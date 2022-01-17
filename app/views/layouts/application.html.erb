@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Site</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+</head>
+
+<body>
+
+<header>
+  <h1>The Tramline HQ</h1>
+  <nav>
+    <%= link_to "Home", root_path %>
+    <% if user_signed_in? %>
+      <%= link_to "Users", '#' %>
+      <a href="#">Account</a>
+      <ul>
+        <%= link_to "Profile", '#' %>
+        <%= link_to "Settings", '#' %>
+        <%= link_to "Log out", destroy_user_session_path, method: :delete %>
+        </li>
+      </ul>
+      </li>
+    <% else %>
+      <%= link_to "Log in", user_session_path %>
+    <% end %>
+  </nav>
+</header>
+
+<% flash.each do |message_type, message| %>
+  <%= content_tag(:div, message) %>
+<% end %>
+
+<%= yield %>
+
+</body>
+</html>

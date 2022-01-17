@@ -1,0 +1,4 @@
+ignore:
+- bundle/bin/*
+- db/schema.rb
+- config/**/*

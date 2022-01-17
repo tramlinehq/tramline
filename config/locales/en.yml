@@ -1,0 +1,5 @@
+en:
+  errors:
+    messages:
+      password:
+        password_strength: "Please choose a stronger password with at least 8 characters. Try a mix of letters, numbers, and symbols."
