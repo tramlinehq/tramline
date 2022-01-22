@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Site</title>
+  <title>The Tramline HQ</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
@@ -12,27 +12,24 @@
 
 <body>
 
+<%= developer_commentary do %>
+  <p>This is definitely not the final UI. We'll revamp the nav bar and the general IA completely soon.</p>
+  <p>- kit</p>
+<% end %>
+
 <header>
   <h1>The Tramline HQ</h1>
   <nav>
     <%= link_to "Home", root_path %>
     <% if user_signed_in? %>
-      <%= link_to "Users", '#' %>
-      <a href="#">Account</a>
-      <ul>
-        <%= link_to "Profile", '#' %>
-        <%= link_to "Settings", '#' %>
-        <%= link_to "Log out", destroy_user_session_path, method: :delete %>
-        </li>
-      </ul>
-      </li>
+      <%= button_to "Log out", destroy_user_session_path, method: :delete, "data-turbo": false %>
     <% else %>
       <%= link_to "Log in", user_session_path %>
     <% end %>
   </nav>
 </header>
 
-<% flash.each do |message_type, message| %>
+<% flash.each do |_message_type, message| %>
   <%= content_tag(:div, message) %>
 <% end %>
 

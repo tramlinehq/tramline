@@ -1,0 +1,30 @@
+<%= form_with(model: [current_organization, app]) do |form| %>
+  <div class="block">
+    <div class="field">
+      <%= form.label :name, class: "label" %>
+      <div class="control">
+        <%= form.text_field :name, class: "input" %>
+      </div>
+    </div>
+
+    <div class="field">
+      <%= form.label :description, class: "label" %>
+      <div class="control">
+        <%= form.text_area :description, class: "input" %>
+      </div>
+    </div>
+
+    <div class="field">
+      <%= form.label :bundle_identifier, class: "label" %>
+      <div class="control">
+        <%= form.text_field :bundle_identifier, class: "input", placeholder: "eg., com.tramline.clojure.is.best" %>
+      </div>
+    </div>
+
+    <div class="field is-grouped">
+      <div class="control">
+        <%= form.submit 'Submit', class: "button is-link" %>
+      </div>
+    </div>
+  </div>
+<% end %>

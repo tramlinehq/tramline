@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>The Tramline HQ</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+</head>
+
+<body>
+
+<%= developer_commentary do %>
+  <p>
+    This is definitely not the final UI. We'll revamp the nav bar and the general IA completely in due time.
+    <p><br>- kit</p>
+  </p>
+<% end %>
+
+<header>
+  <h1>The Tramline HQ</h1>
+  <nav>
+    <%= link_to "Home", root_path %>
+    <a href="#">Account</a>
+    <ul>
+      <%= button_to "Log out", destroy_user_session_path, method: :delete, "data-turbo": false %>
+      </li>
+    </ul>
+    </li>
+  </nav>
+</header>
+
+<% flash.each do |_message_type, message| %>
+  <%= content_tag(:div, message) %>
+<% end %>
+
+<%= yield %>
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+<% unless @app.integrations.exists? %>
+  <p>Go to the
+    <%= link_to "integrations page", new_accounts_organization_app_integration_path(current_organization, @app) %>
+    to create an integration for this app.
+  </p>
+<% end %>

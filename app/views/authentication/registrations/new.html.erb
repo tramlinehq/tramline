@@ -1,0 +1,57 @@
+<%= developer_commentary do %>
+  <p>
+    It's advisable to avoid splitting the full name and ask for an optional preferred name.
+    Refer to <a href=https://uxmovement.com/forms/why-your-form-only-needs-one-name-field>this</a>.
+  </p>
+  <p>We only need the Organization Name from the first signee, the rest will be configured later.</p>
+  <p>Currently, only the admin will be able to invite new users to their org. New users can't self-signup.</p>
+  <p>Logins can get locked after 3 wrong attempts, hence you see a section on unlocking at the bottom.</p>
+  <p>- kit</p>
+<% end %>
+
+<h2>Sign up</h2>
+
+<%= form_for(resource, as: resource_name, html: {'data-turbo' => "false"}, url: registration_path(resource_name)) do |f| %>
+  <%= render "devise/shared/error_messages", resource: user %>
+
+  <div class="field">
+    <%= f.label :full_name %><br/>
+    <%= f.text_field :full_name, autofocus: true, autocomplete: "full-name" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :preferred_name %><br/>
+    <%= f.text_field :preferred_name, autofocus: true, autocomplete: "preferred-name", placeholder: "What should we call you? (optional)" %>
+  </div>
+
+  <div class="field">
+    <%= f.fields_for :organizations, @organization do |m| %>
+      <%= m.label :name, "Organization Name" %><br/>
+      <%= m.text_field :name, autofocus: true, autocomplete: "organization-name" %>
+    <% end %>
+  </div>
+
+  <div class="field">
+    <%= f.label :email %><br/>
+    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :password %>
+    <% if @minimum_password_length %>
+      <em>(<%= @minimum_password_length %> characters minimum)</em>
+    <% end %><br/>
+    <%= f.password_field :password, autocomplete: "new-password" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :password_confirmation %><br/>
+    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
+  </div>
+
+  <div class="actions">
+    <%= f.submit "Sign up" %>
+  </div>
+<% end %>
+
+<%= render "devise/shared/links" %>
