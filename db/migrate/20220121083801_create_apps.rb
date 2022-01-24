@@ -6,6 +6,7 @@ class CreateApps < ActiveRecord::Migration[7.0]
       t.string :bundle_identifier, null: false
       t.belongs_to :organization, index: true, foreign_key: true, type: :uuid
       t.string :slug
+      t.string :working_branch
 
       t.timestamps
     end

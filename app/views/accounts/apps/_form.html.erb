@@ -21,6 +21,13 @@
       </div>
     </div>
 
+    <div class="field">
+      <%= form.label :working_branch, class: "label" %>
+      <div class="control">
+        <%= form.text_field :working_branch, class: "input", placeholder: "eg., main, master etc." %>
+      </div>
+    </div>
+
     <div class="field is-grouped">
       <div class="control">
         <%= form.submit 'Submit', class: "button is-link" %>

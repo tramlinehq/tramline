@@ -3,4 +3,44 @@
     <%= link_to "integrations page", new_accounts_organization_app_integration_path(current_organization, @app) %>
     to create an integration for this app.
   </p>
+<% else %>
+  <table>
+    <thead>
+    <tr>
+      <th>Category</th>
+      <th>Provider</th>
+      <th>Connected</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    <% @app.integrations.each do |integration| %>
+      <tr>
+        <td><%= integration.category.titleize %></td>
+        <td><%= integration.provider.titleize %></td>
+        <td>✅</td>
+        <td><%= link_to "Edit", edit_accounts_organization_app_integration_path(current_organization, @app, @version_control_integration) %></td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Releases</h3>
+  <%= form_with(url: create_release_branch_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
+    <div class="field is-grouped">
+      <div class="control">
+        <%= form.submit 'Create Release Branch', class: "button is-link" %>
+      </div>
+    </div>
+  <% end %>
+
+  <%= form_with(url: create_pull_request_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
+    <div class="field is-grouped">
+      <div class="control">
+        <%= form.submit 'Create Pull Request', class: "button is-link" %>
+      </div>
+    </div>
+  <% end %>
 <% end %>

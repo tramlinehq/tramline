@@ -24,9 +24,10 @@ gem "auto_strip_attributes", "~> 2.6"
 gem "flipper", "~> 0.23.0"
 gem "flipper-ui", "~> 0.23.0"
 gem "flipper-active_record", "~> 0.23.0"
-gem "github_api", "~> 0.19.0"
 gem "dotenv-rails", "~> 2.7"
-gem "rack-cors", "~> 1.1"
+gem "rack-cors", "~> 1.1", require: "rack/cors"
+gem "octokit", "~> 4.22"
+gem "jwt", "~> 2.3"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

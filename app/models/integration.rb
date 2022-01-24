@@ -9,10 +9,10 @@ class Integration < ApplicationRecord
     }.freeze
   end
 
-  enum name: LIST.keys.zip(LIST.keys).to_h
-  enum kind: LIST.values.flatten.zip(LIST.values.flatten).to_h
+  enum category: LIST.keys.zip(LIST.keys).to_h
+  enum provider: LIST.values.flatten.zip(LIST.values.flatten).to_h
 
-  validate -> { kind.in?(LIST[name]) }
+  validate -> { provider.in?(LIST[category]) }
 
-  encrypts :authorization_token, deterministic: true, ignore_case: true
+  encrypts :access_token, deterministic: true, ignore_case: true
 end

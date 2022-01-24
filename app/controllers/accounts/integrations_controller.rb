@@ -1,8 +1,14 @@
 class Accounts::IntegrationsController < ApplicationController
-  before_action :set_app, only: %i[new create show index github_auth_code_callback]
+  require "string_utils"
+  using StringUtils
 
-  GITHUB_CLIENT_ID = "173f1b65d5e09eb15c70"
-  GITHUB_CLIENT_SECRET = "82c3d644efa7a2462bbfd9a83389f59f08e116aa"
+  before_action :set_app, only: %i[new create show edit update index]
+  before_action :set_integration, only: %i[edit show update]
+
+  APP_NAME = "tramline-dev"
+  APP_ID = 166687
+  GITHUB_CLIENT_ID = "Iv1.c541cb029c8e6403"
+  GITHUB_CLIENT_SECRET = "fff4a9a70c01133df7ccab05b32c7b3ec96ef541"
 
   def new
     @integration = @app.integrations.new
@@ -10,36 +16,46 @@ class Accounts::IntegrationsController < ApplicationController
 
   def create
     @integration = @app.integrations.new(integration_params)
-    redirect_to(github_authorize_url, allow_other_host: true, protocol: "https://")
+    redirect_to("https://github.com/apps/#{APP_NAME}/installations/new?state=#{state}", allow_other_host: true)
+  end
+
+  def update
+    respond_to do |format|
+      if @integration.update(integration_params)
+        format.html { redirect_to accounts_organization_app_integration_path(current_organization, @app, @integration), notice: "Deck was successfully updated." }
+        format.json { render :show, status: :ok, location: @integration }
+      else
+        format.html { render :edit, status: :unprocessable_entity }
+        format.json { render json: @integration.errors, status: :unprocessable_entity }
+      end
+    end
   end
 
   def show
   end
 
-  def index
+  def edit
+    @active_repository_names =
+      Integrations::Github::Api.new(APP_ID, @integration.installation_id).repos[:repositories].map(&:full_name)
   end
 
-  def github_auth_code_callback
-    @code = params[:code]
-    puts "Got code: #{@code}"
-    head :ok
-
-    # respond_to do |format|
-    #   if @integration.save
-    #     format.html { redirect_to @integration, notice: "Integration was successfully created." }
-    #     format.json { render :show, status: :created, location: @integration }
-    #   else
-    #     format.html { render :new, status: :unprocessable_entity }
-    #     format.json { render json: @integration.errors, status: :unprocessable_entity }
-    #   end
-    # end
+  def index
   end
 
   private
 
-  def github_authorize_url
-    Github.new(client_id: GITHUB_CLIENT_ID, client_secret: GITHUB_CLIENT_SECRET)
-      .authorize_url(scope: "repo:status")
+  def state
+    {
+      organization_id: current_organization.id,
+      app_id: @app.id,
+      integration_category: Integration.categories[:version_control],
+      integration_provider: Integration.providers[:github],
+      user_id: current_user.id
+    }.to_json.encrypt
+  end
+
+  def set_integration
+    @integration = @app.integrations.find(params[:id])
   end
 
   def set_app
@@ -47,6 +63,6 @@ class Accounts::IntegrationsController < ApplicationController
   end
 
   def integration_params
-    params.require(:integration).permit(:name, :kind)
+    params.require(:integration).permit(:category, :provider, :active_repo)
   end
 end

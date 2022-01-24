@@ -1,26 +1,26 @@
 <%= form_with(model: [current_organization, app, integration]) do |form| %>
   <div class="block">
     <div class="field">
-      <%= form.label :name, "Category", class: "label" %>
+      <%= form.label :category, class: "label" %>
       <div class="control">
         <div class="select">
-          <%= form.select :name, options_for_select([["Version Control", "version_control"]], integration.name) %>
+          <%= form.select :category, options_for_select([["Version Control", "version_control"]], integration.category) %>
         </div>
       </div>
     </div>
 
     <div class="field">
-      <%= form.label :kind, "Provider", class: "label" %>
+      <%= form.label :provider, class: "label" %>
       <div class="control">
         <div class="select">
-          <%= form.select :kind, options_for_select([%w[Github github]], integration.kind) %>
+          <%= form.select :provider, options_for_select([%w[Github github]], integration.provider) %>
         </div>
       </div>
     </div>
 
     <div class="field is-grouped">
       <div class="control">
-        <%= form.submit 'Attach', class: "button is-link" %>
+        <%= form.button 'Attach', class: "button is-link", "data-turbo": false %>
       </div>
     </div>
   </div>

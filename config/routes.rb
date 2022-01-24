@@ -13,9 +13,12 @@ Rails.application.routes.draw do
   namespace :accounts do
     resources :organizations do
       resources :apps do
-        resources :integrations do
-          get "github_auth_code_callback", on: :collection
+        member do
+          post :create_release_branch
+          post :create_pull_request
         end
+
+        resources :integrations
       end
     end
   end

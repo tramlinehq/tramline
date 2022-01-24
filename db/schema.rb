@@ -22,6 +22,7 @@ ActiveRecord::Schema.define(version: 2022_01_21_083806) do
     t.string "bundle_identifier", null: false
     t.uuid "organization_id"
     t.string "slug"
+    t.string "working_branch"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["organization_id", "bundle_identifier"], name: "index_apps_on_organization_id_and_bundle_identifier", unique: true
@@ -45,11 +46,13 @@ ActiveRecord::Schema.define(version: 2022_01_21_083806) do
   end
 
   create_table "integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "name", null: false
-    t.string "kind", null: false
+    t.string "category", null: false
+    t.string "provider", null: false
     t.uuid "app_id"
-    t.string "authorization_token"
-    t.string "original_authorization_token"
+    t.string "access_token"
+    t.string "original_access_token"
+    t.string "active_repo"
+    t.string "installation_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["app_id"], name: "index_integrations_on_app_id"
