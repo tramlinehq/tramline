@@ -163,6 +163,7 @@ GEM
     jbuilder (2.11.5)
       actionview (>= 5.0.0)
       activesupport (>= 5.0.0)
+    json (2.6.1)
     jwt (2.3.0)
     kredis (1.0.1)
       activesupport (>= 6.0.0)
@@ -216,6 +217,11 @@ GEM
     parser (3.1.0.0)
       ast (~> 2.4.1)
     pg (1.2.3)
+    postmark (1.22.0)
+      json
+    postmark-rails (0.21.0)
+      actionmailer (>= 3.0.0)
+      postmark (>= 1.21.3, < 2.0)
     pry (0.14.1)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -388,6 +394,7 @@ DEPENDENCIES
   letter_opener_web
   octokit (~> 4.22)
   pg (~> 1.1)
+  postmark-rails (~> 0.21.0)
   pry
   puma (~> 5.0)
   rack-cors (~> 1.1)

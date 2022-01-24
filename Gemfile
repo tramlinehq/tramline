@@ -28,6 +28,7 @@ gem "dotenv-rails", "~> 2.7"
 gem "rack-cors", "~> 1.1", require: "rack/cors"
 gem "octokit", "~> 4.22"
 gem "jwt", "~> 2.3"
+gem "postmark-rails", "~> 0.21.0"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
