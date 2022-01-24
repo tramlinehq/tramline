@@ -2,6 +2,7 @@ databases:
   - name: site
     databaseName: tramline_site_production
     user: tramline
+    postgresMajorVersion: 14
 
 services:
   - type: web
