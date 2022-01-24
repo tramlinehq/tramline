@@ -3,6 +3,7 @@ databases:
     databaseName: tramline_site_production
     user: tramline
     postgresMajorVersion: 14
+    region: frankfurt
 
 services:
   - type: web
