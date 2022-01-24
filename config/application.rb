@@ -8,6 +8,10 @@ Bundler.require(*Rails.groups)
 
 module Site
   class Application < Rails::Application
+    if %w[development test].include? Rails.env
+      Dotenv::Railtie.load if defined? Dotenv
+    end
+
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.0
 

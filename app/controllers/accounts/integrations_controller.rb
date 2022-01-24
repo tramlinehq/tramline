@@ -5,18 +5,13 @@ class Accounts::IntegrationsController < ApplicationController
   before_action :set_app, only: %i[new create show edit update index]
   before_action :set_integration, only: %i[edit show update]
 
-  APP_NAME = "tramline-dev"
-  APP_ID = 166687
-  GITHUB_CLIENT_ID = "Iv1.c541cb029c8e6403"
-  GITHUB_CLIENT_SECRET = "fff4a9a70c01133df7ccab05b32c7b3ec96ef541"
-
   def new
     @integration = @app.integrations.new
   end
 
   def create
     @integration = @app.integrations.new(integration_params)
-    redirect_to("https://github.com/apps/#{APP_NAME}/installations/new?state=#{state}", allow_other_host: true)
+    redirect_to("https://github.com/apps/#{ENV["GITHUB_APP_NAME"]}/installations/new?state=#{state}", allow_other_host: true)
   end
 
   def update
@@ -36,7 +31,7 @@ class Accounts::IntegrationsController < ApplicationController
 
   def edit
     @active_repository_names =
-      Integrations::Github::Api.new(APP_ID, @integration.installation_id).repos[:repositories].map(&:full_name)
+      Integrations::Github::Api.new(ENV["GITHUB_APP_ID"], @integration.installation_id).repos[:repositories].map(&:full_name)
   end
 
   def index

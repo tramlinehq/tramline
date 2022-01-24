@@ -1,5 +1,4 @@
 class Accounts::AppsController < ApplicationController
-  APP_ID = 166687
   before_action :set_app, only: %i[show index]
   before_action :set_vcs_integration, only: [:show, :create_release_branch, :create_pull_request]
 
@@ -24,7 +23,7 @@ class Accounts::AppsController < ApplicationController
   def create_release_branch
     random_str = (0...8).map { rand(65..90).chr }.join
     Integrations::Github::Api
-      .new(APP_ID, @version_control_integration.installation_id)
+      .new(ENV["GITHUB_APP_ID"], @version_control_integration.installation_id)
       .create_branch!(@version_control_integration.active_repo, @app.working_branch, "release-v#{random_str}")
   end
 
