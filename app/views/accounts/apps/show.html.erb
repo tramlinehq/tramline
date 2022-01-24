@@ -27,20 +27,24 @@
   </table>
   </div>
 
-  <h3>Releases</h3>
-  <%= form_with(url: create_release_branch_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
-    <div class="field is-grouped">
-      <div class="control">
-        <%= form.submit 'Create Release Branch', class: "button is-link" %>
+  <% if @version_control_integration.active_repo.present? %>
+    <h3>Releases</h3>
+    <%= form_with(url: create_release_branch_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
+      <div class="field is-grouped">
+        <div class="control">
+          <%= form.submit 'Create Release Branch', class: "button is-link" %>
+        </div>
       </div>
-    </div>
-  <% end %>
+    <% end %>
 
-  <%= form_with(url: create_pull_request_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
-    <div class="field is-grouped">
-      <div class="control">
-        <%= form.submit 'Create Pull Request', class: "button is-link" %>
+    <%= form_with(url: create_pull_request_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
+      <div class="field is-grouped">
+        <div class="control">
+          <%= form.submit 'Create Pull Request', class: "button is-link" %>
+        </div>
       </div>
-    </div>
+    <% end %>
+  <% else %>
+    Please set the <%= link_to "active repo", edit_accounts_organization_app_integration_path(current_organization, @app, @version_control_integration) %> in your VCS integration.
   <% end %>
 <% end %>
