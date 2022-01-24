@@ -81,6 +81,4 @@ test:
 #
 production:
   <<: *default
-  database: tramline_site_production
-  username: site
-  password: <%= ENV["TRAMLINE_SITE_DATABASE_PASSWORD"] %>
+  url: <%= ENV['DATABASE_URL'] %>
