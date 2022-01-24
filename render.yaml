@@ -8,6 +8,7 @@ services:
   - type: web
     name: site
     env: ruby
+    region: frankfurt
     buildCommand: "./bin/render-build.sh"
     startCommand: "bundle exec puma -C config/puma.rb"
     envVars:
