@@ -3,11 +3,10 @@ require "jwt"
 
 class Integrations::Github::Jwt
   attr_reader :private_key, :app_id
-  delegate :credentials, to: Rails.application
 
   def initialize(app_id)
     @app_id = app_id
-    private_pem = credentials.integrations.github.private_pem
+    private_pem = Rails.application.credentials.integrations.github.private_pem
     @private_key = OpenSSL::PKey::RSA.new(private_pem)
   end
 
