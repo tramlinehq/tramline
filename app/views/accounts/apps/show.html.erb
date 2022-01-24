@@ -32,12 +32,21 @@
     <%= form_with(url: create_release_branch_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
       <div class="field is-grouped">
         <div class="control">
-          <%= form.submit 'Create Release Branch', class: "button is-link" %>
+          <%= form.submit 'Create Random Release Branch', class: "button is-link" %>
         </div>
       </div>
     <% end %>
 
+    <hr/>
+
     <%= form_with(url: create_pull_request_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
+      <div class="field">
+        <%= form.label :pr_head, "Head of PR -- The branch (or git ref) where your changes are implemented", class: "label" %>
+        <div class="control">
+          <%= form.text_field :pr_head, class: "input" %>
+        </div>
+      </div>
+
       <div class="field is-grouped">
         <div class="control">
           <%= form.submit 'Create Pull Request', class: "button is-link" %>
