@@ -32,3 +32,4 @@
 
 # Ignore IntelliJ things
 .idea
+/config/credentials/production.key
