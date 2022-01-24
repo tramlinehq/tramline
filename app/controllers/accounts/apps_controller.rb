@@ -22,7 +22,7 @@ class Accounts::AppsController < ApplicationController
   end
 
   def create_release_branch
-    random_str = (0...8).map { (rand(65..90)).chr }.join
+    random_str = (0...8).map { rand(65..90).chr }.join
     Integrations::Github::Api
       .new(APP_ID, @version_control_integration.installation_id)
       .create_branch!(@version_control_integration.active_repo, @app.working_branch, "release-v#{random_str}")

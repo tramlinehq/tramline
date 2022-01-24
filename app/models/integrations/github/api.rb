@@ -28,7 +28,7 @@ class Integrations::Github::Api
 
   def head(repo, working_branch_name)
     execute do
-      @client.commits(repo, options: { sha: working_branch_name }).first[:sha]
+      @client.commits(repo, options: {sha: working_branch_name}).first[:sha]
     end
   end
 
