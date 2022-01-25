@@ -96,6 +96,8 @@
           <%= form.submit 'Create Pull Request', class: "button is-link" %>
         </div>
       </div>
+
+      <code>Make sure you actually have some changes in the branch against your working branch.</code>
     <% end %>
   <% else %>
     Please set the <%= link_to "active repo", edit_accounts_organization_app_integration_path(current_organization, @app, @version_control_integration) %> in your VCS integration.
