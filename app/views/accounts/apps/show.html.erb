@@ -4,6 +4,22 @@
     to create an integration for this app.
   </p>
 <% else %>
+  <h2><%= @app.name %></h2>
+  <table>
+    <thead>
+    <tr>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    <tr>
+      <td><%= link_to "Edit working branch", edit_accounts_organization_app_path(current_organization, @app) %></td>
+    </tr>
+    </tbody>
+  </table>
+
+  <h3>Integrations</h3>
   <table>
     <thead>
     <tr>
@@ -40,10 +56,36 @@
     <hr/>
 
     <%= form_with(url: create_pull_request_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
+      <% flash.each do |name, msgs| %>
+        <% if name.eql?("custom_errors") %>
+          <blockquote>
+            <p><strong>Errors</strong></p>
+            <table>
+              <thead>
+              <tr>
+                <th>Resource</th>
+                <th>Field</th>
+                <th>Error Code</th>
+              </tr>
+              </thead>
+              <tbody>
+
+              <% JSON.parse(msgs).each do |msg| %>
+                <tr>
+                  <td><%= msg["resource"] %></td>
+                  <td><%= msg["field"] %></td>
+                  <td><%= msg["code"] %></td>
+                </tr>
+              <% end %>
+              </tbody>
+            </table>
+          </blockquote>
+        <% end %>
+      <% end %>
+
       <div class="field">
-        <%= form.label :pr_head, "Head of PR -- The branch (or git ref) where your changes are implemented", class: "label" %>
         <div class="control">
-          <%= form.text_field :pr_head, class: "input" %>
+          <%= form.text_field :pr_head, class: "input", placeholder: "Branch with your changes", required: true %>
         </div>
       </div>
 

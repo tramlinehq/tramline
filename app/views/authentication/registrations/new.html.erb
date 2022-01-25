@@ -11,7 +11,7 @@
 
 <h2>Sign up</h2>
 
-<%= form_for(resource, as: resource_name, html: {'data-turbo' => "false"}, url: registration_path(resource_name)) do |f| %>
+<%= form_for(resource, as: resource_name, html: { 'data-turbo' => "false" }, url: registration_path(resource_name)) do |f| %>
   <%= render "devise/shared/error_messages", resource: user %>
 
   <div class="field">
@@ -21,7 +21,7 @@
 
   <div class="field">
     <%= f.label :preferred_name %><br/>
-    <%= f.text_field :preferred_name, autofocus: true, autocomplete: "preferred-name", placeholder: "What should we call you? (optional)" %>
+    <%= f.text_field :preferred_name, autofocus: true, autocomplete: "preferred-name", placeholder: "What should we call you?" %>
   </div>
 
   <div class="field">

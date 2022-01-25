@@ -1,8 +1,8 @@
 <div>
   <% if current_user.blank? %>
-    <h1>Welcome, stranger.</h1>
+    <h2>Welcome, stranger.</h2>
   <% else %>
-    <h1>Welcome, <%= current_user.preferred_name %>.</h1>
+    <h2>Welcome, <%= current_user.preferred_name.presence || current_user.full_name %></h2>
 
     <h4>Select your destination</h4>
 

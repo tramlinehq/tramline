@@ -1,0 +1,18 @@
+<h2>Edit App</h2>
+
+<%= form_with(model: [current_organization, @app], method: :patch) do |form| %>
+  <div class="field">
+    <%= form.label :working_branch, class: "label" %>
+    <div class="control">
+      <div class="select">
+        <%= form.text_field :working_branch, required: true %>
+      </div>
+    </div>
+  </div>
+
+  <div class="field is-grouped">
+    <div class="control">
+      <%= form.button 'Assign', class: "button is-link", "data-turbo": false %>
+    </div>
+  </div>
+<% end %>

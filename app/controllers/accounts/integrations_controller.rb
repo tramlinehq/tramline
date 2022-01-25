@@ -17,7 +17,7 @@ class Accounts::IntegrationsController < ApplicationController
   def update
     respond_to do |format|
       if @integration.update(integration_params)
-        format.html { redirect_to accounts_organization_app_integration_path(current_organization, @app, @integration), notice: "Deck was successfully updated." }
+        format.html { redirect_to accounts_organization_app_integration_path(current_organization, @app, @integration), notice: "Integration was successfully updated." }
         format.json { render :show, status: :ok, location: @integration }
       else
         format.html { render :edit, status: :unprocessable_entity }

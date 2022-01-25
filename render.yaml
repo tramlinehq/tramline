@@ -10,7 +10,7 @@ services:
     name: site
     env: ruby
     region: frankfurt
-    buildCommand: "./bin/render-build.sh"
+    buildCommand: "./bin/render-build"
     startCommand: "bundle exec puma -C config/puma.rb"
     envVars:
       - key: DATABASE_URL
