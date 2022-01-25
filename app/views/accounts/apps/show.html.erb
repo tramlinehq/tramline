@@ -45,6 +45,7 @@
 
   <% if @version_control_integration.active_repo.present? %>
     <h3>Releases</h3>
+    <h5>Branches</h5>
     <%= form_with(url: create_release_branch_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
       <div class="field is-grouped">
         <div class="control">
@@ -55,6 +56,7 @@
 
     <hr/>
 
+    <h5>PRs</h5>
     <%= form_with(url: create_pull_request_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
       <% flash.each do |name, msgs| %>
         <% if name.eql?("custom_errors") %>
