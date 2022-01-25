@@ -39,6 +39,8 @@ class Accounts::AppsController < ApplicationController
       Integrations::Github::Api
         .new(ENV["GITHUB_APP_ID"], @version_control_integration.installation_id)
         .create_branch!(@version_control_integration.active_repo, @app.working_branch, "release-v#{random_str}")
+
+      redirect_to accounts_organization_app_path(current_organization, @app), notice: "Successfully created a branch!"
     rescue Octokit::UnprocessableEntity => e
       flash[:errors] = e.errors
       render :show, status: :unprocessable_entity
