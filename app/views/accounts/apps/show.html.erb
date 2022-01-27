@@ -5,19 +5,45 @@
   </p>
 <% else %>
   <h2><%= @app.name %></h2>
+  <h3>Trains</h3>
   <table>
     <thead>
     <tr>
-      <th>Actions</th>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Working Branch</th>
+      <th>Starting Version</th>
+      <th>Version Suffix</th>
+      <th>Originally started at</th>
+      <th>Repeats</th>
     </tr>
     </thead>
-    <tbody>
-
-    <tr>
-      <td><%= link_to "Edit working branch", edit_accounts_organization_app_path(current_organization, @app) %></td>
-    </tr>
-    </tbody>
+    <% @app.trains.each do |train| %>
+      <tbody>
+      <tr>
+        <td>
+          <%= link_to train.name, accounts_organization_app_releases_train_path(current_organization, @app, train) %>
+        <td>
+          <%= train.description %></td>
+        <td>
+          <%= train.working_branch %></td>
+        <td>
+          <%= train.version_seeded_with %></td>
+        <td>
+          <%= train.version_suffix %></td>
+        <td>
+          <%= train.kickoff_at %></td>
+        <td>
+          <%= ActiveSupport::Duration.parse(Duration.new(train.repeat_duration).iso8601).inspect %>
+        </td>
+      </tr>
+      </tbody>
+    <% end %>
   </table>
+
+  <%= link_to "Create a releases train", new_accounts_organization_app_releases_train_path(current_organization, @app) %>
+
+  <hr/>
 
   <h3>Integrations</h3>
   <table>
@@ -100,6 +126,8 @@
       <code>Make sure you actually have some changes in the branch against your working branch.</code>
     <% end %>
   <% else %>
-    Please set the <%= link_to "active repo", edit_accounts_organization_app_integration_path(current_organization, @app, @version_control_integration) %> in your VCS integration.
+    Please set
+    the <%= link_to "active repo", edit_accounts_organization_app_integration_path(current_organization, @app, @version_control_integration) %>
+    in your VCS integration.
   <% end %>
 <% end %>

@@ -18,6 +18,12 @@ Rails.application.routes.draw do
           post :create_pull_request
         end
 
+        namespace :releases do
+          resources :trains do
+            resources :steps
+          end
+        end
+
         resources :integrations
       end
     end

@@ -1,0 +1,34 @@
+<h3><%= @train.name %></h3>
+
+<table>
+  <thead>
+  <tr>
+    <th>Description</th>
+    <th>Working Branch</th>
+    <th>Starting Version</th>
+    <th>Version Suffix</th>
+    <th>Originally started at</th>
+    <th>Repeats</th>
+  </tr>
+  </thead>
+    <tbody>
+    <tr>
+      <td>
+        <%= @train.description %></td>
+      <td>
+        <%= @train.working_branch %></td>
+      <td>
+        <%= @train.version_seeded_with %></td>
+      <td>
+        <%= @train.version_suffix %></td>
+      <td>
+        <%= @train.kickoff_at %></td>
+      <td>
+        <%= ActiveSupport::Duration.parse(Duration.new(@train.repeat_duration).iso8601).inspect %>
+      </td>
+    </tr>
+    </tbody>
+</table>
+
+<%= link_to "Add a step",
+            new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>

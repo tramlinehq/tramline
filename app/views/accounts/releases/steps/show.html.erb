@@ -1,0 +1,26 @@
+<h3><%= @step.name %></h3>
+
+<table>
+  <thead>
+  <tr>
+    <th>Description</th>
+    <th>Build Channel</th>
+    <th>CI/CD Channel</th>
+  </tr>
+  </thead>
+    <tbody>
+    <tr>
+      <td>
+        <%= @step.description %></td>
+      <td>
+        <%= @step.build_artifact_channel %>
+      </td>
+      <td>
+        <%= @step.ci_cd_channel %>
+      </td>
+    </tr>
+    </tbody>
+</table>
+
+<%= link_to "Add another step",
+            new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>

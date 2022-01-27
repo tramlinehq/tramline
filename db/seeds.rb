@@ -19,19 +19,19 @@ admin_user = lambda do
   puts "Added admin user."
 end
 
-# Executive user
+# Owner user
 # --------------
-EXECUTIVE_FULL_NAME = "Executive User"
-EXECUTIVE_PREFERRED_NAME = "Executive"
-EXECUTIVE_EMAIL = "executive@tramline.app"
-EXECUTIVE_PASSWORD = "why aroma enclose startup"
+OWNER_FULL_NAME = "Owner User"
+OWNER_PREFERRED_NAME = "Owner"
+OWNER_EMAIL = "owner@tramline.app"
+OWNER_PASSWORD = "why aroma enclose startup"
 
-executive_user = lambda do
+owner_user = lambda do
   user = Accounts::User.create!(
-    full_name: EXECUTIVE_FULL_NAME,
-    preferred_name: EXECUTIVE_PREFERRED_NAME,
-    email: EXECUTIVE_EMAIL,
-    password: EXECUTIVE_PASSWORD
+    full_name: OWNER_FULL_NAME,
+    preferred_name: OWNER_PREFERRED_NAME,
+    email: OWNER_EMAIL,
+    password: OWNER_PASSWORD
   )
 
   organization = Accounts::Organization.create!(
@@ -43,10 +43,10 @@ executive_user = lambda do
   Accounts::Membership.create!(
     user:,
     organization:,
-    role: Accounts::Membership.roles[:executive]
+    role: Accounts::Membership.roles[:owner]
   )
 
-  puts "Added executive user."
+  puts "Added owner user."
 end
 
 # Developer user
@@ -81,6 +81,6 @@ end
 
 ActiveRecord::Base.transaction do
   admin_user.call
-  executive_user.call
+  owner_user.call
   developer_user.call
 end

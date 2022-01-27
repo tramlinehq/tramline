@@ -10,22 +10,23 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_01_21_083806) do
+ActiveRecord::Schema.define(version: 2022_01_26_132735) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
 
   create_table "apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "organization_id", null: false
     t.string "name", null: false
     t.string "description"
     t.string "bundle_identifier", null: false
-    t.uuid "organization_id"
+    t.string "platform"
     t.string "slug"
-    t.string "working_branch"
+    t.bigint "build_number"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["organization_id", "bundle_identifier"], name: "index_apps_on_organization_id_and_bundle_identifier", unique: true
+    t.index ["bundle_identifier", "organization_id"], name: "index_apps_on_bundle_identifier_and_organization_id", unique: true
     t.index ["organization_id"], name: "index_apps_on_organization_id"
   end
 
@@ -46,11 +47,9 @@ ActiveRecord::Schema.define(version: 2022_01_21_083806) do
   end
 
   create_table "integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "app_id", null: false
     t.string "category", null: false
     t.string "provider", null: false
-    t.uuid "app_id"
-    t.string "access_token"
-    t.string "original_access_token"
     t.string "active_repo"
     t.string "installation_id"
     t.datetime "created_at", precision: 6, null: false
@@ -79,6 +78,62 @@ ActiveRecord::Schema.define(version: 2022_01_21_083806) do
     t.datetime "updated_at", precision: 6, null: false
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
     t.index ["status"], name: "index_organizations_on_status"
+  end
+
+  create_table "release_train_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_trains_id", null: false
+    t.uuid "previous_train_run_id"
+    t.datetime "scheduled_at", null: false
+    t.datetime "was_run_at"
+    t.string "status", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["previous_train_run_id"], name: "index_release_train_runs_on_previous_train_run_id"
+    t.index ["release_trains_id"], name: "index_release_train_runs_on_release_trains_id"
+  end
+
+  create_table "release_train_step_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_train_step_id", null: false
+    t.uuid "release_train_run_id", null: false
+    t.uuid "previous_step_run_id"
+    t.datetime "scheduled_at", null: false
+    t.datetime "was_run_at"
+    t.string "status", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["previous_step_run_id"], name: "index_release_train_step_runs_on_previous_step_run_id"
+    t.index ["release_train_run_id"], name: "index_release_train_step_runs_on_release_train_run_id"
+    t.index ["release_train_step_id"], name: "index_release_train_step_runs_on_release_train_step_id"
+  end
+
+  create_table "release_train_steps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_train_id", null: false
+    t.string "name", null: false
+    t.string "description", null: false
+    t.string "status", null: false
+    t.integer "step_number", limit: 2, default: 0, null: false
+    t.string "build_artifact_channel", null: false
+    t.string "ci_cd_channel", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["release_train_id"], name: "index_release_train_steps_on_release_train_id"
+  end
+
+  create_table "trains", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "app_id", null: false
+    t.string "name", null: false
+    t.string "description", null: false
+    t.string "version_seeded_with", null: false
+    t.string "version_current"
+    t.string "version_suffix", null: false
+    t.datetime "kickoff_at", null: false
+    t.interval "repeat_duration", null: false
+    t.string "working_branch", null: false
+    t.integer "step_count", limit: 2, default: 0, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["app_id"], name: "index_release_trains_on_app_id"
+    t.index ["version_suffix", "app_id"], name: "index_release_trains_on_version_suffix_and_app_id", unique: true
   end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -116,4 +171,11 @@ ActiveRecord::Schema.define(version: 2022_01_21_083806) do
   add_foreign_key "integrations", "apps"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
+  add_foreign_key "release_train_runs", "release_train_runs", column: "previous_train_run_id"
+  add_foreign_key "release_train_runs", "trains", column: "release_trains_id"
+  add_foreign_key "release_train_step_runs", "release_train_runs"
+  add_foreign_key "release_train_step_runs", "release_train_step_runs", column: "previous_step_run_id"
+  add_foreign_key "release_train_step_runs", "release_train_steps"
+  add_foreign_key "release_train_steps", "trains"
+  add_foreign_key "trains", "apps"
 end

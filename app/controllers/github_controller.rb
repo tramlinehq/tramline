@@ -2,9 +2,6 @@ class GithubController < ApplicationController
   require "string_utils"
   using StringUtils
 
-  GITHUB_CLIENT_ID = "Iv1.c541cb029c8e6403"
-  GITHUB_CLIENT_SECRET = "fff4a9a70c01133df7ccab05b32c7b3ec96ef541"
-
   def callback
     return unless valid_state?
     @integration = state_app.integrations.new(integration_params)

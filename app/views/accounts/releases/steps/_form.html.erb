@@ -1,0 +1,40 @@
+<%= form_with(
+      model: [current_organization, app, train, step],
+      url: accounts_organization_app_releases_train_steps_path(current_organization, app, train, step)
+    ) do |form|%>
+  <div class="block">
+    <div class="field">
+      <%= form.label :name, class: "label" %>
+      <div class="control">
+        <%= form.text_field :name, class: "input", required: true %>
+      </div>
+    </div>
+
+    <div class="field">
+      <%= form.label :description, class: "label" %>
+      <div class="control">
+        <%= form.text_area :description, class: "input", required: true %>
+      </div>
+    </div>
+
+    <div class="field">
+      <%= form.label :build_artifact_channel, class: "label" %>
+      <div class="control">
+        <%= form.text_field :build_artifact_channel, class: "input", required: true %>
+      </div>
+    </div>
+
+    <div class="field">
+      <%= form.label :ci_cd_channel, class: "label" %>
+      <div class="control">
+        <%= form.text_field :ci_cd_channel, class: "input", required: true %>
+      </div>
+    </div>
+
+    <div class="field is-grouped">
+      <div class="control">
+        <%= form.button 'Submit', class: "button is-link", "data-turbo": false %>
+      </div>
+    </div>
+  </div>
+<% end %>

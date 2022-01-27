@@ -1,0 +1,65 @@
+<%= form_with(model: [current_organization, app, train]) do |form| %>
+  <div class="block">
+    <div class="field">
+      <%= form.label :name, class: "label" %>
+      <div class="control">
+        <%= form.text_field :name, class: "input", required: true %>
+      </div>
+    </div>
+
+    <div class="field">
+      <%= form.label :description, class: "label" %>
+      <div class="control">
+        <%= form.text_area :description, class: "input", required: true %>
+      </div>
+    </div>
+
+    <div class="field">
+      <%= form.label :kickoff_at, class: "label" %>
+      <%= form.text_field :kickoff_at,
+                          required: true,
+                          data: {
+                            controller: "flatpickr",
+                            flatpickr_date_format: "Y-m-d-H:m",
+                            flatpickr_enable_time: true,
+                            flatpickr_min_date: Time.zone.now
+                          } %>
+    </div>
+
+    <div class="field">
+      <%= form.label "Every", class: "label" %>
+      <div class="control">
+        <%= form.number_field :repeat_duration_value, step: 1, min: 1, default: 1, required: true, class: "input" %>
+        <%= form.select :repeat_duration_unit,
+                        options_for_select([%w[Day(s) "days"], %w[Week(s) weeks]], "weeks"), required: true %>
+      </div>
+    </div>
+
+    <div class="field">
+      <%= form.label :version_seeded_with, "Starting version", class: "label" %>
+      <div class="control">
+        <%= form.text_field :version_seeded_with, class: "input", placeholder: "eg. 1.2.0", required: true %>
+      </div>
+    </div>
+
+    <div class="field">
+      <%= form.label :version_suffix, class: "label" %>
+      <div class="control">
+        <%= form.text_field :version_suffix, class: "input", placeholder: "eg. nightly, prod", required: true %>
+      </div>
+    </div>
+
+    <div class="field">
+      <%= form.label :working_branch, class: "label" %>
+      <div class="control">
+        <%= form.text_field :working_branch, class: "input", placeholder: "eg. main or master", required: true %>
+      </div>
+    </div>
+
+    <div class="field is-grouped">
+      <div class="control">
+        <%= form.button 'Submit', class: "button is-link", "data-turbo": false %>
+      </div>
+    </div>
+  </div>
+<% end %>

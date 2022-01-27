@@ -3,6 +3,7 @@ class App < ApplicationRecord
 
   belongs_to :organization, class_name: "Accounts::Organization"
   has_many :integrations
+  has_many :trains, class_name: "Releases::Train"
 
   friendly_id :name, use: :slugged
 end

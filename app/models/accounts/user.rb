@@ -36,7 +36,7 @@ class Accounts::User < ApplicationRecord
     return false if membership.blank?
     return false if organization.blank?
 
-    membership&.role = Accounts::Membership.roles[:executive]
+    membership&.role = Accounts::Membership.roles[:owner]
     organization.created_by = email
     organization.status = Accounts::Organization.statuses[:active]
     save
