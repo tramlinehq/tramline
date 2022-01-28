@@ -24,7 +24,7 @@
         <div class="control">
           <%= form.number_field :run_after_duration_value, step: 1, min: 1, default: 1, required: true, class: "input" %>
           <%= form.select :run_after_duration_unit,
-                          options_for_select([%w[Day(s) days], %w[Week(s) weeks]], "days"), required: true %>
+                          options_for_select([%w[Hour(s) hours], %w[Day(s) days], %w[Week(s) weeks]], "hours"), required: true %>
         </div>
       </div>
     <% end %>
@@ -37,7 +37,7 @@
     </div>
 
     <div class="field">
-      <%= form.label :ci_cd_channel, class: "label" %>
+      <%= form.label :ci_cd_channel, "CI/CD channel", class: "label" %>
       <div class="control">
         <%= form.text_field :ci_cd_channel, class: "input", required: true %>
       </div>

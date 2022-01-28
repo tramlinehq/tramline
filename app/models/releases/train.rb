@@ -14,7 +14,17 @@ class Releases::Train < ApplicationRecord
 
   attribute :repeat_duration, :interval
 
+  GRACE_PERIOD_FOR_RUNNING = 30.seconds
+
   def activate!
     update!(status: Releases::Train.statuses[:active])
+  end
+
+  def runnable?
+    now = Time.now
+    run_count = runs.size || 1
+
+    (kickoff_at + (repeat_duration * run_count))
+      .between?(now + GRACE_PERIOD_FOR_RUNNING, now - GRACE_PERIOD_FOR_RUNNING)
   end
 end

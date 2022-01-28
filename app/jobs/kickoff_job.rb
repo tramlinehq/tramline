@@ -4,6 +4,10 @@ class KickoffJob
   include Sidekiq::Worker
 
   def perform(*args)
-    puts "running scheduler"
+    Releases::Train.active.each do |train|
+      if train.runnable?
+        KickoffTrainJob.perform_now(train.id)
+      end
+    end
   end
 end
