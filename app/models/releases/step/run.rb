@@ -1,6 +1,6 @@
 class Releases::Step::Run < ApplicationRecord
-  self.table_name = :release_train_step_runs
+  self.implicit_order_column = :was_run_at
 
-  belongs_to :step, class_name: "Releases::Step"
-  belongs_to :train, class_name: "Releases::Train"
+  belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id
+  belongs_to :train_run, class_name: "Releases::Train::Run", foreign_key: :train_run_id
 end

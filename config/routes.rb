@@ -1,7 +1,13 @@
 Rails.application.routes.draw do
-  mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
+  require "sidekiq/web"
+  require "sidekiq-scheduler/web"
+
   mount ActionCable.server => "/cable"
-  mount Flipper::UI.app(Flipper) => "/flipper"
+  authenticate :user, lambda { |u| u.admin? } do
+    mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
+    mount Flipper::UI.app(Flipper) => "/flipper"
+    mount Sidekiq::Web => "/sidekiq"
+  end
 
   devise_for :users,
              controllers: { registrations: "authentication/registrations",
@@ -20,6 +26,9 @@ Rails.application.routes.draw do
 
         namespace :releases do
           resources :trains do
+            member do
+              post :activate
+            end
             resources :steps
           end
         end

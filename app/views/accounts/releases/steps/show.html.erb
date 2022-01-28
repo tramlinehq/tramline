@@ -3,13 +3,18 @@
 <table>
   <thead>
   <tr>
+    <th>#</th>
     <th>Description</th>
     <th>Build Channel</th>
     <th>CI/CD Channel</th>
+    <th>Run after previous step</th>
   </tr>
   </thead>
     <tbody>
     <tr>
+      <td>
+        <%= @step.step_number %></td>
+      </td>
       <td>
         <%= @step.description %></td>
       <td>
@@ -17,6 +22,9 @@
       </td>
       <td>
         <%= @step.ci_cd_channel %>
+      </td>
+      <td>
+        <%= @step.run_after_duration %>
       </td>
     </tr>
     </tbody>

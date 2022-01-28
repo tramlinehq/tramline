@@ -1,5 +1,6 @@
 <%= form_with(model: [current_organization, app, train]) do |form| %>
-  <div class="block">
+  <fieldset class="block">
+    <legend><%= legend %></legend>
     <div class="field">
       <%= form.label :name, class: "label" %>
       <div class="control">
@@ -31,7 +32,7 @@
       <div class="control">
         <%= form.number_field :repeat_duration_value, step: 1, min: 1, default: 1, required: true, class: "input" %>
         <%= form.select :repeat_duration_unit,
-                        options_for_select([%w[Day(s) "days"], %w[Week(s) weeks]], "weeks"), required: true %>
+                        options_for_select([%w[Day(s) days], %w[Week(s) weeks]], "weeks"), required: true %>
       </div>
     </div>
 
@@ -61,5 +62,5 @@
         <%= form.button 'Submit', class: "button is-link", "data-turbo": false %>
       </div>
     </div>
-  </div>
+  </fieldset>
 <% end %>

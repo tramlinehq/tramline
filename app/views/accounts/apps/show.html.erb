@@ -3,18 +3,21 @@
     <%= link_to "integrations page", new_accounts_organization_app_integration_path(current_organization, @app) %>
     to create an integration for this app.
   </p>
-<% else %>
+<% end %>
+
+<% if @app.trains.exists? %>
   <h2><%= @app.name %></h2>
   <h3>Trains</h3>
+  <p>
   <table>
     <thead>
     <tr>
       <th>Name</th>
       <th>Description</th>
-      <th>Working Branch</th>
-      <th>Starting Version</th>
-      <th>Version Suffix</th>
-      <th>Originally started at</th>
+      <th>Branch</th>
+      <th>Version from</th>
+      <th>Version suffix</th>
+      <th>Started</th>
       <th>Repeats</th>
     </tr>
     </thead>
@@ -32,7 +35,7 @@
         <td>
           <%= train.version_suffix %></td>
         <td>
-          <%= train.kickoff_at %></td>
+          <%= train.kickoff_at.strftime("%b %e, %l:%M %p") %></td>
         <td>
           <%= ActiveSupport::Duration.parse(Duration.new(train.repeat_duration).iso8601).inspect %>
         </td>
@@ -40,12 +43,18 @@
       </tbody>
     <% end %>
   </table>
+  </p>
+<% end %>
 
-  <%= link_to "Create a releases train", new_accounts_organization_app_releases_train_path(current_organization, @app) %>
+<p>
+  <%= link_to "Create a release train", new_accounts_organization_app_releases_train_path(current_organization, @app) %>
+</p>
 
-  <hr/>
+<hr/>
 
+<% if @app.integrations.exists? %>
   <h3>Integrations</h3>
+  <p>
   <table>
     <thead>
     <tr>
@@ -67,23 +76,30 @@
     <% end %>
     </tbody>
   </table>
-  </div>
+  </p>
+<% end %>
 
-  <% if @version_control_integration.active_repo.present? %>
-    <h3>Releases</h3>
-    <h5>Branches</h5>
+<hr/>
+
+<% if @version_control_integration.active_repo.present? %>
+  <h3>Releases</h3>
+
+  <p>
     <%= form_with(url: create_release_branch_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
+    <fieldset>
+      <legend>Branches</legend>
       <div class="field is-grouped">
         <div class="control">
           <%= form.submit 'Create Random Release Branch', class: "button is-link" %>
         </div>
       </div>
-    <% end %>
+    </fieldset>
+  <% end %>
+  </p>
 
-    <hr/>
-
-    <h5>PRs</h5>
-    <%= form_with(url: create_pull_request_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
+  <%= form_with(url: create_pull_request_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
+    <fieldset>
+      <legend>PRs</legend>
       <% flash.each do |name, msgs| %>
         <% if name.eql?("custom_errors") %>
           <blockquote>
@@ -124,10 +140,12 @@
       </div>
 
       <code>Make sure you actually have some changes in the branch against your working branch.</code>
-    <% end %>
-  <% else %>
+    </fieldset>
+  <% end %>
+<% else %>
+  <p>
     Please set
     the <%= link_to "active repo", edit_accounts_organization_app_integration_path(current_organization, @app, @version_control_integration) %>
     in your VCS integration.
-  <% end %>
+  </p>
 <% end %>

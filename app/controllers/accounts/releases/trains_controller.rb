@@ -1,6 +1,6 @@
 class Accounts::Releases::TrainsController < ApplicationController
-  before_action :set_app, only: %i[new create show index edit update]
-  before_action :set_train, only: %i[show edit update]
+  before_action :set_app, only: %i[new create show index edit update activate]
+  before_action :set_train, only: %i[show edit update activate]
 
   def new
     @train = @app.trains.new
@@ -12,8 +12,8 @@ class Accounts::Releases::TrainsController < ApplicationController
     respond_to do |format|
       if @train.save
         format.html {
-          redirect_to accounts_organization_app_release_train_path(current_organization, @app, @train),
-            notice: "Train was successfully created."
+          redirect_to accounts_organization_app_releases_train_path(current_organization, @app, @train),
+                      notice: "Train was successfully created."
         }
         format.json { render :show, status: :created, location: @train }
       else
@@ -30,7 +30,7 @@ class Accounts::Releases::TrainsController < ApplicationController
       if @train.update(parsed_train_params)
         format.html {
           redirect_to accounts_organization_app_path(current_organization, @train),
-            notice: "Train was successfully updated."
+                      notice: "Train was successfully updated."
         }
         format.json { render :show, status: :ok, location: @train }
       else
@@ -38,6 +38,10 @@ class Accounts::Releases::TrainsController < ApplicationController
         format.json { render json: @train.errors, status: :unprocessable_entity }
       end
     end
+  end
+
+  def activate
+    @train.activate!
   end
 
   def edit
@@ -52,7 +56,7 @@ class Accounts::Releases::TrainsController < ApplicationController
   private
 
   def set_train
-    @train = @app.trains.find(params[:id])
+    @train = @app.trains.friendly.find(params[:id])
   end
 
   def set_app
@@ -60,7 +64,7 @@ class Accounts::Releases::TrainsController < ApplicationController
   end
 
   def train_params
-    params.require(:release_train).permit(
+    params.require(:releases_train).permit(
       :name,
       :description,
       :working_branch,
@@ -74,12 +78,15 @@ class Accounts::Releases::TrainsController < ApplicationController
 
   def parsed_train_params
     train_params
-      .merge(repeat_duration: repeat_duration_in_iso8601(train_params))
+      .merge(repeat_duration: repeat_duration(train_params))
+      .merge(status: Releases::Train.statuses[:inactive])
       .except(:repeat_duration_value, :repeat_duration_unit)
   end
 
-  def repeat_duration_in_iso8601(train_params)
-    Duration.new(train_params[:repeat_duration_unit] =>
-                   train_params[:repeat_duration_value]).iso8601
+  def repeat_duration(train_params)
+    ActiveSupport::Duration.parse(
+      Duration.new(train_params[:repeat_duration_unit].to_sym =>
+                     train_params[:repeat_duration_value].to_i).iso8601
+    )
   end
 end

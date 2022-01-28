@@ -1,34 +1,122 @@
 <h3><%= @train.name %></h3>
-
+<p>
 <table>
   <thead>
   <tr>
     <th>Description</th>
-    <th>Working Branch</th>
-    <th>Starting Version</th>
+    <th>Branch</th>
+    <th>Version from</th>
     <th>Version Suffix</th>
-    <th>Originally started at</th>
+    <th>Started</th>
     <th>Repeats</th>
+    <th>Actions</th>
   </tr>
   </thead>
+  <tbody>
+  <tr>
+    <td>
+      <%= @train.description %></td>
+    <td>
+      <%= @train.working_branch %></td>
+    <td>
+      <%= @train.version_seeded_with %></td>
+    <td>
+      <%= @train.version_suffix %></td>
+    <td>
+      <%= @train.kickoff_at.strftime("%b %e, %l:%M %p") %></td>
+    <td>
+      <%= ActiveSupport::Duration.parse(Duration.new(@train.repeat_duration).iso8601).inspect %>
+    </td>
+    <td>
+      <% if @train.inactive? %>
+        <%= form_with(
+              url: activate_accounts_organization_app_releases_train_path(current_organization, @app, @train)
+            ) do |form| %>
+          <div class="block">
+            <div class="field is-grouped">
+              <div class="control">
+                <%= form.button 'Activate Train', class: "button is-link", "data-turbo": false %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </td>
+  </tr>
+  </tbody>
+</table>
+</p>
+
+<% if @train.steps.size > 0 %>
+  <h4>Steps</h4>
+  <p>
+  <table>
+    <thead>
+    <tr>
+      <th>#</th>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Build Channel</th>
+      <th>CI/CD Channel</th>
+      <th>Run after previous step</th>
+    </tr>
+    </thead>
     <tbody>
+    <% @train.steps.order(:step_number).each do |step| %>
+      <tr>
+        <td>
+          <%= step.step_number %>
+        </td>
+        <td>
+          <%= step.name %></td>
+        <td>
+          <%= step.description %></td>
+        <td>
+          <%= step.build_artifact_channel %></td>
+        <td>
+          <%= step.ci_cd_channel %></td>
+        </td>
+        <td>
+          <%= ActiveSupport::Duration.parse(Duration.new(step.run_after_duration).iso8601).inspect %>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+  </p>
+
+  <p>
+    <%= link_to "Add another step",
+                new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>
+  </p>
+<% else %>
+  <p>
+    <%= link_to "Add a step",
+                new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>
+  </p>
+<% end %>
+
+<h4>Runs</h4>
+<p>
+<table>
+  <thead>
+  <tr>
+    <th>#</th>
+    <th>Code-name</th>
+  </tr>
+  </thead>
+  <tbody>
+  <% @train.runs.order(:was_run_at).each_with_index do |run, idx| %>
     <tr>
       <td>
-        <%= @train.description %></td>
+        <%= idx %>
+      </td>
       <td>
-        <%= @train.working_branch %></td>
-      <td>
-        <%= @train.version_seeded_with %></td>
-      <td>
-        <%= @train.version_suffix %></td>
-      <td>
-        <%= @train.kickoff_at %></td>
-      <td>
-        <%= ActiveSupport::Duration.parse(Duration.new(@train.repeat_duration).iso8601).inspect %>
+        <%= run.code_name %></td>
       </td>
     </tr>
-    </tbody>
+  <% end %>
+  </tbody>
 </table>
+</p>
 
-<%= link_to "Add a step",
-            new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>

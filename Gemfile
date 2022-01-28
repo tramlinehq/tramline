@@ -30,6 +30,9 @@ gem "octokit", "~> 4.22"
 gem "jwt", "~> 2.3"
 gem "postmark-rails", "~> 0.21.0"
 gem "ruby-duration", "~> 3.2"
+gem "sidekiq", "~> 6.4"
+gem "sidekiq-scheduler", "~> 3.1"
+gem "random_name_generator", "~> 2.0"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

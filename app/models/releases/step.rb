@@ -1,4 +1,27 @@
 class Releases::Step < ApplicationRecord
-  self.table_name = :release_train_steps
-  belongs_to :train, class_name: "Releases::Train", foreign_key: :release_train_id
+  extend FriendlyId
+
+  self.table_name = :train_steps
+  self.implicit_order_column = :step_number
+
+  belongs_to :train, class_name: "Releases::Train", inverse_of: :steps
+  has_many :runs, class_name: "Releases::Step::Run", inverse_of: :step, foreign_key: :train_step_id
+
+  enum status: {
+    active: "active",
+    inactive: "inactive"
+  }
+
+  friendly_id :name, use: :slugged
+
+  before_create :set_step_number
+  after_initialize :set_default_status
+
+  def set_step_number
+    self.step_number = train.steps.maximum(:step_number).to_i + 1
+  end
+
+  def set_default_status
+    self.status = Releases::Step.statuses[:active]
+  end
 end

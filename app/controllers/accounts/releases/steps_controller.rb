@@ -2,20 +2,20 @@ class Accounts::Releases::StepsController < ApplicationController
   before_action :set_app, only: %i[new create show edit update]
   before_action :set_train, only: %i[new create show edit update]
   before_action :set_step, only: %i[show edit update]
+  before_action :set_first_step, only: %i[new create]
 
   def new
     @step = @train.steps.new
   end
 
   def create
-    @step = @train.steps.new(step_params)
-    @step.status = "inactive"
+    @step = @train.steps.new(parsed_step_params)
 
     respond_to do |format|
       if @step.save!
         format.html {
           redirect_to accounts_organization_app_releases_train_step_path(current_organization, @app, @train, @step),
-            notice: "Step was successfully created."
+                      notice: "Step was successfully created."
         }
         format.json { render :show, status: :created, location: @step }
       else
@@ -32,7 +32,7 @@ class Accounts::Releases::StepsController < ApplicationController
       if @step.update(train_params)
         format.html {
           redirect_to accounts_organization_app_path(current_organization, @step),
-            notice: "Step was successfully updated."
+                      notice: "Step was successfully updated."
         }
         format.json { render :show, status: :ok, location: @step }
       else
@@ -54,15 +54,19 @@ class Accounts::Releases::StepsController < ApplicationController
   private
 
   def set_step
-    @step = @train.steps.find(params[:id])
+    @step = @train.steps.friendly.find(params[:id])
   end
 
   def set_train
-    @train = @app.trains.find(params[:train_id])
+    @train = @app.trains.friendly.find(params[:train_id])
   end
 
   def set_app
     @app = current_organization.apps.friendly.find(params[:app_id])
+  end
+
+  def set_first_step
+    @first_step = true if @train.steps.count < 1
   end
 
   def step_params
@@ -70,7 +74,25 @@ class Accounts::Releases::StepsController < ApplicationController
       :name,
       :description,
       :build_artifact_channel,
-      :ci_cd_channel
+      :ci_cd_channel,
+      :run_after_duration_unit,
+      :run_after_duration_value
+    )
+  end
+
+  def parsed_step_params
+    step_params
+      .merge(status: "inactive")
+      .merge(run_after_duration: run_after_duration)
+      .except(:run_after_duration_unit, :run_after_duration_value)
+  end
+
+  def run_after_duration
+    return 0.seconds if @first_step
+
+    ActiveSupport::Duration.parse(
+      Duration.new(step_params[:run_after_duration_unit].to_sym =>
+                     step_params[:run_after_duration_value].to_i).iso8601
     )
   end
 end

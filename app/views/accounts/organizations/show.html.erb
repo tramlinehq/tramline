@@ -5,9 +5,10 @@
   </p>
 <% end %>
 
-<% if current_organization.apps.exists? %>
-  <h2>Apps</h2>
+<h2>Apps</h2>
 
+<p>
+  <% if current_organization.apps.exists? %>
   <table>
     <thead>
     <tr>
@@ -27,5 +28,9 @@
     </tbody>
   </table>
 
-  <%= link_to "Create new", new_accounts_organization_app_path(current_organization) %>
+  <p>
+    <%= link_to "Create new", new_accounts_organization_app_path(current_organization) %>
+  </p>
 <% end %>
+</p>
+

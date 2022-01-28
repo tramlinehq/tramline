@@ -1,4 +1,20 @@
----
-:concurrency: 5
+:verbose: true
+:concurrency: 2
+:timeout: 25
 :queues:
-  - [default, 1]
+  - ["high", 3]
+  - ["medium", 2]
+  - ["low", 1]
+
+:schedule:
+  kickoff:
+    cron: '0 * * * * *'   # Runs once per minute
+    class: KickOffJob
+    description: "This job finds trains to jump-start"
+    queue: high
+
+production:
+  :concurrency: 5
+
+staging:
+  :concurrency: 2

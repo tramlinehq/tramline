@@ -2,14 +2,14 @@
   <% if current_user.blank? %>
     <h2>Welcome, stranger.</h2>
   <% else %>
-    <h2>Welcome, <%= current_user.preferred_name.presence || current_user.full_name %></h2>
+    <h2>Welcome, <%= current_user.preferred_name.presence || current_user.full_name %>.</h2>
 
-    <h4>Select your destination</h4>
-
-    <% if current_user&.admin? %>
-      <%= link_to 'Settings', admin_settings_path %>
-    <% else %>
-      <%= link_to 'Organizations', accounts_organizations_path %>
-    <% end %>
+    <p>
+      <% if current_user&.admin? %>
+        <%= link_to 'Settings', admin_settings_path %>
+      <% else %>
+        <%= link_to 'Organizations', accounts_organizations_path %>
+      <% end %>
+    </p>
 <% end %>
 </div>

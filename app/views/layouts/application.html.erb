@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/awsm.css/dist/awsm_theme_white.min.css" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="https://unpkg.com/awsm.css/dist/awsm_theme_white.min.css" media="(prefers-color-scheme: no-preference), (prefers-color-scheme: light)">
   <link rel="stylesheet" href="https://ga.jspm.io/npm:flatpickr@4.6.9/dist/flatpickr.min.css">
   <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   <%= javascript_importmap_tags %>
@@ -19,10 +20,9 @@
 <% end %>
 
 <header>
-  <h1>The Tramline HQ</h1>
+  <h1><%= link_to "The Tramline HQ", root_path, class: "title" %></h1>
+  <sub>pre-α</sub>
   <nav>
-    <%= link_to "Home", root_path %>
-    <span>•</span>
     <% if user_signed_in? %>
       <%= link_to "Log out", destroy_user_session_path, "data-turbo": false %>
     <% else %>
@@ -33,16 +33,19 @@
   </nav>
 </header>
 
+<hr/>
 
-<% flash.each do |name, msg| %>
-  <% unless name.start_with?("custom_errors") %>
-    <blockquote>
-      <%= content_tag :div, msg, :id => "flash_#{name}" if msg.is_a?(String) %>
-    </blockquote>
+<main>
+  <% flash.each do |name, msg| %>
+    <% unless name.start_with?("custom_errors") %>
+      <sub>
+        <%= content_tag :div, msg, :id => "flash_#{name}" if msg.is_a?(String) %>
+      </sub>
+    <% end %>
   <% end %>
-<% end %>
 
-<%= yield %>
+  <%= yield %>
+</main>
 
 </body>
 </html>
