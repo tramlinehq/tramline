@@ -1,3 +1,7 @@
+body {
+  margin-bottom: 5em !important;
+}
+
 .developer-commentary {
   padding: 1em;
   background-color: #F2ECCE;
@@ -7,7 +11,12 @@
   opacity: 0.5;
 }
 
-.title {
+.app-title {
   text-decoration: none;
   color: inherit;
+}
+
+.realign-form {
+  margin-left: 0em !important;
+  margin-top: 1em !important;
 }

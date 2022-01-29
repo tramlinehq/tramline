@@ -68,6 +68,7 @@ class Accounts::Releases::TrainsController < ApplicationController
       :name,
       :description,
       :working_branch,
+      :working_repo,
       :version_seeded_with,
       :version_suffix,
       :kickoff_at,

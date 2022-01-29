@@ -1,16 +1,23 @@
 class Integrations::Github::Api
-  attr_reader :app_id, :installation_id, :jwt, :client
+  attr_reader :app_name, :installation_id, :jwt, :client
 
-  def initialize(app_id, installation_id)
-    @app_id = app_id
+  def initialize(installation_id)
+    @app_name = creds.integrations.github.app_name
     @installation_id = installation_id
-    @jwt = Integrations::Github::Jwt.new(@app_id)
+    @jwt = Integrations::Github::Jwt.new(creds.integrations.github.app_id)
+
     set_client
+  end
+
+  def run_workflow!(repo, id, ref)
+    execute do
+      @client.workflow_dispatch(repo, id, ref)
+    end
   end
 
   def create_branch!(repo, working_branch_name, new_branch_name)
     execute do
-      @client.create_ref(repo, "heads/#{new_branch_name}", head(repo, working_branch_name))
+      @client.create_ref(repo, "headssss/#{new_branch_name}", head(repo, working_branch_name))
     end
   end
 
@@ -28,7 +35,7 @@ class Integrations::Github::Api
 
   def head(repo, working_branch_name)
     execute do
-      @client.commits(repo, options: {sha: working_branch_name}).first[:sha]
+      @client.commits(repo, options: { sha: working_branch_name }).first[:sha]
     end
   end
 
@@ -44,6 +51,11 @@ class Integrations::Github::Api
   def set_client
     client = Octokit::Client.new(bearer_token: jwt.fetch)
     installation_token = client.create_app_installation_access_token(installation_id)[:token]
+
     @client ||= Octokit::Client.new(access_token: installation_token)
+  end
+
+  def creds
+    Rails.application.credentials
   end
 end

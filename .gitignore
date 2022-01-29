@@ -33,3 +33,7 @@
 # Ignore IntelliJ things
 .idea
 /config/credentials/production.key
+
+# Local SSL keys
+localhost.crt
+localhost.key

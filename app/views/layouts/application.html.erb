@@ -20,17 +20,21 @@
 <% end %>
 
 <header>
-  <h1><%= link_to "The Tramline HQ", root_path, class: "title" %></h1>
+  <h1><%= link_to "The Tramline HQ", root_path, class: "app-title" %></h1>
   <sub>pre-α</sub>
   <nav>
     <% if user_signed_in? %>
       <%= link_to "Log out", destroy_user_session_path, "data-turbo": false %>
+      <span>•</span>
+      <%= link_to "Apps", accounts_organization_path(current_organization) %>
     <% else %>
       <%= link_to "Log in", user_session_path %>
       <span>•</span>
       <%= link_to "Sign up", new_user_registration_path %>
     <% end %>
   </nav>
+
+  <%= yield :exceptions %>
 </header>
 
 <hr/>

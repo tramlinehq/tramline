@@ -4,7 +4,6 @@
   <thead>
   <tr>
     <th>Description</th>
-    <th>Branch</th>
     <th>Version from</th>
     <th>Version Suffix</th>
     <th>Started</th>
@@ -17,8 +16,6 @@
     <td>
       <%= @train.description %></td>
     <td>
-      <%= @train.working_branch %></td>
-    <td>
       <%= @train.version_seeded_with %></td>
     <td>
       <%= @train.version_suffix %></td>
@@ -30,12 +27,13 @@
     <td>
       <% if @train.inactive? %>
         <%= form_with(
-              url: activate_accounts_organization_app_releases_train_path(current_organization, @app, @train)
+              url: activate_accounts_organization_app_releases_train_path(current_organization, @app, @train),
+              class: "realign-form"
             ) do |form| %>
           <div class="block">
             <div class="field is-grouped">
               <div class="control">
-                <%= form.button 'Activate Train', class: "button is-link", "data-turbo": false %>
+                <%= form.button 'Activate', class: "button is-link", "data-turbo": false %>
               </div>
             </div>
           </div>

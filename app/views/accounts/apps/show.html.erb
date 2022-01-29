@@ -5,6 +5,13 @@
   </p>
 <% end %>
 
+<% unless @app.trains.exists? %>
+  <p>Go to the
+    <%= link_to "release train page", new_accounts_organization_app_releases_train_path(current_organization, @app) %>
+    to create a new release train for this app.
+  </p>
+<% end %>
+
 <% if @app.trains.exists? %>
   <h2><%= @app.name %></h2>
   <h3>Trains</h3>
@@ -14,7 +21,6 @@
     <tr>
       <th>Name</th>
       <th>Description</th>
-      <th>Branch</th>
       <th>Version from</th>
       <th>Version suffix</th>
       <th>Started</th>
@@ -27,15 +33,17 @@
         <td>
           <%= link_to train.name, accounts_organization_app_releases_train_path(current_organization, @app, train) %>
         <td>
-          <%= train.description %></td>
+          <%= train.description %>
+        </td>
         <td>
-          <%= train.working_branch %></td>
+          <%= train.version_seeded_with %>
+        </td>
         <td>
-          <%= train.version_seeded_with %></td>
+          <%= train.version_suffix %>
+        </td>
         <td>
-          <%= train.version_suffix %></td>
-        <td>
-          <%= train.kickoff_at.strftime("%b %e, %l:%M %p") %></td>
+          <%= train.kickoff_at.strftime("%b %e, %l:%M %p") %>
+        </td>
         <td>
           <%= ActiveSupport::Duration.parse(Duration.new(train.repeat_duration).iso8601).inspect %>
         </td>
@@ -44,13 +52,13 @@
     <% end %>
   </table>
   </p>
+
+  <p>
+    <%= link_to "Create another release train", new_accounts_organization_app_releases_train_path(current_organization, @app) %>
+  </p>
+
+  <hr/>
 <% end %>
-
-<p>
-  <%= link_to "Create a release train", new_accounts_organization_app_releases_train_path(current_organization, @app) %>
-</p>
-
-<hr/>
 
 <% if @app.integrations.exists? %>
   <h3>Integrations</h3>
@@ -71,18 +79,24 @@
         <td><%= integration.category.titleize %></td>
         <td><%= integration.provider.titleize %></td>
         <td>✅</td>
-        <td><%= link_to "Edit", edit_accounts_organization_app_integration_path(current_organization, @app, @version_control_integration) %></td>
+        <td>
+          <%= link_to "Edit", edit_accounts_organization_app_integration_path(current_organization, @app, @version_control_integration) %>
+        </td>
       </tr>
     <% end %>
     </tbody>
   </table>
   </p>
+
+  <p>
+    <%= link_to "Add another integration", new_accounts_organization_app_integration_path(current_organization, @app) %>
+  </p>
+
+  <hr/>
 <% end %>
 
-<hr/>
-
-<% if @version_control_integration.active_repo.present? %>
-  <h3>Releases</h3>
+<% if @version_control_integration&.active_code_repo.present? %>
+  <h3>Developer Testing</h3>
 
   <p>
     <%= form_with(url: create_release_branch_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
@@ -95,7 +109,6 @@
       </div>
     </fieldset>
   <% end %>
-  </p>
 
   <%= form_with(url: create_pull_request_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
     <fieldset>
@@ -142,10 +155,5 @@
       <code>Make sure you actually have some changes in the branch against your working branch.</code>
     </fieldset>
   <% end %>
-<% else %>
-  <p>
-    Please set
-    the <%= link_to "active repo", edit_accounts_organization_app_integration_path(current_organization, @app, @version_control_integration) %>
-    in your VCS integration.
   </p>
 <% end %>

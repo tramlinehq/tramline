@@ -1,36 +1,35 @@
-<% unless current_organization.apps.exists? %>
+<% if current_organization.apps.exists? %>
+  <h2>Apps</h2>
+
+  <p>
+    <% if current_organization.apps.exists? %>
+    <table>
+      <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Bundle Identifier</th>
+      </tr>
+      </thead>
+      <tbody>
+      <% current_organization.apps.each do |app| %>
+        <tr>
+          <td><%= link_to app.name, accounts_organization_app_path(current_organization, app) %></td>
+          <td><%= app.description %></td>
+          <td><%= app.bundle_identifier %></td>
+        </tr>
+      <% end %>
+      </tbody>
+    </table>
+
+    <p>
+      <%= link_to "Create new", new_accounts_organization_app_path(current_organization) %>
+    </p>
+  <% end %>
+  </p>
+<% else %>
   <p>Go to the
     <%= link_to "apps page", new_accounts_organization_app_path(current_organization) %>
     to create an app and configure their integrations.
   </p>
 <% end %>
-
-<h2>Apps</h2>
-
-<p>
-  <% if current_organization.apps.exists? %>
-  <table>
-    <thead>
-    <tr>
-      <th>Name</th>
-      <th>Description</th>
-      <th>Bundle Identifier</th>
-    </tr>
-    </thead>
-    <tbody>
-    <% current_organization.apps.each do |app| %>
-      <tr>
-        <td><%= link_to app.name, accounts_organization_app_path(current_organization, app) %></td>
-        <td><%= app.description %></td>
-        <td><%= app.bundle_identifier %></td>
-      </tr>
-    <% end %>
-    </tbody>
-  </table>
-
-  <p>
-    <%= link_to "Create new", new_accounts_organization_app_path(current_organization) %>
-  </p>
-<% end %>
-</p>
-

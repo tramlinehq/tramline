@@ -4,7 +4,7 @@
     <div class="field">
       <%= form.label :name, class: "label" %>
       <div class="control">
-        <%= form.text_field :name, class: "input" %>
+        <%= form.text_field :name, class: "input", required: true %>
       </div>
     </div>
 
@@ -18,7 +18,14 @@
     <div class="field">
       <%= form.label :bundle_identifier, class: "label" %>
       <div class="control">
-        <%= form.text_field :bundle_identifier, class: "input", placeholder: "eg., com.tramline.go.is.best" %>
+        <%= form.text_field :bundle_identifier, class: "input", required: true, placeholder: "eg., com.clj.is.best" %>
+      </div>
+    </div>
+
+    <div class="field">
+      <%= form.label :build_number, class: "label" %>
+      <div class="control">
+        <%= form.text_field :build_number, class: "input", placeholder: "eg., your last versionCode", required: true %>
       </div>
     </div>
 

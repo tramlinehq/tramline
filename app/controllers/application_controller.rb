@@ -1,4 +1,6 @@
 class ApplicationController < ActionController::Base
+  include ExceptionHandler
+
   before_action :require_login, unless: :devise_controller?
   helper_method :current_organization
 

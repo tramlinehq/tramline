@@ -1,19 +1,29 @@
 <%= form_with(model: [current_organization, @app, @integration], method: :patch) do |form| %>
   <fieldset class="block">
-    <legend>Edit Integration</legend>
+    <legend>VCS</legend>
     <div class="field">
-      <%= form.label :active_repo, "Active Repository", class: "label" %>
+      <%= form.label :active_code_repo, "Active Repository", class: "label" %>
       <div class="control">
         <div class="select">
-          <%= form.select :active_repo, options_for_select(@active_repository_names.zip(@active_repository_names), @integration.active_repo) %>
+          <%= form.select :active_code_repo,
+                          options_for_select(@active_repository_names.zip(@active_repository_names),
+                                             @integration.active_code_repo) %>
         </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <%= form.label :working_branch, class: "label" %>
+      <div class="control">
+        <%= form.text_field :working_branch, class: "input", placeholder: "eg. main or develop", required: true %>
       </div>
     </div>
 
     <div class="field is-grouped">
       <div class="control">
-        <%= form.button 'Assign', class: "button is-link", "data-turbo": false %>
+        <%= form.button 'Set', class: "button is-link", "data-turbo": false %>
       </div>
     </div>
   </fieldset>
 <% end %>
+

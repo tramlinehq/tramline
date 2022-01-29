@@ -5,10 +5,12 @@ class CreateApps < ActiveRecord::Migration[7.0]
 
       t.string :name, null: false
       t.string :description
+
+      t.string :platform, null: false
       t.string :bundle_identifier, null: false
-      t.string :platform
+      t.bigint :build_number, null: false
+
       t.string :slug
-      t.bigint :build_number
 
       t.timestamps
     end

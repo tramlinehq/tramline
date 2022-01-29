@@ -37,8 +37,8 @@ class Accounts::AppsController < ApplicationController
 
     begin
       Integrations::Github::Api
-        .new(ENV["GITHUB_APP_ID"], @version_control_integration.installation_id)
-        .create_branch!(@version_control_integration.active_repo, @app.working_branch, "releases-v#{random_str}")
+        .new(@version_control_integration.installation_id)
+        .create_branch!(@version_control_integration.active_code_repo, "main", "releases-v#{random_str}")
 
       redirect_to accounts_organization_app_path(current_organization, @app), notice: "Successfully created a branch!"
     rescue Octokit::UnprocessableEntity => e
@@ -53,8 +53,8 @@ class Accounts::AppsController < ApplicationController
 
     begin
       Integrations::Github::Api
-        .new(ENV["GITHUB_APP_ID"], @version_control_integration.installation_id)
-        .create_pr!(@version_control_integration.active_repo, @app.working_branch, params[:pr_head], title, body)
+        .new(@version_control_integration.installation_id)
+        .create_pr!(@version_control_integration.active_code_repo, @app.working_branch, params[:pr_head], title, body)
 
       redirect_to accounts_organization_app_path(current_organization, @app), notice: "Successfully created a PR!"
     rescue Octokit::UnprocessableEntity => e
@@ -85,6 +85,6 @@ class Accounts::AppsController < ApplicationController
   end
 
   def app_params
-    params.require(:app).permit(:name, :description, :bundle_identifier)
+    params.require(:app).permit(:name, :description, :bundle_identifier, :build_number)
   end
 end

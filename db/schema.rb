@@ -20,10 +20,10 @@ ActiveRecord::Schema.define(version: 2022_01_26_132735) do
     t.uuid "organization_id", null: false
     t.string "name", null: false
     t.string "description"
+    t.string "platform", null: false
     t.string "bundle_identifier", null: false
-    t.string "platform"
+    t.bigint "build_number", null: false
     t.string "slug"
-    t.bigint "build_number"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["bundle_identifier", "organization_id"], name: "index_apps_on_bundle_identifier_and_organization_id", unique: true
@@ -50,8 +50,10 @@ ActiveRecord::Schema.define(version: 2022_01_26_132735) do
     t.uuid "app_id", null: false
     t.string "category", null: false
     t.string "provider", null: false
-    t.string "active_repo"
+    t.string "active_code_repo"
+    t.string "working_branch"
     t.string "installation_id"
+    t.string "oauth_access_token"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["app_id"], name: "index_integrations_on_app_id"
@@ -114,8 +116,8 @@ ActiveRecord::Schema.define(version: 2022_01_26_132735) do
     t.string "status", null: false
     t.integer "step_number", limit: 2, default: 0, null: false
     t.interval "run_after_duration", null: false
-    t.string "build_artifact_channel", null: false
     t.string "ci_cd_channel", null: false
+    t.string "build_artifact_channel", null: false
     t.string "slug"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -127,7 +129,6 @@ ActiveRecord::Schema.define(version: 2022_01_26_132735) do
     t.uuid "app_id", null: false
     t.string "name", null: false
     t.string "description", null: false
-    t.string "working_branch", null: false
     t.string "status", null: false
     t.string "version_seeded_with", null: false
     t.string "version_current"

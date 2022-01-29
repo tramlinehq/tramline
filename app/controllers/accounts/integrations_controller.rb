@@ -1,7 +1,4 @@
 class Accounts::IntegrationsController < ApplicationController
-  require "string_utils"
-  using StringUtils
-
   before_action :set_app, only: %i[new create show edit update index]
   before_action :set_integration, only: %i[edit show update]
 
@@ -11,7 +8,9 @@ class Accounts::IntegrationsController < ApplicationController
 
   def create
     @integration = @app.integrations.new(integration_params)
-    redirect_to("https://github.com/apps/#{ENV["GITHUB_APP_NAME"]}/installations/new?state=#{state}", allow_other_host: true)
+    @integration.decide
+
+    redirect_to(@integration.install_path, allow_other_host: true)
   end
 
   def update
@@ -31,23 +30,13 @@ class Accounts::IntegrationsController < ApplicationController
 
   def edit
     @active_repository_names =
-      Integrations::Github::Api.new(ENV["GITHUB_APP_ID"], @integration.installation_id).repos[:repositories].map(&:full_name)
+      Integrations::Github::Api.new(@integration.installation_id).repos[:repositories].map(&:full_name)
   end
 
   def index
   end
 
   private
-
-  def state
-    {
-      organization_id: current_organization.id,
-      app_id: @app.id,
-      integration_category: Integration.categories[:version_control],
-      integration_provider: Integration.providers[:github],
-      user_id: current_user.id
-    }.to_json.encrypt
-  end
 
   def set_integration
     @integration = @app.integrations.find(params[:id])
@@ -58,6 +47,8 @@ class Accounts::IntegrationsController < ApplicationController
   end
 
   def integration_params
-    params.require(:integration).permit(:category, :provider, :active_repo)
+    params.require(:integration)
+          .permit(:category, :provider, :active_code_repo, :working_branch)
+          .merge(current_user: current_user)
   end
 end

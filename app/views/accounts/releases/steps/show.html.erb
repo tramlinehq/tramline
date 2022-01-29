@@ -1,6 +1,7 @@
 <h3><%= @step.name %></h3>
 
-<table>
+<p>
+  <table>
   <thead>
   <tr>
     <th>#</th>
@@ -10,25 +11,26 @@
     <th>Run after previous step</th>
   </tr>
   </thead>
-    <tbody>
-    <tr>
-      <td>
-        <%= @step.step_number %></td>
-      </td>
-      <td>
-        <%= @step.description %></td>
-      <td>
-        <%= @step.build_artifact_channel %>
-      </td>
-      <td>
-        <%= @step.ci_cd_channel %>
-      </td>
-      <td>
-        <%= @step.run_after_duration %>
-      </td>
-    </tr>
-    </tbody>
+  <tbody>
+  <tr>
+    <td>
+      <%= @step.step_number %></td>
+    </td>
+    <td>
+      <%= @step.description %></td>
+    <td>
+      <%= @step.build_artifact_channel %>
+    </td>
+    <td>
+      <%= @step.ci_cd_channel %>
+    </td>
+    <td>
+      <%= @step.run_after_duration %>
+    </td>
+  </tr>
+  </tbody>
 </table>
+</p>
 
 <%= link_to "Add another step",
             new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>

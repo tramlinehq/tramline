@@ -50,7 +50,7 @@ class Accounts::User < ApplicationRecord
   private
 
   # We only want to display one error message to the user, so if we get multiple
-  # errors clear out all errors and present our nice message to the user.
+  # exceptions clear out all exceptions and present our nice message to the user.
   def strip_unnecessary_errors
     if errors[:password].any? && errors[:password].size > 1
       errors.delete(:password)

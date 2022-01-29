@@ -1,27 +1,111 @@
-<%= form_with(model: [current_organization, app, integration]) do |form| %>
-  <div class="block">
-    <div class="field">
-      <%= form.label :category, class: "label" %>
-      <div class="control">
-        <div class="select">
-          <%= form.select :category, options_for_select([["Version Control", "version_control"]], integration.category) %>
-        </div>
-      </div>
-    </div>
+<table>
+  <thead>
+  <tr>
+    <th>Category</th>
+    <th>Provider</th>
+    <th>Connected</th>
+  </tr>
+  </thead>
+  <tbody>
 
-    <div class="field">
-      <%= form.label :provider, class: "label" %>
-      <div class="control">
-        <div class="select">
-          <%= form.select :provider, options_for_select([%w[Github github]], integration.provider) %>
-        </div>
-      </div>
-    </div>
+  <tr>
+    <td>VCS</td>
+    <td>
+      <%= image_tag("GitHub-Mark-120px-plus.png", width: 30) %>
+    </td>
+    <td>
+      <% if @app.integrations.version_control.exists? %>
+        ✅
+      <% else %>
+        ❌
+      <% end %>
+    </td>
+  </tr>
+  </tbody>
+</table>
 
-    <div class="field is-grouped">
-      <div class="control">
-        <%= form.button 'Attach', class: "button is-link", "data-turbo": false %>
-      </div>
-    </div>
-  </div>
-<% end %>
+<td>
+  <% unless @app.integrations.version_control.exists? %>
+    <%= form_with(model: [current_organization, app, integration], class: "realign-form") do |form| %>
+      <%= form.hidden_field :category, value: Integration.categories[:version_control] %>
+      <%= form.hidden_field :provider, value: Integration.providers[:github] %>
+      <%= form.button 'Connect', "data-turbo": false %>
+    <% end %>
+  <% end %>
+</td>
+
+<hr/>
+
+<table>
+  <thead>
+  <tr>
+    <th>Category</th>
+    <th>Provider</th>
+    <th>Connected</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td>CI/CD</td>
+    <td>
+      <%= image_tag("GitHub-Mark-120px-plus.png", width: 30) %>
+    </td>
+    <td>
+      <% if @app.integrations.ci_cd.exists? %>
+        ✅
+      <% else %>
+        ❌
+      <% end %>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+<td>
+  <% unless @app.integrations.ci_cd.exists? %>
+    <%= form_with(model: [current_organization, app, integration], class: "realign-form") do |form| %>
+      <%= form.hidden_field :category, value: Integration.categories[:ci_cd] %>
+      <%= form.hidden_field :provider, value: Integration.providers[:github_actions] %>
+      <%= form.button 'Connect', "data-turbo": false %>
+    <% end %>
+  <% end %>
+</td>
+
+<hr/>
+
+<table>
+  <thead>
+  <tr>
+    <th>Category</th>
+    <th>Provider</th>
+    <th>Connected</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td>Notifications</td>
+    <td>
+      <%= image_tag("Slack_Mark_Web.png", width: 30) %>
+    </td>
+    <td>
+      <% if @app.integrations.notification.exists? %>
+        ✅
+      <% else %>
+        ❌
+      <% end %>
+    </td>
+
+  </tr>
+  </tbody>
+</table>
+
+<td>
+  <% unless @app.integrations.notification.exists? %>
+    <%= form_with(model: [current_organization, app, integration], class: "realign-form") do |form| %>
+      <%= form.hidden_field :category, value: Integration.categories[:notification] %>
+      <%= form.hidden_field :provider, value: Integration.providers[:slack] %>
+      <%= form.button 'Connect', "data-turbo": false %>
+    <% end %>
+  <% end %>
+</td>
+

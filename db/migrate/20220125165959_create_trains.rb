@@ -5,7 +5,6 @@ class CreateTrains < ActiveRecord::Migration[7.0]
 
       t.string :name, null: false
       t.string :description, null: false
-      t.string :working_branch, null: false
       t.string :status, null: false
 
       t.string :version_seeded_with, null: false

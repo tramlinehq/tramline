@@ -5,8 +5,8 @@ Rails.application.routes.draw do
   mount ActionCable.server => "/cable"
   authenticate :user, lambda { |u| u.admin? } do
     mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
-    mount Flipper::UI.app(Flipper) => "/flipper"
-    mount Sidekiq::Web => "/sidekiq"
+    mount Flipper::UI.app(Flipper), at: "/flipper"
+    mount Sidekiq::Web, at: "/sidekiq"
   end
 
   devise_for :users,
@@ -22,6 +22,7 @@ Rails.application.routes.draw do
         member do
           post :create_release_branch
           post :create_pull_request
+          post :run_workflow
         end
 
         namespace :releases do
@@ -44,5 +45,9 @@ Rails.application.routes.draw do
 
   scope :github do
     get "/callback", to: "github#callback", as: "github_callback"
+  end
+
+  scope :slack do
+    get "/callback", to: "slack#callback", as: "slack_callback"
   end
 end
