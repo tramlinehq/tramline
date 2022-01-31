@@ -19,6 +19,7 @@ class Integration < ApplicationRecord
 
   attr_reader :integration_type
   attr_accessor :current_user, :code
+  encrypts :oauth_access_token, deterministic: true
 
   validate -> { provider.in?(LIST[category]) }
 

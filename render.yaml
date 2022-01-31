@@ -1,5 +1,5 @@
 databases:
-  - name: site
+  - name: site-db
     databaseName: tramline_site_production
     user: tramline
     postgresMajorVersion: 14
@@ -7,7 +7,7 @@ databases:
 
 services:
   - type: web
-    name: site
+    name: site-web
     env: ruby
     region: frankfurt
     buildCommand: "./bin/render-build"

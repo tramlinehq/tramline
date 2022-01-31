@@ -25,7 +25,7 @@
     <div class="field">
       <%= form.label :build_number, class: "label" %>
       <div class="control">
-        <%= form.text_field :build_number, class: "input", placeholder: "eg., your last versionCode", required: true %>
+        <%= form.number_field :build_number, class: "input", step: 1, min: 1, placeholder: "eg., your last versionCode", required: true %>
       </div>
     </div>
 

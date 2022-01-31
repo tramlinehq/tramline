@@ -34,6 +34,7 @@ gem "sidekiq", "~> 6.4"
 gem "sidekiq-scheduler", "~> 3.1"
 gem "random_name_generator", "~> 2.0"
 gem "http", "~> 5.0"
+gem "connection_pool", "~> 2.2"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

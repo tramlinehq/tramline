@@ -54,6 +54,7 @@ ActiveRecord::Schema.define(version: 2022_01_26_132735) do
     t.string "working_branch"
     t.string "installation_id"
     t.string "oauth_access_token"
+    t.string "original_oauth_access_token"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["app_id"], name: "index_integrations_on_app_id"

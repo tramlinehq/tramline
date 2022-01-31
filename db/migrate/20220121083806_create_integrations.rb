@@ -11,6 +11,7 @@ class CreateIntegrations < ActiveRecord::Migration[7.0]
 
       t.string :installation_id
       t.string :oauth_access_token
+      t.string :original_oauth_access_token
 
       t.timestamps
     end
