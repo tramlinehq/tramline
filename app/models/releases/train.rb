@@ -20,7 +20,7 @@ class Releases::Train < ApplicationRecord
   end
 
   def integrations_are_ready?
-    integrations.exists? && integrations.all? { |int| int.complete? }
+    integrations.exists? && integrations.all? { |int| int.fully_connected? }
   end
 
   GRACE_PERIOD_FOR_RUNNING = 30.seconds

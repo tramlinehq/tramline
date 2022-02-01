@@ -25,7 +25,7 @@ class Integrations::Github::Api
       @client
         .list_app_installation_repositories
         .then { |response| response[:repositories] }
-        .then { |repos| repos.map { |repository| repository.to_h.slice(:id, :name) } }
+        .then { |repos| repos.map { |repository| repository.to_h.slice(:id, :full_name) } }
     end
   end
 

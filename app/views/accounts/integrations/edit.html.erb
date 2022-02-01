@@ -7,10 +7,10 @@
         <div class="control">
           <div class="select">
             <%= form.select :active_code_repo,
-                            options_for_select(@channels.map { |chan| [chan[:name], chan[:id]] },
-                                               @integration.active_code_repo),
-                            {},
-                            data: { controller: "inputselect" } %>
+                            options_for_select(
+                              @channels.map { |chan| [chan[:full_name], { chan[:id] => chan[:full_name] }.to_json] },
+                              @integration.active_code_repo
+                            ) %>
           </div>
         </div>
       </div>
@@ -19,6 +19,32 @@
         <%= form.label :working_branch, class: "label" %>
         <div class="control">
           <%= form.text_field :working_branch, class: "input", placeholder: "eg. main or develop", required: true %>
+        </div>
+      </div>
+
+      <div class="field is-grouped">
+        <div class="control">
+          <%= form.button 'Set', class: "button is-link", "data-turbo": false %>
+        </div>
+      </div>
+    </fieldset>
+  <% end %>
+<% end %>
+
+<% if @integration.ci_cd? %>
+  <%= form_with(model: [current_organization, @app, @integration], method: :patch) do |form| %>
+    <fieldset class="block">
+      <legend>VCS</legend>
+      <div class="field">
+        <%= form.label :active_code_repo, "Active Repository", class: "label" %>
+        <div class="control">
+          <div class="select">
+            <%= form.select :active_code_repo,
+                            options_for_select(
+                              @channels.map { |chan| [chan[:full_name], { chan[:id] => chan[:full_name] }.to_json] },
+                              @integration.active_code_repo
+                            ) %>
+          </div>
         </div>
       </div>
 
@@ -40,7 +66,9 @@
         <div class="control">
           <div class="select">
             <%= form.select :notification_channel,
-                            options_for_select(@channels.map { |chan| ["#" + chan["name"], chan["id"]] }),
+                            options_for_select(
+                              @channels.map { |chan| ["#" + chan["name"], { chan["id"] => chan["name"] }.to_json] }
+                            ),
                             {},
                             data: { controller: "inputselect" } %>
           </div>

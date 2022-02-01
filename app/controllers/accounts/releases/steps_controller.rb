@@ -12,7 +12,7 @@ class Accounts::Releases::StepsController < ApplicationController
                   alert: "You haven't yet completed your integrations!"
     end
 
-    @ci_actions = @train.integrations.ci_cd.first.channels
+    @ci_actions = @train.integrations.ci_cd.first.workflows
     @build_channels = @train.integrations.notification.first.channels
   end
 

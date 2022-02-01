@@ -34,7 +34,7 @@
       <%= form.label :build_artifact_channel, class: "label" %>
       <div class="control">
         <%= form.select :build_artifact_channel,
-                        options_for_select(@build_channels.map { |chan| ["#" + chan["name"], chan["id"]] }),
+                        options_for_select(@build_channels.map { |chan| ["#" + chan["name"], { chan["id"] => chan["name"] }.to_json] }),
                         {},
                         data: { controller: "inputselect" } %>
       </div>
@@ -44,7 +44,7 @@
       <%= form.label :ci_cd_channel, "CI/CD channel", class: "label" %>
       <div class="control">
         <%= form.select :ci_cd_channel,
-                        options_for_select(@ci_actions.map { |action| [action[:name], action[:id]] }),
+                        options_for_select(@ci_actions.map { |action| [action[:name], { action[:id] => action[:name] }.to_json] }),
                         {},
                         data: { controller: "inputselect" } %>
       </div>

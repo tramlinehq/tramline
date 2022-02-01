@@ -75,11 +75,22 @@ class Accounts::IntegrationsController < ApplicationController
   end
 
   def integration_update_params
-    params.require(:integration)
-          .permit(
-            :active_code_repo,
-            :working_branch,
-            :notification_channel
-          ).merge(status: Integration.statuses[:fully_connected])
+    updated_params =
+      params.require(:integration)
+            .permit(
+              :active_code_repo,
+              :working_branch,
+              :notification_channel
+            ).merge(status: Integration.statuses[:fully_connected])
+
+    if updated_params[:active_code_repo].present?
+      updated_params[:active_code_repo] = JSON.parse(updated_params[:active_code_repo])
+    end
+
+    if updated_params[:notification_channel].present?
+      updated_params[:notification_channel] = JSON.parse(updated_params[:notification_channel])
+    end
+
+    updated_params
   end
 end

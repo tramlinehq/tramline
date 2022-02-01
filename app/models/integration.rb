@@ -30,7 +30,7 @@ class Integration < ApplicationRecord
 
   DEFAULT_CONNECT_STATUS = {
     Integration.categories[:version_control] => Integration.statuses[:partially_connected],
-    Integration.categories[:ci_cd] => Integration.statuses[:fully_connected],
+    Integration.categories[:ci_cd] => Integration.statuses[:partially_connected],
     Integration.categories[:notification] => Integration.statuses[:partially_connected],
     Integration.categories[:build_channel] => Integration.statuses[:fully_connected]
   }
@@ -39,11 +39,16 @@ class Integration < ApplicationRecord
     !partially_connected? || !fully_connected?
   end
 
+  def workflows
+    [] unless github_actions? && ci_cd?
+    Integrations::Github::Api.new(installation_id).list_workflows(active_code_repo.values.first)
+  end
+
   def channels
     if github? && version_control?
       Integrations::Github::Api.new(installation_id).list_repos
     elsif github_actions? && ci_cd?
-      Integrations::Github::Api.new(installation_id).list_workflows(active_code_repo)
+      Integrations::Github::Api.new(installation_id).list_repos
     elsif slack? && notification?
       Integrations::Slack::Api.new(oauth_access_token).list_channels
     elsif slack? && build_channel?

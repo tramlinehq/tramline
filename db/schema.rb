@@ -52,9 +52,9 @@ ActiveRecord::Schema.define(version: 2022_01_26_132735) do
     t.string "category", null: false
     t.string "provider"
     t.string "status"
-    t.string "active_code_repo"
+    t.json "active_code_repo"
+    t.json "notification_channel"
     t.string "working_branch"
-    t.string "notification_channel"
     t.string "installation_id"
     t.string "oauth_access_token"
     t.string "original_oauth_access_token"

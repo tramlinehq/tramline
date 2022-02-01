@@ -8,9 +8,9 @@ class CreateIntegrations < ActiveRecord::Migration[7.0]
 
       t.string :status
 
-      t.string :active_code_repo
+      t.json :active_code_repo
+      t.json :notification_channel
       t.string :working_branch
-      t.string :notification_channel
 
       t.string :installation_id
       t.string :oauth_access_token
