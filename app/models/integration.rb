@@ -10,12 +10,17 @@ class Integration < ApplicationRecord
       "version_control" => %w[github],
       "ci_cd" => %w[github_actions],
       "notification" => %w[slack],
-      "build_artifact" => %w[google_play_store]
+      "build_channel" => %w[slack google_play_store]
     }.freeze
   end
 
   enum category: LIST.keys.zip(LIST.keys).to_h
   enum provider: LIST.values.flatten.zip(LIST.values.flatten).to_h
+  enum status: {
+    partially_connected: "partially_connected",
+    fully_connected: "fully_connected",
+    disconnected: "disconnected"
+  }
 
   attr_reader :integration_type
   attr_accessor :current_user, :code
@@ -23,10 +28,35 @@ class Integration < ApplicationRecord
 
   validate -> { provider.in?(LIST[category]) }
 
+  DEFAULT_CONNECT_STATUS = {
+    Integration.categories[:version_control] => Integration.statuses[:partially_connected],
+    Integration.categories[:ci_cd] => Integration.statuses[:fully_connected],
+    Integration.categories[:notification] => Integration.statuses[:partially_connected],
+    Integration.categories[:build_channel] => Integration.statuses[:fully_connected]
+  }
+
+  def connect?
+    !partially_connected? || !fully_connected?
+  end
+
+  def channels
+    if github? && version_control?
+      Integrations::Github::Api.new(installation_id).list_repos
+    elsif github_actions? && ci_cd?
+      Integrations::Github::Api.new(installation_id).list_workflows(active_code_repo)
+    elsif slack? && notification?
+      Integrations::Slack::Api.new(oauth_access_token).list_channels
+    elsif slack? && build_channel?
+      Integrations::Slack::Api.new(oauth_access_token).list_channels
+    else
+      raise Integration::IntegrationNotImplemented, "We don't support that yet!"
+    end
+  end
+
   def decide
-    if github? || github_actions?
+    if (version_control? && github?) || (ci_cd? && github_actions?)
       @integration_type = Github.new(self, current_user)
-    elsif slack?
+    elsif (notification? && slack?) || (build_channel? && slack?)
       @integration_type = Slack.new(self, current_user)
     else
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
@@ -48,6 +78,8 @@ class Integration < ApplicationRecord
   end
 
   class Github
+    include Rails.application.routes.url_helpers
+
     attr_reader :integration, :current_user
 
     BASE_INSTALLATION_URL =
@@ -64,11 +96,23 @@ class Integration < ApplicationRecord
       end
 
       BASE_INSTALLATION_URL
-        .expand(app_name: creds.integrations.github.app_name, params: { state: integration.installation_state }).to_s
+        .expand(app_name: creds.integrations.github.app_name, params: {
+          state: integration.installation_state
+        }).to_s
     end
 
     def complete_access
       # do nothing
+    end
+
+    def register_webhook
+      Integrations::Github::Api
+        .new(integration.installation_id)
+        .create_repo_webhook!(
+          integration.active_code_repo,
+          github_events_url(integration.app.id, integration.installation_id),
+          ["workflow_run"]
+        )
     end
 
     private
@@ -89,12 +133,12 @@ class Integration < ApplicationRecord
     def initialize(integration, current_user)
       @integration = integration
       @current_user = current_user
-
-      @api = Integrations::Slack::Api.new
     end
 
     def install_path
-      raise Integration::IntegrationNotImplemented, "We don't support that yet!" unless integration.notification?
+      unless integration.notification? || integration.build_channel?
+        raise Integration::IntegrationNotImplemented, "We don't support that yet!"
+      end
 
       BASE_INSTALLATION_URL
         .expand(params: {
@@ -106,7 +150,7 @@ class Integration < ApplicationRecord
     end
 
     def complete_access
-      integration.oauth_access_token = @api.oauth_access_token(integration.code)
+      integration.oauth_access_token = Integrations::Slack::Api.oauth_access_token(integration.code)
     end
 
     private

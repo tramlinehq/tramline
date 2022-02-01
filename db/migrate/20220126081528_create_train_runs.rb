@@ -9,6 +9,7 @@ class CreateTrainRuns < ActiveRecord::Migration[7.0]
 
       t.timestamp :scheduled_at, null: false
       t.timestamp :was_run_at
+      t.string :commit_sha
 
       t.string :status, null: false
 

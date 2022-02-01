@@ -54,7 +54,8 @@
   </p>
 
   <p>
-    <%= link_to "Create another release train", new_accounts_organization_app_releases_train_path(current_organization, @app) %>
+    <%= link_to "Create another release train",
+                new_accounts_organization_app_releases_train_path(current_organization, @app) %>
   </p>
 
   <hr/>
@@ -74,13 +75,27 @@
     </thead>
     <tbody>
 
-    <% @app.integrations.each do |integration| %>
+    <% @integrations.each do |integration| %>
       <tr>
         <td><%= integration.category.titleize %></td>
-        <td><%= integration.provider.titleize %></td>
-        <td>✅</td>
+        <td><%= integration.provider&.titleize %></td>
         <td>
-          <%= link_to "Edit", edit_accounts_organization_app_integration_path(current_organization, @app, @version_control_integration) %>
+          <% unless integration.fully_connected? %>
+            ❌
+          <% else %>
+            ✅
+          <% end %>
+        </td>
+        <td>
+          <% if integration.fully_connected? %>
+            <%= link_to "Show",
+                        accounts_organization_app_integration_path(current_organization, @app, integration) %>
+          <% elsif integration.partially_connected? %>
+            <%= link_to "Complete Integration",
+                        edit_accounts_organization_app_integration_path(current_organization, @app, integration) %>
+          <% else %>
+            Disconnected
+          <% end %>
         </td>
       </tr>
     <% end %>
@@ -88,72 +103,6 @@
   </table>
   </p>
 
-  <p>
-    <%= link_to "Add another integration", new_accounts_organization_app_integration_path(current_organization, @app) %>
-  </p>
-
-  <hr/>
+  <%= link_to "Add another integration", new_accounts_organization_app_integration_path(current_organization, @app) %>
 <% end %>
 
-<% if @version_control_integration&.active_code_repo.present? %>
-  <h3>Developer Testing</h3>
-
-  <p>
-    <%= form_with(url: create_release_branch_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
-    <fieldset>
-      <legend>Branches</legend>
-      <div class="field is-grouped">
-        <div class="control">
-          <%= form.submit 'Create Random Release Branch', class: "button is-link" %>
-        </div>
-      </div>
-    </fieldset>
-  <% end %>
-
-  <%= form_with(url: create_pull_request_accounts_organization_app_path(current_organization, @app), method: :post) do |form| %>
-    <fieldset>
-      <legend>PRs</legend>
-      <% flash.each do |name, msgs| %>
-        <% if name.eql?("custom_errors") %>
-          <blockquote>
-            <p><strong>Errors</strong></p>
-            <table>
-              <thead>
-              <tr>
-                <th>Resource</th>
-                <th>Field</th>
-                <th>Error Code</th>
-              </tr>
-              </thead>
-              <tbody>
-
-              <% JSON.parse(msgs).each do |msg| %>
-                <tr>
-                  <td><%= msg["resource"] %></td>
-                  <td><%= msg["field"] %></td>
-                  <td><%= msg["code"] %></td>
-                </tr>
-              <% end %>
-              </tbody>
-            </table>
-          </blockquote>
-        <% end %>
-      <% end %>
-
-      <div class="field">
-        <div class="control">
-          <%= form.text_field :pr_head, class: "input", placeholder: "Branch with your changes", required: true %>
-        </div>
-      </div>
-
-      <div class="field is-grouped">
-        <div class="control">
-          <%= form.submit 'Create Pull Request', class: "button is-link" %>
-        </div>
-      </div>
-
-      <code>Make sure you actually have some changes in the branch against your working branch.</code>
-    </fieldset>
-  <% end %>
-  </p>
-<% end %>

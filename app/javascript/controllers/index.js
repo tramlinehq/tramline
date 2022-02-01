@@ -13,3 +13,7 @@ eagerLoadControllersFrom('controllers', application)
 // import Flatpickr
 import Flatpickr from 'stimulus-flatpickr'
 application.register('flatpickr', Flatpickr)
+
+// import InputSelect
+import InputSelect from "./input_select"
+application.register('inputselect', InputSelect)

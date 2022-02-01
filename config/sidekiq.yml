@@ -1,6 +1,9 @@
 :verbose: true
-:concurrency: 2
-:timeout: 25
+
+:concurrency: <%= ENV['SIDEKIQ_CONCURRENCY'] %>
+
+:timeout: <%= ENV['SIDEKIQ_TIMEOUT'] %>
+
 :queues:
   - ["high", 3]
   - ["medium", 2]
@@ -9,12 +12,6 @@
 :schedule:
   kickoff:
     every: "1m"
-    class: KickoffJob
-    description: "This job finds trains or train-steps to jump-start"
+    class: Releases::KickoffJob
+    description: "This job finds trains and/or train-steps to jump-start"
     queue: high
-
-production:
-  :concurrency: 5
-
-staging:
-  :concurrency: 2

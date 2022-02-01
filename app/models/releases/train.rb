@@ -2,6 +2,7 @@ class Releases::Train < ApplicationRecord
   extend FriendlyId
 
   belongs_to :app
+  has_many :integrations, through: :app
   has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train
   has_many :steps, class_name: "Releases::Step", inverse_of: :train
 
@@ -14,11 +15,15 @@ class Releases::Train < ApplicationRecord
 
   attribute :repeat_duration, :interval
 
-  GRACE_PERIOD_FOR_RUNNING = 30.seconds
-
   def activate!
     update!(status: Releases::Train.statuses[:active])
   end
+
+  def integrations_are_ready?
+    integrations.exists? && integrations.all? { |int| int.complete? }
+  end
+
+  GRACE_PERIOD_FOR_RUNNING = 30.seconds
 
   def runnable?
     now = Time.now

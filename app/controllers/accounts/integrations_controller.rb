@@ -1,13 +1,31 @@
 class Accounts::IntegrationsController < ApplicationController
-  before_action :set_app, only: %i[new create show edit update index]
+  before_action :set_app, only: %i[new connect show edit update index]
   before_action :set_integration, only: %i[edit show update]
 
   def new
-    @integration = @app.integrations.new
+    @integrations_by_categories =
+      Integration::LIST.each_with_object({}) do |(category, providers), combination|
+        # don't allow re-creating an integration that already exists
+        next if @app.integrations.where(category: category).exists?
+
+        combination[category] ||= []
+
+        providers.each do |provider|
+          # skip google_play_store for now
+          next if provider == "google_play_store"
+
+          combination[category] << @app.integrations.new(
+            category: Integration.categories[category],
+            provider: Integration.providers[provider]
+          )
+        end
+
+        combination
+      end
   end
 
-  def create
-    @integration = @app.integrations.new(integration_params)
+  def connect
+    @integration = @app.integrations.new(integration_connect_params)
     @integration.decide
 
     redirect_to(@integration.install_path, allow_other_host: true)
@@ -15,8 +33,11 @@ class Accounts::IntegrationsController < ApplicationController
 
   def update
     respond_to do |format|
-      if @integration.update(integration_params)
-        format.html { redirect_to accounts_organization_app_integration_path(current_organization, @app, @integration), notice: "Integration was successfully updated." }
+      if @integration.update(integration_update_params)
+        format.html {
+          redirect_to accounts_organization_app_integration_path(current_organization, @app, @integration),
+                      notice: "Integration was successfully updated."
+        }
         format.json { render :show, status: :ok, location: @integration }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -29,8 +50,7 @@ class Accounts::IntegrationsController < ApplicationController
   end
 
   def edit
-    @active_repository_names =
-      Integrations::Github::Api.new(@integration.installation_id).repos[:repositories].map(&:full_name)
+    @channels = @integration.channels
   end
 
   def index
@@ -46,9 +66,20 @@ class Accounts::IntegrationsController < ApplicationController
     @app = current_organization.apps.friendly.find(params[:app_id])
   end
 
-  def integration_params
+  def integration_connect_params
     params.require(:integration)
-          .permit(:category, :provider, :active_code_repo, :working_branch)
-          .merge(current_user: current_user)
+          .permit(
+            :category,
+            :provider
+          ).merge(current_user:)
+  end
+
+  def integration_update_params
+    params.require(:integration)
+          .permit(
+            :active_code_repo,
+            :working_branch,
+            :notification_channel
+          ).merge(status: Integration.statuses[:fully_connected])
   end
 end

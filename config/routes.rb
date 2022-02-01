@@ -22,7 +22,6 @@ Rails.application.routes.draw do
         member do
           post :create_release_branch
           post :create_pull_request
-          post :run_workflow
         end
 
         namespace :releases do
@@ -30,11 +29,20 @@ Rails.application.routes.draw do
             member do
               post :activate
             end
-            resources :steps
+
+            resources :steps do
+              collection do
+                get :slack_channels
+              end
+            end
           end
         end
 
-        resources :integrations
+        resources :integrations, except: [:create] do
+          collection do
+            get :connect, to: "integrations#connect", as: :connect
+          end
+        end
       end
     end
   end
@@ -44,10 +52,11 @@ Rails.application.routes.draw do
   end
 
   scope :github do
-    get "/callback", to: "github#callback", as: "github_callback"
+    post "/events/:app_id/:installation_id", to: "github#events", as: :github_events
+    get :callback, to: "github#callback", as: :github_callback
   end
 
   scope :slack do
-    get "/callback", to: "slack#callback", as: "slack_callback"
+    get :callback, to: "slack#callback", as: :slack_callback
   end
 end

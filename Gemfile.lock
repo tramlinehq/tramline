@@ -163,6 +163,7 @@ GEM
       raabro (~> 1.4)
     globalid (1.0.0)
       activesupport (>= 5.0)
+    haikunator (1.1.1)
     http (5.0.4)
       addressable (~> 2.8)
       http-cookie (~> 1.0)
@@ -291,7 +292,6 @@ GEM
       zeitwerk (~> 2.5)
     rainbow (3.0.0)
     rake (13.0.6)
-    random_name_generator (2.0.1)
     redis (4.5.1)
     regexp_parser (2.2.0)
     reline (0.3.1)
@@ -435,6 +435,7 @@ DEPENDENCIES
   flipper-active_record (~> 0.23.0)
   flipper-ui (~> 0.23.0)
   friendly_id (~> 5.4)
+  haikunator (~> 1.1)
   http (~> 5.0)
   importmap-rails (~> 1.0)
   jbuilder (~> 2.11)
@@ -450,7 +451,6 @@ DEPENDENCIES
   rack-cors (~> 1.1)
   rack-mini-profiler
   rails (~> 7.0.1)
-  random_name_generator (~> 2.0)
   redis (~> 4.0)
   rspec-rails
   ruby-duration (~> 3.2)
@@ -463,6 +463,7 @@ DEPENDENCIES
   stimulus-rails (~> 1.0)
   strong_password (~> 0.0.10)
   turbo-rails (~> 1.0)
+  tzinfo (~> 2.0)
   tzinfo-data (~> 1.2021)
   web-console
   webdrivers

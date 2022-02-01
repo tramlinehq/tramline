@@ -32,9 +32,9 @@ gem "postmark-rails", "~> 0.21.0"
 gem "ruby-duration", "~> 3.2"
 gem "sidekiq", "~> 6.4"
 gem "sidekiq-scheduler", "~> 3.1"
-gem "random_name_generator", "~> 2.0"
 gem "http", "~> 5.0"
 gem "connection_pool", "~> 2.2"
+gem "haikunator", "~> 1.1"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

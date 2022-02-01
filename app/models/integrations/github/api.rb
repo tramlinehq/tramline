@@ -1,6 +1,8 @@
 class Integrations::Github::Api
   attr_reader :app_name, :installation_id, :jwt, :client
 
+  WEBHOOK_NAME = "web"
+
   def initialize(installation_id)
     @app_name = creds.integrations.github.app_name
     @installation_id = installation_id
@@ -9,27 +11,56 @@ class Integrations::Github::Api
     set_client
   end
 
+  def list_workflows(repo)
+    execute do
+      @client
+        .workflows(repo)
+        .then { |response| response[:workflows] }
+        .then { |workflows| workflows.map { |workflow| workflow.to_h.slice(:id, :name) } }
+    end
+  end
+
+  def list_repos
+    execute do
+      @client
+        .list_app_installation_repositories
+        .then { |response| response[:repositories] }
+        .then { |repos| repos.map { |repository| repository.to_h.slice(:id, :name) } }
+    end
+  end
+
   def run_workflow!(repo, id, ref)
     execute do
       @client.workflow_dispatch(repo, id, ref)
     end
   end
 
+  def create_repo_webhook!(repo, url, events)
+    execute do
+      @client.create_hook(
+        repo,
+        WEBHOOK_NAME,
+        {
+          url:,
+          content_type: "json"
+        },
+        {
+          events:,
+          active: true
+        }
+      )
+    end
+  end
+
   def create_branch!(repo, working_branch_name, new_branch_name)
     execute do
-      @client.create_ref(repo, "headssss/#{new_branch_name}", head(repo, working_branch_name))
+      @client.create_ref(repo, "heads/#{new_branch_name}", head(repo, working_branch_name))
     end
   end
 
   def create_pr!(repo, to, from, title, body)
     execute do
       @client.create_pull_request(repo, to, from, title, body)
-    end
-  end
-
-  def repos
-    execute do
-      @client.list_app_installation_repositories
     end
   end
 

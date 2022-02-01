@@ -6,6 +6,14 @@ class Accounts::Releases::StepsController < ApplicationController
 
   def new
     @step = @train.steps.new
+
+    unless @train.integrations_are_ready?
+      redirect_to accounts_organization_app_releases_train_url(current_organization, @app, @train),
+                  alert: "You haven't yet completed your integrations!"
+    end
+
+    @ci_actions = @train.integrations.ci_cd.first.channels
+    @build_channels = @train.integrations.notification.first.channels
   end
 
   def create
@@ -83,7 +91,7 @@ class Accounts::Releases::StepsController < ApplicationController
   def parsed_step_params
     step_params
       .merge(status: "inactive")
-      .merge(run_after_duration: run_after_duration)
+      .merge(run_after_duration:)
       .except(:run_after_duration_unit, :run_after_duration_value)
   end
 

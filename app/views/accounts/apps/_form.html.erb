@@ -29,6 +29,13 @@
       </div>
     </div>
 
+    <div class="field">
+      <%= form.label :timezone, class: "label" %>
+      <div class="control">
+        <%= form.time_zone_select(:timezone, ActiveSupport::TimeZone.all.sort, model: ActiveSupport::TimeZone) %>
+      </div>
+    </div>
+
     <div class="field is-grouped">
       <div class="control">
         <%= form.submit 'Submit', class: "button is-link" %>

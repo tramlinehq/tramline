@@ -9,6 +9,7 @@ class CreateApps < ActiveRecord::Migration[7.0]
       t.string :platform, null: false
       t.string :bundle_identifier, null: false
       t.bigint :build_number, null: false
+      t.string :timezone, null: false
 
       t.string :slug
 

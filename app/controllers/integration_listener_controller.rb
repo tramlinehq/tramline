@@ -42,6 +42,7 @@ class IntegrationListenerController < ApplicationController
       installation_id: installation_id,
       category: state_integration_category,
       provider: state_integration_provider,
+      status: Integration::DEFAULT_CONNECT_STATUS[state_integration_category],
       code: code
     }
   end

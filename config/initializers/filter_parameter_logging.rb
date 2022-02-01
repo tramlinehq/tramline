@@ -11,7 +11,6 @@ module ParameterFiltering
     updated_at
     deleted_at
     limit
-    status
   ].freeze
 
   ALLOWED_REGEX = /(^|_)ids?|#{Regexp.union(ALLOWED_ATTRIBUTES)}/.freeze

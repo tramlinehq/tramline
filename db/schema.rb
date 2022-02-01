@@ -23,6 +23,7 @@ ActiveRecord::Schema.define(version: 2022_01_26_132735) do
     t.string "platform", null: false
     t.string "bundle_identifier", null: false
     t.bigint "build_number", null: false
+    t.string "timezone", null: false
     t.string "slug"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -49,9 +50,11 @@ ActiveRecord::Schema.define(version: 2022_01_26_132735) do
   create_table "integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "app_id", null: false
     t.string "category", null: false
-    t.string "provider", null: false
+    t.string "provider"
+    t.string "status"
     t.string "active_code_repo"
     t.string "working_branch"
+    t.string "notification_channel"
     t.string "installation_id"
     t.string "oauth_access_token"
     t.string "original_oauth_access_token"
@@ -89,6 +92,7 @@ ActiveRecord::Schema.define(version: 2022_01_26_132735) do
     t.string "code_name", null: false
     t.datetime "scheduled_at", null: false
     t.datetime "was_run_at"
+    t.string "commit_sha"
     t.string "status", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false

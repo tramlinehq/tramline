@@ -1,111 +1,48 @@
-<table>
-  <thead>
-  <tr>
-    <th>Category</th>
-    <th>Provider</th>
-    <th>Connected</th>
-  </tr>
-  </thead>
-  <tbody>
+<% @integrations_by_categories.each do |category, integrations| %>
+  <h3><%= category.pluralize.titleize %></h3>
+  <br/>
+  <table>
+    <thead>
+    <tr>
+      <th>Provider</th>
+      <th></th>
+      <th>Connected</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
 
-  <tr>
-    <td>VCS</td>
-    <td>
-      <%= image_tag("GitHub-Mark-120px-plus.png", width: 30) %>
-    </td>
-    <td>
-      <% if @app.integrations.version_control.exists? %>
-        ✅
-      <% else %>
-        ❌
-      <% end %>
-    </td>
-  </tr>
-  </tbody>
-</table>
+    <% integrations.each do |integration| %>
+      <% provider = integration.provider %>
 
-<td>
-  <% unless @app.integrations.version_control.exists? %>
-    <%= form_with(model: [current_organization, app, integration], class: "realign-form") do |form| %>
-      <%= form.hidden_field :category, value: Integration.categories[:version_control] %>
-      <%= form.hidden_field :provider, value: Integration.providers[:github] %>
-      <%= form.button 'Connect', "data-turbo": false %>
+      <tr>
+        <td><%= provider.titleize %></td>
+        <td>
+          <%= image_tag("#{provider}_thumb.png", width: 30) %>
+        </td>
+
+        <td>
+          <% if integration.fully_connected? %>
+            ✅
+          <% else %>
+            ❌
+          <% end %>
+        </td>
+
+        <td>
+          <% if integration.connect? %>
+            <%= form_with(model: [current_organization, app, integration],
+                          method: :get,
+                          url: connect_accounts_organization_app_integrations_path(current_organization, app, integration),
+                          class: "realign-form") do |form| %>
+              <%= form.hidden_field :category, value: category %>
+              <%= form.hidden_field :provider, value: provider %>
+              <%= form.submit 'Connect', "data-turbo": false  %>
+            <% end %>
+          <% end %>
+        </td>
+      </tr>
     <% end %>
-  <% end %>
-</td>
-
-<hr/>
-
-<table>
-  <thead>
-  <tr>
-    <th>Category</th>
-    <th>Provider</th>
-    <th>Connected</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr>
-    <td>CI/CD</td>
-    <td>
-      <%= image_tag("GitHub-Mark-120px-plus.png", width: 30) %>
-    </td>
-    <td>
-      <% if @app.integrations.ci_cd.exists? %>
-        ✅
-      <% else %>
-        ❌
-      <% end %>
-    </td>
-  </tr>
-  </tbody>
-</table>
-
-<td>
-  <% unless @app.integrations.ci_cd.exists? %>
-    <%= form_with(model: [current_organization, app, integration], class: "realign-form") do |form| %>
-      <%= form.hidden_field :category, value: Integration.categories[:ci_cd] %>
-      <%= form.hidden_field :provider, value: Integration.providers[:github_actions] %>
-      <%= form.button 'Connect', "data-turbo": false %>
-    <% end %>
-  <% end %>
-</td>
-
-<hr/>
-
-<table>
-  <thead>
-  <tr>
-    <th>Category</th>
-    <th>Provider</th>
-    <th>Connected</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr>
-    <td>Notifications</td>
-    <td>
-      <%= image_tag("Slack_Mark_Web.png", width: 30) %>
-    </td>
-    <td>
-      <% if @app.integrations.notification.exists? %>
-        ✅
-      <% else %>
-        ❌
-      <% end %>
-    </td>
-
-  </tr>
-  </tbody>
-</table>
-
-<td>
-  <% unless @app.integrations.notification.exists? %>
-    <%= form_with(model: [current_organization, app, integration], class: "realign-form") do |form| %>
-      <%= form.hidden_field :category, value: Integration.categories[:notification] %>
-      <%= form.hidden_field :provider, value: Integration.providers[:slack] %>
-      <%= form.button 'Connect', "data-turbo": false %>
-    <% end %>
-  <% end %>
-</td>
-
+    </tbody>
+  </table>
+<% end %>
