@@ -36,7 +36,7 @@ class Accounts::IntegrationsController < ApplicationController
       if @integration.update(integration_update_params)
         format.html {
           redirect_to accounts_organization_app_integration_path(current_organization, @app, @integration),
-                      notice: "Integration was successfully updated."
+            notice: "Integration was successfully updated."
         }
         format.json { render :show, status: :ok, location: @integration }
       else
@@ -68,20 +68,20 @@ class Accounts::IntegrationsController < ApplicationController
 
   def integration_connect_params
     params.require(:integration)
-          .permit(
-            :category,
-            :provider
-          ).merge(current_user:)
+      .permit(
+        :category,
+        :provider
+      ).merge(current_user:)
   end
 
   def integration_update_params
     updated_params =
       params.require(:integration)
-            .permit(
-              :active_code_repo,
-              :working_branch,
-              :notification_channel
-            ).merge(status: Integration.statuses[:fully_connected])
+        .permit(
+          :active_code_repo,
+          :working_branch,
+          :notification_channel
+        ).merge(status: Integration.statuses[:fully_connected])
 
     if updated_params[:active_code_repo].present?
       updated_params[:active_code_repo] = JSON.parse(updated_params[:active_code_repo])

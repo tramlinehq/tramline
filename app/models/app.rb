@@ -5,7 +5,7 @@ class App < ApplicationRecord
   has_many :integrations, inverse_of: :app
   has_many :trains, class_name: "Releases::Train", foreign_key: :app_id
 
-  enum role: { android: "android", ios: "ios" }
+  enum role: {android: "android", ios: "ios"}
 
   after_initialize :set_default_platform
 

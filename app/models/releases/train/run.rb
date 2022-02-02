@@ -3,5 +3,5 @@ class Releases::Train::Run < ApplicationRecord
 
   belongs_to :train, class_name: "Releases::Train"
 
-  enum status: { on_track: "on_track", error: "error", finished: "finished" }
+  enum status: {on_track: "on_track", error: "error", finished: "finished"}
 end

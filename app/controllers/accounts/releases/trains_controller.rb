@@ -13,7 +13,7 @@ class Accounts::Releases::TrainsController < ApplicationController
       if @train.save
         format.html {
           redirect_to accounts_organization_app_releases_train_path(current_organization, @app, @train),
-                      notice: "Train was successfully created."
+            notice: "Train was successfully created."
         }
         format.json { render :show, status: :created, location: @train }
       else
@@ -30,7 +30,7 @@ class Accounts::Releases::TrainsController < ApplicationController
       if @train.update(parsed_train_params)
         format.html {
           redirect_to accounts_organization_app_path(current_organization, @train),
-                      notice: "Train was successfully updated."
+            notice: "Train was successfully updated."
         }
         format.json { render :show, status: :ok, location: @train }
       else

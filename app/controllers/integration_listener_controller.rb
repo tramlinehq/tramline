@@ -13,7 +13,7 @@ class IntegrationListenerController < ApplicationController
       if @integration.save
         format.html {
           redirect_to accounts_organization_app_path(current_organization, state_app),
-                      notice: "Integration was successfully created."
+            notice: "Integration was successfully created."
         }
         format.json { render :show, status: :created, location: state_app }
       else

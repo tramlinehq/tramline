@@ -13,7 +13,7 @@ class Accounts::AppsController < ApplicationController
       if @app.save
         format.html {
           redirect_to accounts_organization_app_path(current_organization, @app),
-                      notice: "App was successfully created."
+            notice: "App was successfully created."
         }
         format.json { render :show, status: :created, location: @app }
       else
@@ -28,7 +28,7 @@ class Accounts::AppsController < ApplicationController
       if @app.update(app_params)
         format.html {
           redirect_to accounts_organization_app_path(current_organization, @app),
-                      notice: "App was successfully updated."
+            notice: "App was successfully updated."
         }
         format.json { render :show, status: :ok, location: @app }
       else

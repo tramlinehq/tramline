@@ -9,7 +9,7 @@ class Accounts::Releases::StepsController < ApplicationController
 
     unless @train.integrations_are_ready?
       redirect_to accounts_organization_app_releases_train_url(current_organization, @app, @train),
-                  alert: "You haven't yet completed your integrations!"
+        alert: "You haven't yet completed your integrations!"
     end
 
     @ci_actions = @train.integrations.ci_cd.first.workflows
@@ -23,7 +23,7 @@ class Accounts::Releases::StepsController < ApplicationController
       if @step.save!
         format.html {
           redirect_to accounts_organization_app_releases_train_step_path(current_organization, @app, @train, @step),
-                      notice: "Step was successfully created."
+            notice: "Step was successfully created."
         }
         format.json { render :show, status: :created, location: @step }
       else
@@ -40,7 +40,7 @@ class Accounts::Releases::StepsController < ApplicationController
       if @step.update(train_params)
         format.html {
           redirect_to accounts_organization_app_path(current_organization, @step),
-                      notice: "Step was successfully updated."
+            notice: "Step was successfully updated."
         }
         format.json { render :show, status: :ok, location: @step }
       else
