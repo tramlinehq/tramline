@@ -26,10 +26,13 @@ class Releases::Train < ApplicationRecord
   GRACE_PERIOD_FOR_RUNNING = 30.seconds
 
   def runnable?
-    now = Time.now
-    run_count = runs.size || 1
+    Time.use_zone(app.timezone) do
+      now = Time.now
+      kickoff = kickoff_at.in_time_zone(app.timezone)
+      run_count = runs.size || 1
 
-    (kickoff_at + (repeat_duration * run_count))
-      .between?(now + GRACE_PERIOD_FOR_RUNNING, now - GRACE_PERIOD_FOR_RUNNING)
+      (kickoff + (repeat_duration * run_count))
+        .between?(now - GRACE_PERIOD_FOR_RUNNING, now + GRACE_PERIOD_FOR_RUNNING)
+    end
   end
 end

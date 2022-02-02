@@ -1,6 +1,6 @@
 require "sidekiq-scheduler"
 
-class ReleaseKickoffJob
+class Releases::KickoffJob
   include Sidekiq::Worker
 
   def perform(*args)

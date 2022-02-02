@@ -1,4 +1,4 @@
-class KickoffTrainJob < ApplicationJob
+class TrainJob < ApplicationJob
   queue_as :high
 
   delegate :transaction, to: ActiveRecord::Base
@@ -15,19 +15,20 @@ class KickoffTrainJob < ApplicationJob
 
     transaction do
       # start the train run (overarching run)
-      code_name = RandomNameGenerator.flip_mode.compose
+      code_name = Haikunator.haikunate(100)
       train_run = train.runs.create!(
         scheduled_at: now,
         was_run_at: now,
         status: Releases::Train::Run.statuses[:on_track],
-        code_name:)
+        code_name:
+      )
 
       # start the first step run (because it runs as soon as the train kicks off)
-      KickoffStepJob.perform_now(train_run.id, train.steps.first.id, user.id)
+      StepJob.perform_now(train_run.id, train.steps.first.id, user.id)
 
       # enq the subsequent train step runs at their designated times
       train.steps.drop(1).each do |step|
-        KickoffStepJob.set(wait_until: now + step.run_after_duration).perform_later(train_run.id, step.id, user.id)
+        StepJob.set(wait_until: now + step.run_after_duration).perform_later(train_run.id, step.id, user.id)
       end
     end
   end

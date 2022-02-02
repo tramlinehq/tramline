@@ -81,6 +81,7 @@ class Accounts::Releases::TrainsController < ApplicationController
     train_params
       .merge(repeat_duration: repeat_duration(train_params))
       .merge(status: Releases::Train.statuses[:inactive])
+      .merge(kickoff_at: in_utc(train_params[:kickoff_at]))
       .except(:repeat_duration_value, :repeat_duration_unit)
   end
 
@@ -89,5 +90,9 @@ class Accounts::Releases::TrainsController < ApplicationController
       Duration.new(train_params[:repeat_duration_unit].to_sym =>
                      train_params[:repeat_duration_value].to_i).iso8601
     )
+  end
+
+  def in_utc(time_param)
+    Time.parse(time_param).in_time_zone.utc
   end
 end

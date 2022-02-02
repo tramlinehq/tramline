@@ -16,4 +16,8 @@ class ApplicationController < ActionController::Base
   def current_organization
     @current_organization ||= current_user.organization
   end
+
+  def time_zone
+    @current_organization.timezone
+  end
 end
