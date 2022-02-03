@@ -1,4 +1,6 @@
 class Accounts::Releases::TrainsController < ApplicationController
+  using RefinedString
+
   before_action :set_app, only: %i[new create show index edit update activate]
   before_action :set_train, only: %i[show edit update activate]
   around_action :set_time_zone
@@ -83,7 +85,7 @@ class Accounts::Releases::TrainsController < ApplicationController
   def parsed_train_params
     train_params
       .merge(repeat_duration: repeat_duration(train_params))
-      .merge(kickoff_at: in_utc(train_params[:kickoff_at]))
+      .merge(kickoff_at: train_params[:kickoff_at].in_tz(@app.timezone))
       .except(:repeat_duration_value, :repeat_duration_unit)
   end
 
@@ -92,10 +94,6 @@ class Accounts::Releases::TrainsController < ApplicationController
       Duration.new(train_params[:repeat_duration_unit].to_sym =>
                      train_params[:repeat_duration_value].to_i).iso8601
     )
-  end
-
-  def in_utc(time_param)
-    Time.parse(time_param).in_time_zone.utc
   end
 
   def validate_integration_status

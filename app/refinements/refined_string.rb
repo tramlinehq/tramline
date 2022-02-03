@@ -19,5 +19,13 @@ module RefinedString
       decrypted = [self].pack("H*").unpack("C*").pack("c*")
       cipher.update(decrypted) + cipher.final
     end
+
+    def time
+      Time.parse(self)
+    end
+
+    def in_tz(tz)
+      time.in_time_zone(tz)
+    end
   end
 end
