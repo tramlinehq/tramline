@@ -85,7 +85,7 @@ class Accounts::Releases::TrainsController < ApplicationController
   def parsed_train_params
     train_params
       .merge(repeat_duration: repeat_duration(train_params))
-      .merge(kickoff_at: train_params[:kickoff_at].in_tz(app.timezone))
+      .merge(kickoff_at: train_params[:kickoff_at].in_tz(@app.timezone))
       .except(:repeat_duration_value, :repeat_duration_unit)
   end
 
