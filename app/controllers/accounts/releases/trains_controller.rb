@@ -11,6 +11,7 @@ class Accounts::Releases::TrainsController < ApplicationController
   end
 
   def create
+    binding.pry
     @train = @app.trains.new(parsed_train_params)
 
     respond_to do |format|
@@ -85,7 +86,7 @@ class Accounts::Releases::TrainsController < ApplicationController
   def parsed_train_params
     train_params
       .merge(repeat_duration: repeat_duration(train_params))
-      .merge(kickoff_at: train_params[:kickoff_at].in_tz(@app.timezone))
+      .merge(kickoff_at: train_params[:kickoff_at].in_tz(@app.timezone).utc)
       .except(:repeat_duration_value, :repeat_duration_unit)
   end
 
