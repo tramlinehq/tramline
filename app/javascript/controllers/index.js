@@ -11,5 +11,5 @@ import Flatpickr from 'stimulus-flatpickr'
 application.register('flatpickr', Flatpickr)
 
 // import InputSelect
-import InputSelect from './input_select'
+import InputSelect from './input_select.js'
 application.register('inputselect', InputSelect)
