@@ -32,7 +32,7 @@ class Releases::Train < ApplicationRecord
 
   def runnable?
     Time.use_zone(app.timezone) do
-      now = Time.now
+      now = Time.current
 
       next_run_at
         .in_time_zone(app.timezone)

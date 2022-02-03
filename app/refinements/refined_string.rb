@@ -20,12 +20,8 @@ module RefinedString
       cipher.update(decrypted) + cipher.final
     end
 
-    def time
-      Time.parse(self)
-    end
-
     def in_tz(tz)
-      time.in_time_zone(tz)
+      ActiveSupport::TimeZone.new(tz).parse(self)
     end
   end
 end
