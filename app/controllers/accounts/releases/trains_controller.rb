@@ -11,7 +11,6 @@ class Accounts::Releases::TrainsController < ApplicationController
   end
 
   def create
-    binding.pry
     @train = @app.trains.new(parsed_train_params)
 
     respond_to do |format|
