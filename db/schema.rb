@@ -96,6 +96,7 @@ ActiveRecord::Schema.define(version: 2022_01_26_132735) do
     t.string "status", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["code_name", "train_id"], name: "index_train_runs_on_code_name_and_train_id", unique: true
     t.index ["previous_train_run_id"], name: "index_train_runs_on_previous_train_run_id"
     t.index ["train_id"], name: "index_train_runs_on_train_id"
   end
@@ -121,12 +122,12 @@ ActiveRecord::Schema.define(version: 2022_01_26_132735) do
     t.string "status", null: false
     t.integer "step_number", limit: 2, default: 0, null: false
     t.interval "run_after_duration", null: false
-    t.string "ci_cd_channel", null: false
-    t.string "build_artifact_channel", null: false
+    t.json "ci_cd_channel", null: false
+    t.json "build_artifact_channel", null: false
     t.string "slug"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["step_number"], name: "index_train_steps_on_step_number", unique: true
+    t.index ["step_number", "train_id"], name: "index_train_steps_on_step_number_and_train_id", unique: true
     t.index ["train_id"], name: "index_train_steps_on_train_id"
   end
 

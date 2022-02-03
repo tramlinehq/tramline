@@ -24,4 +24,17 @@ class Releases::Step < ApplicationRecord
   def set_default_status
     self.status = Releases::Step.statuses[:active]
   end
+
+  def first?
+    train.steps.minimum(:step_number).to_i == step_number
+  end
+
+  def last?
+    train.steps.maximum(:step_number).to_i == step_number
+  end
+
+  def next_run_at
+    return if train.current_run.blank?
+    train.current_run.last_run_step.was_run_at + run_after_duration
+  end
 end

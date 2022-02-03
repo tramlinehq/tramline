@@ -1,5 +1,5 @@
 class IntegrationListenerController < ApplicationController
-  using StringRefinement
+  using RefinedString
 
   def callback
     return unless valid_state?

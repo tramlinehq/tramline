@@ -4,6 +4,8 @@ class ApplicationController < ActionController::Base
   before_action :require_login, unless: :devise_controller?
   helper_method :current_organization
 
+  DEFAULT_TIMEZONE = "Asia/Kolkata"
+
   private
 
   def require_login
@@ -11,6 +13,11 @@ class ApplicationController < ActionController::Base
       flash[:error] = t("errors.messages.not_logged_in")
       redirect_to root_path
     end
+  end
+
+  def set_time_zone
+    tz = @app.present? ? @app.timezone : DEFAULT_TIMEZONE
+    Time.use_zone(tz) { yield }
   end
 
   def current_organization

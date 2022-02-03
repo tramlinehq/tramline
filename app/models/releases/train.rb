@@ -15,12 +15,17 @@ class Releases::Train < ApplicationRecord
 
   attribute :repeat_duration, :interval
 
-  def activate!
-    update!(status: Releases::Train.statuses[:active])
+  after_initialize :set_default_status
+  after_create :create_webhook!
+
+  delegate :integrations_are_ready?, to: :app
+
+  def set_default_status
+    self.status = Releases::Step.statuses[:active]
   end
 
-  def integrations_are_ready?
-    integrations.exists? && integrations.all? { |int| int.fully_connected? }
+  def create_webhook!
+    Automatons::Webhook.dispatch!(train: self)
   end
 
   GRACE_PERIOD_FOR_RUNNING = 30.seconds
@@ -28,11 +33,18 @@ class Releases::Train < ApplicationRecord
   def runnable?
     Time.use_zone(app.timezone) do
       now = Time.now
-      kickoff = kickoff_at.in_time_zone(app.timezone)
-      run_count = runs.size || 1
 
-      (kickoff + (repeat_duration * run_count))
+      next_run_at
+        .in_time_zone(app.timezone)
         .between?(now - GRACE_PERIOD_FOR_RUNNING, now + GRACE_PERIOD_FOR_RUNNING)
     end
+  end
+
+  def next_run_at
+    kickoff_at + (repeat_duration * (runs.finished.size || 1))
+  end
+
+  def current_run
+    runs.on_track.last
   end
 end

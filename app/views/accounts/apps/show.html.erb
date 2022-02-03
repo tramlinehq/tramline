@@ -1,14 +1,20 @@
 <% unless @app.integrations.exists? %>
   <p>Go to the
-    <%= link_to "integrations page", new_accounts_organization_app_integration_path(current_organization, @app) %>
+    <%= link_to "installations page", new_accounts_organization_app_integration_path(current_organization, @app) %>
     to create an integration for this app.
   </p>
 <% end %>
 
-<% unless @app.trains.exists? %>
-  <p>Go to the
-    <%= link_to "release train page", new_accounts_organization_app_releases_train_path(current_organization, @app) %>
-    to create a new release train for this app.
+<% if @app.integrations_are_ready? %>
+  <% unless @app.trains.exists? %>
+    <p>Go to the
+      <%= link_to "release train page", new_accounts_organization_app_releases_train_path(current_organization, @app) %>
+      to create a new release train for this app.
+    </p>
+  <% end %>
+<% else %>
+  <p>
+    Complete your integrations down below before adding a new step.
   </p>
 <% end %>
 

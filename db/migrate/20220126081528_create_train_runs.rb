@@ -15,5 +15,7 @@ class CreateTrainRuns < ActiveRecord::Migration[7.0]
 
       t.timestamps
     end
+
+    add_index :train_runs, [:code_name, :train_id], unique: true
   end
 end

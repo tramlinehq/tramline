@@ -52,7 +52,7 @@ Rails.application.routes.draw do
   end
 
   scope :github do
-    post "/events/:app_id/:installation_id", to: "github#events", as: :github_events
+    post "/events/:train_id", to: "github#events", as: :github_events
     get :callback, to: "github#callback", as: :github_callback
   end
 

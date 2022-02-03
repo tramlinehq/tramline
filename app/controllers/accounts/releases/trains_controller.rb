@@ -1,6 +1,8 @@
 class Accounts::Releases::TrainsController < ApplicationController
   before_action :set_app, only: %i[new create show index edit update activate]
   before_action :set_train, only: %i[show edit update activate]
+  around_action :set_time_zone
+  around_action :validate_integration_status, only: %i[new create]
 
   def new
     @train = @app.trains.new
@@ -11,9 +13,10 @@ class Accounts::Releases::TrainsController < ApplicationController
 
     respond_to do |format|
       if @train.save
+
         format.html {
           redirect_to accounts_organization_app_releases_train_path(current_organization, @app, @train),
-            notice: "Train was successfully created."
+                      notice: "Train was successfully created."
         }
         format.json { render :show, status: :created, location: @train }
       else
@@ -30,7 +33,7 @@ class Accounts::Releases::TrainsController < ApplicationController
       if @train.update(parsed_train_params)
         format.html {
           redirect_to accounts_organization_app_path(current_organization, @train),
-            notice: "Train was successfully updated."
+                      notice: "Train was successfully updated."
         }
         format.json { render :show, status: :ok, location: @train }
       else
@@ -80,7 +83,6 @@ class Accounts::Releases::TrainsController < ApplicationController
   def parsed_train_params
     train_params
       .merge(repeat_duration: repeat_duration(train_params))
-      .merge(status: Releases::Train.statuses[:inactive])
       .merge(kickoff_at: in_utc(train_params[:kickoff_at]))
       .except(:repeat_duration_value, :repeat_duration_unit)
   end
@@ -94,5 +96,14 @@ class Accounts::Releases::TrainsController < ApplicationController
 
   def in_utc(time_param)
     Time.parse(time_param).in_time_zone.utc
+  end
+
+  def validate_integration_status
+    if @app.integrations_are_ready?
+      yield
+    else
+      redirect_to accounts_organization_app_path(current_organization, @app),
+                  alert: "Cannot create trains before integrations are complete."
+    end
   end
 end

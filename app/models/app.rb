@@ -19,4 +19,8 @@ class App < ApplicationRecord
     self.build_number = build_number + 1
     save!
   end
+
+  def integrations_are_ready?
+    integrations.exists? && integrations.all? { |int| int.fully_connected? }
+  end
 end

@@ -1,6 +1,5 @@
 class TrainJob < ApplicationJob
   queue_as :high
-
   delegate :transaction, to: ActiveRecord::Base
 
   def perform(id)

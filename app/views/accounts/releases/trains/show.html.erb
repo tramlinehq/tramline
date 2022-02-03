@@ -8,7 +8,6 @@
     <th>Version Suffix</th>
     <th>Started</th>
     <th>Repeats</th>
-    <th>Actions</th>
   </tr>
   </thead>
   <tbody>
@@ -23,22 +22,6 @@
       <%= @train.kickoff_at.strftime("%b %e, %l:%M %p") %></td>
     <td>
       <%= ActiveSupport::Duration.parse(Duration.new(@train.repeat_duration).iso8601).inspect %>
-    </td>
-    <td>
-      <% if @train.inactive? %>
-        <%= form_with(
-              url: activate_accounts_organization_app_releases_train_path(current_organization, @app, @train),
-              class: "realign-form"
-            ) do |form| %>
-          <div class="block">
-            <div class="field is-grouped">
-              <div class="control">
-                <%= form.button 'Activate', class: "button is-link", "data-turbo": false %>
-              </div>
-            </div>
-          </div>
-        <% end %>
-      <% end %>
     </td>
   </tr>
   </tbody>
@@ -88,10 +71,19 @@
                 new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>
   </p>
 <% else %>
-  <p>
-    <%= link_to "Add a step",
-                new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>
-  </p>
+  <% if @train.integrations_are_ready? %>
+    <p>
+      <%= link_to "Add a step",
+                  new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>
+    </p>
+  <% else %>
+    <p>
+      Complete your
+      <%= link_to "integrations",
+                  accounts_organization_app_path(current_organization, @app) %>
+      before adding a new step.
+    </p>
+  <% end %>
 <% end %>
 
 <h4>Runs</h4>
@@ -116,5 +108,10 @@
   <% end %>
   </tbody>
 </table>
+
+<p>
+  Next release on <%= @train.next_run_at.strftime("%b %e, %l:%M %p") %>
+</p>
+
 </p>
 

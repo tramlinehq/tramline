@@ -1,5 +1,5 @@
 class Integration < ApplicationRecord
-  using StringRefinement
+  using RefinedString
 
   belongs_to :app
 
@@ -41,18 +41,18 @@ class Integration < ApplicationRecord
 
   def workflows
     [] unless github_actions? && ci_cd?
-    Integrations::Github::Api.new(installation_id).list_workflows(active_code_repo.values.first)
+    Installations::Github::Api.new(installation_id).list_workflows(active_code_repo.values.first)
   end
 
   def channels
     if github? && version_control?
-      Integrations::Github::Api.new(installation_id).list_repos
+      Installations::Github::Api.new(installation_id).list_repos
     elsif github_actions? && ci_cd?
-      Integrations::Github::Api.new(installation_id).list_repos
+      Installations::Github::Api.new(installation_id).list_repos
     elsif slack? && notification?
-      Integrations::Slack::Api.new(oauth_access_token).list_channels
+      Installations::Slack::Api.new(oauth_access_token).list_channels
     elsif slack? && build_channel?
-      Integrations::Slack::Api.new(oauth_access_token).list_channels
+      Installations::Slack::Api.new(oauth_access_token).list_channels
     else
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
     end
@@ -111,7 +111,7 @@ class Integration < ApplicationRecord
     end
 
     def register_webhook
-      Integrations::Github::Api
+      Installations::Github::Api
         .new(integration.installation_id)
         .create_repo_webhook!(
           integration.active_code_repo,
@@ -155,7 +155,7 @@ class Integration < ApplicationRecord
     end
 
     def complete_access
-      integration.oauth_access_token = Integrations::Slack::Api.oauth_access_token(integration.code)
+      integration.oauth_access_token = Installations::Slack::Api.oauth_access_token(integration.code)
     end
 
     private

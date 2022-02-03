@@ -3,13 +3,14 @@ class Accounts::Releases::StepsController < ApplicationController
   before_action :set_train, only: %i[new create show edit update]
   before_action :set_step, only: %i[show edit update]
   before_action :set_first_step, only: %i[new create]
+  around_action :set_time_zone
 
   def new
     @step = @train.steps.new
 
     unless @train.integrations_are_ready?
       redirect_to accounts_organization_app_releases_train_url(current_organization, @app, @train),
-        alert: "You haven't yet completed your integrations!"
+        alert: "You haven't yet completed your installations!"
     end
 
     @ci_actions = @train.integrations.ci_cd.first.workflows
@@ -37,7 +38,7 @@ class Accounts::Releases::StepsController < ApplicationController
     return if @step.status.running?
 
     respond_to do |format|
-      if @step.update(train_params)
+      if @step.update(parsed_step_params)
         format.html {
           redirect_to accounts_organization_app_path(current_organization, @step),
             notice: "Step was successfully updated."
@@ -92,6 +93,8 @@ class Accounts::Releases::StepsController < ApplicationController
     step_params
       .merge(status: "inactive")
       .merge(run_after_duration:)
+      .merge(build_artifact_channel: JSON.parse(step_params[:build_artifact_channel]) || "{}")
+      .merge(ci_cd_channel: JSON.parse(step_params[:ci_cd_channel]) || "{}")
       .except(:run_after_duration_unit, :run_after_duration_value)
   end
 
