@@ -26,7 +26,9 @@
     <% if user_signed_in? %>
       <%= link_to "Log out", destroy_user_session_path, "data-turbo": false %>
       <span>•</span>
-      <%= link_to "Apps", accounts_organization_path(current_organization) %>
+      <% unless current_user.admin? %>
+        <%= link_to "Apps", accounts_organization_path(current_organization) %>
+      <% end %>
     <% else %>
       <%= link_to "Log in", user_session_path %>
       <span>•</span>
