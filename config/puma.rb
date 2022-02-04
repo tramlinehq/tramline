@@ -41,3 +41,16 @@ preload_app!
 
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
+
+# Use SSL with localhost
+if ENV['RAILS_ENV'] == 'development'
+  localhost_key = "#{File.join('config', 'certs', 'localhost-key.pem')}"
+  localhost_crt = "#{File.join('config', 'certs', 'localhost.pem')}"
+
+  # To be able to use rake etc
+  ssl_bind '0.0.0.0', 3000, {
+    key: localhost_key,
+    cert: localhost_crt,
+    verify_mode: 'none'
+  }
+end

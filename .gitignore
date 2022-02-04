@@ -34,6 +34,5 @@
 .idea
 /config/credentials/production.key
 
-# Local SSL keys
-localhost.crt
-localhost.key
+# Ignore Local SSL certificates
+/config/certs
