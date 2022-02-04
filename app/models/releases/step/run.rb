@@ -14,7 +14,7 @@ class Releases::Step::Run < ApplicationRecord
       release_branch = train_run.release_branch
       message = "Created release branch: #{release_branch}.\nCI workflow started for: #{train_run.code_name}!"
 
-      Automatons::Branch.dispatch!(branch: release_branch)
+      Automatons::Branch.dispatch!(step: step, branch: release_branch)
       Automatons::Workflow.dispatch!(step: step, ref: release_branch)
       Automatons::Email.dispatch!(user: current_user)
       Automatons::Notify.dispatch!(message:, integration: notification_integration)

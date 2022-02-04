@@ -2,13 +2,14 @@ module Automatons
   class Branch
     class DispatchFailure < StandardError; end
 
-    attr_reader :github_api, :branch
+    attr_reader :github_api, :step, :branch
 
     def self.dispatch!(**args)
       new(**args).dispatch!
     end
 
-    def initialize(branch:)
+    def initialize(step:, branch:)
+      @step = step
       @branch = branch
       @github_api = Installations::Github::Api.new(installation_id)
     end
