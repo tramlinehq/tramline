@@ -1,17 +1,37 @@
 <% if @integration.fully_connected? %>
-  <table>
-    <thead>
-    <tr>
-      <th>Active Repo</th>
-      <th>Working Branch</th>
-    </tr>
-    </thead>
-    <tbody>
-
-    <tr>
-      <td><%= @integration.active_code_repo %></td>
-      <td><%= @integration.working_branch %></td>
-    </tr>
-    </tbody>
-  </table>
+  <% if @integration.version_control? || @integration.ci_cd? %>
+    <table>
+      <thead>
+      <tr>
+        <th>Active Repo</th>
+        <th>Working Branch</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><%= @integration.active_code_repo %></td>
+        <% if @integration.ci_cd? %>
+          <td>Release branches will be auto-generated and the CI/CD will run against that.</td>
+        <% else %>
+          <td><%= @integration.working_branch %></td>
+        <% end %>
+      </tr>
+      </tbody>
+    </table>
+  <% elsif @integration.notification? %>
+    <table>
+      <thead>
+      <tr>
+        <th>Channel</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><%= @integration.notification_channel %></td>
+      </tr>
+      </tbody>
+    </table>
+  <% else %>
+    Nothing to do here, you're all good!
+  <% end %>
 <% end %>
