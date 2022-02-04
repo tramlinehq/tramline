@@ -33,6 +33,6 @@ class GithubController < IntegrationListenerController
   end
 
   def payload_action
-    params[:payload][:action]
+    params[:workflow_run][:status]
   end
 end
