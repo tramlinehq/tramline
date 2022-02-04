@@ -1,0 +1,2 @@
+web: bin/rails server -p 3000
+worker: dotenv -f ".env.development" bundle exec sidekiq -v
