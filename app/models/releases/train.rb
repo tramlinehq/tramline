@@ -47,4 +47,8 @@ class Releases::Train < ApplicationRecord
   def current_run
     runs.on_track.last
   end
+
+  def release_branch_name
+    name.downcase.tr(" ", "-")
+  end
 end

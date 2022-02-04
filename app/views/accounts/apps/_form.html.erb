@@ -32,7 +32,7 @@
     <div class="field">
       <%= form.label :timezone, class: "label" %>
       <div class="control">
-        <%= form.time_zone_select(:timezone, ActiveSupport::TimeZone.all.sort, model: ActiveSupport::TimeZone) %>
+        <%= form.time_zone_select(:timezone, @timezones, model: ActiveSupport::TimeZone) %>
       </div>
     </div>
 

@@ -11,11 +11,13 @@ class Releases::Step::Run < ApplicationRecord
 
   def automatons!
     transaction do
-      message = "Your automaton has successfully started the CI workflow for release: #{train_run.code_name}!"
+      release_branch = train_run.release_branch
+      message = "Created release branch: #{release_branch}.\nCI workflow started for: #{train_run.code_name}!"
 
+      Automatons::Branch.dispatch!(branch: release_branch)
+      Automatons::Workflow.dispatch!(step: step, ref: release_branch)
       Automatons::Email.dispatch!(user: current_user)
       Automatons::Notify.dispatch!(message:, integration: notification_integration)
-      Automatons::Workflow.dispatch!(step: step, integration: ci_cd_integration)
     end
   end
 
@@ -32,9 +34,5 @@ class Releases::Step::Run < ApplicationRecord
 
   def notification_integration
     step.train.app.integrations.notification.first
-  end
-
-  def ci_cd_integration
-    step.train.app.integrations.ci_cd.first
   end
 end

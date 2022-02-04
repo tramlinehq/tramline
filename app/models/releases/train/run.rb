@@ -13,4 +13,8 @@ class Releases::Train::Run < ApplicationRecord
   def last_run_step
     step_runs.finished.last
   end
+
+  def release_branch
+    was_run_at.strftime("rel/#{train.release_branch_name}/#{code_name}/%d-%m-%Y")
+  end
 end

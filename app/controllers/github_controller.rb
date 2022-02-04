@@ -9,6 +9,7 @@ class GithubController < IntegrationListenerController
     head :unprocessable_entity and return if train.inactive?
     head :accepted and return if train.current_run.blank?
     head :accepted and return if train.current_run.last_running_step.blank?
+    head :accepted and return if payload_action != "completed"
 
     transaction do
       current_run = train.current_run
@@ -29,5 +30,9 @@ class GithubController < IntegrationListenerController
 
   def train
     Releases::Train.find_by(id: params[:train_id])
+  end
+
+  def payload_action
+    params[:payload][:action]
   end
 end

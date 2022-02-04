@@ -1,38 +1,30 @@
 module Automatons
-  class Workflow
+  class Branch
     class DispatchFailure < StandardError; end
 
-    attr_reader :github_api, :step, :ref
+    attr_reader :github_api, :branch
 
     def self.dispatch!(**args)
       new(**args).dispatch!
     end
 
-    def initialize(step:, ref:)
-      @step = step
-      @ref = ref
+    def initialize(branch:)
+      @branch = branch
       @github_api = Installations::Github::Api.new(installation_id)
     end
 
     def dispatch!
-      unless github_api.run_workflow!(code_repo, ci_cd_channel, ref)
+      unless github_api.create_branch!(code_repo, ref, branch)
         raise DispatchFailure, "Failed to kickoff the workflow!"
       end
     end
 
     private
 
-    delegate :installation_id, to: :ci_cd
-
-    def ci_cd_channel
-      step
-        .ci_cd_channel
-        .keys
-        .first
-    end
+    delegate :installation_id, to: :version_control
 
     def code_repo
-      ci_cd
+      version_control
         .active_code_repo
         .values
         .first
@@ -44,10 +36,15 @@ module Automatons
         .integrations
     end
 
-    def ci_cd
+    def version_control
       integrations
-        .ci_cd
+        .version_control
         .first
+    end
+
+    def ref
+      version_control
+        .working_branch
     end
   end
 end

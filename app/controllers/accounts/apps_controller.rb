@@ -3,7 +3,10 @@ class Accounts::AppsController < ApplicationController
   before_action :set_integrations, only: %i[show]
   around_action :set_time_zone
 
+  DEFAULT_TIMEZONE_LIST_REGEX = /Asia\/Kolkata/
+
   def new
+    @timezones = ActiveSupport::TimeZone.all.select { |tz| tz.match? DEFAULT_TIMEZONE_LIST_REGEX }
     @app = current_organization.apps.new
   end
 

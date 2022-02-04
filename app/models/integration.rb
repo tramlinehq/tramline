@@ -35,6 +35,12 @@ class Integration < ApplicationRecord
     Integration.categories[:build_channel] => Integration.statuses[:fully_connected]
   }
 
+  MINIMAL_REQUIRED_SET = [:version_control, :ci_cd, :notification]
+
+  def self.ready?
+    where(category: MINIMAL_REQUIRED_SET, status: :fully_connected).size == MINIMAL_REQUIRED_SET.size
+  end
+
   def connect?
     !partially_connected? || !fully_connected?
   end

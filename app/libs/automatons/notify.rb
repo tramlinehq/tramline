@@ -16,7 +16,11 @@ module Automatons
     end
 
     def dispatch!
-      slack_api.message(notification_channel.values.first, message)
+      slack_api.message(notify_channel, message)
+    end
+
+    def notify_channel
+      notification_channel.values.first
     end
   end
 end

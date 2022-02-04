@@ -17,6 +17,5 @@ Sidekiq.configure_client do |config|
 end
 
 Sidekiq.configure_server do |config|
-  config.on(:shutdown) { Statsd.instance.close }
   config.redis = SidekiqConfig.connection_pool
 end
