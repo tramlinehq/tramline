@@ -5,11 +5,12 @@ class GithubController < IntegrationListenerController
   delegate :transaction, to: ActiveRecord::Base
 
   def events
+    head :accepted and return if payload_action != "completed"
     head :unprocessable_entity and return if train.blank?
     head :unprocessable_entity and return if train.inactive?
     head :accepted and return if train.current_run.blank?
     head :accepted and return if train.current_run.last_running_step.blank?
-    head :accepted and return if payload_action != "completed"
+
 
     transaction do
       current_run = train.current_run

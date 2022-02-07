@@ -46,7 +46,7 @@ module Installations
             content_type: "json"
           },
           {
-            events: ["workflow_run"],
+            events: WEBHOOK_EVENTS,
             active: true
           }
         )
@@ -73,6 +73,9 @@ module Installations
 
     private
 
+    delegate :application, to: Rails
+    delegate :credentials, to: :application
+
     def execute
       yield
     rescue Octokit::Unauthorized
@@ -81,14 +84,10 @@ module Installations
     end
 
     def set_client
-      client = Octokit::Client.new(bearer_token: jwt.fetch)
+      client = Octokit::Client.new(bearer_token: jwt.get)
       installation_token = client.create_app_installation_access_token(installation_id)[:token]
 
       @client ||= Octokit::Client.new(access_token: installation_token)
-    end
-
-    def creds
-      Rails.application.credentials
     end
   end
 end
