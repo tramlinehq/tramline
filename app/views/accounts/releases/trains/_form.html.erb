@@ -32,7 +32,7 @@
       <div class="control">
         <%= form.number_field :repeat_duration_value, step: 1, min: 1, default: 1, required: true, class: "input" %>
         <%= form.select :repeat_duration_unit,
-                        options_for_select([%w[Day(s) days], %w[Week(s) weeks]], "weeks"), required: true %>
+                        options_for_select([%w[Minute(s) minutes], %w[Day(s) days], %w[Week(s) weeks]], "days"), required: true %>
       </div>
     </div>
 
