@@ -16,8 +16,8 @@ module Installations
       def oauth_access_token(code)
         form_params = {
           form: {
-            client_id: creds.integrations.slack.client_id,
-            client_secret: creds.integrations.slack.client_secret,
+            client_id: credentials.integrations.slack.client_id,
+            client_secret: credentials.integrations.slack.client_secret,
             code:
           }
         }
@@ -29,9 +29,10 @@ module Installations
           .then { |json| json["access_token"] }
       end
 
-      def creds
-        Rails.application.credentials
-      end
+      private
+
+      delegate :application, to: Rails
+      delegate :credentials, to: :application
     end
 
     def message(channel, text)
@@ -65,14 +66,9 @@ module Installations
         .then { |channels| channels.map { |list| list.slice("id", "name") } }
     end
 
-    def search_channels(q)
-      list_channels.then { |channels| channels.select { |list| list["name"] =~ Regexp.new(q) } }
-    end
-
     private
 
-    def creds
-      Rails.application.credentials
-    end
+    delegate :application, to: Rails
+    delegate :credentials, to: :application
   end
 end

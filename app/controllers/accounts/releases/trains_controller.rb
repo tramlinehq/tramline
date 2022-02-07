@@ -1,10 +1,11 @@
-class Accounts::Releases::TrainsController < ApplicationController
+class Accounts::Releases::TrainsController < SignedInApplicationController
   using RefinedString
+  using RefinedInteger
 
   before_action :set_app, only: %i[new create show index edit update activate]
-  before_action :set_train, only: %i[show edit update activate]
   around_action :set_time_zone
-  around_action :validate_integration_status, only: %i[new create]
+  before_action :set_train, only: %i[show edit update activate]
+  before_action :validate_integration_status, only: %i[new create]
 
   def new
     @train = @app.trains.new
@@ -15,41 +16,13 @@ class Accounts::Releases::TrainsController < ApplicationController
 
     respond_to do |format|
       if @train.save
-
-        format.html {
-          redirect_to accounts_organization_app_releases_train_path(current_organization, @app, @train),
-                      notice: "Train was successfully created."
-        }
+        format.html { redirect_to train_path, notice: "Train was successfully created." }
         format.json { render :show, status: :created, location: @train }
       else
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @train.errors, status: :unprocessable_entity }
       end
     end
-  end
-
-  def update
-    return if @train.status.running?
-
-    respond_to do |format|
-      if @train.update(parsed_train_params)
-        format.html {
-          redirect_to accounts_organization_app_path(current_organization, @train),
-                      notice: "Train was successfully updated."
-        }
-        format.json { render :show, status: :ok, location: @train }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @train.errors, status: :unprocessable_entity }
-      end
-    end
-  end
-
-  def activate
-    @train.activate!
-  end
-
-  def edit
   end
 
   def show
@@ -84,24 +57,28 @@ class Accounts::Releases::TrainsController < ApplicationController
 
   def parsed_train_params
     train_params
-      .merge(repeat_duration: repeat_duration(train_params))
+      .merge(repeat_duration: repeat_duration)
       .merge(kickoff_at: train_params[:kickoff_at].in_tz(@app.timezone))
       .except(:repeat_duration_value, :repeat_duration_unit)
   end
 
-  def repeat_duration(train_params)
-    ActiveSupport::Duration.parse(
-      Duration.new(train_params[:repeat_duration_unit].to_sym =>
-                     train_params[:repeat_duration_value].to_i).iso8601
-    )
+  def repeat_duration
+    train_params[:repeat_duration_value]
+      .to_i
+      .as_duration_with(unit: train_params[:repeat_duration_unit])
   end
 
   def validate_integration_status
-    if @app.integrations_are_ready?
-      yield
-    else
-      redirect_to accounts_organization_app_path(current_organization, @app),
-                  alert: "Cannot create trains before integrations are complete."
+    unless @app.integrations_are_ready?
+      redirect_to app_path, alert: "Cannot create trains before integrations are complete."
     end
+  end
+
+  def app_path
+    accounts_organization_app_path(current_organization, @app)
+  end
+
+  def train_path
+    accounts_organization_app_releases_train_path(current_organization, @app, @train)
   end
 end

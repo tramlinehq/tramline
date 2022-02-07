@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   require "sidekiq-scheduler/web"
 
   mount ActionCable.server => "/cable"
+
   authenticate :user, lambda { |u| u.admin? } do
     mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
     mount Flipper::UI.app(Flipper), at: "/flipper"
@@ -14,27 +15,22 @@ Rails.application.routes.draw do
                             sessions: "authentication/sessions" },
              class_name: "Accounts::User"
 
-  root "home#index"
+  devise_scope :user do
+    unauthenticated :user do
+      root "authentication/sessions#new"
+    end
+
+    authenticated :user do
+      root "accounts/organizations#show", as: :authenticated_root
+    end
+  end
 
   namespace :accounts do
     resources :organizations do
       resources :apps do
-        member do
-          post :create_release_branch
-          post :create_pull_request
-        end
-
         namespace :releases do
           resources :trains do
-            member do
-              post :activate
-            end
-
-            resources :steps do
-              collection do
-                get :slack_channels
-              end
-            end
+            resources :steps
           end
         end
 

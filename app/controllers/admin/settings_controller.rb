@@ -1,4 +1,4 @@
-class Admin::SettingsController < ApplicationController
+class Admin::SettingsController < SignedInApplicationController
   before_action :admin?
 
   def index

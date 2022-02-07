@@ -11,40 +11,39 @@
 
 <%= form_for(resource, as: resource_name, html: { 'data-turbo' => "false" }, url: registration_path(resource_name)) do |f| %>
   <%= render "devise/shared/error_messages", resource: user %>
+
   <fieldset class="block">
     <legend>Sign up</legend>
+
     <div class="field">
-      <%= f.label :full_name %><br/>
+      <%= f.label :full_name %>
       <%= f.text_field :full_name, autofocus: true, autocomplete: "full-name" %>
     </div>
 
     <div class="field">
-      <%= f.label :preferred_name %><br/>
+      <%= f.label :preferred_name %>
       <%= f.text_field :preferred_name, autofocus: true, autocomplete: "preferred-name", placeholder: "What should we call you?" %>
     </div>
 
     <div class="field">
       <%= f.fields_for :organizations, @organization do |m| %>
-        <%= m.label :name, "Organization Name" %><br/>
+        <%= m.label :name, "Organization Name" %>
         <%= m.text_field :name, autofocus: true, autocomplete: "organization-name" %>
       <% end %>
     </div>
 
     <div class="field">
-      <%= f.label :email %><br/>
+      <%= f.label :email %>
       <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
     </div>
 
     <div class="field">
       <%= f.label :password %>
-      <% if @minimum_password_length %>
-        <em>(<%= @minimum_password_length %> characters minimum)</em>
-      <% end %><br/>
-      <%= f.password_field :password, autocomplete: "new-password" %>
+      <%= f.password_field :password, autocomplete: "new-password", placeholder: "Minimum #{@minimum_password_length} characters" %>
     </div>
 
     <div class="field">
-      <%= f.label :password_confirmation %><br/>
+      <%= f.label :password_confirmation %>
       <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
     </div>
 
@@ -54,6 +53,4 @@
   </fieldset>
 <% end %>
 
-<p>
-  <%= render "devise/shared/links" %>
-</p>
+<p><%= render "devise/shared/links" %></p>

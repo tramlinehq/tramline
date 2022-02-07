@@ -1,13 +1,14 @@
 <%= form_for(resource, as: resource_name, html: { 'data-turbo' => "false" }, url: session_path(resource_name)) do |f| %>
   <fieldset class="block">
     <legend>Log in</legend>
+
     <div class="field">
-      <%= f.label :email %><br />
+      <%= f.label :email %>
       <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
     </div>
 
     <div class="field">
-      <%= f.label :password %><br />
+      <%= f.label :password %>
       <%= f.password_field :password, autocomplete: "current-password" %>
     </div>
 
@@ -18,12 +19,12 @@
       </div>
     <% end %>
 
+    <br/>
+
     <div class="actions">
       <%= f.submit "Log in" %>
     </div>
   </fieldset>
 <% end %>
 
-<p>
-  <%= render "devise/shared/links" %>
-</p>
+<p><%= render "devise/shared/links" %></p>

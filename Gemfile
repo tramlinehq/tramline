@@ -58,3 +58,6 @@ group :test do
   gem "selenium-webdriver"
   gem "webdrivers"
 end
+gem "down", "~> 5.2"
+
+gem "aws-sdk-s3", "~> 1.112"

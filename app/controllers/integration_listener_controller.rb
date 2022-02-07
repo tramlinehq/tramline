@@ -1,4 +1,4 @@
-class IntegrationListenerController < ApplicationController
+class IntegrationListenerController < SignedInApplicationController
   using RefinedString
 
   def callback
@@ -11,10 +11,7 @@ class IntegrationListenerController < ApplicationController
 
     respond_to do |format|
       if @integration.save
-        format.html {
-          redirect_to accounts_organization_app_path(current_organization, state_app),
-            notice: "Integration was successfully created."
-        }
+        format.html { redirect_to app_path, notice: "Integration was successfully created." }
         format.json { render :show, status: :created, location: state_app }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -69,5 +66,9 @@ class IntegrationListenerController < ApplicationController
 
   def code
     params[:code]
+  end
+
+  def app_path
+    accounts_organization_app_path(current_organization, state_app)
   end
 end

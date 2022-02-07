@@ -15,8 +15,8 @@ class Releases::Train < ApplicationRecord
 
   attribute :repeat_duration, :interval
 
-  after_initialize :set_default_status
   after_create :create_webhook!
+  after_initialize :set_default_status
 
   delegate :integrations_are_ready?, to: :app
 

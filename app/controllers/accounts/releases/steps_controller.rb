@@ -1,18 +1,16 @@
-class Accounts::Releases::StepsController < ApplicationController
-  before_action :set_app, only: %i[new create show edit update]
-  before_action :set_train, only: %i[new create show edit update]
-  before_action :set_step, only: %i[show edit update]
+class Accounts::Releases::StepsController < SignedInApplicationController
+  using RefinedString
+  using RefinedInteger
+
+  before_action :set_app, only: %i[new create show]
+  before_action :set_train, only: %i[new create show]
+  before_action :set_step, only: %i[show]
   before_action :set_first_step, only: %i[new create]
+  before_action :integrations_are_ready?, only: %i[new create]
   around_action :set_time_zone
 
   def new
     @step = @train.steps.new
-
-    unless @train.integrations_are_ready?
-      redirect_to accounts_organization_app_releases_train_url(current_organization, @app, @train),
-        alert: "You haven't yet completed your installations!"
-    end
-
     @ci_actions = @train.integrations.ci_cd.first.workflows
     @build_channels = @train.integrations.notification.first.channels
   end
@@ -22,36 +20,13 @@ class Accounts::Releases::StepsController < ApplicationController
 
     respond_to do |format|
       if @step.save!
-        format.html {
-          redirect_to accounts_organization_app_releases_train_step_path(current_organization, @app, @train, @step),
-            notice: "Step was successfully created."
-        }
+        format.html { redirect_to step_path, notice: "Step was successfully created." }
         format.json { render :show, status: :created, location: @step }
       else
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @step.errors, status: :unprocessable_entity }
       end
     end
-  end
-
-  def update
-    return if @step.status.running?
-
-    respond_to do |format|
-      if @step.update(parsed_step_params)
-        format.html {
-          redirect_to accounts_organization_app_path(current_organization, @step),
-            notice: "Step was successfully updated."
-        }
-        format.json { render :show, status: :ok, location: @step }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @step.errors, status: :unprocessable_entity }
-      end
-    end
-  end
-
-  def edit
   end
 
   def show
@@ -91,19 +66,31 @@ class Accounts::Releases::StepsController < ApplicationController
 
   def parsed_step_params
     step_params
-      .merge(status: "inactive")
-      .merge(run_after_duration:)
-      .merge(build_artifact_channel: JSON.parse(step_params[:build_artifact_channel]) || "{}")
-      .merge(ci_cd_channel: JSON.parse(step_params[:ci_cd_channel]) || "{}")
+      .merge(run_after_duration: run_after_duration)
+      .merge(build_artifact_channel: step_params[:build_artifact_channel].safe_json_parse)
+      .merge(ci_cd_channel: step_params[:ci_cd_channel].safe_json_parse)
       .except(:run_after_duration_unit, :run_after_duration_value)
   end
 
   def run_after_duration
     return 0.seconds if @first_step
 
-    ActiveSupport::Duration.parse(
-      Duration.new(step_params[:run_after_duration_unit].to_sym =>
-                     step_params[:run_after_duration_value].to_i).iso8601
-    )
+    step_params[:run_after_duration_value]
+      .to_i
+      .as_duration_with(unit: step_params[:run_after_duration_unit])
+  end
+
+  def integrations_are_ready?
+    unless @train.integrations_are_ready?
+      redirect_to train_path, alert: "Cannot create steps before integrations are complete."
+    end
+  end
+
+  def train_path
+    accounts_organization_app_releases_train_path(current_organization, @app, @train)
+  end
+
+  def step_path
+    accounts_organization_app_releases_train_step_path(current_organization, @app, @train, @step)
   end
 end

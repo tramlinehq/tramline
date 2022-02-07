@@ -3,9 +3,14 @@
 <head>
   <title>The Tramline HQ</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
-  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+
+  <link rel="stylesheet" href="https://unpkg.com/awsm.css/dist/awsm.min.css">
+  <link rel="stylesheet" href="https://ga.jspm.io/npm:flatpickr@4.6.9/dist/flatpickr.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slim-select/1.27.1/slimselect.min.css">
+
   <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   <%= javascript_importmap_tags %>
 </head>
@@ -13,30 +18,44 @@
 <body>
 
 <%= developer_commentary do %>
-  <p>
-    This is definitely not the final UI. We'll revamp the nav bar and the general IA completely in due time.
-    <p><br>- kit</p>
-  </p>
+  <p>This is definitely not the final UI. We'll revamp the nav bar and the general IA completely soon.</p>
+  <p>- kit</p>
 <% end %>
 
 <header>
-  <h1>The Tramline HQ</h1>
+  <h1><%= link_to "The Tramline HQ", root_path, class: "app-title" %></h1>
+  <sub>pre-α</sub>
   <nav>
-    <%= link_to "Home", root_path %>
-    <a href="#">Account</a>
-    <ul>
-      <%= button_to "Log out", destroy_user_session_path, method: :delete, "data-turbo": false %>
-      </li>
-    </ul>
-    </li>
+    <% if user_signed_in? %>
+      <%= link_to "Log out", destroy_user_session_path, "data-turbo": false %>
+
+      <% unless current_user.admin? %>
+        <span>•</span>
+        <%= link_to "Apps", accounts_organization_path(current_organization) %>
+      <% end %>
+    <% else %>
+      <%= link_to "Log in", user_session_path %>
+      <span>•</span>
+      <%= link_to "Sign up", new_user_registration_path %>
+    <% end %>
   </nav>
+
+  <%= yield :exceptions %>
 </header>
 
-<% flash.each do |_message_type, message| %>
-  <%= content_tag(:div, message) %>
-<% end %>
+<hr/>
 
-<%= yield %>
+<main>
+  <% flash.each do |name, msg| %>
+    <% unless name.start_with?("custom_errors") %>
+      <sub>
+        <%= content_tag :div, msg, :id => "flash_#{name}" if msg.is_a?(String) %>
+      </sub>
+    <% end %>
+  <% end %>
+
+  <%= yield %>
+</main>
 
 </body>
 </html>

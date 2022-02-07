@@ -2,7 +2,7 @@ module Automatons
   class Branch
     class DispatchFailure < StandardError; end
 
-    attr_reader :github_api, :step, :branch
+    attr_reader :step, :branch, :github_api
 
     def self.dispatch!(**args)
       new(**args).dispatch!

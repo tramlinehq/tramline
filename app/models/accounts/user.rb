@@ -31,7 +31,7 @@ class Accounts::User < ApplicationRecord
     memberships.first
   end
 
-  def create_with_membership
+  def onboard!
     return false unless valid?
     return false if membership.blank?
     return false if organization.blank?
@@ -39,11 +39,7 @@ class Accounts::User < ApplicationRecord
     membership&.role = Accounts::Membership.roles[:owner]
     organization.created_by = email
     organization.status = Accounts::Organization.statuses[:active]
-    save
-
-    self
-  rescue ActiveRecord::RecordInvalid => e
-    logger.error(e)
+    save!
     self
   end
 

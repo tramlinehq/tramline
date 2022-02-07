@@ -11,7 +11,7 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
 
   def create
     build_resource(sign_up_params)
-    user.create_with_membership
+    user.onboard!
 
     if user.persisted?
       if user.active_for_authentication?

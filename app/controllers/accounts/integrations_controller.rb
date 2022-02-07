@@ -1,5 +1,7 @@
-class Accounts::IntegrationsController < ApplicationController
-  before_action :set_app, only: %i[new connect show edit update index]
+class Accounts::IntegrationsController < SignedInApplicationController
+  using RefinedString
+
+  before_action :set_app, only: %i[new connect show edit update]
   before_action :set_integration, only: %i[edit show update]
 
   def new
@@ -11,13 +13,12 @@ class Accounts::IntegrationsController < ApplicationController
         combination[category] ||= []
 
         providers.each do |provider|
-          # skip google_play_store for now
-          next if provider == "google_play_store"
+          integration =
+            @app
+              .integrations
+              .new(category: Integration.categories[category], provider: Integration.providers[provider])
 
-          combination[category] << @app.integrations.new(
-            category: Integration.categories[category],
-            provider: Integration.providers[provider]
-          )
+          combination[category] << integration
         end
 
         combination
@@ -25,7 +26,7 @@ class Accounts::IntegrationsController < ApplicationController
   end
 
   def connect
-    @integration = @app.integrations.new(integration_connect_params)
+    @integration = @app.integrations.new(integration_params)
     @integration.decide
 
     redirect_to(@integration.install_path, allow_other_host: true)
@@ -33,10 +34,10 @@ class Accounts::IntegrationsController < ApplicationController
 
   def update
     respond_to do |format|
-      if @integration.update(integration_update_params)
+      if @integration.update(parsed_integration_params)
         format.html {
           redirect_to accounts_organization_app_integration_path(current_organization, @app, @integration),
-            notice: "Integration was successfully updated."
+                      notice: "Integration was successfully updated."
         }
         format.json { render :show, status: :ok, location: @integration }
       else
@@ -53,9 +54,6 @@ class Accounts::IntegrationsController < ApplicationController
     @channels = @integration.channels
   end
 
-  def index
-  end
-
   private
 
   def set_integration
@@ -66,31 +64,21 @@ class Accounts::IntegrationsController < ApplicationController
     @app = current_organization.apps.friendly.find(params[:app_id])
   end
 
-  def integration_connect_params
+  def integration_params
     params.require(:integration)
-      .permit(
-        :category,
-        :provider
-      ).merge(current_user:)
+          .permit(
+            :category,
+            :provider,
+            :active_code_repo,
+            :working_branch,
+            :notification_channel
+          ).merge(current_user:)
   end
 
-  def integration_update_params
-    updated_params =
-      params.require(:integration)
-        .permit(
-          :active_code_repo,
-          :working_branch,
-          :notification_channel
-        ).merge(status: Integration.statuses[:fully_connected])
-
-    if updated_params[:active_code_repo].present?
-      updated_params[:active_code_repo] = JSON.parse(updated_params[:active_code_repo])
-    end
-
-    if updated_params[:notification_channel].present?
-      updated_params[:notification_channel] = JSON.parse(updated_params[:notification_channel])
-    end
-
-    updated_params
+  def parsed_integration_params
+    integration_params
+      .merge(active_code_repo: integration_params[:active_code_repo]&.safe_json_parse)
+      .merge(notification_channel: integration_params[:notification_channel]&.safe_json_parse)
+      .merge(status: Integration.statuses[:fully_connected])
   end
 end

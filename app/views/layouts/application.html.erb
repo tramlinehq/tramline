@@ -6,30 +6,14 @@
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
   <link rel="stylesheet" href="https://unpkg.com/awsm.css/dist/awsm.min.css">
-  <link rel="stylesheet" href="https://ga.jspm.io/npm:flatpickr@4.6.9/dist/flatpickr.min.css">
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slim-select/1.27.1/slimselect.min.css">
-  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-  <%= javascript_importmap_tags %>
 </head>
 
 <body>
-
-<%= developer_commentary do %>
-  <p>This is definitely not the final UI. We'll revamp the nav bar and the general IA completely soon.</p>
-  <p>- kit</p>
-<% end %>
-
 <header>
   <h1><%= link_to "The Tramline HQ", root_path, class: "app-title" %></h1>
   <sub>pre-α</sub>
   <nav>
-    <% if user_signed_in? %>
-      <%= link_to "Log out", destroy_user_session_path, "data-turbo": false %>
-      <span>•</span>
-      <% unless current_user.admin? %>
-        <%= link_to "Apps", accounts_organization_path(current_organization) %>
-      <% end %>
-    <% else %>
+    <% unless user_signed_in? %>
       <%= link_to "Log in", user_session_path %>
       <span>•</span>
       <%= link_to "Sign up", new_user_registration_path %>

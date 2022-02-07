@@ -1,9 +1,6 @@
 module Automatons
   class Notify
-    attr_reader :integration, :slack_api, :message
-
-    delegate :oauth_access_token, to: :integration
-    delegate :notification_channel, to: :integration
+    attr_reader :message, :integration, :slack_api
 
     def self.dispatch!(**args)
       new(**args).dispatch!
@@ -18,6 +15,11 @@ module Automatons
     def dispatch!
       slack_api.message(notify_channel, message)
     end
+
+    private
+
+    delegate :oauth_access_token, to: :integration
+    delegate :notification_channel, to: :integration
 
     def notify_channel
       notification_channel.values.first

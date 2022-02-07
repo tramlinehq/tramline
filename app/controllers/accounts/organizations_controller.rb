@@ -1,4 +1,4 @@
-class Accounts::OrganizationsController < ApplicationController
+class Accounts::OrganizationsController < SignedInApplicationController
   def index
   end
 

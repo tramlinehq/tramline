@@ -1,6 +1,8 @@
 <% unless @app.integrations.exists? %>
-  <p>Go to the
-    <%= link_to "installations page", new_accounts_organization_app_integration_path(current_organization, @app) %>
+  <p>
+    Go to the
+    <%= link_to "installations page",
+                new_accounts_organization_app_integration_path(current_organization, @app) %>
     to create an integration for this app.
   </p>
 <% end %>
@@ -8,7 +10,8 @@
 <% if @app.integrations_are_ready? %>
   <% unless @app.trains.exists? %>
     <p>Go to the
-      <%= link_to "release train page", new_accounts_organization_app_releases_train_path(current_organization, @app) %>
+      <%= link_to "release train page",
+                  new_accounts_organization_app_releases_train_path(current_organization, @app) %>
       to create a new release train for this app.
     </p>
   <% end %>
@@ -20,8 +23,8 @@
 
 <% if @app.trains.exists? %>
   <h2><%= @app.name %></h2>
+
   <h3>Trains</h3>
-  <p>
   <table>
     <thead>
     <tr>
@@ -57,7 +60,6 @@
       </tbody>
     <% end %>
   </table>
-  </p>
 
   <p>
     <%= link_to "Create another release train",
@@ -69,7 +71,7 @@
 
 <% if @app.integrations.exists? %>
   <h3>Integrations</h3>
-  <p>
+  <br/>
   <table>
     <thead>
     <tr>
@@ -107,8 +109,10 @@
     <% end %>
     </tbody>
   </table>
+
+  <p>
+    <%= link_to "Add another integration", new_accounts_organization_app_integration_path(current_organization, @app) %>
   </p>
 
-  <%= link_to "Add another integration", new_accounts_organization_app_integration_path(current_organization, @app) %>
 <% end %>
 

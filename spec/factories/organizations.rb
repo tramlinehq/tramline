@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :organization do
-    status { "MyString" }
     name { "MyString" }
+    status { "MyString" }
   end
 end

@@ -10,7 +10,7 @@ class Integration < ApplicationRecord
       "version_control" => %w[github],
       "ci_cd" => %w[github_actions],
       "notification" => %w[slack],
-      "build_channel" => %w[slack google_play_store]
+      "build_channel" => %w[slack]
     }.freeze
   end
 

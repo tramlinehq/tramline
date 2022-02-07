@@ -2,7 +2,7 @@ module Automatons
   class Webhook
     include Rails.application.routes.url_helpers
 
-    attr_reader :github_api, :train
+    attr_reader :train, :github_api
 
     def self.dispatch!(**args)
       new(**args).dispatch!

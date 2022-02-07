@@ -2,7 +2,7 @@ module Automatons
   class Workflow
     class DispatchFailure < StandardError; end
 
-    attr_reader :github_api, :step, :ref
+    attr_reader :step, :ref, :github_api
 
     def self.dispatch!(**args)
       new(**args).dispatch!
