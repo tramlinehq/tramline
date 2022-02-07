@@ -2,13 +2,13 @@ module RefinedString
   refine String do
     def encode
       ActiveSupport::MessageEncryptor
-        .new(Rails.application.secrets.secret_key_base[0..31])
+        .new(Rails.application.secret_key_base[0..31])
         .encrypt_and_sign(self)
     end
 
     def decode
       ActiveSupport::MessageEncryptor
-        .new(Rails.application.secrets.secret_key_base[0..31])
+        .new(Rails.application.secret_key_base[0..31])
         .decrypt_and_verify(self)
     end
 
