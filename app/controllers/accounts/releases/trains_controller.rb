@@ -70,7 +70,7 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
 
   def validate_integration_status
     unless @app.integrations_are_ready?
-      redirect_to app_path, alert: "Cannot create trains before integrations are complete."
+      redirect_to app_path, alert: "Cannot create trains before notifiers are complete."
     end
   end
 

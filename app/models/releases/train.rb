@@ -1,4 +1,5 @@
 class Releases::Train < ApplicationRecord
+  using RefinedString
   extend FriendlyId
 
   belongs_to :app
@@ -15,6 +16,7 @@ class Releases::Train < ApplicationRecord
 
   attribute :repeat_duration, :interval
 
+  before_create :set_current_version!
   after_create :create_webhook!
   after_initialize :set_default_status
 
@@ -50,5 +52,15 @@ class Releases::Train < ApplicationRecord
 
   def release_branch_name
     name.downcase.tr(" ", "-")
+  end
+
+  def bump_version!
+    self.version_current = version_current.semver_bump(:minor)
+    save!
+    version_current
+  end
+
+  def set_current_version!
+    self.version_current = version_seeded_with
   end
 end

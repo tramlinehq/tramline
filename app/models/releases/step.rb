@@ -7,6 +7,8 @@ class Releases::Step < ApplicationRecord
   belongs_to :train, class_name: "Releases::Train", inverse_of: :steps
   has_many :runs, class_name: "Releases::Step::Run", inverse_of: :step, foreign_key: :train_step_id
 
+  delegate :app, to: :train
+
   enum status: {
     active: "active",
     inactive: "inactive"

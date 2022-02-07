@@ -23,5 +23,9 @@ module RefinedString
     rescue JSON::ParserError
       {}
     end
+
+    def semver_bump(element)
+      Semantic::Version.new(to_s).increment!(element).to_s
+    end
   end
 end

@@ -82,7 +82,7 @@ class Accounts::Releases::StepsController < SignedInApplicationController
 
   def integrations_are_ready?
     unless @train.integrations_are_ready?
-      redirect_to train_path, alert: "Cannot create steps before integrations are complete."
+      redirect_to train_path, alert: "Cannot create steps before notifiers are complete."
     end
   end
 

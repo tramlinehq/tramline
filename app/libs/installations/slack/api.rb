@@ -48,6 +48,19 @@ module Installations
         .post(PUBLISH_CHAT_MESSAGE_URL, json_params)
     end
 
+    def rich_message(channel, text, block)
+      json_params = {
+        json: {
+          channel: channel,
+          text: text
+        }.merge(block)
+      }
+
+      HTTP
+        .auth("Bearer #{oauth_access_token}")
+        .post(PUBLISH_CHAT_MESSAGE_URL, json_params)
+    end
+
     def list_channels
       params = {
         params: {

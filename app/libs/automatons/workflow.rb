@@ -15,7 +15,7 @@ module Automatons
     end
 
     def dispatch!
-      unless github_api.run_workflow!(code_repo, ci_cd_channel, ref)
+      unless github_api.run_workflow!(code_repo, ci_cd_channel, ref, inputs)
         raise DispatchFailure, "Failed to kickoff the workflow!"
       end
     end
@@ -23,6 +23,13 @@ module Automatons
     private
 
     delegate :installation_id, to: :ci_cd
+
+    def inputs
+      {
+        versionCode: step.app.bump_build_number!.to_s,
+        versionName: step.train.bump_version!.to_s
+      }
+    end
 
     def ci_cd_channel
       step

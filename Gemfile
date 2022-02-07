@@ -35,6 +35,9 @@ gem "sidekiq-scheduler", "~> 3.1"
 gem "http", "~> 5.0"
 gem "connection_pool", "~> 2.2"
 gem "haikunator", "~> 1.1"
+gem "aws-sdk-s3", "~> 1.112"
+gem "down", "~> 5.2"
+gem "semantic", "~> 1.6"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
@@ -58,6 +61,3 @@ group :test do
   gem "selenium-webdriver"
   gem "webdrivers"
 end
-gem "down", "~> 5.2"
-
-gem "aws-sdk-s3", "~> 1.112"

@@ -3,11 +3,12 @@ module Installations
     attr_reader :app_name, :installation_id, :jwt, :client
 
     WEBHOOK_NAME = "web"
+    WEBHOOK_EVENTS = ["workflow_run"]
 
     def initialize(installation_id)
-      @app_name = creds.integrations.github.app_name
+      @app_name = credentials.integrations.github.app_name
       @installation_id = installation_id
-      @jwt = Github::Jwt.new(creds.integrations.github.app_id)
+      @jwt = Github::Jwt.new(credentials.integrations.github.app_id)
 
       set_client
     end
@@ -30,9 +31,9 @@ module Installations
       end
     end
 
-    def run_workflow!(repo, id, ref)
+    def run_workflow!(repo, id, ref, inputs)
       execute do
-        @client.workflow_dispatch(repo, id, ref)
+        @client.workflow_dispatch(repo, id, ref, inputs: inputs)
       end
     end
 

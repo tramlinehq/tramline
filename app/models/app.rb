@@ -20,5 +20,6 @@ class App < ApplicationRecord
   def bump_build_number!
     self.build_number = build_number + 1
     save!
+    build_number.to_s
   end
 end
