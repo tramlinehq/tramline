@@ -6,6 +6,7 @@
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
   <link rel="stylesheet" href="https://unpkg.com/awsm.css/dist/awsm.min.css">
+  <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
 </head>
 
 <body>
@@ -33,8 +34,12 @@
       </sub>
     <% end %>
   <% end %>
-
-  <%= yield %>
+  <main class="container mx-auto mt-28 px-5 flex">
+    <main class="container mx-auto mt-28 px-5 flex">
+  
+    <%= yield %>
+    </main>
+  </main>
 </main>
 
 </body>

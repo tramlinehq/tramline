@@ -3,15 +3,10 @@
 <head>
   <title>The Tramline HQ</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
-
-  <link rel="stylesheet" href="https://unpkg.com/awsm.css/dist/awsm.min.css">
-  <link rel="stylesheet" href="https://ga.jspm.io/npm:flatpickr@4.6.9/dist/flatpickr.min.css">
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slim-select/1.27.1/slimselect.min.css">
-
-  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
   <%= javascript_importmap_tags %>
 </head>
 
@@ -22,40 +17,42 @@
   <p>- kit</p>
 <% end %>
 
-<header>
-  <h1><%= link_to "The Tramline HQ", root_path, class: "app-title" %></h1>
-  <sub>pre-α</sub>
-  <nav>
-    <% if user_signed_in? %>
-      <%= link_to "Log out", destroy_user_session_path, "data-turbo": false %>
+<%# if user_signed_in? %>
+<%#= link_to "Log out", destroy_user_session_path, "data-turbo": false %>
 
-      <% unless current_user.admin? %>
-        <span>•</span>
-        <%= link_to "Apps", accounts_organization_path(current_organization) %>
-      <% end %>
-    <% else %>
-      <%= link_to "Log in", user_session_path %>
-      <span>•</span>
-      <%= link_to "Sign up", new_user_registration_path %>
-    <% end %>
-  </nav>
+<%# unless current_user.admin? %>
+<!--    <span>•</span>-->
+<%#= link_to "Apps", accounts_organization_path(current_organization) %>
+<%# end %>
+<%# else %>
+<%#= link_to "Log in", user_session_path %>
+<!--  <span>•</span>-->
+<%#= link_to "Sign up", new_user_registration_path %>
+<%# end %>
+<!--</nav>-->
 
-  <%= yield :exceptions %>
-</header>
+<%#= yield :exceptions %>
 
-<hr/>
+<div class="flex h-screen overflow-hidden">
+  <%= render partial: 'shared/sidebar' %>
+  <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+    <%= render partial: 'shared/header' %>
 
-<main>
-  <% flash.each do |name, msg| %>
-    <% unless name.start_with?("custom_errors") %>
-      <sub>
-        <%= content_tag :div, msg, :id => "flash_#{name}" if msg.is_a?(String) %>
-      </sub>
-    <% end %>
-  <% end %>
+    <main>
+      <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+        <% flash.each do |name, msg| %>
+          <% unless name.start_with?("custom_errors") %>
+            <sub>
+              <%= content_tag :div, msg, :id => "flash_#{name}" if msg.is_a?(String) %>
+            </sub>
+          <% end %>
+        <% end %>
 
-  <%= yield %>
-</main>
+        <%= yield %>
+      </div>
+    </main>
+  </div>
+</div>
 
 </body>
 </html>

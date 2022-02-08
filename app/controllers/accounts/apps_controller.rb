@@ -1,5 +1,5 @@
 class Accounts::AppsController < SignedInApplicationController
-  before_action :set_app, only: %i[show index edit update]
+  before_action :set_app, only: %i[show edit update]
   before_action :set_integrations, only: %i[show]
   around_action :set_time_zone
 
@@ -26,6 +26,7 @@ class Accounts::AppsController < SignedInApplicationController
   end
 
   def index
+    @apps = current_organization.apps
   end
 
   private

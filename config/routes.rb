@@ -21,7 +21,7 @@ Rails.application.routes.draw do
     end
 
     authenticated :user do
-      root "accounts/organizations#show", as: :authenticated_root
+      root "accounts/apps#index", as: :authenticated_root
     end
   end
 

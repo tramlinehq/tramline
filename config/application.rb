@@ -31,5 +31,6 @@ module Site
     end
 
     config.active_job.queue_adapter = :sidekiq
+    config.assets.css_compressor = nil
   end
 end

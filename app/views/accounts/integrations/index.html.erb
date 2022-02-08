@@ -1,0 +1,43 @@
+<h3>Integrations</h3>
+<br/>
+<table>
+  <thead>
+  <tr>
+    <th>Category</th>
+    <th>Provider</th>
+    <th>Connected</th>
+    <th>Actions</th>
+  </tr>
+  </thead>
+  <tbody>
+
+  <% @integrations.each do |integration| %>
+    <tr>
+      <td><%= integration.category.titleize %></td>
+      <td><%= integration.provider&.titleize %></td>
+      <td>
+        <% unless integration.fully_connected? %>
+          ❌
+        <% else %>
+          ✅
+        <% end %>
+      </td>
+      <td>
+        <% if integration.fully_connected? %>
+          <%= link_to "Show",
+                      accounts_organization_app_integration_path(current_organization, @app, integration) %>
+        <% elsif integration.partially_connected? %>
+          <%= link_to "Complete Integration",
+                      edit_accounts_organization_app_integration_path(current_organization, @app, integration) %>
+        <% else %>
+          Disconnected
+        <% end %>
+      </td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>
+
+<p>
+  <%= link_to "Add another integration", new_accounts_organization_app_integration_path(current_organization, @app) %>
+</p>

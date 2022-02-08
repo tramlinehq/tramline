@@ -12,11 +12,9 @@ gem "turbo-rails", "~> 1.0"
 gem "stimulus-rails", "~> 1.0"
 gem "jbuilder", "~> 2.11"
 gem "redis", "~> 4.0"
-gem "kredis", "~> 1.0"
 gem "bcrypt", "~> 3.1.7"
 gem "tzinfo-data", "~> 1.2021", platforms: %i[mingw mswin x64_mingw jruby]
 gem "bootsnap", "~> 1.10"
-gem "sassc-rails", "~> 2.1"
 gem "devise", "~> 4.8"
 gem "strong_password", "~> 0.0.10"
 gem "friendly_id", "~> 5.4"
@@ -35,9 +33,9 @@ gem "sidekiq-scheduler", "~> 3.1"
 gem "http", "~> 5.0"
 gem "connection_pool", "~> 2.2"
 gem "haikunator", "~> 1.1"
-gem "aws-sdk-s3", "~> 1.112"
-gem "down", "~> 5.2"
 gem "semantic", "~> 1.6"
+gem "sassc-rails", "~> 2.1"
+gem "tailwindcss-rails", "~> 2.0"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

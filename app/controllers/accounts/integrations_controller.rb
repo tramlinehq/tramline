@@ -1,7 +1,7 @@
 class Accounts::IntegrationsController < SignedInApplicationController
   using RefinedString
 
-  before_action :set_app, only: %i[new connect show edit update]
+  before_action :set_app, only: %i[new connect show edit update index]
   before_action :set_integration, only: %i[edit show update]
 
   def new
@@ -52,6 +52,10 @@ class Accounts::IntegrationsController < SignedInApplicationController
 
   def edit
     @channels = @integration.channels
+  end
+
+  def index
+    @app.integrations
   end
 
   private

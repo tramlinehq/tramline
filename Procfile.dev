@@ -1,2 +1,3 @@
-web: bin/rails server -p 3000
+web: bin/rails server -p 3000 -b 'ssl://localhost:3000?key=config/certs/localhost-key.pem&cert=config/certs/localhost.pem'
 worker: dotenv -f ".env.development" bundle exec sidekiq -v
+css: bin/rails tailwindcss:watch

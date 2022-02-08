@@ -72,22 +72,6 @@ GEM
     auto_strip_attributes (2.6.0)
       activerecord (>= 4.0)
     awesome_print (1.9.2)
-    aws-eventstream (1.2.0)
-    aws-partitions (1.553.0)
-    aws-sdk-core (3.126.0)
-      aws-eventstream (~> 1, >= 1.0.2)
-      aws-partitions (~> 1, >= 1.525.0)
-      aws-sigv4 (~> 1.1)
-      jmespath (~> 1.0)
-    aws-sdk-kms (1.54.0)
-      aws-sdk-core (~> 3, >= 3.126.0)
-      aws-sigv4 (~> 1.1)
-    aws-sdk-s3 (1.112.0)
-      aws-sdk-core (~> 3, >= 3.126.0)
-      aws-sdk-kms (~> 1)
-      aws-sigv4 (~> 1.4)
-    aws-sigv4 (1.4.0)
-      aws-eventstream (~> 1, >= 1.0.2)
     bcrypt (3.1.16)
     bindex (0.8.1)
     bootsnap (1.10.2)
@@ -124,8 +108,6 @@ GEM
     dotenv-rails (2.7.6)
       dotenv (= 2.7.6)
       railties (>= 3.2)
-    down (5.2.4)
-      addressable (~> 2.8)
     e2mmap (0.1.0)
     erubi (1.10.0)
     et-orbi (1.2.6)
@@ -203,12 +185,8 @@ GEM
     jbuilder (2.11.5)
       actionview (>= 5.0.0)
       activesupport (>= 5.0.0)
-    jmespath (1.5.0)
     json (2.6.1)
     jwt (2.3.0)
-    kredis (1.0.1)
-      activesupport (>= 6.0.0)
-      redis (~> 4.2)
     launchy (2.5.0)
       addressable (~> 2.7)
     letter_opener (1.7.0)
@@ -403,6 +381,10 @@ GEM
       railties (>= 6.0.0)
     strong_password (0.0.10)
     strscan (3.0.1)
+    tailwindcss-rails (2.0.5-arm64-darwin)
+      railties (>= 6.0.0)
+    tailwindcss-rails (2.0.5-x86_64-linux)
+      railties (>= 6.0.0)
     thor (1.2.1)
     thwait (0.2.0)
       e2mmap
@@ -442,7 +424,6 @@ PLATFORMS
 DEPENDENCIES
   auto_strip_attributes (~> 2.6)
   awesome_print
-  aws-sdk-s3 (~> 1.112)
   bcrypt (~> 3.1.7)
   bootsnap (~> 1.10)
   capybara
@@ -450,7 +431,6 @@ DEPENDENCIES
   debug
   devise (~> 4.8)
   dotenv-rails (~> 2.7)
-  down (~> 5.2)
   factory_bot_rails
   faker
   flipper (~> 0.23.0)
@@ -462,7 +442,6 @@ DEPENDENCIES
   importmap-rails (~> 1.0)
   jbuilder (~> 2.11)
   jwt (~> 2.3)
-  kredis (~> 1.0)
   letter_opener
   letter_opener_web
   octokit (~> 4.22)
@@ -485,6 +464,7 @@ DEPENDENCIES
   standard
   stimulus-rails (~> 1.0)
   strong_password (~> 0.0.10)
+  tailwindcss-rails (~> 2.0)
   turbo-rails (~> 1.0)
   tzinfo-data (~> 1.2021)
   web-console
