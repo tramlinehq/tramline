@@ -1,33 +1,48 @@
 <% if @integration.fully_connected? %>
   <% if @integration.version_control? || @integration.ci_cd? %>
-    <table>
-      <thead>
+    <table class="table-auto w-full">
+      <!-- Table header -->
+      <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
       <tr>
-        <th>Active Repo</th>
-        <th>Working Branch</th>
+        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          Active Code Repo
+        </th>
+        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          Working Branch
+        </th>
       </tr>
       </thead>
-      <tbody>
+      <tbody class="text-sm divide-y divide-slate-200">
       <tr>
-        <td><%= @integration.active_code_repo %></td>
-        <% if @integration.ci_cd? %>
-          <td>Release branches will be auto-generated and the CI/CD will run against that.</td>
-        <% else %>
-          <td><%= @integration.working_branch %></td>
-        <% end %>
+        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <%= @integration.active_code_repo %>
+        </td>
+
+        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <% if @integration.ci_cd? %>
+            Release branches will be auto-generated and the CI/CD will run against that.
+          <% else %>
+            <%= @integration.working_branch %>
+          <% end %>
+        </td>
       </tr>
       </tbody>
     </table>
   <% elsif @integration.notification? %>
-    <table>
-      <thead>
+    <table class="table-auto w-full">
+      <!-- Table header -->
+      <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
       <tr>
-        <th>Channel</th>
+        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          Channel
+        </th>
       </tr>
       </thead>
-      <tbody>
+      <tbody class="text-sm divide-y divide-slate-200">
       <tr>
-        <td><%= @integration.notification_channel %></td>
+        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <%= @integration.notification_channel %>
+        </td>
       </tr>
       </tbody>
     </table>
