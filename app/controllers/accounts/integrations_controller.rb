@@ -55,7 +55,7 @@ class Accounts::IntegrationsController < SignedInApplicationController
   end
 
   def index
-    @app.integrations
+    @integrations = @app.integrations
   end
 
   private

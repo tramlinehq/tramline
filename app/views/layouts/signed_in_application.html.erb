@@ -6,6 +6,7 @@
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slim-select/1.27.1/slimselect.min.css">
+  <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/airbnb.css">
   <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
   <%= javascript_importmap_tags %>
 </head>
@@ -17,20 +18,6 @@
   <p>- kit</p>
 <% end %>
 
-<%# if user_signed_in? %>
-<%#= link_to "Log out", destroy_user_session_path, "data-turbo": false %>
-
-<%# unless current_user.admin? %>
-<!--    <span>•</span>-->
-<%#= link_to "Apps", accounts_organization_path(current_organization) %>
-<%# end %>
-<%# else %>
-<%#= link_to "Log in", user_session_path %>
-<!--  <span>•</span>-->
-<%#= link_to "Sign up", new_user_registration_path %>
-<%# end %>
-<!--</nav>-->
-
 <%#= yield :exceptions %>
 
 <div class="flex h-screen overflow-hidden">
@@ -40,14 +27,7 @@
 
     <main>
       <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-        <% flash.each do |name, msg| %>
-          <% unless name.start_with?("custom_errors") %>
-            <sub>
-              <%= content_tag :div, msg, :id => "flash_#{name}" if msg.is_a?(String) %>
-            </sub>
-          <% end %>
-        <% end %>
-
+        <%= render partial: 'shared/flash' %>
         <%= yield %>
       </div>
     </main>

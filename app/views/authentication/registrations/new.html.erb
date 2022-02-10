@@ -9,48 +9,64 @@
   <p>- kit</p>
 <% end %>
 
-<%= form_for(resource, as: resource_name, html: { 'data-turbo' => "false" }, url: registration_path(resource_name)) do |f| %>
-  <%= render "devise/shared/error_messages", resource: user %>
+<div class="max-w-sm mx-auto px-4 py-8">
+  <h1 class="text-3xl text-slate-800 font-bold mb-6">Create your account ✨</h1>
+  <!-- Form -->
+  <%= form_for(resource, as: resource_name, html: { 'data-turbo' => "false" }, url: registration_path(resource_name)) do |f| %>
 
-  <fieldset class="block">
-    <legend>Sign up</legend>
+    <%= render partial: 'shared/errors' %>
 
-    <div class="field">
-      <%= f.label :full_name %>
-      <%= f.text_field :full_name, autofocus: true, autocomplete: "full-name" %>
+    <div class="space-y-4">
+      <div>
+        <%= f.label :full_name, class: "block text-sm font-medium mb-1" %>
+        <%= f.text_field :full_name, autofocus: true, autocomplete: "full-name", class: "form-input w-full" %>
+      </div>
+
+      <div>
+        <%= f.label :preferred_name, class: "block text-sm font-medium mb-1" %>
+        <%= f.text_field :preferred_name, autofocus: true, autocomplete: "preferred-name", placeholder: "What should we call you?", class: "form-input w-full" %>
+      </div>
+
+      <div>
+        <%= f.label :email, class: "block text-sm font-medium mb-1" %>
+        <%= f.email_field :email, autocomplete: "current-password", class: "form-input w-full" %>
+      </div>
+
+      <div>
+        <%= f.fields_for :organizations, @organization do |m| %>
+          <%= m.label :name, "Organization Name", class: "block text-sm font-medium mb-1" %>
+          <%= m.text_field :name, autofocus: true, autocomplete: "organization-name", class: "form-input w-full" %>
+        <% end %>
+      </div>
+
+      <div class="field">
+        <%= f.label :password, class: "block text-sm font-medium mb-1" %>
+        <%= f.password_field :password, autocomplete: "new-password", placeholder: "Minimum #{@minimum_password_length} characters", class: "form-input w-full" %>
+      </div>
+
+      <div class="field">
+        <%= f.label :password_confirmation, class: "block text-sm font-medium mb-1" %>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-input w-full" %>
+      </div>
+
+      <div class="flex items-center justify-between mt-6">
+        <div class="mr-1">
+          <%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
+            <%= link_to "Forgot your password?", new_password_path(resource_name), class: "text-sm underline hover:no-underline" %>
+          <% end %>
+        </div>
+        <%= f.submit "Sign up", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white ml-3" %>
+      </div>
     </div>
+  <% end %>
 
-    <div class="field">
-      <%= f.label :preferred_name %>
-      <%= f.text_field :preferred_name, autofocus: true, autocomplete: "preferred-name", placeholder: "What should we call you?" %>
+  <!-- Footer -->
+  <div class="pt-5 mt-6 border-t border-slate-200">
+    <div class="text-sm">
+      Have an account?
+      <%= link_to "Sign In", user_session_path, class: "font-medium text-indigo-500 hover:text-indigo-600" %>
     </div>
+  </div>
+</div>
 
-    <div class="field">
-      <%= f.fields_for :organizations, @organization do |m| %>
-        <%= m.label :name, "Organization Name" %>
-        <%= m.text_field :name, autofocus: true, autocomplete: "organization-name" %>
-      <% end %>
-    </div>
-
-    <div class="field">
-      <%= f.label :email %>
-      <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
-    </div>
-
-    <div class="field">
-      <%= f.label :password %>
-      <%= f.password_field :password, autocomplete: "new-password", placeholder: "Minimum #{@minimum_password_length} characters" %>
-    </div>
-
-    <div class="field">
-      <%= f.label :password_confirmation %>
-      <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
-    </div>
-
-    <div class="actions">
-      <%= f.submit "Sign up" %>
-    </div>
-  </fieldset>
-<% end %>
-
-<p><%= render "devise/shared/links" %></p>
+<!--<p><%#= render "devise/shared/links" %></p>-->

@@ -14,6 +14,13 @@ class Integration < ApplicationRecord
     }.freeze
   end
 
+  LIST_DESCRIPTIONS = {
+    "version_control": "Automatically create release branches, tags, and more.",
+    "ci_cd": "Keep up to date with the status of the latest release builds as they're made available.",
+    "notification": "Send release activity notifications at the right time, to the right people.",
+    "build_channel": "Quickly see where your release stands in the app store."
+  }
+
   enum category: LIST.keys.zip(LIST.keys).to_h
   enum provider: LIST.values.flatten.zip(LIST.values.flatten).to_h
   enum status: {
@@ -39,6 +46,10 @@ class Integration < ApplicationRecord
 
   def self.ready?
     where(category: MINIMAL_REQUIRED_SET, status: :fully_connected).size == MINIMAL_REQUIRED_SET.size
+  end
+
+  def self.completable?
+    where(category: MINIMAL_REQUIRED_SET, status: :partially_connected).size == MINIMAL_REQUIRED_SET.size
   end
 
   def connect?

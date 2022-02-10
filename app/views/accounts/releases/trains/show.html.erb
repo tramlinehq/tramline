@@ -1,117 +1,163 @@
-<h3><%= @train.name %></h3>
-<p>
-<table>
-  <thead>
-  <tr>
-    <th>Description</th>
-    <th>Version from</th>
-    <th>Version Suffix</th>
-    <th>Started</th>
-    <th>Repeats</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr>
-    <td>
-      <%= @train.description %></td>
-    <td>
-      <%= @train.version_seeded_with %></td>
-    <td>
-      <%= @train.version_suffix %></td>
-    <td>
-      <%= @train.kickoff_at.strftime("%b %e, %l:%M %p") %></td>
-    <td>
-      <%= ActiveSupport::Duration.parse(Duration.new(@train.repeat_duration).iso8601).inspect %>
-    </td>
-  </tr>
-  </tbody>
-</table>
-</p>
+<div class="mb-8">
+  <h1 class="text-2xl md:text-3xl text-slate-800 font-bold"><%= @train.name %> ✨</h1>
+</div>
 
-<% if @train.steps.size > 0 %>
-  <h4>Steps</h4>
-  <p>
-  <table>
-    <thead>
-    <tr>
-      <th>#</th>
-      <th>Name</th>
-      <th>Description</th>
-      <th>Build Channel</th>
-      <th>CI/CD Channel</th>
-      <th>Run after previous step</th>
-    </tr>
-    </thead>
-    <tbody>
-    <% @train.steps.order(:step_number).each do |step| %>
+<div class="border-t border-slate-200">
+  <div class="space-y-8 mt-8">
+    <h2 class="text-2xl text-slate-800 font-bold mb-6">Train deets</h2>
+    <table class="table-auto w-full">
+      <!-- Table header -->
+      <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
       <tr>
-        <td>
-          <%= step.step_number %>
-        </td>
-        <td>
-          <%= step.name %></td>
-        <td>
-          <%= step.description %></td>
-        <td>
-          <%= step.build_artifact_channel %></td>
-        <td>
-          <%= step.ci_cd_channel %></td>
-        </td>
-        <td>
-          <%= ActiveSupport::Duration.parse(Duration.new(step.run_after_duration).iso8601).inspect %>
-        </td>
+        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <div class="font-semibold text-left">Description</div>
+        </th>
+        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <div class="font-semibold text-left">Version originally started from</div>
+        </th>
+        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <div class="font-semibold text-left">Version Suffix</div>
+        </th>
+        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <div class="font-semibold text-left">Original Kickoff Date</div>
+        </th>
+        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <div class="font-semibold text-left">Repeats every</div>
+        </th>
       </tr>
+      </thead>
+      <!-- Table body -->
+      <tbody class="text-sm divide-y divide-slate-200">
+      <!-- Row -->
+      <% @app.trains.each do |train| %>
+        <tr>
+          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="text-left"><%= train.description %></div>
+          </td>
+          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="text-left"><%= train.version_seeded_with %></div>
+          </td>
+          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="text-left">-<%= train.version_suffix %></div>
+          </td>
+          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="text-left"><%= train.kickoff_at.strftime("%b %e, %l:%M %p") %></div>
+          </td>
+          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="text-left"><%= ActiveSupport::Duration.parse(Duration.new(train.repeat_duration).iso8601).inspect %></div>
+          </td>
+        </tr>
+      <% end %>
+      </tbody>
+    </table>
+    <ul class="-my-2">
+      <!-- List item -->
+      <% @train.runs.order(:was_run_at).each_with_index do |run, idx| %>
+        <li class="relative py-2">
+          <div class="flex items-center mb-1">
+            <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
+            <div class="absolute left-0 rounded-full bg-indigo-500" aria-hidden="true">
+              <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
+                <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 pl-9">Release #<%= idx + 1 %></h3>
+          </div>
+          <div class="pl-9"><%= run.code_name %></div>
+        </li>
+      <% end %>
+      <!-- List item -->
+      <li class="relative py-2">
+        <div class="flex items-center mb-1">
+          <div class="absolute left-0 rounded-full bg-white" aria-hidden="true">
+            <svg class="w-5 h-5 fill-current text-slate-400" viewBox="0 0 20 20">
+              <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm0 2C4.477 20 0 15.523 0 10S4.477 0 10 0s10 4.477 10 10-4.477 10-10 10z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800 pl-9">Upcoming release</h3>
+        </div>
+        <div class="pl-9">On <%= @train.next_run_at.strftime("%b %e, %l:%M %p") %></div>
+      </li>
+    </ul>
+    <% if @train.steps.size > 0 %>
+      <h2 class="text-2xl text-slate-800 font-bold mb-6">Steps</h2>
+      <p>
+      <table class="table-auto w-full">
+        <!-- Table header -->
+        <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+        <tr>
+          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="font-semibold text-left">#</div>
+          </th>
+          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="font-semibold text-left">Name</div>
+          </th>
+          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="font-semibold text-left">Description</div>
+          </th>
+          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="font-semibold text-left">Build Channel</div>
+          </th>
+          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="font-semibold text-left">CI/CD Workflow</div>
+          </th>
+          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="font-semibold text-left">Repeats every</div>
+          </th>
+        </tr>
+        </thead>
+        <!-- Table body -->
+        <tbody class="text-sm divide-y divide-slate-200">
+        <!-- Row -->
+        <% @train.steps.order(:step_number).each do |step| %>
+          <tr>
+            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+              <div class="text-left"><%= step.step_number %></div>
+            </td>
+            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+              <div class="text-left"><%= step.name %></div>
+            </td>
+            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+              <div class="text-left"><%= step.description %></div>
+            </td>
+            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+              <div class="text-left"><%= step.build_artifact_channel %></div>
+            </td>
+            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+              <div class="text-left"><%= step.ci_cd_channel %></div>
+            </td>
+            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+              <div class="text-left"><%= ActiveSupport::Duration.parse(Duration.new(step.run_after_duration).iso8601).inspect %></div>
+            </td>
+          </tr>
+        <% end %>
+        </tbody>
+      </table>
+      <div class="m-1.5">
+        <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white">
+          <%= link_to "Add another step",
+                      new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>
+        </button>
+      </div>
+    <% else %>
+      <% if @train.integrations_are_ready? %>
+        <div class="m-1.5">
+          <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white">
+            <%= link_to "Add a step",
+                        new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>
+          </button>
+        </div>
+      <% else %>
+        <p>
+          Complete your
+          <%= link_to "notifiers",
+                      accounts_organization_app_path(current_organization, @app) %>
+          before adding a new step.
+        </p>
+      <% end %>
     <% end %>
-    </tbody>
-  </table>
-  </p>
+  </div>
+</div>
 
-  <p>
-    <%= link_to "Add another step",
-                new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>
-  </p>
-<% else %>
-  <% if @train.integrations_are_ready? %>
-    <p>
-      <%= link_to "Add a step",
-                  new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>
-    </p>
-  <% else %>
-    <p>
-      Complete your
-      <%= link_to "notifiers",
-                  accounts_organization_app_path(current_organization, @app) %>
-      before adding a new step.
-    </p>
-  <% end %>
-<% end %>
 
-<h4>Runs</h4>
-<p>
-<table>
-  <thead>
-  <tr>
-    <th>#</th>
-    <th>Code-name</th>
-  </tr>
-  </thead>
-  <tbody>
-  <% @train.runs.order(:was_run_at).each_with_index do |run, idx| %>
-    <tr>
-      <td>
-        <%= idx %>
-      </td>
-      <td>
-        <%= run.code_name %></td>
-      </td>
-    </tr>
-  <% end %>
-  </tbody>
-</table>
-
-<p>
-  Next release on <%= @train.next_run_at.strftime("%b %e, %l:%M %p") %>
-</p>
-
-</p>
 

@@ -2,58 +2,59 @@
       model: [current_organization, app, train, step],
       url: accounts_organization_app_releases_train_steps_path(current_organization, app, train, step)
     ) do |form| %>
-  <fieldset class="block">
-    <legend><%= legend %></legend>
-    <div class="field">
-      <%= form.label :name, class: "label" %>
-      <div class="control">
-        <%= form.text_field :name, class: "input", required: true %>
-      </div>
-    </div>
+  <div class="mb-8">
+    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">Create a new step ✨</h1>
+  </div>
 
-    <div class="field">
-      <%= form.label :description, class: "label" %>
-      <div class="control">
-        <%= form.text_area :description, class: "input", required: true %>
-      </div>
+  <div class="grid gap-5 md:grid-cols-2">
+    <div>
+      <%= form.label :name, class: "block text-sm font-medium mb-1" %>
+      <%= form.text_field :name, class: "form-input w-full", placeholder: "Enter step name..", required: true %>
     </div>
 
     <% unless @first_step %>
-      <div class="field">
-        <%= form.label "Run after last step", class: "label" %>
-        <div class="control">
-          <%= form.number_field :run_after_duration_value, step: 1, min: 1, default: 1, required: true, class: "input" %>
-          <%= form.select :run_after_duration_unit,
-                          options_for_select([%w[Minutes(s) minutes], %w[Hour(s) hours], %w[Day(s) days], %w[Week(s) weeks]], "hours"), required: true %>
-        </div>
+      <div>
+        <%= form.label "Run after last step", class: "block text-sm font-medium mb-1" %>
+        <%= form.number_field :run_after_duration_value, step: 1, min: 1, default: 1, required: true, class: "form-input w-full mb-1" %>
+        <%= form.select :run_after_duration_unit,
+                        options_for_select([%w[Minutes(s) minutes], %w[Hour(s) hours], %w[Day(s) days], %w[Week(s) weeks]], "hours"),
+                        { required: true },
+                        { class: "form-input w-full mb-1" } %>
       </div>
     <% end %>
 
 
-    <div class="field">
-      <%= form.label :build_artifact_channel, class: "label" %>
-      <div class="control">
-        <%= form.select :build_artifact_channel,
-                        options_for_select(@build_channels.map { |chan| ["#" + chan["name"], { chan["id"] => chan["name"] }.to_json] }),
-                        {},
-                        data: { controller: "input-select" } %>
-      </div>
+    <div>
+      <%= form.label :build_artifact_channel, class: "block text-sm font-medium mb-1" %>
+      <%= form.select :build_artifact_channel,
+                      options_for_select(@build_channels.map { |chan| ["#" + chan["name"], { chan["id"] => chan["name"] }.to_json] }),
+                      { class: "form-select" },
+                      data: { controller: "input-select" } %>
     </div>
 
-    <div class="field">
-      <%= form.label :ci_cd_channel, "CI/CD channel", class: "label" %>
+    <div>
+      <%= form.label :ci_cd_channel, "CI/CD channel", class: "block text-sm font-medium mb-1" %>
       <div class="control">
         <%= form.select :ci_cd_channel,
                         options_for_select(@ci_actions.map { |action| [action[:name], { action[:id] => action[:name] }.to_json] }),
-                        {},
+                        { class: "form-select" },
                         data: { controller: "input-select" } %>
       </div>
     </div>
 
-    <div class="field is-grouped">
-      <div class="control">
-        <%= form.button 'Submit', class: "button is-link", "data-turbo": false %>
-      </div>
+
+    <div>
+      <%= form.label :description, class: "block text-sm font-medium mb-1" %>
+      <%= form.text_area :description, class: "form-input w-full mb-1", required: true, placeholder: "Describe your step..." %>
     </div>
-  </fieldset>
+  </div>
+
+
+  <div class="mt-5">
+    <%= form.submit 'Create', class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" do %>
+      <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
+        <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
+      </svg>
+    <% end %>
+  </div>
 <% end %>

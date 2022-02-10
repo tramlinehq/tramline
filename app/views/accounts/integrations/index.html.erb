@@ -1,43 +1,62 @@
-<h3>Integrations</h3>
-<br/>
-<table>
-  <thead>
-  <tr>
-    <th>Category</th>
-    <th>Provider</th>
-    <th>Connected</th>
-    <th>Actions</th>
-  </tr>
-  </thead>
-  <tbody>
+<div class="mb-8">
+  <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">Integrations ✨</h1>
+</div>
 
-  <% @integrations.each do |integration| %>
-    <tr>
-      <td><%= integration.category.titleize %></td>
-      <td><%= integration.provider&.titleize %></td>
-      <td>
-        <% unless integration.fully_connected? %>
-          ❌
-        <% else %>
-          ✅
-        <% end %>
-      </td>
-      <td>
-        <% if integration.fully_connected? %>
-          <%= link_to "Show",
-                      accounts_organization_app_integration_path(current_organization, @app, integration) %>
-        <% elsif integration.partially_connected? %>
-          <%= link_to "Complete Integration",
-                      edit_accounts_organization_app_integration_path(current_organization, @app, integration) %>
-        <% else %>
-          Disconnected
-        <% end %>
-      </td>
-    </tr>
-  <% end %>
-  </tbody>
-</table>
+<section class="pb-6">
+  <div class="grid grid-cols-1 gap-6">
+    <!-- Card 1 -->
+    <% @integrations.each do |integration| %>
+      <% provider = integration.provider %>
+      <% category = integration.category %>
 
-<p>
-  <%= link_to "Add another integration", new_accounts_organization_app_integration_path(current_organization, @app) %>
-</p>
+      <h3 class="text-xl leading-snug text-slate-800 font-bold mt-6">
+        <%= category.titleize %>
+      </h3>
+
+      <div class="text-sm"><%= Integration::LIST_DESCRIPTIONS[category.to_sym] %></div>
+
+      <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-full xl:col-span-3 2xl:col-span-4 bg-white shadow-md rounded-sm border border-slate-200">
+          <!-- Card content -->
+          <div class="flex flex-col h-full p-5">
+            <div class="grow">
+              <header class="flex items-center mb-4">
+                <div class="w-30 h-30 shrink-0 mr-3">
+                  <%= image_tag("#{provider}_thumb.png", width: 30) %>
+                </div>
+                <h3 class="text-lg text-slate-800 font-semibold">
+                  <%= provider.titleize %>
+                </h3>
+              </header>
+            </div>
+            <!-- Card footer -->
+            <footer class="mt-1">
+              <div class="flex flex-wrap justify-between items-center">
+                <!-- Left side -->
+                <div class="flex space-x-3">
+                  <div class="flex items-center text-slate-400">
+                    <div class="text-sm text-slate-500">
+                      <button class="btn-sm border-slate-200 hover:border-slate-300 shadow-sm flex items-center">
+                        <% if integration.fully_connected? %>
+                          <svg class="w-3 h-3 shrink-0 fill-current text-green-500 mr-2" viewBox="0 0 12 12">
+                            <path d="M10.28 1.28L3.989 7.575 1.695 5.28A1 1 0 00.28 6.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 1.28z"/>
+                          </svg>
+                          <span>Connected</span>
+                        <% elsif integration.partially_connected? %>
+                          <%= link_to "Complete Integration",
+                                      edit_accounts_organization_app_integration_path(current_organization, @app, integration) %>
+                        <% else %>
+                          <span>Disconnected</span>
+                        <% end %>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </footer>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</section>

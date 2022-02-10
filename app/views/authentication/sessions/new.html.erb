@@ -1,30 +1,50 @@
-<%= form_for(resource, as: resource_name, html: { 'data-turbo' => "false" }, url: session_path(resource_name)) do |f| %>
-  <fieldset class="block">
-    <legend>Log in</legend>
+<div class="max-w-sm mx-auto px-4 py-8">
+  <h1 class="text-3xl text-slate-800 font-bold mb-6">Welcome back! ✨</h1>
+  <%= render partial: 'shared/flash' %>
 
-    <div class="field">
-      <%= f.label :email %>
-      <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
-    </div>
-
-    <div class="field">
-      <%= f.label :password %>
-      <%= f.password_field :password, autocomplete: "current-password" %>
-    </div>
-
-    <% if devise_mapping.rememberable? %>
-      <div class="field">
-        <%= f.check_box :remember_me %>
-        <%= f.label :remember_me %>
+  <!-- Form -->
+  <%= form_for(resource, as: resource_name, html: { 'data-turbo' => "false" }, url: session_path(resource_name)) do |f| %>
+    <div class="space-y-4">
+      <div>
+        <%= f.label :email, class: "block text-sm font-medium mb-1" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-input w-full" %>
       </div>
-    <% end %>
 
-    <br/>
+      <div>
+        <%= f.label :password, class: "block text-sm font-medium mb-1" %>
+        <%= f.password_field :password, autocomplete: "current-password", class: "form-input w-full" %>
+      </div>
 
-    <div class="actions">
-      <%= f.submit "Log in" %>
+      <% if devise_mapping.rememberable? %>
+        <label class="flex items-center">
+          <%= f.check_box :remember_me, class: "form-checkbox" %>
+          <%= f.label :remember_me, class: "text-sm ml-2" %>
+        </label>
+      <% end %>
+
+      <div class="flex items-center justify-between mt-6">
+        <div class="mr-1">
+          <%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
+            <%= link_to "Forgot your password?", new_password_path(resource_name), class: "text-sm underline hover:no-underline" %>
+          <% end %>
+        </div>
+        <%= f.submit "Log in", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white ml-3" %>
+      </div>
     </div>
-  </fieldset>
-<% end %>
+  <% end %>
 
-<p><%= render "devise/shared/links" %></p>
+  <!-- Footer -->
+  <div class="pt-5 mt-6 border-t border-slate-200">
+    <div class="text-sm">
+      Don’t you have an account?
+      <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
+        <%= link_to "Sign up", new_registration_path(resource_name), class: "font-medium text-indigo-500 hover:text-indigo-600" %>
+      <% end %>
+    </div>
+    <div class="mt-5">
+      <div class="bg-yellow-100 text-yellow-600 px-3 py-2 rounded">
+        <span class="text-sm">Tramline is in pre-alpha stage. Please reach out to us at hello@tramline.app for any issues.</span>
+      </div>
+    </div>
+  </div>
+</div>

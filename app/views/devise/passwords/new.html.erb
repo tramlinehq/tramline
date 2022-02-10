@@ -1,16 +1,30 @@
-<h2>Forgot your password?</h2>
+<div class="max-w-sm mx-auto px-4 py-8">
+  <h1 class="text-3xl text-slate-800 font-bold mb-6">Forgot your password?</h1>
+  <%= render partial: "shared/errors" %>
 
-<%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
+  <!-- Form -->
+  <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+    <div class="space-y-4">
 
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+      <div>
+        <%= f.label :email, class: "block text-sm font-medium mb-1" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-input w-full" %>
+      </div>
+
+      <div class="flex items-center justify-center mt-6">
+        <%= f.submit "Send reset password instructions", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white ml-3" %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Footer -->
+  <div class="pt-5 mt-6 border-t border-slate-200">
+    <div class="text-sm">
+      <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
+        <%= link_to "Sign up", new_registration_path(resource_name), class: "font-medium text-indigo-500 hover:text-indigo-600" %>
+      <% end %>
+      or,
+      <%= link_to "Sign In", user_session_path, class: "font-medium text-indigo-500 hover:text-indigo-600" %>
+    </div>
   </div>
-
-  <div class="actions">
-    <%= f.submit "Send me reset password instructions" %>
-  </div>
-<% end %>
-
-<%= render "devise/shared/links" %>
+</div>

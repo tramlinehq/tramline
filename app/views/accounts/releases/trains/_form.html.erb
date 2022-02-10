@@ -1,59 +1,70 @@
 <%= form_with(model: [current_organization, app, train]) do |form| %>
-  <fieldset class="block">
-    <legend><%= legend %></legend>
-    <div class="field">
-      <%= form.label :name, class: "label" %>
-      <div class="control">
-        <%= form.text_field :name, class: "input", required: true %>
+  <div class="mb-8">
+    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">Create a new train ✨</h1>
+  </div>
+
+  <div class="grid gap-5 md:grid-cols-2">
+    <div>
+      <%= form.label :name, class: "block text-sm font-medium mb-1" %>
+      <%= form.text_field :name, class: "form-input w-full", placeholder: "Enter train name...", required: true %>
+    </div>
+
+    <div>
+      <%= form.label :repeat_duration, class: "block text-sm font-medium mb-1" %>
+      <%= form.number_field :repeat_duration_value, step: 1, min: 1, default: 1, required: true, class: "form-input w-full mb-1" %>
+      <%= form.select :repeat_duration_unit,
+                      options_for_select([%w[Minute(s) minutes], %w[Day(s) days], %w[Week(s) weeks]], "days"),
+                      { required: true },
+                      { class: "form-select" } %>
+
+      <div class="mt-6">
+        <%= form.label :kickoff_at, class: "block text-sm font-medium mb-1" %>
+        <div class="relative">
+          <%= form.text_field :kickoff_at,
+                              required: true,
+                              class: "form-input pl-9 text-slate-500 hover:text-slate-600 font-medium focus:border-slate-300 w-60",
+                              data: {
+                                class: "flatpickr-right",
+                                controller: "flatpickr",
+                                flatpickr_enable_time: true,
+                                flatpickr_time_24hr: true,
+                                flatpickr_month_selector_type: "static",
+                                flatpickr_date_format: "M j, Y H:i",
+                                flatpickr_prev_arrow: '<svg class="fill-current" width="7" height="11" viewBox="0 0 7 11"><path d="M5.4 10.8l1.4-1.4-4-4 4-4L5.4 0 0 5.4z" /></svg>',
+                                flatpickr_next_arrow: '<svg class="fill-current" width="7" height="11" viewBox="0 0 7 11"><path d="M1.4 10.8L0 9.4l4-4-4-4L1.4 0l5.4 5.4z" /></svg>',
+                                flatpickr_min_date: Time.zone.now,
+                              } %>
+          <div class="absolute inset-0 right-auto flex items-center pointer-events-none">
+            <svg class="w-4 h-4 fill-current text-slate-500 ml-3" viewBox="0 0 16 16">
+              <path d="M15 2h-2V0h-2v2H9V0H7v2H5V0H3v2H1a1 1 0 00-1 1v12a1 1 0 001 1h14a1 1 0 001-1V3a1 1 0 00-1-1zm-1 12H2V6h12v8z"/>
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="field">
-      <%= form.label :description, class: "label" %>
-      <div class="control">
-        <%= form.text_area :description, class: "input", required: true %>
-      </div>
+    <div>
+      <%= form.label :version_seeded_with, class: "block text-sm font-medium mb-1" %>
+      <%= form.text_field :version_seeded_with, class: "form-input w-full", placeholder: "eg., 1.2.0", required: true %>
     </div>
 
-    <div class="field">
-      <%= form.label :kickoff_at, class: "label" %>
-      <%= form.text_field :kickoff_at,
-                          required: true,
-                          data: {
-                            controller: "flatpickr",
-                            flatpickr_date_format: "Y-m-d-H:i",
-                            flatpickr_enable_time: true,
-                            flatpickr_min_date: Time.zone.now
-                          } %>
+    <div>
+      <%= form.label :version_suffix, class: "block text-sm font-medium mb-1" %>
+      <%= form.text_field :version_suffix, class: "form-input w-full", placeholder: "eg., nightly, prod", required: true %>
     </div>
 
-    <div class="field">
-      <%= form.label "Every", class: "label" %>
-      <div class="control">
-        <%= form.number_field :repeat_duration_value, step: 1, min: 1, default: 1, required: true, class: "input" %>
-        <%= form.select :repeat_duration_unit,
-                        options_for_select([%w[Minute(s) minutes], %w[Day(s) days], %w[Week(s) weeks]], "days"), required: true %>
-      </div>
-    </div>
 
-    <div class="field">
-      <%= form.label :version_seeded_with, "Starting version", class: "label" %>
-      <div class="control">
-        <%= form.text_field :version_seeded_with, class: "input", placeholder: "eg. 1.2.0", required: true %>
-      </div>
+    <div>
+      <%= form.label :description, class: "block text-sm font-medium mb-1" %>
+      <%= form.text_area :description, class: "form-input w-full", placeholder: "Describe the purpose of your train...", required: true %>
     </div>
+  </div>
 
-    <div class="field">
-      <%= form.label :version_suffix, class: "label" %>
-      <div class="control">
-        <%= form.text_field :version_suffix, class: "input", placeholder: "eg. nightly, prod", required: true %>
-      </div>
-    </div>
-
-    <div class="field is-grouped">
-      <div class="control">
-        <%= form.button 'Submit', class: "button is-link", "data-turbo": false %>
-      </div>
-    </div>
-  </fieldset>
+  <div class="mt-5">
+    <%= form.submit 'Create', class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" do %>
+      <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
+        <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
+      </svg>
+    <% end %>
+  </div>
 <% end %>

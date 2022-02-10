@@ -12,6 +12,7 @@ class App < ApplicationRecord
   friendly_id :name, use: :slugged
 
   delegate :ready?, to: :integrations, prefix: :integrations_are
+  delegate :completable?, to: :integrations, prefix: :integrations_are
 
   def set_default_platform
     self.platform = App.roles[:android]

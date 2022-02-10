@@ -1,23 +1,17 @@
-import { Controller } from "@hotwired/stimulus"
+import {Controller} from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = [ "hideable" ]
+  static targets = ["visible"]
 
-  showTargets() {
-    this.hideableTargets.forEach(el => {
-      el.hidden = false
-    });
+  initialize() {
+    this.visibleTarget.style.display = "none"
   }
 
-  hideTargets() {
-    this.hideableTargets.forEach(el => {
-      el.hidden = true
-    });
-  }
-
-  toggleTargets() {
-    this.hideableTargets.forEach((el) => {
-      el.hidden = !el.hidden
-    });
+  toggle() {
+    if (this.visibleTarget.style.display === "none") {
+      this.visibleTarget.style.display = "block";
+    } else {
+      this.visibleTarget.style.display = "none";
+    }
   }
 }
