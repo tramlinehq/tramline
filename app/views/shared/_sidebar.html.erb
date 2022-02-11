@@ -7,7 +7,7 @@
     <!-- Sidebar header -->
     <div class="flex justify-between mb-10 pr-3 sm:px-2">
       <!-- Logo -->
-      <a class="block" href="index.html">
+      <%= link_to root_path, class: "block" do %>
         <svg width="32" height="32" viewBox="0 0 32 32">
           <defs>
             <linearGradient x1="28.538%" y1="20.229%" x2="100%" y2="108.156%" id="logo-a">
@@ -24,7 +24,7 @@
           <path d="M7.404 2.503l18.339 26.19A15.93 15.93 0 0116 32C7.163 32 0 24.837 0 16 0 10.327 2.952 5.344 7.404 2.503z" fill="url(#logo-a)"/>
           <path d="M2.223 24.14L29.777 7.86A15.926 15.926 0 0132 16c0 8.837-7.163 16-16 16-5.864 0-10.991-3.154-13.777-7.86z" fill="url(#logo-b)"/>
         </svg>
-      </a>
+      <% end %>
     </div>
 
     <!-- Links -->
@@ -52,7 +52,7 @@
 
           <!-- Schedule -->
           <li class="px-3 py-2 rounded-sm mb-0.5 last:mb-0">
-            <a class="block text-slate-200 hover:text-white truncate transition duration-150" href="calendar.html">
+            <a class="block text-slate-200 hover:text-white truncate transition duration-150" href="/">
               <div class="flex items-center">
                 <svg class="shrink-0 h-6 w-6" viewBox="0 0 24 24">
                   <path class="fill-current text-slate-600" d="M1 3h22v20H1z"/>
