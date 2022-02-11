@@ -19,7 +19,7 @@ class GithubController < IntegrationListenerController
           code_name: train.current_run.code_name,
           branch_name: train.current_run.release_branch,
           build_number: train.app.build_number,
-          version_number: train.version_current,
+          version_number: train.version_current
         )
 
       current_run.last_running_step.wrap_up_run!
