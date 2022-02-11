@@ -103,7 +103,7 @@
             <div class="font-semibold text-left">CI/CD Workflow</div>
           </th>
           <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="font-semibold text-left">Repeat after last</div>
+            <div class="font-semibold text-left">Run after previous step</div>
           </th>
         </tr>
         </thead>
@@ -128,7 +128,10 @@
               <div class="text-left"><%= step.ci_cd_channel %></div>
             </td>
             <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-              <div class="text-left"><%= ActiveSupport::Duration.parse(Duration.new(step.run_after_duration).iso8601).inspect %></div>
+              <div class="text-left">
+                <% after_previous_step = ActiveSupport::Duration.parse(Duration.new(step.run_after_duration).iso8601) %>
+                <%= after_previous_step == 0.seconds ? "As soon as the train starts" : after_previous_step.inspect %>
+              </div>
             </td>
           </tr>
         <% end %>
