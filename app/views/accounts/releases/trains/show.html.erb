@@ -48,36 +48,6 @@
         </tr>
       </tbody>
     </table>
-    <ul class="-my-2">
-      <!-- List item -->
-      <% @train.runs.order(:was_run_at).each_with_index do |run, idx| %>
-        <% color = run.on_track? ? "bg-indigo-500" : "bg-slate-800" %>
-        <li class="relative py-2">
-          <div class="flex items-center mb-1">
-            <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
-            <div class="absolute left-0 rounded-full <%= color %>" aria-hidden="true">
-              <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
-                <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"/>
-              </svg>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 pl-9">Release #<%= idx + 1 %></h3>
-          </div>
-
-          <div class="pl-9">Started <em><%= run.code_name %></em> on <%= run.was_run_at.strftime("%b %e, %l:%M %p") %></div>
-        </li>
-      <% end %>
-      <li class="relative py-2">
-        <div class="flex items-center mb-1">
-          <div class="absolute left-0 rounded-full bg-white" aria-hidden="true">
-            <svg class="w-5 h-5 fill-current text-slate-400" viewBox="0 0 20 20">
-              <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm0 2C4.477 20 0 15.523 0 10S4.477 0 10 0s10 4.477 10 10-4.477 10-10 10z"/>
-            </svg>
-          </div>
-          <h3 class="text-lg font-bold text-slate-800 pl-9">Upcoming release</h3>
-        </div>
-        <div class="pl-9">On <%= @train.next_run_at.strftime("%b %e, %l:%M %p") %></div>
-      </li>
-    </ul>
     <% if @train.steps.size > 0 %>
       <h2 class="text-2xl text-slate-800 font-bold mb-6">Steps</h2>
       <p>
@@ -158,6 +128,36 @@
         </p>
       <% end %>
     <% end %>
+    <ul class="-my-2">
+      <!-- List item -->
+      <% @train.runs.order(:was_run_at).each_with_index do |run, idx| %>
+        <% color = run.on_track? ? "bg-indigo-500" : "bg-slate-800" %>
+        <li class="relative py-2">
+          <div class="flex items-center mb-1">
+            <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
+            <div class="absolute left-0 rounded-full <%= color %>" aria-hidden="true">
+              <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
+                <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 pl-9">Release #<%= idx + 1 %></h3>
+          </div>
+
+          <div class="pl-9"><em><%= run.code_name %></em> on <%= run.was_run_at.strftime("%b %e, %l:%M %p") %></div>
+        </li>
+      <% end %>
+      <li class="relative py-2">
+        <div class="flex items-center mb-1">
+          <div class="absolute left-0 rounded-full bg-white" aria-hidden="true">
+            <svg class="w-5 h-5 fill-current text-slate-400" viewBox="0 0 20 20">
+              <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm0 2C4.477 20 0 15.523 0 10S4.477 0 10 0s10 4.477 10 10-4.477 10-10 10z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800 pl-9">Upcoming release</h3>
+        </div>
+        <div class="pl-9">On <%= @train.next_run_at.strftime("%b %e, %l:%M %p") %></div>
+      </li>
+    </ul>
   </div>
 </div>
 
