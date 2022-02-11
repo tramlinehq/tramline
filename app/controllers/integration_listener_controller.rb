@@ -2,9 +2,12 @@ class IntegrationListenerController < SignedInApplicationController
   using RefinedString
 
   def callback
-    return unless valid_state?
-    @integration = state_app.integrations.new(integration_params)
+    unless valid_state?
+      redirect_to app_path, notice: "Failed to create the notification, please try again."
+      return
+    end
 
+    @integration = state_app.integrations.new(integration_params)
     @integration
       .decide
       .complete_access
@@ -31,7 +34,7 @@ class IntegrationListenerController < SignedInApplicationController
   end
 
   def valid_state?
-    state_user.present? && state_organization.present? && state_app.present?
+    state_user.present? && state_organization.present? && state_app.present? && !error?
   end
 
   def integration_params
@@ -66,6 +69,10 @@ class IntegrationListenerController < SignedInApplicationController
 
   def code
     params[:code]
+  end
+
+  def error?
+    params[:error] == "access_denied"
   end
 
   def app_path
