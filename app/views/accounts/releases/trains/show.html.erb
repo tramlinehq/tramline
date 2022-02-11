@@ -29,25 +29,23 @@
       <!-- Table body -->
       <tbody class="text-sm divide-y divide-slate-200">
       <!-- Row -->
-      <% @app.trains.each do |train| %>
         <tr>
           <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="text-left"><%= train.description %></div>
+            <div class="text-left"><%= @train.description %></div>
           </td>
           <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="text-left"><%= train.version_seeded_with %></div>
+            <div class="text-left"><%= @train.version_seeded_with %></div>
           </td>
           <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="text-left">-<%= train.version_suffix %></div>
+            <div class="text-left">-<%= @train.version_suffix %></div>
           </td>
           <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="text-left"><%= train.kickoff_at.strftime("%b %e, %l:%M %p") %></div>
+            <div class="text-left"><%= @train.kickoff_at.strftime("%b %e, %l:%M %p") %></div>
           </td>
           <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="text-left"><%= ActiveSupport::Duration.parse(Duration.new(train.repeat_duration).iso8601).inspect %></div>
+            <div class="text-left"><%= ActiveSupport::Duration.parse(Duration.new(@train.repeat_duration).iso8601).inspect %></div>
           </td>
         </tr>
-      <% end %>
       </tbody>
     </table>
     <ul class="-my-2">
