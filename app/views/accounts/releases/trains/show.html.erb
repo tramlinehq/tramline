@@ -53,6 +53,7 @@
     <ul class="-my-2">
       <!-- List item -->
       <% @train.runs.order(:was_run_at).each_with_index do |run, idx| %>
+
         <li class="relative py-2">
           <div class="flex items-center mb-1">
             <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
@@ -102,7 +103,7 @@
             <div class="font-semibold text-left">CI/CD Workflow</div>
           </th>
           <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="font-semibold text-left">Repeats every</div>
+            <div class="font-semibold text-left">Repeat after last</div>
           </th>
         </tr>
         </thead>
