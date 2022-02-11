@@ -43,7 +43,7 @@ class Releases::Train < ApplicationRecord
   end
 
   def next_run_at
-    kickoff_at + (repeat_duration * (runs.finished.size || 1))
+    kickoff_at + (repeat_duration * ([runs.finished.size, runs.on_track.size].max || 1))
   end
 
   def current_run
