@@ -30,6 +30,9 @@ Rails.application.routes.draw do
       resources :apps do
         namespace :releases do
           resources :trains do
+            member do
+              patch :deactivate
+            end
             resources :steps
           end
         end

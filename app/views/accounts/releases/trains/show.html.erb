@@ -1,5 +1,27 @@
-<div class="mb-8">
-  <h1 class="text-2xl md:text-3xl text-slate-800 font-bold"><%= @train.name %> 🚦</h1>
+<div class="sm:flex sm:justify-between sm:items-center mb-8">
+  <!-- Left: Title -->
+  <div class="mb-4 sm:mb-0">
+    <% if @train.inactive? %>
+      <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">
+        <%= @train.name %> 🚦
+        <em>(inactive)</em>
+      </h1>
+    <% else %>
+      <h1 class="text-2xl md:text-3xl text-slate-800 font-bold"><%= @train.name %> 🚦</h1>
+    <% end %>
+  </div>
+
+  <% if @train.active? %>
+    <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+      <%= form_with(url: deactivate_accounts_organization_app_releases_train_path(current_organization, @app, @train),
+                    method: :patch,
+                    data: { turbo_confirm: 'Are you sure?' }) do |form| %>
+        <div class="mt-5">
+          <%= form.submit 'Deactivate train', class: "btn bg-rose-500 hover:bg-rose-600 text-white" %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 </div>
 
 <div class="border-t border-slate-200">
@@ -29,23 +51,23 @@
       <!-- Table body -->
       <tbody class="text-sm divide-y divide-slate-200">
       <!-- Row -->
-        <tr>
-          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="text-left"><%= @train.description %></div>
-          </td>
-          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="text-left"><%= @train.version_seeded_with %></div>
-          </td>
-          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="text-left">-<%= @train.version_suffix %></div>
-          </td>
-          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="text-left"><%= @train.kickoff_at.strftime("%b %e, %l:%M %p") %></div>
-          </td>
-          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="text-left"><%= ActiveSupport::Duration.parse(Duration.new(@train.repeat_duration).iso8601).inspect %></div>
-          </td>
-        </tr>
+      <tr>
+        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <div class="text-left"><%= @train.description %></div>
+        </td>
+        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <div class="text-left"><%= @train.version_seeded_with %></div>
+        </td>
+        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <div class="text-left">-<%= @train.version_suffix %></div>
+        </td>
+        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <div class="text-left"><%= @train.kickoff_at.strftime("%b %e, %l:%M %p") %></div>
+        </td>
+        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <div class="text-left"><%= ActiveSupport::Duration.parse(Duration.new(@train.repeat_duration).iso8601).inspect %></div>
+        </td>
+      </tr>
       </tbody>
     </table>
     <% if @train.steps.size > 0 %>

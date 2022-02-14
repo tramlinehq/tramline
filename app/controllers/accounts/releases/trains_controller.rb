@@ -2,9 +2,9 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
-  before_action :set_app, only: %i[new create show index edit update activate]
+  before_action :set_app, only: %i[new create show index edit update deactivate]
   around_action :set_time_zone
-  before_action :set_train, only: %i[show edit update activate]
+  before_action :set_train, only: %i[show edit update deactivate]
   before_action :validate_integration_status, only: %i[new create]
 
   def new
@@ -20,6 +20,22 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
         format.json { render :show, status: :created, location: @train }
       else
         format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: @train.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def deactivate
+    params = {
+      status: Releases::Train.statuses[:inactive]
+    }
+
+    respond_to do |format|
+      if @train.update(params)
+        format.html { redirect_to train_path, notice: "Train was successfully deactivated!" }
+        format.json { render :show, status: :created, location: @train }
+      else
+        format.html { render :show, status: :unprocessable_entity }
         format.json { render json: @train.errors, status: :unprocessable_entity }
       end
     end
