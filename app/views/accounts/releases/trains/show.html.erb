@@ -164,9 +164,15 @@
               </svg>
             </div>
             <h3 class="text-lg font-bold text-slate-800 pl-9">Release #<%= idx + 1 %></h3>
+            <div class="text-xs ml-2 inline-flex font-medium bg-slate-100 text-slate-500 rounded-full text-center px-2.5 py-1">
+              <%= run.was_run_at.strftime("%b %e, %l:%M %p") %>
+            </div>
           </div>
 
-          <div class="pl-9"><em><%= run.code_name %></em> on <%= run.was_run_at.strftime("%b %e, %l:%M %p") %></div>
+          <div class="pl-9 flex">
+            <%= image_tag("git-branch.svg") %>
+            <pre class="ml-1"><%= run.release_branch %></pre>
+          </div>
         </li>
       <% end %>
       <li class="relative py-2">
