@@ -53,7 +53,7 @@ class Integration < ApplicationRecord
   end
 
   def connect?
-    !partially_connected? || !fully_connected?
+    !partially_connected? && !fully_connected?
   end
 
   def workflows
