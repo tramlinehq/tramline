@@ -4,7 +4,7 @@
     <% if @train.inactive? %>
       <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">
         <%= @train.name %> 🚦
-        <em>(inactive)</em>
+        <div class="text-xs inline-flex font-medium bg-rose-100 text-rose-600 rounded-full text-center px-2.5 py-1">Inactive</div>
       </h1>
     <% else %>
       <h1 class="text-2xl md:text-3xl text-slate-800 font-bold"><%= @train.name %> 🚦</h1>
