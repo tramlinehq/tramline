@@ -156,7 +156,7 @@
         </td>
 
       </tr>
-      <% @train.runs.order(:was_run_at).each_with_index do |run, idx| %>
+      <% @train.runs.order(was_run_at: :desc).each_with_index do |run, idx| %>
         <tr>
           <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
             <% if run.on_track? %>
