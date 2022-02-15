@@ -1,15 +1,15 @@
 module Automatons
   class Notify
-    attr_reader :message, :text_block, :integration, :slack_api
+    attr_reader :train, :message, :text_block, :slack_api
 
     def self.dispatch!(**args)
       new(**args).dispatch!
     end
 
-    def initialize(message:, integration:, text_block: {})
+    def initialize(train:, message:, text_block: {})
+      @train = train
       @message = message
       @text_block = text_block
-      @integration = integration
       @slack_api = Installations::Slack::Api.new(oauth_access_token)
     end
 
@@ -24,6 +24,13 @@ module Automatons
 
     def notify_channel
       notification_channel.values.first
+    end
+
+    def integration
+      train
+        .integrations
+        .notification
+        .first
     end
   end
 end

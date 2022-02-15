@@ -18,6 +18,7 @@ class Releases::Train < ApplicationRecord
 
   before_create :set_current_version!
   before_create :set_default_status
+
   after_create :create_webhook!
 
   delegate :integrations_are_ready?, to: :app
@@ -50,8 +51,12 @@ class Releases::Train < ApplicationRecord
     runs.on_track.last
   end
 
-  def release_branch_name
+  def display_name
     name.downcase.tr(" ", "-")
+  end
+
+  def tag_name
+    "v#{version_current}"
   end
 
   def bump_version!

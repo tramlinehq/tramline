@@ -1,5 +1,7 @@
 class TrainJob < ApplicationJob
   queue_as :high
+  sidekiq_options retry: false
+
   delegate :transaction, to: ActiveRecord::Base
 
   def perform(id)
@@ -14,13 +16,19 @@ class TrainJob < ApplicationJob
 
     transaction do
       # start the train run (overarching run)
-      code_name = Haikunator.haikunate(100)
       train_run = train.runs.create!(
         scheduled_at: now,
         was_run_at: now,
         status: Releases::Train::Run.statuses[:on_track],
-        code_name:
+        code_name: Haikunator.haikunate(100)
       )
+
+      release_branch = train_run.release_branch
+      message = "Created release branch: #{release_branch}.\nCI workflow started for: #{train_run.code_name}!"
+
+      Automatons::Branch.dispatch!(train: train, branch: release_branch)
+      Automatons::Notify.dispatch!(train: train, message: message)
+      Automatons::Email.dispatch!(train: train, user: user)
 
       # start the first step run (because it runs as soon as the train kicks off)
       StepJob.perform_now(train_run.id, train.steps.first.id, user.id)

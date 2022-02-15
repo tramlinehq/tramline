@@ -1,5 +1,5 @@
 module Automatons
-  class Branch
+  class Tag
     class DispatchFailure < StandardError; end
 
     attr_reader :train, :branch, :github_api
@@ -15,7 +15,7 @@ module Automatons
     end
 
     def dispatch!
-      unless github_api.create_branch!(code_repo, ref, branch)
+      unless github_api.create_tag!(code_repo, train.tag_name, branch)
         raise DispatchFailure, "Failed to kickoff the workflow!"
       end
     end
@@ -36,11 +36,6 @@ module Automatons
         .integrations
         .version_control
         .first
-    end
-
-    def ref
-      version_control
-        .working_branch
     end
   end
 end
