@@ -35,9 +35,6 @@
           <div class="font-semibold text-left">Description</div>
         </th>
         <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">Version originally started from</div>
-        </th>
-        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="font-semibold text-left">Version Suffix</div>
         </th>
         <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
@@ -54,9 +51,6 @@
       <tr>
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="text-left"><%= @train.description %></div>
-        </td>
-        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="text-left"><%= @train.version_seeded_with %></div>
         </td>
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="text-left">-<%= @train.version_suffix %></div>
@@ -78,9 +72,8 @@
               <% unless step.last? %>
                 <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
               <% end %>
-              <div class="absolute left-0 rounded-full bg-indigo-500" aria-hidden="true">
+              <div class="absolute left-0 rounded-full bg-green-500" aria-hidden="true">
                 <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
-                  <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"/>
                 </svg>
               </div>
               <h3 class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></h3>
@@ -124,7 +117,10 @@
       <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
       <tr>
         <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">Release</div>
+          <div class="font-semibold text-left">Release Status</div>
+        </th>
+        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <div class="font-semibold text-left">Release Branch</div>
         </th>
         <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="font-semibold text-left">When</div>
@@ -136,7 +132,15 @@
       <!-- Row -->
       <tr>
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="text-left">Upcoming release</div>
+          <div class="text-left">
+            <div class="text-xs inline-flex font-medium bg-sky-100 text-sky-600 rounded-full text-center px-2.5 py-1">
+              Upcoming release
+            </div>
+          </div>
+        </td>
+
+        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          -
         </td>
 
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
@@ -148,6 +152,17 @@
       </tr>
       <% @train.runs.order(:was_run_at).each_with_index do |run, idx| %>
         <tr>
+          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <% if run.on_track? %>
+              <div class="text-xs inline-flex font-medium bg-green-100 text-green-600 rounded-full text-center px-2.5 py-1">
+                In progress
+              </div>
+            <% else %>
+              <div class="text-xs inline-flex font-medium bg-slate-100 text-slate-500 rounded-full text-center px-2.5 py-1">
+                Completed
+              </div>
+            <% end %>
+          </td>
           <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
             <div class="flex">
               <%= image_tag("git_branch.svg") %>
