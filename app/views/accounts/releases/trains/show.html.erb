@@ -35,7 +35,7 @@
           <div class="font-semibold text-left">Description</div>
         </th>
         <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">Version Suffix</div>
+          <div class="font-semibold text-left">Latest Version</div>
         </th>
         <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="font-semibold text-left">Original Kickoff Date</div>
@@ -53,7 +53,7 @@
           <div class="text-left"><%= @train.description %></div>
         </td>
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="text-left">-<%= @train.version_suffix %></div>
+          <div class="text-left"><%= @train.version_current %></div>
         </td>
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="text-left"><%= @train.kickoff_at.strftime("%b %e, %l:%M %p") %></div>
