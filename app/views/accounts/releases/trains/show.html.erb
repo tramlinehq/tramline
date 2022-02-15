@@ -69,9 +69,7 @@
         <% @train.steps.order(:step_number).each do |step| %>
           <li class="relative py-2">
             <div class="flex items-center mb-1">
-              <% unless step.last? %>
-                <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
-              <% end %>
+              <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
               <div class="absolute left-0 rounded-full bg-green-500" aria-hidden="true">
                 <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
                 </svg>
@@ -79,7 +77,7 @@
               <h3 class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></h3>
               <div class="text-xs ml-2 inline-flex font-medium bg-slate-100 text-slate-500 rounded-full text-center px-2.5 py-1">
                 <% if step.first? %>
-                  As soon as the train starts
+                  When the train starts
                 <% else %>
                   <%= ActiveSupport::Duration.parse(Duration.new(step.absolute_run_after).iso8601).inspect %>
                   later
@@ -92,14 +90,22 @@
             </div>
           </li>
         <% end %>
-      </ul>
 
-      <div class="m-1.5">
-        <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white">
-          <%= link_to "Add another step",
-                      new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>
-        </button>
-      </div>
+        <li class="relative py-2">
+          <div class="flex items-center mb-1">
+            <div class="absolute left-0 rounded-full bg-white" aria-hidden="true">
+              <svg class="w-5 h-5 fill-current text-slate-400" viewBox="0 0 20 20">
+                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm0 2C4.477 20 0 15.523 0 10S4.477 0 10 0s10 4.477 10 10-4.477 10-10 10z"/>
+              </svg>
+            </div>
+            <div class="pl-9">
+              <%= link_to "Add another step",
+                          new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train),
+                          class: "text-blue-500 hover:underline" %>
+            </div>
+          </div>
+        </li>
+      </ul>
     <% else %>
       <% if @train.integrations_are_ready? %>
         <div class="m-1.5">
