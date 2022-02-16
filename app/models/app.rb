@@ -1,7 +1,8 @@
 class App < ApplicationRecord
+  has_paper_trail
   extend FriendlyId
 
-  belongs_to :organization, class_name: "Accounts::Organization"
+  belongs_to :organization, class_name: "Accounts::Organization", required: true
   has_many :integrations, inverse_of: :app
   has_many :trains, class_name: "Releases::Train", foreign_key: :app_id
 

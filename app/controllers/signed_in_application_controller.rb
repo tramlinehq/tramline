@@ -1,4 +1,5 @@
 class SignedInApplicationController < ActionController::Base
+  before_action :set_paper_trail_whodunnit
   include ExceptionHandler
 
   layout "signed_in_application"

@@ -1,4 +1,5 @@
 class Releases::Step::Run < ApplicationRecord
+  has_paper_trail
   self.implicit_order_column = :was_run_at
 
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id

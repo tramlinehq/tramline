@@ -1,4 +1,5 @@
 class Integration < ApplicationRecord
+  has_paper_trail
   using RefinedString
 
   belongs_to :app
@@ -19,7 +20,7 @@ class Integration < ApplicationRecord
     "ci_cd": "Keep up to date with the status of the latest release builds as they're made available.",
     "notification": "Send release activity notifications at the right time, to the right people.",
     "build_channel": "Quickly see where your release stands in the app store."
-  }
+  }.freeze
 
   enum category: LIST.keys.zip(LIST.keys).to_h
   enum provider: LIST.values.flatten.zip(LIST.values.flatten).to_h

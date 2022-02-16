@@ -1,6 +1,10 @@
 class Accounts::Membership < ApplicationRecord
-  belongs_to :user, inverse_of: :memberships
-  belongs_to :organization, inverse_of: :memberships
+  has_paper_trail
 
-  enum role: {owner: "owner", manager: "manager", developer: "developer"}
+  belongs_to :user, inverse_of: :memberships, required: true
+  belongs_to :organization, inverse_of: :memberships, required: true
+
+  enum role: { owner: "owner", manager: "manager", developer: "developer" }
+
+  validates :user_id, uniqueness: { scope: :organization_id }
 end

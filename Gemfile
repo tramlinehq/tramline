@@ -59,3 +59,5 @@ group :test do
   gem "selenium-webdriver"
   gem "webdrivers"
 end
+
+gem "paper_trail", "~> 12.2"

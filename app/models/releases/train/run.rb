@@ -1,4 +1,5 @@
 class Releases::Train::Run < ApplicationRecord
+  has_paper_trail
   self.implicit_order_column = :was_run_at
 
   belongs_to :train, class_name: "Releases::Train"

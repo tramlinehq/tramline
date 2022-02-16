@@ -1,5 +1,6 @@
 class Accounts::Organization < ApplicationRecord
   extend FriendlyId
+  has_paper_trail
 
   has_many :memberships, dependent: :delete_all, inverse_of: :organization
   has_many :users, through: :memberships, dependent: :delete_all

@@ -1,4 +1,5 @@
 class Releases::Step < ApplicationRecord
+  has_paper_trail
   extend FriendlyId
 
   self.table_name = :train_steps

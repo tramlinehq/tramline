@@ -1,8 +1,9 @@
 class Releases::Train < ApplicationRecord
+  has_paper_trail
   using RefinedString
   extend FriendlyId
 
-  belongs_to :app
+  belongs_to :app, required: true
   has_many :integrations, through: :app
   has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train
   has_many :steps, class_name: "Releases::Step", inverse_of: :train
@@ -17,13 +18,13 @@ class Releases::Train < ApplicationRecord
   attribute :repeat_duration, :interval
 
   before_create :set_current_version!
-  before_create :set_default_status
+  before_create :set_default_status!
 
   after_create :create_webhook!
 
   delegate :integrations_are_ready?, to: :app
 
-  def set_default_status
+  def set_default_status!
     self.status = Releases::Step.statuses[:active]
   end
 
