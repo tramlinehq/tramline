@@ -31,6 +31,7 @@ module Site
     end
 
     config.active_job.queue_adapter = :sidekiq
+    config.assets.css_compressor = nil
     PaperTrail.config.version_limit = 10
   end
 end
