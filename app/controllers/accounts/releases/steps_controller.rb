@@ -4,6 +4,8 @@ class Accounts::Releases::StepsController < SignedInApplicationController
 
   before_action :set_app, only: %i[new create show]
   before_action :set_train, only: %i[new create show]
+  before_action :set_ci_actions, only: %i[new create]
+  before_action :set_build_channels, only: %i[new create]
   before_action :set_step, only: %i[show]
   before_action :set_first_step, only: %i[new create]
   before_action :integrations_are_ready?, only: %i[new create]
@@ -11,15 +13,13 @@ class Accounts::Releases::StepsController < SignedInApplicationController
 
   def new
     @step = @train.steps.new
-    @ci_actions = @train.integrations.ci_cd.first.workflows
-    @build_channels = @train.integrations.notification.first.channels
   end
 
   def create
     @step = @train.steps.new(parsed_step_params)
 
     respond_to do |format|
-      if @step.save!
+      if @step.save
         format.html { redirect_to step_path, notice: "Step was successfully created." }
         format.json { render :show, status: :created, location: @step }
       else
@@ -92,5 +92,13 @@ class Accounts::Releases::StepsController < SignedInApplicationController
 
   def step_path
     accounts_organization_app_releases_train_step_path(current_organization, @app, @train, @step)
+  end
+
+  def set_ci_actions
+    @ci_actions = @train.integrations.ci_cd.first.workflows
+  end
+
+  def set_build_channels
+    @build_channels = @train.integrations.notification.first.channels
   end
 end

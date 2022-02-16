@@ -17,6 +17,9 @@ class Releases::Train < ApplicationRecord
 
   attribute :repeat_duration, :interval
 
+  validate :semver_compatibility
+  validate :kickoff_in_the_future
+
   before_create :set_current_version!
   before_create :set_default_status!
 
@@ -33,6 +36,7 @@ class Releases::Train < ApplicationRecord
   end
 
   GRACE_PERIOD_FOR_RUNNING = 30.seconds
+  MINIMUM_TRAIN_KICKOFF_DELAY = 30.minutes
 
   def runnable?
     Time.use_zone(app.timezone) do
@@ -68,5 +72,21 @@ class Releases::Train < ApplicationRecord
 
   def set_current_version!
     self.version_current = version_seeded_with
+  end
+
+  private
+
+  def semver_compatibility
+    Semantic::Version.new(version_seeded_with)
+  rescue ArgumentError
+    errors.add(:version_seeded_with, "Please choose a valid semver format, eg. major.minor.patch")
+  end
+
+  def kickoff_in_the_future
+    Time.use_zone(app.timezone) do
+      unless kickoff_at > Time.current + MINIMUM_TRAIN_KICKOFF_DELAY
+        errors.add(:kickoff_at, "Please kickoff the train at least #{MINIMUM_TRAIN_KICKOFF_DELAY.inspect} from now")
+      end
+    end
   end
 end
