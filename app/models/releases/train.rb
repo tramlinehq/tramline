@@ -19,10 +19,8 @@ class Releases::Train < ApplicationRecord
 
   validate :semver_compatibility
   validate :kickoff_in_the_future
-
   before_create :set_current_version!
   before_create :set_default_status!
-
   after_create :create_webhook!
 
   delegate :integrations_are_ready?, to: :app
