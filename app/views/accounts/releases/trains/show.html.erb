@@ -50,7 +50,9 @@
       <!-- Row -->
       <tr>
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="text-left"><%= @train.description %></div>
+          <div class="text-left">
+            <%= simple_format(@train.description) %>
+          </div>
         </td>
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="text-left"><%= @train.version_current %></div>
@@ -70,7 +72,7 @@
           <li class="relative py-2">
             <div class="flex items-center mb-1">
               <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
-              <div class="absolute left-0 rounded-full bg-green-500" aria-hidden="true">
+              <div class="absolute left-0 rounded-full bg-slate-500" aria-hidden="true">
                 <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
                 </svg>
               </div>
@@ -86,7 +88,7 @@
             </div>
 
             <div class="pl-9 flex">
-              <%= step.description %>
+              <%= simple_format(step.description) %>
             </div>
           </li>
         <% end %>
