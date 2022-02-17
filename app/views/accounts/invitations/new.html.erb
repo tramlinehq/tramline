@@ -1,0 +1,22 @@
+<%= form_for(resource, as: resource_name, url: invitation_path(resource_name), html: { method: :post }) do |form| %>
+  <%= render "devise/shared/error_messages", resource: resource %>
+
+  <div class="mb-8">
+    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">Add a member to your team 📱</h1>
+  </div>
+
+  <% resource.class.invite_key_fields.each do |field| -%>
+    <div class="field">
+      <%= form.label field %><br/>
+      <%= form.text_field field %>
+    </div>
+  <% end %>
+
+  <div class="actions">
+    <%= form.submit t("devise.invitations.new.submit_button") %>
+  </div>
+<% end %>
+
+
+
+

@@ -26,7 +26,7 @@
 
 <div class="border-t border-slate-200">
   <div class="space-y-8 mt-8">
-    <h2 class="text-2xl text-slate-800 font-bold mb-6">Train deets</h2>
+    <h2 class="text-2xl text-slate-800 font-bold mb-6">Train Details</h2>
     <table class="table-auto w-full">
       <!-- Table header -->
       <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
@@ -61,7 +61,9 @@
           <div class="text-left"><%= @train.kickoff_at.strftime("%b %e, %l:%M %p") %></div>
         </td>
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="text-left"><%= ActiveSupport::Duration.parse(Duration.new(@train.repeat_duration).iso8601).inspect %></div>
+          <div class="text-left">
+            <%= ActiveSupport::Duration.parse(Duration.new(@train.repeat_duration).iso8601).inspect %>
+          </div>
         </td>
       </tr>
       </tbody>

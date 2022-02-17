@@ -58,13 +58,7 @@
             <div class="font-semibold text-left">Description</div>
           </th>
           <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="font-semibold text-left">Version originally started from</div>
-          </th>
-          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="font-semibold text-left">Version Suffix</div>
-          </th>
-          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="font-semibold text-left">Original Kickoff Date</div>
+            <div class="font-semibold text-left">Current Version</div>
           </th>
           <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
             <div class="font-semibold text-left">Repeats every</div>
@@ -86,13 +80,7 @@
               <div class="text-left"><%= simple_format(train.description) %></div>
             </td>
             <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-              <div class="text-left"><%= train.version_seeded_with %></div>
-            </td>
-            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-              <div class="text-left">-<%= train.version_suffix %></div>
-            </td>
-            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-              <div class="text-left"><%= train.kickoff_at.strftime("%b %e, %l:%M %p") %></div>
+              <div class="text-left"><%= train.version_current %></div>
             </td>
             <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
               <div class="text-left">

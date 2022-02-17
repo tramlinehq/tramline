@@ -30,6 +30,8 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
     end
   end
 
+  protected
+
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up) do |u|
       u.permit(
