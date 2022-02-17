@@ -18,7 +18,7 @@ class Releases::Train < ApplicationRecord
   attribute :repeat_duration, :interval
 
   validate :semver_compatibility
-  # validate :kickoff_in_the_future
+  validate :kickoff_in_the_future, on: :create
   before_create :set_current_version!
   before_create :set_default_status!
   after_create :create_webhook!
