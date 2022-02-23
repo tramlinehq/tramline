@@ -1,20 +1,29 @@
-class Accounts::InvitationsController < Devise::InvitationsController
-  before_action :configure_permitted_parameters, if: :devise_controller?
-  alias_method :user, :resource
-  helper_method :user
-
-  layout "signed_in_application", only: [:new]
-
+class Accounts::InvitationsController < SignedInApplicationController
   def new
-    super
+    @invite = Accounts::Invite.new(sender: current_user, organization: current_organization)
   end
 
   def create
+    @invite = Accounts::Invite.new(invite_params)
+    @invite.sender = current_user
+
+    if @invite.save
+      if @invite.recipient.present?
+        InvitationMailer.existing_user(@invite).deliver
+      else
+        InvitationMailer.new_user(@invite).deliver
+      end
+
+      redirect_to accounts_organization_team_path(current_organization),
+                  notice: "Sent an invite to #{@invite.email}!"
+    else
+      render :new, status: :unprocessable_entity
+    end
   end
 
   protected
 
-  def configure_permitted_parameters
-    devise_parameter_sanitizer.permit(:invite, keys: [:full_name, :preferred_name, :email, :role])
+  def invite_params
+    params.require(:accounts_invite).permit(:email, :organization_id, :role)
   end
 end

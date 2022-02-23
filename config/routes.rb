@@ -12,8 +12,7 @@ Rails.application.routes.draw do
 
   devise_for :users,
              controllers: { registrations: "authentication/registrations",
-                            sessions: "authentication/sessions",
-                            invitations: "accounts/invitations" },
+                            sessions: "authentication/sessions" },
              class_name: "Accounts::User"
 
   devise_scope :user do
@@ -29,6 +28,7 @@ Rails.application.routes.draw do
   namespace :accounts do
     resources :organizations do
       resource :team
+      resources :invitations
       resources :apps do
         namespace :releases do
           resources :trains do

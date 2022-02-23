@@ -1,7 +1,11 @@
 class Authentication::RegistrationsController < Devise::RegistrationsController
   before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :set_invite_token, only: [:new, :create]
+  before_action :set_invite, only: [:new, :create]
   alias_method :user, :resource
   helper_method :user
+
+  delegate :transaction, to: ActiveRecord::Base
 
   def new
     super do |usr|
@@ -10,27 +14,53 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
   end
 
   def create
-    build_resource(sign_up_params)
-    user.onboard!
+    if @token.present?
+      build_resource(sign_up_params_for_invites)
 
-    if user.persisted?
-      if user.active_for_authentication?
-        set_flash_message! :notice, :signed_up
-        sign_up(resource_name, user)
-        respond_with user, location: after_sign_up_path_for(user)
-      else
-        set_flash_message! :notice, :"signed_up_but_#{user.inactive_message}"
-        expire_data_after_sign_in!
-        respond_with user, location: after_inactive_sign_up_path_for(user)
+      if sign_up_email != @invite.email
+        flash[:notice] = t("invitation.flash.invite_error.email")
+        render :new, status: :unprocessable_entity and return
+      end
+
+      transaction do
+        user.add!(@invite.organization, @invite.role)
+        @invite.mark_accepted!
       end
     else
-      clean_up_passwords user
+      build_resource(sign_up_params)
+      user.onboard!
+    end
+
+    finish_sign_up
+  end
+
+  protected
+
+  def finish_sign_up
+    if user.persisted?
+      if user.active_for_authentication?
+        set_flash_message!(:notice, :signed_up)
+        sign_up(resource_name, user)
+        respond_with(user, location: after_sign_up_path_for(user))
+      else
+        set_flash_message!(:notice, :"signed_up_but_#{user.inactive_message}")
+        expire_data_after_sign_in!
+        respond_with(user, location: after_inactive_sign_up_path_for(user))
+      end
+    else
+      clean_up_passwords(user)
       set_minimum_password_length
       respond_with user
     end
   end
 
-  protected
+  def set_invite_token
+    @token = params[:invite_token]
+  end
+
+  def set_invite
+    @invite = Accounts::Invite.find_by_token(@token) if @token.present?
+  end
 
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up) do |u|
@@ -43,5 +73,13 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
         organizations_attributes: [:name]
       )
     end
+  end
+
+  def sign_up_params_for_invites
+    sign_up_params.except(:organizations_attributes)
+  end
+
+  def sign_up_email
+    sign_up_params[:email]
   end
 end

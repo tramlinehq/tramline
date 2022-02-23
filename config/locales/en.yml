@@ -1,28 +1,46 @@
 en:
+  invitation:
+    flash:
+      invite_issued: "Invitation issued"
+      invite_error:
+        mailer: "Unable to issue invitation to %{email}"
+        email: "The email specified does not match the one in the invitation"
+    invite_mailer:
+      existing_user:
+        subject: "Invitation instructions"
+        hello: "Hello %{email}"
+        someone_invited_you: "%{invitable} (%{sender}) has invited you to %{org} at %{url}. You now have permissions to access it."
+        ignore: "If you don't want to accept this invite or feel it is in error, please contact %{sender}."
+      new_user:
+        subject: "Invitation instructions"
+        hello: "Hello %{email}"
+        someone_invited_you: "%{invitable} (%{sender}) has invited you to %{org} at %{url}. You can accept the invitation with the url below."
+        accept: "Accept invitation"
+        ignore: "If you don't want to accept the invitation, please ignore this email. Your account won't be created until you access the link above and set your password."
   errors:
     messages:
       http_code:
         '400':
-          title: The request you submitted was invalid or malformed
+          title: "The request you submitted was invalid or malformed"
         '403':
-          title: You don't have permissions to view this page
+          title: "You don't have permissions to view this page"
         '404':
-          title: Not Found
-          content: The page you are looking for isn't here.
+          title: "Not Found"
+          content: "The page you are looking for isn't here."
         '406':
-          title: This page is not available in the requested format.
+          title: "This page is not available in the requested format."
         '410':
-          title: The page you were looking for doesn't exist here anymore.
+          title: "The page you were looking for doesn't exist here anymore."
         '422':
-          title: Security verification failed
-          content: Security verification failed. Are you blocking cookies maybe?
+          title: "Security verification failed"
+          content: "Security verification failed. Are you blocking cookies maybe?"
         '429':
-          title: Too many requests
+          title: "Too many requests"
         '500':
-          title: This page is not correct
-          content: We're sorry, but something went wrong on our end.
+          title: "This page is not correct"
+          content: "We're sorry, but something went wrong on our end."
         '503':
-          title: The page could not be served due to a temporary server failure.
+          title: "The page could not be served due to a temporary server failure."
       password:
         password_strength: "Please choose a stronger password with at least 8 characters. Try a mix of letters, numbers, and symbols."
       not_authorized_policy: "Not Authorized %{model} on %{query} action"

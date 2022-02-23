@@ -37,7 +37,6 @@ gem "semantic", "~> 1.6"
 gem "sassc-rails", "~> 2.1"
 gem "tailwindcss-rails", "~> 2.0"
 gem "paper_trail", "~> 12.2"
-gem "devise_invitable", "~> 2.0"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

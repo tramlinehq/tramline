@@ -1,20 +1,13 @@
-<%= developer_commentary do %>
-  <p>
-    It's advisable to avoid splitting the full name and ask for an optional preferred name.
-    Refer to <a href=https://uxmovement.com/forms/why-your-form-only-needs-one-name-field>this</a>.
-  </p>
-  <p>We only need the Organization Name from the first signee, the rest will be configured later.</p>
-  <p>Currently, only the admin will be able to invite new users to their org. New users can't self-signup.</p>
-  <p>Logins can get locked after 3 wrong attempts, hence you see a section on unlocking at the bottom.</p>
-  <p>- kit</p>
-<% end %>
-
 <div class="max-w-sm mx-auto px-4 py-8">
   <h1 class="text-3xl text-slate-800 font-bold mb-6">Create your account ✨</h1>
   <!-- Form -->
   <%= form_for(resource, as: resource_name, html: { 'data-turbo' => "false" }, url: registration_path(resource_name)) do |f| %>
-
     <%= render partial: 'shared/errors' %>
+    <%= render partial: 'shared/flash' %>
+
+    <% if @token.present? %>
+      <%= hidden_field_tag :invite_token, @token %>
+    <% end %>
 
     <div class="space-y-4">
       <div>
@@ -32,12 +25,14 @@
         <%= f.email_field :email, autocomplete: "current-password", class: "form-input w-full" %>
       </div>
 
-      <div>
-        <%= f.fields_for :organizations, @organization do |m| %>
-          <%= m.label :name, "Organization Name", class: "block text-sm font-medium mb-1" %>
-          <%= m.text_field :name, autofocus: true, autocomplete: "organization-name", class: "form-input w-full" %>
-        <% end %>
-      </div>
+      <% if @token.blank? %>
+        <div>
+          <%= f.fields_for :organizations, @organization do |m| %>
+            <%= m.label :name, "Organization Name", class: "block text-sm font-medium mb-1" %>
+            <%= m.text_field :name, autofocus: true, autocomplete: "organization-name", class: "form-input w-full" %>
+          <% end %>
+        </div>
+      <% end %>
 
       <div class="field">
         <%= f.label :password, class: "block text-sm font-medium mb-1" %>
@@ -68,5 +63,3 @@
     </div>
   </div>
 </div>
-
-<!--<p><%#= render "devise/shared/links" %></p>-->
