@@ -8,10 +8,15 @@ class Accounts::InvitationsController < SignedInApplicationController
     @invite.sender = current_user
 
     if @invite.save
-      if @invite.recipient.present?
-        InvitationMailer.existing_user(@invite).deliver
-      else
-        InvitationMailer.new_user(@invite).deliver
+      begin
+        if @invite.recipient.present?
+          InvitationMailer.existing_user(@invite).deliver
+        else
+          InvitationMailer.new_user(@invite).deliver
+        end
+      rescue Postmark::ApiInputError
+        flash[:error] = "Sorry, there was a delivery error while sending the invite!"
+        render :new, status: :unprocessable_entity
       end
 
       redirect_to accounts_organization_team_path(current_organization),
