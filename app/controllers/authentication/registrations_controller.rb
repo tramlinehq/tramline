@@ -5,8 +5,6 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
   alias_method :user, :resource
   helper_method :user
 
-  delegate :transaction, to: ActiveRecord::Base
-
   def new
     super do |usr|
       @organization = usr.organizations.build
