@@ -13,8 +13,8 @@ class Accounts::User < ApplicationRecord
   has_many :memberships, dependent: :delete_all, inverse_of: :user
   has_many :organizations, -> { where(status: :active) }, through: :memberships
   has_many :all_organizations, through: :memberships, source: :organization
-  has_many :invitations, class_name: "Invite", foreign_key: "recipient_id"
   has_many :sent_invites, class_name: "Invite", foreign_key: "sender_id"
+  has_many :invitations, class_name: "Invite", foreign_key: "recipient_id"
 
   friendly_id :full_name, use: :slugged
 
@@ -48,11 +48,12 @@ class Accounts::User < ApplicationRecord
     self
   end
 
-  def add!(organization, role)
+  def add!(invite)
     return false unless valid?
 
     transaction do
-      memberships.new(organization: organization, role: role)
+      invite.mark_accepted!
+      memberships.new(organization: invite.organization, role: invite.role)
       save!
     end
   end

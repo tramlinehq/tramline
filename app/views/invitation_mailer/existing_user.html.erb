@@ -6,4 +6,6 @@
              org: @invite.organization.name,
              url: root_url) %></p>
 
+<p><%= link_to t("invitation.invite_mailer.new_user.accept"), @user_invite_accept_url %></p>
+
 <p><%= t("invitation.invite_mailer.existing_user.ignore", sender: @invite.sender.email) %></p>

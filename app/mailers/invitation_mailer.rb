@@ -1,6 +1,7 @@
 class InvitationMailer < ActionMailer::Base
   def existing_user(invite)
     @invite = invite
+    @user_invite_accept_url = @invite.accept_url
 
     mail(
       from: @invite.sender.email,

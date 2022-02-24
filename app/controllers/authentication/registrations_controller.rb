@@ -18,14 +18,12 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
       build_resource(sign_up_params_for_invites)
 
       if sign_up_email != @invite.email
+        flash.clear
         flash[:notice] = t("invitation.flash.invite_error.email")
         render :new, status: :unprocessable_entity and return
       end
 
-      transaction do
-        user.add!(@invite.organization, @invite.role)
-        @invite.mark_accepted!
-      end
+      user.add!(@invite)
     else
       build_resource(sign_up_params)
       user.onboard!

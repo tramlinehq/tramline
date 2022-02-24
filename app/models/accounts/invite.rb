@@ -7,6 +7,8 @@ class Accounts::Invite < ActiveRecord::Base
   belongs_to :recipient, class_name: "Accounts::User", optional: true
 
   validate :user_already_in_organization, on: :create
+  validate :accept_only_once, on: :mark_accepted!
+
   before_save :add_recipient
   before_create :generate_token
 
@@ -30,15 +32,41 @@ class Accounts::Invite < ActiveRecord::Base
     end
   end
 
-  def registration_url
-    if Rails.env.development?
-      new_user_registration_url(host: ENV["HOST_NAME"], protocol: "https", port: ENV["PORT_NUM"], invite_token: token)
-    else
-      new_user_registration_url(host: ENV["HOST_NAME"], protocol: "https", invite_token: token)
+  def mark_accepted!
+    update!(accepted_at: Time.now)
+  end
+
+  def accept_only_once
+    if accepted_at.present?
+      errors.add(:recipient, "has already accepted the invite!")
     end
   end
 
-  def mark_accepted!
-    update!(accepted_at: Time.now)
+  def registration_url
+    params = {
+      host: ENV["HOST_NAME"],
+      protocol: "https",
+      invite_token: token
+    }
+
+    if Rails.env.development?
+      new_user_registration_url(params.merge(port: ENV["PORT_NUM"]))
+    else
+      new_user_registration_url(params)
+    end
+  end
+
+  def accept_url
+    params = {
+      host: ENV["HOST_NAME"],
+      protocol: "https",
+      invite_token: token
+    }
+
+    if Rails.env.development?
+      new_authentication_invite_confirmation_url(params.merge(port: ENV["PORT_NUM"]))
+    else
+      new_authentication_invite_confirmation_url(params)
+    end
   end
 end

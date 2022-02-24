@@ -9,7 +9,8 @@ en:
       existing_user:
         subject: "Invitation instructions"
         hello: "Hello %{email}"
-        someone_invited_you: "%{invitable} (%{sender}) has invited you to %{org} at %{url}. You now have permissions to access it."
+        someone_invited_you: "%{invitable} (%{sender}) has invited you to %{org} at %{url}."
+        accept: "Accept invitation"
         ignore: "If you don't want to accept this invite or feel it is in error, please contact %{sender}."
       new_user:
         subject: "Invitation instructions"
