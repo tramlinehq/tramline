@@ -7,6 +7,7 @@ class Accounts::Invite < ActiveRecord::Base
   belongs_to :recipient, class_name: "Accounts::User", optional: true
 
   validate :user_already_in_organization, on: :create
+  validate :user_already_invited, on: :create
   validate :accept_only_once, on: :mark_accepted!
 
   before_save :add_recipient
@@ -29,6 +30,12 @@ class Accounts::Invite < ActiveRecord::Base
 
     if organization.users.find_by_id(recipient)
       errors.add(:recipient, "already exists in the organization!")
+    end
+  end
+
+  def user_already_invited
+    if Accounts::Invite.where(email: email, accepted_at: nil, organization: organization).exists?
+      errors.add(:recipient, "has already been invited to the organization!")
     end
   end
 
