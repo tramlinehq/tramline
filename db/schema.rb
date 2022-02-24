@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_02_16_085534) do
+ActiveRecord::Schema.define(version: 2022_02_23_072246) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -89,6 +89,21 @@ ActiveRecord::Schema.define(version: 2022_02_16_085534) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["app_id"], name: "index_integrations_on_app_id"
+  end
+
+  create_table "invites", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "organization_id", null: false
+    t.uuid "sender_id", null: false
+    t.uuid "recipient_id"
+    t.string "email"
+    t.string "token"
+    t.string "role"
+    t.datetime "accepted_at", precision: 6
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["organization_id"], name: "index_invites_on_organization_id"
+    t.index ["recipient_id"], name: "index_invites_on_recipient_id"
+    t.index ["sender_id"], name: "index_invites_on_sender_id"
   end
 
   create_table "memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -223,6 +238,9 @@ ActiveRecord::Schema.define(version: 2022_02_16_085534) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "apps", "organizations"
   add_foreign_key "integrations", "apps"
+  add_foreign_key "invites", "organizations"
+  add_foreign_key "invites", "users", column: "recipient_id"
+  add_foreign_key "invites", "users", column: "sender_id"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "train_runs", "train_runs", column: "previous_train_run_id"

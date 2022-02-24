@@ -25,8 +25,19 @@ Rails.application.routes.draw do
     end
   end
 
+  namespace :authentication do
+    resources :invite_confirmations, only: [:new, :create]
+  end
+
   namespace :accounts do
     resources :organizations do
+      member do
+        get :switch
+      end
+
+      resource :team
+      resources :invitations
+
       resources :apps do
         namespace :releases do
           resources :trains do

@@ -5,6 +5,7 @@ class Accounts::Organization < ApplicationRecord
   has_many :memberships, dependent: :delete_all, inverse_of: :organization
   has_many :users, through: :memberships, dependent: :delete_all
   has_many :apps
+  has_many :invites
 
   enum status: { active: "active", dormant: "dormant", guest: "guest" }
 

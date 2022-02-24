@@ -18,7 +18,7 @@ class Releases::Step < ApplicationRecord
   friendly_id :name, use: :slugged
 
   before_validation :set_step_number
-  validate :within_train_schedule
+  validate :within_train_schedule, on: :create
   after_initialize :set_default_status
 
   def set_step_number

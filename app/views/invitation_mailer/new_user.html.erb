@@ -1,0 +1,11 @@
+<p><%= t("invitation.invite_mailer.new_user.hello", email: @invite.email) %></p>
+
+<p><%= raw t("invitation.invite_mailer.new_user.someone_invited_you",
+             sender: @invite.sender.email,
+             invitable: @invite.sender.preferred_name,
+             org: @invite.organization.name,
+             url: root_url) %></p>
+
+<p><%= link_to t("invitation.invite_mailer.new_user.accept"), @user_registration_url %></p>
+
+<p><%= t("invitation.invite_mailer.new_user.ignore").html_safe %></p>

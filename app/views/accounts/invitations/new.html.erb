@@ -1,0 +1,33 @@
+<%= form_for(@invite, url: accounts_organization_invitations_path(@invite.organization, @invite), html: { method: :post }) do |form| %>
+  <%= render "shared/errors", resource: @invite %>
+
+  <div class="mb-8">
+    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">Add a member to your team 📱</h1>
+  </div>
+
+  <div class="space-y-4">
+    <%= form.hidden_field :organization_id, value: @invite.organization.id %>
+
+    <div>
+      <%= form.label :email, class: "block text-sm font-medium mb-1" %>
+      <%= form.email_field :email, autofocus: true, autocomplete: "email", class: "form-input w-full" %>
+    </div>
+
+    <div>
+      <%= form.label :role, class: "block text-sm font-medium mb-1" %>
+      <%= form.select :role,
+                      options_for_select(Accounts::Membership.roles.transform_keys(&:titleize).to_a, "developer"),
+                      { required: true },
+                      { class: "form-input w-full mb-1" } %>
+    </div>
+
+    <div class="mt-5">
+      <!-- Start -->
+      <%= form.submit 'Create', class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" do %>
+        <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
+          <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
+        </svg>
+      <% end %>
+    </div>
+  </div>
+<% end %>

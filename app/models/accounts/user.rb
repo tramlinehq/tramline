@@ -5,14 +5,16 @@ class Accounts::User < ApplicationRecord
   self.implicit_order_column = "created_at"
 
   devise :database_authenticatable, :registerable, :trackable, :lockable,
-    :recoverable, :confirmable, :timeoutable, :rememberable, :validatable
+         :recoverable, :confirmable, :timeoutable, :rememberable, :validatable
 
-  validates :password, password_strength: {use_dictionary: true}, allow_nil: true
+  validates :password, password_strength: { use_dictionary: true }, allow_nil: true
   after_validation :strip_unnecessary_errors
 
   has_many :memberships, dependent: :delete_all, inverse_of: :user
   has_many :organizations, -> { where(status: :active) }, through: :memberships
   has_many :all_organizations, through: :memberships, source: :organization
+  has_many :sent_invites, class_name: "Invite", foreign_key: "sender_id"
+  has_many :invitations, class_name: "Invite", foreign_key: "recipient_id"
 
   friendly_id :full_name, use: :slugged
 
@@ -32,6 +34,8 @@ class Accounts::User < ApplicationRecord
     memberships.first
   end
 
+  delegate :role, to: :membership
+
   def onboard!
     return false unless valid?
     return false if membership.blank?
@@ -42,6 +46,16 @@ class Accounts::User < ApplicationRecord
     organization.status = Accounts::Organization.statuses[:active]
     save!
     self
+  end
+
+  def add!(invite)
+    return false unless valid?
+
+    transaction do
+      invite.mark_accepted!
+      memberships.new(organization: invite.organization, role: invite.role)
+      save!
+    end
   end
 
   private

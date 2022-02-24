@@ -25,6 +25,11 @@ class SignedInApplicationController < ActionController::Base
   end
 
   def current_organization
-    @current_organization ||= current_user.organization
+    @current_organization ||=
+      if session[:active_organization]
+        Accounts::Organization.friendly.find(session[:active_organization])
+      else
+        current_user.organization
+      end
   end
 end
