@@ -36,13 +36,7 @@ Rails.application.routes.draw do
       end
 
       resource :team
-
-      resources :invitations do
-        collection do
-          get :confirm
-          patch :accept
-        end
-      end
+      resources :invitations
 
       resources :apps do
         namespace :releases do
