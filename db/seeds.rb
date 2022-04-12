@@ -53,7 +53,7 @@ end
 # --------------
 DEVELOPER_FULL_NAME = "Developer User"
 DEVELOPER_PREFERRED_NAME = "Developer"
-DEVELOPER_EMAIL = "developer@tramline.app"
+DEVELOPER_EMAIL = "play_developer@tramline.app"
 DEVELOPER_PASSWORD = "why aroma enclose startup"
 
 developer_user = lambda do
@@ -65,7 +65,7 @@ developer_user = lambda do
   )
 
   organization = Accounts::Organization.create!(
-    name: "Tramline Test (developer)",
+    name: "Tramline Test (play_developer)",
     status: Accounts::Organization.statuses[:active],
     created_by: user.email
   )
@@ -76,7 +76,7 @@ developer_user = lambda do
     role: Accounts::Membership.roles[:developer]
   )
 
-  puts "Added developer user."
+  puts "Added play_developer user."
 end
 
 ActiveRecord::Base.transaction do
