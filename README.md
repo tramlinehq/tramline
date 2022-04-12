@@ -46,9 +46,22 @@ Now run,
 bundle install
 ```
 
+This should now finish your rails setup.
+
 ### Database
 
 Make sure you have Postgres 14 running. On the mac, [Postgres.app](https://postgresapp.com) is a handy way of managing pg versions.
+
+To create a database, migrate add some seed data, run
+
+```
+rails db:create
+rails db:migrate
+rails db:seed
+```
+
+
+Refer to `db/seeds.rb` for credentials on how to login using the seed users.
 
 ## Developer Notes
 
