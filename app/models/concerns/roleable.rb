@@ -4,7 +4,7 @@ module Roleable
   included do
     enum role: {
       owner: "owner",
-      developer: "play_developer",
+      developer: "developer",
       manager: "manager"
     }
   end
