@@ -9,9 +9,11 @@
   - ["medium", 2]
   - ["low", 1]
 
-:schedule:
-  kickoff:
-    every: "1m"
-    class: Releases::KickoffJob
-    description: "This job finds trains and/or train-steps to jump-start"
-    queue: high
+# Automatic train running is currently disabled
+#
+#:schedule:
+#  kickoff:
+#    every: "1m"
+#    class: Releases::KickoffJob
+#    description: "This job finds trains and/or train-steps to jump-start"
+#    queue: high
