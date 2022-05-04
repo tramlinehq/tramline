@@ -133,8 +133,8 @@ ActiveRecord::Schema.define(version: 2022_02_23_072246) do
     t.uuid "train_id", null: false
     t.uuid "previous_train_run_id"
     t.string "code_name", null: false
-    t.datetime "scheduled_at", null: false
-    t.datetime "was_run_at"
+    t.datetime "scheduled_at", precision: 6, null: false
+    t.datetime "was_run_at", precision: 6
     t.string "commit_sha"
     t.string "status", null: false
     t.datetime "created_at", precision: 6, null: false
@@ -148,8 +148,8 @@ ActiveRecord::Schema.define(version: 2022_02_23_072246) do
     t.uuid "train_step_id", null: false
     t.uuid "train_run_id", null: false
     t.uuid "previous_step_run_id"
-    t.datetime "scheduled_at", null: false
-    t.datetime "was_run_at"
+    t.datetime "scheduled_at", precision: 6, null: false
+    t.datetime "was_run_at", precision: 6
     t.string "status", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -182,7 +182,7 @@ ActiveRecord::Schema.define(version: 2022_02_23_072246) do
     t.string "version_seeded_with", null: false
     t.string "version_current"
     t.string "version_suffix", null: false
-    t.datetime "kickoff_at", null: false
+    t.datetime "kickoff_at", precision: 6, null: false
     t.interval "repeat_duration", null: false
     t.string "slug"
     t.datetime "created_at", precision: 6, null: false
