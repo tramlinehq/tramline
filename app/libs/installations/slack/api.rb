@@ -1,5 +1,6 @@
 module Installations
   class Slack::Api
+    include Vaultable
     attr_reader :installation_scopes, :installation_state, :oauth_access_token
 
     PUBLISH_CHAT_MESSAGE_URL = "https://slack.com/api/chat.postMessage"
@@ -11,13 +12,15 @@ module Installations
     end
 
     class << self
+      include Vaultable
+
       OAUTH_V2ACCESS_TOKEN_URL = "https://slack.com/api/oauth.v2.access"
 
       def oauth_access_token(code)
         form_params = {
           form: {
-            client_id: credentials.integrations.slack.client_id,
-            client_secret: credentials.integrations.slack.client_secret,
+            client_id: creds.integrations.slack.client_id,
+            client_secret: creds.integrations.slack.client_secret,
             code:
           }
         }
@@ -28,11 +31,6 @@ module Installations
           .then { |body| JSON.parse(body) }
           .then { |json| json["access_token"] }
       end
-
-      private
-
-      delegate :application, to: Rails
-      delegate :credentials, to: :application
     end
 
     def message(channel, text)
@@ -78,10 +76,5 @@ module Installations
         .then { |json| json["channels"] }
         .then { |channels| channels.map { |list| list.slice("id", "name") } }
     end
-
-    private
-
-    delegate :application, to: Rails
-    delegate :credentials, to: :application
   end
 end

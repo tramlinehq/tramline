@@ -6,7 +6,7 @@ class App < ApplicationRecord
   has_many :integrations, inverse_of: :app
   has_many :trains, class_name: "Releases::Train", foreign_key: :app_id
 
-  enum role: { android: "android", ios: "ios" }
+  enum platform: { android: "android", ios: "ios" }
 
   after_initialize :set_default_platform
 
@@ -16,7 +16,7 @@ class App < ApplicationRecord
   delegate :completable?, to: :integrations, prefix: :integrations_are
 
   def set_default_platform
-    self.platform = App.roles[:android]
+    self.platform = App.platforms[:android]
   end
 
   def bump_build_number!

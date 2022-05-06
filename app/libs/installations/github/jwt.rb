@@ -3,6 +3,7 @@ module Installations
   require "jwt"
 
   class Github::Jwt
+    include Vaultable
     attr_reader :private_key, :app_id
 
     def initialize(app_id)
@@ -21,13 +22,8 @@ module Installations
       JWT.encode(payload, private_key, "RS256")
     end
 
-    private
-
-    delegate :application, to: Rails
-    delegate :credentials, to: :application
-
     def private_pem
-      credentials.integrations.github.private_pem
+      creds.integrations.github.private_pem
     end
   end
 end

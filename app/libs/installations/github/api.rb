@@ -1,14 +1,15 @@
 module Installations
   class Github::Api
+    include Vaultable
     attr_reader :app_name, :installation_id, :jwt, :client
 
     WEBHOOK_NAME = "web"
     WEBHOOK_EVENTS = ["workflow_run"]
 
     def initialize(installation_id)
-      @app_name = credentials.integrations.github.app_name
+      @app_name = creds.integrations.github.app_name
       @installation_id = installation_id
-      @jwt = Github::Jwt.new(credentials.integrations.github.app_id)
+      @jwt = Github::Jwt.new(creds.integrations.github.app_id)
 
       set_client
     end
@@ -77,11 +78,6 @@ module Installations
         @client.commits(repo, options: { sha: working_branch_name }).first[:sha]
       end
     end
-
-    private
-
-    delegate :application, to: Rails
-    delegate :credentials, to: :application
 
     def execute
       yield

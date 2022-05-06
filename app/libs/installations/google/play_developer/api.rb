@@ -1,5 +1,7 @@
 module Installations
   class Google::PlayDeveloper::Api
+    include Vaultable
+
     ANDROID_PUBLISHER = ::Google::Apis::AndroidpublisherV3
     SERVICE = ANDROID_PUBLISHER::AndroidPublisherService
     SERVICE_ACCOUNT = ::Google::Auth::ServiceAccountCredentials
@@ -28,11 +30,6 @@ module Installations
         client.commit_edit(package_name, edit.id)
       end
     end
-
-    private
-
-    delegate :application, to: Rails
-    delegate :credentials, to: :application
 
     def track(version_code)
       ANDROID_PUBLISHER::Track.new(track: track_name, version_codes: [version_code], releases: [release])
