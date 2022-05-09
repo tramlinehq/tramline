@@ -5,6 +5,12 @@ class GithubController < IntegrationListenerController
   delegate :transaction, to: ActiveRecord::Base
   delegate :current_run, to: :train
 
+  def providable_params
+    super.merge({
+      installation_id: installation_id
+    })
+  end
+
   def events
     head :accepted and return unless successful?
     head :unprocessable_entity and return if train.blank?
