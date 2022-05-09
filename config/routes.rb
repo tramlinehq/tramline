@@ -39,6 +39,7 @@ Rails.application.routes.draw do
       resources :invitations
 
       resources :apps do
+        resource :app_config, only: [:edit, :update], path: :config
         namespace :releases do
           resources :trains do
             member do

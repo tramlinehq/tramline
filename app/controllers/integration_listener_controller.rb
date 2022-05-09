@@ -8,19 +8,20 @@ class IntegrationListenerController < SignedInApplicationController
     end
 
     @integration = state_app.integrations.new(integration_params)
-    @integration
-      .decide
-      .complete_access
+    @integration.providable = build_providable
+    @integration.complete_access
 
-    respond_to do |format|
-      if @integration.save
-        format.html { redirect_to app_path, notice: "Integration was successfully created." }
-        format.json { render :show, status: :created, location: state_app }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: state_app.errors, status: :unprocessable_entity }
-      end
+    if @integration.save
+      redirect_to app_path, notice: "Integration was successfully created."
+    else
+      render :new, status: :unprocessable_entity
     end
+  end
+
+  protected
+
+  def providable_params
+    { integration: @integration }
   end
 
   private
@@ -39,12 +40,13 @@ class IntegrationListenerController < SignedInApplicationController
 
   def integration_params
     {
-      installation_id: installation_id,
       category: state_integration_category,
-      provider: state_integration_provider,
-      status: Integration::DEFAULT_CONNECT_STATUS[state_integration_category],
-      code: code
+      status: Integration::DEFAULT_CONNECT_STATUS,
     }
+  end
+
+  def build_providable
+    state_integration_provider.constantize.new(providable_params)
   end
 
   def state_user

@@ -9,21 +9,21 @@
       <h3 class="text-xl leading-snug text-slate-800 font-bold mt-6">
         <%= category.titleize %>
       </h3>
-      <div class="text-sm"><%= Integration::LIST_DESCRIPTIONS[category.to_sym] %></div>
+      <div class="text-sm"><%= Integration::CATEGORY_DESCRIPTIONS[category.to_sym] %></div>
 
       <div class="grid grid-cols-12 gap-6">
         <% integrations.each do |integration| %>
-          <% provider = integration.provider %>
+          <% provider = integration.providable %>
           <div class="col-span-full xl:col-span-3 2xl:col-span-4 bg-white shadow-md rounded-sm border border-slate-200">
             <!-- Card content -->
             <div class="flex flex-col h-full p-5">
               <div class="grow">
                 <header class="flex items-center mb-4">
                   <div class="w-30 h-30 shrink-0 mr-3">
-                    <%= image_tag("#{provider}_thumb.png", width: 30) %>
+                    <%= image_tag("#{provider.to_s}_thumb.png", width: 30) %>
                   </div>
                   <h3 class="text-lg text-slate-800 font-semibold">
-                    <%= provider.titleize %>
+                    <%= provider.to_s.titleize %>
                   </h3>
                 </header>
               </div>
@@ -41,16 +41,12 @@
                               ) do |form| %>
 
                             <%= form.hidden_field :category, value: category %>
-                            <%= form.hidden_field :provider, value: provider %>
+                            <%= form.hidden_field :providable, value: integration.providable_type %>
                             <%= form.submit 'Connect',
                                             class: "btn-lg border-slate-600 hover:border-slate-300 flex items-center",
                                             "data-turbo": false %>
                           <% end %>
-                        <% elsif integration.partially_connected? %>
-                          <%= link_to "Complete Integration",
-                                      edit_accounts_organization_app_integration_path(current_organization, @app, integration),
-                                      class: "btn-lg border-slate-600 hover:border-slate-300 flex items-center" %>
-                        <% elsif integration.fully_connected? %>
+                        <% else %>
                           <div class="text-xs inline-flex font-medium bg-green-100 text-green-600 rounded-full text-center px-2.5 py-1">
                             Connected
                           </div>

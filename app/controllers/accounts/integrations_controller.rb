@@ -1,39 +1,14 @@
 class Accounts::IntegrationsController < SignedInApplicationController
   using RefinedString
 
-  before_action :set_app, only: %i[connect show edit update index]
-  before_action :set_integration, only: %i[edit show update]
+  before_action :set_app, only: %i[connect index]
 
-  def new
-  end
 
   def connect
-    @integration = @app.integrations.new(integration_params)
-    @integration.decide
+    @integration = @app.integrations.new(connect_params)
+    @integration.providable = build_providable
 
     redirect_to(@integration.install_path, allow_other_host: true)
-  end
-
-  def update
-    respond_to do |format|
-      if @integration.update(parsed_integration_params)
-        format.html {
-          redirect_to accounts_organization_app_integrations_path(current_organization, @app),
-                      notice: "Integration was successfully updated."
-        }
-        format.json { render :index, status: :ok, location: @integration }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @integration.errors, status: :unprocessable_entity }
-      end
-    end
-  end
-
-  def show
-  end
-
-  def edit
-    @channels = @integration.channels
   end
 
   def index
@@ -51,7 +26,7 @@ class Accounts::IntegrationsController < SignedInApplicationController
           integration =
             @app
               .integrations
-              .new(category: Integration.categories[category], provider: Integration.providers[provider])
+              .new(category: Integration.categories[category], providable: provider.constantize.new)
 
           combination[category] << integration
         end
@@ -62,29 +37,27 @@ class Accounts::IntegrationsController < SignedInApplicationController
 
   private
 
-  def set_integration
-    @integration = @app.integrations.find(params[:id])
-  end
-
   def set_app
     @app = current_organization.apps.friendly.find(params[:app_id])
+  end
+
+  def build_providable
+    providable_params[:providable].constantize.new(integration: @integration)
   end
 
   def integration_params
     params.require(:integration)
           .permit(
             :category,
-            :provider,
-            :active_code_repo,
-            :working_branch,
-            :notification_channel
+            :providable
           ).merge(current_user:)
   end
 
-  def parsed_integration_params
-    integration_params
-      .merge(active_code_repo: integration_params[:active_code_repo]&.safe_json_parse)
-      .merge(notification_channel: integration_params[:notification_channel]&.safe_json_parse)
-      .merge(status: Integration.statuses[:fully_connected])
+  def connect_params
+    integration_params.except(:providable)
+  end
+
+  def providable_params
+    integration_params.except(:category)
   end
 end

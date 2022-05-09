@@ -20,22 +20,18 @@ module Automatons
     private
 
     def installation_id
-      integration
+      train
+        .app
+        .vcs_provider
         .installation_id
     end
 
     def repo
-      integration
-        .active_code_repo
-        .values
-        .first
-    end
-
-    def integration
       train
         .app
-        .integrations
-        .version_control
+        .config
+        .code_repository
+        .values
         .first
     end
 

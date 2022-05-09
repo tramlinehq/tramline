@@ -19,18 +19,18 @@ module Automatons
 
     private
 
-    delegate :oauth_access_token, to: :integration
-    delegate :notification_channel, to: :integration
-
     def notify_channel
-      notification_channel.values.first
+      train
+        .app
+        .config
+        .notification_channel
     end
 
-    def integration
+    def oauth_access_token
       train
-        .integrations
-        .notification
-        .first
+        .app
+        .notification_provider
+        .oauth_access_token
     end
   end
 end
