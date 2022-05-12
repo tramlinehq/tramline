@@ -35,16 +35,40 @@
                     <div class="flex items-center text-slate-400">
                       <div class="text-sm text-slate-500">
                         <% if integration.connect? %>
-                          <%= form_with(model: [current_organization, @app, integration],
-                                        method: :get,
-                                        url: connect_accounts_organization_app_integrations_path(current_organization, @app, integration)
-                              ) do |form| %>
+                          <% if integration.providable_type == "GooglePlayStoreIntegration" %>
+                          <span data-controller="visibility">
+                            <button class="btn-lg border-slate-600 hover:border-slate-300 flex items-center"
+                                    data-turbo="false"
+                                    data-action="visibility#toggle">
+                              Connect
+                            </button>
 
-                            <%= form.hidden_field :category, value: category %>
-                            <%= form.hidden_field :providable, value: integration.providable_type %>
-                            <%= form.submit 'Connect',
-                                            class: "btn-lg border-slate-600 hover:border-slate-300 flex items-center",
-                                            "data-turbo": false %>
+                            <%= modal_for("Add JSON Key") do %>
+                              <%= form_with(model: [current_organization, @app, integration]) do |form| %>
+                                <%= form.hidden_field :category, value: category %>
+                                <%= form.fields_for :providable do |subform| %>
+                                  <%= subform.hidden_field :type, value: integration.providable_type %>
+                                  <%= subform.file_field :json_key, accept: 'application/json' %>
+                                <% end %>
+
+                                <%= form.submit 'Create', class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
+                              <% end %>
+                            <% end %>
+                          </span>
+                          <% else %>
+                            <%= form_with(model: [current_organization, @app, integration],
+                                          method: :get,
+                                          url: connect_accounts_organization_app_integrations_path(current_organization, @app, integration)
+                                ) do |form| %>
+
+                              <%= form.hidden_field :category, value: category %>
+                              <%= form.fields_for :providable do |subform| %>
+                                <%= subform.hidden_field :type, value: integration.providable_type %>
+                              <% end %>
+                              <%= form.submit 'Connect',
+                                              class: "btn-lg border-slate-600 hover:border-slate-300 flex items-center",
+                                              "data-turbo": false %>
+                            <% end %>
                           <% end %>
                         <% else %>
                           <div class="text-xs inline-flex font-medium bg-green-100 text-green-600 rounded-full text-center px-2.5 py-1">
