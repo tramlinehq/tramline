@@ -12,7 +12,7 @@ class Integration < ApplicationRecord
       "version_control" => %w[GithubIntegration],
       "ci_cd" => %w[GithubIntegration],
       "notification" => %w[SlackIntegration],
-      "build_channel" => %w[SlackIntegration]
+      "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration]
     }.freeze
   end
 
@@ -38,6 +38,12 @@ class Integration < ApplicationRecord
   scope :ci_cd_provider, -> { ci_cd.first.providable }
   scope :notification_provider, -> { notification.first.providable }
 
+  delegate :channels, to: :providable
+  delegate :install_path, to: :providable
+  delegate :complete_access, to: :providable
+
+  before_create :set_connected
+
   DEFAULT_CONNECT_STATUS = Integration.statuses[:connected]
   MINIMAL_REQUIRED_SET = [:version_control, :ci_cd, :notification]
 
@@ -49,18 +55,6 @@ class Integration < ApplicationRecord
     !connected?
   end
 
-  def channels
-    providable.channels
-  end
-
-  def install_path
-    providable.install_path
-  end
-
-  def complete_access
-    providable.complete_access
-  end
-
   def installation_state
     {
       organization_id: app.organization.id,
@@ -69,5 +63,9 @@ class Integration < ApplicationRecord
       integration_provider: providable_type,
       user_id: current_user.id
     }.to_json.encode
+  end
+
+  def set_connected
+    self.status = DEFAULT_CONNECT_STATUS
   end
 end

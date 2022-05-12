@@ -1,14 +1,20 @@
 class Accounts::IntegrationsController < SignedInApplicationController
   using RefinedString
 
-  before_action :set_app, only: %i[connect index]
-
+  before_action :set_app, only: %i[connect index create]
+  before_action :set_integration, only: %i[connect create]
+  before_action :set_providable, only: %i[connect create]
 
   def connect
-    @integration = @app.integrations.new(connect_params)
-    @integration.providable = build_providable
-
     redirect_to(@integration.install_path, allow_other_host: true)
+  end
+
+  def create
+    if @integration.save!
+      redirect_to index_path, notice: "Integration was successfully created."
+    else
+      redirect_to index_path, notice: "Integration failed!"
+    end
   end
 
   def index
@@ -41,23 +47,46 @@ class Accounts::IntegrationsController < SignedInApplicationController
     @app = current_organization.apps.friendly.find(params[:app_id])
   end
 
-  def build_providable
-    providable_params[:providable].constantize.new(integration: @integration)
+  def set_integration
+    @integration = @app.integrations.new(integrations_only_params)
+  end
+
+  def set_providable
+    @integration.providable = providable_type.constantize.new(integration: @integration)
+    @integration.providable.assign_attributes(additional_providable_params)
   end
 
   def integration_params
     params.require(:integration)
           .permit(
             :category,
-            :providable
+            providable: [:json_key, :type]
           ).merge(current_user:)
   end
 
-  def connect_params
+  def integrations_only_params
     integration_params.except(:providable)
   end
 
   def providable_params
-    integration_params.except(:category)
+    integration_params[:providable]
+  end
+
+  def additional_providable_params
+    params = {}
+    params = params.merge(json_key: attachment) if providable_type.eql?("GooglePlayStoreIntegration")
+    params
+  end
+
+  def providable_type
+    providable_params[:type]
+  end
+
+  def attachment
+    Services::Attachment.for_json(integration_params[:providable][:json_key])
+  end
+
+  def index_path
+    accounts_organization_app_integrations_path(@current_organization, @app)
   end
 end

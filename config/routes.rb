@@ -49,7 +49,7 @@ Rails.application.routes.draw do
           end
         end
 
-        resources :integrations, except: [:create] do
+        resources :integrations do
           collection do
             get :connect, to: "integrations#connect", as: :connect
           end
