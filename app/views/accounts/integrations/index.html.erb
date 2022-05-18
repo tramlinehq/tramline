@@ -2,86 +2,34 @@
   <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">Integrations 🤖</h1>
 </div>
 
+<%= render partial: 'shared/errors', locals: { resource: @integration } %>
+
 <section class="pb-6">
   <div class="grid grid-cols-1 gap-6">
-    <!-- Card 1 -->
     <% @integrations_by_categories.each do |category, integrations| %>
       <h3 class="text-xl leading-snug text-slate-800 font-bold mt-6">
         <%= category.titleize %>
       </h3>
+
       <div class="text-sm"><%= Integration::CATEGORY_DESCRIPTIONS[category.to_sym] %></div>
 
       <div class="grid grid-cols-12 gap-6">
         <% integrations.each do |integration| %>
-          <% provider = integration.providable %>
-          <div class="col-span-full xl:col-span-3 2xl:col-span-4 bg-white shadow-md rounded-sm border border-slate-200">
-            <!-- Card content -->
-            <div class="flex flex-col h-full p-5">
-              <div class="grow">
-                <header class="flex items-center mb-4">
-                  <div class="w-30 h-30 shrink-0 mr-3">
-                    <%= image_tag("#{provider.to_s}_thumb.png", width: 30) %>
-                  </div>
-                  <h3 class="text-lg text-slate-800 font-semibold">
-                    <%= provider.to_s.titleize %>
-                  </h3>
-                </header>
-              </div>
-              <!-- Card footer -->
-              <footer class="mt-1">
-                <div class="flex flex-wrap justify-between items-center">
-                  <!-- Left side -->
-                  <div class="flex space-x-3">
-                    <div class="flex items-center text-slate-400">
-                      <div class="text-sm text-slate-500">
-                        <% if integration.connect? %>
-                          <% if integration.providable_type == "GooglePlayStoreIntegration" %>
-                          <span data-controller="visibility">
-                            <button class="btn-lg border-slate-600 hover:border-slate-300 flex items-center"
-                                    data-turbo="false"
-                                    data-action="visibility#toggle">
-                              Connect
-                            </button>
+          <% if integration.providable.creatable? %>
+            <%= render partial: "creatable",
+                       locals: { current_organization: current_organization,
+                                 integration: integration,
+                                 category: category
+                       } %>
+          <% end %>
 
-                            <%= modal_for("Add JSON Key") do %>
-                              <%= form_with(model: [current_organization, @app, integration]) do |form| %>
-                                <%= form.hidden_field :category, value: category %>
-                                <%= form.fields_for :providable do |subform| %>
-                                  <%= subform.hidden_field :type, value: integration.providable_type %>
-                                  <%= subform.file_field :json_key, accept: 'application/json' %>
-                                <% end %>
-
-                                <%= form.submit 'Create', class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
-                              <% end %>
-                            <% end %>
-                          </span>
-                          <% else %>
-                            <%= form_with(model: [current_organization, @app, integration],
-                                          method: :get,
-                                          url: connect_accounts_organization_app_integrations_path(current_organization, @app, integration)
-                                ) do |form| %>
-
-                              <%= form.hidden_field :category, value: category %>
-                              <%= form.fields_for :providable do |subform| %>
-                                <%= subform.hidden_field :type, value: integration.providable_type %>
-                              <% end %>
-                              <%= form.submit 'Connect',
-                                              class: "btn-lg border-slate-600 hover:border-slate-300 flex items-center",
-                                              "data-turbo": false %>
-                            <% end %>
-                          <% end %>
-                        <% else %>
-                          <div class="text-xs inline-flex font-medium bg-green-100 text-green-600 rounded-full text-center px-2.5 py-1">
-                            Connected
-                          </div>
-                        <% end %>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </footer>
-            </div>
-          </div>
+          <% if integration.providable.connectable? %>
+            <%= render partial: "connectable",
+                       locals: { current_organization: current_organization,
+                                 integration: integration,
+                                 category: category
+                       } %>
+          <% end %>
         <% end %>
       </div>
     <% end %>

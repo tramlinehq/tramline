@@ -99,10 +99,10 @@ ActiveRecord::Schema[7.0].define(version: 2022_05_09_151830) do
 
   create_table "integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "app_id", null: false
+    t.string "category", null: false
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "category"
     t.uuid "providable_id"
     t.string "providable_type"
     t.index ["app_id"], name: "index_integrations_on_app_id"

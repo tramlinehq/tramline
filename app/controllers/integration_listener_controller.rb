@@ -9,7 +9,6 @@ class IntegrationListenerController < SignedInApplicationController
 
     @integration = state_app.integrations.new(integration_params)
     @integration.providable = build_providable
-    @integration.complete_access
 
     if @integration.save
       redirect_to app_path, notice: "Integration was successfully created."

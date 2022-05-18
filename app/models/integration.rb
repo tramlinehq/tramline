@@ -30,7 +30,8 @@ class Integration < ApplicationRecord
     disconnected: "disconnected"
   }
 
-  validate -> { providable_type.in?(LIST[category]) }
+  validates_presence_of :category
+  validate :provider_in_category
 
   attr_accessor :current_user, :code
 
@@ -40,19 +41,15 @@ class Integration < ApplicationRecord
 
   delegate :channels, to: :providable
   delegate :install_path, to: :providable
-  delegate :complete_access, to: :providable
 
   before_create :set_connected
 
   DEFAULT_CONNECT_STATUS = Integration.statuses[:connected]
+  DEFAULT_INITIAL_STATUS = Integration.statuses[:disconnected]
   MINIMAL_REQUIRED_SET = [:version_control, :ci_cd, :notification]
 
   def self.ready?
     where(category: MINIMAL_REQUIRED_SET, status: :connected).size == MINIMAL_REQUIRED_SET.size
-  end
-
-  def connect?
-    !connected?
   end
 
   def installation_state
@@ -67,5 +64,11 @@ class Integration < ApplicationRecord
 
   def set_connected
     self.status = DEFAULT_CONNECT_STATUS
+  end
+
+  def provider_in_category
+    unless providable_type&.in?(LIST[category])
+      errors.add(:providable_type, "Provider is not a part of this type of Integration")
+    end
   end
 end
