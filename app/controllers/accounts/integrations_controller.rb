@@ -10,14 +10,21 @@ class Accounts::IntegrationsController < SignedInApplicationController
   end
 
   def create
-    if @integration.save!
+    if @integration.save
       redirect_to index_path, notice: "Integration was successfully created."
     else
-      redirect_to index_path, notice: "Integration failed!"
+      set_integrations_by_categories
+      render :index, status: :unprocessable_entity
     end
   end
 
   def index
+    set_integrations_by_categories
+  end
+
+  private
+
+  def set_integrations_by_categories
     @integrations_by_categories =
       Integration::LIST.each_with_object({}) do |(category, providers), combination|
         existing_integration = @app.integrations.where(category: category)
@@ -32,7 +39,9 @@ class Accounts::IntegrationsController < SignedInApplicationController
           integration =
             @app
               .integrations
-              .new(category: Integration.categories[category], providable: provider.constantize.new)
+              .new(category: Integration.categories[category],
+                   providable: provider.constantize.new,
+                   status: Integration::DEFAULT_INITIAL_STATUS)
 
           combination[category] << integration
         end
@@ -40,8 +49,6 @@ class Accounts::IntegrationsController < SignedInApplicationController
         combination
       end
   end
-
-  private
 
   def set_app
     @app = current_organization.apps.friendly.find(params[:app_id])
@@ -53,14 +60,14 @@ class Accounts::IntegrationsController < SignedInApplicationController
 
   def set_providable
     @integration.providable = providable_type.constantize.new(integration: @integration)
-    @integration.providable.assign_attributes(additional_providable_params)
+    @integration.providable.assign_attributes(providable_params)
   end
 
   def integration_params
     params.require(:integration)
           .permit(
             :category,
-            providable: [:json_key, :type]
+            providable: [:type]
           ).merge(current_user:)
   end
 
@@ -69,21 +76,11 @@ class Accounts::IntegrationsController < SignedInApplicationController
   end
 
   def providable_params
-    integration_params[:providable]
-  end
-
-  def additional_providable_params
-    params = {}
-    params = params.merge(json_key: attachment) if providable_type.eql?("GooglePlayStoreIntegration")
-    params
+    {}
   end
 
   def providable_type
-    providable_params[:type]
-  end
-
-  def attachment
-    Services::Attachment.for_json(integration_params[:providable][:json_key])
+    integration_params[:providable][:type]
   end
 
   def index_path

@@ -21,7 +21,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def workflows
-    [] unless github_actions? && ci_cd?
+    [] unless integration.github_actions? && integration.ci_cd?
     Installations::Github::Api.new(installation_id).list_workflows(active_code_repo.values.first)
   end
 
@@ -37,7 +37,11 @@ class GithubIntegration < ApplicationRecord
     "github"
   end
 
-  def complete_access
-    # do nothing
+  def creatable?
+    false
+  end
+
+  def connectable?
+    true
   end
 end

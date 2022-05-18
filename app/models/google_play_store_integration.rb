@@ -5,8 +5,12 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   encrypts :json_key, deterministic: true
 
-  def complete_access
-    # do nothing
+  def creatable?
+    true
+  end
+
+  def connectable?
+    false
   end
 
   def to_s
