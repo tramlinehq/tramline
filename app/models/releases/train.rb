@@ -20,12 +20,16 @@ class Releases::Train < ApplicationRecord
   validate :semver_compatibility
   validate :kickoff_in_the_future, on: :create
   validate :ready?, on: :create
+  validates_uniqueness_of :version_suffix, scope: :app
 
   before_create :set_current_version!
   before_create :set_default_status!
   after_create :create_webhook!
 
   delegate :ready?, to: :app
+  delegate :vcs_provider, to: :integrations
+  delegate :ci_cd_provider, to: :integrations
+  delegate :notification_provider, to: :integrations
 
   def set_default_status!
     self.status = Releases::Step.statuses[:active]

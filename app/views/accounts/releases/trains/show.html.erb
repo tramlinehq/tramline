@@ -111,14 +111,12 @@
         </li>
       </ul>
     <% else %>
-      <% if @train.integrations_are_ready? %>
-        <div class="m-1.5">
-          <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white">
-            <%= link_to "Add a step",
-                        new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>
-          </button>
-        </div>
-      <% end %>
+      <div class="m-1.5">
+        <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white">
+          <%= link_to "Add a step",
+                      new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>
+        </button>
+      </div>
     <% end %>
 
     <h2 class="text-2xl text-slate-800 font-bold mb-6">Runs</h2>
