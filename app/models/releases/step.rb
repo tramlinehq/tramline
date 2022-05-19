@@ -40,10 +40,10 @@ class Releases::Step < ApplicationRecord
   def absolute_run_after
     train
       .steps
-      .where("step_number <= ?", step_number)
+      .where("step_number < ?", step_number)
       .order(:step_number)
       .pluck(:run_after_duration)
-      .sum
+      .sum + run_after_duration
   end
 
   def next_run_at
@@ -54,7 +54,7 @@ class Releases::Step < ApplicationRecord
   private
 
   def within_train_schedule
-    unless (train.kickoff_at + absolute_run_after) < (train.kickoff_at + train.repeat_duration)
+    unless absolute_run_after < train.repeat_duration
       errors.add(:run_after_duration, "Please ensure that all steps finish before the train ends.")
     end
   end

@@ -39,7 +39,6 @@ class Integration < ApplicationRecord
   scope :ci_cd_provider, -> { ci_cd.first.providable }
   scope :notification_provider, -> { notification.first.providable }
 
-  delegate :channels, to: :providable
   delegate :install_path, to: :providable
 
   before_create :set_connected

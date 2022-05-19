@@ -81,7 +81,7 @@ class Accounts::Releases::StepsController < SignedInApplicationController
   end
 
   def integrations_are_ready?
-    unless @train.integrations_are_ready?
+    unless @train.ready?
       redirect_to train_path, alert: "Cannot create steps before notifiers are complete."
     end
   end
@@ -95,10 +95,10 @@ class Accounts::Releases::StepsController < SignedInApplicationController
   end
 
   def set_ci_actions
-    @ci_actions = @train.integrations.ci_cd.first.workflows
+    @ci_actions = @train.ci_cd_provider.workflows
   end
 
   def set_build_channels
-    @build_channels = @train.integrations.notification.first.channels
+    @build_channels = @train.notification_provider.channels
   end
 end
