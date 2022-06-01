@@ -2,72 +2,32 @@
 
 The primary orchestration and frontend monolith.
 
-## Setup
+## Development Setup
 
-### Ruby
+We have a `bin/setup` script that does most of the work of getting things setup, but you need a few things in place first. If you are on a Mac, install:
 
-The recommended ruby version manager is [asdfvm](https://asdf-vm.com). But [rbenv](https://github.com/rbenv/rbenv) should also work well.
-
-* Follow this [guide](https://asdf-vm.com/guide/getting-started.html#_3-install-asdf) to install asdfvm.
-* Follow this [guide](https://github.com/rbenv/rbenv#installation) to install rbenv.
-
-Install `ruby 3.1.0`,
-
-##### rbenv
-
-```
-ruby install 3.1.0
+```bash
+brew install rbenv ruby-build redis postgresql@14
 ```
 
-##### asdfvm
+For local development, clone the git repository and run the setup script included:
 
-```
-asdf install ruby 3.1.0
-```
-
-### Rails
-
-Checking into the root directory should correctly activate your ruby version. Confirm this by running,
-
-```
-❯ ruby --version
-ruby 3.1.0p0 (2021-12-25 revision fb4df44d16) [arm64-darwin21]
+```bash
+git clone git@github.com:tramlinehq/site.git
+cd site
+bin/setup.mac
 ```
 
-After this, install `bundler` for bootstrapping rails and our dependencies.
+Note: If you already have a previous dev environment you're trying to refresh, it's easiest to drop your database run setup again.
 
+```bash
+rails db:drop
+bin/setup.mac
 ```
-gem install bundler
-```
-
-Now run,
-
-```
-bundle install
-```
-
-This should now finish your rails setup.
-
-### Database
-
-Make sure you have Postgres 14 running. On the mac, [Postgres.app](https://postgresapp.com) is a handy way of managing pg versions.
-
-To create a database, migrate add some seed data, run
-
-```
-rails db:create
-rails db:migrate
-rails db:seed
-```
-
 
 Refer to `db/seeds.rb` for credentials on how to login using the seed users.
 
 ## Developer Notes
-
-### App Settings
-
-All admins should be able to access the settings page where general app-level configurations are tweaked at http://localhost:3000/admin/settings.
 
 ### Letter Opener
 

@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+{
+  RUBY_VERSION=$(cat .ruby-version)
+} >/dev/null 2>&1
+
+BUNDLER_VERSION=2.3.3
+
+init() {
+  verify_ruby_version && verify_bundled_gems
+  verify_foreman
+  verify_postgres && verify_database_migrations
+}
+
+## utility functions for dependencies
+
+is_darwin() {
+  PLATFORM=$(uname)
+  [ "$PLATFORM" == "Darwin" ]
+}
+
+has_homebrew() {
+  echo 'Checking for homebrew'
+  [ "$(is_darwin)" ] && [ ! "$(command -v brew)" ]
+}
+
+verify_homebrew() {
+  echo 'Verifying Homebrew installation...'
+  if [ ! "$(has_homebrew)" ]; then
+    echo 'Homebrew is not installed'
+    if [ "$(is_darwin)" ]; then
+      echo 'Please install homebrew. https://brew.sh'
+    fi
+    exit 1
+  fi
+}
+
+has_postgres() {
+  hash psql >/dev/null 2>&1
+}
+
+pg_running() {
+  echo 'Checking if postgres is running...'
+  pgrep '[p]ostgres' >/dev/null 2>&1
+}
+
+has_rbenv() {
+  hash rbenv >/dev/null 2>&1
+}
+
+update_rbenv() {
+  brew update
+  brew upgrade ruby-build
+}
+
+rbenv_install_ruby_version() {
+  rbenv install "$RUBY_VERSION"
+  rbenv local "$RUBY_VERSION"
+}
+
+has_ruby_version() {
+  INSTALLED_RUBY_VERSION=$(ruby -e 'puts RUBY_VERSION')
+  [ "$INSTALLED_RUBY_VERSION" == "$RUBY_VERSION" ]
+}
+
+install_ruby_version() {
+  verify_homebrew
+
+  if [ ! "$(has_rbenv)" ]; then
+    echo 'Please install rbenv (https://github.com/rbenv/rbenv) to manage your ruby versions.'
+    exit 1
+  fi
+
+  has_rbenv && {
+    update_rbenv
+    rbenv_install_ruby_version
+  }
+}
+
+verify_postgres() {
+  has_postgres || {
+    echo 'Please install postgresql.'
+    exit 1
+  }
+
+  pg_running || {
+    echo 'Please ensure postgresql is running'
+    exit 1
+  }
+}
+
+verify_ruby_version() {
+  echo 'Checking for ruby version...'
+  has_ruby_version || install_ruby_version
+}
+
+verify_bundled_gems() {
+  echo 'Updating gems...'
+  {
+    (gem list -i -v ${BUNDLER_VERSION} bundler || gem install bundler -v ${BUNDLER_VERSION}) && bundle _${BUNDLER_VERSION}_ binstubs --all
+  } 2>&1
+}
+
+verify_foreman() {
+  echo 'Installing foreman...'
+  gem list -i foreman || gem install foreman
+}
+
+verify_database_migrations() {
+  echo 'Setting up database...'
+  migrate_existing_database || setup_database
+}
+
+migrate_existing_database() {
+  bundle exec rails db:migrate 2>/dev/null
+}
+
+setup_database() {
+  if [ ! "$(bundle exec rails db:setup)" ]; then
+    echo 'Unable to create the databases for you. Please ensure your database.yml is configured for your system and try again.'
+    exit 0
+  fi
+}
+
+init
