@@ -249,6 +249,8 @@ GEM
     nio4r (2.5.8)
     nokogiri (1.13.4-arm64-darwin)
       racc (~> 1.4)
+    nokogiri (1.13.4-x86_64-linux)
+      racc (~> 1.4)
     octokit (4.22.0)
       faraday (>= 0.9)
       sawyer (~> 0.8.0, >= 0.5.3)
@@ -417,6 +419,8 @@ GEM
     strscan (3.0.1)
     tailwindcss-rails (2.0.8-arm64-darwin)
       railties (>= 6.0.0)
+    tailwindcss-rails (2.0.8-x86_64-linux)
+      railties (>= 6.0.0)
     thor (1.2.1)
     thwait (0.2.0)
       e2mmap
@@ -454,6 +458,7 @@ GEM
 
 PLATFORMS
   arm64-darwin-21
+  x86_64-linux
 
 DEPENDENCIES
   auto_strip_attributes (~> 2.6)
