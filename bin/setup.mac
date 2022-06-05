@@ -12,6 +12,7 @@ init() {
   verify_ruby_version && verify_bundled_gems
   verify_foreman
   verify_postgres && verify_database_migrations
+  configure_local_ssl
 }
 
 ## utility functions for dependencies
@@ -122,6 +123,13 @@ setup_database() {
     echo 'Unable to create the databases for you. Please ensure your database.yml is configured for your system and try again.'
     exit 0
   fi
+}
+
+configure_local_ssl() {
+  brew bundle
+  mkcert -install
+  mkdir -p config/certs
+  mkcert -key-file config/certs/localhost-key.pem -cert-file config/certs/localhost.pem localhost
 }
 
 init

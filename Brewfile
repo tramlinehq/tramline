@@ -1,0 +1,5 @@
+brew "mkcert"
+brew "rbenv"
+brew "ruby-build" 
+brew "redis"
+brew "postgresql@14"
