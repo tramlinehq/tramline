@@ -7,6 +7,7 @@
 # Ignore bundler config.
 /.bundle
 /bundle
+bundle/
 
 # Ignore all logfiles and tempfiles.
 /log/*
@@ -36,7 +37,7 @@
 /config/credentials/production.key
 
 # Ignore Local SSL certificates
-/config/certs
+/config/certs/*.pem
 
 /app/assets/builds/*
 !/app/assets/builds/.keep

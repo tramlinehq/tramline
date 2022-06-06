@@ -4,13 +4,7 @@ The primary orchestration and frontend monolith.
 
 ## Development Setup
 
-We have a `bin/setup` script that does most of the work of getting things setup, but you need a few things in place first. If you are on a Mac, install:
-
-```bash
-brew install rbenv ruby-build redis postgresql@14
-```
-
-For local development, clone the git repository and run the setup script included:
+For local development on Mac, clone the git repository and run the setup script included:
 
 ```bash
 git clone git@github.com:tramlinehq/site.git

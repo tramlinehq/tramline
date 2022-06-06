@@ -9,7 +9,8 @@ set -euo pipefail
 BUNDLER_VERSION=2.3.3
 
 init() {
-  verify_ruby_version && verify_bundled_gems
+  run_brew
+  verify_ruby_version && set_bundler_binstubs && verify_bundled_gems
   verify_foreman
   verify_postgres && verify_database_migrations
   configure_local_ssl
@@ -97,6 +98,10 @@ verify_ruby_version() {
   has_ruby_version || install_ruby_version
 }
 
+set_bundler_binstubs() {
+  bundle config --local bin bundle/bin
+}
+
 verify_bundled_gems() {
   echo 'Updating gems...'
   {
@@ -125,11 +130,18 @@ setup_database() {
   fi
 }
 
-configure_local_ssl() {
+run_brew() {
+  echo 'Running brew bundle...'
   brew bundle
-  mkcert -install
-  mkdir -p config/certs
-  mkcert -key-file config/certs/localhost-key.pem -cert-file config/certs/localhost.pem localhost
+}
+
+configure_local_ssl() {
+  echo 'Configuring local SSL certificates...'
+  if [[ ! -f config/certs/localhost-key.pem ]] && [[ ! -f config/certs/localhost.pem ]]
+  then
+    mkcert -install
+    mkcert -key-file config/certs/localhost-key.pem -cert-file config/certs/localhost.pem localhost
+  fi
 }
 
 init
