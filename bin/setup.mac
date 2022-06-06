@@ -140,7 +140,7 @@ configure_local_ssl() {
   if [[ ! -f config/certs/localhost-key.pem ]] && [[ ! -f config/certs/localhost.pem ]]
   then
     mkcert -install
-    mkcert -key-file config/certs/localhost-key.pem -cert-file config/certs/localhost.pem localhost
+    mkcert -key-file config/certs/localhost-key.pem -cert-file config/certs/localhost.pem localhost tramline.local.gd
   fi
 }
 

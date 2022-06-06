@@ -23,6 +23,10 @@ Refer to `db/seeds.rb` for credentials on how to login using the seed users.
 
 ## Developer Notes
 
+### SSL
+
+We use SSL locally and as a part of the setup script certificates are also generated. It's recommended to use `https://local.tramline.gd:3000`. This is the default `HOST_NAME` that can be changed via `.env.development` if necessary.
+
 ### Letter Opener
 
 All e-mails are caught and can be viewed at http://localhost:3000/letter_opener.
