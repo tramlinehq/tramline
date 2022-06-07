@@ -2,72 +2,30 @@
 
 The primary orchestration and frontend monolith.
 
-## Setup
+## Development Setup
 
-### Ruby
+For local development on Mac, clone the git repository and run the setup script included:
 
-The recommended ruby version manager is [asdfvm](https://asdf-vm.com). But [rbenv](https://github.com/rbenv/rbenv) should also work well.
-
-* Follow this [guide](https://asdf-vm.com/guide/getting-started.html#_3-install-asdf) to install asdfvm.
-* Follow this [guide](https://github.com/rbenv/rbenv#installation) to install rbenv.
-
-Install `ruby 3.1.0`,
-
-##### rbenv
-
-```
-ruby install 3.1.0
+```bash
+git clone git@github.com:tramlinehq/site.git
+cd site
+bin/setup.mac
 ```
 
-##### asdfvm
+Note: If you already have a previous dev environment you're trying to refresh, it's easiest to drop your database run setup again.
 
+```bash
+rails db:drop
+bin/setup.mac
 ```
-asdf install ruby 3.1.0
-```
-
-### Rails
-
-Checking into the root directory should correctly activate your ruby version. Confirm this by running,
-
-```
-❯ ruby --version
-ruby 3.1.0p0 (2021-12-25 revision fb4df44d16) [arm64-darwin21]
-```
-
-After this, install `bundler` for bootstrapping rails and our dependencies.
-
-```
-gem install bundler
-```
-
-Now run,
-
-```
-bundle install
-```
-
-This should now finish your rails setup.
-
-### Database
-
-Make sure you have Postgres 14 running. On the mac, [Postgres.app](https://postgresapp.com) is a handy way of managing pg versions.
-
-To create a database, migrate add some seed data, run
-
-```
-rails db:create
-rails db:migrate
-rails db:seed
-```
-
 
 Refer to `db/seeds.rb` for credentials on how to login using the seed users.
 
 ## Developer Notes
 
-### App Settings
+### SSL
 
-All admins should be able to access the settings page where general app-level configurations are tweaked at http://localhost:3000/admin/settings.
+We use SSL locally and as a part of the setup script certificates are also generated. It's recommended to use `https://local.tramline.gd:3000`. This is the default `HOST_NAME` that can be changed via `.env.development` if necessary.
 
 ### Letter Opener
 

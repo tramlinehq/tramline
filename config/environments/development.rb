@@ -41,7 +41,7 @@ Rails.application.configure do
 
   config.action_mailer.perform_caching = false
 
-  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+  config.action_mailer.default_url_options = { host: ENV['HOST_NAME'], port: 3000, protocol: "https" }
 
   config.action_mailer.delivery_method = :letter_opener
 
@@ -80,4 +80,7 @@ Rails.application.configure do
 
   # Allow web console to be triggered when fired against external webhooks
   config.web_console.whiny_requests = false
+
+  # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
+  config.force_ssl = true
 end

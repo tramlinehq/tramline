@@ -13,7 +13,8 @@ admin_user = lambda do
     preferred_name: ADMIN_PREFERRED_NAME,
     email: ADMIN_EMAIL,
     password: ADMIN_PASSWORD,
-    admin: true
+    admin: true,
+    confirmed_at: DateTime.now
   )
 
   puts "Added admin user."
@@ -31,7 +32,8 @@ owner_user = lambda do
     full_name: OWNER_FULL_NAME,
     preferred_name: OWNER_PREFERRED_NAME,
     email: OWNER_EMAIL,
-    password: OWNER_PASSWORD
+    password: OWNER_PASSWORD,
+    confirmed_at: DateTime.now
   )
 
   organization = Accounts::Organization.create!(
@@ -61,7 +63,8 @@ developer_user = lambda do
     full_name: DEVELOPER_FULL_NAME,
     preferred_name: DEVELOPER_PREFERRED_NAME,
     email: DEVELOPER_EMAIL,
-    password: DEVELOPER_PASSWORD
+    password: DEVELOPER_PASSWORD,
+    confirmed_at: DateTime.now
   )
 
   organization = Accounts::Organization.create!(
