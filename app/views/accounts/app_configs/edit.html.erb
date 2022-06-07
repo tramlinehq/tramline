@@ -27,7 +27,7 @@
       <%= form.select :notification_channel,
                       options_for_select(
                         @notification_channels.map { |chan| ["#" + chan["name"], { chan["id"] => chan["name"] }.to_json] },
-                        @config.notification_channel
+                        @config.notification_channel.to_json
                       ),
                       {},
                       { class: "form-input w-full", data: { controller: "input-select" } } %>
