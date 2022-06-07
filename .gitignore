@@ -43,3 +43,7 @@ bundle/
 !/app/assets/builds/.keep
 
 /node_modules
+
+# Brew-related stuff 
+Brewfile.lock.json 
+
