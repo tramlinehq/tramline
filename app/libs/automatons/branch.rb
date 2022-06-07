@@ -15,7 +15,7 @@ module Automatons
     end
 
     def dispatch!
-      unless github_api.create_branch!(code_repo, ref, branch)
+      unless github_api.create_branch!(code_repository, working_branch, branch)
         raise DispatchFailure, "Failed to kickoff the workflow!"
       end
     end
@@ -23,24 +23,23 @@ module Automatons
     private
 
     delegate :installation_id, to: :version_control
+    delegate :working_branch, to: :config
 
-    def code_repo
-      version_control
-        .active_code_repo
+    def code_repository
+      config
+        .code_repository
         .values
         .first
     end
 
-    def version_control
-      train
-        .integrations
-        .version_control
-        .first
+    def config
+      train.app.config
     end
 
-    def ref
-      version_control
-        .working_branch
+    def version_control
+      train
+        .app
+        .vcs_provider
     end
   end
 end

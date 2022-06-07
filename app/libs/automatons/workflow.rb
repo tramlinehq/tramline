@@ -15,14 +15,12 @@ module Automatons
     end
 
     def dispatch!
-      unless github_api.run_workflow!(code_repo, ci_cd_channel, ref, inputs)
+      unless github_api.run_workflow!(code_repository, ci_cd_channel, ref, inputs)
         raise DispatchFailure, "Failed to kickoff the workflow!"
       end
     end
 
     private
-
-    delegate :installation_id, to: :ci_cd
 
     def inputs
       {
@@ -38,23 +36,20 @@ module Automatons
         .first
     end
 
-    def code_repo
-      ci_cd
-        .active_code_repo
+    def code_repository
+      step
+        .app
+        .config
+        .code_repository
         .values
         .first
     end
 
-    def integrations
+    def installation_id
       step
-        .train
-        .integrations
-    end
-
-    def ci_cd
-      integrations
-        .ci_cd
-        .first
+        .app
+        .ci_cd_provider
+        .installation_id
     end
   end
 end

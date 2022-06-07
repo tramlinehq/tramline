@@ -22,20 +22,20 @@ module Automatons
 
     private
 
-    delegate :installation_id, to: :version_control
-
     def code_repo
-      version_control
-        .active_code_repo
+      train
+        .app
+        .config
+        .code_repository
         .values
         .first
     end
 
-    def version_control
+    def installation_id
       train
-        .integrations
-        .version_control
-        .first
+        .app
+        .vcs_provider
+        .installation_id
     end
   end
 end

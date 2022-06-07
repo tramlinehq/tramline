@@ -39,6 +39,7 @@ Rails.application.routes.draw do
       resources :invitations
 
       resources :apps do
+        resource :app_config, only: [:edit, :update], path: :config
         namespace :releases do
           resources :trains do
             member do
@@ -48,9 +49,12 @@ Rails.application.routes.draw do
           end
         end
 
-        resources :integrations, except: [:create] do
+        resources :integrations do
           collection do
             get :connect, to: "integrations#connect", as: :connect
+            resource :google_play_store, only: [:create],
+                     controller: "integrations/google_play_store", as: :google_play_store_integration
+
           end
         end
       end
@@ -63,10 +67,10 @@ Rails.application.routes.draw do
 
   scope :github do
     post "/events/:train_id", to: "github#events", as: :github_events
-    get :callback, to: "github#callback", as: :github_callback
+    get :callback, controller: "integration_listeners/github", as: :github_callback
   end
 
   scope :slack do
-    get :callback, to: "slack#callback", as: :slack_callback
+    get :callback, controller: "integration_listeners/slack", as: :slack_callback
   end
 end

@@ -1,9 +1,13 @@
-class GithubController < IntegrationListenerController
+class IntegrationListeners::GithubController < IntegrationListenerController
   skip_before_action :verify_authenticity_token, only: [:events]
   skip_before_action :require_login, only: [:events]
 
   delegate :transaction, to: ActiveRecord::Base
   delegate :current_run, to: :train
+
+  def providable_params
+    super.merge(installation_id: installation_id)
+  end
 
   def events
     head :accepted and return unless successful?

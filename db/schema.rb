@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_02_23_072246) do
+ActiveRecord::Schema[7.0].define(version: 2022_05_09_151830) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -41,6 +41,16 @@ ActiveRecord::Schema[7.0].define(version: 2022_02_23_072246) do
     t.uuid "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "app_configs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "app_id", null: false
+    t.json "code_repository"
+    t.json "notification_channel"
+    t.string "working_branch"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
   create_table "apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -74,20 +84,29 @@ ActiveRecord::Schema[7.0].define(version: 2022_02_23_072246) do
     t.index ["feature_key", "key", "value"], name: "index_flipper_gates_on_feature_key_and_key_and_value", unique: true
   end
 
+  create_table "github_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "installation_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "google_play_store_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "json_key"
+    t.string "original_json_key"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "app_id", null: false
     t.string "category", null: false
-    t.string "provider"
     t.string "status"
-    t.json "active_code_repo"
-    t.json "notification_channel"
-    t.string "working_branch"
-    t.string "installation_id"
-    t.string "oauth_access_token"
-    t.string "original_oauth_access_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "providable_id"
+    t.string "providable_type"
     t.index ["app_id"], name: "index_integrations_on_app_id"
+    t.index ["providable_type", "providable_id"], name: "index_integrations_on_providable_type_and_providable_id", unique: true
   end
 
   create_table "invites", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -128,12 +147,19 @@ ActiveRecord::Schema[7.0].define(version: 2022_02_23_072246) do
     t.index ["status"], name: "index_organizations_on_status"
   end
 
+  create_table "slack_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "oauth_access_token"
+    t.string "original_oauth_access_token"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "train_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "train_id", null: false
     t.uuid "previous_train_run_id"
     t.string "code_name", null: false
-    t.datetime "scheduled_at", null: false
-    t.datetime "was_run_at"
+    t.datetime "scheduled_at", precision: nil, null: false
+    t.datetime "was_run_at", precision: nil
     t.string "commit_sha"
     t.string "status", null: false
     t.datetime "created_at", null: false
@@ -147,8 +173,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_02_23_072246) do
     t.uuid "train_step_id", null: false
     t.uuid "train_run_id", null: false
     t.uuid "previous_step_run_id"
-    t.datetime "scheduled_at", null: false
-    t.datetime "was_run_at"
+    t.datetime "scheduled_at", precision: nil, null: false
+    t.datetime "was_run_at", precision: nil
     t.string "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -181,7 +207,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_02_23_072246) do
     t.string "version_seeded_with", null: false
     t.string "version_current"
     t.string "version_suffix", null: false
-    t.datetime "kickoff_at", null: false
+    t.datetime "kickoff_at", precision: nil, null: false
     t.interval "repeat_duration", null: false
     t.string "slug"
     t.datetime "created_at", null: false
@@ -235,6 +261,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_02_23_072246) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "app_configs", "apps"
   add_foreign_key "apps", "organizations"
   add_foreign_key "integrations", "apps"
   add_foreign_key "invites", "organizations"

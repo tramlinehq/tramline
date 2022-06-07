@@ -1,42 +1,30 @@
 class Accounts::IntegrationsController < SignedInApplicationController
   using RefinedString
 
-  before_action :set_app, only: %i[connect show edit update index]
-  before_action :set_integration, only: %i[edit show update]
-
-  def new
-  end
+  before_action :set_app, only: %i[connect index create]
+  before_action :set_integration, only: %i[connect create]
+  before_action :set_providable, only: %i[connect create]
 
   def connect
-    @integration = @app.integrations.new(integration_params)
-    @integration.decide
-
     redirect_to(@integration.install_path, allow_other_host: true)
   end
 
-  def update
-    respond_to do |format|
-      if @integration.update(parsed_integration_params)
-        format.html {
-          redirect_to accounts_organization_app_integrations_path(current_organization, @app),
-                      notice: "Integration was successfully updated."
-        }
-        format.json { render :index, status: :ok, location: @integration }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @integration.errors, status: :unprocessable_entity }
-      end
+  def create
+    if @integration.save
+      redirect_to index_path, notice: "Integration was successfully created."
+    else
+      set_integrations_by_categories
+      render :index, status: :unprocessable_entity
     end
   end
 
-  def show
-  end
-
-  def edit
-    @channels = @integration.channels
-  end
-
   def index
+    set_integrations_by_categories
+  end
+
+  private
+
+  def set_integrations_by_categories
     @integrations_by_categories =
       Integration::LIST.each_with_object({}) do |(category, providers), combination|
         existing_integration = @app.integrations.where(category: category)
@@ -51,7 +39,9 @@ class Accounts::IntegrationsController < SignedInApplicationController
           integration =
             @app
               .integrations
-              .new(category: Integration.categories[category], provider: Integration.providers[provider])
+              .new(category: Integration.categories[category],
+                   providable: provider.constantize.new,
+                   status: Integration::DEFAULT_INITIAL_STATUS)
 
           combination[category] << integration
         end
@@ -60,31 +50,40 @@ class Accounts::IntegrationsController < SignedInApplicationController
       end
   end
 
-  private
-
-  def set_integration
-    @integration = @app.integrations.find(params[:id])
-  end
-
   def set_app
     @app = current_organization.apps.friendly.find(params[:app_id])
+  end
+
+  def set_integration
+    @integration = @app.integrations.new(integrations_only_params)
+  end
+
+  def set_providable
+    @integration.providable = providable_type.constantize.new(integration: @integration)
+    @integration.providable.assign_attributes(providable_params)
   end
 
   def integration_params
     params.require(:integration)
           .permit(
             :category,
-            :provider,
-            :active_code_repo,
-            :working_branch,
-            :notification_channel
+            providable: [:type]
           ).merge(current_user:)
   end
 
-  def parsed_integration_params
-    integration_params
-      .merge(active_code_repo: integration_params[:active_code_repo]&.safe_json_parse)
-      .merge(notification_channel: integration_params[:notification_channel]&.safe_json_parse)
-      .merge(status: Integration.statuses[:fully_connected])
+  def integrations_only_params
+    integration_params.except(:providable)
+  end
+
+  def providable_params
+    {}
+  end
+
+  def providable_type
+    integration_params[:providable][:type]
+  end
+
+  def index_path
+    accounts_organization_app_integrations_path(@current_organization, @app)
   end
 end
