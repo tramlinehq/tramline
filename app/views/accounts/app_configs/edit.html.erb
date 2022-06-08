@@ -16,7 +16,7 @@
       <%= form.select :code_repository,
                       options_for_select(
                         @code_repositories.map { |chan| [chan[:full_name], { chan[:id] => chan[:full_name] }.to_json] },
-                        @config.code_repository
+                        @config.code_repository.to_json
                       ),
                       {},
                       { class: "form-input w-full" } %>
