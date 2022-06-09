@@ -6,10 +6,29 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   delegate :current_run, to: :train
 
   def providable_params
-    super.merge(installation_id: installation_id)
+    super.merge(installation_id:)
   end
 
   def events
+    case event_type
+    when 'workflow_run'
+      handle_push
+    when 'push'
+      handle_push
+    when 'ping'
+      handle_ping
+    end
+  end
+
+  def handle_ping
+    head :accepted
+  end
+
+  def handle_push
+    head :accepted
+  end
+
+  def handle_workflow_run
     head :accepted and return unless successful?
     head :unprocessable_entity and return if train.blank?
     head :unprocessable_entity and return if train.inactive?
@@ -25,18 +44,18 @@ class IntegrationListeners::GithubController < IntegrationListenerController
       text_block =
         Notifiers::Slack::BuildFinished.render_json(
           artifact_link: artifacts_url,
-          code_name: code_name,
+          code_name:,
           branch_name: release_branch,
-          build_number: build_number,
-          version_number: version_number
+          build_number:,
+          version_number:
         )
 
       current_run.last_running_step.wrap_up_run!
 
       Automatons::Notify.dispatch!(
-        train: train,
-        message: "Your release workflow completed!",
-        text_block: text_block
+        train:,
+        message: 'Your release workflow completed!',
+        text_block:
       )
     end
 
@@ -50,7 +69,7 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def successful?
-    payload_status == "completed" && payload_conclusion == "success"
+    payload_status == 'completed' && payload_conclusion == 'success'
   end
 
   def payload_status
@@ -63,5 +82,9 @@ class IntegrationListeners::GithubController < IntegrationListenerController
 
   def artifacts_url
     params[:workflow_run][:artifacts_url]
+  end
+
+  def event_type
+    request.headers['HTTP_X_GITHUB_EVENT']
   end
 end
