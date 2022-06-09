@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby File.read(".ruby-version").strip
+ruby File.read(".ruby-version").strip rescue nil
 
 gem "rails", "~> 7.0.1"
 gem "pg", "~> 1.1"

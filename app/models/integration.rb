@@ -17,10 +17,10 @@ class Integration < ApplicationRecord
   end
 
   CATEGORY_DESCRIPTIONS = {
-    "version_control": "Automatically create release branches, tags, and more.",
-    "ci_cd": "Keep up to date with the status of the latest release builds as they're made available.",
-    "notification": "Send release activity notifications at the right time, to the right people.",
-    "build_channel": "See where your release stands."
+    version_control: "Automatically create release branches, tags, and more.",
+    ci_cd: "Keep up to date with the status of the latest release builds as they're made available.",
+    notification: "Send release activity notifications at the right time, to the right people.",
+    build_channel: "See where your release stands."
   }.freeze
 
   enum category: LIST.keys.zip(LIST.keys).to_h
