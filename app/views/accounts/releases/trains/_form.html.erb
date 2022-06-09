@@ -10,33 +10,7 @@
     </div>
 
     <div>
-      <%= form.label :repeat_duration, class: "block text-sm font-medium mb-1" %>
-      <%= form.number_field :repeat_duration_value, step: 1, min: 1, default: 1, required: true, class: "form-input w-full mb-1" %>
-      <%= form.select :repeat_duration_unit,
-                      options_for_select([%w[Minute(s) minutes], %w[Day(s) days], %w[Week(s) weeks]], "days"),
-                      { required: true },
-                      { class: "form-select" } %>
-
-      <div class="mt-6">
-        <%= form.label :kickoff_at, class: "block text-sm font-medium mb-1" %>
-        <div class="relative">
-          <%= form.text_field :kickoff_at,
-                              required: true,
-                              class: "form-input pl-9 text-slate-500 hover:text-slate-600 font-medium focus:border-slate-300 w-60",
-                              data: {
-                                class: "flatpickr-right",
-                                controller: "flatpickr",
-                                flatpickr_enable_time: true,
-                                flatpickr_time_24hr: true,
-                                flatpickr_month_selector_type: "static",
-                                flatpickr_date_format: "M j, Y H:i",
-                                flatpickr_prev_arrow: '<svg class="fill-current" width="7" height="11" viewBox="0 0 7 11"><path d="M5.4 10.8l1.4-1.4-4-4 4-4L5.4 0 0 5.4z" /></svg>',
-                                flatpickr_next_arrow: '<svg class="fill-current" width="7" height="11" viewBox="0 0 7 11"><path d="M1.4 10.8L0 9.4l4-4-4-4L1.4 0l5.4 5.4z" /></svg>',
-                                flatpickr_min_date: Time.zone.now,
-                              } %>
-        </div>
-      </div>
-    </div>
+  </div>
 
     <div>
       <%= form.label :version_seeded_with, class: "block text-sm font-medium mb-1" %>
