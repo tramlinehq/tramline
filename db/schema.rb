@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_05_09_151830) do
+ActiveRecord::Schema[7.0].define(version: 2022_06_09_103133) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -158,8 +158,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_05_09_151830) do
     t.uuid "train_id", null: false
     t.uuid "previous_train_run_id"
     t.string "code_name", null: false
-    t.datetime "scheduled_at", precision: nil, null: false
-    t.datetime "was_run_at", precision: nil
+    t.datetime "scheduled_at", null: false
+    t.datetime "was_run_at"
     t.string "commit_sha"
     t.string "status", null: false
     t.datetime "created_at", null: false
@@ -173,8 +173,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_05_09_151830) do
     t.uuid "train_step_id", null: false
     t.uuid "train_run_id", null: false
     t.uuid "previous_step_run_id"
-    t.datetime "scheduled_at", precision: nil, null: false
-    t.datetime "was_run_at", precision: nil
+    t.datetime "scheduled_at", null: false
+    t.datetime "was_run_at"
     t.string "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -207,8 +207,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_05_09_151830) do
     t.string "version_seeded_with", null: false
     t.string "version_current"
     t.string "version_suffix", null: false
-    t.datetime "kickoff_at", precision: nil, null: false
-    t.interval "repeat_duration", null: false
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

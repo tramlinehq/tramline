@@ -12,7 +12,7 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
   end
 
   def create
-    @train = @app.trains.new(parsed_train_params)
+    @train = @app.trains.new(train_params)
 
     respond_to do |format|
       if @train.save
@@ -65,23 +65,7 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
       :working_repo,
       :version_seeded_with,
       :version_suffix,
-      :kickoff_at,
-      :repeat_duration_value,
-      :repeat_duration_unit
     )
-  end
-
-  def parsed_train_params
-    train_params
-      .merge(repeat_duration: repeat_duration)
-      .merge(kickoff_at: train_params[:kickoff_at].in_tz(@app.timezone))
-      .except(:repeat_duration_value, :repeat_duration_unit)
-  end
-
-  def repeat_duration
-    train_params[:repeat_duration_value]
-      .to_i
-      .as_duration_with(unit: train_params[:repeat_duration_unit])
   end
 
   def validate_integration_status
