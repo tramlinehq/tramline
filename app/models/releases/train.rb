@@ -15,10 +15,7 @@ class Releases::Train < ApplicationRecord
 
   friendly_id :name, use: :slugged
 
-  attribute :repeat_duration, :interval
-
   validate :semver_compatibility
-  validate :kickoff_in_the_future, on: :create
   validate :ready?, on: :create
   validates_uniqueness_of :version_suffix, scope: :app
 
@@ -52,10 +49,6 @@ class Releases::Train < ApplicationRecord
     end
   end
 
-  def next_run_at
-    kickoff_at + (repeat_duration * ([runs.finished.size, runs.on_track.size].max || 1))
-  end
-
   def current_run
     runs.on_track.last
   end
@@ -84,13 +77,5 @@ class Releases::Train < ApplicationRecord
     Semantic::Version.new(version_seeded_with)
   rescue ArgumentError
     errors.add(:version_seeded_with, "Please choose a valid semver format, eg. major.minor.patch")
-  end
-
-  def kickoff_in_the_future
-    Time.use_zone(app.timezone) do
-      unless kickoff_at > Time.current + MINIMUM_TRAIN_KICKOFF_DELAY
-        errors.add(:kickoff_at, "Please kickoff the train at least #{MINIMUM_TRAIN_KICKOFF_DELAY.inspect} from now")
-      end
-    end
   end
 end

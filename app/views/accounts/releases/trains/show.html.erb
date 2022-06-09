@@ -37,12 +37,6 @@
         <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="font-semibold text-left">Latest Version</div>
         </th>
-        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">Original Kickoff Date</div>
-        </th>
-        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">Repeats every</div>
-        </th>
       </tr>
       </thead>
       <!-- Table body -->
@@ -56,14 +50,6 @@
         </td>
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="text-left"><%= @train.version_current %></div>
-        </td>
-        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="text-left"><%= @train.kickoff_at.strftime("%b %e, %l:%M %p") %></div>
-        </td>
-        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="text-left">
-            <%= ActiveSupport::Duration.parse(Duration.new(@train.repeat_duration).iso8601).inspect %>
-          </div>
         </td>
       </tr>
       </tbody>
@@ -149,12 +135,6 @@
 
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           -
-        </td>
-
-        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="text-left">
-            <%= @train.next_run_at.strftime("%b %e, %l:%M %p") %>
-          </div>
         </td>
 
       </tr>

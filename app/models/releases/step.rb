@@ -54,6 +54,8 @@ class Releases::Step < ApplicationRecord
   private
 
   def within_train_schedule
+    return true # FIXME: skip validation for now
+
     unless absolute_run_after < train.repeat_duration
       errors.add(:run_after_duration, "Please ensure that all steps finish before the train ends.")
     end

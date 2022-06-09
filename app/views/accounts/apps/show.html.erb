@@ -101,11 +101,6 @@
             <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
               <div class="text-left"><%= train.version_current %></div>
             </td>
-            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-              <div class="text-left">
-                <%= ActiveSupport::Duration.parse(Duration.new(train.repeat_duration).iso8601).inspect %>
-              </div>
-            </td>
           </tr>
         <% end %>
         </tbody>
