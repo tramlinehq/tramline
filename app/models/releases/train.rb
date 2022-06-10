@@ -39,16 +39,6 @@ class Releases::Train < ApplicationRecord
   GRACE_PERIOD_FOR_RUNNING = 30.seconds
   MINIMUM_TRAIN_KICKOFF_DELAY = 30.minutes
 
-  def runnable?
-    Time.use_zone(app.timezone) do
-      now = Time.current
-
-      next_run_at
-        .in_time_zone(app.timezone)
-        .between?(now - GRACE_PERIOD_FOR_RUNNING, now + GRACE_PERIOD_FOR_RUNNING)
-    end
-  end
-
   def current_run
     runs.on_track.last
   end

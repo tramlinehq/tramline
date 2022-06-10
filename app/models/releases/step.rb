@@ -46,11 +46,6 @@ class Releases::Step < ApplicationRecord
       .sum + run_after_duration
   end
 
-  def next_run_at
-    return if train.current_run.blank?
-    train.current_run.last_run_step.was_run_at + run_after_duration
-  end
-
   private
 
   def within_train_schedule
