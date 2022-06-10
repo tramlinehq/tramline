@@ -25,18 +25,22 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def handle_push
-    response = WebhookHandlers::Github::Push.process(params)
-    head response.code
+    response = WebhookHandlers::Github::Push.process(train, params)
+    head response.status
   end
 
   def handle_workflow_run
-    response = WebhookHandlers::Github::WorkflowRun.process(params)
-    head response.code
+    response = WebhookHandlers::Github::WorkflowRun.process(train, params)
+    head response.status
   end
 
   private
 
   def event_type
     request.headers['HTTP_X_GITHUB_EVENT']
+  end
+
+  def train
+    @train ||= Releases::Train.find_by(id: params[:train_id])
   end
 end

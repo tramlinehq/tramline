@@ -1,16 +1,22 @@
 class WebhookHandlers::Github::WorkflowRun
   Response = Struct.new(:status, :body)
+  attr_reader :train, :payload
 
-  def self.process(payload)
-    new(payload).process
+  def self.process(train, payload)
+    new(train, payload).process
+  end
+
+  def initialize(train, payload)
+    @train = train
+    @payload = payload
   end
 
   def process
-    return Response.new(status: :accepted) unless successful?
-    return Response.new(status: :unprocessable_entity) if train.blank?
-    return Response.new(status: :unprocessable_entity)  if train.inactive?
-    return Response.new(status: :accepted) if train.current_run.blank?
-    return Response.new(status: :accepted)  if train.current_run.last_running_step.blank?
+    return Response.new(:accepted) unless successful?
+    return Response.new(:unprocessable_entity) if train.blank?
+    return Response.new(:unprocessable_entity) if train.inactive?
+    return Response.new(:accepted) if train.current_run.blank?
+    return Response.new(:accepted) if train.current_run.last_running_step.blank?
 
     release_branch = train.current_run.release_branch
     code_name = train.current_run.code_name
@@ -36,14 +42,10 @@ class WebhookHandlers::Github::WorkflowRun
       )
     end
 
-    return Response.new(status: :accepted)
+    Response.new(:accepted)
   end
 
   private
-
-  def train
-    Releases::Train.find_by(id: payload[:train_id])
-  end
 
   def successful?
     payload_status == 'completed' && payload_conclusion == 'success'
