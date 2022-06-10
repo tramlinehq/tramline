@@ -18,7 +18,6 @@ class Releases::Step < ApplicationRecord
   friendly_id :name, use: :slugged
 
   before_validation :set_step_number
-  validate :within_train_schedule, on: :create
   after_initialize :set_default_status
 
   def set_step_number
@@ -44,15 +43,5 @@ class Releases::Step < ApplicationRecord
       .order(:step_number)
       .pluck(:run_after_duration)
       .sum + run_after_duration
-  end
-
-  private
-
-  def within_train_schedule
-    return true # FIXME: skip validation for now
-
-    unless absolute_run_after < train.repeat_duration
-      errors.add(:run_after_duration, "Please ensure that all steps finish before the train ends.")
-    end
   end
 end
