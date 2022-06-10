@@ -1,4 +1,4 @@
-class SignedInApplicationController < ActionController::Base
+class SignedInApplicationController < ApplicationController
   before_action :set_paper_trail_whodunnit
   include ExceptionHandler
 
@@ -8,7 +8,7 @@ class SignedInApplicationController < ActionController::Base
   helper_method :current_organization
   helper_method :current_user
 
-  DEFAULT_TIMEZONE = "Asia/Kolkata"
+  DEFAULT_TIMEZONE = "Asia/Kolkata".freeze
 
   protected
 
@@ -19,9 +19,9 @@ class SignedInApplicationController < ActionController::Base
     end
   end
 
-  def set_time_zone
+  def set_time_zone(&)
     tz = @app.present? ? @app.timezone : DEFAULT_TIMEZONE
-    Time.use_zone(tz) { yield }
+    Time.use_zone(tz, &)
   end
 
   def current_organization

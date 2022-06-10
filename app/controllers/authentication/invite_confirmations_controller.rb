@@ -24,6 +24,6 @@ class Authentication::InviteConfirmationsController < ApplicationController
   end
 
   def set_invite
-    @invite = Accounts::Invite.find_by_token(@token) if @token.present?
+    @invite = Accounts::Invite.find_by(token: @token) if @token.present?
   end
 end

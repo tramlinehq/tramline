@@ -35,9 +35,7 @@ module ExceptionHandler
   end
 
   def respond_with_error(code, exception)
-    if code >= 500
-      logger.error exception.full_message
-    end
+    logger.error exception.full_message if code >= 500
 
     respond_to do |format|
       @code = code
@@ -46,7 +44,7 @@ module ExceptionHandler
       @message = exception.message if code < 500
 
       format.any { render "exceptions/index", status: code, formats: [:html] }
-      format.json { render json: {code:, error: Rack::Utils::HTTP_STATUS_CODES[code]}, status: code }
+      format.json { render json: { code:, error: Rack::Utils::HTTP_STATUS_CODES[code] }, status: code }
     end
   end
 end

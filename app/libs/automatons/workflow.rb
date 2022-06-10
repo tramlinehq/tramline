@@ -15,9 +15,7 @@ module Automatons
     end
 
     def dispatch!
-      unless github_api.run_workflow!(code_repository, ci_cd_channel, ref, inputs)
-        raise DispatchFailure, "Failed to kickoff the workflow!"
-      end
+      raise DispatchFailure, "Failed to kickoff the workflow!" unless github_api.run_workflow!(code_repository, ci_cd_channel, ref, inputs)
     end
 
     private

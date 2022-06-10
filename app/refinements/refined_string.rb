@@ -15,7 +15,7 @@ module RefinedString
     def in_tz(tz)
       ActiveSupport::TimeZone.new(tz).parse(self)
     rescue NoMethodError
-      Time.parse(self)
+      Time.zone.parse(self)
     end
 
     def safe_json_parse
@@ -25,7 +25,7 @@ module RefinedString
     end
 
     def semver_bump(element)
-      Semantic::Version.new(to_s).increment!(element).to_s
+      Semantic::Version.new(to_s).increment!(element).to_s # rubocop:disable Rails/SkipsModelValidations
     end
   end
 end

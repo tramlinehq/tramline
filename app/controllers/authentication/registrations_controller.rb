@@ -2,7 +2,7 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :set_invite_token, only: [:new, :create]
   before_action :set_invite, only: [:new, :create]
-  alias_method :user, :resource
+  alias user resource
   helper_method :user
 
   def new
@@ -55,7 +55,7 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
   end
 
   def set_invite
-    @invite = Accounts::Invite.find_by_token(@token) if @token.present?
+    @invite = Accounts::Invite.find_by(token: @token) if @token.present?
   end
 
   def configure_permitted_parameters

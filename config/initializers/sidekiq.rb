@@ -4,7 +4,7 @@ module SidekiqConfig
   def self.connection_pool
     ConnectionPool.new(size: DEFAULT_SIDEKIQ_REDIS_POOL) do
       if ENV["SIDEKIQ_REDIS_URL"].present?
-        Redis.new(url: ENV["SIDEKIQ_REDIS_URL"])
+        Redis.new(url: ENV.fetch("SIDEKIQ_REDIS_URL", nil))
       else
         Redis.new
       end

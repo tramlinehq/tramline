@@ -4,7 +4,7 @@ Rails.application.routes.draw do
 
   mount ActionCable.server => "/cable"
 
-  authenticate :user, lambda { |u| u.admin? } do
+  authenticate :user, ->(u) { u.admin? } do
     mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
     mount Flipper::UI.app(Flipper), at: "/flipper"
     mount Sidekiq::Web, at: "/sidekiq"
@@ -53,8 +53,7 @@ Rails.application.routes.draw do
           collection do
             get :connect, to: "integrations#connect", as: :connect
             resource :google_play_store, only: [:create],
-                     controller: "integrations/google_play_store", as: :google_play_store_integration
-
+                                         controller: "integrations/google_play_store", as: :google_play_store_integration
           end
         end
       end

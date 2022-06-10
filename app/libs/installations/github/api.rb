@@ -3,8 +3,8 @@ module Installations
     include Vaultable
     attr_reader :app_name, :installation_id, :jwt, :client
 
-    WEBHOOK_NAME = "web"
-    WEBHOOK_EVENTS = ["workflow_run"]
+    WEBHOOK_NAME = "web".freeze
+    WEBHOOK_EVENTS = ["workflow_run"].freeze
 
     def initialize(installation_id)
       @app_name = creds.integrations.github.app_name

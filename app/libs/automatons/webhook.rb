@@ -37,9 +37,9 @@ module Automatons
 
     def url
       if Rails.env.development?
-        github_events_url(host: ENV["WEBHOOK_HOST_NAME"], port: 3000, train_id: train.id)
+        github_events_url(host: ENV.fetch("WEBHOOK_HOST_NAME", nil), port: 3000, train_id: train.id)
       else
-        github_events_url(host: ENV["HOST_NAME"], train_id: train.id, protocol: "https")
+        github_events_url(host: ENV.fetch("HOST_NAME", nil), train_id: train.id, protocol: "https")
       end
     end
   end

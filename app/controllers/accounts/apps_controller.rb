@@ -22,8 +22,7 @@ class Accounts::AppsController < SignedInApplicationController
     end
   end
 
-  def show
-  end
+  def show; end
 
   def index
     @apps = current_organization.apps
@@ -53,9 +52,9 @@ class Accounts::AppsController < SignedInApplicationController
     accounts_organization_app_path(current_organization, @app)
   end
 
-  DEFAULT_TIMEZONE_LIST_REGEX = /Asia\/Kolkata/
+  DEFAULT_TIMEZONE_LIST_REGEX = %r{Asia/Kolkata}
 
   def default_timezones
-    ActiveSupport::TimeZone.all.select { |tz| tz.match?(DEFAULT_TIMEZONE_LIST_REGEX) }
+    ActiveSupport::TimeZone.all.grep(DEFAULT_TIMEZONE_LIST_REGEX)
   end
 end

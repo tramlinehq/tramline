@@ -2,12 +2,12 @@ class App < ApplicationRecord
   has_paper_trail
   extend FriendlyId
 
-  belongs_to :organization, class_name: "Accounts::Organization", required: true
+  belongs_to :organization, class_name: "Accounts::Organization", optional: false
   has_many :integrations, inverse_of: :app
-  has_many :trains, class_name: "Releases::Train", foreign_key: :app_id
+  has_many :trains, class_name: "Releases::Train"
   has_one :config, class_name: "AppConfig"
 
-  enum platform: {android: "android", ios: "ios"}
+  enum platform: { android: "android", ios: "ios" }
 
   after_initialize :set_default_platform
 

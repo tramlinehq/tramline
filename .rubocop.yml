@@ -9,11 +9,16 @@
 #
 # See https://docs.rubocop.org/rubocop/configuration
 #
+require:
+  - rubocop-rails
+  - rubocop-rspec
+
 AllCops:
   Exclude:
     - db/schema.rb 
     - bundle/**/*
-    - bin/
+    - bin/*
+    - config/puma.rb
   NewCops: enable
 
 Style/StringLiterals:
@@ -41,4 +46,56 @@ Metrics/MethodLength:
   Enabled: false
 
 Lint/EmptyBlock:
+  Enabled: false
+
+Style/MutableConstant:
+  Exclude:
+    - db/*
+
+Style/GuardClause:
+  Enabled: false
+
+Metrics/AbcSize: 
+  Enabled: false
+
+Bundler/OrderedGems:
+  Enabled: false
+
+Style/HashSyntax:
+  Enabled: false
+
+Naming/MemoizedInstanceVariableName:
+  Enabled: false
+
+Style/ClassAndModuleChildren: 
+  Enabled: false 
+
+Naming/MethodParameterName: 
+  Enabled: false
+
+Rails/HasManyOrHasOneDependent:
+  Enabled: false
+
+Rails/InverseOf:
+  Enabled: false
+
+Rails/I18nLocaleTexts:
+  Enabled: false
+
+Naming/AccessorMethodName:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Rails/BulkChangeTable:
+  Enabled: false
+
+Rails/LexicallyScopedActionFilter:
+  Enabled: false
+
+Metrics/PerceivedComplexity: 
+  Enabled: false
+
+RSpec/FilePath:
   Enabled: false

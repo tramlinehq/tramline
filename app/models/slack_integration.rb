@@ -16,17 +16,15 @@ class SlackIntegration < ApplicationRecord
     Addressable::Template.new("https://slack.com/oauth/v2/authorize{?params*}")
 
   def install_path
-    unless integration.notification? || integration.build_channel?
-      raise Integration::IntegrationNotImplemented, "We don't support that yet!"
-    end
+    raise Integration::IntegrationNotImplemented, "We don't support that yet!" unless integration.notification? || integration.build_channel?
 
     BASE_INSTALLATION_URL
       .expand(params: {
-        client_id: creds.integrations.slack.client_id,
-        redirect_uri: redirect_uri,
-        scope: creds.integrations.slack.scopes,
-        state: integration.installation_state
-      }).to_s
+                client_id: creds.integrations.slack.client_id,
+                redirect_uri: redirect_uri,
+                scope: creds.integrations.slack.scopes,
+                state: integration.installation_state
+              }).to_s
   end
 
   def complete_access
@@ -53,9 +51,9 @@ class SlackIntegration < ApplicationRecord
 
   def redirect_uri
     if Rails.env.development?
-      slack_callback_url(host: ENV["HOST_NAME"], port: "3000", protocol: "https")
+      slack_callback_url(host: ENV.fetch("HOST_NAME", nil), port: "3000", protocol: "https")
     else
-      slack_callback_url(host: ENV["HOST_NAME"], protocol: "https")
+      slack_callback_url(host: ENV.fetch("HOST_NAME", nil), protocol: "https")
     end
   end
 end

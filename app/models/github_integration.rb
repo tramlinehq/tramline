@@ -10,14 +10,12 @@ class GithubIntegration < ApplicationRecord
     Addressable::Template.new("https://github.com/apps/{app_name}/installations/new{?params*}")
 
   def install_path
-    unless integration.version_control? || integration.ci_cd?
-      raise Integration::IntegrationNotImplemented, "We don't support that yet!"
-    end
+    raise Integration::IntegrationNotImplemented, "We don't support that yet!" unless integration.version_control? || integration.ci_cd?
 
     BASE_INSTALLATION_URL
       .expand(app_name: creds.integrations.github.app_name, params: {
-        state: integration.installation_state
-      }).to_s
+                state: integration.installation_state
+              }).to_s
   end
 
   def workflows

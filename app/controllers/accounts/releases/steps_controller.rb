@@ -29,11 +29,9 @@ class Accounts::Releases::StepsController < SignedInApplicationController
     end
   end
 
-  def show
-  end
+  def show; end
 
-  def index
-  end
+  def index; end
 
   private
 
@@ -81,9 +79,7 @@ class Accounts::Releases::StepsController < SignedInApplicationController
   end
 
   def integrations_are_ready?
-    unless @train.ready?
-      redirect_to train_path, alert: "Cannot create steps before notifiers are complete."
-    end
+    redirect_to train_path, alert: "Cannot create steps before notifiers are complete." unless @train.ready?
   end
 
   def train_path

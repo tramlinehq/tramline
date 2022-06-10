@@ -9,7 +9,7 @@ class TrainJob < ApplicationJob
     train = Releases::Train.find(id)
 
     return if train.inactive?
-    return if train.steps.size < 1
+    return if train.steps.empty?
     return if train.runs.size >= 1 && train.runs.last.was_run_at > now
 
     user = train.app.organization.users.first

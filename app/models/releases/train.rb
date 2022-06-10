@@ -3,7 +3,7 @@ class Releases::Train < ApplicationRecord
   using RefinedString
   extend FriendlyId
 
-  belongs_to :app, required: true
+  belongs_to :app, optional: false
   has_many :integrations, through: :app
   has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train
   has_many :steps, class_name: "Releases::Step", inverse_of: :train
@@ -20,7 +20,7 @@ class Releases::Train < ApplicationRecord
   validate :semver_compatibility
   validate :kickoff_in_the_future, on: :create
   validate :ready?, on: :create
-  validates_uniqueness_of :version_suffix, scope: :app
+  validates :version_suffix, uniqueness: { scope: :app }
 
   before_create :set_current_version!
   before_create :set_default_status!
@@ -88,9 +88,7 @@ class Releases::Train < ApplicationRecord
 
   def kickoff_in_the_future
     Time.use_zone(app.timezone) do
-      unless kickoff_at > Time.current + MINIMUM_TRAIN_KICKOFF_DELAY
-        errors.add(:kickoff_at, "Please kickoff the train at least #{MINIMUM_TRAIN_KICKOFF_DELAY.inspect} from now")
-      end
+      errors.add(:kickoff_at, "Please kickoff the train at least #{MINIMUM_TRAIN_KICKOFF_DELAY.inspect} from now") unless kickoff_at > Time.current + MINIMUM_TRAIN_KICKOFF_DELAY
     end
   end
 end

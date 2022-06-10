@@ -1,7 +1,11 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby File.read(".ruby-version").strip rescue nil
+begin
+  ruby File.read(".ruby-version").strip
+rescue StandardError
+  nil
+end
 
 gem "rails", "~> 7.0.1"
 gem "pg", "~> 1.1"
@@ -55,6 +59,9 @@ group :development do
   gem "letter_opener"
   gem "letter_opener_web"
   gem "awesome_print"
+  gem 'rubocop-rails', require: false
+  gem 'rubocop-performance', require: false
+  gem 'rubocop-rspec', require: false
 end
 
 group :test do

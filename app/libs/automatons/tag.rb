@@ -15,9 +15,7 @@ module Automatons
     end
 
     def dispatch!
-      unless github_api.create_tag!(code_repo, train.tag_name, branch)
-        raise DispatchFailure, "Failed to kickoff the workflow!"
-      end
+      raise DispatchFailure, "Failed to kickoff the workflow!" unless github_api.create_tag!(code_repo, train.tag_name, branch)
     end
 
     private

@@ -45,7 +45,7 @@ module Installations
       error =
         begin
           JSON.parse(e.body)
-        rescue
+        rescue StandardError
           nil
         end
 
@@ -72,5 +72,3 @@ module Installations
     end
   end
 end
-
-

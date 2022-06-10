@@ -41,7 +41,7 @@ Rails.application.configure do
 
   config.action_mailer.perform_caching = false
 
-  config.action_mailer.default_url_options = { host: ENV['HOST_NAME'], port: 3000, protocol: "https" }
+  config.action_mailer.default_url_options = { host: ENV.fetch('HOST_NAME', nil), port: 3000, protocol: "https" }
 
   config.action_mailer.delivery_method = :letter_opener
 

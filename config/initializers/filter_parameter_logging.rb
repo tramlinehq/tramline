@@ -13,15 +13,15 @@ module ParameterFiltering
     limit
   ].freeze
 
-  ALLOWED_REGEX = /(^|_)ids?|#{Regexp.union(ALLOWED_ATTRIBUTES)}/.freeze
+  ALLOWED_REGEX = /(^|_)ids?|#{Regexp.union(ALLOWED_ATTRIBUTES)}/
   # We have to explicitly exclude integer params because
   # the lambda can only filter string params.
-  DISALLOWED_INTEGER_PARAMS = []
+  DISALLOWED_INTEGER_PARAMS = [].freeze
   SANITIZED_VALUE = "[FILTERED]".freeze
 
   # Returns the lambda for attributes that are okay to leave in the logs
   def self.filter
-    lambda { |key, value| value.replace(SANITIZED_VALUE) if !key.match(ALLOWED_REGEX) && value.is_a?(String) }
+    ->(key, value) { value.replace(SANITIZED_VALUE) if !key.match(ALLOWED_REGEX) && value.is_a?(String) }
   end
 end
 

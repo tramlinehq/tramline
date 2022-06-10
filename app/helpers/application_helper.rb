@@ -1,8 +1,6 @@
 module ApplicationHelper
   def sidebar_active_link(path, style)
-    if current_page?(path)
-      style
-    end
+    style if current_page?(path)
   end
 
   def modal_for(heading, &block)

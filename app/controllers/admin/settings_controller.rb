@@ -1,8 +1,7 @@
 class Admin::SettingsController < SignedInApplicationController
   before_action :admin?
 
-  def index
-  end
+  def index; end
 
   private
 

@@ -38,10 +38,10 @@ class Accounts::IntegrationsController < SignedInApplicationController
         providers.each do |provider|
           integration =
             @app
-              .integrations
-              .new(category: Integration.categories[category],
-                   providable: provider.constantize.new,
-                   status: Integration::DEFAULT_INITIAL_STATUS)
+            .integrations
+            .new(category: Integration.categories[category],
+                 providable: provider.constantize.new,
+                 status: Integration::DEFAULT_INITIAL_STATUS)
 
           combination[category] << integration
         end

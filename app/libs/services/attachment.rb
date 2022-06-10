@@ -1,6 +1,6 @@
 class Services::Attachment
   SIZE_LIMIT = 4096
-  JSON_CONTENT_TYPE = "application/json"
+  JSON_CONTENT_TYPE = "application/json".freeze
 
   class InvalidAttachment < StandardError; end
 
@@ -16,6 +16,7 @@ class Services::Attachment
 
   def parse
     raise InvalidAttachment unless valid?
+
     read
   end
 
@@ -25,6 +26,7 @@ class Services::Attachment
 
   def read
     return @content if @content.present?
+
     file.rewind # TODO: revisit this, why do we need to rewind?
     @content = file.read
   end

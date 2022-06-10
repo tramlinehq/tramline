@@ -41,4 +41,3 @@ class Accounts::AppConfigsController < SignedInApplicationController
       .merge(notification_channel: app_config_params[:notification_channel]&.safe_json_parse)
   end
 end
-

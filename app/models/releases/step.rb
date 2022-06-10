@@ -17,9 +17,9 @@ class Releases::Step < ApplicationRecord
 
   friendly_id :name, use: :slugged
 
+  after_initialize :set_default_status
   before_validation :set_step_number
   validate :within_train_schedule, on: :create
-  after_initialize :set_default_status
 
   def set_step_number
     self.step_number = train.steps.maximum(:step_number).to_i + 1
@@ -48,14 +48,13 @@ class Releases::Step < ApplicationRecord
 
   def next_run_at
     return if train.current_run.blank?
+
     train.current_run.last_run_step.was_run_at + run_after_duration
   end
 
   private
 
   def within_train_schedule
-    unless absolute_run_after < train.repeat_duration
-      errors.add(:run_after_duration, "Please ensure that all steps finish before the train ends.")
-    end
+    errors.add(:run_after_duration, "Please ensure that all steps finish before the train ends.") unless absolute_run_after < train.repeat_duration
   end
 end

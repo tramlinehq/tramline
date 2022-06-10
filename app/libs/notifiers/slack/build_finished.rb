@@ -1,6 +1,6 @@
 class Notifiers::Slack::BuildFinished
-  ROOT_PATH = File.join(Rails.root, "app", "views", "notifiers", "slack")
-  TEMPLATE_FILE = "build_finished.json.erb"
+  ROOT_PATH = Rails.root.join("app/views/notifiers/slack")
+  TEMPLATE_FILE = "build_finished.json.erb".freeze
   RUN_URI =
     Addressable::Template.new("https://api.github.com/repos/{org_name}/{repo_name}/actions/runs/{run_id}/artifacts")
 
@@ -30,7 +30,7 @@ class Notifiers::Slack::BuildFinished
 
   def artifact_link(link)
     extracted = RUN_URI.extract(link)
-    "https://github.com/#{extracted["org_name"]}/#{extracted["repo_name"]}/actions/runs/#{extracted["run_id"]}"
+    "https://github.com/#{extracted['org_name']}/#{extracted['repo_name']}/actions/runs/#{extracted['run_id']}"
   end
 
   def template_file

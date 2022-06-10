@@ -65,7 +65,7 @@ class Accounts::User < ApplicationRecord
   def strip_unnecessary_errors
     if errors[:password].any? && errors[:password].size > 1
       errors.delete(:password)
-      errors.add(:password, I18n.translate("errors.messages.password.password_strength"))
+      errors.add(:password, I18n.t("errors.messages.password.password_strength"))
     end
   end
 end

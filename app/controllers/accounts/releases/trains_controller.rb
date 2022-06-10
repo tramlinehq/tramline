@@ -41,11 +41,9 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
     end
   end
 
-  def show
-  end
+  def show; end
 
-  def index
-  end
+  def index; end
 
   private
 
@@ -85,9 +83,7 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
   end
 
   def validate_integration_status
-    unless @app.ready?
-      redirect_to app_path, alert: "Cannot create trains before notifiers are complete."
-    end
+    redirect_to app_path, alert: "Cannot create trains before notifiers are complete." unless @app.ready?
   end
 
   def app_path

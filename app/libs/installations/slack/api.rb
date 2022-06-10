@@ -3,8 +3,8 @@ module Installations
     include Vaultable
     attr_reader :installation_scopes, :installation_state, :oauth_access_token
 
-    PUBLISH_CHAT_MESSAGE_URL = "https://slack.com/api/chat.postMessage"
-    LIST_CHANNELS_URL = "https://slack.com/api/conversations.list"
+    PUBLISH_CHAT_MESSAGE_URL = "https://slack.com/api/chat.postMessage".freeze
+    LIST_CHANNELS_URL = "https://slack.com/api/conversations.list".freeze
     LIST_CHANNELS_LIMIT = 200
 
     def initialize(oauth_access_token)
@@ -14,7 +14,7 @@ module Installations
     class << self
       include Vaultable
 
-      OAUTH_V2ACCESS_TOKEN_URL = "https://slack.com/api/oauth.v2.access"
+      OAUTH_V2ACCESS_TOKEN_URL = "https://slack.com/api/oauth.v2.access".freeze
 
       def oauth_access_token(code)
         form_params = {

@@ -15,9 +15,7 @@ module Automatons
     end
 
     def dispatch!
-      unless github_api.create_branch!(code_repository, working_branch, branch)
-        raise DispatchFailure, "Failed to kickoff the workflow!"
-      end
+      raise DispatchFailure, "Failed to kickoff the workflow!" unless github_api.create_branch!(code_repository, working_branch, branch)
     end
 
     private

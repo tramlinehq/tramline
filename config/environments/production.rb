@@ -67,8 +67,8 @@ Rails.application.configure do
   config.action_mailer.postmark_settings = {
     :api_token => Rails.application.credentials.dependencies.postmark.api_token
   }
-  config.action_mailer.default_url_options = { :host => ENV["HOST_NAME"] }
-  Rails.application.routes.default_url_options[:host] = ENV["HOST_NAME"]
+  config.action_mailer.default_url_options = { :host => ENV.fetch("HOST_NAME", nil) }
+  Rails.application.routes.default_url_options[:host] = ENV.fetch("HOST_NAME", nil)
 
   # Ignore bad email addresses and do not raise email delivery exceptions.
   # Set this to true and configure the email server for immediate delivery to raise delivery exceptions.
@@ -89,7 +89,7 @@ Rails.application.configure do
   # config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new "app-name")
 
   if ENV["RAILS_LOG_TO_STDOUT"].present?
-    logger = ActiveSupport::Logger.new(STDOUT)
+    logger = ActiveSupport::Logger.new($stdout)
     logger.formatter = config.log_formatter
     config.logger = ActiveSupport::TaggedLogging.new(logger)
   end
