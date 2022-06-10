@@ -25,7 +25,8 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def handle_push
-    head :accepted
+    response = WebhookHandlers::Github::Push.process(params)
+    head response.code
   end
 
   def handle_workflow_run
