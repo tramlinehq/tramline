@@ -106,69 +106,80 @@
     <% end %>
 
     <h2 class="text-2xl text-slate-800 font-bold mb-6">Runs</h2>
-    <table class="table-auto w-full">
-      <!-- Table header -->
-      <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
-      <tr>
-        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">Release Status</div>
-        </th>
-        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">Release Branch</div>
-        </th>
-        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">When</div>
-        </th>
-      </tr>
-      </thead>
-      <!-- Table body -->
-      <tbody class="text-sm divide-y divide-slate-200">
-      <!-- Row -->
-      <tr>
-        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="text-left">
-            <div class="text-xs inline-flex font-medium bg-sky-100 text-sky-600 rounded-full text-center px-2.5 py-1">
-              Upcoming release
-            </div>
-          </div>
-        </td>
-
-        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          -
-        </td>
-
-      </tr>
-      <% @train.runs.order(was_run_at: :desc).each_with_index do |run, idx| %>
+    <% if @train.steps.empty? %>
+      <div class="text-center px-4">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-t from-slate-200 to-slate-100 mb-4">
+            <svg class="w-5 h-6 fill-current" viewBox="0 0 20 24">
+                <path class="text-slate-500" d="M10 10.562l9-5-8.514-4.73a1 1 0 00-.972 0L1 5.562l9 5z"></path>
+                <path class="text-slate-300" d="M9 12.294l-9-5v10.412a1 1 0 00.514.874L9 23.294v-11z"></path>
+                <path class="text-slate-400" d="M11 12.294v11l8.486-4.714a1 1 0 00.514-.874V7.295l-9 4.999z"></path>
+            </svg>
+        </div>
+        <h2 class="text-2xl text-slate-800 font-bold mb-2">No steps in the train</h2>
+        <div class="mb-6">Trains can't run till the steps are added to the train</div>
+      </div>
+    <% else %>
+      <table class="table-auto w-full">
+        <!-- Table header -->
+        <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+        <tr>
+          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="font-semibold text-left">Release Status</div>
+          </th>
+          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="font-semibold text-left">Release Branch</div>
+          </th>
+          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="font-semibold text-left">When</div>
+          </th>
+        </tr>
+        </thead>
+        <!-- Table body -->
+        <tbody class="text-sm divide-y divide-slate-200">
+        <!-- Row -->
         <tr>
           <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <% if run.on_track? %>
-              <div class="text-xs inline-flex font-medium bg-green-100 text-green-600 rounded-full text-center px-2.5 py-1">
-                In progress
+            <div class="text-left">
+              <div class="text-xs inline-flex font-medium bg-sky-100 text-sky-600 rounded-full text-center px-2.5 py-1">
+                Upcoming release
               </div>
-            <% else %>
-              <div class="text-xs inline-flex font-medium bg-slate-100 text-slate-500 rounded-full text-center px-2.5 py-1">
-                Completed
-              </div>
-            <% end %>
-          </td>
-          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="flex">
-              <%= image_tag("git_branch.svg") %>
-              <code class="pl-3"><%= run.release_branch %></code>
             </div>
           </td>
 
           <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="text-left">
-              <%= run.was_run_at.strftime("%b %e, %l:%M %p") %>
-            </div>
+            -
           </td>
+
         </tr>
-      <% end %>
-      </tbody>
-    </table>
+        <% @train.runs.order(was_run_at: :desc).each_with_index do |run, idx| %>
+          <tr>
+            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+              <% if run.on_track? %>
+                <div class="text-xs inline-flex font-medium bg-green-100 text-green-600 rounded-full text-center px-2.5 py-1">
+                  In progress
+                </div>
+              <% else %>
+                <div class="text-xs inline-flex font-medium bg-slate-100 text-slate-500 rounded-full text-center px-2.5 py-1">
+                  Completed
+                </div>
+              <% end %>
+            </td>
+            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+              <div class="flex">
+                <%= image_tag("git_branch.svg") %>
+                <code class="pl-3"><%= run.release_branch %></code>
+              </div>
+            </td>
+
+            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+              <div class="text-left">
+                <%= run.was_run_at.strftime("%b %e, %l:%M %p") %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+        </tbody>
+      </table>
+    <% end %>
   </div>
 </div>
-
-
-
