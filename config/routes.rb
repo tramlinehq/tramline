@@ -40,6 +40,7 @@ Rails.application.routes.draw do
 
       resources :apps do
         resource :app_config, only: [:edit, :update], path: :config
+        resource :sign_off_groups, only: [:edit, :update], shallow: true
         namespace :releases do
           resources :trains do
             member do

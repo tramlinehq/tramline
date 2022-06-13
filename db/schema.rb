@@ -149,11 +149,11 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_15_102239) do
 
   create_table "sign_off_group_memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "sign_off_group_id", null: false
-    t.uuid "users_id", null: false
+    t.uuid "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["sign_off_group_id"], name: "index_sign_off_group_memberships_on_sign_off_group_id"
-    t.index ["users_id"], name: "index_sign_off_group_memberships_on_users_id"
+    t.index ["user_id"], name: "index_sign_off_group_memberships_on_user_id"
   end
 
   create_table "sign_off_groups", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -297,7 +297,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_15_102239) do
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "sign_off_group_memberships", "sign_off_groups"
-  add_foreign_key "sign_off_group_memberships", "users", column: "users_id"
+  add_foreign_key "sign_off_group_memberships", "users"
   add_foreign_key "sign_off_groups", "apps"
   add_foreign_key "sign_offs", "sign_off_groups"
   add_foreign_key "sign_offs", "train_steps"

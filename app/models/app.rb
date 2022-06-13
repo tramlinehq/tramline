@@ -5,9 +5,12 @@ class App < ApplicationRecord
   belongs_to :organization, class_name: "Accounts::Organization", required: true
   has_many :integrations, inverse_of: :app
   has_many :trains, class_name: "Releases::Train", foreign_key: :app_id
+  has_many :sign_off_groups
   has_one :config, class_name: "AppConfig"
 
   enum platform: {android: "android", ios: "ios"}
+
+  accepts_nested_attributes_for :sign_off_groups, allow_destroy: true
 
   after_initialize :set_default_platform
 
