@@ -45,7 +45,9 @@ Rails.application.routes.draw do
             member do
               patch :deactivate
             end
-            resources :steps
+            resources :steps, shallow: true do
+              resource :sign_off, only: [:show, :create]
+            end
           end
         end
 

@@ -35,7 +35,6 @@ class Integration < ApplicationRecord
 
   attr_accessor :current_user, :code
 
-  scope :vcs_provider, -> { version_control.first.providable }
   scope :ci_cd_provider, -> { ci_cd.first.providable }
   scope :notification_provider, -> { notification.first.providable }
 
@@ -49,6 +48,10 @@ class Integration < ApplicationRecord
 
   def self.ready?
     where(category: MINIMAL_REQUIRED_SET, status: :connected).size == MINIMAL_REQUIRED_SET.size
+  end
+
+  def self.vcs_provider
+    version_control.first&.providable
   end
 
   def installation_state

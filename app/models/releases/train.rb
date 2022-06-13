@@ -34,6 +34,8 @@ class Releases::Train < ApplicationRecord
   end
 
   def create_webhook!
+    return false if Rails.env.test?
+
     Automatons::Webhook.dispatch!(train: self)
   end
 
