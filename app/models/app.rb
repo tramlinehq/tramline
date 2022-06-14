@@ -8,9 +8,9 @@ class App < ApplicationRecord
   has_many :sign_off_groups
   has_one :config, class_name: "AppConfig"
 
-  enum platform: {android: "android", ios: "ios"}
+  enum platform: { android: "android", ios: "ios" }
 
-  accepts_nested_attributes_for :sign_off_groups, allow_destroy: true
+  accepts_nested_attributes_for :sign_off_groups, allow_destroy: true, reject_if: proc { |attributes| attributes['name'].blank? }
 
   after_initialize :set_default_platform
 

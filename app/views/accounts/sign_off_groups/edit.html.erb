@@ -1,25 +1,23 @@
 <%= form_with model: @app, url: accounts_organization_app_sign_off_groups_path(@organization, @app), method: :put  do |f| %>
-  <div class="grid grid-cols-2 gap-2">
-  <%= f.fields_for :sign_off_groups do |g| %>
-    <div>
-      <%= g.text_field :name, class: 'form-input w-full' %>
-    </div>
-    <div>
-      <%= g.select :sign_off_member_ids, options_for_select(@organization.users.all.map {|user| [user.full_name, user.id]}, g.object.sign_off_members.pluck(:id)), {}, {multiple: true, class: 'js-choice'} %>
-    </div>
-  <% end %>
+  <div data-controller="nested-form">
+    <template data-nested-form-target='template'>
+      <%= f.fields_for :sign_off_groups, SignOffGroup.new, child_index: 'TEMPLATE_RECORD' do |g| %>
+        <%= render 'sign_off_fields', g: g %>
+      <% end %>
+
+    </template>
+
+    <%= f.fields_for :sign_off_groups do |g| %>
+        <%= render 'sign_off_fields', g: g %>
+    <% end %>
+  <div data-nested-form-target="add_item">
+      <%= link_to "Add Group", "#", data: { action: "nested-form#add_association" } %>
   </div>
-  <%= f.submit %>
+  </div>
+  <%= f.submit "Update", class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' %>
 <% end %>
 
-<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-<!-- Include Choices CSS -->
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"
-/>
-
 <script>
-  const elements = [...document.querySelectorAll('.js-choice')].map(el => new Choices(el))
+    [...document.querySelectorAll('.js-choice')].map(el => new Choices(el))
 </script>
 

@@ -15,6 +15,6 @@ class Accounts::SignOffGroupsController < SignedInApplicationController
   end
 
   def sign_off_groups_attributes
-    params.require(:app).permit(sign_off_groups_attributes: [:id, :name, { sign_off_member_ids: [] }])
+    params.require(:app).permit(sign_off_groups_attributes: [:id, :name, :_destroy, { sign_off_member_ids: [] }])
   end
 end
