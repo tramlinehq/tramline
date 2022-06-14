@@ -10,9 +10,6 @@
     </div>
 
     <div>
-  </div>
-
-    <div>
       <%= form.label :version_seeded_with, class: "block text-sm font-medium mb-1" %>
       <%= form.text_field :version_seeded_with, class: "form-input w-full", placeholder: "only in semver format, eg., 1.2.0", required: true %>
     </div>
@@ -26,6 +23,11 @@
     <div>
       <%= form.label :description, class: "block text-sm font-medium mb-1" %>
       <%= form.text_area :description, class: "form-input w-full", placeholder: "Describe the purpose of your train..." %>
+    </div>
+
+    <div>
+      <%= form.label :signoff_enabled, 'Enable Sign off groups?', class: "block text-sm font-medium mb-1"  %>
+      <%= form.check_box :signoff_enabled, class: "form-input", required: true %>
     </div>
   </div>
 
