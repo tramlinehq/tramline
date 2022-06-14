@@ -1,7 +1,8 @@
 class Accounts::SignOffGroupsController < SignedInApplicationController
   def edit
     @organization = Accounts::Organization.friendly.find(params[:organization_id])
-    @app = App.friendly.find(params[:app_id])
+    @app = App.includes(sign_off_groups: :sign_off_members).friendly.find(params[:app_id])
+    @organization_members = @organization.users.map { |u| [u.full_name, u.id] }
   end
 
   def update

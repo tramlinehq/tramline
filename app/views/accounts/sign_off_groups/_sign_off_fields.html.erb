@@ -4,11 +4,11 @@
   </div>
   <div class="basis-2/4">
     <%= g.select :sign_off_member_ids, 
-      options_for_select(@organization.users.all.map {|user| [user.full_name, user.id]},
+      options_for_select(@organization_members,
                          g.object.sign_off_members.pluck(:id)
                         ), 
                         {}, 
-                        {multiple: true, class: 'js-choice'} %>
+                        { multiple: true, class: 'js-choice' } %>
   </div>
   <div class="basis-1/4">
     <%= g.check_box '_destroy' %>
