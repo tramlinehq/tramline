@@ -18,9 +18,6 @@
     <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
       CI/CD Channel
     </th>
-    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-      Run after previous step
-    </th>
   </tr>
   </thead>
   <tbody class="text-sm divide-y divide-slate-200">
@@ -31,13 +28,10 @@
     <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
       <%= simple_format(@step.description) %></td>
     <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-      <%= @step.build_artifact_channel %>
+      <%= @step.build_artifact_channel.values.first %>
     </td>
     <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-      <%= @step.ci_cd_channel %>
-    </td>
-    <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-      <%= @step.run_after_duration %>
+      <%= @step.ci_cd_channel.values.first %>
     </td>
   </tr>
   </tbody>

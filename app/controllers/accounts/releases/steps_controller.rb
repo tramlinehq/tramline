@@ -59,25 +59,13 @@ class Accounts::Releases::StepsController < SignedInApplicationController
       :description,
       :build_artifact_channel,
       :ci_cd_channel,
-      :run_after_duration_unit,
-      :run_after_duration_value
     )
   end
 
   def parsed_step_params
     step_params
-      .merge(run_after_duration: run_after_duration)
       .merge(build_artifact_channel: step_params[:build_artifact_channel].safe_json_parse)
       .merge(ci_cd_channel: step_params[:ci_cd_channel].safe_json_parse)
-      .except(:run_after_duration_unit, :run_after_duration_value)
-  end
-
-  def run_after_duration
-    return 0.seconds if @first_step
-
-    step_params[:run_after_duration_value]
-      .to_i
-      .as_duration_with(unit: step_params[:run_after_duration_unit])
   end
 
   def integrations_are_ready?
