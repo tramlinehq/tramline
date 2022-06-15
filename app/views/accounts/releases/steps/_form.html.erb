@@ -12,18 +12,6 @@
       <%= form.text_field :name, class: "form-input w-full", placeholder: "Enter step name..", required: true %>
     </div>
 
-    <% unless @first_step %>
-      <div>
-        <%= form.label "Run after last step", class: "block text-sm font-medium mb-1" %>
-        <%= form.number_field :run_after_duration_value, step: 1, min: 1, default: 1, required: true, class: "form-input w-full mb-1" %>
-        <%= form.select :run_after_duration_unit,
-                        options_for_select([%w[Minutes(s) minutes], %w[Hour(s) hours], %w[Day(s) days], %w[Week(s) weeks]], "hours"),
-                        { required: true },
-                        { class: "form-input w-full mb-1" } %>
-      </div>
-    <% end %>
-
-
     <div>
       <%= form.label :build_artifact_channel, class: "block text-sm font-medium mb-1" %>
       <%= form.select :build_artifact_channel,

@@ -35,13 +35,4 @@ class Releases::Step < ApplicationRecord
   def last?
     train.steps.maximum(:step_number).to_i == step_number
   end
-
-  def absolute_run_after
-    train
-      .steps
-      .where("step_number < ?", step_number)
-      .order(:step_number)
-      .pluck(:run_after_duration)
-      .sum + run_after_duration
-  end
 end
