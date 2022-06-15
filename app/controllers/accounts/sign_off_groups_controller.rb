@@ -1,7 +1,7 @@
 class Accounts::SignOffGroupsController < SignedInApplicationController
   def edit
     @organization = Accounts::Organization.friendly.find(params[:organization_id])
-    @app = App.includes(sign_off_groups: :sign_off_members).friendly.find(params[:app_id])
+    @app = App.includes(sign_off_groups: :members).friendly.find(params[:app_id])
     @organization_members = @organization.users.map { |u| [u.full_name, u.id] }
   end
 
@@ -16,6 +16,6 @@ class Accounts::SignOffGroupsController < SignedInApplicationController
   end
 
   def sign_off_groups_attributes
-    params.require(:app).permit(sign_off_groups_attributes: [:id, :name, :_destroy, { sign_off_member_ids: [] }])
+    params.require(:app).permit(sign_off_groups_attributes: [:id, :name, :_destroy, { member_ids: [] }])
   end
 end

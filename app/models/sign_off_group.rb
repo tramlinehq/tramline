@@ -1,5 +1,6 @@
 class SignOffGroup < ApplicationRecord
   belongs_to :app
-  has_many :sign_off_group_memberships, dependent: :destroy
-  has_many :sign_off_members, through: :sign_off_group_memberships, source: :user
+  has_many :memberships, dependent: :destroy, class_name: 'SignOffGroupMembership'
+  has_many :members, through: :memberships, source: :user
+  has_many :sign_offs, dependent: :destroy
 end

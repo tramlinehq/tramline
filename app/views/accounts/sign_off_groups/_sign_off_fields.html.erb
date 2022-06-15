@@ -3,9 +3,9 @@
     <%= g.text_field :name, class: 'form-input w-full' %>
   </div>
   <div class="basis-2/4">
-    <%= g.select :sign_off_member_ids, 
+    <%= g.select :member_ids, 
       options_for_select(@organization_members,
-                         g.object.sign_off_members.pluck(:id)
+                         g.object.members.pluck(:id)
                         ), 
                         {}, 
                         { multiple: true, class: 'js-choice' } %>
