@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_06_09_103133) do
+ActiveRecord::Schema[7.0].define(version: 2022_06_15_102239) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -158,8 +158,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_09_103133) do
     t.uuid "train_id", null: false
     t.uuid "previous_train_run_id"
     t.string "code_name", null: false
-    t.datetime "scheduled_at", null: false
-    t.datetime "was_run_at"
+    t.datetime "scheduled_at", precision: nil, null: false
+    t.datetime "was_run_at", precision: nil
     t.string "commit_sha"
     t.string "status", null: false
     t.datetime "created_at", null: false
@@ -173,8 +173,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_09_103133) do
     t.uuid "train_step_id", null: false
     t.uuid "train_run_id", null: false
     t.uuid "previous_step_run_id"
-    t.datetime "scheduled_at", null: false
-    t.datetime "was_run_at"
+    t.datetime "scheduled_at", precision: nil, null: false
+    t.datetime "was_run_at", precision: nil
     t.string "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -189,7 +189,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_09_103133) do
     t.string "description", null: false
     t.string "status", null: false
     t.integer "step_number", limit: 2, default: 0, null: false
-    t.interval "run_after_duration", null: false
     t.json "ci_cd_channel", null: false
     t.json "build_artifact_channel", null: false
     t.string "slug"
