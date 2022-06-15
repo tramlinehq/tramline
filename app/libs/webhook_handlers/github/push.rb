@@ -19,19 +19,25 @@ class WebhookHandlers::Github::Push
 
   private
 
-  def branch_name
-    return nil unless payload.key?('ref') && payload['ref'].include?('refs/heads/')
+  def validate_repo_and_branch
+    return false unless branch_name
 
-    payload['ref'].split('/').last
+    (app.config.code_repository.values.first == repository_name)
+  end
+
+  def valid_branch?
+    payload['ref']&.include?('refs/heads/')
+  end
+
+  def branch_name
+    payload['ref'].split('/').last if valid_branch?
   end
 
   def repository_name
     payload['repository']['full_name']
   end
 
-  def validate_repo_and_branch
-    return false unless branch_name 
-
-    (app.config.code_repository.values.first == repository_name)
+  def valid_repo_and_branch?
+    (app.config.code_repository.values.first == repository_name) if branch_name
   end
 end
