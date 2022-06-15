@@ -9,11 +9,15 @@ class Accounts::SignOffGroupsController < SignedInApplicationController
     organization = Accounts::Organization.friendly.find(params[:organization_id])
     app = App.friendly.find(params[:app_id])
     if app.update(sign_off_groups_attributes)
-      redirect_to edit_accounts_organization_app_sign_off_groups_path(organization, app), notice: 'Sign off groups updated.'
+      redirect_to edit_accounts_organization_app_sign_off_groups_path(organization, app),
+                  notice: 'Sign off groups updated.'
     else
       render :edit, flash: { error: app.errors.full_messages.join(', ') }
     end
   end
+
+
+  private
 
   def sign_off_groups_attributes
     params.require(:app).permit(sign_off_groups_attributes: [:id, :name, :_destroy, { member_ids: [] }])
