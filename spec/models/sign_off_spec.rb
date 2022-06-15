@@ -1,5 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe SignOff, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  it 'Has valid factory' do
+    expect(FactoryBot.build(:sign_off)).to be_valid
+  end
 end
