@@ -75,7 +75,7 @@ Rails.application.configure do
   # config.action_cable.disable_request_forgery_protection = true
 
   # Allow tunnelled DNSes to access localhost, like ngrok or local.gd
-  config.hosts << /[a-z0-9-]+\.ngrok\.io/
+  config.hosts << /[a-z0-9-]+(\.in)?\.ngrok\.io/
   config.hosts << /[a-z0-9-]+\.local\.gd/
 
   # Allow web console to be triggered when fired against external webhooks

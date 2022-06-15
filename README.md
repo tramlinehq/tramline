@@ -39,6 +39,15 @@ The dashboard for all background jobs can be viewed at http://localhost:3000/sid
 
 All feature-flags are managed through flipper. The UI can be viewed at: http://localhost:3000/flipper. 
 
+## Webhooks
+
+Webhooks need access to the application over internet and it require tunneling on localhost environment. It's recommened to use ngrok and set the ngrok URL as `WEBHOOK_HOST_NAME` 
+in .env.development
+
+```
+ngrok http https://localhost:3000
+```
+
 ### Adding or updating gems
 
 * Use `bundle add <gem>` to add a new gem.
