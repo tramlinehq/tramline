@@ -198,6 +198,15 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_15_102239) do
     t.index ["train_id"], name: "index_train_runs_on_train_id"
   end
 
+  create_table "train_sign_off_groups", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_id", null: false
+    t.uuid "sign_off_group_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["sign_off_group_id"], name: "index_train_sign_off_groups_on_sign_off_group_id"
+    t.index ["train_id"], name: "index_train_sign_off_groups_on_train_id"
+  end
+
   create_table "train_step_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "train_step_id", null: false
     t.uuid "train_run_id", null: false
@@ -304,6 +313,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_15_102239) do
   add_foreign_key "sign_offs", "users"
   add_foreign_key "train_runs", "train_runs", column: "previous_train_run_id"
   add_foreign_key "train_runs", "trains"
+  add_foreign_key "train_sign_off_groups", "sign_off_groups"
+  add_foreign_key "train_sign_off_groups", "trains"
   add_foreign_key "train_step_runs", "train_runs"
   add_foreign_key "train_step_runs", "train_step_runs", column: "previous_step_run_id"
   add_foreign_key "train_step_runs", "train_steps"
