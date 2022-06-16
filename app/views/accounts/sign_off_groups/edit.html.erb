@@ -25,7 +25,6 @@
       <%= f.fields_for :sign_off_groups, SignOffGroup.new, child_index: 'TEMPLATE_RECORD' do |g| %>
         <%= render 'sign_off_fields', form: g %>
       <% end %>
-
     </template>
 
     <%= f.fields_for :sign_off_groups do |g| %>
@@ -39,6 +38,7 @@
         <span class="ml-2">Add Group</span>
       <% end %>
     </div>
+  	<%= f.submit "Update", class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' %>
   </div>
-  <%= f.submit "Update", class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' %>
+
 <% end %>

@@ -54,7 +54,7 @@
       </tr>
       </tbody>
     </table>
-    <% if @train.steps.any? %>
+    <% if @train.steps.any? && false %>
       <div>
         <% @train.app.sign_off_groups.each do |group| %>
           <div class="flex">
