@@ -7,6 +7,8 @@ class Releases::Train < ApplicationRecord
   has_many :integrations, through: :app
   has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train
   has_many :steps, class_name: "Releases::Step", inverse_of: :train
+  has_many :train_sign_off_groups, dependent: :destroy
+  has_many :sign_off_groups, through: :train_sign_off_groups
 
   enum status: {
     active: "active",
@@ -33,6 +35,8 @@ class Releases::Train < ApplicationRecord
   end
 
   def create_webhook!
+    return false if Rails.env.test?
+
     Automatons::Webhook.dispatch!(train: self)
   end
 

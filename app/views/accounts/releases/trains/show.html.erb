@@ -54,6 +54,24 @@
       </tr>
       </tbody>
     </table>
+    <% if @train.steps.any? && false %>
+      <div>
+        <% @train.app.sign_off_groups.each do |group| %>
+          <div class="flex">
+          <div class="flex-1 w-30">
+            <%= group.name %>
+          </div>
+          <div class="flex-1 w-30">
+            <% if @train.steps.last.sign_offs.exists?(sign_off_group: group, signed: true) %>
+               <%= button_to "Approved", accounts_releases_step_sign_off_path(@train.steps.last), params: { sign_off_group_id: group.id }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"', method: :delete %>
+            <% else %>
+               <%= button_to "Not Approved", accounts_releases_step_sign_off_path(@train.steps.last), params: { sign_off_group_id: group.id }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"' %>
+              <% end %>
+          </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
     <% if @train.steps.size > 0 %>
       <ul class="-my-2">
         <% @train.steps.order(:step_number).each do |step| %>

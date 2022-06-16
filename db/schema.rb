@@ -147,6 +147,35 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_15_102239) do
     t.index ["status"], name: "index_organizations_on_status"
   end
 
+  create_table "sign_off_group_memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "sign_off_group_id", null: false
+    t.uuid "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["sign_off_group_id"], name: "index_sign_off_group_memberships_on_sign_off_group_id"
+    t.index ["user_id"], name: "index_sign_off_group_memberships_on_user_id"
+  end
+
+  create_table "sign_off_groups", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "name"
+    t.uuid "app_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["app_id"], name: "index_sign_off_groups_on_app_id"
+  end
+
+  create_table "sign_offs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "sign_off_group_id", null: false
+    t.uuid "train_step_id", null: false
+    t.uuid "user_id", null: false
+    t.boolean "signed", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["sign_off_group_id"], name: "index_sign_offs_on_sign_off_group_id"
+    t.index ["train_step_id"], name: "index_sign_offs_on_train_step_id"
+    t.index ["user_id"], name: "index_sign_offs_on_user_id"
+  end
+
   create_table "slack_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "oauth_access_token"
     t.string "original_oauth_access_token"
@@ -167,6 +196,15 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_15_102239) do
     t.index ["code_name", "train_id"], name: "index_train_runs_on_code_name_and_train_id", unique: true
     t.index ["previous_train_run_id"], name: "index_train_runs_on_previous_train_run_id"
     t.index ["train_id"], name: "index_train_runs_on_train_id"
+  end
+
+  create_table "train_sign_off_groups", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_id", null: false
+    t.uuid "sign_off_group_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["sign_off_group_id"], name: "index_train_sign_off_groups_on_sign_off_group_id"
+    t.index ["train_id"], name: "index_train_sign_off_groups_on_train_id"
   end
 
   create_table "train_step_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -209,6 +247,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_15_102239) do
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "signoff_enabled", default: false
     t.index ["app_id"], name: "index_trains_on_app_id"
     t.index ["version_suffix", "app_id"], name: "index_trains_on_version_suffix_and_app_id", unique: true
   end
@@ -266,8 +305,16 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_15_102239) do
   add_foreign_key "invites", "users", column: "sender_id"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
+  add_foreign_key "sign_off_group_memberships", "sign_off_groups"
+  add_foreign_key "sign_off_group_memberships", "users"
+  add_foreign_key "sign_off_groups", "apps"
+  add_foreign_key "sign_offs", "sign_off_groups"
+  add_foreign_key "sign_offs", "train_steps"
+  add_foreign_key "sign_offs", "users"
   add_foreign_key "train_runs", "train_runs", column: "previous_train_run_id"
   add_foreign_key "train_runs", "trains"
+  add_foreign_key "train_sign_off_groups", "sign_off_groups"
+  add_foreign_key "train_sign_off_groups", "trains"
   add_foreign_key "train_step_runs", "train_runs"
   add_foreign_key "train_step_runs", "train_step_runs", column: "previous_step_run_id"
   add_foreign_key "train_step_runs", "train_steps"
