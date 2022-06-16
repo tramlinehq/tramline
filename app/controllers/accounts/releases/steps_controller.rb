@@ -20,7 +20,7 @@ class Accounts::Releases::StepsController < SignedInApplicationController
 
     respond_to do |format|
       if @step.save
-        format.html { redirect_to step_path, notice: "Step was successfully created." }
+        format.html { redirect_to train_path, notice: "Step was successfully created." }
         format.json { render :show, status: :created, location: @step }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -76,10 +76,6 @@ class Accounts::Releases::StepsController < SignedInApplicationController
 
   def train_path
     accounts_organization_app_releases_train_path(current_organization, @app, @train)
-  end
-
-  def step_path
-    accounts_organization_app_releases_train_step_path(current_organization, @app, @train, @step)
   end
 
   def set_ci_actions
