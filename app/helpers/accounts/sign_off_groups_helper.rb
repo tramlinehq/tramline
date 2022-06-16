@@ -1,2 +1,0 @@
-module Accounts::SignOffGroupsHelper
-end
