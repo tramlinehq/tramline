@@ -1,17 +1,17 @@
-<div class="flex flex-row">
-  <div class="basis-1/4">
-    <%= g.text_field :name, class: 'form-input w-full' %>
+<div class="flex flex-row align-middle	">
+  <div class="basis-1/12 text-center align-middle inline-block">
+    <%= form.check_box '_destroy' %>
+ </div>
+
+  <div class="basis-3/12">
+    <%= form.text_field :name, class: 'form-input w-full' %>
   </div>
-  <div class="basis-2/4">
-    <%= g.select :member_ids, 
+  <div class="basis-8/12">
+    <%= form.select :member_ids, 
       options_for_select(@organization_members,
-                         g.object.members.pluck(:id)
+                         form.object.members.pluck(:id)
                         ), 
                         {}, 
                         { multiple: true, class: 'js-choice' } %>
   </div>
-  <div class="basis-1/4">
-    <%= g.check_box '_destroy' %>
- </div>
 </div>
-
