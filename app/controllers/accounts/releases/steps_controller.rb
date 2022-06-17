@@ -29,10 +29,22 @@ class Accounts::Releases::StepsController < SignedInApplicationController
     end
   end
 
-  def show
+  def edit
+    @step = Releases::Step.friendly.find(params[:id])
+    @train = @step.train
+    @build_channels = @train.notification_provider.channels
+    @ci_actions = @train.ci_cd_provider.workflows
   end
 
-  def index
+  def update
+    @step = Releases::Step.friendly.find(params[:id])
+    @train = @step.train
+    @app = @train.app
+    if @step.update(parsed_step_params)
+      redirect_to train_path, notice: "Step was successfully created."
+    else
+      render :edit, status: :unprocessable_entity
+    end
   end
 
   private
