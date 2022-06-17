@@ -47,6 +47,9 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
   def index
   end
 
+  def edit
+  end
+
   private
 
   def set_train
