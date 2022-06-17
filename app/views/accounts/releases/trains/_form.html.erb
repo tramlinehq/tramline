@@ -30,6 +30,16 @@
     </div>
 
     <div>
+      <%= form.label :working_branch, class: "block text-sm font-medium mb-1" %>
+      <%= form.text_field :working_branch, class: "form-input w-full", placeholder: "eg., com.clj.is.best", required: true %>
+    </div>
+
+    <div>
+      <%= form.label :signoff_enabled, 'Enable Sign off groups?', class: "block text-sm font-medium mb-1"  %>
+      <%= form.check_box :signoff_enabled, class: "form-input" %>
+    </div>
+
+    <div>
         <%= form.label "Sign Off Groups", class: "block text-sm font-medium mb-1" %>
         <%= form.select :sign_off_groups,
           options_for_select(app.sign_off_groups.map { |group| [group.name, group.id] }, train.sign_off_groups.map {|group| [group.name, group.id] }),
