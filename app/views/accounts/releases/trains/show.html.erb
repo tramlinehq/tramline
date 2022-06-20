@@ -27,7 +27,7 @@
 </div>
 
 <% @train.steps.each_with_index do | step, index | %>
-  <div class="grid grid-cols-12 gap-4 mt-6 border-slate-700 border border-x-0">
+  <div class="grid grid-cols-12 gap-4 border-slate-700 border border-x-0">
     <div class="col-span-2 border-r-2">
       <%= index + 1 %> 
     </div>
@@ -42,6 +42,8 @@
     </div>
   </div>
 <% end %>
+
+<h2 class="mt-10 font-bold"> Releases </h3>
 
 <% @train.runs.each do |run| %>
   <div class="grid gris-cols-12">
