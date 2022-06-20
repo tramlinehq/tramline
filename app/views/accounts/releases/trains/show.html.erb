@@ -26,22 +26,25 @@
   </div>
 </div>
 
-<% @train.steps.each_with_index do | step, index | %>
-  <div class="grid grid-cols-12 gap-4 border-slate-700 border border-x-0">
-    <div class="col-span-2 border-r-2">
-      <%= index + 1 %> 
-    </div>
+<div class="mt-5">
+   <% @train.steps.each_with_index do | step, index | %>
+    <div class="grid grid-cols-12 gap-4 border-slate-700 border border-x-0">
+      <div class="col-span-2 border-r-2">
+        <%= index + 1 %> 
+      </div>
 
-    <div class="col-span-10">
-      <span class="font-bold"><%= step.name %></span>
-      </br>
-      <%= step.description %>
-      </br>
-      Github / <%= step.ci_cd_channel&.values&.first %>
+      <div class="col-span-10">
+        <span class="font-bold"><%= step.name %></span>
+        </br>
+        <%= step.description %>
+        </br>
+        Github / <%= step.ci_cd_channel&.values&.first %>
 
+      </div>
     </div>
-  </div>
-<% end %>
+  <% end %>
+ 
+</div>
 
 <h2 class="mt-10 font-bold"> Releases </h3>
 

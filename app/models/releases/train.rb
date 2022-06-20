@@ -2,6 +2,11 @@ class Releases::Train < ApplicationRecord
   has_paper_trail
   using RefinedString
   extend FriendlyId
+  BRACHING_STRATEGIES = {
+    almost_trunk: 'Almost Trunk',
+    release_backmerge: 'Release Backmerge',
+    parallel_working: 'Parallel working'
+  }.freeze
 
   belongs_to :app, required: true
   has_many :integrations, through: :app
@@ -65,10 +70,6 @@ class Releases::Train < ApplicationRecord
 
   def set_current_version!
     self.version_current = version_seeded_with
-  end
-
-  def branching_strategy
-    "Dev Main Backmerging"
   end
 
   private

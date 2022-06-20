@@ -77,6 +77,7 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
       :working_repo,
       :version_seeded_with,
       :version_suffix,
+      :branching_strategy,
       sign_off_group_ids: []
     )
   end

@@ -30,11 +30,6 @@
     </div>
 
     <div>
-      <%= form.label :working_branch, class: "block text-sm font-medium mb-1" %>
-      <%= form.text_field :working_branch, class: "form-input w-full", placeholder: "eg., com.clj.is.best", required: true %>
-    </div>
-
-    <div>
         <%= form.label "Sign Off Groups", class: "block text-sm font-medium mb-1" %>
         <%= form.select :sign_off_group_ids,
           options_for_select(app.sign_off_groups.map { |group| [group.name, group.id] }, train.sign_off_groups.pluck(:id) ),
@@ -42,7 +37,46 @@
                         { class: "form-input w-full mb-1", multiple: true, id: "slim-select", data: { controller: "input-select" }  } %>
       </div>
 
+    <div data-controller="branching-selector">
+        <%= form.label "Branching strategy", class: "block text-sm font-medium mb-1" %>
+        <%= form.select :branching_strategy,
+          options_for_select(Releases::Train::BRACHING_STRATEGIES.invert, train.branching_strategy ),
+                        { required: true },
+                        { class: "form-input w-full mb-1", data: { action: 'branching-selector#change' }  } %>
+    </div>
+
+    <div class="almost_trunk hidden">
+      <div>
+        <%= form.label :working_branch, class: "block text-sm font-medium mb-1" %>
+        <%= form.text_field :working_branch, class: "form-input w-full", placeholder: "eg., master, main" %>
+      </div>
+    </div>
+    <div class="release_backmerge hidden">
+      <div>
+        <%= form.label :working_branch, class: "block text-sm font-medium mb-1" %>
+        <%= form.text_field :working_branch, class: "form-input w-full", placeholder: "eg., master, main" %>
+      </div>
+
+      <div>
+        <%= form.label :release_merge_destination, class: "block text-sm font-medium mb-1" %>
+        <%= form.text_field :release_merge_destination, class: "form-input w-full", placeholder: "eg., dev" %>
+      </div>
+    </div>
+
+    <div class="parallel_working hidden">
+      <div>
+        <%= form.label :working_branch, class: "block text-sm font-medium mb-1" %>
+        <%= form.text_field :working_branch, class: "form-input w-full", placeholder: "eg., master, main" %>
+      </div>
+
+      <div>
+        <%= form.label :release_branch, class: "block text-sm font-medium mb-1" %>
+        <%= form.text_field :release_branch, class: "form-input w-full", placeholder: "eg., production" %>
+      </div>
+    </div>
+
   </div>
+
 
   <div class="mt-5">
     <%= form.submit class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" do %>
