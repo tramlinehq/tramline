@@ -86,7 +86,16 @@
                 </svg>
               </div>
               <h3 class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></h3>
-              <div class="text-xs ml-2 inline-flex font-medium bg-slate-100 text-slate-500 rounded-full text-center px-2.5 py-1">
+              <div class="m-auto">
+                <% if @train.runs.blank? %>
+                  <%= link_to edit_accounts_releases_step_path(step) do%>
+                    <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Edit </button>
+                  <% end %>
+                <% else %>
+                  <%= link_to edit_accounts_releases_step_path(step) do%>
+                    <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5" disabled> Edit </button>
+                  <% end %>
+                <% end %>
               </div>
             </div>
 
