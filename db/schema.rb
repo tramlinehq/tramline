@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_06_15_102239) do
+ActiveRecord::Schema[7.0].define(version: 2022_06_17_150427) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -187,8 +187,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_15_102239) do
     t.uuid "train_id", null: false
     t.uuid "previous_train_run_id"
     t.string "code_name", null: false
-    t.datetime "scheduled_at", precision: nil, null: false
-    t.datetime "was_run_at", precision: nil
+    t.datetime "scheduled_at", null: false
+    t.datetime "was_run_at"
     t.string "commit_sha"
     t.string "status", null: false
     t.datetime "created_at", null: false
@@ -211,8 +211,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_15_102239) do
     t.uuid "train_step_id", null: false
     t.uuid "train_run_id", null: false
     t.uuid "previous_step_run_id"
-    t.datetime "scheduled_at", precision: nil, null: false
-    t.datetime "was_run_at", precision: nil
+    t.datetime "scheduled_at", null: false
+    t.datetime "was_run_at"
     t.string "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -248,6 +248,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_15_102239) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "signoff_enabled", default: false
+    t.string "working_branch"
     t.index ["app_id"], name: "index_trains_on_app_id"
     t.index ["version_suffix", "app_id"], name: "index_trains_on_version_suffix_and_app_id", unique: true
   end
