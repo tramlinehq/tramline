@@ -30,6 +30,8 @@ class Releases::Train < ApplicationRecord
   delegate :ci_cd_provider, to: :integrations
   delegate :notification_provider, to: :integrations
 
+  self.ignored_columns = [:signoff_enabled]
+
   def set_default_status!
     self.status = Releases::Step.statuses[:active]
   end
