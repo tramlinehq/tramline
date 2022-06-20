@@ -1,209 +1,63 @@
 <div class="sm:flex sm:justify-between sm:items-center mb-8">
   <!-- Left: Title -->
   <div class="mb-4 sm:mb-0">
-    <% if @train.inactive? %>
-      <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">
-        <%= @train.name %> 🚦
-        <div class="text-xs inline-flex font-medium bg-rose-100 text-rose-600 rounded-full text-center px-2.5 py-1">Inactive</div>
-      </h1>
-    <% else %>
-      <h1 class="text-2xl md:text-3xl text-slate-800 font-bold"><%= @train.name %> 🚦</h1>
-    <% end %>
+    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold"> 🚝 <%= @train.name.titleize %></h1>
   </div>
 
-  <% if @train.active? %>
-    <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-      <%= form_with(url: deactivate_accounts_organization_app_releases_train_path(current_organization, @app, @train),
-                    method: :patch,
-                    data: { turbo_confirm: 'Are you sure?' }) do |form| %>
-        <div class="mt-5">
-          <%= form.submit 'Deactivate train', class: "btn bg-rose-500 hover:bg-rose-600 text-white" %>
-        </div>
-      <% end %>
-      <%= link_to edit_accounts_organization_app_releases_train_path(current_organization, @app, @train) do%>
-        <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Edit </button>
-      <% end %>
+  <!-- Right: Actions -->
+  <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+
+    <%= link_to edit_accounts_organization_app_releases_train_path(current_organization, @app, @train) do%>
+      <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Modify </button>
+    <% end %>
+ 
+  </div>
+</div>
+
+<div class="flex justify-between">
+  <div class="basis-1/2">
+    <span class="font-bold"> Sign Off Groups: </span> <%= @train.sign_off_groups.map(&:name).join(", ") %>
+    </br>
+    <span class="font-bold">Branching Strategy: </span> <%= @train.branching_strategy %>
+  </div>
+
+  <div class="basis-1/2">
+    <%= @train.description %>
+  </div>
+</div>
+
+<% @train.steps.each_with_index do | step, index | %>
+  <div class="grid grid-cols-12 gap-4 mt-6 border-slate-700 border border-x-0">
+    <div class="col-span-2 border-r-2">
+      <%= index + 1 %> 
     </div>
-  <% end %>
-</div>
 
-<div class="border-t border-slate-200">
-  <div class="space-y-8 mt-8">
-    <h2 class="text-2xl text-slate-800 font-bold mb-6">Train Details</h2>
-    <table class="table-auto w-full">
-      <!-- Table header -->
-      <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
-      <tr>
-        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">Description</div>
-        </th>
-        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">Latest Version</div>
-        </th>
-      </tr>
-      </thead>
-      <!-- Table body -->
-      <tbody class="text-sm divide-y divide-slate-200">
-      <!-- Row -->
-      <tr>
-        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="text-left">
-            <%= simple_format(@train.description) %>
-          </div>
-        </td>
-        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="text-left"><%= @train.version_current %></div>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-    <% if @train.steps.any? && false %>
-      <div>
-        <% @train.app.sign_off_groups.each do |group| %>
-          <div class="flex">
-          <div class="flex-1 w-30">
-            <%= group.name %>
-          </div>
-          <div class="flex-1 w-30">
-            <% if @train.steps.last.sign_offs.exists?(sign_off_group: group, signed: true) %>
-               <%= button_to "Approved", accounts_releases_step_sign_off_path(@train.steps.last), params: { sign_off_group_id: group.id }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"', method: :delete %>
-            <% else %>
-               <%= button_to "Not Approved", accounts_releases_step_sign_off_path(@train.steps.last), params: { sign_off_group_id: group.id }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"' %>
-              <% end %>
-          </div>
-          </div>
-        <% end %>
-      </div>
-    <% end %>
-    <% if @train.steps.size > 0 %>
-      <ul class="-my-2">
-        <% @train.steps.order(:step_number).each do |step| %>
-          <li class="relative py-2">
-            <div class="flex items-center mb-1">
-              <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
-              <div class="absolute left-0 rounded-full bg-slate-500" aria-hidden="true">
-                <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
-                </svg>
-              </div>
-              <h3 class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></h3>
-              <div class="m-auto">
-                <% if @train.runs.blank? %>
-                  <%= link_to edit_accounts_releases_step_path(step) do%>
-                    <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Edit </button>
-                  <% end %>
-                <% else %>
-                  <%= link_to edit_accounts_releases_step_path(step) do%>
-                    <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5" disabled> Edit </button>
-                  <% end %>
-                <% end %>
-              </div>
-            </div>
+    <div class="col-span-10">
+      <span class="font-bold"><%= step.name %></span>
+      </br>
+      <%= step.description %>
+      </br>
+      Github / <%= step.ci_cd_channel&.values&.first %>
 
-            <div class="pl-9 flex">
-              <%= simple_format(step.description) %>
-            </div>
-          </li>
-        <% end %>
-
-        <li class="relative py-2">
-          <div class="flex items-center mb-1">
-            <div class="absolute left-0 rounded-full bg-white" aria-hidden="true">
-              <svg class="w-5 h-5 fill-current text-slate-400" viewBox="0 0 20 20">
-                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm0 2C4.477 20 0 15.523 0 10S4.477 0 10 0s10 4.477 10 10-4.477 10-10 10z"/>
-              </svg>
-            </div>
-            <div class="pl-9">
-              <%= link_to "Add another step",
-                          new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train),
-                          class: "text-blue-500 hover:underline" %>
-            </div>
-          </div>
-        </li>
-      </ul>
-    <% else %>
-      <div class="m-1.5">
-        <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white">
-          <%= link_to "Add a step",
-                      new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>
-        </button>
-      </div>
-    <% end %>
-
-    <h2 class="text-2xl text-slate-800 font-bold mb-6">Runs</h2>
-    <% if @train.steps.empty? %>
-      <div class="text-center px-4">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-t from-slate-200 to-slate-100 mb-4">
-            <svg class="w-5 h-6 fill-current" viewBox="0 0 20 24">
-                <path class="text-slate-500" d="M10 10.562l9-5-8.514-4.73a1 1 0 00-.972 0L1 5.562l9 5z"></path>
-                <path class="text-slate-300" d="M9 12.294l-9-5v10.412a1 1 0 00.514.874L9 23.294v-11z"></path>
-                <path class="text-slate-400" d="M11 12.294v11l8.486-4.714a1 1 0 00.514-.874V7.295l-9 4.999z"></path>
-            </svg>
-        </div>
-        <h2 class="text-2xl text-slate-800 font-bold mb-2">No steps in the train</h2>
-        <div class="mb-6">Trains can't run till the steps are added to the train</div>
-      </div>
-    <% else %>
-      <table class="table-auto w-full">
-        <!-- Table header -->
-        <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
-        <tr>
-          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="font-semibold text-left">Release Status</div>
-          </th>
-          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="font-semibold text-left">Release Branch</div>
-          </th>
-          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="font-semibold text-left">When</div>
-          </th>
-        </tr>
-        </thead>
-        <!-- Table body -->
-        <tbody class="text-sm divide-y divide-slate-200">
-        <!-- Row -->
-        <tr>
-          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="text-left">
-              <div class="text-xs inline-flex font-medium bg-sky-100 text-sky-600 rounded-full text-center px-2.5 py-1">
-                Upcoming release
-              </div>
-            </div>
-          </td>
-
-          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            -
-          </td>
-
-        </tr>
-        <% @train.runs.order(was_run_at: :desc).each_with_index do |run, idx| %>
-          <tr>
-            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-              <% if run.on_track? %>
-                <div class="text-xs inline-flex font-medium bg-green-100 text-green-600 rounded-full text-center px-2.5 py-1">
-                  In progress
-                </div>
-              <% else %>
-                <div class="text-xs inline-flex font-medium bg-slate-100 text-slate-500 rounded-full text-center px-2.5 py-1">
-                  Completed
-                </div>
-              <% end %>
-            </td>
-            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-              <div class="flex">
-                <%= image_tag("git_branch.svg") %>
-                <code class="pl-3"><%= run.release_branch %></code>
-              </div>
-            </td>
-
-            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-              <div class="text-left">
-                <%= run.was_run_at.strftime("%b %e, %l:%M %p") %>
-              </div>
-            </td>
-          </tr>
-        <% end %>
-        </tbody>
-      </table>
-    <% end %>
+    </div>
   </div>
-</div>
+<% end %>
+
+<% @train.runs.each do |run| %>
+  <div class="grid gris-cols-12">
+     <div>
+       1
+     </div> 
+     <div>
+       <%= run.code_name %> 
+     </div>
+
+     <div>
+       branch name
+     </div>
+
+     <div>
+       Slack
+     </div>
+  </div>  
+<% end %>

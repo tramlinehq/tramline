@@ -16,7 +16,7 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
 
     respond_to do |format|
       if @train.save
-        format.html { redirect_to train_path, notice: "Train was successfully created." }
+        format.html { redirect_to train_path, notice: 'Train was successfully created.' }
         format.json { render :show, status: :created, location: @train }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -32,7 +32,7 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
 
     respond_to do |format|
       if @train.update(params)
-        format.html { redirect_to train_path, notice: "Train was successfully deactivated!" }
+        format.html { redirect_to train_path, notice: 'Train was successfully deactivated!' }
         format.json { render :show, status: :created, location: @train }
       else
         format.html { render :show, status: :unprocessable_entity }
@@ -41,14 +41,23 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
     end
   end
 
-  def show
+  def update
+    respond_to do |format|
+      if @train.update(train_params)
+        format.html { redirect_to train_path, notice: 'Train was updated' }
+        format.json { render :show, status: :created, location: @train }
+      else
+        format.html { render :show, status: :unprocessable_entity }
+        format.json { render json: @train.errors, status: :unprocessable_entity }
+      end
+    end
   end
 
-  def index
-  end
+  def show; end
 
-  def edit
-  end
+  def index; end
+
+  def edit; end
 
   private
 
@@ -68,13 +77,12 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
       :working_repo,
       :version_seeded_with,
       :version_suffix,
+      sign_off_group_ids: []
     )
   end
 
   def validate_integration_status
-    unless @app.ready?
-      redirect_to app_path, alert: "Cannot create trains before notifiers are complete."
-    end
+    redirect_to app_path, alert: 'Cannot create trains before notifiers are complete.' unless @app.ready?
   end
 
   def app_path

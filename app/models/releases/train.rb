@@ -67,6 +67,10 @@ class Releases::Train < ApplicationRecord
     self.version_current = version_seeded_with
   end
 
+  def branching_strategy
+    "Dev Main Backmerging"
+  end
+
   private
 
   def semver_compatibility
