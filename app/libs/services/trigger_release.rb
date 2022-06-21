@@ -16,24 +16,30 @@ class Services::TriggerRelease
     return if train.inactive?
     return if train.steps.empty?
 
+    create_run_record
     create_branches
-    setup_webhooks
+    create_webhooks
+    setup_webhook_listners
     run_first_step
   end
 
   private
 
+  def create_run_record
+    train.runs.create(was_run_at: starting_time, code_name: 1, scheduled_at: starting_time, status: :on_track)
+  end
+
   def create_branches
     installation.create_branch!(repo, working_branch, new_branch_name)
   end
 
-  def setup_webhooks
+  def create_webhooks
     installation.create_repo_webhook!(repo, webhook_url)
   end
 
-  def run_first_step
+  def setup_webhook_listners; end
 
-  end
+  def run_first_step; end
 
   def installation
     @installation ||= train.ci_cd_provider.installation
