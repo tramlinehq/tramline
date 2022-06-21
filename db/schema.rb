@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_06_20_155830) do
+ActiveRecord::Schema[7.0].define(version: 2022_06_21_004939) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -250,6 +250,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_20_155830) do
     t.boolean "signoff_enabled", default: false
     t.string "working_branch"
     t.string "branching_strategy"
+    t.string "release_branch"
+    t.string "release_backmerge_branch"
     t.index ["app_id"], name: "index_trains_on_app_id"
     t.index ["version_suffix", "app_id"], name: "index_trains_on_version_suffix_and_app_id", unique: true
   end

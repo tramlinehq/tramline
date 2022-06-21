@@ -43,7 +43,7 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
 
   def update
     respond_to do |format|
-      if @train.update(train_params)
+      if @train.update(train_update_params)
         format.html { redirect_to train_path, notice: 'Train was updated' }
         format.json { render :show, status: :created, location: @train }
       else
@@ -78,6 +78,18 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
       :version_seeded_with,
       :version_suffix,
       :branching_strategy,
+      :release_backmerge_branch,
+      :release_branch,
+      sign_off_group_ids: []
+    )
+  end
+
+  def train_update_params
+    params.require(:releases_train).permit(
+      :name,
+      :description,
+      :version_seeded_with,
+      :version_suffix,
       sign_off_group_ids: []
     )
   end
