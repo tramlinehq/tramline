@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_06_21_004939) do
+ActiveRecord::Schema[7.0].define(version: 2022_06_21_145021) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -145,6 +145,27 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_21_004939) do
     t.datetime "updated_at", null: false
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
     t.index ["status"], name: "index_organizations_on_status"
+  end
+
+  create_table "releases_commit_listners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_id", null: false
+    t.string "branch_name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["train_id"], name: "index_releases_commit_listners_on_train_id"
+  end
+
+  create_table "releases_commits", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "commit_hash", null: false
+    t.uuid "train_id", null: false
+    t.string "message"
+    t.datetime "timestamp", null: false
+    t.string "author_name", null: false
+    t.string "author_email", null: false
+    t.string "url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["train_id"], name: "index_releases_commits_on_train_id"
   end
 
   create_table "sign_off_group_memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -309,6 +330,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_21_004939) do
   add_foreign_key "invites", "users", column: "sender_id"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
+  add_foreign_key "releases_commit_listners", "trains"
+  add_foreign_key "releases_commits", "trains"
   add_foreign_key "sign_off_group_memberships", "sign_off_groups"
   add_foreign_key "sign_off_group_memberships", "users"
   add_foreign_key "sign_off_groups", "apps"

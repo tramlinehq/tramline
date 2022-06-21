@@ -12,9 +12,22 @@ class WebhookHandlers::Github::Push
   end
 
   def process
-    Response.new(:accepted, branch_name)
-    # TODO: filter commits from the branche(es) we care about
-    # Run train steps from first to current to generate builds
+    if train.commit_listners.exists?(branch_name: branch_name)
+      payload['commits'].each do |commit|
+        Releases::Commit.create!(train:,
+                                 commit_hash: commit['id'],
+                                 message: commit['message'],
+                                 timestamp: commit['timestamp'],
+                                 author_name: commit['author']['name'],
+                                 author_email: commit['author']['email'],
+                                 url: commit['url'])
+      end
+    end
+
+    train.steps.each do |step|
+      # run step
+    end
+    Response.new(:accepted)
   end
 
   private

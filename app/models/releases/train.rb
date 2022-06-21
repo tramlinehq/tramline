@@ -14,6 +14,7 @@ class Releases::Train < ApplicationRecord
   has_many :steps, class_name: "Releases::Step", inverse_of: :train
   has_many :train_sign_off_groups, dependent: :destroy
   has_many :sign_off_groups, through: :train_sign_off_groups
+  has_many :commit_listners, class_name: 'Releases::CommitListner', inverse_of: :train
 
   enum status: {
     active: "active",

@@ -26,7 +26,10 @@ class Services::TriggerRelease
   private
 
   def create_run_record
-    train.runs.create(was_run_at: starting_time, code_name: 1, scheduled_at: starting_time, status: :on_track)
+    train.runs.create(was_run_at: starting_time,
+                      code_name: Haikunator.haikunate(100),
+                      scheduled_at: starting_time, # FIXME: remove this column
+                      status: :on_track)
   end
 
   def create_branches
@@ -37,7 +40,9 @@ class Services::TriggerRelease
     installation.create_repo_webhook!(repo, webhook_url)
   end
 
-  def setup_webhook_listners; end
+  def setup_webhook_listners
+    train.commit_listners.create(branch: feature_branch)
+  end
 
   def run_first_step; end
 
@@ -47,6 +52,10 @@ class Services::TriggerRelease
 
   def repo
     train.app.config.code_repository_name
+  end
+
+  def feature_branch
+    new_branch_name
   end
 
   def working_branch
