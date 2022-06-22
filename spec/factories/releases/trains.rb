@@ -5,5 +5,8 @@ FactoryBot.define do
     name { 'train' }
     description { 'train description' }
     version_suffix { '-train' }
+    branching_strategy { 'release_backmerge' }
+    working_branch { 'dev' }
+    release_backmerge_branch { 'main' }
   end
 end
