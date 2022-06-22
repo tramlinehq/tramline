@@ -5,7 +5,7 @@ class Services::TriggerRelease
     new(*args).call
   end
 
-  attr_reader :train, :starting_time
+  attr_reader :train, :starting_time, :train_run
 
   def initialize(train)
     @train = train
@@ -26,10 +26,10 @@ class Services::TriggerRelease
   private
 
   def create_run_record
-    train.runs.create(was_run_at: starting_time,
-                      code_name: Haikunator.haikunate(100),
-                      scheduled_at: starting_time, # FIXME: remove this column
-                      status: :on_track)
+    @train_run = train.runs.create(was_run_at: starting_time,
+                                   code_name: Haikunator.haikunate(100),
+                                   scheduled_at: starting_time, # FIXME: remove this column
+                                   status: :on_track)
   end
 
   def create_branches
@@ -69,7 +69,7 @@ class Services::TriggerRelease
   end
 
   def new_branch_name
-    starting_time.strftime("rel/#{train.display_name}/%d-%m-%Y")
+    starting_time.strftime("rel/#{train.display_name}/#{train_run.code_name}/%d-%m-%Y")
   end
 
   def webhook_url
