@@ -15,4 +15,10 @@ class AppConfig < ApplicationRecord
 
     code_repository.values.first
   end
+
+  def notification_channel_name
+    return unless notification_channel
+
+    notification_channel.values.first
+  end
 end

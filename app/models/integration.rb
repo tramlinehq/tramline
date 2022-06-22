@@ -56,7 +56,7 @@ class Integration < ApplicationRecord
   end
 
   def self.notification_provider
-    notifications.first&.providable
+    notification.first&.providable
   end
 
   def installation_state

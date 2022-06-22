@@ -33,7 +33,9 @@ class Services::TriggerRelease
   end
 
   def create_branches
-    installation.create_branch!(repo, working_branch, new_branch_name)
+    installation.create_branch!(repo, working_branch, new_branch_name) rescue nil
+    message = "Branch #{new_branch_name} is created"
+    Automatons::Notify.dispatch!(train:, message:)
   end
 
   def create_webhooks
