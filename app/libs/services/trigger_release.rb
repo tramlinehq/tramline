@@ -33,17 +33,21 @@ class Services::TriggerRelease
   end
 
   def create_branches
-    installation.create_branch!(repo, working_branch, new_branch_name) rescue nil
+    installation.create_branch!(repo, working_branch, new_branch_name)
     message = "Branch #{new_branch_name} is created"
     Automatons::Notify.dispatch!(train:, message:)
+  rescue Octokit::UnprocessableEntity
+    nil
   end
 
   def create_webhooks
     installation.create_repo_webhook!(repo, webhook_url)
+  rescue Octokit::UnprocessableEntity
+    nil
   end
 
   def setup_webhook_listners
-    train.commit_listners.create(branch: feature_branch)
+    train.commit_listners.create(branch_name: feature_branch)
   end
 
   def run_first_step; end

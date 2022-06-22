@@ -12,7 +12,7 @@ class WebhookHandlers::Github::Push
   end
 
   def process
-    if train.commit_listners.exists?(branch_name: branch_name)
+    if train.commit_listners.exists?(branch_name:)
       payload['commits'].each do |commit|
         Releases::Commit.create!(train:,
                                  commit_hash: commit['id'],
@@ -43,7 +43,7 @@ class WebhookHandlers::Github::Push
   end
 
   def branch_name
-    payload['ref'].split('/').last if valid_branch?
+    payload['ref'].delete_prefix('refs/heads/') if valid_branch?
   end
 
   def repository_name
