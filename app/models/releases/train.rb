@@ -85,6 +85,10 @@ class Releases::Train < ApplicationRecord
     self.version_current = version_seeded_with
   end
 
+  def branching_strategy_name
+    BRACHING_STRATEGIES[branching_strategy.to_sym]
+  end
+
   private
 
   def semver_compatibility
