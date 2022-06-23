@@ -30,19 +30,44 @@
     </div>
 
     <div>
-      <%= form.label :working_branch, class: "block text-sm font-medium mb-1" %>
-      <%= form.text_field :working_branch, class: "form-input w-full", placeholder: "eg., com.clj.is.best", required: true %>
-    </div>
-
-    <div>
         <%= form.label "Sign Off Groups", class: "block text-sm font-medium mb-1" %>
-        <%= form.select :sign_off_groups,
-          options_for_select(app.sign_off_groups.map { |group| [group.name, group.id] }, train.sign_off_groups.map {|group| [group.name, group.id] }),
+        <%= form.select :sign_off_group_ids,
+          options_for_select(app.sign_off_groups.map { |group| [group.name, group.id] }, train.sign_off_groups.pluck(:id) ),
                         { required: true },
                         { class: "form-input w-full mb-1", multiple: true, id: "slim-select", data: { controller: "input-select" }  } %>
       </div>
 
+    <div data-controller="branching-selector">
+        <%= form.label "Branching strategy", class: "block text-sm font-medium mb-1" %>
+        <%= form.select :branching_strategy,
+          options_for_select(Releases::Train::BRACHING_STRATEGIES.invert, train.branching_strategy ),
+                        { required: true, },
+                        { class: "form-input w-full mb-1", data: { action: 'branching-selector#change' }, disabled: train.persisted?  } %>
+    </div>
+
+    <div>
+      <%= form.label :working_branch, class: "block text-sm font-medium mb-1" %>
+      <%= form.text_field :working_branch, class: "form-input w-full", placeholder: "eg., master, main", disabled: train.persisted? %>
+    </div>
+
+    <div class="almost_trunk hidden">
+    </div>
+    <div class="release_backmerge hidden">
+      <div>
+        <%= form.label :release_backmerge_branch, class: "block text-sm font-medium mb-1" %>
+        <%= form.text_field :release_backmerge_branch, class: "form-input w-full", placeholder: "eg., dev", disabled: train.persisted? %>
+      </div>
+    </div>
+
+    <div class="parallel_working hidden">
+      <div>
+        <%= form.label :release_branch, class: "block text-sm font-medium mb-1" %>
+        <%= form.text_field :release_branch, class: "form-input w-full", placeholder: "eg., production", disabled: train.persisted? %>
+      </div>
+    </div>
+
   </div>
+
 
   <div class="mt-5">
     <%= form.submit class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" do %>
@@ -52,3 +77,58 @@
     <% end %>
   </div>
 <% end %>
+
+ <% if @train.steps.size > 0 && @train.persisted? %>
+      <ul class="-my-2">
+        <% @train.steps.order(:step_number).each do |step| %>
+          <li class="relative py-2">
+            <div class="flex items-center mb-1">
+              <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
+              <div class="absolute left-0 rounded-full bg-slate-500" aria-hidden="true">
+                <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
+                </svg>
+              </div>
+              <h3 class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></h3>
+              <div class="m-auto">
+                <% if @train.runs.blank? %>
+                  <%= link_to edit_accounts_releases_step_path(step) do%>
+                    <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Edit </button>
+                  <% end %>
+                <% else %>
+                  <%= link_to edit_accounts_releases_step_path(step) do%>
+                    <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5" disabled> Edit </button>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+
+            <div class="pl-9 flex">
+              <%= simple_format(step.description) %>
+            </div>
+          </li>
+        <% end %>
+
+        <li class="relative py-2">
+          <div class="flex items-center mb-1">
+            <div class="absolute left-0 rounded-full bg-white" aria-hidden="true">
+              <svg class="w-5 h-5 fill-current text-slate-400" viewBox="0 0 20 20">
+                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm0 2C4.477 20 0 15.523 0 10S4.477 0 10 0s10 4.477 10 10-4.477 10-10 10z"/>
+              </svg>
+            </div>
+            <div class="pl-9">
+              <%= link_to "Add another step",
+                          new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train),
+                          class: "text-blue-500 hover:underline" %>
+            </div>
+          </div>
+        </li>
+      </ul>
+    <% elsif @train.persisted? %>
+      <div class="m-1.5">
+        <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white">
+          <%= link_to "Add a step",
+                      new_accounts_organization_app_releases_train_step_path(current_organization, @app, @train) %>
+        </button>
+      </div>
+    <% end %>
+

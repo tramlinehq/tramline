@@ -9,6 +9,7 @@ class Releases::Step < ApplicationRecord
   has_many :runs, class_name: "Releases::Step::Run", inverse_of: :step, foreign_key: :train_step_id
   has_many :sign_offs, foreign_key: :train_step_id
   has_many :sign_off_groups, through: :train
+  has_one :app, through: :train
 
   delegate :app, to: :train
 

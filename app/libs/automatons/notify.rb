@@ -23,7 +23,7 @@ module Automatons
       train
         .app
         .config
-        .notification_channel
+        .notification_channel_name
     end
 
     def oauth_access_token

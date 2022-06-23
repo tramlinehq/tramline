@@ -2,17 +2,35 @@ class Releases::Train < ApplicationRecord
   has_paper_trail
   using RefinedString
   extend FriendlyId
+  BRACHING_STRATEGIES = {
+    almost_trunk: 'Almost Trunk',
+    release_backmerge: 'Release Backmerge',
+    parallel_working: 'Parallel working'
+  }.freeze
 
   belongs_to :app, required: true
   has_many :integrations, through: :app
-  has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train
-  has_many :steps, class_name: "Releases::Step", inverse_of: :train
+  has_many :runs, class_name: 'Releases::Train::Run', inverse_of: :train
+  has_one :active_run, -> { where(status: 'on_track') }, class_name: 'Releases::Train::Run', inverse_of: :train
+  has_many :steps, class_name: 'Releases::Step', inverse_of: :train
   has_many :train_sign_off_groups, dependent: :destroy
   has_many :sign_off_groups, through: :train_sign_off_groups
+  has_many :commit_listners, class_name: 'Releases::CommitListner', inverse_of: :train
+
+  validates :branching_strategy, :working_branch, presence: true
+  validates :release_backmerge_branch, presence: true,
+                                       if: lambda { |record|
+                                             record.branching_strategy == 'release_backmerge'
+                                           }
+  validates :release_branch, presence: true,
+                             if: lambda { |record|
+                                   record.branching_strategy == 'parallel_working'
+                                 }
+  validates :branching_strategy, inclusion: { in: BRACHING_STRATEGIES.keys.map(&:to_s) }
 
   enum status: {
-    active: "active",
-    inactive: "inactive"
+    active: 'active',
+    inactive: 'inactive'
   }
 
   friendly_id :name, use: :slugged
@@ -50,7 +68,7 @@ class Releases::Train < ApplicationRecord
   end
 
   def display_name
-    name.downcase.tr(" ", "-")
+    name.downcase.tr(' ', '-')
   end
 
   def tag_name
@@ -67,11 +85,15 @@ class Releases::Train < ApplicationRecord
     self.version_current = version_seeded_with
   end
 
+  def branching_strategy_name
+    BRACHING_STRATEGIES[branching_strategy.to_sym]
+  end
+
   private
 
   def semver_compatibility
     Semantic::Version.new(version_seeded_with)
   rescue ArgumentError
-    errors.add(:version_seeded_with, "Please choose a valid semver format, eg. major.minor.patch")
+    errors.add(:version_seeded_with, 'Please choose a valid semver format, eg. major.minor.patch')
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_06_17_150427) do
+ActiveRecord::Schema[7.0].define(version: 2022_06_23_105656) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -147,6 +147,29 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_17_150427) do
     t.index ["status"], name: "index_organizations_on_status"
   end
 
+  create_table "releases_commit_listners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_id", null: false
+    t.string "branch_name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["train_id"], name: "index_releases_commit_listners_on_train_id"
+  end
+
+  create_table "releases_commits", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "commit_hash", null: false
+    t.uuid "train_id", null: false
+    t.string "message"
+    t.datetime "timestamp", null: false
+    t.string "author_name", null: false
+    t.string "author_email", null: false
+    t.string "url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "train_runs_id"
+    t.index ["train_id"], name: "index_releases_commits_on_train_id"
+    t.index ["train_runs_id"], name: "index_releases_commits_on_train_runs_id"
+  end
+
   create_table "sign_off_group_memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "sign_off_group_id", null: false
     t.uuid "user_id", null: false
@@ -193,6 +216,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_17_150427) do
     t.string "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "branch_name", default: "", null: false
     t.index ["code_name", "train_id"], name: "index_train_runs_on_code_name_and_train_id", unique: true
     t.index ["previous_train_run_id"], name: "index_train_runs_on_previous_train_run_id"
     t.index ["train_id"], name: "index_train_runs_on_train_id"
@@ -249,6 +273,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_17_150427) do
     t.datetime "updated_at", null: false
     t.boolean "signoff_enabled", default: false
     t.string "working_branch"
+    t.string "branching_strategy"
+    t.string "release_branch"
+    t.string "release_backmerge_branch"
     t.index ["app_id"], name: "index_trains_on_app_id"
     t.index ["version_suffix", "app_id"], name: "index_trains_on_version_suffix_and_app_id", unique: true
   end
@@ -306,6 +333,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_17_150427) do
   add_foreign_key "invites", "users", column: "sender_id"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
+  add_foreign_key "releases_commit_listners", "trains"
+  add_foreign_key "releases_commits", "train_runs", column: "train_runs_id"
+  add_foreign_key "releases_commits", "trains"
   add_foreign_key "sign_off_group_memberships", "sign_off_groups"
   add_foreign_key "sign_off_group_memberships", "users"
   add_foreign_key "sign_off_groups", "apps"

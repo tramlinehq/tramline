@@ -21,12 +21,17 @@ class GithubIntegration < ApplicationRecord
   end
 
   def workflows
-    [] unless integration.ci_cd?
-    Installations::Github::Api.new(installation_id).list_workflows(app_config.code_repository.values.first)
+    return [] unless integration.ci_cd?
+
+    installation.list_workflows(app_config.code_repository_name)
   end
 
   def repos
-    Installations::Github::Api.new(installation_id).list_repos
+    installation.list_repos
+  end
+
+  def installation
+    Installations::Github::Api.new(installation_id)
   end
 
   def events_url

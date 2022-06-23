@@ -35,9 +35,6 @@ class Integration < ApplicationRecord
 
   attr_accessor :current_user, :code
 
-  scope :ci_cd_provider, -> { ci_cd.first.providable }
-  scope :notification_provider, -> { notification.first.providable }
-
   delegate :install_path, to: :providable
 
   before_create :set_connected
@@ -52,6 +49,14 @@ class Integration < ApplicationRecord
 
   def self.vcs_provider
     version_control.first&.providable
+  end
+
+  def self.ci_cd_provider
+    ci_cd.first&.providable
+  end
+
+  def self.notification_provider
+    notification.first&.providable
   end
 
   def installation_state

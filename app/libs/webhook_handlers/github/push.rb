@@ -12,25 +12,41 @@ class WebhookHandlers::Github::Push
   end
 
   def process
-    Response.new(:accepted, branch_name)
-    # TODO: filter commits from the branche(es) we care about
-    # Run train steps from first to current to generate builds
+    if valid_repo_and_branch?
+
+      if train.commit_listners.exists?(branch_name:)
+        payload['commits'].each do |commit|
+          Releases::Commit.create!(train:,
+                                   train_run: release,
+                                   commit_hash: commit['id'],
+                                   message: commit['message'],
+                                   timestamp: commit['timestamp'],
+                                   author_name: commit['author']['name'],
+                                   author_email: commit['author']['email'],
+                                   url: commit['url'])
+        end
+      end
+
+      train.steps.each do |step|
+        Automatons::Workflow.dispatch!(step:, ref: branch_name)
+      end
+      message = "New push to the branch #{payload['ref'].delete_prefix('refs/heads/')} with \
+    message #{payload['head_commit']['message']}"
+      Automatons::Notify.dispatch!(train:, message:)
+      Response.new(:accepted)
+    else
+      Response.new(:unprocessable_entity)
+    end
   end
 
   private
-
-  def validate_repo_and_branch
-    return false unless branch_name
-
-    (app.config.code_repository.values.first == repository_name)
-  end
 
   def valid_branch?
     payload['ref']&.include?('refs/heads/')
   end
 
   def branch_name
-    payload['ref'].split('/').last if valid_branch?
+    payload['ref'].delete_prefix('refs/heads/') if valid_branch?
   end
 
   def repository_name
@@ -38,6 +54,10 @@ class WebhookHandlers::Github::Push
   end
 
   def valid_repo_and_branch?
-    (app.config.code_repository.values.first == repository_name) if branch_name
+    (train.app.config&.code_repository_name == repository_name) if branch_name
+  end
+
+  def release
+    train.active_run
   end
 end
