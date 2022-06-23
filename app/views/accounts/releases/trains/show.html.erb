@@ -10,7 +10,10 @@
     <%= link_to edit_accounts_organization_app_releases_train_path(current_organization, @app, @train) do%>
       <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Modify </button>
     <% end %>
- 
+
+    <%= button_to start_accounts_organization_app_releases_train_path(current_organization, @app, @train), method: :patch do%>
+      <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Start </button>
+    <% end %>
   </div>
 </div>
 
@@ -48,16 +51,16 @@
 
 <h2 class="mt-10 font-bold"> Releases </h3>
 
-<% @train.runs.each do |run| %>
-  <div class="grid gris-cols-12">
+<% @train.runs.each_with_index do |run, index| %>
+  <div class="grid grid-cols-12 ">
      <div>
-       1
+       <%= index + 1 %>
      </div> 
-     <div>
+     <div class="col-span-4">
        <%= run.code_name %> 
      </div>
 
-     <div>
+     <div class="col-span-4">
        branch name
      </div>
 

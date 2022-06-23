@@ -45,6 +45,7 @@ Rails.application.routes.draw do
           resources :trains do
             member do
               patch :deactivate
+              patch :start
             end
             resources :steps, shallow: true do
               resource :sign_off, only: [:create, :destroy]

@@ -2,9 +2,9 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
-  before_action :set_app, only: %i[new create show index edit update deactivate]
+  before_action :set_app, only: %i[new create show index edit update deactivate start]
   around_action :set_time_zone
-  before_action :set_train, only: %i[show edit update deactivate]
+  before_action :set_train, only: %i[show edit update deactivate start]
   before_action :validate_integration_status, only: %i[new create]
 
   def new
@@ -58,6 +58,11 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
   def index; end
 
   def edit; end
+
+  def start
+    Services::TriggerRelease.call(@train)
+    redirect_back fallback_location: root_path, notice: 'Train successfully started'
+  end
 
   private
 
