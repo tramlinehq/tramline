@@ -14,27 +14,27 @@ class WebhookHandlers::Github::Push
   def process
     if valid_repo_and_branch?
 
-    if train.commit_listners.exists?(branch_name:)
-      payload['commits'].each do |commit|
-        Releases::Commit.create!(train:,
-                                 commit_hash: commit['id'],
-                                 message: commit['message'],
-                                 timestamp: commit['timestamp'],
-                                 author_name: commit['author']['name'],
-                                 author_email: commit['author']['email'],
-                                 url: commit['url'])
+      if train.commit_listners.exists?(branch_name:)
+        payload['commits'].each do |commit|
+          Releases::Commit.create!(train:,
+                                   commit_hash: commit['id'],
+                                   message: commit['message'],
+                                   timestamp: commit['timestamp'],
+                                   author_name: commit['author']['name'],
+                                   author_email: commit['author']['email'],
+                                   url: commit['url'])
+        end
       end
-    end
 
-    train.steps.each do |step|
-      Automatons::Workflow.dispatch!(step:, ref: branch_name)
-    end
-    message = "New push to the branch #{payload['ref'].delete_prefix('refs/heads/')} with \
+      train.steps.each do |step|
+        Automatons::Workflow.dispatch!(step:, ref: branch_name)
+      end
+      message = "New push to the branch #{payload['ref'].delete_prefix('refs/heads/')} with \
     message #{payload['head_commit']['message']}"
-    Automatons::Notify.dispatch!(train:, message:)
-    Response.new(:accepted)
-  else
-    Response.new(:unprocessable_entity)
+      Automatons::Notify.dispatch!(train:, message:)
+      Response.new(:accepted)
+    else
+      Response.new(:unprocessable_entity)
     end
   end
 
@@ -53,6 +53,10 @@ class WebhookHandlers::Github::Push
   end
 
   def valid_repo_and_branch?
-    (train.app.config.code_repository_name == repository_name) if branch_name
+    (train.app.config&.code_repository_name == repository_name) if branch_name
+  end
+
+  def release
+    train.active_run
   end
 end

@@ -21,8 +21,9 @@ class GithubIntegration < ApplicationRecord
   end
 
   def workflows
-    [] unless integration.ci_cd?
-    installation.list_workflows(app_config.code_repository.values.first)
+    return [] unless integration.ci_cd?
+
+    installation.list_workflows(app_config.code_repository_name)
   end
 
   def repos

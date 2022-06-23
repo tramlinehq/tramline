@@ -11,6 +11,7 @@ class Releases::Train < ApplicationRecord
   belongs_to :app, required: true
   has_many :integrations, through: :app
   has_many :runs, class_name: 'Releases::Train::Run', inverse_of: :train
+  has_one :active_run, -> { where(status: 'on_track') }, class_name: 'Releases::Train::Run', inverse_of: :train
   has_many :steps, class_name: 'Releases::Step', inverse_of: :train
   has_many :train_sign_off_groups, dependent: :destroy
   has_many :sign_off_groups, through: :train_sign_off_groups

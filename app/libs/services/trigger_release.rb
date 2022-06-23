@@ -15,6 +15,7 @@ class Services::TriggerRelease
   def call
     return if train.inactive?
     return if train.steps.empty?
+    return if train.active_run.present?
 
     create_run_record
     create_branches
