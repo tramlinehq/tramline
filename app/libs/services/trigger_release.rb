@@ -69,9 +69,7 @@ class Services::TriggerRelease
   end
 
   def new_branch_name
-    starting_time.strftime("rel/#{train.display_name}/#{train_run.code_name}/%d-%m-%Y")
-    # r/code_name/yyy-mm-dd
-    # r/traincodename/yyyy-mm-dd
+    starting_time.strftime("r/#{train.display_name}/#{train_run.code_name}/%Y-%m-%d")
   end
 
   def webhook_url
