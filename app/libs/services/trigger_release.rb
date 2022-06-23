@@ -30,6 +30,7 @@ class Services::TriggerRelease
     @train_run = train.runs.create(was_run_at: starting_time,
                                    code_name: Haikunator.haikunate(100),
                                    scheduled_at: starting_time, # FIXME: remove this column
+                                   branch_name: feature_branch,
                                    status: :on_track)
   end
 

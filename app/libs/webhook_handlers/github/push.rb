@@ -17,6 +17,7 @@ class WebhookHandlers::Github::Push
       if train.commit_listners.exists?(branch_name:)
         payload['commits'].each do |commit|
           Releases::Commit.create!(train:,
+                                   train_run: release,
                                    commit_hash: commit['id'],
                                    message: commit['message'],
                                    timestamp: commit['timestamp'],

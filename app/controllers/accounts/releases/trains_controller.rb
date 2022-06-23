@@ -64,6 +64,13 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
     redirect_back fallback_location: root_path, notice: 'Train successfully started'
   end
 
+  # TODO: move to own controller
+  def live_release
+    @app = current_organization.apps.friendly.find(params[:app_id])
+    @train = @app.trains.friendly.find(params[:id])
+    @current_release = @train.current_run
+  end
+
   private
 
   def set_train

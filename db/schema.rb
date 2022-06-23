@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_06_21_145021) do
+ActiveRecord::Schema[7.0].define(version: 2022_06_23_105656) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -165,7 +165,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_21_145021) do
     t.string "url"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "train_runs_id"
     t.index ["train_id"], name: "index_releases_commits_on_train_id"
+    t.index ["train_runs_id"], name: "index_releases_commits_on_train_runs_id"
   end
 
   create_table "sign_off_group_memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -214,6 +216,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_21_145021) do
     t.string "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "branch_name", default: "", null: false
     t.index ["code_name", "train_id"], name: "index_train_runs_on_code_name_and_train_id", unique: true
     t.index ["previous_train_run_id"], name: "index_train_runs_on_previous_train_run_id"
     t.index ["train_id"], name: "index_train_runs_on_train_id"
@@ -331,6 +334,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_21_145021) do
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "releases_commit_listners", "trains"
+  add_foreign_key "releases_commits", "train_runs", column: "train_runs_id"
   add_foreign_key "releases_commits", "trains"
   add_foreign_key "sign_off_group_memberships", "sign_off_groups"
   add_foreign_key "sign_off_group_memberships", "users"
