@@ -6,8 +6,8 @@ RSpec.describe WebhookHandlers::Github::Push do
   let(:handler) { WebhookHandlers::Github::Push.new(train, payload) }
 
   describe '#process' do
-    it 'returns success' do
-      expect(handler.process.status).to be_eql(:accepted)
+    it 'returns unprocessable_entity when commit listner not present' do
+      expect(handler.process.status).to be_eql(:unprocessable_entity)
     end
   end
 end
