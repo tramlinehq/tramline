@@ -9,10 +9,15 @@ set -euo pipefail
 BUNDLER_VERSION=2.3.3
 
 init() {
+	echo '🍺 run_brew'
   run_brew
+	echo '💎 verify_ruby_version'
   verify_ruby_version && set_bundler_binstubs && verify_bundled_gems
+	echo '🤷‍♂️ verify_foreman'
   verify_foreman
+	echo '📦 verify_postgres'
   verify_postgres && verify_database_migrations
+	echo '🔐 configure_local_ssl'
   configure_local_ssl
 }
 
@@ -105,7 +110,7 @@ set_bundler_binstubs() {
 verify_bundled_gems() {
   echo 'Updating gems...'
   {
-    (gem list -i -v ${BUNDLER_VERSION} bundler || gem install bundler -v ${BUNDLER_VERSION}) && bundle _${BUNDLER_VERSION}_ binstubs --all
+    (gem list -i -v ${BUNDLER_VERSION} bundler || gem install bundler -v ${BUNDLER_VERSION}) && bundle && bundle _${BUNDLER_VERSION}_ binstubs --all
   } 2>&1
 }
 
