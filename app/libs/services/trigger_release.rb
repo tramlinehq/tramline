@@ -17,11 +17,13 @@ class Services::TriggerRelease
     return if train.steps.empty?
     return if train.active_run.present?
 
-    create_run_record
-    create_branches
-    create_webhooks
-    setup_webhook_listners
-    run_first_step
+    ApplicationRecord.transaction do
+      create_run_record
+      create_branches
+      create_webhooks
+      setup_webhook_listners
+      run_first_step
+    end
   end
 
   private
@@ -52,7 +54,11 @@ class Services::TriggerRelease
     train.commit_listners.create(branch_name: feature_branch)
   end
 
-  def run_first_step; end
+  def run_first_step
+    step = train.steps.first
+    step_run = train_run.step_runs.create(step:, scheduled_at: Time.current, status: 'on_track')
+    step_run.automatons!
+  end
 
   def installation
     @installation ||= train.ci_cd_provider.installation

@@ -165,9 +165,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_23_105656) do
     t.string "url"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "train_runs_id", null: false
+    t.uuid "train_run_id", null: false
     t.index ["train_id"], name: "index_releases_commits_on_train_id"
-    t.index ["train_runs_id"], name: "index_releases_commits_on_train_runs_id"
+    t.index ["train_run_id"], name: "index_releases_commits_on_train_run_id"
   end
 
   create_table "sign_off_group_memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -334,7 +334,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_23_105656) do
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "releases_commit_listners", "trains"
-  add_foreign_key "releases_commits", "train_runs", column: "train_runs_id"
+  add_foreign_key "releases_commits", "train_runs"
   add_foreign_key "releases_commits", "trains"
   add_foreign_key "sign_off_group_memberships", "sign_off_groups"
   add_foreign_key "sign_off_group_memberships", "users"

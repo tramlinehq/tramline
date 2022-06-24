@@ -12,7 +12,7 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   def events
     case event_type
     when 'workflow_run'
-      handle_push
+      handle_workflow_run
     when 'push'
       handle_push
     when 'ping'

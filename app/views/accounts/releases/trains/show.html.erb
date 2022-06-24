@@ -11,11 +11,11 @@
       <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Modify </button>
     <% end %>
 
-    <%= link_to live_release_accounts_organization_app_releases_train_path(current_organization, @app, @train) do%>
+    <%= link_to live_release_accounts_organization_app_releases_train_releases_path(current_organization, @app, @train) do%>
       <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Live </button>
     <% end %>
 
-    <%= button_to start_accounts_organization_app_releases_train_path(current_organization, @app, @train), method: :patch do%>
+    <%= button_to accounts_organization_app_releases_train_releases_path(current_organization, @app, @train) do%>
       <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Start </button>
     <% end %>
   </div>
@@ -55,17 +55,19 @@
 
 <h2 class="mt-10 font-bold"> Releases </h3>
 
-<% @train.runs.each_with_index do |run, index| %>
+<% releases_count = @train.runs.size %>
+<% @train.runs.order(was_run_at: :desc).each_with_index do |run, index| %>
   <div class="grid grid-cols-12 ">
      <div>
-       <%= index + 1 %>
+       <%= releases_count - index %>
      </div> 
+
      <div class="col-span-4">
-       <%= run.code_name %> 
+       <%= link_to run.branch_name, accounts_releases_release_path(run.id)%>
      </div>
 
      <div class="col-span-4">
-       branch name
+       <%= run.status %> 
      </div>
 
      <div>

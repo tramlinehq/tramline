@@ -23,7 +23,7 @@ class WebhookHandlers::Github::WorkflowRun
     build_number = train.app.build_number
     version_number = train.version_current
 
-    transaction do
+    ApplicationRecord.transaction do
       text_block =
         Notifiers::Slack::BuildFinished.render_json(
           artifact_link: artifacts_url,
@@ -33,7 +33,7 @@ class WebhookHandlers::Github::WorkflowRun
           version_number:
         )
 
-      current_run.last_running_step.wrap_up_run!
+      train.current_run.last_running_step.wrap_up_run! rescue nil
 
       Automatons::Notify.dispatch!(
         train:,

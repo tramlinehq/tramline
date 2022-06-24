@@ -69,6 +69,7 @@ class Accounts::Releases::TrainsController < SignedInApplicationController
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:id])
     @current_release = @train.current_run
+    redirect_back fallback_location: root_path, notice: 'No release in progress' unless @current_release
   end
 
   private
