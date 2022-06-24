@@ -1,3 +1,4 @@
+<% breadcrumb :app_config, @config %>
 <%= form_with(model: [current_organization, @app, @config],
               url: accounts_organization_app_app_config_path(current_organization, @app, @config),
               method: :patch) do |form| %>
