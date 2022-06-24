@@ -1,0 +1,44 @@
+<div class="sm:flex sm:justify-between sm:items-center mb-8">
+  <!-- Left: Title -->
+  <div class="mb-4 sm:mb-0">
+    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold"> 🚝 <%= @train.name.titleize %></h1>
+    <h2> <%= @release.branch_name %> </h2>
+  </div>
+
+  <!-- Right: Actions -->
+  <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+
+    <%= link_to accounts_organization_app_releases_train_path(current_organization, @app, @train) do%>
+      <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Train </button>
+    <% end %>
+
+    <% if @release.on_track? %>
+      <%= button_to accounts_releases_release_path(@release.id), method: :delete do%>
+        <button class="btn bg-red-500 hover:bg-red-600 text-white mt-5"> Stop </button>
+      <% end %>
+    <% end %>
+
+  </div>
+</div>
+
+<div class="flex mb-10">
+  <% @train.steps.each do |step| %>
+    <div class="outline grow text-center h-12	">
+      <%= step.name %>
+    </div>
+  <% end %>  
+</div>
+
+
+<h3 class="font-bold">Commits </h3>
+
+<% @release.commits.each do |commit| %>
+  <div class="flex">
+    <div class="mr-2">
+      <%= link_to commit.commit_hash[0, 5], commit.url %>
+    </div>
+    <div class="">
+      <%= commit.message %>
+    </div>
+  </div>
+<% end %>

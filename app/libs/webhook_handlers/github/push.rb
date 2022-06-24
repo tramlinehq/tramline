@@ -27,8 +27,13 @@ class WebhookHandlers::Github::Push
         end
       end
 
-      train.steps.each do |step|
-        Automatons::Workflow.dispatch!(step:, ref: branch_name)
+      if release
+        current_step = release.step_runs.last&.step&.step_number
+
+        train.steps.where('step_number <= ?', current_step).each do |step|
+          step_run = release.step_runs.create(step:, scheduled_at: Time.current, status: 'on_track')
+          step_run.automatons!
+        end
       end
       message = "New push to the branch #{payload['ref'].delete_prefix('refs/heads/')} with \
     message #{payload['head_commit']['message']}"
