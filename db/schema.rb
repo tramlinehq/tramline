@@ -149,7 +149,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_23_105656) do
 
   create_table "releases_commit_listners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "train_id", null: false
-    t.string "branch_name"
+    t.string "branch_name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["train_id"], name: "index_releases_commit_listners_on_train_id"
