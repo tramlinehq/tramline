@@ -1,3 +1,4 @@
+<% breadcrumb :train, @train %>
 <%= render partial: 'shared/errors', locals: { resource: @step } %>
 <%= form_with(
       model: [@current_organization, @app, @train, @step],
