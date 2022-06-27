@@ -64,14 +64,19 @@
        <%= releases_count - index %>
      </div> 
 
+     <% if run.completed_at %>
+       <div class="col-span-4">
+         <%= "#{run.release_version} released on #{run.completed_at.to_s(:short)}" %>
+        </div>
+      <% else %>
+        <div class="col-span-4">
+         <%= "#{run.release_version} ? " %>
+        </div>
+      <% end %>
+
      <div class="col-span-4">
        <%= link_to run.branch_name, accounts_releases_release_path(run.id)%>
      </div>
-
-     <div class="col-span-4">
-       <%= run.status %> 
-     </div>
-
      <div>
        Slack
      </div>
