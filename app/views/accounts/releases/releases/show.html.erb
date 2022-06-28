@@ -24,8 +24,13 @@
 
 <div class="flex mb-10">
   <% @train.steps.each do |step| %>
+    <% step_run = @release.step_runs.find_by(step: step) %>
     <div class="outline grow text-center h-12	">
       <%= step.name %>
+      <br/>
+      <%= step_run&.status || 'pending' %>
+      <%= button_to 'start', start_accounts_releases_release_step_run_path(@release, step) %>
+      <%= button_to 'stop', stop_accounts_releases_release_step_run_path(@release, step) %>
     </div>
   <% end %>  
 </div>

@@ -51,6 +51,12 @@ Rails.application.routes.draw do
             end
 
             resources :releases, only: [:show, :create, :destroy], shallow: true do
+              resources :step_runs, only: [], shallow: false, module: 'releases' do
+                member do
+                  post :start
+                  post :stop
+                end
+              end
               collection do
                 get :live_release
               end
