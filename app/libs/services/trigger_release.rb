@@ -33,6 +33,7 @@ class Services::TriggerRelease
                                    code_name: Haikunator.haikunate(100),
                                    scheduled_at: starting_time, # FIXME: remove this column
                                    branch_name: feature_branch,
+                                   release_version: train.version_current,
                                    status: :on_track)
   end
 
