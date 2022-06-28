@@ -14,7 +14,7 @@ class WebhookHandlers::Github::Push
   def process
     if valid_repo_and_branch?
 
-      if train.commit_listners.exists?(branch_name:)
+      if train.commit_listeners.exists?(branch_name:)
         payload['commits'].each do |commit|
           Releases::Commit.create!(train:,
                                    train_run: release,

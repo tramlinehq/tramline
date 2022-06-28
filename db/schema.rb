@@ -147,12 +147,12 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_27_082300) do
     t.index ["status"], name: "index_organizations_on_status"
   end
 
-  create_table "releases_commit_listners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "releases_commit_listeners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "train_id", null: false
     t.string "branch_name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["train_id"], name: "index_releases_commit_listners_on_train_id"
+    t.index ["train_id"], name: "index_releases_commit_listeners_on_train_id"
   end
 
   create_table "releases_commits", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -335,7 +335,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_27_082300) do
   add_foreign_key "invites", "users", column: "sender_id"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
-  add_foreign_key "releases_commit_listners", "trains"
+  add_foreign_key "releases_commit_listeners", "trains"
   add_foreign_key "releases_commits", "train_runs"
   add_foreign_key "releases_commits", "trains"
   add_foreign_key "sign_off_group_memberships", "sign_off_groups"

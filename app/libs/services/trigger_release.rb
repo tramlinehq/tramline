@@ -21,7 +21,7 @@ class Services::TriggerRelease
       create_run_record
       create_branches
       create_webhooks
-      setup_webhook_listners
+      setup_webhook_listeners
       run_first_step
     end
   end
@@ -51,8 +51,8 @@ class Services::TriggerRelease
     nil
   end
 
-  def setup_webhook_listners
-    train.commit_listners.create(branch_name: feature_branch)
+  def setup_webhook_listeners
+    train.commit_listeners.create(branch_name: feature_branch)
   end
 
   def run_first_step
