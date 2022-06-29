@@ -30,11 +30,11 @@
       <%= step.name %>
       <br/>
       <%= step_status %>
-      <% if @release.running_step? %>
-        
-      <% elsif @release.next_step == step %>
-        <%= button_to 'start', start_accounts_releases_release_step_run_path(@release, step), { class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' } %>
-      <% end %>
+      <% unless @release.running_step? %>
+        <% if @release.next_step == step %>
+          <%= button_to 'start', start_accounts_releases_release_step_run_path(@release, step), { class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' } %>
+        <% end %>
+    <% end %>
     </div>
   <% end %>  
 </div>
