@@ -1,8 +1,8 @@
 class Services::TriggerRelease
   include Rails.application.routes.url_helpers
 
-  def self.call(*args)
-    new(*args).call
+  def self.call(train)
+    new(train).call
   end
 
   attr_reader :train, :starting_time, :train_run
@@ -32,7 +32,7 @@ class Services::TriggerRelease
     @train_run = train.runs.create(was_run_at: starting_time,
                                    code_name: Haikunator.haikunate(100),
                                    scheduled_at: starting_time, # FIXME: remove this column
-                                   branch_name: feature_branch,
+                                   branch_name: release_branch,
                                    release_version: train.version_current,
                                    status: :on_track)
   end
@@ -45,6 +45,8 @@ class Services::TriggerRelease
     nil
   end
 
+  # Webhooks are created with the train and we don't need to create webhooks for each train run AKA release
+  # This is a fallback mechanism to ensure that webhook gets created if it is not present
   def create_webhooks
     installation.create_repo_webhook!(repo, webhook_url)
   rescue Octokit::UnprocessableEntity
@@ -52,7 +54,7 @@ class Services::TriggerRelease
   end
 
   def setup_webhook_listners
-    train.commit_listners.create(branch_name: feature_branch)
+    train.commit_listners.create(branch_name: release_branch)
   end
 
   def run_first_step
@@ -69,8 +71,15 @@ class Services::TriggerRelease
     train.app.config.code_repository_name
   end
 
-  def feature_branch
-    new_branch_name
+  def release_branch
+    case train.branching_strategy.to_s
+    when 'almost_trunk'
+      new_branch_name
+    when 'release_backmerge'
+      new_branch_name
+    when 'parallel_working'
+      train.release_branch
+    end
   end
 
   def working_branch
