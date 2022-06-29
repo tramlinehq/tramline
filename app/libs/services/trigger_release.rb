@@ -53,8 +53,8 @@ class Services::TriggerRelease
     nil
   end
 
-  def setup_webhook_listners
-    train.commit_listners.create(branch_name: release_branch)
+  def setup_webhook_listeners
+    train.commit_listeners.create(branch_name: release_branch)
   end
 
   def run_first_step
