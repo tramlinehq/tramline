@@ -4,42 +4,41 @@ end
 
 # Issue list
 crumb :apps do
-  link 'All apps', accounts_organization_apps_path(current_organization)
+  link 'All apps', apps_path(current_organization)
 end
 
 crumb :app do |app|
-  link app.name, accounts_organization_app_path(app.organization, app)
+  link app.name, app_path(app)
   parent :apps
 end
 
 crumb :train do |train|
-  link train.name, accounts_organization_app_releases_train_path(current_organization, train.app, train)
+  link train.name, app_releases_train_path(train.app, train)
   parent :app, train.app
 end
 
 crumb :step do |step|
-  link step.name, accounts_organization_app_releases_train_steps_path(current_organization, step.train.app, step.train)
+  link step.name, app_releases_train_steps_path(step.train.app, step.train)
   parent :train, step.train
 end
 
 crumb :release do |release|
-  link release.branch_name,
-       accounts_organization_app_releases_train_releases_path(current_organization, release.train.app, release.train)
+  link release.branch_name, app_releases_train_releases_path(release.train.app, release.train)
   parent :train, release.train
 end
 
 crumb :app_config do |config|
-  link 'App config', edit_accounts_organization_app_app_config_path(current_organization, config.app, config)
+  link 'App config', edit_app_app_config_path(config.app, config)
   parent :app, config.app
 end
 
 crumb :integrations do |app|
-  link 'integrations', accounts_organization_app_integrations_path(current_organization, app)
+  link 'integrations', app_integrations_path(app)
   parent :app, app
 end
 
 crumb :sign_off_groups do |app|
-  link 'Sign Off Config', edit_accounts_organization_app_sign_off_groups_path(current_organization, app)
+  link 'Sign Off Config', app_sign_off_groups_path(app)
   parent :app, app
 end
 

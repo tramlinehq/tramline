@@ -1,0 +1,41 @@
+<% if integration.providable.creatable? %>
+  <span data-controller="visibility">
+    <button class="btn-lg border-slate-600 hover:border-slate-300 flex items-center"
+            data-turbo="false"
+            data-action="visibility#toggle">
+      Connect
+    </button>
+
+    <%= modal_for("Add JSON Key") do %>
+      <div class="flex flex-col space-y-2">
+        <%= form_with(model: [current_organization, @app, integration]) do |form| %>
+          <div class="flex">
+            <%= form.hidden_field :category, value: category %>
+            <%= form.fields_for :providable do |subform| %>
+              <%= subform.hidden_field :type, value: integration.providable_type %>
+              <%= subform.file_field :json_key, accept: 'application/json' %>
+            <% end %>
+          </div>
+
+          <div class="flex self-end">
+            <%= form.submit 'Create', class: "btn bg-indigo-500 hover:bg-indigo-600 flex text-white items-center" %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </span>
+<% else %>
+  <%= form_with(model: [current_organization, @app, integration],
+                method: :get,
+                url: connect_app_integrations_path(@app, integration)) do |form| %>
+    <%= form.hidden_field :category, value: category %>
+
+    <%= form.fields_for :providable do |subform| %>
+      <%= subform.hidden_field :type, value: integration.providable_type %>
+    <% end %>
+
+    <%= form.submit 'Connect',
+                    class: "btn-lg border-slate-600 hover:border-slate-300 flex items-center",
+                    "data-turbo": false %>
+  <% end %>
+<% end %>

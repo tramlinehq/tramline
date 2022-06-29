@@ -1,0 +1,28 @@
+<% form_url = app_google_play_store_integration_path(@app) %>
+
+<span data-controller="visibility">
+    <button class="btn-lg border-slate-600 hover:border-slate-300 flex items-center"
+            data-turbo="false"
+            data-action="visibility#toggle">
+      Connect
+    </button>
+
+  <%= modal_for("Add JSON Key") do %>
+      <div class="flex flex-col space-y-2">
+        <div class="flex">
+          <%= form_with(model: [@app, integration], url: form_url) do |form| %>
+              <%= form.hidden_field :category, value: category %>
+              <%= form.fields_for :providable do |subform| %>
+                <%= subform.hidden_field :type, value: integration.providable_type %>
+                <%= subform.file_field :json_key, accept: 'application/json' %>
+              <% end %>
+        </div>
+
+        <div class="flex self-end">
+          <%= form.submit 'Create', class: "btn bg-indigo-500 hover:bg-indigo-600 flex text-white items-center" %>
+        </div>
+
+          <% end %>
+      </div>
+  <% end %>
+</span>
