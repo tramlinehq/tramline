@@ -21,7 +21,7 @@ class Services::TriggerRelease
       create_run_record
       create_branches
       create_webhooks
-      setup_webhook_listners
+      setup_webhook_listeners
       run_first_step
     end
   end

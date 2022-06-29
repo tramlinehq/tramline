@@ -24,8 +24,17 @@
 
 <div class="flex mb-10">
   <% @train.steps.each do |step| %>
-    <div class="outline grow text-center h-12	">
+    <% step_run = @release.step_runs.find_by(step: step) %>
+    <% step_status = step_run&.status || 'pending' %>
+    <div class="outline grow text-center h-25">
       <%= step.name %>
+      <br/>
+      <%= step_status %>
+      <% unless @release.running_step? %>
+        <% if @release.next_step == step %>
+          <%= button_to 'start', start_accounts_releases_release_step_run_path(@release, step), { class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' } %>
+        <% end %>
+    <% end %>
     </div>
   <% end %>  
 </div>
