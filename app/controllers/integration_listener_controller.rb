@@ -20,7 +20,7 @@ class IntegrationListenerController < SignedInApplicationController
   protected
 
   def providable_params
-    { integration: @integration }
+    {integration: @integration}
   end
 
   private
@@ -40,7 +40,7 @@ class IntegrationListenerController < SignedInApplicationController
   def integration_params
     {
       category: state_integration_category,
-      status: Integration::DEFAULT_CONNECT_STATUS,
+      status: Integration::DEFAULT_CONNECT_STATUS
     }
   end
 

@@ -70,7 +70,7 @@ class Accounts::Releases::StepsController < SignedInApplicationController
       :name,
       :description,
       :build_artifact_channel,
-      :ci_cd_channel,
+      :ci_cd_channel
     )
   end
 

@@ -11,11 +11,11 @@ class IntegrationListeners::GithubController < IntegrationListenerController
 
   def events
     case event_type
-    when 'workflow_run'
+    when "workflow_run"
       handle_workflow_run
-    when 'push'
+    when "push"
       handle_push
-    when 'ping'
+    when "ping"
       handle_ping
     end
   end
@@ -37,7 +37,7 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   private
 
   def event_type
-    request.headers['HTTP_X_GITHUB_EVENT']
+    request.headers["HTTP_X_GITHUB_EVENT"]
   end
 
   def train

@@ -1,7 +1,7 @@
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe Releases::Commit, type: :model do
-  it 'has valid factory' do
+  it "has valid factory" do
     expect(FactoryBot.create(:releases_commit)).to be_valid
   end
 end

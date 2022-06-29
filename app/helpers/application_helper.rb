@@ -8,7 +8,7 @@ module ApplicationHelper
   def modal_for(heading, &block)
     render(
       partial: "shared/modal",
-      locals: { heading: heading, block: block }
+      locals: {heading: heading, block: block}
     )
   end
 end

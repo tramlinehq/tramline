@@ -7,7 +7,7 @@ class Accounts::Organization < ApplicationRecord
   has_many :apps
   has_many :invites
 
-  enum status: { active: "active", dormant: "dormant", guest: "guest" }
+  enum status: {active: "active", dormant: "dormant", guest: "guest"}
 
   friendly_id :name, use: :slugged
 

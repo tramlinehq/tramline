@@ -14,7 +14,7 @@ class Accounts::Invite < ActiveRecord::Base
   before_create :generate_token
 
   def generate_token
-    self.token = Digest::SHA1.hexdigest([self.organization_id, Time.now, rand].join)
+    self.token = Digest::SHA1.hexdigest([organization_id, Time.now, rand].join)
   end
 
   def add_recipient

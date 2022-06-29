@@ -30,11 +30,11 @@ class Services::TriggerRelease
 
   def create_run_record
     @train_run = train.runs.create(was_run_at: starting_time,
-                                   code_name: Haikunator.haikunate(100),
-                                   scheduled_at: starting_time, # FIXME: remove this column
-                                   branch_name: feature_branch,
-                                   release_version: train.version_current,
-                                   status: :on_track)
+      code_name: Haikunator.haikunate(100),
+      scheduled_at: starting_time, # FIXME: remove this column
+      branch_name: feature_branch,
+      release_version: train.version_current,
+      status: :on_track)
   end
 
   def create_branches
@@ -57,7 +57,7 @@ class Services::TriggerRelease
 
   def run_first_step
     step = train.steps.first
-    step_run = train_run.step_runs.create(step:, scheduled_at: Time.current, status: 'on_track')
+    step_run = train_run.step_runs.create(step:, scheduled_at: Time.current, status: "on_track")
     step_run.automatons!
   end
 
@@ -83,9 +83,9 @@ class Services::TriggerRelease
 
   def webhook_url
     if Rails.env.development?
-      github_events_url(host: ENV['WEBHOOK_HOST_NAME'], train_id: train.id)
+      github_events_url(host: ENV["WEBHOOK_HOST_NAME"], train_id: train.id)
     else
-      github_events_url(host: ENV['HOST_NAME'], train_id: train.id, protocol: 'https')
+      github_events_url(host: ENV["HOST_NAME"], train_id: train.id, protocol: "https")
     end
   end
 end

@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :releases_step, class: 'Releases::Step' do
+  factory :releases_step, class: "Releases::Step" do
     association :train, factory: :releases_train
     name { Faker::Lorem.word }
     description { Faker::Lorem.sentence }

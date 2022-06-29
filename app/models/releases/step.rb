@@ -40,6 +40,6 @@ class Releases::Step < ApplicationRecord
   end
 
   def next
-    train.steps.where('step_number > ?', step_number).first
+    train.steps.where("step_number > ?", step_number).first
   end
 end
