@@ -2,7 +2,8 @@ class Releases::Train < ApplicationRecord
   has_paper_trail
   using RefinedString
   extend FriendlyId
-  BRACHING_STRATEGIES = {
+
+  BRANCHING_STRATEGIES = {
     almost_trunk: 'Almost Trunk',
     release_backmerge: 'Release Backmerge',
     parallel_working: 'Parallel working'
@@ -26,7 +27,7 @@ class Releases::Train < ApplicationRecord
                              if: lambda { |record|
                                    record.branching_strategy == 'parallel_working'
                                  }
-  validates :branching_strategy, inclusion: { in: BRACHING_STRATEGIES.keys.map(&:to_s) }
+  validates :branching_strategy, inclusion: { in: BRANCHING_STRATEGIES.keys.map(&:to_s) }
 
   enum status: {
     active: 'active',
@@ -86,7 +87,7 @@ class Releases::Train < ApplicationRecord
   end
 
   def branching_strategy_name
-    BRACHING_STRATEGIES[branching_strategy.to_sym]
+    BRANCHING_STRATEGIES[branching_strategy.to_sym]
   end
 
   private

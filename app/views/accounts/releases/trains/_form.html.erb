@@ -40,7 +40,7 @@
     <div data-controller="branching-selector">
         <%= form.label "Branching strategy", class: "block text-sm font-medium mb-1" %>
         <%= form.select :branching_strategy,
-          options_for_select(Releases::Train::BRACHING_STRATEGIES.invert, train.branching_strategy ),
+          options_for_select(Releases::Train::BRANCHING_STRATEGIES.invert, train.branching_strategy ),
                         { required: true, },
                         { class: "form-input w-full mb-1", data: { action: 'branching-selector#change' }, disabled: train.persisted?  } %>
     </div>
