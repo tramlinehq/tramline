@@ -38,4 +38,8 @@ class Releases::Step < ApplicationRecord
   def last?
     train.steps.maximum(:step_number).to_i == step_number
   end
+
+  def next
+    train.steps.where('step_number > ?', step_number).first
+  end
 end

@@ -16,6 +16,14 @@ class Releases::Train::Run < ApplicationRecord
     step_runs.finished.last
   end
 
+  def next_step
+    step_runs.last.step.next
+  end
+
+  def running_step?
+    step_runs.on_track.exists?
+  end
+
   def release_branch
     was_run_at.strftime("r/#{train.display_name}/%Y-%m-%d")
   end
