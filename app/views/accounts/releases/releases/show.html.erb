@@ -26,7 +26,7 @@
   <% @train.steps.each do |step| %>
     <% step_run = @release.step_runs.find_by(step: step) %>
     <% step_status = step_run&.status || 'pending' %>
-    <div class="outline grow text-center h-fit">
+    <div class="outline grow text-center h-25">
       <%= step.name %>
       <br/>
       <%= step_status %>
