@@ -4,7 +4,7 @@ end
 
 # Issue list
 crumb :apps do
-  link 'All apps', apps_path(current_organization)
+  link 'All apps', apps_path
 end
 
 crumb :app do |app|

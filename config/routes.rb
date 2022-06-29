@@ -40,7 +40,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :apps, only: %i[show index] do
+  resources :apps, only: %i[show index new] do
     resource :app_config, only: %i[edit update], path: :config
     resource :sign_off_groups, only: %i[edit update]
     namespace :releases, path: '' do
