@@ -30,30 +30,30 @@ Rails.application.routes.draw do
   end
 
   namespace :accounts do
-    resources :organizations do
+    resources :organizations, only: [:index] do
       member do
         get :switch
       end
 
-      resource :team
-      resources :invitations
+      resource :team, only: [:show]
+      resources :invitations, only: %i[new create]
     end
   end
 
-  resources :apps do
+  resources :apps, only: %i[show index] do
     resource :app_config, only: %i[edit update], path: :config
     resource :sign_off_groups, only: %i[edit update]
-    namespace :releases do
+    namespace :releases, path: '' do
       resources :trains do
         member do
           patch :deactivate
         end
-        resources :steps, shallow: true do
+        resources :steps, only: %i[new create edit update], shallow: true do
           resource :sign_off, only: %i[create destroy]
         end
 
         resources :releases, only: %i[show create destroy], shallow: true do
-          resources :step_runs, only: [], shallow: false, module: 'releases' do
+          resources :step_runs, only: [], shallow: false do
             member do
               post :start
               post :stop
@@ -66,17 +66,18 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :integrations do
+    resources :integrations, only: %i[index create] do
       collection do
         get :connect, to: 'integrations#connect', as: :connect
         resource :google_play_store, only: [:create],
-                                     controller: 'integrations/google_play_store', as: :google_play_store_integration
+                                     controller: 'integrations/google_play_store',
+                                     as: :google_play_store_integration
       end
     end
   end
 
   namespace :admin do
-    resource :settings
+    resource :settings, only: [:index]
   end
 
   scope :github do
