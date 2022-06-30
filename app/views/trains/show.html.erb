@@ -1,0 +1,84 @@
+<% breadcrumb :train, @train %>
+<div class="sm:flex sm:justify-between sm:items-center mb-8">
+  <!-- Left: Title -->
+  <div class="mb-4 sm:mb-0">
+    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold"><%= @train.name.titleize %> 🚂</h1>
+  </div>
+
+  <!-- Right: Actions -->
+  <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+
+    <%= link_to edit_app_train_path(@app, @train) do %>
+      <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Modify</button>
+    <% end %>
+
+    <% if @train.current_run %>
+      <%= link_to live_release_app_train_releases_path(@app, @train) do %>
+        <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Live</button>
+      <% end %>
+    <% else %>
+      <%= button_to app_train_releases_path(@app, @train) do %>
+        <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Start</button>
+      <% end %>
+  <% end %>
+  </div>
+</div>
+
+<div class="flex justify-between">
+  <div class="basis-1/2">
+    <span class="font-bold"> Sign Off Groups: </span> <%= @train.sign_off_groups.map(&:name).join(", ") %>
+    <br/>
+    <span class="font-bold">Branching Strategy: </span> <%= @train.branching_strategy_name %>
+  </div>
+
+  <div class="basis-1/2">
+    <%= @train.description %>
+  </div>
+</div>
+
+<div class="mt-5">
+  <% @train.steps.each_with_index do |step, index| %>
+    <div class="grid grid-cols-12 gap-4 border-slate-700 border border-x-0">
+      <div class="col-span-2 border-r-2">
+        <%= index + 1 %>
+      </div>
+
+      <div class="col-span-10">
+        <span class="font-bold"><%= step.name %></span>
+        <br/>
+        <%= step.description %>
+        <br/>
+        Github / <%= step.ci_cd_channel&.values&.first %>
+
+      </div>
+    </div>
+  <% end %>
+
+</div>
+
+<h2 class="mt-10 font-bold"> Releases </h2>
+
+<% releases_count = @train.runs.size %>
+<% @train.runs.order(was_run_at: :desc).each_with_index do |run, index| %>
+  <div class="grid grid-cols-12 ">
+    <div>
+      <%= releases_count - index %>
+    </div>
+     <% if run.completed_at %>
+       <div class="col-span-4">
+         <%= "#{run.release_version} released on #{run.completed_at.to_s(:short)}" %>
+        </div>
+      <% else %>
+        <div class="col-span-4">
+         <%= "#{run.release_version} ? " %>
+        </div>
+      <% end %>
+
+     <div class="col-span-4">
+       <%= link_to run.branch_name, release_path(run.id)%>
+     </div>
+     <div>
+       Slack
+     </div>
+  </div>  
+<% end %>

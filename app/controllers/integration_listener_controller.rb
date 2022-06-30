@@ -77,6 +77,6 @@ class IntegrationListenerController < SignedInApplicationController
   end
 
   def app_path
-    accounts_organization_app_path(current_organization, state_app)
+    app_path(state_app)
   end
 end

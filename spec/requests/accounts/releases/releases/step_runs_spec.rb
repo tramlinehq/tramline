@@ -9,7 +9,7 @@ RSpec.describe "Accounts::Releases::Releases::StepRuns", type: :request do
   describe "POST /start" do
     xit "start the step" do
       sign_in user
-      post start_accounts_releases_release_step_run_path(release, step)
+      post start_release_step_run_path(release, step)
       expect(step.status).to be_eql("on_track")
     end
   end

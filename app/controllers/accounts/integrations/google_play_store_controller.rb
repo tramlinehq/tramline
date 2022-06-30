@@ -1,4 +1,4 @@
-class Accounts::Integrations::GooglePlayStoreController < Accounts::IntegrationsController
+class Integrations::GooglePlayStoreController < Accounts::IntegrationsController
   def integration_params
     params.require(:integration)
       .permit(

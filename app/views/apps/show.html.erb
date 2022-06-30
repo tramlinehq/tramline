@@ -1,0 +1,130 @@
+<% breadcrumb @app %>
+
+<div class="sm:flex sm:justify-between sm:items-center mb-8">
+  <!-- Left: Title -->
+  <div class="mb-4 sm:mb-0">
+    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold"><%= @app.name %> 📱</h1>
+  </div>
+
+  <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+    <% if @app.ready? %>
+      <%= link_to app_integrations_path(@app), class: "btn border-slate-200 hover:border-slate-300 text-slate-600" do %>
+        <svg class="w-4 h-4 fill-current text-slate-500 shrink-0" viewBox="0 0 16 16">
+          <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4zM4.6 14H2v-2.6l6-6L10.6 8l-6 6zM12 6.6L9.4 4 11 2.4 13.6 5 12 6.6z"/>
+        </svg>
+        <span class="ml-2">
+          Integrations
+        </span>
+      <% end %>
+      <%= link_to edit_app_app_config_path(@app), class: "btn border-slate-200 hover:border-slate-300 text-slate-600" do %>
+        <svg class="w-4 h-4 fill-current text-slate-500 shrink-0" viewBox="0 0 16 16">
+          <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4zM4.6 14H2v-2.6l6-6L10.6 8l-6 6zM12 6.6L9.4 4 11 2.4 13.6 5 12 6.6z"/>
+        </svg>
+        <span class="ml-2">
+          App Config
+        </span>
+      <% end %>
+
+      <%= link_to edit_app_sign_off_groups_path(@app), class: "btn border-slate-200 hover:border-slate-300 text-slate-600" do %>
+        <svg class="w-4 h-4 fill-current text-slate-500 shrink-0" viewBox="0 0 16 16">
+          <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4zM4.6 14H2v-2.6l6-6L10.6 8l-6 6zM12 6.6L9.4 4 11 2.4 13.6 5 12 6.6z"/>
+        </svg>
+        <span class="ml-2">
+          Sign Off Config
+        </span>
+      <% end %>
+
+    <% end %>
+  </div>
+</div>
+
+<div class="border-t border-slate-200">
+  <div class="space-y-8 mt-8">
+    <% if @app.ready? %>
+      <% unless @app.trains.exists? %>
+        <div class="grid grid-flow-col sm:auto-cols-max justify-start gap-2">
+          <%= link_to new_app_train_path(@app),
+                      class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" do %>
+            <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
+              <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
+            </svg>
+            <span class="hidden xs:block ml-2">
+              Add a release train
+            </span>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <% unless @app.integrations.ready? %>
+        <%= link_to app_integrations_path(@app), class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" do %>
+          <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
+            <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
+          </svg>
+          <span class="ml-2">
+            Setup Integrations
+          </span>
+        <% end %>
+      <% else %>
+        <%= link_to edit_app_config_path(@app), class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" do %>
+          <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
+            <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
+          </svg>
+          <span class="ml-2">
+            Update Config
+          </span>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <% if @app.trains.exists? %>
+      <h2 class="text-2xl text-slate-800 font-bold mb-6">Release Trains</h2>
+      <table class="table-auto w-full">
+        <!-- Table header -->
+        <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+        <tr>
+          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="font-semibold text-left">Name</div>
+          </th>
+          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="font-semibold text-left">Description</div>
+          </th>
+          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="font-semibold text-left">Current Version</div>
+          </th>
+        </tr>
+        </thead>
+        <tbody class="text-sm divide-y divide-slate-200">
+        <% @app.trains.each do |train| %>
+          <tr>
+            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="font-medium text-slate-800">
+                  <%= link_to train.name, app_train_path(@app, train) %>
+                </div>
+              </div>
+            </td>
+            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+              <div class="text-left"><%= simple_format(train.description) %></div>
+            </td>
+            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+              <div class="text-left"><%= train.version_current %></div>
+            </td>
+          </tr>
+        <% end %>
+        </tbody>
+      </table>
+    <% end %>
+
+    <% if @app.trains.exists? %>
+      <div class="m-1.5">
+        <%= link_to new_app_train_path(@app),
+                    class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" do %>
+          Add another train
+        <% end %>
+      </div>
+
+    <% end %>
+  </div>
+</div>
+
+
