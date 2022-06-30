@@ -52,7 +52,7 @@ Rails.application.routes.draw do
       end
 
       resources :releases, only: %i[show create destroy], shallow: true do
-        resources :step_runs, only: [], shallow: false do
+        resources :step_runs, only: [], shallow: false, module: 'releases' do
           member do
             post :start
             post :stop
