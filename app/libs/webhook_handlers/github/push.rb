@@ -12,19 +12,20 @@ class WebhookHandlers::Github::Push
   end
 
   def process
+    return Response.new(:accepted) if valid_tag?
+
     if valid_repo_and_branch?
 
       if train.commit_listeners.exists?(branch_name:)
-        payload["commits"].each do |commit|
-          Releases::Commit.create!(train:,
-            train_run: release,
-            commit_hash: commit["id"],
-            message: commit["message"],
-            timestamp: commit["timestamp"],
-            author_name: commit["author"]["name"],
-            author_email: commit["author"]["email"],
-            url: commit["url"])
-        end
+        commit = payload['head_commit']
+        Releases::Commit.create!(train:,
+          train_run: release,
+          commit_hash: commit["id"],
+          message: commit["message"],
+          timestamp: commit["timestamp"],
+          author_name: commit["author"]["name"],
+          author_email: commit["author"]["email"],
+          url: commit["url"])
       end
 
       if release
@@ -48,6 +49,10 @@ class WebhookHandlers::Github::Push
 
   def valid_branch?
     payload["ref"]&.include?("refs/heads/")
+  end
+
+  def valid_tag?
+    payload["ref"]&.include?("refs/tags/")
   end
 
   def branch_name
