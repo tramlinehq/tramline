@@ -10,7 +10,7 @@ RSpec.describe "Accounts::SignOffGroups", type: :request do
   describe "GET /edit" do
     it "returns http success" do
       sign_in user
-      get "/accounts/organizations/#{organization.id}/apps/#{tram_app.id}/sign_off_groups/edit"
+      get "/apps/#{tram_app.id}/sign_off_groups/edit"
       expect(response).to have_http_status(:success)
     end
   end
@@ -18,7 +18,7 @@ RSpec.describe "Accounts::SignOffGroups", type: :request do
   describe "GET /update" do
     it "returns http success" do
       sign_in user
-      put "/accounts/organizations/#{organization.slug}/apps/#{tram_app.slug}/sign_off_groups",
+      put "/apps/#{tram_app.slug}/sign_off_groups",
         params: {app: {sign_off_groups_attributes: [
           {name: "Developers", sign_off_group_membership_ids: [developer_1.id]},
           {name: "Testers", sign_off_group_membership_ids: [qa_1.id]}

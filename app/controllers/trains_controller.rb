@@ -1,4 +1,4 @@
-class Releases::TrainsController < SignedInApplicationController
+class TrainsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
@@ -119,6 +119,6 @@ class Releases::TrainsController < SignedInApplicationController
   end
 
   def train_path
-    app_releases_train_path(@app, @train)
+    app_train_path(@app, @train)
   end
 end

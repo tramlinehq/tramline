@@ -1,4 +1,4 @@
-class Releases::Releases::StepRunsController < ApplicationController
+class Releases::StepRunsController < ApplicationController
   def start
     release = Releases::Train::Run.find(params[:release_id])
     step = release.train.steps.friendly.find(params[:id])

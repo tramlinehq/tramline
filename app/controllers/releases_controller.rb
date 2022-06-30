@@ -1,4 +1,4 @@
-class Releases::ReleasesController < SignedInApplicationController
+class ReleasesController < SignedInApplicationController
   def create
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])

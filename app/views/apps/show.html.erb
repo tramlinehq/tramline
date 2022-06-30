@@ -43,7 +43,7 @@
     <% if @app.ready? %>
       <% unless @app.trains.exists? %>
         <div class="grid grid-flow-col sm:auto-cols-max justify-start gap-2">
-          <%= link_to new_app_releases_train_path(@app),
+          <%= link_to new_app_train_path(@app),
                       class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" do %>
             <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
               <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
@@ -99,7 +99,7 @@
             <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="font-medium text-slate-800">
-                  <%= link_to train.name, app_releases_train_path(@app, train) %>
+                  <%= link_to train.name, app_train_path(@app, train) %>
                 </div>
               </div>
             </td>
@@ -117,7 +117,7 @@
 
     <% if @app.trains.exists? %>
       <div class="m-1.5">
-        <%= link_to new_app_releases_train_path(@app),
+        <%= link_to new_app_train_path(@app),
                     class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" do %>
           Add another train
         <% end %>

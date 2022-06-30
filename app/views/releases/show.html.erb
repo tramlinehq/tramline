@@ -9,12 +9,12 @@
   <!-- Right: Actions -->
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
 
-    <%= link_to app_releases_train_path(@app, @train) do%>
+    <%= link_to app_train_path(@app, @train) do%>
       <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Train </button>
     <% end %>
 
     <% if @release.on_track? %>
-      <%= button_to releases_release_path(@release.id), method: :delete do%>
+      <%= button_to release_path(@release.id), method: :delete do%>
         <button class="btn bg-red-500 hover:bg-red-600 text-white mt-5"> Stop </button>
       <% end %>
     <% end %>
@@ -32,7 +32,7 @@
       <%= step_status %>
       <% unless @release.running_step? %>
         <% if @release.next_step == step %>
-          <%= button_to 'start', start_releases_release_step_run_path(@release, step), { class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' } %>
+          <%= button_to 'start', start_release_step_run_path(@release, step), { class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' } %>
         <% end %>
     <% end %>
     </div>

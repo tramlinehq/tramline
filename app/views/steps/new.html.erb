@@ -2,7 +2,7 @@
 <%= render partial: 'shared/errors', locals: { resource: @step } %>
 <%= form_with(
       model: [@app, @train, @step],
-      url: app_releases_train_steps_path(@app, @train, @step)
+      url: app_train_steps_path(@app, @train, @step)
     ) do |form| %>
 
      <div class="mb-8">

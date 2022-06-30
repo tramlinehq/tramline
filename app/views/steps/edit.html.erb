@@ -2,7 +2,7 @@
 <%= render partial: 'shared/errors', locals: { resource: @step } %>
 <%= form_with(
       model: @step,
-      url: accounts_releases_step_path(@step),
+      url: step_path(@step),
       method: :patch
     ) do |form| %>
     <div class="mb-8">

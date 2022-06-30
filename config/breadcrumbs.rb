@@ -13,17 +13,17 @@ crumb :app do |app|
 end
 
 crumb :train do |train|
-  link train.name, app_releases_train_path(train.app, train)
+  link train.name, app_train_path(train.app, train)
   parent :app, train.app
 end
 
 crumb :step do |step|
-  link step.name, app_releases_train_steps_path(step.train.app, step.train)
+  link step.name, app_train_steps_path(step.train.app, step.train)
   parent :train, step.train
 end
 
 crumb :release do |release|
-  link release.branch_name, app_releases_train_releases_path(release.train.app, release.train)
+  link release.branch_name, app_train_releases_path(release.train.app, release.train)
   parent :train, release.train
 end
 

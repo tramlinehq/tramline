@@ -43,29 +43,26 @@ Rails.application.routes.draw do
   resources :apps, only: %i[show index new] do
     resource :app_config, only: %i[edit update], path: :config
     resource :sign_off_groups, only: %i[edit update]
-    namespace :releases, path: '' do
-      resources :trains do
-        member do
-          patch :deactivate
-        end
-        resources :steps, only: %i[new create edit update], shallow: true do
-          resource :sign_off, only: %i[create destroy]
-        end
+    resources :trains do
+      member do
+        patch :deactivate
+      end
+      resources :steps, only: %i[new create edit update], shallow: true do
+        resource :sign_off, only: %i[create destroy]
+      end
 
-        resources :releases, only: %i[show create destroy], shallow: true do
-          resources :step_runs, only: [], shallow: false do
-            member do
-              post :start
-              post :stop
-            end
+      resources :releases, only: %i[show create destroy], shallow: true do
+        resources :step_runs, only: [], shallow: false do
+          member do
+            post :start
+            post :stop
           end
-          collection do
-            get :live_release
-          end
+        end
+        collection do
+          get :live_release
         end
       end
     end
-
     resources :integrations, only: %i[index create] do
       collection do
         get :connect, to: 'integrations#connect', as: :connect

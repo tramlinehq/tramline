@@ -8,16 +8,16 @@
   <!-- Right: Actions -->
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
 
-    <%= link_to edit_app_releases_train_path(@app, @train) do %>
+    <%= link_to edit_app_train_path(@app, @train) do %>
       <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Modify</button>
     <% end %>
 
     <% if @train.current_run %>
-      <%= link_to live_release_app_releases_train_releases_path(@app, @train) do %>
+      <%= link_to live_release_app_train_releases_path(@app, @train) do %>
         <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Live</button>
       <% end %>
     <% else %>
-      <%= button_to app_releases_train_releases_path(@app, @train) do %>
+      <%= button_to app_train_releases_path(@app, @train) do %>
         <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Start</button>
       <% end %>
   <% end %>
@@ -75,7 +75,7 @@
       <% end %>
 
      <div class="col-span-4">
-       <%= link_to run.branch_name, releases_release_path(run.id)%>
+       <%= link_to run.branch_name, release_path(run.id)%>
      </div>
      <div>
        Slack

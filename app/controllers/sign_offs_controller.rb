@@ -1,4 +1,4 @@
-class Releases::SignOffsController < SignedInApplicationController
+class SignOffsController < SignedInApplicationController
   def create
     @step = Releases::Step.friendly.find(params[:step_id])
     @sign_off_group = SignOffGroup.find(params[:sign_off_group_id])

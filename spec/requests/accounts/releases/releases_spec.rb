@@ -8,7 +8,7 @@ RSpec.describe "Accounts::Releases::Releases", type: :request do
 
     it "returns success code" do
       sign_in user
-      get accounts_releases_release_path(release.id)
+      get release_path(release.id)
       expect(response).to have_http_status(200)
     end
   end

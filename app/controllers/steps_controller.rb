@@ -1,4 +1,4 @@
-class Releases::StepsController < SignedInApplicationController
+class StepsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
@@ -87,7 +87,7 @@ class Releases::StepsController < SignedInApplicationController
   end
 
   def train_path
-    app_releases_train_path(current_organization, @app, @train)
+    app_train_path(current_organization, @app, @train)
   end
 
   def set_ci_actions
