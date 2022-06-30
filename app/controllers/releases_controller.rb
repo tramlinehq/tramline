@@ -1,4 +1,4 @@
-class Accounts::Releases::ReleasesController < SignedInApplicationController
+class ReleasesController < SignedInApplicationController
   before_action :set_release, only: [:show, :destroy]
   def create
     @app = current_organization.apps.friendly.find(params[:app_id])

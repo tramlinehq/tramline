@@ -1,4 +1,4 @@
-class Accounts::Releases::SignOffsController < SignedInApplicationController
+class SignOffsController < SignedInApplicationController
   before_action :set_step, only: [:create, :destroy]
 
   def create
