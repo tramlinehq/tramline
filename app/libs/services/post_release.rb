@@ -14,7 +14,7 @@ class Services::PostRelease
     if train.branching_strategy == "release_backmerge"
 
       response = begin
-        repo_integration.create_pr!(repository_name, train.release_backmerge_branch, release.branch_name, backmerge_pr_title, backmerge_pr_description)
+        repo_integration.create_pr!(repository_name, train.release_backmerge_branch, release.branch_name, pr_title, pr_description)
       rescue
         nil
       end
@@ -24,10 +24,14 @@ class Services::PostRelease
         nil
       end
 
-      response = repo_integration.create_pr!(repository_name, train.working_branch, train.release_backmerge_branch, backmerge_pr_title, backmerge_pr_description)
+      response = repo_integration.create_pr!(repository_name, train.working_branch, train.release_backmerge_branch, pr_title, pr_description)
 
       repo_integration.merge_pr!(repository_name, response[:number])
 
+    elsif branching_strategy == "parallel_working"
+      response = repo_integration.create_pr!(repository_name, train.working_branch, train.release_branch, pr_title, pr_description)
+
+      repo_integration.merge_pr!(repository_name, response[:number])
     end
     create_tag
   end
@@ -57,11 +61,11 @@ class Services::PostRelease
     train.app.config.code_repository_name
   end
 
-  def backmerge_pr_title
+  def pr_title
     "Release PR"
   end
 
-  def backmerge_pr_description
+  def pr_description
     <<~TEXT
       Verbose description for #{train.name} release on #{release.was_run_at}
     TEXT
