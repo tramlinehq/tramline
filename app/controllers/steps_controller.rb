@@ -30,14 +30,14 @@ class StepsController < SignedInApplicationController
   end
 
   def edit
-    @step = Releases::Step.friendly.find(params[:id])
+    @step = Releases::Step.joins(train: :app).where(trains: {apps: {organization: current_organization}}).friendly.find(params[:id])
     @train = @step.train
     @build_channels = @train.notification_provider.channels
     @ci_actions = @train.ci_cd_provider.workflows
   end
 
   def update
-    @step = Releases::Step.friendly.find(params[:id])
+    @step = Releases::Step.joins(train: :app).where(trains: {apps: {organization: current_organization}}).friendly.find(params[:id])
     @train = @step.train
     @app = @train.app
     if @step.update(parsed_step_params)
