@@ -7,15 +7,15 @@ class SignOffGroupsController < SignedInApplicationController
   def update
     app = current_organization.apps.friendly.find(params[:app_id])
     if app.update(sign_off_groups_attributes)
-      redirect_to app_sign_off_groups_path(app), notice: 'Sign off groups updated.'
+      redirect_to app_sign_off_groups_path(app), notice: "Sign off groups updated."
     else
-      render :edit, flash: { error: app.errors.full_messages.join(', ') }
+      render :edit, flash: {error: app.errors.full_messages.join(", ")}
     end
   end
 
   private
 
   def sign_off_groups_attributes
-    params.require(:app).permit(sign_off_groups_attributes: [:id, :name, :_destroy, { member_ids: [] }])
+    params.require(:app).permit(sign_off_groups_attributes: [:id, :name, :_destroy, {member_ids: []}])
   end
 end

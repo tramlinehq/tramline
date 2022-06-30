@@ -73,11 +73,11 @@ class Services::TriggerRelease
 
   def release_branch
     case train.branching_strategy.to_s
-    when 'almost_trunk'
+    when "almost_trunk"
       new_branch_name
-    when 'release_backmerge'
+    when "release_backmerge"
       new_branch_name
-    when 'parallel_working'
+    when "parallel_working"
       train.release_branch
     end
   end
