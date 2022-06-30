@@ -21,16 +21,7 @@ class Releases::Step::Run < ApplicationRecord
   def wrap_up_run!
     self.status = Releases::Step::Run.statuses[:finished]
 
-    if step.last?
-      train_run.status = Releases::Train::Run.statuses[:finished]
-      train_run.completed_at = Time.current
-      train_run.save!
-
-      Automatons::Tag.dispatch!(
-        train: train_run.train,
-        branch: release_branch
-      )
-    end
+    train_run.perform_post_release! if step.last?
 
     save!
   end

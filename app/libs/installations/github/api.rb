@@ -73,6 +73,12 @@ module Installations
       end
     end
 
+    def merge_pr!(repo, pr_number)
+      execute do
+        @client.merge_pull_request(repo, pr_number)
+      end
+    end
+
     def head(repo, working_branch_name)
       execute do
         @client.commits(repo, options: {sha: working_branch_name}).first[:sha]

@@ -30,6 +30,7 @@ class GithubIntegration < ApplicationRecord
     installation.list_repos
   end
 
+  # @return [Installation::Github::Api]
   def installation
     Installations::Github::Api.new(installation_id)
   end

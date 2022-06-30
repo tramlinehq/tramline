@@ -33,4 +33,8 @@ class Releases::Train::Run < ApplicationRecord
   def set_version
     self.release_version = train.bump_version!.to_s
   end
+
+  def perform_post_release!
+    Services::PostRelease.call(self)
+  end
 end
