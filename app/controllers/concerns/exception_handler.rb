@@ -2,7 +2,7 @@ module ExceptionHandler
   extend ActiveSupport::Concern
 
   included do
-    # rescue_from ActiveRecord::RecordNotFound, ActionController::RoutingError, with: :not_found
+    rescue_from ActiveRecord::RecordNotFound, ActionController::RoutingError, with: :not_found
     rescue_from ActionController::InvalidAuthenticityToken, with: :unprocessable_entity
     rescue_from ActionController::ParameterMissing, with: :bad_request
     rescue_from HTTP::Error, OpenSSL::SSL::SSLError, with: :internal_server_error
