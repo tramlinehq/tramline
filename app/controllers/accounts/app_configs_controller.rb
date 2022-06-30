@@ -13,7 +13,7 @@ class Accounts::AppConfigsController < SignedInApplicationController
 
     if @config.update(parsed_app_config_params)
       redirect_to accounts_organization_app_path(current_organization, @app),
-                  notice: "App Config was successfully updated."
+        notice: "App Config was successfully updated."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -41,4 +41,3 @@ class Accounts::AppConfigsController < SignedInApplicationController
       .merge(notification_channel: app_config_params[:notification_channel]&.safe_json_parse)
   end
 end
-

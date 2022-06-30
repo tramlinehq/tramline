@@ -1,10 +1,10 @@
 class Accounts::Integrations::GooglePlayStoreController < Accounts::IntegrationsController
   def integration_params
     params.require(:integration)
-          .permit(
-            :category,
-            providable: [:json_key, :type]
-          ).merge(current_user:)
+      .permit(
+        :category,
+        providable: [:json_key, :type]
+      ).merge(current_user:)
   end
 
   def providable_params

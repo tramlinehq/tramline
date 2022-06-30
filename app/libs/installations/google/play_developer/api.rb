@@ -72,5 +72,3 @@ module Installations
     end
   end
 end
-
-

@@ -5,9 +5,9 @@ class Accounts::User < ApplicationRecord
   self.implicit_order_column = "created_at"
 
   devise :database_authenticatable, :registerable, :trackable, :lockable,
-         :recoverable, :confirmable, :timeoutable, :rememberable, :validatable
+    :recoverable, :confirmable, :timeoutable, :rememberable, :validatable
 
-  validates :password, password_strength: { use_dictionary: true }, allow_nil: true
+  validates :password, password_strength: {use_dictionary: true}, allow_nil: true
   after_validation :strip_unnecessary_errors
 
   has_many :memberships, dependent: :delete_all, inverse_of: :user
@@ -45,6 +45,7 @@ class Accounts::User < ApplicationRecord
     organization.created_by = email
     organization.status = Accounts::Organization.statuses[:active]
     save!
+
     self
   end
 

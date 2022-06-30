@@ -20,7 +20,7 @@ class Accounts::InvitationsController < SignedInApplicationController
       end
 
       redirect_to accounts_organization_team_path(current_organization),
-                  notice: "Sent an invite to #{@invite.email}!"
+        notice: "Sent an invite to #{@invite.email}!"
     else
       render :new, status: :unprocessable_entity
     end

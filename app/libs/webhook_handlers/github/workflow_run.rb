@@ -33,11 +33,15 @@ class WebhookHandlers::Github::WorkflowRun
           version_number:
         )
 
-      train.current_run.last_running_step.wrap_up_run! rescue nil
+      begin
+        train.current_run.last_running_step.wrap_up_run!
+      rescue
+        nil
+      end
 
       Automatons::Notify.dispatch!(
         train:,
-        message: 'Your release workflow completed!',
+        message: "Your release workflow completed!",
         text_block:
       )
     end
@@ -48,7 +52,7 @@ class WebhookHandlers::Github::WorkflowRun
   private
 
   def successful?
-    payload_status == 'completed' && payload_conclusion == 'success'
+    payload_status == "completed" && payload_conclusion == "success"
   end
 
   def payload_status

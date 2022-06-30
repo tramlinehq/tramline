@@ -40,8 +40,8 @@ class Accounts::IntegrationsController < SignedInApplicationController
             @app
               .integrations
               .new(category: Integration.categories[category],
-                   providable: provider.constantize.new,
-                   status: Integration::DEFAULT_INITIAL_STATUS)
+                providable: provider.constantize.new,
+                status: Integration::DEFAULT_INITIAL_STATUS)
 
           combination[category] << integration
         end
@@ -65,10 +65,10 @@ class Accounts::IntegrationsController < SignedInApplicationController
 
   def integration_params
     params.require(:integration)
-          .permit(
-            :category,
-            providable: [:type]
-          ).merge(current_user:)
+      .permit(
+        :category,
+        providable: [:type]
+      ).merge(current_user:)
   end
 
   def integrations_only_params
