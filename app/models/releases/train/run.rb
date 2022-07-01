@@ -8,6 +8,9 @@ class Releases::Train::Run < ApplicationRecord
 
   enum status: {on_track: "on_track", error: "error", finished: "finished"}
 
+
+  before_create :set_version
+
   def last_running_step
     step_runs.on_track.last
   end
@@ -26,5 +29,9 @@ class Releases::Train::Run < ApplicationRecord
 
   def release_branch
     was_run_at.strftime("r/#{train.display_name}/%Y-%m-%d")
+  end
+
+  def set_version
+    self.release_version = train.bump_version!.to_s
   end
 end
