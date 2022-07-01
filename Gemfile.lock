@@ -76,7 +76,11 @@ GEM
     bindex (0.8.1)
     bootsnap (1.11.1)
       msgpack (~> 1.2)
+    brakeman (5.2.3)
     builder (3.2.4)
+    bundler-audit (0.9.1)
+      bundler (>= 1.2.0, < 3)
+      thor (~> 1.0)
     capybara (3.36.0)
       addressable
       matrix
@@ -221,7 +225,7 @@ GEM
     llhttp-ffi (0.4.0)
       ffi-compiler (~> 1.0)
       rake (~> 13.0)
-    loofah (2.17.0)
+    loofah (2.18.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
     mail (2.7.1)
@@ -250,11 +254,11 @@ GEM
       net-protocol
       timeout
     nio4r (2.5.8)
-    nokogiri (1.13.4-arm64-darwin)
+    nokogiri (1.13.6-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.13.4-x86_64-darwin)
+    nokogiri (1.13.6-x86_64-darwin)
       racc (~> 1.4)
-    nokogiri (1.13.4-x86_64-linux)
+    nokogiri (1.13.6-x86_64-linux)
       racc (~> 1.4)
     octokit (4.22.0)
       faraday (>= 0.9)
@@ -281,7 +285,7 @@ GEM
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.6.0)
-    rack (2.2.3)
+    rack (2.2.4)
     rack-cors (1.1.1)
       rack (>= 2.0.0)
     rack-mini-profiler (3.0.0)
@@ -307,7 +311,7 @@ GEM
     rails-dom-testing (2.0.3)
       activesupport (>= 4.2.0)
       nokogiri (>= 1.6)
-    rails-html-sanitizer (1.4.2)
+    rails-html-sanitizer (1.4.3)
       loofah (~> 2.3)
     railties (7.0.2.4)
       actionpack (= 7.0.2.4)
@@ -481,6 +485,8 @@ DEPENDENCIES
   awesome_print
   bcrypt (~> 3.1.7)
   bootsnap (~> 1.10)
+  brakeman (~> 5.2)
+  bundler-audit (~> 0.9.1)
   capybara
   connection_pool (~> 2.2)
   debug
