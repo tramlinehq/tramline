@@ -39,6 +39,9 @@ gem "tailwindcss-rails", "~> 2.0"
 gem "paper_trail", "~> 12.2"
 gem "google-apis-androidpublisher_v3", "~> 0.16.0"
 gem "googleauth", "~> 1.1"
+gem "gretel", "~> 4.4"
+gem "breakman", "~> 1.0", require: false
+gem "bundler-audit", "~> 0.9.1", require: false
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
@@ -62,5 +65,3 @@ group :test do
   gem "selenium-webdriver"
   gem "webdrivers"
 end
-
-gem "gretel", "~> 4.4"
