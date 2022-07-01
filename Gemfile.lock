@@ -76,7 +76,7 @@ GEM
     bindex (0.8.1)
     bootsnap (1.11.1)
       msgpack (~> 1.2)
-    breakman (1.0.0)
+    brakeman (5.2.3)
     builder (3.2.4)
     bundler-audit (0.9.1)
       bundler (>= 1.2.0, < 3)
@@ -485,7 +485,7 @@ DEPENDENCIES
   awesome_print
   bcrypt (~> 3.1.7)
   bootsnap (~> 1.10)
-  breakman (~> 1.0)
+  brakeman (~> 5.2)
   bundler-audit (~> 0.9.1)
   capybara
   connection_pool (~> 2.2)

@@ -50,7 +50,7 @@ group :development, :test do
   gem "factory_bot_rails"
   gem "faker"
   gem "pry"
-  gem "breakman", "~> 1.0", require: false
+  gem "brakeman", "~> 5.2", require: false
   gem "bundler-audit", "~> 0.9.1", require: false
 end
 
