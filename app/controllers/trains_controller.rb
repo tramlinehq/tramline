@@ -62,19 +62,6 @@ class TrainsController < SignedInApplicationController
   def edit
   end
 
-  def start
-    Services::TriggerRelease.call(@train)
-    redirect_back fallback_location: root_path, notice: "Train successfully started"
-  end
-
-  # TODO: move to own controller
-  def live_release
-    @app = current_organization.apps.friendly.find(params[:app_id])
-    @train = @app.trains.friendly.find(params[:id])
-    @current_release = @train.current_run
-    redirect_back fallback_location: root_path, notice: "No release in progress" unless @current_release
-  end
-
   private
 
   def set_train

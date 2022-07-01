@@ -1,4 +1,5 @@
 class ReleasesController < SignedInApplicationController
+  before_action :set_release, only: [:show, :destroy]
   def create
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
@@ -7,7 +8,6 @@ class ReleasesController < SignedInApplicationController
   end
 
   def show
-    @release = Releases::Train::Run.find(params[:id])
     @train = @release.train
     @app = @train.app
   end
@@ -24,8 +24,13 @@ class ReleasesController < SignedInApplicationController
   end
 
   def destroy
-    @release = Releases::Train::Run.find(params[:id])
     @release.update(status: "finished")
     redirect_back fallback_location: root_path, notice: "Release is marked as finished"
+  end
+
+  private
+
+  def set_release
+    @release = Releases::Train::Run.joins(train: :app).where(apps: {organization: current_organization}).find(params[:id])
   end
 end
