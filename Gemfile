@@ -40,6 +40,8 @@ gem "paper_trail", "~> 12.2"
 gem "google-apis-androidpublisher_v3", "~> 0.16.0"
 gem "googleauth", "~> 1.1"
 gem "gretel", "~> 4.4"
+gem "sentry-ruby", "~> 5.3"
+gem "sentry-rails", "~> 5.3"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
