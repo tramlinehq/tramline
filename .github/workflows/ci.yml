@@ -28,6 +28,8 @@ jobs:
           bundler-cache: true
       - name: Set up database schema
         run: bin/rails db:schema:load
+      - name: Run asset pre compilation
+        run: bundle exex rails assets:precompile
       - name: Run tests
         run: bundle exec rspec
 
