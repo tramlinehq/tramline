@@ -14,7 +14,7 @@ class Releases::Step::Run < ApplicationRecord
 
   def automatons!
     transaction do
-      Automatons::Workflow.dispatch!(step: step, ref: release_branch)
+      Automatons::Workflow.dispatch!(step: step, ref: release_branch, release: train_run)
     end
   end
 
