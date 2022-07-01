@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_06_29_065036) do
+ActiveRecord::Schema[7.0].define(version: 2022_07_01_164358) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -66,6 +66,13 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_29_065036) do
     t.datetime "updated_at", null: false
     t.index ["bundle_identifier", "organization_id"], name: "index_apps_on_bundle_identifier_and_organization_id", unique: true
     t.index ["organization_id"], name: "index_apps_on_organization_id"
+  end
+
+  create_table "build_artifacts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_step_runs_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["train_step_runs_id"], name: "index_build_artifacts_on_train_step_runs_id"
   end
 
   create_table "flipper_features", force: :cascade do |t|
@@ -329,6 +336,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_06_29_065036) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "app_configs", "apps"
   add_foreign_key "apps", "organizations"
+  add_foreign_key "build_artifacts", "train_step_runs", column: "train_step_runs_id"
   add_foreign_key "integrations", "apps"
   add_foreign_key "invites", "organizations"
   add_foreign_key "invites", "users", column: "recipient_id"
