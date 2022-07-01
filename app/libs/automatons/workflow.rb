@@ -8,7 +8,7 @@ module Automatons
       new(**args).dispatch!
     end
 
-    def initialize(step:, ref:, release: )
+    def initialize(step:, ref:, release:)
       @step = step
       @ref = ref
       @release = release

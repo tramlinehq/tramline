@@ -8,7 +8,6 @@ class Releases::Train::Run < ApplicationRecord
 
   enum status: {on_track: "on_track", error: "error", finished: "finished"}
 
-
   before_create :set_version
 
   def last_running_step
