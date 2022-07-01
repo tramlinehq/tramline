@@ -87,7 +87,7 @@ class StepsController < SignedInApplicationController
   end
 
   def train_path
-    app_train_path(current_organization, @app, @train)
+    app_train_path(@app, @train)
   end
 
   def set_ci_actions

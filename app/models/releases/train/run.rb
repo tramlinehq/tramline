@@ -20,7 +20,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def next_step
-    step_runs.last.step.next
+    step_runs.joins(:step).order("step_number").last.step.next
   end
 
   def running_step?

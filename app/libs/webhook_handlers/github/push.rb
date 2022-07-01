@@ -17,7 +17,7 @@ class WebhookHandlers::Github::Push
     if valid_repo_and_branch?
 
       if train.commit_listeners.exists?(branch_name:)
-        commit = payload['head_commit']
+        commit = payload["head_commit"]
         Releases::Commit.create!(train:,
           train_run: release,
           commit_hash: commit["id"],
