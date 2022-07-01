@@ -40,8 +40,6 @@ gem "paper_trail", "~> 12.2"
 gem "google-apis-androidpublisher_v3", "~> 0.16.0"
 gem "googleauth", "~> 1.1"
 gem "gretel", "~> 4.4"
-gem "breakman", "~> 1.0", require: false
-gem "bundler-audit", "~> 0.9.1", require: false
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
@@ -50,6 +48,8 @@ group :development, :test do
   gem "factory_bot_rails"
   gem "faker"
   gem "pry"
+  gem "breakman", "~> 1.0", require: false
+  gem "bundler-audit", "~> 0.9.1", require: false
 end
 
 group :development do
