@@ -8,66 +8,13 @@ class Services::PostRelease
     @train = release.train
   end
 
+  POST_RELEASE_HANDLERS = {
+    "alomost_trunk" => AlmostTrunk,
+    "release_backmerge" => ReleaseBackMerge,
+    "parallel_working" => ParallelBranches
+  }
+
   def call
-    update_status
-
-    if train.branching_strategy == "release_backmerge"
-
-      response = begin
-        repo_integration.create_pr!(repository_name, train.release_backmerge_branch, release.branch_name, pr_title, pr_description)
-      rescue
-        nil
-      end
-      begin
-        repo_integration.merge_pr!(repository_name, response[:number])
-      rescue
-        nil
-      end
-
-      response = repo_integration.create_pr!(repository_name, train.working_branch, train.release_backmerge_branch, pr_title, pr_description)
-
-      repo_integration.merge_pr!(repository_name, response[:number])
-
-    elsif branching_strategy == "parallel_working"
-      response = repo_integration.create_pr!(repository_name, train.working_branch, train.release_branch, pr_title, pr_description)
-
-      repo_integration.merge_pr!(repository_name, response[:number])
-    end
-    create_tag
-  end
-
-  private
-
-  attr_reader :train, :release
-
-  def update_status
-    release.status = Releases::Train::Run.statuses[:finished]
-    release.completed_at = Time.current
-    release.save
-  end
-
-  def create_tag
-    Automatons::Tag.dispatch!(
-      train:,
-      branch: release.branch_name
-    )
-  end
-
-  def repo_integration
-    train.ci_cd_provider.installation
-  end
-
-  def repository_name
-    train.app.config.code_repository_name
-  end
-
-  def pr_title
-    "Release PR"
-  end
-
-  def pr_description
-    <<~TEXT
-      Verbose description for #{train.name} release on #{release.was_run_at}
-    TEXT
+    POST_RELEASE_HANDLERS[@train.branching_strategy].call(@release)
   end
 end
