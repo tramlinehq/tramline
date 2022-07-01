@@ -25,7 +25,7 @@
               <% end %>
 
               <% if integration.disconnected? %>
-                <%= render partial: "accounts/integrations/providers/google_play_store",
+                <%= render partial: "integrations/providers/google_play_store",
                            locals: { current_organization: current_organization,
                                      integration: integration,
                                      category: category
