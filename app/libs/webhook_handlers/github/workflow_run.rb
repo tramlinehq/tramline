@@ -63,7 +63,7 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   def last_running_step
-    train.current_run.last_running_step
+    @last_running_step ||= train.current_run.last_running_step
   end
 
   def successful?
