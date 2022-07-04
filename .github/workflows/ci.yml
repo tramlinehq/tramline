@@ -49,4 +49,4 @@ jobs:
       - name: Lint Ruby files
         run: bundle exec standardrb
       - name: Check autoloading
-        run:  bundle exec rails zeitwerk:check
+        run:  RAILS_ENV=test bundle exec rails zeitwerk:check
