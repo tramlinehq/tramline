@@ -6,9 +6,18 @@ local:
   service: Disk
   root: <%= Rails.root.join("storage") %>
 
-amazon:
-  service: S3
-  access_key_id: <%= Rails.application.credentials.dig(:dependencies, :aws, :access_key_id) %>
-  secret_access_key: <%= Rails.application.credentials.dig(:dependencies, :aws, :secret_key_id) %>
-  region: <%= Rails.application.credentials.dig(:dependencies, :aws, :region) %>
-  bucket: <%= Rails.application.credentials.dig(:dependencies, :aws, :bucket) %>
+google:
+  service: GCS
+  credentials:
+    type: "service_account"
+    project_id: <%= Rails.application.credentials.dependencies.gcp.project_id %>
+    private_key_id: <%= Rails.application.credentials.dependencies.gcp.private_key_id %>
+    private_key: <%= Rails.application.credentials.dependencies.gcp.private_key.dump %>
+    client_email: <%= Rails.application.credentials.dependencies.gcp.client_email %>
+    client_id: <%= Rails.application.credentials.dependencies.gcp.client_id %>
+    auth_uri: "https://accounts.google.com/o/oauth2/auth"
+    token_uri: "https://accounts.google.com/o/oauth2/token"
+    auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs"
+    client_x509_cert_url: <%= Rails.application.credentials.dependencies.gcp.client_x509_cert_url %>
+  project: <%= Rails.application.credentials.dependencies.gcp.project_id %>
+  bucket: "artifact-builds"

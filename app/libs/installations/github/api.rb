@@ -1,10 +1,12 @@
 module Installations
+  require "down/http"
+
   class Github::Api
     include Vaultable
     attr_reader :app_name, :installation_id, :jwt, :client
 
     WEBHOOK_NAME = "web"
-    WEBHOOK_EVENTS = ["workflow_run", "push"]
+    WEBHOOK_EVENTS = %w[workflow_run push]
 
     def initialize(installation_id)
       @app_name = creds.integrations.github.app_name
@@ -79,6 +81,21 @@ module Installations
       end
     end
 
+    def artifact_io_stream(archive_download_url)
+      # FIXME: return an IO stream instead of a TempFile
+      # See issue: https://github.com/janko/down/issues/70
+      Down::Http.download(archive_download_url,
+        headers: {"Authorization" => "Bearer #{@client.access_token}"},
+        follow: {max_hops: 1})
+    end
+
+    def artifacts(artifacts_url)
+      HTTP
+        .auth("Bearer #{@client.access_token}")
+        .get(artifacts_url)
+        .then { |resp| JSON.parse(resp.to_s)["artifacts"] }
+    end
+
     def execute
       yield
     rescue Octokit::Unauthorized
@@ -89,7 +106,6 @@ module Installations
     def set_client
       client = Octokit::Client.new(bearer_token: jwt.get)
       installation_token = client.create_app_installation_access_token(installation_id)[:token]
-
       @client ||= Octokit::Client.new(access_token: installation_token)
     end
   end
