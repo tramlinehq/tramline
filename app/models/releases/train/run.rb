@@ -3,8 +3,8 @@ class Releases::Train::Run < ApplicationRecord
   self.implicit_order_column = :was_run_at
 
   belongs_to :train, class_name: "Releases::Train"
-  has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id
-  has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id"
+  has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy
+  has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy
 
   enum status: {on_track: "on_track", error: "error", finished: "finished"}
 
