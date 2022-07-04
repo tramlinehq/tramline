@@ -17,7 +17,7 @@ class Releases::Train < ApplicationRecord
   has_many :train_sign_off_groups, dependent: :destroy
   has_many :sign_off_groups, through: :train_sign_off_groups
   has_many :commit_listeners, class_name: "Releases::CommitListener", inverse_of: :train, dependent: :destroy
-  has_many :commits, class_name: 'Releases::Commit', inverse_of: :train, dependent: :destroy
+  has_many :commits, class_name: "Releases::Commit", inverse_of: :train, dependent: :destroy
 
   validates :branching_strategy, :working_branch, presence: true
   validates :release_backmerge_branch, presence: true,
