@@ -11,12 +11,13 @@ class Releases::Train < ApplicationRecord
 
   belongs_to :app, required: true
   has_many :integrations, through: :app
-  has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train
+  has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
   has_one :active_run, -> { where(status: "on_track") }, class_name: "Releases::Train::Run", inverse_of: :train
-  has_many :steps, class_name: "Releases::Step", inverse_of: :train
+  has_many :steps, class_name: "Releases::Step", inverse_of: :train, dependent: :destroy
   has_many :train_sign_off_groups, dependent: :destroy
   has_many :sign_off_groups, through: :train_sign_off_groups
-  has_many :commit_listeners, class_name: "Releases::CommitListener", inverse_of: :train
+  has_many :commit_listeners, class_name: "Releases::CommitListener", inverse_of: :train, dependent: :destroy
+  has_many :commits, class_name: "Releases::Commit", inverse_of: :train, dependent: :destroy
 
   validates :branching_strategy, :working_branch, presence: true
   validates :release_backmerge_branch, presence: true,

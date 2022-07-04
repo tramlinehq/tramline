@@ -1,5 +1,6 @@
 class Services::TriggerRelease
   include Rails.application.routes.url_helpers
+  Response = Struct.new(:success, :body)
 
   def self.call(train)
     new(train).call
@@ -13,9 +14,9 @@ class Services::TriggerRelease
   end
 
   def call
-    return if train.inactive?
-    return if train.steps.empty?
-    return if train.active_run.present?
+    return Response.new(false, "Cannot start a train that is inactive") if train.inactive?
+    return Response.new(false, "Cannot start a train that has no steps. Please add at least one step.") if train.steps.empty?
+    return Reponse.new(false, "Train is already running") if train.active_run.present?
 
     ApplicationRecord.transaction do
       create_run_record
@@ -24,6 +25,7 @@ class Services::TriggerRelease
       setup_webhook_listeners
       run_first_step
     end
+    Response.new(true)
   end
 
   private

@@ -2,6 +2,7 @@ class Releases::Step::Run < ApplicationRecord
   has_paper_trail
   self.implicit_order_column = :was_run_at
 
+  has_one :build_artifact, foreign_key: :train_step_runs_id
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id
   belongs_to :train_run, class_name: "Releases::Train::Run", foreign_key: :train_run_id
 
@@ -13,9 +14,7 @@ class Releases::Step::Run < ApplicationRecord
   delegate :release_branch, to: :train_run
 
   def automatons!
-    transaction do
-      Automatons::Workflow.dispatch!(step: step, ref: release_branch, release: train_run)
-    end
+    Automatons::Workflow.dispatch!(step: step, ref: release_branch, release: train_run)
   end
 
   def wrap_up_run!

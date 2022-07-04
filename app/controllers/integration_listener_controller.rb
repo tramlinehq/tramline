@@ -3,7 +3,7 @@ class IntegrationListenerController < SignedInApplicationController
 
   def callback
     unless valid_state?
-      redirect_to app_path, notice: "Failed to create the notification, please try again."
+      redirect_to app_path(state_app), notice: "Failed to create the notification, please try again."
       return
     end
 
@@ -11,7 +11,7 @@ class IntegrationListenerController < SignedInApplicationController
     @integration.providable = build_providable
 
     if @integration.save
-      redirect_to app_path, notice: "Integration was successfully created."
+      redirect_to app_path(state_app), notice: "Integration was successfully created."
     else
       render :new, status: :unprocessable_entity
     end
@@ -57,7 +57,7 @@ class IntegrationListenerController < SignedInApplicationController
   end
 
   def state_app
-    @state_app = @state_organization.apps.find(state[:app_id])
+    @state_app ||= @state_organization.apps.find(state[:app_id])
   end
 
   def state_integration_category
@@ -74,9 +74,5 @@ class IntegrationListenerController < SignedInApplicationController
 
   def error?
     params[:error] == "access_denied"
-  end
-
-  def app_path
-    app_path(state_app)
   end
 end

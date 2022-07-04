@@ -3,8 +3,12 @@ class ReleasesController < SignedInApplicationController
   def create
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
-    Services::TriggerRelease.call(@train)
-    redirect_back fallback_location: root_path, notice: "Train successfully started"
+    response = Services::TriggerRelease.call(@train)
+    if response.success
+      redirect_back fallback_location: root_path, notice: "Train successfully started"
+    else
+      redirect_back fallback_location: root_path, flash: {error: response.body}
+    end
   end
 
   def show

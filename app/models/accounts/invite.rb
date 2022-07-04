@@ -13,6 +13,8 @@ class Accounts::Invite < ActiveRecord::Base
   before_save :add_recipient
   before_create :generate_token
 
+  scope :not_accepted, -> { where(accepted_at: nil) }
+
   def generate_token
     self.token = Digest::SHA1.hexdigest([organization_id, Time.now, rand].join)
   end
