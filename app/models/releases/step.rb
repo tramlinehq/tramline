@@ -11,6 +11,8 @@ class Releases::Step < ApplicationRecord
   has_many :sign_off_groups, through: :train
   has_one :app, through: :train
 
+  validates :ci_cd_channel, presence: true
+
   delegate :app, to: :train
 
   enum status: {

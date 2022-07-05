@@ -1,6 +1,6 @@
 class WebhookHandlers::Github::WorkflowRun
   Response = Struct.new(:status, :body)
-  attr_reader :train, :payload
+  attr_reader :train, :payload, :release
   delegate :transaction, to: ApplicationRecord
 
   def self.process(train, payload)
@@ -10,14 +10,15 @@ class WebhookHandlers::Github::WorkflowRun
   def initialize(train, payload)
     @train = train
     @payload = payload
+    @release = train.current_run
   end
 
   def process
     return Response.new(:accepted) unless successful?
     return Response.new(:unprocessable_entity) if train.blank?
     return Response.new(:unprocessable_entity) if train.inactive?
-    return Response.new(:accepted) if train.current_run.blank?
-    return Response.new(:accepted) if train.current_run.last_running_step.blank?
+    return Response.new(:accepted) if release.blank?
+    return Response.new(:accepted) if release.last_running_step.blank?
 
     transaction do
       finish_step_run
@@ -32,8 +33,6 @@ class WebhookHandlers::Github::WorkflowRun
 
   def finish_step_run
     last_running_step.wrap_up_run!
-  rescue
-    nil
   end
 
   def upload_artifact
@@ -41,8 +40,8 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   def notify
-    release_branch = train.current_run.release_branch
-    code_name = train.current_run.code_name
+    release_branch = release.release_branch
+    code_name = release.code_name
     build_number = train.app.build_number
     version_number = train.version_current
 
@@ -63,7 +62,7 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   def last_running_step
-    @last_running_step ||= train.current_run.last_running_step
+    @last_running_step ||= release.last_running_step
   end
 
   def successful?

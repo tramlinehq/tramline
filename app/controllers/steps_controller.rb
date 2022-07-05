@@ -76,8 +76,8 @@ class StepsController < SignedInApplicationController
 
   def parsed_step_params
     step_params
-      .merge(build_artifact_channel: step_params[:build_artifact_channel].safe_json_parse)
-      .merge(ci_cd_channel: step_params[:ci_cd_channel].safe_json_parse)
+      .merge(build_artifact_channel: step_params[:build_artifact_channel]&.safe_json_parse)
+      .merge(ci_cd_channel: step_params[:ci_cd_channel]&.safe_json_parse)
   end
 
   def integrations_are_ready?

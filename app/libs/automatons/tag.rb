@@ -26,9 +26,7 @@ module Automatons
       train
         .app
         .config
-        .code_repository
-        .values
-        .first
+        .code_repository_name
     end
 
     def installation_id

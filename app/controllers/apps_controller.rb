@@ -13,7 +13,7 @@ class AppsController < SignedInApplicationController
 
     respond_to do |format|
       if @app.save
-        format.html { redirect_to app_path, notice: "App was successfully created." }
+        format.html { redirect_to app_path(@app), notice: "App was successfully created." }
         format.json { render :show, status: :created, location: @app }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -47,10 +47,6 @@ class AppsController < SignedInApplicationController
       :build_number,
       :timezone
     )
-  end
-
-  def app_path
-    app_path(@app)
   end
 
   DEFAULT_TIMEZONE_LIST_REGEX = /Asia\/Kolkata/

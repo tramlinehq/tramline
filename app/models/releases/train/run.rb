@@ -27,10 +27,14 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def release_branch
-    was_run_at.strftime("r/#{train.display_name}/%Y-%m-%d")
+    branch_name
   end
 
   def set_version
     self.release_version = train.bump_version!.to_s
+  end
+
+  def perform_post_release!
+    Services::PostRelease.call(self)
   end
 end

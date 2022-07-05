@@ -26,19 +26,19 @@ class WebhookHandlers::Github::Push
           author_name: commit["author"]["name"],
           author_email: commit["author"]["email"],
           url: commit["url"])
-      end
 
-      if release
-        current_step = release.step_runs.last&.step&.step_number
+        if release
+          current_step = release.step_runs.last&.step&.step_number
 
-        train.steps.where("step_number <= ?", current_step).each do |step|
-          step_run = release.step_runs.create(step:, scheduled_at: Time.current, status: "on_track")
-          step_run.automatons!
+          train.steps.where("step_number <= ?", current_step).each do |step|
+            step_run = release.step_runs.create(step:, scheduled_at: Time.current, status: "on_track")
+            step_run.automatons!
+          end
         end
-      end
-      message = "New push to the branch #{payload["ref"].delete_prefix("refs/heads/")} with \
+        message = "New push to the branch #{payload["ref"].delete_prefix("refs/heads/")} with \
     message #{payload["head_commit"]["message"]}"
-      Automatons::Notify.dispatch!(train:, message:)
+        Automatons::Notify.dispatch!(train:, message:)
+      end
       Response.new(:accepted)
     else
       Response.new(:unprocessable_entity)
