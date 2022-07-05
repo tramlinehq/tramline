@@ -5,7 +5,7 @@ RSpec.describe "Accounts::Releases::SignOffs", type: :request do
   let(:organization) { step.train.app.organization }
   let(:user) { FactoryBot.create(:accounts_user, confirmed_at: Time.now, organizations: [organization]) }
   let(:sign_off_group) { FactoryBot.create(:sign_off_group, members: [user]) }
-  let(:commit) {FactoryBot.create(:releases_commit)}
+  let(:commit) { FactoryBot.create(:releases_commit) }
 
   describe "GET /create" do
     it "returns http success" do
