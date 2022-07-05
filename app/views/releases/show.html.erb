@@ -42,7 +42,7 @@
 
 <h3 class="font-bold">Commits </h3>
 
-<% @release.commits.each do |commit| %>
+<% @release.commits.order(created_at: :desc).each do |commit| %>
   <div class="flex">
     <div class="mr-2">
       <%= link_to commit.commit_hash[0, 5], commit.url %>
