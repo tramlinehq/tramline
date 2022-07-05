@@ -11,8 +11,8 @@ class Services::PostRelease
 
     def call
       update_status
-      merge_prs
       create_tag
+      merge_prs
     end
 
     private

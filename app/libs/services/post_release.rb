@@ -9,7 +9,7 @@ class Services::PostRelease
   end
 
   POST_RELEASE_HANDLERS = {
-    "alomost_trunk" => AlmostTrunk,
+    "almost_trunk" => AlmostTrunk,
     "release_backmerge" => ReleaseBackMerge,
     "parallel_working" => ParallelBranches
   }

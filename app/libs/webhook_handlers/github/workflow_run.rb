@@ -33,8 +33,6 @@ class WebhookHandlers::Github::WorkflowRun
 
   def finish_step_run
     last_running_step.wrap_up_run!
-  rescue
-    nil
   end
 
   def upload_artifact
