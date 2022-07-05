@@ -7,7 +7,7 @@
   <div>
     <%= form.label :build_artifact_channel, class: "block text-sm font-medium mb-1" %>
     <%= form.select :build_artifact_channel,
-                    options_for_select(@build_channels.map { |chan| ["#" + chan["name"], { chan["id"] => chan["name"] }.to_json] }),
+                    options_for_select(@build_channels.map { |chan| ["#" + chan["name"], { chan["id"] => chan["name"] }.to_json] }, @step.build_artifact_channel.to_json),
                     { class: "form-select" },
                     data: { controller: "input-select" } %>
   </div>
@@ -16,7 +16,7 @@
     <%= form.label :ci_cd_channel, "CI/CD channel", class: "block text-sm font-medium mb-1" %>
     <div class="control">
       <%= form.select :ci_cd_channel,
-                      options_for_select(@ci_actions.map { |action| [action[:name], { action[:id] => action[:name] }.to_json] }),
+                      options_for_select(@ci_actions.map { |action| [action[:name], { action[:id] => action[:name] }.to_json] }, @step.ci_cd_channel.to_json),
                       { class: "form-select" },
                       data: { controller: "input-select" } %>
     </div>
