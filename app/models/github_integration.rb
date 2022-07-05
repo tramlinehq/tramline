@@ -42,6 +42,7 @@ class GithubIntegration < ApplicationRecord
     integration.app.config
   end
 
+
   def to_s
     "github"
   end
@@ -52,5 +53,9 @@ class GithubIntegration < ApplicationRecord
 
   def connectable?
     true
+  end
+
+  def branch_url(repo, branch_name)
+    "https://github.com/#{repo}/tree/#{branch_name}"
   end
 end
