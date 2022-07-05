@@ -42,7 +42,6 @@ class GithubIntegration < ApplicationRecord
     integration.app.config
   end
 
-
   def to_s
     "github"
   end

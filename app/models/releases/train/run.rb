@@ -39,6 +39,6 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def branch_url
-    train.app.vcs_provider.branch_url(train.app.config.code_repository_name, branch_name)
+    train.app.vcs_provider&.branch_url(train.app.config&.code_repository_name, branch_name)
   end
 end
