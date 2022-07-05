@@ -56,7 +56,7 @@ class Services::TriggerRelease
 
   def prepare_branch
     if train.branching_strategy == "parallel_working"
-      response = installation.create_pr!(repo, train.release_branch, train.working_branch,  "Pre release merge", "")
+      response = installation.create_pr!(repo, train.release_branch, train.working_branch, "Pre release merge", "")
 
       installation.merge_pr!(repo, response[:number])
     end
