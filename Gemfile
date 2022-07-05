@@ -44,6 +44,7 @@ gem "sentry-ruby", "~> 5.3"
 gem "sentry-rails", "~> 5.3"
 gem "google-cloud-storage", "~> 1.37"
 gem "down", "~> 5.3"
+gem "faraday-retry", "~> 2.0"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
