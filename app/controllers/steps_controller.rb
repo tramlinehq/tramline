@@ -41,7 +41,7 @@ class StepsController < SignedInApplicationController
     @train = @step.train
     @app = @train.app
     if @step.update(parsed_step_params)
-      redirect_to train_path, notice: "Step was successfully created."
+      redirect_to train_path, notice: "Step was successfully updated."
     else
       render :edit, status: :unprocessable_entity
     end
