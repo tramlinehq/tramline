@@ -132,6 +132,8 @@ GEM
       faraday-net_http (~> 2.0)
       ruby2_keywords (>= 0.0.4)
     faraday-net_http (2.0.3)
+    faraday-retry (2.0.0)
+      faraday (~> 2.0)
     ffi (1.15.5)
     ffi-compiler (1.0.1)
       ffi (>= 1.0.0)
@@ -497,6 +499,7 @@ DEPENDENCIES
   down (~> 5.3)
   factory_bot_rails
   faker
+  faraday-retry (~> 2.0)
   flipper (~> 0.23.0)
   flipper-active_record (~> 0.23.0)
   flipper-ui (~> 0.23.0)

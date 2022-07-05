@@ -41,7 +41,23 @@ class Releases::Step < ApplicationRecord
     train.steps.maximum(:step_number).to_i == step_number
   end
 
+  # @return [Releases::Step]
   def next
     train.steps.where("step_number > ?", step_number).first
+  end
+
+  # @return [Releases::Step]
+  def previous
+    train.steps.where("step_number < ?", step_number).last
+  end
+
+  def can_start?
+    (train.current_run&.next_step == self) && (first? || (signed_previous_step? && previous_step.runs.last.finished?))
+  end
+
+  def signed_previous_step?
+    train.sign_off_groups.all? do |group|
+      previous.sign_offs.exists?(sign_off_group: group, signed: true)
+    end
   end
 end

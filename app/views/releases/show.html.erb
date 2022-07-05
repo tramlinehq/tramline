@@ -30,11 +30,22 @@
       <%= step.name %>
       <br/>
       <%= step_status %>
-      <% unless @release.running_step? %>
-        <% if @release.next_step == step %>
-          <%= button_to 'start', start_release_step_run_path(@release, step), { class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' } %>
+      <% if step.can_start? %>
+        <%= button_to 'start', start_release_step_run_path(@release, step), { class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' } %>
+      <% end %>
+      <div class="sign_off">
+        <% @train.sign_off_groups.each do |group| %>
+          <div class="flex">
+           <%= group.name %> :
+            <% if step.sign_offs.exists?(sign_off_group: group, signed: true) %>
+               <%= button_to "Approved", step_sign_off_path(step), params: { sign_off_group_id: group.id, commit_id: @train.commits.last }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"', method: :delete %>
+            <% else %>
+               <%= button_to "Not Approved", step_sign_off_path(step), params: { sign_off_group_id: group.id, commit_id: @train.commits.last }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"' %>
+              <% end %>
+
+          </div>
         <% end %>
-    <% end %>
+      </div>
     </div>
   <% end %>  
 </div>

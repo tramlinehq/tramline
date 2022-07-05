@@ -3,8 +3,9 @@ class SignOffsController < SignedInApplicationController
 
   def create
     @sign_off_group = SignOffGroup.find(params[:sign_off_group_id])
+    commit = Releases::Commit.find(params[:commit_id])
     if @sign_off_group.members.include?(current_user)
-      @step_sign_off = @step.sign_offs.create!(user_id: current_user.id, sign_off_group: @sign_off_group, signed: true)
+      @step_sign_off = @step.sign_offs.create!(user_id: current_user.id, sign_off_group: @sign_off_group, signed: true, commit: commit)
       redirect_back fallback_location: root_path, notice: "You have signed off on this step"
     else
       redirect_back(fallback_location: root_path, notice: "You are not authorized to sign off on this step.")
@@ -13,7 +14,8 @@ class SignOffsController < SignedInApplicationController
 
   def destroy
     @sign_off_group = SignOffGroup.find(params[:sign_off_group_id])
-    @step.sign_offs.where(sign_off_group: @sign_off_group).update(signed: false)
+    commit = Releases::Commit.find(params[:commit_id])
+    @step.sign_offs.where(sign_off_group: @sign_off_group, commit: commit).update(signed: false)
     redirect_back fallback_location: root_path, notice: "You have unsigned this step"
   end
 

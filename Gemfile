@@ -69,3 +69,5 @@ group :test do
   gem "selenium-webdriver"
   gem "webdrivers"
 end
+
+gem "faraday-retry", "~> 2.0"

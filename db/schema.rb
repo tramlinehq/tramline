@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_07_01_164358) do
+ActiveRecord::Schema[7.0].define(version: 2022_07_05_050420) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -201,6 +201,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_07_01_164358) do
     t.boolean "signed", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "releases_commit_id", null: false
+    t.index ["releases_commit_id"], name: "index_sign_offs_on_releases_commit_id"
     t.index ["sign_off_group_id"], name: "index_sign_offs_on_sign_off_group_id"
     t.index ["train_step_id"], name: "index_sign_offs_on_train_step_id"
     t.index ["user_id"], name: "index_sign_offs_on_user_id"
@@ -349,6 +351,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_07_01_164358) do
   add_foreign_key "sign_off_group_memberships", "sign_off_groups"
   add_foreign_key "sign_off_group_memberships", "users"
   add_foreign_key "sign_off_groups", "apps"
+  add_foreign_key "sign_offs", "releases_commits"
   add_foreign_key "sign_offs", "sign_off_groups"
   add_foreign_key "sign_offs", "train_steps"
   add_foreign_key "sign_offs", "users"
