@@ -77,8 +77,8 @@ class Releases::Train < ApplicationRecord
     "v#{version_current}"
   end
 
-  def bump_version!
-    self.version_current = version_current.semver_bump(:minor)
+  def bump_version!(element = :minor)
+    self.version_current = version_current.semver_bump(element)
     save!
     version_current
   end
