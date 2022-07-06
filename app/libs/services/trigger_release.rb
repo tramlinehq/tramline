@@ -15,7 +15,11 @@ class Services::TriggerRelease
 
   def call
     return Response.new(false, "Cannot start a train that is inactive") if train.inactive?
-    return Response.new(false, "Cannot start a train that has no steps. Please add at least one step.") if train.steps.empty?
+
+    if train.steps.empty?
+      return Response.new(false,
+        "Cannot start a train that has no steps. Please add at least one step.")
+    end
     return Reponse.new(false, "Train is already running") if train.active_run.present?
 
     ApplicationRecord.transaction do
@@ -91,7 +95,14 @@ class Services::TriggerRelease
   end
 
   def new_branch_name
-    starting_time.strftime("r/#{train.display_name}/%Y-%m-%d")
+    @branch_name ||= begin
+      branch_name = starting_time.strftime("r/#{train.display_name}/%Y-%m-%d")
+      if train.runs.exists?(branch_name:)
+        branch_name += "-1"
+        branch_name = branch_name.succ while train.runs.exists?(branch_name:)
+      end
+      branch_name
+    end
   end
 
   def webhook_url
