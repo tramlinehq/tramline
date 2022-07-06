@@ -22,9 +22,10 @@ class Services::TriggerRelease
     end
     return Reponse.new(false, "Train is already running") if train.active_run.present?
 
-    ApplicationRecord.transaction do
+    ApplicationRecord.transaction do # FIXME cleanup and extract pre release hooks per branching strategy
       create_run_record
       create_branches
+      prepare_branch
       create_webhooks
       setup_webhook_listeners
       run_first_step
@@ -49,6 +50,16 @@ class Services::TriggerRelease
     installation.create_branch!(repo, working_branch, new_branch_name)
     message = "Branch #{new_branch_name} is created"
     Automatons::Notify.dispatch!(train:, message:)
+  rescue Octokit::UnprocessableEntity
+    nil
+  end
+
+  def prepare_branch
+    if train.branching_strategy == "parallel_working"
+      response = installation.create_pr!(repo, train.release_branch, train.working_branch, "Pre release merge", "")
+
+      installation.merge_pr!(repo, response[:number])
+    end
   rescue Octokit::UnprocessableEntity
     nil
   end
