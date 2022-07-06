@@ -24,10 +24,10 @@ class Services::TriggerRelease
 
     ApplicationRecord.transaction do # FIXME cleanup and extract pre release hooks per branching strategy
       create_run_record
+      setup_webhook_listeners
+      create_webhooks
       create_branches
       prepare_branch
-      create_webhooks
-      setup_webhook_listeners
       run_first_step
     end
     Response.new(true)
