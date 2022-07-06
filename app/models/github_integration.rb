@@ -53,4 +53,8 @@ class GithubIntegration < ApplicationRecord
   def connectable?
     true
   end
+
+  def branch_url(repo, branch_name)
+    "https://github.com/#{repo}/tree/#{branch_name}"
+  end
 end
