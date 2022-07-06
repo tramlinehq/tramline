@@ -20,7 +20,7 @@ class StepsController < SignedInApplicationController
 
     respond_to do |format|
       if @step.save
-        format.html { redirect_to train_path, notice: "Step was successfully created." }
+        format.html { redirect_to app_train_path(@app, @train), notice: "Step was successfully created." }
         format.json { render :show, status: :created, location: @step }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -41,7 +41,7 @@ class StepsController < SignedInApplicationController
     @train = @step.train
     @app = @train.app
     if @step.update(parsed_step_params)
-      redirect_to train_path, notice: "Step was successfully updated."
+      redirect_to edit_app_train_path(@app, @train), notice: "Step was successfully updated."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -82,12 +82,8 @@ class StepsController < SignedInApplicationController
 
   def integrations_are_ready?
     unless @train.ready?
-      redirect_to train_path, alert: "Cannot create steps before notifiers are complete."
+      redirect_to app_train_path(@app, @train), alert: "Cannot create steps before notifiers are complete."
     end
-  end
-
-  def train_path
-    app_train_path(@app, @train)
   end
 
   def set_ci_actions
