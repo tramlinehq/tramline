@@ -21,6 +21,7 @@ module Installations
         @client
           .workflows(repo)
           .then { |response| response[:workflows] }
+          .then { |workflows| workflows.select { |workflow| workflow[:state] == "active" } }
           .then { |workflows| workflows.map { |workflow| workflow.to_h.slice(:id, :name) } }
       end
     end

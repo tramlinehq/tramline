@@ -10,7 +10,7 @@ class WebhookHandlers::Github::WorkflowRun
   def initialize(train, payload)
     @train = train
     @payload = payload
-    @release = train.current_run
+    @release = train.active_run
   end
 
   def process

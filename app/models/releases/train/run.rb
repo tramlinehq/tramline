@@ -3,8 +3,8 @@ class Releases::Train::Run < ApplicationRecord
   self.implicit_order_column = :was_run_at
 
   belongs_to :train, class_name: "Releases::Train"
-  has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy
-  has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy
+  has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
+  has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
 
   enum status: {on_track: "on_track", error: "error", finished: "finished"}
 
@@ -36,5 +36,9 @@ class Releases::Train::Run < ApplicationRecord
 
   def perform_post_release!
     Services::PostRelease.call(self)
+  end
+
+  def branch_url
+    train.app.vcs_provider&.branch_url(train.app.config&.code_repository_name, branch_name)
   end
 end

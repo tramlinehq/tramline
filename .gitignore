@@ -47,3 +47,5 @@ bundle/
 # Brew-related stuff 
 Brewfile.lock.json 
 
+# Local rubocop overrides
+.rubocop.yml

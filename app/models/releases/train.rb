@@ -9,10 +9,10 @@ class Releases::Train < ApplicationRecord
     parallel_working: "Parallel working"
   }.freeze
 
-  belongs_to :app, required: true
+  belongs_to :app, optional: false
   has_many :integrations, through: :app
   has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
-  has_one :active_run, -> { where(status: "on_track") }, class_name: "Releases::Train::Run", inverse_of: :train
+  has_one :active_run, -> { where(status: "on_track") }, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
   has_many :steps, class_name: "Releases::Step", inverse_of: :train, dependent: :destroy
   has_many :train_sign_off_groups, dependent: :destroy
   has_many :sign_off_groups, through: :train_sign_off_groups
@@ -39,7 +39,7 @@ class Releases::Train < ApplicationRecord
 
   validate :semver_compatibility
   validate :ready?, on: :create
-  validates_uniqueness_of :version_suffix, scope: :app
+  validates :version_suffix, uniqueness: {scope: :app}
 
   before_create :set_current_version!
   before_create :set_default_status!
@@ -65,10 +65,6 @@ class Releases::Train < ApplicationRecord
   GRACE_PERIOD_FOR_RUNNING = 30.seconds
   MINIMUM_TRAIN_KICKOFF_DELAY = 30.minutes
 
-  def current_run
-    runs.on_track.last
-  end
-
   def display_name
     name.downcase.tr(" ", "-")
   end
@@ -77,8 +73,8 @@ class Releases::Train < ApplicationRecord
     "v#{version_current}"
   end
 
-  def bump_version!
-    self.version_current = version_current.semver_bump(:minor)
+  def bump_version!(element = :minor)
+    self.version_current = version_current.semver_bump(element)
     save!
     version_current
   end

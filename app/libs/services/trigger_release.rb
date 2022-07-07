@@ -15,14 +15,19 @@ class Services::TriggerRelease
 
   def call
     return Response.new(false, "Cannot start a train that is inactive") if train.inactive?
-    return Response.new(false, "Cannot start a train that has no steps. Please add at least one step.") if train.steps.empty?
+
+    if train.steps.empty?
+      return Response.new(false,
+        "Cannot start a train that has no steps. Please add at least one step.")
+    end
     return Reponse.new(false, "Train is already running") if train.active_run.present?
 
-    ApplicationRecord.transaction do
+    ApplicationRecord.transaction do # FIXME cleanup and extract pre release hooks per branching strategy
       create_run_record
-      create_branches
-      create_webhooks
       setup_webhook_listeners
+      create_webhooks
+      create_branches
+      prepare_branch
       run_first_step
     end
     Response.new(true)
@@ -45,6 +50,16 @@ class Services::TriggerRelease
     installation.create_branch!(repo, working_branch, new_branch_name)
     message = "Branch #{new_branch_name} is created"
     Automatons::Notify.dispatch!(train:, message:)
+  rescue Octokit::UnprocessableEntity
+    nil
+  end
+
+  def prepare_branch
+    if train.branching_strategy == "parallel_working"
+      response = installation.create_pr!(repo, train.release_branch, train.working_branch, "Pre release merge", "")
+
+      installation.merge_pr!(repo, response[:number])
+    end
   rescue Octokit::UnprocessableEntity
     nil
   end
@@ -91,7 +106,14 @@ class Services::TriggerRelease
   end
 
   def new_branch_name
-    starting_time.strftime("r/#{train.display_name}/%Y-%m-%d")
+    @branch_name ||= begin
+      branch_name = starting_time.strftime("r/#{train.display_name}/%Y-%m-%d")
+      if train.runs.exists?(branch_name:)
+        branch_name += "-1"
+        branch_name = branch_name.succ while train.runs.exists?(branch_name:)
+      end
+      branch_name
+    end
   end
 
   def webhook_url

@@ -33,7 +33,7 @@ module Automatons
       train
         .app
         .vcs_provider
-        .installation_id
+        &.installation_id
     end
   end
 end
