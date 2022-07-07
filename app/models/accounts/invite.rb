@@ -1,4 +1,4 @@
-class Accounts::Invite < ActiveRecord::Base
+class Accounts::Invite < ApplicationRecord
   include Roleable
   include Rails.application.routes.url_helpers
 
@@ -16,11 +16,11 @@ class Accounts::Invite < ActiveRecord::Base
   scope :not_accepted, -> { where(accepted_at: nil) }
 
   def generate_token
-    self.token = Digest::SHA1.hexdigest([organization_id, Time.now, rand].join)
+    self.token = Digest::SHA1.hexdigest([organization_id, Time.zone.now, rand].join)
   end
 
   def add_recipient
-    recipient = Accounts::User.find_by_email(email)
+    recipient = Accounts::User.find_by(email: email)
 
     if recipient
       self.recipient = recipient
@@ -28,21 +28,21 @@ class Accounts::Invite < ActiveRecord::Base
   end
 
   def user_already_in_organization
-    recipient = Accounts::User.find_by_email(email)
+    recipient = Accounts::User.find_by(email: email)
 
-    if organization.users.find_by_id(recipient)
+    if organization.users.find_by(id: recipient)
       errors.add(:recipient, "already exists in the organization!")
     end
   end
 
   def user_already_invited
-    if Accounts::Invite.where(email: email, accepted_at: nil, organization: organization).exists?
+    if Accounts::Invite.exists?(email: email, accepted_at: nil, organization: organization)
       errors.add(:recipient, "has already been invited to the organization!")
     end
   end
 
   def mark_accepted!
-    update!(accepted_at: Time.now)
+    update!(accepted_at: Time.zone.now)
   end
 
   def accept_only_once

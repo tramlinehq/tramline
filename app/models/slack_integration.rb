@@ -4,7 +4,7 @@ class SlackIntegration < ApplicationRecord
 
   has_paper_trail
 
-  has_one :integration, as: :providable
+  has_one :integration, as: :providable, dependent: :destroy
 
   encrypts :oauth_access_token, deterministic: true
 

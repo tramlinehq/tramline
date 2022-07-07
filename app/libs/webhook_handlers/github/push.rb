@@ -35,6 +35,9 @@ class WebhookHandlers::Github::Push
             step_run.automatons!
           end
         end
+        train.bump_version!(:patch)
+        release.update(release_version: train.version_current)
+
         message = "New push to the branch #{payload["ref"].delete_prefix("refs/heads/")} with \
     message #{payload["head_commit"]["message"]}"
         Automatons::Notify.dispatch!(train:, message:)
