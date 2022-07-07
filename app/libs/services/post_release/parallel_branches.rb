@@ -48,12 +48,13 @@ class Services::PostRelease
     end
 
     def pr_title
-      "Release PR"
+      "[Release kickoff] #{release.release_version}"
     end
 
     def pr_description
       <<~TEXT
-        Verbose description for #{train.name} release on #{release.was_run_at}
+        New release train #{train.name} triggered.
+        The #{train.working_branch} branch has been merged into #{release.branch_name} branch, as per #{train.branching_strategy_name} branching strategy.
       TEXT
     end
   end
