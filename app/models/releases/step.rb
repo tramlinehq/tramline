@@ -6,8 +6,8 @@ class Releases::Step < ApplicationRecord
   self.implicit_order_column = :step_number
 
   belongs_to :train, class_name: "Releases::Train", inverse_of: :steps
-  has_many :runs, class_name: "Releases::Step::Run", inverse_of: :step, foreign_key: :train_step_id
-  has_many :sign_offs, foreign_key: :train_step_id
+  has_many :runs, class_name: "Releases::Step::Run", inverse_of: :step, foreign_key: :train_step_id, dependent: :destroy
+  has_many :sign_offs, foreign_key: :train_step_id, inverse_of: :step, dependent: :destroy
   has_many :sign_off_groups, through: :train
   has_one :app, through: :train
 
@@ -22,8 +22,8 @@ class Releases::Step < ApplicationRecord
 
   friendly_id :name, use: :slugged
 
-  before_validation :set_step_number
   after_initialize :set_default_status, if: :new_record?
+  before_validation :set_step_number
 
   def set_step_number
     self.step_number = train.steps.maximum(:step_number).to_i + 1

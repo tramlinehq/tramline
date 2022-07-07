@@ -36,7 +36,7 @@ class AppsController < SignedInApplicationController
   end
 
   def set_app
-    @app = current_organization.apps.friendly.find(params[:id])
+    @app = current_organization.apps.friendly.includes(:trains).find(params[:id])
   end
 
   def app_params

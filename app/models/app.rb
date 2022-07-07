@@ -2,11 +2,11 @@ class App < ApplicationRecord
   has_paper_trail
   extend FriendlyId
 
-  belongs_to :organization, class_name: "Accounts::Organization", required: true
-  has_many :integrations, inverse_of: :app
-  has_many :trains, class_name: "Releases::Train", foreign_key: :app_id
-  has_many :sign_off_groups
-  has_one :config, class_name: "AppConfig"
+  belongs_to :organization, class_name: "Accounts::Organization", optional: false
+  has_many :integrations, inverse_of: :app, dependent: :destroy
+  has_many :trains, class_name: "Releases::Train", dependent: :destroy
+  has_many :sign_off_groups, dependent: :destroy
+  has_one :config, class_name: "AppConfig", dependent: :destroy
 
   validates :bundle_identifier, uniqueness: {scope: :organization_id}
 
