@@ -91,7 +91,7 @@
               </div>
               <h3 class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></h3>
               <div class="m-auto">
-                <% if @train.current_run.blank? %>
+                <% if @train.active_run.blank? %>
                   <%= link_to edit_step_path(step) do%>
                     <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Edit </button>
                   <% end %>
