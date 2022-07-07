@@ -53,7 +53,7 @@ class Services::PostRelease
 
     def pr_description
       <<~TEXT
-        New release train #{train.name} triggered by user name.
+        New release train #{train.name} triggered.
         The #{train.working_branch} branch has been merged into #{release.branch_name} branch, as per #{train.branching_strategy_name} branching strategy.
       TEXT
     end
