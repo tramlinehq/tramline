@@ -12,27 +12,19 @@ class Accounts::User < ApplicationRecord
 
   has_many :memberships, dependent: :delete_all, inverse_of: :user
   has_many :organizations, -> { where(status: :active) }, through: :memberships
+  # NOTE: For now assume that user has only one organisation
+
+  has_one :membership, dependent: :delete, inverse_of: :user
+  has_one :organization, -> { where(status: :active) }, through: :membership
   has_many :all_organizations, through: :memberships, source: :organization
-  has_many :sent_invites, class_name: "Invite", foreign_key: "sender_id"
-  has_many :invitations, class_name: "Invite", foreign_key: "recipient_id"
+  has_many :sent_invites, class_name: "Invite", foreign_key: "sender_id", inverse_of: :sender, dependent: :destroy
+  has_many :invitations, class_name: "Invite", foreign_key: "recipient_id", inverse_of: :recipient, dependent: :destroy
 
   friendly_id :full_name, use: :slugged
 
   auto_strip_attributes :full_name, :preferred_name, squish: true
 
   accepts_nested_attributes_for :organizations
-
-  def organization
-    # for now, just assume that user has membership with
-    # only one organization
-    organizations.first
-  end
-
-  def membership
-    # for now, just assume that user has membership with
-    # only one organization
-    memberships.first
-  end
 
   delegate :role, to: :membership
 
@@ -66,7 +58,7 @@ class Accounts::User < ApplicationRecord
   def strip_unnecessary_errors
     if errors[:password].any? && errors[:password].size > 1
       errors.delete(:password)
-      errors.add(:password, I18n.translate("errors.messages.password.password_strength"))
+      errors.add(:password, I18n.t("errors.messages.password.password_strength"))
     end
   end
 end

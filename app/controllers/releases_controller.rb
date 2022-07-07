@@ -19,7 +19,7 @@ class ReleasesController < SignedInApplicationController
   def live_release
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
-    @release = @train.current_run
+    @release = @train.active_run
     if @release
       render :show
     else

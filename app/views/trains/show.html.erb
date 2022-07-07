@@ -12,7 +12,7 @@
       <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Modify</button>
     <% end %>
 
-    <% if @train.current_run %>
+    <% if @train.active_run %>
       <%= link_to live_release_app_train_releases_path(@app, @train) do %>
         <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white mt-5"> Live</button>
       <% end %>

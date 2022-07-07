@@ -30,7 +30,7 @@ class Integration < ApplicationRecord
     disconnected: "disconnected"
   }
 
-  validates_presence_of :category
+  validates :category, presence: true
   validate :provider_in_category
 
   attr_accessor :current_user, :code
