@@ -23,7 +23,7 @@ crumb :step do |step|
 end
 
 crumb :release do |release|
-  link release.branch_name, app_train_releases_path(release.train.app, release.train)
+  link release.release_version, app_train_releases_path(release.train.app, release.train)
   parent :train, release.train
 end
 
