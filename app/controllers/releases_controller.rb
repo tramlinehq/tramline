@@ -5,7 +5,7 @@ class ReleasesController < SignedInApplicationController
     @train = @app.trains.friendly.find(params[:train_id])
     response = Services::TriggerRelease.call(@train)
     if response.success
-      redirect_back fallback_location: root_path, notice: "Train successfully started"
+      redirect_to live_release_app_train_releases_path(@app, @train), notice: "Train successfully started"
     else
       redirect_back fallback_location: root_path, flash: {error: response.body}
     end
@@ -29,7 +29,7 @@ class ReleasesController < SignedInApplicationController
 
   def destroy
     @release.update(status: "finished")
-    redirect_back fallback_location: root_path, notice: "Release is marked as finished"
+    redirect_to app_train_path(@release.train.app, @release.train), notice: "Release marked as finished"
   end
 
   private
