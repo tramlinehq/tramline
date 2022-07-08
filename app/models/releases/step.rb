@@ -52,7 +52,7 @@ class Releases::Step < ApplicationRecord
   end
 
   def can_start?
-    (train.current_run&.next_step == self) && (first? || (signed_previous_step? && previous_step.runs.last.finished?))
+    (train.active_run&.next_step == self) && (first? || (signed_previous_step? && previous.runs.last.finished?))
   end
 
   def signed_previous_step?

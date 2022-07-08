@@ -18,7 +18,7 @@ class WebhookHandlers::Github::Push
 
       if train.commit_listeners.exists?(branch_name:)
         commit = payload["head_commit"]
-        Releases::Commit.create!(train:,
+        commit_record = Releases::Commit.create!(train:,
           train_run: release,
           commit_hash: commit["id"],
           message: commit["message"],
@@ -28,10 +28,11 @@ class WebhookHandlers::Github::Push
           url: commit["url"])
 
         if release
-          current_step = release.step_runs.last&.step&.step_number
+          current_step = release.step_runs.last&.step&.step_number || 1
 
           train.steps.where("step_number <= ?", current_step).each do |step|
-            step_run = release.step_runs.create(step:, scheduled_at: Time.current, status: "on_track")
+            step_run = release.step_runs.create!(step:, scheduled_at: Time.current, status: "on_track", commit: commit_record)
+            binding.pry
             step_run.automatons!
           end
         end

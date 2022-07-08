@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_07_05_050420) do
+ActiveRecord::Schema[7.0].define(version: 2022_07_08_030609) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -251,7 +251,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_07_05_050420) do
     t.string "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "releases_commit_id", null: false
     t.index ["previous_step_run_id"], name: "index_train_step_runs_on_previous_step_run_id"
+    t.index ["releases_commit_id"], name: "index_train_step_runs_on_releases_commit_id"
     t.index ["train_run_id"], name: "index_train_step_runs_on_train_run_id"
     t.index ["train_step_id"], name: "index_train_step_runs_on_train_step_id"
   end
@@ -359,6 +361,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_07_05_050420) do
   add_foreign_key "train_runs", "trains"
   add_foreign_key "train_sign_off_groups", "sign_off_groups"
   add_foreign_key "train_sign_off_groups", "trains"
+  add_foreign_key "train_step_runs", "releases_commits"
   add_foreign_key "train_step_runs", "train_runs"
   add_foreign_key "train_step_runs", "train_step_runs", column: "previous_step_run_id"
   add_foreign_key "train_step_runs", "train_steps"
