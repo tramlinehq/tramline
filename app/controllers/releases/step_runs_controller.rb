@@ -3,7 +3,7 @@ class Releases::StepRunsController < SignedInApplicationController
 
   def start
     step = @release.train.steps.friendly.find(params[:id])
-    step_run = @release.step_runs.create(step:, scheduled_at: Time.current, status: "on_track")
+    step_run = @release.step_runs.create(step:, scheduled_at: Time.current, status: "on_track", commit: @release.commits.last)
     step_run.automatons!
     redirect_back fallback_location: root_path, notice: "Step successfully started"
   end

@@ -9,17 +9,17 @@
   <!-- Right: Actions -->
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
     <% if @release.on_track? %>
-      <%= button_to release_path(@release.id), method: :delete do%>
+      <%= button_to release_path(@release.id), method: :delete do %>
         <button class="btn bg-red-500 hover:bg-red-600 text-white mt-5"> Stop Release</button>
       <% end %>
     <% end %>
 
   </div>
 </div>
-<hr class="mt-1 mb-5"/>
+<hr class="mt-1 mb-5">
 <section>
   <div class="flex">
-    <h2 class="font-bold text-2xl"> Kick-off </h2> <span class="text-2xl text-slate-500 ml-5"><%= time_ago_in_words(@release.created_at) %> ago</span>  
+    <h2 class="font-bold text-2xl"> Kick-off </h2> <span class="text-2xl text-slate-500 ml-5"><%= time_ago_in_words(@release.created_at) %> ago</span>
   </div>
   <div class="flex flex-col mt-5">
     <div> <span class="font-bold"> Sign Off Groups: </span> <%= @train.sign_off_groups.map(&:name).join(", ") %> </div>
@@ -27,16 +27,16 @@
   </div>
 </section>
 
-<hr class="mt-5 mb-5"/>
+<hr class="mt-5 mb-5">
 
 <section>
   <div class="flex">
-    <h2 class="font-bold text-2xl"> Stability </h2> <span class="text-2xl text-slate-500 ml-5"><%= time_ago_in_words(@release.updated_at) %> ago</span>  
+    <h2 class="font-bold text-2xl"> Stability </h2> <span class="text-2xl text-slate-500 ml-5"><%= time_ago_in_words(@release.updated_at) %> ago</span>
   </div>
   <div class="flex flex-col">
     <ul>
     <% @train.steps.each do |step| %>
-      <% step_run = @release.step_runs.find_by(step: step) %>
+      <% step_run = @release.step_runs.where(step: step).last %>
       <li class="relative py-2">
         <div class="flex items-center mb-1">
             <% unless step.last? %>
@@ -57,7 +57,25 @@
           <% end %>
             <h3 class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></h3>
         </div>
-        <div class="pl-9">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</div>
+        <div class="pl-9"><%= step.description %></div>
+        <% if step.can_start? %>
+          <%= button_to 'start', start_release_step_run_path(@release, step), { class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' } %>
+        <% end %>
+        <div class="flex flex-col">
+          <% @train.sign_off_groups.each do |group| %>
+            <div class="flex ml-10">
+            <%= group.name %>
+            <% if step.sign_offs.exists?(sign_off_group: group, signed: true, commit: step_run&.commit) %>
+              Step has been approved
+            <% else %>
+              <div class="flex ml-10">
+               <%= button_to "reject", step_sign_off_path(step), params: { sign_off_group_id: group.id, commit_id: step_run&.commit }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"', method: :delete %>
+               <%= button_to "approve", step_sign_off_path(step), params: { sign_off_group_id: group.id, commit_id: step_run&.commit }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"' %>
+               </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
       </li>
     <% end %>
     </ul>
@@ -72,14 +90,20 @@
     <div class="">
       <%= commit.message %>
     </div>
+    <div class="px-4">
+      <% commit.step_runs.each do |step_run| %>
+        <%= step_run.step.name %>
+        <%= step_run.signed? ? "✅" : "❌" %>
+      <% end %>
+    </div>
   </div>
   <% end %>
 </section>
 
-<hr class="mt-5 mb-5"/>
+<hr class="mt-5 mb-5">
 
 <section>
   <div class="flex">
-    <h2 class="font-bold text-2xl"> Finalise </h2> <span class="text-2xl text-slate-500 ml-5">pending approvals</span>  
+    <h2 class="font-bold text-2xl"> Finalise </h2> <span class="text-2xl text-slate-500 ml-5">pending approvals</span>
   </div>
 </section>

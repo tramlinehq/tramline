@@ -3,7 +3,11 @@ class Releases::Commit < ApplicationRecord
 
   belongs_to :train
   belongs_to :train_run, class_name: "Releases::Train::Run"
-  has_many :step_runs, class_name: "Releases::Step::Run", dependent: :nullify
+  has_many :step_runs, class_name: "Releases::Step::Run", dependent: :nullify, foreign_key: 'releases_commit_id'
 
   validates :commit_hash, uniqueness: {scope: :train_run_id}
+
+  def step_runs_for(step)
+    step_runs.where(step: step)
+  end
 end

@@ -32,7 +32,6 @@ class WebhookHandlers::Github::Push
 
           train.steps.where("step_number <= ?", current_step).each do |step|
             step_run = release.step_runs.create!(step:, scheduled_at: Time.current, status: "on_track", commit: commit_record)
-            binding.pry
             step_run.automatons!
           end
         end
