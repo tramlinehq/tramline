@@ -48,22 +48,28 @@
 
 <h2 class="text-2xl font-bold mt-8 mb-4">Steps</h2>
 
-<div class="">
-  <% @train.steps.each_with_index do |step, index| %>
-    <div class="grid grid-cols-12 gap-4 border-slate-700 border border-x-0">
-      <div class="col-span-2 border-r-2">
-        <%= index + 1 %>
-      </div>
-
-      <div class="col-span-10">
-        <span class="font-bold"><%= step.name %></span>
-        <br/>
-        <%= step.description %>
-        <br/>
-        Github / <%= step.ci_cd_channel&.values&.first %>
-      </div>
-    </div>
-  <% end %>
+<div class="flex flex-col">
+  <ul>
+    <% @train.steps.each do |step| %>
+      <li class="relative py-2">
+        <div class="flex items-center">
+          <% unless step.last? %>
+            <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
+          <% end %>
+          <div class="absolute left-0 rounded-full bg-slate-200 border border-indigo-200" aria-hidden="true">
+            <svg class="w-5 h-5 fill-current text-slate-500" viewBox="0 0 20 20">
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></h3>
+        </div>
+        <div class="pl-9">
+          <span class="text-slate-400"><%= step.description %></span>
+          <br/>
+          Github / <%= step.ci_cd_channel&.values&.first %>
+        </div>
+      </li>
+    <% end %>
+  </ul>
 </div>
 
 <!--Releases-->
