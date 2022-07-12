@@ -13,7 +13,7 @@ class Releases::Step < ApplicationRecord
 
   validates :ci_cd_channel, presence: true
   validates :release_suffix, presence: true
-  validates :release_suffix, format: {with: /\A[a-zA-Z]+\z/, message: "only allows letters and underscore"}
+  validates :release_suffix, format: {with: /\A[a-zA-Z\-_]+\z/, message: "only allows letters and underscore"}
 
   delegate :app, to: :train
 
@@ -53,13 +53,21 @@ class Releases::Step < ApplicationRecord
     train.steps.where("step_number < ?", step_number).last
   end
 
-  def can_start?
-    (train.active_run&.next_step == self) && (first? || (signed_previous_step? && previous.runs.last.finished?))
+  def startable?
+    return true if train.active_run.nil? && first?
+    return false if train.active_run.nil?
+
+    (train.active_run&.next_step == self) && (signed_previous_step? && previous.runs.last.finished?)
+
+  end
+
+  def signed?
+    train.sign_off_groups.all? do |group|
+      sign_offs.exists?(sign_off_group: group, signed: true)
+    end
   end
 
   def signed_previous_step?
-    train.sign_off_groups.all? do |group|
-      previous.sign_offs.exists?(sign_off_group: group, signed: true)
-    end
+    previous.signed?
   end
 end

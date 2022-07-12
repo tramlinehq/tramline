@@ -59,7 +59,7 @@
             <span><%= step_run&.build_version %> </span>
         </div>
         <div class="pl-9"><%= step.description %></div>
-        <% if step.can_start? %>
+        <% if step.startable? %>
           <%= button_to 'start', start_release_step_run_path(@release, step), { class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' } %>
         <% end %>
         <div class="flex flex-col">
