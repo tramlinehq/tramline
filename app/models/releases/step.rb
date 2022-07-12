@@ -54,11 +54,11 @@ class Releases::Step < ApplicationRecord
   end
 
   def startable?
+    return false if train.status == "finished"
     return true if train.active_run.nil? && first?
     return false if train.active_run.nil?
 
     (train.active_run&.next_step == self) && (signed_previous_step? && previous.runs.last.finished?)
-
   end
 
   def signed?
