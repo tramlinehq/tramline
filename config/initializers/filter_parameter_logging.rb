@@ -25,4 +25,4 @@ module ParameterFiltering
   end
 end
 
-Rails.application.config.filter_parameters += [*ParameterFiltering::DISALLOWED_INTEGER_PARAMS, ParameterFiltering.filter]
+Rails.application.config.filter_parameters += [*ParameterFiltering::DISALLOWED_INTEGER_PARAMS, ParameterFiltering.filter] unless Rails.env.development?

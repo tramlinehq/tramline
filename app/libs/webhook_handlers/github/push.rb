@@ -18,7 +18,7 @@ class WebhookHandlers::Github::Push
 
       if train.commit_listeners.exists?(branch_name:)
         commit = payload["head_commit"]
-        Releases::Commit.create!(train:,
+        commit_record = Releases::Commit.create!(train:,
           train_run: release,
           commit_hash: commit["id"],
           message: commit["message"],
@@ -28,14 +28,15 @@ class WebhookHandlers::Github::Push
           url: commit["url"])
 
         if release
-          current_step = release.step_runs.last&.step&.step_number
+          current_step = release.step_runs.last&.step&.step_number || train.steps.first.step_number
 
           train.steps.where("step_number <= ?", current_step).each do |step|
-            step_run = release.step_runs.create(step:, scheduled_at: Time.current, status: "on_track")
-            step_run.automatons!
+            next if release.last_run_for(step).signed?
+
+            Services::TriggerStepRun.call(step, commit_record)
           end
         end
-        train.bump_version!(:patch)
+        # train.bump_version!(:patch)
         release.update(release_version: train.version_current)
 
         message = "New push to the branch #{payload["ref"].delete_prefix("refs/heads/")} with \

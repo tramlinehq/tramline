@@ -2,16 +2,16 @@ module Automatons
   class Workflow
     class DispatchFailure < StandardError; end
 
-    attr_reader :step, :ref, :github_api, :release
+    attr_reader :step, :ref, :github_api, :step_run
 
     def self.dispatch!(**args)
       new(**args).dispatch!
     end
 
-    def initialize(step:, ref:, release:)
+    def initialize(step:, ref:, step_run:)
       @step = step
       @ref = ref
-      @release = release
+      @step_run = step_run
       @github_api = Installations::Github::Api.new(installation_id)
     end
 
@@ -26,7 +26,7 @@ module Automatons
     def inputs
       {
         versionCode: step.app.bump_build_number!.to_s,
-        versionName: release.release_version
+        versionName: step_run.build_version
       }
     end
 

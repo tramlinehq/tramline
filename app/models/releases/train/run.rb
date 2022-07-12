@@ -19,6 +19,8 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def next_step
+    return train.steps.first if step_runs.empty?
+
     step_runs.joins(:step).order("step_number").last.step.next
   end
 
@@ -40,5 +42,13 @@ class Releases::Train::Run < ApplicationRecord
 
   def branch_url
     train.app.vcs_provider&.branch_url(train.app.config&.code_repository_name, branch_name)
+  end
+
+  def last_commit
+    commits.last
+  end
+
+  def last_run_for(step)
+    step_runs.where(step: step).last
   end
 end

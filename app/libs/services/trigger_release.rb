@@ -28,7 +28,7 @@ class Services::TriggerRelease
       create_webhooks
       create_branches
       prepare_branch
-      run_first_step
+      # run_first_step
     end
     Response.new(true)
   end

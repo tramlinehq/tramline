@@ -43,6 +43,9 @@ class StepsController < SignedInApplicationController
     if @step.update(parsed_step_params)
       redirect_to edit_app_train_path(@app, @train), notice: "Step was successfully updated."
     else
+      @build_channels = @train.notification_provider.channels
+      @ci_actions = @train.ci_cd_provider.workflows
+
       render :edit, status: :unprocessable_entity
     end
   end
@@ -70,7 +73,8 @@ class StepsController < SignedInApplicationController
       :name,
       :description,
       :build_artifact_channel,
-      :ci_cd_channel
+      :ci_cd_channel,
+      :release_suffix
     )
   end
 
