@@ -18,26 +18,28 @@ class WebhookHandlers::Github::Push
 
       if train.commit_listeners.exists?(branch_name:)
         commit = payload["head_commit"]
-        commit_record = Releases::Commit.create!(train:,
-          train_run: release,
-          commit_hash: commit["id"],
-          message: commit["message"],
-          timestamp: commit["timestamp"],
-          author_name: commit["author"]["name"],
-          author_email: commit["author"]["email"],
-          url: commit["url"])
+        Releases::Commit.transaction do
+          commit_record = Releases::Commit.create!(train:,
+            train_run: release,
+            commit_hash: commit["id"],
+            message: commit["message"],
+            timestamp: commit["timestamp"],
+            author_name: commit["author"]["name"],
+            author_email: commit["author"]["email"],
+            url: commit["url"])
 
-        if release
-          current_step = release.step_runs.last&.step&.step_number || train.steps.first.step_number
+          if release
+            current_step = release.step_runs.last&.step&.step_number || train.steps.first.step_number
 
-          train.steps.where("step_number <= ?", current_step).each do |step|
-            next if release.last_run_for(step).signed?
+            train.steps.where("step_number <= ?", current_step).each do |step|
+              next if release.last_run_for(step)&.signed?
 
-            Services::TriggerStepRun.call(step, commit_record)
+              Services::TriggerStepRun.call(step, commit_record)
+            end
           end
+          # train.bump_version!(:patch)
+          release.update(release_version: train.version_current)
         end
-        # train.bump_version!(:patch)
-        release.update(release_version: train.version_current)
 
         message = "New push to the branch #{payload["ref"].delete_prefix("refs/heads/")} with \
     message #{payload["head_commit"]["message"]}"

@@ -55,19 +55,14 @@ class Releases::Step < ApplicationRecord
 
   def startable?
     return false if train.status == "finished"
-    return true if train.active_run.nil? && first?
+    return true if runs.empty? && first?
     return false if train.active_run.nil?
+    return false if first?
 
     (train.active_run&.next_step == self) && (signed_previous_step? && previous.runs.last.finished?)
   end
 
-  def signed?
-    train.sign_off_groups.all? do |group|
-      sign_offs.exists?(sign_off_group: group, signed: true)
-    end
-  end
-
   def signed_previous_step?
-    previous.signed?
+    previous.runs.last.signed?
   end
 end
