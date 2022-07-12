@@ -12,6 +12,8 @@ class Releases::Step < ApplicationRecord
   has_one :app, through: :train
 
   validates :ci_cd_channel, presence: true
+  validates :release_suffix, presence: true
+  validates :release_suffix, format: {with: /\A[a-zA-Z]+\z/, message: "only allows letters and underscore"}
 
   delegate :app, to: :train
 
@@ -23,7 +25,7 @@ class Releases::Step < ApplicationRecord
   friendly_id :name, use: :slugged
 
   after_initialize :set_default_status, if: :new_record?
-  before_validation :set_step_number
+  before_validation :set_step_number, if: :new_record?
 
   def set_step_number
     self.step_number = train.steps.maximum(:step_number).to_i + 1

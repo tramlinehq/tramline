@@ -28,14 +28,15 @@ class WebhookHandlers::Github::Push
           url: commit["url"])
 
         if release
-          current_step = release.step_runs.last&.step&.step_number || 1
+          current_step = release.step_runs.last&.step&.step_number || train.steps.first.step_number
 
           train.steps.where("step_number <= ?", current_step).each do |step|
-            step_run = release.step_runs.create!(step:, scheduled_at: Time.current, status: "on_track", commit: commit_record)
-            step_run.automatons!
+            next if release.last_run_for(step).signed?
+
+            Services::TriggerStepRun.call(step, commit_record)
           end
         end
-        train.bump_version!(:patch)
+        # train.bump_version!(:patch)
         release.update(release_version: train.version_current)
 
         message = "New push to the branch #{payload["ref"].delete_prefix("refs/heads/")} with \

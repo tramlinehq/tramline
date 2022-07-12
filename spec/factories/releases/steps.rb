@@ -5,5 +5,6 @@ FactoryBot.define do
     description { Faker::Lorem.sentence }
     ci_cd_channel { Faker::Lorem.word }
     build_artifact_channel { Faker::Lorem.word }
+    release_suffix { "qa-staging" }
   end
 end

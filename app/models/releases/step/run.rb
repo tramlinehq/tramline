@@ -1,6 +1,6 @@
 class Releases::Step::Run < ApplicationRecord
   has_paper_trail
-  self.implicit_order_column = :was_run_at
+  self.implicit_order_column = :created_at
 
   has_one :build_artifact, foreign_key: :train_step_runs_id, inverse_of: :step_run, dependent: :destroy
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :runs
@@ -9,6 +9,7 @@ class Releases::Step::Run < ApplicationRecord
   belongs_to :commit, class_name: "Releases::Commit", foreign_key: "releases_commit_id", inverse_of: :step_runs
 
   validates :train_step_id, uniqueness: {scope: :releases_commit_id}
+  validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
 
   enum status: {on_track: "on_track", halted: "halted", finished: "finished"}
 
@@ -18,7 +19,7 @@ class Releases::Step::Run < ApplicationRecord
   delegate :release_branch, to: :train_run
 
   def automatons!
-    Automatons::Workflow.dispatch!(step: step, ref: release_branch, release: train_run)
+    Automatons::Workflow.dispatch!(step: step, ref: release_branch, step_run: self)
   end
 
   def wrap_up_run!

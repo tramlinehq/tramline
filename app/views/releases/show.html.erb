@@ -36,7 +36,7 @@
   <div class="flex flex-col">
     <ul>
     <% @train.steps.each do |step| %>
-      <% step_run = @release.step_runs.where(step: step).last %>
+      <% step_run = @release.last_run_for(step) %>
       <li class="relative py-2">
         <div class="flex items-center mb-1">
             <% unless step.last? %>
@@ -56,6 +56,7 @@
             </div>
           <% end %>
             <h3 class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></h3>
+            <span><%= step_run&.build_version %> </span>
         </div>
         <div class="pl-9"><%= step.description %></div>
         <% if step.can_start? %>
@@ -92,7 +93,9 @@
     </div>
     <div class="px-4">
       <% commit.step_runs.each do |step_run| %>
+        <br/>
         <%= step_run.step.name %>
+        <%= step_run.build_version %>
         <%= step_run.signed? ? "✅" : "❌" %>
       <% end %>
     </div>

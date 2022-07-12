@@ -47,4 +47,8 @@ class Releases::Train::Run < ApplicationRecord
   def last_commit
     commits.last
   end
+
+  def last_run_for(step)
+    step_runs.where(step: step).last
+  end
 end

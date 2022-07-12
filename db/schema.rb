@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_07_08_030609) do
+ActiveRecord::Schema[7.0].define(version: 2022_07_11_144647) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -252,6 +252,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_07_08_030609) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "releases_commit_id", null: false
+    t.string "build_version", null: false
     t.index ["previous_step_run_id"], name: "index_train_step_runs_on_previous_step_run_id"
     t.index ["releases_commit_id"], name: "index_train_step_runs_on_releases_commit_id"
     t.index ["train_run_id"], name: "index_train_step_runs_on_train_run_id"
@@ -269,6 +270,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_07_08_030609) do
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "release_suffix", null: false
     t.index ["step_number", "train_id"], name: "index_train_steps_on_step_number_and_train_id", unique: true
     t.index ["train_id"], name: "index_train_steps_on_train_id"
   end
