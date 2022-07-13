@@ -112,19 +112,19 @@
 
       <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <% if run.completed_at %>
-          <div class="col-span-4">
-            <%= "#{run.release_version} released on #{run.completed_at.to_s(:short)}" %>
+          <div class="underline">
+            <%= link_to "#{run.release_version} released on #{run.completed_at.to_s(:short)}", release_path(run.id) %>
           </div>
         <% else %>
-          <div class="col-span-4">
-            <%= "#{run.release_version} ? " %>
+          <div class="underline">
+            <%= link_to run.release_version.chop + '*', release_path(run.id) %>
           </div>
         <% end %>
       </td>
 
       <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="col-span-4">
-          <%= link_to run.branch_name, release_path(run.id) %>
+        <div class="">
+          <%= run.branch_name %>
         </div>
       </td>
 
