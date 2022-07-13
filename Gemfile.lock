@@ -527,6 +527,7 @@ DEPENDENCIES
   redis (~> 4.0)
   rspec-rails
   ruby-duration (~> 3.2)
+  rubyzip (~> 2.3)
   sassc-rails (~> 2.1)
   selenium-webdriver
   semantic (~> 1.6)

@@ -29,6 +29,8 @@ class Services::PostRelease
         train:,
         branch: release.branch_name
       )
+    rescue Octokit::UnprocessableEntity
+      nil
     end
 
     def repo_integration
