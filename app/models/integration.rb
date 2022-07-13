@@ -59,6 +59,10 @@ class Integration < ApplicationRecord
     notification.first&.providable
   end
 
+  def self.build_channel_provider
+    build_channel.first&.providable
+  end
+
   def installation_state
     {
       organization_id: app.organization.id,

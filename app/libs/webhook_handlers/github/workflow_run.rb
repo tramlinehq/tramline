@@ -23,6 +23,7 @@ class WebhookHandlers::Github::WorkflowRun
     transaction do
       finish_step_run
       upload_artifact
+      upload_artifact_build_channel
       notify
     end
 
@@ -37,6 +38,17 @@ class WebhookHandlers::Github::WorkflowRun
 
   def upload_artifact
     Releases::Step::UploadArtifact.perform_later(last_running_step.id, installation_id, artifacts_url)
+  end
+
+  def upload_artifact_build_channel
+    sleep 10
+    app = train.app
+    last_running_step.reload
+    api = Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier,
+      last_running_step.build_artifact.file.blob,
+      StringIO.new(app.integrations.build_channel_provider.json_key), train.version_current)
+    api.upload
+    api.release
   end
 
   def notify
