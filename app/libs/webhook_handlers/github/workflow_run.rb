@@ -1,3 +1,5 @@
+require 'zip'
+
 class WebhookHandlers::Github::WorkflowRun
   Response = Struct.new(:status, :body)
   attr_reader :train, :payload, :release
@@ -41,6 +43,7 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   def upload_artifact_build_channel
+    # FIXME: move to background job
     app = train.app
     last_running_step.reload
     file = last_running_step.build_artifact.file.blob.open do |file|
