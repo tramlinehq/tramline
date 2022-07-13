@@ -39,7 +39,7 @@
     <% end %>
   </div>
 
-  <div class="basis-1/2 text-slate-400 italic">
+  <div class="basis-1/2 text-slate-600 text-xl">
     <%= @train.description %>
   </div>
 </div>
@@ -51,21 +51,28 @@
 <div class="flex flex-col">
   <ul>
     <% @train.steps.each do |step| %>
-      <li class="relative py-2">
+      <li class="relative pb-6">
         <div class="flex items-center">
           <% unless step.last? %>
             <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
           <% end %>
-          <div class="absolute left-0 rounded-full bg-slate-200 border border-indigo-200" aria-hidden="true">
-            <svg class="w-5 h-5 fill-current text-slate-500" viewBox="0 0 20 20">
-            </svg>
+          <div class="absolute left-0 rounded-full bg-indigo-200" aria-hidden="true">
+            <svg class="w-5 h-5 fill-current text-slate-500" viewBox="0 0 20 20"/>
           </div>
           <h3 class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></h3>
         </div>
-        <div class="pl-9">
+        <div class="pl-9 flex flex-col">
           <span class="text-slate-400"><%= step.description %></span>
-          <br/>
-          Github / <%= step.ci_cd_channel&.values&.first %>
+          <span class="pt-1.5 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-crane mr-1" width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M6 21h6"/>
+              <path d="M9 21v-18l-6 6h18"/>
+              <path d="M9 3l10 6"/>
+              <path d="M17 9v4a2 2 0 1 1 -2 2"/>
+            </svg>
+            <%= step.ci_cd_channel&.values&.first %>
+          </span>
         </div>
       </li>
     <% end %>
