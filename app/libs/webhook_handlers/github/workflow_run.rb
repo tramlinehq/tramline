@@ -32,7 +32,7 @@ class WebhookHandlers::Github::WorkflowRun
   private
 
   def finish_step_run
-    step.wrap_up_run!
+    step_run.wrap_up_run!
   end
 
   def upload_artifact
