@@ -4,6 +4,7 @@ class Releases::Train::Run < ApplicationRecord
 
   belongs_to :train, class_name: "Releases::Train"
   has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
+  has_many :steps, through: :step_runs
   has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
 
   enum status: {on_track: "on_track", error: "error", finished: "finished"}
@@ -50,5 +51,9 @@ class Releases::Train::Run < ApplicationRecord
 
   def last_run_for(step)
     step_runs.where(step: step).last
+  end
+
+  def current_step
+    steps.order(:step_number).last&.step_number
   end
 end

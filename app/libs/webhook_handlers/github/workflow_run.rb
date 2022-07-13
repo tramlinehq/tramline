@@ -18,7 +18,7 @@ class WebhookHandlers::Github::WorkflowRun
     return Response.new(:unprocessable_entity) if train.blank?
     return Response.new(:unprocessable_entity) if train.inactive?
     return Response.new(:accepted) if release.blank?
-    return Response.new(:accepted) if release.last_running_step.blank?
+    return Response.new(:accepted) if step_run.blank?
 
     transaction do
       finish_step_run
@@ -32,11 +32,11 @@ class WebhookHandlers::Github::WorkflowRun
   private
 
   def finish_step_run
-    last_running_step.wrap_up_run!
+    step.wrap_up_run!
   end
 
   def upload_artifact
-    Releases::Step::UploadArtifact.perform_later(last_running_step.id, installation_id, artifacts_url)
+    Releases::Step::UploadArtifact.perform_later(step.id, installation_id, artifacts_url)
   end
 
   def notify
@@ -61,8 +61,12 @@ class WebhookHandlers::Github::WorkflowRun
     )
   end
 
-  def last_running_step
-    @last_running_step ||= release.last_running_step
+  def step_run
+    @step_run ||= release.step_runs.find_by(ci_ref: payload["workflow_run"]["id"])
+  end
+
+  def step
+    step_run.step
   end
 
   def successful?

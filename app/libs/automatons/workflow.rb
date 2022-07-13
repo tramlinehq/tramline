@@ -16,7 +16,15 @@ module Automatons
     end
 
     def dispatch!
-      unless github_api.run_workflow!(code_repository, ci_cd_channel, ref, inputs)
+      if github_api.run_workflow!(code_repository, ci_cd_channel, ref, inputs)
+        last_workflow_run = github_api.workflow_runs(code_repository, ci_cd_channel, {
+          branch: ref,
+          event: "workflow_dispatch",
+          actor: "tramline-dev[bot]",
+          per_page: 1
+        })[:workflow_runs].first
+        step_run.update!(ci_ref: last_workflow_run[:id], ci_link: last_workflow_run[:html_url])
+      else
         raise DispatchFailure, "Failed to kickoff the workflow!"
       end
     end
