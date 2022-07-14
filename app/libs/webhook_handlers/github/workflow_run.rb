@@ -1,4 +1,4 @@
-require 'zip'
+require "zip"
 
 class WebhookHandlers::Github::WorkflowRun
   Response = Struct.new(:status, :body)
