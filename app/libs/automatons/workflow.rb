@@ -16,7 +16,17 @@ module Automatons
     end
 
     def dispatch!
-      unless github_api.run_workflow!(code_repository, ci_cd_channel, ref, inputs)
+      if github_api.run_workflow!(code_repository, ci_cd_channel, ref, inputs)
+        last_workflow_run = github_api.workflow_runs(code_repository, ci_cd_channel, {
+          branch: ref,
+          event: "workflow_dispatch",
+          actor: github_bot_name,
+          per_page: 1
+        })[:workflow_runs].first
+        # NOTE: Unfortunately github is not giving us the newly created workflow run with workflow dispatch api call
+        # This is workaround to get last workflow dispatch created from the same branch, there is a scope of race condition here
+        step_run.update!(ci_ref: last_workflow_run[:id], ci_link: last_workflow_run[:html_url])
+      else
         raise DispatchFailure, "Failed to kickoff the workflow!"
       end
     end
@@ -49,6 +59,14 @@ module Automatons
         .app
         .ci_cd_provider
         .installation_id
+    end
+
+    def github_bot_name
+      if Rails.env.production?
+        "tramline[bot]"
+      else
+        "tramline-dev[bot]"
+      end
     end
   end
 end

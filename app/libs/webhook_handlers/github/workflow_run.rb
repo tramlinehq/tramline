@@ -20,7 +20,7 @@ class WebhookHandlers::Github::WorkflowRun
     return Response.new(:unprocessable_entity) if train.blank?
     return Response.new(:unprocessable_entity) if train.inactive?
     return Response.new(:accepted) if release.blank?
-    return Response.new(:accepted) if release.last_running_step.blank?
+    return Response.new(:accepted) if step_run.blank?
 
     transaction do
       finish_step_run
@@ -35,18 +35,18 @@ class WebhookHandlers::Github::WorkflowRun
   private
 
   def finish_step_run
-    last_running_step.wrap_up_run!
+    step_run.wrap_up_run!
   end
 
   def upload_artifact
-    Releases::Step::UploadArtifact.perform_now(last_running_step.id, installation_id, artifacts_url)
+    Releases::Step::UploadArtifact.perform_now(step_run.id, installation_id, artifacts_url)
   end
 
   def upload_artifact_build_channel
     # FIXME: move to background job
     app = train.app
-    last_running_step.reload
-    file = last_running_step.build_artifact.file.blob.open do |file|
+    step_run.reload
+    file = step_run.build_artifact.file.blob.open do |file|
       Zip::File.open(file).glob("*.aab").first.get_input_stream
     end
     api = Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier,
@@ -79,8 +79,12 @@ class WebhookHandlers::Github::WorkflowRun
     )
   end
 
-  def last_running_step
-    @last_running_step ||= release.last_running_step
+  def step_run
+    @step_run ||= release.step_runs.find_by(ci_ref: payload["workflow_run"]["id"])
+  end
+
+  def step
+    step_run.step
   end
 
   def successful?

@@ -29,15 +29,14 @@ class WebhookHandlers::Github::Push
             url: commit["url"])
 
           if release
-            current_step = release.step_runs.last&.step&.step_number || train.steps.first.step_number
+            current_step = release.current_step || 1
 
             train.steps.where("step_number <= ?", current_step).each do |step|
-              next if release.last_run_for(step)&.signed?
+              next if train.sign_off_groups.exists? && release.last_run_for(step)&.signed?
 
               Services::TriggerStepRun.call(step, commit_record)
             end
           end
-          # train.bump_version!(:patch)
           release.update(release_version: train.version_current)
         end
 
