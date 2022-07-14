@@ -83,10 +83,6 @@ class WebhookHandlers::Github::WorkflowRun
     @step_run ||= release.step_runs.find_by(ci_ref: payload["workflow_run"]["id"])
   end
 
-  def step
-    step_run.step
-  end
-
   def successful?
     payload_status == "completed" && payload_conclusion == "success"
   end
