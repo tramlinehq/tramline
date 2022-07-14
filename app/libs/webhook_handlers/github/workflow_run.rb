@@ -36,7 +36,7 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   def upload_artifact
-    Releases::Step::UploadArtifact.perform_later(step.id, installation_id, artifacts_url)
+    Releases::Step::UploadArtifact.perform_later(step_run.id, installation_id, artifacts_url)
   end
 
   def notify
@@ -63,10 +63,6 @@ class WebhookHandlers::Github::WorkflowRun
 
   def step_run
     @step_run ||= release.step_runs.find_by(ci_ref: payload["workflow_run"]["id"])
-  end
-
-  def step
-    step_run.step
   end
 
   def successful?
