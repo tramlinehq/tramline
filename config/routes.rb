@@ -4,7 +4,7 @@ Rails.application.routes.draw do
 
   mount ActionCable.server => '/cable'
 
-  authenticate :user, ->(u) { u.admin? } do
+  authenticate :user, ->(u) { u.admin? || Rails.env.development? } do
     mount LetterOpenerWeb::Engine, at: '/letter_opener' if Rails.env.development?
     mount Flipper::UI.app(Flipper), at: '/flipper'
     mount Sidekiq::Web, at: '/sidekiq'

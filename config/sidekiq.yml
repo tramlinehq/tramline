@@ -8,6 +8,7 @@
   - ["high", 3]
   - ["medium", 2]
   - ["low", 1]
+  - ["default", 1]
 
 # Automatic train running is currently disabled
 #
