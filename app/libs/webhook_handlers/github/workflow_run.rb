@@ -1,5 +1,3 @@
-require "zip"
-
 class WebhookHandlers::Github::WorkflowRun
   Response = Struct.new(:status, :body)
   attr_reader :train, :payload, :release
@@ -25,7 +23,6 @@ class WebhookHandlers::Github::WorkflowRun
     transaction do
       finish_step_run
       upload_artifact
-      upload_artifact_build_channel
       notify
     end
 
@@ -39,22 +36,7 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   def upload_artifact
-    Releases::Step::UploadArtifact.perform_now(step_run.id, installation_id, artifacts_url)
-  end
-
-  def upload_artifact_build_channel
-    # FIXME: move to background job
-    app = train.app
-    step_run.reload
-    file = step_run.build_artifact.file.blob.open do |file|
-      Zip::File.open(file).glob("*.aab").first.get_input_stream
-    end
-    api = Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier,
-      file,
-      StringIO.new(app.integrations.build_channel_provider.json_key),
-      train.version_current)
-    api.upload
-    api.release
+    Releases::Step::UploadArtifact.perform_later(step_run.id, installation_id, artifacts_url)
   end
 
   def notify
