@@ -14,7 +14,7 @@ module Installations
     def initialize(package_name, apk_path, key_file, track_name)
       @package_name = package_name
       @apk_path = apk_path
-      @key_file = File.open(File.expand_path(key_file))
+      @key_file = key_file
       @track_name = track_name
       @errors = []
 
@@ -26,6 +26,7 @@ module Installations
       execute do
         edit = client.insert_edit(package_name)
         apk = client.upload_edit_bundle(package_name, edit.id, upload_source: apk_path, content_type: CONTENT_TYPE)
+        Rails.logger.info apk.version_code
         client.update_edit_track(package_name, edit.id, track_name, track(apk.version_code))
         client.commit_edit(package_name, edit.id)
       end
@@ -41,7 +42,7 @@ module Installations
 
     def execute
       yield if block_given?
-    rescue ::Google::Apis::Error => e
+    rescue ::Google::Apis::ServerError => e
       error =
         begin
           JSON.parse(e.body)

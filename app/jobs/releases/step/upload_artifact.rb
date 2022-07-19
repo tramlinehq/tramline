@@ -19,6 +19,7 @@ class Releases::Step::UploadArtifact < ApplicationJob
       build_artifact.file = blob
       build_artifact.save!
     end
+    Releases::Step::UploadToPlaystore.perform_later(step_run_id)
   end
 
   # FIXME: this is tied to github, but should be made generic eventually

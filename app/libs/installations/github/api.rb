@@ -94,6 +94,13 @@ module Installations
       end
     end
 
+    def artifact_filename(archive_download_url)
+      header = Down::Http.open(archive_download_url,
+        headers: {"Authorization" => "Bearer #{@client.access_token}"},
+        follow: {max_hops: 1}).data[:headers]["Content-Disposition"]
+      Down::Utils.filename_from_content_disposition(header)
+    end
+
     def artifact_io_stream(archive_download_url)
       # FIXME: return an IO stream instead of a TempFile
       # See issue: https://github.com/janko/down/issues/70

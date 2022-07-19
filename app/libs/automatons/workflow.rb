@@ -29,6 +29,8 @@ module Automatons
       else
         raise DispatchFailure, "Failed to kickoff the workflow!"
       end
+    rescue Octokit::UnprocessableEntity => e
+      DispatchFailure.new(e)
     end
 
     private

@@ -34,7 +34,9 @@ class SlackIntegration < ApplicationRecord
   end
 
   def channels
-    Installations::Slack::Api.new(oauth_access_token).list_channels
+    Installations::Slack::Api.new(oauth_access_token).list_channels.map do |chan|
+      ["#" + chan["name"], {chan["id"] => chan["name"]}]
+    end
   end
 
   def to_s
