@@ -81,6 +81,14 @@ class WebhookHandlers::Github::WorkflowRun
     payload[:workflow_run][:artifacts_url]
   end
 
+  def artifacts_name
+    installation.artifact_filename(artifacts_url)
+  end
+
+  def installation
+    @installation ||= Installations::Github::Api.new(installation)
+  end
+
   def installation_id
     @installation_id ||= train.ci_cd_provider.installation_id
   end

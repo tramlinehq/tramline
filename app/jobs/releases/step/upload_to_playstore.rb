@@ -9,7 +9,7 @@ class Releases::Step::UploadToPlaystore < ApplicationJob
     app = train.app
     step_run.build_artifact.file.blob.open do |zip_file|
       aab_file = Zip::File.open(zip_file).glob("*.{aab,apk,txt}").first
-      Tempfile.open(["playstore-artififact", ".aab"]) do |tmp|
+      Tempfile.open(["playstore-artifact", ".aab"]) do |tmp|
         aab_file.extract(tmp.path) { true }
         api = Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier,
           tmp,
