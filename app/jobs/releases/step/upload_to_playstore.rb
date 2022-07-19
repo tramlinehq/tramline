@@ -5,6 +5,7 @@ class Releases::Step::UploadToPlaystore < ApplicationJob
 
   def perform(step_run_id)
     step_run = Releases::Step::Run.find(step_run_id)
+    step = step_run.step
     train = step_run.step.train
     app = train.app
     step_run.build_artifact.file.blob.open do |zip_file|
@@ -14,7 +15,7 @@ class Releases::Step::UploadToPlaystore < ApplicationJob
         api = Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier,
           tmp,
           StringIO.new(app.integrations.build_channel_provider.json_key),
-          "internal")
+          step.build_artifact_channel.values.first)
         api.upload
       end
     end

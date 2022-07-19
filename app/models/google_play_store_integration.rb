@@ -5,6 +5,13 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   encrypts :json_key, deterministic: true
 
+  CHANNELS = {
+    production: "production",
+    open_testing: "open testing",
+    closed_testing: "closed testing",
+    internal_testing: "internal testing"
+  }
+
   def creatable?
     true
   end
@@ -15,5 +22,9 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def to_s
     "google_play_store"
+  end
+
+  def channels
+    CHANNELS.invert.map { |k, v| [k, {k => v}.to_json] }
   end
 end

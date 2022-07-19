@@ -49,6 +49,7 @@ class Releases::Train < ApplicationRecord
   delegate :vcs_provider, to: :integrations
   delegate :ci_cd_provider, to: :integrations
   delegate :notification_provider, to: :integrations
+  delegate :build_channel_provider, to: :integrations
 
   self.ignored_columns = [:signoff_enabled]
 

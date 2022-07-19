@@ -97,7 +97,7 @@ module Installations
     def artifact_filename(archive_download_url)
       header = Down::Http.open(archive_download_url,
         headers: {"Authorization" => "Bearer #{@client.access_token}"},
-        follow: {max_hops: 1}).data[:headers]['Content-Disposition']
+        follow: {max_hops: 1}).data[:headers]["Content-Disposition"]
       Down::Utils.filename_from_content_disposition(header)
     end
 
