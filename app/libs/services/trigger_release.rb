@@ -15,6 +15,7 @@ class Services::TriggerRelease
 
   def call
     return Response.new(false, "Cannot start a train that is inactive") if train.inactive?
+    return Response.new(false, "Can not start a new release before wrapping existing releases") if Releases::Train::Run.pending_release?
 
     if train.steps.empty?
       return Response.new(false,

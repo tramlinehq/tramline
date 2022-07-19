@@ -7,7 +7,7 @@ class Releases::Train::Run < ApplicationRecord
   has_many :steps, through: :step_runs
   has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
 
-  enum status: {on_track: "on_track", error: "error", finished: "finished"}
+  enum status: {on_track: "on_track", error: "error", post_release: "post_release", finished: "finished"}
 
   before_create :set_version
 
@@ -55,5 +55,9 @@ class Releases::Train::Run < ApplicationRecord
 
   def current_step
     steps.order(:step_number).last&.step_number
+  end
+
+  def self.pending_release?
+    self.class.exists?(status: [:post_release, :on_track])
   end
 end
