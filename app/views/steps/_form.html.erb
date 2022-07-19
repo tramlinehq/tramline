@@ -5,6 +5,12 @@
   </div>
 
   <div>
+    <%= form.label :build_artifact_integration, class: "block text-sm font-medium mb-1" %>
+    <%= form.select :build_artifact_integration, options_for_select(@step.train.build_channel_providers, @step.build_artifact_integration),
+      {class: "form-select"},  required: true,  data: { controller: "input-select" } %>
+  </div>
+
+  <div>
     <%= form.label :build_artifact_channel, class: "block text-sm font-medium mb-1" %>
     <%= form.select :build_artifact_channel,
                     options_for_select(@build_channels, @step.build_artifact_channel.to_json),

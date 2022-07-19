@@ -32,7 +32,7 @@ class StepsController < SignedInApplicationController
   def edit
     @step = Releases::Step.joins(train: :app).where(trains: {apps: {organization: current_organization}}).friendly.find(params[:id])
     @train = @step.train
-    @build_channels = @train.build_channel_provider.channels
+    @build_channels = @train.build_channel_providers.first.channels
     @ci_actions = @train.ci_cd_provider.workflows
   end
 
@@ -74,6 +74,7 @@ class StepsController < SignedInApplicationController
       :description,
       :build_artifact_channel,
       :ci_cd_channel,
+      :build_artifact_integration,
       :release_suffix
     )
   end
