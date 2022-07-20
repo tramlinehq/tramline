@@ -33,11 +33,11 @@ module Installations
     end
 
     def track(version_code)
-      ANDROID_PUBLISHER::Track.new(track: track_name, version_codes: [version_code], releases: [release])
+      ANDROID_PUBLISHER::Track.new(track: track_name, releases: [release])
     end
 
     def release
-      ANDROID_PUBLISHER::TrackRelease.new(name: "ueno", status: "draft")
+      ANDROID_PUBLISHER::TrackRelease.new(name: "ueno", status: "completed", version_codes: [version_code])
     end
 
     def execute

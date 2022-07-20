@@ -7,9 +7,9 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   CHANNELS = {
     production: "production",
-    open_testing: "open testing",
-    closed_testing: "closed testing",
-    internal_testing: "internal testing"
+    beta: "open testing",
+    alpha: "closed testing",
+    internal: "internal testing"
   }
 
   def creatable?

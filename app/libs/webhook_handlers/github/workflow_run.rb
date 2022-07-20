@@ -62,7 +62,7 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   def step_run
-    @step_run ||= release.step_runs.find_by(ci_ref: payload["workflow_run"]["id"])
+    @step_run ||= release.step_runs.on_track.last
   end
 
   def successful?

@@ -15,7 +15,7 @@ class Releases::Step::UploadToPlaystore < ApplicationJob
         aab_file.extract(tmp.path) { true }
         api = Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier,
           tmp,
-          StringIO.new(app.integrations.build_channel_provider.json_key),
+          StringIO.new(step.deployment_provider.providable.json_key),
           step.deployment_channel)
         api.upload
       end
