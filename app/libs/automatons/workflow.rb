@@ -30,7 +30,7 @@ module Automatons
       else
         raise DispatchFailure, "Failed to kickoff the workflow!"
       end
-    rescue NoMethodError => e
+    rescue NoMethodError
       # TODO handle this when the workflos linking is finished
     rescue Octokit::UnprocessableEntity => e
       DispatchFailure.new(e)
