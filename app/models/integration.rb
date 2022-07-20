@@ -61,10 +61,6 @@ class Integration < ApplicationRecord
     notification.first&.providable
   end
 
-  def self.build_channel_providers
-    build_channel.map(&:providable)
-  end
-
   def installation_state
     {
       organization_id: app.organization.id,
