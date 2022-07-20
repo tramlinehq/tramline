@@ -17,6 +17,7 @@ module Automatons
 
     def dispatch!
       if github_api.run_workflow!(code_repository, ci_cd_channel, ref, inputs)
+        sleep 1 # FIXME remove this
         last_workflow_run = github_api.workflow_runs(code_repository, ci_cd_channel, {
           branch: ref,
           event: "workflow_dispatch",
@@ -29,6 +30,8 @@ module Automatons
       else
         raise DispatchFailure, "Failed to kickoff the workflow!"
       end
+    rescue NoMethodError => e
+      # TODO handle this when the workflos linking is finished
     rescue Octokit::UnprocessableEntity => e
       DispatchFailure.new(e)
     end
