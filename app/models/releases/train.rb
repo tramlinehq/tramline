@@ -88,6 +88,12 @@ class Releases::Train < ApplicationRecord
     BRANCHING_STRATEGIES[branching_strategy.to_sym]
   end
 
+  def build_channel_integrations
+    app.integrations.build_channel.pluck(:providable_type).index_by do |integration|
+      integration.gsub("Integration", "").titleize
+    end
+  end
+
   private
 
   def semver_compatibility

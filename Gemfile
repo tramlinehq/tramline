@@ -71,3 +71,5 @@ group :test do
   gem "selenium-webdriver"
   gem "webdrivers"
 end
+
+gem "requestjs-rails", "~> 0.0.9"
