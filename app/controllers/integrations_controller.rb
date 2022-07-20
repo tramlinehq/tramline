@@ -31,11 +31,13 @@ class IntegrationsController < SignedInApplicationController
         combination[category] ||= []
 
         if existing_integration.exists?
-          combination[category] << existing_integration.first
-          next
+          existing_integration.each do |integration|
+            combination[category] << integration
+          end
+          next if Integration::MULTI_INTEGRATION_CATEGORIES.exclude?(category)
         end
 
-        providers.each do |provider|
+        (providers - existing_integration.pluck(:providable_type)).each do |provider|
           integration =
             @app
               .integrations

@@ -6,5 +6,6 @@ FactoryBot.define do
     ci_cd_channel { Faker::Lorem.word }
     build_artifact_channel { Faker::Lorem.word }
     release_suffix { "qa-staging" }
+    build_artifact_integration { "SlackIntegration" }
   end
 end

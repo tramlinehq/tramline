@@ -23,6 +23,8 @@ class Integration < ApplicationRecord
     build_channel: "See where your release stands."
   }.freeze
 
+  MULTI_INTEGRATION_CATEGORIES = ["build_channel"]
+
   enum category: LIST.keys.zip(LIST.keys).to_h
 
   enum status: {
@@ -57,10 +59,6 @@ class Integration < ApplicationRecord
 
   def self.notification_provider
     notification.first&.providable
-  end
-
-  def self.build_channel_provider
-    build_channel.first&.providable
   end
 
   def installation_state

@@ -49,7 +49,6 @@ class Releases::Train < ApplicationRecord
   delegate :vcs_provider, to: :integrations
   delegate :ci_cd_provider, to: :integrations
   delegate :notification_provider, to: :integrations
-  delegate :build_channel_provider, to: :integrations
 
   self.ignored_columns = [:signoff_enabled]
 
@@ -86,6 +85,12 @@ class Releases::Train < ApplicationRecord
 
   def branching_strategy_name
     BRANCHING_STRATEGIES[branching_strategy.to_sym]
+  end
+
+  def build_channel_integrations
+    app.integrations.build_channel.pluck(:providable_type).index_by do |integration|
+      integration.gsub("Integration", "").titleize
+    end
   end
 
   private

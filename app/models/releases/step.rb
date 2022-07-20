@@ -65,4 +65,12 @@ class Releases::Step < ApplicationRecord
   def signed_previous_step?
     previous.runs.last.signed?
   end
+
+  def available_deployment_channels
+    train.app.integrations.build_channel.find_by(providable_type: build_artifact_integration).providable.channels
+  end
+
+  def deployment_channel
+    build_artifact_channels.values.first
+  end
 end
