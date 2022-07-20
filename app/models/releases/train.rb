@@ -93,6 +93,10 @@ class Releases::Train < ApplicationRecord
     end
   end
 
+  def final_deployment_channel
+    steps.order(:step_number).last.build_artifact_integration.gsub("Integration", "").titleize
+  end
+
   private
 
   def semver_compatibility

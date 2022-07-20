@@ -13,7 +13,7 @@ module Automatons
 
     def dispatch!
       TestMailer
-        .with(user_id: user.id, was_run_at: Time.now, train_name: train.name)
+        .with(user_id: user.id, was_run_at: Time.zone.now, train_name: train.name)
         .verify
         .deliver_now
     end
