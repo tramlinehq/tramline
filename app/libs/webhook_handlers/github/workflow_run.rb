@@ -36,9 +36,7 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   def upload_artifact
-    if step_run.step.build_artifact_integration == 'GooglePlayStoreIntegration'
-      Releases::Step::UploadArtifact.perform_later(step_run.id, installation_id, artifacts_url)
-    end
+    Releases::Step::UploadArtifact.perform_later(step_run.id, installation_id, artifacts_url)
   end
 
   def notify
