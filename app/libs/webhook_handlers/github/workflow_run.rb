@@ -35,7 +35,7 @@ class WebhookHandlers::Github::WorkflowRun
   private
 
   def add_step_run_meta_data
-    step_run.update!(ci_ref: payload[:id], ci_link: payload[:html_url])
+    step_run.update!(ci_ref: payload[:workflow_run][:id], ci_link: payload[:workflow_run][:html_url])
   end
 
   def finish_step_run
