@@ -11,10 +11,10 @@ module Services
     end
 
     def call
-      step.train.bump_version!(:patch)
       release.update(release_version: step.train.version_current)
       build_version = release.release_version + "-" + step.release_suffix
-      step_run = release.step_runs.create!(step:, scheduled_at: Time.current, status: "on_track", commit: commit, build_version:)
+      build_number = step.train.app.bump_build_number!.to_s
+      step_run = release.step_runs.create!(step:, scheduled_at: Time.current, status: "on_track", commit:, build_version:, build_number:)
       step_run.automatons!
     end
 

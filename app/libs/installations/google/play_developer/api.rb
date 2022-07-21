@@ -9,7 +9,7 @@ module Installations
 
     CONTENT_TYPE = "application/octet-stream".freeze
 
-    attr_reader :package_name, :apk_path, :key_file, :track_name, :client
+    attr_reader :package_name, :apk_path, :key_file, :track_name, :client, :errors
 
     def initialize(package_name, apk_path, key_file, track_name)
       @package_name = package_name
@@ -33,16 +33,16 @@ module Installations
     end
 
     def track(version_code)
-      ANDROID_PUBLISHER::Track.new(track: track_name, version_codes: [version_code], releases: [release])
+      ANDROID_PUBLISHER::Track.new(track: track_name, releases: [release(version_code)])
     end
 
-    def release
-      ANDROID_PUBLISHER::TrackRelease.new(name: "ueno", status: "draft")
+    def release(version_code)
+      ANDROID_PUBLISHER::TrackRelease.new(name: "ueno", status: "completed", version_codes: [version_code])
     end
 
     def execute
       yield if block_given?
-    rescue ::Google::Apis::ServerError => e
+    rescue ::Google::Apis::ServerError, ::Google::Apis::ClientError => e
       error =
         begin
           JSON.parse(e.body)

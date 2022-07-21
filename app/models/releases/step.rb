@@ -70,7 +70,11 @@ class Releases::Step < ApplicationRecord
     train.app.integrations.build_channel.find_by(providable_type: build_artifact_integration).providable.channels
   end
 
+  def deployment_provider
+    train.app.integrations.build_channel.find_by(providable_type: build_artifact_integration)
+  end
+
   def deployment_channel
-    build_artifact_channels.values.first
+    build_artifact_channel.values.first
   end
 end

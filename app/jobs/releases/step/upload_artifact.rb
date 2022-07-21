@@ -1,6 +1,7 @@
 class Releases::Step::UploadArtifact < ApplicationJob
   queue_as :high
   sidekiq_options retry: false
+  VERSION_ARTIFACT_NAME = "version"
 
   delegate :transaction, to: ApplicationRecord
 
@@ -40,6 +41,9 @@ class Releases::Step::UploadArtifact < ApplicationJob
   end
 
   def archive_download_url(installation_id, artifacts_url)
-    Installations::Github::Api.new(installation_id).artifacts(artifacts_url).first["archive_download_url"]
+    Installations::Github::Api.new(installation_id)
+      .artifacts(artifacts_url)
+      .reject { |artifact| artifact["name"] == VERSION_ARTIFACT_NAME }
+      .first["archive_download_url"]
   end
 end

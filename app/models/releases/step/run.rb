@@ -10,6 +10,7 @@ class Releases::Step::Run < ApplicationRecord
 
   validates :train_step_id, uniqueness: {scope: :releases_commit_id}
   validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
+  validates :build_number, uniqueness: {scope: [:train_run_id]}
 
   enum status: {on_track: "on_track", halted: "halted", finished: "finished"}
 
