@@ -11,7 +11,6 @@ module Services
     end
 
     def call
-      step.train.bump_version!(:patch)
       release.update(release_version: step.train.version_current)
       build_version = release.release_version + "-" + step.release_suffix
       build_number = step.train.app.bump_build_number!.to_s

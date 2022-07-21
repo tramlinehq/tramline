@@ -23,6 +23,7 @@ class WebhookHandlers::Github::WorkflowRun
     return Response.new(:accepted) if step_run.blank?
 
     transaction do
+      add_step_run_meta_data
       finish_step_run
       upload_artifact
       notify
@@ -32,6 +33,10 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   private
+
+  def add_step_run_meta_data
+    step_run.update!(ci_ref: payload[:id], ci_link: payload[:html_url])
+  end
 
   def finish_step_run
     step_run.wrap_up_run!
