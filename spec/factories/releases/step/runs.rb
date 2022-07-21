@@ -7,5 +7,6 @@ FactoryBot.define do
     association :train_run, factory: :releases_train_run
     scheduled_at { Time.current }
     status { "on_track" }
+    build_number { 123 }
   end
 end
