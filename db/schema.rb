@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_07_19_132108) do
+ActiveRecord::Schema[7.0].define(version: 2022_07_21_013249) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -255,6 +255,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_07_19_132108) do
     t.string "build_version", null: false
     t.string "ci_ref"
     t.string "ci_link"
+    t.string "build_number", null: false
     t.index ["previous_step_run_id"], name: "index_train_step_runs_on_previous_step_run_id"
     t.index ["releases_commit_id"], name: "index_train_step_runs_on_releases_commit_id"
     t.index ["train_run_id"], name: "index_train_step_runs_on_train_run_id"

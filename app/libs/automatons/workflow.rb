@@ -20,8 +20,6 @@ module Automatons
       else
         raise DispatchFailure, "Failed to kickoff the workflow!"
       end
-    rescue NoMethodError
-      # TODO handle this when the workflos linking is finished
     rescue Octokit::UnprocessableEntity => e
       DispatchFailure.new(e)
     end
@@ -30,7 +28,7 @@ module Automatons
 
     def inputs
       {
-        versionCode: step.app.bump_build_number!.to_s,
+        versionCode: step_run.build_number,
         versionName: step_run.build_version
       }
     end

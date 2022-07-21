@@ -18,6 +18,7 @@ class Releases::Step::UploadToPlaystore < ApplicationJob
           StringIO.new(step.deployment_provider.providable.json_key),
           step.deployment_channel)
         api.upload
+        raise api.errors if api.errors.present?
       end
     end
   end

@@ -1,3 +1,5 @@
+require "zip"
+
 class WebhookHandlers::Github::WorkflowRun
   Response = Struct.new(:status, :body)
   attr_reader :train, :payload, :release
@@ -62,7 +64,18 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   def step_run
-    @step_run ||= release.step_runs.on_track.last
+    @step_run ||= begin
+      version_zip = installation.artifact_io_stream(version_artifact_url)
+
+      build_number = Zip::File.open(version_zip).entries.first.get_input_stream.read.strip
+      release.step_runs.on_track.find_by(build_number: build_number)
+    end
+  end
+
+  def version_artifact_url
+    installation
+      .artifacts(artifacts_url)
+      .find { |artifact| artifact["name"] == "version" }["archive_download_url"]
   end
 
   def successful?
@@ -86,7 +99,7 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   def installation
-    @installation ||= Installations::Github::Api.new(installation)
+    @installation ||= Installations::Github::Api.new(installation_id)
   end
 
   def installation_id
