@@ -16,7 +16,8 @@ class Releases::Step::UploadToPlaystore < ApplicationJob
         api = Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier,
           tmp,
           StringIO.new(step.deployment_provider.providable.json_key),
-          step.deployment_channel)
+          step.deployment_channel,
+          step_run.train_run.release_version)
         api.upload
         raise api.errors if api.errors.present?
       end

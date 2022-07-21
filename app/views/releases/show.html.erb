@@ -42,8 +42,14 @@
             <% unless step.last? %>
               <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
             <% end %>
-            <% if step_run&.signed? %>
+            <% if step_run&.signed? && step_run.finished? %>
             <div class="absolute left-0 rounded-full bg-indigo-500" aria-hidden="true">
+                <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
+                    <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"></path>
+                </svg>
+            </div>
+          <% elsif step_run&.on_track? %>
+            <div class="absolute left-0 rounded-full bg-slate-500" aria-hidden="true">
                 <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
                     <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"></path>
                 </svg>
