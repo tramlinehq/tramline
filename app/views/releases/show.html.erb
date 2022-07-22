@@ -68,7 +68,7 @@
         <% if @release.on_track? && step.startable? %>
           <%= button_to 'start', start_release_step_run_path(@release, step), { class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' } %>
         <% end %>
-        <% if step_run&.finished? %>
+        <% if @release.on_track? &&  step_run&.finished? %>
         <div class="flex flex-col">
           <% @train.sign_off_groups.each do |group| %>
             <div class="flex ml-10">
@@ -90,6 +90,9 @@
       </li>
     <% end %>
     </ul>
+    <% if @release.on_track? && @release.signed? && @release.finished_steps? %>
+      <%= button_to "post release", post_release_app_train_releases_path(@app, @train) %>
+    <% end %>
   </div>
   <hr class="bg-gradient-to-r">
   <h2 class="font-bold text-lg">Builds</h2>

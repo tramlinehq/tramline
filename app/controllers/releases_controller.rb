@@ -32,6 +32,20 @@ class ReleasesController < SignedInApplicationController
     redirect_to app_train_path(@release.train.app, @release.train), notice: "Release marked as finished"
   end
 
+  def post_release
+    @app = current_organization.apps.friendly.find(params[:app_id])
+    @train = @app.trains.friendly.find(params[:train_id])
+    @release = @train.active_run
+
+    if @release.finished_steps?
+      # TODO move to background job
+      @train_run.perform_post_release!
+      redirect_back fallback_location: root_path, notice: "Performing post release steps" 
+    else
+      redirect_back fallback_location: root_path, notice: "Train is still running" 
+    end
+  end
+
   private
 
   def set_release
