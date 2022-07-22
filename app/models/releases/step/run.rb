@@ -2,6 +2,8 @@ class Releases::Step::Run < ApplicationRecord
   has_paper_trail
   self.implicit_order_column = :created_at
 
+  self.ignored_columns = [:previous_step_run_id]
+
   has_one :build_artifact, foreign_key: :train_step_runs_id, inverse_of: :step_run, dependent: :destroy
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :runs
   belongs_to :train_run, class_name: "Releases::Train::Run"
@@ -31,6 +33,8 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def signed?
+    return true unless sign_required?
+
     train.sign_off_groups.all? do |group|
       step.sign_offs.exists?(sign_off_group: group, signed: true, commit: commit)
     end

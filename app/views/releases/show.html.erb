@@ -68,12 +68,15 @@
         <% if @release.on_track? && step.startable? %>
           <%= button_to 'start', start_release_step_run_path(@release, step), { class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' } %>
         <% end %>
+        <% if step_run&.finished? %>
         <div class="flex flex-col">
           <% @train.sign_off_groups.each do |group| %>
             <div class="flex ml-10">
             <%= group.name %>
-            <% if step.sign_offs.exists?(sign_off_group: group, signed: true, commit: step_run&.commit) %>
+            <% if !step_run&.sign_required? || step.sign_offs.exists?(sign_off_group: group, signed: true, commit: step_run&.commit) %>
               Step has been approved
+            <% elsif step.sign_offs.exists?(sign_off_group: group, signed: false, commit: step_run&.commit) %>
+              Step has been rejected
             <% else %>
               <div class="flex ml-10">
                <%= button_to "reject", step_sign_off_path(step), params: { sign_off_group_id: group.id, commit_id: step_run&.commit }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"', method: :delete %>
@@ -83,6 +86,7 @@
             </div>
           <% end %>
         </div>
+      <% end %>
       </li>
     <% end %>
     </ul>
