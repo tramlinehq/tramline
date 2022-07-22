@@ -40,9 +40,9 @@ class ReleasesController < SignedInApplicationController
     if @release.finished_steps?
       # TODO move to background job
       @train_run.perform_post_release!
-      redirect_back fallback_location: root_path, notice: "Performing post release steps" 
+      redirect_back fallback_location: root_path, notice: "Performing post release steps"
     else
-      redirect_back fallback_location: root_path, notice: "Train is still running" 
+      redirect_back fallback_location: root_path, notice: "Train is still running"
     end
   end
 
