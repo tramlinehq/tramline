@@ -10,7 +10,7 @@ For local development on macOS, clone this repository and run the included setup
 bin/setup.mac
 ```
 
-Note: If you already have a previous dev environment that you're trying to refresh, the easiest to do is to drop your database and run setup again.
+Note: If you already have a previous dev environment that you're trying to refresh, the easiest thing to do is to drop your database and run setup again.
 
 ```bash
 rails db:drop
