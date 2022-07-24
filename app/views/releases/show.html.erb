@@ -35,7 +35,7 @@
   </div>
   <div class="flex flex-col">
     <ul>
-    <% @train.steps.order(:step_number).each do |step| %>
+    <% @train.steps.order(:step_number).includes(:train, :runs).each do |step| %>
       <% step_run = @release.last_run_for(step) %>
       <li class="relative py-2">
         <div class="flex items-center mb-1">
@@ -96,7 +96,7 @@
   </div>
   <hr class="bg-gradient-to-r">
   <h2 class="font-bold text-lg">Builds</h2>
-  <% @release.commits.order(created_at: :desc).each do |commit| %>
+  <% @release.commits.order(created_at: :desc).includes(step_runs: :step).each do |commit| %>
   <div class="flex">
     <div class="mr-2">
       <%= link_to commit.commit_hash[0, 5], commit.url %>
@@ -106,7 +106,7 @@
     </div>
     <div class="px-4">
       <% commit.step_runs.each do |step_run| %>
-        <br/>
+        <br>
         <%= step_run.step.name %>
         <%= step_run.build_version %>
         <%= step_run.signed? ? "✅" : "❌" %>

@@ -14,6 +14,8 @@ class Releases::Step::Run < ApplicationRecord
   validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
   validates :build_number, uniqueness: {scope: [:train_run_id]}
 
+  after_create :reset_signed!
+
   enum status: {on_track: "on_track", halted: "halted", finished: "finished"}
 
   attr_accessor :current_user
@@ -32,7 +34,11 @@ class Releases::Step::Run < ApplicationRecord
     train_run.perform_post_release! if step.last?
   end
 
-  def signed?
+  def reset_signed!
+    update!(signed: is_signed?)
+  end
+
+  def is_signed?
     return true unless sign_required?
 
     train.sign_off_groups.all? do |group|
