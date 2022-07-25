@@ -3,6 +3,8 @@ class Releases::Train < ApplicationRecord
   using RefinedString
   extend FriendlyId
 
+  self.implicit_order_column = :created_at
+
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
     release_backmerge: "Release Backmerge",
@@ -74,8 +76,10 @@ class Releases::Train < ApplicationRecord
   end
 
   def bump_version!(element = :minor)
-    self.version_current = version_current.semver_bump(element)
-    save!
+    if runs.any?
+      self.version_current = version_current.semver_bump(element)
+      save!
+    end
     version_current
   end
 

@@ -28,7 +28,7 @@ class WebhookHandlers::Github::Push
             author_email: commit["author"]["email"],
             url: commit["url"])
 
-          train.bump_version!(:patch)
+          train.bump_version!(:patch) if release.step_runs.any?
 
           if release
             current_step = release.current_step || 1
