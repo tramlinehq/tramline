@@ -36,7 +36,7 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def reset_approval!
-    if !sign_required? 
+    if !sign_required?
       approval_approved!
     elsif is_approved?
       approval_approved!
@@ -62,11 +62,11 @@ class Releases::Step::Run < ApplicationRecord
   def approval_emoji
     case approval_status
     when "approved"
-      return "✅"
+      "✅"
     when "rejected"
-      return "❌"
+      "❌"
     when "pending"
-      return "⌛"
+      "⌛"
     end
   end
 end

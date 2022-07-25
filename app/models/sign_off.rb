@@ -10,7 +10,7 @@ class SignOff < ApplicationRecord
     commit.step_runs.find_by(step: step)
   end
 
-  def reset_signed!
+  def reset_approval!
     step_run&.reset_approval!
   end
 end
