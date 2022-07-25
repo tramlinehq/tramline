@@ -41,7 +41,7 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def train
-    @train ||= Releases::Train.find_by(id: params[:train_id])
+    @train ||= Releases::Train.find(params[:train_id])
   end
 
   def workflow_payload
