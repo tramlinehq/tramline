@@ -13,6 +13,7 @@ class Services::PostRelease
       update_status
       create_tag
       merge_prs
+      release.finished!
     end
 
     private

@@ -12,7 +12,7 @@ class Services::PostRelease
     def call
       update_status
       create_tag
-      release.update(status: Releases::Step::Run.statuses[:finished])
+      release.finished!
     end
 
     private
