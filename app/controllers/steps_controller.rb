@@ -33,6 +33,7 @@ class StepsController < SignedInApplicationController
     @step = Releases::Step.joins(train: :app).where(trains: {apps: {organization: current_organization}}).friendly.find(params[:id])
     @train = @step.train
     @build_channels = @step.available_deployment_channels
+
     @ci_actions = @train.ci_cd_provider.workflows
   end
 
@@ -55,7 +56,11 @@ class StepsController < SignedInApplicationController
     train = Releases::Train.friendly.find(params[:train_id])
     provider = params[:provider]
 
-    @build_channels = train.app.integrations.build_channel.find_by(providable_type: provider).providable.channels
+    @build_channels = if provider == "external" # TODO: Have a better abstraction instead of if conditions
+      {"external" => "external"}
+    else
+      train.app.integrations.build_channel.find_by(providable_type: provider).providable.channels
+    end
     respond_to do |format|
       format.turbo_stream
     end
