@@ -29,7 +29,7 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def wrap_up_run!
-    self.status = Releases::Step::Run.statuses[:post_release]
+    self.status = Releases::Step::Run.statuses[:finished]
     save!
 
     train_run.perform_post_release! if step.last?

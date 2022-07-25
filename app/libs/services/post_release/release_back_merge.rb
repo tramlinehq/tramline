@@ -10,10 +10,9 @@ class Services::PostRelease
     end
 
     def call
-      update_status
       merge_prs
       create_tag
-      release.finished!
+      update_status
     end
 
     private
