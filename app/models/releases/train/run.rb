@@ -11,14 +11,6 @@ class Releases::Train::Run < ApplicationRecord
 
   before_create :set_version
 
-  def last_running_step
-    step_runs.on_track.last
-  end
-
-  def last_run_step
-    step_runs.finished.last
-  end
-
   def next_step
     return train.steps.first if step_runs.empty?
 
@@ -55,5 +47,13 @@ class Releases::Train::Run < ApplicationRecord
 
   def current_step
     steps.order(:step_number).last&.step_number
+  end
+
+  def finished_steps?
+    steps.order(:step_number).last == train.steps.last
+  end
+
+  def signed?
+    last_run_for(train.steps.last)&.approval_approved?
   end
 end

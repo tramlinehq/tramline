@@ -57,6 +57,7 @@ group :development, :test do
   gem "pry"
   gem "brakeman", "~> 5.2", require: false
   gem "bundler-audit", "~> 0.9.1", require: false
+  gem "bullet"
 end
 
 group :development do

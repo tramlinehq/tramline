@@ -35,14 +35,14 @@
   </div>
   <div class="flex flex-col">
     <ul>
-    <% @train.steps.order(:step_number).each do |step| %>
+    <% @train.steps.order(:step_number).includes(:train, :runs).each do |step| %>
       <% step_run = @release.last_run_for(step) %>
       <li class="relative py-2">
         <div class="flex items-center mb-1">
             <% unless step.last? %>
               <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
             <% end %>
-            <% if step_run&.signed? && step_run.finished? %>
+            <% if step_run&.approval_approved? && step_run.finished? %>
             <div class="absolute left-0 rounded-full bg-indigo-500" aria-hidden="true">
                 <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
                     <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"></path>
@@ -68,41 +68,59 @@
         <% if @release.on_track? && step.startable? %>
           <%= button_to 'start', start_release_step_run_path(@release, step), { class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' } %>
         <% end %>
+        <% if @release.on_track? &&  step_run&.finished? %>
         <div class="flex flex-col">
-          <% @train.sign_off_groups.each do |group| %>
-            <div class="flex ml-10">
-            <%= group.name %>
-            <% if step.sign_offs.exists?(sign_off_group: group, signed: true, commit: step_run&.commit) %>
-              Step has been approved
-            <% else %>
+          <% if step_run.approval_approved? %>
+            <span>This step has been approved</span>
+          <% elsif step_run.approval_rejected? %>
+            <span>This step has been rejected</span>
+          <% else %>
+            <% @train.sign_off_groups.each do |group| %>
               <div class="flex ml-10">
-               <%= button_to "reject", step_sign_off_path(step), params: { sign_off_group_id: group.id, commit_id: step_run&.commit }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"', method: :delete %>
-               <%= button_to "approve", step_sign_off_path(step), params: { sign_off_group_id: group.id, commit_id: step_run&.commit }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"' %>
-               </div>
-              <% end %>
-            </div>
+              <%= group.name %>
+              <% if !step_run&.sign_required? || step.sign_offs.exists?(sign_off_group: group, signed: true, commit: step_run&.commit) %>
+                Step has been approved
+              <% elsif step.sign_offs.exists?(sign_off_group: group, signed: false, commit: step_run&.commit) %>
+                Step has been rejected
+              <% else %>
+                <div class="flex ml-10">
+                 <%= button_to "reject", step_sign_off_path(step), params: { sign_off_group_id: group.id, commit_id: step_run&.commit }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"', method: :delete %>
+                 <%= button_to "approve", step_sign_off_path(step), params: { sign_off_group_id: group.id, commit_id: step_run&.commit }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"' %>
+                 </div>
+                <% end %>
+              </div>
+            <% end %>
           <% end %>
         </div>
+      <% end %>
       </li>
     <% end %>
     </ul>
+    <% if @release.on_track? && @release.signed? && @release.finished_steps? %>
+      <%= button_to "post release", post_release_app_train_releases_path(@app, @train) %>
+    <% end %>
   </div>
   <hr class="bg-gradient-to-r">
   <h2 class="font-bold text-lg">Builds</h2>
-  <% @release.commits.order(created_at: :desc).each do |commit| %>
+  <% commits_count = @release.commits.size %>
+  <% @release.commits.order(created_at: :desc).includes(step_runs: :step).each_with_index do |commit, index| %>
   <div class="flex">
-    <div class="mr-2">
+    <div class="w-1/6">
+      <%= commits_count - index %>
+    </div>
+    <div class="w-1/6">
       <%= link_to commit.commit_hash[0, 5], commit.url %>
     </div>
-    <div class="">
+    <div class="w-2/6">
       <%= commit.message %>
     </div>
-    <div class="px-4">
-      <% commit.step_runs.each do |step_run| %>
-        <br/>
-        <%= step_run.step.name %>
-        <%= step_run.build_version %>
-        <%= step_run.signed? ? "✅" : "❌" %>
+    <div class="flex flex-col w-2/6">
+      <% commit.step_runs.each_with_index do |step_run| %>
+        <div>
+          <span><%= step_run.step.name %> </span>
+          <span class="float-right"> <%= step_run.build_version %>
+          <%= step_run.approval_emoji %> </span>
+        </div>
       <% end %>
     </div>
   </div>
