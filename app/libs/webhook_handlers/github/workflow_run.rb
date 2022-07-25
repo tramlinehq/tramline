@@ -1,3 +1,5 @@
+require "zip"
+
 class WebhookHandlers::Github::WorkflowRun
   Response = Struct.new(:status, :body)
   attr_reader :train, :payload, :release
@@ -21,6 +23,7 @@ class WebhookHandlers::Github::WorkflowRun
     return Response.new(:accepted) if step_run.blank?
 
     transaction do
+      add_step_run_meta_data
       finish_step_run
       upload_artifact
       notify
@@ -30,6 +33,10 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   private
+
+  def add_step_run_meta_data
+    step_run.update!(ci_ref: payload[:workflow_run][:id], ci_link: payload[:workflow_run][:html_url])
+  end
 
   def finish_step_run
     step_run.wrap_up_run!
@@ -62,11 +69,22 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   def step_run
-    @step_run ||= release.step_runs.find_by(ci_ref: payload["workflow_run"]["id"])
+    @step_run ||= begin
+      version_zip = installation.artifact_io_stream(version_artifact_url)
+
+      build_number = Zip::File.open(version_zip).entries.first.get_input_stream.read.strip
+      release.step_runs.on_track.find_by(build_number: build_number)
+    end
+  end
+
+  def version_artifact_url
+    installation
+      .artifacts(artifacts_url)
+      .find { |artifact| artifact["name"] == "version" }["archive_download_url"]
   end
 
   def successful?
-    payload_status == "completed" && payload_conclusion == "success"
+    complete_action? || payload_status == "completed" && payload_conclusion == "success"
   end
 
   def payload_status
@@ -81,12 +99,17 @@ class WebhookHandlers::Github::WorkflowRun
     payload[:workflow_run][:artifacts_url]
   end
 
+  # TODO Workaround as it seems that github's status field is not consistent
+  def complete_action?
+    payload[:action] == "completed"
+  end
+
   def artifacts_name
     installation.artifact_filename(artifacts_url)
   end
 
   def installation
-    @installation ||= Installations::Github::Api.new(installation)
+    @installation ||= Installations::Github::Api.new(installation_id)
   end
 
   def installation_id

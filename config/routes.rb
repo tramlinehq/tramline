@@ -49,6 +49,9 @@ Rails.application.routes.draw do
       end
       resources :steps, only: %i[new create edit update], shallow: true do
         resource :sign_off, only: %i[create destroy]
+        collection do
+          get :build_artifact_channels
+        end
       end
 
       resources :releases, only: %i[show create destroy], shallow: true do
@@ -60,6 +63,7 @@ Rails.application.routes.draw do
         end
         collection do
           get :live_release
+          post :post_release
         end
       end
     end

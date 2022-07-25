@@ -3,6 +3,8 @@ class Releases::Train < ApplicationRecord
   using RefinedString
   extend FriendlyId
 
+  self.implicit_order_column = :created_at
+
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
     release_backmerge: "Release Backmerge",
@@ -49,7 +51,6 @@ class Releases::Train < ApplicationRecord
   delegate :vcs_provider, to: :integrations
   delegate :ci_cd_provider, to: :integrations
   delegate :notification_provider, to: :integrations
-  delegate :build_channel_provider, to: :integrations
 
   self.ignored_columns = [:signoff_enabled]
 
@@ -75,8 +76,10 @@ class Releases::Train < ApplicationRecord
   end
 
   def bump_version!(element = :minor)
-    self.version_current = version_current.semver_bump(element)
-    save!
+    if runs.any?
+      self.version_current = version_current.semver_bump(element)
+      save!
+    end
     version_current
   end
 
@@ -86,6 +89,16 @@ class Releases::Train < ApplicationRecord
 
   def branching_strategy_name
     BRANCHING_STRATEGIES[branching_strategy.to_sym]
+  end
+
+  def build_channel_integrations
+    app.integrations.build_channel.pluck(:providable_type).index_by do |integration|
+      integration.gsub("Integration", "").titleize
+    end
+  end
+
+  def final_deployment_channel
+    steps.order(:step_number).last.build_artifact_integration.gsub("Integration", "").titleize
   end
 
   private

@@ -9,14 +9,17 @@ class Releases::Step::UploadToPlaystore < ApplicationJob
     train = step_run.step.train
     app = train.app
     step_run.build_artifact.file.blob.open do |zip_file|
+      # FIXME This is an expensive operation, we should be unzipping the artifacts before pushing to object store
       aab_file = Zip::File.open(zip_file).glob("*.{aab,apk,txt}").first
       Tempfile.open(["playstore-artifact", ".aab"]) do |tmp|
         aab_file.extract(tmp.path) { true }
         api = Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier,
           tmp,
-          StringIO.new(app.integrations.build_channel_provider.json_key),
-          step.build_artifact_channel.values.first)
+          StringIO.new(step.deployment_provider.providable.json_key),
+          step.deployment_channel,
+          step_run.train_run.release_version)
         api.upload
+        raise api.errors if api.errors.present?
       end
     end
   end

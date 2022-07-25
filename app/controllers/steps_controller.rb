@@ -32,7 +32,7 @@ class StepsController < SignedInApplicationController
   def edit
     @step = Releases::Step.joins(train: :app).where(trains: {apps: {organization: current_organization}}).friendly.find(params[:id])
     @train = @step.train
-    @build_channels = @train.build_channel_provider.channels
+    @build_channels = @step.available_deployment_channels
     @ci_actions = @train.ci_cd_provider.workflows
   end
 
@@ -43,10 +43,21 @@ class StepsController < SignedInApplicationController
     if @step.update(parsed_step_params)
       redirect_to edit_app_train_path(@app, @train), notice: "Step was successfully updated."
     else
-      @build_channels = @train.build_channel_provider.channels
+      @build_channels = @step.available_deployment_channels
       @ci_actions = @train.ci_cd_provider.workflows
 
       render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def build_artifact_channels
+    @step = Releases::Step.find_by(id: params[:step_id]) || Releases::Step.new
+    train = Releases::Train.friendly.find(params[:train_id])
+    provider = params[:provider]
+
+    @build_channels = train.app.integrations.build_channel.find_by(providable_type: provider).providable.channels
+    respond_to do |format|
+      format.turbo_stream
     end
   end
 
@@ -74,6 +85,7 @@ class StepsController < SignedInApplicationController
       :description,
       :build_artifact_channel,
       :ci_cd_channel,
+      :build_artifact_integration,
       :release_suffix
     )
   end

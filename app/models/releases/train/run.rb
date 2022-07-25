@@ -11,14 +11,6 @@ class Releases::Train::Run < ApplicationRecord
 
   before_create :set_version
 
-  def last_running_step
-    step_runs.on_track.last
-  end
-
-  def last_run_step
-    step_runs.finished.last
-  end
-
   def next_step
     return train.steps.first if step_runs.empty?
 
@@ -46,7 +38,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def last_commit
-    commits.last
+    commits.order(:created_at).last
   end
 
   def last_run_for(step)
@@ -58,6 +50,14 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def self.pending_release?
-    self.class.exists?(status: [:post_release, :on_track])
+    self.exists?(status: [:post_release, :on_track])
+   end
+    
+  def finished_steps?
+    steps.order(:step_number).last == train.steps.last
+  end
+
+  def signed?
+    last_run_for(train.steps.last)&.approval_approved?
   end
 end

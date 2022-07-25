@@ -28,13 +28,17 @@ class WebhookHandlers::Github::Push
             author_email: commit["author"]["email"],
             url: commit["url"])
 
+          train.bump_version!(:patch) if release.step_runs.any?
+
           if release
             current_step = release.current_step || 1
 
-            train.steps.where("step_number <= ?", current_step).each do |step|
-              next if train.sign_off_groups.exists? && release.last_run_for(step)&.signed?
-
-              Services::TriggerStepRun.call(step, commit_record)
+            train.steps.where("step_number <= ?", current_step).order("step_number").each do |step|
+              if step.step_number < current_step
+                Services::TriggerStepRun.call(step, commit_record, false)
+              else
+                Services::TriggerStepRun.call(step, commit_record)
+              end
             end
           end
           release.update(release_version: train.version_current)

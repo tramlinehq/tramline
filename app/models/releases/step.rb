@@ -59,10 +59,22 @@ class Releases::Step < ApplicationRecord
     return false if train.active_run.nil?
     return false if first?
 
-    (train.active_run&.next_step == self) && (signed_previous_step? && previous.runs.last.finished?)
+    (train.active_run&.next_step == self) && (approved_previous_step? && previous.runs.last.finished?)
   end
 
-  def signed_previous_step?
-    previous.runs.last.signed?
+  def approved_previous_step?
+    previous.runs.last.approval_approved?
+  end
+
+  def available_deployment_channels
+    train.app.integrations.build_channel.find_by(providable_type: build_artifact_integration).providable.channels
+  end
+
+  def deployment_provider
+    train.app.integrations.build_channel.find_by(providable_type: build_artifact_integration)
+  end
+
+  def deployment_channel
+    build_artifact_channel.values.first
   end
 end

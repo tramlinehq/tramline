@@ -3,7 +3,7 @@ class Releases::StepRunsController < SignedInApplicationController
 
   def start
     step = @release.train.steps.friendly.find(params[:id])
-    commit = @release.commits.last
+    commit = @release.last_commit
     Services::TriggerStepRun.call(step, commit)
     redirect_back fallback_location: root_path, notice: "Step successfully started"
   end

@@ -46,6 +46,7 @@ gem "google-cloud-storage", "~> 1.37"
 gem "down", "~> 5.3"
 gem "faraday-retry", "~> 2.0"
 gem "rubyzip", "~> 2.3"
+gem "requestjs-rails", "~> 0.0.9"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
@@ -56,6 +57,7 @@ group :development, :test do
   gem "pry"
   gem "brakeman", "~> 5.2", require: false
   gem "bundler-audit", "~> 0.9.1", require: false
+  gem "bullet"
 end
 
 group :development do
