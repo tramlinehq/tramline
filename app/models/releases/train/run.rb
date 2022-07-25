@@ -38,7 +38,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def last_commit
-    commits.last
+    commits.order(:created_at).last
   end
 
   def last_run_for(step)
