@@ -54,6 +54,6 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def signed?
-    last_run_for(train.steps.last)&.signed?
+    last_run_for(train.steps.last)&.approval_approved?
   end
 end

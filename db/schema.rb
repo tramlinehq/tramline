@@ -257,7 +257,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_07_24_103652) do
     t.string "ci_link"
     t.string "build_number", null: false
     t.boolean "sign_required", default: true
-    t.boolean "signed", default: false, null: false
+    t.string "approval_status", default: "pending", null: false
     t.index ["previous_step_run_id"], name: "index_train_step_runs_on_previous_step_run_id"
     t.index ["releases_commit_id"], name: "index_train_step_runs_on_releases_commit_id"
     t.index ["train_run_id"], name: "index_train_step_runs_on_train_run_id"

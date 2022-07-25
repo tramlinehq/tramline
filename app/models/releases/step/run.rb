@@ -14,9 +14,10 @@ class Releases::Step::Run < ApplicationRecord
   validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
   validates :build_number, uniqueness: {scope: [:train_run_id]}
 
-  after_create :reset_signed!
+  after_create :reset_approval!
 
   enum status: {on_track: "on_track", halted: "halted", finished: "finished"}
+  enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
 
   attr_accessor :current_user
 
@@ -34,15 +35,38 @@ class Releases::Step::Run < ApplicationRecord
     train_run.perform_post_release! if step.last?
   end
 
-  def reset_signed!
-    update!(signed: is_signed?)
+  def reset_approval!
+    if !sign_required? 
+      approval_approved!
+    elsif is_approved?
+      approval_approved!
+    elsif is_rejected?
+      approval_rejected!
+    end
   end
 
-  def is_signed?
-    return true unless sign_required?
-
+  def is_approved?
     train.sign_off_groups.all? do |group|
       step.sign_offs.exists?(sign_off_group: group, signed: true, commit: commit)
+    end
+  end
+
+  def is_rejected?
+    # FIXME Should rejection needs to be from all groups, or just one group ?
+    train.sign_off_groups.all? do |group|
+      step.sign_offs.exists?(sign_off_group: group, signed: false, commit: commit)
+    end
+  end
+
+  # TODO Move this to presenter
+  def approval_emoji
+    case approval_status
+    when "approved"
+      return "✅"
+    when "rejected"
+      return "❌"
+    when "pending"
+      return "⌛"
     end
   end
 end

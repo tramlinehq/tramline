@@ -4,13 +4,13 @@ class SignOff < ApplicationRecord
   belongs_to :user, class_name: "Accounts::User"
   belongs_to :commit, class_name: "Releases::Commit", foreign_key: "releases_commit_id", inverse_of: :sign_offs
 
-  after_create :reset_signed!
+  after_create :reset_approval!
 
   def step_run
     commit.step_runs.find_by(step: step)
   end
 
   def reset_signed!
-    step_run&.reset_signed!
+    step_run&.reset_approval!
   end
 end

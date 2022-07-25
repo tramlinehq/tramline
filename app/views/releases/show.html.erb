@@ -42,7 +42,7 @@
             <% unless step.last? %>
               <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
             <% end %>
-            <% if step_run&.signed? && step_run.finished? %>
+            <% if step_run&.approval_approved? && step_run.finished? %>
             <div class="absolute left-0 rounded-full bg-indigo-500" aria-hidden="true">
                 <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
                     <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"></path>
@@ -70,20 +70,26 @@
         <% end %>
         <% if @release.on_track? &&  step_run&.finished? %>
         <div class="flex flex-col">
-          <% @train.sign_off_groups.each do |group| %>
-            <div class="flex ml-10">
-            <%= group.name %>
-            <% if !step_run&.sign_required? || step.sign_offs.exists?(sign_off_group: group, signed: true, commit: step_run&.commit) %>
-              Step has been approved
-            <% elsif step.sign_offs.exists?(sign_off_group: group, signed: false, commit: step_run&.commit) %>
-              Step has been rejected
-            <% else %>
+          <% if step_run.approval_approved? %>
+            <span>This step has been approved</span>
+          <% elsif step_run.approval_rejected? %>
+            <span>This step has been rejected</span>
+          <% else %>
+            <% @train.sign_off_groups.each do |group| %>
               <div class="flex ml-10">
-               <%= button_to "reject", step_sign_off_path(step), params: { sign_off_group_id: group.id, commit_id: step_run&.commit }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"', method: :delete %>
-               <%= button_to "approve", step_sign_off_path(step), params: { sign_off_group_id: group.id, commit_id: step_run&.commit }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"' %>
-               </div>
-              <% end %>
-            </div>
+              <%= group.name %>
+              <% if !step_run&.sign_required? || step.sign_offs.exists?(sign_off_group: group, signed: true, commit: step_run&.commit) %>
+                Step has been approved
+              <% elsif step.sign_offs.exists?(sign_off_group: group, signed: false, commit: step_run&.commit) %>
+                Step has been rejected
+              <% else %>
+                <div class="flex ml-10">
+                 <%= button_to "reject", step_sign_off_path(step), params: { sign_off_group_id: group.id, commit_id: step_run&.commit }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"', method: :delete %>
+                 <%= button_to "approve", step_sign_off_path(step), params: { sign_off_group_id: group.id, commit_id: step_run&.commit }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"' %>
+                 </div>
+                <% end %>
+              </div>
+            <% end %>
           <% end %>
         </div>
       <% end %>
@@ -113,7 +119,7 @@
         <div>
           <span><%= step_run.step.name %> </span>
           <span class="float-right"> <%= step_run.build_version %>
-          <%= step_run.signed? ? "✅" : "❌" %> </span>
+          <%= step_run.approval_emoji %> </span>
         </div>
       <% end %>
     </div>
