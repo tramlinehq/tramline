@@ -84,7 +84,7 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   def successful?
-    payload_status == "completed" && payload_conclusion == "success"
+    complete_action? || payload_status == "completed" && payload_conclusion == "success"
   end
 
   def payload_status
@@ -97,6 +97,11 @@ class WebhookHandlers::Github::WorkflowRun
 
   def artifacts_url
     payload[:workflow_run][:artifacts_url]
+  end
+
+  # TODO Workaround as it seems that github's status field is not consistent
+  def complete_action?
+    payload[:action] == "completed"
   end
 
   def artifacts_name
