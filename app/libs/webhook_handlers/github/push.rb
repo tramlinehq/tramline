@@ -33,7 +33,7 @@ class WebhookHandlers::Github::Push
           if release
             current_step = release.current_step || 1
 
-            train.steps.where("step_number <= ?", current_step).each do |step|
+            train.steps.where("step_number <= ?", current_step).order("step_number").each do |step|
               if step.step_number < current_step
                 Services::TriggerStepRun.call(step, commit_record, false)
               else
