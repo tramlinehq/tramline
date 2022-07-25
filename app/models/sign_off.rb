@@ -11,6 +11,6 @@ class SignOff < ApplicationRecord
   end
 
   def reset_signed!
-    step_run.reset_signed!
+    step_run&.reset_signed!
   end
 end
