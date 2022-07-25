@@ -30,7 +30,7 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def handle_workflow_run
-    response = WebhookHandlers::Github::WorkflowRun.process(train, params)
+    response = WebhookHandlers::Github::WorkflowRun.process(train, workflow_payload)
     head response.status
   end
 
@@ -42,5 +42,9 @@ class IntegrationListeners::GithubController < IntegrationListenerController
 
   def train
     @train ||= Releases::Train.find_by(id: params[:train_id])
+  end
+
+  def workflow_payload
+    params.permit(:train_id, :github, action: {}, workflow_run: {}, workflow: {}, repository: {}, organization: {}, sender: {})
   end
 end
