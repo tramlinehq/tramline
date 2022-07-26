@@ -67,7 +67,10 @@ class Releases::Step < ApplicationRecord
   end
 
   def available_deployment_channels
-    train.app.integrations.build_channel.find_by(providable_type: build_artifact_integration).providable.channels
+    if external_deployment?
+    else
+      train.app.integrations.build_channel.find_by(providable_type: build_artifact_integration).providable.channels
+    end
   end
 
   def deployment_provider
@@ -76,5 +79,9 @@ class Releases::Step < ApplicationRecord
 
   def deployment_channel
     build_artifact_channel.values.first
+  end
+
+  def external_deployment?
+    build_artifact_integration == "external"
   end
 end

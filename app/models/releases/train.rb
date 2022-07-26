@@ -10,6 +10,7 @@ class Releases::Train < ApplicationRecord
     release_backmerge: "Release Backmerge",
     parallel_working: "Parallel working"
   }.freeze
+  EXTERNAL_DEPLOYMENT_CHANNEL = {"None (outside Tramline)" => "external"}
 
   belongs_to :app, optional: false
   has_many :integrations, through: :app
@@ -94,7 +95,7 @@ class Releases::Train < ApplicationRecord
   def build_channel_integrations
     app.integrations.build_channel.pluck(:providable_type).index_by do |integration|
       integration.gsub("Integration", "").titleize
-    end
+    end.merge(EXTERNAL_DEPLOYMENT_CHANNEL)
   end
 
   def final_deployment_channel
