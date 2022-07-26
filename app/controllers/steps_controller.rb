@@ -33,7 +33,6 @@ class StepsController < SignedInApplicationController
     @step = Releases::Step.joins(train: :app).where(trains: {apps: {organization: current_organization}}).friendly.find(params[:id])
     @train = @step.train
     @build_channels = @step.available_deployment_channels
-
     @ci_actions = @train.ci_cd_provider.workflows
   end
 

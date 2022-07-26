@@ -8,7 +8,7 @@
     <div>
       <%= form.label :build_artifact_integration, class: "block text-sm font-medium mb-1" %>
       <%= form.select :build_artifact_integration, options_for_select(@step.train.build_channel_integrations, @step.build_artifact_integration),
-        {class: "form-select"},  { data: { controller: "input-select", action: 'change->build-channel#change'}, } %>
+        {class: "form-select"},  required: true,  data: { controller: "input-select", action: 'change->build-channel#change'} %>
     </div>
 
     <div>
