@@ -32,7 +32,7 @@
     <% unless @train.sign_off_groups.blank? %>
       <div>
         <div class="font-bold text-slate-600 text-sm uppercase mb-1">Sign-off Groups</div>
-        <span><%= @train.sign_off_groups.map(&:name).join(", ") %>foo, barb, az </span>
+        <span><%= @train.sign_off_groups.map(&:name).join(", ") %></span>
       </div>
     <% end %>
   </div>
@@ -48,37 +48,49 @@
       <% @train.steps.order(:step_number).includes(:train, :runs).each do |step| %>
         <% step_run = @release.last_run_for(step) %>
         <li class="relative py-2">
-          <!-- Step name and symbol row -->
+
+          <!-- Step symbol, name, action button -->
           <div class="flex items-center mb-1">
             <% unless step.last? %>
               <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
             <% end %>
             <% if step_run&.approval_approved? && step_run.finished? %>
+              <!-- approved and finished -->
               <div class="absolute left-0 rounded-full bg-indigo-500" aria-hidden="true">
                 <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
                   <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"></path>
                 </svg>
               </div>
             <% elsif step_run&.on_track? %>
+              <!-- on_track -->
               <div class="absolute left-0 rounded-full bg-slate-500" aria-hidden="true">
                 <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
                   <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"></path>
                 </svg>
               </div>
             <% else %>
+              <!-- not on_track, not finished, not approved -->
               <div class="absolute left-0 rounded-full bg-white" aria-hidden="true">
                 <svg class="w-5 h-5 fill-current text-slate-400" viewBox="0 0 20 20">
                   <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm0 2C4.477 20 0 15.523 0 10S4.477 0 10 0s10 4.477 10 10-4.477 10-10 10z"></path>
                 </svg>
               </div>
             <% end %>
-            <h3 class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></h3>
-            <span><%= step_run&.build_version %> </span>
+            <p class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></p>
+            <% if @release.on_track? && step.startable? %>
+              <%= button_to 'Move to this step',
+                            start_release_step_run_path(@release, step),
+                            { class: 'btn-xs ml-4 bg-indigo-500 hover:bg-indigo-600 text-white' } %>
+            <% end %>
           </div>
+
           <!-- Step metadata -->
           <div class="pl-9">
-            <% if @release.on_track? && step.startable? %>
-              <%= button_to 'start', start_release_step_run_path(@release, step), { class: 'btn-sm bg-indigo-500 hover:bg-indigo-600 text-white' } %>
+            <% if step_run&.build_version %>
+              <div class="flex items-center">
+                <span class="mr-2"><%= step_run&.build_version %></span>
+                <span class="text-xs uppercase inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2.5 py-1">Latest build</span>
+              </div>
             <% end %>
             <% if @release.on_track? && step_run&.finished? %>
               <div class="flex flex-col">
@@ -96,8 +108,13 @@
                         Step has been rejected
                       <% else %>
                         <div class="flex ml-10">
-                          <%= button_to "reject", step_sign_off_path(step), params: { sign_off_group_id: group.id, commit_id: step_run&.commit }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"', method: :delete %>
-                          <%= button_to "approve", step_sign_off_path(step), params: { sign_off_group_id: group.id, commit_id: step_run&.commit }, class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"' %>
+                          <%= button_to "Reject", step_sign_off_path(step),
+                                        params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
+                                        class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"',
+                                        method: :delete %>
+                          <%= button_to "Approve", step_sign_off_path(step),
+                                        params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
+                                        class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"' %>
                         </div>
                       <% end %>
                     </div>
@@ -108,14 +125,18 @@
           </div>
         </li>
       <% end %>
+      <div class="pl-9">
+        <% if @release.on_track? && @release.signed? && @release.finished_steps? %>
+          <%= button_to "Move to Finalize phase",
+                        post_release_app_train_releases_path(@app, @train),
+                        class: 'btn-sm bg-indigo-500 hover:bg-indigo-600 text-white' %>
+        <% end %>
+      </div>
     </ul>
-    <% if @release.on_track? && @release.signed? && @release.finished_steps? %>
-      <%= button_to "post release", post_release_app_train_releases_path(@app, @train) %>
-    <% end %>
   </div>
 
   <!-- Builds -->
-  <p class="font-bold text-xl mt-4 mb-2">All builds</p>
+  <p class="font-bold text-xl mt-8 mb-2">All builds</p>
   <% commits_count = @release.commits.size %>
   <table class="table-auto w-full">
     <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
@@ -145,7 +166,7 @@
           <%= link_to commit.commit_hash[0, 5], commit.url %>
         </td>
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <%= link_to commit.message, commit.url %>
+          <span class="underline"><%= link_to commit.message, commit.url %></span>
         </td>
         <!--        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">-->
         <%# commit.step_runs.each_with_index do |step_run| %>
@@ -168,7 +189,7 @@
 
 <section class="border-t border-dashed border-slate-200 pt-8 mt-8">
   <div class="flex">
-    <h2 class="font-bold text-2xl"> Finalise </h2>
+    <h2 class="font-bold text-2xl">Finalize</h2>
     <span class="text-2xl text-slate-400 ml-4">pending approvals</span>
   </div>
 </section>
