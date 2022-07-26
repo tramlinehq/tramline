@@ -114,30 +114,56 @@
     <% end %>
   </div>
 
-  <p class="font-bold text-xl my-4">All builds</p>
+  <!-- Builds -->
+  <p class="font-bold text-xl mt-4 mb-2">All builds</p>
   <% commits_count = @release.commits.size %>
-  <% @release.commits.order(created_at: :desc).includes(step_runs: :step).each_with_index do |commit, index| %>
-    <div class="flex">
-      <div class="w-1/6">
-        <%= commits_count - index %>
-      </div>
-      <div class="w-1/6">
-        <%= link_to commit.commit_hash[0, 5], commit.url %>
-      </div>
-      <div class="w-2/6">
-        <%= commit.message %>
-      </div>
-      <div class="flex flex-col w-2/6">
-        <% commit.step_runs.each_with_index do |step_run| %>
-          <div>
-            <span><%= step_run.step.name %> </span>
-            <span class="float-right"> <%= step_run.build_version %>
-              <%= step_run.approval_emoji %> </span>
+  <table class="table-auto w-full">
+    <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+    <tr>
+      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">•</div>
+      </th>
+      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">commit id</div>
+      </th>
+      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">commit message</div>
+      </th>
+      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">builds</div>
+      </th>
+    </tr>
+    </thead>
+
+    <tbody class="text-sm divide-y divide-slate-200">
+    <% @release.commits.order(created_at: :desc).includes(step_runs: :step).each_with_index do |commit, index| %>
+      <tr>
+        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <%= commits_count - index %>
+        </td>
+        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <%= link_to commit.commit_hash[0, 5], commit.url %>
+        </td>
+        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <%= link_to commit.message, commit.url %>
+        </td>
+        <!--        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">-->
+        <%# commit.step_runs.each_with_index do |step_run| %>
+        <!--            <span><%#= step_run.step.name %> </span>-->
+        <%# end %>
+        <!--        </td>-->
+        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <div class="grid grid-cols-2">
+            <% commit.step_runs.each_with_index do |step_run| %>
+              <div class=""><%= step_run.step.name %></div>
+              <div><%= step_run.approval_emoji %> <%= step_run.build_version %></div>
+            <% end %>
           </div>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
 </section>
 
 <section class="border-t border-dashed border-slate-200 pt-8 mt-8">
