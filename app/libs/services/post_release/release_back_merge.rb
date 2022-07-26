@@ -52,12 +52,12 @@ class Services::PostRelease
     end
 
     def pr_title
-      "Release PR"
+      "[Release kickoff] #{release.release_version}"
     end
 
     def pr_description
       <<~TEXT
-        Verbose description for #{train.name} release on #{release.was_run_at}
+        New release train #{train.name} triggered.
       TEXT
     end
   end
