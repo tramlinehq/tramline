@@ -76,6 +76,13 @@ module Installations
       end
     end
 
+    def create_annotated_tag!(repo, name, branch_name)
+      execute do
+        annotated_tag = @client.create_tag(repo, name, "Tag creation", head(repo, branch_name), "commit", "Tramline", "tramline@tramline.app", Time.current)
+        @client.create_ref(repo, "refs/tags/#{name}", annotated_tag[:sha])
+      end
+    end
+
     def create_pr!(repo, to, from, title, body)
       execute do
         @client.create_pull_request(repo, to, from, title, body)
@@ -90,7 +97,7 @@ module Installations
 
     def head(repo, working_branch_name)
       execute do
-        @client.commits(repo, options: {sha: working_branch_name}).first[:sha]
+        @client.commits(repo, sha: working_branch_name).first[:sha]
       end
     end
 
