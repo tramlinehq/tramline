@@ -71,7 +71,11 @@
               <path d="M9 3l10 6"/>
               <path d="M17 9v4a2 2 0 1 1 -2 2"/>
             </svg>
-            <%= step.ci_cd_channel&.values&.first %>
+            <%= step.ci_cd_provider_name %>:
+            <%= step.ci_cd_channel_name %>
+            <br>
+            <%= step.deployment_provider_name %>
+            <%= step.deployment_channel_name %>
           </span>
         </div>
       </li>
