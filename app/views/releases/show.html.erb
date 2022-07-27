@@ -93,26 +93,40 @@
               </div>
             <% end %>
             <% if @release.on_track? && step_run&.finished? %>
+              <% is_current_step = (@release.current_step == step.step_number)  %>
               <div class="flex flex-col">
-                <% if step_run.approval_approved? %>
+                <% if step_run.approval_approved? && (@release.finished? || !is_current_step) %>
                   <span>This step has been approved</span>
-                <% elsif step_run.approval_rejected? %>
+                <% elsif step_run.approval_rejected? && (@release.finished? || !is_current_step) %>
                   <span>This step has been rejected</span>
                 <% else %>
                   <% @train.sign_off_groups.each do |group| %>
                     <div class="flex ml-10">
                       <%= group.name %>
-                      <% if !step_run&.sign_required? || step.sign_offs.exists?(sign_off_group: group, signed: true, commit: step_run&.commit) %>
-                        Step has been approved
-                      <% elsif step.sign_offs.exists?(sign_off_group: group, signed: false, commit: step_run&.commit) %>
-                        Step has been rejected
-                      <% else %>
-                        <div class="flex ml-10">
-                          <%= button_to "Reject", step_sign_off_path(step),
+                      <% if !step_run&.sign_required? || step.sign_offs.exists?(sign_off_group: group, signed: false, commit: step_run&.commit) %>
+                          <%= button_to "Approve", approve_step_sign_off_path(step),
+                                        params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
+                                        class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"' %>
+                          <%= button_to "Revert", revert_step_sign_off_path(step),
+                                        params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
+                                        class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"',
+                                        method: :delete%>
+
+                      <% elsif step.sign_offs.exists?(sign_off_group: group, signed: true, commit: step_run&.commit) %>
+                          <%= button_to "Reject", reject_step_sign_off_path(step),
+                                        params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
+                                        class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"' %>
+                          <%= button_to "Revert", revert_step_sign_off_path(step),
                                         params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
                                         class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"',
                                         method: :delete %>
-                          <%= button_to "Approve", step_sign_off_path(step),
+
+                      <% else %>
+                        <div class="flex ml-10">
+                          <%= button_to "Approve", approve_step_sign_off_path(step),
+                                        params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
+                                        class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"' %>
+                          <%= button_to "Reject", reject_step_sign_off_path(step),
                                         params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
                                         class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white"' %>
                         </div>
@@ -175,7 +189,7 @@
         <!--        </td>-->
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="grid grid-cols-2">
-            <% commit.step_runs.each_with_index do |step_run| %>
+            <% commit.step_runs.order(:created_at).each_with_index do |step_run| %>
               <div class=""><%= step_run.step.name %></div>
               <div><%= step_run.approval_emoji %> <%= step_run.build_version %></div>
             <% end %>
