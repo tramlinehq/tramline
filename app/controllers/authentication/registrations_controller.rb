@@ -8,6 +8,7 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
   def new
     super do |usr|
       @organization = usr.organizations.build
+      @user.email = @invite.email
     end
   end
 
