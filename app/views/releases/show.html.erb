@@ -89,7 +89,7 @@
             <% if step_run&.build_version %>
               <div class="flex items-center">
                 <span class="mr-2"><%= step_run&.build_version %></span>
-                <span class="text-xs uppercase inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2.5 py-1">Latest build</span>
+                <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">Latest build</span>
               </div>
             <% end %>
             <% if @release.on_track? && step_run&.finished? %>
