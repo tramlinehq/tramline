@@ -81,6 +81,22 @@ class Releases::Step < ApplicationRecord
     build_artifact_channel.values.first
   end
 
+  def deployment_provider_name
+    build_artifact_integration.gsub("Integration", "")
+  end
+
+  def deployment_channel_name
+    build_artifact_channel.values.first
+  end
+
+  def ci_cd_provider_name
+    app.ci_cd_provider.class.name.gsub("Integration", "")
+  end
+
+  def ci_cd_channel_name
+    ci_cd_channel.values.first
+  end
+
   def external_deployment?
     build_artifact_integration == "external"
   end
