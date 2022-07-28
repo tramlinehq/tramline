@@ -2,20 +2,22 @@ class StepsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
-  before_action :set_app, only: %i[new create show]
-  before_action :set_train, only: %i[new create show]
+  before_action :set_app, only: %i[new create]
+  before_action :set_train, only: %i[new create]
   before_action :set_ci_actions, only: %i[new create]
   before_action :set_build_channels, only: %i[new create]
-  before_action :set_step, only: %i[show]
   before_action :set_first_step, only: %i[new create]
   before_action :integrations_are_ready?, only: %i[new create]
   around_action :set_time_zone
 
   def new
+    head 403 and return if @train.active_run 
     @step = @train.steps.new
   end
 
   def create
+
+    head 403 and return if @train.active_run 
     @step = @train.steps.new(parsed_step_params)
 
     respond_to do |format|
@@ -32,6 +34,8 @@ class StepsController < SignedInApplicationController
   def edit
     @step = Releases::Step.joins(train: :app).where(trains: {apps: {organization: current_organization}}).friendly.find(params[:id])
     @train = @step.train
+
+    head 403  and return if @train.active_run 
     @build_channels = @step.available_deployment_channels
     @ci_actions = @train.ci_cd_provider.workflows
   end
@@ -39,6 +43,7 @@ class StepsController < SignedInApplicationController
   def update
     @step = Releases::Step.joins(train: :app).where(trains: {apps: {organization: current_organization}}).friendly.find(params[:id])
     @train = @step.train
+    head 403 and return if @train.active_run 
     @app = @train.app
     if @step.update(parsed_step_params)
       redirect_to edit_app_train_path(@app, @train), notice: "Step was successfully updated."
