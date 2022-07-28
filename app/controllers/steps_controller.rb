@@ -11,13 +11,12 @@ class StepsController < SignedInApplicationController
   around_action :set_time_zone
 
   def new
-    head 403 and return if @train.active_run 
+    head 403 and return if @train.active_run
     @step = @train.steps.new
   end
 
   def create
-
-    head 403 and return if @train.active_run 
+    head 403 and return if @train.active_run
     @step = @train.steps.new(parsed_step_params)
 
     respond_to do |format|
@@ -35,7 +34,7 @@ class StepsController < SignedInApplicationController
     @step = Releases::Step.joins(train: :app).where(trains: {apps: {organization: current_organization}}).friendly.find(params[:id])
     @train = @step.train
 
-    head 403  and return if @train.active_run 
+    head 403 and return if @train.active_run
     @build_channels = @step.available_deployment_channels
     @ci_actions = @train.ci_cd_provider.workflows
   end
@@ -43,7 +42,7 @@ class StepsController < SignedInApplicationController
   def update
     @step = Releases::Step.joins(train: :app).where(trains: {apps: {organization: current_organization}}).friendly.find(params[:id])
     @train = @step.train
-    head 403 and return if @train.active_run 
+    head 403 and return if @train.active_run
     @app = @train.app
     if @step.update(parsed_step_params)
       redirect_to edit_app_train_path(@app, @train), notice: "Step was successfully updated."
