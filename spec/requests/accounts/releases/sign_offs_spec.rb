@@ -10,7 +10,7 @@ RSpec.describe "Accounts::Releases::SignOffs", type: :request do
   describe "GET /create" do
     it "returns http success" do
       sign_in user
-      post "/steps/#{step.id}/sign_off", params: {sign_off_group_id: sign_off_group.id, commit_id: commit.id}
+      post "/steps/#{step.id}/sign_off/approve", params: {sign_off_group_id: sign_off_group.id, commit_id: commit.id}
       expect(response).to have_http_status(302)
       expect(SignOff.count).to eq(1)
     end

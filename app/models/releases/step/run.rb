@@ -31,8 +31,6 @@ class Releases::Step::Run < ApplicationRecord
   def wrap_up_run!
     self.status = Releases::Step::Run.statuses[:finished]
     save!
-
-    train_run.perform_post_release! if step.last?
   end
 
   def reset_approval!
@@ -42,6 +40,8 @@ class Releases::Step::Run < ApplicationRecord
       approval_approved!
     elsif is_rejected?
       approval_rejected!
+    else
+      approval_pending!
     end
   end
 
@@ -53,7 +53,7 @@ class Releases::Step::Run < ApplicationRecord
 
   def is_rejected?
     # FIXME Should rejection needs to be from all groups, or just one group ?
-    train.sign_off_groups.all? do |group|
+    train.sign_off_groups.any? do |group|
       step.sign_offs.exists?(sign_off_group: group, signed: false, commit: commit)
     end
   end

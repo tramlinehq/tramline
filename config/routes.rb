@@ -48,7 +48,13 @@ Rails.application.routes.draw do
         patch :deactivate
       end
       resources :steps, only: %i[new create edit update], shallow: true do
-        resource :sign_off, only: %i[create destroy]
+        resource :sign_off, only: %i[] do
+          collection do
+            post :approve
+            post :reject
+            delete :revert
+          end
+        end
         collection do
           get :build_artifact_channels
         end
