@@ -1,6 +1,11 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+.form-select {
+  @apply pr-10;
+}
+
+.form-checkbox,
+.form-radio {
+  @apply text-indigo-500 border border-slate-300;
+}
 
 /* Typography */
 .h1 {
@@ -88,15 +93,6 @@ input[type="search"]::-webkit-search-results-decoration {
 .form-input,
 .form-textarea {
   @apply placeholder-slate-400;
-}
-
-.form-select {
-  @apply pr-10;
-}
-
-.form-checkbox,
-.form-radio {
-  @apply text-indigo-500 border border-slate-300;
 }
 
 /* Chrome, Safari and Opera */
@@ -342,3 +338,9 @@ span.flatpickr-weekday {
 .flatpickr-calendar.arrowBottom::after {
   display: none;
 }
+
+/* Mosaic theme ends here, keep it above Tailwind includes, otherwise shit will break */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
