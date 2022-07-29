@@ -1,3 +1,7 @@
+@tailwind base;
+
+/* Mosaic theme starts here */
+
 .form-select {
   @apply pr-10;
 }
@@ -341,6 +345,5 @@ span.flatpickr-weekday {
 
 /* Mosaic theme ends here, keep it above Tailwind includes, otherwise shit will break */
 
-@tailwind base;
 @tailwind components;
 @tailwind utilities;
