@@ -101,10 +101,6 @@ class TrainsController < SignedInApplicationController
     redirect_to app_path, alert: "Cannot create trains before notifiers are complete." unless @app.ready?
   end
 
-  def app_path
-    app_path(@app)
-  end
-
   def train_path
     app_train_path(@app, @train)
   end
