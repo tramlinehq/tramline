@@ -6,4 +6,8 @@ then
   gem install foreman
 fi
 
-foreman start -f Procfile.dev
+if pgrep -fl ngrok ; then
+  foreman start -f Procfile.dev
+else
+  echo "[FAIL] ngrok is not running!"
+fi
