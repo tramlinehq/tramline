@@ -44,8 +44,8 @@ class App < ApplicationRecord
   end
 
   def no_trains_are_running
-    if trains.running?
-      errors.add(:base, "Cannot update the app when associated trains are already running!")
+    if trains.running? && bundle_identifier_changed?
+      errors.add(:bundle_identifier, "cannot be updated if there are running trains!")
     end
   end
 end
