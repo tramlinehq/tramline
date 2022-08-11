@@ -40,7 +40,7 @@
   </div>
 
   <div class="basis-1/2 text-slate-600 text-xl">
-    <%= @train.description %>
+    <%= simple_format @train.description %>
   </div>
 </div>
 
@@ -61,21 +61,28 @@
           </div>
           <h3 class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></h3>
         </div>
-        <div class="pl-9 flex flex-col">
-          <span class="text-slate-400"><%= step.description %></span>
-          <span class="pt-1.5 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-crane mr-1" width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <div class="pl-9 pt-1 flex flex-col">
+          <span><%= step.description %></span>
+          <span class="flex pt-1 items-center text-slate-500">
+            <svg class="mr-2 icon icon-tabler icon-tabler-subtask" width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
               <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-              <path d="M6 21h6"/>
-              <path d="M9 21v-18l-6 6h18"/>
-              <path d="M9 3l10 6"/>
-              <path d="M17 9v4a2 2 0 1 1 -2 2"/>
+              <line x1="6" y1="9" x2="12" y2="9"/>
+              <line x1="4" y1="5" x2="8" y2="5"/>
+              <path d="M6 5v11a1 1 0 0 0 1 1h5"/>
+              <rect x="12" y="7" width="8" height="4" rx="1"/>
+              <rect x="12" y="15" width="8" height="4" rx="1"/>
             </svg>
-            <%= step.ci_cd_provider_name %>:
-            <%= step.ci_cd_channel_name %>
-            <br>
-            <%= step.deployment_provider_name %>
-            <%= step.deployment_channel_name %>
+            <span class="mr-8"><%= step.ci_cd_provider_name %> • <%= step.ci_cd_channel_name %></span>
+
+            <svg class="mr-2 icon icon-tabler icon-tabler-package" width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <polyline points="12 3 20 7.5 20 16.5 12 21 4 16.5 4 7.5 12 3"/>
+              <line x1="12" y1="12" x2="20" y2="7.5"/>
+              <line x1="12" y1="12" x2="12" y2="21"/>
+              <line x1="12" y1="12" x2="4" y2="7.5"/>
+              <line x1="16" y1="5.25" x2="8" y2="9.75"/>
+            </svg>
+            <span><%= step.deployment_provider_name %> • <%= step.deployment_channel_name %></span>
           </span>
         </div>
       </li>
