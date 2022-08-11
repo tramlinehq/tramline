@@ -81,9 +81,8 @@
   </div>
 <% end %>
 
+<div class="text-2xl font-bold mt-8 mb-4 pt-4 border-t border-dashed">Steps</div>
 <% if @train.steps.size > 0 && @train.persisted? %>
-  <div class="text-2xl font-bold mt-8 mb-4 pt-4 border-t border-dashed">Steps</div>
-
   <ul>
     <% @train.steps.order(:step_number).each do |step| %>
       <li class="relative pb-6">
@@ -165,9 +164,9 @@
     <% end %>
   </ul>
 <% elsif @train.persisted? %>
-  <div class="m-1.5">
-    <button class="btn-sm bg-indigo-500 hover:bg-indigo-600 text-white">
-      <%= link_to "Add a step", new_app_train_step_path(@app, @train) %>
+  <div class="">
+    <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white">
+      <%= link_to "Add a new step", new_app_train_step_path(@app, @train) %>
     </button>
   </div>
 <% end %>
