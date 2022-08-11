@@ -1,27 +1,27 @@
 Rails.application.routes.draw do
-  require 'sidekiq/web'
-  require 'sidekiq-scheduler/web'
+  require "sidekiq/web"
+  require "sidekiq-scheduler/web"
 
-  mount ActionCable.server => '/cable'
+  mount ActionCable.server => "/cable"
 
   authenticate :user, ->(u) { u.admin? || Rails.env.development? } do
-    mount LetterOpenerWeb::Engine, at: '/letter_opener' if Rails.env.development?
-    mount Flipper::UI.app(Flipper), at: '/flipper'
-    mount Sidekiq::Web, at: '/sidekiq'
+    mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
+    mount Flipper::UI.app(Flipper), at: "/flipper"
+    mount Sidekiq::Web, at: "/sidekiq"
   end
 
   devise_for :users,
-             controllers: { registrations: 'authentication/registrations',
-                            sessions: 'authentication/sessions' },
-             class_name: 'Accounts::User'
+    controllers: {registrations: "authentication/registrations",
+                  sessions: "authentication/sessions"},
+    class_name: "Accounts::User"
 
   devise_scope :user do
     unauthenticated :user do
-      root 'authentication/sessions#new'
+      root "authentication/sessions#new"
     end
 
     authenticated :user do
-      root 'apps#index', as: :authenticated_root
+      root "apps#index", as: :authenticated_root
     end
   end
 
@@ -40,7 +40,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :apps, only: %i[show index new create] do
+  resources :apps do
     resource :app_config, only: %i[edit update], path: :config
     resource :sign_off_groups, only: %i[edit update]
     resources :trains do
@@ -61,7 +61,7 @@ Rails.application.routes.draw do
       end
 
       resources :releases, only: %i[show create destroy], shallow: true do
-        resources :step_runs, only: [], shallow: false, module: 'releases' do
+        resources :step_runs, only: [], shallow: false, module: "releases" do
           member do
             post :start
             post :stop
@@ -75,10 +75,10 @@ Rails.application.routes.draw do
     end
     resources :integrations, only: %i[index create] do
       collection do
-        get :connect, to: 'integrations#connect', as: :connect
+        get :connect, to: "integrations#connect", as: :connect
         resource :google_play_store, only: [:create],
-                                     controller: 'integrations/google_play_store',
-                                     as: :google_play_store_integration
+          controller: "integrations/google_play_store",
+          as: :google_play_store_integration
       end
     end
   end
@@ -88,11 +88,11 @@ Rails.application.routes.draw do
   end
 
   scope :github do
-    post '/events/:train_id', to: 'integration_listeners/github#events', as: :github_events
-    get :callback, controller: 'integration_listeners/github', as: :github_callback
+    post "/events/:train_id", to: "integration_listeners/github#events", as: :github_events
+    get :callback, controller: "integration_listeners/github", as: :github_callback
   end
 
   scope :slack do
-    get :callback, controller: 'integration_listeners/slack', as: :slack_callback
+    get :callback, controller: "integration_listeners/slack", as: :slack_callback
   end
 end
