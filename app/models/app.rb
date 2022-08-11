@@ -10,6 +10,7 @@ class App < ApplicationRecord
 
   validates :bundle_identifier, uniqueness: {scope: :organization_id}
   validates :build_number, numericality: {greater_than: :build_number_was}, on: :update
+  validate :no_trains_are_running, on: :update
 
   enum platform: {android: "android", ios: "ios"}
 
@@ -40,5 +41,11 @@ class App < ApplicationRecord
     self.build_number = build_number + 1
     save!
     build_number.to_s
+  end
+
+  def no_trains_are_running
+    if trains.running?
+      errors.add(:base, "Cannot update the app when associated trains are already running!")
+    end
   end
 end

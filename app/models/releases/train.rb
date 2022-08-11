@@ -55,18 +55,18 @@ class Releases::Train < ApplicationRecord
 
   self.ignored_columns = [:signoff_enabled]
 
+  def self.running?
+    joins(:runs).where(runs: {status: Releases::Train::Run.statuses[:on_track]}).any?
+  end
+
   def set_default_status!
     self.status = Releases::Step.statuses[:active]
   end
 
   def create_webhook!
     return false if Rails.env.test?
-
     Automatons::Webhook.dispatch!(train: self)
   end
-
-  GRACE_PERIOD_FOR_RUNNING = 30.seconds
-  MINIMUM_TRAIN_KICKOFF_DELAY = 30.minutes
 
   def display_name
     name.downcase.tr(" ", "-")
