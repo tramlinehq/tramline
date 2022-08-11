@@ -1,5 +1,7 @@
 class Services::PostRelease
   class AlmostTrunk
+    delegate :transaction, to: ApplicationRecord
+
     def self.call(release)
       new(release).call
     end
@@ -10,8 +12,10 @@ class Services::PostRelease
     end
 
     def call
-      update_status
-      create_tag
+      transaction do
+        update_status
+        create_tag
+      end
     end
 
     private
