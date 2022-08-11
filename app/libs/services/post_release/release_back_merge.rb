@@ -1,5 +1,7 @@
 class Services::PostRelease
   class ReleaseBackMerge
+    delegate :transaction, to: ApplicationRecord
+
     def self.call(release)
       new(release).call
     end
@@ -10,9 +12,11 @@ class Services::PostRelease
     end
 
     def call
-      update_status
-      merge_prs
-      create_tag
+      transaction do
+        update_status
+        merge_prs
+        create_tag
+      end
     end
 
     private
@@ -26,13 +30,14 @@ class Services::PostRelease
     end
 
     def merge_prs
-      response = repo_integration.create_pr!(repository_name, train.release_backmerge_branch, release.branch_name, pr_title,
-        pr_description)
+      response =
+        repo_integration
+          .create_pr!(repository_name, train.release_backmerge_branch, release.branch_name, pr_title, pr_description)
       repo_integration.merge_pr!(repository_name, response[:number])
 
-      response = repo_integration.create_pr!(repository_name, train.working_branch, train.release_backmerge_branch,
-        pr_title, pr_description)
-
+      response =
+        repo_integration
+          .create_pr!(repository_name, train.working_branch, train.release_backmerge_branch, pr_title, pr_description)
       repo_integration.merge_pr!(repository_name, response[:number])
     end
 

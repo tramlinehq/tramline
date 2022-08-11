@@ -1,5 +1,7 @@
 class Services::PostRelease
   class ParallelBranches
+    delegate :transaction, to: ApplicationRecord
+
     def self.call(release)
       new(release).call
     end
@@ -10,9 +12,11 @@ class Services::PostRelease
     end
 
     def call
-      update_status
-      create_tag
-      merge_prs
+      transaction do
+        update_status
+        create_tag
+        merge_prs
+      end
     end
 
     private
@@ -26,9 +30,9 @@ class Services::PostRelease
     end
 
     def merge_prs
-      response = repo_integration.create_pr!(repository_name, train.working_branch, train.release_branch, pr_title,
-        pr_description)
-
+      response =
+        repo_integration
+          .create_pr!(repository_name, train.working_branch, train.release_branch, pr_title, pr_description)
       repo_integration.merge_pr!(repository_name, response[:number])
     end
 
