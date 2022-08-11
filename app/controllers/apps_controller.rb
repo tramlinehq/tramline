@@ -25,6 +25,21 @@ class AppsController < SignedInApplicationController
   def show
   end
 
+  def edit
+  end
+
+  def update
+    respond_to do |format|
+      if @app.update(app_update_params)
+        format.html { redirect_to app_path(@app), notice: "App was updated." }
+        format.json { render :show, status: :updated, location: @app }
+      else
+        format.html { render :edit, status: :unprocessable_entity }
+        format.json { render json: @app.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
   def index
     @apps = current_organization.apps
   end
@@ -47,6 +62,10 @@ class AppsController < SignedInApplicationController
       :build_number,
       :timezone
     )
+  end
+
+  def app_update_params
+    app_params.except(:timezone)
   end
 
   DEFAULT_TIMEZONE_LIST_REGEX = /Asia\/Kolkata/

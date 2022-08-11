@@ -9,6 +9,7 @@ class App < ApplicationRecord
   has_one :config, class_name: "AppConfig", dependent: :destroy
 
   validates :bundle_identifier, uniqueness: {scope: :organization_id}
+  validates :build_number, numericality: {greater_than: :build_number_was}, on: :update
 
   enum platform: {android: "android", ios: "ios"}
 
