@@ -24,20 +24,26 @@
   </div>
 </div>
 
-<div class="flex mt-8">
-  <div class="basis-1/2">
-    <span class="font-bold">Branching strategy: </span>
-    <%= @train.branching_strategy_name %>
+<section class="mt-8">
+  <div class="grid md:grid-cols-2 gap-y-4 mt-4">
+    <div>
+      <div class="font-bold text-slate-600 text-sm uppercase mb-1">Description</div>
+      <span><%= @train.description %></span>
+    </div>
+
+    <div>
+      <div class="font-bold text-slate-600 text-sm uppercase mb-1">Branching Strategy</div>
+      <span><%= @train.branching_strategy_name %></span>
+    </div>
+
     <% unless @train.sign_off_groups.blank? %>
-      <br/>
-      <span class="font-bold">Sign-off groups: </span> <%= @train.sign_off_groups.map(&:name).join(", ") %>
+      <div>
+        <div class="font-bold text-slate-600 text-sm uppercase mb-1">Sign-off Groups</div>
+        <span><%= @train.sign_off_groups.map(&:name).join(", ") %></span>
+      </div>
     <% end %>
   </div>
-
-  <div class="basis-1/2 text-slate-600 text-xl">
-    <%= simple_format @train.description %>
-  </div>
-</div>
+</section>
 
 <!--Steps-->
 <h2 class="text-2xl font-bold mt-8 mb-4">Steps</h2>
