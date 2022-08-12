@@ -10,7 +10,7 @@
     <% if @app.ready? %>
       <%= link_to app_integrations_path(@app), class: "btn bg-amber-100 border-slate-300 hover:border-slate-400 text-slate-600" do %>
         <svg class="w-4 h-4 fill-current shrink-0 text-slate-500" viewBox="0 0 16 16">
-          <path d="M11 0c1.3 0 2.6.5 3.5 1.5 1 .9 1.5 2.2 1.5 3.5 0 1.3-.5 2.6-1.4 3.5l-1.2 1.2c-.2.2-.5.3-.7.3-.2 0-.5-.1-.7-.3-.4-.4-.4-1 0-1.4l1.1-1.2c.6-.5.9-1.3.9-2.1s-.3-1.6-.9-2.2C12 1.7 10 1.7 8.9 2.8L7.7 4c-.4.4-1 .4-1.4 0-.4-.4-.4-1 0-1.4l1.2-1.1C8.4.5 9.7 0 11 0ZM8.3 12c.4-.4 1-.5 1.4-.1.4.4.4 1 0 1.4l-1.2 1.2C7.6 15.5 6.3 16 5 16c-1.3 0-2.6-.5-3.5-1.5C.5 13.6 0 12.3 0 11c0-1.3.5-2.6 1.5-3.5l1.1-1.2c.4-.4 1-.4 1.4 0 .4.4.4 1 0 1.4L2.9 8.9c-.6.5-.9 1.3-.9 2.1s.3 1.6.9 2.2c1.1 1.1 3.1 1.1 4.2 0L8.3 12Zm1.1-6.8c.4-.4 1-.4 1.4 0 .4.4.4 1 0 1.4l-4.2 4.2c-.2.2-.5.3-.7.3-.2 0-.5-.1-.7-.3-.4-.4-.4-1 0-1.4l4.2-4.2Z" />
+          <path d="M11 0c1.3 0 2.6.5 3.5 1.5 1 .9 1.5 2.2 1.5 3.5 0 1.3-.5 2.6-1.4 3.5l-1.2 1.2c-.2.2-.5.3-.7.3-.2 0-.5-.1-.7-.3-.4-.4-.4-1 0-1.4l1.1-1.2c.6-.5.9-1.3.9-2.1s-.3-1.6-.9-2.2C12 1.7 10 1.7 8.9 2.8L7.7 4c-.4.4-1 .4-1.4 0-.4-.4-.4-1 0-1.4l1.2-1.1C8.4.5 9.7 0 11 0ZM8.3 12c.4-.4 1-.5 1.4-.1.4.4.4 1 0 1.4l-1.2 1.2C7.6 15.5 6.3 16 5 16c-1.3 0-2.6-.5-3.5-1.5C.5 13.6 0 12.3 0 11c0-1.3.5-2.6 1.5-3.5l1.1-1.2c.4-.4 1-.4 1.4 0 .4.4.4 1 0 1.4L2.9 8.9c-.6.5-.9 1.3-.9 2.1s.3 1.6.9 2.2c1.1 1.1 3.1 1.1 4.2 0L8.3 12Zm1.1-6.8c.4-.4 1-.4 1.4 0 .4.4.4 1 0 1.4l-4.2 4.2c-.2.2-.5.3-.7.3-.2 0-.5-.1-.7-.3-.4-.4-.4-1 0-1.4l4.2-4.2Z"/>
         </svg>
         <span class="ml-2">
           Integrations
@@ -19,8 +19,8 @@
 
       <%= link_to edit_app_sign_off_groups_path(@app), class: "btn bg-amber-100 border-slate-300 hover:border-slate-400 text-slate-600" do %>
         <svg class="shrink-0 h-4 w-4" viewBox="0 0 24 24">
-          <path class="fill-current text-slate-600" :class="page.startsWith('team-') && 'text-indigo-500'" d="M18.974 8H22a2 2 0 012 2v6h-2v5a1 1 0 01-1 1h-2a1 1 0 01-1-1v-5h-2v-6a2 2 0 012-2h.974zM20 7a2 2 0 11-.001-3.999A2 2 0 0120 7zM2.974 8H6a2 2 0 012 2v6H6v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5H0v-6a2 2 0 012-2h.974zM4 7a2 2 0 11-.001-3.999A2 2 0 014 7z" />
-          <path class="fill-current text-slate-400" :class="page.startsWith('team-') && 'text-indigo-300'" d="M12 6a3 3 0 110-6 3 3 0 010 6zm2 18h-4a1 1 0 01-1-1v-6H6v-6a3 3 0 013-3h6a3 3 0 013 3v6h-3v6a1 1 0 01-1 1z" />
+          <path class="fill-current text-slate-600" :class="page.startsWith('team-') && 'text-indigo-500'" d="M18.974 8H22a2 2 0 012 2v6h-2v5a1 1 0 01-1 1h-2a1 1 0 01-1-1v-5h-2v-6a2 2 0 012-2h.974zM20 7a2 2 0 11-.001-3.999A2 2 0 0120 7zM2.974 8H6a2 2 0 012 2v6H6v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5H0v-6a2 2 0 012-2h.974zM4 7a2 2 0 11-.001-3.999A2 2 0 014 7z"/>
+          <path class="fill-current text-slate-400" :class="page.startsWith('team-') && 'text-indigo-300'" d="M12 6a3 3 0 110-6 3 3 0 010 6zm2 18h-4a1 1 0 01-1-1v-6H6v-6a3 3 0 013-3h6a3 3 0 013 3v6h-3v6a1 1 0 01-1 1z"/>
         </svg>
         <span class="ml-2">
           Sign-offs
@@ -29,25 +29,25 @@
 
       <%= link_to edit_app_app_config_path(@app), class: "btn bg-amber-100 border-slate-300 hover:border-slate-400 text-slate-600" do %>
         <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
-          <path class="fill-current text-slate-600" d="M19.714 14.7l-7.007 7.007-1.414-1.414 7.007-7.007c-.195-.4-.298-.84-.3-1.286a3 3 0 113 3 2.969 2.969 0 01-1.286-.3z" />
-          <path class="fill-current text-slate-400" d="M10.714 18.3c.4-.195.84-.298 1.286-.3a3 3 0 11-3 3c.002-.446.105-.885.3-1.286l-6.007-6.007 1.414-1.414 6.007 6.007z" />
-          <path class="fill-current text-slate-600" d="M5.7 10.714c.195.4.298.84.3 1.286a3 3 0 11-3-3c.446.002.885.105 1.286.3l7.007-7.007 1.414 1.414L5.7 10.714z" />
-          <path class="fill-current text-slate-400" d="M19.707 9.292a3.012 3.012 0 00-1.415 1.415L13.286 5.7c-.4.195-.84.298-1.286.3a3 3 0 113-3 2.969 2.969 0 01-.3 1.286l5.007 5.006z" />
+          <path class="fill-current text-slate-600" d="M19.714 14.7l-7.007 7.007-1.414-1.414 7.007-7.007c-.195-.4-.298-.84-.3-1.286a3 3 0 113 3 2.969 2.969 0 01-1.286-.3z"/>
+          <path class="fill-current text-slate-400" d="M10.714 18.3c.4-.195.84-.298 1.286-.3a3 3 0 11-3 3c.002-.446.105-.885.3-1.286l-6.007-6.007 1.414-1.414 6.007 6.007z"/>
+          <path class="fill-current text-slate-600" d="M5.7 10.714c.195.4.298.84.3 1.286a3 3 0 11-3-3c.446.002.885.105 1.286.3l7.007-7.007 1.414 1.414L5.7 10.714z"/>
+          <path class="fill-current text-slate-400" d="M19.707 9.292a3.012 3.012 0 00-1.415 1.415L13.286 5.7c-.4.195-.84.298-1.286.3a3 3 0 113-3 2.969 2.969 0 01-.3 1.286l5.007 5.006z"/>
         </svg>
 
         <span class="ml-2">
           Configure
         </span>
       <% end %>
+    <% end %>
 
-      <%= link_to edit_app_path(@app), class: "btn bg-amber-100 border-slate-300 hover:border-slate-400 text-slate-600" do %>
-        <svg class="w-4 h-4 fill-current text-slate-500 shrink-0" viewBox="0 0 16 16">
-          <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4zM4.6 14H2v-2.6l6-6L10.6 8l-6 6zM12 6.6L9.4 4 11 2.4 13.6 5 12 6.6z"/>
-        </svg>
-        <span class="ml-2">
+    <%= link_to edit_app_path(@app), class: "btn bg-amber-100 border-slate-300 hover:border-slate-400 text-slate-600" do %>
+      <svg class="w-4 h-4 fill-current text-slate-500 shrink-0" viewBox="0 0 16 16">
+        <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4zM4.6 14H2v-2.6l6-6L10.6 8l-6 6zM12 6.6L9.4 4 11 2.4 13.6 5 12 6.6z"/>
+      </svg>
+      <span class="ml-2">
           Settings
         </span>
-      <% end %>
     <% end %>
   </div>
 </div>
@@ -91,6 +91,52 @@
     <% end %>
 
     <% if @app.trains.any? %>
+      <% active_runs = @app.active_runs %>
+      <% if active_runs.present? %>
+        <h2 class="text-2xl text-slate-800 font-bold mb-6">Active Releases</h2>
+        <table class="table-auto w-full">
+          <!-- Table header -->
+          <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+          <tr>
+            <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+              <div class="font-semibold text-left">Release Version</div>
+            </th>
+            <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+              <div class="font-semibold text-left">Train</div>
+            </th>
+          </tr>
+          </thead>
+          <tbody class="text-sm divide-y divide-slate-200">
+          <% @app.active_runs.each do |run| %>
+            <tr>
+              <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="font-medium text-slate-800">
+                    <%= link_to release_path(run.id) do %>
+                      <span class="underline">
+                        <% if run.completed_at %>
+                          <%= "#{run.release_version} released on #{run.completed_at.to_s(:short)}" %>
+                        <% else %>
+                          <%= run.release_version.chop + '*' %>
+                        <% end %>
+                      </span>
+                    <% end %>
+                  </div>
+                </div>
+              </td>
+              <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="font-medium text-slate-800">
+                    <%= link_to run.train.name, app_train_path(@app, run.train) %>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+          </tbody>
+        </table>
+      <% end %>
+
       <h2 class="text-2xl text-slate-800 font-bold mb-6">Release Trains</h2>
       <table class="table-auto w-full">
         <!-- Table header -->
