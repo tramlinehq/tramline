@@ -9,9 +9,7 @@
   <!-- Right: Actions -->
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
     <% if @release.on_track? %>
-      <%= button_to release_path(@release.id), method: :delete do %>
-        <button class="btn bg-red-500 hover:bg-red-600 text-white">Stop release</button>
-      <% end %>
+      <%= button_to "Stop release", release_path(@release.id), method: :delete, class: "btn bg-red-500 hover:bg-red-600 text-white" %>
     <% end %>
   </div>
 </div>
