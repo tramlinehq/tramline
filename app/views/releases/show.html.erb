@@ -17,7 +17,7 @@
 
 <section class="mt-8">
   <div class="flex">
-    <h2 class="font-bold text-2xl"> Kick-off </h2>
+    <h2 class="font-bold text-2xl">Kick-off</h2>
     <span class="text-2xl text-slate-400 ml-4"><%= time_ago_in_words(@release.created_at) %> ago</span>
   </div>
   <div class="grid md:grid-cols-2 gap-y-4 mt-4">
@@ -25,10 +25,12 @@
       <div class="font-bold text-slate-600 text-sm uppercase mb-1">Release branch</div>
       <code><%= link_to @release.branch_name, @release.branch_url %></code>
     </div>
+
     <div>
       <div class="font-bold text-slate-600 text-sm uppercase mb-1">Branching Strategy</div>
       <span><%= @train.branching_strategy_name %></span>
     </div>
+
     <% unless @train.sign_off_groups.blank? %>
       <div>
         <div class="font-bold text-slate-600 text-sm uppercase mb-1">Sign-off Groups</div>
