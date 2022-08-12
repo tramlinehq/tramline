@@ -1,26 +1,29 @@
 <% breadcrumb :sign_off_groups, @app %>
+
 <div class="mb-8">
   <h1 class="text-2xl md:text-3xl text-slate-800 font-bold"> Sign Off groups</h1>
 </div>
+
 <div class="overflow-x-auto">
   <table class="table-auto w-full">
     <!-- Table header -->
     <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
     <tr>
-      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="font-semibold text-left">Action</div>
-      </th>
-      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <th class="px-1 first:pl-3 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">Name</div>
       </th>
-      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <th class="px-1 first:pl-1 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">Members</div>
+      </th>
+      <th class="px-1 py-3 first:pl-1 last:pr-5 whitespace-nowrap">
+        <div class="font-semibold text-right">Delete?</div>
       </th>
     </tr>
     </thead>
   </table>
 </div>
-<%= form_with model: @app, url: app_sign_off_groups_path(@app), method: :put  do |f| %>
+
+<%= form_with model: @app, url: app_sign_off_groups_path(@app), method: :put do |f| %>
   <div data-controller="nested-form">
     <template data-nested-form-target='template'>
       <%= f.fields_for :sign_off_groups, SignOffGroup.new, child_index: 'TEMPLATE_RECORD' do |g| %>
@@ -29,8 +32,9 @@
     </template>
 
     <%= f.fields_for :sign_off_groups do |g| %>
-        <%= render 'sign_off_fields', form: g %>
+      <%= render 'sign_off_fields', form: g %>
     <% end %>
+
     <div data-nested-form-target="add_item">
       <%= button_to "#", data: { action: "nested-form#add_association" }, class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" do %>
         <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
@@ -39,7 +43,9 @@
         <span class="ml-2">Add Group</span>
       <% end %>
     </div>
-  	<%= f.submit "Update", class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' %>
-  </div>
 
+    <div class="mt-5">
+      <%= f.submit "Update", class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' %>
+    </div>
+  </div>
 <% end %>
