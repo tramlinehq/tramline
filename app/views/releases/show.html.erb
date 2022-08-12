@@ -1,4 +1,5 @@
 <% breadcrumb :release, @release %>
+
 <div class="sm:flex sm:justify-between sm:items-center pb-8 border-b border-slate-200">
   <!-- Left: Title -->
   <div class="mb-4 sm:mb-0">
@@ -20,6 +21,7 @@
     <h2 class="font-bold text-2xl"> Kick-off </h2>
     <span class="text-2xl text-slate-400 ml-4"><%= time_ago_in_words(@release.created_at) %> ago</span>
   </div>
+
   <div class="grid md:grid-cols-2 gap-y-4 mt-4">
     <div>
       <div class="font-bold text-slate-600 text-sm uppercase mb-1">Release branch</div>
@@ -29,6 +31,7 @@
       <div class="font-bold text-slate-600 text-sm uppercase mb-1">Branching Strategy</div>
       <span><%= @train.branching_strategy_name %></span>
     </div>
+
     <% unless @train.sign_off_groups.blank? %>
       <div>
         <div class="font-bold text-slate-600 text-sm uppercase mb-1">Sign-off Groups</div>
@@ -110,28 +113,27 @@
                       <% if !step_run&.sign_required? || step.sign_offs.exists?(sign_off_group: group, signed: false, commit: step_run&.commit) %>
                         <%= button_to "Approve", approve_step_sign_off_path(step),
                                       params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
-                                      class: 'btn-sm w-20 border-slate-300 hover:border-slate-500 text-green-600' %>
+                                      class: 'btn border-slate-200 hover:border-slate-300 text-green-500' %>
                           <%= button_to "Revert", revert_step_sign_off_path(step),
                                         params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
-                                        class: 'btn-sm w-20 border-slate-300 hover:border-slate-500 text-slate-600',
+                                        class: 'btn border-slate-200 hover:border-slate-300 text-slate-600',
                                         method: :delete %>
 
                       <% elsif step.sign_offs.exists?(sign_off_group: group, signed: true, commit: step_run&.commit) %>
                         <%= button_to "Reject", reject_step_sign_off_path(step),
                                       params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
-                                      class: 'btn-sm w-20 border-slate-300 hover:border-slate-500 text-rose-600' %>
+                                      class: 'btn border-slate-200 hover:border-slate-300 text-rose-500' %>
                           <%= button_to "Revert", revert_step_sign_off_path(step),
                                         params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
-                                        class: 'btn-sm w-20 border-slate-300 hover:border-slate-500 text-slate-600',
+                                        class: 'btn border-slate-200 hover:border-slate-300 text-slate-600',
                                         method: :delete %>
-
                       <% else %>
                         <%= button_to "Approve", approve_step_sign_off_path(step),
                                       params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
-                                      class: 'btn-sm w-20 border-slate-300 hover:border-slate-500 text-green-600' %>
+                                      class: 'btn border-slate-200 hover:border-slate-300 text-green-500' %>
                           <%= button_to "Reject", reject_step_sign_off_path(step),
                                         params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
-                                        class: 'btn-sm w-20 border-slate-300 hover:border-slate-500 text-rose-600' %>
+                                        class: 'btn border-slate-200 hover:border-slate-300 text-rose-500' %>
                       <% end %>
                       </span>
                     </div>
@@ -158,16 +160,20 @@
   <% commits_count = @release.commits.size %>
   <table class="table-auto w-full">
     <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+
     <tr>
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">•</div>
       </th>
+
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">commit id</div>
       </th>
+
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">commit message</div>
       </th>
+
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">builds</div>
       </th>
@@ -186,11 +192,6 @@
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <span class="underline"><%= link_to commit.message, commit.url %></span>
         </td>
-        <!--        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">-->
-        <%# commit.step_runs.each_with_index do |step_run| %>
-        <!--            <span><%#= step_run.step.name %> </span>-->
-        <%# end %>
-        <!--        </td>-->
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="grid grid-cols-2">
             <% commit.step_runs.order(:created_at).each_with_index do |step_run| %>
