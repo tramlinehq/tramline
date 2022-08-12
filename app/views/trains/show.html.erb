@@ -10,8 +10,7 @@
       <%= link_to "Ongoing Release", live_release_app_train_releases_path(@app, @train),
                   class: "btn bg-green-500 hover:bg-green-600 text-white" %>
     <% else %>
-      <%= link_to "Start new Release", app_train_releases_path(@app, @train),
-                  class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
+      <%= button_to "Start new release", app_train_releases_path(@app, @train), class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
     <% end %>
 
     <%= link_to edit_app_train_path(@app, @train), class: "btn bg-amber-100 border-slate-300 hover:border-slate-400 text-slate-600" do %>
