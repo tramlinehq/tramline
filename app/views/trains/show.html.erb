@@ -7,30 +7,27 @@
 
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
     <% if @train.active_run %>
-      <%= link_to live_release_app_train_releases_path(@app, @train) do %>
-        <button class="btn bg-green-500 hover:bg-green-600 text-white">Ongoing release</button>
-      <% end %>
+      <%= link_to "Ongoing Release", live_release_app_train_releases_path(@app, @train),
+                  class: "btn bg-green-500 hover:bg-green-600 text-white" %>
     <% else %>
-      <%= button_to app_train_releases_path(@app, @train) do %>
-        <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white">Start new release</button>
-      <% end %>
+      <%= link_to "Start new Release", app_train_releases_path(@app, @train),
+                  class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
     <% end %>
 
-    <%= link_to edit_app_train_path(@app, @train) do %>
-      <button class="btn bg-amber-100 border-slate-300 hover:border-slate-400 text-slate-600">
-        <svg class="w-4 h-4 fill-current text-slate-500 shrink-0" viewBox="0 0 16 16">
-          <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4zM4.6 14H2v-2.6l6-6L10.6 8l-6 6zM12 6.6L9.4 4 11 2.4 13.6 5 12 6.6z"></path>
-        </svg>
+    <%= link_to edit_app_train_path(@app, @train), class: "btn bg-amber-100 border-slate-300 hover:border-slate-400 text-slate-600" do %>
+      <svg class="w-4 h-4 fill-current text-slate-500 shrink-0" viewBox="0 0 16 16">
+        <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4zM4.6 14H2v-2.6l6-6L10.6 8l-6 6zM12 6.6L9.4 4 11 2.4 13.6 5 12 6.6z"></path>
+      </svg>
 
-        <span class="ml-2">Settings</span>
-      </button>
+      <span class="ml-2">Settings</span>
     <% end %>
   </div>
 </div>
 
 <div class="flex mt-8">
   <div class="basis-1/2">
-    <span class="font-bold">Branching strategy: </span> <%= @train.branching_strategy_name %>
+    <span class="font-bold">Branching strategy: </span>
+    <%= @train.branching_strategy_name %>
     <% unless @train.sign_off_groups.blank? %>
       <br/>
       <span class="font-bold">Sign-off groups: </span> <%= @train.sign_off_groups.map(&:name).join(", ") %>
@@ -95,6 +92,7 @@
     <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
       <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
     </svg>
+
     <span class="hidden xs:block ml-2">Add a new step</span>
   <% end %>
 <% end %>
