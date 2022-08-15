@@ -37,7 +37,7 @@
 
         <ul class="mt-3">
           <!-- Apps -->
-          <li class="px-3 py-2 rounded-sm mb-0.5 last:mb-0 <%= sidebar_active_link(apps_path, "bg-slate-900") %>">
+          <li class="px-3 py-2 rounded-sm mb-0.5 last:mb-0 <%= sidebar_active_resource('apps', "bg-slate-900") %>">
             <%= link_to apps_path, class: "block text-slate-200 hover:text-white truncate transition duration-150 active:text-indigo-500" do %>
               <div class="flex items-center">
                 <svg class="shrink-0 h-6 w-6" viewBox="0 0 24 24">
@@ -48,12 +48,12 @@
               </div>
             <% end %>
 
-            <div class="lg:hidden lg:sidebar-expanded:block 2xl:block">
+            <div class="lg:sidebar-expanded:block 2xl:block">
               <ul class="pl-9 mt-1">
                 <% active_apps.each do |app| %>
                   <li class="mb-1 last:mb-0">
                     <%= link_to app_path(app), class: "block text-slate-400 hover:text-slate-200 transition duration-150 truncate" do %>
-                      <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200 <%= sidebar_active_link(app_path(app), "text-indigo-500") %>">
+                      <span class="text-sm font-medium lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200 <%= sidebar_active_path(app_path(app), "text-indigo-500") %>">
                         <%= app.name %>
                       </span>
                     <% end %>
