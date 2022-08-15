@@ -44,12 +44,12 @@ class StepsController < SignedInApplicationController
     @train = @step.train
     head 403 and return if @train.active_run
     @app = @train.app
+
     if @step.update(parsed_step_params)
       redirect_to edit_app_train_path(@app, @train), notice: "Step was successfully updated."
     else
       @build_channels = @step.available_deployment_channels
       @ci_actions = @train.ci_cd_provider.workflows
-
       render :edit, status: :unprocessable_entity
     end
   end
@@ -64,6 +64,7 @@ class StepsController < SignedInApplicationController
     else
       train.app.integrations.build_channel.find_by(providable_type: provider).providable.channels
     end
+
     respond_to do |format|
       format.turbo_stream
     end
