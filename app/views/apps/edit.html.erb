@@ -26,6 +26,9 @@
     <div>
       <%= form.label :bundle_identifier, class: "block text-sm font-medium mb-1" %>
       <%= form.text_field :bundle_identifier, class: "form-input w-full", placeholder: "eg., com.clj.is.best", required: true %>
+      <div class="text-sm mt-2">If you're going to deploy to the App Store or Play Store, this <strong>must</strong> match the
+        identifier in the store listing.
+      </div>
     </div>
 
     <div>
