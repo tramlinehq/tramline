@@ -14,7 +14,6 @@ class Notifiers::Slack::BuildFinished
     @build_number = build_number
     @version_number = version_number
     @branch_name = branch_name
-
     @template = template_file
   end
 
