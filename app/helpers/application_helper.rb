@@ -1,6 +1,12 @@
 module ApplicationHelper
-  def sidebar_active_link(path, style)
+  def sidebar_active_path(path, style)
     if current_page?(path)
+      style
+    end
+  end
+
+  def sidebar_active_resource(resource, style)
+    if resource.eql?(controller_name)
       style
     end
   end
