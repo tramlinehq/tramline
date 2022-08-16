@@ -4,6 +4,21 @@
     <%= form.text_field :name, class: "form-input w-full", placeholder: "Enter step name..", required: true %>
   </div>
 
+  <div>
+    <%= form.label :description, class: "block text-sm font-medium mb-1" %>
+    <%= form.text_area :description, class: "form-input w-full mb-1", placeholder: "Describe your step..." %>
+  </div>
+
+  <div>
+    <%= form.label :ci_cd_channel, "CI workflow", class: "block text-sm font-medium mb-1" %>
+    <div class="control">
+      <%= form.select :ci_cd_channel,
+                      options_for_select(@ci_actions.map { |action| [action[:name], { action[:id] => action[:name] }.to_json] }, @step.ci_cd_channel.to_json),
+                      { class: "form-select" },
+                      data: { controller: "input-select" } %>
+    </div>
+  </div>
+
   <div data-controller='build-channel' data-train="<%= @train.id %>" data-app="<%= @train.app.id %>" data-step="<%= @step.id %>">
     <div>
       <%= form.label :build_artifact_integration, class: "block text-sm font-medium mb-1" %>
@@ -12,19 +27,9 @@
     </div>
 
     <div>
-      <%= form.label :build_artifact_channel, class: "block text-sm font-medium mb-1" %>
+      <%= form.label :build_artifact_channel, class: "block text-sm font-medium mb-1 mt-4" %>
       <%= form.select :build_artifact_channel,
                       options_for_select(@build_channels, @step.build_artifact_channel.to_json),
-                      { class: "form-select" },
-                      data: { controller: "input-select" } %>
-    </div>
-  </div>
-
-  <div>
-    <%= form.label :ci_cd_channel, "CI/CD channel", class: "block text-sm font-medium mb-1" %>
-    <div class="control">
-      <%= form.select :ci_cd_channel,
-                      options_for_select(@ci_actions.map { |action| [action[:name], { action[:id] => action[:name] }.to_json] }, @step.ci_cd_channel.to_json),
                       { class: "form-select" },
                       data: { controller: "input-select" } %>
     </div>
@@ -35,8 +40,4 @@
     <%= form.text_field :release_suffix, class: "form-input w-full", placeholder: "Eg: qa-staging", required: true %>
   </div>
 
-  <div>
-    <%= form.label :description, class: "block text-sm font-medium mb-1" %>
-    <%= form.text_area :description, class: "form-input w-full mb-1", placeholder: "Describe your step..." %>
-  </div>
 </div>
