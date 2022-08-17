@@ -8,7 +8,7 @@
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
     <% if @train.active_run %>
       <%= link_to "Ongoing Release", live_release_app_train_releases_path(@app, @train),
-                  class: "btn bg-green-500 hover:bg-green-600 text-white" %>
+                  class: "btn bg-emerald-500 hover:bg-emerald-600 text-white" %>
     <% else %>
       <%= button_to "Start new release", app_train_releases_path(@app, @train), class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
     <% end %>

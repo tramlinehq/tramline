@@ -34,6 +34,9 @@
     <div>
       <%= form.label :build_number, class: "block text-sm font-medium mb-1" %>
       <%= form.number_field :build_number, class: "form-input w-full", placeholder: "eg., your last versionCode", required: true %>
+      <div class="text-sm mt-1">If you're going to deploy to the App Store or Play Store, this number <strong>must
+        be</strong> higher than the build number of the last build you deployed to the store.
+      </div>
     </div>
   </div>
 
