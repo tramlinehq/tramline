@@ -39,12 +39,11 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   def finish_step_run
-    step_run.wrap_up_run!
+    step_run.mark_success!
   end
 
   def upload_artifact
     return if step_run.step.external_deployment?
-
     Releases::Step::UploadArtifact.perform_later(step_run.id, installation_id, artifacts_url)
   end
 

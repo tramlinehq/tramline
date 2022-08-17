@@ -1,7 +1,7 @@
 class Releases::Step::Run < ApplicationRecord
   has_paper_trail
-  self.implicit_order_column = :created_at
 
+  self.implicit_order_column = :created_at
   self.ignored_columns = [:previous_step_run_id]
 
   has_one :build_artifact, foreign_key: :train_step_runs_id, inverse_of: :step_run, dependent: :destroy
@@ -16,20 +16,19 @@ class Releases::Step::Run < ApplicationRecord
 
   after_create :reset_approval!
 
-  enum status: {on_track: "on_track", halted: "halted", finished: "finished"}
+  enum status: {waiting: "waiting", on_track: "on_track", halted: "halted", success: "success", failed: "failed"}
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
 
   attr_accessor :current_user
 
-  delegate :transaction, to: ActiveRecord::Base
   delegate :release_branch, to: :train_run
 
   def automatons!
     Automatons::Workflow.dispatch!(step: step, ref: release_branch, step_run: self)
   end
 
-  def wrap_up_run!
-    self.status = Releases::Step::Run.statuses[:finished]
+  def mark_success!
+    self.status = Releases::Step::Run.statuses[:success]
     save!
   end
 
@@ -43,6 +42,10 @@ class Releases::Step::Run < ApplicationRecord
     else
       approval_pending!
     end
+  end
+
+  def finished?
+    success? || failed?
   end
 
   def is_approved?
