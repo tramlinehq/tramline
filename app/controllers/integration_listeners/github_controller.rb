@@ -45,6 +45,15 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def workflow_payload
-    params.permit(:train_id, :github, action: {}, workflow_run: {}, workflow: {}, repository: {}, organization: {}, sender: {})
+    params.permit(
+      :train_id,
+      github: {},
+      action: {},
+      workflow_run: {},
+      workflow: {},
+      repository: {},
+      organization: {},
+      sender: {}
+    )
   end
 end
