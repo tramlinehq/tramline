@@ -56,6 +56,7 @@
             <% unless step.last? %>
               <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
             <% end %>
+
             <% if step_run&.approval_approved? && step_run.finished? %>
               <!-- approved and finished -->
               <div class="absolute left-0 rounded-full bg-indigo-500" aria-hidden="true">
@@ -78,7 +79,9 @@
                 </svg>
               </div>
             <% end %>
+
             <p class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></p>
+
             <% if @release.on_track? && step.startable? %>
               <%= button_to 'Move to this step',
                             start_release_step_run_path(@release, step),
@@ -192,10 +195,21 @@
           <span class="underline"><%= link_to commit.message, commit.url %></span>
         </td>
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="grid grid-cols-2">
+          <div class="grid grid-cols-2 gap-y-1">
             <% commit.step_runs.order(:created_at).each_with_index do |step_run| %>
-              <div class=""><%= step_run.step.name %></div>
-              <div><%= step_run.approval_emoji %> <%= step_run.build_version %></div>
+              <div>
+                <span class="ml-2">
+                  <% if step_run.ci_link.present? %>
+                    <%= link_to step_run.step.name, step_run.ci_link, class: "underline", target: :_blank %>
+                  <% else %>
+                    <%= step_run.step.name %>
+                  <% end %>
+                </span>
+                
+                <%= build_status_badge(step_run.status) %>
+              </div>
+
+              <div><%= approval_emoji(step_run.approval_status) %> <%= step_run.build_version %></div>
             <% end %>
           </div>
         </td>

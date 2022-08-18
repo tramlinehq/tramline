@@ -54,8 +54,8 @@ class Releases::Train::Run < ApplicationRecord
 
   def latest_finished_step_runs
     step_runs.select("DISTINCT ON (train_step_id) *")
-             .where(status: Releases::Step::Run.statuses[:success])
-             .order(:train_step_id, updated_at: :desc)
+      .where(status: Releases::Step::Run.statuses[:success])
+      .order(:train_step_id, updated_at: :desc)
   end
 
   def signed?

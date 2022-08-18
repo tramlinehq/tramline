@@ -16,7 +16,7 @@ class Releases::Step::Run < ApplicationRecord
 
   after_create :reset_approval!
 
-  enum status: {waiting: "waiting", on_track: "on_track", halted: "halted", success: "success", failed: "failed"}
+  enum status: {on_track: "on_track", halted: "halted", success: "success", failed: "failed"}
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
 
   attr_accessor :current_user
@@ -32,6 +32,16 @@ class Releases::Step::Run < ApplicationRecord
     save!
   end
 
+  def mark_failed!
+    self.status = Releases::Step::Run.statuses[:failed]
+    save!
+  end
+
+  def mark_halted!
+    self.status = Releases::Step::Run.statuses[:halted]
+    save!
+  end
+
   def reset_approval!
     if !sign_required?
       approval_approved!
@@ -44,10 +54,6 @@ class Releases::Step::Run < ApplicationRecord
     end
   end
 
-  def finished?
-    success? || failed?
-  end
-
   def is_approved?
     train.sign_off_groups.all? do |group|
       step.sign_offs.exists?(sign_off_group: group, signed: true, commit: commit)
@@ -55,21 +61,13 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def is_rejected?
-    # FIXME Should rejection needs to be from all groups, or just one group ?
+    # FIXME Should rejection needs to be from all groups, or just one group?
     train.sign_off_groups.any? do |group|
       step.sign_offs.exists?(sign_off_group: group, signed: false, commit: commit)
     end
   end
 
-  # TODO Move this to presenter
-  def approval_emoji
-    case approval_status
-    when "approved"
-      "✅"
-    when "rejected"
-      "❌"
-    when "pending"
-      "⌛"
-    end
+  def finished?
+    success? || failed?
   end
 end
