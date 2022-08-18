@@ -5,16 +5,23 @@ class Services::PostRelease
 
   def initialize(release)
     @release = release
-    @train = release.train
   end
 
   POST_RELEASE_HANDLERS = {
     "almost_trunk" => AlmostTrunk,
-    "release_backmerge" => ReleaseBackMerge,
-    "parallel_working" => ParallelBranches
+    "parallel_working" => ParallelBranches,
+    "release_backmerge" => ReleaseBackMerge
   }
 
   def call
-    POST_RELEASE_HANDLERS[@train.branching_strategy].call(@release)
+    POST_RELEASE_HANDLERS[train.branching_strategy].call(release)
   end
+
+  def train
+    release.train
+  end
+
+  private
+
+  attr_reader :release
 end

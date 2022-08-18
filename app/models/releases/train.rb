@@ -22,6 +22,15 @@ class Releases::Train < ApplicationRecord
   has_many :commit_listeners, class_name: "Releases::CommitListener", inverse_of: :train, dependent: :destroy
   has_many :commits, class_name: "Releases::Commit", inverse_of: :train, dependent: :destroy
 
+  scope :running, -> { includes(:runs).where(runs: {status: Releases::Train::Run.statuses[:on_track]}) }
+
+  enum status: {
+    active: "active",
+    inactive: "inactive"
+  }
+
+  friendly_id :name, use: :slugged
+
   validates :branching_strategy, :working_branch, presence: true
   validates :release_backmerge_branch, presence: true,
     if: lambda { |record|
@@ -32,15 +41,6 @@ class Releases::Train < ApplicationRecord
           record.branching_strategy == "parallel_working"
         }
   validates :branching_strategy, inclusion: {in: BRANCHING_STRATEGIES.keys.map(&:to_s)}
-
-  scope :running, -> { includes(:runs).where(runs: {status: Releases::Train::Run.statuses[:on_track]}) }
-
-  enum status: {
-    active: "active",
-    inactive: "inactive"
-  }
-
-  friendly_id :name, use: :slugged
 
   validate :semver_compatibility
   validate :ready?, on: :create
@@ -83,6 +83,7 @@ class Releases::Train < ApplicationRecord
       self.version_current = version_current.semver_bump(element)
       save!
     end
+
     version_current
   end
 
