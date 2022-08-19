@@ -1,5 +1,7 @@
 <% breadcrumb :train, @train %>
+
 <%= render partial: 'shared/errors', locals: { resource: @step } %>
+
 <%= form_with(
       model: [@app, @train, @step],
       url: app_train_steps_path(@app, @train, @step)
@@ -10,6 +12,7 @@
     </div>
 
     <%= render 'form', form: form %>
+
     <div class="mt-5">
     <%= form.submit 'Create', class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" do %>
       <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">

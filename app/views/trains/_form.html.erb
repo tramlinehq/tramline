@@ -1,4 +1,5 @@
 <% url = train.new_record? ? app_trains_path(app) : app_train_path(app, train) %>
+
 <%= form_with(model: [app, train], url: url) do |form| %>
   <div class="mb-8">
     <% if train.new_record? %>
@@ -54,8 +55,6 @@
 
     <div class="almost_trunk hidden">
     </div>
-
-    <div class="pratul-make-sensible-grid"></div>
 
     <div class="release_backmerge hidden">
       <div>
@@ -113,31 +112,7 @@
           </div>
         </div>
 
-        <div class="pl-9 my-3 flex flex-col">
-          <span><%= step.description %></span>
-          <span class="pt-1.5 flex items-center text-slate-400">
-            <svg class="mr-2 icon icon-tabler icon-tabler-subtask" width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-              <line x1="6" y1="9" x2="12" y2="9"/>
-              <line x1="4" y1="5" x2="8" y2="5"/>
-              <path d="M6 5v11a1 1 0 0 0 1 1h5"/>
-              <rect x="12" y="7" width="8" height="4" rx="1"/>
-              <rect x="12" y="15" width="8" height="4" rx="1"/>
-            </svg>
-            <span class="mr-8"><%= step.ci_cd_provider_name %> • <%= step.ci_cd_channel_name %></span>
-
-            <svg class="mr-2 icon icon-tabler icon-tabler-package" width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-              <polyline points="12 3 20 7.5 20 16.5 12 21 4 16.5 4 7.5 12 3"/>
-              <line x1="12" y1="12" x2="20" y2="7.5"/>
-              <line x1="12" y1="12" x2="12" y2="21"/>
-              <line x1="12" y1="12" x2="4" y2="7.5"/>
-              <line x1="16" y1="5.25" x2="8" y2="9.75"/>
-            </svg>
-            <span><%= step.deployment_provider_name %> • <%= step.deployment_channel_name %></span>
-          </span>
-        </div>
-
+        <%= render partial: 'per_step_metadata', locals: { step: step } %>
       </li>
     <% end %>
 
@@ -158,7 +133,7 @@
               <span class="ml-2">Add another step</span>
             </button>
           <% else %>
-            <%= link_to new_app_train_step_path(@app, @train), class: 'btn bg-green-600 hover:bg-green-700 text-white' do %>
+            <%= link_to new_app_train_step_path(@app, @train), class: 'btn bg-emerald-500 hover:bg-emerald-600 text-white' do %>
               <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
                 <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"></path>
               </svg>
@@ -170,9 +145,10 @@
     </li>
   </ul>
 <% elsif @train.persisted? %>
-  <div class="">
-    <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white">
-      <%= link_to "Add a new step", new_app_train_step_path(@app, @train) %>
-    </button>
-  </div>
+  <%= link_to new_app_train_step_path(@app, @train), class: "btn bg-indigo-500 hover:bg-indigo-600 text-white mt-4" do %>
+    <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
+      <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
+    </svg>
+    <span class="hidden xs:block ml-2">Add a new step</span>
+  <% end %>
 <% end %>

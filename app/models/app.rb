@@ -25,6 +25,12 @@ class App < ApplicationRecord
   delegate :ci_cd_provider, to: :integrations
   delegate :notification_provider, to: :integrations
 
+  scope :with_trains, -> { joins(:trains).distinct }
+
+  def active_runs
+    Releases::Train::Run.on_track.joins(train: :app).where(train: {app: self})
+  end
+
   def ready?
     integrations.ready? and config&.ready?
   end

@@ -33,6 +33,8 @@ class Releases::Train < ApplicationRecord
         }
   validates :branching_strategy, inclusion: {in: BRANCHING_STRATEGIES.keys.map(&:to_s)}
 
+  scope :running, -> { includes(:runs).where(runs: {status: Releases::Train::Run.statuses[:on_track]}) }
+
   enum status: {
     active: "active",
     inactive: "inactive"
@@ -56,7 +58,7 @@ class Releases::Train < ApplicationRecord
   self.ignored_columns = [:signoff_enabled]
 
   def self.running?
-    joins(:runs).where(runs: {status: Releases::Train::Run.statuses[:on_track]}).any?
+    running.any?
   end
 
   def set_default_status!
