@@ -51,10 +51,7 @@ class Services::TriggerRelease
 
   def create_branches
     return if train.branching_strategy == "parallel_working"
-
     installation.create_branch!(repo, working_branch, new_branch_name)
-    message = "Branch #{new_branch_name} is created"
-    Automatons::Notify.dispatch!(train:, message:)
   rescue Octokit::UnprocessableEntity
     nil
   end

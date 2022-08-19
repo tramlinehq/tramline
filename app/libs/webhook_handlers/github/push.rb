@@ -17,15 +17,16 @@ class WebhookHandlers::Github::Push
     if valid_repo_and_branch?
       if train.commit_listeners.exists?(branch_name:)
         commit = payload["head_commit"]
+
         Releases::Commit.transaction do
           commit_record = Releases::Commit.create!(train:,
-            train_run: release,
-            commit_hash: commit["id"],
-            message: commit["message"],
-            timestamp: commit["timestamp"],
-            author_name: commit["author"]["name"],
-            author_email: commit["author"]["email"],
-            url: commit["url"])
+                                                   train_run: release,
+                                                   commit_hash: commit["id"],
+                                                   message: commit["message"],
+                                                   timestamp: commit["timestamp"],
+                                                   author_name: commit["author"]["name"],
+                                                   author_email: commit["author"]["email"],
+                                                   url: commit["url"])
 
           train.bump_version!(:patch) if release.step_runs.any?
 
@@ -42,10 +43,16 @@ class WebhookHandlers::Github::Push
           end
 
           release.update(release_version: train.version_current)
-        end
 
-        message = "New push to the branch #{payload["ref"].delete_prefix("refs/heads/")} with commit message: _#{payload["head_commit"]["message"]}_"
-        Automatons::Notify.dispatch!(train:, message:)
+
+          if release.commits.eql?(1)
+            Automatons::Notify.dispatch!(
+              train:,
+              message: "New Release!",
+              text_block: release_started_notification(payload)
+            )
+          end
+        end
       end
       Response.new(:accepted)
     else
@@ -77,5 +84,14 @@ class WebhookHandlers::Github::Push
 
   def release
     train.active_run
+  end
+
+  def release_started_notification(payload)
+    Notifiers::Slack::ReleaseStarted.render_json(
+      train_name: train.name,
+      version_number: train.version_current,
+      branch_name: payload["ref"].delete_prefix("refs/heads/"),
+      commit_msg: payload["head_commit"]["message"]
+    )
   end
 end

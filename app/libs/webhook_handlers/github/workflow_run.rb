@@ -72,11 +72,7 @@ class WebhookHandlers::Github::WorkflowRun
         version_number:
       )
 
-    Automatons::Notify.dispatch!(
-      train:,
-      message: "Your release workflow completed!",
-      text_block:
-    )
+    Automatons::Notify.dispatch!(train:, message: "Your release workflow completed!", text_block:)
   end
 
   def step_run
