@@ -7,11 +7,11 @@ export default class extends Controller {
   initialize() {
     this.reset_choices()
   }
-   
+
   add_association(event) {
-    event.preventDefault()  
+    event.preventDefault()
     var content = this.templateTarget.innerHTML.replace(/TEMPLATE_RECORD/g, new Date().valueOf())
-    this.add_itemTarget.insertAdjacentHTML('beforebegin', content)
+    this.add_itemTarget.insertAdjacentHTML("beforebegin", content)
     this.reset_choices()
   }
 
