@@ -4,13 +4,13 @@ export default class extends Controller {
   static targets = ['branching-selector']
 
   initialize() {
-    let class_name = document.querySelector('[name="releases_train[branching_strategy]"]').value
+    const class_name = document.querySelector('[name="releases_train[branching_strategy]"]').value
     for (let el of document.querySelectorAll("." + class_name)) el.classList.remove("hidden");
   }
 
   change(event) {
     this.resetFields();
-    let class_name = event.srcElement.value
+    const class_name = event.srcElement.value
     for (let el of document.querySelectorAll("." + class_name)) el.classList.remove("hidden");
   }
 

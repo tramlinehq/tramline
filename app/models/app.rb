@@ -14,7 +14,7 @@ class App < ApplicationRecord
 
   enum platform: {android: "android", ios: "ios"}
 
-  accepts_nested_attributes_for :sign_off_groups, allow_destroy: true, reject_if: proc { |attributes| attributes["name"].blank? }
+  accepts_nested_attributes_for :sign_off_groups, allow_destroy: true, reject_if: :reject_sign_off_groups?
 
   after_initialize :initialize_config, if: :new_record?
   after_initialize :set_default_platform, if: :new_record?
@@ -53,5 +53,9 @@ class App < ApplicationRecord
     if trains.running? && bundle_identifier_changed?
       errors.add(:bundle_identifier, "cannot be updated if there are running trains!")
     end
+  end
+
+  def reject_sign_off_groups?(attributes)
+    attributes["name"].blank? || attributes["member_ids"].compact_blank.empty?
   end
 end

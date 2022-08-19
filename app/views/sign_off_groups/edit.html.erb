@@ -24,13 +24,13 @@
       <!-- Table header -->
       <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
       <tr>
-        <th class="px-1 first:pl-3 py-3 whitespace-nowrap">
+        <th class="first:pl-3 py-3 whitespace-nowrap">
           <div class="font-semibold text-left">Name</div>
         </th>
-        <th class="px-1 first:pl-1 py-3 whitespace-nowrap">
+        <th class="py-3 whitespace-nowrap">
           <div class="font-semibold text-left">Members</div>
         </th>
-        <th class="px-1 py-3 first:pl-1 last:pr-5 whitespace-nowrap">
+        <th class="py-3 last:pr-5 whitespace-nowrap">
           <div class="font-semibold text-right">Delete?</div>
         </th>
       </tr>
@@ -38,7 +38,7 @@
     </table>
   </div>
 
-  <%= form_with model: @app, url: app_sign_off_groups_path(@app), method: :put do |f| %>
+  <%= form_with model: @app, url: app_sign_off_groups_path(@app), method: :put, data: { nested_form_target:'form' } do |f| %>
     <template data-nested-form-target='template'>
       <%= f.fields_for :sign_off_groups, SignOffGroup.new, child_index: 'TEMPLATE_RECORD' do |g| %>
         <%= render 'sign_off_fields', form: g %>
