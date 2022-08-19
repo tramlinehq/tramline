@@ -30,7 +30,7 @@ RSpec.describe Releases::Step, type: :model do
     it "second step can be started after finishing first step" do
       second_step = steps.second
       release = FactoryBot.create(:releases_train_run, train:)
-      FactoryBot.create(:releases_step_run, step: steps.first, status: "finished", train_run: release)
+      FactoryBot.create(:releases_step_run, step: steps.first, status: "success", train_run: release)
       expect(second_step).to be_startable
     end
   end
