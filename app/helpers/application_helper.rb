@@ -14,7 +14,15 @@ module ApplicationHelper
   def modal_for(heading, &block)
     render(
       partial: "shared/modal",
-      locals: {heading: heading, block: block}
+      locals: { heading: heading, block: block }
     )
+  end
+
+  def dynamic_header_color
+    if Rails.env.development?
+      "bg-amber-400"
+    else
+      "bg-white"
+    end
   end
 end
