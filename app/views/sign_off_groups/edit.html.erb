@@ -38,15 +38,21 @@
     </table>
   </div>
 
-  <%= form_with model: @app, url: app_sign_off_groups_path(@app), method: :put, data: { nested_form_target:'form' } do |f| %>
+  <%= form_with model: @app, url: app_sign_off_groups_path(@app), method: :put do |f| %>
     <template data-nested-form-target='template'>
       <%= f.fields_for :sign_off_groups, SignOffGroup.new, child_index: 'TEMPLATE_RECORD' do |g| %>
         <%= render 'sign_off_fields', form: g %>
       <% end %>
     </template>
 
-    <%= f.fields_for :sign_off_groups do |g| %>
-      <%= render 'sign_off_fields', form: g %>
+    <% if @app.sign_off_groups.blank? %>
+      <%= f.fields_for :sign_off_groups, SignOffGroup.new, child_index: 'TEMPLATE_RECORD' do |g| %>
+        <%= render 'sign_off_fields', form: g %>
+      <% end %>
+    <% else %>
+      <%= f.fields_for :sign_off_groups do |g| %>
+        <%= render 'sign_off_fields', form: g %>
+      <% end %>
     <% end %>
 
     <div data-nested-form-target="addItem"></div>
