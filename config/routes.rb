@@ -69,12 +69,14 @@ Rails.application.routes.draw do
             post :stop
           end
         end
+
         collection do
           get :live_release
           post :post_release
         end
       end
     end
+
     resources :integrations, only: %i[index create] do
       collection do
         get :connect, to: "integrations#connect", as: :connect

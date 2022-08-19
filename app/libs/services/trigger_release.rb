@@ -1,6 +1,9 @@
 class Services::TriggerRelease
   include Rails.application.routes.url_helpers
+
   Response = Struct.new(:success, :body)
+
+  delegate :transaction, to: ActiveRecord::Base
 
   def self.call(train)
     new(train).call
@@ -20,9 +23,10 @@ class Services::TriggerRelease
       return Response.new(false,
         "Cannot start a train that has no steps. Please add at least one step.")
     end
+
     return Reponse.new(false, "Train is already running") if train.active_run.present?
 
-    ApplicationRecord.transaction do # FIXME cleanup and extract pre release hooks per branching strategy
+    transaction do # FIXME cleanup and extract pre release hooks per branching strategy
       create_run_record
       setup_webhook_listeners
       create_webhooks
@@ -30,6 +34,7 @@ class Services::TriggerRelease
       prepare_branch
       # run_first_step
     end
+
     Response.new(true)
   end
 
@@ -57,7 +62,6 @@ class Services::TriggerRelease
   def prepare_branch
     if train.branching_strategy == "parallel_working"
       response = installation.create_pr!(repo, train.release_branch, train.working_branch, "Pre release merge", "")
-
       installation.merge_pr!(repo, response[:number])
     end
   rescue Octokit::UnprocessableEntity
@@ -108,10 +112,12 @@ class Services::TriggerRelease
   def new_branch_name
     @branch_name ||= begin
       branch_name = starting_time.strftime("r/#{train.display_name}/%Y-%m-%d")
+
       if train.runs.exists?(branch_name:)
         branch_name += "-1"
         branch_name = branch_name.succ while train.runs.exists?(branch_name:)
       end
+
       branch_name
     end
   end

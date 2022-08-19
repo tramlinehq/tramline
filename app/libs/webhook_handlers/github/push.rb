@@ -15,7 +15,6 @@ class WebhookHandlers::Github::Push
     return Response.new(:accepted) if valid_tag?
 
     if valid_repo_and_branch?
-
       if train.commit_listeners.exists?(branch_name:)
         commit = payload["head_commit"]
         Releases::Commit.transaction do
@@ -41,6 +40,7 @@ class WebhookHandlers::Github::Push
               end
             end
           end
+
           release.update(release_version: train.version_current)
         end
 

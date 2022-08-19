@@ -2,7 +2,6 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   skip_before_action :verify_authenticity_token, only: [:events]
   skip_before_action :require_login, only: [:events]
 
-  delegate :transaction, to: ActiveRecord::Base
   delegate :active_run, to: :train
 
   def providable_params
@@ -45,6 +44,15 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def workflow_payload
-    params.permit(:train_id, :github, action: {}, workflow_run: {}, workflow: {}, repository: {}, organization: {}, sender: {})
+    params.permit(
+      :train_id,
+      github: {},
+      action: {},
+      workflow_run: {},
+      workflow: {},
+      repository: {},
+      organization: {},
+      sender: {}
+    )
   end
 end
