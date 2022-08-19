@@ -4,6 +4,7 @@ class SignOffsController < SignedInApplicationController
   def approve
     @sign_off_group = SignOffGroup.find(params[:sign_off_group_id])
     commit = Releases::Commit.find(params[:commit_id])
+
     if @sign_off_group.members.include?(current_user)
       @step_sign_off = @step.sign_offs.find_or_create_by(user_id: current_user.id, sign_off_group: @sign_off_group, commit: commit)
       @step_sign_off.update(signed: true)
@@ -16,6 +17,7 @@ class SignOffsController < SignedInApplicationController
   def reject
     @sign_off_group = SignOffGroup.find(params[:sign_off_group_id])
     commit = Releases::Commit.find(params[:commit_id])
+
     if @sign_off_group.members.include?(current_user)
       @step_sign_off = @step.sign_offs.find_or_create_by(user_id: current_user.id, sign_off_group: @sign_off_group, commit: commit)
       @step_sign_off.update(signed: false)
@@ -28,6 +30,7 @@ class SignOffsController < SignedInApplicationController
   def revert
     @sign_off_group = SignOffGroup.find(params[:sign_off_group_id])
     commit = Releases::Commit.find(params[:commit_id])
+
     if @sign_off_group.members.include?(current_user)
       @step_sign_off = @step.sign_offs.find_by!(sign_off_group: @sign_off_group, commit: commit)
       @step_run = @step_sign_off.step_run

@@ -1,17 +1,16 @@
 <div class="flex gap-4 h-14">
-  <div class="basis-1/12  flex items-center justify-center">
-    <%= form.check_box '_destroy' %>
- </div>
-
   <div class="basis-3/12 flex items-center">
-    <%= form.text_field :name, class: 'form-input w-full' %>
+    <%= form.text_field :name, class: 'form-input w-full', placeholder: "for eg. QAs, Product Managers etc." %>
   </div>
-  <div class="basis-8/12">
-    <%= form.select :member_ids, 
-      options_for_select(@organization_members,
-                         form.object.members.pluck(:id)
-                        ), 
-                        {}, 
-                        { multiple: true, class: 'js-choice' } %>
+
+  <div class="basis-8/12 pt-3">
+    <%= form.select :member_ids,
+                    options_for_select(@organization_members, form.object.members.pluck(:id)),
+                    {},
+                    { multiple: true, id: "slim-select", data: { controller: "input-select" } } %>
+  </div>
+
+  <div class="basis-1/12 flex items-center justify-center">
+    <%= form.check_box '_destroy' %>
   </div>
 </div>

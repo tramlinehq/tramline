@@ -6,6 +6,7 @@ class SignOffGroupsController < SignedInApplicationController
 
   def update
     app = current_organization.apps.friendly.find(params[:app_id])
+
     if app.update(sign_off_groups_attributes)
       redirect_to app_sign_off_groups_path(app), notice: "Sign off groups updated."
     else

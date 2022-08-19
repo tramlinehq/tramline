@@ -20,8 +20,8 @@ RSpec.describe "Accounts::SignOffGroups", type: :request do
       sign_in user
       put "/apps/#{tram_app.slug}/sign_off_groups",
         params: {app: {sign_off_groups_attributes: [
-          {name: "Developers", sign_off_group_membership_ids: [developer_1.id]},
-          {name: "Testers", sign_off_group_membership_ids: [qa_1.id]}
+          {name: "Developers", member_ids: [developer_1.id]},
+          {name: "Testers", member_ids: [qa_1.id]}
         ]}}
 
       expect(tram_app.sign_off_groups.count).to eq(2)
