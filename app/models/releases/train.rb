@@ -45,6 +45,7 @@ class Releases::Train < ApplicationRecord
   validate :semver_compatibility
   validate :ready?, on: :create
   validates :version_suffix, uniqueness: {scope: :app}
+  validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: "can only contain alphanumerics, underscores, hyphens and forward-slashes."}
 
   before_create :set_current_version!
   before_create :set_default_status!
@@ -71,7 +72,7 @@ class Releases::Train < ApplicationRecord
   end
 
   def display_name
-    name.downcase.tr(" ", "-")
+    name.strip.downcase.gsub(/\s+/, "-")
   end
 
   def tag_name
