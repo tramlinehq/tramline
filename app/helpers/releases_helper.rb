@@ -23,7 +23,7 @@ module ReleasesHelper
         ["Unknown", %w[bg-slate-100 text-slate-500]]
       end
 
-    classes = %w[font-mono text-xs uppercase tracking-wide inline-flex font-medium rounded-full text-center px-2 py-0.5]
+    classes = %w[text-xs uppercase tracking-wide inline-flex font-medium rounded-full text-center px-2 py-0.5]
 
     content_tag(
       :span,
