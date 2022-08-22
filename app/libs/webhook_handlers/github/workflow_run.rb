@@ -60,8 +60,8 @@ class WebhookHandlers::Github::WorkflowRun
   def notify!
     release_branch = release.release_branch
     code_name = release.code_name
-    build_number = train.app.build_number
-    version_number = train.version_current
+    build_number = step_run.build_number
+    version_number = step_run.build_version
 
     text_block =
       Notifiers::Slack::BuildFinished.render_json(
