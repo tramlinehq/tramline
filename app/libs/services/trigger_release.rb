@@ -109,7 +109,6 @@ class Services::TriggerRelease
   def new_branch_name
     @branch_name ||= begin
       branch_name = starting_time.strftime("r/#{train.display_name}/%Y-%m-%d")
-
       if train.runs.exists?(branch_name:)
         branch_name += "-1"
         branch_name = branch_name.succ while train.runs.exists?(branch_name:)

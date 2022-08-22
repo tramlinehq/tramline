@@ -105,10 +105,9 @@
                 <% if step_run.approval_approved? && (@release.finished? || !is_current_step) %>
                   <span>This step has been approved</span>
                 <% elsif step_run.approval_rejected? && (@release.finished? || !is_current_step) %>
-                  <div class="font-bold text-slate-600 text-sm uppercase mb-1">Sign-offs required!</div>
                   <span>This step has been rejected</span>
                 <% else %>
-                  <div class="font-bold text-slate-600 text-sm uppercase mb-1">Sign-offs required!</div>
+                  <div class="font-bold text-slate-600 text-sm uppercase mb-1">Sign-offs</div>
                   <% @train.sign_off_groups.each do |group| %>
                     <div class="flex items-center justify-between mb-2">
                       <span class=""><%= group.name %></span>
