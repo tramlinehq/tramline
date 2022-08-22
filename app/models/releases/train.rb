@@ -7,8 +7,8 @@ class Releases::Train < ApplicationRecord
 
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
-    release_backmerge: "Release Backmerge",
-    parallel_working: "Parallel working"
+    release_backmerge: "Release with Backmerge",
+    parallel_working: "Parallel Working and Release"
   }.freeze
   EXTERNAL_DEPLOYMENT_CHANNEL = {"None (outside Tramline)" => "external"}
 

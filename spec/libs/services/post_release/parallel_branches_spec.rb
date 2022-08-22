@@ -17,7 +17,7 @@ describe Services::PostRelease::ParallelBranches do
       "dev",
       nil,
       "[Release kickoff] 1.1.1",
-      "New release train train triggered.\nThe dev branch has been merged into production branch, as per Release Backmerge branching strategy.\n")
+      "New release train train triggered.\nThe dev branch has been merged into production branch, as per Release with Backmerge branching strategy.\n")
     expect(repo_integration).to have_received(:merge_pr!).with(any_args)
   end
 end
