@@ -125,7 +125,7 @@
           <% if run.completed_at %>
             <%= "#{run.release_version} released on #{run.completed_at.to_s(:short)}" %>
           <% else %>
-            <%= run.release_version.chop + '*' %>
+            <%= version_in_progress(run.release_version) %>
           <% end %>
         </span>
             <% if @train.active_run == run %>

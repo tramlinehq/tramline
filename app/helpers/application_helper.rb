@@ -27,4 +27,9 @@ module ApplicationHelper
       "bg-white"
     end
   end
+
+  def version_in_progress(version)
+    semver = Semantic::Version.new(version)
+    "#{semver.major}.#{semver.minor}.*"
+  end
 end
