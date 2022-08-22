@@ -53,6 +53,7 @@ class WebhookHandlers::Github::Push
           end
         end
       end
+
       Response.new(:accepted)
     else
       Response.new(:unprocessable_entity)
