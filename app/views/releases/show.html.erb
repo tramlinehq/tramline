@@ -33,7 +33,7 @@
 
     <% unless @train.sign_off_groups.blank? %>
       <div>
-        <div class="font-bold text-slate-600 text-sm uppercase mb-1">Sign-off Groups</div>
+        <div class="font-bold text-slate-600 text-sm uppercase mb-1">Sign-off groups</div>
         <span><%= @train.sign_off_groups.map(&:name).join(", ") %></span>
       </div>
     <% end %>
