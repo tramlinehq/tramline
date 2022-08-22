@@ -4,21 +4,14 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": ":rocket: *New build is available!*"
+        "text": ":star: *New release has commenced!* :star:"
       }
     },
     {
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*<<%= @artifact_link %>|Build Artifact>*"
-      }
-    },
-    {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": "*Version:* <%= @version_number %>\n*Build Number:* <%= @build_number %>\n*Branch:* <%= @branch_name %>"
+        "text": "*Release Train:* <%= @train_name %>\n*App Version:* <%= @version_number %>\n*Branch:* <%= @branch_name %>\n*Commit:* <%= @commit_msg %>"
       },
       "accessory": {
         "type": "image",

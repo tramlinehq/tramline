@@ -77,9 +77,7 @@ class StepsController < SignedInApplicationController
         train.app.integrations.build_channel.find_by(providable_type: provider).providable.channels
       end
 
-    respond_to do |format|
-      format.turbo_stream
-    end
+    respond_to { |format| format.turbo_stream }
   end
 
   private

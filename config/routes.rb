@@ -43,6 +43,7 @@ Rails.application.routes.draw do
   resources :apps do
     resource :app_config, only: %i[edit update], path: :config
     resource :sign_off_groups, only: %i[edit update]
+
     resources :trains do
       member do
         patch :deactivate
