@@ -44,8 +44,7 @@ class WebhookHandlers::Github::Push
 
           release.update(release_version: train.version_current)
 
-
-          if release.commits.eql?(1)
+          if release.commits.size.eql?(1)
             Automatons::Notify.dispatch!(
               train:,
               message: "New Release!",
@@ -83,7 +82,7 @@ class WebhookHandlers::Github::Push
   end
 
   def release
-    train.active_run
+    @release ||= train.active_run
   end
 
   def release_started_notification(payload)
