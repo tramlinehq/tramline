@@ -19,6 +19,8 @@ module ReleasesHelper
         ["Success", %w[bg-green-100 text-green-600]]
       when Releases::Step::Run.statuses[:failed]
         ["Failure", %w[bg-rose-100 text-rose-600]]
+      when Releases::Step::Run.statuses[:halted]
+        ["Cancelled", %w[bg-yellow-100 text-yellow-600]]
       else
         ["Unknown", %w[bg-slate-100 text-slate-500]]
       end
