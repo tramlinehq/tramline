@@ -90,8 +90,10 @@ class WebhookHandlers::Github::WorkflowRun
       .find { |artifact| artifact["name"] == "version" }["archive_download_url"]
   end
 
+  # TODO: These checks are a workaround because Github's action, status and conclusion fields can be pretty unreliable
   def successful?
-    complete_action? && payload_status == "completed" && payload_conclusion == "success"
+    (complete_action? && payload_status == "in_progress") ||
+      (payload_status == "completed" && payload_conclusion == "success")
   end
 
   def payload_status
@@ -110,7 +112,6 @@ class WebhookHandlers::Github::WorkflowRun
     payload[:workflow_run][:artifacts_url]
   end
 
-  # TODO Workaround as it seems that github's status field is not consistent
   def complete_action?
     payload_action == "completed"
   end

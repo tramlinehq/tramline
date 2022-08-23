@@ -1,6 +1,5 @@
 class Notifiers::Slack::Base
   ROOT_PATH = File.join(Rails.root, "app", "views", "notifiers", "slack")
-  TEMPLATE_FILE = "release_started.json.erb"
 
   def self.render_json(**args)
     new(**args).render_json
