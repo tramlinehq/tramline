@@ -20,13 +20,13 @@ class WebhookHandlers::Github::Push
 
         Releases::Commit.transaction do
           commit_record = Releases::Commit.create!(train:,
-            train_run: release,
-            commit_hash: commit["id"],
-            message: commit["message"],
-            timestamp: commit["timestamp"],
-            author_name: commit["author"]["name"],
-            author_email: commit["author"]["email"],
-            url: commit["url"])
+                                                   train_run: release,
+                                                   commit_hash: commit["id"],
+                                                   message: commit["message"],
+                                                   timestamp: commit["timestamp"],
+                                                   author_name: commit["author"]["name"],
+                                                   author_email: commit["author"]["email"],
+                                                   url: commit["url"])
 
           train.bump_version!(:patch) if release.step_runs.any?
 
@@ -43,14 +43,7 @@ class WebhookHandlers::Github::Push
           end
 
           release.update(release_version: train.version_current)
-
-          if release.commits.size.eql?(1)
-            Automatons::Notify.dispatch!(
-              train:,
-              message: "New Release!",
-              text_block: release_started_notification(payload)
-            )
-          end
+          notify_release_start!(payload)
         end
       end
 
@@ -86,12 +79,22 @@ class WebhookHandlers::Github::Push
     @release ||= train.active_run
   end
 
-  def release_started_notification(payload)
-    Notifiers::Slack::ReleaseStarted.render_json(
-      train_name: train.name,
-      version_number: train.version_current,
-      branch_name: payload["ref"].delete_prefix("refs/heads/"),
-      commit_msg: payload["head_commit"]["message"]
+  def notify_release_start!(payload)
+    binding.pry
+    return unless release.commits.size.eql?(1)
+
+    notifier =
+      Notifiers::Slack::ReleaseStarted.render_json(
+        train_name: train.name,
+        version_number: train.version_current,
+        branch_name: payload["ref"].delete_prefix("refs/heads/"),
+        commit_msg: payload["head_commit"]["message"]
+      )
+
+    Automatons::Notify.dispatch!(
+      train:,
+      message: "New Release!",
+      text_block: notifier
     )
   end
 end
