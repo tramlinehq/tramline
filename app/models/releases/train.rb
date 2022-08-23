@@ -30,6 +30,7 @@ class Releases::Train < ApplicationRecord
   }
 
   friendly_id :name, use: :slugged
+  auto_strip_attributes :name, squish: true
 
   validates :branching_strategy, :working_branch, presence: true
   validates :release_backmerge_branch, presence: true,

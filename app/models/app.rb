@@ -20,6 +20,7 @@ class App < ApplicationRecord
   after_initialize :set_default_platform, if: :new_record?
 
   friendly_id :name, use: :slugged
+  auto_strip_attributes :name, squish: true
 
   delegate :vcs_provider, to: :integrations
   delegate :ci_cd_provider, to: :integrations
