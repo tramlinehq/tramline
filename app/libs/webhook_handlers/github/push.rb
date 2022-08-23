@@ -20,13 +20,13 @@ class WebhookHandlers::Github::Push
 
         Releases::Commit.transaction do
           commit_record = Releases::Commit.create!(train:,
-                                                   train_run: release,
-                                                   commit_hash: commit["id"],
-                                                   message: commit["message"],
-                                                   timestamp: commit["timestamp"],
-                                                   author_name: commit["author"]["name"],
-                                                   author_email: commit["author"]["email"],
-                                                   url: commit["url"])
+            train_run: release,
+            commit_hash: commit["id"],
+            message: commit["message"],
+            timestamp: commit["timestamp"],
+            author_name: commit["author"]["name"],
+            author_email: commit["author"]["email"],
+            url: commit["url"])
 
           train.bump_version!(:patch) if release.step_runs.any?
 
@@ -80,7 +80,6 @@ class WebhookHandlers::Github::Push
   end
 
   def notify_release_start!(payload)
-    binding.pry
     return unless release.commits.size.eql?(1)
 
     notifier =

@@ -23,4 +23,3 @@ module Notifiers
     end
   end
 end
-
