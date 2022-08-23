@@ -42,10 +42,7 @@ class Services::PostRelease
     end
 
     def create_tag
-      Automatons::Tag.dispatch!(
-        train:,
-        branch: release.branch_name
-      )
+      Automatons::Tag.dispatch!(train:, branch: release.branch_name)
     end
 
     def repo_integration

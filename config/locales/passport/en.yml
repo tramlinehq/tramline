@@ -1,0 +1,4 @@
+en:
+  passport:
+    stampable_created: "Created a %{stampable} with status '%{status}'"
+    stampable_status_changed: "Status changed for %{stampable} from '%{from}' to '%{to}'"

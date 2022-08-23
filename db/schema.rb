@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_07_24_103652) do
+ActiveRecord::Schema[7.0].define(version: 2022_08_23_121411) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -152,6 +152,21 @@ ActiveRecord::Schema[7.0].define(version: 2022_07_24_103652) do
     t.datetime "updated_at", null: false
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
     t.index ["status"], name: "index_organizations_on_status"
+  end
+
+  create_table "passports", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "stampable_type", null: false
+    t.uuid "stampable_id", null: false
+    t.string "reason"
+    t.string "kind"
+    t.string "message"
+    t.json "metadata"
+    t.uuid "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["kind"], name: "index_passports_on_kind"
+    t.index ["reason"], name: "index_passports_on_reason"
+    t.index ["stampable_type", "stampable_id"], name: "index_passports_on_stampable"
   end
 
   create_table "releases_commit_listeners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
