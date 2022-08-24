@@ -42,7 +42,7 @@ class ReleasesController < SignedInApplicationController
     @release = @train.active_run
 
     if @release.finished_steps?
-      # TODO move to background job
+      # TODO: move to background job
       @release.perform_post_release!
       redirect_back fallback_location: root_path, notice: "Performing post release steps"
     else

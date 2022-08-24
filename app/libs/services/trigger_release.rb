@@ -26,7 +26,7 @@ class Services::TriggerRelease
 
     return Reponse.new(false, "Train is already running") if train.active_run.present?
 
-    transaction do # FIXME cleanup and extract pre release hooks per branching strategy
+    transaction do # FIXME: cleanup and extract pre release hooks per branching strategy
       create_run_record
       setup_webhook_listeners
       create_webhooks

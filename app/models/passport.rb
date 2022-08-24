@@ -15,6 +15,7 @@ class Passport < ApplicationRecord
   end
 
   def appropriate_reason
+    # FIXME: Check if the constant exists under the stampable
     if stampable.class::STAMPABLE_REASONS.exclude?(reason)
       errors.add(:reason, "should belong to the stampable!")
     end
