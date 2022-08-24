@@ -30,7 +30,7 @@ class Services::PostRelease
 
     def create_tag
       Automatons::Tag.dispatch!(train:, branch: release.branch_name)
-    rescue Octokit::UnprocessableEntity
+    rescue Installations::Github::Error::ReferenceAlreadyExists
       nil
     end
   end

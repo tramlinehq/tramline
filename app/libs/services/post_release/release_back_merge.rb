@@ -14,7 +14,7 @@ class Services::PostRelease
     def call
       transaction do
         update_status
-        merge_prs
+        create_and_merge_prs
         create_tag
       end
     end
@@ -29,7 +29,7 @@ class Services::PostRelease
       release.save
     end
 
-    def merge_prs
+    def create_and_merge_prs
       response =
         repo_integration
           .create_pr!(repository_name, train.release_backmerge_branch, release.branch_name, pr_title, pr_description)
@@ -43,6 +43,8 @@ class Services::PostRelease
 
     def create_tag
       Automatons::Tag.dispatch!(train:, branch: release.branch_name)
+    rescue Installations::Github::Error::ReferenceAlreadyExists
+      nil
     end
 
     def repo_integration
