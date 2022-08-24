@@ -9,7 +9,7 @@ class Releases::Train::Run < ApplicationRecord
   has_many :steps, through: :step_runs
   has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
 
-  enum status: {on_track: "on_track", error: "error", finished: "finished"}
+  enum status: {on_track: "on_track", error: "error", post_release: "post_release", finished: "finished"}
 
   before_create :set_version
   before_update :status_change_stamp!, if: -> { status_changed? }
@@ -33,7 +33,15 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def perform_post_release!
+    self.status = Releases::Train::Run.statuses[:post_release]
+    save!
     Services::PostRelease.call(self)
+  end
+
+  def mark_finished!
+    self.status = Releases::Train::Run.statuses[:finished]
+    self.completed_at = Time.current
+    save!
   end
 
   def branch_url
@@ -65,6 +73,10 @@ class Releases::Train::Run < ApplicationRecord
 
   def signed?
     last_run_for(train.steps.last)&.approval_approved?
+  end
+
+  def self.pending_release?
+    exists?(status: [:post_release, :on_track])
   end
 
   def event_stamp!(reason:, kind:, data:)
