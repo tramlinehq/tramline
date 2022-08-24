@@ -1,5 +1,6 @@
 class Services::PostRelease
   class ParallelBranches
+    class PostReleaseFailed < StandardError; end
     delegate :transaction, to: ApplicationRecord
 
     def self.call(release)
@@ -13,9 +14,9 @@ class Services::PostRelease
 
     def call
       transaction do
-        update_status
         create_tag
         create_and_merge_prs
+        release.mark_finished!
       end
     end
 
@@ -23,17 +24,22 @@ class Services::PostRelease
 
     attr_reader :train, :release
 
-    def update_status
-      release.status = Releases::Train::Run.statuses[:finished]
-      release.completed_at = Time.current
-      release.save
-    end
-
     def create_and_merge_prs
-      response =
-        repo_integration
-          .create_pr!(repository_name, train.working_branch, train.release_branch, pr_title, pr_description)
-      repo_integration.merge_pr!(repository_name, response[:number])
+      begin
+        response =
+          repo_integration
+            .create_pr!(repository_name, train.working_branch, train.release_branch, pr_title, pr_description)
+      rescue Installations::Github::Error::PullRequestAlreadyExistsError
+        train_run.event_stamp!(reason: :post_release_pull_request_already_exists, kind: :notice, data: {})
+        raise PostReleaseFailed.new
+      end
+
+      begin
+        repo_integration.merge_pr!(repository_name, response[:number])
+      rescue Installations::Github::Error::PullRequestNotMergeableError
+        train_run.event_stamp!(reason: :post_release_pull_request_not_mergeable, kind: :notice, data: {})
+        raise PostReleaseFailed.new
+      end
     end
 
     def create_tag
