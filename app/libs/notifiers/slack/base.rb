@@ -16,10 +16,4 @@ class Notifiers::Slack::Base
   def render
     ERB.new(@template).result(binding)
   end
-
-  private
-
-  def template_file
-    File.read(File.join(ROOT_PATH, TEMPLATE_FILE))
-  end
 end

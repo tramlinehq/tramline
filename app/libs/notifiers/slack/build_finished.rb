@@ -20,6 +20,10 @@ module Notifiers
         extracted = RUN_URI.extract(link)
         "https://github.com/#{extracted["org_name"]}/#{extracted["repo_name"]}/actions/runs/#{extracted["run_id"]}"
       end
+
+      def template_file
+        File.read(File.join(ROOT_PATH, TEMPLATE_FILE))
+      end
     end
   end
 end

@@ -61,7 +61,7 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def is_rejected?
-    # FIXME Should rejection needs to be from all groups, or just one group?
+    # FIXME: Should rejection needs to be from all groups, or just one group?
     train.sign_off_groups.any? do |group|
       step.sign_offs.exists?(sign_off_group: group, signed: false, commit: commit)
     end
