@@ -29,20 +29,9 @@ class Services::PostRelease
     end
 
     def create_tag
-      Automatons::Tag.dispatch!(
-        train:,
-        branch: release.branch_name
-      )
+      Automatons::Tag.dispatch!(train:, branch: release.branch_name)
     rescue Octokit::UnprocessableEntity
       nil
-    end
-
-    def repo_integration
-      train.ci_cd_provider.installation
-    end
-
-    def repository_name
-      train.app.config.code_repository_name
     end
   end
 end

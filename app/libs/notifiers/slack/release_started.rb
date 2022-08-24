@@ -10,6 +10,12 @@ module Notifiers
         @version_number = version_number
         super
       end
+
+      private
+
+      def template_file
+        File.read(File.join(ROOT_PATH, TEMPLATE_FILE))
+      end
     end
   end
 end

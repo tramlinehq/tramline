@@ -7,7 +7,7 @@ class PassportJob < ApplicationJob
       begin
         stampable_type.constantize.find(stampable_id)
       rescue NameError, ActiveRecord::RecordNotFound
-        # do nothing
+        # FIXME: maybe push message to Sentry? definitely don't propagate this further
       end
 
     Passport.stamp!(stampable: stampable, reason: reason, kind: kind, message: message, metadata: metadata)
