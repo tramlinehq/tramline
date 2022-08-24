@@ -1,4 +1,6 @@
 en:
   passport:
-    stampable_created: "Created a %{stampable} with status '%{status}'"
-    stampable_status_changed: "Status changed for %{stampable} from '%{from}' to '%{to}'"
+    pre_release_no_commits_for_pull_request: "Could not create a PR from %{from} to %{to} because there was no diff between the two"
+    stampable:
+      created: "Created a %{stampable} with status '%{status}'"
+      status_changed: "Status changed for %{stampable} from '%{from}' to '%{to}'"

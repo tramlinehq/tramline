@@ -61,8 +61,12 @@ class Services::TriggerRelease
       response = installation.create_pr!(repo, train.release_branch, train.working_branch, "Pre release merge", "")
       installation.merge_pr!(repo, response[:number])
     end
-  rescue Octokit::UnprocessableEntity
-    nil
+  rescue Installations::Github::Error::NoCommitsForPullRequestError
+    train_run.event_stamp!(
+      reason: :pre_release_no_commits_for_pull_request,
+      kind: :notice,
+      data: {to: train.release_branch, from: train.working_branch}
+    )
   end
 
   # Webhooks are created with the train and we don't need to create webhooks for each train run AKA release

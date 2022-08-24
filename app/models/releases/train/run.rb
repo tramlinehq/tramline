@@ -2,7 +2,7 @@ class Releases::Train::Run < ApplicationRecord
   has_paper_trail
   self.implicit_order_column = :was_run_at
 
-  STAMPABLE_REASONS = %w[created status_changed]
+  STAMPABLE_REASONS = %w[created status_changed pre_release_no_commits_for_pull_request]
 
   belongs_to :train, class_name: "Releases::Train"
   has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
@@ -67,13 +67,24 @@ class Releases::Train::Run < ApplicationRecord
     last_run_for(train.steps.last)&.approval_approved?
   end
 
+  def event_stamp!(reason:, kind:, data:)
+    PassportJob.perform_later(
+      id,
+      self.class.name,
+      reason:,
+      kind:,
+      message: I18n.t("passport.#{reason}", **data),
+      metadata: data
+    )
+  end
+
   def create_stamp!
     PassportJob.perform_later(
       id,
       self.class.name,
       reason: :created,
       kind: :success,
-      message: I18n.t("passport.stampable_created", stampable: "release", status: status),
+      message: I18n.t("passport.stampable.created", stampable: "release", status: status),
       metadata: {status: status}
     )
   end
@@ -84,7 +95,7 @@ class Releases::Train::Run < ApplicationRecord
       self.class.name,
       reason: :status_changed,
       kind: :success,
-      message: I18n.t("passport.stampable_status_changed", stampable: "release", from: status_was, to: status),
+      message: I18n.t("passport.stampable.status_changed", stampable: "release", from: status_was, to: status),
       metadata: {from: status_was, to: status}
     )
   end
