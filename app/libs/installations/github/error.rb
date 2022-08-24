@@ -1,7 +1,9 @@
 module Installations
   class Github::Error
     class UnsupportedType < ArgumentError; end
+
     class ReferenceAlreadyExists < Octokit::UnprocessableEntity; end
+
     class NoCommitsForPullRequestError < Octokit::UnprocessableEntity; end
 
     ERRORS = [
