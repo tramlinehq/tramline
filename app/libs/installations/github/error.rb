@@ -5,6 +5,7 @@ module Installations
     class ReferenceAlreadyExists < Octokit::UnprocessableEntity; end
 
     class NoCommitsForPullRequestError < Octokit::UnprocessableEntity; end
+    class PullRequestNotMergeableError < Octokit::MethodNotAllowed; end
 
     ERRORS = [
       {
@@ -34,6 +35,8 @@ module Installations
     def handle
       case type
       when :validation
+        handle_validation_errors
+      when :not_allowed
         handle_validation_errors
       else
         raise UnsupportedType
