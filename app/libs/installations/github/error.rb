@@ -32,9 +32,8 @@ module Installations
     end
 
     def handle_validation_errors
-      throwable = matched_error[:decorated_exception]
-      return throwable if throwable.present?
-      exception
+      return exception if matched_error.nil?
+      matched_error[:decorated_exception]
     end
 
     private
@@ -42,13 +41,14 @@ module Installations
     attr_reader :type, :exception
 
     def matched_error
-      ERRORS.find do |known_error|
-        errors.any? do |err|
-          err["resource"].eql?(known_error[:resource]) &&
-            err["code"].eql?(known_error[:code]) &&
-            err["message"] =~ known_error[:message_matcher]
+      @matched_error ||=
+        ERRORS.find do |known_error|
+          errors.any? do |err|
+            err["resource"].eql?(known_error[:resource]) &&
+              err["code"].eql?(known_error[:code]) &&
+              err["message"] =~ known_error[:message_matcher]
+          end
         end
-      end
     end
 
     def body
