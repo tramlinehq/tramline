@@ -91,7 +91,6 @@ class TrainsController < SignedInApplicationController
     params.require(:releases_train).permit(
       :name,
       :description,
-      :version_seeded_with,
       :version_suffix,
       sign_off_group_ids: []
     )
