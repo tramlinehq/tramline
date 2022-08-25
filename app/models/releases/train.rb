@@ -35,12 +35,12 @@ class Releases::Train < ApplicationRecord
   validates :branching_strategy, :working_branch, presence: true
   validates :release_backmerge_branch, presence: true,
     if: lambda { |record|
-          record.branching_strategy == "release_backmerge"
-        }
+      record.branching_strategy == "release_backmerge"
+    }
   validates :release_branch, presence: true,
     if: lambda { |record|
-          record.branching_strategy == "parallel_working"
-        }
+      record.branching_strategy == "parallel_working"
+    }
   validates :branching_strategy, inclusion: {in: BRANCHING_STRATEGIES.keys.map(&:to_s)}
 
   validate :semver_compatibility
@@ -90,7 +90,7 @@ class Releases::Train < ApplicationRecord
   end
 
   def set_current_version!
-    self.version_current = version_seeded_with
+    self.version_current = version_seeded_with.semver_bump(:minor)
   end
 
   def branching_strategy_name

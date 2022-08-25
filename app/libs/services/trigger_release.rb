@@ -17,14 +17,14 @@ class Services::TriggerRelease
   end
 
   def call
-    return Response.new(false, "Cannot start a train that is inactive") if train.inactive?
+    return Response.new(false, "Cannot start a train that is inactive.") if train.inactive?
 
     if train.steps.empty?
       return Response.new(false,
         "Cannot start a train that has no steps. Please add at least one step.")
     end
 
-    return Reponse.new(false, "Train is already running") if train.active_run.present?
+    return Response.new(false, "A release is already in progress.") if train.active_run.present?
 
     transaction do # FIXME: cleanup and extract pre release hooks per branching strategy
       create_run_record

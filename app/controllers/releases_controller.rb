@@ -8,7 +8,7 @@ class ReleasesController < SignedInApplicationController
     response = Services::TriggerRelease.call(@train)
 
     if response.success
-      redirect_to live_release_path, notice: "Train successfully started"
+      redirect_to live_release_path, notice: "A new release has started successfully."
     else
       redirect_back fallback_location: root_path, flash: {error: response.body}
     end
@@ -27,13 +27,13 @@ class ReleasesController < SignedInApplicationController
     if @release
       render :show
     else
-      redirect_back fallback_location: root_path, notice: "No release in progress" unless @release
+      redirect_back fallback_location: root_path, notice: "No release in progress." unless @release
     end
   end
 
   def destroy
     @release.update(status: "finished")
-    redirect_to app_train_path(@release.train.app, @release.train), notice: "Release marked as finished"
+    redirect_to app_train_path(@release.train.app, @release.train), notice: "Release marked as finished."
   end
 
   def post_release
@@ -44,9 +44,9 @@ class ReleasesController < SignedInApplicationController
     if @release.finished_steps?
       # TODO: move to background job
       @release.perform_post_release!
-      redirect_back fallback_location: root_path, notice: "Performing post release steps"
+      redirect_back fallback_location: root_path, notice: "Performing post-release steps."
     else
-      redirect_back fallback_location: root_path, notice: "Train is still running"
+      redirect_back fallback_location: root_path, notice: "Train is still running."
     end
   end
 
