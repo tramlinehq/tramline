@@ -148,7 +148,7 @@
 
       <% end %>
       <div class="pl-9">
-        <% if @release.on_track? && @release.signed? && @release.finished_steps? %>
+        <% if (@release.on_track? || @release.post_release?) && @release.signed? && @release.finished_steps? %>
           <%= button_to "Move to Finalize phase",
                         post_release_app_train_releases_path(@app, @train),
                         class: 'btn-sm bg-indigo-500 hover:bg-indigo-600 text-white' %>

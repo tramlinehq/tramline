@@ -89,6 +89,12 @@ module Installations
       end
     end
 
+    def find_pr(repo, to, from)
+      execute do
+        @client.pull_requests(repo, { head: from, base: to }).first
+      end
+    end
+
     def merge_pr!(repo, pr_number)
       execute do
         @client.merge_pull_request(repo, pr_number)

@@ -2,18 +2,25 @@ class Releases::Train::Run < ApplicationRecord
   has_paper_trail
   self.implicit_order_column = :was_run_at
 
-  STAMPABLE_REASONS = %w[created status_changed pre_release_no_commits_for_pull_request]
+  STAMPABLE_REASONS = %w[created status_changed pre_release_no_commits_for_pull_request post_release_tag_reference_already_exists]
 
   belongs_to :train, class_name: "Releases::Train"
-  has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
   has_many :steps, through: :step_runs
   has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
+  has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
+  has_many :pull_requests, class_name: "Releases::PullRequest", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
 
-  enum status: {on_track: "on_track", error: "error", post_release: "post_release", finished: "finished"}
+  enum status: { on_track: "on_track", post_release: "post_release", finished: "finished", error: "error" }
 
   before_create :set_version
   before_update :status_change_stamp!, if: -> { status_changed? }
   after_create :create_stamp!
+
+  scope :pending_release, -> { where(status: [:post_release, :on_track]) }
+
+  def self.pending_release?
+    pending_release.exists?
+  end
 
   def next_step
     return train.steps.first if step_runs.empty?
@@ -45,7 +52,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def branch_url
-    train.app.vcs_provider&.branch_url(train.app.config&.code_repository_name, branch_name)
+    train.vcs_provider&.branch_url(train.app.config&.code_repository_name, branch_name)
   end
 
   def last_commit
@@ -75,10 +82,6 @@ class Releases::Train::Run < ApplicationRecord
     last_run_for(train.steps.last)&.approval_approved?
   end
 
-  def self.pending_release?
-    exists?(status: [:post_release, :on_track])
-  end
-
   def event_stamp!(reason:, kind:, data:)
     PassportJob.perform_later(
       id,
@@ -97,7 +100,7 @@ class Releases::Train::Run < ApplicationRecord
       reason: :created,
       kind: :success,
       message: I18n.t("passport.stampable.created", stampable: "release", status: status),
-      metadata: {status: status}
+      metadata: { status: status }
     )
   end
 
@@ -108,7 +111,7 @@ class Releases::Train::Run < ApplicationRecord
       reason: :status_changed,
       kind: :success,
       message: I18n.t("passport.stampable.status_changed", stampable: "release", from: status_was, to: status),
-      metadata: {from: status_was, to: status}
+      metadata: { from: status_was, to: status }
     )
   end
 end

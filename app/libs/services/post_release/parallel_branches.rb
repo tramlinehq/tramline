@@ -1,6 +1,5 @@
 class Services::PostRelease
   class ParallelBranches
-    class PostReleaseFailed < StandardError; end
     delegate :transaction, to: ApplicationRecord
 
     def self.call(release)
@@ -13,47 +12,65 @@ class Services::PostRelease
     end
 
     def call
-      transaction do
-        create_tag
-        create_and_merge_prs
-        release.mark_finished!
-      end
+      release.mark_finished! if create_tag.success? && create_and_merge_pr.success?
     end
 
     private
 
+    Result = Struct.new(:success?, :err_message)
+
+    delegate :release_branch, :fully_qualified_release_branch_hack, :working_branch, to: train
     attr_reader :train, :release
 
-    def create_and_merge_prs
-      begin
-        response =
-          repo_integration
-            .create_pr!(repository_name, train.working_branch, train.release_branch, pr_title, pr_description)
-      rescue Installations::Github::Error::PullRequestAlreadyExistsError
-        train_run.event_stamp!(reason: :post_release_pull_request_already_exists, kind: :notice, data: {})
-        raise PostReleaseFailed.new
-      end
+    def create_and_merge_pr
+      pull_request =
+        release
+          .pull_requests
+          .post_release
+          .open
+          .build
+          .update_or_insert!(pull_request_at_source)
 
-      begin
-        repo_integration.merge_pr!(repository_name, response[:number])
-      rescue Installations::Github::Error::PullRequestNotMergeableError
-        train_run.event_stamp!(reason: :post_release_pull_request_not_mergeable, kind: :notice, data: {})
-        raise PostReleaseFailed.new
+      if merge_pr.success?
+        pull_request.close!
+        Result.new(true)
+      else
+        Result.new(false, "Failed to merge the Pull Request")
       end
+    end
+
+    def pull_request_at_source
+      @pull_request_at_source ||=
+        begin
+          repo_integration.create_pr!(repository_name, working_branch, release_branch, pr_title, pr_description)
+        rescue Installations::Github::Error::PullRequestAlreadyExistsError
+          release.event_stamp!(reason: :post_release_pull_request_already_exists, kind: :notice, data: {})
+          repo_integration.find_pr(repository_name, working_branch, fully_qualified_release_branch_hack)
+        end
+    end
+
+    def merge_pr
+      repo_integration.merge_pr!(repository_name, pull_request_at_source[:number])
+      Result.new(true)
+    rescue Installations::Github::Error::PullRequestNotMergeableError
+      release.event_stamp!(reason: :post_release_pull_request_not_mergeable, kind: :notice, data: {})
+      Result.new(false, "Failed to merge the Pull Request")
     end
 
     def create_tag
       Automatons::Tag.dispatch!(train:, branch: release.branch_name)
     rescue Installations::Github::Error::ReferenceAlreadyExists
-      nil
-    end
-
-    def repo_integration
-      train.ci_cd_provider.installation
+      release.event_stamp!(reason: :post_release_tag_reference_already_exists, kind: :notice, data: {})
+    ensure
+      Result.new(true)
     end
 
     def repository_name
       train.app.config.code_repository_name
+    end
+
+    def repo_integration
+      train.vcs_provider.installation
     end
 
     def pr_title
@@ -63,7 +80,7 @@ class Services::PostRelease
     def pr_description
       <<~TEXT
         New release train #{train.name} triggered.
-        The #{train.working_branch} branch has been merged into #{release.branch_name} branch, as per #{train.branching_strategy_name} branching strategy.
+        The #{working_branch} branch has been merged into #{release.branch_name} branch, as per #{train.branching_strategy_name} branching strategy.
       TEXT
     end
   end

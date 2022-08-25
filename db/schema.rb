@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_08_23_121411) do
+ActiveRecord::Schema[7.0].define(version: 2022_08_25_070848) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -190,6 +190,31 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_23_121411) do
     t.uuid "train_run_id", null: false
     t.index ["train_id"], name: "index_releases_commits_on_train_id"
     t.index ["train_run_id"], name: "index_releases_commits_on_train_run_id"
+  end
+
+  create_table "releases_pull_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_run_id", null: false
+    t.bigint "number", null: false
+    t.string "source_id", null: false
+    t.string "url"
+    t.string "title", null: false
+    t.text "body"
+    t.string "state", null: false
+    t.string "phase", null: false
+    t.string "source", null: false
+    t.string "head_ref", null: false
+    t.string "base_ref", null: false
+    t.datetime "opened_at", null: false
+    t.datetime "closed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["number"], name: "index_releases_pull_requests_on_number"
+    t.index ["phase"], name: "index_releases_pull_requests_on_phase"
+    t.index ["source"], name: "index_releases_pull_requests_on_source"
+    t.index ["source_id"], name: "index_releases_pull_requests_on_source_id"
+    t.index ["state"], name: "index_releases_pull_requests_on_state"
+    t.index ["train_run_id", "head_ref", "base_ref"], name: "idx_prs_on_train_run_id_and_head_ref_and_base_ref", unique: true
+    t.index ["train_run_id"], name: "index_releases_pull_requests_on_train_run_id"
   end
 
   create_table "sign_off_group_memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -373,6 +398,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_08_23_121411) do
   add_foreign_key "releases_commit_listeners", "trains"
   add_foreign_key "releases_commits", "train_runs"
   add_foreign_key "releases_commits", "trains"
+  add_foreign_key "releases_pull_requests", "train_runs"
   add_foreign_key "sign_off_group_memberships", "sign_off_groups"
   add_foreign_key "sign_off_group_memberships", "users"
   add_foreign_key "sign_off_groups", "apps"

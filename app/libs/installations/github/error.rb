@@ -18,7 +18,7 @@ module Installations
         resource: "PullRequest",
         code: "custom",
         message_matcher: /A pull request already exists for/,
-        decorated_exception: NoCommitsForPullRequestError
+        decorated_exception: PullRequestAlreadyExistsError
       }
     ]
 
