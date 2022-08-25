@@ -23,7 +23,7 @@
     <div>
       <%= form.label :version_seeded_with, class: "block text-sm font-medium mb-1" %>
       <%= form.text_field :version_seeded_with,
-                          class: disabled_text_field_classes(disabled: came_from == :edit),
+                          class: text_field_classes(is_disabled: train.persisted?),
                           placeholder: "only in semver format, eg., 1.2.0",
                           required: true,
                           disabled: train.persisted?
@@ -50,12 +50,12 @@
       <%= form.select :branching_strategy,
                       options_for_select(Releases::Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
                       { required: true, },
-                      { class: disabled_text_field_classes(train.persisted?), data: { action: 'branching-selector#change' }, disabled: train.persisted? } %>
+                      { class: text_field_classes(is_disabled: train.persisted?), data: { action: 'branching-selector#change' }, disabled: train.persisted? } %>
     </div>
 
     <div>
       <%= form.label :working_branch, class: "block text-sm font-medium mb-1" %>
-      <%= form.text_field :working_branch, class: disabled_text_field_classes(train.persisted?), placeholder: "eg., master, main", disabled: train.persisted? %>
+      <%= form.text_field :working_branch, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., master, main", disabled: train.persisted? %>
     </div>
 
     <div class="almost_trunk hidden">
@@ -68,19 +68,19 @@
     <div class="release_backmerge hidden">
       <div>
         <%= form.label :release_backmerge_branch, class: "block text-sm font-medium my-1" %>
-        <%= form.text_field :release_backmerge_branch, class: disabled_text_field_classes(train.persisted?), placeholder: "eg., dev", disabled: train.persisted? %>
+        <%= form.text_field :release_backmerge_branch, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., dev", disabled: train.persisted? %>
       </div>
     </div>
 
     <div class="parallel_working hidden">
       <div>
         <%= form.label :release_branch, class: "block text-sm font-medium my-1" %>
-        <%= form.text_field :release_branch, class: disabled_text_field_classes(train.persisted?), placeholder: "eg., production", disabled: train.persisted? %>
+        <%= form.text_field :release_branch, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., production", disabled: train.persisted? %>
       </div>
     </div>
   </div>
 
-  <% if came_from == :new %>
+  <% unless train.persisted? %>
     <div class="mt-4">
       <span class="font-semibold">Almost Trunk</span> is the simplest strategy and the one that we recommend. For every
       release, we will create a new release branch from the HEAD of the working branch. Release-specific fixes should

@@ -33,8 +33,8 @@ module ApplicationHelper
     "#{semver.major}.#{semver.minor}.*"
   end
 
-  def disabled_text_field_classes(disabled)
-    if disabled
+  def text_field_classes(is_disabled:)
+    if is_disabled
       "form-input w-full disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-600 disabled:cursor-not-allowed"
     else
       "form-input w-full"
