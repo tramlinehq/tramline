@@ -167,7 +167,13 @@
               <div class="text-left"><%= simple_format train.description %></div>
             </td>
             <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-              <div class="text-left"><%= train.version_current %></div>
+              <div class="text-left">
+                <%= if train.runs.any?
+                      train.version_current
+                    else
+                      train.version_seeded_with
+                    end %>
+              </div>
             </td>
           </tr>
         <% end %>
