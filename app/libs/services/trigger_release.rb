@@ -10,6 +10,7 @@ class Services::TriggerRelease
   end
 
   attr_reader :train, :starting_time, :train_run
+  delegate :fully_qualified_working_branch_hack, :working_branch, to: :train
 
   def initialize(train)
     @train = train
@@ -20,14 +21,17 @@ class Services::TriggerRelease
     return Response.new(false, "Cannot start a train that is inactive!") if train.inactive?
 
     if train.steps.empty?
-      return Response.new(false,
-        "Cannot start a train that has no steps. Please add at least one step.")
+      return Response.new(
+        false,
+        "Cannot start a train that has no steps. Please add at least one step."
+      )
     end
 
     return Response.new(false, "A release is already in progress!") if train.active_run.present?
-    return Response.new(false, "Cannot start a new release before wrapping up existing releases!") if Releases::Train::Run.pending_release?
+    return Response.new(false, "Cannot start a new release before wrapping up existing releases!") if train.runs.pending_release?
 
-    transaction do # FIXME: cleanup and extract pre release hooks per branching strategy
+    transaction do
+      # FIXME: cleanup and extract pre release hooks per branching strategy
       create_run_record
       setup_webhook_listeners
       create_webhooks
@@ -58,15 +62,14 @@ class Services::TriggerRelease
   end
 
   def prepare_branch
-    if train.branching_strategy == "parallel_working"
-      response = installation.create_pr!(repo, train.release_branch, train.working_branch, "Pre release merge", "")
-      installation.merge_pr!(repo, response[:number])
-    end
-  rescue Installations::Github::Error::NoCommitsForPullRequestError
-    train_run.event_stamp!(
-      reason: :pre_release_no_commits_for_pull_request,
-      kind: :notice,
-      data: {to: train.release_branch, from: train.working_branch}
+    return unless train.branching_strategy == "parallel_working"
+    Automatons::PullRequest.create_and_merge!(
+      release: release,
+      new_pull_request: release.pull_requests.pre_release.open.build,
+      to_branch_ref: release_branch,
+      from_branch_ref: fully_qualified_working_branch_hack,
+      title: "Pre-release merge",
+      description: "Merging this before starting release."
     )
   end
 
@@ -105,10 +108,6 @@ class Services::TriggerRelease
     when "parallel_working"
       train.release_branch
     end
-  end
-
-  def working_branch
-    train.working_branch
   end
 
   def new_branch_name

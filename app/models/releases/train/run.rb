@@ -2,13 +2,14 @@ class Releases::Train::Run < ApplicationRecord
   has_paper_trail
   self.implicit_order_column = :was_run_at
 
-  STAMPABLE_REASONS = %w[created status_changed pre_release_no_commits_for_pull_request post_release_tag_reference_already_exists]
+  STAMPABLE_REASONS = %w[created status_changed pull_request_not_required pull_request_not_mergeable tag_reference_already_exists]
 
   belongs_to :train, class_name: "Releases::Train"
-  has_many :steps, through: :step_runs
   has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
+  has_many :steps, through: :step_runs
   has_many :pull_requests, class_name: "Releases::PullRequest", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
+  has_many :passports
 
   enum status: { on_track: "on_track", post_release: "post_release", finished: "finished", error: "error" }
 

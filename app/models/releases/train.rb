@@ -111,6 +111,10 @@ class Releases::Train < ApplicationRecord
     [app.config.code_repository_organization_name_hack, ":", release_branch].join
   end
 
+  def fully_qualified_working_branch_hack
+    [app.config.code_repository_organization_name_hack, ":", working_branch].join
+  end
+
   private
 
   def semver_compatibility

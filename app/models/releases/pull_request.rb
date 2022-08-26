@@ -21,33 +21,50 @@ class Releases::PullRequest < ApplicationRecord
   }
 
   def update_or_insert!(response)
-    case repository_source_name
-    when "github"
-      update_or_insert_for_github!(response)
-    else
-      raise UnsupportedPullRequestSource.new
-    end
-  end
+    attributes =
+      case repository_source_name
+      when "github"
+        attributes_for_github(response)
+      else
+        raise UnsupportedPullRequestSource.new
+      end
 
-  def update_or_insert_for_github!(response)
-    self.source = Releases::PullRequest.sources[:github]
-    self.source_id = response[:id]
-    self.number = response[:number]
-    self.title = response[:title]
-    self.body = response[:body]
-    self.url = response[:html_url]
-    self.state = response[:state]
-    self.head_ref = response[:head][:ref]
-    self.base_ref = response[:base][:ref]
-    self.opened_at = response[:created_at]
-
-    Releases::PullRequest.upsert(attributes, unique_by: [:train_run_id, :head_ref, :base_ref])
+    Releases::PullRequest
+      .upsert(generic_attributes.merge(attributes), unique_by: [:train_run_id, :head_ref, :base_ref])
+      .rows
+      .first
+      .first
+      .then { |id| Releases::PullRequest.find_by(id: id) }
   end
 
   def close!
     self.closed_at = Time.current
-    self.status = Releases::PullRequest.states[:closed]
+    self.state = Releases::PullRequest.states[:closed]
     save!
+  end
+
+  private
+
+  def attributes_for_github(response)
+    {
+      source: Releases::PullRequest.sources[:github],
+      source_id: response[:id],
+      number: response[:number],
+      title: response[:title],
+      body: response[:body],
+      url: response[:html_url],
+      state: response[:state],
+      head_ref: response[:head][:ref],
+      base_ref: response[:base][:ref],
+      opened_at: response[:created_at]
+    }
+  end
+
+  def generic_attributes
+    {
+      train_run_id: train_run.id,
+      phase: phase
+    }
   end
 
   def repository_source_name
