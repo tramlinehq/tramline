@@ -107,12 +107,16 @@ class Releases::Train < ApplicationRecord
     steps.order(:step_number).last.build_artifact_integration.gsub("Integration", "").titleize
   end
 
+  def fully_qualified_working_branch_hack
+    [app.config.code_repository_organization_name_hack, ":", working_branch].join
+  end
+
   def fully_qualified_release_branch_hack
     [app.config.code_repository_organization_name_hack, ":", release_branch].join
   end
 
-  def fully_qualified_working_branch_hack
-    [app.config.code_repository_organization_name_hack, ":", working_branch].join
+  def fully_qualified_release_backmerge_branch_hack
+    [app.config.code_repository_organization_name_hack, ":", release_backmerge_branch].join
   end
 
   private

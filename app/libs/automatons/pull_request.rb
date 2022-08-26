@@ -1,7 +1,6 @@
 module Automatons
   class PullRequest
     Result = Struct.new(:ok?, :error, :value, keyword_init: true)
-
     delegate :transaction, to: ApplicationRecord
 
     def self.create_and_merge!(**args)
@@ -29,7 +28,7 @@ module Automatons
         if merge.ok?
           Result.new(ok?: true)
         else
-          Result.new(ok?: false, error: "Failed to create / merge the Pull Request")
+          return Result.new(ok?: false, error: "Failed to create / merge the Pull Request")
         end
       end
     end

@@ -9,7 +9,7 @@ class Releases::Train::Run < ApplicationRecord
   has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
   has_many :steps, through: :step_runs
   has_many :pull_requests, class_name: "Releases::PullRequest", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
-  has_many :passports
+  has_many :passports, dependent: :destroy
 
   enum status: { on_track: "on_track", post_release: "post_release", finished: "finished", error: "error" }
 
@@ -19,8 +19,14 @@ class Releases::Train::Run < ApplicationRecord
 
   scope :pending_release, -> { where(status: [:post_release, :on_track]) }
 
+  delegate :app, to: :train
+
   def self.pending_release?
     pending_release.exists?
+  end
+
+  def committable?
+    on_track?
   end
 
   def next_step
@@ -81,6 +87,10 @@ class Releases::Train::Run < ApplicationRecord
 
   def signed?
     last_run_for(train.steps.last)&.approval_approved?
+  end
+
+  def fully_qualified_branch_name_hack
+    [app.config.code_repository_organization_name_hack, ":", branch_name].join
   end
 
   def event_stamp!(reason:, kind:, data:)

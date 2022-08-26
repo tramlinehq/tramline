@@ -13,6 +13,7 @@ class WebhookHandlers::Github::Push
 
   def process
     return Response.new(:accepted) if valid_tag?
+    return Response.new(:accepted) unless release.committable? # FIXME: this is sometimes barfing, esp in finalize
 
     if valid_repo_and_branch?
       if train.commit_listeners.exists?(branch_name:)

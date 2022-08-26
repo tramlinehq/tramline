@@ -15,16 +15,18 @@ class Services::PostRelease
 
     private
 
-    Result = Struct.new(:success?, :err_message)
+    Result = Struct.new(:ok?, :error, :value, keyword_init: true)
 
     attr_reader :train, :release
 
     def create_tag
-      Automatons::Tag.dispatch!(train:, branch: release.branch_name)
-    rescue Installations::Github::Error::ReferenceAlreadyExists
-      release.event_stamp!(reason: :tag_reference_already_exists, kind: :notice, data: {})
-    ensure
-      Result.new(true)
+      begin
+        Automatons::Tag.dispatch!(train:, branch: release.branch_name)
+      rescue Installations::Github::Error::ReferenceAlreadyExists
+        release.event_stamp!(reason: :tag_reference_already_exists, kind: :notice, data: {})
+      end
+
+      Result.new(ok?: true)
     end
   end
 end

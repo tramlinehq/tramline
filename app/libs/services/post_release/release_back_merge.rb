@@ -1,6 +1,8 @@
 class Services::PostRelease
   class ReleaseBackMerge
     delegate :transaction, to: ApplicationRecord
+    delegate :fully_qualified_release_backmerge_branch_hack, :release_backmerge_branch, :working_branch, to: :train
+    delegate :fully_qualified_branch_name_hack, to: :release
 
     def self.call(release)
       new(release).call
@@ -12,7 +14,7 @@ class Services::PostRelease
     end
 
     def call
-      release.mark_finished! if create_tag.success? && create_and_merge_prs.success?
+      release.reload.mark_finished! if create_tag.ok? && create_and_merge_prs.ok?
     end
 
     private
@@ -21,25 +23,23 @@ class Services::PostRelease
 
     attr_reader :train, :release
 
-    # TODO: Fix from branch to be fully qualified
     def create_and_merge_prs
       Automatons::PullRequest.create_and_merge!(
         release: release,
         new_pull_request: release.pull_requests.post_release.open.build,
-        to_branch_ref: train.release_backmerge_branch,
-        from_branch_ref: release.branch_name,
-        title: "Pre-release merge",
-        description: "Merging this before starting release."
-      )
-
-      Automatons::PullRequest.create_and_merge!(
-        release: release,
-        new_pull_request: release.pull_requests.post_release.open.build,
-        to_branch_ref: train.working_branch,
-        from_branch_ref: train.release_backmerge_branch,
-        title: "Pre-release merge",
-        description: "Merging this before starting release."
-      )
+        to_branch_ref: release_backmerge_branch,
+        from_branch_ref: fully_qualified_branch_name_hack,
+        title: pr_title,
+        description: pr_description
+      ).ok? &&
+        Automatons::PullRequest.create_and_merge!(
+          release: release,
+          new_pull_request: release.pull_requests.post_release.open.build,
+          to_branch_ref: working_branch,
+          from_branch_ref: fully_qualified_release_backmerge_branch_hack,
+          title: pr_title,
+          description: pr_description
+        ).ok? ? Result.new(ok?: true) : Result.new(ok?: false)
     end
 
     def create_tag
@@ -53,7 +53,7 @@ class Services::PostRelease
     end
 
     def pr_title
-      "Release PR"
+      "[Release PR] #{release.release_version}"
     end
 
     def pr_description
