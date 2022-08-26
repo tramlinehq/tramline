@@ -14,6 +14,36 @@
   </div>
 </div>
 
+<% if @pre_release_prs&.exists? %>
+  <section class="mt-8">
+    <div class="flex">
+      <h2 class="font-bold text-2xl">Pre-release PRs</h2>
+    </div>
+
+    <div class="grid grid-cols-5 gap-6 mt-4">
+      <% @pre_release_prs.each do |pr| %>
+        <div class="mt-2 bg-white rounded-sm border border-slate-200 p-4">
+          <%= image_tag("#{pr.source}_thumb.png", width: 40, class: "mb-4") %>
+
+          <div class="h-full">
+            <h2 class="font-semibold text-slate-800">
+              <%= pr.title %><span class="ml-1 underline">(#<%= link_to pr.number, pr.url, target: :_blank %>)</span>
+            </h2>
+
+            <div class="mt-2">
+              <%= image_tag("git_pull_request.svg", width: 20, class: "inline-flex") %>
+
+              <div class="text-xs inline-flex font-medium <%= pull_request_badge(pr.state) %> rounded-full text-center px-2.5 py-1">
+                <%= pr.state.titleize %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </section>
+<% end %>
+
 <section class="mt-8">
   <div class="flex">
     <h2 class="font-bold text-2xl">Kick-off</h2>
@@ -50,7 +80,6 @@
       <% @train.steps.order(:step_number).includes(:train, :runs).each do |step| %>
         <% step_run = @release.last_run_for(step) %>
         <li class="relative py-2">
-
           <!-- Step symbol, name, action button -->
           <div class="flex items-center mb-4">
             <% unless step.last? %>
@@ -145,7 +174,6 @@
             <% end %>
           </div>
         </li>
-
       <% end %>
       <div class="pl-9">
         <% if (@release.on_track? || @release.post_release?) && @release.signed? && @release.finished_steps? %>

@@ -12,7 +12,7 @@ class Services::PostRelease
     end
 
     def call
-      release.mark_finished! if create_tag.ok? && create_and_merge_pr.ok?
+      release.reload.mark_finished! if create_tag.ok? && create_and_merge_pr.ok?
     end
 
     private

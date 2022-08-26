@@ -17,6 +17,7 @@ class ReleasesController < SignedInApplicationController
   def show
     @train = @release.train
     @app = @train.app
+    @pre_release_prs = @release.pull_requests.pre_release
   end
 
   def live_release

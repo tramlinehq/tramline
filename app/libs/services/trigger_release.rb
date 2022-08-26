@@ -64,11 +64,11 @@ class Services::TriggerRelease
   def prepare_branch
     return unless train.branching_strategy == "parallel_working"
     Automatons::PullRequest.create_and_merge!(
-      release: release,
-      new_pull_request: release.pull_requests.pre_release.open.build,
+      release: train_run,
+      new_pull_request: train_run.pull_requests.pre_release.open.build,
       to_branch_ref: release_branch,
       from_branch_ref: fully_qualified_working_branch_hack,
-      title: "Pre-release merge",
+      title: "Pre-release Merge",
       description: "Merging this before starting release."
     )
   end
