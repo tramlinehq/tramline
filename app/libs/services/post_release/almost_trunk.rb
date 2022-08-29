@@ -10,7 +10,7 @@ class Services::PostRelease
     end
 
     def call
-      release.mark_finished! if create_tag.success?
+      release.mark_finished! if create_tag.ok?
     end
 
     private
