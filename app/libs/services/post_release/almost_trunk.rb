@@ -1,7 +1,5 @@
 class Services::PostRelease
   class AlmostTrunk
-    delegate :transaction, to: ApplicationRecord
-
     def self.call(release)
       new(release).call
     end
@@ -12,26 +10,23 @@ class Services::PostRelease
     end
 
     def call
-      transaction do
-        update_status
-        create_tag
-      end
+      release.mark_finished! if create_tag.ok?
     end
 
     private
 
+    Result = Struct.new(:ok?, :error, :value, keyword_init: true)
+
     attr_reader :train, :release
 
-    def update_status
-      release.status = Releases::Train::Run.statuses[:finished]
-      release.completed_at = Time.current
-      release.save
-    end
-
     def create_tag
-      Automatons::Tag.dispatch!(train:, branch: release.branch_name)
-    rescue Installations::Github::Error::ReferenceAlreadyExists
-      nil
+      begin
+        Automatons::Tag.dispatch!(train:, branch: release.branch_name)
+      rescue Installations::Github::Error::ReferenceAlreadyExists
+        release.event_stamp!(reason: :tag_reference_already_exists, kind: :notice, data: {})
+      end
+
+      Result.new(ok?: true)
     end
   end
 end

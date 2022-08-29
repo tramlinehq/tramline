@@ -10,6 +10,7 @@ class Services::TriggerRelease
   end
 
   attr_reader :train, :starting_time, :train_run
+  delegate :fully_qualified_working_branch_hack, :working_branch, to: :train
 
   def initialize(train)
     @train = train
@@ -17,36 +18,48 @@ class Services::TriggerRelease
   end
 
   def call
-    return Response.new(false, "Cannot start a train that is inactive.") if train.inactive?
+    return Response.new(false, "Cannot start a train that is inactive!") if train.inactive?
 
     if train.steps.empty?
-      return Response.new(false,
-        "Cannot start a train that has no steps. Please add at least one step.")
+      return Response.new(
+        false,
+        "Cannot start a train that has no steps. Please add at least one step."
+      )
     end
 
-    return Response.new(false, "A release is already in progress.") if train.active_run.present?
+    return Response.new(false, "A release is already in progress!") if train.active_run.present?
+    return Response.new(false, "Cannot start a new release before wrapping up existing releases!") if train.runs.pending_release?
 
-    transaction do # FIXME: cleanup and extract pre release hooks per branching strategy
-      create_run_record
-      setup_webhook_listeners
+    # FIXME: cleanup and extract pre release hooks per branching strategy
+    # FIXME: run_first_step at some point for certain cases within this flow
+    # FIXME: what happens when release isn't committed and branch push hook shows up before that?
+    transaction do
+      create_release
       create_webhooks
+      create_webhook_listeners
       create_branches
-      prepare_branch
-      # run_first_step
-    end
 
-    Response.new(true)
+      if create_and_merge_pr.ok?
+        Response.new(true)
+      else
+        return Response.new(false, "Could not start a release because kickoff PRs could not be merged!")
+      end
+    end
   end
 
   private
 
-  def create_run_record
-    @train_run = train.runs.create(was_run_at: starting_time,
+  Result = Struct.new(:ok?, :error, :value, keyword_init: true)
+
+  def create_release
+    @train_run = train.runs.create(
+      was_run_at: starting_time,
       code_name: Haikunator.haikunate(100),
       scheduled_at: starting_time, # FIXME: remove this column
       branch_name: release_branch,
       release_version: train.version_current,
-      status: :on_track)
+      status: :on_track
+    )
   end
 
   def create_branches
@@ -56,13 +69,16 @@ class Services::TriggerRelease
     nil
   end
 
-  def prepare_branch
-    if train.branching_strategy == "parallel_working"
-      response = installation.create_pr!(repo, train.release_branch, train.working_branch, "Pre release merge", "")
-      installation.merge_pr!(repo, response[:number])
-    end
-  rescue Octokit::UnprocessableEntity
-    nil
+  def create_and_merge_pr
+    return Result.new(ok?: true) unless train.branching_strategy == "parallel_working"
+    Automatons::PullRequest.create_and_merge!(
+      release: train_run,
+      new_pull_request: train_run.pull_requests.pre_release.open.build,
+      to_branch_ref: release_branch,
+      from_branch_ref: fully_qualified_working_branch_hack,
+      title: "Pre-release Merge",
+      description: "Merging this before starting release."
+    )
   end
 
   # Webhooks are created with the train and we don't need to create webhooks for each train run AKA release
@@ -73,7 +89,7 @@ class Services::TriggerRelease
     nil
   end
 
-  def setup_webhook_listeners
+  def create_webhook_listeners
     train.commit_listeners.create(branch_name: release_branch)
   end
 
@@ -102,21 +118,18 @@ class Services::TriggerRelease
     end
   end
 
-  def working_branch
-    train.working_branch
-  end
-
   def new_branch_name
-    @branch_name ||= begin
-      branch_name = starting_time.strftime("r/#{train.display_name}/%Y-%m-%d")
+    @branch_name ||=
+      begin
+        branch_name = starting_time.strftime("r/#{train.display_name}/%Y-%m-%d")
 
-      if train.runs.exists?(branch_name:)
-        branch_name += "-1"
-        branch_name = branch_name.succ while train.runs.exists?(branch_name:)
+        if train.runs.exists?(branch_name:)
+          branch_name += "-1"
+          branch_name = branch_name.succ while train.runs.exists?(branch_name:)
+        end
+
+        branch_name
       end
-
-      branch_name
-    end
   end
 
   def webhook_url

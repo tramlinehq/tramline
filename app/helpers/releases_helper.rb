@@ -33,4 +33,15 @@ module ReleasesHelper
       class: classes.concat(display_data.second)
     )
   end
+
+  def pull_request_badge(state)
+    case state
+    when "open"
+      "bg-green-100 text-green-600"
+    when "closed"
+      "bg-indigo-100 text-indigo-600"
+    else
+      "bg-slate-100 text-slate-500"
+    end
+  end
 end
