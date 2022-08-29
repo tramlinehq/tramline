@@ -13,7 +13,7 @@ class WebhookHandlers::Github::Push
 
   def process
     return Response.new(:accepted) if valid_tag?
-    return Response.new(:accepted) unless release
+    return Response.new(:unprocessable_entity) unless release
     return Response.new(:accepted) unless release.committable?
 
     if valid_repo_and_branch?
