@@ -268,15 +268,15 @@
     <div class="mt-4 bg-slate-50 border border-slate-200 ">
       <div class="py-8 px-8 lg:px-8">
         <div class="max-w-sm mx-auto lg:max-w-none">
-          <div class="text-slate-800 font-semibold text-center mb-6">
-            Good work team! This release is now complete! 🚀
+          <div class="text-slate-800 font-bold text-center mb-6 animate-bounce">
+            ↯ Great work team! This release is complete! ↯
           </div>
           <!-- Details -->
           <div class="mt-8">
             <div class="mt-6 text-sm font-semibold text-slate-800 mb-1">Release Summary</div>
             <ul class="mt-3">
               <li class="flex items-center justify-between py-3 border-b border-slate-200">
-                <div class="text-sm">Total Time Taken</div>
+                <div class="text-sm">Total Run Time</div>
                 <div class="text-sm font-medium text-slate-800 ml-2">
                   <%= finalize_phase_metadata(@release).dig(:total_run_time) %>
                 </div>
@@ -296,7 +296,7 @@
                   <%= image_tag("link.svg", width: 20, class: "inline-flex mr-2") %> Download Artifact
                 </div>
               </li>
-              <li class="flex items-center justify-between py-3 border-b border-slate-200">
+              <li class="flex items-center justify-between py-3">
                 <div class="text-sm">Store Link</div>
                 <div class="flex items-center whitespace-nowrap">
 
@@ -343,8 +343,6 @@
                   </div>
                 <% end %>
               </div>
-            <% else %>
-              <p class="text-sm">None.</p>
             <% end %>
           </div>
         </div>
