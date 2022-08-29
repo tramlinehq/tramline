@@ -44,7 +44,7 @@ module Automatons
         rescue Installations::Github::Error::PullRequestAlreadyExistsError
           Result.new(ok?: true, value: repo_integration.find_pr(repo_name, to_branch_ref, from_branch_ref))
         rescue Installations::Github::Error::NoCommitsForPullRequestError
-          release.event_stamp!(reason: :pull_request_not_required, kind: :notice, data: { to: to_branch_ref, from: from_branch_ref })
+          release.event_stamp!(reason: :pull_request_not_required, kind: :notice, data: {to: to_branch_ref, from: from_branch_ref})
           Result.new(ok?: false, error: "Could not create a Pull Request")
         end
     end
@@ -52,7 +52,6 @@ module Automatons
     def merge
       repo_integration.merge_pr!(repo_name, create.value[:number])
       Result.new(ok?: true)
-
     rescue Installations::Github::Error::PullRequestNotMergeableError
       release.event_stamp!(reason: :pull_request_not_mergeable, kind: :notice, data: {})
       Result.new(ok?: false, error: "Failed to merge the Pull Request")

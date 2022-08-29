@@ -91,7 +91,7 @@ module Installations
 
     def find_pr(repo, to, from)
       execute do
-        @client.pull_requests(repo, { head: from, base: to }).first
+        @client.pull_requests(repo, {head: from, base: to}).first
       end
     end
 

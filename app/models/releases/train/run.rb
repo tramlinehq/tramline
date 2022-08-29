@@ -11,7 +11,7 @@ class Releases::Train::Run < ApplicationRecord
   has_many :pull_requests, class_name: "Releases::PullRequest", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :passports, dependent: :destroy
 
-  enum status: { on_track: "on_track", post_release: "post_release", finished: "finished", error: "error" }
+  enum status: {on_track: "on_track", post_release: "post_release", finished: "finished", error: "error"}
 
   before_create :set_version
   before_update :status_change_stamp!, if: -> { status_changed? }
@@ -111,7 +111,7 @@ class Releases::Train::Run < ApplicationRecord
       reason: :created,
       kind: :success,
       message: I18n.t("passport.stampable.created", stampable: "release", status: status),
-      metadata: { status: status }
+      metadata: {status: status}
     )
   end
 
@@ -122,7 +122,7 @@ class Releases::Train::Run < ApplicationRecord
       reason: :status_changed,
       kind: :success,
       message: I18n.t("passport.stampable.status_changed", stampable: "release", from: status_was, to: status),
-      metadata: { from: status_was, to: status }
+      metadata: {from: status_was, to: status}
     )
   end
 end

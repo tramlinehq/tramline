@@ -3,8 +3,11 @@ module Installations
     class UnsupportedType < ArgumentError; end
 
     class ReferenceAlreadyExists < Octokit::UnprocessableEntity; end
+
     class PullRequestNotMergeableError < Octokit::MethodNotAllowed; end
+
     class NoCommitsForPullRequestError < Octokit::UnprocessableEntity; end
+
     class PullRequestAlreadyExistsError < Octokit::UnprocessableEntity; end
 
     ERRORS = [
