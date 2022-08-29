@@ -48,9 +48,9 @@
       <% end %>
     </div>
   <% else %>
-  <div class="text-sm mt-4">
-    None.
-  </div>
+    <div class="text-sm mt-4">
+      None.
+    </div>
   <% end %>
 </section>
 
@@ -91,7 +91,7 @@
         <% step_run = @release.last_run_for(step) %>
         <li class="relative py-2">
           <!-- Step symbol, name, action button -->
-          <div class="flex items-center mb-4">
+          <div class="flex items-center">
             <% unless step.last? %>
               <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
             <% end %>
@@ -130,10 +130,16 @@
 
           <!-- Step metadata -->
           <div class="pl-9">
+            <div class="mt-1">
+              <%= render partial: 'trains/per_step_metadata', locals: { step: step } %>
+            </div>
+
             <% if step_run&.build_version %>
-              <div class="flex items-center mb-2">
-                <span class="mr-2 text-lg"><%= step_run&.build_version %></span>
-                <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">Latest build</span>
+              <div class="flex items-center my-3">
+                <span class="mr-2 text-lg"><%= step_run.build_version %></span>
+                <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">
+                  Latest build
+                </span>
               </div>
             <% end %>
 
@@ -149,7 +155,7 @@
                   <div class="font-bold text-slate-600 text-sm uppercase mb-1">Sign-offs</div>
                   <% @train.sign_off_groups.each do |group| %>
                     <div class="flex items-center justify-between mb-2">
-                      <span class=""><%= group.name %></span>
+                      <span><%= group.name %></span>
                       <span class="grid grid-flow-col gap-2">
                       <% if !step_run&.sign_required? || step.sign_offs.exists?(sign_off_group: group, signed: false, commit: step_run&.commit) %>
                         <%= button_to "Approve", approve_step_sign_off_path(step),
