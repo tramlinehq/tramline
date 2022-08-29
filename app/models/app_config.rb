@@ -19,4 +19,8 @@ class AppConfig < ApplicationRecord
     return unless notification_channel
     notification_channel.values.first
   end
+
+  def code_repository_organization_name_hack
+    code_repository_name.partition("/").first
+  end
 end

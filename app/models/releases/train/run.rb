@@ -2,18 +2,32 @@ class Releases::Train::Run < ApplicationRecord
   has_paper_trail
   self.implicit_order_column = :was_run_at
 
-  STAMPABLE_REASONS = %w[created status_changed]
+  STAMPABLE_REASONS = %w[created status_changed pull_request_not_required pull_request_not_mergeable tag_reference_already_exists]
 
   belongs_to :train, class_name: "Releases::Train"
+  has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
   has_many :steps, through: :step_runs
-  has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
+  has_many :pull_requests, class_name: "Releases::PullRequest", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
+  has_many :passports, dependent: :destroy
 
-  enum status: {on_track: "on_track", error: "error", finished: "finished"}
+  enum status: {on_track: "on_track", post_release: "post_release", finished: "finished", error: "error"}
 
   before_create :set_version
   before_update :status_change_stamp!, if: -> { status_changed? }
-  after_create :create_stamp!
+  after_commit :create_stamp!, on: :create
+
+  scope :pending_release, -> { where(status: [:post_release, :on_track]) }
+
+  delegate :app, to: :train
+
+  def self.pending_release?
+    pending_release.exists?
+  end
+
+  def committable?
+    on_track?
+  end
 
   def next_step
     return train.steps.first if step_runs.empty?
@@ -33,11 +47,19 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def perform_post_release!
+    self.status = Releases::Train::Run.statuses[:post_release]
+    save!
     Services::PostRelease.call(self)
   end
 
+  def mark_finished!
+    self.status = Releases::Train::Run.statuses[:finished]
+    self.completed_at = Time.current
+    save!
+  end
+
   def branch_url
-    train.app.vcs_provider&.branch_url(train.app.config&.code_repository_name, branch_name)
+    train.vcs_provider&.branch_url(train.app.config&.code_repository_name, branch_name)
   end
 
   def last_commit
@@ -67,13 +89,28 @@ class Releases::Train::Run < ApplicationRecord
     last_run_for(train.steps.last)&.approval_approved?
   end
 
+  def fully_qualified_branch_name_hack
+    [app.config.code_repository_organization_name_hack, ":", branch_name].join
+  end
+
+  def event_stamp!(reason:, kind:, data:)
+    PassportJob.perform_later(
+      id,
+      self.class.name,
+      reason:,
+      kind:,
+      message: I18n.t("passport.#{reason}", **data),
+      metadata: data
+    )
+  end
+
   def create_stamp!
     PassportJob.perform_later(
       id,
       self.class.name,
       reason: :created,
       kind: :success,
-      message: I18n.t("passport.stampable_created", stampable: "release", status: status),
+      message: I18n.t("passport.stampable.created", stampable: "release", status: status),
       metadata: {status: status}
     )
   end
@@ -84,7 +121,7 @@ class Releases::Train::Run < ApplicationRecord
       self.class.name,
       reason: :status_changed,
       kind: :success,
-      message: I18n.t("passport.stampable_status_changed", stampable: "release", from: status_was, to: status),
+      message: I18n.t("passport.stampable.status_changed", stampable: "release", from: status_was, to: status),
       metadata: {from: status_was, to: status}
     )
   end

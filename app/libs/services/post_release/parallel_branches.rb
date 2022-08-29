@@ -12,52 +12,45 @@ class Services::PostRelease
     end
 
     def call
-      transaction do
-        update_status
-        create_tag
-        create_and_merge_prs
-      end
+      release.reload.mark_finished! if create_tag.ok? && create_and_merge_pr.ok?
     end
 
     private
 
+    Result = Struct.new(:ok?, :error, :value, keyword_init: true)
+
+    delegate :fully_qualified_release_branch_hack, :working_branch, to: :train
     attr_reader :train, :release
 
-    def update_status
-      release.status = Releases::Train::Run.statuses[:finished]
-      release.completed_at = Time.current
-      release.save
-    end
-
-    def create_and_merge_prs
-      response =
-        repo_integration
-          .create_pr!(repository_name, train.working_branch, train.release_branch, pr_title, pr_description)
-      repo_integration.merge_pr!(repository_name, response[:number])
+    def create_and_merge_pr
+      Automatons::PullRequest.create_and_merge!(
+        release: release,
+        new_pull_request: release.pull_requests.post_release.open.build,
+        to_branch_ref: working_branch,
+        from_branch_ref: fully_qualified_release_branch_hack,
+        title: pr_title,
+        description: pr_description
+      )
     end
 
     def create_tag
-      Automatons::Tag.dispatch!(train:, branch: release.branch_name)
-    rescue Installations::Github::Error::ReferenceAlreadyExists
-      nil
-    end
+      begin
+        Automatons::Tag.dispatch!(train:, branch: release.branch_name)
+      rescue Installations::Github::Error::ReferenceAlreadyExists
+        release.event_stamp!(reason: :tag_reference_already_exists, kind: :notice, data: {})
+      end
 
-    def repo_integration
-      train.ci_cd_provider.installation
-    end
-
-    def repository_name
-      train.app.config.code_repository_name
+      Result.new(ok?: true)
     end
 
     def pr_title
-      "[Release kickoff] #{release.release_version}"
+      "[Release Kickoff] #{release.release_version}"
     end
 
     def pr_description
       <<~TEXT
         New release train #{train.name} triggered.
-        The #{train.working_branch} branch has been merged into #{release.branch_name} branch, as per #{train.branching_strategy_name} branching strategy.
+        The #{working_branch} branch has been merged into #{release.branch_name} branch, as per #{train.branching_strategy_name} branching strategy.
       TEXT
     end
   end

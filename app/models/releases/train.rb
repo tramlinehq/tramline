@@ -5,17 +5,17 @@ class Releases::Train < ApplicationRecord
 
   self.implicit_order_column = :created_at
 
+  EXTERNAL_DEPLOYMENT_CHANNEL = {"None (outside Tramline)" => "external"}
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
     release_backmerge: "Release with Backmerge",
     parallel_working: "Parallel Working and Release"
   }.freeze
-  EXTERNAL_DEPLOYMENT_CHANNEL = {"None (outside Tramline)" => "external"}
 
   belongs_to :app, optional: false
   has_many :integrations, through: :app
   has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
-  has_one :active_run, -> { where(status: "on_track") }, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
+  has_one :active_run, -> { pending_release }, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
   has_many :steps, -> { order(:step_number) }, class_name: "Releases::Step", inverse_of: :train, dependent: :destroy
   has_many :train_sign_off_groups, dependent: :destroy
   has_many :sign_off_groups, through: :train_sign_off_groups
@@ -105,6 +105,18 @@ class Releases::Train < ApplicationRecord
 
   def final_deployment_channel
     steps.order(:step_number).last.build_artifact_integration.gsub("Integration", "").titleize
+  end
+
+  def fully_qualified_working_branch_hack
+    [app.config.code_repository_organization_name_hack, ":", working_branch].join
+  end
+
+  def fully_qualified_release_branch_hack
+    [app.config.code_repository_organization_name_hack, ":", release_branch].join
+  end
+
+  def fully_qualified_release_backmerge_branch_hack
+    [app.config.code_repository_organization_name_hack, ":", release_backmerge_branch].join
   end
 
   private

@@ -22,7 +22,7 @@ module ApplicationHelper
 
   def dynamic_header_color
     if Rails.env.development?
-      "bg-amber-400"
+      "bg-slate-200"
     else
       "bg-white"
     end

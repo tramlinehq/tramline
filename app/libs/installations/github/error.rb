@@ -4,7 +4,11 @@ module Installations
 
     class ReferenceAlreadyExists < Octokit::UnprocessableEntity; end
 
+    class PullRequestNotMergeableError < Octokit::MethodNotAllowed; end
+
     class NoCommitsForPullRequestError < Octokit::UnprocessableEntity; end
+
+    class PullRequestAlreadyExistsError < Octokit::UnprocessableEntity; end
 
     ERRORS = [
       {
@@ -12,6 +16,12 @@ module Installations
         code: "custom",
         message_matcher: /No commits between/,
         decorated_exception: NoCommitsForPullRequestError
+      },
+      {
+        resource: "PullRequest",
+        code: "custom",
+        message_matcher: /A pull request already exists for/,
+        decorated_exception: PullRequestAlreadyExistsError
       }
     ]
 
@@ -19,6 +29,10 @@ module Installations
       {
         message_matcher: /Reference already exists/,
         decorated_exception: ReferenceAlreadyExists
+      },
+      {
+        message_matcher: /Pull Request is not mergeable/,
+        decorated_exception: PullRequestNotMergeableError
       }
     ]
 
@@ -33,16 +47,16 @@ module Installations
 
     def handle
       case type
-      when :validation
-        handle_validation_errors
+      when :validation, :not_allowed
+        rethrow
       else
         raise UnsupportedType
       end
     end
 
-    def handle_validation_errors
+    def rethrow
       return exception if match.nil?
-      match[:decorated_exception]
+      match[:decorated_exception].new
     end
 
     private

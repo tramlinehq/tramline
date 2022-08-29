@@ -36,7 +36,6 @@ jobs:
         run: bundle exec rails assets:precompile
       - name: Run tests
         run: bundle exec rspec
-
   lint:
     runs-on: ubuntu-latest
     steps:

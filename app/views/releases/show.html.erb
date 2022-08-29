@@ -14,7 +14,47 @@
   </div>
 </div>
 
+
 <section class="mt-8">
+  <div class="flex">
+    <h2 class="font-bold text-2xl">Pre-release PRs</h2>
+  </div>
+  <% if @pre_release_prs&.exists? %>
+    <div class="grid grid-cols-5 gap-6 mt-4">
+      <% @pre_release_prs.each do |pr| %>
+        <div class="mt-2 bg-white rounded-sm border border-slate-200 p-4">
+          <%= image_tag("#{pr.source}_thumb.png", width: 40, class: "mb-4") %>
+
+          <div class="h-full">
+            <h2 class="font-semibold text-slate-800">
+              <%= pr.title %><span class="ml-1 underline">(#<%= link_to pr.number, pr.url, target: :_blank %>)</span>
+            </h2>
+
+            <div class="mt-2">
+              <%= image_tag("git_pull_request.svg", width: 20, class: "inline-flex") %>
+
+              <div class="text-xs inline-flex font-medium <%= pull_request_badge(pr.state) %> rounded-full text-center px-2.5 py-1">
+                <%= pr.state.titleize %>
+              </div>
+            </div>
+
+            <% if pr.closed_at.nil? %>
+              <div class="text-sm mt-2">Opened at – <%= pr.opened_at.to_s(:short) %></div>
+            <% else %>
+              <div class="text-sm mt-2">Closed at – <%= pr.closed_at.to_s(:short) %></div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+  <div class="text-sm mt-4">
+    None.
+  </div>
+  <% end %>
+</section>
+
+<section class="border-t border-dashed border-slate-200 pt-8 mt-8">
   <div class="flex">
     <h2 class="font-bold text-2xl">Kick-off</h2>
     <span class="text-2xl text-slate-400 ml-4"><%= time_ago_in_words(@release.created_at) %> ago</span>
@@ -50,7 +90,6 @@
       <% @train.steps.order(:step_number).includes(:train, :runs).each do |step| %>
         <% step_run = @release.last_run_for(step) %>
         <li class="relative py-2">
-
           <!-- Step symbol, name, action button -->
           <div class="flex items-center mb-4">
             <% unless step.last? %>
@@ -145,10 +184,9 @@
             <% end %>
           </div>
         </li>
-
       <% end %>
       <div class="pl-9">
-        <% if @release.on_track? && @release.signed? && @release.finished_steps? %>
+        <% if (@release.on_track? || @release.post_release?) && @release.signed? && @release.finished_steps? %>
           <%= button_to "Move to Finalize phase",
                         post_release_app_train_releases_path(@app, @train),
                         class: 'btn-sm bg-indigo-500 hover:bg-indigo-600 text-white' %>
@@ -222,6 +260,42 @@
 <section class="border-t border-dashed border-slate-200 pt-8 mt-8">
   <div class="flex">
     <h2 class="font-bold text-2xl">Finalize</h2>
-    <span class="text-2xl text-slate-400 ml-4">pending approvals</span>
+    <% unless @release.signed? %>
+      <span class="text-2xl text-slate-400 ml-4">pending approvals</span>
+    <% end %>
   </div>
+
+  <% if @post_release_prs&.exists? %>
+    <div class="grid grid-cols-5 gap-6 mt-4">
+      <% @post_release_prs.each do |pr| %>
+        <div class="mt-2 bg-white rounded-sm border border-slate-200 p-4">
+          <%= image_tag("#{pr.source}_thumb.png", width: 40, class: "mb-4") %>
+
+          <div class="h-full">
+            <h2 class="font-semibold text-slate-800">
+              <%= pr.title %><span class="ml-1 underline">(#<%= link_to pr.number, pr.url, target: :_blank %>)</span>
+            </h2>
+
+            <div class="mt-2">
+              <%= image_tag("git_pull_request.svg", width: 20, class: "inline-flex") %>
+
+              <div class="text-xs inline-flex font-medium <%= pull_request_badge(pr.state) %> rounded-full text-center px-2.5 py-1">
+                <%= pr.state.titleize %>
+              </div>
+            </div>
+
+            <div class="font-mono text-xs mt-2">
+              <%= pr.base_ref %> ← <%= pr.head_ref %>
+            </div>
+
+            <% if pr.closed_at.nil? %>
+              <div class="text-sm mt-2">Opened at – <%= pr.opened_at.to_s(:short) %></div>
+            <% else %>
+              <div class="text-sm mt-2">Closed at – <%= pr.closed_at.to_s(:short) %></div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 </section>

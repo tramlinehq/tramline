@@ -45,7 +45,7 @@ class App < ApplicationRecord
   end
 
   def bump_build_number!
-    self.build_number = build_number + 1
+    self.build_number = build_number.succ
     save!
     build_number.to_s
   end

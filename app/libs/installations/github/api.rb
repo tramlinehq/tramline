@@ -89,6 +89,12 @@ module Installations
       end
     end
 
+    def find_pr(repo, to, from)
+      execute do
+        @client.pull_requests(repo, {head: from, base: to}).first
+      end
+    end
+
     def merge_pr!(repo, pr_number)
       execute do
         @client.merge_pull_request(repo, pr_number)
@@ -129,17 +135,15 @@ module Installations
       set_client
       retry
     rescue Octokit::UnprocessableEntity => e
-      raise validation_errors(e)
+      raise Installations::Github::Error.handle(:validation, e)
+    rescue Octokit::MethodNotAllowed => e
+      raise Installations::Github::Error.handle(:not_allowed, e)
     end
 
     def set_client
       client = Octokit::Client.new(bearer_token: jwt.get)
       installation_token = client.create_app_installation_access_token(installation_id)[:token]
       @client ||= Octokit::Client.new(access_token: installation_token)
-    end
-
-    def validation_errors(e)
-      Installations::Github::Error.handle(:validation, e)
     end
   end
 end
