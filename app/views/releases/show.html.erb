@@ -291,15 +291,17 @@
                   </div>
                 </div>
               </li>
-              <li class="flex items-center justify-between py-3 border-b border-slate-200">
-                <div class="text-sm">Final Release Build</div>
-                <div class="flex items-center whitespace-nowrap">
-                  <%= image_tag("link.svg", width: 20, class: "inline-flex mr-2") %>
-                  <div class="text-sm font-mono text-slate-800">
-                    <%= link_to "Download Artifact", finalize_phase_metadata(@release).dig(:final_artifact_url) %>
+              <% unless finalize_phase_metadata(@release).dig(:final_artifact_url).nil? %>
+                <li class="flex items-center justify-between py-3 border-b border-slate-200">
+                  <div class="text-sm">Final Release Build</div>
+                  <div class="flex items-center whitespace-nowrap">
+                    <%= image_tag("link.svg", width: 20, class: "inline-flex mr-2") %>
+                    <div class="text-sm font-mono text-slate-800">
+                      <%= link_to "Download Artifact", finalize_phase_metadata(@release).dig(:final_artifact_url) %>
+                    </div>
                   </div>
-                </div>
-              </li>
+                </li>
+              <% end %>
               <li class="flex items-center justify-between py-3">
                 <div class="text-sm">Store Link</div>
                 <div class="flex items-center whitespace-nowrap">
