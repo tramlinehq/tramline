@@ -77,7 +77,8 @@ class Services::TriggerRelease
       to_branch_ref: release_branch,
       from_branch_ref: fully_qualified_working_branch_hack,
       title: "Pre-release Merge",
-      description: "Merging this before starting release."
+      description: "Merging this before starting release.",
+      allow_without_diff: false
     )
   end
 
