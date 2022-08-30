@@ -62,6 +62,10 @@ class Releases::Train::Run < ApplicationRecord
     train.vcs_provider&.branch_url(train.app.config&.code_repository_name, branch_name)
   end
 
+  def tag_url
+    train.vcs_provider&.tag_url(train.app.config&.code_repository_name, train.tag_name)
+  end
+
   def last_commit
     commits.order(:created_at).last
   end

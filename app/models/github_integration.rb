@@ -57,4 +57,8 @@ class GithubIntegration < ApplicationRecord
   def branch_url(repo, branch_name)
     "https://github.com/#{repo}/tree/#{branch_name}"
   end
+
+  def tag_url(repo, tag_name)
+    "https://github.com/#{repo}/releases/tag/#{tag_name}"
+  end
 end
