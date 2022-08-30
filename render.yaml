@@ -5,7 +5,6 @@ databases:
     postgresMajorVersion: 14
     region: frankfurt
     plan: starter
-    previewPlan: starter
 
 services:
   - type: web
@@ -13,10 +12,9 @@ services:
     env: ruby
     region: frankfurt
     plan: starter plus
-    buildCommand: "./bin/render-build"
+    buildCommand: ./bin/render-build
     startCommand: "bundle exec puma -C config/puma.rb"
     initialDeployHook: ./bin/render-seed
-    previewPlan: starter
     envVars:
       - key: DATABASE_URL
         fromDatabase:
