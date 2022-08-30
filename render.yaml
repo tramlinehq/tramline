@@ -7,7 +7,7 @@ databases:
     postgresMajorVersion: 14
     region: frankfurt
     plan: starter
-    previewPlan: free
+    previewPlan: starter
 
 services:
   - type: web
@@ -39,3 +39,6 @@ services:
     name: site-redis
     region: frankfurt
     plan: free
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere
