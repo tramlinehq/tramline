@@ -1,0 +1,44 @@
+previewsEnabled: true
+previewsExpireAfterDays: 7
+databases:
+  - name: site-db
+    databaseName: tramline_site_production
+    user: tramline
+    postgresMajorVersion: 14
+    region: frankfurt
+    plan: starter
+    previewPlan: starter
+
+services:
+  - type: web
+    name: site-web
+    env: ruby
+    region: frankfurt
+    plan: starter plus
+    buildCommand: "./bin/render-build"
+    startCommand: "bundle exec puma -C config/puma.rb"
+    initialDeployHook: ./bin/render-seed
+    previewPlan: starter
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: site-db
+          property: connectionString
+      - key: RAILS_MASTER_KEY
+        sync: false
+
+  - type: worker
+    name: site-jobs
+    region: frankfurt
+    plan: starter
+    env: ruby
+    startCommand: "bundle exec sidekiq"
+    previewPlan: starter
+
+  - type: redis
+    name: site-redis
+    region: frankfurt
+    plan: free
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere
