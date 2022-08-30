@@ -25,13 +25,13 @@ services:
       - key: RAILS_MASTER_KEY
         sync: false
 
-  - type: worker
-    name: site-jobs
-    region: frankfurt
-    plan: starter
-    env: ruby
-    startCommand: "bundle exec sidekiq"
-    previewPlan: starter
+#   - type: worker
+#     name: site-jobs
+#     region: frankfurt
+#     plan: starter
+#     env: ruby
+#     startCommand: "bundle exec sidekiq"
+#     previewPlan: starter
 
   - type: redis
     name: site-redis
