@@ -1,5 +1,3 @@
-previewsEnabled: true
-previewsExpireAfterDays: 7
 databases:
   - name: site-db
     databaseName: tramline_site_production
