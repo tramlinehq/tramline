@@ -32,6 +32,7 @@ services:
     region: frankfurt
     plan: starter
     env: ruby
+    startCommand: "bundle exec sidekiq"
     previewPlan: starter
 
   - type: redis
