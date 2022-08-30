@@ -39,4 +39,3 @@ services:
     name: site-redis
     region: frankfurt
     plan: free
-    previewPlan: free
