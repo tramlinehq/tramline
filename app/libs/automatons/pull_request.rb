@@ -9,17 +9,18 @@ module Automatons
 
     delegate :train, to: :release
 
-    def initialize(release:, new_pull_request:, to_branch_ref:, from_branch_ref:, title:, description:)
+    def initialize(release:, new_pull_request:, to_branch_ref:, from_branch_ref:, title:, description:, allow_without_diff: true)
       @release = release
       @to_branch_ref = to_branch_ref
       @from_branch_ref = from_branch_ref
       @title = title
       @description = description
       @new_pull_request = new_pull_request
+      @allow_without_diff = allow_without_diff
     end
 
     def create_and_merge!
-      return Result.new(ok?: true) unless create.ok?
+      return Result.new(ok?: allow_without_diff) unless create.ok?
       upserted_pull_request = @new_pull_request.update_or_insert!(create.value)
 
       ::Releases::PullRequest.transaction do
@@ -35,7 +36,7 @@ module Automatons
 
     private
 
-    attr_reader :release, :to_branch_ref, :from_branch_ref, :title, :description
+    attr_reader :release, :to_branch_ref, :from_branch_ref, :title, :description, :allow_without_diff
 
     def create
       @create_result ||=
@@ -44,7 +45,7 @@ module Automatons
         rescue Installations::Github::Error::PullRequestAlreadyExistsError
           Result.new(ok?: true, value: repo_integration.find_pr(repo_name, to_branch_ref, from_branch_ref))
         rescue Installations::Github::Error::NoCommitsForPullRequestError
-          release.event_stamp!(reason: :pull_request_not_required, kind: :notice, data: {to: to_branch_ref, from: from_branch_ref})
+          release.event_stamp!(reason: :pull_request_not_required, kind: :notice, data: { to: to_branch_ref, from: from_branch_ref })
           Result.new(ok?: false, error: "Could not create a Pull Request")
         end
     end
