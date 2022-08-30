@@ -80,9 +80,20 @@ class Releases::Train::Run < ApplicationRecord
 
   def latest_finished_step_runs
     step_runs
-      .select("DISTINCT ON (train_step_id) *")
       .where(status: Releases::Step::Run.statuses[:success])
-      .order(:train_step_id, updated_at: :desc)
+      .order(updated_at: :desc)
+  end
+
+  def final_artifact_file
+    return unless finished?
+
+    step_runs
+      .where(status: Releases::Step::Run.statuses[:success])
+      .joins(:step)
+      .order(step_number: :desc, updated_at: :desc)
+      .first
+      &.build_artifact
+      &.file
   end
 
   def signed?
