@@ -6,13 +6,15 @@ databases:
     user: tramline
     postgresMajorVersion: 14
     region: frankfurt
-    previewPlan: starter
+    plan: starter
+    previewPlan: free
 
 services:
   - type: web
     name: site-web
     env: ruby
     region: frankfurt
+    plan: starter plus
     buildCommand: "./bin/render-build"
     startCommand: "bundle exec puma -C config/puma.rb"
     initialDeployHook: ./bin/render-seed
@@ -24,3 +26,17 @@ services:
           property: connectionString
       - key: RAILS_MASTER_KEY
         sync: false
+
+  - type: worker
+    name: site-jobs
+    region: frankfurt
+    plan: starter
+    env: ruby
+    startCommand: bundle exec sidekiq ./app/jobs/releases/kickoff_job.rb
+    previewPlan: starter
+
+  - type: redis
+    name: site-redis
+    region: frankfurt
+    plan: free
+    previewPlan: free
