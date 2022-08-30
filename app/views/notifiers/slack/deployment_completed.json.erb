@@ -1,0 +1,23 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": ":new: *Release <%= @version_number %> is now live!* :new:"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Artifact:* <<%= @artifact_download_link %>|Download>\n*Release Train:* <%= @train_name %>\n*App Version:* <%= @version_number %>"
+      },
+      "accessory": {
+        "type": "image",
+        "image_url": "https://avatars.githubusercontent.com/u/92373487?s=400&u=b9b89bb428dc401abf44c2bddc64d4215f1dbde6.jpg",
+        "alt_text": "Tramline"
+      }
+    }
+  ]
+}
