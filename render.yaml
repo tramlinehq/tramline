@@ -6,6 +6,7 @@ databases:
     user: tramline
     postgresMajorVersion: 14
     region: frankfurt
+    previewPlan: starter
 
 services:
   - type: web
@@ -15,6 +16,7 @@ services:
     buildCommand: "./bin/render-build"
     startCommand: "bundle exec puma -C config/puma.rb"
     initialDeployHook: ./bin/render-seed
+    previewPlan: starter
     envVars:
       - key: DATABASE_URL
         fromDatabase:

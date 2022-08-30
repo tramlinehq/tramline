@@ -2,6 +2,9 @@ class App < ApplicationRecord
   has_paper_trail
   extend FriendlyId
 
+  GOOGLE_PLAY_STORE_URL_TEMPLATE =
+    Addressable::Template.new("https://play.google.com/store/apps/details{?query*}")
+
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
   has_many :integrations, inverse_of: :app, dependent: :destroy
   has_many :trains, class_name: "Releases::Train", dependent: :destroy
@@ -58,5 +61,13 @@ class App < ApplicationRecord
 
   def reject_sign_off_groups?(attributes)
     attributes["name"].blank? || attributes["member_ids"].compact_blank.empty?
+  end
+
+  def store_link
+    if android?
+      GOOGLE_PLAY_STORE_URL_TEMPLATE.expand(query: {id: bundle_identifier}).to_s
+    else
+      +""
+    end
   end
 end
