@@ -11,11 +11,11 @@ class App < ApplicationRecord
   has_many :sign_off_groups, dependent: :destroy
   has_one :config, class_name: "AppConfig", dependent: :destroy
 
-  validates :bundle_identifier, uniqueness: { scope: :organization_id }
-  validates :build_number, numericality: { greater_than_or_equal_to: :build_number_was }, on: :update
+  validates :bundle_identifier, uniqueness: {scope: :organization_id}
+  validates :build_number, numericality: {greater_than_or_equal_to: :build_number_was}, on: :update
   validate :no_trains_are_running, on: :update
 
-  enum platform: { android: "android", ios: "ios" }
+  enum platform: {android: "android", ios: "ios"}
 
   accepts_nested_attributes_for :sign_off_groups, allow_destroy: true, reject_if: :reject_sign_off_groups?
 
@@ -32,7 +32,7 @@ class App < ApplicationRecord
   scope :with_trains, -> { joins(:trains).distinct }
 
   def active_runs
-    Releases::Train::Run.on_track.joins(train: :app).where(train: { app: self })
+    Releases::Train::Run.on_track.joins(train: :app).where(train: {app: self})
   end
 
   def ready?
@@ -65,7 +65,7 @@ class App < ApplicationRecord
 
   def store_link
     if android?
-      GOOGLE_PLAY_STORE_URL_TEMPLATE.expand(query: { id: bundle_identifier }).to_s
+      GOOGLE_PLAY_STORE_URL_TEMPLATE.expand(query: {id: bundle_identifier}).to_s
     else
       +""
     end
