@@ -1,7 +1,10 @@
 class Releases::Step::UploadArtifact < ApplicationJob
   queue_as :high
   sidekiq_options retry: false
+
   VERSION_ARTIFACT_NAME = "version"
+
+  class BadBuildArtifactIntegration < StandardError; end
 
   delegate :transaction, to: ApplicationRecord
 
@@ -27,7 +30,7 @@ class Releases::Step::UploadArtifact < ApplicationJob
     when "SlackIntegration"
       Releases::Step::DeploymentFinished.perform_later(step_run_id)
     else
-      # do nothing
+      raise BadBuildArtifactIntegration
     end
   end
 
