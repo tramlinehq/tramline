@@ -15,6 +15,7 @@ class WebhookHandlers::Github::Push
     return Response.new(:accepted) if valid_tag?
     return Response.new(:unprocessable_entity) unless release
     return Response.new(:accepted) unless release.committable?
+    return Response.new(:unprocessable_entity) unless relevant_commit?
 
     if valid_repo_and_branch?
       if train.commit_listeners.exists?(branch_name:)
@@ -75,6 +76,11 @@ class WebhookHandlers::Github::Push
 
   def valid_repo_and_branch?
     (train.app.config&.code_repository_name == repository_name) if branch_name
+  end
+
+  # TODO: See if we can rely on the commit listener instead
+  def relevant_commit?
+    release.release_branch == branch_name
   end
 
   def release
