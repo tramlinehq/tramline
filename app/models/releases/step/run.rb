@@ -11,8 +11,8 @@ class Releases::Step::Run < ApplicationRecord
   belongs_to :commit, class_name: "Releases::Commit", foreign_key: "releases_commit_id", inverse_of: :step_runs
 
   validates :train_step_id, uniqueness: {scope: :releases_commit_id}
-  validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
   validates :build_number, uniqueness: {scope: [:train_run_id]}
+  validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
 
   after_create :reset_approval!
 

@@ -5,8 +5,9 @@ module Notifiers
 
       TEMPLATE_FILE = "deployment_completed.json.erb"
 
-      def initialize(release:)
-        @release = release
+      def initialize(step_run:)
+        @step_run = step_run
+        @train_run = @step_run.train_run
         @version_number = version_number
         @train_name = train_name
         @artifact_download_link = artifact_download_link
@@ -16,11 +17,11 @@ module Notifiers
       private
 
       def train_name
-        @release.train.name
+        @train_run.train.name
       end
 
       def artifact_download_link
-        if @release.final_artifact_file.present?
+        if @step_run.build_artifact.file.present?
           _artifact_download_link
         else
           fallback_link
@@ -29,22 +30,22 @@ module Notifiers
 
       def _artifact_download_link
         if Rails.env.development?
-          rails_blob_url(@release.final_artifact_file, host: ENV["HOST_NAME"], port: ENV["PORT_NUM"], protocol: "https", disposition: "attachment")
+          rails_blob_url(@step_run.build_artifact.file, host: ENV["HOST_NAME"], port: ENV["PORT_NUM"], protocol: "https", disposition: "attachment")
         else
-          rails_blob_url(@release.final_artifact_file, protocol: "https", disposition: "attachment")
+          rails_blob_url(@step_run.build_artifact.file, protocol: "https", disposition: "attachment")
         end
       end
 
       def fallback_link
         if Rails.env.development?
-          release_url(@release, host: ENV["HOST_NAME"], protocol: "https", port: ENV["PORT_NUM"])
+          release_url(@train_run, host: ENV["HOST_NAME"], protocol: "https", port: ENV["PORT_NUM"])
         else
-          release_url(@release, host: ENV["HOST_NAME"], protocol: "https")
+          release_url(@train_run, host: ENV["HOST_NAME"], protocol: "https")
         end
       end
 
       def version_number
-        @release.train.version_current
+        @train_run.train.version_current
       end
 
       def template_file
