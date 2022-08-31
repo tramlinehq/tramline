@@ -1,5 +1,11 @@
 @tailwind base;
 
+/* Override color of turbo progress bar */
+
+.turbo-progress-bar {
+  background-color: orangered;
+}
+
 /* Mosaic theme starts here */
 
 .form-select {
