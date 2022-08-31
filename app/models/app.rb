@@ -28,6 +28,7 @@ class App < ApplicationRecord
   delegate :vcs_provider, to: :integrations
   delegate :ci_cd_provider, to: :integrations
   delegate :notification_provider, to: :integrations
+  delegate :slack_build_channel_provider, to: :integrations
 
   scope :with_trains, -> { joins(:trains).distinct }
 

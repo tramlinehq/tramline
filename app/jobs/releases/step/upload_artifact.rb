@@ -1,7 +1,10 @@
 class Releases::Step::UploadArtifact < ApplicationJob
   queue_as :high
   sidekiq_options retry: false
+
   VERSION_ARTIFACT_NAME = "version"
+
+  class BadBuildArtifactIntegration < StandardError; end
 
   delegate :transaction, to: ApplicationRecord
 
@@ -21,8 +24,13 @@ class Releases::Step::UploadArtifact < ApplicationJob
       build_artifact.save!
     end
 
-    if step_run.step.build_artifact_integration == "GooglePlayStoreIntegration"
+    case step_run.step.build_artifact_integration
+    when "GooglePlayStoreIntegration"
       Releases::Step::UploadToPlaystore.perform_later(step_run_id)
+    when "SlackIntegration"
+      Releases::Step::DeploymentFinished.perform_later(step_run_id)
+    else
+      raise BadBuildArtifactIntegration
     end
   end
 

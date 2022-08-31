@@ -61,6 +61,10 @@ class Integration < ApplicationRecord
     notification.first&.providable
   end
 
+  def self.slack_build_channel_provider
+    build_channel.where(providable_type: "SlackIntegration").first.providable
+  end
+
   def installation_state
     {
       organization_id: app.organization.id,
