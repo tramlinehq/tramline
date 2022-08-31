@@ -25,7 +25,7 @@ class Releases::Step::UploadArtifact < ApplicationJob
     when "GooglePlayStoreIntegration"
       Releases::Step::UploadToPlaystore.perform_later(step_run_id)
     when "SlackIntegration"
-      Releases::Step::PushToSlack.perform_later(step_run_id)
+      Releases::Step::DeploymentFinished.perform_later(step_run_id)
     else
       # do nothing
     end

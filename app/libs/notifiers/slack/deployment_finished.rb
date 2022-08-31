@@ -1,12 +1,13 @@
 module Notifiers
   module Slack
-    class DeploymentCompleted < Base
+    class DeploymentFinished < Base
       include Rails.application.routes.url_helpers
 
-      TEMPLATE_FILE = "deployment_completed.json.erb"
+      TEMPLATE_FILE = "deployment_finished.json.erb"
 
       def initialize(step_run:)
         @step_run = step_run
+        @step_name = step_run.step.name
         @train_run = @step_run.train_run
         @version_number = version_number
         @train_name = train_name
