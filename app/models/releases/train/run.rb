@@ -5,13 +5,19 @@ class Releases::Train::Run < ApplicationRecord
   STAMPABLE_REASONS = %w[created status_changed pull_request_not_required pull_request_not_mergeable tag_reference_already_exists]
 
   belongs_to :train, class_name: "Releases::Train"
+  has_many :pull_requests, class_name: "Releases::PullRequest", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
   has_many :steps, through: :step_runs
-  has_many :pull_requests, class_name: "Releases::PullRequest", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :passports, dependent: :destroy
 
-  enum status: {on_track: "on_track", post_release: "post_release", finished: "finished", error: "error"}
+  enum status: {
+    on_track: "on_track",
+    release_phase: "release_phase",
+    post_release: "post_release",
+    finished: "finished",
+    error: "error"
+  }
 
   before_create :set_version
   before_update :status_change_stamp!, if: -> { status_changed? }

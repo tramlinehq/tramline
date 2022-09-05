@@ -15,7 +15,7 @@ class Passport < ApplicationRecord
   end
 
   def appropriate_reason
-    return unless defined? stampable.class::STAMPABLE_REASONS
+    return unless defined?(stampable.class::STAMPABLE_REASONS).eql?("constant")
 
     if stampable.class::STAMPABLE_REASONS.exclude?(reason)
       errors.add(:reason, "should belong to the stampable!")
