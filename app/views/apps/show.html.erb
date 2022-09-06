@@ -90,6 +90,9 @@
       <% end %>
     <% end %>
 
+    <h2 class="text-2xl text-slate-800 font-bold mb-6">Release History</h2>
+    <%= line_chart @app.runs.group_by_day(:completed_at).count %>
+
     <% if @app.trains.any? %>
       <% active_runs = @app.active_runs %>
       <% if active_runs.present? %>
