@@ -8,6 +8,7 @@ Rails.application.routes.draw do
     mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
     mount Flipper::UI.app(Flipper), at: "/flipper"
     mount Sidekiq::Web, at: "/sidekiq"
+    mount PgHero::Engine, at: "/pghero"
   end
 
   devise_for :users,
