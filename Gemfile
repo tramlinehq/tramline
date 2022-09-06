@@ -47,6 +47,7 @@ gem "down", "~> 5.3"
 gem "faraday-retry", "~> 2.0"
 gem "rubyzip", "~> 2.3"
 gem "requestjs-rails", "~> 0.0.9"
+gem "pghero", "~> 2.8"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
@@ -59,7 +60,6 @@ group :development, :test do
   gem "bundler-audit", "~> 0.9.1", require: false
   gem "pg_query"
   gem "prosopite"
-  gem "pghero"
 end
 
 group :development do
