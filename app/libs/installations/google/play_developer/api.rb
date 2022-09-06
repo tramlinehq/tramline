@@ -11,12 +11,13 @@ module Installations
 
     attr_reader :package_name, :apk_path, :key_file, :track_name, :release_version, :client, :errors
 
-    def initialize(package_name, apk_path, key_file, track_name, release_version)
+    def initialize(package_name, apk_path, key_file, track_name, release_version, should_promote: true)
       @package_name = package_name
       @apk_path = apk_path
       @key_file = key_file
       @track_name = track_name
       @release_version = release_version
+      @should_promote = should_promote
       @errors = []
 
       set_api_defaults
@@ -27,9 +28,21 @@ module Installations
       execute do
         edit = client.insert_edit(package_name)
         apk = client.upload_edit_bundle(package_name, edit.id, upload_source: apk_path, content_type: CONTENT_TYPE)
-        client.update_edit_track(package_name, edit.id, track_name, track(apk.version_code))
+        edit_track(edit, apk.version_code) if @should_promote
         client.commit_edit(package_name, edit.id)
       end
+    end
+
+    def promote(version_code)
+      execute do
+        edit = client.insert_edit(package_name)
+        edit_track(edit, version_code)
+        client.commit_edit(package_name, edit.id)
+      end
+    end
+
+    def edit_track(edit, version_code)
+      client.update_edit_track(package_name, edit.id, track_name, track(version_code))
     end
 
     def track(version_code)
@@ -66,9 +79,9 @@ module Installations
     end
 
     def set_api_defaults
-      ::Google::Apis::ClientOptions.default.read_timeout_sec = 50
-      ::Google::Apis::ClientOptions.default.open_timeout_sec = 50
-      ::Google::Apis::ClientOptions.default.send_timeout_sec = 50
+      ::Google::Apis::ClientOptions.default.read_timeout_sec = 100
+      ::Google::Apis::ClientOptions.default.open_timeout_sec = 100
+      ::Google::Apis::ClientOptions.default.send_timeout_sec = 100
       ::Google::Apis::RequestOptions.default.retries = 3
     end
   end

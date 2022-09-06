@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "~> 3.1"
+ruby File.read(".ruby-version").strip
 
 gem "rails", "~> 7.0.1"
 gem "pg", "~> 1.1"
@@ -47,6 +47,7 @@ gem "down", "~> 5.3"
 gem "faraday-retry", "~> 2.0"
 gem "rubyzip", "~> 2.3"
 gem "requestjs-rails", "~> 0.0.9"
+gem "app-info", "~> 2.8"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

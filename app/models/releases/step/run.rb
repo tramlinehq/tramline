@@ -16,7 +16,7 @@ class Releases::Step::Run < ApplicationRecord
 
   after_create :reset_approval!
 
-  enum status: {on_track: "on_track", halted: "halted", success: "success", failed: "failed"}
+  enum status: {on_track: "on_track", pending_deployment: "pending_deployment", success: "success", failed: "failed"}
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
 
   attr_accessor :current_user
@@ -25,6 +25,11 @@ class Releases::Step::Run < ApplicationRecord
 
   def automatons!
     Automatons::Workflow.dispatch!(step: step, ref: release_branch, step_run: self)
+  end
+
+  def mark_pending_deployment!
+    self.status = Releases::Step::Run.statuses[:pending_deployment]
+    save!
   end
 
   def mark_success!

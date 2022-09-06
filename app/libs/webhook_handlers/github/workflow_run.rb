@@ -25,7 +25,7 @@ class WebhookHandlers::Github::WorkflowRun
     if successful?
       transaction do
         add_step_run_metadata!
-        step_run.mark_success!
+        update_status!
         upload_artifact!
         notify!
       end
@@ -42,7 +42,7 @@ class WebhookHandlers::Github::WorkflowRun
     if failed?
       step_run.mark_failed!
     elsif successful?
-      step_run.mark_success!
+      step_run.mark_pending_deployment!
     elsif halted?
       step_run.mark_halted!
     end

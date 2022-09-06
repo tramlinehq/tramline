@@ -25,6 +25,7 @@ module Site
 
     config.active_job.queue_adapter = :sidekiq
     config.assets.css_compressor = nil
+    config.middleware.insert_after ActionDispatch::Static, Rack::Deflater
     PaperTrail.config.version_limit = 10
   end
 end
