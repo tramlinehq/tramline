@@ -35,6 +35,10 @@ class Releases::Train::Run < ApplicationRecord
     on_track?
   end
 
+  def finalizable?
+    (on_track? || release_phase? || post_release?) && signed? && finished_steps?
+  end
+
   def next_step
     return train.steps.first if step_runs.empty?
     step_runs.joins(:step).order("step_number").last.step.next

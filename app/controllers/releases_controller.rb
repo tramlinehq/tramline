@@ -41,7 +41,7 @@ class ReleasesController < SignedInApplicationController
   def post_release
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
-    @release = @train.active_run
+    @release = @train.release_phase_run # FIXME: wrong release being picked up
 
     if @release.finished_steps?
       # TODO: move to background job

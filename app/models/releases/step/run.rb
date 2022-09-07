@@ -10,14 +10,20 @@ class Releases::Step::Run < ApplicationRecord
   has_one :train, through: :train_run
   belongs_to :commit, class_name: "Releases::Commit", foreign_key: "releases_commit_id", inverse_of: :step_runs
 
-  validates :train_step_id, uniqueness: {scope: :releases_commit_id}
-  validates :build_number, uniqueness: {scope: [:train_run_id]}
-  validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
+  validates :train_step_id, uniqueness: { scope: :releases_commit_id }
+  validates :build_number, uniqueness: { scope: [:train_run_id] }
+  validates :build_version, uniqueness: { scope: [:train_step_id, :train_run_id] }
 
   after_create :reset_approval!
 
-  enum status: {on_track: "on_track", pending_deployment: "pending_deployment", success: "success", failed: "failed"}
-  enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
+  enum status: {
+    on_track: "on_track",
+    pending_deployment: "pending_deployment",
+    deployment_started: "deployment_started",
+    success: "success",
+    failed: "failed"
+  }
+  enum approval_status: { pending: "pending", approved: "approved", rejected: "rejected" }, _prefix: "approval"
 
   attr_accessor :current_user
 
@@ -27,14 +33,34 @@ class Releases::Step::Run < ApplicationRecord
     Automatons::Workflow.dispatch!(step: step, ref: release_branch, step_run: self)
   end
 
+  def promotable?
+    build_artifact&.release_situation&.bundle_uploaded? &&
+      pending_deployment? &&
+      step.build_artifact_integration.eql?("GooglePlayStoreIntegration")
+  end
+
+  def uploading?
+    pending_deployment? && build_artifact&.release_situation.blank?
+  end
+
+  def promote!
+    return unless promotable?
+    Releases::Step::PromoteOnPlaystore.perform_later(id)
+    self.status = Releases::Step::Run.statuses[:deployment_started]
+    save!
+  end
+
   def mark_pending_deployment!
     self.status = Releases::Step::Run.statuses[:pending_deployment]
     save!
   end
 
   def mark_success!
-    self.status = Releases::Step::Run.statuses[:success]
-    save!
+    transaction do
+      self.status = Releases::Step::Run.statuses[:success]
+      build_artifact.release_situation.update!(status: ReleaseSituation.statuses[:released])
+      save!
+    end
   end
 
   def mark_failed!

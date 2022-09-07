@@ -9,43 +9,39 @@ module Installations
 
     CONTENT_TYPE = "application/octet-stream".freeze
 
-    attr_reader :package_name, :apk_path, :key_file, :track_name, :release_version, :client, :errors
+    attr_reader :package_name, :key_file, :release_version, :client, :errors
 
-    def initialize(package_name, apk_path, key_file, track_name, release_version, should_promote: true)
+    def initialize(package_name, key_file, release_version)
       @package_name = package_name
-      @apk_path = apk_path
       @key_file = key_file
-      @track_name = track_name
       @release_version = release_version
-      @should_promote = should_promote
       @errors = []
 
       set_api_defaults
       set_client
     end
 
-    def upload
+    def upload(apk_path)
       execute do
         edit = client.insert_edit(package_name)
-        apk = client.upload_edit_bundle(package_name, edit.id, upload_source: apk_path, content_type: CONTENT_TYPE)
-        edit_track(edit, apk.version_code) if @should_promote
+        client.upload_edit_bundle(package_name, edit.id, upload_source: apk_path, content_type: CONTENT_TYPE)
         client.commit_edit(package_name, edit.id)
       end
     end
 
-    def promote(version_code)
+    def promote(track_name, version_code)
       execute do
         edit = client.insert_edit(package_name)
-        edit_track(edit, version_code)
+        edit_track(edit, track_name, version_code)
         client.commit_edit(package_name, edit.id)
       end
     end
 
-    def edit_track(edit, version_code)
-      client.update_edit_track(package_name, edit.id, track_name, track(version_code))
+    def edit_track(edit, track_name, version_code)
+      client.update_edit_track(package_name, edit.id, track_name, track(track_name, version_code))
     end
 
-    def track(version_code)
+    def track(track_name, version_code)
       ANDROID_PUBLISHER::Track.new(track: track_name, releases: [release(version_code)])
     end
 
@@ -79,9 +75,9 @@ module Installations
     end
 
     def set_api_defaults
-      ::Google::Apis::ClientOptions.default.read_timeout_sec = 100
-      ::Google::Apis::ClientOptions.default.open_timeout_sec = 100
-      ::Google::Apis::ClientOptions.default.send_timeout_sec = 100
+      ::Google::Apis::ClientOptions.default.read_timeout_sec = 150
+      ::Google::Apis::ClientOptions.default.open_timeout_sec = 150
+      ::Google::Apis::ClientOptions.default.send_timeout_sec = 150
       ::Google::Apis::RequestOptions.default.retries = 3
     end
   end

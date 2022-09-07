@@ -17,6 +17,8 @@ module ReleasesHelper
         ["In Progress", %w[bg-sky-100 text-sky-600]]
       when Releases::Step::Run.statuses[:pending_deployment]
         ["Pending Deployment", %w[bg-indigo-100 text-indigo-600]]
+      when Releases::Step::Run.statuses[:deployment_started]
+        ["Deployment In Progress", %w[bg-slate-700 text-slate-100 animate-pulse]]
       when Releases::Step::Run.statuses[:success]
         ["Success", %w[bg-green-100 text-green-600]]
       when Releases::Step::Run.statuses[:failed]

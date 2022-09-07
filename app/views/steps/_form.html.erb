@@ -35,18 +35,6 @@
     </div>
   </div>
 
-  <div class="flex flex-wrap items-center -m-3">
-    <div class="m-3">
-      <label class="flex items-center">
-        <input type="checkbox" class="form-checkbox" />
-        <span class="text-sm font-medium ml-2">Deploy Automatically?</span>
-      </label>
-
-      <div class="text-sm mt-2">This can be <strong>unchecked</strong> when you are making a final release to the store so you have full control over when to actually go live.
-        We recommend for most other non-store release steps, to run the CI workflow and deploy to the build channel automatically to get maximum benefit out of tramline and reduce manual overhead.</div>
-    </div>
-  </div>
-
   <div>
     <%= form.label :release_suffix, class: "block text-sm font-medium mb-1" %>
     <%= form.text_field :release_suffix, class: "form-input w-full", placeholder: "Eg: qa-staging", required: true %>
