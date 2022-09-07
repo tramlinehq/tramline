@@ -10,9 +10,9 @@ class Releases::Step::Run < ApplicationRecord
   has_one :train, through: :train_run
   belongs_to :commit, class_name: "Releases::Commit", foreign_key: "releases_commit_id", inverse_of: :step_runs
 
-  validates :train_step_id, uniqueness: { scope: :releases_commit_id }
-  validates :build_number, uniqueness: { scope: [:train_run_id] }
-  validates :build_version, uniqueness: { scope: [:train_step_id, :train_run_id] }
+  validates :train_step_id, uniqueness: {scope: :releases_commit_id}
+  validates :build_number, uniqueness: {scope: [:train_run_id]}
+  validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
 
   after_create :reset_approval!
 
@@ -23,7 +23,7 @@ class Releases::Step::Run < ApplicationRecord
     success: "success",
     failed: "failed"
   }
-  enum approval_status: { pending: "pending", approved: "approved", rejected: "rejected" }, _prefix: "approval"
+  enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
 
   attr_accessor :current_user
 

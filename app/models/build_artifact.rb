@@ -16,4 +16,3 @@ class BuildArtifact < ApplicationRecord
     "step-run-#{train_step_runs_id}-release.zip"
   end
 end
-
