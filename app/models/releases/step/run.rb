@@ -45,9 +45,12 @@ class Releases::Step::Run < ApplicationRecord
 
   def promote!
     return unless promotable?
-    Releases::Step::PromoteOnPlaystore.perform_later(id)
-    self.status = Releases::Step::Run.statuses[:deployment_started]
-    save!
+
+    with_lock do
+      Releases::Step::PromoteOnPlaystore.perform_later(id)
+      self.status = Releases::Step::Run.statuses[:deployment_started]
+      save!
+    end
   end
 
   def mark_pending_deployment!

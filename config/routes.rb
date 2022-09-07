@@ -73,9 +73,12 @@ Rails.application.routes.draw do
           end
         end
 
+        member do
+          post :post_release
+        end
+
         collection do
           get :live_release
-          post :post_release
         end
       end
     end

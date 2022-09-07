@@ -39,13 +39,10 @@ class ReleasesController < SignedInApplicationController
   end
 
   def post_release
-    @app = current_organization.apps.friendly.find(params[:app_id])
-    @train = @app.trains.friendly.find(params[:train_id])
-    @release = @train.release_phase_run # FIXME: wrong release being picked up
+    @release = Releases::Train::Run.find(params[:id])
 
     if @release.finished_steps?
-      # TODO: move to background job
-      @release.perform_post_release!
+      @release.perform_post_release! # TODO: move to background job
       redirect_back fallback_location: root_path, notice: "Performing post-release steps."
     else
       redirect_back fallback_location: root_path, notice: "Train is still running."

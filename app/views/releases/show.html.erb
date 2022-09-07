@@ -205,7 +205,7 @@
       <div class="pl-9">
         <% if @release.finalizable? %>
           <%= button_to "Move to Finalize phase",
-                        post_release_app_train_releases_path(@app, @train),
+                        post_release_release_path(@release),
                         class: 'btn-sm bg-indigo-500 hover:bg-indigo-600 text-white' %>
         <% end %>
       </div>

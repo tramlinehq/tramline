@@ -36,7 +36,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def finalizable?
-    (on_track? || release_phase? || post_release?) && signed? && finished_steps?
+    (release_phase? || post_release?) && signed? && finished_steps?
   end
 
   def next_step
@@ -137,7 +137,7 @@ class Releases::Train::Run < ApplicationRecord
       reason: :created,
       kind: :success,
       message: I18n.t("passport.stampable.created", stampable: "release", status: status),
-      metadata: {status: status}
+      metadata: { status: status }
     )
   end
 
@@ -148,7 +148,7 @@ class Releases::Train::Run < ApplicationRecord
       reason: :status_changed,
       kind: :success,
       message: I18n.t("passport.stampable.status_changed", stampable: "release", from: status_was, to: status),
-      metadata: {from: status_was, to: status}
+      metadata: { from: status_was, to: status }
     )
   end
 end
