@@ -40,7 +40,7 @@ class WebhookHandlers::Github::WorkflowRun
 
   def update_status!
     if failed?
-      step_run.mark_failed!
+      step_run.mark_workflow_failed!
     elsif successful?
       step_run.mark_pending_deployment!
     elsif halted?
@@ -53,7 +53,6 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   def upload_artifact!
-    return if step_run.step.external_deployment?
     Releases::Step::UploadArtifact.perform_later(step_run.id, installation_id, artifacts_url)
   end
 

@@ -19,9 +19,10 @@ class Releases::Step::Run < ApplicationRecord
   enum status: {
     on_track: "on_track",
     pending_deployment: "pending_deployment",
+    deployment_failed: "deployment_failed",
     deployment_started: "deployment_started",
-    success: "success",
-    failed: "failed"
+    workflow_failed: "workflow_failed",
+    success: "success"
   }
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
 
@@ -58,16 +59,23 @@ class Releases::Step::Run < ApplicationRecord
     save!
   end
 
-  def mark_success!
-    transaction do
-      self.status = Releases::Step::Run.statuses[:success]
-      build_artifact.release_situation.update!(status: ReleaseSituation.statuses[:released])
+  def mark_deployment_failed!
+    with_lock do
+      self.status = Releases::Step::Run.statuses[:deployment_failed]
       save!
     end
   end
 
-  def mark_failed!
-    self.status = Releases::Step::Run.statuses[:failed]
+  def mark_success!
+    transaction do
+      self.status = Releases::Step::Run.statuses[:success]
+      build_artifact&.release_situation&.update!(status: ReleaseSituation.statuses[:released])
+      save!
+    end
+  end
+
+  def mark_workflow_failed!
+    self.status = Releases::Step::Run.statuses[:workflow_failed]
     save!
   end
 
@@ -102,6 +110,6 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def finished?
-    success? || failed?
+    success? || workflow_failed?
   end
 end

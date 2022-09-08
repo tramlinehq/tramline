@@ -9,16 +9,21 @@ class Releases::Step::UploadArtifact < ApplicationJob
 
   def perform(step_run_id, installation_id, artifacts_url)
     step_run = Releases::Step::Run.find(step_run_id)
-    stream = get_download_stream(step_run, archive_download_url(installation_id, artifacts_url))
-    BuildArtifact.new(step_run: step_run).save_zip!(stream)
 
-    case step_run.step.build_artifact_integration
-    when "GooglePlayStoreIntegration"
-      Releases::Step::UploadToPlaystore.perform_later(step_run_id)
-    when "SlackIntegration"
-      Releases::Step::DeploymentFinished.perform_later(step_run_id)
-    else
-      raise BadBuildArtifactIntegration, "This BuildArtifact Integration is unsupported!"
+    begin
+      stream = get_download_stream(step_run, archive_download_url(installation_id, artifacts_url))
+      BuildArtifact.new(step_run: step_run).save_zip!(stream)
+
+      case step_run.step.build_artifact_integration
+      when "GooglePlayStoreIntegration"
+        Releases::Step::UploadToPlaystore.perform_later(step_run_id)
+      when "SlackIntegration"
+        Releases::Step::DeploymentFinished.perform_later(step_run_id)
+      else
+        step_run.mark_success!
+      end
+    rescue
+      step_run.mark_deployment_failed! # FIXME: this should actually be upload_failed maybe?
     end
   end
 

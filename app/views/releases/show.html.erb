@@ -102,7 +102,7 @@
                   <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"></path>
                 </svg>
               </div>
-            <% elsif step_run&.on_track? %>
+            <% elsif step_run&.on_track? || step_run&.pending_deployment? || step_run&.deployment_started? %>
               <!-- on_track -->
               <div class="absolute left-0 rounded-full bg-slate-500" aria-hidden="true">
                 <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
@@ -139,12 +139,6 @@
                 <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">
                   Latest build
                 </span>
-
-                <% if step_run.uploading? %>
-                  <span class="text-xs uppercase tracking-wide inline-flex bg-green-500 animate-pulse text-white hover:bg-green-600 rounded-full text-center ml-2 px-2 py-0.5">
-                    Uploading build
-                  </span>
-                <% end %>
 
                 <% if step_run.promotable? %>
                   <%= button_to 'Promote this build',
@@ -262,6 +256,11 @@
                 </span>
 
                 <%= build_status_badge(step_run.status) %>
+                <% if step_run.uploading? %>
+                  <span class="text-xs uppercase tracking-wide inline-flex bg-green-500 animate-pulse text-white hover:bg-green-600 rounded-full text-center ml-2 px-2 py-0.5">
+                    Uploading build
+                  </span>
+                <% end %>
               </div>
 
               <div><%= approval_emoji(step_run.approval_status) %> <%= step_run.build_version %></div>

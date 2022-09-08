@@ -39,9 +39,9 @@ class Integration < ApplicationRecord
 
   before_create :set_connected
 
+  MINIMAL_REQUIRED_SET = [:version_control, :ci_cd, :notification]
   DEFAULT_CONNECT_STATUS = Integration.statuses[:connected]
   DEFAULT_INITIAL_STATUS = Integration.statuses[:disconnected]
-  MINIMAL_REQUIRED_SET = [:version_control, :ci_cd, :notification]
 
   def self.ready?
     where(category: MINIMAL_REQUIRED_SET, status: :connected).size == MINIMAL_REQUIRED_SET.size
