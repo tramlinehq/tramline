@@ -21,11 +21,13 @@ module Site
     # in config/environments, which are processed later.
     #
     # config.time_zone = "Central Time (US & Canada)"
-    # config.eager_load_paths << Rails.root.join("extras")
 
+    config.eager_load_paths << Rails.root.join("lib")
     config.active_job.queue_adapter = :sidekiq
     config.assets.css_compressor = nil
     config.middleware.insert_after ActionDispatch::Static, Rack::Deflater
     PaperTrail.config.version_limit = 10
   end
+
+  require "site_extensions"
 end

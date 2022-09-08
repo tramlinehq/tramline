@@ -4,6 +4,8 @@ module Reports
       new(**args).call
     end
 
+    FORMAT = "%b %Y"
+
     def initialize(app:, period:, last:)
       @app = app
       @period = period || :month
@@ -11,7 +13,11 @@ module Reports
     end
 
     def call
-      app.runs.finished.group_by_period(period, :completed_at, last: last, current: true).count
+      app
+        .runs
+        .finished
+        .group_by_period(period, :completed_at, last: last, current: true, format: FORMAT)
+        .count
     end
 
     private
