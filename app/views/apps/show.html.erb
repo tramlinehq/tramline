@@ -91,21 +91,12 @@
     <% end %>
 
     <% if @app.runs.size > 1 %>
-      <div data-controller='release-history-chart' data-app="<%= @app.id %>">
-        <div class="sm:flex sm:justify-between sm:items-center mb-8">
-          <div>
-            <h2 class="text-2xl text-slate-800 font-bold mb-6">Release History</h2>
-          </div>
-
-          <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2 mb-6">
-            <div>
-              <%= select :release_history_timeframe, nil, @release_history_options, { required: true, data: { action: 'change->build-channel#change' } }, { class: "form-select pr-10" } %>
-            </div>
-          </div>
-        </div>
-
-        <%= line_chart @app.runs.group_by_period(:week, :completed_at, current: true, last: 3).count, ytitle: "Number of Releases" %>
+      <div class="mb-6">
+        <h2 class="text-2xl text-slate-800 font-bold">Release History</h2>
+        <p class="text-sm text-slate-500">Last 5 months</p>
       </div>
+
+      <%= line_chart [{ name: "Count", data: Reports::ReleaseHistory.call(app: @app, period: :month, last: 5) }], ytitle: "Number of Releases", legend: "top left" %>
     <% end %>
 
     <% if @app.trains.any? %>
@@ -212,7 +203,7 @@
         <% end %>
       </div>
     <% end %>
-  </div>
+    </div>
 </div>
 
 
