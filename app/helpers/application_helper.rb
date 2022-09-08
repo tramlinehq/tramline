@@ -40,4 +40,11 @@ module ApplicationHelper
       "form-input w-full"
     end
   end
+
+  def current_deploy
+    {
+      ref: Site.git_ref,
+      ago: time_ago_in_words(Site.git_ref_at) + " ago"
+    }
+  end
 end
