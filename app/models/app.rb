@@ -32,8 +32,12 @@ class App < ApplicationRecord
 
   scope :with_trains, -> { joins(:trains).distinct }
 
+  def runs
+    Releases::Train::Run.joins(train: :app).where(train: {app: self})
+  end
+
   def active_runs
-    Releases::Train::Run.on_track.joins(train: :app).where(train: {app: self})
+    runs.on_track
   end
 
   def ready?

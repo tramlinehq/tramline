@@ -90,6 +90,15 @@
       <% end %>
     <% end %>
 
+    <% if @app.runs.size > 1 %>
+      <div class="mb-6">
+        <h2 class="text-2xl text-slate-800 font-bold">Release History</h2>
+        <p class="text-sm text-slate-500">Last 5 months</p>
+      </div>
+
+      <%= line_chart [{ name: "Count", data: Reports::ReleaseHistory.call(app: @app, period: :month, last: 5) }], ytitle: "Number of Releases", legend: "top left" %>
+    <% end %>
+
     <% if @app.trains.any? %>
       <% active_runs = @app.active_runs %>
       <% if active_runs.present? %>
@@ -194,7 +203,7 @@
         <% end %>
       </div>
     <% end %>
-  </div>
+    </div>
 </div>
 
 
