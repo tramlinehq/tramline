@@ -23,6 +23,12 @@ class AppsController < SignedInApplicationController
   end
 
   def show
+    @release_history_options = [
+      ["Last 2 weeks", "2w"],
+      ["Last month", "1m"],
+      ["Last 2 months", "2m"],
+      ["All Time", "all"]
+    ]
   end
 
   def edit
