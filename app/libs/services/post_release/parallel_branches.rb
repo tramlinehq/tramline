@@ -44,7 +44,7 @@ class Services::PostRelease
     end
 
     def pr_title
-      "[#{release.release_version}] post-release merge"
+      "[#{release.release_version}] Post-release merge"
     end
 
     def pr_description

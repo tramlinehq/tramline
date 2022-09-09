@@ -53,11 +53,11 @@ class Services::PostRelease
     end
 
     def release_pr_title
-      "[#{release.release_version}] finalize release merge"
+      "[#{release.release_version}] Merge to finalize release"
     end
 
     def backmerge_pr_title
-      "[#{release.release_version}] backmerge"
+      "[#{release.release_version}] Backmerge to working branch"
     end
 
     def pr_description

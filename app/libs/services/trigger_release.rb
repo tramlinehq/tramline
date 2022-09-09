@@ -84,7 +84,7 @@ class Services::TriggerRelease
   end
 
   def pr_title
-    "[#{version_in_progress(train.version_current)}] pre-release merge"
+    "[#{version_in_progress(train.version_current)}] Pre-release merge"
   end
 
   # Webhooks are created with the train and we don't need to create webhooks for each train run AKA release
