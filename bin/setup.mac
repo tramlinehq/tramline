@@ -13,8 +13,6 @@ init() {
   run_brew
 	echo '💎 verify_ruby_version'
   verify_ruby_version && set_bundler_binstubs && verify_bundled_gems
-	echo '🤷‍♂️ verify_foreman'
-  verify_foreman
 	echo '📦 verify_postgres'
   verify_postgres && verify_database_migrations
 	echo '🔐 configure_local_ssl'
@@ -112,11 +110,6 @@ verify_bundled_gems() {
   {
     (gem list -i -v ${BUNDLER_VERSION} bundler || gem install bundler -v ${BUNDLER_VERSION}) && bundle && bundle _${BUNDLER_VERSION}_ binstubs --all
   } 2>&1
-}
-
-verify_foreman() {
-  echo 'Installing foreman...'
-  gem list -i foreman || gem install foreman
 }
 
 verify_database_migrations() {
