@@ -29,7 +29,7 @@ class Services::PostRelease
         new_pull_request: release.pull_requests.post_release.open.build,
         to_branch_ref: release_backmerge_branch,
         from_branch_ref: fully_qualified_branch_name_hack,
-        title: pr_title,
+        title: release_pr_title,
         description: pr_description
       ).ok? &&
         Automatons::PullRequest.create_and_merge!(
@@ -37,7 +37,7 @@ class Services::PostRelease
           new_pull_request: release.pull_requests.post_release.open.build,
           to_branch_ref: working_branch,
           from_branch_ref: fully_qualified_release_backmerge_branch_hack,
-          title: pr_title,
+          title: backmerge_pr_title,
           description: pr_description
         ).ok? ? Result.new(ok?: true) : Result.new(ok?: false)
     end
@@ -52,8 +52,12 @@ class Services::PostRelease
       Result.new(ok?: true)
     end
 
-    def pr_title
-      "[Release PR] #{release.release_version}"
+    def release_pr_title
+      "[#{release.release_version}] Merge to finalize release"
+    end
+
+    def backmerge_pr_title
+      "[#{release.release_version}] Backmerge to working branch"
     end
 
     def pr_description
