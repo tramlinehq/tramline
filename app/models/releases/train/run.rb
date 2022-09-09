@@ -23,7 +23,7 @@ class Releases::Train::Run < ApplicationRecord
   before_update :status_change_stamp!, if: -> { status_changed? }
   after_commit :create_stamp!, on: :create
 
-  scope :pending_release, -> { where(status: [:post_release, :on_track]) }
+  scope :pending_release, -> { where(status: [:release_phase, :post_release, :on_track]) }
 
   delegate :app, to: :train
 
