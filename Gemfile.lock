@@ -1,8 +1,6 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    CFPropertyList (3.0.5)
-      rexml
     actioncable (7.0.3.1)
       actionpack (= 7.0.3.1)
       activesupport (= 7.0.3.1)
@@ -70,17 +68,6 @@ GEM
       tzinfo (~> 2.0)
     addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
-    android_parser (2.5.0)
-      rubyzip (>= 1.0, < 3.0)
-    app-info (2.8.3)
-      CFPropertyList (>= 2.3.4, < 3.1.0)
-      android_parser (~> 2.5.0)
-      google-protobuf (>= 3.19.4, < 3.22.0)
-      icns (~> 0.2.0)
-      image_size (>= 1.5, < 3.1)
-      ruby-macho (>= 1.4, < 4)
-      rubyzip (>= 1.2, < 3.0)
-      uuidtools (>= 2.1.5, < 2.3.0)
     ast (2.4.2)
     auto_strip_attributes (2.6.0)
       activerecord (>= 4.0)
@@ -225,8 +212,6 @@ GEM
     httpclient (2.8.3)
     i18n (1.11.0)
       concurrent-ruby (~> 1.0)
-    icns (0.2.0)
-    image_size (3.0.2)
     importmap-rails (1.0.3)
       actionpack (>= 6.0.0)
       railties (>= 6.0.0)
@@ -404,7 +389,6 @@ GEM
       activesupport (>= 3.0.0)
       i18n
       iso8601
-    ruby-macho (3.0.0)
     ruby-progressbar (1.11.0)
     ruby2_keywords (0.0.5)
     rubyzip (2.3.2)
@@ -489,7 +473,6 @@ GEM
       unf_ext
     unf_ext (0.0.8.1)
     unicode-display_width (2.2.0)
-    uuidtools (2.2.0)
     warden (1.2.9)
       rack (>= 2.0.9)
     web-console (4.2.0)
@@ -515,7 +498,6 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  app-info (~> 2.8)
   auto_strip_attributes (~> 2.6)
   awesome_print
   bcrypt (~> 3.1.7)
