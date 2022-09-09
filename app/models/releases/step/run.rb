@@ -16,7 +16,14 @@ class Releases::Step::Run < ApplicationRecord
 
   after_create :reset_approval!
 
-  enum status: {on_track: "on_track", halted: "halted", success: "success", failed: "failed"}
+  enum status: {
+    on_track: "on_track",
+    pending_deployment: "pending_deployment",
+    deployment_failed: "deployment_failed",
+    deployment_started: "deployment_started",
+    workflow_failed: "workflow_failed",
+    success: "success"
+  }
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
 
   attr_accessor :current_user
@@ -27,13 +34,48 @@ class Releases::Step::Run < ApplicationRecord
     Automatons::Workflow.dispatch!(step: step, ref: release_branch, step_run: self)
   end
 
-  def mark_success!
-    self.status = Releases::Step::Run.statuses[:success]
+  def promotable?
+    build_artifact&.release_situation&.bundle_uploaded? &&
+      pending_deployment? &&
+      step.build_artifact_integration.eql?("GooglePlayStoreIntegration")
+  end
+
+  def uploading?
+    pending_deployment? && build_artifact&.release_situation.blank?
+  end
+
+  def promote!
+    return unless promotable?
+
+    with_lock do
+      Releases::Step::PromoteOnPlaystore.perform_later(id)
+      self.status = Releases::Step::Run.statuses[:deployment_started]
+      save!
+    end
+  end
+
+  def mark_pending_deployment!
+    self.status = Releases::Step::Run.statuses[:pending_deployment]
     save!
   end
 
-  def mark_failed!
-    self.status = Releases::Step::Run.statuses[:failed]
+  def mark_deployment_failed!
+    with_lock do
+      self.status = Releases::Step::Run.statuses[:deployment_failed]
+      save!
+    end
+  end
+
+  def mark_success!
+    transaction do
+      self.status = Releases::Step::Run.statuses[:success]
+      build_artifact&.release_situation&.update!(status: ReleaseSituation.statuses[:released])
+      save!
+    end
+  end
+
+  def mark_workflow_failed!
+    self.status = Releases::Step::Run.statuses[:workflow_failed]
     save!
   end
 
@@ -68,6 +110,6 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def finished?
-    success? || failed?
+    success? || workflow_failed?
   end
 end

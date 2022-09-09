@@ -69,12 +69,16 @@ Rails.application.routes.draw do
           member do
             post :start
             post :stop
+            post :promote
           end
+        end
+
+        member do
+          post :post_release
         end
 
         collection do
           get :live_release
-          post :post_release
         end
       end
     end

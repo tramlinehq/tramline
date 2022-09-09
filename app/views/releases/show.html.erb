@@ -102,7 +102,7 @@
                   <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"></path>
                 </svg>
               </div>
-            <% elsif step_run&.on_track? %>
+            <% elsif step_run&.on_track? || step_run&.pending_deployment? || step_run&.deployment_started? %>
               <!-- on_track -->
               <div class="absolute left-0 rounded-full bg-slate-500" aria-hidden="true">
                 <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
@@ -139,10 +139,16 @@
                 <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">
                   Latest build
                 </span>
+
+                <% if step_run.promotable? %>
+                  <%= button_to 'Promote this build',
+                                promote_release_step_run_path(@release, step_run),
+                                { class: 'btn-xs ml-4 bg-green-500 hover:bg-green-600 text-white' } %>
+                <% end %>
               </div>
             <% end %>
 
-            <% if @release.on_track? && step_run&.finished? && !@train.sign_off_groups.empty? %>
+            <% if (@release.on_track? || @release.release_phase?) && step_run&.finished? && !@train.sign_off_groups.empty? %>
               <% is_current_step = (@release.current_step == step.step_number) %>
               <!-- Sign offs -->
               <div class="flex flex-col w-1/3 bg-amber-50 rounded-lg p-4 mb-2">
@@ -191,9 +197,9 @@
         </li>
       <% end %>
       <div class="pl-9">
-        <% if (@release.on_track? || @release.post_release?) && @release.signed? && @release.finished_steps? %>
+        <% if @release.finalizable? %>
           <%= button_to "Move to Finalize phase",
-                        post_release_app_train_releases_path(@app, @train),
+                        post_release_release_path(@release),
                         class: 'btn-sm bg-indigo-500 hover:bg-indigo-600 text-white' %>
         <% end %>
       </div>
@@ -250,6 +256,11 @@
                 </span>
 
                 <%= build_status_badge(step_run.status) %>
+                <% if step_run.uploading? %>
+                  <span class="text-xs uppercase tracking-wide inline-flex bg-green-500 animate-pulse text-white hover:bg-green-600 rounded-full text-center ml-2 px-2 py-0.5">
+                    Uploading build
+                  </span>
+                <% end %>
               </div>
 
               <div><%= approval_emoji(step_run.approval_status) %> <%= step_run.build_version %></div>

@@ -15,6 +15,12 @@ class Releases::StepRunsController < SignedInApplicationController
     redirect_back fallback_location: root_path, notice: "step halted"
   end
 
+  def promote
+    step_run = Releases::Step::Run.find(params[:id])
+    step_run.promote!
+    redirect_back fallback_location: root_path, notice: "Promoted this build!"
+  end
+
   private
 
   def set_release

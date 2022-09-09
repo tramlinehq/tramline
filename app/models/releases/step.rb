@@ -25,8 +25,8 @@ class Releases::Step < ApplicationRecord
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
 
-  after_initialize :set_default_status, if: :new_record?
   before_validation :set_step_number, if: :new_record?
+  after_initialize :set_default_status, if: :new_record?
 
   def set_step_number
     self.step_number = train.steps.maximum(:step_number).to_i + 1

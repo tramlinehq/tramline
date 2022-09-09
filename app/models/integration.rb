@@ -7,14 +7,12 @@ class Integration < ApplicationRecord
 
   class IntegrationNotImplemented < StandardError; end
 
-  unless const_defined?(:LIST)
-    LIST = {
-      "version_control" => %w[GithubIntegration],
-      "ci_cd" => %w[GithubIntegration],
-      "notification" => %w[SlackIntegration],
-      "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration]
-    }.freeze
-  end
+  LIST = {
+    "version_control" => %w[GithubIntegration],
+    "ci_cd" => %w[GithubIntegration],
+    "notification" => %w[SlackIntegration],
+    "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration]
+  }.freeze
 
   CATEGORY_DESCRIPTIONS = {
     version_control: "Automatically create release branches and tags, and merge release PRs.",
@@ -41,9 +39,9 @@ class Integration < ApplicationRecord
 
   before_create :set_connected
 
+  MINIMAL_REQUIRED_SET = [:version_control, :ci_cd, :notification]
   DEFAULT_CONNECT_STATUS = Integration.statuses[:connected]
   DEFAULT_INITIAL_STATUS = Integration.statuses[:disconnected]
-  MINIMAL_REQUIRED_SET = [:version_control, :ci_cd, :notification]
 
   def self.ready?
     where(category: MINIMAL_REQUIRED_SET, status: :connected).size == MINIMAL_REQUIRED_SET.size

@@ -6,14 +6,14 @@ class App < ApplicationRecord
     Addressable::Template.new("https://play.google.com/store/apps/details{?query*}")
 
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
+  has_one :config, class_name: "AppConfig", dependent: :destroy
   has_many :integrations, inverse_of: :app, dependent: :destroy
   has_many :trains, class_name: "Releases::Train", dependent: :destroy
   has_many :sign_off_groups, dependent: :destroy
-  has_one :config, class_name: "AppConfig", dependent: :destroy
 
+  validate :no_trains_are_running, on: :update
   validates :bundle_identifier, uniqueness: {scope: :organization_id}
   validates :build_number, numericality: {greater_than_or_equal_to: :build_number_was}, on: :update
-  validate :no_trains_are_running, on: :update
 
   enum platform: {android: "android", ios: "ios"}
 

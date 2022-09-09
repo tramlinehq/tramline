@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_09_06_073801) do
+ActiveRecord::Schema[7.0].define(version: 2022_09_06_105409) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -168,6 +168,14 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_06_073801) do
     t.index ["kind"], name: "index_passports_on_kind"
     t.index ["reason"], name: "index_passports_on_reason"
     t.index ["stampable_type", "stampable_id"], name: "index_passports_on_stampable"
+  end
+
+  create_table "release_situations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "build_artifact_id", null: false
+    t.string "status"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["build_artifact_id"], name: "index_release_situations_on_build_artifact_id"
   end
 
   create_table "releases_commit_listeners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -396,6 +404,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_06_073801) do
   add_foreign_key "invites", "users", column: "sender_id"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
+  add_foreign_key "release_situations", "build_artifacts"
   add_foreign_key "releases_commit_listeners", "trains"
   add_foreign_key "releases_commits", "train_runs"
   add_foreign_key "releases_commits", "trains"
