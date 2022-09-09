@@ -1,13 +1,43 @@
 #!/usr/bin/env bash
 
-if ! command -v foreman &> /dev/null
-then
-  echo "Installing foreman..."
-  gem install foreman
+# check if tmux exists
+if ! command -v tmux &>/dev/null; then
+  echo "🚨 Please install tmux before running this script! 🚨"
+  exit 0
 fi
 
-if pgrep -fl ngrok ; then
-  foreman start -f Procfile.dev
-else
-  echo "[FAIL] ngrok is not running!"
+# init tmux
+SESSION=$PWD
+
+if tmux has-session -t "$SESSION"; then
+  echo "Session $SESSION already exists. Attaching..."
+  sleep 1
+  tmux attach -t "$SESSION"
+  exit 0
 fi
+
+tmux -2 new-session -d -s "$SESSION"
+
+# first window
+window=0
+left="bin/rails server -p 3000 -b 'ssl://localhost:3000?key=config/certs/localhost-key.pem&cert=config/certs/localhost.pem'"
+right="bundle exec sidekiq"
+tmux new-window -t "$SESSION":"$window" -k -n "main" "$left"
+tmux split-window -h
+tmux select-pane -t 1
+tmux send-keys "$right" C-m
+
+# second window
+window=1
+left="bin/rails tailwindcss:watch"
+right="ngrok http https://localhost:3000"
+tmux new-window -t "$SESSION":"$window" -k -n "util" "$left"
+tmux split-window -h
+tmux select-pane -t 1
+tmux send-keys "$right" C-m
+
+# select first window
+tmux select-window -t 0
+
+# attach to the session
+tmux -2 attach-session -t "$SESSION"
