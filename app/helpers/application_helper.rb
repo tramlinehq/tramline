@@ -22,7 +22,7 @@ module ApplicationHelper
 
   def dynamic_header_color
     if Rails.env.development?
-      "bg-slate-200"
+      "bg-rose-100"
     else
       "bg-white"
     end
@@ -39,5 +39,12 @@ module ApplicationHelper
     else
       "form-input w-full"
     end
+  end
+
+  def current_deploy
+    {
+      ref: Site.git_ref,
+      ago: time_ago_in_words(Site.git_ref_at) + " ago"
+    }
   end
 end

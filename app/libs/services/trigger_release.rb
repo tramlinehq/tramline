@@ -1,5 +1,6 @@
 class Services::TriggerRelease
   include Rails.application.routes.url_helpers
+  include ApplicationHelper
 
   Response = Struct.new(:success, :body)
 
@@ -76,10 +77,14 @@ class Services::TriggerRelease
       new_pull_request: train_run.pull_requests.pre_release.open.build,
       to_branch_ref: release_branch,
       from_branch_ref: fully_qualified_working_branch_hack,
-      title: "Pre-release Merge",
+      title: pr_title,
       description: "Merging this before starting release.",
       allow_without_diff: false
     )
+  end
+
+  def pr_title
+    "[#{version_in_progress(train.version_current)}] Pre-release merge"
   end
 
   # Webhooks are created with the train and we don't need to create webhooks for each train run AKA release

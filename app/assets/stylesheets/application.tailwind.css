@@ -1,13 +1,11 @@
 @tailwind base;
 
 /* Override color of turbo progress bar */
-
 .turbo-progress-bar {
   background-color: orangered;
 }
 
 /* Mosaic theme starts here */
-
 .form-select {
   @apply pr-10;
 }
@@ -136,7 +134,6 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 /* Customise flatpickr */
-
 .flatpickr-calendar {
   border: inherit;
   @apply rounded shadow-lg border border-slate-200 left-1/2;
@@ -348,7 +345,6 @@ span.flatpickr-weekday {
 .flatpickr-calendar.arrowBottom::after {
   display: none;
 }
-
 /* Mosaic theme ends here, keep it above Tailwind includes, otherwise shit will break */
 
 @tailwind components;
