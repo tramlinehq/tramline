@@ -20,14 +20,7 @@ class Services::TriggerRelease
 
   def call
     return Response.new(false, "Cannot start a train that is inactive!") if train.inactive?
-
-    if train.steps.empty?
-      return Response.new(
-        false,
-        "Cannot start a train that has no steps. Please add at least one step."
-      )
-    end
-
+    return Response.new(false, "Cannot start a train that has no steps. Please add at least one step.") if train.steps.empty?
     return Response.new(false, "A release is already in progress!") if train.active_run.present?
     return Response.new(false, "Cannot start a new release before wrapping up existing releases!") if train.runs.pending_release?
 
@@ -90,7 +83,7 @@ class Services::TriggerRelease
   # Webhooks are created with the train and we don't need to create webhooks for each train run AKA release
   # This is a fallback mechanism to ensure that webhook gets created if it is not present
   def create_webhooks
-    installation.create_repo_webhook!(repo, webhook_url)
+    train.create_webhook!
   rescue Octokit::UnprocessableEntity
     nil
   end
@@ -136,13 +129,5 @@ class Services::TriggerRelease
 
         branch_name
       end
-  end
-
-  def webhook_url
-    if Rails.env.development?
-      github_events_url(host: ENV["WEBHOOK_HOST_NAME"], train_id: train.id)
-    else
-      github_events_url(host: ENV["HOST_NAME"], train_id: train.id, protocol: "https")
-    end
   end
 end
