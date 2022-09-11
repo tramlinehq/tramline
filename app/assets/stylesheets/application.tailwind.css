@@ -3,6 +3,7 @@
 /* Override color of turbo progress bar */
 .turbo-progress-bar {
   background-color: orangered;
+  height: 4px;
 }
 
 /* Mosaic theme starts here */
