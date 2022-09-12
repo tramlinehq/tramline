@@ -10,7 +10,7 @@
       <rect x="12" y="15" width="8" height="4" rx="1"/>
     </svg>
 
-    <span class="mr-8"><%= step.ci_cd_provider_name %> • <%= step.ci_cd_channel_name %></span>
+    <span class="mr-8"><%= show_ci_cd_provider step %> • <%= show_ci_cd_channel step %></span>
 
     <svg class="mr-2 icon icon-tabler icon-tabler-package" width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
       <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -24,7 +24,7 @@
     <% if step.external_deployment? %>
       <span>External (outside Tramline)</span>
     <% else %>
-      <span><%= step.deployment_provider_name %> • <%= step.deployment_channel_name %></span>
+      <span><%= show_deployment_provider step %> • <%= show_deployment_channel step %></span>
     <% end %>
   </span>
 </div>
