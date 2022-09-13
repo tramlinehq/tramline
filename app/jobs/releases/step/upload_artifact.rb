@@ -20,10 +20,10 @@ class Releases::Step::UploadArtifact < ApplicationJob
       when "SlackIntegration"
         Releases::Step::DeploymentFinished.perform_later(step_run_id)
       else
-        step_run.mark_success!
+        step_run.finish!
       end
     rescue
-      step_run.mark_deployment_failed! # FIXME: this should actually be upload_failed maybe?
+      step_run.fail_deploy! # FIXME: this should actually be upload_failed maybe?
     end
   end
 

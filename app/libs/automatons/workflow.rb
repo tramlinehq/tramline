@@ -17,6 +17,7 @@ module Automatons
 
     def dispatch!
       if github_api.run_workflow!(code_repository, ci_cd_channel, ref, inputs)
+        step_run.ci_start!
       else
         raise DispatchFailure, "Failed to kickoff the workflow!"
       end

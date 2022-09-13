@@ -13,7 +13,7 @@ module ReleasesHelper
   def build_status_badge(status)
     display_data =
       case status
-      when Releases::Step::Run.statuses[:on_track]
+      when Releases::Step::Run.statuses[:ci_workflow_started], Releases::Step::Run.statuses[:on_track]
         ["In Progress", %w[bg-sky-100 text-sky-600]]
       when Releases::Step::Run.statuses[:pending_deployment]
         ["Pending Deployment", %w[bg-indigo-100 text-indigo-600]]
@@ -21,10 +21,10 @@ module ReleasesHelper
         ["Deployment In Progress", %w[bg-slate-700 text-slate-100 animate-pulse]]
       when Releases::Step::Run.statuses[:success]
         ["Success", %w[bg-green-100 text-green-600]]
-      when Releases::Step::Run.statuses[:workflow_failed]
-        ["Workflow Failure", %w[bg-rose-100 text-rose-600]]
-      when Releases::Step::Run.statuses[:halted]
-        ["Cancelled", %w[bg-yellow-100 text-yellow-600]]
+      when Releases::Step::Run.statuses[:ci_workflow_failed]
+        ["CI Workflow Failure", %w[bg-rose-100 text-rose-600]]
+      when Releases::Step::Run.statuses[:ci_workflow_halted]
+        ["CI Workflow Cancelled", %w[bg-yellow-100 text-yellow-600]]
       else
         ["Unknown", %w[bg-slate-100 text-slate-500]]
       end

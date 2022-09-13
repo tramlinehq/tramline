@@ -55,12 +55,12 @@ class Releases::Step < ApplicationRecord
   end
 
   def startable?
-    return false if train.status == "finished"
+    return false if train.inactive?
     return true if runs.empty? && first?
     return false if train.active_run.nil?
     return false if first?
 
-    (train.active_run&.next_step == self) && (approved_previous_step? && previous.runs.last.finished?)
+    (train.active_run&.next_step == self) && (approved_previous_step? && previous.runs.last.success?)
   end
 
   def approved_previous_step?
@@ -82,7 +82,7 @@ class Releases::Step < ApplicationRecord
   def deployment_channel
     build_artifact_channel.values.first
   end
-  
+
   def external_deployment?
     build_artifact_integration == "external"
   end

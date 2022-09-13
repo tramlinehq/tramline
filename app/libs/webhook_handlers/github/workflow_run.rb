@@ -39,13 +39,9 @@ class WebhookHandlers::Github::WorkflowRun
   private
 
   def update_status!
-    if failed?
-      step_run.mark_workflow_failed!
-    elsif successful?
-      step_run.mark_pending_deployment!
-    elsif halted?
-      step_run.mark_halted!
-    end
+    step_run.ci_failed! and return if failed?
+    step_run.about_to_deploy! and return if successful?
+    step_run.ci_cancelled! if halted?
   end
 
   def add_step_run_metadata!
@@ -79,7 +75,7 @@ class WebhookHandlers::Github::WorkflowRun
       begin
         version_zip = installation.artifact_io_stream(version_artifact_url)
         build_number = Zip::File.open(version_zip).entries.first.get_input_stream.read.strip
-        release.step_runs.on_track.find_by(build_number: build_number)
+        release.step_runs.ci_workflow_started.find_by(build_number: build_number)
       end
   end
 

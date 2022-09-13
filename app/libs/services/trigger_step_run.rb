@@ -18,7 +18,7 @@ module Services
         release.update(release_version: step.train.version_current)
         build_version = release.release_version + "-" + step.release_suffix
         build_number = step.train.app.bump_build_number!
-        step_run = release.step_runs.create!(step:, scheduled_at: Time.current, status: "on_track", commit:, build_version:, build_number:, sign_required:)
+        step_run = release.step_runs.create!(step:, scheduled_at: Time.current, commit:, build_version:, build_number:, sign_required:)
         step_run.automatons!
       end
     end

@@ -21,7 +21,7 @@ class Releases::Step::PromoteOnPlaystore < ApplicationJob
       api = Installations::Google::PlayDeveloper::Api.new(package_name, key, release_version)
       api.promote(step.deployment_channel, step_run.build_number)
       raise api.errors if api.errors.present?
-      step_run.mark_success!
+      step_run.finish!
     end
   end
 end

@@ -50,6 +50,8 @@ gem "requestjs-rails", "~> 0.0.9"
 gem "groupdate", "~> 6.1"
 gem "chartkick", "~> 4.2"
 gem "pghero", "~> 2.8"
+gem "aasm", "~> 5.3"
+gem "after_commit_everywhere", "~> 1.2"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

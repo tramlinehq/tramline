@@ -19,7 +19,7 @@ class Releases::Step::DeploymentFinished < ApplicationJob
     # FIXME: this transaction can eventually be removed, just use Result objects
     transaction do
       Automatons::Notify.dispatch!(train:, message:, text_block:, channel:, provider:)
-      step_run.mark_success!
+      step_run.finish!
     end
   end
 end
