@@ -5,7 +5,7 @@
     <li><%= link_to "Feature Flags via Flipper", "/flipper" %></li>
     <li><%= link_to "Sidekiq Dashboard", "/sidekiq" %></li>
     <li><%= link_to "PgHero Dashboard", "/pghero" %></li>
-    <li><%= link_to "Letter Opener (mail catcher)", "/letter_opener" if Rails.env.development? %></li>
+    <% if Rails.env.development? %><li><%= link_to "Letter Opener (mail catcher)", "/letter_opener" %></li><% end %>
   </ul>
 </div>
 
