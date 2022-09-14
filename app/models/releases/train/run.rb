@@ -59,7 +59,7 @@ class Releases::Train::Run < ApplicationRecord
   def perform_post_release!
     self.status = Releases::Train::Run.statuses[:post_release]
     save!
-    Services::PostRelease.call(self)
+    Releases::PostReleaseJob.perform_later(id)
   end
 
   def mark_finished!

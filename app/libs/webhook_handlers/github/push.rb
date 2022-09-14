@@ -49,7 +49,6 @@ class WebhookHandlers::Github::Push
           notify_release_start!(payload)
         end
       end
-
       Response.new(:accepted)
     else
       Response.new(:unprocessable_entity)

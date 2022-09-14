@@ -80,7 +80,8 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def promotable?
-    build_artifact&.release_situation&.bundle_uploaded? &&
+    pending_deployment? &&
+      build_artifact&.release_situation&.bundle_uploaded? &&
       step.build_artifact_integration.eql?("GooglePlayStoreIntegration")
   end
 
