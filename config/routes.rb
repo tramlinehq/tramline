@@ -12,13 +12,16 @@ Rails.application.routes.draw do
   end
 
   devise_for :users,
-    controllers: {registrations: "authentication/registrations",
-                  sessions: "authentication/sessions"},
+    controllers: {registrations: "authentication/registrations", sessions: "authentication/sessions"},
     class_name: "Accounts::User"
 
   devise_scope :user do
     unauthenticated :user do
       root "authentication/sessions#new"
+    end
+
+    authenticated :user, ->(u) { u.admin? } do
+      root "admin/settings#index", as: :authenticated_admin_root
     end
 
     authenticated :user do
@@ -51,7 +54,7 @@ Rails.application.routes.draw do
       end
 
       resources :steps, only: %i[new create edit update], shallow: true do
-        resource :sign_off, only: %i[] do
+        resource :sign_off do
           collection do
             post :approve
             post :reject
@@ -65,7 +68,7 @@ Rails.application.routes.draw do
       end
 
       resources :releases, only: %i[show create destroy], shallow: true do
-        resources :step_runs, only: [], shallow: false, module: "releases" do
+        resources :step_runs, shallow: false, module: "releases" do
           member do
             post :start
             post :stop
