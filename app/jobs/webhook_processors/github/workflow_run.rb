@@ -1,3 +1,5 @@
+require "zip"
+
 class WebhookProcessors::Github::WorkflowRun < ApplicationJob
   queue_as :high
   delegate :transaction, to: Releases::Step::Run
