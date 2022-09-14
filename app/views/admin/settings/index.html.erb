@@ -1,0 +1,15 @@
+<div>
+  <%= image_tag("tram_aesthetic.png") %>
+
+  <ul>
+    <li><%= link_to "Feature Flags via Flipper", "/flipper" %></li>
+    <li><%= link_to "Sidekiq Dashboard", "/sidekiq" %></li>
+    <li><%= link_to "PgHero Dashboard", "/pghero" %></li>
+    <% if Rails.env.development? %><li><%= link_to "Letter Opener (mail catcher)", "/letter_opener" %></li><% end %>
+  </ul>
+</div>
+
+<%= link_to "Log out", destroy_user_session_path, "data-turbo": false %>
+
+
+

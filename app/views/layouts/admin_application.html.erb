@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <%= render partial: "shared/favicon" %>
+  <title>Admin | Tramline</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+  <!-- current deploy: <%= Site.git_ref %> at <%= Site.git_ref_at %> -->
+</head>
+
+<body>
+  <main>
+    <%= yield %>
+  </main>
+</body>
+</html>

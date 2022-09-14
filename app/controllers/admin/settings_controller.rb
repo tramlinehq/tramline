@@ -1,12 +1,4 @@
-class Admin::SettingsController < SignedInApplicationController
-  before_action :admin?
-
+class Admin::SettingsController < AdminApplicationController
   def index
-  end
-
-  private
-
-  def admin?
-    current_user.admin?
   end
 end
