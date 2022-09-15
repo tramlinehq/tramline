@@ -4,7 +4,7 @@ class Releases::Step::PromoteOnPlaystore < ApplicationJob
   queue_as :high
   delegate :transaction, to: Releases::Step::Run
 
-  def perform(step_run_id)
+  def perform(step_run_id, rollout_percentage)
     step_run = Releases::Step::Run.find(step_run_id)
     step_run.with_lock do
       step = step_run.step
@@ -19,7 +19,7 @@ class Releases::Step::PromoteOnPlaystore < ApplicationJob
       release_version = step_run.train_run.release_version
 
       api = Installations::Google::PlayDeveloper::Api.new(package_name, key, release_version)
-      api.promote(step.deployment_channel, step_run.build_number)
+      api.promote(step.deployment_channel, step_run.build_number, rollout_percentage)
       raise api.errors if api.errors.present?
       step_run.finish!
     end

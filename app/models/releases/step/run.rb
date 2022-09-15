@@ -51,7 +51,7 @@ class Releases::Step::Run < ApplicationRecord
     end
 
     event :promote do
-      before { Releases::Step::PromoteOnPlaystore.perform_later(id) }
+      before { Releases::Step::PromoteOnPlaystore.perform_later(id, initial_rollout_percentage) }
       transitions from: :pending_deployment, to: :deployment_started, guard: :promotable?
     end
 
@@ -67,9 +67,14 @@ class Releases::Step::Run < ApplicationRecord
 
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
 
+  attr_reader :initial_rollout_percentage
   attr_accessor :current_user
 
   delegate :release_branch, to: :train_run
+
+  def initial_rollout_percentage=(v)
+    @initial_rollout_percentage = BigDecimal(v)
+  end
 
   def automatons!
     Automatons::Workflow.dispatch!(step: step, ref: release_branch, step_run: self)

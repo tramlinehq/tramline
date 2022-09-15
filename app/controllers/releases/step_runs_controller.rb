@@ -17,11 +17,16 @@ class Releases::StepRunsController < SignedInApplicationController
 
   def promote
     step_run = Releases::Step::Run.find(params[:id])
+    step_run.assign_attributes(promote_params)
     step_run.promote!
     redirect_back fallback_location: root_path, notice: "Promoted this build!"
   end
 
   private
+
+  def promote_params
+    params.require(:releases_step_run).permit(:initial_rollout_percentage)
+  end
 
   def set_release
     @release = Releases::Train::Run.joins(train: :app).where(apps: {organization: current_organization}).find(params[:release_id])

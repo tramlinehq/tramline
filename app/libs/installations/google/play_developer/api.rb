@@ -29,24 +29,42 @@ module Installations
       end
     end
 
-    def promote(track_name, version_code)
+    def promote(track_name, version_code, rollout_percentage)
       execute do
         edit = client.insert_edit(package_name)
-        edit_track(edit, track_name, version_code)
+        edit_track(edit, track_name, version_code, rollout_percentage)
         client.commit_edit(package_name, edit.id)
       end
     end
 
-    def edit_track(edit, track_name, version_code)
-      client.update_edit_track(package_name, edit.id, track_name, track(track_name, version_code))
+    def edit_track(edit, track_name, version_code, rollout_percentage)
+      client.update_edit_track(package_name, edit.id, track_name, track(track_name, version_code, rollout_percentage))
     end
 
-    def track(track_name, version_code)
-      ANDROID_PUBLISHER::Track.new(track: track_name, releases: [release(version_code)])
+    def track(track_name, version_code, rollout_percentage)
+      ANDROID_PUBLISHER::Track.new(track: track_name, releases: [release(version_code, rollout_percentage)])
     end
 
-    def release(version_code)
-      ANDROID_PUBLISHER::TrackRelease.new(name: release_version, status: "completed", version_codes: [version_code])
+    def release(version_code, rollout_percentage)
+      ANDROID_PUBLISHER::TrackRelease
+        .new(
+          name: release_version,
+          user_fraction: user_fraction(rollout_percentage),
+          status: release_status(rollout_percentage),
+          version_codes: [version_code]
+        )
+    end
+
+    def user_fraction(rollout_percentage)
+      rollout_percentage.to_f / 100.0
+    end
+
+    def release_status(rollout_percentage)
+      if rollout_percentage.eql?(100)
+        "completed"
+      else
+        "inProgress"
+      end
     end
 
     def execute
