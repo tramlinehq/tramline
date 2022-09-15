@@ -328,6 +328,17 @@
                   </div>
                 </div>
               </li>
+
+              <% if @release.last_good_step_run&.initial_rollout_percentage.present? %>
+                <li class="flex items-center justify-between py-3 border-b border-slate-200">
+                  <div class="text-sm">Rolled-out To</div>
+                  <div class="flex items-center whitespace-nowrap">
+                    <%= number_to_percentage(@release.last_good_step_run.initial_rollout_percentage) %>
+                    (<%= link_to "Increase on Play Store", "https://play.google.com/console/u/0/developers", class: "underline" %>)
+                  </div>
+                </li>
+              <% end %>
+
               <% unless finalize_phase_metadata(@release).dig(:final_artifact_url).nil? %>
                 <li class="flex items-center justify-between py-3 border-b border-slate-200">
                   <div class="text-sm">Final Release Build</div>
@@ -339,10 +350,10 @@
                   </div>
                 </li>
               <% end %>
+
               <li class="flex items-center justify-between py-3">
                 <div class="text-sm">Store Link</div>
                 <div class="flex items-center whitespace-nowrap">
-
                   <div class="text-sm font-mono text-slate-800">
                     <%= link_to image_tag("link_external.svg", width: 20, class: "inline-flex mr-2"),
                                 finalize_phase_metadata(@release).dig(:store_url), target: "_blank" %>

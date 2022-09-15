@@ -14,6 +14,7 @@ class Releases::Step::Run < ApplicationRecord
   validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
   validates :build_number, uniqueness: {scope: [:train_run_id]}
   validates :train_step_id, uniqueness: {scope: :releases_commit_id}
+  validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than: 100, allow_nil: true}
 
   after_create :reset_approval!
 
@@ -67,14 +68,9 @@ class Releases::Step::Run < ApplicationRecord
 
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
 
-  attr_reader :initial_rollout_percentage
   attr_accessor :current_user
 
   delegate :release_branch, to: :train_run
-
-  def initial_rollout_percentage=(v)
-    @initial_rollout_percentage = BigDecimal(v)
-  end
 
   def automatons!
     Automatons::Workflow.dispatch!(step: step, ref: release_branch, step_run: self)
