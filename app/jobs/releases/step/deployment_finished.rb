@@ -1,5 +1,6 @@
 class Releases::Step::DeploymentFinished < ApplicationJob
   queue_as :high
+  sidekiq_options retry: false
   delegate :transaction, to: Releases::Step::Run
 
   def perform(step_run_id)
@@ -11,7 +12,7 @@ class Releases::Step::DeploymentFinished < ApplicationJob
     step_run.train_run.update!(status: Releases::Train::Run.statuses[:release_phase]) if step.last?
 
     train = step_run.train
-    message = "A wild new Release has appeared!"
+    message = "A wild new release has appeared!"
     text_block = Notifiers::Slack::DeploymentFinished.render_json(step_run: step_run)
     channel = step_run.step.build_artifact_channel.values.first
     provider = step_run.step.app.slack_build_channel_provider

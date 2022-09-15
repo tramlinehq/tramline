@@ -16,47 +16,29 @@ class WebhookHandlers::Github::Push
     return Response.new(:unprocessable_entity) unless release
     return Response.new(:accepted) unless release.committable?
     return Response.new(:unprocessable_entity) unless relevant_commit?
+    return Response.new(:unprocessable_entity) unless valid_repo_and_branch?
 
-    if valid_repo_and_branch?
-      if train.commit_listeners.exists?(branch_name:)
-        commit = payload["head_commit"]
-
-        Releases::Commit.transaction do
-          commit_record = Releases::Commit.create!(train:,
-            train_run: release,
-            commit_hash: commit["id"],
-            message: commit["message"],
-            timestamp: commit["timestamp"],
-            author_name: commit["author"]["name"],
-            author_email: commit["author"]["email"],
-            url: commit["url"])
-
-          train.bump_version!(:patch) if release.step_runs.any?
-
-          if release
-            current_step = release.current_step || 1
-
-            train.steps.where("step_number <= ?", current_step).order("step_number").each do |step|
-              if step.step_number < current_step
-                Services::TriggerStepRun.call(step, commit_record, false)
-              else
-                Services::TriggerStepRun.call(step, commit_record)
-              end
-            end
-          end
-
-          release.update(release_version: train.version_current)
-          notify_release_start!(payload)
-        end
-      end
-
-      Response.new(:accepted)
-    else
-      Response.new(:unprocessable_entity)
-    end
+    WebhookProcessors::Github::Push.perform_later(release.id, commit_attributes) if train.commit_listeners.exists?(branch_name:)
+    Response.new(:accepted)
   end
 
   private
+
+  def commit_attributes
+    {
+      commit_sha: head_commit["id"],
+      message: head_commit["message"],
+      timestamp: head_commit["timestamp"],
+      author_name: head_commit["author"]["name"],
+      author_email: head_commit["author"]["email"],
+      url: head_commit["url"],
+      branch_name: branch_name
+    }
+  end
+
+  def head_commit
+    @head_commit ||= payload["head_commit"]
+  end
 
   def valid_branch?
     payload["ref"]&.include?("refs/heads/")
@@ -85,23 +67,5 @@ class WebhookHandlers::Github::Push
 
   def release
     @release ||= train.active_run
-  end
-
-  def notify_release_start!(payload)
-    return unless release.commits.size.eql?(1)
-
-    notifier =
-      Notifiers::Slack::ReleaseStarted.render_json(
-        train_name: train.name,
-        version_number: train.version_current,
-        branch_name: payload["ref"].delete_prefix("refs/heads/"),
-        commit_msg: payload["head_commit"]["message"]
-      )
-
-    Automatons::Notify.dispatch!(
-      train:,
-      message: "New Release!",
-      text_block: notifier
-    )
   end
 end
