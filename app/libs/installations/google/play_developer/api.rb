@@ -30,6 +30,8 @@ module Installations
     end
 
     def promote(track_name, version_code, rollout_percentage)
+      rollout_percentage = BigDecimal(rollout_percentage)
+
       execute do
         edit = client.insert_edit(package_name)
         edit_track(edit, track_name, version_code, rollout_percentage)
@@ -46,13 +48,16 @@ module Installations
     end
 
     def release(version_code, rollout_percentage)
-      ANDROID_PUBLISHER::TrackRelease
-        .new(
-          name: release_version,
-          user_fraction: user_fraction(rollout_percentage),
-          status: release_status(rollout_percentage),
-          version_codes: [version_code]
-        )
+      params = {
+        name: release_version,
+        status: release_status(rollout_percentage),
+        version_codes: [version_code]
+      }
+
+      user_fraction = user_fraction(rollout_percentage)
+      params[:user_fraction] = user_fraction if user_fraction < 1.0
+
+      ANDROID_PUBLISHER::TrackRelease.new(**params)
     end
 
     def user_fraction(rollout_percentage)
@@ -60,11 +65,7 @@ module Installations
     end
 
     def release_status(rollout_percentage)
-      if rollout_percentage.eql?(100)
-        "completed"
-      else
-        "inProgress"
-      end
+      rollout_percentage.eql?(100) ? "completed" : "inProgress"
     end
 
     def execute
