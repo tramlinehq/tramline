@@ -145,7 +145,12 @@
             <% if step_run&.promotable? %>
               <div class="pr-9">
                 <%= form_with(model: [@release, step_run], url: promote_release_step_run_path(@release, step_run)) do |form| %>
-                  <%= form.number_field :initial_rollout_percentage, class: "form-input w-72 mb-3", placeholder: "Initial Staged Rollout Percentage", step: ".001", min: 0, max: 100, required: true %>
+                  <% if step_run.rolloutable? %>
+                    <%= form.number_field :initial_rollout_percentage, class: "form-input w-72 mb-3", placeholder: "Initial Staged Rollout Percentage", step: ".001", min: 0, max: 100, required: true %>
+                  <% else %>
+                    <%= form.number_field :initial_rollout_percentage, value: "100", hidden: true %>
+                  <% end %>
+
                   <%= form.submit 'Promote this build', class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
                 <% end %>
               </div>
@@ -248,7 +253,7 @@
         </td>
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="grid grid-cols-2 gap-y-1">
-            <% commit.step_runs.order(:created_at).each_with_index do |step_run| %>
+            <% commit.step_runs.includes(:step).order(:created_at).each_with_index do |step_run| %>
               <div>
                 <span class="mx-2">
                   <% if step_run.ci_link.present? %>
@@ -331,10 +336,11 @@
 
               <% if @release.last_good_step_run&.initial_rollout_percentage.present? %>
                 <li class="flex items-center justify-between py-3 border-b border-slate-200">
-                  <div class="text-sm">Rolled-out To</div>
+                  <div class="text-sm">Initial Roll-out Percentage</div>
                   <div class="flex items-center whitespace-nowrap">
                     <%= number_to_percentage(@release.last_good_step_run.initial_rollout_percentage) %>
-                    (<%= link_to "Increase on Play Store", "https://play.google.com/console/u/0/developers", class: "underline" %>)
+                    (<%= link_to "Increase on Play Store", "https://play.google.com/console/u/0/developers", class: "underline" %>
+                    )
                   </div>
                 </li>
               <% end %>
