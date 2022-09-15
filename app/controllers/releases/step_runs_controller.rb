@@ -17,13 +17,29 @@ class Releases::StepRunsController < SignedInApplicationController
 
   def promote
     step_run = Releases::Step::Run.find(params[:id])
-    step_run.promote!
+
+    # FIXME: we need an extra save inside this transaction because aasm creates very narrow lock
+    # and we can't have un-persisted changes before we start a lock
+    step_run.transaction do
+      step_run.assign_attributes(promote_params)
+      step_run.save!
+      step_run.promote!
+    end
+
     redirect_back fallback_location: root_path, notice: "Promoted this build!"
   end
 
   private
 
+  def promote_params
+    params.require(:releases_step_run).permit(:initial_rollout_percentage)
+  end
+
   def set_release
-    @release = Releases::Train::Run.joins(train: :app).where(apps: {organization: current_organization}).find(params[:release_id])
+    @release =
+      Releases::Train::Run
+        .joins(train: :app)
+        .where(apps: {organization: current_organization})
+        .find(params[:release_id])
   end
 end

@@ -99,16 +99,17 @@ class Releases::Train::Run < ApplicationRecord
       .order(:train_step_id, created_at: :desc)
   end
 
-  def final_artifact_file
-    return unless finished?
-
+  def last_good_step_run
     step_runs
       .where(status: Releases::Step::Run.statuses[:success])
       .joins(:step)
       .order(step_number: :desc, updated_at: :desc)
       .first
-      &.build_artifact
-      &.file
+  end
+
+  def final_artifact_file
+    return unless finished?
+    last_good_step_run&.build_artifact&.file
   end
 
   def signed?

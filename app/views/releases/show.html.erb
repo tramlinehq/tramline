@@ -139,11 +139,19 @@
                 <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">
                   Latest build
                 </span>
+              </div>
+            <% end %>
 
-                <% if step_run.promotable? %>
-                  <%= button_to 'Promote this build',
-                                promote_release_step_run_path(@release, step_run),
-                                { class: 'btn-xs ml-4 bg-green-500 hover:bg-green-600 text-white' } %>
+            <% if step_run&.promotable? %>
+              <div class="pr-9">
+                <%= form_with(model: [@release, step_run], url: promote_release_step_run_path(@release, step_run)) do |form| %>
+                  <% if step_run.rolloutable? %>
+                    <%= form.number_field :initial_rollout_percentage, class: "form-input w-72 mb-3", placeholder: "Initial Staged Rollout Percentage", step: ".001", min: 0, max: 100, required: true %>
+                  <% else %>
+                    <%= form.number_field :initial_rollout_percentage, value: "100", hidden: true %>
+                  <% end %>
+
+                  <%= form.submit 'Promote this build', class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
                 <% end %>
               </div>
             <% end %>
@@ -245,7 +253,7 @@
         </td>
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="grid grid-cols-2 gap-y-1">
-            <% commit.step_runs.order(:created_at).each_with_index do |step_run| %>
+            <% commit.step_runs.includes(:step).order(:created_at).each_with_index do |step_run| %>
               <div>
                 <span class="mx-2">
                   <% if step_run.ci_link.present? %>
@@ -286,9 +294,9 @@
     <div class="text-center px-4 mb-6">
       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-t from-slate-200 to-slate-100 mb-4 animate-pulse">
         <svg class="w-5 h-6 fill-current" viewBox="0 0 20 24">
-          <path class="text-slate-500" d="M10 10.562l9-5-8.514-4.73a1 1 0 00-.972 0L1 5.562l9 5z" />
-          <path class="text-slate-300" d="M9 12.294l-9-5v10.412a1 1 0 00.514.874L9 23.294v-11z" />
-          <path class="text-slate-400" d="M11 12.294v11l8.486-4.714a1 1 0 00.514-.874V7.295l-9 4.999z" />
+          <path class="text-slate-500" d="M10 10.562l9-5-8.514-4.73a1 1 0 00-.972 0L1 5.562l9 5z"/>
+          <path class="text-slate-300" d="M9 12.294l-9-5v10.412a1 1 0 00.514.874L9 23.294v-11z"/>
+          <path class="text-slate-400" d="M11 12.294v11l8.486-4.714a1 1 0 00.514-.874V7.295l-9 4.999z"/>
         </svg>
       </div>
       <h2 class="text-2xl text-slate-400 mb-6">Finishing up, give us a few!</h2>
@@ -325,6 +333,18 @@
                   </div>
                 </div>
               </li>
+
+              <% if @release.last_good_step_run&.initial_rollout_percentage.present? %>
+                <li class="flex items-center justify-between py-3 border-b border-slate-200">
+                  <div class="text-sm">Initial Roll-out Percentage</div>
+                  <div class="flex items-center whitespace-nowrap">
+                    <%= number_to_percentage(@release.last_good_step_run.initial_rollout_percentage) %>
+                    (<%= link_to "Increase on Play Store", "https://play.google.com/console/u/0/developers", class: "underline" %>
+                    )
+                  </div>
+                </li>
+              <% end %>
+
               <% unless finalize_phase_metadata(@release).dig(:final_artifact_url).nil? %>
                 <li class="flex items-center justify-between py-3 border-b border-slate-200">
                   <div class="text-sm">Final Release Build</div>
@@ -336,10 +356,10 @@
                   </div>
                 </li>
               <% end %>
+
               <li class="flex items-center justify-between py-3">
                 <div class="text-sm">Store Link</div>
                 <div class="flex items-center whitespace-nowrap">
-
                   <div class="text-sm font-mono text-slate-800">
                     <%= link_to image_tag("link_external.svg", width: 20, class: "inline-flex mr-2"),
                                 finalize_phase_metadata(@release).dig(:store_url), target: "_blank" %>

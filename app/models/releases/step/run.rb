@@ -14,6 +14,7 @@ class Releases::Step::Run < ApplicationRecord
   validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
   validates :build_number, uniqueness: {scope: [:train_run_id]}
   validates :train_step_id, uniqueness: {scope: :releases_commit_id}
+  validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   after_create :reset_approval!
 
@@ -51,7 +52,7 @@ class Releases::Step::Run < ApplicationRecord
     end
 
     event :promote do
-      before { Releases::Step::PromoteOnPlaystore.perform_later(id) }
+      before { Releases::Step::PromoteOnPlaystore.perform_later(id, initial_rollout_percentage) }
       transitions from: :pending_deployment, to: :deployment_started, guard: :promotable?
     end
 
@@ -77,6 +78,10 @@ class Releases::Step::Run < ApplicationRecord
 
   def uploading?
     pending_deployment? && build_artifact&.release_situation.blank?
+  end
+
+  def rolloutable?
+    promotable? && step.last?
   end
 
   def promotable?
