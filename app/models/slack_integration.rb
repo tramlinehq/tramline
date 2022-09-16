@@ -1,12 +1,10 @@
 class SlackIntegration < ApplicationRecord
-  include Vaultable
-  include Rails.application.routes.url_helpers
-
   has_paper_trail
-
-  has_one :integration, as: :providable, dependent: :destroy
-
   encrypts :oauth_access_token, deterministic: true
+
+  include Vaultable
+  include Providable
+  include Rails.application.routes.url_helpers
 
   attr_accessor :code
 

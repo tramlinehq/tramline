@@ -3,12 +3,12 @@ class Integration < ApplicationRecord
   using RefinedString
 
   belongs_to :app
-  belongs_to :providable, polymorphic: true
+  delegated_type :providable, types: %w[GithubIntegration SlackIntegration GooglePlayStoreIntegration]
 
   class IntegrationNotImplemented < StandardError; end
 
   LIST = {
-    "version_control" => %w[GithubIntegration],
+    "version_control" => %w[GithubIntegration GitlabIntegration],
     "ci_cd" => %w[GithubIntegration],
     "notification" => %w[SlackIntegration],
     "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration]

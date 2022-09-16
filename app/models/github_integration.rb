@@ -2,9 +2,8 @@ class GithubIntegration < ApplicationRecord
   has_paper_trail
 
   include Vaultable
+  include Providable
   include Rails.application.routes.url_helpers
-
-  has_one :integration, as: :providable, dependent: :destroy
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://github.com/apps/{app_name}/installations/new{?params*}")
