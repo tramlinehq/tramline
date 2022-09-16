@@ -120,9 +120,6 @@
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">deployment channel</div>
       </th>
-      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="font-semibold text-left">event log</div>
-      </th>
     </tr>
     </thead>
 
@@ -158,15 +155,9 @@
           </div>
         </td>
 
-        <td class="px-2 py-3 whitespace-nowrap">
+        <td class="px-2 last:pr-5 py-3 whitespace-nowrap">
           <div>
             <%= @train.final_deployment_channel %>
-          </div>
-        </td>
-
-        <td class="px-2 last:pl-10 py-3 whitespace-nowrap">
-          <div>
-            <%= link_to "->", timeline_release_path(run), class: "sm:inline" %>
           </div>
         </td>
       </tr>
