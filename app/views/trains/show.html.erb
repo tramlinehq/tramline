@@ -16,11 +16,11 @@
       <%= button_to nil, class: "btn bg-indigo-500 hover:bg-indigo-600 text-white disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed shadow-none", disabled: true do %>
         <svg xmlns="http://www.w3.org/2000/svg" class="opacity-80" width="20" height="20" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-          <line x1="14" y1="12" x2="14" y2="12.01" />
-          <line x1="10" y1="12" x2="10" y2="12.01" />
-          <line x1="12" y1="10" x2="12" y2="10.01" />
-          <line x1="12" y1="14" x2="12" y2="14.01" />
-          <path d="M4.5 12.5l8 -8a4.94 4.94 0 0 1 7 7l-8 8a4.94 4.94 0 0 1 -7 -7" />
+          <line x1="14" y1="12" x2="14" y2="12.01"/>
+          <line x1="10" y1="12" x2="10" y2="12.01"/>
+          <line x1="12" y1="10" x2="12" y2="10.01"/>
+          <line x1="12" y1="14" x2="12" y2="14.01"/>
+          <path d="M4.5 12.5l8 -8a4.94 4.94 0 0 1 7 7l-8 8a4.94 4.94 0 0 1 -7 -7"/>
         </svg>
         <span class="ml-2">Hotfix last release</span>
       <% end %>
@@ -120,19 +120,22 @@
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">deployment channel</div>
       </th>
+      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">event log</div>
+      </th>
     </tr>
     </thead>
 
     <tbody class="text-sm divide-y divide-slate-200">
     <% @train.runs.order(was_run_at: :desc).each_with_index do |run, index| %>
       <tr>
-        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <td class="px-2 first:pl-5 py-3 whitespace-nowrap">
           <div>
             <%= releases_count - index %>
           </div>
         </td>
 
-        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <td class="px-2 py-3 whitespace-nowrap">
           <%= link_to release_path(run.id) do %>
         <span class="underline">
           <% if run.completed_at %>
@@ -149,15 +152,21 @@
           <% end %>
         </td>
 
-        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <td class="px-2 py-3 whitespace-nowrap">
           <div class="">
             <%= run.branch_name %>
           </div>
         </td>
 
-        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <td class="px-2 py-3 whitespace-nowrap">
           <div>
             <%= @train.final_deployment_channel %>
+          </div>
+        </td>
+
+        <td class="px-2 last:pl-10 py-3 whitespace-nowrap">
+          <div>
+            <%= link_to "->", timeline_release_path(run), class: "sm:inline" %>
           </div>
         </td>
       </tr>

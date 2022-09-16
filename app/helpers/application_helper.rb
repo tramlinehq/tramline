@@ -41,10 +41,14 @@ module ApplicationHelper
     end
   end
 
+  def ago_in_words(time)
+    time_ago_in_words(time) + " ago"
+  end
+
   def current_deploy
     {
       ref: Site.git_ref,
-      ago: time_ago_in_words(Site.git_ref_at) + " ago"
+      ago: ago_in_words(Site.git_ref_at)
     }
   end
 end

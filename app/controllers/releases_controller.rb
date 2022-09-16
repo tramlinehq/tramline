@@ -1,5 +1,5 @@
 class ReleasesController < SignedInApplicationController
-  before_action :set_release, only: [:show, :destroy]
+  before_action :set_release, only: [:show, :timeline, :destroy]
 
   def create
     @app = current_organization.apps.friendly.find(params[:app_id])
@@ -19,6 +19,12 @@ class ReleasesController < SignedInApplicationController
     @app = @train.app
     @pre_release_prs = @release.pull_requests.pre_release
     @post_release_prs = @release.pull_requests.post_release
+  end
+
+  def timeline
+    @train = @release.train
+    @app = @train.app
+    @events = @release.passports
   end
 
   def live_release

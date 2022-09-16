@@ -9,7 +9,7 @@ class Releases::Train::Run < ApplicationRecord
   has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
   has_many :steps, through: :step_runs
-  has_many :passports, dependent: :destroy
+  has_many :passports, as: :stampable, dependent: :destroy
 
   enum status: {
     on_track: "on_track",

@@ -8,6 +8,7 @@
 
   <!-- Right: Actions -->
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+    <%= link_to "Event Log", timeline_release_path(@release), class: "btn border-slate-300 hover:border-slate-400 text-slate-600" %>
     <% if @release.on_track? %>
       <%= button_to "Stop release", release_path(@release.id), method: :delete, class: "btn bg-red-500 hover:bg-red-600 text-white" %>
     <% end %>
