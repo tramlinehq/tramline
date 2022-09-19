@@ -19,7 +19,7 @@
           <div class="flex items-center text-slate-400">
             <div class="text-sm text-slate-500">
               <% if integration.connected? %>
-                <div class="text-xs inline-flex font-medium bg-green-100 text-green-600 rounded-full text-center px-2.5 py-1">
+                <div class="text-xs inline-flex font-medium uppercase tracking-wide bg-green-100 text-green-600 rounded-full text-center px-2.5 py-1">
                   Connected
                 </div>
               <% end %>
@@ -35,7 +35,7 @@
                   <% end %>
 
                   <%= form.submit 'Connect',
-                                  class: "btn-lg border-slate-600 hover:border-slate-300 flex items-center",
+                                  class: "btn border-slate-300 hover:border-slate-400 flex items-center",
                                   "data-turbo": false %>
                 <% end %>
               <% end %>
