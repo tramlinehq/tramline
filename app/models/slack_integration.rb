@@ -8,7 +8,7 @@ class SlackIntegration < ApplicationRecord
 
   attr_accessor :code
 
-  before_save :complete_access
+  before_create :complete_access
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://slack.com/oauth/v2/authorize{?params*}")

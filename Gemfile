@@ -52,6 +52,7 @@ gem "chartkick", "~> 4.2"
 gem "pghero", "~> 2.8"
 gem "aasm", "~> 5.3"
 gem "after_commit_everywhere", "~> 1.2"
+gem "retriable", "~> 3.1"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

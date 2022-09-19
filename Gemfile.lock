@@ -551,6 +551,7 @@ DEPENDENCIES
   rails (~> 7.0.1)
   redis (~> 4.0)
   requestjs-rails (~> 0.0.9)
+  retriable (~> 3.1)
   rspec-rails
   ruby-duration (~> 3.2)
   rubyzip (~> 2.3)

@@ -11,7 +11,7 @@
       <%= form.label :code_repository, "Code Repository", class: "block text-sm font-medium mb-1" %>
       <%= form.select :code_repository,
                       options_for_select(
-                        @code_repositories.map { |chan| [chan[:full_name], { chan[:id] => chan[:full_name] }.to_json] },
+                        @code_repositories.map { |chan| [chan[:name], { chan[:id] => chan[:name] }.to_json] },
                         @config.code_repository.to_json
                       ),
                       {},

@@ -75,6 +75,7 @@ module Installations
         .then { |body| JSON.parse(body) }
         .then { |json| json["channels"] }
         .then { |channels| channels.map { |list| list.slice("id", "name") } }
+        .then { |responses| Installations::Response::Keys.normalize(responses) }
     end
   end
 end

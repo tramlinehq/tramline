@@ -23,6 +23,7 @@ module Installations
           .then { |response| response[:workflows] }
           .then { |workflows| workflows.select { |workflow| workflow[:state] == "active" } }
           .then { |workflows| workflows.map { |workflow| workflow.to_h.slice(:id, :name) } }
+          .then { |responses| Installations::Response::Keys.normalize(responses) }
       end
     end
 
@@ -32,6 +33,7 @@ module Installations
           .list_app_installation_repositories
           .then { |response| response[:repositories] }
           .then { |repos| repos.map { |repository| repository.to_h.slice(:id, :full_name) } }
+          .then { |responses| Installations::Response::Keys.normalize(responses) }
       end
     end
 
@@ -73,13 +75,6 @@ module Installations
     def create_tag!(repo, name, branch_name)
       execute do
         @client.create_ref(repo, "refs/tags/#{name}", head(repo, branch_name))
-      end
-    end
-
-    def create_annotated_tag!(repo, name, branch_name)
-      execute do
-        annotated_tag = @client.create_tag(repo, name, "Tag creation", head(repo, branch_name), "commit", "Tramline", "tramline@tramline.app", Time.current)
-        @client.create_ref(repo, "refs/tags/#{name}", annotated_tag[:sha])
       end
     end
 
