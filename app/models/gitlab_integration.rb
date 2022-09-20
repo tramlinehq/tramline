@@ -59,7 +59,7 @@ class GitlabIntegration < ApplicationRecord
   private
 
   def with_api_retries
-    Retriable.retriable(on: Installations::Gitlab::Api::TokenExpired, tries: 1, on_retry: reset_tokens!) do
+    Retryable.retryable(on: Installations::Gitlab::Api::TokenExpired, tries: 2, sleep: 0, exception_cb: proc { reset_tokens! }) do
       yield
     end
   end
@@ -70,9 +70,10 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def set_tokens(tokens)
-    return unless tokens
-    self.oauth_access_token = tokens.access_token
-    self.oauth_refresh_token = tokens.refresh_token
+    if tokens
+      self.oauth_access_token = tokens.access_token
+      self.oauth_refresh_token = tokens.refresh_token
+    end
   end
 
   def redirect_uri
