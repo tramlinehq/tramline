@@ -5,7 +5,23 @@ module Installations
 
     class TokenExpired < StandardError; end
 
-    LIST_REPOS_URL = "https://gitlab.com/api/v4/projects"
+    LIST_PROJECTS_URL = "https://gitlab.com/api/v4/projects"
+    PROJECT_HOOKS_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/hooks"
+    CREATE_TAG_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/tags"
+    BRANCH_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/branches/{branch_name}"
+    CREATE_BRANCH_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/branches"
+    MR_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests"
+    MR_MERGE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests/{merge_request_iid}/merge"
+
+    WEBHOOK_PERMISSIONS = {
+      deployment_events: true,
+      job_events: true,
+      merge_requests_events: true,
+      pipeline_events: true,
+      push_events: true,
+      releases_events: true,
+      tag_push_events: true
+    }
 
     def initialize(oauth_access_token)
       @oauth_access_token = oauth_access_token
@@ -56,23 +72,89 @@ module Installations
       end
     end
 
-    def list_repos
+    def list_projects
       params = {
         params: {
           membership: true
         }
       }
 
-      execute(LIST_REPOS_URL, params, :get)
+      execute(LIST_PROJECTS_URL, params, :get)
         .then { |repositories| repositories.map { |repo| repo.slice("id", "path_with_namespace") } }
         .then { |responses| Installations::Response::Keys.normalize(responses) }
     end
 
-    def execute(url, params, verb = :get)
+    def create_project_webhook!(project_id, url)
+      params = {
+        form: {
+          id: project_id,
+          url: url
+        }.merge(WEBHOOK_PERMISSIONS)
+      }
+
+      execute(:post, PROJECT_HOOKS_URL.expand(project_id:).to_s, params)
+    end
+
+    def create_branch!(project_id, from_branch_name, new_branch_name)
+      params = {
+        form: {
+          branch: new_branch_name,
+          ref: from_branch_name
+        }
+      }
+
+      execute(:post, CREATE_BRANCH_URL.expand(project_id:).to_s, params)
+    end
+
+    def create_tag!(project_id, tag_name, branch_name)
+      params = {
+        form: {
+          tag_name:,
+          ref: branch_name
+        }
+      }
+
+      execute(:post, CREATE_TAG_URL.expand(project_id:).to_s, params)
+    end
+
+    def create_pr!(project_id, target_branch, source_branch, title, description)
+      params = {
+        form: {
+          source_branch:,
+          target_branch:,
+          title:,
+          description:
+        }
+      }
+
+      execute(:post, MR_URL.expand(project_id:).to_s, params)
+    end
+
+    def find_pr(project_id, target_branch, source_branch)
+      params = {
+        form: {
+          source_branch:,
+          target_branch:
+        }
+      }
+
+      execute(:get, MR_URL.expand(project_id:).to_s, params).first
+    end
+
+    def merge_pr!(project_id, pr_number)
+      params = {
+        form: {
+          merge_request_iid: pr_number
+        }
+      }
+
+      execute(:put, MR_MERGE_URL.expand(project_id:, merge_request_iid: pr_number).to_s, params)
+    end
+
+    def execute(verb, url, params)
       response = HTTP.auth("Bearer #{oauth_access_token}").public_send(verb, url, params)
-      status = response.status
       body = JSON.parse(response.body.to_s)
-      raise TokenExpired if refresh_token?(status, body)
+      raise TokenExpired if refresh_token?(response.status, body)
       body
     end
 
