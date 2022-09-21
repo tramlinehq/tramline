@@ -2,8 +2,6 @@ class App < ApplicationRecord
   has_paper_trail
   extend FriendlyId
 
-  self.implicit_order_column = :created_at
-
   GOOGLE_PLAY_STORE_URL_TEMPLATE =
     Addressable::Template.new("https://play.google.com/store/apps/details{?query*}")
 

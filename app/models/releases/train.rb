@@ -3,8 +3,6 @@ class Releases::Train < ApplicationRecord
   using RefinedString
   extend FriendlyId
 
-  self.implicit_order_column = :created_at
-
   EXTERNAL_DEPLOYMENT_CHANNEL = {"None (outside Tramline)" => "external"}
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",

@@ -2,8 +2,6 @@ class Accounts::User < ApplicationRecord
   extend FriendlyId
   has_paper_trail
 
-  self.implicit_order_column = "created_at"
-
   devise :database_authenticatable, :registerable, :trackable, :lockable,
     :recoverable, :confirmable, :timeoutable, :rememberable, :validatable
 

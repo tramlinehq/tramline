@@ -1,6 +1,5 @@
 class Releases::Commit < ApplicationRecord
   self.table_name = "releases_commits"
-  self.implicit_order_column = :created_at
 
   belongs_to :train
   belongs_to :train_run, class_name: "Releases::Train::Run"

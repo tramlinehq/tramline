@@ -2,7 +2,6 @@ class Releases::Step::Run < ApplicationRecord
   has_paper_trail
   include AASM
 
-  self.implicit_order_column = :created_at
   self.ignored_columns = [:previous_step_run_id]
 
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :runs

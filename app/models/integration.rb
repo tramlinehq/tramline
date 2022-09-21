@@ -3,7 +3,7 @@ class Integration < ApplicationRecord
   using RefinedString
 
   belongs_to :app
-  delegated_type :providable, types: %w[GithubIntegration SlackIntegration GooglePlayStoreIntegration]
+  delegated_type :providable, types: %w[GithubIntegration GitlabIntegration SlackIntegration GooglePlayStoreIntegration]
 
   class IntegrationNotImplemented < StandardError; end
 
