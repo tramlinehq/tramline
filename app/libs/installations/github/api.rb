@@ -43,12 +43,6 @@ module Installations
       end
     end
 
-    def workflow_runs(repo, workflow, inputs)
-      execute do
-        @client.workflow_runs(repo, workflow, inputs)
-      end
-    end
-
     def create_repo_webhook!(repo, url)
       execute do
         @client.create_hook(
