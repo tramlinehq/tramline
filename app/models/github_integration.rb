@@ -28,13 +28,13 @@ class GithubIntegration < ApplicationRecord
     installation.list_repos
   end
 
+  def create_webhook!(url_params)
+    installation.create_repo_webhook!(app_config.code_repository_name, events_url(url_params))
+  end
+
   # @return [Installation::Github::Api]
   def installation
     Installations::Github::Api.new(installation_id)
-  end
-
-  def events_url
-    github_events_url(integration.app.id, installation_id)
   end
 
   def app_config
@@ -59,5 +59,15 @@ class GithubIntegration < ApplicationRecord
 
   def tag_url(repo, tag_name)
     "https://github.com/#{repo}/releases/tag/#{tag_name}"
+  end
+
+  private
+
+  def events_url(params)
+    if Rails.env.development?
+      github_events_url(host: ENV["WEBHOOK_HOST_NAME"], **params)
+    else
+      github_events_url(host: ENV["HOST_NAME"], protocol: "https", **params)
+    end
   end
 end

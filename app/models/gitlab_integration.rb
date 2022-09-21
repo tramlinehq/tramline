@@ -32,7 +32,15 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def repos
-    with_api_retries { installation.list_repos }
+    with_api_retries { installation.list_projects }
+  end
+
+  def workflows
+    with_api_retries { installation.list_pipelines(app_config.code_repository_name) }
+  end
+
+  def create_webhook!(url_params)
+    with_api_retries { installation.create_project_webhook!(app_config.code_repository_name, events_url(url_params)) }
   end
 
   # @return [Installation::Gitlab::Api]
@@ -59,6 +67,7 @@ class GitlabIntegration < ApplicationRecord
   private
 
   def with_api_retries
+    # retry just once (2 attempts in total)
     Retryable.retryable(on: Installations::Gitlab::Api::TokenExpired, tries: 2, sleep: 0, exception_cb: proc { reset_tokens! }) do
       yield
     end
@@ -81,6 +90,14 @@ class GitlabIntegration < ApplicationRecord
       gitlab_callback_url(host: ENV["HOST_NAME"], port: "3000", protocol: "https")
     else
       gitlab_callback_url(host: ENV["HOST_NAME"], protocol: "https")
+    end
+  end
+
+  def events_url(params)
+    if Rails.env.development?
+      gitlab_events_url(host: ENV["WEBHOOK_HOST_NAME"], **params)
+    else
+      gitlab_events_url(host: ENV["HOST_NAME"], protocol: "https", **params)
     end
   end
 end

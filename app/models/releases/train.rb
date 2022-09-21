@@ -69,7 +69,7 @@ class Releases::Train < ApplicationRecord
 
   def create_webhook!
     return false if Rails.env.test?
-    Automatons::Webhook.dispatch!(train: self)
+    train.app.vcs_provider.create_webhook!(train_id: id) && train.app.ci_cd_provider.create_webhook!(train_id: id)
   end
 
   def display_name
