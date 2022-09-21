@@ -67,7 +67,9 @@ class Releases::Train < ApplicationRecord
 
   def create_webhook!
     return false if Rails.env.test?
-    vcs_provider.create_webhook!(train_id: id) && ci_cd_provider.create_webhook!(train_id: id)
+    vcs_provider.create_webhook!(train_id: id)
+    return true if integrations.shared_vcs_and_ci_cd?
+    ci_cd_provider.create_webhook!(train_id: id)
   end
 
   def create_tag!(branch_name)

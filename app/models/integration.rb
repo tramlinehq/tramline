@@ -63,6 +63,11 @@ class Integration < ApplicationRecord
     build_channel.where(providable_type: "SlackIntegration").first.providable
   end
 
+  def self.shared_vcs_and_ci_cd?
+    (version_control.first.github_integration? && ci_cd.first.github_integration?) ||
+      (version_control.first.gitlab_integration? && ci_cd.first.gitlab_integration?)
+  end
+
   def installation_state
     {
       organization_id: app.organization.id,
