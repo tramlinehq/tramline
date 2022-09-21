@@ -8,6 +8,7 @@ class GitlabIntegration < ApplicationRecord
 
   attr_accessor :code
   before_create :complete_access
+  delegate :code_repository_name, to: :app_config
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://gitlab.com/oauth/authorize{?params*}")
@@ -36,20 +37,20 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def workflows
-    with_api_retries { installation.list_pipelines(app_config.code_repository_name) }
+    # with_api_retries { installation.list_pipelines(code_repository_name) }
   end
 
   def create_webhook!(url_params)
-    with_api_retries { installation.create_project_webhook!(app_config.code_repository_name, events_url(url_params)) }
+    with_api_retries { installation.create_project_webhook!(code_repository_name, events_url(url_params)) }
+  end
+
+  def create_tag!(tag_name, branch)
+    with_api_retries { installation.create_tag!(code_repository_name, tag_name, branch) }
   end
 
   # @return [Installation::Gitlab::Api]
   def installation
     Installations::Gitlab::Api.new(oauth_access_token)
-  end
-
-  def app_config
-    integration.app.config
   end
 
   def to_s
@@ -83,6 +84,10 @@ class GitlabIntegration < ApplicationRecord
       self.oauth_access_token = tokens.access_token
       self.oauth_refresh_token = tokens.refresh_token
     end
+  end
+
+  def app_config
+    integration.app.config
   end
 
   def redirect_uri

@@ -5,6 +5,8 @@ class GithubIntegration < ApplicationRecord
   include Providable
   include Rails.application.routes.url_helpers
 
+  delegate :code_repository_name, to: :app_config
+
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://github.com/apps/{app_name}/installations/new{?params*}")
 
@@ -21,7 +23,7 @@ class GithubIntegration < ApplicationRecord
 
   def workflows
     return [] unless integration.ci_cd?
-    installation.list_workflows(app_config.code_repository_name)
+    installation.list_workflows(code_repository_name)
   end
 
   def repos
@@ -29,16 +31,16 @@ class GithubIntegration < ApplicationRecord
   end
 
   def create_webhook!(url_params)
-    installation.create_repo_webhook!(app_config.code_repository_name, events_url(url_params))
+    installation.create_repo_webhook!(code_repository_name, events_url(url_params))
+  end
+
+  def create_tag!(tag_name, branch)
+    installation.create_tag!(code_repository_name, tag_name, branch)
   end
 
   # @return [Installation::Github::Api]
   def installation
     Installations::Github::Api.new(installation_id)
-  end
-
-  def app_config
-    integration.app.config
   end
 
   def to_s
@@ -62,6 +64,10 @@ class GithubIntegration < ApplicationRecord
   end
 
   private
+
+  def app_config
+    integration.app.config
+  end
 
   def events_url(params)
     if Rails.env.development?

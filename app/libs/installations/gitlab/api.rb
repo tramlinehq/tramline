@@ -142,12 +142,6 @@ module Installations
     end
 
     def merge_pr!(project_id, pr_number)
-      params = {
-        form: {
-          merge_request_iid: pr_number
-        }
-      }
-
       execute(:put, MR_MERGE_URL.expand(project_id:, merge_request_iid: pr_number).to_s, params)
     end
 

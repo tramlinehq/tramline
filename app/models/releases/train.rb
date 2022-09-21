@@ -69,7 +69,12 @@ class Releases::Train < ApplicationRecord
 
   def create_webhook!
     return false if Rails.env.test?
-    train.app.vcs_provider.create_webhook!(train_id: id) && train.app.ci_cd_provider.create_webhook!(train_id: id)
+    vcs_provider.create_webhook!(train_id: id) && ci_cd_provider.create_webhook!(train_id: id)
+  end
+
+  def create_tag!(branch_name)
+    return false if Rails.env.test?
+    vcs_provider.create_tag!(tag_name, branch_name)
   end
 
   def display_name
