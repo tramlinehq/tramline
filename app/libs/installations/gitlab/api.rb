@@ -12,6 +12,7 @@ module Installations
     CREATE_BRANCH_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/branches"
     MR_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests"
     MR_MERGE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests/{merge_request_iid}/merge"
+    COMPARE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/compare"
 
     WEBHOOK_PERMISSIONS = {
       deployment_events: true,
@@ -118,6 +119,9 @@ module Installations
     end
 
     def create_pr!(project_id, target_branch, source_branch, title, description)
+      # gitlab allows creating merge requests without any changes, but we avoid it
+      raise Installations::Errors::PullRequestWithoutCommits unless diff?(project_id, source_branch, target_branch)
+
       params = {
         form: {
           source_branch:,
@@ -143,22 +147,32 @@ module Installations
     end
 
     def merge_pr!(project_id, pr_number)
-      execute(:put, MR_MERGE_URL.expand(project_id:, merge_request_iid: pr_number).to_s, params)
+      execute(:put, MR_MERGE_URL.expand(project_id:, merge_request_iid: pr_number).to_s, {})
     end
+
+    def diff?(project_id, from, to)
+      params = {
+        params: {
+          from:,
+          to:,
+          straight: false # `git diff from...to`
+        }
+      }
+
+      execute(:get, COMPARE_URL.expand(project_id:).to_s, params)["diffs"].present?
+    end
+
+    private
 
     def execute(verb, url, params)
       response = HTTP.auth("Bearer #{oauth_access_token}").public_send(verb, url, params)
       body = JSON.parse(response.body.to_s)
-      raise TokenExpired if refresh_token?(response.status, body)
-      body
+      return body unless _4xx?(response.status)
+      raise Installations::Gitlab::Error.handle(body)
     end
 
-    def refresh_token?(status, body)
-      status.eql?(401) && invalid_token?(body)
-    end
-
-    def invalid_token?(body)
-      body["error"].eql?("invalid_token")
+    def _4xx?(code)
+      code.between?(400, 499)
     end
   end
 end

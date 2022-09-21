@@ -1,67 +1,47 @@
 module Installations
   class Github::Error
-    class UnsupportedType < ArgumentError; end
-
-    class ReferenceAlreadyExists < Octokit::UnprocessableEntity; end
-
-    class PullRequestNotMergeableError < Octokit::MethodNotAllowed; end
-
-    class NoCommitsForPullRequestError < Octokit::UnprocessableEntity; end
-
-    class PullRequestAlreadyExistsError < Octokit::UnprocessableEntity; end
-
     ERRORS = [
       {
         resource: "PullRequest",
         code: "custom",
         message_matcher: /No commits between/,
-        decorated_exception: NoCommitsForPullRequestError
+        decorated_exception: Installations::Errors::PullRequestWithoutCommits
       },
       {
         resource: "PullRequest",
         code: "custom",
         message_matcher: /A pull request already exists for/,
-        decorated_exception: PullRequestAlreadyExistsError
+        decorated_exception: Installations::Errors::PullRequestAlreadyExists
       }
     ]
 
     MESSAGES = [
       {
         message_matcher: /Reference already exists/,
-        decorated_exception: ReferenceAlreadyExists
+        decorated_exception: Installations::Errors::TagReferenceAlreadyExists
       },
       {
         message_matcher: /Pull Request is not mergeable/,
-        decorated_exception: PullRequestNotMergeableError
+        decorated_exception: Installations::Errors::PullRequestNotMergeable
       }
     ]
 
-    def self.handle(type, exception)
-      new(type, exception).handle
+    def self.handle
+      new(exception).handle
     end
 
-    def initialize(type, exception)
-      @type = type
+    def initialize(exception)
       @exception = exception
     end
 
     def handle
-      case type
-      when :validation, :not_allowed
-        rethrow
-      else
-        raise UnsupportedType
-      end
-    end
-
-    def rethrow
       return exception if match.nil?
       match[:decorated_exception].new
     end
 
     private
 
-    attr_reader :type, :exception
+    attr_reader :exception
 
     def match
       @match ||= matched_error || matched_message

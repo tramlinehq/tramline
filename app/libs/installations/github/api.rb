@@ -123,10 +123,8 @@ module Installations
     rescue Octokit::Unauthorized
       set_client
       retry
-    rescue Octokit::UnprocessableEntity => e
-      raise Installations::Github::Error.handle(:validation, e)
-    rescue Octokit::MethodNotAllowed => e
-      raise Installations::Github::Error.handle(:not_allowed, e)
+    rescue Octokit::UnprocessableEntity, Octokit::MethodNotAllowed => e
+      raise Installations::Github::Error.handle(e)
     end
 
     def set_client

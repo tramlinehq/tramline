@@ -22,7 +22,7 @@ class Services::PostRelease
     def create_tag
       begin
         train.create_tag!(release.branch_name)
-      rescue Installations::Github::Error::ReferenceAlreadyExists
+      rescue Installations::Error::TagReferenceAlreadyExists
         release.event_stamp!(reason: :tag_reference_already_exists, kind: :notice, data: {})
       end
 
