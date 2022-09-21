@@ -67,11 +67,10 @@ class GitlabIntegration < ApplicationRecord
 
   private
 
+  # retry just once (2 attempts in total)
   def with_api_retries
-    # retry just once (2 attempts in total)
-    Retryable.retryable(on: Installations::Gitlab::Api::TokenExpired, tries: 2, sleep: 0, exception_cb: proc { reset_tokens! }) do
-      yield
-    end
+    retryables = [Installations::Gitlab::Api::TokenExpired]
+    Retryable.retryable(on: retryables, tries: 2, sleep: 0, exception_cb: proc { reset_tokens! }) { yield }
   end
 
   def reset_tokens!
