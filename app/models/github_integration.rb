@@ -38,6 +38,10 @@ class GithubIntegration < ApplicationRecord
     installation.create_tag!(code_repository_name, tag_name, branch)
   end
 
+  def create_branch!(from, to)
+    installation.create_branch!(code_repository_name, from, to)
+  end
+
   # @return [Installation::Github::Api]
   def installation
     Installations::Github::Api.new(installation_id)

@@ -58,7 +58,7 @@ class Services::TriggerRelease
 
   def create_branches
     return if train.branching_strategy == "parallel_working"
-    installation.create_branch!(repo, working_branch, new_branch_name)
+    train.create_branch!(working_branch, new_branch_name)
   rescue Octokit::UnprocessableEntity
     nil
   end
@@ -74,10 +74,6 @@ class Services::TriggerRelease
       description: "Merging this before starting release.",
       allow_without_diff: false
     )
-  end
-
-  def pr_title
-    "[#{version_in_progress(train.version_current)}] Pre-release merge"
   end
 
   # Webhooks are created with the train and we don't need to create webhooks for each train run AKA release
@@ -98,12 +94,8 @@ class Services::TriggerRelease
     step_run.automatons!
   end
 
-  def installation
-    @installation ||= train.ci_cd_provider.installation
-  end
-
-  def repo
-    train.app.config.code_repository_name
+  def pr_title
+    "[#{version_in_progress(train.version_current)}] Pre-release merge"
   end
 
   def release_branch

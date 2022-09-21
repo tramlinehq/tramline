@@ -75,6 +75,10 @@ class Releases::Train < ApplicationRecord
     vcs_provider.create_tag!(tag_name, branch_name)
   end
 
+  def create_branch!(from, to)
+    vcs_provider.create_branch!(from, to)
+  end
+
   def display_name
     name.strip.downcase.gsub(/\s+/, "-")
   end

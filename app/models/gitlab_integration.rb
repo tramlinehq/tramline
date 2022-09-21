@@ -8,7 +8,7 @@ class GitlabIntegration < ApplicationRecord
 
   attr_accessor :code
   before_create :complete_access
-  delegate :code_repository_name, to: :app_config
+  delegate :code_repository_name, :working_branch, to: :app_config
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://gitlab.com/oauth/authorize{?params*}")
@@ -46,6 +46,10 @@ class GitlabIntegration < ApplicationRecord
 
   def create_tag!(tag_name, branch)
     with_api_retries { installation.create_tag!(code_repository_name, tag_name, branch) }
+  end
+
+  def create_branch!(from, to)
+    with_api_retries { installation.create_branch!(code_repository_name, from, to) }
   end
 
   # @return [Installation::Gitlab::Api]

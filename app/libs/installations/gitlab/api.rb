@@ -79,7 +79,7 @@ module Installations
         }
       }
 
-      execute(LIST_PROJECTS_URL, params, :get)
+      execute(:get, LIST_PROJECTS_URL, params)
         .then { |repositories| repositories.map { |repo| repo.slice("id", "path_with_namespace") } }
         .then { |responses| Installations::Response::Keys.normalize(responses) }
     end
