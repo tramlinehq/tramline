@@ -134,7 +134,8 @@ module Installations
       params = {
         form: {
           source_branch:,
-          target_branch:
+          target_branch:,
+          state: "open"
         }
       }
 
