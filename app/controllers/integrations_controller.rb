@@ -34,10 +34,13 @@ class IntegrationsController < SignedInApplicationController
           existing_integration.each do |integration|
             combination[category] << integration
           end
+
           next if Integration::MULTI_INTEGRATION_CATEGORIES.exclude?(category)
         end
 
         (providers - existing_integration.pluck(:providable_type)).each do |provider|
+          next if provider.eql?("GitlabIntegration") && !Flipper.enabled?(:gitlab_integration)
+
           integration =
             @app
               .integrations
