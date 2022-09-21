@@ -7,5 +7,7 @@ module Installations
     class PullRequestWithoutCommits < StandardError; end
 
     class PullRequestAlreadyExists < StandardError; end
+
+    class WebhookLimitReached < StandardError; end
   end
 end

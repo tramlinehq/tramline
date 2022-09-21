@@ -12,6 +12,12 @@ module Installations
         code: "custom",
         message_matcher: /A pull request already exists for/,
         decorated_exception: Installations::Errors::PullRequestAlreadyExists
+      },
+      {
+        resource: "Hook",
+        code: "custom",
+        message_matcher: /The "workflow_run" event cannot have more than 20 hooks/,
+        decorated_exception: Installations::Errors::WebhookLimitReached
       }
     ]
 
@@ -26,7 +32,7 @@ module Installations
       }
     ]
 
-    def self.handle
+    def self.handle(exception)
       new(exception).handle
     end
 

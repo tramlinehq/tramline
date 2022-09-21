@@ -80,7 +80,7 @@ class Services::TriggerRelease
   # This is a fallback mechanism to ensure that webhook gets created if it is not present
   def create_webhooks
     train.create_webhook!
-  rescue Octokit::UnprocessableEntity
+  rescue ActiveRecord::RecordInvalid
     nil
   end
 

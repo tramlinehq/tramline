@@ -42,9 +42,9 @@ module Automatons
       @create_result ||=
         begin
           Result.new(ok?: true, value: repo_integration.create_pr!(repo_name, to_branch_ref, from_branch_ref, title, description))
-        rescue Installations::Error::PullRequestAlreadyExists
+        rescue Installations::Errors::PullRequestAlreadyExists
           Result.new(ok?: true, value: repo_integration.find_pr(repo_name, to_branch_ref, from_branch_ref))
-        rescue Installations::Error::PullRequestWithoutCommits
+        rescue Installations::Errors::PullRequestWithoutCommits
           release.event_stamp!(reason: :pull_request_not_required, kind: :notice, data: {to: to_branch_ref, from: from_branch_ref})
           Result.new(ok?: false, error: "Could not create a Pull Request")
         end
@@ -53,7 +53,7 @@ module Automatons
     def merge
       repo_integration.merge_pr!(repo_name, create.value[:number])
       Result.new(ok?: true)
-    rescue Installations::Error::PullRequestNotMergeable
+    rescue Installations::Errors::PullRequestNotMergeable
       release.event_stamp!(reason: :pull_request_not_mergeable, kind: :notice, data: {})
       Result.new(ok?: false, error: "Failed to merge the Pull Request")
     end
