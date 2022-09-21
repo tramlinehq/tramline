@@ -107,6 +107,7 @@ Rails.application.routes.draw do
   end
 
   scope :gitlab do
+    post "/events/:train_id", to: "integration_listeners/gitlab#events", as: :gitlab_events
     get :callback, controller: "integration_listeners/gitlab", as: :gitlab_callback
   end
 
