@@ -37,7 +37,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def workflows
-    # with_api_retries { installation.list_pipelines(code_repository_name) }
+    nil
   end
 
   def create_webhook!(url_params)
