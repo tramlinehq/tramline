@@ -23,7 +23,7 @@
     <div class="grid grid-cols-5 gap-6 mt-4">
       <% @pre_release_prs.each do |pr| %>
         <div class="mt-2 bg-white rounded-sm border border-slate-200 p-4">
-          <%= image_tag("#{pr.source}_thumb.png", width: 40, class: "mb-4") %>
+          <%= image_tag("integrations/logo_#{pr.source}.png", width: 40, class: "mb-4") %>
 
           <div class="h-full">
             <h2 class="font-semibold text-slate-800">
@@ -375,7 +375,7 @@
               <div class="grid grid-cols-4 gap-5 mt-3">
                 <% @post_release_prs.each do |pr| %>
                   <div class="mt-2 bg-white rounded-sm border border-slate-200 p-4">
-                    <%= image_tag("#{pr.source}_thumb.png", width: 40, class: "mb-4") %>
+                    <%= image_tag("integrations/logo_#{pr.source}.png", width: 40, class: "mb-4") %>
 
                     <div class="h-full">
                       <h2 class="font-semibold text-slate-800">
