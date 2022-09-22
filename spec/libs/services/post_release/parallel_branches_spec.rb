@@ -8,11 +8,11 @@ describe Services::PostRelease::ParallelBranches do
     allow_any_instance_of(described_class).to receive(:repo_integration).and_return(repo_integration)
     allow(repo_integration).to receive(:create_pr!).and_return({number: 1})
     allow(repo_integration).to receive(:merge_pr!)
-    allow(Automatons::Tag).to receive(:dispatch!)
+    allow(release.train).to receive(:create_tag!)
 
     described_class.call(release)
     expect(release.status).to be_eql("finished")
-    expect(Automatons::Tag).to have_received(:dispatch!).with(train: release.train, branch: "production")
+    expect(release.train).to have_received(:create_tag!).with(branch: "production")
     expect(repo_integration).to have_received(:create_pr!).with(nil,
       "dev",
       nil,

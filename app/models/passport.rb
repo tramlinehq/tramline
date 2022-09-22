@@ -1,6 +1,4 @@
 class Passport < ApplicationRecord
-  self.implicit_order_column = :created_at
-
   belongs_to :stampable, polymorphic: true
   belongs_to :user, optional: true
 

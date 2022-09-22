@@ -3,12 +3,12 @@ class Integration < ApplicationRecord
   using RefinedString
 
   belongs_to :app
-  belongs_to :providable, polymorphic: true
+  delegated_type :providable, types: %w[GithubIntegration GitlabIntegration SlackIntegration GooglePlayStoreIntegration]
 
   class IntegrationNotImplemented < StandardError; end
 
   LIST = {
-    "version_control" => %w[GithubIntegration],
+    "version_control" => %w[GithubIntegration GitlabIntegration],
     "ci_cd" => %w[GithubIntegration],
     "notification" => %w[SlackIntegration],
     "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration]
@@ -61,6 +61,11 @@ class Integration < ApplicationRecord
 
   def self.slack_build_channel_provider
     build_channel.where(providable_type: "SlackIntegration").first.providable
+  end
+
+  def self.shared_vcs_and_ci_cd?
+    (version_control.first.github_integration? && ci_cd.first.github_integration?) ||
+      (version_control.first.gitlab_integration? && ci_cd.first.gitlab_integration?)
   end
 
   def installation_state

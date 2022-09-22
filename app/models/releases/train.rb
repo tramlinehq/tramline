@@ -3,8 +3,6 @@ class Releases::Train < ApplicationRecord
   using RefinedString
   extend FriendlyId
 
-  self.implicit_order_column = :created_at
-
   EXTERNAL_DEPLOYMENT_CHANNEL = {"None (outside Tramline)" => "external"}
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
@@ -69,7 +67,21 @@ class Releases::Train < ApplicationRecord
 
   def create_webhook!
     return false if Rails.env.test?
-    Automatons::Webhook.dispatch!(train: self)
+    vcs_provider.create_webhook!(train_id: id)
+    return true if integrations.shared_vcs_and_ci_cd?
+    ci_cd_provider.create_webhook!(train_id: id)
+  rescue Installations::Errors::WebhookLimitReached
+    errors.add(:webhooks, "We can't create any more webhooks in your VCS/CI environment!")
+    raise ActiveRecord::RecordInvalid, self
+  end
+
+  def create_tag!(branch_name)
+    return false if Rails.env.test?
+    vcs_provider.create_tag!(tag_name, branch_name)
+  end
+
+  def create_branch!(from, to)
+    vcs_provider.create_branch!(from, to)
   end
 
   def display_name

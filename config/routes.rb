@@ -106,6 +106,11 @@ Rails.application.routes.draw do
     get :callback, controller: "integration_listeners/github", as: :github_callback
   end
 
+  scope :gitlab do
+    post "/events/:train_id", to: "integration_listeners/gitlab#events", as: :gitlab_events
+    get :callback, controller: "integration_listeners/gitlab", as: :gitlab_callback
+  end
+
   scope :slack do
     get :callback, controller: "integration_listeners/slack", as: :slack_callback
   end

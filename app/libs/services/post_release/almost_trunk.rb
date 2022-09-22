@@ -21,8 +21,8 @@ class Services::PostRelease
 
     def create_tag
       begin
-        Automatons::Tag.dispatch!(train:, branch: release.branch_name)
-      rescue Installations::Github::Error::ReferenceAlreadyExists
+        train.create_tag!(release.branch_name)
+      rescue Installations::Errors::TagReferenceAlreadyExists
         release.event_stamp!(reason: :tag_reference_already_exists, kind: :notice, data: {})
       end
 

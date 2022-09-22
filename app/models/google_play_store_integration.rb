@@ -1,9 +1,8 @@
 class GooglePlayStoreIntegration < ApplicationRecord
   has_paper_trail
-
-  has_one :integration, as: :providable, dependent: :destroy
-
   encrypts :json_key, deterministic: true
+
+  include Providable
 
   CHANNELS = {
     production: "production",
