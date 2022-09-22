@@ -71,7 +71,7 @@ class Releases::Train < ApplicationRecord
     return true if integrations.shared_vcs_and_ci_cd?
     ci_cd_provider.create_webhook!(train_id: id)
   rescue Installations::Errors::WebhookLimitReached
-    errors.add(:webhooks, "The webhooks limit was hit. Please clear some integration webhooks before proceeding!")
+    errors.add(:webhooks, "We can't create any more webhooks in your VCS/CI environment!")
     raise ActiveRecord::RecordInvalid, self
   end
 
