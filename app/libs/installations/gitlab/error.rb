@@ -53,11 +53,11 @@ module Installations
     end
 
     def matched_error
-      ERRORS.find { |known_error| known_error[:error].eql?(message) }
+      ERRORS.find { |known_error| known_error[:error].eql?(error) }
     end
 
-    def errors
-      body["errors"]
+    def error
+      body["error"]
     end
 
     def message
