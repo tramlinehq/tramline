@@ -88,3 +88,8 @@ Rails.application.configure do
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
 end
+
+# Set a longer session timeout to make things easier on developers
+Devise.setup do |config|
+  config.timeout_in = 48.hours
+end
