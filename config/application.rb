@@ -1,7 +1,7 @@
 require_relative "boot"
 
 require "rails/all"
-require_relative "../lib/extensions/logging_extensions"
+require_relative "../lib/logging_extensions"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
