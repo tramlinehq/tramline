@@ -1,6 +1,7 @@
 require_relative "boot"
 
 require "rails/all"
+require_relative "../lib/extensions/logging_extensions"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -27,6 +28,10 @@ module Site
     config.assets.css_compressor = nil
     config.middleware.insert_after ActionDispatch::Static, Rack::Deflater
     PaperTrail.config.version_limit = 10
+
+    require "json_logger"
+    config.log_formatter = LoggingExtensions.default_log_formatter
+    config.logger = ActiveSupport::TaggedLogging.new(JsonLogger.new(Rails.root.join("log", "#{Rails.env}.log")))
   end
 
   require "site_extensions"

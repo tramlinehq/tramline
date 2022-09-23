@@ -53,6 +53,11 @@ gem "pghero", "~> 2.8"
 gem "aasm", "~> 5.3"
 gem "after_commit_everywhere", "~> 1.2"
 gem "retryable", "~> 3.0"
+gem "lograge", "~> 0.12.0"
+gem "ougai", "~> 2.0"
+gem "amazing_print", "~> 1.4"
+gem "ddtrace", "~> 1.4"
+gem "dogstatsd-ruby", "~> 5.5"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

@@ -73,6 +73,7 @@ GEM
     after_commit_everywhere (1.2.2)
       activerecord (>= 4.2)
       activesupport
+    amazing_print (1.4.0)
     ast (2.4.2)
     auto_strip_attributes (2.6.0)
       activerecord (>= 4.0)
@@ -101,6 +102,12 @@ GEM
     concurrent-ruby (1.1.10)
     connection_pool (2.2.5)
     crass (1.0.6)
+    ddtrace (1.4.1)
+      debase-ruby_core_source (= 0.10.16)
+      libdatadog (~> 0.7.0.1.1)
+      libddwaf (~> 1.3.0.2.0)
+      msgpack
+    debase-ruby_core_source (0.10.16)
     debug (1.6.0)
       irb (>= 1.3.6)
       reline (>= 0.3.1)
@@ -115,6 +122,7 @@ GEM
     digest (3.1.0)
     digest-crc (0.6.4)
       rake (>= 12.0.0, < 14.0.0)
+    dogstatsd-ruby (5.5.0)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
     dotenv (2.7.6)
@@ -238,9 +246,22 @@ GEM
       letter_opener (~> 1.7)
       railties (>= 5.2)
       rexml
+    libdatadog (0.7.0.1.1)
+    libdatadog (0.7.0.1.1-x86_64-linux)
+    libddwaf (1.3.0.2.0-arm64-darwin)
+      ffi (~> 1.0)
+    libddwaf (1.3.0.2.0-x86_64-darwin)
+      ffi (~> 1.0)
+    libddwaf (1.3.0.2.0-x86_64-linux)
+      ffi (~> 1.0)
     llhttp-ffi (0.4.0)
       ffi-compiler (~> 1.0)
       rake (~> 13.0)
+    lograge (0.12.0)
+      actionpack (>= 4)
+      activesupport (>= 4)
+      railties (>= 4)
+      request_store (~> 1.0)
     loofah (2.18.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
@@ -278,8 +299,11 @@ GEM
     octokit (4.25.0)
       faraday (>= 1, < 3)
       sawyer (~> 0.9)
+    oj (3.13.21)
     orm_adapter (0.5.0)
     os (1.1.4)
+    ougai (2.0.0)
+      oj (~> 3.10)
     paper_trail (12.3.0)
       activerecord (>= 5.2)
       request_store (~> 1.1)
@@ -506,6 +530,7 @@ PLATFORMS
 DEPENDENCIES
   aasm (~> 5.3)
   after_commit_everywhere (~> 1.2)
+  amazing_print (~> 1.4)
   auto_strip_attributes (~> 2.6)
   awesome_print
   bcrypt (~> 3.1.7)
@@ -515,8 +540,10 @@ DEPENDENCIES
   capybara
   chartkick (~> 4.2)
   connection_pool (~> 2.2)
+  ddtrace (~> 1.4)
   debug
   devise (~> 4.8)
+  dogstatsd-ruby (~> 5.5)
   dotenv-rails (~> 2.7)
   down (~> 5.3)
   factory_bot_rails
@@ -538,7 +565,9 @@ DEPENDENCIES
   jwt (~> 2.3)
   letter_opener
   letter_opener_web
+  lograge (~> 0.12.0)
   octokit (~> 4.22)
+  ougai (~> 2.0)
   paper_trail (~> 12.2)
   pg (~> 1.1)
   pg_query
