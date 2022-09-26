@@ -5,7 +5,7 @@ class ReleasesController < SignedInApplicationController
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
 
-    response = Services::TriggerRelease.call(@train)
+    response = Triggers::Release.call(@train)
 
     if response.success
       redirect_to live_release_path, notice: "A new release has started successfully."

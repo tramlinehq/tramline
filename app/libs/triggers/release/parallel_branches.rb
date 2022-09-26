@@ -1,5 +1,7 @@
 class Triggers::Release
   class ParallelBranches
+    include ApplicationHelper
+
     def self.call(release, release_branch)
       new(release, release_branch).call
     end
@@ -16,7 +18,10 @@ class Triggers::Release
     private
 
     attr_reader :release, :release_branch
+    delegate :train, to: :release
     delegate :fully_qualified_working_branch_hack, :working_branch, to: :train
+
+    PR_DESCRIPTION = "Merging this before starting release.".freeze
 
     def create_and_merge_pr
       Triggers::PullRequest.create_and_merge!(
@@ -25,7 +30,7 @@ class Triggers::Release
         to_branch_ref: release_branch,
         from_branch_ref: fully_qualified_working_branch_hack,
         title: pr_title,
-        description: "Merging this before starting release.",
+        description: PR_DESCRIPTION,
         allow_without_diff: false
       )
     end

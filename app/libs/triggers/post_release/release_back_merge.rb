@@ -1,6 +1,5 @@
-class Services::PostRelease
+class Triggers::PostRelease
   class ReleaseBackMerge
-    delegate :transaction, to: ApplicationRecord
     delegate :fully_qualified_release_backmerge_branch_hack, :release_backmerge_branch, :working_branch, to: :train
     delegate :fully_qualified_branch_name_hack, to: :release
 
@@ -24,7 +23,7 @@ class Services::PostRelease
     attr_reader :train, :release
 
     def create_and_merge_prs
-      Automatons::PullRequest.create_and_merge!(
+      Triggers::PullRequest.create_and_merge!(
         release: release,
         new_pull_request: release.pull_requests.post_release.open.build,
         to_branch_ref: release_backmerge_branch,
@@ -32,7 +31,7 @@ class Services::PostRelease
         title: release_pr_title,
         description: pr_description
       ).ok? &&
-        Automatons::PullRequest.create_and_merge!(
+        Triggers::PullRequest.create_and_merge!(
           release: release,
           new_pull_request: release.pull_requests.post_release.open.build,
           to_branch_ref: working_branch,

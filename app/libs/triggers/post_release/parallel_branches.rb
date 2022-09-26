@@ -1,7 +1,5 @@
-class Services::PostRelease
+class Triggers::PostRelease
   class ParallelBranches
-    delegate :transaction, to: ApplicationRecord
-
     def self.call(release)
       new(release).call
     end
@@ -23,7 +21,7 @@ class Services::PostRelease
     attr_reader :train, :release
 
     def create_and_merge_pr
-      Automatons::PullRequest.create_and_merge!(
+      Triggers::PullRequest.create_and_merge!(
         release: release,
         new_pull_request: release.pull_requests.post_release.open.build,
         to_branch_ref: working_branch,

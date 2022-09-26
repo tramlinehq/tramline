@@ -71,8 +71,8 @@ class Releases::Step::Run < ApplicationRecord
 
   delegate :release_branch, to: :train_run
 
-  def automatons!
-    Automatons::Workflow.dispatch!(step: step, ref: release_branch, step_run: self)
+  def trigger_workflow!
+    Triggers::Workflow.dispatch!(step: step, ref: release_branch, step_run: self)
   end
 
   def uploading?
@@ -101,14 +101,15 @@ class Releases::Step::Run < ApplicationRecord
     end
   end
 
+  # approval needs to be from all groups
   def is_approved?
     train.sign_off_groups.all? do |group|
       step.sign_offs.exists?(sign_off_group: group, signed: true, commit: commit)
     end
   end
 
+  # rejection needs to be from any one group
   def is_rejected?
-    # FIXME: Should rejection needs to be from all groups, or just one group?
     train.sign_off_groups.any? do |group|
       step.sign_offs.exists?(sign_off_group: group, signed: false, commit: commit)
     end

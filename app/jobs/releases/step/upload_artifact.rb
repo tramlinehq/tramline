@@ -1,11 +1,6 @@
 class Releases::Step::UploadArtifact < ApplicationJob
   queue_as :high
   sidekiq_options retry: false
-  delegate :transaction, to: ApplicationRecord
-
-  VERSION_ARTIFACT_NAME = "version"
-
-  class BadBuildArtifactIntegration < StandardError; end
 
   def perform(step_run_id, installation_id, artifacts_url)
     step_run = Releases::Step::Run.find(step_run_id)
@@ -35,6 +30,8 @@ class Releases::Step::UploadArtifact < ApplicationJob
   def installation_id(step_run)
     step_run.train_run.train.ci_cd_provider.installation_id
   end
+
+  VERSION_ARTIFACT_NAME = "version"
 
   def archive_download_url(installation_id, artifacts_url)
     Installations::Github::Api

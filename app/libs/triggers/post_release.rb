@@ -1,4 +1,4 @@
-class Services::PostRelease
+class Triggers::PostRelease
   def self.call(release)
     new(release).call
   end
@@ -17,11 +17,8 @@ class Services::PostRelease
     POST_RELEASE_HANDLERS[train.branching_strategy].call(release)
   end
 
-  def train
-    release.train
-  end
-
   private
 
   attr_reader :release
+  delegate :train, to: :release
 end

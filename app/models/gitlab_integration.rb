@@ -83,10 +83,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def set_tokens(tokens)
-    if tokens
-      self.oauth_access_token = tokens.access_token
-      self.oauth_refresh_token = tokens.refresh_token
-    end
+    assign_attributes(oauth_access_token: tokens.access_token, oauth_refresh_token: tokens.refresh_token) if tokens
   end
 
   def app_config

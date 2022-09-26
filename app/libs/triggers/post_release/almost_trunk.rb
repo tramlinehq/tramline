@@ -1,4 +1,4 @@
-class Services::PostRelease
+class Triggers::PostRelease
   class AlmostTrunk
     def self.call(release)
       new(release).call

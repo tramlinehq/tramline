@@ -13,9 +13,9 @@ class WebhookProcessors::Github::Push < ApplicationJob
 
       train.steps.where("step_number <= ?", current_step).order(:step_number).each do |step|
         if step.step_number < current_step
-          Services::TriggerStepRun.call(step, commit_record, false)
+          Triggers::StepRun.call(step, commit_record, false)
         else
-          Services::TriggerStepRun.call(step, commit_record)
+          Triggers::StepRun.call(step, commit_record)
         end
       end
 
@@ -49,7 +49,7 @@ class WebhookProcessors::Github::Push < ApplicationJob
     message = "New Release!"
     Notifiers::Slack::ReleaseStarted
       .render_json(train_name: train.name, version_number: train.version_current, branch_name: branch_name, commit_msg: commit_message)
-      .then { |notifier| Automatons::Notify.dispatch!(train:, message:, text_block: notifier) }
+      .then { |notifier| Triggers::Notification.dispatch!(train:, message:, text_block: notifier) }
   end
 
   def train

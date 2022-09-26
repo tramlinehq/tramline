@@ -167,11 +167,11 @@ module Installations
     def execute(verb, url, params)
       response = HTTP.auth("Bearer #{oauth_access_token}").public_send(verb, url, params)
       body = JSON.parse(response.body.to_s)
-      return body unless _4xx?(response.status)
+      return body unless error?(response.status)
       raise Installations::Gitlab::Error.handle(body)
     end
 
-    def _4xx?(code)
+    def error?(code)
       code.between?(400, 499)
     end
   end
