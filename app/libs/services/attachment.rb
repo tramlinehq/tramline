@@ -1,4 +1,4 @@
-class Services::FetchAttachment
+class Services::Attachment
   SIZE_LIMIT = 4096
   JSON_CONTENT_TYPE = "application/json"
 
