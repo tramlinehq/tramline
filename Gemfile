@@ -58,6 +58,7 @@ gem "ougai", "~> 2.0"
 gem "amazing_print", "~> 1.4"
 gem "ddtrace", "~> 1.4"
 gem "dogstatsd-ruby", "~> 5.5"
+gem "memery", "~> 1.4"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
@@ -85,5 +86,3 @@ group :test do
   gem "selenium-webdriver"
   gem "webdrivers"
 end
-
-gem "memery", "~> 1.4"
