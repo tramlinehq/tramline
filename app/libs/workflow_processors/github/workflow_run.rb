@@ -23,7 +23,7 @@ class WorkflowProcessors::Github::WorkflowRun
   private
 
   attr_reader :step_run, :workflow_run_attrs
-  delegate :transaction, to: ::Releases::Step::Run
+  delegate :transaction, to: Releases::Step::Run
   delegate :train, :release, to: :step_run
 
   def update_status!

@@ -1,6 +1,6 @@
 class Releases::Step::UploadArtifact < ApplicationJob
   queue_as :high
-  sidekiq_options retry: false
+  sidekiq_options retry: 0
 
   def perform(step_run_id, installation_id, artifacts_url)
     step_run = Releases::Step::Run.find(step_run_id)
@@ -18,7 +18,8 @@ class Releases::Step::UploadArtifact < ApplicationJob
         # FIXME: for external deployments, train-run/release needs to be finalized
         step_run.finish!
       end
-    rescue
+    rescue => e
+      Sentry.capture_exception(e)
       step_run.fail_deploy! # FIXME: this should actually be upload_failed maybe?
     end
   end

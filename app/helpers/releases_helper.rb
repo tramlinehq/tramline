@@ -25,6 +25,8 @@ module ReleasesHelper
         ["Success", %w[bg-green-100 text-green-600]]
       when Releases::Step::Run.statuses[:ci_workflow_failed]
         ["CI Workflow Failure", %w[bg-rose-100 text-rose-600]]
+      when Releases::Step::Run.statuses[:ci_workflow_unavailable]
+        ["CI Workflow Not Found", %w[bg-rose-100 text-rose-600]]
       when Releases::Step::Run.statuses[:ci_workflow_halted]
         ["CI Workflow Cancelled", %w[bg-yellow-100 text-yellow-600]]
       else

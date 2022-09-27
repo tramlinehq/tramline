@@ -9,6 +9,7 @@ class WebhookProcessors::Github::Push < ApplicationJob
     transaction do
       commit_record = create_commit
       train.bump_version!(:patch) if release.step_runs.any?
+      release.update(release_version: train.version_current)
       current_step = release.current_step || 1
 
       train.steps.where("step_number <= ?", current_step).order(:step_number).each do |step|
@@ -19,7 +20,6 @@ class WebhookProcessors::Github::Push < ApplicationJob
         end
       end
 
-      release.update(release_version: train.version_current)
       send_notification!
     end
   end

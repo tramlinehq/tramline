@@ -53,9 +53,11 @@ class App < ApplicationRecord
   end
 
   def bump_build_number!
-    self.build_number = build_number.succ
-    save!
-    build_number.to_s
+    with_lock do
+      self.build_number = build_number.succ
+      save!
+      build_number.to_s
+    end
   end
 
   def no_trains_are_running

@@ -1,6 +1,4 @@
 class Triggers::StepRun
-  delegate :transaction, to: ActiveRecord::Base
-
   def self.call(step, commit, sign_required = true)
     new(step, commit, sign_required).call
   end
@@ -13,7 +11,6 @@ class Triggers::StepRun
   end
 
   def call
-    release.update(release_version: step.train.version_current)
     release.step_runs.create!(step:, scheduled_at: Time.current, commit:, build_version:, build_number:, sign_required:)
   end
 

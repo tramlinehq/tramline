@@ -1,6 +1,6 @@
 class Releases::Step::DeploymentFinished < ApplicationJob
   queue_as :high
-  sidekiq_options retry: false
+  sidekiq_options retry: 0
   delegate :transaction, to: Releases::Step::Run
 
   def perform(step_run_id)

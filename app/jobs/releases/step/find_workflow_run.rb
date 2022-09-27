@@ -22,15 +22,11 @@ class Releases::Step::FindWorkflowRun
   sidekiq_retries_exhausted do |msg, ex|
     if ex.is_a?(Releases::Step::FindWorkflowRun::WorkflowRunNotFound)
       step_run = Releases::Step::Run.find(msg["args"].first)
-
-      if step_run.may_ci_trigger?
-        step_run.trigger_workflow_run!
-      else
-        # FIXME: tag the step run in an inconsistent state -- ci not found
-      end
+      step_run.ci_unavailable!
     end
   end
 
+  # FIXME: check if train is still on_track
   def perform(step_run_id)
     step_run = Releases::Step::Run.find(step_run_id)
     workflow_run = step_run.find_workflow_run&.slice(:id, :html_url)

@@ -16,6 +16,7 @@ class Releases::Step::Run < ApplicationRecord
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   after_create :reset_approval!
+  after_create :trigger_workflow_run!
 
   STATES = {
     on_track: "on_track",
@@ -32,18 +33,15 @@ class Releases::Step::Run < ApplicationRecord
 
   enum status: STATES
 
-  after_commit -> { Releases::Step::FindWorkflowRun.perform_async(id) }, if: -> { may_ci_started? }
-
   aasm column: :status, requires_lock: true, requires_new_transaction: false, enum: true, create_scopes: false do
     state :on_track, initial: true
     state(*STATES.keys)
 
-    event :ci_trigger do
+    event :ci_trigger, after_commit: -> { Releases::Step::FindWorkflowRun.perform_async(id) } do
       transitions from: :on_track, to: :ci_workflow_triggered
     end
 
-    event :ci_started do
-      after { WorkflowProcessors::WorkflowRun.perform_later(id) }
+    event :ci_started, after_commit: -> { WorkflowProcessors::WorkflowRun.perform_later(id) } do
       transitions from: [:on_track, :ci_workflow_triggered], to: :ci_workflow_started
     end
 
@@ -69,7 +67,7 @@ class Releases::Step::Run < ApplicationRecord
     end
 
     event :fail_deploy do
-      transitions from: :deployment_started, to: :deployment_failed
+      transitions from: [:pending_deployment, :deployment_started], to: :deployment_failed
     end
 
     event :finish do
@@ -83,6 +81,7 @@ class Releases::Step::Run < ApplicationRecord
   attr_accessor :current_user
 
   delegate :release_branch, to: :train_run
+  delegate :commit_hash, to: :commit
 
   def start_ci!(ci_ref, ci_link)
     transaction do
@@ -97,12 +96,12 @@ class Releases::Step::Run < ApplicationRecord
       versionName: build_version
     }
 
-    train.ci_cd_provider.trigger_workflow_run!(step.ci_cd_channel.keys.first, release_branch, inputs)
+    train.ci_cd_provider.trigger_workflow_run!(workflow_name, release_branch, inputs)
     ci_trigger!
   end
 
   def find_workflow_run
-    train.ci_cd_provider.find_workflow_run(step.ci_cd_channel.keys.first, release_branch, commit.commit_hash)
+    train.ci_cd_provider.find_workflow_run(workflow_name, release_branch, commit_hash)
   end
 
   def get_workflow_run
@@ -151,5 +150,9 @@ class Releases::Step::Run < ApplicationRecord
 
   def release
     train_run
+  end
+
+  def workflow_name
+    step.ci_cd_channel.keys.first
   end
 end

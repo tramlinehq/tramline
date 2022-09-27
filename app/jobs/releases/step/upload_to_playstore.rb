@@ -12,7 +12,7 @@ class Releases::Step::UploadToPlaystore < ApplicationJob
     release_version = step_run.train_run.release_version
 
     step_run.build_artifact.file.blob.open do |zip_file|
-      # FIXME: This is an expensive operation, we should be unzipping the artifacts before pushing to object store
+      # FIXME: This is an expensive operation, we should not be unzipping here but before pushing to object store
       aab_file = Zip::File.open(zip_file).glob("*.{aab,apk,txt}").first
 
       Tempfile.open(%w[playstore-artifact .aab]) do |tmp|
