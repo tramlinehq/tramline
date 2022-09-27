@@ -24,7 +24,7 @@ class Releases::Step::FindWorkflowRun
       step_run = Releases::Step::Run.find(msg["args"].first)
 
       if step_run.may_ci_trigger?
-        step_run.trigger_workflow!
+        step_run.trigger_workflow_run!
       else
         # FIXME: tag the step run in an inconsistent state -- ci not found
       end

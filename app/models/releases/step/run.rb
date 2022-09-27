@@ -91,8 +91,14 @@ class Releases::Step::Run < ApplicationRecord
     end
   end
 
-  def trigger_workflow!
-    Triggers::Workflow.dispatch!(step: step, ref: release_branch, step_run: self)
+  def trigger_workflow_run!
+    inputs = {
+      versionCode: build_number,
+      versionName: build_version
+    }
+
+    train.ci_cd_provider.trigger_workflow_run!(step.ci_cd_channel.keys.first, release_branch, inputs)
+    ci_trigger!
   end
 
   def find_workflow_run

@@ -30,6 +30,10 @@ class GithubIntegration < ApplicationRecord
     installation.list_repos
   end
 
+  def trigger_workflow_run!(ci_cd_channel, ref, inputs)
+    installation.run_workflow!(code_repository_name, ci_cd_channel, ref, inputs)
+  end
+
   def create_webhook!(url_params)
     installation.create_repo_webhook!(code_repository_name, events_url(url_params))
   end
