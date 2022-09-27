@@ -11,5 +11,7 @@ module Installations
     class PullRequestWithoutCommits < StandardError; end
 
     class HookAlreadyExistsOnRepository < StandardError; end
+
+    class ResourceNotFound < StandardError; end
   end
 end

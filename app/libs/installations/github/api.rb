@@ -27,7 +27,6 @@ module Installations
       end
     end
 
-    # FIXME: handle 404 when workflow not found
     def find_workflow_run(repo, workflow, branch, head_sha)
       options = {
         branch:,
@@ -44,7 +43,6 @@ module Installations
       end
     end
 
-    # FIXME: handle 404 when workflow run not found
     def get_workflow_run(repo, run_id)
       execute do
         @client
@@ -149,7 +147,7 @@ module Installations
     rescue Octokit::Unauthorized
       set_client
       retry
-    rescue Octokit::UnprocessableEntity, Octokit::MethodNotAllowed => e
+    rescue Octokit::NotFound, Octokit::UnprocessableEntity, Octokit::MethodNotAllowed => e
       raise Installations::Github::Error.handle(e)
     end
 

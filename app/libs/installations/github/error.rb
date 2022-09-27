@@ -35,6 +35,10 @@ module Installations
       {
         message_matcher: /Pull Request is not mergeable/,
         decorated_exception: Installations::Errors::PullRequestNotMergeable
+      },
+      {
+        message_matcher: /Not Found/,
+        decorated_exception: Installations::Errors::ResourceNotFound
       }
     ]
 
