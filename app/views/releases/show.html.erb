@@ -340,8 +340,7 @@
                   <div class="text-sm">Initial Roll-out Percentage</div>
                   <div class="flex items-center whitespace-nowrap">
                     <%= number_to_percentage(@release.last_good_step_run.initial_rollout_percentage) %>
-                    (<%= link_to "Increase on Play Store", "https://play.google.com/console/u/0/developers", class: "underline" %>
-                    )
+                    (<%= link_to "Increase on Play Store", "https://play.google.com/console/u/0/developers", class: "underline", target: "_blank" %>)
                   </div>
                 </li>
               <% end %>

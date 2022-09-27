@@ -42,6 +42,14 @@ class GithubIntegration < ApplicationRecord
     installation.create_branch!(code_repository_name, from, to)
   end
 
+  def find_workflow_run(workflow_id, branch, head_sha)
+    installation.find_workflow_run(code_repository_name, workflow_id, branch, head_sha)
+  end
+
+  def get_workflow_run(workflow_run_id)
+    installation.get_workflow_run(code_repository_name, workflow_run_id)
+  end
+
   # @return [Installation::Github::Api]
   def installation
     Installations::Github::Api.new(installation_id)

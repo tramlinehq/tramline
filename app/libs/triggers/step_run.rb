@@ -13,16 +13,19 @@ class Triggers::StepRun
   end
 
   def call
-    transaction do
-      release.update(release_version: step.train.version_current)
-      build_version = release.release_version + "-" + step.release_suffix
-      build_number = step.train.app.bump_build_number!
-      step_run = release.step_runs.create!(step:, scheduled_at: Time.current, commit:, build_version:, build_number:, sign_required:)
-      step_run.trigger_workflow!
-    end
+    release.update(release_version: step.train.version_current)
+    release.step_runs.create!(step:, scheduled_at: Time.current, commit:, build_version:, build_number:, sign_required:)
   end
 
   private
 
   attr_reader :step, :release, :commit, :sign_required
+
+  def build_version
+    release.release_version + "-" + step.release_suffix
+  end
+
+  def build_number
+    step.train.app.bump_build_number!
+  end
 end

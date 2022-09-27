@@ -13,7 +13,9 @@ module ReleasesHelper
   def build_status_badge(status)
     display_data =
       case status
-      when Releases::Step::Run.statuses[:ci_workflow_started], Releases::Step::Run.statuses[:on_track]
+      when Releases::Step::Run.statuses[:ci_workflow_triggered], Releases::Step::Run.statuses[:on_track]
+        ["Waiting for CI", %w[bg-sky-100 text-sky-600]]
+      when Releases::Step::Run.statuses[:ci_workflow_started]
         ["In Progress", %w[bg-sky-100 text-sky-600]]
       when Releases::Step::Run.statuses[:pending_deployment]
         ["Pending Deployment", %w[bg-indigo-100 text-indigo-600]]

@@ -19,6 +19,8 @@ class Releases::Step::Run < ApplicationRecord
 
   STATES = {
     on_track: "on_track",
+    ci_workflow_triggered: "ci_workflow_triggered",
+    ci_workflow_unavailable: "ci_workflow_unavailable",
     ci_workflow_started: "ci_workflow_started",
     ci_workflow_failed: "ci_workflow_failed",
     ci_workflow_halted: "ci_workflow_halted",
@@ -30,12 +32,23 @@ class Releases::Step::Run < ApplicationRecord
 
   enum status: STATES
 
+  after_commit -> { Releases::Step::FindWorkflowRun.perform_async(id) }, if: -> { may_ci_started? }
+
   aasm column: :status, requires_lock: true, requires_new_transaction: false, enum: true, create_scopes: false do
     state :on_track, initial: true
     state(*STATES.keys)
 
-    event :ci_start do
-      transitions from: :on_track, to: :ci_workflow_started
+    event :ci_trigger do
+      transitions from: :on_track, to: :ci_workflow_triggered
+    end
+
+    event :ci_started do
+      after { WorkflowProcessors::WorkflowRun.perform_later(id) }
+      transitions from: [:on_track, :ci_workflow_triggered], to: :ci_workflow_started
+    end
+
+    event :ci_unavailable do
+      transitions from: [:on_track, :ci_workflow_triggered], to: :ci_workflow_unavailable
     end
 
     event :ci_failed do
@@ -71,8 +84,23 @@ class Releases::Step::Run < ApplicationRecord
 
   delegate :release_branch, to: :train_run
 
+  def start_ci!(ci_ref, ci_link)
+    transaction do
+      update(ci_ref: ci_ref, ci_link: ci_link)
+      ci_started!
+    end
+  end
+
   def trigger_workflow!
     Triggers::Workflow.dispatch!(step: step, ref: release_branch, step_run: self)
+  end
+
+  def find_workflow_run
+    train.ci_cd_provider.find_workflow_run(step.ci_cd_channel.keys.first, release_branch, commit.commit_hash)
+  end
+
+  def get_workflow_run
+    train.ci_cd_provider.get_workflow_run(ci_ref)
   end
 
   def uploading?
@@ -113,5 +141,9 @@ class Releases::Step::Run < ApplicationRecord
     train.sign_off_groups.any? do |group|
       step.sign_offs.exists?(sign_off_group: group, signed: false, commit: commit)
     end
+  end
+
+  def release
+    train_run
   end
 end

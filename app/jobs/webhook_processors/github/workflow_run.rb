@@ -11,8 +11,8 @@ class WebhookProcessors::Github::WorkflowRun < ApplicationJob
     return update_status! unless workflow_successful?
 
     transaction do
-      add_metadata!
       update_status!
+      add_metadata!
       upload_artifact!
     end
 
@@ -52,7 +52,7 @@ class WebhookProcessors::Github::WorkflowRun < ApplicationJob
   end
 
   def step_run
-    @step_run ||= release.step_runs.ci_workflow_started.find_by(build_number: artifact_build_number)
+    @step_run ||= release.step_runs.ci_workflow_triggered.find_by(build_number: artifact_build_number)
   end
 
   def artifact_build_number

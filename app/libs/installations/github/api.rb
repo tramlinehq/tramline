@@ -27,6 +27,32 @@ module Installations
       end
     end
 
+    # FIXME: handle 404 when workflow not found
+    def find_workflow_run(repo, workflow, branch, head_sha)
+      options = {
+        branch:,
+        head_sha:
+      }
+
+      execute do
+        @client
+          .workflow_runs(repo, workflow, options)
+          .then { |response| response[:workflow_runs] }
+          .then { |workflow_runs| workflow_runs.sort_by { |workflow_run| workflow_run[:run_number] }.reverse! }
+          .first
+          &.to_h
+      end
+    end
+
+    # FIXME: handle 404 when workflow run not found
+    def get_workflow_run(repo, run_id)
+      execute do
+        @client
+          .workflow_run(repo, run_id)
+          .to_h
+      end
+    end
+
     def list_repos
       execute do
         @client

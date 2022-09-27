@@ -15,6 +15,7 @@ class Releases::Step::UploadArtifact < ApplicationJob
       when "SlackIntegration"
         Releases::Step::DeploymentFinished.perform_later(step_run_id)
       else
+        # FIXME: for external deployments, train-run/release needs to be finalized
         step_run.finish!
       end
     rescue

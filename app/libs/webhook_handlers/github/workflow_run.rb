@@ -16,6 +16,7 @@ class WebhookHandlers::Github::WorkflowRun
   end
 
   def process
+    return Response.new(:accepted) # FIXME: feature-flag this off maybe lol
     return Response.new(:accepted) unless complete_action?
     return Response.new(:unprocessable_entity) if train.blank?
     return Response.new(:unprocessable_entity) if train.inactive?

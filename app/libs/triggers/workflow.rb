@@ -16,7 +16,7 @@ class Triggers::Workflow
 
   def dispatch!
     if github_api.run_workflow!(code_repository, ci_cd_channel, ref, inputs)
-      step_run.ci_start!
+      step_run.ci_trigger!
     else
       raise DispatchFailure, "Failed to kickoff the workflow!"
     end
