@@ -1,14 +1,22 @@
 require "zip"
 
-class Releases::Step::UploadToPlaystore < ApplicationJob
+class Deployments::GooglePlayStore::Upload < ApplicationJob
   queue_as :high
   delegate :transaction, to: Releases::Step::Run
 
-  def perform(step_run_id)
-    step_run = Releases::Step::Run.find(step_run_id)
+  def perform(deployment_run_id)
+    deployment_run = DeploymentRun.find(deployment_run_id)
+    deployment = deployment_run.deployment
+    return unless deployment.integration.google_play_store_integration?
+
+    step_run = deployment_run.step_run
+    upload(step_run, deployment.access_key)
+    deployment_run.upload!
+  end
+
+  def upload(step_run, key)
     step = step_run.step
     package_name = step.app.bundle_identifier
-    key = StringIO.new(step.deployment_provider.providable.json_key)
     release_version = step_run.train_run.release_version
 
     step_run.build_artifact.file.blob.open do |zip_file|
@@ -22,7 +30,5 @@ class Releases::Step::UploadToPlaystore < ApplicationJob
         raise api.errors if api.errors.present?
       end
     end
-
-    step_run.build_artifact.create_release_situation!(status: ReleaseSituation.statuses[:bundle_uploaded])
   end
 end

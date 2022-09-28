@@ -1,0 +1,25 @@
+<section class="border-t border-dashed border-slate-200 pt-8 mt-8">
+  <div class="flex">
+    <h2 class="font-bold text-2xl">Kick-off</h2>
+    <span class="text-2xl text-slate-400 ml-4"><%= time_ago_in_words(release.created_at) %> ago</span>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-y-4 mt-4">
+    <div>
+      <div class="font-bold text-slate-600 text-sm uppercase mb-1">Release branch</div>
+      <code><%= link_to release.branch_name, release.branch_url, target: :_blank %></code>
+    </div>
+
+    <div>
+      <div class="font-bold text-slate-600 text-sm uppercase mb-1">Branching Strategy</div>
+      <span><%= release_train.branching_strategy_name %></span>
+    </div>
+
+    <% unless release_train.sign_off_groups.blank? %>
+      <div>
+        <div class="font-bold text-slate-600 text-sm uppercase mb-1">Sign-off groups</div>
+        <span><%= release_train.sign_off_groups.map(&:name).join(", ") %></span>
+      </div>
+    <% end %>
+  </div>
+</section>

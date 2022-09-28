@@ -1,0 +1,70 @@
+<p class="font-bold text-xl mt-8 mb-2">All builds</p>
+
+<% commits_count = release.commits.size %>
+
+<table class="table-auto w-full">
+  <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+
+  <tr>
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">•</div>
+    </th>
+
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">commit id</div>
+    </th>
+
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">commit message</div>
+    </th>
+
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">builds</div>
+    </th>
+  </tr>
+  </thead>
+
+  <tbody class="text-sm divide-y divide-slate-200">
+  <% release.commits.order(created_at: :desc).includes(step_runs: :step).each_with_index do |commit, index| %>
+    <tr>
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <%= commits_count - index %>
+      </td>
+
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <%= link_to commit.commit_hash[0, 5], commit.url %>
+      </td>
+
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <span class="underline"><%= link_to commit.message, commit.url %></span>
+      </td>
+
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="grid grid-cols-2 gap-y-1">
+          <% commit.step_runs.includes(:step).order(:created_at).each_with_index do |step_run| %>
+            <div>
+                <span class="mx-2">
+                  <% if step_run.ci_link.present? %>
+                    <%= link_to step_run.step.name, step_run.ci_link, class: "underline", target: :_blank %>
+                  <% else %>
+                    <%= step_run.step.name %>
+                  <% end %>
+                </span>
+
+              <%= build_status_badge(step_run.status) %>
+
+              <% if step_run.uploading? %>
+                  <span class="text-xs uppercase tracking-wide inline-flex bg-green-500 animate-pulse text-white hover:bg-green-600 rounded-full text-center ml-2 px-2 py-0.5">
+                    Uploading build
+                  </span>
+              <% end %>
+            </div>
+
+            <div><%= approval_emoji(step_run.approval_status) %> <%= step_run.build_version %></div>
+          <% end %>
+        </div>
+      </td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>

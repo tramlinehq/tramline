@@ -9,6 +9,8 @@ class Releases::Step < ApplicationRecord
   has_many :runs, class_name: "Releases::Step::Run", inverse_of: :step, foreign_key: :train_step_id, dependent: :destroy
   has_many :sign_offs, foreign_key: :train_step_id, inverse_of: :step, dependent: :destroy
   has_many :sign_off_groups, through: :train
+  has_many :deployments, foreign_key: :train_step_id, inverse_of: :step, dependent: :destroy
+  has_many :deployment_runs, through: :deployments, class_name: "DeploymentRun"
   has_one :app, through: :train
 
   validates :ci_cd_channel, presence: true
@@ -44,12 +46,10 @@ class Releases::Step < ApplicationRecord
     train.steps.maximum(:step_number).to_i == step_number
   end
 
-  # @return [Releases::Step]
   def next
     train.steps.where("step_number > ?", step_number)&.first
   end
 
-  # @return [Releases::Step]
   def previous
     train.steps.where("step_number < ?", step_number).last
   end

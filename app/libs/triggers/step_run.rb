@@ -11,7 +11,7 @@ class Triggers::StepRun
   end
 
   def call
-    release.step_runs.create!(step:, scheduled_at: Time.current, commit:, build_version:, build_number:, sign_required:)
+    release.step_runs.create!(step:, scheduled_at: Time.current, commit:, build_version:, sign_required:)
   end
 
   private
@@ -20,9 +20,5 @@ class Triggers::StepRun
 
   def build_version
     release.release_version + "-" + step.release_suffix
-  end
-
-  def build_number
-    step.train.app.bump_build_number!
   end
 end
