@@ -23,6 +23,7 @@ class Triggers::Deployment
   delegate :external?, :slack_integration?, :google_play_store_integration?, to: :deployment
   attr_reader :deployment, :step_run, :starting_time
 
+  # FIXME: should we take a lock around this SR? what is someone double triggers the run?
   def dispatch_job!(deployment_run)
     if external?
       Rails.logger.info("External deployment, doing nothing...")

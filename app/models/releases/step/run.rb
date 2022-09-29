@@ -11,6 +11,7 @@ class Releases::Step::Run < ApplicationRecord
   belongs_to :commit, class_name: "Releases::Commit", foreign_key: :releases_commit_id, inverse_of: :step_runs
   has_one :build_artifact, foreign_key: :train_step_runs_id, inverse_of: :step_run, dependent: :destroy
   has_many :deployment_runs, foreign_key: :train_step_run_id, inverse_of: :step_run
+  has_many :deployments, through: :step
 
   validates :build_version, uniqueness: { scope: [:train_step_id, :train_run_id] }
   validates :train_step_id, uniqueness: { scope: :releases_commit_id }
@@ -28,7 +29,7 @@ class Releases::Step::Run < ApplicationRecord
     ci_workflow_started: "ci_workflow_started",
     ci_workflow_failed: "ci_workflow_failed",
     ci_workflow_halted: "ci_workflow_halted",
-    pending_deployment: "pending_deployment",
+    build_ready: "build_ready",
     deployment_started: "deployment_started",
     deployment_failed: "deployment_failed",
     success: "success"
@@ -40,11 +41,11 @@ class Releases::Step::Run < ApplicationRecord
     state :on_track, initial: true
     state(*STATES.keys)
 
-    event :ci_trigger, after_commit: -> { Releases::Step::FindWorkflowRun.perform_async(id) } do
+    event :trigger_ci, after_commit: -> { Releases::Step::FindWorkflowRun.perform_async(id) } do
       transitions from: :on_track, to: :ci_workflow_triggered
     end
 
-    event :ci_started, after_commit: -> { WorkflowProcessors::WorkflowRun.perform_later(id) } do
+    event :ci_start, after_commit: -> { WorkflowProcessors::WorkflowRun.perform_later(id) } do
       transitions from: [:on_track, :ci_workflow_triggered], to: :ci_workflow_started
     end
 
@@ -52,34 +53,31 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: [:on_track, :ci_workflow_triggered], to: :ci_workflow_unavailable
     end
 
-    event :ci_failed do
+    event :fail_ci do
       transitions from: :ci_workflow_started, to: :ci_workflow_failed
     end
 
-    event :ci_cancelled do
+    event :cancel_ci do
       transitions from: :ci_workflow_started, to: :ci_workflow_halted
     end
 
-    event :about_to_deploy do
-      transitions from: :ci_workflow_started, to: :pending_deployment
+    event :finish_ci do
+      transitions from: :ci_workflow_started, to: :build_ready
     end
 
-    event :promote do
-      before { Releases::Step::Promote.perform_later(id, initial_rollout_percentage) }
-      transitions from: :pending_deployment, to: :deployment_started, guard: :promotable?
+    event :ready_to_deploy do
+      transitions from: :build_ready, to: :deployment_started
     end
 
     event :fail_deploy do
-      transitions from: [:pending_deployment, :deployment_started], to: :deployment_failed
+      transitions from: [:build_ready, :deployment_started], to: :deployment_failed
     end
 
     event :finish do
-      # FIXME: remove this
-      after { build_artifact&.release_situation&.update!(status: ReleaseSituation.statuses[:released]) }
       # FIXME: potential race condition here if a commit lands right here... . at this point...
       # ...and starts another run, but the release phase is triggered for an effectively stale run
-      after { release.update!(status: Releases::Train::Run.statuses[:release_phase]) if step.last? }
-      transitions from: [:pending_deployment, :deployment_started], to: :success
+      after { release.finish! if step.last? }
+      transitions from: [:build_ready, :deployment_started], to: :success
     end
   end
 
@@ -90,12 +88,13 @@ class Releases::Step::Run < ApplicationRecord
   delegate :train, to: :train_run
   delegate :release_branch, to: :train_run
   delegate :commit_hash, to: :commit
+  delegate :build_download_url, to: :build_artifact
   alias_method :release, :train_run
 
   def start_ci!(ci_ref, ci_link)
     transaction do
       update(ci_ref: ci_ref, ci_link: ci_link)
-      ci_started!
+      ci_start!
     end
   end
 
@@ -108,7 +107,7 @@ class Releases::Step::Run < ApplicationRecord
 
     raise WorkflowTriggerFailed unless train.ci_cd_provider.trigger_workflow_run!(workflow_name, release_branch, inputs)
     update!(build_number: version_code)
-    ci_trigger!
+    trigger_ci!
   end
 
   def find_workflow_run
@@ -119,8 +118,12 @@ class Releases::Step::Run < ApplicationRecord
     train.ci_cd_provider.get_workflow_run(ci_ref)
   end
 
-  def uploading?
-    pending_deployment? && build_artifact&.release_situation.blank?
+  def fetching_build?
+    may_finish_ci? && build_artifact.blank?
+  end
+
+  def build_available?
+    build_artifact.present?
   end
 
   def last_deployment_run

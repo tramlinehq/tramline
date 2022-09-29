@@ -4,6 +4,13 @@
     <span class="text-2xl text-slate-400 ml-4"><%= time_ago_in_words(release.updated_at) %> ago</span>
   </div>
 
+  <%= render "shared/note_box",
+             message: "When a new commit lands, all steps are re-run until the last running step. This ensures that previous stakeholders are kept up-to-date." %>
+
+  <%= render "shared/note_box",
+             message: "If your release is stuck in some unrecoverable state, just land another commit to kick things off again." %>
+
+  <p class="font-bold text-xl mt-8 mb-2">Latest build</p>
   <div class="flex flex-col mt-4">
     <ul>
       <% release_train.steps.order(:step_number).includes(:train, :runs).each do |step| %>
@@ -22,7 +29,7 @@
                   <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"></path>
                 </svg>
               </div>
-            <% elsif step_run&.on_track? || step_run&.pending_deployment? || step_run&.deployment_started? %>
+            <% elsif step_run&.may_finish? %>
               <!-- on_track -->
               <div class="absolute left-0 rounded-full bg-slate-500" aria-hidden="true">
                 <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
@@ -49,7 +56,7 @@
 
           <!-- Step metadata -->
           <div class="pl-9">
-            <%= render partial: "releases/live_release/per_step_metadata", locals: { step: step, step_run: step_run } %>
+            <%= render partial: "releases/live_release/per_step_metadata", locals: { release: release, step: step, step_run: step_run } %>
             <%= render partial: "releases/live_release/step_sign_offs", locals: { release: release, release_train: release_train, step_run: step_run } %>
           </div>
         </li>

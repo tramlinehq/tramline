@@ -48,7 +48,7 @@ class ReleasesController < SignedInApplicationController
     @release = Releases::Train::Run.find(params[:id])
 
     if @release.finished_steps?
-      @release.perform_post_release! # TODO: move to background job
+      @release.start_post_release_phase!
       redirect_back fallback_location: root_path, notice: "Performing post-release steps."
     else
       redirect_back fallback_location: root_path, notice: "Train is still running."

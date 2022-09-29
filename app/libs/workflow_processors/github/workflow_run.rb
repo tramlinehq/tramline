@@ -27,9 +27,9 @@ class WorkflowProcessors::Github::WorkflowRun
   delegate :train, :release, to: :step_run
 
   def update_status!
-    step_run.about_to_deploy! and return if successful?
-    step_run.ci_failed! and return if failed?
-    step_run.ci_cancelled! if halted?
+    step_run.finish_ci! and return if successful?
+    step_run.fail_ci! and return if failed?
+    step_run.cancel_ci! if halted?
   end
 
   def upload_artifact!

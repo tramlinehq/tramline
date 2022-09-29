@@ -1,5 +1,6 @@
 class Releases::Train::Run < ApplicationRecord
   has_paper_trail
+  include AASM
   self.implicit_order_column = :was_run_at
 
   STAMPABLE_REASONS = %w[created status_changed pull_request_not_required pull_request_not_mergeable tag_reference_already_exists]
@@ -11,13 +12,33 @@ class Releases::Train::Run < ApplicationRecord
   has_many :steps, through: :step_runs
   has_many :passports, as: :stampable, dependent: :destroy
 
-  enum status: {
+  STATES = {
     on_track: "on_track",
     release_phase: "release_phase",
     post_release: "post_release",
     finished: "finished",
     error: "error"
   }
+
+  enum status: STATES
+
+  aasm column: :status, requires_lock: true, requires_new_transaction: false, enum: true, create_scopes: false do
+    state :on_track, initial: true
+    state(*STATES.keys)
+
+    event :start_release_phase do
+      transitions from: :on_track, to: :release_phase
+    end
+
+    event :start_post_release_phase, after_commit: -> { Releases::PostReleaseJob.perform_later(id) } do
+      transitions from: :release_phase, to: :post_release, guard: :finalizable?
+    end
+
+    event :finish do
+      before { self.completed_at = Time.current }
+      transitions from: :post_release, to: :finished
+    end
+  end
 
   before_create :set_version
   before_update :status_change_stamp!, if: -> { status_changed? }
@@ -58,18 +79,6 @@ class Releases::Train::Run < ApplicationRecord
 
   def set_version
     self.release_version = train.bump_version!.to_s
-  end
-
-  def perform_post_release!
-    self.status = Releases::Train::Run.statuses[:post_release]
-    save!
-    Releases::PostReleaseJob.perform_later(id)
-  end
-
-  def mark_finished!
-    self.status = Releases::Train::Run.statuses[:finished]
-    self.completed_at = Time.current
-    save!
   end
 
   def branch_url
@@ -142,7 +151,7 @@ class Releases::Train::Run < ApplicationRecord
       reason: :created,
       kind: :success,
       message: I18n.t("passport.stampable.created", stampable: "release", status: status),
-      metadata: {status: status}
+      metadata: { status: status }
     )
   end
 
@@ -153,7 +162,7 @@ class Releases::Train::Run < ApplicationRecord
       reason: :status_changed,
       kind: :success,
       message: I18n.t("passport.stampable.status_changed", stampable: "release", from: status_was, to: status),
-      metadata: {from: status_was, to: status}
+      metadata: { from: status_was, to: status }
     )
   end
 end

@@ -3,57 +3,60 @@
 
   <span class="pt-1 flex items-center">
     <%= image_tag("workflow.svg", width: 16, class: "inline-flex mr-2") %>
-
     <span class="mr-2 text-slate-500"><%= show_ci_cd_provider step %> • <%= show_ci_cd_channel step %></span>
+  </span>
 
-    <% if step_run&.build_version %>
-      <%= image_tag("arrow-right.svg", width: 16, class: "inline-flex mr-2") %>
-
-      <div class="flex items-center">
-        <span class="mr-2 text-lg"><%= step_run.build_version %></span>
-        <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">
+  <% if step_run&.build_version %>
+    <div class="flex items-center">
+      <span class="mr-2 text-lg"><%= step_run.build_version %></span>
+      <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">
           Latest build
         </span>
-      </div>
-    <% end %>
-  </span>
+    </div>
+  <% end %>
 
   <%= image_tag("arrow-down.svg", width: 16, class: "inline-flex mt-2 mb-2") %>
 
   <% step.deployments.each do |deployment| %>
-
-    <div class="pt-1 flex items-center text-slate-500">
+    <div class="pt-2 flex items-center text-slate-500">
       <span class="mr-2 font-mono">
         <%= deployment.deployment_number %>
         <%= image_tag("arrow-right.svg", width: 16, class: "inline-flex") %>
       </span>
 
       <%= image_tag("package.svg", width: 16, class: "inline-flex mr-2") %>
-      <span><%= show_deployment_provider deployment %> • <%= show_deployment_channel deployment %></span>
-    </div>
 
-    <% if deployment.startable? %>
-      Start this deployment!
-    <% end %>
+      <span class="mr-2"><%= show_deployment_provider deployment %> • <%= show_deployment_channel deployment %></span>
 
-    <% if step_run.present? %>
-      <% deployment_run = step_run.last_run_for(deployment) %>
+      <% if step_run.present? %>
+        <% if deployment.startable? %>
+          <%= button_to 'Move to this deployment',
+                        start_release_step_run_deployment_path(release, step_run, deployment),
+                        { class: 'btn-xs bg-indigo-500 hover:bg-indigo-600 text-white' } %>
+        <% end %>
 
-      <%= deployment_run&.status %>
+        <% deployment_run = step_run.last_run_for(deployment) %>
 
-      <% if deployment_run&.promotable? %>
-        <div class="pr-9">
-          <%= form_with(model: [@release, step_run], url: promote_release_step_run_path(@release, step_run)) do |form| %>
-            <% if deployment_run.rolloutable? %>
-              <%= form.number_field :initial_rollout_percentage, class: "form-input w-72 mb-3", placeholder: "Initial Staged Rollout Percentage", step: ".001", min: 0, max: 100, required: true %>
-            <% else %>
-              <%= form.number_field :initial_rollout_percentage, value: "100", hidden: true %>
+        <% if deployment_run.present? %>
+          <span class="text-xs uppercase inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">
+            <%= deployment_run.status %>
+          </span>
+        <% end %>
+
+        <% if deployment_run&.promotable? %>
+          <div class="ml-2">
+            <%= form_with(model: [release, step_run, deployment_run], url: promote_deployment_run_path(deployment_run)) do |form| %>
+              <% if deployment_run.rolloutable? %>
+                <%= form.number_field :initial_rollout_percentage, class: "form-input w-72 mb-3", placeholder: "Initial Staged Rollout Percentage", step: ".001", min: 0, max: 100, required: true %>
+              <% else %>
+                <%= form.number_field :initial_rollout_percentage, value: "100", hidden: true %>
+              <% end %>
+
+              <%= form.submit 'Promote', class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
             <% end %>
-
-            <%= form.submit 'Promote', class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
-          <% end %>
-        </div>
+          </div>
+        <% end %>
       <% end %>
-    <% end %>
+    </div>
   <% end %>
 </div>

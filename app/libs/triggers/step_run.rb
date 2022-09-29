@@ -10,6 +10,7 @@ class Triggers::StepRun
     @sign_required = sign_required
   end
 
+  # FIXME: should we take a lock around this release? what is someone double triggers the run?
   def call
     release.step_runs.create!(step:, scheduled_at: Time.current, commit:, build_version:, sign_required:)
   end

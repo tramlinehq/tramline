@@ -5,13 +5,14 @@ class Deployments::Slack < ApplicationJob
 
   def perform(deployment_run_id)
     deployment_run = DeploymentRun.find(deployment_run_id)
-    deployment = deployment_run.deployment
-    return unless deployment.integration.slack_integration?
-
-    # FIXME: this transaction can eventually be removed, just use Result objects
-    transaction do
-      push(deployment, deployment_run.step_run)
-      deployment_run.release!
+    deployment_run.with_lock do
+      deployment = deployment_run.deployment
+      return unless deployment.integration.slack_integration?
+      # FIXME: this transaction can eventually be removed, just use Result objects
+      transaction do
+        push(deployment, deployment_run.step_run)
+        deployment_run.release!
+      end
     end
   end
 

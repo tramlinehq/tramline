@@ -10,7 +10,7 @@ class Triggers::PostRelease
     end
 
     def call
-      release.mark_finished! if create_tag.ok?
+      release.finish! if create_tag.ok?
     end
 
     private

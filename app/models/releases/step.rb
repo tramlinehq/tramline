@@ -13,7 +13,7 @@ class Releases::Step < ApplicationRecord
   has_many :deployment_runs, through: :deployments, class_name: "DeploymentRun"
   has_one :app, through: :train
 
-  validates :ci_cd_channel, presence: true
+  validates :ci_cd_channel, presence: true, uniqueness: { scope: :train_id }
   validates :release_suffix, presence: true
   validates :release_suffix, format: {with: /\A[a-zA-Z\-_]+\z/, message: "only allows letters and underscore"}
 

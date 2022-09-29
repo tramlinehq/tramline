@@ -7,7 +7,8 @@ class Releases::Step::UploadArtifact < ApplicationJob
 
     begin
       stream = get_download_stream(step_run, archive_download_url(installation_id, artifacts_url))
-      BuildArtifact.new(step_run: step_run).save_zip!(stream)
+      BuildArtifact.new(step_run: step_run, generated_at: Time.current).save_zip!(stream)
+      step_run.ready_to_deploy!
       Triggers::Deployment.call(step_run: step_run)
     rescue => e
       Rails.logger.error e

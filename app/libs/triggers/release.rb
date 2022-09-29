@@ -18,6 +18,7 @@ class Triggers::Release
     @starting_time = Time.current
   end
 
+  # FIXME: should we take a lock around this train? what is someone double triggers the run?
   def call
     return Response.new(false, "Cannot start a train that is inactive!") if train.inactive?
     return Response.new(false, "Cannot start a train that has no steps. Please add at least one step.") if train.steps.empty?
