@@ -71,7 +71,6 @@ Rails.application.routes.draw do
           member do
             post :start
             post :stop
-            patch :promote
           end
 
           resources :deployments do
