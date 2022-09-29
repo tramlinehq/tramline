@@ -96,7 +96,7 @@
               <div class="mb-4">
                 <% if step_run.build_available? %>
                   Deployments
-                  <% step_run.deployment_runs.includes(:deployment).each do |deployment_run| %>
+                  <% step_run.deployment_runs.each do |deployment_run| %>
                     <% deployment = deployment_run.deployment %>
 
                     <div class="mt-1">

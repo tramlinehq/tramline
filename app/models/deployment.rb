@@ -1,6 +1,8 @@
 class Deployment < ApplicationRecord
   has_paper_trail
 
+  self.implicit_order_column = :deployment_number
+
   has_many :deployment_runs
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :deployments
   belongs_to :integration, optional: true
@@ -25,27 +27,6 @@ class Deployment < ApplicationRecord
 
   def external?
     integration.nil?
-  end
-
-  def startable?
-    return false if train.inactive?
-    return false if train.active_run.nil?
-    return true if deployment_runs.empty? && first?
-    return false if first?
-
-    next_active == self && last_deployment_run.released?
-  end
-
-  def active_step_run
-    train.active_run&.active_step_run
-  end
-
-  def last_deployment_run
-    active_step_run&.last_deployment_run
-  end
-
-  def next_active
-    active_step_run&.next_deployment
   end
 
   def first?

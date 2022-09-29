@@ -29,8 +29,8 @@
       <span class="mr-2"><%= show_deployment_provider deployment %> • <%= show_deployment_channel deployment %></span>
 
       <% if step_run.present? %>
-        <% if deployment.startable? %>
-          <%= button_to 'Move to this deployment',
+        <% if step_run.manually_startable_deployment?(deployment) %>
+          <%= button_to 'Start this deployment',
                         start_release_step_run_deployment_path(release, step_run, deployment),
                         { class: 'btn-xs bg-indigo-500 hover:bg-indigo-600 text-white' } %>
         <% end %>

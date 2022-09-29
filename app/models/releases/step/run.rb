@@ -10,7 +10,7 @@ class Releases::Step::Run < ApplicationRecord
   belongs_to :train_run, class_name: "Releases::Train::Run"
   belongs_to :commit, class_name: "Releases::Commit", foreign_key: :releases_commit_id, inverse_of: :step_runs
   has_one :build_artifact, foreign_key: :train_step_runs_id, inverse_of: :step_run, dependent: :destroy
-  has_many :deployment_runs, foreign_key: :train_step_run_id, inverse_of: :step_run
+  has_many :deployment_runs, -> { includes(:deployment).order("deployments.deployment_number ASC") }, foreign_key: :train_step_run_id, inverse_of: :step_run
   has_many :deployments, through: :step
 
   validates :build_version, uniqueness: { scope: [:train_step_id, :train_run_id] }
@@ -125,8 +125,16 @@ class Releases::Step::Run < ApplicationRecord
     build_artifact.present?
   end
 
+  def manually_startable_deployment?(deployment)
+    return false if train.inactive?
+    return false if train.active_run.nil?
+    return false if deployment_runs.empty? || deployment.first?
+
+    next_deployment == deployment && last_deployment_run.released?
+  end
+
   def last_deployment_run
-    deployment_runs.joins(:deployment).order(:deployment_number).last
+    deployment_runs.last
   end
 
   def last_run_for(deployment)
