@@ -75,7 +75,7 @@ class Releases::Step::Run < ApplicationRecord
     event :finish do
       # FIXME: potential race condition here if a commit lands right here... . at this point...
       # ...and starts another run, but the release phase is triggered for an effectively stale run
-      after { release.finish! if step.last? }
+      after { release.start_release_phase! if step.last? }
       transitions from: [:build_ready, :deployment_started], to: :success
     end
   end
