@@ -18,7 +18,6 @@ class Releases::Step::Run < ApplicationRecord
   validates :initial_rollout_percentage, numericality: { greater_than: 0, less_than_or_equal_to: 100, allow_nil: true }
 
   after_create :reset_approval!
-  after_create :trigger_workflow_run!
 
   scope :active, -> { where.not(status: [:ci_workflow_unavailable, :ci_workflow_failed, :ci_workflow_halted, :deployment_failed, :success]) }
 

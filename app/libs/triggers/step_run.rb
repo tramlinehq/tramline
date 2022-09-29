@@ -12,7 +12,10 @@ class Triggers::StepRun
 
   # FIXME: should we take a lock around this release? what is someone double triggers the run?
   def call
-    release.step_runs.create!(step:, scheduled_at: Time.current, commit:, build_version:, sign_required:)
+    release
+      .step_runs
+      .create!(step:, scheduled_at: Time.current, commit:, build_version:, sign_required:)
+      .then(&:trigger_workflow_run!)
   end
 
   private
