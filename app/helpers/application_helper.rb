@@ -42,7 +42,7 @@ module ApplicationHelper
   end
 
   def ago_in_words(time)
-    time_ago_in_words(time) + " ago"
+    (time.presence && time_ago_in_words(time, include_seconds: true) + " ago") || "N/A"
   end
 
   def current_deploy

@@ -19,7 +19,7 @@ class BuildArtifact < ApplicationRecord
     "step-run-#{train_step_runs_id}-release.zip"
   end
 
-  def build_download_url
+  def download_url
     if Rails.env.development?
       rails_blob_url(file, host: ENV["HOST_NAME"], port: ENV["PORT_NUM"], protocol: "https", disposition: "attachment")
     else

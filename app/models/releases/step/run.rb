@@ -88,7 +88,7 @@ class Releases::Step::Run < ApplicationRecord
   delegate :train, to: :train_run
   delegate :release_branch, to: :train_run
   delegate :commit_hash, to: :commit
-  delegate :build_download_url, to: :build_artifact
+  delegate :download_url, to: :build_artifact
   alias_method :release, :train_run
 
   def start_ci!(ci_ref, ci_link)

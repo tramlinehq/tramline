@@ -51,7 +51,7 @@
         <div class="grid grid-cols-1 gap-y-1">
           <% commit.step_runs.includes(:step).order(:created_at).each_with_index do |step_run| %>
             <div class="border-dashed border-b last:border-b-0 p-2">
-              <div class="mb-2">
+              <div class="mb-4">
                 <% if step_run.ci_link.present? %>
                   <%= link_to step_run.step.name, step_run.ci_link, class: "underline", target: :_blank %>
                 <% else %>
@@ -59,17 +59,17 @@
                 <% end %>
               </div>
 
-              <%# if Rails.env.development? %>
-<!--                <div class="mb-2">-->
-                  <%#= step_run.id %>
-<!--                </div>-->
-              <%# end %>
+              <% if Rails.env.development? %>
+                <div class="mb-4">
+                  <%= step_run.id %>
+                </div>
+              <% end %>
 
-              <div class="mb-2">
+              <div class="mb-4">
                 <%= build_status_badge(step_run.status) %>
               </div>
 
-              <div class="mb-2">
+              <div class="mb-4">
                 <% if step_run.fetching_build? %>
                   <span class="text-xs uppercase tracking-wide inline-flex bg-green-500 animate-pulse text-white hover:bg-green-600 rounded-full text-center px-2 py-0.5">
                     Uploading build
@@ -79,27 +79,47 @@
 
               <div class="mb-4">
                 <% if step_run.build_available? %>
-                  <%= link_to "Download Build", step_run.build_download_url, class: "underline" %>
+                  <%= link_to "Download Build", step_run.download_url, class: "underline" %>
                   <div>
                     <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-2") %>
-                    <%= "built " + ago_in_words(step_run.build_artifact.generated_at) %>
+                    <%= "built " + ago_in_words(step_run.build_artifact&.generated_at) %>
                   </div>
 
                   <div>
                     <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-2") %>
-                    <%= "uploaded " + ago_in_words(step_run.build_artifact.uploaded_at) %>
+                    <%= "uploaded " + ago_in_words(step_run.build_artifact&.uploaded_at) %>
                   </div>
 
                 <% end %>
               </div>
 
-              <div class="mb-2">
-                <div><span class="font-medium">Release Version:</span> <%= step_run.build_version %></div>
-                <div><span class="font-medium">Approval Status:</span> <%= approval_emoji(step_run.approval_status) %></div>
+              <div class="mb-4">
+                <% if step_run.build_available? %>
+                  Deployments
+                  <% step_run.deployment_runs.includes(:deployment).each do |deployment_run| %>
+                    <% deployment = deployment_run.deployment %>
+
+                    <div class="mt-1">
+                      <%= image_tag("package.svg", width: 16, class: "inline-flex mr-2") %>
+                      <span><%= show_deployment_provider deployment %> • <%= show_deployment_channel deployment %></span>
+                      <span class="text-xs uppercase inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">
+                        <%= deployment_run.status %>
+                      </span>
+                    </div>
+                  <% end %>
+                <% end %>
+              </div>
+
+              <div class="mb-4">
+                <div>
+                  <span class="font-medium">Release Version:</span> <%= step_run.build_version %>
+                </div>
+
+                <div>
+                  <span class="font-medium">Approval Status:</span> <%= approval_emoji(step_run.approval_status) %>
+                </div>
               </div>
             </div>
-
-
           <% end %>
         </div>
       </td>

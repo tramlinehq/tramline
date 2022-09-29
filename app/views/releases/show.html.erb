@@ -1,3 +1,16 @@
+<% if @release.finished? %>
+  <% content_for :locked_release do %>
+    <div class="px-4 py-2 rounded-sm text-sm bg-indigo-100 border border-indigo-200 text-indigo-500">
+      <div class="flex w-full justify-between items-start">
+        <div class="flex">
+          <div class="font-medium">This release was completed and is now locked.</div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+
 <% breadcrumb :release, @release %>
 
 <div class="sm:flex sm:justify-between sm:items-center pb-8 border-b border-slate-200">
