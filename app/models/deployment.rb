@@ -45,4 +45,3 @@ class Deployment < ApplicationRecord
     step.deployments.where("deployment_number < ?", deployment_number).last
   end
 end
-

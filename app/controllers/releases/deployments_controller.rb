@@ -8,13 +8,18 @@ class Releases::DeploymentsController < SignedInApplicationController
     redirect_back fallback_location: root_path, notice: "Deployment successfully started!"
   end
 
+  def update
+    binding.pry
+    Rails.logger.info "hi2u"
+  end
+
   private
 
   def set_release
     @release =
       Releases::Train::Run
         .joins(train: :app)
-        .where(apps: { organization: current_organization })
+        .where(apps: {organization: current_organization})
         .find_by(id: params[:release_id])
   end
 
@@ -24,5 +29,9 @@ class Releases::DeploymentsController < SignedInApplicationController
 
   def set_deployment
     @deployment = @step_run.deployments.find_by(id: params[:id])
+  end
+
+  def deployments_attributes
+    params.require(:step).permit(deployments_attributes: [:id, :integration_id, :build_artifact_channel])
   end
 end

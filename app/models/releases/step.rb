@@ -20,6 +20,7 @@ class Releases::Step < ApplicationRecord
 
   delegate :app, to: :train
 
+
   enum status: {
     active: "active",
     inactive: "inactive"
@@ -27,6 +28,7 @@ class Releases::Step < ApplicationRecord
 
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
+  accepts_nested_attributes_for :deployments, allow_destroy: false, reject_if: :reject_deployments?
 
   before_validation :set_step_number, if: :new_record?
   after_initialize :set_default_status, if: :new_record?
@@ -86,5 +88,9 @@ class Releases::Step < ApplicationRecord
 
   def external_deployment?
     build_artifact_integration == "external"
+  end
+
+  def reject_deployments?
+    false
   end
 end

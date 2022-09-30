@@ -16,6 +16,8 @@ class StepsController < SignedInApplicationController
   end
 
   def create
+    binding.pry
+
     head 403 and return if @train.active_run
     @step = @train.steps.new(parsed_step_params)
 
@@ -39,6 +41,7 @@ class StepsController < SignedInApplicationController
         .find(params[:id])
     @train = @step.train
     head 403 and return if @train.active_run
+
 
     @build_channels = @step.available_deployment_channels
     @ci_actions = @train.ci_cd_provider.workflows

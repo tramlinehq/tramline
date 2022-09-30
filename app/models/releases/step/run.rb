@@ -13,9 +13,9 @@ class Releases::Step::Run < ApplicationRecord
   has_many :deployment_runs, -> { includes(:deployment).order("deployments.deployment_number ASC") }, foreign_key: :train_step_run_id, inverse_of: :step_run
   has_many :deployments, through: :step
 
-  validates :build_version, uniqueness: { scope: [:train_step_id, :train_run_id] }
-  validates :train_step_id, uniqueness: { scope: :releases_commit_id }
-  validates :initial_rollout_percentage, numericality: { greater_than: 0, less_than_or_equal_to: 100, allow_nil: true }
+  validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
+  validates :train_step_id, uniqueness: {scope: :releases_commit_id}
+  validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   after_create :reset_approval!
 
@@ -80,7 +80,7 @@ class Releases::Step::Run < ApplicationRecord
     end
   end
 
-  enum approval_status: { pending: "pending", approved: "approved", rejected: "rejected" }, _prefix: "approval"
+  enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
 
   attr_accessor :current_user
 
@@ -125,12 +125,16 @@ class Releases::Step::Run < ApplicationRecord
     build_artifact.present?
   end
 
-  def manually_startable_deployment?(deployment)
+  def startable_deployment?(deployment)
     return false if train.inactive?
     return false if train.active_run.nil?
-    return false if deployment_runs.empty? || deployment.first?
+    return true if deployment_runs.empty?
+    next_deployment == deployment
+  end
 
-    next_deployment == deployment && last_deployment_run.released?
+  def manually_startable_deployment?(deployment)
+    return false if deployment.first?
+    startable_deployment?(deployment) && last_deployment_run.released?
   end
 
   def last_deployment_run
