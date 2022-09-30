@@ -2,8 +2,6 @@ class Releases::Step::Run < ApplicationRecord
   has_paper_trail
   include AASM
 
-  class WorkflowTriggerFailed < StandardError; end
-
   self.ignored_columns = [:previous_step_run_id]
 
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :runs
@@ -44,7 +42,7 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: :on_track, to: :ci_workflow_triggered
     end
 
-    event :ci_start, after_commit: -> { WorkflowProcessors::WorkflowRun.perform_later(id) } do
+    event :ci_start, after_commit: -> { WorkflowProcessors::WorkflowRunJob.perform_later(id) } do
       transitions from: [:on_track, :ci_workflow_triggered], to: :ci_workflow_started
     end
 
@@ -85,6 +83,7 @@ class Releases::Step::Run < ApplicationRecord
   attr_accessor :current_user
 
   delegate :train, to: :train_run
+  delegate :ci_cd_provider, to: :train
   delegate :release_branch, to: :train_run
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
@@ -100,21 +99,23 @@ class Releases::Step::Run < ApplicationRecord
   def trigger_workflow_run!
     version_code = train.app.bump_build_number!
     inputs = {
-      versionCode: version_code,
-      versionName: build_version
+      version_code: version_code,
+      build_version: build_version
     }
 
-    raise WorkflowTriggerFailed unless train.ci_cd_provider.trigger_workflow_run!(workflow_name, release_branch, inputs)
+    workflow_run = ci_cd_provider.trigger_workflow_run!(workflow_name, release_branch, inputs, commit_hash)
     update!(build_number: version_code)
+
+    return start_ci!(workflow_run[:ci_ref], workflow_run[:ci_link]) if workflow_run[:ci_ref].present?
     trigger_ci!
   end
 
   def find_workflow_run
-    train.ci_cd_provider.find_workflow_run(workflow_name, release_branch, commit_hash)
+    ci_cd_provider.find_workflow_run(workflow_name, release_branch, commit_hash)
   end
 
   def get_workflow_run
-    train.ci_cd_provider.get_workflow_run(ci_ref)
+    ci_cd_provider.get_workflow_run(ci_ref)
   end
 
   def fetching_build?

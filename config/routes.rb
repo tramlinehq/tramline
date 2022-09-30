@@ -103,6 +103,10 @@ Rails.application.routes.draw do
         resource :google_play_store, only: [:create],
                  controller: "integrations/google_play_store",
                  as: :google_play_store_integration
+
+        resource :bitrise, only: [:create],
+                 controller: "integrations/bitrise",
+                 as: :bitrise_integration
       end
     end
   end

@@ -61,9 +61,18 @@ module Installations
       end
     end
 
+    class WorkflowTriggerFailed < StandardError; end
+
     def run_workflow!(repo, id, ref, inputs)
+      inputs = {
+        versionCode: inputs[:version_code],
+        versionNumber: inputs[:build_version]
+      }
+
       execute do
-        @client.workflow_dispatch(repo, id, ref, inputs: inputs)
+        @client
+          .workflow_dispatch(repo, id, ref, inputs:)
+          .then { |ok| raise Installations::Errors::WorkflowTriggerFailed unless ok }
       end
     end
 

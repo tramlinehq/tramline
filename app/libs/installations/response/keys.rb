@@ -1,8 +1,10 @@
 class Installations::Response::Keys
   class << self
     NORMALIZE_MAP = {
-      [:id] => :id,
-      [:full_name, :name, :path_with_namespace] => :name
+      [:id, :slug] => :id,
+      [:full_name, :name, :path_with_namespace, :title] => :name,
+      [:build_slug] => :ci_ref,
+      [:build_url] => :ci_link
     }
 
     def normalize(map_list)

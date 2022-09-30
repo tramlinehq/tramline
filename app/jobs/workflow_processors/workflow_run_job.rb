@@ -1,6 +1,7 @@
-class WorkflowProcessors::WorkflowRun < ApplicationJob
+class WorkflowProcessors::WorkflowRunJob < ApplicationJob
   class WorkflowRunNotFound < StandardError; end
 
+  sidekiq_options retry: 0
   queue_as :high
 
   # FIXME: check if train is still on_track
@@ -11,6 +12,6 @@ class WorkflowProcessors::WorkflowRun < ApplicationJob
     step_run
       .get_workflow_run
       .tap { |workflow_run| raise WorkflowRunNotFound if workflow_run.blank? }
-      .then { |workflow_run| WorkflowProcessors::Github::WorkflowRun.process(step_run, workflow_run) }
+      .then { |workflow_run| WorkflowProcessors::WorkflowRun.process(step_run, workflow_run) }
   end
 end
