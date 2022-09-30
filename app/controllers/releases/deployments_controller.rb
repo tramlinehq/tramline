@@ -14,7 +14,7 @@ class Releases::DeploymentsController < SignedInApplicationController
     @release =
       Releases::Train::Run
         .joins(train: :app)
-        .where(apps: { organization: current_organization })
+        .where(apps: {organization: current_organization})
         .find_by(id: params[:release_id])
   end
 

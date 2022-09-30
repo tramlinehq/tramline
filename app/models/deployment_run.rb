@@ -4,11 +4,10 @@ class DeploymentRun < ApplicationRecord
   belongs_to :deployment, inverse_of: :deployment_runs
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
 
-  validates :deployment_id, uniqueness: { scope: :train_step_run_id }
-  validates :initial_rollout_percentage, numericality: { greater_than: 0, less_than_or_equal_to: 100, allow_nil: true }
+  validates :deployment_id, uniqueness: {scope: :train_step_run_id}
+  validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   delegate :step, to: :step_run
-  delegate :startable?, to: :may_dispatch_job?
 
   unless const_defined?(:STATES)
     STATES = {

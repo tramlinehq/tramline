@@ -151,7 +151,7 @@ class Releases::Train::Run < ApplicationRecord
       reason: :created,
       kind: :success,
       message: I18n.t("passport.stampable.created", stampable: "release", status: status),
-      metadata: { status: status }
+      metadata: {status: status}
     )
   end
 
@@ -162,7 +162,7 @@ class Releases::Train::Run < ApplicationRecord
       reason: :status_changed,
       kind: :success,
       message: I18n.t("passport.stampable.status_changed", stampable: "release", from: status_was, to: status),
-      metadata: { from: status_was, to: status }
+      metadata: {from: status_was, to: status}
     )
   end
 end
