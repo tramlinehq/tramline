@@ -55,24 +55,24 @@
              message: "The generated build artifact above will be moved across the configured deployment channels below." %>
 </div>
 
-<div data-controller='build-channel' data-train="<%= @train.id %>" data-app="<%= @train.app.id %>" data-step="<%= @step.id %>">
-  <div class="grid gap-5 md:grid-cols-2 pb-5">
-    <%= form.fields_for :deployments, Deployment.new do |deployments_form| %>
-      <div>
-        <%= deployments_form.label :integration_id, class: "block text-sm font-medium mb-1" %>
-        <%= deployments_form.select :integration_id, options_for_select(@step.train.build_channel_integrations, @step.train.build_channel_integrations.first),
-                                    { class: "form-select" }, required: true, data: { controller: "input-select", action: 'change->build-channel#change' } %>
-      </div>
+<div class="grid gap-5 md:grid-cols-2 divide-x-2 p-2">
+  <%= render partial: "deployment", locals: {
+    form: form,
+    train: @train,
+    app: @train.app,
+    step: @step,
+    deployment: Deployment.new,
+    deployment_number: 1
+  } %>
 
-      <div>
-        <%= deployments_form.label :build_artifact_channel, class: "block text-sm font-medium mb-1" %>
-        <%= deployments_form.select :build_artifact_channel,
-                                    options_for_select(@build_channels),
-                                    { class: "form-select" },
-                                    data: { build_channel_target: "channels", controller: "input-select" } %>
-      </div>
-    <% end %>
-  </div>
+  <%= render partial: "deployment", locals: {
+    form: form,
+    train: @train,
+    app: @train.app,
+    step: @step,
+    deployment: Deployment.new,
+    deployment_number: 2
+  } %>
 </div>
 
 

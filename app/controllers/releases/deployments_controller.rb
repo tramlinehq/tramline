@@ -8,11 +8,6 @@ class Releases::DeploymentsController < SignedInApplicationController
     redirect_back fallback_location: root_path, notice: "Deployment successfully started!"
   end
 
-  def update
-    binding.pry
-    Rails.logger.info "hi2u"
-  end
-
   private
 
   def set_release

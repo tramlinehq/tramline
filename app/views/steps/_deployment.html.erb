@@ -1,0 +1,20 @@
+<div class="last:pl-3" data-controller="build-channel" data-train="<%= train.id %>" data-app="<%= app.id %>" data-step="<%= step.id %>" data-deployment-number="<%= deployment_number %>">
+  <%= form.fields_for :deployments, deployment do |deployments_form| %>
+    <div>
+      <%= deployments_form.label :integration_id, class: "block text-sm font-medium mb-1" %>
+      <%= deployments_form.select :integration_id, options_for_select(train.build_channel_integrations, train.build_channel_integrations.first),
+                                  { class: "form-select" }, required: true, data: { controller: "input-select", action: 'change->build-channel#change' } %>
+    </div>
+
+    <div>
+      <%= deployments_form.label :build_artifact_channel, class: "block text-sm font-medium mb-1" %>
+      <%= deployments_form.select :build_artifact_channel,
+                                  options_for_select(@build_channels),
+                                  { class: "form-select" },
+                                  {
+                                    id: "deployment_#{deployment_number}",
+                                    data: { build_channel_target: "channels", controller: "input-select" }
+                                  } %>
+    </div>
+  <% end %>
+</div>

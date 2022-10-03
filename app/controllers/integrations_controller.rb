@@ -24,7 +24,7 @@ class IntegrationsController < SignedInApplicationController
 
   def build_artifact_channels
     id = params[:id]
-
+    @deployment_number = params[:deployment_number]
     @build_channels =
       if id.blank?
         [["External", {"external" => "external"}.to_json]] # TODO: Have a better abstraction instead of if conditions
