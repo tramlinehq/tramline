@@ -3,7 +3,9 @@ class Releases::DeploymentRunsController < SignedInApplicationController
   delegate :transaction, to: :DeploymentRun
 
   def promote
-    @deployment_run.promote!(promotion_params[:initial_rollout_percentage])
+    @deployment_run.assign_attributes(promotion_params)
+    @deployment_run.promote!
+
     redirect_back fallback_location: root_path, notice: "Promoted this deployment!"
   end
 

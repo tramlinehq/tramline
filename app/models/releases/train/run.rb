@@ -48,6 +48,19 @@ class Releases::Train::Run < ApplicationRecord
 
   delegate :app, to: :train
 
+  def startable_step?(step)
+    return false if train.inactive?
+    return false unless on_track?
+    return true if step.first? && step_runs_for(step).empty?
+    return false if step.first?
+
+    (next_step == step) && last_run_for(step.previous).approval_approved? && last_run_for(step.previous).success?
+  end
+
+  def step_runs_for(step)
+    step_runs.where(step:)
+  end
+
   def self.pending_release?
     pending_release.exists?
   end

@@ -60,9 +60,7 @@
               </div>
 
               <% if Rails.env.development? %>
-                <div class="mb-4">
-                  <%= step_run.id %>
-                </div>
+                <div class="mb-4"><%= step_run.id.strip %></div>
               <% end %>
 
               <div class="mb-4">

@@ -16,8 +16,6 @@ class StepsController < SignedInApplicationController
   end
 
   def create
-    binding.pry
-
     head 403 and return if @train.active_run
     @step = @train.steps.new(parsed_step_params)
 
@@ -119,7 +117,7 @@ class StepsController < SignedInApplicationController
   def deployments_params
     params
       .require(:releases_step)
-      .permit(deployments_attributes: [:integration_id, :build_artifact_channel])
+      .permit(deployments_attributes: [:integration_id, :build_artifact_channel, :deployment_number]) # FIXME: figure out a nice model-level way of doing this
   end
 
   def parsed_deployments_params

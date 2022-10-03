@@ -7,7 +7,7 @@ class Deployment < ApplicationRecord
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :deployments
   belongs_to :integration, optional: true
 
-  before_validation :set_deployment_number, if: :new_record?
+  # before_validation :set_deployment_number, if: :new_record?
 
   delegate :google_play_store_integration?, to: :integration, allow_nil: true
   delegate :slack_integration?, to: :integration, allow_nil: true
@@ -43,5 +43,17 @@ class Deployment < ApplicationRecord
 
   def previous
     step.deployments.where("deployment_number < ?", deployment_number).last
+  end
+
+  def deployment_channel
+    build_artifact_channel.values.first
+  end
+
+  def available_deployment_channels
+    if external?
+      [["External", {"external" => "external"}.to_json]]
+    else
+      deployment.integration.providable.channels
+    end
   end
 end

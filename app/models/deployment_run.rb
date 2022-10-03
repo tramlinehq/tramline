@@ -8,6 +8,7 @@ class DeploymentRun < ApplicationRecord
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   delegate :step, to: :step_run
+  attr_accessor :initial_rollout_percentage
 
   unless const_defined?(:STATES)
     STATES = {
@@ -22,7 +23,7 @@ class DeploymentRun < ApplicationRecord
   enum status: STATES
 
   aasm column: :status, requires_lock: true, requires_new_transaction: false, enum: true, create_scopes: false do
-    state :created, initial: true, before_enter: -> { deployment.startable? }
+    state :created, initial: true, before_enter: -> { step_run.startable_deployment?(deployment) }
     state(*STATES.keys)
 
     event :dispatch_job do
@@ -43,12 +44,20 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  def promote!(rollout_percentage)
+  def promote!
     with_lock do
       return unless promotable?
-      self.initial_rollout_percentage = rollout_percentage
+      return unless deployment.integration.google_play_store_integration?
+
       save!
-      Deployments::GooglePlayStore::Promote.perform_later(id)
+
+      package_name = step.app.bundle_identifier
+      release_version = step_run.train_run.release_version
+      api = Installations::Google::PlayDeveloper::Api.new(package_name, deployment.access_key, release_version)
+      api.promote(deployment.deployment_channel, step_run.build_number, initial_rollout_percentage)
+      raise api.errors if api.errors.present?
+
+      release!
     end
   end
 

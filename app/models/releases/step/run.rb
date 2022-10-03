@@ -2,6 +2,8 @@ class Releases::Step::Run < ApplicationRecord
   has_paper_trail
   include AASM
 
+  self.implicit_order_column = :scheduled_at
+
   class WorkflowTriggerFailed < StandardError; end
 
   self.ignored_columns = [:previous_step_run_id]
@@ -125,16 +127,28 @@ class Releases::Step::Run < ApplicationRecord
     build_artifact.present?
   end
 
+  def previous_run
+    previous_runs.last
+  end
+
+  def other_runs
+    train_run.step_runs_for(step).where.not(id:)
+  end
+
+  def previous_runs
+    other_runs.where("scheduled_at < ?", scheduled_at)
+  end
+
   def startable_deployment?(deployment)
     return false if train.inactive?
     return false if train.active_run.nil?
-    return true if deployment_runs.empty?
+    return true if deployment.first? && deployment_runs.empty?
     next_deployment == deployment
   end
 
   def manually_startable_deployment?(deployment)
     return false if deployment.first?
-    startable_deployment?(deployment) && last_deployment_run.released?
+    startable_deployment?(deployment) && last_deployment_run&.released?
   end
 
   def last_deployment_run

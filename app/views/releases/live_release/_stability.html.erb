@@ -47,7 +47,7 @@
 
             <p class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></p>
 
-            <% if release.on_track? && step.startable? %>
+            <% if release.on_track? && release.startable_step?(step) %>
               <%= button_to 'Move to this step',
                             start_release_step_run_path(release, step),
                             { class: 'btn-xs ml-4 bg-indigo-500 hover:bg-indigo-600 text-white' } %>

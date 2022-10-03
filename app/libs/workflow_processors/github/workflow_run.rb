@@ -9,7 +9,7 @@ class WorkflowProcessors::Github::WorkflowRun
   end
 
   def process
-    WorkflowProcessors::WorkflowRun.set(wait: 5.minutes).perform_later(step_run.id) if in_progress?
+    WorkflowProcessors::WorkflowRun.set(wait: wait_time).perform_later(step_run.id) if in_progress?
 
     return update_status! unless successful?
 
@@ -76,5 +76,13 @@ class WorkflowProcessors::Github::WorkflowRun
 
   def installation_id
     train.ci_cd_provider.installation_id
+  end
+
+  def wait_time
+    if Rails.env.development?
+      2.minutes
+    else
+      5.minutes
+    end
   end
 end

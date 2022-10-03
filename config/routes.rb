@@ -60,24 +60,24 @@ Rails.application.routes.draw do
             delete :revert
           end
         end
-
-        resources :deployments, shallow: true do
-          member do
-            post :start
-          end
-
-          resources :deployment_runs, shallow: true do
-            member do
-              patch :promote
-            end
-          end
-        end
       end
 
       resources :releases, only: %i[show create destroy], shallow: true do
         resources :step_runs, shallow: false, module: "releases" do
           member do
             post :start
+          end
+
+          resources :deployments, only: [:start] do
+            member do
+              post :start
+            end
+
+            resources :deployment_runs, shallow: true do
+              member do
+                patch :promote
+              end
+            end
           end
         end
 

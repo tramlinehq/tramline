@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_10_03_085617) do
+ActiveRecord::Schema[7.0].define(version: 2022_10_03_151349) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -97,6 +97,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_03_085617) do
     t.integer "deployment_number", limit: 2, default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["deployment_number", "train_step_id"], name: "index_deployments_on_deployment_number_and_train_step_id", unique: true
     t.index ["integration_id"], name: "index_deployments_on_integration_id"
     t.index ["train_step_id"], name: "index_deployments_on_train_step_id"
   end

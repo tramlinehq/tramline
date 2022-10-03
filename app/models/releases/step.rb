@@ -56,40 +56,7 @@ class Releases::Step < ApplicationRecord
     train.steps.where("step_number < ?", step_number).last
   end
 
-  def startable?
-    return false if train.inactive?
-    return true if runs.empty? && first?
-    return false if train.active_run.nil?
-    return false if first?
-
-    (train.active_run&.next_step == self) && (approved_previous_step? && previous.runs.last.success?)
-  end
-
-  def approved_previous_step?
-    previous.runs.last.approval_approved?
-  end
-
-  def available_deployment_channels
-    if external_deployment?
-      [["External", {"external" => "external"}.to_json]]
-    else
-      app.integrations.build_channel.find_by(providable_type: build_artifact_integration).providable.channels
-    end
-  end
-
-  def deployment_provider
-    app.integrations.build_channel.find_by(providable_type: build_artifact_integration)
-  end
-
-  def deployment_channel
-    build_artifact_channel.values.first
-  end
-
-  def external_deployment?
-    build_artifact_integration == "external"
-  end
-
-  def reject_deployments?
-    false
+  def reject_deployments?(attributes)
+    attributes["build_artifact_channel"].blank? || !attributes["build_artifact_channel"].is_a?(Hash)
   end
 end
