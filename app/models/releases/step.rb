@@ -20,7 +20,6 @@ class Releases::Step < ApplicationRecord
 
   delegate :app, to: :train
 
-
   enum status: {
     active: "active",
     inactive: "inactive"

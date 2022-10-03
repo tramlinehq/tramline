@@ -1,20 +1,32 @@
 import {Controller} from "@hotwired/stimulus";
-import { get } from "@rails/request.js"
+import {get} from "@rails/request.js"
 
 export default class extends Controller {
-  static values = { train: String, app: String, step: String }
+  static values = {train: String, app: String, step: String}
+  static targets = ["channels"]
 
   initialize() {
     this.train = this.element.dataset.train
     this.app = this.element.dataset.app
     this.step = this.element.dataset.step
-	}
+  }
+
+  updateExternalChannels() {
+    this.channelsTarget.innerHTML = ""
+    const option = document.createElement("option")
+    option.value = '{"external": "external"}'
+    option.innerHTML = "External"
+    this.channelsTarget.appendChild(option)
+  }
 
   change(event) {
-	  let selected = event.target.selectedOptions[0].value
+    const integrationID = event.target.selectedOptions[0].value
 
-	  get(`/apps/${this.app}/trains/${this.train}/steps/build_artifact_channels?provider=${selected}&step_id=${this.step}`, {
-      responseKind: "turbo-stream"
-	  })
-	}
+    if (integrationID === "") {
+      this.updateExternalChannels()
+      return
+    }
+
+    get(`/apps/${this.app}/integrations/${integrationID}/build_artifact_channels`, {responseKind: "turbo-stream"})
+  }
 }

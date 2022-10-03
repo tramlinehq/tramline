@@ -3,7 +3,7 @@ class Releases::Train < ApplicationRecord
   using RefinedString
   extend FriendlyId
 
-  EXTERNAL_DEPLOYMENT_CHANNEL = {"None (outside Tramline)" => "external"}
+  EXTERNAL_DEPLOYMENT_CHANNEL = ["None (outside Tramline)", nil]
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
     release_backmerge: "Release with Backmerge",
@@ -110,9 +110,11 @@ class Releases::Train < ApplicationRecord
   end
 
   def build_channel_integrations
-    app.integrations.build_channel.pluck(:providable_type).index_by do |integration|
-      integration.gsub("Integration", "").titleize
-    end.merge(EXTERNAL_DEPLOYMENT_CHANNEL)
+    app
+      .integrations
+      .build_channel
+      .pluck(:providable_type, :id)
+      .push(EXTERNAL_DEPLOYMENT_CHANNEL)
   end
 
   def final_deployment_channel

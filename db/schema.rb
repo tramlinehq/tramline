@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_09_28_165634) do
+ActiveRecord::Schema[7.0].define(version: 2022_10_03_085617) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -355,12 +355,12 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_28_165634) do
     t.string "status", null: false
     t.integer "step_number", limit: 2, default: 0, null: false
     t.json "ci_cd_channel", null: false
-    t.json "build_artifact_channel", null: false
+    t.json "build_artifact_channel"
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "release_suffix", null: false
-    t.string "build_artifact_integration", null: false
+    t.string "build_artifact_integration"
     t.index ["step_number", "train_id"], name: "index_train_steps_on_step_number_and_train_id", unique: true
     t.index ["train_id"], name: "index_train_steps_on_train_id"
   end

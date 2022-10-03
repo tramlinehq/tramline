@@ -11,8 +11,8 @@ Rails.application.routes.draw do
   end
 
   devise_for :users,
-    controllers: {registrations: "authentication/registrations", sessions: "authentication/sessions"},
-    class_name: "Accounts::User"
+             controllers: { registrations: "authentication/registrations", sessions: "authentication/sessions" },
+             class_name: "Accounts::User"
 
   devise_scope :user do
     unauthenticated :user do
@@ -72,10 +72,6 @@ Rails.application.routes.draw do
             end
           end
         end
-
-        collection do
-          get :build_artifact_channels
-        end
       end
 
       resources :releases, only: %i[show create destroy], shallow: true do
@@ -97,11 +93,15 @@ Rails.application.routes.draw do
     end
 
     resources :integrations, only: %i[index create] do
+      member do
+        get :build_artifact_channels
+      end
+
       collection do
         get :connect, to: "integrations#connect", as: :connect
         resource :google_play_store, only: [:create],
-          controller: "integrations/google_play_store",
-          as: :google_play_store_integration
+                 controller: "integrations/google_play_store",
+                 as: :google_play_store_integration
       end
     end
   end
