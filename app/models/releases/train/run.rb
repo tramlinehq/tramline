@@ -54,11 +54,15 @@ class Releases::Train::Run < ApplicationRecord
     return true if step.first? && step_runs_for(step).empty?
     return false if step.first?
 
-    (next_step == step) && last_run_for(step.previous).approval_approved? && last_run_for(step.previous).success?
+    (next_step == step) && previous_step_run_for(step).approval_approved? && previous_step_run_for(step).success?
   end
 
   def step_runs_for(step)
     step_runs.where(step:)
+  end
+
+  def previous_step_run_for(step)
+    last_run_for(step.previous)
   end
 
   def self.pending_release?
