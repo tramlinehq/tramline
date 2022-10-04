@@ -30,6 +30,16 @@ services:
         fromDatabase:
           name: site-db
           property: connectionString
+      - key: SIDEKIQ_REDIS_URL
+        fromService:
+          type: redis
+          name: site-redis
+          property: connectionString
+      - key: DEFAULT_REDIS_URL
+        fromService:
+          type: redis
+          name: site-redis
+          property: connectionString
       - key: RAILS_MASTER_KEY
         sync: false
 
@@ -48,6 +58,11 @@ services:
           name: site-db
           property: connectionString
       - key: SIDEKIQ_REDIS_URL
+        fromService:
+          type: redis
+          name: site-redis
+          property: connectionString
+      - key: DEFAULT_REDIS_URL
         fromService:
           type: redis
           name: site-redis
@@ -80,6 +95,16 @@ services:
         fromDatabase:
           name: site-staging-db
           property: connectionString
+      - key: SIDEKIQ_REDIS_URL
+        fromService:
+          type: redis
+          name: site-staging-redis
+          property: connectionString
+      - key: DEFAULT_REDIS_URL
+        fromService:
+          type: redis
+          name: site-staging-redis
+          property: connectionStrin
       - key: RAILS_MASTER_KEY
         sync: false
 
@@ -102,6 +127,11 @@ services:
           type: redis
           name: site-staging-redis
           property: connectionString
+      - key: DEFAULT_REDIS_URL
+        fromService:
+          type: redis
+          name: site-staging-redis
+          property: connectionStrin
       - key: RAILS_MASTER_KEY
         sync: false
 
