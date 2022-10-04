@@ -104,7 +104,7 @@ services:
         fromService:
           type: redis
           name: site-staging-redis
-          property: connectionStrin
+          property: connectionString
       - key: RAILS_MASTER_KEY
         sync: false
 
@@ -131,7 +131,7 @@ services:
         fromService:
           type: redis
           name: site-staging-redis
-          property: connectionStrin
+          property: connectionString
       - key: RAILS_MASTER_KEY
         sync: false
 
