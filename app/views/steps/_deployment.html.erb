@@ -1,17 +1,15 @@
-<div class="last:pl-3" data-controller="build-channel" data-train="<%= train.id %>" data-app="<%= app.id %>" data-step="<%= step.id %>">
-  <%= form.fields_for :deployments, Deployment.new do |deployments_form| %>
-    <div>
-      <%= deployments_form.label :integration_id, class: "block text-sm font-medium mb-1" %>
-      <%= deployments_form.select :integration_id, options_for_select(train.build_channel_integrations, train.build_channel_integrations.first),
-                                  { class: "form-select" }, data: { controller: "input-select", action: 'change->build-channel#change' } %>
-    </div>
+<div class="last:pl-3" data-controller="build-artifacts" data-app="<%= train.app.id %>">
+  <div>
+    <%= form.label :integration_id, "Provider", class: "block text-sm font-medium mb-1" %>
+    <%= form.select :integration_id, options_for_select(@build_channel_integrations, @selected_integration),
+                                { class: "form-select" }, data: { controller: "input-select", action: 'change->build-artifacts#change' } %>
+  </div>
 
-    <div>
-      <%= deployments_form.label :build_artifact_channel, class: "block text-sm font-medium mb-1" %>
-      <%= deployments_form.select :build_artifact_channel,
-                                  options_for_select(@build_channels),
-                                  { class: "form-select" },
-                                  { data: { build_channel_target: "channels", controller: "input-select" } } %>
-    </div>
-  <% end %>
+  <div class="mt-2">
+    <%= form.label :build_artifact_channel, "Channel", class: "block text-sm font-medium mb-1" %>
+    <%= form.select :build_artifact_channel,
+                                options_for_select(@selected_build_channels),
+                                { class: "form-select" },
+                                { data: { build_artifacts_target: "select", controller: "input-select" } } %>
+  </div>
 </div>

@@ -42,33 +42,4 @@
   </div>
 </div>
 
-<div class="sm:flex sm:justify-between sm:items-center mt-8 mb-2 pb-5">
-  <p class="font-bold text-xl">
-    Where should we deploy?
-  </p>
-
-  <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">TODO: Add Button</div>
-</div>
-
-<div class="grid md:grid-cols-1 pb-5">
-  <%= render "shared/note_box",
-             message: "The generated build artifact above will be moved across the configured deployment channels below." %>
-</div>
-
-<div class="grid gap-5 md:grid-cols-2 divide-x-2 p-2">
-  <%= render partial: "deployment", locals: {
-    form: form,
-    train: @train,
-    app: @train.app,
-    step: @step
-  } %>
-
-  <%= render partial: "deployment", locals: {
-    form: form,
-    train: @train,
-    app: @train.app,
-    step: @step
-  } %>
-</div>
-
 

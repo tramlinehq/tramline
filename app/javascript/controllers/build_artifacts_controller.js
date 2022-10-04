@@ -2,21 +2,22 @@ import {Controller} from "@hotwired/stimulus";
 import {get} from "@rails/request.js"
 
 export default class extends Controller {
-  static values = {train: String, app: String, step: String}
-  static targets = ["channels"]
+  static values = {
+    app: String,
+  }
+
+  static targets = ["select"]
 
   initialize() {
-    this.train = this.element.dataset.train
     this.app = this.element.dataset.app
-    this.step = this.element.dataset.step
   }
 
   updateExternalChannels() {
-    this.channelsTarget.innerHTML = ""
+    this.selectTarget.innerHTML = ""
     const option = document.createElement("option")
     option.value = '{"external": "external"}'
     option.innerHTML = "External"
-    this.channelsTarget.appendChild(option)
+    this.selectTarget.appendChild(option)
   }
 
   change(event) {
@@ -27,6 +28,8 @@ export default class extends Controller {
       return
     }
 
-    get(`/apps/${this.app}/integrations/${integrationID}/build_artifact_channels`, {responseKind: "turbo-stream"})
+    get(`/apps/${this.app}/integrations/${integrationID}/build_artifact_channels?target=${this.selectTarget.id}`, {
+      responseKind: "turbo-stream"
+    })
   }
 }

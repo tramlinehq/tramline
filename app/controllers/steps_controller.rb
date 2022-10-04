@@ -5,8 +5,7 @@ class StepsController < SignedInApplicationController
   before_action :set_app, only: %i[new create]
   before_action :set_train, only: %i[new create]
   before_action :set_ci_actions, only: %i[new create]
-  before_action :set_build_channels, only: %i[new create]
-  before_action :set_first_step, only: %i[new create]
+  before_action :set_build_channels, only: %i[new]
   before_action :integrations_are_ready?, only: %i[new create]
   around_action :set_time_zone
 
@@ -39,8 +38,6 @@ class StepsController < SignedInApplicationController
         .find(params[:id])
     @train = @step.train
     head 403 and return if @train.active_run
-
-    @build_channels = @step.available_deployment_channels
     @ci_actions = @train.ci_cd_provider.workflows
   end
 
@@ -59,7 +56,6 @@ class StepsController < SignedInApplicationController
     if @step.update(parsed_step_params)
       redirect_to edit_app_train_path(@app, @train), notice: "Step was successfully updated."
     else
-      @build_channels = @step.available_deployment_channels
       @ci_actions = @train.ci_cd_provider.workflows
       render :edit, status: :unprocessable_entity
     end
@@ -77,10 +73,6 @@ class StepsController < SignedInApplicationController
 
   def set_app
     @app = current_organization.apps.friendly.find(params[:app_id])
-  end
-
-  def set_first_step
-    @first_step = true if @train.steps.count < 1
   end
 
   def step_params
@@ -111,7 +103,9 @@ class StepsController < SignedInApplicationController
   end
 
   def set_build_channels
-    @build_channels = @train.notification_provider.channels
+    @build_channel_integrations = @train.build_channel_integrations
+    @selected_integration = @build_channel_integrations.second
+    @selected_build_channels = Integration.find_by(id: @selected_integration).providable.channels
   end
 
   def deployments_params

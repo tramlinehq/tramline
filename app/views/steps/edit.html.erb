@@ -11,6 +11,16 @@
 
   <%= render 'form', form: form %>
 
+  <div class="sm:flex sm:justify-between sm:items-center mt-8 mb-2 pb-5">
+    <p class="font-bold text-xl">
+      Deployments
+    </p>
+  </div>
+
+  <div class="mb-8">
+    <%= render partial: "shared/deployments", locals: { step: @step } %>
+  </div>
+
   <div class="mt-5">
     <%= form.submit 'Update', class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" do %>
       <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">

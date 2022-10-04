@@ -8,15 +8,5 @@
 
   <%= image_tag("arrow-down.svg", width: 16, class: "inline-flex mt-2 mb-2") %>
 
-  <% step.deployments.each do |deployment| %>
-    <div class="pt-1 flex items-center text-slate-500">
-      <span class="mr-2 font-mono">
-        <%= deployment.deployment_number %>
-        <%= image_tag("arrow-right.svg", width: 16, class: "inline-flex") %>
-      </span>
-
-      <%= image_tag("package.svg", width: 16, class: "inline-flex mr-2") %>
-      <span><%= show_deployment_provider deployment %> • <%= show_deployment_channel deployment %></span>
-    </div>
-  <% end %>
+  <%= render partial: "shared/deployments", locals: { step: step } %>
 </div>
