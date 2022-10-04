@@ -55,7 +55,7 @@ module ReleasesHelper
     @finalize_phase_metadata ||=
       {
         total_run_time: distance_of_time_in_words(release.created_at, release.completed_at),
-        release_tag: release.train.tag_name,
+        release_tag: release.tag_name,
         release_tag_url: release.tag_url,
         final_artifact_url: final_artifact_url(release),
         store_url: release.app.store_link

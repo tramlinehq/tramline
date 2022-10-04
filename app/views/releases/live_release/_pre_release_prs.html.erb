@@ -11,7 +11,7 @@
 
           <div class="h-full">
             <h2 class="font-semibold text-slate-800">
-              <%= pr.title %><span class="ml-1 underline">(#<%= link_to pr.number, pr.url, target: :_blank %>)</span>
+              <%= pr.title %><span class="ml-1 underline">(#<%= link_to_external pr.number, pr.url %>)</span>
             </h2>
 
             <div class="mt-2">

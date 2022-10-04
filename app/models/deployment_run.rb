@@ -8,7 +8,6 @@ class DeploymentRun < ApplicationRecord
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   delegate :step, to: :step_run
-  attr_accessor :initial_rollout_percentage
 
   unless const_defined?(:STATES)
     STATES = {
@@ -45,12 +44,11 @@ class DeploymentRun < ApplicationRecord
   end
 
   def promote!
+    save!
+
     with_lock do
       return unless promotable?
       return unless deployment.integration.google_play_store_integration?
-
-      save!
-
       package_name = step.app.bundle_identifier
       release_version = step_run.train_run.release_version
       api = Installations::Google::PlayDeveloper::Api.new(package_name, deployment.access_key, release_version)

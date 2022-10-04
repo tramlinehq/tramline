@@ -36,15 +36,15 @@
       </td>
 
       <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <%= link_to commit.commit_hash[0, 5], commit.url %>
+        <%= commit.commit_hash[0, 5] %>
       </td>
 
       <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <span class="underline"><%= ago_in_words commit.timestamp %></span>
+        <span><%= ago_in_words commit.timestamp %></span>
       </td>
 
       <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <span class="underline"><%= link_to commit.message.truncate(70), commit.url %></span>
+        <span class="underline"><%= link_to_external commit.message.truncate(70), commit.url %></span>
       </td>
 
       <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
@@ -53,7 +53,7 @@
             <div class="border-dashed border-b last:border-b-0 p-2">
               <div class="mb-4">
                 <% if step_run.ci_link.present? %>
-                  <%= link_to step_run.step.name, step_run.ci_link, class: "underline", target: :_blank %>
+                  <%= link_to_external step_run.step.name, step_run.ci_link, class: "underline" %>
                 <% else %>
                   <%= step_run.step.name %>
                 <% end %>

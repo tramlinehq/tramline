@@ -48,6 +48,11 @@ class Releases::Train::Run < ApplicationRecord
 
   delegate :app, to: :train
 
+  def tag_name
+    "v#{release_version}"
+  end
+
+
   def startable_step?(step)
     return false if train.inactive?
     return false unless on_track?
@@ -103,7 +108,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def tag_url
-    train.vcs_provider&.tag_url(train.app.config&.code_repository_name, train.tag_name)
+    train.vcs_provider&.tag_url(train.app.config&.code_repository_name, tag_name)
   end
 
   def last_commit

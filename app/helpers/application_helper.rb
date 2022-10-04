@@ -51,4 +51,9 @@ module ApplicationHelper
       ago: ago_in_words(Site.git_ref_at)
     }
   end
+
+  def link_to_external(name = nil, options = nil, html_options = nil, &block)
+    external_target_opt = {target: "_blank"}
+    link_to(name, options, html_options&.merge(external_target_opt) || external_target_opt, &block)
+  end
 end

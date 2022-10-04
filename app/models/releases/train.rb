@@ -118,7 +118,7 @@ class Releases::Train < ApplicationRecord
   end
 
   def final_deployment_channel
-    steps.order(:step_number).last.deployments.last.integration.providable
+    steps.order(:step_number).last.deployments.last.integration&.providable
   end
 
   def fully_qualified_working_branch_hack
