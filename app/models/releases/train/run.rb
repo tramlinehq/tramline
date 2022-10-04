@@ -52,7 +52,6 @@ class Releases::Train::Run < ApplicationRecord
     "v#{release_version}"
   end
 
-
   def startable_step?(step)
     return false if train.inactive?
     return false unless on_track?
