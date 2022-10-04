@@ -7,11 +7,13 @@ class Deployment < ApplicationRecord
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :deployments
   belongs_to :integration, optional: true
 
-  # before_validation :set_deployment_number, if: :new_record?
+  validates :deployment_number, presence: true
 
   delegate :google_play_store_integration?, to: :integration, allow_nil: true
   delegate :slack_integration?, to: :integration, allow_nil: true
   delegate :train, to: :step
+
+  before_save :set_deployment_number, if: :new_record?
 
   def set_deployment_number
     self.deployment_number = step.deployments.maximum(:deployment_number).to_i + 1
@@ -51,7 +53,7 @@ class Deployment < ApplicationRecord
 
   def available_deployment_channels
     if external?
-      [["External", {"external" => "external"}.to_json]]
+      [["External", { "external" => "external" }.to_json]]
     else
       deployment.integration.providable.channels
     end

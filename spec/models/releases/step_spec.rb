@@ -2,12 +2,12 @@ require "rails_helper"
 
 RSpec.describe Releases::Step, type: :model do
   it "has valid spec" do
-    expect(FactoryBot.create(:releases_step)).to be_valid
+    expect(create(:releases_step)).to be_valid
   end
 
   describe "#next" do
-    let(:train) { FactoryBot.create(:releases_train) }
-    let(:steps) { FactoryBot.create_list(:releases_step, 5, train: train) }
+    let(:train) { create(:releases_train) }
+    let(:steps) { create_list(:releases_step, 5, train: train) }
 
     it "returns next element" do
       first_step = steps.first
@@ -17,5 +17,24 @@ RSpec.describe Releases::Step, type: :model do
     it "returns nil for final element" do
       expect(steps.last.next).to be_nil
     end
+  end
+
+  describe "#create" do
+    it "saves deployments along with it" do
+      step = build(:releases_step)
+      step.deployments = build_list(:deployment, 2)
+      step.save!
+
+      expect(step.reload.deployments.size).to eq(2)
+    end
+
+    it "adds incremented deployment numbers to created deployments" do
+      step = build(:releases_step)
+      step.deployments = build_list(:deployment, 2)
+      step.save!
+
+      expect(step.reload.deployments.pluck(:deployment_number)).to contain_exactly(1, 2)
+    end
+
   end
 end

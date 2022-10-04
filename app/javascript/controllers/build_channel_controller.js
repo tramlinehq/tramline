@@ -9,7 +9,6 @@ export default class extends Controller {
     this.train = this.element.dataset.train
     this.app = this.element.dataset.app
     this.step = this.element.dataset.step
-    this.deploymentNumber = this.element.dataset.deploymentNumber
   }
 
   updateExternalChannels() {
@@ -28,6 +27,6 @@ export default class extends Controller {
       return
     }
 
-    get(`/apps/${this.app}/integrations/${integrationID}/build_artifact_channels?deployment_number=${this.deploymentNumber}`, {responseKind: "turbo-stream"})
+    get(`/apps/${this.app}/integrations/${integrationID}/build_artifact_channels`, {responseKind: "turbo-stream"})
   }
 }
