@@ -46,7 +46,7 @@ class DeploymentRun < ApplicationRecord
   def promote!
     save!
 
-    with_lock do
+    step_run.train_run.with_lock do
       return unless promotable?
       return unless deployment.integration.google_play_store_integration?
       package_name = step.app.bundle_identifier
