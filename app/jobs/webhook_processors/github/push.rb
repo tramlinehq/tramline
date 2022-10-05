@@ -21,9 +21,9 @@ class WebhookProcessors::Github::Push < ApplicationJob
           Triggers::StepRun.call(step, commit_record)
         end
       end
-
-      send_notification!
     end
+
+    send_notification!
   end
 
   private
@@ -55,7 +55,7 @@ class WebhookProcessors::Github::Push < ApplicationJob
   end
 
   def train
-    @train ||= @release.train
+    @train ||= release.train
   end
 
   def commit_message

@@ -44,7 +44,7 @@ module ReleasesHelper
       when :started
         ["Running", %w[bg-indigo-100 text-indigo-600]]
       when :uploaded
-        ["Uploaded On Tramline", %w[bg-slate-100 text-slate-500]]
+        ["Uploaded", %w[bg-slate-100 text-slate-500]]
       when :released
         ["Released", %w[bg-green-100 text-green-600]]
       else

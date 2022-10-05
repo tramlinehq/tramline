@@ -15,7 +15,7 @@ class Triggers::StepRun
     release
       .step_runs
       .create!(step:, scheduled_at: Time.current, commit:, build_version:, sign_required:)
-      .then(&:trigger_workflow_run!)
+      .then(&:trigger_ci!)
   end
 
   private

@@ -87,7 +87,7 @@ class Releases::Train::Run < ApplicationRecord
 
   def next_step
     return train.steps.first if step_runs.empty?
-    step_runs.joins(:step).order("step_number").last.step.next
+    step_runs.joins(:step).order(:step_number).last.step.next
   end
 
   def running_step?

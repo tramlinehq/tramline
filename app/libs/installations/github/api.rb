@@ -39,7 +39,7 @@ module Installations
           .then { |response| response[:workflow_runs] }
           .then { |workflow_runs| workflow_runs.sort_by { |workflow_run| workflow_run[:run_number] }.reverse! }
           .first
-          &.to_h
+          .then { |run| run&.to_h.presence || raise(Installations::Errors::WorkflowRunNotFound) }
       end
     end
 
@@ -47,7 +47,7 @@ module Installations
       execute do
         @client
           .workflow_run(repo, run_id)
-          .to_h
+          .then { |run| run.to_h.presence || raise(Installations::Errors::WorkflowRunNotFound) }
       end
     end
 
@@ -63,7 +63,9 @@ module Installations
 
     def run_workflow!(repo, id, ref, inputs)
       execute do
-        @client.workflow_dispatch(repo, id, ref, inputs: inputs)
+        @client
+          .workflow_dispatch(repo, id, ref, inputs: inputs)
+          .then { |ok| ok.presence || raise(Installations::Errors::WorkflowTriggerFailed) }
       end
     end
 

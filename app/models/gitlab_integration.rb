@@ -52,7 +52,6 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.create_branch!(code_repository_name, from, to) }
   end
 
-  # @return [Installation::Gitlab::Api]
   def installation
     Installations::Gitlab::Api.new(oauth_access_token)
   end

@@ -39,7 +39,7 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :complete do
-      after { step_run.finish! if deployment.last? } # FIXME: is this correct?
+      after { step_run.finish! if deployment.last? }
       transitions from: [:created, :uploaded, :started], to: :released
     end
   end

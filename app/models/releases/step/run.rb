@@ -43,10 +43,12 @@ class Releases::Step::Run < ApplicationRecord
     state(*STATES.keys)
 
     event :trigger_ci, after_commit: -> { Releases::Step::FindWorkflowRun.perform_async(id) } do
+      before :trigger_workflow_run
       transitions from: :on_track, to: :ci_workflow_triggered
     end
 
     event :ci_start, after_commit: -> { WorkflowProcessors::WorkflowRun.perform_later(id) } do
+      before :find_and_update_workflow_run
       transitions from: [:on_track, :ci_workflow_triggered], to: :ci_workflow_started
     end
 
@@ -75,8 +77,6 @@ class Releases::Step::Run < ApplicationRecord
     end
 
     event :finish do
-      # FIXME: potential race condition here if a commit lands right here... . at this point...
-      # ...and starts another run, but the release phase is triggered for an effectively stale run
       after { release.start_release_phase! if step.last? }
       transitions from: [:build_ready, :deployment_started], to: :success
     end
@@ -92,23 +92,20 @@ class Releases::Step::Run < ApplicationRecord
   delegate :download_url, to: :build_artifact
   alias_method :release, :train_run
 
-  def start_ci!(ci_ref, ci_link)
-    transaction do
-      update(ci_ref: ci_ref, ci_link: ci_link)
-      ci_start!
-    end
+  def find_and_update_workflow_run
+    workflow_run = find_workflow_run&.slice(:id, :html_url)
+    update!(ci_ref: workflow_run[:id], ci_link: workflow_run[:html_url])
   end
 
-  def trigger_workflow_run!
+  def trigger_workflow_run
     version_code = train.app.bump_build_number!
     inputs = {
       versionCode: version_code,
       versionName: build_version
     }
 
-    raise WorkflowTriggerFailed unless train.ci_cd_provider.trigger_workflow_run!(workflow_name, release_branch, inputs)
+    train.ci_cd_provider.trigger_workflow_run!(workflow_name, release_branch, inputs)
     update!(build_number: version_code)
-    trigger_ci!
   end
 
   def find_workflow_run

@@ -54,7 +54,6 @@ class GithubIntegration < ApplicationRecord
     installation.get_workflow_run(code_repository_name, workflow_run_id)
   end
 
-  # @return [Installation::Github::Api]
   def installation
     Installations::Github::Api.new(installation_id)
   end

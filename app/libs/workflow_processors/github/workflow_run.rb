@@ -1,11 +1,12 @@
 class WorkflowProcessors::Github::WorkflowRun
-  def self.process(step_run, workflow_run_attrs)
-    new(step_run, workflow_run_attrs).process
+  include Memery
+
+  def self.process(step_run)
+    new(step_run).process
   end
 
-  def initialize(step_run, workflow_run_attrs)
+  def initialize(step_run)
     @step_run = step_run
-    @workflow_run_attrs = workflow_run_attrs
   end
 
   def process
@@ -63,15 +64,15 @@ class WorkflowProcessors::Github::WorkflowRun
   end
 
   def status
-    workflow_run_attrs[:status]
+    workflow_run[:status]
   end
 
   def conclusion
-    workflow_run_attrs[:conclusion]
+    workflow_run[:conclusion]
   end
 
   def artifacts_url
-    workflow_run_attrs[:artifacts_url]
+    workflow_run[:artifacts_url]
   end
 
   def installation_id
@@ -84,5 +85,9 @@ class WorkflowProcessors::Github::WorkflowRun
     else
       5.minutes
     end
+  end
+
+  memoize def workflow_run
+    step_run.get_workflow_run
   end
 end
