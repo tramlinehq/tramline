@@ -18,7 +18,7 @@ class Releases::Step::UploadArtifact < ApplicationJob
         Triggers::Deployment.call(step_run: step_run)
       end
     rescue => e
-      Rails.logger.error e
+      Rails.logger.error(e)
       Sentry.capture_exception(e)
       step_run.fail_deploy! # FIXME: this should actually be upload_failed maybe?
     end

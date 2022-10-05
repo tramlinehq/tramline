@@ -363,6 +363,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_05_110150) do
     t.datetime "updated_at", null: false
     t.string "release_suffix", null: false
     t.string "build_artifact_integration"
+    t.index ["ci_cd_channel", "train_id"], name: "index_train_steps_on_ci_cd_channel_and_train_id", unique: true
     t.index ["step_number", "train_id"], name: "index_train_steps_on_step_number_and_train_id", unique: true
     t.index ["train_id"], name: "index_train_steps_on_train_id"
   end

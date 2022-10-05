@@ -13,5 +13,7 @@ module Installations
     class HookAlreadyExistsOnRepository < StandardError; end
 
     class ResourceNotFound < StandardError; end
+
+    class BuildExistsInBuildChannel < StandardError; end
   end
 end

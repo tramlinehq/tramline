@@ -26,8 +26,10 @@ class Deployments::GooglePlayStore::Upload < ApplicationJob
         api = Installations::Google::PlayDeveloper::Api.new(package_name, key, release_version)
         aab_file.extract(tmp.path) { true }
         api.upload(tmp)
-        raise api.errors if api.errors.present?
       end
+    rescue Installations::Errors::BuildExistsInBuildChannel => e
+      logger.error(e)
+      Sentry.capture_exception(e)
     end
   end
 end

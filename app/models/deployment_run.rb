@@ -38,7 +38,7 @@ class DeploymentRun < ApplicationRecord
       transitions from: [:started, :uploaded], to: :failed
     end
 
-    event :release do
+    event :complete do
       after { step_run.finish! if deployment.last? } # FIXME: is this correct?
       transitions from: [:created, :uploaded, :started], to: :released
     end
@@ -55,9 +55,8 @@ class DeploymentRun < ApplicationRecord
       release_version = step_run.train_run.release_version
       api = Installations::Google::PlayDeveloper::Api.new(package_name, deployment.access_key, release_version)
       api.promote(deployment.deployment_channel, step_run.build_number, initial_rollout_percentage)
-      raise api.errors if api.errors.present?
 
-      release!
+      complete!
     end
   end
 
