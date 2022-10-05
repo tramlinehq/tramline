@@ -35,6 +35,5 @@ RSpec.describe Releases::Step, type: :model do
 
       expect(step.reload.deployments.pluck(:deployment_number)).to contain_exactly(1, 2)
     end
-
   end
 end
