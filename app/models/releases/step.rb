@@ -12,13 +12,14 @@ class Releases::Step < ApplicationRecord
   has_many :deployments, foreign_key: :train_step_id, inverse_of: :step, dependent: :destroy
   has_many :deployment_runs, through: :deployments, class_name: "DeploymentRun"
   has_one :app, through: :train
-
-  # FIXME: do this by hand, can't do this with json
-  # validates :ci_cd_channel, presence: true, uniqueness: { scope: :train_id }
+  
+  validates :ci_cd_channel, presence: true, uniqueness: { scope: :train_id, message: "you have already used this in another step of this train!" }
   validates :release_suffix, presence: true
-  validates :release_suffix, format: {with: /\A[a-zA-Z\-_]+\z/, message: "only allows letters and underscore"}
+  validates :release_suffix, format: { with: /\A[a-zA-Z\-_]+\z/, message: "only allows letters and underscore" }
+  validate :duplicate_deployments
 
-  delegate :app, to: :train
+  before_validation :set_step_number, if: :new_record?
+  after_initialize :set_default_status, if: :new_record?
 
   enum status: {
     active: "active",
@@ -29,8 +30,7 @@ class Releases::Step < ApplicationRecord
   auto_strip_attributes :name, squish: true
   accepts_nested_attributes_for :deployments, allow_destroy: false, reject_if: :reject_deployments?
 
-  before_validation :set_step_number, if: :new_record?
-  after_initialize :set_default_status, if: :new_record?
+  delegate :app, to: :train
 
   def set_step_number
     self.step_number = train.steps.maximum(:step_number).to_i + 1
@@ -56,7 +56,19 @@ class Releases::Step < ApplicationRecord
     train.steps.where("step_number < ?", step_number).last
   end
 
+  private
+
   def reject_deployments?(attributes)
     attributes["build_artifact_channel"].blank? || !attributes["build_artifact_channel"].is_a?(Hash)
+  end
+
+  def duplicate_deployments
+    duplicates =
+      deployments
+        .group_by { |deployment| deployment.values_at(:build_artifact_channel, :integration_id, :train_step_id) }
+        .values
+        .detect { |arr| arr.size > 1 }
+
+    errors.add(:deployments, "should be designed to have unique providers and channels") if duplicates
   end
 end

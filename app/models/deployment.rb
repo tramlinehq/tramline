@@ -8,6 +8,7 @@ class Deployment < ApplicationRecord
   belongs_to :integration, optional: true
 
   validates :deployment_number, presence: true
+  validates :build_artifact_channel, uniqueness: { scope: [:integration_id, :train_step_id], message: "Deployments should be designed to have unique providers and channels" }
 
   delegate :google_play_store_integration?, to: :integration, allow_nil: true
   delegate :slack_integration?, to: :integration, allow_nil: true
