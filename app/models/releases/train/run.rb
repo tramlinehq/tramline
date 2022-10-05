@@ -141,9 +141,9 @@ class Releases::Train::Run < ApplicationRecord
       .first
   end
 
-  def final_artifact_file
+  def final_build_artifact
     return unless finished?
-    last_good_step_run&.build_artifact&.file
+    last_good_step_run&.build_artifact
   end
 
   def signed?

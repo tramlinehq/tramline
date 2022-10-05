@@ -4,11 +4,15 @@
     <span class="text-2xl text-slate-400 ml-4"><%= time_ago_in_words(release.updated_at) %> ago</span>
   </div>
 
-  <%= render "shared/note_box",
-             message: "When a new commit lands, all steps are re-run until the last running step. This ensures that previous stakeholders are kept up-to-date." %>
+  <div class="mt-5">
+    <%= render "shared/note_box",
+               message: "When a new commit lands, all steps are re-run until the last running step. This ensures that previous stakeholders are kept up-to-date." %>
+  </div>
 
-  <%= render "shared/note_box",
-             message: "If your release is stuck in some unrecoverable state, just land another commit to kick things off again." %>
+  <div class="mt-2">
+    <%= render "shared/note_box",
+               message: "If your release is stuck in some unrecoverable state, just land another commit to kick things off again." %>
+  </div>
 
   <p class="font-bold text-xl mt-8 mb-2">Latest build</p>
   <div class="flex flex-col mt-4">
@@ -54,7 +58,6 @@
             <% end %>
           </div>
 
-          <!-- Step metadata -->
           <div class="pl-9">
             <%= render partial: "releases/live_release/per_step_metadata", locals: { release: release, step: step, step_run: step_run } %>
             <div class="mt-5">

@@ -24,9 +24,7 @@
         <%= image_tag("arrow-right.svg", width: 16, class: "inline-flex") %>
       </span>
 
-      <%= image_tag("package.svg", width: 16, class: "inline-flex mr-2") %>
-
-      <span class="mr-2"><%= show_deployment_provider deployment %> • <%= show_deployment_channel deployment %></span>
+      <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
 
       <% if step_run.present? %>
         <% if step_run.manually_startable_deployment?(deployment) %>
@@ -38,9 +36,7 @@
         <% deployment_run = step_run.last_run_for(deployment) %>
 
         <% if deployment_run.present? %>
-          <span class="text-xs uppercase inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">
-            <%= deployment_run.status %>
-          </span>
+          <%= deployment_run_status_badge(deployment_run) %>
         <% end %>
 
         <% if deployment_run&.promotable? %>

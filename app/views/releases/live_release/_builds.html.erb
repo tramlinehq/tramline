@@ -64,7 +64,7 @@
               <% end %>
 
               <div class="mb-4">
-                <%= build_status_badge(step_run.status) %>
+                <%= build_status_badge(step_run) %>
               </div>
 
               <div class="mb-4">
@@ -87,7 +87,6 @@
                     <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-2") %>
                     <%= "uploaded " + ago_in_words(step_run.build_artifact&.uploaded_at) %>
                   </div>
-
                 <% end %>
               </div>
 
@@ -98,11 +97,8 @@
                     <% deployment = deployment_run.deployment %>
 
                     <div class="mt-1">
-                      <%= image_tag("package.svg", width: 16, class: "inline-flex mr-2") %>
-                      <span><%= show_deployment_provider deployment %> • <%= show_deployment_channel deployment %></span>
-                      <span class="text-xs uppercase inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">
-                        <%= deployment_run.status %>
-                      </span>
+                      <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
+                      <%= deployment_run_status_badge(deployment_run) %>
                     </div>
                   <% end %>
                 <% end %>
@@ -114,7 +110,7 @@
                 </div>
 
                 <div>
-                  <span class="font-medium">Approval Status:</span> <%= approval_emoji(step_run.approval_status) %>
+                  <span class="font-medium">Approval Status:</span> <%= approval_emoji(step_run) %>
                 </div>
               </div>
             </div>

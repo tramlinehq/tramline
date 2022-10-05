@@ -20,6 +20,8 @@ class BuildArtifact < ApplicationRecord
   end
 
   def download_url
+    return if file.nil?
+
     if Rails.env.development?
       rails_blob_url(file, host: ENV["HOST_NAME"], port: ENV["PORT_NUM"], protocol: "https", disposition: "attachment")
     else
