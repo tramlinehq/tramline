@@ -32,6 +32,11 @@ module Site
     require "json_logger"
     config.log_formatter = LoggingExtensions.default_log_formatter
     config.logger = ActiveSupport::TaggedLogging.new(JsonLogger.new(Rails.root.join("log", "#{Rails.env}.log")))
+
+    if ENV["RAILS_PIPELINE_ENV"].present?
+      Rails.application.config.credentials.content_path =
+        Rails.root.join("config/credentials/#{ENV["RAILS_PIPELINE_ENV"]}.yml.enc")
+    end
   end
 
   require "site_extensions"
