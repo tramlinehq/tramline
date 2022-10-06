@@ -28,7 +28,7 @@ module Installations
 
     def list_apps
       execute(:get, LIST_APPS_URL, {})
-        .then { |apps| apps.map { |app| app.slice("slug", "title") } }
+        .then { |apps| apps["data"].map { |app| app.slice("slug", "title") } }
         .then { |responses| Installations::Response::Keys.normalize(responses) }
     end
 
@@ -58,7 +58,7 @@ module Installations
       execute(:post, TRIGGER_WORKFLOW_URL.expand(app_slug:).to_s, params)
         .tap { |response| raise Installations::Errors::WorkflowTriggerFailed if response.blank? }
         .then { |build| [build.slice("build_slug", "build_url")] }
-        .then { |responses| Installations::Response::Keys.normalize(responses) }.first
+        .then { |responses| Installations::Response::Keys.normalize(responses, :workflow_runs) }.first
     end
 
     def get_workflow_run(app_slug, build_slug)

@@ -15,9 +15,9 @@ class Releases::Step::Run < ApplicationRecord
   has_many :deployment_runs, -> { includes(:deployment).order("deployments.deployment_number ASC") }, foreign_key: :train_step_run_id, inverse_of: :step_run
   has_many :deployments, through: :step
 
-  validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
-  validates :train_step_id, uniqueness: {scope: :releases_commit_id}
-  validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
+  validates :build_version, uniqueness: { scope: [:train_step_id, :train_run_id] }
+  validates :train_step_id, uniqueness: { scope: :releases_commit_id }
+  validates :initial_rollout_percentage, numericality: { greater_than: 0, less_than_or_equal_to: 100, allow_nil: true }
 
   after_create :reset_approval!
 
@@ -38,21 +38,16 @@ class Releases::Step::Run < ApplicationRecord
 
   enum status: STATES
 
-  def workflow_found?
-    ci_ref.present?
-  end
-
   aasm column: :status, requires_lock: true, requires_new_transaction: false, enum: true, create_scopes: false do
     state :on_track, initial: true
     state(*STATES.keys)
 
-    event :trigger_ci, after_commit: -> { Releases::Step::FindWorkflowRun.perform_async(id) unless workflow_found? } do
+    event :trigger_ci, after_commit: -> { Releases::Step::FindWorkflowRun.perform_async(id) } do
       before :trigger_workflow_run
-      transitions from: :on_track, to: :ci_workflow_started, if: :workflow_found?
       transitions from: :on_track, to: :ci_workflow_triggered
     end
 
-    event :ci_start, after_commit: -> { WorkflowProcessors::WorkflowRun.perform_later(id) } do
+    event :ci_start, after_commit: -> { WorkflowProcessors::WorkflowRunJob.perform_later(id) } do
       before :find_and_update_workflow_run
       transitions from: :ci_workflow_triggered, to: :ci_workflow_started
     end
@@ -87,24 +82,28 @@ class Releases::Step::Run < ApplicationRecord
     end
   end
 
-  enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
+  enum approval_status: { pending: "pending", approved: "approved", rejected: "rejected" }, _prefix: "approval"
 
   attr_accessor :current_user
 
   delegate :train, to: :train_run
   delegate :ci_cd_provider, to: :train
+  delegate :unzip_artifact?, to: :train
   delegate :release_branch, to: :train_run
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
   alias_method :release, :train_run
 
-  def update_ci_metadata!(ci_ref, ci_link)
-    update!(ci_ref:, ci_link:)
+  def update_ci_metadata!(workflow_run)
+    return if workflow_run[:ci_ref].blank?
+    update!(ci_ref: workflow_run[:ci_ref], ci_link: workflow_run[:ci_link])
   end
 
   def find_and_update_workflow_run
-    workflow_run = find_workflow_run&.slice(:id, :html_url)
-    update_ci_metadata!(workflow_run[:id], workflow_run[:html_url])
+    return if workflow_found?
+
+    find_workflow_run
+      .then { |wr| update_ci_metadata!(wr) }
   end
 
   def trigger_workflow_run
@@ -113,10 +112,15 @@ class Releases::Step::Run < ApplicationRecord
       version_code: version_code,
       build_version: build_version
     }
-
-    workflow_run = ci_cd_provider.trigger_workflow_run!(workflow_name, release_branch, inputs, commit_hash)
     update!(build_number: version_code)
-    update_ci_metadata!(workflow_run[:ci_ref], workflow_run[:ci_link]) if workflow_run[:ci_ref].present?
+
+    ci_cd_provider
+      .trigger_workflow_run!(workflow_name, release_branch, inputs, commit_hash)
+      .then { |wr| update_ci_metadata!(wr) }
+  end
+
+  def workflow_found?
+    ci_ref.present?
   end
 
   def find_workflow_run

@@ -38,6 +38,7 @@ module Installations
           .workflow_runs(repo, workflow, options)
           .then { |response| response[:workflow_runs] }
           .then { |workflow_runs| workflow_runs.sort_by { |workflow_run| workflow_run[:run_number] }.reverse! }
+          .then { |responses| Installations::Response::Keys.normalize(responses, :workflow_runs) }
           .first
           .then { |run| run&.to_h.presence || raise(Installations::Errors::WorkflowRunNotFound) }
       end

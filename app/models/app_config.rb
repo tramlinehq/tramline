@@ -24,8 +24,7 @@ class AppConfig < ApplicationRecord
     code_repository_name.partition("/").first
   end
 
-  # FIXME: lol
-  def project_id
-    "e92eb64365bcdd8f"
+  def project
+    project_id.keys.first
   end
 end

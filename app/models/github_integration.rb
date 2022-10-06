@@ -97,6 +97,10 @@ class GithubIntegration < ApplicationRecord
       .then { |url| installation.artifact_io_stream(url) }
   end
 
+  def unzip_artifact?
+    true
+  end
+
   private
 
   def app_config

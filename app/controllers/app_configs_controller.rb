@@ -1,6 +1,7 @@
 class AppConfigsController < SignedInApplicationController
   using RefinedString
   before_action :set_app, only: %i[edit update]
+  before_action :set_projects, only: %i[edit]
 
   def edit
     @config = AppConfig.find_or_initialize_by(app: @app)
@@ -30,7 +31,8 @@ class AppConfigsController < SignedInApplicationController
       .permit(
         :code_repository,
         :working_branch,
-        :notification_channel
+        :notification_channel,
+        :project_id
       )
   end
 
@@ -38,5 +40,16 @@ class AppConfigsController < SignedInApplicationController
     app_config_params
       .merge(code_repository: app_config_params[:code_repository]&.safe_json_parse)
       .merge(notification_channel: app_config_params[:notification_channel]&.safe_json_parse)
+      .merge(project_id: app_config_params[:project_id]&.safe_json_parse)
+  end
+
+  def set_projects
+    if @app.ci_cd_provider.belongs_to_project?
+      @projects =
+        @app
+          .ci_cd_provider
+          .list_apps
+          .map { |pair| ["#{pair[:name]} (#{pair[:id]})", { pair[:id] => pair[:name] }.to_json] }
+    end
   end
 end
