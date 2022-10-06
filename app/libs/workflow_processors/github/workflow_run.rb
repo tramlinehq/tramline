@@ -1,6 +1,6 @@
 class WorkflowProcessors::Github::WorkflowRun
-  def initialize(workflow_run_attrs)
-    @workflow_run_attrs = workflow_run_attrs
+  def initialize(workflow_run)
+    @workflow_run = workflow_run
   end
 
   def in_progress?
@@ -20,12 +20,12 @@ class WorkflowProcessors::Github::WorkflowRun
   end
 
   def artifacts_url
-    workflow_run_attrs[:artifacts_url]
+    workflow_run[:artifacts_url]
   end
 
   private
 
-  attr_reader :workflow_run_attrs
+  attr_reader :workflow_run
 
   def status
     workflow_run[:status]

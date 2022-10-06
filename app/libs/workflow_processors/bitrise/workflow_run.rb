@@ -1,7 +1,7 @@
 class WorkflowProcessors::Bitrise::WorkflowRun
-  def initialize(integration, workflow_run_attrs)
+  def initialize(integration, workflow_run)
     @integration = integration
-    @workflow_run_attrs = workflow_run_attrs
+    @workflow_run = workflow_run
   end
 
   def in_progress?
@@ -21,14 +21,14 @@ class WorkflowProcessors::Bitrise::WorkflowRun
   end
 
   def artifacts_url
-    @integration.artifact_url(workflow_run_attrs[:slug])
+    @integration.artifact_url(workflow_run[:slug])
   end
 
   private
 
-  attr_reader :workflow_run_attrs
+  attr_reader :workflow_run
 
   def status
-    workflow_run_attrs[:status_text]
+    workflow_run[:status_text]
   end
 end

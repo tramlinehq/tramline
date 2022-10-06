@@ -1,13 +1,12 @@
 class WorkflowProcessors::WorkflowRun
   include Memery
 
-  def self.process(step_run, workflow_run_attrs)
-    new(step_run, workflow_run_attrs).process
+  def self.process(step_run)
+    new(step_run).process
   end
 
-  def initialize(step_run, workflow_run_attrs)
+  def initialize(step_run)
     @step_run = step_run
-    @workflow_run_attrs = workflow_run_attrs
   end
 
   GITHUB = WorkflowProcessors::Bitrise::WorkflowRun
@@ -30,7 +29,7 @@ class WorkflowProcessors::WorkflowRun
 
   private
 
-  attr_reader :step_run, :workflow_run_attrs
+  attr_reader :step_run
   delegate :transaction, to: Releases::Step::Run
   delegate :train, :release, to: :step_run
   delegate :in_progress?, :successful?, :failed?, :halted?, :artifacts_url, to: :runner
@@ -56,8 +55,8 @@ class WorkflowProcessors::WorkflowRun
   end
 
   memoize def runner
-    return GITHUB.new(workflow_run_attrs) if github?
-    BITRISE.new(step_run.ci_cd_provider, workflow_run_attrs) if bitrise?
+    return GITHUB.new(workflow_run) if github?
+    BITRISE.new(step_run.ci_cd_provider, workflow_run) if bitrise?
   end
 
   def github?
@@ -70,5 +69,9 @@ class WorkflowProcessors::WorkflowRun
 
   def integration
     step_run.ci_cd_provider.integration
+  end
+
+  memoize def workflow_run
+    step_run.get_workflow_run
   end
 end
