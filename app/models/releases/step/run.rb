@@ -2,6 +2,10 @@ class Releases::Step::Run < ApplicationRecord
   has_paper_trail
   include AASM
 
+  self.implicit_order_column = :scheduled_at
+
+  class WorkflowTriggerFailed < StandardError; end
+
   self.ignored_columns = [:previous_step_run_id]
 
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :runs
@@ -34,16 +38,23 @@ class Releases::Step::Run < ApplicationRecord
 
   enum status: STATES
 
+  def workflow_found?
+    ci_ref.present?
+  end
+
   aasm column: :status, requires_lock: true, requires_new_transaction: false, enum: true, create_scopes: false do
     state :on_track, initial: true
     state(*STATES.keys)
 
-    event :trigger_ci, after_commit: -> { Releases::Step::FindWorkflowRun.perform_async(id) } do
+    event :trigger_ci, after_commit: -> { Releases::Step::FindWorkflowRun.perform_async(id) unless workflow_found? } do
+      before :trigger_workflow_run
+      transitions from: :on_track, to: :ci_workflow_started, if: :workflow_found?
       transitions from: :on_track, to: :ci_workflow_triggered
     end
 
-    event :ci_start, after_commit: -> { WorkflowProcessors::WorkflowRunJob.perform_later(id) } do
-      transitions from: [:on_track, :ci_workflow_triggered], to: :ci_workflow_started
+    event :ci_start, after_commit: -> { WorkflowProcessors::WorkflowRun.perform_later(id) } do
+      before :find_and_update_workflow_run
+      transitions from: :ci_workflow_triggered, to: :ci_workflow_started
     end
 
     event :ci_unavailable do
@@ -71,8 +82,6 @@ class Releases::Step::Run < ApplicationRecord
     end
 
     event :finish do
-      # FIXME: potential race condition here if a commit lands right here... . at this point...
-      # ...and starts another run, but the release phase is triggered for an effectively stale run
       after { release.start_release_phase! if step.last? }
       transitions from: [:build_ready, :deployment_started], to: :success
     end
@@ -89,14 +98,16 @@ class Releases::Step::Run < ApplicationRecord
   delegate :download_url, to: :build_artifact
   alias_method :release, :train_run
 
-  def start_ci!(ci_ref, ci_link)
-    transaction do
-      update(ci_ref: ci_ref, ci_link: ci_link)
-      ci_start!
-    end
+  def update_ci_metadata!(ci_ref, ci_link)
+    update!(ci_ref:, ci_link:)
   end
 
-  def trigger_workflow_run!
+  def find_and_update_workflow_run
+    workflow_run = find_workflow_run&.slice(:id, :html_url)
+    update_ci_metadata!(workflow_run[:id], workflow_run[:html_url])
+  end
+
+  def trigger_workflow_run
     version_code = train.app.bump_build_number!
     inputs = {
       version_code: version_code,
@@ -105,9 +116,7 @@ class Releases::Step::Run < ApplicationRecord
 
     workflow_run = ci_cd_provider.trigger_workflow_run!(workflow_name, release_branch, inputs, commit_hash)
     update!(build_number: version_code)
-
-    return start_ci!(workflow_run[:ci_ref], workflow_run[:ci_link]) if workflow_run[:ci_ref].present?
-    trigger_ci!
+    update_ci_metadata!(workflow_run[:ci_ref], workflow_run[:ci_link]) if workflow_run[:ci_ref].present?
   end
 
   def find_workflow_run
@@ -126,12 +135,28 @@ class Releases::Step::Run < ApplicationRecord
     build_artifact.present?
   end
 
-  def manually_startable_deployment?(deployment)
+  def previous_run
+    previous_runs.last
+  end
+
+  def other_runs
+    train_run.step_runs_for(step).where.not(id:)
+  end
+
+  def previous_runs
+    other_runs.where("scheduled_at < ?", scheduled_at)
+  end
+
+  def startable_deployment?(deployment)
     return false if train.inactive?
     return false if train.active_run.nil?
-    return false if deployment_runs.empty? || deployment.first?
+    return true if deployment.first? && deployment_runs.empty?
+    next_deployment == deployment
+  end
 
-    next_deployment == deployment && last_deployment_run.released?
+  def manually_startable_deployment?(deployment)
+    return false if deployment.first?
+    startable_deployment?(deployment) && last_deployment_run&.released?
   end
 
   def last_deployment_run

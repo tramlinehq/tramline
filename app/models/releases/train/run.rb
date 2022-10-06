@@ -48,6 +48,27 @@ class Releases::Train::Run < ApplicationRecord
 
   delegate :app, to: :train
 
+  def tag_name
+    "v#{release_version}"
+  end
+
+  def startable_step?(step)
+    return false if train.inactive?
+    return false unless on_track?
+    return true if step.first? && step_runs_for(step).empty?
+    return false if step.first?
+
+    (next_step == step) && previous_step_run_for(step).approval_approved? && previous_step_run_for(step).success?
+  end
+
+  def step_runs_for(step)
+    step_runs.where(step:)
+  end
+
+  def previous_step_run_for(step)
+    last_run_for(step.previous)
+  end
+
   def self.pending_release?
     pending_release.exists?
   end
@@ -66,7 +87,7 @@ class Releases::Train::Run < ApplicationRecord
 
   def next_step
     return train.steps.first if step_runs.empty?
-    step_runs.joins(:step).order("step_number").last.step.next
+    step_runs.joins(:step).order(:step_number).last.step.next
   end
 
   def running_step?
@@ -86,7 +107,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def tag_url
-    train.vcs_provider&.tag_url(train.app.config&.code_repository_name, train.tag_name)
+    train.vcs_provider&.tag_url(train.app.config&.code_repository_name, tag_name)
   end
 
   def last_commit
@@ -120,9 +141,9 @@ class Releases::Train::Run < ApplicationRecord
       .first
   end
 
-  def final_artifact_file
+  def final_build_artifact
     return unless finished?
-    last_good_step_run&.build_artifact&.file
+    last_good_step_run&.build_artifact
   end
 
   def signed?

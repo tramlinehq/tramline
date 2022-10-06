@@ -27,7 +27,7 @@ class Triggers::Deployment
   def dispatch_job!(deployment_run)
     if external?
       Rails.logger.info("External deployment, doing nothing...")
-      deployment_run.release!
+      deployment_run.complete!
       return
     end
 

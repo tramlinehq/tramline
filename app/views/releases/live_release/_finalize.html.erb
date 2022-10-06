@@ -46,18 +46,19 @@
                 <div class="flex items-center whitespace-nowrap">
                   <%= image_tag("git_tag.svg", width: 20, class: "inline-flex mr-2") %>
                   <div class="text-sm font-mono text-slate-800">
-                    <%= link_to finalize_phase_metadata(release).dig(:release_tag),
-                                finalize_phase_metadata(release).dig(:release_tag_url) %>
+                    <%= link_to_external finalize_phase_metadata(release).dig(:release_tag),
+                                         finalize_phase_metadata(release).dig(:release_tag_url) %>
                   </div>
                 </div>
               </li>
 
-              <% if release.last_good_step_run&.initial_rollout_percentage.present? %>
+              <% if release.last_good_step_run&.deployment_runs.last.initial_rollout_percentage.present? %>
                 <li class="flex items-center justify-between py-3 border-b border-slate-200">
                   <div class="text-sm">Initial Roll-out Percentage</div>
                   <div class="flex items-center whitespace-nowrap">
-                    <%= number_to_percentage(release.last_good_step_run.initial_rollout_percentage) %>
-                    (<%= link_to "Increase on Play Store", "https://play.google.com/console/u/0/developers", class: "underline", target: "_blank" %>)
+                    <%= number_to_percentage(release.last_good_step_run&.deployment_runs.last.initial_rollout_percentage) %>
+                    (<%= link_to_external "Increase on Play Store", "https://play.google.com/console/u/0/developers", class: "underline" %>
+                    )
                   </div>
                 </li>
               <% end %>
@@ -78,8 +79,8 @@
                 <div class="text-sm">Store Link</div>
                 <div class="flex items-center whitespace-nowrap">
                   <div class="text-sm font-mono text-slate-800">
-                    <%= link_to image_tag("link_external.svg", width: 20, class: "inline-flex mr-2"),
-                                finalize_phase_metadata(release).dig(:store_url), target: "_blank" %>
+                    <%= link_to_external image_tag("link_external.svg", width: 20, class: "inline-flex mr-2"),
+                                         finalize_phase_metadata(release).dig(:store_url) %>
                   </div>
                 </div>
               </li>
@@ -98,13 +99,13 @@
                     <div class="h-full">
                       <h2 class="font-semibold text-slate-800">
                         <%= pr.title %>
-                        <span class="ml-1 underline">(#<%= link_to pr.number, pr.url, target: :_blank %>)</span>
+                        <span class="ml-1 underline">(#<%= link_to_external pr.number, pr.url %>)</span>
                       </h2>
 
                       <div class="mt-2">
                         <%= image_tag("git_pull_request.svg", width: 20, class: "inline-flex") %>
 
-                        <div class="text-xs inline-flex font-medium <%= pull_request_badge(pr.state) %> rounded-full text-center px-2.5 py-1">
+                        <div class="text-xs inline-flex font-medium <%= pull_request_badge(pr) %> rounded-full text-center px-2.5 py-1">
                           <%= pr.state.titleize %>
                         </div>
                       </div>

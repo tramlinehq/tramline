@@ -6,7 +6,9 @@ class WebhookProcessors::Github::Push < ApplicationJob
     @release = Releases::Train::Run.find(train_run_id)
     @commit_attributes = commit_attributes
 
-    transaction do
+    @release.with_lock do
+      return unless release.committable?
+
       commit_record = create_commit
       train.bump_version!(:patch) if release.step_runs.any?
       release.update(release_version: train.version_current)
@@ -19,9 +21,9 @@ class WebhookProcessors::Github::Push < ApplicationJob
           Triggers::StepRun.call(step, commit_record)
         end
       end
-
-      send_notification!
     end
+
+    send_notification!
   end
 
   private
@@ -53,7 +55,7 @@ class WebhookProcessors::Github::Push < ApplicationJob
   end
 
   def train
-    @train ||= @release.train
+    @train ||= release.train
   end
 
   def commit_message

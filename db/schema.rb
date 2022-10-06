@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_09_30_081521) do
+ActiveRecord::Schema[7.0].define(version: 2022_10_05_110150) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -100,10 +100,12 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_30_081521) do
   create_table "deployments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "integration_id"
     t.uuid "train_step_id", null: false
-    t.json "build_artifact_channel"
+    t.jsonb "build_artifact_channel"
     t.integer "deployment_number", limit: 2, default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["build_artifact_channel", "integration_id", "train_step_id"], name: "idx_deployments_on_build_artifact_chan_and_integration_and_step", unique: true
+    t.index ["deployment_number", "train_step_id"], name: "index_deployments_on_deployment_number_and_train_step_id", unique: true
     t.index ["integration_id"], name: "index_deployments_on_integration_id"
     t.index ["train_step_id"], name: "index_deployments_on_train_step_id"
   end
@@ -361,13 +363,14 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_30_081521) do
     t.string "description", null: false
     t.string "status", null: false
     t.integer "step_number", limit: 2, default: 0, null: false
-    t.json "ci_cd_channel", null: false
-    t.json "build_artifact_channel", null: false
+    t.jsonb "ci_cd_channel", null: false
+    t.json "build_artifact_channel"
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "release_suffix", null: false
-    t.string "build_artifact_integration", null: false
+    t.string "build_artifact_integration"
+    t.index ["ci_cd_channel", "train_id"], name: "index_train_steps_on_ci_cd_channel_and_train_id", unique: true
     t.index ["step_number", "train_id"], name: "index_train_steps_on_step_number_and_train_id", unique: true
     t.index ["train_id"], name: "index_train_steps_on_train_id"
   end

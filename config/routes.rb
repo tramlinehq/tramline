@@ -60,20 +60,15 @@ Rails.application.routes.draw do
             delete :revert
           end
         end
-
-        collection do
-          get :build_artifact_channels
-        end
       end
 
       resources :releases, only: %i[show create destroy], shallow: true do
         resources :step_runs, shallow: false, module: "releases" do
           member do
             post :start
-            post :stop
           end
 
-          resources :deployments do
+          resources :deployments, only: [:start] do
             member do
               post :start
             end
@@ -98,6 +93,10 @@ Rails.application.routes.draw do
     end
 
     resources :integrations, only: %i[index create] do
+      member do
+        get :build_artifact_channels
+      end
+
       collection do
         get :connect, to: "integrations#connect", as: :connect
         resource :google_play_store, only: [:create],

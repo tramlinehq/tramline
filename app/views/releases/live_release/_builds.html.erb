@@ -36,15 +36,15 @@
       </td>
 
       <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <%= link_to commit.commit_hash[0, 5], commit.url %>
+        <%= commit.commit_hash[0, 5] %>
       </td>
 
       <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <span class="underline"><%= ago_in_words commit.timestamp %></span>
+        <span><%= ago_in_words commit.timestamp %></span>
       </td>
 
       <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <span class="underline"><%= link_to commit.message.truncate(70), commit.url %></span>
+        <span class="underline"><%= link_to_external commit.message.truncate(70), commit.url %></span>
       </td>
 
       <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
@@ -53,26 +53,24 @@
             <div class="border-dashed border-b last:border-b-0 p-2">
               <div class="mb-4">
                 <% if step_run.ci_link.present? %>
-                  <%= link_to step_run.step.name, step_run.ci_link, class: "underline", target: :_blank %>
+                  <%= link_to_external step_run.step.name, step_run.ci_link, class: "underline" %>
                 <% else %>
                   <%= step_run.step.name %>
                 <% end %>
               </div>
 
               <% if Rails.env.development? %>
-                <div class="mb-4">
-                  <%= step_run.id %>
-                </div>
+                <div class="mb-4"><%= step_run.id.strip %></div>
               <% end %>
 
               <div class="mb-4">
-                <%= build_status_badge(step_run.status) %>
+                <%= build_status_badge(step_run) %>
               </div>
 
               <div class="mb-4">
                 <% if step_run.fetching_build? %>
                   <span class="text-xs uppercase tracking-wide inline-flex bg-green-500 animate-pulse text-white hover:bg-green-600 rounded-full text-center px-2 py-0.5">
-                    Uploading build
+                    Fetching build
                   </span>
                 <% end %>
               </div>
@@ -89,7 +87,6 @@
                     <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-2") %>
                     <%= "uploaded " + ago_in_words(step_run.build_artifact&.uploaded_at) %>
                   </div>
-
                 <% end %>
               </div>
 
@@ -100,11 +97,8 @@
                     <% deployment = deployment_run.deployment %>
 
                     <div class="mt-1">
-                      <%= image_tag("package.svg", width: 16, class: "inline-flex mr-2") %>
-                      <span><%= show_deployment_provider deployment %> • <%= show_deployment_channel deployment %></span>
-                      <span class="text-xs uppercase inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">
-                        <%= deployment_run.status %>
-                      </span>
+                      <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
+                      <%= deployment_run_status_badge(deployment_run) %>
                     </div>
                   <% end %>
                 <% end %>
@@ -116,7 +110,7 @@
                 </div>
 
                 <div>
-                  <span class="font-medium">Approval Status:</span> <%= approval_emoji(step_run.approval_status) %>
+                  <span class="font-medium">Approval Status:</span> <%= approval_emoji(step_run) %>
                 </div>
               </div>
             </div>

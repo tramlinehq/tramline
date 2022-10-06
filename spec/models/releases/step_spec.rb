@@ -2,14 +2,14 @@ require "rails_helper"
 
 RSpec.describe Releases::Step, type: :model do
   it "has valid spec" do
-    expect(FactoryBot.create(:releases_step)).to be_valid
+    expect(create(:releases_step)).to be_valid
   end
 
   describe "#next" do
-    let(:train) { FactoryBot.create(:releases_train) }
-    let(:steps) { FactoryBot.create_list(:releases_step, 5, train: train) }
+    let(:train) { create(:releases_train) }
+    let(:steps) { create_list(:releases_step, 5, train: train) }
 
-    it "retuns next element" do
+    it "returns next element" do
       first_step = steps.first
       expect(first_step.next).to be_eql(steps.second)
     end
@@ -19,19 +19,21 @@ RSpec.describe Releases::Step, type: :model do
     end
   end
 
-  describe "#startable?" do
-    let(:train) { FactoryBot.create(:releases_train) }
-    let(:steps) { FactoryBot.create_list(:releases_step, 5, train: train) }
+  describe "#create" do
+    it "saves deployments along with it" do
+      step = build(:releases_step)
+      step.deployments = build_list(:deployment, 2)
+      step.save!
 
-    it "first step can be started if there are no step runs" do
-      expect(steps.first).to be_startable
+      expect(step.reload.deployments.size).to eq(2)
     end
 
-    it "second step can be started after finishing first step" do
-      second_step = steps.second
-      release = FactoryBot.create(:releases_train_run, train:)
-      FactoryBot.create(:releases_step_run, step: steps.first, status: "success", train_run: release)
-      expect(second_step).to be_startable
+    it "adds incremented deployment numbers to created deployments" do
+      step = build(:releases_step)
+      step.deployments = build_list(:deployment, 2)
+      step.save!
+
+      expect(step.reload.deployments.pluck(:deployment_number)).to contain_exactly(1, 2)
     end
   end
 end

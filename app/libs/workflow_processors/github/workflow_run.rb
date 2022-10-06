@@ -28,10 +28,10 @@ class WorkflowProcessors::Github::WorkflowRun
   attr_reader :workflow_run_attrs
 
   def status
-    workflow_run_attrs[:status]
+    workflow_run[:status]
   end
 
   def conclusion
-    workflow_run_attrs[:conclusion]
+    workflow_run[:conclusion]
   end
 end

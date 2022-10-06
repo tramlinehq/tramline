@@ -11,7 +11,7 @@ class Deployments::Slack < ApplicationJob
       # FIXME: this transaction can eventually be removed, just use Result objects
       transaction do
         push(deployment, deployment_run.step_run)
-        deployment_run.release!
+        deployment_run.complete!
       end
     end
   end

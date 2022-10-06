@@ -5,14 +5,8 @@ class Releases::StepRunsController < SignedInApplicationController
     step = @release.train.steps.friendly.find(params[:id])
     commit = @release.last_commit
     Triggers::StepRun.call(step, commit)
-    redirect_back fallback_location: root_path, notice: "Step successfully started"
-  end
 
-  def stop
-    step = @release.train.steps.friendly.find(params[:id])
-    step_run = @release.step_runs.find_by(step:, status: "on_track")
-    step_run.update(status: "halted")
-    redirect_back fallback_location: root_path, notice: "step halted"
+    redirect_back fallback_location: root_path, notice: "Step successfully started"
   end
 
   private
@@ -23,5 +17,9 @@ class Releases::StepRunsController < SignedInApplicationController
         .joins(train: :app)
         .where(apps: {organization: current_organization})
         .find(params[:release_id])
+  end
+
+  def deployment_attributes
+    params.require(:releases_step_runs).permit(deployment_attributes: [:integration_id, :build_artifact_channel])
   end
 end

@@ -14,6 +14,12 @@ module Installations
 
     class ResourceNotFound < StandardError; end
 
+    class BuildExistsInBuildChannel < StandardError; end
+
+    class WorkflowTriggerFailed < StandardError; end
+
+    class WorkflowRunNotFound < StandardError; end
+
     class WorkflowTriggerFailed < StandardError; end
   end
 end
