@@ -1,0 +1,18 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  production:
+    runs-on: ubuntu-latest
+    steps:
+      - name: site-web
+        uses: distributhor/workflow-webhook
+        with:
+          url: ${{ secrets.SITE_JOBS_PRODUCTION_WEBHOOK }}
+      - name: site-jobs
+        uses: distributhor/workflow-webhook
+        with:
+          url: ${{ secrets.SITE_WEB_PRODUCTION_WEBHOOK }}
+
