@@ -52,3 +52,5 @@ Brewfile.lock.json
 
 # Local rubocop overrides
 .rubocop.yml
+
+/config/credentials/staging.key

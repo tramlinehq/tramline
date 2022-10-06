@@ -6,7 +6,15 @@ databases:
     region: frankfurt
     plan: starter
 
+  - name: site-staging-db
+    databaseName: tramline_site_staging
+    user: tramline
+    postgresMajorVersion: 14
+    region: frankfurt
+    plan: starter
+
 services:
+  # production starts here
   - type: web
     name: site-web
     env: ruby
@@ -15,10 +23,22 @@ services:
     buildCommand: ./bin/render-build
     startCommand: "bundle exec puma -C config/puma.rb"
     initialDeployHook: ./bin/render-seed
+    autoDeploy: false
+    branch: main
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: site-db
+          property: connectionString
+      - key: SIDEKIQ_REDIS_URL
+        fromService:
+          type: redis
+          name: site-redis
+          property: connectionString
+      - key: DEFAULT_REDIS_URL
+        fromService:
+          type: redis
+          name: site-redis
           property: connectionString
       - key: RAILS_MASTER_KEY
         sync: false
@@ -30,12 +50,19 @@ services:
     plan: starter
     buildCommand: bundle install
     startCommand: bundle exec sidekiq
+    autoDeploy: false
+    branch: main
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: site-db
           property: connectionString
       - key: SIDEKIQ_REDIS_URL
+        fromService:
+          type: redis
+          name: site-redis
+          property: connectionString
+      - key: DEFAULT_REDIS_URL
         fromService:
           type: redis
           name: site-redis
@@ -50,3 +77,69 @@ services:
     ipAllowList:
       - source: 0.0.0.0/0
         description: everywhere
+  # production ends here
+
+  # staging starts here
+  - type: web
+    name: site-staging-web
+    env: ruby
+    region: frankfurt
+    plan: starter plus
+    buildCommand: ./bin/render-build
+    startCommand: "bundle exec puma -C config/puma.rb"
+    initialDeployHook: ./bin/render-seed
+    autoDeploy: true
+    branch: main
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: site-staging-db
+          property: connectionString
+      - key: SIDEKIQ_REDIS_URL
+        fromService:
+          type: redis
+          name: site-staging-redis
+          property: connectionString
+      - key: DEFAULT_REDIS_URL
+        fromService:
+          type: redis
+          name: site-staging-redis
+          property: connectionString
+      - key: RAILS_MASTER_KEY
+        sync: false
+
+  - type: worker
+    name: site-staging-jobs
+    env: ruby
+    region: frankfurt
+    plan: starter
+    buildCommand: bundle install
+    startCommand: bundle exec sidekiq
+    autoDeploy: true
+    branch: main
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: site-db
+          property: connectionString
+      - key: SIDEKIQ_REDIS_URL
+        fromService:
+          type: redis
+          name: site-staging-redis
+          property: connectionString
+      - key: DEFAULT_REDIS_URL
+        fromService:
+          type: redis
+          name: site-staging-redis
+          property: connectionString
+      - key: RAILS_MASTER_KEY
+        sync: false
+
+  - type: redis
+    name: site-staging-redis
+    region: frankfurt
+    plan: free
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere
+  # staging ends here
