@@ -9,12 +9,11 @@ class WorkflowProcessors::WorkflowRun
     @step_run = step_run
   end
 
-  GITHUB = WorkflowProcessors::Bitrise::WorkflowRun
+  GITHUB = WorkflowProcessors::Github::WorkflowRun
   BITRISE = WorkflowProcessors::Bitrise::WorkflowRun
 
   def process
-    Sidekiq.logger.info "Processing workflow run wth status #{runner.send(:status)}"
-    WorkflowProcessors::WorkflowRunJob.set(wait: 5.minutes).perform_later(step_run.id) if in_progress?
+    WorkflowProcessors::WorkflowRunJob.set(wait: wait_time).perform_later(step_run.id) if in_progress?
 
     return update_status! unless successful?
 
@@ -73,5 +72,13 @@ class WorkflowProcessors::WorkflowRun
 
   memoize def workflow_run
     step_run.get_workflow_run
+  end
+
+  def wait_time
+    if Rails.env.development?
+      2.minutes
+    else
+      5.minutes
+    end
   end
 end

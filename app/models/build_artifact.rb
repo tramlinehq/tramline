@@ -10,7 +10,6 @@ class BuildArtifact < ApplicationRecord
   delegate :unzip_artifact?, to: :step_run
 
   VALID_UNZIPS = "*.{aab,apk,txt}".freeze
-  ZIP_CONTENT_TYPE = "application/zip".freeze
 
   def save_zip!(io_stream)
     transaction do

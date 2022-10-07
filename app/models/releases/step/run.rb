@@ -15,9 +15,9 @@ class Releases::Step::Run < ApplicationRecord
   has_many :deployment_runs, -> { includes(:deployment).order("deployments.deployment_number ASC") }, foreign_key: :train_step_run_id, inverse_of: :step_run
   has_many :deployments, through: :step
 
-  validates :build_version, uniqueness: { scope: [:train_step_id, :train_run_id] }
-  validates :train_step_id, uniqueness: { scope: :releases_commit_id }
-  validates :initial_rollout_percentage, numericality: { greater_than: 0, less_than_or_equal_to: 100, allow_nil: true }
+  validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
+  validates :train_step_id, uniqueness: {scope: :releases_commit_id}
+  validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   after_create :reset_approval!
 
@@ -82,7 +82,7 @@ class Releases::Step::Run < ApplicationRecord
     end
   end
 
-  enum approval_status: { pending: "pending", approved: "approved", rejected: "rejected" }, _prefix: "approval"
+  enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
 
   attr_accessor :current_user
 
@@ -95,7 +95,7 @@ class Releases::Step::Run < ApplicationRecord
   alias_method :release, :train_run
 
   def update_ci_metadata!(workflow_run)
-    return if workflow_run[:ci_ref].blank?
+    return if workflow_run.blank? || workflow_run[:ci_ref].blank?
     update!(ci_ref: workflow_run[:ci_ref], ci_link: workflow_run[:ci_link])
   end
 
