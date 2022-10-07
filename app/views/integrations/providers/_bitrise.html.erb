@@ -7,22 +7,17 @@
       Connect
     </button>
 
-  <%= modal_for("Add Access Token") do %>
-      <div class="flex flex-col space-y-2">
-        <div class="flex">
-          <%= form_with(model: [@app, integration], url: form_url) do |form| %>
-              <%= form.hidden_field :category, value: category %>
-            <%= form.fields_for :providable do |subform| %>
-                <%= subform.hidden_field :type, value: integration.providable_type %>
-              <%= subform.text_field :access_token %>
-              <% end %>
-            </div>
+  <%= modal_for("Add Personal Access Token") do %>
+    <%= form_with(model: [@app, integration], url: form_url) do |form| %>
+      <%= form.hidden_field :category, value: category %>
+      <%= form.fields_for :providable do |subform| %>
+        <%= subform.hidden_field :type, value: integration.providable_type %>
+        <%= subform.text_field :access_token, placeholder: "Paste here..." %>
+      <% end %>
 
-            <div class="flex self-end">
-          <%= form.submit 'Create', class: "btn bg-indigo-500 hover:bg-indigo-600 flex text-white items-center" %>
-        </div>
+      <%= form.submit 'Create', class: "btn bg-indigo-500 hover:bg-indigo-600 flex text-white items-center mt-5 mb-5" %>
+    <% end %>
 
-          <% end %>
-          </div>
+    <a href="https://devcenter.bitrise.io/en/accounts/personal-access-tokens.html" class="underline text-slate-500 items-end">How to add a personal access token?</a>
   <% end %>
 </span>
