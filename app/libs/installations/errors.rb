@@ -16,8 +16,6 @@ module Installations
 
     class BuildExistsInBuildChannel < StandardError; end
 
-    class WorkflowTriggerFailed < StandardError; end
-
     class WorkflowRunNotFound < StandardError; end
 
     class WorkflowTriggerFailed < StandardError; end

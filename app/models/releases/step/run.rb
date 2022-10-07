@@ -3,9 +3,6 @@ class Releases::Step::Run < ApplicationRecord
   include AASM
 
   self.implicit_order_column = :scheduled_at
-
-  class WorkflowTriggerFailed < StandardError; end
-
   self.ignored_columns = [:previous_step_run_id]
 
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :runs
@@ -20,8 +17,6 @@ class Releases::Step::Run < ApplicationRecord
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   after_create :reset_approval!
-
-  scope :active, -> { where.not(status: [:ci_workflow_unavailable, :ci_workflow_failed, :ci_workflow_halted, :deployment_failed, :success]) }
 
   STATES = {
     on_track: "on_track",
@@ -49,7 +44,7 @@ class Releases::Step::Run < ApplicationRecord
 
     event :ci_start, after_commit: -> { WorkflowProcessors::WorkflowRunJob.perform_later(id) } do
       before :find_and_update_workflow_run
-      transitions from: :ci_workflow_triggered, to: :ci_workflow_started
+      transitions from: [:ci_workflow_triggered], to: :ci_workflow_started
     end
 
     event :ci_unavailable do
@@ -95,7 +90,7 @@ class Releases::Step::Run < ApplicationRecord
   alias_method :release, :train_run
 
   def update_ci_metadata!(workflow_run)
-    return if workflow_run.blank? || workflow_run[:ci_ref].blank?
+    return if workflow_run.try(:[], :ci_ref).blank?
     update!(ci_ref: workflow_run[:ci_ref], ci_link: workflow_run[:ci_link])
   end
 

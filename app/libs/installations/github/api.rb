@@ -63,8 +63,6 @@ module Installations
       end
     end
 
-    class WorkflowTriggerFailed < StandardError; end
-
     def run_workflow!(repo, id, ref, inputs)
       inputs = {
         versionCode: inputs[:version_code],

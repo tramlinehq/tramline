@@ -23,7 +23,7 @@ class WorkflowProcessors::WorkflowRun
     end
 
     # NOTE: This is outside the transaction since upload artifact is non-rollbackable.
-    # send_notification!
+    send_notification!
   end
 
   private
