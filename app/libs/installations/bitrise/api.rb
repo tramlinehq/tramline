@@ -12,16 +12,6 @@ module Installations
     WORKFLOW_RUN_ARTIFACTS_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/builds/{build_slug}/artifacts")
     WORKFLOW_RUN_ARTIFACT_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/builds/{build_slug}/artifacts/{artifact_slug}")
 
-    WEBHOOK_PERMISSIONS = {
-      deployment_events: true,
-      job_events: true,
-      merge_requests_events: true,
-      pipeline_events: true,
-      push_events: true,
-      releases_events: true,
-      tag_push_events: true
-    }
-
     def initialize(access_token)
       @access_token = access_token
     end
