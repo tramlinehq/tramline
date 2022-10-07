@@ -7,7 +7,7 @@ class Releases::Step::UploadArtifact < ApplicationJob
 
     begin
       stream = step_run.ci_cd_provider.download_stream(artifacts_url)
-      BuildArtifact.new(step_run: step_run, generated_at: Time.current).save_zip!(stream)
+      BuildArtifact.new(step_run: step_run, generated_at: Time.current).save_file!(stream)
 
       step_run.ready_to_deploy!
 

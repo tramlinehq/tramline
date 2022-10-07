@@ -11,7 +11,7 @@ class BuildArtifact < ApplicationRecord
 
   VALID_UNZIPS = "*.{aab,apk,txt}".freeze
 
-  def save_zip!(io_stream)
+  def save_file!(io_stream)
     transaction do
       self.file = ActiveStorage::Blob.create_and_upload!(io: io_stream, filename:, content_type: io_stream.content_type, identify: false)
       self.uploaded_at = Time.current
