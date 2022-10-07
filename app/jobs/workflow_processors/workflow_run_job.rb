@@ -1,6 +1,4 @@
 class WorkflowProcessors::WorkflowRunJob < ApplicationJob
-  class WorkflowRunNotFound < StandardError; end
-
   sidekiq_options retry: 0
   queue_as :high
 
