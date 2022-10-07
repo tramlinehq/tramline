@@ -20,7 +20,7 @@ class Deployments::GooglePlayStore::Upload < ApplicationJob
     package_name = step.app.bundle_identifier
     release_version = step_run.train_run.release_version
 
-    step_run.build_artifact.file_for_upload do |file|
+    step_run.build_artifact.file_for_playstore_upload do |file|
       API.upload(package_name, key, release_version, file)
     rescue Installations::Errors::BuildExistsInBuildChannel => e
       logger.error(e)

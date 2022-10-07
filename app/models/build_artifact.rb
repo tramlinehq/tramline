@@ -23,7 +23,7 @@ class BuildArtifact < ApplicationRecord
     "step-run-#{train_step_runs_id}-release"
   end
 
-  def file_for_upload
+  def file_for_playstore_upload
     file.open do |temp_file|
       # FIXME: This is an expensive operation, we should not be unzipping here but before pushing to object store
       artifact_file =
@@ -33,7 +33,7 @@ class BuildArtifact < ApplicationRecord
           return yield(temp_file)
         end
 
-      Tempfile.open(%w[playstore-artifact .aab]) do |new_temp_file|
+      Tempfile.open(%w[artifact .aab]) do |new_temp_file|
         artifact_file.extract(new_temp_file.path) { true }
         yield(new_temp_file)
       end
