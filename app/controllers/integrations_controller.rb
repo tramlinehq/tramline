@@ -54,6 +54,7 @@ class IntegrationsController < SignedInApplicationController
 
         (providers - existing_integration.pluck(:providable_type)).each do |provider|
           next if provider.eql?("GitlabIntegration") && !Flipper.enabled?(:gitlab_integration)
+          next if provider.eql?("BitriseIntegration") && !Flipper.enabled?(:bitrise_integration)
 
           integration =
             @app
