@@ -8,6 +8,12 @@ module Installations
         code: 403,
         message_matcher: /APK specifies a version code that has already been used/,
         decorated_exception: Installations::Errors::BuildExistsInBuildChannel
+      },
+      {
+        status: "NOT_FOUND",
+        code: 404,
+        message_matcher: /Package not found:/,
+        decorated_exception: Installations::Errors::BundleIdentifierNotFound
       }
     ]
 
