@@ -29,12 +29,12 @@
                       { class: "form-input w-full", data: { controller: "input-select" } } %>
     </div>
 
-    <% if @projects.present? %>
+    <% if @ci_cd_projects.present? %>
       <div>
-        <%= form.label :project_id, "Project", class: "block text-sm font-medium mb-1" %>
+        <%= form.label :project_id, "#{@ci_cd_provider_name} Project", class: "block text-sm font-medium mb-1" %>
         <%= form.select :project_id,
                         options_for_select(
-                          @projects,
+                          @ci_cd_projects,
                           @config.project_id.to_json
                         ),
                         {},
