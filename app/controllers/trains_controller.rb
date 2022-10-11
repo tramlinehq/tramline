@@ -79,7 +79,6 @@ class TrainsController < SignedInApplicationController
       :working_branch,
       :working_repo,
       :version_seeded_with,
-      :version_suffix,
       :branching_strategy,
       :release_backmerge_branch,
       :release_branch,
@@ -91,7 +90,6 @@ class TrainsController < SignedInApplicationController
     params.require(:releases_train).permit(
       :name,
       :description,
-      :version_suffix,
       sign_off_group_ids: []
     )
   end
