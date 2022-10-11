@@ -4,8 +4,8 @@ class DeploymentRun < ApplicationRecord
   belongs_to :deployment, inverse_of: :deployment_runs
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
 
-  validates :deployment_id, uniqueness: {scope: :train_step_run_id}
-  validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
+  validates :deployment_id, uniqueness: { scope: :train_step_run_id }
+  validates :initial_rollout_percentage, numericality: { greater_than: 0, less_than_or_equal_to: 100, allow_nil: true }
 
   delegate :step, to: :step_run
   delegate :release, to: :step_run
@@ -35,6 +35,7 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :dispatch_fail do
+      after { step_run.fail_deploy! }
       transitions from: [:started, :uploaded], to: :failed
     end
 
@@ -57,6 +58,11 @@ class DeploymentRun < ApplicationRecord
       api.promote(deployment.deployment_channel, step_run.build_number, initial_rollout_percentage)
 
       complete!
+
+    rescue Installations::Errors::BuildNotUpgradable => e
+      logger.error(e)
+      Sentry.capture_exception(e)
+      dispatch_fail!
     end
   end
 

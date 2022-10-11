@@ -14,6 +14,12 @@ module Installations
         code: 404,
         message_matcher: /Package not found:/,
         decorated_exception: Installations::Errors::BundleIdentifierNotFound
+      },
+      {
+        status: "PERMISSION_DENIED",
+        code: 403,
+        message_matcher: /You cannot rollout this release because it does not allow any existing users to upgrade to the newly added APKs/,
+        decorated_exception: Installations::Errors::BuildNotUpgradable
       }
     ]
 

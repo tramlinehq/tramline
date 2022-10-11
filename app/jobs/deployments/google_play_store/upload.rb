@@ -27,7 +27,6 @@ class Deployments::GooglePlayStore::Upload < ApplicationJob
     rescue Installations::Errors::BundleIdentifierNotFound => e
       log(e)
       deployment_run.dispatch_fail!
-      step_run.fail_deploy!
     end
   end
 

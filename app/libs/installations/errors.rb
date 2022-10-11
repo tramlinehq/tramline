@@ -21,5 +21,7 @@ module Installations
     class WorkflowTriggerFailed < StandardError; end
 
     class BundleIdentifierNotFound < StandardError; end
+
+    class BuildNotUpgradable < StandardError; end
   end
 end
