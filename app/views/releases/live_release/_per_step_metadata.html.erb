@@ -37,7 +37,7 @@
         <% deployment_run = step_run.last_run_for(deployment) %>
 
         <% if deployment_run.present? %>
-          <%= deployment_run_status_badge(deployment_run) %>
+          <span class="ml-2"><%= deployment_run_status_badge(deployment_run) %></span>
         <% end %>
 
         <% if deployment_run&.promotable? %>

@@ -8,6 +8,8 @@ class BuildArtifact < ApplicationRecord
   has_one_attached :file
 
   delegate :unzip_artifact?, to: :step_run
+  delegate :train, to: :step_run
+  delegate :app, to: :train
 
   VALID_UNZIPS = "*.{aab,apk,txt}".freeze
 
@@ -20,7 +22,7 @@ class BuildArtifact < ApplicationRecord
   end
 
   def filename
-    "step-run-#{train_step_runs_id}-release"
+    "#{app.slug}-#{step_run.build_version}-build"
   end
 
   def file_for_playstore_upload

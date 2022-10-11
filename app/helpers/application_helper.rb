@@ -52,13 +52,14 @@ module ApplicationHelper
     }
   end
 
-  def status_badge(status, style)
-    classes = %w[ml-2 text-xs uppercase tracking-wide inline-flex font-medium rounded-full text-center px-2 py-0.5]
+  def status_badge(status, style, pulse: false)
+    classes = %w[text-xs uppercase tracking-wide inline-flex font-medium rounded-full text-center px-2 py-0.5]
+    classes << "animate-pulse" if pulse
     content_tag(:span, status, class: classes.concat(style))
   end
 
   def link_to_external(name = nil, options = nil, html_options = nil, &block)
-    opts = {target: "_blank", rel: "nofollow noopener"}
+    opts = { target: "_blank", rel: "nofollow noopener" }
 
     if block
       options ||= {}

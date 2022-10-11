@@ -69,9 +69,7 @@
 
               <div class="mb-4">
                 <% if step_run.fetching_build? %>
-                  <span class="text-xs uppercase tracking-wide inline-flex bg-green-500 animate-pulse text-white hover:bg-green-600 rounded-full text-center px-2 py-0.5">
-                    Waiting for build
-                  </span>
+                  <%= status_badge("Waiting for build", %w[bg-green-500 hover:bg-green-600 text-white], pulse: true) %>
                 <% end %>
               </div>
 

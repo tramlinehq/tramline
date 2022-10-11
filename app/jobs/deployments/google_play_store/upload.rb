@@ -1,6 +1,6 @@
 class Deployments::GooglePlayStore::Upload < ApplicationJob
   queue_as :high
-  delegate :transaction, to: Releases::Step::Run
+  sidekiq_options retry: 0
 
   API = Installations::Google::PlayDeveloper::Api
 
@@ -21,13 +21,14 @@ class Deployments::GooglePlayStore::Upload < ApplicationJob
 
     step_run.build_artifact.file_for_playstore_upload do |file|
       API.upload(package_name, key, release_version, file)
-      deployment_run.upload!
     rescue Installations::Errors::BuildExistsInBuildChannel => e
       log(e)
     rescue Installations::Errors::BundleIdentifierNotFound => e
       log(e)
-      deployment_run.dispatch_fail!
+      return deployment_run.dispatch_fail!
     end
+
+    deployment_run.upload!
   end
 
   def log(e)
