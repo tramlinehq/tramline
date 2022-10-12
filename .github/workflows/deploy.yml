@@ -8,11 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: site-web
-        uses: distributhor/workflow-webhook
+        uses: distributhor/workflow-webhook@v2
         with:
           url: ${{ secrets.SITE_JOBS_PRODUCTION_WEBHOOK }}
       - name: site-jobs
-        uses: distributhor/workflow-webhook
+        uses: distributhor/workflow-webhook@v2
         with:
           url: ${{ secrets.SITE_WEB_PRODUCTION_WEBHOOK }}
-
