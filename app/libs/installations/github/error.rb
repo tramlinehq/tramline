@@ -18,6 +18,12 @@ module Installations
         code: "custom",
         message_matcher: /The "workflow_run" event cannot have more than 20 hooks/,
         decorated_exception: Installations::Errors::WebhookLimitReached
+      },
+      {
+        resource: "Hook",
+        code: "custom",
+        message_matcher: /Hook already exists on this repository/,
+        decorated_exception: Installations::Errors::HookAlreadyExistsOnRepository
       }
     ]
 
@@ -29,6 +35,10 @@ module Installations
       {
         message_matcher: /Pull Request is not mergeable/,
         decorated_exception: Installations::Errors::PullRequestNotMergeable
+      },
+      {
+        message_matcher: /Not Found/,
+        decorated_exception: Installations::Errors::ResourceNotFound
       }
     ]
 

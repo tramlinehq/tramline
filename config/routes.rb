@@ -1,6 +1,5 @@
 Rails.application.routes.draw do
   require "sidekiq/web"
-  require "sidekiq-scheduler/web"
 
   mount ActionCable.server => "/cable"
 
@@ -12,8 +11,8 @@ Rails.application.routes.draw do
   end
 
   devise_for :users,
-    controllers: {registrations: "authentication/registrations", sessions: "authentication/sessions"},
-    class_name: "Accounts::User"
+             controllers: { registrations: "authentication/registrations", sessions: "authentication/sessions" },
+             class_name: "Accounts::User"
 
   devise_scope :user do
     unauthenticated :user do
@@ -61,18 +60,24 @@ Rails.application.routes.draw do
             delete :revert
           end
         end
-
-        collection do
-          get :build_artifact_channels
-        end
       end
 
       resources :releases, only: %i[show create destroy], shallow: true do
         resources :step_runs, shallow: false, module: "releases" do
           member do
             post :start
-            post :stop
-            patch :promote
+          end
+
+          resources :deployments, only: [:start] do
+            member do
+              post :start
+            end
+
+            resources :deployment_runs, shallow: true do
+              member do
+                patch :promote
+              end
+            end
           end
         end
 
@@ -88,11 +93,19 @@ Rails.application.routes.draw do
     end
 
     resources :integrations, only: %i[index create] do
+      member do
+        get :build_artifact_channels
+      end
+
       collection do
         get :connect, to: "integrations#connect", as: :connect
         resource :google_play_store, only: [:create],
-          controller: "integrations/google_play_store",
-          as: :google_play_store_integration
+                 controller: "integrations/google_play_store",
+                 as: :google_play_store_integration
+
+        resource :bitrise, only: [:create],
+                 controller: "integrations/bitrise",
+                 as: :bitrise_integration
       end
     end
   end
@@ -102,13 +115,13 @@ Rails.application.routes.draw do
   end
 
   scope :github do
-    post "/events/:train_id", to: "integration_listeners/github#events", as: :github_events
     get :callback, controller: "integration_listeners/github", as: :github_callback
+    post "/events/:train_id", to: "integration_listeners/github#events", as: :github_events
   end
 
   scope :gitlab do
-    post "/events/:train_id", to: "integration_listeners/gitlab#events", as: :gitlab_events
     get :callback, controller: "integration_listeners/gitlab", as: :gitlab_callback
+    post "/events/:train_id", to: "integration_listeners/gitlab#events", as: :gitlab_events
   end
 
   scope :slack do

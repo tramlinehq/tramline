@@ -25,11 +25,21 @@
               <% end %>
 
               <% if integration.disconnected? %>
-                <%= render partial: "integrations/providers/google_play_store",
-                           locals: { current_organization: current_organization,
-                                     integration: integration,
-                                     category: category
-                           } %>
+                <% if integration.providable.to_s == "google_play_store" %>
+                  <%= render partial: "integrations/providers/google_play_store",
+                             locals: { current_organization: current_organization,
+                                       integration: integration,
+                                       category: category
+                             } %>
+                <% end %>
+                <% if integration.providable.to_s == "bitrise" %>
+                  <%= render partial: "integrations/providers/bitrise",
+                             locals: { current_organization: current_organization,
+                                       integration: integration,
+                                       category: category
+                             } %>
+                <% end %>
+
               <% end %>
             </div>
           </div>

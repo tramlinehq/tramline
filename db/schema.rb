@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_09_19_100553) do
+ActiveRecord::Schema[7.0].define(version: 2022_10_11_110345) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -51,6 +51,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_19_100553) do
     t.string "working_branch"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "project_id"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
@@ -69,11 +70,47 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_19_100553) do
     t.index ["organization_id"], name: "index_apps_on_organization_id"
   end
 
+  create_table "bitrise_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "access_token"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "build_artifacts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "train_step_runs_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "generated_at", precision: nil
+    t.datetime "uploaded_at", precision: nil
     t.index ["train_step_runs_id"], name: "index_build_artifacts_on_train_step_runs_id"
+  end
+
+  create_table "data_migrations", primary_key: "version", id: :string, force: :cascade do |t|
+  end
+
+  create_table "deployment_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "deployment_id", null: false
+    t.uuid "train_step_run_id", null: false
+    t.datetime "scheduled_at", precision: nil, null: false
+    t.string "status"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.decimal "initial_rollout_percentage", precision: 8, scale: 5
+    t.index ["deployment_id"], name: "index_deployment_runs_on_deployment_id"
+    t.index ["train_step_run_id"], name: "index_deployment_runs_on_train_step_run_id"
+  end
+
+  create_table "deployments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "integration_id"
+    t.uuid "train_step_id", null: false
+    t.jsonb "build_artifact_channel"
+    t.integer "deployment_number", limit: 2, default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["build_artifact_channel", "integration_id", "train_step_id"], name: "idx_deployments_on_build_artifact_chan_and_integration_and_step", unique: true
+    t.index ["deployment_number", "train_step_id"], name: "index_deployments_on_deployment_number_and_train_step_id", unique: true
+    t.index ["integration_id"], name: "index_deployments_on_integration_id"
+    t.index ["train_step_id"], name: "index_deployments_on_train_step_id"
   end
 
   create_table "flipper_features", force: :cascade do |t|
@@ -207,7 +244,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_19_100553) do
     t.datetime "updated_at", null: false
     t.uuid "train_run_id", null: false
     t.index ["train_id"], name: "index_releases_commits_on_train_id"
-    t.index ["train_run_id"], name: "index_releases_commits_on_train_run_id"
+    t.index ["train_run_id"], name: "index_releases_commits_on_train_runs_id"
   end
 
   create_table "releases_pull_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -313,7 +350,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_19_100553) do
     t.string "build_version", null: false
     t.string "ci_ref"
     t.string "ci_link"
-    t.string "build_number", null: false
+    t.string "build_number"
     t.boolean "sign_required", default: true
     t.string "approval_status", default: "pending", null: false
     t.decimal "initial_rollout_percentage", precision: 8, scale: 5
@@ -329,13 +366,14 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_19_100553) do
     t.string "description", null: false
     t.string "status", null: false
     t.integer "step_number", limit: 2, default: 0, null: false
-    t.json "ci_cd_channel", null: false
-    t.json "build_artifact_channel", null: false
+    t.jsonb "ci_cd_channel", null: false
+    t.json "build_artifact_channel"
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "release_suffix", null: false
-    t.string "build_artifact_integration", null: false
+    t.string "build_artifact_integration"
+    t.index ["ci_cd_channel", "train_id"], name: "index_train_steps_on_ci_cd_channel_and_train_id", unique: true
     t.index ["step_number", "train_id"], name: "index_train_steps_on_step_number_and_train_id", unique: true
     t.index ["train_id"], name: "index_train_steps_on_train_id"
   end
@@ -347,7 +385,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_19_100553) do
     t.string "status", null: false
     t.string "version_seeded_with", null: false
     t.string "version_current"
-    t.string "version_suffix", null: false
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -357,7 +394,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_19_100553) do
     t.string "release_branch"
     t.string "release_backmerge_branch"
     t.index ["app_id"], name: "index_trains_on_app_id"
-    t.index ["version_suffix", "app_id"], name: "index_trains_on_version_suffix_and_app_id", unique: true
   end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -408,6 +444,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_19_100553) do
   add_foreign_key "app_configs", "apps"
   add_foreign_key "apps", "organizations"
   add_foreign_key "build_artifacts", "train_step_runs", column: "train_step_runs_id"
+  add_foreign_key "deployment_runs", "deployments"
+  add_foreign_key "deployment_runs", "train_step_runs"
+  add_foreign_key "deployments", "train_steps"
   add_foreign_key "integrations", "apps"
   add_foreign_key "invites", "organizations"
   add_foreign_key "invites", "users", column: "recipient_id"

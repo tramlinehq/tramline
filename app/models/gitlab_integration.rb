@@ -52,7 +52,6 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.create_branch!(code_repository_name, from, to) }
   end
 
-  # @return [Installation::Gitlab::Api]
   def installation
     Installations::Gitlab::Api.new(oauth_access_token)
   end
@@ -83,10 +82,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def set_tokens(tokens)
-    if tokens
-      self.oauth_access_token = tokens.access_token
-      self.oauth_refresh_token = tokens.refresh_token
-    end
+    assign_attributes(oauth_access_token: tokens.access_token, oauth_refresh_token: tokens.refresh_token) if tokens
   end
 
   def app_config

@@ -6,7 +6,6 @@ class StepsController < SignedInApplicationController
   before_action :set_train, only: %i[new create]
   before_action :set_ci_actions, only: %i[new create]
   before_action :set_build_channels, only: %i[new create]
-  before_action :set_first_step, only: %i[new create]
   before_action :integrations_are_ready?, only: %i[new create]
   around_action :set_time_zone
 
@@ -39,8 +38,6 @@ class StepsController < SignedInApplicationController
         .find(params[:id])
     @train = @step.train
     head 403 and return if @train.active_run
-
-    @build_channels = @step.available_deployment_channels
     @ci_actions = @train.ci_cd_provider.workflows
   end
 
@@ -59,25 +56,9 @@ class StepsController < SignedInApplicationController
     if @step.update(parsed_step_params)
       redirect_to edit_app_train_path(@app, @train), notice: "Step was successfully updated."
     else
-      @build_channels = @step.available_deployment_channels
       @ci_actions = @train.ci_cd_provider.workflows
       render :edit, status: :unprocessable_entity
     end
-  end
-
-  def build_artifact_channels
-    @step = Releases::Step.find_by(id: params[:step_id]) || Releases::Step.new
-    train = Releases::Train.friendly.find(params[:train_id])
-    provider = params[:provider]
-
-    @build_channels =
-      if provider == "external" # TODO: Have a better abstraction instead of if conditions
-        [["External", {"external" => "external"}.to_json]]
-      else
-        train.app.integrations.build_channel.find_by(providable_type: provider).providable.channels
-      end
-
-    respond_to(&:turbo_stream)
   end
 
   private
@@ -94,10 +75,6 @@ class StepsController < SignedInApplicationController
     @app = current_organization.apps.friendly.find(params[:app_id])
   end
 
-  def set_first_step
-    @first_step = true if @train.steps.count < 1
-  end
-
   def step_params
     params.require(:releases_step).permit(
       :name,
@@ -111,7 +88,7 @@ class StepsController < SignedInApplicationController
 
   def parsed_step_params
     step_params
-      .merge(build_artifact_channel: step_params[:build_artifact_channel]&.safe_json_parse)
+      .merge(parsed_deployments_params)
       .merge(ci_cd_channel: step_params[:ci_cd_channel]&.safe_json_parse)
   end
 
@@ -126,6 +103,24 @@ class StepsController < SignedInApplicationController
   end
 
   def set_build_channels
-    @build_channels = @train.notification_provider.channels
+    @build_channel_integrations = @train.build_channel_integrations
+    @selected_integration = @build_channel_integrations.first
+    @selected_build_channels = Integration.find_by(id: @selected_integration).providable.channels
+  end
+
+  def deployments_params
+    params
+      .require(:releases_step)
+      .permit(deployments_attributes: [:integration_id, :build_artifact_channel])
+  end
+
+  def parsed_deployments_params
+    deployments_params.merge(deployments_attributes: parsed_deployments_attributes)
+  end
+
+  def parsed_deployments_attributes
+    deployments_params[:deployments_attributes].to_h.to_h do |number, attributes|
+      [number, attributes.merge(build_artifact_channel: attributes[:build_artifact_channel]&.safe_json_parse)]
+    end
   end
 end

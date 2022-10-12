@@ -1,0 +1,59 @@
+<div class="flex flex-col">
+  <span class="text-slate-500"><%= simple_format step.description %></span>
+
+  <span class="pt-1 flex items-center">
+    <%= image_tag("workflow.svg", width: 16, class: "inline-flex mr-2") %>
+    <span class="mr-2 text-slate-500"><%= show_ci_cd_provider step %> • <%= show_ci_cd_channel step %></span>
+  </span>
+
+  <% if step_run&.build_version %>
+    <div class="flex items-center">
+      <span class="mr-2 text-lg"><%= step_run.build_version %> (<%= step_run.build_number %>)</span>
+
+      <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">
+          Latest build
+        </span>
+    </div>
+  <% end %>
+
+  <%= image_tag("arrow-down.svg", width: 16, class: "inline-flex mt-2 mb-2") %>
+
+  <% step.deployments.each do |deployment| %>
+    <div class="pt-2 flex items-center text-slate-500">
+      <span class="mr-2 font-mono">
+        <%= deployment.deployment_number %>
+        <%= image_tag("arrow-right.svg", width: 16, class: "inline-flex") %>
+      </span>
+
+      <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
+
+      <% if step_run.present? %>
+        <% if step_run.manually_startable_deployment?(deployment) %>
+          <%= button_to 'Start this deployment',
+                        start_release_step_run_deployment_path(release, step_run, deployment),
+                        { class: 'ml-2 btn-xs bg-indigo-500 hover:bg-indigo-600 text-white' } %>
+        <% end %>
+
+        <% deployment_run = step_run.last_run_for(deployment) %>
+
+        <% if deployment_run.present? %>
+          <span class="ml-2"><%= deployment_run_status_badge(deployment_run) %></span>
+        <% end %>
+
+        <% if deployment_run&.promotable? %>
+          <div class="ml-2">
+            <%= form_with(model: [release, step_run, deployment_run], url: promote_deployment_run_path(deployment_run)) do |form| %>
+              <% if deployment_run.rolloutable? %>
+                <%= form.number_field :initial_rollout_percentage, class: "form-input w-72 mb-3", placeholder: "Initial Staged Rollout Percentage", step: ".001", min: 0, max: 100, required: true %>
+              <% else %>
+                <%= form.number_field :initial_rollout_percentage, value: "100", hidden: true %>
+              <% end %>
+
+              <%= form.submit 'Promote', class: "btn-xs ml-4 bg-indigo-500 hover:bg-indigo-600 text-white" %>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

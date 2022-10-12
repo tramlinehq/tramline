@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Services::TriggerRelease do
+RSpec.describe Triggers::Release do
   let(:train) { FactoryBot.create(:releases_train) }
 
   it ".run" do

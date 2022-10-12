@@ -3,13 +3,15 @@ class Integration < ApplicationRecord
   using RefinedString
 
   belongs_to :app
-  delegated_type :providable, types: %w[GithubIntegration GitlabIntegration SlackIntegration GooglePlayStoreIntegration]
+  delegated_type :providable, types: %w[GithubIntegration GitlabIntegration SlackIntegration GooglePlayStoreIntegration BitriseIntegration]
 
   class IntegrationNotImplemented < StandardError; end
 
+  class UnsupportedAction < StandardError; end
+
   LIST = {
     "version_control" => %w[GithubIntegration GitlabIntegration],
-    "ci_cd" => %w[GithubIntegration],
+    "ci_cd" => %w[GithubIntegration BitriseIntegration],
     "notification" => %w[SlackIntegration],
     "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration]
   }.freeze

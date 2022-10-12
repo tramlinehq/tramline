@@ -1,0 +1,23 @@
+<% form_url = app_bitrise_integration_path(@app) %>
+
+<span data-controller="visibility">
+    <button class="btn border-slate-300 hover:border-slate-400 flex items-center"
+            data-turbo="false"
+            data-action="visibility#toggle">
+      Connect
+    </button>
+
+  <%= modal_for("Add Personal Access Token") do %>
+    <%= form_with(model: [@app, integration], url: form_url) do |form| %>
+      <%= form.hidden_field :category, value: category %>
+      <%= form.fields_for :providable do |subform| %>
+        <%= subform.hidden_field :type, value: integration.providable_type %>
+        <%= subform.text_field :access_token, placeholder: "Paste here..." %>
+      <% end %>
+
+      <%= form.submit 'Create', class: "btn bg-indigo-500 hover:bg-indigo-600 flex text-white items-center mt-5 mb-5" %>
+    <% end %>
+
+    <%= link_to_external "How to add a personal access token?", "https://devcenter.bitrise.io/en/accounts/personal-access-tokens.html", class: "underline text-slate-500 items-end" %>
+  <% end %>
+</span>

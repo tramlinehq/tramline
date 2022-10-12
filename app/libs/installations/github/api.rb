@@ -27,6 +27,32 @@ module Installations
       end
     end
 
+    def find_workflow_run(repo, workflow, branch, head_sha)
+      options = {
+        branch:,
+        head_sha:
+      }
+
+      execute do
+        @client
+          .workflow_runs(repo, workflow, options)
+          .then { |response| response[:workflow_runs] }
+          .then { |workflow_runs| workflow_runs.sort_by { |workflow_run| workflow_run[:run_number] }.reverse! }
+          .then { |workflow_runs| workflow_runs.map { |workflow_run| workflow_run.to_h.slice(:id, :html_url) } }
+          .then { |responses| Installations::Response::Keys.normalize(responses, :workflow_runs) }
+          .first
+          .then { |run| run&.presence || raise(Installations::Errors::WorkflowRunNotFound) }
+      end
+    end
+
+    def get_workflow_run(repo, run_id)
+      execute do
+        @client
+          .workflow_run(repo, run_id)
+          .then { |run| run.to_h.presence || raise(Installations::Errors::WorkflowRunNotFound) }
+      end
+    end
+
     def list_repos
       execute do
         @client
@@ -38,8 +64,15 @@ module Installations
     end
 
     def run_workflow!(repo, id, ref, inputs)
+      inputs = {
+        versionCode: inputs[:version_code],
+        versionName: inputs[:build_version]
+      }
+
       execute do
-        @client.workflow_dispatch(repo, id, ref, inputs: inputs)
+        @client
+          .workflow_dispatch(repo, id, ref, inputs: inputs)
+          .then { |ok| ok.presence || raise(Installations::Errors::WorkflowTriggerFailed) }
       end
     end
 
@@ -123,7 +156,7 @@ module Installations
     rescue Octokit::Unauthorized
       set_client
       retry
-    rescue Octokit::UnprocessableEntity, Octokit::MethodNotAllowed => e
+    rescue Octokit::NotFound, Octokit::UnprocessableEntity, Octokit::MethodNotAllowed => e
       raise Installations::Github::Error.handle(e)
     end
 

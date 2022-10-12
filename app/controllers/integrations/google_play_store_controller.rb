@@ -12,6 +12,6 @@ class Integrations::GooglePlayStoreController < IntegrationsController
   end
 
   def attachment
-    Services::Attachment.for_json(integration_params[:providable][:json_key])
+    Services::FetchAttachment.for_json(integration_params[:providable][:json_key])
   end
 end

@@ -10,12 +10,12 @@ class IntegrationListeners::GithubController < IntegrationListenerController
 
   def events
     case event_type
-    when "workflow_run"
-      handle_workflow_run
     when "push"
       handle_push
     when "ping"
       handle_ping
+    else
+      head :ok
     end
   end
 
@@ -25,11 +25,7 @@ class IntegrationListeners::GithubController < IntegrationListenerController
 
   def handle_push
     response = WebhookHandlers::Github::Push.process(train, params)
-    head response.status
-  end
-
-  def handle_workflow_run
-    response = WebhookHandlers::Github::WorkflowRun.process(train, workflow_payload)
+    Rails.logger.debug response.body
     head response.status
   end
 

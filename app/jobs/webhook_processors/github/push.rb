@@ -6,22 +6,24 @@ class WebhookProcessors::Github::Push < ApplicationJob
     @release = Releases::Train::Run.find(train_run_id)
     @commit_attributes = commit_attributes
 
-    transaction do
+    @release.with_lock do
+      return unless release.committable?
+
       commit_record = create_commit
       train.bump_version!(:patch) if release.step_runs.any?
+      release.update(release_version: train.version_current)
       current_step = release.current_step || 1
 
       train.steps.where("step_number <= ?", current_step).order(:step_number).each do |step|
         if step.step_number < current_step
-          Services::TriggerStepRun.call(step, commit_record, false)
+          Triggers::StepRun.call(step, commit_record, false)
         else
-          Services::TriggerStepRun.call(step, commit_record)
+          Triggers::StepRun.call(step, commit_record)
         end
       end
-
-      release.update(release_version: train.version_current)
-      send_notification!
     end
+
+    send_notification!
   end
 
   private
@@ -49,11 +51,11 @@ class WebhookProcessors::Github::Push < ApplicationJob
     message = "New Release!"
     Notifiers::Slack::ReleaseStarted
       .render_json(train_name: train.name, version_number: train.version_current, branch_name: branch_name, commit_msg: commit_message)
-      .then { |notifier| Automatons::Notify.dispatch!(train:, message:, text_block: notifier) }
+      .then { |notifier| Triggers::Notification.dispatch!(train:, message:, text_block: notifier) }
   end
 
   def train
-    @train ||= @release.train
+    @train ||= release.train
   end
 
   def commit_message

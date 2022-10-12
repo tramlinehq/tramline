@@ -23,4 +23,8 @@ class AppConfig < ApplicationRecord
   def code_repository_organization_name_hack
     code_repository_name.partition("/").first
   end
+
+  def project
+    project_id.keys.first
+  end
 end

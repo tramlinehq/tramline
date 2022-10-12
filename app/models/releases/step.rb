@@ -9,13 +9,17 @@ class Releases::Step < ApplicationRecord
   has_many :runs, class_name: "Releases::Step::Run", inverse_of: :step, foreign_key: :train_step_id, dependent: :destroy
   has_many :sign_offs, foreign_key: :train_step_id, inverse_of: :step, dependent: :destroy
   has_many :sign_off_groups, through: :train
+  has_many :deployments, foreign_key: :train_step_id, inverse_of: :step, dependent: :destroy
+  has_many :deployment_runs, through: :deployments, class_name: "DeploymentRun"
   has_one :app, through: :train
 
-  validates :ci_cd_channel, presence: true
+  validates :ci_cd_channel, presence: true, uniqueness: {scope: :train_id, message: "you have already used this in another step of this train!"}
   validates :release_suffix, presence: true
   validates :release_suffix, format: {with: /\A[a-zA-Z\-_]+\z/, message: "only allows letters and underscore"}
+  validate :duplicate_deployments
 
-  delegate :app, to: :train
+  before_validation :set_step_number, if: :new_record?
+  after_initialize :set_default_status, if: :new_record?
 
   enum status: {
     active: "active",
@@ -24,9 +28,9 @@ class Releases::Step < ApplicationRecord
 
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
+  accepts_nested_attributes_for :deployments, allow_destroy: false, reject_if: :reject_deployments?
 
-  before_validation :set_step_number, if: :new_record?
-  after_initialize :set_default_status, if: :new_record?
+  delegate :app, to: :train
 
   def set_step_number
     self.step_number = train.steps.maximum(:step_number).to_i + 1
@@ -44,46 +48,27 @@ class Releases::Step < ApplicationRecord
     train.steps.maximum(:step_number).to_i == step_number
   end
 
-  # @return [Releases::Step]
   def next
     train.steps.where("step_number > ?", step_number)&.first
   end
 
-  # @return [Releases::Step]
   def previous
     train.steps.where("step_number < ?", step_number).last
   end
 
-  def startable?
-    return false if train.inactive?
-    return true if runs.empty? && first?
-    return false if train.active_run.nil?
-    return false if first?
+  private
 
-    (train.active_run&.next_step == self) && (approved_previous_step? && previous.runs.last.success?)
+  def reject_deployments?(attributes)
+    attributes["build_artifact_channel"].blank? || !attributes["build_artifact_channel"].is_a?(Hash)
   end
 
-  def approved_previous_step?
-    previous.runs.last.approval_approved?
-  end
+  def duplicate_deployments
+    duplicates =
+      deployments
+        .group_by { |deployment| deployment.values_at(:build_artifact_channel, :integration_id, :train_step_id) }
+        .values
+        .detect { |arr| arr.size > 1 }
 
-  def available_deployment_channels
-    if external_deployment?
-      [["External", {"external" => "external"}.to_json]]
-    else
-      app.integrations.build_channel.find_by(providable_type: build_artifact_integration).providable.channels
-    end
-  end
-
-  def deployment_provider
-    app.integrations.build_channel.find_by(providable_type: build_artifact_integration)
-  end
-
-  def deployment_channel
-    build_artifact_channel.values.first
-  end
-
-  def external_deployment?
-    build_artifact_integration == "external"
+    errors.add(:deployments, "should be designed to have unique providers and channels") if duplicates
   end
 end

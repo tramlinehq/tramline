@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe Services::PostRelease::ParallelBranches do
+describe Triggers::PostRelease::ParallelBranches do
   let(:release) { FactoryBot.create(:releases_train_run, branch_name: "production") }
 
   xit ".call" do

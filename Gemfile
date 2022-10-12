@@ -28,8 +28,7 @@ gem "octokit", "~> 4.22"
 gem "jwt", "~> 2.3"
 gem "postmark-rails", "~> 0.21.0"
 gem "ruby-duration", "~> 3.2"
-gem "sidekiq", "~> 6.4"
-gem "sidekiq-scheduler", "~> 3.1"
+gem "sidekiq", "~> 6.5"
 gem "http", "~> 5.0"
 gem "connection_pool", "~> 2.2"
 gem "haikunator", "~> 1.1"
@@ -58,6 +57,8 @@ gem "ougai", "~> 2.0"
 gem "amazing_print", "~> 1.4"
 gem "ddtrace", "~> 1.4"
 gem "dogstatsd-ruby", "~> 5.5"
+gem "memery", "~> 1.4"
+gem "data_migrate", "~> 8.1"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

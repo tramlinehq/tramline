@@ -1,6 +1,6 @@
 web: bin/rails server -p 3000 -b 'ssl://localhost:3000?key=config/certs/localhost-key.pem&cert=config/certs/localhost.pem'
 css: bin/rails tailwindcss:watch
-worker: bundle exec sidekiq
+worker: bundle exec sidekiq | tee ./log/sidekiq.log
 tunnel: ngrok http https://localhost:3000
 console: bin/rails console
 dbconsole: bin/rails dbconsole

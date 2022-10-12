@@ -22,19 +22,7 @@ module Notifiers
       end
 
       def artifact_download_link
-        if @step_run.build_artifact.file.present?
-          _artifact_download_link
-        else
-          fallback_link
-        end
-      end
-
-      def _artifact_download_link
-        if Rails.env.development?
-          rails_blob_url(@step_run.build_artifact.file, host: ENV["HOST_NAME"], port: ENV["PORT_NUM"], protocol: "https", disposition: "attachment")
-        else
-          rails_blob_url(@step_run.build_artifact.file, protocol: "https", disposition: "attachment")
-        end
+        @step_run.build_artifact.download_url.presence || fallback_link
       end
 
       def fallback_link
@@ -46,7 +34,7 @@ module Notifiers
       end
 
       def version_number
-        @train_run.train.version_current
+        @step_run.build_version
       end
 
       def template_file

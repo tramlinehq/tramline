@@ -9,13 +9,16 @@ module Installations
 
     CONTENT_TYPE = "application/octet-stream".freeze
 
-    attr_reader :package_name, :key_file, :release_version, :client, :errors
+    attr_reader :package_name, :key_file, :release_version, :client
+
+    def self.upload(package_name, key_file, release_version, file)
+      new(package_name, key_file, release_version).upload(file)
+    end
 
     def initialize(package_name, key_file, release_version)
       @package_name = package_name
       @key_file = key_file
       @release_version = release_version
-      @errors = []
 
       set_api_defaults
       set_client
@@ -71,19 +74,7 @@ module Installations
     def execute
       yield if block_given?
     rescue ::Google::Apis::ServerError, ::Google::Apis::ClientError => e
-      error =
-        begin
-          JSON.parse(e.body)
-        rescue
-          nil
-        end
-
-      @errors =
-        if error
-          error["error"] && error["error"]["message"]
-        else
-          e.body
-        end
+      raise Installations::Google::PlayDeveloper::Error.handle(e)
     end
 
     def set_client

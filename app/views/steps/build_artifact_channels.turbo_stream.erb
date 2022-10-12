@@ -1,3 +1,0 @@
-<%= turbo_stream.update "releases_step_build_artifact_channel" do %>
- <%= options_for_select(@build_channels, @step.build_artifact_channel.to_json) %>
-<% end %>

@@ -1,4 +1,4 @@
-<div class="grid gap-5 md:grid-cols-2">
+<div class="grid gap-5 md:grid-cols-2 border-b border-dashed pb-5">
   <div>
     <%= form.label :name, class: "block text-sm font-medium mb-1" %>
     <%= form.text_field :name, class: "form-input w-full", placeholder: "Enter step name..", required: true %>
@@ -9,7 +9,25 @@
     <%= form.text_area :description, class: "form-input w-full mb-1", placeholder: "Describe your step..." %>
   </div>
 
+  <div><!-- to push away the next field to the right--></div>
+
   <div>
+    <%= form.label :release_suffix, class: "block text-sm font-medium mb-1" %>
+    <%= form.text_field :release_suffix, class: "form-input w-full", placeholder: "Eg: qa-staging", required: true %>
+    <div class="text-sm mt-1">
+      This is appended to the <strong>bundle identifier</strong> of the app.
+    </div>
+  </div>
+</div>
+
+<div class="sm:flex sm:justify-between sm:items-center mt-8 mb-2 pb-5">
+  <p class="font-bold text-xl">
+    How do we build your app?
+  </p>
+</div>
+
+<div class="grid gap-5 md:grid-cols-1 border-b border-dashed pb-10">
+  <div class="w-1/2">
     <%= form.label :ci_cd_channel, "CI workflow", class: "block text-sm font-medium mb-1" %>
     <div class="control">
       <%= form.select :ci_cd_channel,
@@ -17,26 +35,11 @@
                       { class: "form-select" },
                       data: { controller: "input-select" } %>
     </div>
-  </div>
 
-  <div data-controller='build-channel' data-train="<%= @train.id %>" data-app="<%= @train.app.id %>" data-step="<%= @step.id %>">
-    <div>
-      <%= form.label :deployment_integrations, class: "block text-sm font-medium mb-1" %>
-      <%= form.select :build_artifact_integration, options_for_select(@step.train.build_channel_integrations, @step.build_artifact_integration),
-        {class: "form-select"},  required: true,  data: { controller: "input-select", action: 'change->build-channel#change'} %>
+    <div class="text-sm mt-1">
+      This CI workflow should generate a valid build artifact (aab/apk/ipa).
     </div>
-
-    <div>
-      <%= form.label :deployment_channel, class: "block text-sm font-medium mb-1 mt-4" %>
-      <%= form.select :build_artifact_channel,
-                      options_for_select(@build_channels, @step.build_artifact_channel.to_json),
-                      { class: "form-select" },
-                      data: { controller: "input-select" } %>
-    </div>
-  </div>
-
-  <div>
-    <%= form.label :release_suffix, class: "block text-sm font-medium mb-1" %>
-    <%= form.text_field :release_suffix, class: "form-input w-full", placeholder: "Eg: qa-staging", required: true %>
   </div>
 </div>
+
+

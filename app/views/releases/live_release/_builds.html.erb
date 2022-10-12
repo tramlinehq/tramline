@@ -1,0 +1,125 @@
+<p class="font-bold text-xl mt-8 mb-2">All builds</p>
+
+<% commits_count = release.commits.size %>
+
+<table class="table-auto w-full">
+  <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+
+  <tr>
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">•</div>
+    </th>
+
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">commit id</div>
+    </th>
+
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">when</div>
+    </th>
+
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">commit message</div>
+    </th>
+
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">builds</div>
+    </th>
+  </tr>
+  </thead>
+
+  <tbody class="text-sm divide-y divide-slate-200">
+  <% release.commits.order(created_at: :desc).includes(step_runs: :step).each_with_index do |commit, index| %>
+    <tr>
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <%= commits_count - index %>
+      </td>
+
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <%= commit.commit_hash[0, 5] %>
+      </td>
+
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <span><%= ago_in_words commit.timestamp %></span>
+      </td>
+
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <span class="underline"><%= link_to_external commit.message.truncate(70), commit.url %></span>
+      </td>
+
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="grid grid-cols-1 gap-y-1">
+          <% commit.step_runs.includes(:step).order(:created_at).each_with_index do |step_run| %>
+            <div class="border-dashed border-b last:border-b-0 p-2">
+              <div class="mb-4">
+                <% if step_run.ci_link.present? %>
+                  <%= link_to_external step_run.step.name, step_run.ci_link, class: "underline" %>
+                <% else %>
+                  <%= step_run.step.name %>
+                <% end %>
+              </div>
+
+              <% if Rails.env.development? %>
+                <div class="mb-4"><%= step_run.id.strip %></div>
+              <% end %>
+
+              <div class="mb-4">
+                <%= build_status_badge(step_run) %>
+              </div>
+
+              <div class="mb-4">
+                <% if step_run.fetching_build? %>
+                  <%= status_badge("Waiting for build", %w[bg-green-500 hover:bg-green-600 text-white], pulse: true) %>
+                <% end %>
+              </div>
+
+              <div class="mb-4">
+                <% if step_run.build_available? %>
+                  <%= link_to_external "Download Build", step_run.download_url, class: "underline" %>
+                  <div>
+                    <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-2") %>
+                    <%= "built " + ago_in_words(step_run.build_artifact&.generated_at) %>
+                  </div>
+
+                  <div>
+                    <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-2") %>
+                    <%= "uploaded " + ago_in_words(step_run.build_artifact&.uploaded_at) %>
+                  </div>
+                <% end %>
+              </div>
+
+              <div class="mb-4">
+                <% if step_run.build_available? %>
+                  Deployments
+                  <% step_run.deployment_runs.each do |deployment_run| %>
+                    <% deployment = deployment_run.deployment %>
+
+                    <div class="mt-1">
+                      <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
+                      <%= deployment_run_status_badge(deployment_run) %>
+                    </div>
+                  <% end %>
+                <% end %>
+              </div>
+
+              <div class="mb-4">
+                <div>
+                  <span class="font-medium">Build Number:</span> <%= step_run.build_number %>
+                </div>
+
+                <div>
+                  <span class="font-medium">Release Version:</span> <%= step_run.build_version %>
+                </div>
+
+                <div>
+                  <span class="font-medium">Approval Status:</span> <%= approval_emoji(step_run) %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>

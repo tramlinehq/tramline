@@ -22,6 +22,20 @@ class IntegrationsController < SignedInApplicationController
     set_integrations_by_categories
   end
 
+  def build_artifact_channels
+    id = params[:id]
+
+    @target = params[:target]
+    @build_channels =
+      if id.blank?
+        [["External", {"external" => "external"}.to_json]] # TODO: Have a better abstraction instead of if conditions
+      else
+        Integration.find_by(id: id).providable.channels
+      end
+
+    respond_to(&:turbo_stream)
+  end
+
   private
 
   def set_integrations_by_categories
@@ -40,6 +54,7 @@ class IntegrationsController < SignedInApplicationController
 
         (providers - existing_integration.pluck(:providable_type)).each do |provider|
           next if provider.eql?("GitlabIntegration") && !Flipper.enabled?(:gitlab_integration)
+          next if provider.eql?("BitriseIntegration") && !Flipper.enabled?(:bitrise_integration)
 
           integration =
             @app
