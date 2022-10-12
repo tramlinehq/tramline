@@ -4,6 +4,8 @@ namespace :db do
     Releases::CommitListener.delete_all
     ReleaseSituation.delete_all
     BuildArtifact.delete_all
+    DeploymentRun.delete_all
+    Deployment.delete_all
     Releases::Step::Run.delete_all
     SignOff.delete_all
     Releases::Commit.delete_all
