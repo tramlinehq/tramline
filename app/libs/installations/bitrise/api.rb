@@ -36,8 +36,8 @@ module Installations
             commit_hash: commit_hash,
             workflow_id: workflow_id,
             environments: [
-              { mapped_to: "BUILD_VERSION", value: inputs[:build_version] },
-              { mapped_to: "BUILD_NUMBER", value: inputs[:version_code] }
+              {mapped_to: "BUILD_VERSION", value: inputs[:build_version]},
+              {mapped_to: "BUILD_NUMBER", value: inputs[:version_code]}
             ]
           },
 
@@ -84,7 +84,7 @@ module Installations
     def download_artifact(download_url)
       # FIXME: return an IO stream instead of a TempFile
       # See issue: https://github.com/janko/down/issues/70
-      Down::Http.download(download_url, headers: { "Authorization" => access_token }, follow: { max_hops: 1 })
+      Down::Http.download(download_url, headers: {"Authorization" => access_token}, follow: {max_hops: 1})
     end
 
     def execute(verb, url, params)

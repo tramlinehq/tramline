@@ -50,7 +50,7 @@ class AppConfigsController < SignedInApplicationController
         @app
           .ci_cd_provider
           .list_apps
-          .map { |pair| ["#{pair[:name]} (#{pair[:id]})", { pair[:id] => pair[:name] }.to_json] }
+          .map { |pair| ["#{pair[:name]} (#{pair[:id]})", {pair[:id] => pair[:name]}.to_json] }
     end
   end
 end

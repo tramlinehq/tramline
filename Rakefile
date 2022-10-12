@@ -9,6 +9,6 @@ class Nope < RuntimeError; end
 
 task :destructive do
   puts "This task is destructive! Are you sure you want to continue? [y/N]"
-  input = STDIN.gets.chomp
+  input = $stdin.gets.chomp
   raise Nope unless input.downcase == "y"
 end
