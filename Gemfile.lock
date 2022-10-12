@@ -102,6 +102,9 @@ GEM
     concurrent-ruby (1.1.10)
     connection_pool (2.3.0)
     crass (1.0.6)
+    data_migrate (8.1.1)
+      activerecord (>= 5.0)
+      railties (>= 5.0)
     ddtrace (1.4.1)
       debase-ruby_core_source (= 0.10.16)
       libdatadog (~> 0.7.0.1.1)
@@ -525,6 +528,7 @@ DEPENDENCIES
   capybara
   chartkick (~> 4.2)
   connection_pool (~> 2.2)
+  data_migrate (~> 8.1)
   ddtrace (~> 1.4)
   debug
   devise (~> 4.8)
