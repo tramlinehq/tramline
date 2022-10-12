@@ -38,8 +38,10 @@ module Installations
           .workflow_runs(repo, workflow, options)
           .then { |response| response[:workflow_runs] }
           .then { |workflow_runs| workflow_runs.sort_by { |workflow_run| workflow_run[:run_number] }.reverse! }
+          .then { |workflow_runs| workflow_runs.map { |workflow_run| workflow_run.to_h.slice(:id, :html_url) } }
+          .then { |responses| Installations::Response::Keys.normalize(responses, :workflow_runs) }
           .first
-          .then { |run| run&.to_h.presence || raise(Installations::Errors::WorkflowRunNotFound) }
+          .then { |run| run&.presence || raise(Installations::Errors::WorkflowRunNotFound) }
       end
     end
 
@@ -62,6 +64,11 @@ module Installations
     end
 
     def run_workflow!(repo, id, ref, inputs)
+      inputs = {
+        versionCode: inputs[:version_code],
+        versionName: inputs[:build_version]
+      }
+
       execute do
         @client
           .workflow_dispatch(repo, id, ref, inputs: inputs)

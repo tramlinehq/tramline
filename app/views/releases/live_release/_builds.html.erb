@@ -69,15 +69,13 @@
 
               <div class="mb-4">
                 <% if step_run.fetching_build? %>
-                  <span class="text-xs uppercase tracking-wide inline-flex bg-green-500 animate-pulse text-white hover:bg-green-600 rounded-full text-center px-2 py-0.5">
-                    Fetching build
-                  </span>
+                  <%= status_badge("Waiting for build", %w[bg-green-500 hover:bg-green-600 text-white], pulse: true) %>
                 <% end %>
               </div>
 
               <div class="mb-4">
                 <% if step_run.build_available? %>
-                  <%= link_to "Download Build", step_run.download_url, class: "underline" %>
+                  <%= link_to_external "Download Build", step_run.download_url, class: "underline" %>
                   <div>
                     <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-2") %>
                     <%= "built " + ago_in_words(step_run.build_artifact&.generated_at) %>
@@ -105,6 +103,10 @@
               </div>
 
               <div class="mb-4">
+                <div>
+                  <span class="font-medium">Build Number:</span> <%= step_run.build_number %>
+                </div>
+
                 <div>
                   <span class="font-medium">Release Version:</span> <%= step_run.build_version %>
                 </div>

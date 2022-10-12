@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_10_05_110150) do
+ActiveRecord::Schema[7.0].define(version: 2022_10_11_110345) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -51,6 +51,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_05_110150) do
     t.string "working_branch"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "project_id"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
@@ -69,6 +70,12 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_05_110150) do
     t.index ["organization_id"], name: "index_apps_on_organization_id"
   end
 
+  create_table "bitrise_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "access_token"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "build_artifacts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "train_step_runs_id", null: false
     t.datetime "created_at", null: false
@@ -76,6 +83,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_05_110150) do
     t.datetime "generated_at", precision: nil
     t.datetime "uploaded_at", precision: nil
     t.index ["train_step_runs_id"], name: "index_build_artifacts_on_train_step_runs_id"
+  end
+
+  create_table "data_migrations", primary_key: "version", id: :string, force: :cascade do |t|
   end
 
   create_table "deployment_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -234,7 +244,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_05_110150) do
     t.datetime "updated_at", null: false
     t.uuid "train_run_id", null: false
     t.index ["train_id"], name: "index_releases_commits_on_train_id"
-    t.index ["train_run_id"], name: "index_releases_commits_on_train_run_id"
+    t.index ["train_run_id"], name: "index_releases_commits_on_train_runs_id"
   end
 
   create_table "releases_pull_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -375,7 +385,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_05_110150) do
     t.string "status", null: false
     t.string "version_seeded_with", null: false
     t.string "version_current"
-    t.string "version_suffix", null: false
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -385,7 +394,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_05_110150) do
     t.string "release_branch"
     t.string "release_backmerge_branch"
     t.index ["app_id"], name: "index_trains_on_app_id"
-    t.index ["version_suffix", "app_id"], name: "index_trains_on_version_suffix_and_app_id", unique: true
   end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

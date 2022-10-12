@@ -8,7 +8,8 @@
 
   <% if step_run&.build_version %>
     <div class="flex items-center">
-      <span class="mr-2 text-lg"><%= step_run.build_version %></span>
+      <span class="mr-2 text-lg"><%= step_run.build_version %> (<%= step_run.build_number %>)</span>
+
       <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">
           Latest build
         </span>
@@ -36,7 +37,7 @@
         <% deployment_run = step_run.last_run_for(deployment) %>
 
         <% if deployment_run.present? %>
-          <%= deployment_run_status_badge(deployment_run) %>
+          <span class="ml-2"><%= deployment_run_status_badge(deployment_run) %></span>
         <% end %>
 
         <% if deployment_run&.promotable? %>
@@ -48,7 +49,7 @@
                 <%= form.number_field :initial_rollout_percentage, value: "100", hidden: true %>
               <% end %>
 
-              <%= form.submit 'Promote', class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
+              <%= form.submit 'Promote', class: "btn-xs ml-4 bg-indigo-500 hover:bg-indigo-600 text-white" %>
             <% end %>
           </div>
         <% end %>

@@ -3,9 +3,6 @@ class Releases::Step::Run < ApplicationRecord
   include AASM
 
   self.implicit_order_column = :scheduled_at
-
-  class WorkflowTriggerFailed < StandardError; end
-
   self.ignored_columns = [:previous_step_run_id]
 
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :runs
@@ -20,8 +17,6 @@ class Releases::Step::Run < ApplicationRecord
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   after_create :reset_approval!
-
-  scope :active, -> { where.not(status: [:ci_workflow_unavailable, :ci_workflow_failed, :ci_workflow_halted, :deployment_failed, :success]) }
 
   STATES = {
     on_track: "on_track",
@@ -47,9 +42,9 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: :on_track, to: :ci_workflow_triggered
     end
 
-    event :ci_start, after_commit: -> { WorkflowProcessors::WorkflowRun.perform_later(id) } do
+    event :ci_start, after_commit: -> { WorkflowProcessors::WorkflowRunJob.perform_later(id) } do
       before :find_and_update_workflow_run
-      transitions from: [:on_track, :ci_workflow_triggered], to: :ci_workflow_started
+      transitions from: [:ci_workflow_triggered], to: :ci_workflow_started
     end
 
     event :ci_unavailable do
@@ -87,33 +82,48 @@ class Releases::Step::Run < ApplicationRecord
   attr_accessor :current_user
 
   delegate :train, to: :train_run
+  delegate :ci_cd_provider, to: :train
+  delegate :unzip_artifact?, to: :train
   delegate :release_branch, to: :train_run
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
   alias_method :release, :train_run
 
+  def update_ci_metadata!(workflow_run)
+    return if workflow_run.try(:[], :ci_ref).blank?
+    update!(ci_ref: workflow_run[:ci_ref], ci_link: workflow_run[:ci_link])
+  end
+
   def find_and_update_workflow_run
-    workflow_run = find_workflow_run&.slice(:id, :html_url)
-    update!(ci_ref: workflow_run[:id], ci_link: workflow_run[:html_url])
+    return if workflow_found?
+
+    find_workflow_run
+      .then { |wr| update_ci_metadata!(wr) }
   end
 
   def trigger_workflow_run
     version_code = train.app.bump_build_number!
     inputs = {
-      versionCode: version_code,
-      versionName: build_version
+      version_code: version_code,
+      build_version: build_version
     }
-
-    train.ci_cd_provider.trigger_workflow_run!(workflow_name, release_branch, inputs)
     update!(build_number: version_code)
+
+    ci_cd_provider
+      .trigger_workflow_run!(workflow_name, release_branch, inputs, commit_hash)
+      .then { |wr| update_ci_metadata!(wr) }
+  end
+
+  def workflow_found?
+    ci_ref.present?
   end
 
   def find_workflow_run
-    train.ci_cd_provider.find_workflow_run(workflow_name, release_branch, commit_hash)
+    ci_cd_provider.find_workflow_run(workflow_name, release_branch, commit_hash)
   end
 
   def get_workflow_run
-    train.ci_cd_provider.get_workflow_run(ci_ref)
+    ci_cd_provider.get_workflow_run(ci_ref)
   end
 
   def fetching_build?

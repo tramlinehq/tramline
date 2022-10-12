@@ -11,6 +11,10 @@ module Installations
 
     attr_reader :package_name, :key_file, :release_version, :client
 
+    def self.upload(package_name, key_file, release_version, file)
+      new(package_name, key_file, release_version).upload(file)
+    end
+
     def initialize(package_name, key_file, release_version)
       @package_name = package_name
       @key_file = key_file

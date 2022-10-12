@@ -21,17 +21,8 @@ class GithubIntegration < ApplicationRecord
       }).to_s
   end
 
-  def workflows
-    return [] unless integration.ci_cd?
-    installation.list_workflows(code_repository_name)
-  end
-
   def repos
     installation.list_repos
-  end
-
-  def trigger_workflow_run!(ci_cd_channel, ref, inputs)
-    installation.run_workflow!(code_repository_name, ci_cd_channel, ref, inputs)
   end
 
   def create_webhook!(url_params)
@@ -46,12 +37,12 @@ class GithubIntegration < ApplicationRecord
     installation.create_branch!(code_repository_name, from, to)
   end
 
-  def find_workflow_run(workflow_id, branch, head_sha)
-    installation.find_workflow_run(code_repository_name, workflow_id, branch, head_sha)
+  def branch_url(repo, branch_name)
+    "https://github.com/#{repo}/tree/#{branch_name}"
   end
 
-  def get_workflow_run(workflow_run_id)
-    installation.get_workflow_run(code_repository_name, workflow_run_id)
+  def tag_url(repo, tag_name)
+    "https://github.com/#{repo}/releases/tag/#{tag_name}"
   end
 
   def installation
@@ -70,12 +61,44 @@ class GithubIntegration < ApplicationRecord
     true
   end
 
-  def branch_url(repo, branch_name)
-    "https://github.com/#{repo}/tree/#{branch_name}"
+  # FIXME: what is this really?
+  def belongs_to_project?
+    false
   end
 
-  def tag_url(repo, tag_name)
-    "https://github.com/#{repo}/releases/tag/#{tag_name}"
+  ## CI/CD
+
+  def workflows
+    return [] unless integration.ci_cd?
+    installation.list_workflows(code_repository_name)
+  end
+
+  def trigger_workflow_run!(ci_cd_channel, ref, inputs, _commit_hash = nil)
+    raise WorkflowRun unless installation.run_workflow!(code_repository_name, ci_cd_channel, ref, inputs)
+  end
+
+  def find_workflow_run(workflow_id, branch, commit_sha)
+    installation.find_workflow_run(code_repository_name, workflow_id, branch, commit_sha)
+  end
+
+  def get_workflow_run(workflow_run_id)
+    installation.get_workflow_run(code_repository_name, workflow_run_id)
+  end
+
+  def artifact_url
+    raise Integrations::UnsupportedAction
+  end
+
+  def download_stream(artifacts_url)
+    installation
+      .artifacts(artifacts_url)
+      .reject { |artifact| artifact["name"] == "version" }
+      .first["archive_download_url"]
+      .then { |url| installation.artifact_io_stream(url) }
+  end
+
+  def unzip_artifact?
+    true
   end
 
   private

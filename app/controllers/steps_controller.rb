@@ -104,7 +104,7 @@ class StepsController < SignedInApplicationController
 
   def set_build_channels
     @build_channel_integrations = @train.build_channel_integrations
-    @selected_integration = @build_channel_integrations.second
+    @selected_integration = @build_channel_integrations.first
     @selected_build_channels = Integration.find_by(id: @selected_integration).providable.channels
   end
 

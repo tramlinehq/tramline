@@ -43,7 +43,6 @@ class Releases::Train < ApplicationRecord
 
   validate :semver_compatibility
   validate :ready?, on: :create
-  validates :version_suffix, uniqueness: {scope: :app}
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: "can only contain alphanumerics, underscores, hyphens and forward-slashes."}
 
   before_create :set_current_version!
@@ -54,6 +53,7 @@ class Releases::Train < ApplicationRecord
   delegate :vcs_provider, to: :integrations
   delegate :ci_cd_provider, to: :integrations
   delegate :notification_provider, to: :integrations
+  delegate :unzip_artifact?, to: :ci_cd_provider
 
   self.ignored_columns = [:signoff_enabled]
 
@@ -68,8 +68,6 @@ class Releases::Train < ApplicationRecord
   def create_webhook!
     return false if Rails.env.test?
     vcs_provider.create_webhook!(train_id: id)
-    return true if integrations.shared_vcs_and_ci_cd?
-    ci_cd_provider.create_webhook!(train_id: id)
   rescue Installations::Errors::WebhookLimitReached
     errors.add(:webhooks, "We can't create any more webhooks in your VCS/CI environment!")
     raise ActiveRecord::RecordInvalid, self
