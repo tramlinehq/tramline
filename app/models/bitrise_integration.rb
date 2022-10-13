@@ -25,6 +25,10 @@ class BitriseIntegration < ApplicationRecord
     false
   end
 
+  def store?
+    false
+  end
+
   # FIXME: what is this really?
   def belongs_to_project?
     true

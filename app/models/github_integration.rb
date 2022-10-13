@@ -61,6 +61,10 @@ class GithubIntegration < ApplicationRecord
     true
   end
 
+  def store?
+    false
+  end
+
   # FIXME: what is this really?
   def belongs_to_project?
     false

@@ -13,10 +13,11 @@ class Releases::Step < ApplicationRecord
   has_many :deployment_runs, through: :deployments, class_name: "DeploymentRun"
   has_one :app, through: :train
 
-  validates :ci_cd_channel, presence: true, uniqueness: {scope: :train_id, message: "you have already used this in another step of this train!"}
+  validates :ci_cd_channel, presence: true, uniqueness: { scope: :train_id, message: "you have already used this in another step of this train!" }
   validates :release_suffix, presence: true
-  validates :release_suffix, format: {with: /\A[a-zA-Z\-_]+\z/, message: "only allows letters and underscore"}
-  validate :duplicate_deployments
+  validates :release_suffix, format: { with: /\A[a-zA-Z\-_]+\z/, message: "only allows letters and underscore" }
+  validate :unique_deployments
+  validate :unique_store_deployments_per_train
 
   before_validation :set_step_number, if: :new_record?
   after_initialize :set_default_status, if: :new_record?
@@ -62,7 +63,7 @@ class Releases::Step < ApplicationRecord
     attributes["build_artifact_channel"].blank? || !attributes["build_artifact_channel"].is_a?(Hash)
   end
 
-  def duplicate_deployments
+  def unique_deployments
     duplicates =
       deployments
         .group_by { |deployment| deployment.values_at(:build_artifact_channel, :integration_id, :train_step_id) }
@@ -70,5 +71,14 @@ class Releases::Step < ApplicationRecord
         .detect { |arr| arr.size > 1 }
 
     errors.add(:deployments, "should be designed to have unique providers and channels") if duplicates
+  end
+
+  def unique_store_deployments_per_train
+    duplicates =
+      deployments
+        .filter(&:store?)
+        .any? { |deployment| train.deployments.exists?(build_artifact_channel: deployment.build_artifact_channel, integration: deployment.integration) }
+
+    errors.add(:deployments, "cannot have repeated store configurations across steps in the same train") if duplicates
   end
 end

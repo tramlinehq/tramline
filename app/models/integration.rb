@@ -89,4 +89,8 @@ class Integration < ApplicationRecord
       errors.add(:providable_type, "Provider is not a part of this type of Integration")
     end
   end
+
+  def store?
+    build_channel? && providable.store?
+  end
 end

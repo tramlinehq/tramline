@@ -68,6 +68,10 @@ class GitlabIntegration < ApplicationRecord
     true
   end
 
+  def store?
+    false
+  end
+
   private
 
   # retry once (2 attempts in total)
