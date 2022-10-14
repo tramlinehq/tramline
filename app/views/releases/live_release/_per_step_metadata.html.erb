@@ -44,12 +44,12 @@
           <div class="ml-2">
             <%= form_with(model: [release, step_run, deployment_run], url: promote_deployment_run_path(deployment_run)) do |form| %>
               <% if deployment_run.rolloutable? %>
-                <%= form.number_field :initial_rollout_percentage, class: "form-input w-72 mb-3", placeholder: "Initial Staged Rollout Percentage", step: ".001", min: 0, max: 100, required: true %>
+                <%= form.number_field :initial_rollout_percentage, class: "form-input w-72 mb-3", placeholder: "Initial Staged Rollout Percentage", step: ".001", min: 0, max: 99, required: true %>
               <% else %>
                 <%= form.number_field :initial_rollout_percentage, value: "100", hidden: true %>
               <% end %>
 
-              <%= form.submit 'Promote', class: "btn-xs ml-4 bg-indigo-500 hover:bg-indigo-600 text-white" %>
+              <%= form.submit 'Release', class: "btn-xs ml-4 bg-indigo-500 hover:bg-indigo-600 text-white" %>
             <% end %>
           </div>
         <% end %>
