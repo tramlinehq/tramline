@@ -97,6 +97,12 @@
                     <div class="mt-1">
                       <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
                       <%= deployment_run_status_badge(deployment_run) %>
+                      <% if deployment.store? && deployment_run.released? %>
+                        <div class="text-xs ml-4 mt-2">
+                          <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-1") %>
+                          <span>Released to: <%= number_to_percentage deployment_run.initial_rollout_percentage %> of the users</span>
+                        </div>
+                      <% end %>
                     </div>
                   <% end %>
                 <% end %>
