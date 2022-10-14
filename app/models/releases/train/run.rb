@@ -73,7 +73,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def finalizable?
-    (on_track? || post_release?) && signed? && (commits.last.step_runs.success.size == train.steps.size)
+    (on_track? || post_release?) && signed? && finished_steps?
   end
 
   def next_step
@@ -114,7 +114,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def finished_steps?
-    latest_finished_step_runs.size == train.steps.size
+    commits.last.step_runs.success.size == train.steps.size
   end
 
   def latest_finished_step_runs
