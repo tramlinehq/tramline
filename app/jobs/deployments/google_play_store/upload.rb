@@ -21,7 +21,7 @@ class Deployments::GooglePlayStore::Upload < ApplicationJob
 
     step_run.build_artifact.file_for_playstore_upload do |file|
       API.upload(package_name, key, release_version, file)
-    rescue Installations::Errors::BuildExistsInBuildChannel => e
+    rescue Installations::Errors::BuildExistsInBuildChannel, Installations::Errors::DuplicatedBuildUploadAttempt => e
       log(e)
     rescue Installations::Errors::BundleIdentifierNotFound => e
       log(e)

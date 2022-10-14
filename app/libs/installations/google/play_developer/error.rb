@@ -20,6 +20,12 @@ module Installations
         code: 403,
         message_matcher: /You cannot rollout this release because it does not allow any existing users to upgrade to the newly added APKs/,
         decorated_exception: Installations::Errors::BuildNotUpgradable
+      },
+      {
+        status: "FAILED_PRECONDITION",
+        code: 400,
+        message_matcher: /This Edit has been deleted/,
+        decorated_exception: Installations::Errors::DuplicatedBuildUploadAttempt
       }
     ]
 
