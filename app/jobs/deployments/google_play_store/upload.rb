@@ -22,6 +22,8 @@ class Deployments::GooglePlayStore::Upload < ApplicationJob
     step_run.build_artifact.file_for_playstore_upload do |file|
       API.upload(package_name, key, release_version, file)
     rescue Installations::Errors::BuildExistsInBuildChannel, Installations::Errors::DuplicatedBuildUploadAttempt => e
+      # FIXME: this is a hack because it's possible to send to play store in parallel
+      # this should be fixed as a design, maybe call deployments sequentially
       log(e)
     rescue Installations::Errors::BundleIdentifierNotFound => e
       log(e)
