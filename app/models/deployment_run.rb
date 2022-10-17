@@ -4,8 +4,8 @@ class DeploymentRun < ApplicationRecord
   belongs_to :deployment, inverse_of: :deployment_runs
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
 
-  validates :deployment_id, uniqueness: {scope: :train_step_run_id}
-  validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
+  validates :deployment_id, uniqueness: { scope: :train_step_run_id }
+  validates :initial_rollout_percentage, numericality: { greater_than: 0, less_than_or_equal_to: 100, allow_nil: true }
 
   delegate :step, :release, to: :step_run
 
@@ -82,12 +82,12 @@ class DeploymentRun < ApplicationRecord
   end
 
   def initial_run
-    release
-      .commits
+    deployment
+      .deployment_runs
+      .includes(step_run: :train_run)
+      .where(step_run: { train_runs: release })
+      .where.not(id:)
       .first
-      .step_runs_for(step)
-      .last
-      .last_run_for(deployment)
   end
 
   def previous_rollout
