@@ -72,7 +72,6 @@ class Releases::Step::Run < ApplicationRecord
     end
 
     event :finish do
-      after { release.start_release_phase! if step.last? }
       transitions from: [:build_ready, :deployment_started], to: :success
     end
   end

@@ -49,6 +49,10 @@ class SlackIntegration < ApplicationRecord
     true
   end
 
+  def store?
+    false
+  end
+
   private
 
   def redirect_uri

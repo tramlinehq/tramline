@@ -19,6 +19,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
     false
   end
 
+  def store?
+    true
+  end
+
   def to_s
     "google_play_store"
   end

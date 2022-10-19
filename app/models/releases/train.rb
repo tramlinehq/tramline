@@ -19,6 +19,7 @@ class Releases::Train < ApplicationRecord
   has_many :sign_off_groups, through: :train_sign_off_groups
   has_many :commit_listeners, class_name: "Releases::CommitListener", inverse_of: :train, dependent: :destroy
   has_many :commits, class_name: "Releases::Commit", inverse_of: :train, dependent: :destroy
+  has_many :deployments, through: :steps
 
   scope :running, -> { includes(:runs).where(runs: {status: Releases::Train::Run.statuses[:on_track]}) }
 

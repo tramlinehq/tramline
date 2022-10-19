@@ -76,9 +76,9 @@ class WorkflowProcessors::WorkflowRun
 
   def wait_time
     if Rails.env.development?
-      2.minutes
+      1.minute
     else
-      5.minutes
+      2.minutes
     end
   end
 end

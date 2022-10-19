@@ -7,8 +7,7 @@ class DeploymentRun < ApplicationRecord
   validates :deployment_id, uniqueness: {scope: :train_step_run_id}
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
-  delegate :step, to: :step_run
-  delegate :release, to: :step_run
+  delegate :step, :release, to: :step_run
 
   unless const_defined?(:STATES)
     STATES = {
@@ -66,11 +65,36 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
+  # FIXME: this is cheap hack around not allowing users to re-enter rollout
+  # since that can cause users to downgrade subsequent build rollouts
+  # we want users to only upgrade or keep the same initial rollout they entered the first time
+  # even after subsequent deployment runs / commits land
+  def noninitial?
+    initial_run.present?
+  end
+
   def promotable?
-    uploaded? && deployment.google_play_store_integration?
+    release.on_track? && uploaded? && deployment.google_play_store_integration?
   end
 
   def rolloutable?
     promotable? && deployment.last? && step.last?
+  end
+
+  def initial_run
+    deployment
+      .deployment_runs
+      .includes(step_run: :train_run)
+      .where(step_run: {train_runs: release})
+      .where.not(id:)
+      .first
+  end
+
+  def previous_rollout
+    initial_run.initial_rollout_percentage
+  end
+
+  def previously_rolled_out?
+    rolloutable? && noninitial?
   end
 end

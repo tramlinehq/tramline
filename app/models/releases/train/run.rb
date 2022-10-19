@@ -14,7 +14,6 @@ class Releases::Train::Run < ApplicationRecord
 
   STATES = {
     on_track: "on_track",
-    release_phase: "release_phase",
     post_release: "post_release",
     finished: "finished",
     error: "error"
@@ -26,12 +25,8 @@ class Releases::Train::Run < ApplicationRecord
     state :on_track, initial: true
     state(*STATES.keys)
 
-    event :start_release_phase do
-      transitions from: :on_track, to: :release_phase
-    end
-
     event :start_post_release_phase, after_commit: -> { Releases::PostReleaseJob.perform_later(id) } do
-      transitions from: :release_phase, to: :post_release, guard: :finalizable?
+      transitions from: :on_track, to: :post_release, guard: :finalizable?
     end
 
     event :finish do
@@ -78,7 +73,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def finalizable?
-    (release_phase? || post_release?) && signed? && finished_steps?
+    (on_track? || post_release?) && signed? && finished_steps?
   end
 
   def next_step
@@ -119,7 +114,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def finished_steps?
-    latest_finished_step_runs.size == train.steps.size
+    commits.last.step_runs.success.size == train.steps.size
   end
 
   def latest_finished_step_runs

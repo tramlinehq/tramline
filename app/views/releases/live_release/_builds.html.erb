@@ -30,6 +30,7 @@
 
   <tbody class="text-sm divide-y divide-slate-200">
   <% release.commits.order(created_at: :desc).includes(step_runs: :step).each_with_index do |commit, index| %>
+    <% is_stale_commit = commit.stale? %>
     <tr>
       <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <%= commits_count - index %>
@@ -49,8 +50,12 @@
 
       <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <div class="grid grid-cols-1 gap-y-1">
+          <% if is_stale_commit %>
+            <span class="font-bold">This commit has been replaced by a newer commit.</span>
+          <% end %>
+
           <% commit.step_runs.includes(:step).order(:created_at).each_with_index do |step_run| %>
-            <div class="border-dashed border-b last:border-b-0 p-2">
+            <div class="border-dashed border-b last:border-b-0 p-2 <%= "opacity-50" if is_stale_commit %>">
               <div class="mb-4">
                 <% if step_run.ci_link.present? %>
                   <%= link_to_external step_run.step.name, step_run.ci_link, class: "underline" %>
@@ -97,6 +102,13 @@
                     <div class="mt-1">
                       <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
                       <%= deployment_run_status_badge(deployment_run) %>
+
+                      <% if deployment.store? && deployment_run.released? %>
+                        <div class="text-xs ml-4 mt-2">
+                          <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-1") %>
+                          <span>Released to: <%= number_to_percentage deployment_run.initial_rollout_percentage %> of the users</span>
+                        </div>
+                      <% end %>
                     </div>
                   <% end %>
                 <% end %>

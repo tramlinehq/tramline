@@ -23,5 +23,7 @@ module Installations
     class BundleIdentifierNotFound < StandardError; end
 
     class BuildNotUpgradable < StandardError; end
+
+    class DuplicatedBuildUploadAttempt < StandardError; end
   end
 end

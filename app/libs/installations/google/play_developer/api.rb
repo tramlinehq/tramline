@@ -6,7 +6,6 @@ module Installations
     SERVICE = ANDROID_PUBLISHER::AndroidPublisherService
     SERVICE_ACCOUNT = ::Google::Auth::ServiceAccountCredentials
     SCOPE = ANDROID_PUBLISHER::AUTH_ANDROIDPUBLISHER
-
     CONTENT_TYPE = "application/octet-stream".freeze
 
     attr_reader :package_name, :key_file, :release_version, :client

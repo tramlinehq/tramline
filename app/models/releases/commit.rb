@@ -11,4 +11,8 @@ class Releases::Commit < ApplicationRecord
   def step_runs_for(step)
     step_runs.where(step: step)
   end
+
+  def stale?
+    train_run.commits.last != self
+  end
 end
