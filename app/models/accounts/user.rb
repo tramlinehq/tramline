@@ -7,9 +7,9 @@ class Accounts::User < ApplicationRecord
 
   validates :password, password_strength: {use_dictionary: true}, allow_nil: true
   validates :email, presence: true,
-            uniqueness: { case_sensitive: false },
-            length: { maximum: 105 },
-            format: { with: URI::MailTo::EMAIL_REGEXP }
+    uniqueness: {case_sensitive: false},
+    length: {maximum: 105},
+    format: {with: URI::MailTo::EMAIL_REGEXP}
 
   after_validation :strip_unnecessary_errors
 
