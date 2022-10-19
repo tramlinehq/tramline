@@ -74,7 +74,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def promotable?
-    uploaded? && deployment.google_play_store_integration?
+    release.on_track? && uploaded? && deployment.google_play_store_integration?
   end
 
   def rolloutable?

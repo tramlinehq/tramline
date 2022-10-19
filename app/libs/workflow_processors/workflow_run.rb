@@ -78,7 +78,7 @@ class WorkflowProcessors::WorkflowRun
     if Rails.env.development?
       2.minutes
     else
-      5.minutes
+      2.minutes
     end
   end
 end
