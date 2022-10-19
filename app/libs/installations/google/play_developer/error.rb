@@ -38,7 +38,7 @@ module Installations
     end
 
     def handle
-      return error if match.nil?
+      return exception if match.nil?
       match[:decorated_exception].new
     end
 
