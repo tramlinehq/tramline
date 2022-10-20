@@ -2,10 +2,10 @@ module ExceptionHandler
   extend ActiveSupport::Concern
 
   included do
-    rescue_from ActiveRecord::RecordNotFound, ActionController::RoutingError, with: :not_found if Rails.env.production?
+    rescue_from StandardError, with: :internal_server_error
+    rescue_from ActiveRecord::RecordNotFound, ActionController::RoutingError, with: :not_found
     rescue_from ActionController::InvalidAuthenticityToken, with: :unprocessable_entity
     rescue_from ActionController::ParameterMissing, with: :bad_request
-    rescue_from HTTP::Error, OpenSSL::SSL::SSLError, with: :internal_server_error
   end
 
   private
@@ -42,10 +42,11 @@ module ExceptionHandler
     respond_to do |format|
       @code = code
       @exception = exception
-      @title = t("exceptions.http_code.#{@code}.title")
+      @title = t("errors.messages.http_code.#{@code}.title")
+      @content = t("errors.messages.http_code.#{@code}.content")
       @message = exception.message if code < 500
 
-      format.any { render "exceptions/index", status: code, formats: [:html] }
+      format.any { render "errors/show", layout: "errors", status: code, formats: [:html] }
       format.json { render json: {code:, error: Rack::Utils::HTTP_STATUS_CODES[code]}, status: code }
     end
   end

@@ -27,7 +27,7 @@ en:
           title: "You don't have permissions to view this page"
         '404':
           title: "Not Found"
-          content: "The page you are looking for isn't here."
+          content: "Hmm...this page does not exist. Try searching for something else!"
         '406':
           title: "This page is not available in the requested format."
         '410':
@@ -39,7 +39,7 @@ en:
           title: "Too many requests"
         '500':
           title: "This page is not correct"
-          content: "We're sorry, but something went wrong on our end."
+          content: "Tramline made a boo-boo, please go back and try again. 😭"
         '503':
           title: "The page could not be served due to a temporary server failure."
       password:
