@@ -24,6 +24,11 @@ module Installations
         code: "custom",
         message_matcher: /Hook already exists on this repository/,
         decorated_exception: Installations::Errors::HookAlreadyExistsOnRepository
+      },
+      {
+        resource: "Release",
+        code: "already_exists",
+        decorated_exception: Installations::Errors::TaggedReleaseAlreadyExists
       }
     ]
 

@@ -105,6 +105,12 @@ module Installations
       end
     end
 
+    def create_release!(repo, tag_name)
+      execute do
+        @client.create_release(repo, tag_name, generate_release_notes: true)
+      end
+    end
+
     def create_pr!(repo, to, from, title, body)
       execute do
         @client.create_pull_request(repo, to, from, title, body)
