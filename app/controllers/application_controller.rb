@@ -1,6 +1,6 @@
 class ApplicationController < ActionController::Base
   using RefinedString
-  include ExceptionHandler if Rails.env.production? || ENV["GRACEFUL_ERRORS"].to_boolean
+  include ExceptionHandler if Rails.env.production? || ENV["GRACEFUL_ERROR_PAGES"].to_boolean
 
   def raise_not_found
     raise ActionController::RoutingError, "Unknown url: #{params[:unmatched_route]}"
