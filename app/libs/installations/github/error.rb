@@ -34,16 +34,16 @@ module Installations
 
     MESSAGES = [
       {
+        message_matcher: /Not Found/,
+        decorated_exception: Installations::Errors::ResourceNotFound
+      },
+      {
         message_matcher: /Reference already exists/,
         decorated_exception: Installations::Errors::TagReferenceAlreadyExists
       },
       {
         message_matcher: /Pull Request is not mergeable/,
         decorated_exception: Installations::Errors::PullRequestNotMergeable
-      },
-      {
-        message_matcher: /Not Found/,
-        decorated_exception: Installations::Errors::ResourceNotFound
       }
     ]
 
