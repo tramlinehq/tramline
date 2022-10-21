@@ -31,7 +31,6 @@ class GithubIntegration < ApplicationRecord
 
   def create_tag!(tag_name, branch)
     installation.create_tag!(code_repository_name, tag_name, branch)
-    tag_name
   end
 
   def create_branch!(from, to)

@@ -101,7 +101,20 @@ module Installations
 
     def create_tag!(repo, name, branch_name)
       execute do
-        @client.create_ref(repo, "refs/tags/#{name}", head(repo, branch_name))
+        object_sha = head(repo, branch_name)
+        @client.create_ref(repo, "refs/tags/#{name}", object_sha)
+      end
+    end
+
+    def create_annotated_tag!(repo, name, branch_name, message, tagger_name, tagger_email)
+      execute do
+        object_sha = head(repo, branch_name)
+        type = "commit"
+        tagged_at = Time.current
+
+        @client
+          .create_tag(repo, name, message, object_sha, type, tagger_name, tagger_email, tagged_at)
+          .then { |resp| @client.create_ref(repo, "refs/tags/#{name}", resp[:sha]) }
       end
     end
 
@@ -119,7 +132,7 @@ module Installations
 
     def find_pr(repo, to, from)
       execute do
-        @client.pull_requests(repo, {head: from, base: to}).first
+        @client.pull_requests(repo, { head: from, base: to }).first
       end
     end
 
@@ -131,14 +144,15 @@ module Installations
 
     def head(repo, working_branch_name)
       execute do
+        # FIXME: this method is unsupported and could get deprecated, find a way around it
         @client.commits(repo, sha: working_branch_name).first[:sha]
       end
     end
 
     def artifact_filename(archive_download_url)
       header = Down::Http.open(archive_download_url,
-        headers: {"Authorization" => "Bearer #{@client.access_token}"},
-        follow: {max_hops: 1}).data[:headers]["Content-Disposition"]
+                               headers: { "Authorization" => "Bearer #{@client.access_token}" },
+                               follow: { max_hops: 1 }).data[:headers]["Content-Disposition"]
       Down::Utils.filename_from_content_disposition(header)
     end
 
@@ -146,8 +160,8 @@ module Installations
       # FIXME: return an IO stream instead of a TempFile
       # See issue: https://github.com/janko/down/issues/70
       Down::Http.download(archive_download_url,
-        headers: {"Authorization" => "Bearer #{@client.access_token}"},
-        follow: {max_hops: 1})
+                          headers: { "Authorization" => "Bearer #{@client.access_token}" },
+                          follow: { max_hops: 1 })
     end
 
     def artifacts(artifacts_url)
