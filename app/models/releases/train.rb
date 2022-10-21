@@ -79,7 +79,13 @@ class Releases::Train < ApplicationRecord
     vcs_provider.create_tag!(tag_name, branch_name)
   end
 
+  def create_release!(tag_name)
+    return false if Rails.env.test?
+    vcs_provider.create_release!(tag_name)
+  end
+
   def create_branch!(from, to)
+    return false if Rails.env.test?
     vcs_provider.create_branch!(from, to)
   end
 

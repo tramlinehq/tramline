@@ -2,6 +2,8 @@ module Installations
   module Errors
     class TagReferenceAlreadyExists < StandardError; end
 
+    class TaggedReleaseAlreadyExists < StandardError; end
+
     class PullRequestNotMergeable < StandardError; end
 
     class WebhookLimitReached < StandardError; end
