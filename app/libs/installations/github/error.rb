@@ -70,10 +70,16 @@ module Installations
 
     def matched_error
       ERRORS.find do |known_error|
+        resource = known_error[:resource]
+        code = known_error[:code]
+        message_matcher = known_error[:message_matcher]
+
         errors&.any? do |err|
-          err["resource"].eql?(known_error[:resource]) &&
-            err["code"].eql?(known_error[:code]) &&
-            err["message"] =~ known_error[:message_matcher]
+          resource_match = err["resource"].eql?(resource)
+          code_match = err["code"].eql?(code)
+          msg_match = message_matcher.nil? ? true : err["message"] =~ message_matcher
+
+          resource_match && code_match && msg_match
         end
       end
     end
