@@ -28,9 +28,7 @@
               <%= render partial: "releases/live_release/future_circle" %>
             <% end %>
 
-            <p class="text-lg font-bold text-slate-800 pl-6">
-              <%= step.name %>
-            </p>
+            <p class="text-lg font-bold text-slate-800 pl-6"><%= step.name %></p>
 
             <% if release.on_track? && release.startable_step?(step) %>
               <%= button_to "Move to this step", start_release_step_run_path(release, step), { class: 'btn-xs ml-4 bg-indigo-500 hover:bg-indigo-600 text-white' } %>
