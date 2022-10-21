@@ -48,10 +48,6 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.create_tag!(code_repository_name, tag_name, branch) }
   end
 
-  def create_release!(_tag_name)
-    true
-  end
-
   def create_branch!(from, to)
     with_api_retries { installation.create_branch!(code_repository_name, from, to) }
   end

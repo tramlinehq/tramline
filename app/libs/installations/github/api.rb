@@ -118,9 +118,10 @@ module Installations
       end
     end
 
-    def create_release!(repo, tag_name)
+    # creates a lightweight tag and a GitHub release simultaneously
+    def create_release!(repo, tag_name, branch_name)
       execute do
-        @client.create_release(repo, tag_name, generate_release_notes: true)
+        @client.create_release(repo, tag_name, target_commitish: branch_name, generate_release_notes: true)
       end
     end
 
