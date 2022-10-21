@@ -5,76 +5,51 @@
   </div>
 
   <div class="mt-5">
-    <%= render "shared/note_box",
-               message: "When a new commit lands, all steps are re-run until the last running step. This ensures that previous stakeholders are kept up-to-date." %>
+    <%= render "shared/note_box", message: "When a new commit lands, all steps are re-run until the last running step. This ensures that previous stakeholders are kept up-to-date." %>
   </div>
 
   <div class="mt-2">
-    <%= render "shared/note_box",
-               message: "If your release is stuck in some unrecoverable state, just land another commit to kick things off again." %>
+    <%= render "shared/note_box", message: "If your release is stuck in some unrecoverable state, just land another commit to kick things off again." %>
   </div>
 
   <p class="font-bold text-xl mt-8 mb-2">Latest build</p>
-  <div class="flex flex-col mt-4">
-    <ul>
+  <div class="flex flex-col mt-3">
+    <ol class="relative border-l-4 border-gray-300 ml-3 mt-2">
       <% release_train.steps.order(:step_number).includes(:train, :runs).each do |step| %>
         <% step_run = release.last_run_for(step) %>
-        <li class="relative py-2">
-          <!-- Step symbol, name, action button -->
+
+        <li class="mb-10 ml-6 last:mb-0">
           <div class="flex items-center">
-            <% unless step.last? %>
-              <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
-            <% end %>
-
-            <% if step_run&.approval_approved? && step_run.success? %>
-              <!-- approved and finished -->
-              <div class="absolute left-0 rounded-full bg-indigo-500" aria-hidden="true">
-                <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
-                  <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"></path>
-                </svg>
-              </div>
-            <% elsif step_run&.may_finish? %>
-              <!-- on_track -->
-              <div class="absolute left-0 rounded-full bg-slate-500" aria-hidden="true">
-                <svg class="w-5 h-5 fill-current text-white" viewBox="0 0 20 20">
-                  <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"></path>
-                </svg>
-              </div>
+            <% if step_run&.in_progress? %>
+              <%= render partial: "releases/live_release/in_progress_circle" %>
+            <% elsif step_run&.done? %>
+              <%= render partial: "releases/live_release/done_circle" %>
             <% else %>
-              <!-- not on_track, not finished, not approved -->
-              <div class="absolute left-0 rounded-full bg-white" aria-hidden="true">
-                <svg class="w-5 h-5 fill-current text-slate-400" viewBox="0 0 20 20">
-                  <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm0 2C4.477 20 0 15.523 0 10S4.477 0 10 0s10 4.477 10 10-4.477 10-10 10z"></path>
-                </svg>
-              </div>
+              <%= render partial: "releases/live_release/future_circle" %>
             <% end %>
 
-            <p class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></p>
+            <p class="text-lg font-bold text-slate-800 pl-6">
+              <%= step.name %>
+            </p>
 
             <% if release.on_track? && release.startable_step?(step) %>
-              <%= button_to 'Move to this step',
-                            start_release_step_run_path(release, step),
-                            { class: 'btn-xs ml-4 bg-indigo-500 hover:bg-indigo-600 text-white' } %>
+              <%= button_to "Move to this step", start_release_step_run_path(release, step), { class: 'btn-xs ml-4 bg-indigo-500 hover:bg-indigo-600 text-white' } %>
             <% end %>
           </div>
 
-          <div class="pl-9">
+          <div class="pl-6">
             <%= render partial: "releases/live_release/per_step_metadata", locals: { release: release, step: step, step_run: step_run } %>
-            <div class="mt-5">
-              <%= render partial: "releases/live_release/step_sign_offs", locals: { release: release, release_train: release_train, step: step, step_run: step_run } %>
-            </div>
+            <%= render partial: "releases/live_release/step_sign_offs", locals: { release: release, release_train: release_train, step: step, step_run: step_run } %>
           </div>
         </li>
       <% end %>
+    </ol>
 
-      <div class="pl-9">
-        <% if release.finalizable? %>
-          <%= button_to "Finish this release",
-                        post_release_release_path(release),
-                        class: 'btn-sm bg-indigo-500 hover:bg-indigo-600 text-white' %>
-        <% end %>
+    <% if release.finalizable? %>
+      <div class="mt-9">
+        <%= button_to "Finish this release", post_release_release_path(release), class: 'btn-sm bg-indigo-500 hover:bg-indigo-600 text-white' %>
       </div>
-    </ul>
+    <% end %>
   </div>
 
   <%= render partial: "releases/live_release/builds", locals: { release: release } %>

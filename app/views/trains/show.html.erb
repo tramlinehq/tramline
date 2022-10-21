@@ -65,25 +65,23 @@
 <h2 class="text-2xl font-bold mt-8 mb-4">Steps</h2>
 <% if @train.steps.size > 0 %>
   <div class="flex flex-col">
-    <ul>
+    <ol class="relative border-l-4 border-gray-300 ml-3 mt-2">
       <% @train.steps.each do |step| %>
-        <li class="relative pb-6">
+        <li class="mb-10 ml-6 last:mb-0">
           <div class="flex items-center">
-            <% unless step.last? %>
-              <div class="absolute left-0 h-full w-0.5 bg-slate-200 self-start ml-2.5 -translate-x-1/2 translate-y-3" aria-hidden="true"></div>
-            <% end %>
-            <div class="absolute left-0 rounded-full bg-indigo-200" aria-hidden="true">
-              <svg class="w-5 h-5 fill-current text-slate-500" viewBox="0 0 20 20"/>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 pl-9"><%= step.name %></h3>
+            <span class="flex absolute -left-5 justify-center items-center w-9 h-6 bg-slate-200 rounded-full ring-8 ring-white"></span>
+
+            <h3 class="text-lg font-bold text-slate-800 pl-6">
+              <%= step.name %>
+            </h3>
           </div>
 
-          <div class="pl-9 mt-1">
+          <div class="pl-6 mt-1">
             <%= render partial: 'per_step_metadata', locals: { step: step } %>
           </div>
         </li>
       <% end %>
-    </ul>
+    </ol>
   </div>
 <% else %>
   <p class="text-sm">

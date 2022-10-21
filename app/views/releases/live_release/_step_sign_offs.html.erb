@@ -1,47 +1,49 @@
 <% if release.on_track? && step_run&.success? && !release_train.sign_off_groups.empty? %>
-  <% is_current_step = (release.current_step == step.step_number) %>
+  <div class="mt-5">
+    <% is_current_step = (release.current_step == step.step_number) %>
 
-  <div class="flex flex-col w-1/2 bg-amber-50 rounded-lg p-4 mb-2">
-    <% if step_run.approval_approved? && (release.finished? || !is_current_step) %>
-      <span>This step has been approved</span>
-    <% elsif step_run.approval_rejected? && (release.finished? || !is_current_step) %>
-      <span>This step has been rejected</span>
-    <% else %>
-      <div class="font-bold text-slate-600 text-sm uppercase mb-1">Sign-offs</div>
+    <div class="flex flex-col w-1/2 bg-amber-50 rounded-lg p-4 mb-2">
+      <% if step_run.approval_approved? && (release.finished? || !is_current_step) %>
+        <span>This step has been approved</span>
+      <% elsif step_run.approval_rejected? && (release.finished? || !is_current_step) %>
+        <span>This step has been rejected</span>
+      <% else %>
+        <div class="font-bold text-slate-600 text-sm uppercase mb-1">Sign-offs</div>
 
-      <% release_train.sign_off_groups.each do |group| %>
-        <div class="flex items-center justify-between mb-2">
-          <div><%= group.name %></div>
-          <div><%= group.members.pluck(:email).to_sentence %></div>
-          <span class="grid grid-flow-col gap-2">
+        <% release_train.sign_off_groups.each do |group| %>
+          <div class="flex items-center justify-between mb-2">
+            <div><%= group.name %></div>
+            <div><%= group.members.pluck(:email).to_sentence %></div>
+            <span class="grid grid-flow-col gap-2">
                       <% if !step_run&.sign_required? || step.sign_offs.exists?(sign_off_group: group, signed: false, commit: step_run&.commit) %>
                         <%= button_to "Approve", approve_step_sign_off_path(step),
                                       params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
                                       class: 'btn border-slate-200 hover:border-slate-300 text-green-500' %>
-              <%= button_to "Revert", revert_step_sign_off_path(step),
-                            params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
-                            class: 'btn border-slate-200 hover:border-slate-300 text-slate-600',
-                            method: :delete %>
+                <%= button_to "Revert", revert_step_sign_off_path(step),
+                              params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
+                              class: 'btn border-slate-200 hover:border-slate-300 text-slate-600',
+                              method: :delete %>
 
                       <% elsif step.sign_offs.exists?(sign_off_group: group, signed: true, commit: step_run&.commit) %>
                         <%= button_to "Reject", reject_step_sign_off_path(step),
                                       params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
                                       class: 'btn border-slate-200 hover:border-slate-300 text-rose-500' %>
-              <%= button_to "Revert", revert_step_sign_off_path(step),
-                            params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
-                            class: 'btn border-slate-200 hover:border-slate-300 text-slate-600',
-                            method: :delete %>
+                <%= button_to "Revert", revert_step_sign_off_path(step),
+                              params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
+                              class: 'btn border-slate-200 hover:border-slate-300 text-slate-600',
+                              method: :delete %>
                       <% else %>
                         <%= button_to "Approve", approve_step_sign_off_path(step),
                                       params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
                                       class: 'btn border-slate-200 hover:border-slate-300 text-green-500' %>
-              <%= button_to "Reject", reject_step_sign_off_path(step),
-                            params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
-                            class: 'btn border-slate-200 hover:border-slate-300 text-rose-500' %>
+                <%= button_to "Reject", reject_step_sign_off_path(step),
+                              params: { sign_off_group_id: group.id, commit_id: step_run&.commit },
+                              class: 'btn border-slate-200 hover:border-slate-300 text-rose-500' %>
                       <% end %>
                       </span>
-        </div>
+          </div>
+        <% end %>
       <% end %>
-    <% end %>
+    </div>
   </div>
 <% end %>

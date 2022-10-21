@@ -191,6 +191,14 @@ class Releases::Step::Run < ApplicationRecord
     end
   end
 
+  def in_progress?
+    !success? || is_rejected?
+  end
+
+  def done?
+    approval_approved? && success?
+  end
+
   def workflow_name
     step.ci_cd_channel.keys.first
   end
