@@ -133,7 +133,7 @@ module Installations
 
     def find_pr(repo, to, from)
       execute do
-        @client.pull_requests(repo, { head: from, base: to }).first
+        @client.pull_requests(repo, {head: from, base: to}).first
       end
     end
 
@@ -152,8 +152,8 @@ module Installations
 
     def artifact_filename(archive_download_url)
       header = Down::Http.open(archive_download_url,
-                               headers: { "Authorization" => "Bearer #{@client.access_token}" },
-                               follow: { max_hops: 1 }).data[:headers]["Content-Disposition"]
+        headers: {"Authorization" => "Bearer #{@client.access_token}"},
+        follow: {max_hops: 1}).data[:headers]["Content-Disposition"]
       Down::Utils.filename_from_content_disposition(header)
     end
 
@@ -161,8 +161,8 @@ module Installations
       # FIXME: return an IO stream instead of a TempFile
       # See issue: https://github.com/janko/down/issues/70
       Down::Http.download(archive_download_url,
-                          headers: { "Authorization" => "Bearer #{@client.access_token}" },
-                          follow: { max_hops: 1 })
+        headers: {"Authorization" => "Bearer #{@client.access_token}"},
+        follow: {max_hops: 1})
     end
 
     def artifacts(artifacts_url)

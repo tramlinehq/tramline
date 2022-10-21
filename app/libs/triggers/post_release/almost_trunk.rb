@@ -24,7 +24,7 @@ class Triggers::PostRelease
       rescue Installations::Errors::TagReferenceAlreadyExists
         release.event_stamp!(reason: :tag_reference_already_exists, kind: :notice, data: {})
       rescue Installations::Errors::TaggedReleaseAlreadyExists
-        release.event_stamp!(reason: :tagged_release_already_exists, kind: :notice, data: { tag: release.tag_name })
+        release.event_stamp!(reason: :tagged_release_already_exists, kind: :notice, data: {tag: release.tag_name})
       end
 
       Result.new(ok?: true)
