@@ -6,6 +6,21 @@ class ApplicationController < ActionController::Base
     raise ActionController::RoutingError, "Unknown url: #{params[:unmatched_route]}"
   end
 
+  protected
+
+  def ensure_supported_layout(layout)
+    return "unsupported_device" unless supported_device?
+    layout
+  end
+
+  def supported_device?
+    device_type.in?(%w[desktop])
+  end
+
+  def device_type
+    DeviceDetector.new(request.user_agent).device_type
+  end
+
   unless Rails.env.production?
     around_action :n_plus_one_detection
 
