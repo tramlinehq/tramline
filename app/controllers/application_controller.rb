@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
   using RefinedString
   include ExceptionHandler if Rails.env.production? || ENV.fetch("GRACEFUL_ERROR_PAGES", "false").to_boolean
+  layout -> { ensure_supported_layout("application") }
 
   def raise_not_found
     raise ActionController::RoutingError, "Unknown url: #{params[:unmatched_route]}"
@@ -9,8 +10,11 @@ class ApplicationController < ActionController::Base
   protected
 
   def ensure_supported_layout(layout)
-    return "unsupported_device" unless supported_device?
-    layout
+    if supported_device?
+      layout
+    else
+      "unsupported_device"
+    end
   end
 
   def supported_device?
