@@ -41,7 +41,7 @@ class Releases::Train::Run < ApplicationRecord
 
   scope :pending_release, -> { where(status: [:release_phase, :post_release, :on_track]) }
 
-  delegate :app, to: :train
+  delegate :app, :pre_release_prs?, to: :train
 
   def tag_name
     "v#{release_version}"

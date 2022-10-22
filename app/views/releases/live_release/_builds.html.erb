@@ -1,159 +1,140 @@
-<p class="font-bold text-xl mt-8 mb-2">All builds</p>
+<section>
+  <div class="flex">
+    <h3 class="font-bold text-xl">All Builds</h3>
+  </div>
 
-<% commits_count = release.commits.size %>
+  <% commits_count = release.commits.size %>
 
-<table class="table-auto w-full">
-  <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
-
-  <tr>
-    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-      <div class="font-semibold text-left">•</div>
-    </th>
-
-    <th class="px-2 py-3 whitespace-nowrap">
-      <div class="font-semibold text-left">commit id</div>
-    </th>
-
-    <th class="px-2 py-3 whitespace-nowrap">
-      <div class="font-semibold text-left">when</div>
-    </th>
-
-    <th class="px-2 py-3 whitespace-nowrap">
-      <div class="font-semibold text-left">commit message</div>
-    </th>
-
-    <th class="px-2 py-3 whitespace-nowrap"><!-- latest commit badge --></th>
-    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"><!-- build details accordion --></th>
-  </tr>
-  </thead>
-
-  <% release.commits.order(created_at: :desc).includes(step_runs: :step).each_with_index do |commit, index| %>
-    <% is_stale_commit = commit.stale? %>
-
-    <tbody class="text-sm border-b last:border-b-0" data-controller="reveal" data-reveal-toggle-keys-value="c">
+  <table class="table-auto w-full mt-4">
+    <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
     <tr>
-      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <%= commits_count - index %>
-      </td>
+      <th class="px-2 py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">commit</div>
+      </th>
 
-      <td class="px-2 py-3 whitespace-nowrap">
-        <%= commit.commit_hash[0, 5] %>
-      </td>
-
-      <td class="px-2 py-3 whitespace-nowrap">
-        <span><%= ago_in_words commit.timestamp %></span>
-      </td>
-
-      <td class="px-2 py-3 whitespace-nowrap">
-        <span class="underline"><%= link_to_external commit.message.truncate(70), commit.url %></span>
-      </td>
-
-      <td class="px-2 py-3 whitespace-nowrap">
-        <% unless commit.stale? %>
-          <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">Latest Commit</span>
-        <% end %>
-      </td>
-
-      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
-        <button
-          class="text-slate-400 hover:text-slate-500 transform"
-          data-action="reveal#toggle">
-
-          <div class="flex truncate">
-            <span class="truncate mx-2 font-medium text-slate-500 group-hover:text-slate-800">Build Details</span>
-            <svg class="w-3 h-3 shrink-0 ml-1 mt-1 fill-current text-slate-500 group-hover:text-slate-800" viewBox="0 0 12 12">
-              <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z"/>
-            </svg>
-          </div>
-        </button>
-      </td>
+      <th class="py-3 whitespace-nowrap"><!-- build details accordion --></th>
     </tr>
+    </thead>
 
-    <tr data-reveal <%= "hidden" if commit.stale? %>>
-      <td colspan="5" class="px-2 last:pr-5 py-3 whitespace-nowrap">
-        <div class="grid grid-cols-1 gap-y-1">
-          <% if is_stale_commit %>
-            <span class="font-bold">This commit has been replaced by a newer commit.</span>
+    <% release.commits.order(created_at: :desc).includes(step_runs: :step).each_with_index do |commit, index| %>
+      <% is_stale_commit = commit.stale? %>
+
+      <tbody class="text-sm border-b last:border-b-0" data-controller="reveal" data-reveal-toggle-keys-value="c">
+      <tr>
+        <td class="py-3 whitespace-nowrap">
+          <% if commit.stale? %>
+            <%= commits_count - index %>
+          <% else %>
+            <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">Latest</span>
           <% end %>
+          <div class="mt-2 underline"><%= link_to_external commit.message.truncate(50), commit.url %></div>
+          <div class="mt-2"><%= commit.commit_hash[0, 5] %></div>
+          <div class="mt-2"><%= ago_in_words commit.timestamp %></div>
+        </td>
 
-          <% commit.step_runs.includes(:step).order(:created_at).each_with_index do |step_run| %>
-            <div class="border-dashed border-b last:border-b-0 p-2 <%= "opacity-50" if is_stale_commit %>">
-              <div class="mb-4">
-                <% if step_run.ci_link.present? %>
-                  <%= link_to_external step_run.step.name, step_run.ci_link, class: "underline" %>
-                <% else %>
-                  <%= step_run.step.name %>
+        <td class="align-text-top py-3 whitespace-nowrap w-px">
+          <button
+            class="text-slate-400 hover:text-slate-500 transform"
+            data-action="reveal#toggle">
+
+            <div class="flex truncate">
+              <span class="truncate mx-2 font-medium text-slate-500 group-hover:text-slate-800 underline">Build Details</span>
+              <svg class="w-3 h-3 shrink-0 ml-1 mt-1 fill-current text-slate-500 group-hover:text-slate-800" viewBox="0 0 12 12">
+                <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z"/>
+              </svg>
+            </div>
+          </button>
+        </td>
+      </tr>
+
+      <tr data-reveal <%= "hidden" if commit.stale? %>>
+        <td colspan="2" class="py-3 whitespace-nowrap">
+          <div class="grid grid-cols-1 gap-y-1">
+            <% if is_stale_commit %>
+              <span class="font-bold">This commit has been replaced by a newer commit.</span>
+            <% end %>
+
+            <% commit.step_runs.includes(:step).order(:created_at).each_with_index do |step_run| %>
+              <div class="border-dashed border-t last:border-t-0"></div>
+
+              <div class="pr-2 pt-2 <%= "opacity-50" if is_stale_commit %>">
+                <div class="mb-4">
+                  <% if step_run.ci_link.present? %>
+                    <%= link_to_external step_run.step.name, step_run.ci_link, class: "underline" %>
+                  <% else %>
+                    <%= step_run.step.name %>
+                  <% end %>
+                </div>
+
+                <% if Rails.env.development? %>
+                  <div class="mb-4"><%= step_run.id.strip %></div>
                 <% end %>
-              </div>
 
-              <% if Rails.env.development? %>
-                <div class="mb-4"><%= step_run.id.strip %></div>
-              <% end %>
+                <div class="mb-4">
+                  <%= build_status_badge(step_run) %>
+                </div>
 
-              <div class="mb-4">
-                <%= build_status_badge(step_run) %>
-              </div>
+                <div class="mb-4">
+                  <% if step_run.fetching_build? %>
+                    <%= status_badge("Waiting for build", %w[bg-green-500 hover:bg-green-600 text-white], pulse: true) %>
+                  <% end %>
+                </div>
 
-              <div class="mb-4">
-                <% if step_run.fetching_build? %>
-                  <%= status_badge("Waiting for build", %w[bg-green-500 hover:bg-green-600 text-white], pulse: true) %>
-                <% end %>
-              </div>
+                <div class="mb-4">
+                  <% if step_run.build_available? %>
+                    <%= link_to_external "Download Build", step_run.download_url, class: "underline" %>
+                    <div>
+                      <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-2") %>
+                      <%= "built " + ago_in_words(step_run.build_artifact&.generated_at) %>
+                    </div>
 
-              <div class="mb-4">
-                <% if step_run.build_available? %>
-                  <%= link_to_external "Download Build", step_run.download_url, class: "underline" %>
-                  <div>
-                    <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-2") %>
-                    <%= "built " + ago_in_words(step_run.build_artifact&.generated_at) %>
-                  </div>
-
-                  <div>
-                    <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-2") %>
-                    <%= "uploaded " + ago_in_words(step_run.build_artifact&.uploaded_at) %>
-                  </div>
-                <% end %>
-              </div>
-
-              <div class="mb-4">
-                <% if step_run.build_available? %>
-                  Deployments
-                  <% step_run.deployment_runs.each do |deployment_run| %>
-                    <% deployment = deployment_run.deployment %>
-
-                    <div class="mt-1">
-                      <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
-                      <%= deployment_run_status_badge(deployment_run) %>
-
-                      <% if deployment.store? && deployment_run.released? %>
-                        <div class="text-xs ml-4 mt-2">
-                          <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-1") %>
-                          <span>Released to: <%= number_to_percentage deployment_run.initial_rollout_percentage %> of the users</span>
-                        </div>
-                      <% end %>
+                    <div>
+                      <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-2") %>
+                      <%= "uploaded " + ago_in_words(step_run.build_artifact&.uploaded_at) %>
                     </div>
                   <% end %>
-                <% end %>
+                </div>
+
+                <div class="mb-4">
+                  <% if step_run.build_available? %>
+                    Deployments
+                    <% step_run.deployment_runs.each do |deployment_run| %>
+                      <% deployment = deployment_run.deployment %>
+
+                      <div class="mt-1">
+                        <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
+                        <%= deployment_run_status_badge(deployment_run) %>
+
+                        <% if deployment.store? && deployment_run.released? %>
+                          <div class="text-xs ml-4 mt-2">
+                            <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-1") %>
+                            <span>Released to: <%= number_to_percentage deployment_run.initial_rollout_percentage %> of the users</span>
+                          </div>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  <% end %>
+                </div>
+
+                <div class="mb-4">
+                  <div>
+                    <span class="font-medium">Build Number:</span> <%= step_run.build_number %>
+                  </div>
+
+                  <div>
+                    <span class="font-medium">Release Version:</span> <%= step_run.build_version %>
+                  </div>
+
+                  <div>
+                    <span class="font-medium">Approval Status:</span> <%= approval_emoji(step_run) %>
+                  </div>
+                </div>
               </div>
-
-              <div class="mb-4">
-                <div>
-                  <span class="font-medium">Build Number:</span> <%= step_run.build_number %>
-                </div>
-
-                <div>
-                  <span class="font-medium">Release Version:</span> <%= step_run.build_version %>
-                </div>
-
-                <div>
-                  <span class="font-medium">Approval Status:</span> <%= approval_emoji(step_run) %>
-                </div>
-              </div>
-            </div>
-          <% end %>
-        </div>
-      </td>
-    </tr>
-    </tbody>
-  <% end %>
-</table>
+            <% end %>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    <% end %>
+  </table>
+</section>
