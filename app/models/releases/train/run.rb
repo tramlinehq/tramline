@@ -3,7 +3,7 @@ class Releases::Train::Run < ApplicationRecord
   include AASM
   self.implicit_order_column = :was_run_at
 
-  STAMPABLE_REASONS = %w[created status_changed pull_request_not_required pull_request_not_mergeable tag_reference_already_exists]
+  STAMPABLE_REASONS = %w[created status_changed pull_request_not_required pull_request_not_mergeable tag_reference_already_exists, tagged_release_already_exists]
 
   belongs_to :train, class_name: "Releases::Train"
   has_many :pull_requests, class_name: "Releases::PullRequest", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
