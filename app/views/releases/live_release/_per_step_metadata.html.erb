@@ -1,7 +1,7 @@
 <div class="flex flex-col">
   <div class="text-slate-500 text-sm"><%= simple_format(step.description) %></div>
 
-  <div class="text-xs text-slate-500 font-medium align-text-bottom mt-5 mb-3">
+  <div class="text-xs text-slate-500 font-medium mt-5">
     <%= image_tag("workflow.svg", width: 14, class: "inline-flex mr-1") %>
     <%= render partial: "shared/display_channels",
                locals: { name: show_ci_cd_provider(step), channel: show_ci_cd_channel(step) } %>
@@ -9,7 +9,7 @@
 
   <% if step_run&.build_version %>
     <div class="flex items-center">
-      <span class="align-text-bottom text-sm mr-2">
+      <span class="text-sm mr-2">
         <%= step_run.build_version %>&nbsp;(<%= step_run.build_number %>)
       </span>
 
