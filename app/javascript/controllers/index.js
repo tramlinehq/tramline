@@ -9,3 +9,7 @@ eagerLoadControllersFrom('controllers', application)
 // import Flatpickr
 import Flatpickr from 'stimulus-flatpickr'
 application.register('flatpickr', Flatpickr)
+
+// import Reveal
+import RevealController from 'stimulus-reveal'
+application.register("reveal", RevealController)

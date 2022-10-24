@@ -138,6 +138,10 @@ class Releases::Train < ApplicationRecord
     [app.config.code_repository_organization_name_hack, ":", release_backmerge_branch].join
   end
 
+  def pre_release_prs?
+    branching_strategy == "parallel_working"
+  end
+
   private
 
   def semver_compatibility
