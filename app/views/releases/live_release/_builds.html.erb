@@ -1,6 +1,6 @@
 <section>
   <div class="flex">
-    <h3 class="font-bold text-xl">All Builds</h3>
+    <h2 class="font-bold text-2xl">All builds</h2>
   </div>
 
   <% commits_count = release.commits.size %>
@@ -102,7 +102,9 @@
                       <% deployment = deployment_run.deployment %>
 
                       <div class="mt-1">
-                        <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
+                        <span class="mr-1">
+                          <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
+                        </span>
                         <%= deployment_run_status_badge(deployment_run) %>
 
                         <% if deployment.store? && deployment_run.released? %>

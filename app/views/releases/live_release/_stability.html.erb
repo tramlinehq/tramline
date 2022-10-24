@@ -1,6 +1,6 @@
 <section>
   <div class="flex">
-    <h3 class="font-bold text-xl">Stability</h3>
+    <h2 class="font-bold text-2xl">Stability</h2>
     <span class="text-xl text-slate-400 ml-4"><%= time_ago_in_words(release.updated_at) %> ago</span>
   </div>
 
@@ -12,7 +12,8 @@
     <%= render "shared/note_box", message: "If your release is stuck in some unrecoverable state, just land another commit to kick things off again." %>
   </div>
 
-  <p class="font-bold text-xl mt-8 mb-2">Latest build</p>
+  <p class="font-bold text-2xl mt-8 mb-2">Latest build</p>
+
   <div class="flex flex-col mt-3">
     <ol class="relative border-l-4 border-gray-300 ml-3 mt-2">
       <% release_train.steps.order(:step_number).includes(:train, :runs).each do |step| %>
@@ -31,7 +32,7 @@
             <p class="text-lg font-bold text-slate-800 pl-6"><%= step.name %></p>
 
             <% if release.on_track? && release.startable_step?(step) %>
-              <%= button_to "Move to this step", start_release_step_run_path(release, step), { class: 'btn-xs ml-4 bg-indigo-500 hover:bg-indigo-600 text-white' } %>
+              <%= button_to "Move to this step", start_release_step_run_path(release, step), { class: 'btn-xs ml-2 bg-indigo-500 hover:bg-indigo-600 text-white' } %>
             <% end %>
           </div>
 

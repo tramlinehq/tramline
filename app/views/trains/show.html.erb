@@ -68,17 +68,12 @@
     <ol class="relative border-l-4 border-gray-300 ml-3 mt-2">
       <% @train.steps.each do |step| %>
         <li class="mb-10 ml-6 last:mb-0">
-          <div class="flex items-center">
+          <div class="flex">
             <span class="flex absolute -left-5 justify-center items-center w-9 h-6 bg-slate-200 rounded-full ring-8 ring-white"></span>
-
-            <h3 class="text-lg font-bold text-slate-800 pl-6">
-              <%= step.name %>
-            </h3>
+            <h3 class="text-xl font-bold items-start justify-start text-slate-800 pl-6"><%= step.name %></h3>
           </div>
 
-          <div class="pl-6 mt-1">
-            <%= render partial: 'per_step_metadata', locals: { step: step } %>
-          </div>
+          <div class="pl-6"><%= render partial: "per_step_metadata", locals: { step: step } %></div>
         </li>
       <% end %>
     </ol>

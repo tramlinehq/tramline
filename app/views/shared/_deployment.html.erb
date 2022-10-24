@@ -1,2 +1,2 @@
-<%= image_tag("package.svg", width: 16, class: "inline-flex mr-2") %>
-<span><%= show_deployment_provider deployment %> • <%= show_deployment_channel deployment %></span>
+<%= render partial: "shared/display_channels",
+           locals: { name: show_deployment_provider(deployment), channel: show_deployment_channel(deployment) } %>

@@ -1,10 +1,15 @@
-<% step.deployments.each do |deployment| %>
-  <div class="pt-1 flex items-center text-slate-500">
-    <span class="mr-2 font-mono">
-      <%= deployment.deployment_number %>
-      <%= image_tag("arrow-right.svg", width: 16, class: "inline-flex") %>
-    </span>
-
-    <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
-  </div>
-<% end %>
+<ol class="relative border-l-2 border-gray-300">
+  <% step.deployments.each do |deployment| %>
+    <li class="last:mb-0 mb-3">
+      <div class="inline-flex absolute -left-1.5 w-2.5 h-2.5 bg-slate-300 rounded-full mt-2"></div>
+      <div class="pl-4">
+        <div class="text-xs font-medium align-text-bottom">
+          <%= image_tag("package.svg", width: 14, class: "inline-flex mr-1") %>
+          <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
+          <%= render partial: "releases/live_release/deployment_status",
+                     locals: { step_run: step_run, deployment: deployment, release: release } if show_deployment_status %>
+        </div>
+      </div>
+    </li>
+  <% end %>
+</ol>
