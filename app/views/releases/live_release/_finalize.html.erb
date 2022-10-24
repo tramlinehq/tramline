@@ -32,20 +32,20 @@
   <% end %>
 
   <% if release.finished? && release.completed_at.present? %>
-    <div class="mt-4 bg-indigo-50 rounded-md border border-slate-200 ">
+    <div class="mt-4 bg-indigo-50 rounded-md border border-indigo-300">
       <div class="py-4 px-8 lg:px-8">
         <div class="max-w-sm mx-auto lg:max-w-none">
           <div class="text-sm font-semibold text-slate-800 mb-1">Release Summary</div>
 
           <ul class="mt-3">
-            <li class="flex items-center justify-between py-3 border-b border-indigo-300">
+            <li class="flex items-center justify-between py-3 border-b border-indigo-200">
               <div class="text-sm">Total Run Time</div>
               <div class="text-sm font-medium text-slate-800 ml-2">
                 <%= finalize_phase_metadata(release).dig(:total_run_time) %>
               </div>
             </li>
 
-            <li class="flex items-center justify-between py-3 border-b border-indigo-300">
+            <li class="flex items-center justify-between py-3 border-b border-indigo-200">
               <div class="text-sm">Release Tag</div>
               <div class="flex items-center whitespace-nowrap">
                 <%= image_tag("git_tag.svg", width: 20, class: "inline-flex mr-2") %>
@@ -57,7 +57,7 @@
             </li>
 
             <% if release.last_good_step_run&.deployment_runs.last.initial_rollout_percentage.present? %>
-              <li class="flex items-center justify-between py-3 border-b border-indigo-300">
+              <li class="flex items-center justify-between py-3 border-b border-indigo-200">
                 <div class="text-sm">Initial Roll-out Percentage</div>
                 <div class="flex items-center whitespace-nowrap">
                   <%= number_to_percentage(release.last_good_step_run&.deployment_runs.last.initial_rollout_percentage) %>
@@ -68,7 +68,7 @@
             <% end %>
 
             <% unless finalize_phase_metadata(release).dig(:final_artifact_url).nil? %>
-              <li class="flex items-center justify-between py-3 border-b border-indigo-300">
+              <li class="flex items-center justify-between py-3 border-b border-indigo-200">
                 <div class="text-sm">Final Release Build</div>
                 <div class="flex items-center whitespace-nowrap">
                   <%= image_tag("link.svg", width: 20, class: "inline-flex mr-2") %>
