@@ -192,11 +192,11 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def in_progress?
-    !success? || is_rejected?
+    !success? || !is_approved?
   end
 
   def done?
-    approval_approved? && success?
+    is_approved? && success?
   end
 
   def workflow_name
