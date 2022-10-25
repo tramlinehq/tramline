@@ -53,7 +53,6 @@ class Releases::Train < ApplicationRecord
     throw(:abort) if errors.present?
   end
 
-
   delegate :ready?, to: :app
   delegate :vcs_provider, to: :integrations
   delegate :ci_cd_provider, to: :integrations
