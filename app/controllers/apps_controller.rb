@@ -1,6 +1,6 @@
 class AppsController < SignedInApplicationController
-  before_action :set_app, only: %i[show edit update]
-  before_action :set_integrations, only: %i[show]
+  before_action :set_app, only: %i[show edit update destroy]
+  before_action :set_integrations, only: %i[show destroy]
   around_action :set_time_zone
 
   def new
@@ -23,12 +23,6 @@ class AppsController < SignedInApplicationController
   end
 
   def show
-    @release_history_options = [
-      ["Last 2 weeks", "2w"],
-      ["Last month", "1m"],
-      ["Last 2 months", "2m"],
-      ["All Time", "all"]
-    ]
   end
 
   def edit
@@ -48,6 +42,16 @@ class AppsController < SignedInApplicationController
 
   def index
     @apps = current_organization.apps
+  end
+
+  def destroy
+    respond_to do |format|
+      if @app.destroy
+        format.html { redirect_to apps_path, status: :see_other, notice: "App was deleted!" }
+      else
+        format.html { render :show, status: :unprocessable_entity }
+      end
+    end
   end
 
   private
