@@ -21,7 +21,7 @@ class App < ApplicationRecord
 
   after_initialize :initialize_config, if: :new_record?
   after_initialize :set_default_platform, if: :new_record?
-  before_destroy :ensure_no_trains, prepend: true do
+  before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
   end
 
@@ -83,7 +83,7 @@ class App < ApplicationRecord
     attributes["name"].blank? || attributes["member_ids"].compact_blank.empty?
   end
 
-  def ensure_no_trains
+  def ensure_deletable
     errors.add(:trains, "cannot delete an app if there are any releases made from it!") if runs.present?
   end
 end

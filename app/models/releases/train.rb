@@ -49,7 +49,7 @@ class Releases::Train < ApplicationRecord
   before_create :set_current_version!
   before_create :set_default_status!
   after_create :create_webhook!
-  before_destroy :ensure_no_runs, prepend: true do
+  before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
   end
 
@@ -147,7 +147,7 @@ class Releases::Train < ApplicationRecord
 
   private
 
-  def ensure_no_runs
+  def ensure_deletable
     errors.add(:trains, "cannot delete a train if there are releases made from it!") if runs.present?
   end
 
