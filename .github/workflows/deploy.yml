@@ -8,12 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: site-jobs
-        uses: johnbeynon/render-deploy-action@v0.0.8
+        uses: wei/curl@v1
         with:
-          service-id: ${{ secrets.SITE_JOBS_PRODUCTION_SERVICE_ID }}
-          api-key: ${{ secrets.SITE_JOBS_PRODUCTION_API_KEY }}
+          args: -X POST https://api.render.com/deploy/${{ secrets.SITE_JOBS_PRODUCTION_SERVICE_ID }}?key=${{ secrets.SITE_JOBS_PRODUCTION_API_KEY }}
       - name: site-web
-        uses: johnbeynon/render-deploy-action@v0.0.8
+        uses: wei/curl@v1
         with:
-          service-id: ${{ secrets.SITE_WEB_PRODUCTION_SERVICE_ID }}
-          api-key: ${{ secrets.SITE_WEB_PRODUCTION_API_KEY }}
+          args: -X POST https://api.render.com/deploy/${{ secrets.SITE_WEB_PRODUCTION_SERVICE_ID }}?key=${{ secrets.SITE_WEB_PRODUCTION_API_KEY }}
