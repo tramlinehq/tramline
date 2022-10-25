@@ -40,7 +40,7 @@ class WorkflowProcessors::WorkflowRun
   end
 
   def upload_artifact!
-    Releases::Step::UploadArtifact.perform_later(step_run.id, artifacts_url)
+    Releases::UploadArtifact.perform_later(step_run.id, artifacts_url)
   end
 
   def send_notification!
