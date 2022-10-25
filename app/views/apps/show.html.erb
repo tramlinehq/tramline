@@ -46,7 +46,7 @@
       <span class="ml-2">Settings</span>
     <% end %>
 
-    <% if @app.trains.blank? %>
+    <% if @app.runs.blank? %>
       <%= link_to app_path(@app), method: :delete, class: "btn bg-rose-500 hover:bg-rose-600 text-white", data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } do %>
         <span>Delete</span>
       <% end %>

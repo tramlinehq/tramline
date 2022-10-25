@@ -8,7 +8,7 @@ class App < ApplicationRecord
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
   has_one :config, class_name: "AppConfig", dependent: :destroy
   has_many :integrations, inverse_of: :app, dependent: :destroy
-  has_many :trains, class_name: "Releases::Train"
+  has_many :trains, class_name: "Releases::Train", dependent: :destroy
   has_many :sign_off_groups, dependent: :destroy
 
   validate :no_trains_are_running, on: :update
@@ -84,6 +84,6 @@ class App < ApplicationRecord
   end
 
   def ensure_no_trains
-    errors.add(:trains, "cannot delete an app if there are trains configured!") if trains.present?
+    errors.add(:trains, "cannot delete an app if there are any releases made from it!") if runs.present?
   end
 end
