@@ -7,8 +7,13 @@ jobs:
   production:
     runs-on: ubuntu-latest
     steps:
-      - name: site-web
+      - name: site-jobs
         uses: johnbeynon/render-deploy-action@v0.0.8
         with:
           service-id: ${{ secrets.SITE_JOBS_PRODUCTION_SERVICE_ID }}
           api-key: ${{ secrets.SITE_JOBS_PRODUCTION_API_KEY }}
+      - name: site-web
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.SITE_WEB_PRODUCTION_SERVICE_ID }}
+          api-key: ${{ secrets.SITE_WEB_PRODUCTION_API_KEY }}
