@@ -1,5 +1,7 @@
 <% breadcrumb :train, @train %>
 
+<%= render partial: 'shared/errors', locals: { resource: @train } %>
+
 <div class="sm:flex sm:justify-between sm:items-center pb-8 border-b border-slate-200">
   <div class="mb-4 sm:mb-0">
     <p class="text-2xl md:text-3xl text-slate-800 font-bold"><%= @train.name %> 🚦</p>
@@ -12,6 +14,7 @@
     <% elsif @train.steps.any? %>
       <%= button_to "Start new release", app_train_releases_path(@app, @train), class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
     <% end %>
+
     <% if @train.runs.size > 0 %>
       <%= button_to nil, class: "btn bg-indigo-500 hover:bg-indigo-600 text-white disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed shadow-none", disabled: true do %>
         <svg xmlns="http://www.w3.org/2000/svg" class="opacity-80" width="20" height="20" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -25,11 +28,19 @@
         <span class="ml-2">Hotfix last release</span>
       <% end %>
     <% end %>
+
     <%= link_to edit_app_train_path(@app, @train), class: "btn border-slate-300 hover:border-slate-400 text-slate-600" do %>
       <svg class="w-4 h-4 fill-current text-slate-500 shrink-0" viewBox="0 0 16 16">
         <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4zM4.6 14H2v-2.6l6-6L10.6 8l-6 6zM12 6.6L9.4 4 11 2.4 13.6 5 12 6.6z"></path>
       </svg>
       <span class="ml-2">Settings</span>
+    <% end %>
+
+    <% if @train.runs.blank? %>
+      <%= link_to app_train_path(@app, @train), method: :delete, class: "btn bg-rose-500 hover:bg-rose-600 text-white",
+                  data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } do %>
+        <span>Delete</span>
+      <% end %>
     <% end %>
   </div>
 </div>

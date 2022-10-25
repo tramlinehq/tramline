@@ -12,7 +12,7 @@ class Releases::Train < ApplicationRecord
 
   belongs_to :app, optional: false
   has_many :integrations, through: :app
-  has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
+  has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train
   has_one :active_run, -> { pending_release }, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
   has_many :steps, -> { order(:step_number) }, class_name: "Releases::Step", inverse_of: :train, dependent: :destroy
   has_many :train_sign_off_groups, dependent: :destroy
@@ -49,6 +49,10 @@ class Releases::Train < ApplicationRecord
   before_create :set_current_version!
   before_create :set_default_status!
   after_create :create_webhook!
+  before_destroy :ensure_no_runs, prepend: true do
+    throw(:abort) if errors.present?
+  end
+
 
   delegate :ready?, to: :app
   delegate :vcs_provider, to: :integrations
@@ -143,6 +147,10 @@ class Releases::Train < ApplicationRecord
   end
 
   private
+
+  def ensure_no_runs
+    errors.add(:trains, "cannot delete a train if there are releases made from it!") if runs.present?
+  end
 
   def semver_compatibility
     Semantic::Version.new(version_seeded_with)
