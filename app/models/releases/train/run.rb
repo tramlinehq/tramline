@@ -27,7 +27,7 @@ class Releases::Train::Run < ApplicationRecord
     state(*STATES.keys)
 
     event :start do
-      transitions from: :created, to: :on_track
+      transitions from: [:created, :on_track], to: :on_track
     end
 
     event :start_post_release_phase, after_commit: -> { Releases::PostReleaseJob.perform_later(id) } do
