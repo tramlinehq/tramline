@@ -13,6 +13,7 @@ class Releases::Train::Run < ApplicationRecord
   has_many :passports, as: :stampable, dependent: :destroy
 
   STATES = {
+    created: "created",
     on_track: "on_track",
     post_release: "post_release",
     finished: "finished",
@@ -22,8 +23,12 @@ class Releases::Train::Run < ApplicationRecord
   enum status: STATES
 
   aasm column: :status, requires_lock: true, requires_new_transaction: false, enum: true, create_scopes: false do
-    state :on_track, initial: true
+    state :created, initial: true
     state(*STATES.keys)
+
+    event :start do
+      transitions from: :created, to: :on_track
+    end
 
     event :start_post_release_phase, after_commit: -> { Releases::PostReleaseJob.perform_later(id) } do
       transitions from: :on_track, to: :post_release, guard: :finalizable?
@@ -39,7 +44,7 @@ class Releases::Train::Run < ApplicationRecord
   before_update :status_change_stamp!, if: -> { status_changed? }
   after_commit :create_stamp!, on: :create
 
-  scope :pending_release, -> { where(status: [:release_phase, :post_release, :on_track]) }
+  scope :pending_release, -> { where(status: [:release_phase, :post_release, :on_track, :created]) }
 
   delegate :app, :pre_release_prs?, to: :train
 
@@ -69,7 +74,11 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def committable?
-    on_track?
+    created? || on_track?
+  end
+
+  def stoppable?
+    created? || on_track?
   end
 
   def finalizable?
