@@ -26,7 +26,7 @@ class Releases::PullRequest < ApplicationRecord
       when "github"
         attributes_for_github(response)
       else
-        raise UnsupportedPullRequestSource.new
+        raise UnsupportedPullRequestSource
       end
 
     Releases::PullRequest
