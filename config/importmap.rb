@@ -11,3 +11,4 @@ pin "stimulus-flatpickr", to: "https://ga.jspm.io/npm:stimulus-flatpickr@3.0.0-0
 pin "slim-select", to: "https://ga.jspm.io/npm:slim-select@1.27.1/dist/slimselect.min.mjs"
 pin "chartkick", to: "chartkick.js"
 pin "Chart.bundle", to: "Chart.bundle.js"
+pin "stimulus-reveal", to: "https://ga.jspm.io/npm:stimulus-reveal@1.4.2/dist/stimulus-reveal.esm.js"

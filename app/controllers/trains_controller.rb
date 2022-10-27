@@ -2,9 +2,9 @@ class TrainsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
-  before_action :set_app, only: %i[new create show index edit update deactivate start]
+  before_action :set_app, only: %i[new create show index edit update destroy deactivate start]
   around_action :set_time_zone
-  before_action :set_train, only: %i[show edit update deactivate start]
+  before_action :set_train, only: %i[show edit update destroy deactivate start]
   before_action :validate_integration_status, only: %i[new create]
 
   def new
@@ -49,6 +49,16 @@ class TrainsController < SignedInApplicationController
       else
         format.html { render :show, status: :unprocessable_entity }
         format.json { render json: @train.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def destroy
+    respond_to do |format|
+      if @train.destroy
+        format.html { redirect_to app_path(@app), status: :see_other, notice: "Train was deleted!" }
+      else
+        format.html { render :show, status: :unprocessable_entity }
       end
     end
   end

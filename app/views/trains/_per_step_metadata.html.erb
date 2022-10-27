@@ -1,12 +1,11 @@
 <div class="flex flex-col">
-  <span class="text-slate-500"><%= simple_format step.description %></span>
+  <div class="text-slate-500 text-sm"><%= simple_format(step.description) %></div>
 
-  <span class="pt-1 flex items-center text-slate-500">
+  <div class="text-xs text-slate-500 font-medium align-text-bottom mt-5 mb-3">
     <%= image_tag("workflow.svg", width: 16, class: "inline-flex mr-2") %>
-    <span class="mr-8"><%= show_ci_cd_provider step %> • <%= show_ci_cd_channel step %></span>
-  </span>
+    <%= render partial: "shared/display_channels",
+               locals: { name: show_ci_cd_provider(step), channel: show_ci_cd_channel(step) } %>
+  </div>
 
-  <%= image_tag("arrow-down.svg", width: 16, class: "inline-flex mt-2 mb-2") %>
-
-  <%= render partial: "shared/deployments", locals: { step: step } %>
+  <%= render partial: "shared/deployments", locals: { step: step, show_deployment_status: false } %>
 </div>

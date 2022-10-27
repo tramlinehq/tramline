@@ -101,7 +101,27 @@ module Installations
 
     def create_tag!(repo, name, branch_name)
       execute do
-        @client.create_ref(repo, "refs/tags/#{name}", head(repo, branch_name))
+        object_sha = head(repo, branch_name)
+        @client.create_ref(repo, "refs/tags/#{name}", object_sha)
+      end
+    end
+
+    def create_annotated_tag!(repo, name, branch_name, message, tagger_name, tagger_email)
+      execute do
+        object_sha = head(repo, branch_name)
+        type = "commit"
+        tagged_at = Time.current
+
+        @client
+          .create_tag(repo, name, message, object_sha, type, tagger_name, tagger_email, tagged_at)
+          .then { |resp| @client.create_ref(repo, "refs/tags/#{name}", resp[:sha]) }
+      end
+    end
+
+    # creates a lightweight tag and a GitHub release simultaneously
+    def create_release!(repo, tag_name, branch_name)
+      execute do
+        @client.create_release(repo, tag_name, target_commitish: branch_name, generate_release_notes: true)
       end
     end
 
@@ -125,6 +145,7 @@ module Installations
 
     def head(repo, working_branch_name)
       execute do
+        # FIXME: this method is unsupported and could get deprecated, find a way around it
         @client.commits(repo, sha: working_branch_name).first[:sha]
       end
     end

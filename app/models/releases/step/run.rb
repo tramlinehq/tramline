@@ -37,7 +37,7 @@ class Releases::Step::Run < ApplicationRecord
     state :on_track, initial: true
     state(*STATES.keys)
 
-    event :trigger_ci, after_commit: -> { Releases::Step::FindWorkflowRun.perform_async(id) } do
+    event :trigger_ci, after_commit: -> { Releases::FindWorkflowRun.perform_async(id) } do
       before :trigger_workflow_run
       transitions from: :on_track, to: :ci_workflow_triggered
     end
@@ -72,7 +72,6 @@ class Releases::Step::Run < ApplicationRecord
     end
 
     event :finish do
-      after { release.start_release_phase! if step.last? }
       transitions from: [:build_ready, :deployment_started], to: :success
     end
   end
@@ -190,6 +189,14 @@ class Releases::Step::Run < ApplicationRecord
     train.sign_off_groups.any? do |group|
       step.sign_offs.exists?(sign_off_group: group, signed: false, commit: commit)
     end
+  end
+
+  def in_progress?
+    !success? || !is_approved?
+  end
+
+  def done?
+    is_approved? && success?
   end
 
   def workflow_name

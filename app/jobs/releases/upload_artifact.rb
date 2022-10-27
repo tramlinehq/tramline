@@ -1,4 +1,4 @@
-class Releases::Step::UploadArtifact < ApplicationJob
+class Releases::UploadArtifact < ApplicationJob
   queue_as :high
   sidekiq_options retry: 0
 

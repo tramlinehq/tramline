@@ -3,7 +3,7 @@ class Releases::Train::Run < ApplicationRecord
   include AASM
   self.implicit_order_column = :was_run_at
 
-  STAMPABLE_REASONS = %w[created status_changed pull_request_not_required pull_request_not_mergeable tag_reference_already_exists]
+  STAMPABLE_REASONS = %w[created status_changed pull_request_not_required pull_request_not_mergeable tag_reference_already_exists, tagged_release_already_exists]
 
   belongs_to :train, class_name: "Releases::Train"
   has_many :pull_requests, class_name: "Releases::PullRequest", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
@@ -13,8 +13,8 @@ class Releases::Train::Run < ApplicationRecord
   has_many :passports, as: :stampable, dependent: :destroy
 
   STATES = {
+    created: "created",
     on_track: "on_track",
-    release_phase: "release_phase",
     post_release: "post_release",
     finished: "finished",
     error: "error"
@@ -23,15 +23,15 @@ class Releases::Train::Run < ApplicationRecord
   enum status: STATES
 
   aasm column: :status, requires_lock: true, requires_new_transaction: false, enum: true, create_scopes: false do
-    state :on_track, initial: true
+    state :created, initial: true
     state(*STATES.keys)
 
-    event :start_release_phase do
-      transitions from: :on_track, to: :release_phase
+    event :start do
+      transitions from: [:created, :on_track], to: :on_track
     end
 
     event :start_post_release_phase, after_commit: -> { Releases::PostReleaseJob.perform_later(id) } do
-      transitions from: :release_phase, to: :post_release, guard: :finalizable?
+      transitions from: :on_track, to: :post_release, guard: :finalizable?
     end
 
     event :finish do
@@ -44,9 +44,9 @@ class Releases::Train::Run < ApplicationRecord
   before_update :status_change_stamp!, if: -> { status_changed? }
   after_commit :create_stamp!, on: :create
 
-  scope :pending_release, -> { where(status: [:release_phase, :post_release, :on_track]) }
+  scope :pending_release, -> { where(status: [:release_phase, :post_release, :on_track, :created]) }
 
-  delegate :app, to: :train
+  delegate :app, :pre_release_prs?, to: :train
 
   def tag_name
     "v#{release_version}"
@@ -74,11 +74,15 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def committable?
-    on_track?
+    created? || on_track?
+  end
+
+  def stoppable?
+    created? || on_track?
   end
 
   def finalizable?
-    (release_phase? || post_release?) && signed? && finished_steps?
+    (on_track? || post_release?) && signed? && finished_steps?
   end
 
   def next_step
@@ -119,7 +123,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def finished_steps?
-    latest_finished_step_runs.size == train.steps.size
+    commits.last.step_runs.success.size == train.steps.size
   end
 
   def latest_finished_step_runs

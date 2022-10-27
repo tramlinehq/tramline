@@ -12,6 +12,7 @@ class Deployment < ApplicationRecord
 
   delegate :google_play_store_integration?, to: :integration, allow_nil: true
   delegate :slack_integration?, to: :integration, allow_nil: true
+  delegate :store?, to: :integration, allow_nil: true
   delegate :train, to: :step
 
   before_save :set_deployment_number, if: :new_record?

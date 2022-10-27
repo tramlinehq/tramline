@@ -1,15 +1,18 @@
-<div>
-  <%= image_tag("tram_aesthetic.png") %>
+<div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+  <div class="max-w-2xl m-auto mt-16">
+    <div class="text-center px-4">
+      <%= image_tag("tram_aesthetic.png", width: 300, class: "rounded-sm") %>
 
-  <ul>
-    <li><%= link_to "Feature Flags via Flipper", "/flipper" %></li>
-    <li><%= link_to "Sidekiq Dashboard", "/sidekiq" %></li>
-    <li><%= link_to "PgHero Dashboard", "/pghero" %></li>
-    <% if Rails.env.development? %><li><%= link_to "Letter Opener (mail catcher)", "/letter_opener" %></li><% end %>
-  </ul>
+      <ul>
+        <li><%= link_to "Feature Flags via Flipper", "/flipper" %></li>
+        <li><%= link_to "Sidekiq Dashboard", "/sidekiq" %></li>
+        <li><%= link_to "PgHero Dashboard", "/pghero" %></li>
+        <% if Rails.env.development? %>
+          <li><%= link_to "Letter Opener (mail catcher)", "/letter_opener" %></li>
+        <% end %>
+      </ul>
+    </div>
+
+    <%= link_to "Log out", destroy_user_session_path, "data-turbo": false %>
+  </div>
 </div>
-
-<%= link_to "Log out", destroy_user_session_path, "data-turbo": false %>
-
-
-

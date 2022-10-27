@@ -12,6 +12,10 @@ module RefinedString
         .decrypt_and_verify(self)
     end
 
+    def to_boolean
+      ActiveModel::Type::Boolean.new.cast(self)
+    end
+
     def in_tz(tz)
       ActiveSupport::TimeZone.new(tz).parse(self)
     rescue NoMethodError

@@ -12,13 +12,14 @@ class Releases::Train < ApplicationRecord
 
   belongs_to :app, optional: false
   has_many :integrations, through: :app
-  has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
+  has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train
   has_one :active_run, -> { pending_release }, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
   has_many :steps, -> { order(:step_number) }, class_name: "Releases::Step", inverse_of: :train, dependent: :destroy
   has_many :train_sign_off_groups, dependent: :destroy
   has_many :sign_off_groups, through: :train_sign_off_groups
   has_many :commit_listeners, class_name: "Releases::CommitListener", inverse_of: :train, dependent: :destroy
   has_many :commits, class_name: "Releases::Commit", inverse_of: :train, dependent: :destroy
+  has_many :deployments, through: :steps
 
   scope :running, -> { includes(:runs).where(runs: {status: Releases::Train::Run.statuses[:on_track]}) }
 
@@ -48,6 +49,9 @@ class Releases::Train < ApplicationRecord
   before_create :set_current_version!
   before_create :set_default_status!
   after_create :create_webhook!
+  before_destroy :ensure_deletable, prepend: true do
+    throw(:abort) if errors.present?
+  end
 
   delegate :ready?, to: :app
   delegate :vcs_provider, to: :integrations
@@ -78,7 +82,13 @@ class Releases::Train < ApplicationRecord
     vcs_provider.create_tag!(tag_name, branch_name)
   end
 
+  def create_release!(tag_name)
+    return false if Rails.env.test?
+    vcs_provider.create_release!(tag_name)
+  end
+
   def create_branch!(from, to)
+    return false if Rails.env.test?
     vcs_provider.create_branch!(from, to)
   end
 
@@ -131,7 +141,15 @@ class Releases::Train < ApplicationRecord
     [app.config.code_repository_organization_name_hack, ":", release_backmerge_branch].join
   end
 
+  def pre_release_prs?
+    branching_strategy == "parallel_working"
+  end
+
   private
+
+  def ensure_deletable
+    errors.add(:trains, "cannot delete a train if there are releases made from it!") if runs.present?
+  end
 
   def semver_compatibility
     Semantic::Version.new(version_seeded_with)

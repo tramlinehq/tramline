@@ -127,4 +127,7 @@ Rails.application.routes.draw do
   scope :slack do
     get :callback, controller: "integration_listeners/slack", as: :slack_callback
   end
+
+  match '/', via: %i[post put patch delete], to: 'application#raise_not_found', format: false
+  match '*unmatched_route', via: :all, to: 'application#raise_not_found', format: false
 end

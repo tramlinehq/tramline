@@ -59,6 +59,7 @@ gem "ddtrace", "~> 1.4"
 gem "dogstatsd-ruby", "~> 5.5"
 gem "memery", "~> 1.4"
 gem "data_migrate", "~> 8.1"
+gem "device_detector", "~> 1.0"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

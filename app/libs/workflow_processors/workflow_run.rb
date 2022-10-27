@@ -40,7 +40,7 @@ class WorkflowProcessors::WorkflowRun
   end
 
   def upload_artifact!
-    Releases::Step::UploadArtifact.perform_later(step_run.id, artifacts_url)
+    Releases::UploadArtifact.perform_later(step_run.id, artifacts_url)
   end
 
   def send_notification!
@@ -76,9 +76,9 @@ class WorkflowProcessors::WorkflowRun
 
   def wait_time
     if Rails.env.development?
-      2.minutes
+      1.minute
     else
-      5.minutes
+      2.minutes
     end
   end
 end

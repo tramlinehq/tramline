@@ -7,12 +7,11 @@ jobs:
   production:
     runs-on: ubuntu-latest
     steps:
-      - name: site-web
-        uses: distributhor/workflow-webhook
-        with:
-          url: ${{ secrets.SITE_JOBS_PRODUCTION_WEBHOOK }}
       - name: site-jobs
-        uses: distributhor/workflow-webhook
+        uses: wei/curl@v1
         with:
-          url: ${{ secrets.SITE_WEB_PRODUCTION_WEBHOOK }}
-
+          args: -X POST https://api.render.com/deploy/${{ secrets.SITE_JOBS_PRODUCTION_SERVICE_ID }}?key=${{ secrets.SITE_JOBS_PRODUCTION_API_KEY }}
+      - name: site-web
+        uses: wei/curl@v1
+        with:
+          args: -X POST https://api.render.com/deploy/${{ secrets.SITE_WEB_PRODUCTION_SERVICE_ID }}?key=${{ secrets.SITE_WEB_PRODUCTION_API_KEY }}

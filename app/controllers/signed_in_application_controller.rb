@@ -1,13 +1,11 @@
 class SignedInApplicationController < ApplicationController
+  DEFAULT_TIMEZONE = "Asia/Kolkata"
+
   before_action :set_paper_trail_whodunnit
-
-  layout "signed_in_application"
-
   before_action :require_login, unless: :devise_controller?
   helper_method :current_organization
   helper_method :current_user
-
-  DEFAULT_TIMEZONE = "Asia/Kolkata"
+  layout -> { ensure_supported_layout("signed_in_application") }
 
   protected
 

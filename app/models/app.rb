@@ -21,6 +21,9 @@ class App < ApplicationRecord
 
   after_initialize :initialize_config, if: :new_record?
   after_initialize :set_default_platform, if: :new_record?
+  before_destroy :ensure_deletable, prepend: true do
+    throw(:abort) if errors.present?
+  end
 
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
@@ -44,20 +47,30 @@ class App < ApplicationRecord
     integrations.ready? and config&.ready?
   end
 
-  def set_default_platform
-    self.platform = App.platforms[:android]
-  end
-
-  def initialize_config
-    build_config
-  end
-
   def bump_build_number!
     with_lock do
       self.build_number = build_number.succ
       save!
       build_number.to_s
     end
+  end
+
+  def store_link
+    if android?
+      GOOGLE_PLAY_STORE_URL_TEMPLATE.expand(query: {id: bundle_identifier}).to_s
+    else
+      +""
+    end
+  end
+
+  private
+
+  def set_default_platform
+    self.platform = App.platforms[:android]
+  end
+
+  def initialize_config
+    build_config
   end
 
   def no_trains_are_running
@@ -70,11 +83,7 @@ class App < ApplicationRecord
     attributes["name"].blank? || attributes["member_ids"].compact_blank.empty?
   end
 
-  def store_link
-    if android?
-      GOOGLE_PLAY_STORE_URL_TEMPLATE.expand(query: {id: bundle_identifier}).to_s
-    else
-      +""
-    end
+  def ensure_deletable
+    errors.add(:trains, "cannot delete an app if there are any releases made from it!") if runs.present?
   end
 end

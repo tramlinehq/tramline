@@ -11,6 +11,7 @@ class WebhookProcessors::Github::Push < ApplicationJob
 
       commit_record = create_commit
       train.bump_version!(:patch) if release.step_runs.any?
+      release.start!
       release.update(release_version: train.version_current)
       current_step = release.current_step || 1
 

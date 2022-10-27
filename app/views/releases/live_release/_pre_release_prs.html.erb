@@ -1,34 +1,12 @@
-<section class="mt-8">
+<section>
   <div class="flex">
-    <h2 class="font-bold text-2xl">Pre-release PRs</h2>
+    <h3 class="font-bold text-xl">Pre-release PRs</h3>
   </div>
 
   <% if pre_release_prs&.exists? %>
-    <div class="grid grid-cols-5 gap-6 mt-4">
+    <div class="grid grid-cols-2 gap-3 mt-3">
       <% pre_release_prs.each do |pr| %>
-        <div class="mt-2 bg-white rounded-sm border border-slate-200 p-4">
-          <%= image_tag("integrations/logo_#{pr.source}.png", width: 40, class: "mb-4") %>
-
-          <div class="h-full">
-            <h2 class="font-semibold text-slate-800">
-              <%= pr.title %><span class="ml-1 underline">(#<%= link_to_external pr.number, pr.url %>)</span>
-            </h2>
-
-            <div class="mt-2">
-              <%= image_tag("git_pull_request.svg", width: 20, class: "inline-flex") %>
-
-              <div class="text-xs inline-flex font-medium <%= pull_request_badge(pr.state) %> rounded-full text-center px-2.5 py-1">
-                <%= pr.state.titleize %>
-              </div>
-            </div>
-
-            <% if pr.closed_at.nil? %>
-              <div class="text-sm mt-2">Opened at – <%= pr.opened_at.to_s(:short) %></div>
-            <% else %>
-              <div class="text-sm mt-2">Closed at – <%= pr.closed_at.to_s(:short) %></div>
-            <% end %>
-          </div>
-        </div>
+        <%= render partial: "releases/live_release/pull_request", locals: { pr: pr } %>
       <% end %>
     </div>
   <% else %>

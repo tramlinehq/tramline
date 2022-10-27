@@ -31,13 +31,13 @@ class Triggers::Deployment
       return
     end
 
+    deployment_run.dispatch_job!
+
     if google_play_store_integration?
       Deployments::GooglePlayStore::Upload.perform_later(deployment_run.id)
     elsif slack_integration?
       Deployments::Slack.perform_later(deployment_run.id)
     end
-
-    deployment_run.dispatch_job!
   end
 
   def first_deployment

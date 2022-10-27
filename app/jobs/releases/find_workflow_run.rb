@@ -1,4 +1,4 @@
-class Releases::Step::FindWorkflowRun
+class Releases::FindWorkflowRun
   include Sidekiq::Job
 
   queue_as :high

@@ -2,6 +2,8 @@ module Installations
   module Errors
     class TagReferenceAlreadyExists < StandardError; end
 
+    class TaggedReleaseAlreadyExists < StandardError; end
+
     class PullRequestNotMergeable < StandardError; end
 
     class WebhookLimitReached < StandardError; end
@@ -23,5 +25,7 @@ module Installations
     class BundleIdentifierNotFound < StandardError; end
 
     class BuildNotUpgradable < StandardError; end
+
+    class DuplicatedBuildUploadAttempt < StandardError; end
   end
 end
