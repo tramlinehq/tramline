@@ -81,6 +81,6 @@ class AppsController < SignedInApplicationController
   DEFAULT_TIMEZONE_LIST_REGEX = /Asia\/Kolkata/
 
   def default_timezones
-    ActiveSupport::TimeZone.all.select { |tz| tz.match?(DEFAULT_TIMEZONE_LIST_REGEX) }
+    ActiveSupport::TimeZone.all.grep(DEFAULT_TIMEZONE_LIST_REGEX)
   end
 end

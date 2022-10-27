@@ -1,4 +1,4 @@
-puts "Seeding database..."
+Rails.logger.debug "Seeding database..."
 
 # Admin user
 # ----------
@@ -17,7 +17,7 @@ admin_user = lambda do
     confirmed_at: DateTime.now
   )
 
-  puts "Added admin user."
+  Rails.logger.debug "Added admin user."
 end
 
 # Owner user
@@ -48,7 +48,7 @@ owner_user = lambda do
     role: Accounts::Membership.roles[:owner]
   )
 
-  puts "Added owner user."
+  Rails.logger.debug "Added owner user."
 end
 
 # Developer user
@@ -79,7 +79,7 @@ developer_user = lambda do
     role: Accounts::Membership.roles[:developer]
   )
 
-  puts "Added developer user."
+  Rails.logger.debug "Added developer user."
 end
 
 ActiveRecord::Base.transaction do
