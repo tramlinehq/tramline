@@ -1,9 +1,9 @@
 class Releases::Step::Run < ApplicationRecord
   has_paper_trail
   include AASM
+  include Passportable
 
   self.implicit_order_column = :scheduled_at
-  self.ignored_columns = [:previous_step_run_id]
 
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :runs
   belongs_to :train_run, class_name: "Releases::Train::Run"
@@ -11,12 +11,19 @@ class Releases::Step::Run < ApplicationRecord
   has_one :build_artifact, foreign_key: :train_step_runs_id, inverse_of: :step_run, dependent: :destroy
   has_many :deployment_runs, -> { includes(:deployment).order("deployments.deployment_number ASC") }, foreign_key: :train_step_run_id, inverse_of: :step_run
   has_many :deployments, through: :step
+  has_many :passports, as: :stampable, dependent: :destroy
 
-  validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
-  validates :train_step_id, uniqueness: {scope: :releases_commit_id}
-  validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
+  validates :build_version, uniqueness: { scope: [:train_step_id, :train_run_id] }
+  validates :train_step_id, uniqueness: { scope: :releases_commit_id }
+  validates :initial_rollout_percentage, numericality: { greater_than: 0, less_than_or_equal_to: 100, allow_nil: true }
 
   after_create :reset_approval!
+  after_commit -> { create_stamp!(data: { name: step.name }) }, on: :create
+  after_commit -> { status_update_stamp!(data: { name: step.name, sha: commit.commit_hash }) },
+    if: -> { saved_change_to_attribute?(:status) },
+    on: :update
+
+  STAMPABLE_REASONS = ["created", "status_changed"]
 
   STATES = {
     on_track: "on_track",
@@ -76,7 +83,7 @@ class Releases::Step::Run < ApplicationRecord
     end
   end
 
-  enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
+  enum approval_status: { pending: "pending", approved: "approved", rejected: "rejected" }, _prefix: "approval"
 
   attr_accessor :current_user
 

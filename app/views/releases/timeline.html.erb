@@ -1,7 +1,7 @@
 <% breadcrumb :release, @release %>
 
 <div class="sm:flex sm:justify-between sm:items-center pb-8 border-b border-slate-200">
-  <p class="text-2xl md:text-3xl text-slate-800 font-bold">Notable Events</p>
+  <p class="text-2xl md:text-3xl text-slate-800 font-bold">Event Log</p>
 </div>
 
 <section>
@@ -17,7 +17,7 @@
 
             <div class="shrink-0 self-end ml-2">
               <span class="font-medium text-indigo-500 hover:text-indigo-600">
-                <%= passport.created_at.strftime("%I:%M%p –– %d/Sept/%y") %>
+                <%= passport.created_at.strftime("%I:%M:%S –– %d/Sept/%y") %>
               </span>
             </div>
           </div>

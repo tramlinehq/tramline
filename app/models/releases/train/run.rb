@@ -1,16 +1,25 @@
 class Releases::Train::Run < ApplicationRecord
   has_paper_trail
   include AASM
+  include Passportable
   self.implicit_order_column = :scheduled_at
-
-  STAMPABLE_REASONS = %w[created status_changed pull_request_not_required pull_request_not_mergeable tag_reference_already_exists, tagged_release_already_exists]
 
   belongs_to :train, class_name: "Releases::Train"
   has_many :pull_requests, class_name: "Releases::PullRequest", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
+  has_many :deployment_runs, through: :step_runs
   has_many :steps, through: :step_runs
   has_many :passports, as: :stampable, dependent: :destroy
+
+  STAMPABLE_REASONS = [
+    "created",
+    "status_changed",
+    "pull_request_not_required",
+    "pull_request_not_mergeable",
+    "tag_reference_already_exists",
+    "tagged_release_already_exists"
+  ]
 
   STATES = {
     created: "created",
@@ -41,11 +50,10 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   before_create :set_version
-  before_update :status_change_stamp!, if: -> { status_changed? }
-  after_commit :create_stamp!, on: :create
+  after_commit -> { create_stamp!(data: { version: release_version }) }, on: :create
+  after_commit :status_update_stamp!, if: -> { saved_change_to_attribute?(:status) }, on: :update
 
   scope :pending_release, -> { where(status: [:release_phase, :post_release, :on_track, :created]) }
-
   delegate :app, :pre_release_prs?, to: :train
 
   def tag_name
@@ -154,36 +162,10 @@ class Releases::Train::Run < ApplicationRecord
     [app.config.code_repository_organization_name_hack, ":", branch_name].join
   end
 
-  def event_stamp!(reason:, kind:, data:)
-    PassportJob.perform_later(
-      id,
-      self.class.name,
-      reason:,
-      kind:,
-      message: I18n.t("passport.#{reason}", **data),
-      metadata: data
-    )
-  end
+  def events
+    types = %w[Releases::Train::Run Releases::Step::Run Releases::Commit DeploymentRun]
+    ids = [id, commits.pluck(:id), step_runs.pluck(:id), deployment_runs.pluck(:id)].flatten
 
-  def create_stamp!
-    PassportJob.perform_later(
-      id,
-      self.class.name,
-      reason: :created,
-      kind: :success,
-      message: I18n.t("passport.stampable.created", stampable: "release", status: status),
-      metadata: {status: status}
-    )
-  end
-
-  def status_change_stamp!
-    PassportJob.perform_later(
-      id,
-      self.class.name,
-      reason: :status_changed,
-      kind: :success,
-      message: I18n.t("passport.stampable.status_changed", stampable: "release", from: status_was, to: status),
-      metadata: {from: status_was, to: status}
-    )
+    Passport.where(stampable_type: types, stampable_id: ids).order(:created_at)
   end
 end

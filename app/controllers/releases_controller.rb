@@ -24,7 +24,7 @@ class ReleasesController < SignedInApplicationController
   def timeline
     @train = @release.train
     @app = @train.app
-    @events = @release.passports
+    @events = @release.events
   end
 
   def live_release

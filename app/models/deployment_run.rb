@@ -1,23 +1,24 @@
 class DeploymentRun < ApplicationRecord
   include AASM
+  include Passportable
 
   belongs_to :deployment, inverse_of: :deployment_runs
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
 
-  validates :deployment_id, uniqueness: {scope: :train_step_run_id}
-  validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
+  validates :deployment_id, uniqueness: { scope: :train_step_run_id }
+  validates :initial_rollout_percentage, numericality: { greater_than: 0, less_than_or_equal_to: 100, allow_nil: true }
 
-  delegate :step, :release, to: :step_run
+  delegate :step, :release, :commit, to: :step_run
+  delegate :deployment_number, to: :deployment
 
-  unless const_defined?(:STATES)
-    STATES = {
-      created: "created",
-      started: "started",
-      uploaded: "uploaded",
-      released: "released",
-      failed: "failed"
-    }
-  end
+  STAMPABLE_REASONS = ["created", "status_changed"]
+  STATES = {
+    created: "created",
+    started: "started",
+    uploaded: "uploaded",
+    released: "released",
+    failed: "failed"
+  }
 
   enum status: STATES
 
@@ -43,6 +44,13 @@ class DeploymentRun < ApplicationRecord
       transitions from: [:created, :uploaded, :started], to: :released
     end
   end
+
+  after_commit -> {
+    create_stamp!(data: { num: deployment_number, step_name: step.name, sha: commit.commit_hash })
+  }, on: :create
+  after_commit -> {
+    status_update_stamp!(data: { num: deployment_number, step_name: step.name, sha: commit.commit_hash })
+  }, if: -> { saved_change_to_attribute?(:status) }, on: :update
 
   def promote!
     save!
@@ -85,7 +93,7 @@ class DeploymentRun < ApplicationRecord
     deployment
       .deployment_runs
       .includes(step_run: :train_run)
-      .where(step_run: {train_runs: release})
+      .where(step_run: { train_runs: release })
       .where.not(id:)
       .first
   end
