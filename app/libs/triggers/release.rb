@@ -47,7 +47,6 @@ class Triggers::Release
   def create_release
     @release =
       train.runs.create(
-        was_run_at: starting_time, # FIXME: remove this column
         code_name: Haikunator.haikunate(100),
         scheduled_at: starting_time,
         branch_name: release_branch,

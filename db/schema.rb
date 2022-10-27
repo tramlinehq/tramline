@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_10_11_110345) do
+ActiveRecord::Schema[7.0].define(version: 2022_10_13_102431) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -216,14 +216,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_11_110345) do
     t.index ["stampable_type", "stampable_id"], name: "index_passports_on_stampable"
   end
 
-  create_table "release_situations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "build_artifact_id", null: false
-    t.string "status"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["build_artifact_id"], name: "index_release_situations_on_build_artifact_id"
-  end
-
   create_table "releases_commit_listeners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "train_id", null: false
     t.string "branch_name", null: false
@@ -312,10 +304,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_11_110345) do
 
   create_table "train_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "train_id", null: false
-    t.uuid "previous_train_run_id"
     t.string "code_name", null: false
     t.datetime "scheduled_at", precision: nil, null: false
-    t.datetime "was_run_at", precision: nil
     t.string "commit_sha"
     t.string "status", null: false
     t.datetime "created_at", null: false
@@ -323,8 +313,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_11_110345) do
     t.string "branch_name", null: false
     t.string "release_version", null: false
     t.datetime "completed_at"
-    t.index ["code_name", "train_id"], name: "index_train_runs_on_code_name_and_train_id", unique: true
-    t.index ["previous_train_run_id"], name: "index_train_runs_on_previous_train_run_id"
     t.index ["train_id"], name: "index_train_runs_on_train_id"
   end
 
@@ -340,9 +328,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_11_110345) do
   create_table "train_step_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "train_step_id", null: false
     t.uuid "train_run_id", null: false
-    t.uuid "previous_step_run_id"
     t.datetime "scheduled_at", precision: nil, null: false
-    t.datetime "was_run_at", precision: nil
     t.string "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -354,7 +340,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_11_110345) do
     t.boolean "sign_required", default: true
     t.string "approval_status", default: "pending", null: false
     t.decimal "initial_rollout_percentage", precision: 8, scale: 5
-    t.index ["previous_step_run_id"], name: "index_train_step_runs_on_previous_step_run_id"
     t.index ["releases_commit_id"], name: "index_train_step_runs_on_releases_commit_id"
     t.index ["train_run_id"], name: "index_train_step_runs_on_train_run_id"
     t.index ["train_step_id"], name: "index_train_step_runs_on_train_step_id"
@@ -453,7 +438,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_11_110345) do
   add_foreign_key "invites", "users", column: "sender_id"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
-  add_foreign_key "release_situations", "build_artifacts"
   add_foreign_key "releases_commit_listeners", "trains"
   add_foreign_key "releases_commits", "train_runs"
   add_foreign_key "releases_commits", "trains"
@@ -465,13 +449,11 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_11_110345) do
   add_foreign_key "sign_offs", "sign_off_groups"
   add_foreign_key "sign_offs", "train_steps"
   add_foreign_key "sign_offs", "users"
-  add_foreign_key "train_runs", "train_runs", column: "previous_train_run_id"
   add_foreign_key "train_runs", "trains"
   add_foreign_key "train_sign_off_groups", "sign_off_groups"
   add_foreign_key "train_sign_off_groups", "trains"
   add_foreign_key "train_step_runs", "releases_commits"
   add_foreign_key "train_step_runs", "train_runs"
-  add_foreign_key "train_step_runs", "train_step_runs", column: "previous_step_run_id"
   add_foreign_key "train_step_runs", "train_steps"
   add_foreign_key "train_steps", "trains"
   add_foreign_key "trains", "apps"

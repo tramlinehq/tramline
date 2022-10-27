@@ -5,7 +5,6 @@ class WebhookProcessors::Github::Push < ApplicationJob
   def perform(train_run_id, commit_attributes)
     @release = Releases::Train::Run.find(train_run_id)
     @commit_attributes = commit_attributes
-
     @release.with_lock do
       return unless release.committable?
 

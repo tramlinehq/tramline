@@ -1,5 +1,7 @@
 class WorkflowProcessors::WorkflowRun
   include Memery
+  GITHUB = WorkflowProcessors::Github::WorkflowRun
+  BITRISE = WorkflowProcessors::Bitrise::WorkflowRun
 
   def self.process(step_run)
     new(step_run).process
@@ -9,27 +11,18 @@ class WorkflowProcessors::WorkflowRun
     @step_run = step_run
   end
 
-  GITHUB = WorkflowProcessors::Github::WorkflowRun
-  BITRISE = WorkflowProcessors::Bitrise::WorkflowRun
-
   def process
     WorkflowProcessors::WorkflowRunJob.set(wait: wait_time).perform_later(step_run.id) if in_progress?
 
     return update_status! unless successful?
-
-    transaction do
-      update_status!
-      upload_artifact!
-    end
-
-    # This is outside the transaction since upload artifact is non-rollbackable.
+    upload_artifact!
+    update_status!
     send_notification!
   end
 
   private
 
   attr_reader :step_run
-  delegate :transaction, to: Releases::Step::Run
   delegate :train, :release, to: :step_run
   delegate :in_progress?, :successful?, :failed?, :halted?, :artifacts_url, to: :runner
 

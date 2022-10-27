@@ -1,7 +1,7 @@
 class Releases::Train::Run < ApplicationRecord
   has_paper_trail
   include AASM
-  self.implicit_order_column = :was_run_at
+  self.implicit_order_column = :scheduled_at
 
   STAMPABLE_REASONS = %w[created status_changed pull_request_not_required pull_request_not_mergeable tag_reference_already_exists, tagged_release_already_exists]
 

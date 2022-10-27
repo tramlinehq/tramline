@@ -62,7 +62,7 @@ class Triggers::PostRelease
 
     def pr_description
       <<~TEXT
-        Verbose description for #{train.name} release on #{release.was_run_at}
+        Verbose description for #{train.name} release on #{release.scheduled_at}
       TEXT
     end
   end

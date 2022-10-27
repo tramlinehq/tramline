@@ -128,7 +128,7 @@
     </thead>
 
     <tbody class="text-sm divide-y divide-slate-200">
-    <% @train.runs.order(was_run_at: :desc).each_with_index do |run, index| %>
+    <% @train.runs.order(scheduled_at: :desc).each_with_index do |run, index| %>
       <tr>
         <td class="px-2 first:pl-5 py-3 whitespace-nowrap">
           <div>
