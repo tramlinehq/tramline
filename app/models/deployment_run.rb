@@ -5,8 +5,8 @@ class DeploymentRun < ApplicationRecord
   belongs_to :deployment, inverse_of: :deployment_runs
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
 
-  validates :deployment_id, uniqueness: { scope: :train_step_run_id }
-  validates :initial_rollout_percentage, numericality: { greater_than: 0, less_than_or_equal_to: 100, allow_nil: true }
+  validates :deployment_id, uniqueness: {scope: :train_step_run_id}
+  validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   delegate :step, :release, :commit, to: :step_run
   delegate :deployment_number, to: :deployment
@@ -46,10 +46,10 @@ class DeploymentRun < ApplicationRecord
   end
 
   after_commit -> {
-    create_stamp!(data: { num: deployment_number, step_name: step.name, sha_link: commit.url, sha: commit.short_sha })
+    create_stamp!(data: {num: deployment_number, step_name: step.name, sha_link: commit.url, sha: commit.short_sha})
   }, on: :create
   after_commit -> {
-    status_update_stamp!(data: { num: deployment_number, step_name: step.name, sha_link: commit.url, sha: commit.short_sha })
+    status_update_stamp!(data: {num: deployment_number, step_name: step.name, sha_link: commit.url, sha: commit.short_sha})
   }, if: -> { saved_change_to_attribute?(:status) }, on: :update
 
   def promote!
@@ -93,7 +93,7 @@ class DeploymentRun < ApplicationRecord
     deployment
       .deployment_runs
       .includes(step_run: :train_run)
-      .where(step_run: { train_runs: release })
+      .where(step_run: {train_runs: release})
       .where.not(id:)
       .first
   end

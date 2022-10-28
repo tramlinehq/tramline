@@ -13,14 +13,14 @@ class Releases::Step::Run < ApplicationRecord
   has_many :deployments, through: :step
   has_many :passports, as: :stampable, dependent: :destroy
 
-  validates :build_version, uniqueness: { scope: [:train_step_id, :train_run_id] }
-  validates :train_step_id, uniqueness: { scope: :releases_commit_id }
-  validates :initial_rollout_percentage, numericality: { greater_than: 0, less_than_or_equal_to: 100, allow_nil: true }
+  validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
+  validates :train_step_id, uniqueness: {scope: :releases_commit_id}
+  validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   after_create :reset_approval!
-  after_commit -> { create_stamp!(data: { name: step.name }) }, on: :create
+  after_commit -> { create_stamp!(data: {name: step.name}) }, on: :create
   after_commit -> {
-    status_update_stamp!(data: { name: step.name, sha_link: commit.url, sha: commit.short_sha })
+    status_update_stamp!(data: {name: step.name, sha_link: commit.url, sha: commit.short_sha})
   }, if: -> { saved_change_to_attribute?(:status) }, on: :update
 
   STAMPABLE_REASONS = ["created", "status_changed"]
@@ -83,7 +83,7 @@ class Releases::Step::Run < ApplicationRecord
     end
   end
 
-  enum approval_status: { pending: "pending", approved: "approved", rejected: "rejected" }, _prefix: "approval"
+  enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
 
   attr_accessor :current_user
 

@@ -18,7 +18,7 @@ module Passportable
     event_stamp!(
       reason: :status_changed,
       kind: :success,
-      data: { from: saved_changes[:status].first, to: status }.merge(data)
+      data: {from: saved_changes[:status].first, to: status}.merge(data)
     )
   end
 

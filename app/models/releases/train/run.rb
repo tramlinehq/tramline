@@ -50,7 +50,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   before_create :set_version
-  after_commit -> { create_stamp!(data: { version: release_version }) }, on: :create
+  after_commit -> { create_stamp!(data: {version: release_version}) }, on: :create
   after_commit :status_update_stamp!, if: -> { saved_change_to_attribute?(:status) }, on: :update
 
   scope :pending_release, -> { where(status: [:release_phase, :post_release, :on_track, :created]) }
