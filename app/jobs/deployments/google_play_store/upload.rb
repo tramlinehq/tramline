@@ -24,9 +24,11 @@ class Deployments::GooglePlayStore::Upload < ApplicationJob
     rescue Installations::Errors::BuildExistsInBuildChannel, Installations::Errors::DuplicatedBuildUploadAttempt => e
       # FIXME: this is a hack because it's possible to send to play store in parallel
       # this should be fixed as a design, maybe call deployments sequentially
+      deployment_run.event_stamp!(reason: :duplicate_build, kind: :error)
       log(e)
     rescue Installations::Errors::BundleIdentifierNotFound => e
       log(e)
+      deployment_run.event_stamp!(reason: :bundle_identifier_not_found, kind: :error)
       return deployment_run.dispatch_fail!
     end
 

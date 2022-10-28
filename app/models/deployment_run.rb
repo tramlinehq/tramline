@@ -1,5 +1,6 @@
 class DeploymentRun < ApplicationRecord
   include AASM
+  include Passportable
 
   belongs_to :deployment, inverse_of: :deployment_runs
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
@@ -7,17 +8,17 @@ class DeploymentRun < ApplicationRecord
   validates :deployment_id, uniqueness: {scope: :train_step_run_id}
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
-  delegate :step, :release, to: :step_run
+  delegate :step, :release, :commit, to: :step_run
+  delegate :deployment_number, to: :deployment
 
-  unless const_defined?(:STATES)
-    STATES = {
-      created: "created",
-      started: "started",
-      uploaded: "uploaded",
-      released: "released",
-      failed: "failed"
-    }
-  end
+  STAMPABLE_REASONS = ["created", "status_changed", "duplicate_build", "bundle_identifier_not_found"]
+  STATES = {
+    created: "created",
+    started: "started",
+    uploaded: "uploaded",
+    released: "released",
+    failed: "failed"
+  }
 
   enum status: STATES
 
@@ -43,6 +44,13 @@ class DeploymentRun < ApplicationRecord
       transitions from: [:created, :uploaded, :started], to: :released
     end
   end
+
+  after_commit -> {
+    create_stamp!(data: {num: deployment_number, step_name: step.name, sha_link: commit.url, sha: commit.short_sha})
+  }, on: :create
+  after_commit -> {
+    status_update_stamp!(data: {num: deployment_number, step_name: step.name, sha_link: commit.url, sha: commit.short_sha})
+  }, if: -> { saved_change_to_attribute?(:status) }, on: :update
 
   def promote!
     save!
