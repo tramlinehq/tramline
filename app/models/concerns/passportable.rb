@@ -5,7 +5,7 @@ module Passportable
       self.class.name,
       reason:,
       kind:,
-      message: I18n.t("passport.#{stamp_namespace}.#{reason}", **data),
+      message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
       metadata: data
     )
   end

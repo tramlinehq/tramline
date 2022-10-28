@@ -19,9 +19,9 @@ class Releases::Step::Run < ApplicationRecord
 
   after_create :reset_approval!
   after_commit -> { create_stamp!(data: { name: step.name }) }, on: :create
-  after_commit -> { status_update_stamp!(data: { name: step.name, sha: commit.commit_hash }) },
-    if: -> { saved_change_to_attribute?(:status) },
-    on: :update
+  after_commit -> {
+    status_update_stamp!(data: { name: step.name, sha_link: commit.url, sha: commit.short_sha })
+  }, if: -> { saved_change_to_attribute?(:status) }, on: :update
 
   STAMPABLE_REASONS = ["created", "status_changed"]
 

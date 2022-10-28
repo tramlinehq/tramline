@@ -11,7 +11,7 @@ class DeploymentRun < ApplicationRecord
   delegate :step, :release, :commit, to: :step_run
   delegate :deployment_number, to: :deployment
 
-  STAMPABLE_REASONS = ["created", "status_changed"]
+  STAMPABLE_REASONS = ["created", "status_changed", "duplicate_build", "bundle_identifier_not_found"]
   STATES = {
     created: "created",
     started: "started",
@@ -46,10 +46,10 @@ class DeploymentRun < ApplicationRecord
   end
 
   after_commit -> {
-    create_stamp!(data: { num: deployment_number, step_name: step.name, sha: commit.commit_hash })
+    create_stamp!(data: { num: deployment_number, step_name: step.name, sha_link: commit.url, sha: commit.short_sha })
   }, on: :create
   after_commit -> {
-    status_update_stamp!(data: { num: deployment_number, step_name: step.name, sha: commit.commit_hash })
+    status_update_stamp!(data: { num: deployment_number, step_name: step.name, sha_link: commit.url, sha: commit.short_sha })
   }, if: -> { saved_change_to_attribute?(:status) }, on: :update
 
   def promote!

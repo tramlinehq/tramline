@@ -21,4 +21,8 @@ class Releases::Commit < ApplicationRecord
   def stale?
     train_run.commits.last != self
   end
+
+  def short_sha
+    commit_hash[0, 5]
+  end
 end
