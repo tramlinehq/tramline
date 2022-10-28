@@ -7,7 +7,7 @@ en:
       tagged_release_already_exists_html: "Skipping generating a release, since a release for %{tag} already exists!"
       pull_request_not_required_html: "Did not create a PR from %{from} to %{to} because there was no diff between the two"
       created_html: "Created a new release – %{version}"
-      status_changed_html: "Release moved '%{from}' → '%{to}'"
+      status_changed_html: "Release moved from '%{from}' → '%{to}'"
     releases/step/run:
       created_html: "Started a new run for step – '%{name}'"
       status_changed_html: "<a href='%{sha_link}'>[%{sha}]</a> Step – '%{name}' moved from '%{from}' → '%{to}'"
