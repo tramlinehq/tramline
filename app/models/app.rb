@@ -1,3 +1,19 @@
+# == Schema Information
+#
+# Table name: apps
+#
+#  id                :uuid             not null, primary key
+#  organization_id   :uuid             not null
+#  name              :string           not null
+#  description       :string
+#  platform          :string           not null
+#  bundle_identifier :string           not null
+#  build_number      :bigint           not null
+#  timezone          :string           not null
+#  slug              :string
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#
 class App < ApplicationRecord
   has_paper_trail
   extend FriendlyId

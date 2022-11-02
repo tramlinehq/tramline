@@ -60,6 +60,9 @@ gem "dogstatsd-ruby", "~> 5.5"
 gem "memery", "~> 1.4"
 gem "data_migrate", "~> 8.1"
 gem "device_detector", "~> 1.0"
+gem "strong_migrations", "~> 1.4"
+gem "fast_blank", "~> 1.0"
+gem "oj", "~> 3.13"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
@@ -80,6 +83,7 @@ group :development do
   gem "letter_opener"
   gem "letter_opener_web"
   gem "awesome_print"
+  gem "annotate"
 end
 
 group :test do

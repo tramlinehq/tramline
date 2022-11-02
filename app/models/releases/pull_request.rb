@@ -1,3 +1,24 @@
+# == Schema Information
+#
+# Table name: releases_pull_requests
+#
+#  id           :uuid             not null, primary key
+#  train_run_id :uuid             not null
+#  number       :bigint           not null
+#  source_id    :string           not null
+#  url          :string
+#  title        :string           not null
+#  body         :text
+#  state        :string           not null
+#  phase        :string           not null
+#  source       :string           not null
+#  head_ref     :string           not null
+#  base_ref     :string           not null
+#  opened_at    :datetime         not null
+#  closed_at    :datetime
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#
 class Releases::PullRequest < ApplicationRecord
   class UnsupportedPullRequestSource < StandardError; end
 

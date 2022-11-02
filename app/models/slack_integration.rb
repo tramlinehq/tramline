@@ -1,3 +1,13 @@
+# == Schema Information
+#
+# Table name: slack_integrations
+#
+#  id                          :uuid             not null, primary key
+#  oauth_access_token          :string
+#  original_oauth_access_token :string
+#  created_at                  :datetime         not null
+#  updated_at                  :datetime         not null
+#
 class SlackIntegration < ApplicationRecord
   has_paper_trail
   encrypts :oauth_access_token, deterministic: true

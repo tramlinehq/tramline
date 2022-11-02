@@ -1,9 +1,29 @@
+# == Schema Information
+#
+# Table name: train_step_runs
+#
+#  id                         :uuid             not null, primary key
+#  train_step_id              :uuid             not null
+#  train_run_id               :uuid             not null
+#  scheduled_at               :datetime         not null
+#  status                     :string           not null
+#  created_at                 :datetime         not null
+#  updated_at                 :datetime         not null
+#  releases_commit_id         :uuid             not null
+#  build_version              :string           not null
+#  ci_ref                     :string
+#  ci_link                    :string
+#  build_number               :string
+#  sign_required              :boolean          default(TRUE)
+#  approval_status            :string           default("pending"), not null
+#  initial_rollout_percentage :decimal(8, 5)
+#
 class Releases::Step::Run < ApplicationRecord
   has_paper_trail
   include AASM
+  include Passportable
 
   self.implicit_order_column = :scheduled_at
-  self.ignored_columns = [:previous_step_run_id]
 
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :runs
   belongs_to :train_run, class_name: "Releases::Train::Run"
@@ -11,12 +31,19 @@ class Releases::Step::Run < ApplicationRecord
   has_one :build_artifact, foreign_key: :train_step_runs_id, inverse_of: :step_run, dependent: :destroy
   has_many :deployment_runs, -> { includes(:deployment).order("deployments.deployment_number ASC") }, foreign_key: :train_step_run_id, inverse_of: :step_run
   has_many :deployments, through: :step
+  has_many :passports, as: :stampable, dependent: :destroy
 
   validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
   validates :train_step_id, uniqueness: {scope: :releases_commit_id}
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   after_create :reset_approval!
+  after_commit -> { create_stamp!(data: {name: step.name}) }, on: :create
+  after_commit -> {
+    status_update_stamp!(data: {name: step.name, sha_link: commit.url, sha: commit.short_sha})
+  }, if: -> { saved_change_to_attribute?(:status) }, on: :update
+
+  STAMPABLE_REASONS = ["created", "status_changed"]
 
   STATES = {
     on_track: "on_track",
@@ -33,7 +60,7 @@ class Releases::Step::Run < ApplicationRecord
 
   enum status: STATES
 
-  aasm column: :status, requires_lock: true, requires_new_transaction: false, enum: true, create_scopes: false do
+  aasm safe_state_machine_params do
     state :on_track, initial: true
     state(*STATES.keys)
 
@@ -47,33 +74,13 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: [:ci_workflow_triggered], to: :ci_workflow_started
     end
 
-    event :ci_unavailable do
-      transitions from: [:on_track, :ci_workflow_triggered], to: :ci_workflow_unavailable
-    end
-
-    event :fail_ci do
-      transitions from: :ci_workflow_started, to: :ci_workflow_failed
-    end
-
-    event :cancel_ci do
-      transitions from: :ci_workflow_started, to: :ci_workflow_halted
-    end
-
-    event :finish_ci do
-      transitions from: :ci_workflow_started, to: :build_ready
-    end
-
-    event :ready_to_deploy do
-      transitions from: :build_ready, to: :deployment_started
-    end
-
-    event :fail_deploy do
-      transitions from: [:build_ready, :deployment_started], to: :deployment_failed
-    end
-
-    event :finish do
-      transitions from: [:build_ready, :deployment_started], to: :success
-    end
+    event(:ci_unavailable) { transitions from: [:on_track, :ci_workflow_triggered], to: :ci_workflow_unavailable }
+    event(:fail_ci) { transitions from: :ci_workflow_started, to: :ci_workflow_failed }
+    event(:cancel_ci) { transitions from: :ci_workflow_started, to: :ci_workflow_halted }
+    event(:finish_ci) { transitions from: :ci_workflow_started, to: :build_ready }
+    event(:ready_to_deploy) { transitions from: :build_ready, to: :deployment_started }
+    event(:fail_deploy) { transitions from: [:build_ready, :deployment_started], to: :deployment_failed }
+    event(:finish) { transitions from: [:build_ready, :deployment_started], to: :success }
   end
 
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"

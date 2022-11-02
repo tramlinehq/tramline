@@ -1,5 +1,19 @@
+# == Schema Information
+#
+# Table name: deployment_runs
+#
+#  id                         :uuid             not null, primary key
+#  deployment_id              :uuid             not null
+#  train_step_run_id          :uuid             not null
+#  scheduled_at               :datetime         not null
+#  status                     :string
+#  created_at                 :datetime         not null
+#  updated_at                 :datetime         not null
+#  initial_rollout_percentage :decimal(8, 5)
+#
 class DeploymentRun < ApplicationRecord
   include AASM
+  include Passportable
 
   belongs_to :deployment, inverse_of: :deployment_runs
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
@@ -7,21 +21,21 @@ class DeploymentRun < ApplicationRecord
   validates :deployment_id, uniqueness: {scope: :train_step_run_id}
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
-  delegate :step, :release, to: :step_run
+  delegate :step, :release, :commit, to: :step_run
+  delegate :deployment_number, to: :deployment
 
-  unless const_defined?(:STATES)
-    STATES = {
-      created: "created",
-      started: "started",
-      uploaded: "uploaded",
-      released: "released",
-      failed: "failed"
-    }
-  end
+  STAMPABLE_REASONS = ["created", "status_changed", "duplicate_build", "bundle_identifier_not_found"]
+  STATES = {
+    created: "created",
+    started: "started",
+    uploaded: "uploaded",
+    released: "released",
+    failed: "failed"
+  }
 
   enum status: STATES
 
-  aasm column: :status, requires_lock: true, requires_new_transaction: false, enum: true, create_scopes: false do
+  aasm safe_state_machine_params do
     state :created, initial: true, before_enter: -> { step_run.startable_deployment?(deployment) }
     state(*STATES.keys)
 
@@ -43,6 +57,13 @@ class DeploymentRun < ApplicationRecord
       transitions from: [:created, :uploaded, :started], to: :released
     end
   end
+
+  after_commit -> {
+    create_stamp!(data: {num: deployment_number, step_name: step.name, sha_link: commit.url, sha: commit.short_sha})
+  }, on: :create
+  after_commit -> {
+    status_update_stamp!(data: {num: deployment_number, step_name: step.name, sha_link: commit.url, sha: commit.short_sha})
+  }, if: -> { saved_change_to_attribute?(:status) }, on: :update
 
   def promote!
     save!

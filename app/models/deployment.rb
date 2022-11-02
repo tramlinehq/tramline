@@ -1,3 +1,15 @@
+# == Schema Information
+#
+# Table name: deployments
+#
+#  id                     :uuid             not null, primary key
+#  integration_id         :uuid
+#  train_step_id          :uuid             not null
+#  build_artifact_channel :jsonb
+#  deployment_number      :integer          default(0), not null
+#  created_at             :datetime         not null
+#  updated_at             :datetime         not null
+#
 class Deployment < ApplicationRecord
   has_paper_trail
 

@@ -28,7 +28,7 @@
             <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">Latest</span>
           <% end %>
           <div class="mt-2 underline"><%= link_to_external commit.message.truncate(50), commit.url %></div>
-          <div class="mt-2"><%= commit.commit_hash[0, 5] %></div>
+          <div class="mt-2"><%= commit.short_sha %></div>
           <div class="mt-2"><%= ago_in_words commit.timestamp %></div>
         </td>
 

@@ -1,10 +1,20 @@
 en:
   passport:
-    pull_request_already_exists: "The pull request already exists. A new one was not created"
-    pull_request_not_mergeable: "The pull request cannot be merged. Please check for any merge conflicts"
-    tag_reference_already_exists: "Did not create tag, since it already existed"
-    tagged_release_already_exists: "Skipping generating a release, since a release for %{tag} already exists!"
-    pull_request_not_required: "Did not create a PR from %{from} to %{to} because there was no diff between the two"
-    stampable:
-      created: "Created a %{stampable} with status '%{status}'"
-      status_changed: "Status changed for %{stampable} from '%{from}' to '%{to}'"
+    releases/train/run:
+      pull_request_already_exists_html_html: "The pull request already exists. A new one was not created"
+      pull_request_not_mergeable_html: "The pull request cannot be merged. Please check for any merge conflicts"
+      tag_reference_already_exists_html: "Did not create tag, since it already existed"
+      tagged_release_already_exists_html: "Skipping generating a release, since a release for %{tag} already exists!"
+      pull_request_not_required_html: "Did not create a PR from %{from} to %{to} because there was no diff between the two"
+      created_html: "Created a new release – %{version}"
+      status_changed_html: "Release moved from '%{from}' → '%{to}'"
+    releases/step/run:
+      created_html: "Started a new run for step – '%{name}'"
+      status_changed_html: "<a href='%{sha_link}'>[%{sha}]</a> Step – '%{name}' moved from '%{from}' → '%{to}'"
+    releases/commit:
+      created_html: "New commit – %{sha} – has landed"
+    deployment_run:
+      created_html: "<a href='%{sha_link}'>[%{sha}]</a> Started deployment #%{num} for step – '%{step_name}'"
+      status_changed_html: "<a href='%{sha_link}'>[%{sha}]</a> Deployment #%{num} for step – '%{step_name}' moved from: '%{from}' → '%{to}'"
+      duplicate_build_html: "Build with is already uploaded. Upload was ignored."
+      bundle_identifier_not_found_html: "The configured package was not found in the store."

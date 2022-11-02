@@ -1,3 +1,12 @@
+# == Schema Information
+#
+# Table name: bitrise_integrations
+#
+#  id           :uuid             not null, primary key
+#  access_token :string
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#
 class BitriseIntegration < ApplicationRecord
   has_paper_trail
 

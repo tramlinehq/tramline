@@ -1,3 +1,22 @@
+# == Schema Information
+#
+# Table name: trains
+#
+#  id                       :uuid             not null, primary key
+#  app_id                   :uuid             not null
+#  name                     :string           not null
+#  description              :string           not null
+#  status                   :string           not null
+#  version_seeded_with      :string           not null
+#  version_current          :string
+#  slug                     :string
+#  created_at               :datetime         not null
+#  updated_at               :datetime         not null
+#  working_branch           :string
+#  branching_strategy       :string
+#  release_branch           :string
+#  release_backmerge_branch :string
+#
 class Releases::Train < ApplicationRecord
   has_paper_trail
   using RefinedString
