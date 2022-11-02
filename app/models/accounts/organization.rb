@@ -1,3 +1,15 @@
+# == Schema Information
+#
+# Table name: organizations
+#
+#  id         :uuid             not null, primary key
+#  status     :string           not null
+#  name       :string           not null
+#  slug       :string
+#  created_by :string           not null
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#
 class Accounts::Organization < ApplicationRecord
   extend FriendlyId
   has_paper_trail

@@ -1,3 +1,16 @@
+# == Schema Information
+#
+# Table name: deployment_runs
+#
+#  id                         :uuid             not null, primary key
+#  deployment_id              :uuid             not null
+#  train_step_run_id          :uuid             not null
+#  scheduled_at               :datetime         not null
+#  status                     :string
+#  created_at                 :datetime         not null
+#  updated_at                 :datetime         not null
+#  initial_rollout_percentage :decimal(8, 5)
+#
 class DeploymentRun < ApplicationRecord
   include AASM
   include Passportable
@@ -22,7 +35,7 @@ class DeploymentRun < ApplicationRecord
 
   enum status: STATES
 
-  aasm column: :status, requires_lock: true, requires_new_transaction: false, enum: true, create_scopes: false do
+  aasm safe_state_machine_params do
     state :created, initial: true, before_enter: -> { step_run.startable_deployment?(deployment) }
     state(*STATES.keys)
 

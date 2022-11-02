@@ -1,3 +1,13 @@
+# == Schema Information
+#
+# Table name: sign_off_groups
+#
+#  id         :uuid             not null, primary key
+#  name       :string
+#  app_id     :uuid             not null
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#
 class SignOffGroup < ApplicationRecord
   belongs_to :app
   has_many :memberships, dependent: :destroy, class_name: "SignOffGroupMembership"

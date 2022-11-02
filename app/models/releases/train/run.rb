@@ -1,3 +1,19 @@
+# == Schema Information
+#
+# Table name: train_runs
+#
+#  id              :uuid             not null, primary key
+#  train_id        :uuid             not null
+#  code_name       :string           not null
+#  scheduled_at    :datetime         not null
+#  commit_sha      :string
+#  status          :string           not null
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#  branch_name     :string           not null
+#  release_version :string           not null
+#  completed_at    :datetime
+#
 class Releases::Train::Run < ApplicationRecord
   has_paper_trail
   include AASM
@@ -31,7 +47,7 @@ class Releases::Train::Run < ApplicationRecord
 
   enum status: STATES
 
-  aasm column: :status, requires_lock: true, requires_new_transaction: false, enum: true, create_scopes: false do
+  aasm safe_state_machine_params do
     state :created, initial: true
     state(*STATES.keys)
 

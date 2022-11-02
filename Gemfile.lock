@@ -74,6 +74,9 @@ GEM
       activerecord (>= 4.2)
       activesupport
     amazing_print (1.4.0)
+    annotate (3.2.0)
+      activerecord (>= 3.2, < 8.0)
+      rake (>= 10.4, < 14.0)
     ast (2.4.2)
     auto_strip_attributes (2.6.0)
       activerecord (>= 4.0)
@@ -149,6 +152,7 @@ GEM
     faraday-net_http (2.0.3)
     faraday-retry (2.0.0)
       faraday (~> 2.0)
+    fast_blank (1.0.1)
     ffi (1.15.5)
     ffi-compiler (1.0.1)
       ffi (>= 1.0.0)
@@ -466,6 +470,8 @@ GEM
       rubocop-performance (= 1.13.3)
     stimulus-rails (1.0.4)
       railties (>= 6.0.0)
+    strong_migrations (1.4.0)
+      activerecord (>= 5.2)
     strong_password (0.0.10)
     strscan (3.0.3)
     tailwindcss-rails (2.0.8-arm64-darwin)
@@ -517,6 +523,7 @@ DEPENDENCIES
   aasm (~> 5.3)
   after_commit_everywhere (~> 1.2)
   amazing_print (~> 1.4)
+  annotate
   auto_strip_attributes (~> 2.6)
   awesome_print
   bcrypt (~> 3.1.7)
@@ -537,6 +544,7 @@ DEPENDENCIES
   factory_bot_rails
   faker
   faraday-retry (~> 2.0)
+  fast_blank (~> 1.0)
   flipper (~> 0.23.0)
   flipper-active_record (~> 0.23.0)
   flipper-ui (~> 0.23.0)
@@ -556,6 +564,7 @@ DEPENDENCIES
   lograge (~> 0.12.0)
   memery (~> 1.4)
   octokit (~> 4.22)
+  oj (~> 3.13)
   ougai (~> 2.0)
   paper_trail (~> 12.2)
   pg (~> 1.1)
@@ -583,6 +592,7 @@ DEPENDENCIES
   sprockets-rails (~> 3.4)
   standard
   stimulus-rails (~> 1.0)
+  strong_migrations (~> 1.4)
   strong_password (~> 0.0.10)
   tailwindcss-rails (~> 2.0)
   turbo-rails (~> 1.0)

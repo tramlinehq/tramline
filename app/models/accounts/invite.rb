@@ -1,3 +1,18 @@
+# == Schema Information
+#
+# Table name: invites
+#
+#  id              :uuid             not null, primary key
+#  organization_id :uuid             not null
+#  sender_id       :uuid             not null
+#  recipient_id    :uuid
+#  email           :string
+#  token           :string
+#  role            :string
+#  accepted_at     :datetime
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#
 class Accounts::Invite < ApplicationRecord
   include Roleable
   include Rails.application.routes.url_helpers

@@ -1,3 +1,14 @@
+# == Schema Information
+#
+# Table name: memberships
+#
+#  id              :uuid             not null, primary key
+#  user_id         :uuid
+#  organization_id :uuid
+#  role            :string           not null
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#
 class Accounts::Membership < ApplicationRecord
   include Roleable
   has_paper_trail

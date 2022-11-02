@@ -1,3 +1,14 @@
+# == Schema Information
+#
+# Table name: build_artifacts
+#
+#  id                 :uuid             not null, primary key
+#  train_step_runs_id :uuid             not null
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  generated_at       :datetime
+#  uploaded_at        :datetime
+#
 require "zip"
 
 class BuildArtifact < ApplicationRecord

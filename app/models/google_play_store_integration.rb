@@ -1,3 +1,13 @@
+# == Schema Information
+#
+# Table name: google_play_store_integrations
+#
+#  id                :uuid             not null, primary key
+#  json_key          :string
+#  original_json_key :string
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#
 class GooglePlayStoreIntegration < ApplicationRecord
   has_paper_trail
   encrypts :json_key, deterministic: true

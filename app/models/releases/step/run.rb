@@ -1,3 +1,23 @@
+# == Schema Information
+#
+# Table name: train_step_runs
+#
+#  id                         :uuid             not null, primary key
+#  train_step_id              :uuid             not null
+#  train_run_id               :uuid             not null
+#  scheduled_at               :datetime         not null
+#  status                     :string           not null
+#  created_at                 :datetime         not null
+#  updated_at                 :datetime         not null
+#  releases_commit_id         :uuid             not null
+#  build_version              :string           not null
+#  ci_ref                     :string
+#  ci_link                    :string
+#  build_number               :string
+#  sign_required              :boolean          default(TRUE)
+#  approval_status            :string           default("pending"), not null
+#  initial_rollout_percentage :decimal(8, 5)
+#
 class Releases::Step::Run < ApplicationRecord
   has_paper_trail
   include AASM
@@ -40,7 +60,7 @@ class Releases::Step::Run < ApplicationRecord
 
   enum status: STATES
 
-  aasm column: :status, requires_lock: true, requires_new_transaction: false, enum: true, create_scopes: false do
+  aasm safe_state_machine_params do
     state :on_track, initial: true
     state(*STATES.keys)
 
@@ -54,33 +74,13 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: [:ci_workflow_triggered], to: :ci_workflow_started
     end
 
-    event :ci_unavailable do
-      transitions from: [:on_track, :ci_workflow_triggered], to: :ci_workflow_unavailable
-    end
-
-    event :fail_ci do
-      transitions from: :ci_workflow_started, to: :ci_workflow_failed
-    end
-
-    event :cancel_ci do
-      transitions from: :ci_workflow_started, to: :ci_workflow_halted
-    end
-
-    event :finish_ci do
-      transitions from: :ci_workflow_started, to: :build_ready
-    end
-
-    event :ready_to_deploy do
-      transitions from: :build_ready, to: :deployment_started
-    end
-
-    event :fail_deploy do
-      transitions from: [:build_ready, :deployment_started], to: :deployment_failed
-    end
-
-    event :finish do
-      transitions from: [:build_ready, :deployment_started], to: :success
-    end
+    event(:ci_unavailable) { transitions from: [:on_track, :ci_workflow_triggered], to: :ci_workflow_unavailable }
+    event(:fail_ci) { transitions from: :ci_workflow_started, to: :ci_workflow_failed }
+    event(:cancel_ci) { transitions from: :ci_workflow_started, to: :ci_workflow_halted }
+    event(:finish_ci) { transitions from: :ci_workflow_started, to: :build_ready }
+    event(:ready_to_deploy) { transitions from: :build_ready, to: :deployment_started }
+    event(:fail_deploy) { transitions from: [:build_ready, :deployment_started], to: :deployment_failed }
+    event(:finish) { transitions from: [:build_ready, :deployment_started], to: :success }
   end
 
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"

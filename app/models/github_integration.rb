@@ -1,3 +1,12 @@
+# == Schema Information
+#
+# Table name: github_integrations
+#
+#  id              :uuid             not null, primary key
+#  installation_id :string
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#
 class GithubIntegration < ApplicationRecord
   has_paper_trail
 
