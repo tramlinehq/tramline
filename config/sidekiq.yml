@@ -1,5 +1,5 @@
 :verbose: true
-:timeout: <%= ENV['SIDEKIQ_TIMEOUT'] || 13 %>
+:timeout: <%= ENV['SIDEKIQ_TIMEOUT'] || 12 %>
 :concurrency: <%= ENV['SIDEKIQ_CONCURRENCY'] || 5 %>
 :queues:
   - ["high", 3]
