@@ -1,8 +1,20 @@
 :verbose: true
-:timeout: <%= ENV['SIDEKIQ_TIMEOUT'] || 13 %>
+
 :concurrency: <%= ENV['SIDEKIQ_CONCURRENCY'] || 5 %>
+
+:timeout: <%= ENV['SIDEKIQ_TIMEOUT'] || 13 %>
+
 :queues:
   - ["high", 3]
   - ["medium", 2]
   - ["low", 1]
   - ["default", 1]
+
+# Automatic train running is currently disabled
+#
+#:schedule:
+#  kickoff:
+#    every: "1m"
+#    class: Releases::KickoffJob
+#    description: "This job finds trains and/or train-steps to jump-start"
+#    queue: high

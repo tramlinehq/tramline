@@ -19,11 +19,11 @@ bin/setup.mac
 
 Refer to `db/seeds.rb` for credentials on how to login using the seed users.
 
-## Running the development environment
-- Place the `master.key` file in the `config` directory. You can get this file from our Google Cloud Storage bucket.
-- Start [ngrok](#webhooks)
-- Start PostgreSQL and Redis using [Homebrew services](https://github.com/Homebrew/homebrew-services)
-- Finally, run `bin/dev`
+## Running the development environment 
+- Place the `master.key` file in the `config` directory. You can get this file from our Google Cloud Storage bucket. 
+- Start [ngrok](#webhooks) 
+- Start PostgreSQL and Redis using [Homebrew services](https://github.com/Homebrew/homebrew-services) 
+- Finally, run `bin/dev` 
 
 ## Developer Notes
 
@@ -46,7 +46,7 @@ Doing this for development/test groups is optional.
 
 ### SSL
 
-We use SSL locally and certificates are also generated as part of the setup script. It's recommended to use https://tramline.local.gd:3000.
+We use SSL locally and certificates are also generated as part of the setup script. It's recommended to use https://tramline.local.gd:3000. 
 
 This is the default `HOST_NAME` that can be changed via `.env.development` if necessary.
 
@@ -60,4 +60,4 @@ The dashboard for all background jobs can be viewed at https://tramline.local.gd
 
 ### Flipper
 
-All feature-flags are managed through flipper. The UI can be viewed at: https://tramline.local.gd:3000/flipper.
+All feature-flags are managed through flipper. The UI can be viewed at: https://tramline.local.gd:3000/flipper. 
