@@ -11,8 +11,8 @@ Rails.application.routes.draw do
   end
 
   devise_for :users,
-             controllers: { registrations: "authentication/registrations", sessions: "authentication/sessions" },
-             class_name: "Accounts::User"
+    controllers: {registrations: "authentication/registrations", sessions: "authentication/sessions"},
+    class_name: "Accounts::User"
 
   devise_scope :user do
     unauthenticated :user do
@@ -100,12 +100,12 @@ Rails.application.routes.draw do
       collection do
         get :connect, to: "integrations#connect", as: :connect
         resource :google_play_store, only: [:create],
-                 controller: "integrations/google_play_store",
-                 as: :google_play_store_integration
+          controller: "integrations/google_play_store",
+          as: :google_play_store_integration
 
         resource :bitrise, only: [:create],
-                 controller: "integrations/bitrise",
-                 as: :bitrise_integration
+          controller: "integrations/bitrise",
+          as: :bitrise_integration
       end
     end
   end
@@ -128,6 +128,7 @@ Rails.application.routes.draw do
     get :callback, controller: "integration_listeners/slack", as: :slack_callback
   end
 
-  match '/', via: %i[post put patch delete], to: 'application#raise_not_found', format: false
-  match '*unmatched_route', via: :all, to: 'application#raise_not_found', format: false
+  match "/", via: %i[post put patch delete], to: "application#raise_not_found", format: false
+  match "*unmatched_route", via: :all, to: "application#raise_not_found", format: false,
+    constraints: lambda { |req| req.path.exclude? "rails/active_storage" }
 end
