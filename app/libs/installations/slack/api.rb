@@ -63,7 +63,7 @@ module Installations
       params = {
         params: {
           limit: LIST_CHANNELS_LIMIT,
-          exclude_archived: false,
+          exclude_archived: true,
           types: "public_channel,private_channel"
         }
       }
