@@ -6,7 +6,7 @@ class AppConfigsController < SignedInApplicationController
   def edit
     @config = AppConfig.find_or_initialize_by(app: @app)
     @code_repositories = @app.vcs_provider.repos
-    @notification_channels = @app.notification_provider.channels
+    @notification_channels = @app.notification_provider.channels if @app.notifications?
     @ci_cd_provider_name = @app.ci_cd_provider.display
   end
 
@@ -50,7 +50,7 @@ class AppConfigsController < SignedInApplicationController
         @app
           .ci_cd_provider
           .list_apps
-          .map { |pair| ["#{pair[:name]} (#{pair[:id]})", {pair[:id] => pair[:name]}.to_json] }
+          .map { |pair| ["#{pair[:name]} (#{pair[:id]})", { pair[:id] => pair[:name] }.to_json] }
     end
   end
 end

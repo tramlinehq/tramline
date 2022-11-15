@@ -48,10 +48,13 @@ class WebhookProcessors::Github::Push < ApplicationJob
   def send_notification!
     return unless release.commits.size.eql?(1)
 
-    message = "New Release!"
     Notifiers::Slack::ReleaseStarted
-      .render_json(train_name: train.name, version_number: train.version_current, branch_name: branch_name, commit_msg: commit_message)
-      .then { |notifier| Triggers::Notification.dispatch!(train:, message:, text_block: notifier) }
+      .render_json(
+        train_name: train.name,
+        version_number: train.version_current,
+        branch_name: branch_name,
+        commit_msg: commit_message
+      ).then { |notifier| train.notify!(message: "New Release!", text_block: notifier) }
   end
 
   def train

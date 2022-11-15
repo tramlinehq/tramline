@@ -40,7 +40,7 @@ class Releases::Train < ApplicationRecord
   has_many :commits, class_name: "Releases::Commit", inverse_of: :train, dependent: :destroy
   has_many :deployments, through: :steps
 
-  scope :running, -> { includes(:runs).where(runs: {status: Releases::Train::Run.statuses[:on_track]}) }
+  scope :running, -> { includes(:runs).where(runs: { status: Releases::Train::Run.statuses[:on_track] }) }
 
   enum status: {
     active: "active",
@@ -52,18 +52,18 @@ class Releases::Train < ApplicationRecord
 
   validates :branching_strategy, :working_branch, presence: true
   validates :release_backmerge_branch, presence: true,
-    if: lambda { |record|
-      record.branching_strategy == "release_backmerge"
-    }
+            if: lambda { |record|
+              record.branching_strategy == "release_backmerge"
+            }
   validates :release_branch, presence: true,
-    if: lambda { |record|
-      record.branching_strategy == "parallel_working"
-    }
-  validates :branching_strategy, inclusion: {in: BRANCHING_STRATEGIES.keys.map(&:to_s)}
+            if: lambda { |record|
+              record.branching_strategy == "parallel_working"
+            }
+  validates :branching_strategy, inclusion: { in: BRANCHING_STRATEGIES.keys.map(&:to_s) }
 
   validate :semver_compatibility
   validate :ready?, on: :create
-  validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: "can only contain alphanumerics, underscores, hyphens and forward-slashes."}
+  validates :name, format: { with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: "can only contain alphanumerics, underscores, hyphens and forward-slashes." }
 
   before_create :set_current_version!
   before_create :set_default_status!
@@ -109,6 +109,13 @@ class Releases::Train < ApplicationRecord
   def create_branch!(from, to)
     return false if Rails.env.test?
     vcs_provider.create_branch!(from, to)
+  end
+
+  # FIXME: this is helpful to segregate Slack as a notification channel from deployment channel
+  # but eventually, solve that problem through a better abstraction that segregates the two
+  def notify!(message:, text_block: {}, channel: nil, provider: nil)
+    return unless app.notifications?
+    Triggers::Notification(train: self, message:, text_block:, channel:, provider:)
   end
 
   def display_name

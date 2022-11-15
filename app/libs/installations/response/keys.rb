@@ -13,6 +13,8 @@ class Installations::Response::Keys
     }
 
     def normalize(map_list, mapper = nil)
+      return [] if map_list.blank?
+
       map_list.map do |map|
         replaced_map = map.with_indifferent_access
 

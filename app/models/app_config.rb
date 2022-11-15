@@ -16,10 +16,10 @@ class AppConfig < ApplicationRecord
   belongs_to :app
   self.ignored_columns = [:working_branch]
 
-  MINIMAL_REQUIRED_CONFIG = %i[code_repository notification_channel]
+  MINIMUM_REQUIRED_CONFIG = %i[code_repository]
 
   def ready?
-    MINIMAL_REQUIRED_CONFIG.all? { |config| public_send(config).present? }
+    MINIMUM_REQUIRED_CONFIG.all? { |config| public_send(config).present? }
   end
 
   def code_repository_name

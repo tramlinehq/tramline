@@ -54,12 +54,12 @@ class Integration < ApplicationRecord
 
   before_create :set_connected
 
-  MINIMAL_REQUIRED_SET = [:version_control, :ci_cd, :notification]
+  MINIMUM_REQUIRED_SET = [:version_control, :ci_cd, :build_channel]
   DEFAULT_CONNECT_STATUS = Integration.statuses[:connected]
   DEFAULT_INITIAL_STATUS = Integration.statuses[:disconnected]
 
   def self.ready?
-    where(category: MINIMAL_REQUIRED_SET, status: :connected).size == MINIMAL_REQUIRED_SET.size
+    where(category: MINIMUM_REQUIRED_SET, status: :connected).pluck(:category).uniq.size == MINIMUM_REQUIRED_SET.size
   end
 
   def self.vcs_provider
@@ -76,11 +76,6 @@ class Integration < ApplicationRecord
 
   def self.slack_build_channel_provider
     build_channel.where(providable_type: "SlackIntegration").first.providable
-  end
-
-  def self.shared_vcs_and_ci_cd?
-    (version_control.first.github_integration? && ci_cd.first.github_integration?) ||
-      (version_control.first.gitlab_integration? && ci_cd.first.gitlab_integration?)
   end
 
   def installation_state
