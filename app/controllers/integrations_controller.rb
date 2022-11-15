@@ -11,7 +11,7 @@ class IntegrationsController < SignedInApplicationController
 
   def create
     if @integration.save
-      redirect_to index_path, notice: "Integration was successfully created."
+      redirect_to app_path(@app), notice: "Integration was successfully created."
     else
       set_integrations_by_categories
       render :index, status: :unprocessable_entity
