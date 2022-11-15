@@ -58,7 +58,7 @@ class BitriseIntegration < ApplicationRecord
     return [] unless integration.ci_cd?
     installation
       .list_workflows(project)
-      .map { |workflow| { id: workflow, name: workflow } }
+      .map { |workflow| {id: workflow, name: workflow} }
   end
 
   def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
