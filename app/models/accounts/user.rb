@@ -82,6 +82,14 @@ class Accounts::User < ApplicationRecord
     end
   end
 
+  protected
+
+  # keeping the devise confirmable module around and disabling like this,
+  # in case we need to bring it back in some way
+  def confirmation_required?
+    false
+  end
+
   private
 
   # We only want to display one error message to the user, so if we get multiple
