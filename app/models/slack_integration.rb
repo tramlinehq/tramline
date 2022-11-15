@@ -51,6 +51,10 @@ class SlackIntegration < ApplicationRecord
     "slack"
   end
 
+  def display
+    "Slack"
+  end
+
   def creatable?
     false
   end

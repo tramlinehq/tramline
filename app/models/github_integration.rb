@@ -62,6 +62,10 @@ class GithubIntegration < ApplicationRecord
     "github"
   end
 
+  def display
+    "GitHub"
+  end
+
   def creatable?
     false
   end

@@ -37,6 +37,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
     "google_play_store"
   end
 
+  def display
+    "Google Play Store"
+  end
+
   def channels
     CHANNELS.invert.map { |k, v| [k, {k => v}.to_json] }
   end

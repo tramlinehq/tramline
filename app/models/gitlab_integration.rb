@@ -72,6 +72,10 @@ class GitlabIntegration < ApplicationRecord
     "gitlab"
   end
 
+  def display
+    "GitLab"
+  end
+
   def creatable?
     false
   end

@@ -7,7 +7,7 @@ class AppConfigsController < SignedInApplicationController
     @config = AppConfig.find_or_initialize_by(app: @app)
     @code_repositories = @app.vcs_provider.repos
     @notification_channels = @app.notification_provider.channels
-    @ci_cd_provider_name = @app.ci_cd_provider.to_s.titleize
+    @ci_cd_provider_name = @app.ci_cd_provider.display
   end
 
   def update
