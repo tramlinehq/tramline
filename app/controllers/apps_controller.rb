@@ -23,6 +23,7 @@ class AppsController < SignedInApplicationController
   end
 
   def show
+    @setup_instructions = @app.setup_instructions
   end
 
   def edit

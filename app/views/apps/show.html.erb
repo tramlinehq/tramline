@@ -1,3 +1,10 @@
+<% if @app.ready? && !@app.notifications? %>
+  <% content_for :missing_notification_integration do %>
+    <%= render partial: "shared/sticky_topbar_message",
+               locals: { msg: "You haven't yet added the integration for notifications. Set it up to receive timely updates about your release!" } %>
+  <% end %>
+<% end %>
+
 <% breadcrumb @app %>
 
 <%= render partial: 'shared/errors', locals: { resource: @app } %>
@@ -71,25 +78,7 @@
         </div>
       <% end %>
     <% else %>
-      <% unless @app.integrations.ready? %>
-        <%= link_to app_integrations_path(@app), class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" do %>
-          <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
-            <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
-          </svg>
-          <span class="ml-2">
-            Setup Integrations
-          </span>
-        <% end %>
-      <% else %>
-        <%= link_to edit_app_app_config_path(@app), class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" do %>
-          <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
-            <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
-          </svg>
-          <span class="ml-2">
-            Update Config
-          </span>
-        <% end %>
-      <% end %>
+      <%= render partial: "setup_progress", locals: { setup_instructions: @setup_instructions } %>
     <% end %>
 
     <% if @app.trains.any? %>

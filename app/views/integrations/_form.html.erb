@@ -9,6 +9,7 @@
       <h3 class="text-xl leading-snug text-slate-800 font-bold mt-6">
         <%= category.titleize %>
       </h3>
+
       <div class="text-sm"><%= Integration::CATEGORY_DESCRIPTIONS[category.to_sym] %></div>
 
       <div class="grid grid-cols-12 gap-6">
@@ -27,6 +28,7 @@
                   </h3>
                 </header>
               </div>
+
               <!-- Card footer -->
               <footer class="mt-1">
                 <div class="flex flex-wrap justify-between items-center">

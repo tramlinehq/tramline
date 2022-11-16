@@ -83,6 +83,35 @@ class App < ApplicationRecord
     !notification_provider.nil?
   end
 
+  # this helps power initial setup instructions after an app is created
+  def setup_instructions
+    app_setup = {
+      app: {
+        visible: persisted?, completed: persisted?
+      }
+    }
+
+    integration_setup =
+      Integration::MINIMUM_REQUIRED_SET.map do |integration_category|
+        is_completed = integrations.any? { |i| i.category.eql?(integration_category.to_s) }
+        {
+          integration_category => {
+            visible: true, completed: is_completed
+          }
+        }
+      end
+
+    app_config_setup = {
+      app_config: {
+        visible: integrations.ready?, completed: ready?
+      }
+    }
+
+    [app_setup, integration_setup, app_config_setup]
+      .flatten
+      .reduce(:merge)
+  end
+
   private
 
   def set_default_platform

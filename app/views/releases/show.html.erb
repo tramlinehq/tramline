@@ -1,15 +1,9 @@
 <% if @release.finished? %>
   <% content_for :locked_release do %>
-    <div class="px-4 py-2 rounded-sm text-sm bg-indigo-100 border border-indigo-200 text-indigo-500">
-      <div class="flex w-full justify-between items-start">
-        <div class="flex">
-          <div class="font-medium">This release was completed and is now locked.</div>
-        </div>
-      </div>
-    </div>
+    <%= render partial: "shared/sticky_topbar_message",
+               locals: { msg: "This release was completed and is now locked." } %>
   <% end %>
 <% end %>
-
 
 <% breadcrumb :release, @release %>
 
