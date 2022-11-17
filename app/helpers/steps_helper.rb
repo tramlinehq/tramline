@@ -1,6 +1,6 @@
 module StepsHelper
   def show_ci_cd_provider(step)
-    step.app.ci_cd_provider.class.name.gsub("Integration", "").titleize
+    step.app.ci_cd_provider.display
   end
 
   def show_ci_cd_channel(step)
