@@ -80,7 +80,7 @@ class App < ApplicationRecord
   end
 
   def notifications?
-    !notification_provider.nil?
+    notification_provider.present? && config.notification_channel.present?
   end
 
   # this helps power initial setup instructions after an app is created

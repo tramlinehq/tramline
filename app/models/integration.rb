@@ -29,6 +29,13 @@ class Integration < ApplicationRecord
     "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration]
   }.freeze
 
+  enum category: LIST.keys.zip(LIST.keys).to_h
+
+  enum status: {
+    connected: "connected",
+    disconnected: "disconnected"
+  }
+
   CATEGORY_DESCRIPTIONS = {
     version_control: "Automatically create release branches and tags, and merge release PRs.",
     ci_cd: "Trigger workflows to create builds and stay up-to-date as they're made available.",
@@ -36,14 +43,11 @@ class Integration < ApplicationRecord
     build_channel: "Send builds to the right deployment service for the right stakeholders."
   }.freeze
 
-  MULTI_INTEGRATION_CATEGORIES = ["build_channel"]
+  MULTI_INTEGRATION_CATEGORIES = ["build_channel"].freeze
 
-  enum category: LIST.keys.zip(LIST.keys).to_h
-
-  enum status: {
-    connected: "connected",
-    disconnected: "disconnected"
-  }
+  MINIMUM_REQUIRED_SET = [:version_control, :ci_cd, :build_channel].freeze
+  DEFAULT_CONNECT_STATUS = Integration.statuses[:connected].freeze
+  DEFAULT_INITIAL_STATUS = Integration.statuses[:disconnected].freeze
 
   validates :category, presence: true
   validate :provider_in_category
@@ -52,14 +56,12 @@ class Integration < ApplicationRecord
 
   delegate :install_path, to: :providable
 
+  scope :ready, -> { where(category: MINIMUM_REQUIRED_SET, status: :connected) }
+
   before_create :set_connected
 
-  MINIMUM_REQUIRED_SET = [:version_control, :ci_cd, :build_channel]
-  DEFAULT_CONNECT_STATUS = Integration.statuses[:connected]
-  DEFAULT_INITIAL_STATUS = Integration.statuses[:disconnected]
-
   def self.ready?
-    where(category: MINIMUM_REQUIRED_SET, status: :connected).pluck(:category).uniq.size == MINIMUM_REQUIRED_SET.size
+    ready.pluck(:category).uniq.size == MINIMUM_REQUIRED_SET.size
   end
 
   def self.vcs_provider

@@ -115,7 +115,7 @@ class Releases::Train < ApplicationRecord
   # but eventually, solve that problem through a better abstraction that segregates the two
   def notify!(message:, text_block: {}, channel: nil, provider: nil)
     return unless app.notifications?
-    Triggers::Notification(train: self, message:, text_block:, channel:, provider:)
+    Triggers::Notification.dispatch!(train: self, message:, text_block:, channel:, provider:)
   end
 
   def display_name
