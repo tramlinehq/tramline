@@ -18,16 +18,18 @@ class BitriseIntegration < ApplicationRecord
 
   encrypts :access_token, deterministic: true
 
+  def self.display
+    "Bitrise"
+  end
+
+  delegate :display, to: self
+
   def installation
     Installations::Bitrise::Api.new(access_token)
   end
 
   def to_s
     "bitrise"
-  end
-
-  def display
-    "Bitrise"
   end
 
   def creatable?

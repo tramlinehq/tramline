@@ -52,6 +52,8 @@ class Integration < ApplicationRecord
   validates :category, presence: true
   validate :provider_in_category
 
+  validates_associated :providable, message: proc { |_p, meta| providable_error_message(meta) }
+
   attr_accessor :current_user, :code
 
   delegate :install_path, to: :providable
@@ -60,24 +62,32 @@ class Integration < ApplicationRecord
 
   before_create :set_connected
 
-  def self.ready?
-    ready.pluck(:category).uniq.size == MINIMUM_REQUIRED_SET.size
-  end
+  class << self
+    def ready?
+      ready.pluck(:category).uniq.size == MINIMUM_REQUIRED_SET.size
+    end
 
-  def self.vcs_provider
-    version_control.first&.providable
-  end
+    def vcs_provider
+      version_control.first&.providable
+    end
 
-  def self.ci_cd_provider
-    ci_cd.first&.providable
-  end
+    def ci_cd_provider
+      ci_cd.first&.providable
+    end
 
-  def self.notification_provider
-    notification.first&.providable
-  end
+    def notification_provider
+      notification.first&.providable
+    end
 
-  def self.slack_build_channel_provider
-    build_channel.where(providable_type: "SlackIntegration").first.providable
+    def slack_build_channel_provider
+      build_channel.where(providable_type: "SlackIntegration").first.providable
+    end
+
+    private
+
+    def providable_error_message(meta)
+      meta[:value].errors.full_messages[0]
+    end
   end
 
   def installation_state

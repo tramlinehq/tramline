@@ -25,6 +25,12 @@ class GitlabIntegration < ApplicationRecord
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://gitlab.com/oauth/authorize{?params*}")
 
+  def self.display
+    "GitLab"
+  end
+
+  delegate :display, to: self
+
   def install_path
     unless integration.version_control? || integration.ci_cd?
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
@@ -70,10 +76,6 @@ class GitlabIntegration < ApplicationRecord
 
   def to_s
     "gitlab"
-  end
-
-  def display
-    "GitLab"
   end
 
   def creatable?

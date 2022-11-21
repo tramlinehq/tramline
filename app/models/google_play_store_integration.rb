@@ -13,6 +13,8 @@ class GooglePlayStoreIntegration < ApplicationRecord
   encrypts :json_key, deterministic: true
 
   include Providable
+  delegate :app, to: :integration
+  validate :correct_key, on: :create
 
   CHANNELS = {
     production: "production",
@@ -20,6 +22,12 @@ class GooglePlayStoreIntegration < ApplicationRecord
     alpha: "closed testing",
     internal: "internal testing"
   }
+
+  def self.display
+    "Google Play Store"
+  end
+
+  delegate :display, to: self
 
   def creatable?
     true
@@ -37,11 +45,21 @@ class GooglePlayStoreIntegration < ApplicationRecord
     "google_play_store"
   end
 
-  def display
-    "Google Play Store"
+  def channels
+    CHANNELS.invert.map { |k, v| [k, { k => v }.to_json] }
   end
 
-  def channels
-    CHANNELS.invert.map { |k, v| [k, {k => v}.to_json] }
+  def correct_key
+    errors.add(:json_key, :no_bundles) if developer_api.list_bundles.keys.size < 1
+  rescue RuntimeError
+    errors.add(:json_key, :key_format)
+  rescue Installations::Errors::BundleIdentifierNotFound
+    errors.add(:json_key, :bundle_id_not_found)
+  rescue Installations::Errors::GooglePlayDeveloperAPIDisabled
+    errors.add(:json_key, :dev_api_not_enabled)
+  end
+
+  def developer_api
+    Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier, StringIO.new(json_key), +"")
   end
 end

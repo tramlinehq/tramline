@@ -1,4 +1,20 @@
 en:
+  activerecord:
+    attributes:
+      google_play_store_integration:
+        json_key: "google play store json key"
+    errors:
+      models:
+        format: "%{attribute} →\n%{message}"
+        integration:
+          format: "%{message}"
+        google_play_store_integration:
+          attributes:
+            json_key:
+              no_bundles: "you don't have any uploaded bundles for this app, please release at least once manually from play console!"
+              key_format: "the supplied key format is incorrect, please check your key!"
+              bundle_id_not_found: "the bundle identifier configured against the supplied key is incorrect, check your app settings!"
+              dev_api_not_enabled: "your Google Play Developer account does not have the Play Developer API enabled!"
   invitation:
     flash:
       invite_issued: "Invitation issued"
@@ -19,6 +35,7 @@ en:
         accept: "Accept invitation"
         ignore: "If you don't want to accept the invitation, please ignore this email. Your account won't be created until you access the link above and set your password."
   errors:
+    format: "%{attribute} →\n%{message}"
     messages:
       http_code:
         '400':

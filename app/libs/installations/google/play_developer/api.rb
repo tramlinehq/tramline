@@ -41,6 +41,16 @@ module Installations
       end
     end
 
+    def list_bundles
+      execute do
+        edit = client.insert_edit(package_name)
+        client
+          .list_edit_bundles(package_name, edit.id)
+          &.bundles
+          .to_h { |b| [b.sha256, { version_code: b.version_code }] } || {}
+      end
+    end
+
     def edit_track(edit, track_name, version_code, rollout_percentage)
       client.update_edit_track(package_name, edit.id, track_name, track(track_name, version_code, rollout_percentage))
     end
@@ -73,7 +83,7 @@ module Installations
     def execute
       yield if block_given?
     rescue ::Google::Apis::ServerError, ::Google::Apis::ClientError => e
-      raise Installations::Google::PlayDeveloper::Error.handle(e)
+        raise Installations::Google::PlayDeveloper::Error.handle(e)
     end
 
     def set_client

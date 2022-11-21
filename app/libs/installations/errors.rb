@@ -27,5 +27,6 @@ module Installations
     class BuildNotUpgradable < StandardError; end
 
     class DuplicatedBuildUploadAttempt < StandardError; end
+    class GooglePlayDeveloperAPIDisabled < StandardError; end
   end
 end

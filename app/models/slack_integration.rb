@@ -23,6 +23,12 @@ class SlackIntegration < ApplicationRecord
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://slack.com/oauth/v2/authorize{?params*}")
 
+  def self.display
+    "Slack"
+  end
+
+  delegate :display, to: self
+
   def install_path
     unless integration.notification? || integration.build_channel?
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
@@ -49,10 +55,6 @@ class SlackIntegration < ApplicationRecord
 
   def to_s
     "slack"
-  end
-
-  def display
-    "Slack"
   end
 
   def creatable?
