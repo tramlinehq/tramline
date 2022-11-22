@@ -5,6 +5,11 @@ en:
         access_token: "bitrise personal access token"
       google_play_store_integration:
         json_key: "google play store json key"
+      releases/train:
+        version_seeded_with: "version seeded with"
+      releases/step:
+        ci_cd_channel: "ci workflow"
+        release_suffix: "release suffix"
     errors:
       models:
         integration:
