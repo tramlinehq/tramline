@@ -14,8 +14,12 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   include Providable
   include Displayable
+
   delegate :app, to: :integration
+
   validate :correct_key, on: :create
+
+  attr_accessor :json_key_file
 
   CHANNELS = {
     production: "production",

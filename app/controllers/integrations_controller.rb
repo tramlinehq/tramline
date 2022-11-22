@@ -52,11 +52,11 @@ class IntegrationsController < SignedInApplicationController
 
   def set_providable
     @integration.providable = providable_type.constantize.new(integration: @integration)
+    set_providable_params
+  end
+
+  def set_providable_params
     @integration.providable.assign_attributes(providable_params)
-  rescue Services::FetchAttachment::InvalidAttachment => e
-    flash.now[:error] = e.message
-    set_integrations_by_categories
-    render :index, status: :unprocessable_entity
   end
 
   def integration_params

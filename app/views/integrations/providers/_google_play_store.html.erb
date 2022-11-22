@@ -12,7 +12,7 @@
       <%= form.hidden_field :category, value: category %>
       <%= form.fields_for :providable do |subform| %>
         <%= subform.hidden_field :type, value: integration.providable_type %>
-        <%= subform.file_field :json_key, accept: 'application/json' %>
+        <%= subform.file_field :json_key_file, accept: 'application/json' %>
       <% end %>
 
       <div class="flex items-center mt-5 mb-5" data-controller="reveal">

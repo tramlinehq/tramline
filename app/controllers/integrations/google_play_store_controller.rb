@@ -1,17 +1,34 @@
 class Integrations::GooglePlayStoreController < IntegrationsController
+  JSON_KEY_FILE_SIZE_LIMIT = 4096
+
   def integration_params
     params.require(:integration)
       .permit(
         :category,
-        providable: [:json_key, :type]
+        providable: [:json_key_file, :type]
       ).merge(current_user:)
   end
 
-  def providable_params
-    super.merge(json_key: attachment)
+  def set_providable_params
+    if providable_params_errors.present?
+      flash.now[:error] = providable_params_errors.first
+      set_integrations_by_categories
+      render :index, status: :unprocessable_entity
+    else
+      super
+    end
   end
 
-  def attachment
-    Services::FetchAttachment.for_json(integration_params[:providable][:json_key])
+  def providable_params
+    super.merge(json_key: json_key_file.read)
+  end
+
+  def providable_params_errors
+    @providable_params_errors ||=
+      Validators::GooglePlayStore::JsonKeyValidator.validate(json_key_file).errors
+  end
+
+  def json_key_file
+    @json_key_file ||= integration_params[:providable][:json_key_file]
   end
 end
