@@ -63,6 +63,35 @@ class Integration < ApplicationRecord
   before_create :set_connected
 
   class << self
+    def by_categories_for(app)
+      LIST.each_with_object({}) do |(category, providers), combination|
+        existing_integration = app.integrations.where(category: category)
+        combination[category] ||= []
+
+        if existing_integration.exists?
+          existing_integration.each do |integration|
+            combination[category] << integration
+          end
+
+          next if MULTI_INTEGRATION_CATEGORIES.exclude?(category)
+        end
+
+        (providers - existing_integration.pluck(:providable_type)).each do |provider|
+          next if provider.eql?("GitlabIntegration") && !Flipper.enabled?(:gitlab_integration)
+          next if provider.eql?("BitriseIntegration") && !Flipper.enabled?(:bitrise_integration)
+
+          integration =
+            app
+              .integrations
+              .new(category: categories[category], providable: provider.constantize.new, status: DEFAULT_INITIAL_STATUS)
+
+          combination[category] << integration
+        end
+
+        combination
+      end
+    end
+
     def ready?
       ready.pluck(:category).uniq.size == MINIMUM_REQUIRED_SET.size
     end

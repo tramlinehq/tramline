@@ -39,35 +39,7 @@ class IntegrationsController < SignedInApplicationController
   private
 
   def set_integrations_by_categories
-    @integrations_by_categories =
-      Integration::LIST.each_with_object({}) do |(category, providers), combination|
-        existing_integration = @app.integrations.where(category: category)
-        combination[category] ||= []
-
-        if existing_integration.exists?
-          existing_integration.each do |integration|
-            combination[category] << integration
-          end
-
-          next if Integration::MULTI_INTEGRATION_CATEGORIES.exclude?(category)
-        end
-
-        (providers - existing_integration.pluck(:providable_type)).each do |provider|
-          next if provider.eql?("GitlabIntegration") && !Flipper.enabled?(:gitlab_integration)
-          next if provider.eql?("BitriseIntegration") && !Flipper.enabled?(:bitrise_integration)
-
-          integration =
-            @app
-              .integrations
-              .new(category: Integration.categories[category],
-                providable: provider.constantize.new,
-                status: Integration::DEFAULT_INITIAL_STATUS)
-
-          combination[category] << integration
-        end
-
-        combination
-      end
+    @integrations_by_categories = Integration.by_categories_for(@app)
   end
 
   def set_app
@@ -81,6 +53,10 @@ class IntegrationsController < SignedInApplicationController
   def set_providable
     @integration.providable = providable_type.constantize.new(integration: @integration)
     @integration.providable.assign_attributes(providable_params)
+  rescue Services::FetchAttachment::InvalidAttachment => e
+    flash.now[:error] = e.message
+    set_integrations_by_categories
+    render :index, status: :unprocessable_entity
   end
 
   def integration_params

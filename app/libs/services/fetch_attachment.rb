@@ -10,12 +10,12 @@ class Services::FetchAttachment
 
   def initialize(file, content_type, size_limit = SIZE_LIMIT)
     @file = file
-    @content_type = content_type
     @size_limit = size_limit
+    @content_type = content_type
   end
 
   def parse
-    raise InvalidAttachment unless valid?
+    raise InvalidAttachment, "please upload a valid JSON file!" unless valid?
     read
   end
 
@@ -30,7 +30,7 @@ class Services::FetchAttachment
   end
 
   def valid?
-    valid_size? && valid_file?
+    !file.nil? && valid_size? && valid_file?
   end
 
   def valid_size?
