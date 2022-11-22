@@ -24,6 +24,12 @@ module Installations
       {
         status: "PERMISSION_DENIED",
         code: 403,
+        message_matcher: /The caller does not have permission/,
+        decorated_exception: Installations::Errors::GooglePlayDeveloperAPIPermissionDenied
+      },
+      {
+        status: "PERMISSION_DENIED",
+        code: 403,
         message_matcher: /Google Play Android Developer API has not been used in project/,
         decorated_exception: Installations::Errors::GooglePlayDeveloperAPIDisabled
       },

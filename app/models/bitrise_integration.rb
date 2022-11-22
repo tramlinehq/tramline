@@ -16,6 +16,9 @@ class BitriseIntegration < ApplicationRecord
 
   delegate :project, to: :app_config
 
+  validates :access_token, presence: true
+  validate :correct_key, on: :create
+
   encrypts :access_token, deterministic: true
 
   def self.display
@@ -92,5 +95,11 @@ class BitriseIntegration < ApplicationRecord
 
   def app_config
     integration.app.config
+  end
+
+  def correct_key
+    if access_token.present?
+      errors.add(:access_token, :no_apps) if list_apps.size < 1
+    end
   end
 end

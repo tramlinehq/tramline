@@ -19,7 +19,7 @@ module Installations
     def list_apps
       execute(:get, LIST_APPS_URL, {})
         .then { |response| response&.fetch("data", nil) }
-        .then { |apps| apps.map { |app| app.slice("slug", "title") } }
+        .then { |apps| apps&.map { |app| app.slice("slug", "title") } }
         .then { |responses| Installations::Response::Keys.normalize(responses) }
     end
 

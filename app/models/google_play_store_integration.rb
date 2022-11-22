@@ -46,14 +46,14 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def channels
-    CHANNELS.invert.map { |k, v| [k, { k => v }.to_json] }
+    CHANNELS.invert.map { |k, v| [k, {k => v}.to_json] }
   end
 
   def correct_key
     errors.add(:json_key, :no_bundles) if developer_api.list_bundles.keys.size < 1
   rescue RuntimeError
     errors.add(:json_key, :key_format)
-  rescue Installations::Errors::BundleIdentifierNotFound
+  rescue Installations::Errors::BundleIdentifierNotFound, Installations::Errors::GooglePlayDeveloperAPIPermissionDenied
     errors.add(:json_key, :bundle_id_not_found)
   rescue Installations::Errors::GooglePlayDeveloperAPIDisabled
     errors.add(:json_key, :dev_api_not_enabled)

@@ -1,13 +1,18 @@
 en:
   activerecord:
     attributes:
+      bitrise_integration:
+        access_token: "bitrise personal access token"
       google_play_store_integration:
         json_key: "google play store json key"
     errors:
       models:
-        format: "%{attribute} →\n%{message}"
         integration:
           format: "%{message}"
+        bitrise_integration:
+          attributes:
+            access_token:
+              no_apps: "could not find any apps listed for this token!"
         google_play_store_integration:
           attributes:
             json_key:
