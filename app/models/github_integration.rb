@@ -12,18 +12,13 @@ class GithubIntegration < ApplicationRecord
 
   include Vaultable
   include Providable
+  include Displayable
   include Rails.application.routes.url_helpers
 
   delegate :code_repository_name, to: :app_config
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://github.com/apps/{app_name}/installations/new{?params*}")
-
-  def self.display
-    "GitHub"
-  end
-
-  delegate :display, to: self
 
   def install_path
     unless integration.version_control? || integration.ci_cd?

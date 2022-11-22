@@ -13,6 +13,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   encrypts :json_key, deterministic: true
 
   include Providable
+  include Displayable
   delegate :app, to: :integration
   validate :correct_key, on: :create
 
@@ -22,12 +23,6 @@ class GooglePlayStoreIntegration < ApplicationRecord
     alpha: "closed testing",
     internal: "internal testing"
   }
-
-  def self.display
-    "Google Play Store"
-  end
-
-  delegate :display, to: self
 
   def creatable?
     true

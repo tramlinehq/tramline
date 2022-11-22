@@ -16,6 +16,7 @@ class GitlabIntegration < ApplicationRecord
 
   include Vaultable
   include Providable
+  include Displayable
   include Rails.application.routes.url_helpers
 
   attr_accessor :code
@@ -24,12 +25,6 @@ class GitlabIntegration < ApplicationRecord
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://gitlab.com/oauth/authorize{?params*}")
-
-  def self.display
-    "GitLab"
-  end
-
-  delegate :display, to: self
 
   def install_path
     unless integration.version_control? || integration.ci_cd?

@@ -14,6 +14,7 @@ class SlackIntegration < ApplicationRecord
 
   include Vaultable
   include Providable
+  include Displayable
   include Rails.application.routes.url_helpers
 
   attr_accessor :code
@@ -22,12 +23,6 @@ class SlackIntegration < ApplicationRecord
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://slack.com/oauth/v2/authorize{?params*}")
-
-  def self.display
-    "Slack"
-  end
-
-  delegate :display, to: self
 
   def install_path
     unless integration.notification? || integration.build_channel?

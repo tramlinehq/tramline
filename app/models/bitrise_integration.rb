@@ -12,6 +12,7 @@ class BitriseIntegration < ApplicationRecord
 
   include Vaultable
   include Providable
+  include Displayable
   include Rails.application.routes.url_helpers
 
   delegate :project, to: :app_config
@@ -20,12 +21,6 @@ class BitriseIntegration < ApplicationRecord
   validate :correct_key, on: :create
 
   encrypts :access_token, deterministic: true
-
-  def self.display
-    "Bitrise"
-  end
-
-  delegate :display, to: self
 
   def installation
     Installations::Bitrise::Api.new(access_token)
