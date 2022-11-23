@@ -25,6 +25,7 @@ module Site
 
     config.eager_load_paths << Rails.root.join("lib")
     config.active_job.queue_adapter = :sidekiq
+    config.active_model.i18n_customize_full_message = true
     config.assets.css_compressor = nil
     config.middleware.insert_after ActionDispatch::Static, Rack::Deflater
     PaperTrail.config.version_limit = 10

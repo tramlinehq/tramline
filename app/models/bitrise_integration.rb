@@ -12,9 +12,13 @@ class BitriseIntegration < ApplicationRecord
 
   include Vaultable
   include Providable
+  include Displayable
   include Rails.application.routes.url_helpers
 
   delegate :project, to: :app_config
+
+  validates :access_token, presence: true
+  validate :correct_key, on: :create
 
   encrypts :access_token, deterministic: true
 
@@ -24,10 +28,6 @@ class BitriseIntegration < ApplicationRecord
 
   def to_s
     "bitrise"
-  end
-
-  def display
-    "Bitrise"
   end
 
   def creatable?
@@ -90,5 +90,11 @@ class BitriseIntegration < ApplicationRecord
 
   def app_config
     integration.app.config
+  end
+
+  def correct_key
+    if access_token.present?
+      errors.add(:access_token, :no_apps) if list_apps.size < 1
+    end
   end
 end

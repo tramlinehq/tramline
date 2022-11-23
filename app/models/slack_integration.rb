@@ -14,6 +14,7 @@ class SlackIntegration < ApplicationRecord
 
   include Vaultable
   include Providable
+  include Displayable
   include Rails.application.routes.url_helpers
 
   attr_accessor :code
@@ -49,10 +50,6 @@ class SlackIntegration < ApplicationRecord
 
   def to_s
     "slack"
-  end
-
-  def display
-    "Slack"
   end
 
   def creatable?

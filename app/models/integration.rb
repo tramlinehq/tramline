@@ -52,6 +52,8 @@ class Integration < ApplicationRecord
   validates :category, presence: true
   validate :provider_in_category
 
+  validates_associated :providable, message: proc { |_p, meta| providable_error_message(meta) }
+
   attr_accessor :current_user, :code
 
   delegate :install_path, to: :providable
@@ -60,24 +62,61 @@ class Integration < ApplicationRecord
 
   before_create :set_connected
 
-  def self.ready?
-    ready.pluck(:category).uniq.size == MINIMUM_REQUIRED_SET.size
-  end
+  class << self
+    def by_categories_for(app)
+      LIST.each_with_object({}) do |(category, providers), combination|
+        existing_integration = app.integrations.where(category: category)
+        combination[category] ||= []
 
-  def self.vcs_provider
-    version_control.first&.providable
-  end
+        if existing_integration.exists?
+          existing_integration.each do |integration|
+            combination[category] << integration
+          end
 
-  def self.ci_cd_provider
-    ci_cd.first&.providable
-  end
+          next if MULTI_INTEGRATION_CATEGORIES.exclude?(category)
+        end
 
-  def self.notification_provider
-    notification.first&.providable
-  end
+        (providers - existing_integration.pluck(:providable_type)).each do |provider|
+          next if provider.eql?("GitlabIntegration") && !Flipper.enabled?(:gitlab_integration)
+          next if provider.eql?("BitriseIntegration") && !Flipper.enabled?(:bitrise_integration)
 
-  def self.slack_build_channel_provider
-    build_channel.where(providable_type: "SlackIntegration").first.providable
+          integration =
+            app
+              .integrations
+              .new(category: categories[category], providable: provider.constantize.new, status: DEFAULT_INITIAL_STATUS)
+
+          combination[category] << integration
+        end
+
+        combination
+      end
+    end
+
+    def ready?
+      ready.pluck(:category).uniq.size == MINIMUM_REQUIRED_SET.size
+    end
+
+    def vcs_provider
+      version_control.first&.providable
+    end
+
+    def ci_cd_provider
+      ci_cd.first&.providable
+    end
+
+    def notification_provider
+      notification.first&.providable
+    end
+
+    def slack_build_channel_provider
+      build_channel.where(providable_type: "SlackIntegration").first.providable
+    end
+
+    private
+
+    def providable_error_message(meta)
+      meta[:value].errors.full_messages[0]
+    end
   end
 
   def installation_state

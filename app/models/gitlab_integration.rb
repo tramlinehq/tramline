@@ -16,6 +16,7 @@ class GitlabIntegration < ApplicationRecord
 
   include Vaultable
   include Providable
+  include Displayable
   include Rails.application.routes.url_helpers
 
   attr_accessor :code
@@ -70,10 +71,6 @@ class GitlabIntegration < ApplicationRecord
 
   def to_s
     "gitlab"
-  end
-
-  def display
-    "GitLab"
   end
 
   def creatable?

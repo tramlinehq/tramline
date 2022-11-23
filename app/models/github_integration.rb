@@ -12,6 +12,7 @@ class GithubIntegration < ApplicationRecord
 
   include Vaultable
   include Providable
+  include Displayable
   include Rails.application.routes.url_helpers
 
   delegate :code_repository_name, to: :app_config
@@ -60,10 +61,6 @@ class GithubIntegration < ApplicationRecord
 
   def to_s
     "github"
-  end
-
-  def display
-    "GitHub"
   end
 
   def creatable?
