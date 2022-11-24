@@ -70,10 +70,24 @@ class Releases::Train::Run < ApplicationRecord
   after_commit :status_update_stamp!, if: -> { saved_change_to_attribute?(:status) }, on: :update
 
   scope :pending_release, -> { where(status: [:release_phase, :post_release, :on_track, :created]) }
-  delegate :app, :pre_release_prs?, to: :train
+  delegate :app, :steps, :pre_release_prs?, to: :train
 
   def tag_name
     "v#{release_version}"
+  end
+
+  def overall_movement_status
+    steps.each do |step|
+      step_runs
+        .select { |run| run.step_id == step.id }
+        .find { |run| run.step }
+    end
+
+    step_runs
+      .map { |run| {run => {failed: run.failed?, success: run.success?, in_progress: run.in_progress?}} }
+      .reduce(&:merge)
+      .group_by { |run| run.step }
+      .map { |step, runs| runs.any? { |run| run.presence } }
   end
 
   def startable_step?(step)

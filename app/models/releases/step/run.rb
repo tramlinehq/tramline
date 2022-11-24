@@ -206,6 +206,10 @@ class Releases::Step::Run < ApplicationRecord
     is_approved? && success?
   end
 
+  def failed?
+    ci_workflow_unavailable? || ci_workflow_failed? || ci_workflow_halted? || deployment_failed?
+  end
+
   def workflow_name
     step.ci_cd_channel.keys.first
   end
