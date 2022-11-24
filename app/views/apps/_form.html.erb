@@ -18,7 +18,7 @@
 </div>
 
 <div data-controller="domain--build-number-help"
-     data-domain--build-number-help-number-value="<%= app.build_number %>">
+     data-domain--build-number-help-number-current-value="<%= app.build_number %>">
   <%= form.label :build_number, class: "block text-sm font-medium mb-1" %>
   <%= form.number_field :build_number,
                         class: "form-input w-full",

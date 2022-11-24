@@ -28,6 +28,18 @@
                           required: true,
                           disabled: train.persisted?
       %>
+      <div class="text-sm mt-1">
+        <p>
+          Tramline increments the version name for every release build created, which guarantees that every build can be
+          uniquely identified. We follow <a href="https://semver.org" class="underline">semver</a>.
+        </p>
+        <p class="pt-1">
+          Every new release will increment the minor version.
+          Every build generated during a release itself will increment the patch version. Once this is setup, teams do
+          not need to worry about manually incrementing the version name for every release.
+        </p>
+      </div>
+
     </div>
   </div>
 

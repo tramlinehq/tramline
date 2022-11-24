@@ -2,7 +2,7 @@ import {Controller} from "@hotwired/stimulus";
 
 export default class extends Controller {
   static values = {
-    number: Number,
+    numberCurrent: Number,
   }
 
   static targets = [
@@ -11,11 +11,11 @@ export default class extends Controller {
   ]
 
   initialize() {
-    this.__increment(this.numberValue);
+    this.__increment(this.numberCurrentValue);
   }
 
   increment() {
-    this.__increment(parseInt(this.inputTarget.value || this.numberValue));
+    this.__increment(parseInt(this.inputTarget.value || this.numberCurrentValue));
   }
 
   __increment(value) {
