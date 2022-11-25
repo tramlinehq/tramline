@@ -16,20 +16,29 @@
       <%= form.label :name, class: "block text-sm font-medium mb-1" %>
       <%= form.text_field :name, class: "form-input w-full", placeholder: "Enter train name...", required: true %>
     </div>
+
     <div>
       <%= form.label :description, class: "block text-sm font-medium mb-1" %>
-      <%= form.text_area :description, class: "form-input w-full h-24", placeholder: "Describe the purpose of your train..." %>
+      <%= form.text_area :description, class: "form-input w-full h-24",
+                         placeholder: "Describe the purpose of your train..." %>
     </div>
-    <div>
+
+    <div data-controller="domain--version-name-help"
+         data-domain--version-name-help-disabled-value="<%= train.persisted? %>"
+         data-domain--version-name-help-version-current-value="<%= train.version_current %>">
       <%= form.label :version_seeded_with, class: "block text-sm font-medium mb-1" %>
       <%= form.text_field :version_seeded_with,
                           class: text_field_classes(is_disabled: train.persisted?),
-                          placeholder: "only in semver format, eg., 1.2.0",
+                          placeholder: "only in semver format, eg., 0.1.0",
                           required: true,
-                          disabled: train.persisted?
-      %>
+                          disabled: train.persisted?,
+                          data: { domain__version_name_help_target: "input",
+                                  action: "domain--version-name-help#bump" } %>
       <div class="text-sm mt-1">
         <p>
+          <span class="font-mono" data-domain--version-name-help-target="helpText"></span>
+        </p>
+        <p class="pt-2">
           Tramline increments the version name for every release build created, which guarantees that every build can be
           uniquely identified. We follow <a href="https://semver.org" class="underline">semver</a>.
         </p>

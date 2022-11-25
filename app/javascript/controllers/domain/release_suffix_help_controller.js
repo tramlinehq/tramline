@@ -23,3 +23,4 @@ export default class extends Controller {
     this.helpTextTarget.innerHTML = this.versionValue + "-" + suffix;
   }
 }
+
