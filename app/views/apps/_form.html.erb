@@ -18,7 +18,7 @@
 </div>
 
 <div data-controller="domain--build-number-help"
-     data-domain--build-number-help-number-current-value="<%= app.build_number %>">
+     data-domain--build-number-help-number-current-value="<%= app.build_number.presence %>">
   <%= form.label :build_number, class: "block text-sm font-medium mb-1" %>
   <%= form.number_field :build_number,
                         class: "form-input w-full",
@@ -28,8 +28,9 @@
                                 action: "domain--build-number-help#increment" } %>
 
   <div class="text-sm mt-1">
-    <p>
-      <span data-domain--build-number-help-target="helpText"></span>
+    <p class="italic">
+      <span data-domain--build-number-help-target="helpTextTitle"></span>&nbsp;
+      <span class="font-mono" data-domain--build-number-help-target="helpTextVal"></span>
     </p>
     <p class="pt-2">
       Tramline increments the build number for every release build created, which guarantees that every build can be

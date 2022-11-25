@@ -35,8 +35,9 @@
                           data: { domain__version_name_help_target: "input",
                                   action: "domain--version-name-help#bump" } %>
       <div class="text-sm mt-1">
-        <p>
-          <span class="font-mono" data-domain--version-name-help-target="helpText"></span>
+        <p class="italic">
+          <span data-domain--version-name-help-target="helpTextTitle"></span>&nbsp;
+          <span class="font-mono" data-domain--version-name-help-target="helpTextVal"></span>
         </p>
         <p class="pt-2">
           Tramline increments the version name for every release build created, which guarantees that every build can be

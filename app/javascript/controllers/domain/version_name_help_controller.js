@@ -13,7 +13,8 @@ export default class extends Controller {
 
   static targets = [
     "input",
-    "helpText",
+    "helpTextTitle",
+    "helpTextVal"
   ]
 
   initialize() {
@@ -30,14 +31,17 @@ export default class extends Controller {
     }
 
     if (value.length === 0) {
-      this.helpTextTarget.innerHTML = ""
+      this.helpTextTitleTarget.innerHTML = ""
+      this.helpTextValTarget.innerHTML = ""
       return;
     }
 
     if (this.__isSemVer(value)) {
-      this.helpTextTarget.innerHTML = baseHelpText + bumpVersion([0, 1, 0], value);
+      this.helpTextTitleTarget.innerHTML = baseHelpText
+      this.helpTextValTarget.innerHTML = bumpVersion([0, 1, 0], value);
     } else {
-      this.helpTextTarget.innerHTML = "Invalid semver format!"
+      this.helpTextTitleTarget.innerHTML = "Invalid semver format!"
+      this.helpTextValTarget.innerHTML = ""
     }
   }
 
