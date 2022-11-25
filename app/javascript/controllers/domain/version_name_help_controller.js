@@ -3,6 +3,7 @@ import bumpVersion from "semver-increment";
 
 // https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
 const semVerRegex = new RegExp('^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$')
+const initialHelpNotice = "Enter a versionName in SemVer format."
 const baseHelpText = "Next version name will be: "
 
 export default class extends Controller {
@@ -31,7 +32,7 @@ export default class extends Controller {
     }
 
     if (value.length === 0) {
-      this.helpTextTitleTarget.innerHTML = ""
+      this.helpTextTitleTarget.innerHTML = initialHelpNotice
       this.helpTextValTarget.innerHTML = ""
       return;
     }

@@ -1,6 +1,6 @@
 import {Controller} from "@hotwired/stimulus";
 
-const helpNotice = "Enter a positive integer as your build number. This would typically be your last versionCode."
+const initialHelpNotice = "Enter a positive integer as your build number. This would typically be your last versionCode."
 const baseHelpText = "The next build number will be:"
 
 export default class extends Controller {
@@ -24,7 +24,7 @@ export default class extends Controller {
 
   __increment(value) {
     if (value.length === 0) {
-      this.helpTextTitleTarget.innerHTML = helpNotice;
+      this.helpTextTitleTarget.innerHTML = initialHelpNotice;
       this.helpTextValTarget.innerHTML = "";
       return;
     }

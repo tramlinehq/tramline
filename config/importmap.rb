@@ -15,3 +15,5 @@ pin "stimulus-reveal", to: "https://ga.jspm.io/npm:stimulus-reveal@1.4.2/dist/st
 pin "semver-increment", to: "https://ga.jspm.io/npm:semver-increment@1.0.1/index.js"
 pin "fs", to: "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.27/nodelibs/browser/fs.js"
 pin "semver-utils", to: "https://ga.jspm.io/npm:semver-utils@1.1.1/semver-utils.js"
+pin "parameterize-string", to: "https://ga.jspm.io/npm:parameterize-string@1.0.1/lib/index.js"
+pin "strftime", to: "https://ga.jspm.io/npm:strftime@0.10.1/strftime.js"
