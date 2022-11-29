@@ -72,7 +72,7 @@ class Triggers::Release
   end
 
   memoize def new_branch_name
-    branch_name = starting_time.strftime("r/#{train.display_name}/%Y-%m-%d")
+    branch_name = starting_time.strftime(train.release_branch_name_fmt)
 
     if train.runs.exists?(branch_name:)
       branch_name += "-1"

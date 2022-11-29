@@ -119,7 +119,11 @@ class Releases::Train < ApplicationRecord
   end
 
   def display_name
-    name.strip.downcase.gsub(/\s+/, "-")
+    name&.parameterize
+  end
+
+  def release_branch_name_fmt
+    "r/#{display_name}/%Y-%m-%d"
   end
 
   def tag_name
