@@ -17,6 +17,7 @@
 class App < ApplicationRecord
   has_paper_trail
   extend FriendlyId
+  include Flipper::Identifier
 
   GOOGLE_PLAY_STORE_URL_TEMPLATE =
     Addressable::Template.new("https://play.google.com/store/apps/details{?query*}")
@@ -110,6 +111,10 @@ class App < ApplicationRecord
     [app_setup, integration_setup, app_config_setup]
       .flatten
       .reduce(:merge)
+  end
+
+  def sign_offs_enabled?
+    Flipper.enabled?(:sign_offs, self)
   end
 
   private

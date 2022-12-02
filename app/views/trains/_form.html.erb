@@ -64,13 +64,15 @@
     </div>
   </div>
 
-  <div class="text-xl text-slate-600 font-medium mt-8 mb-2">Sign-off groups</div>
-  <div>
-    <%= form.select :sign_off_group_ids,
-                    options_for_select(app.sign_off_groups.map { |group| [group.name, group.id] }, train.sign_off_groups.pluck(:id)),
-                    { required: true },
-                    { class: "form-input w-1/2", multiple: true, id: "slim-select", data: { controller: "input-select" } } %>
-  </div>
+  <% if @app.sign_offs_enabled? %>
+    <div class="text-xl text-slate-600 font-medium mt-8 mb-2">Sign-off groups</div>
+    <div>
+      <%= form.select :sign_off_group_ids,
+                      options_for_select(app.sign_off_groups.map { |group| [group.name, group.id] }, train.sign_off_groups.pluck(:id)),
+                      { required: true },
+                      { class: "form-input w-1/2", multiple: true, id: "slim-select", data: { controller: "input-select" } } %>
+    </div>
+  <% end %>
 
   <div class="text-xl text-slate-600 font-medium mt-8 mb-2">Branching strategy</div>
   <div class="grid gap-x-5 md:grid-cols-2">
