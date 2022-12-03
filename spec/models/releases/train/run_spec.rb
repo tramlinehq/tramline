@@ -7,6 +7,7 @@ RSpec.describe Releases::Train::Run, type: :model do
 
   describe "#next_step" do
     subject { create(:releases_train_run) }
+
     let(:steps) { create_list(:releases_step, 5, train: subject.train) }
 
     it "returns next step" do
@@ -21,16 +22,16 @@ RSpec.describe Releases::Train::Run, type: :model do
     it "first step can be started if there are no step runs" do
       train_run = create(:releases_train_run, train: active_train)
 
-      expect(train_run.startable_step?(steps.first)).to eq(true)
-      expect(train_run.startable_step?(steps.second)).to eq(false)
+      expect(train_run.startable_step?(steps.first)).to be(true)
+      expect(train_run.startable_step?(steps.second)).to be(false)
     end
 
     it "next step can be started after finishing previous step" do
       train_run = create(:releases_train_run, train: active_train)
       create(:releases_step_run, step: steps.first, status: "success", train_run: train_run)
 
-      expect(train_run.startable_step?(steps.first)).to eq(false)
-      expect(train_run.startable_step?(steps.second)).to eq(true)
+      expect(train_run.startable_step?(steps.first)).to be(false)
+      expect(train_run.startable_step?(steps.second)).to be(true)
     end
   end
 end

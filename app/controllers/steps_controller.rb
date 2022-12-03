@@ -10,12 +10,12 @@ class StepsController < SignedInApplicationController
   around_action :set_time_zone
 
   def new
-    head 403 and return if @train.active_run
+    head :forbidden and return if @train.active_run
     @step = @train.steps.new
   end
 
   def create
-    head 403 and return if @train.active_run
+    head :forbidden and return if @train.active_run
     @step = @train.steps.new(parsed_step_params)
 
     respond_to do |format|
@@ -37,7 +37,7 @@ class StepsController < SignedInApplicationController
         .friendly
         .find(params[:id])
     @train = @step.train
-    head 403 and return if @train.active_run
+    head :forbidden and return if @train.active_run
     @ci_actions = @train.ci_cd_provider.workflows
   end
 
@@ -49,7 +49,7 @@ class StepsController < SignedInApplicationController
         .friendly
         .find(params[:id])
     @train = @step.train
-    head 403 and return if @train.active_run
+    head :forbidden and return if @train.active_run
 
     @app = @train.app
 

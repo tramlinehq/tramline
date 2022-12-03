@@ -12,7 +12,7 @@ module SiteExtensions
   end
 
   def git_ref_at
-    Time.parse GIT_REF.at
+    Time.zone.parse GIT_REF.at
   end
 end
 

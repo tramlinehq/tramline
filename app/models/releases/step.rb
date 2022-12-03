@@ -37,8 +37,8 @@ class Releases::Step < ApplicationRecord
   validate :unique_deployments, on: :create
   validate :unique_store_deployments_per_train, on: :create
 
-  before_validation :set_step_number, if: :new_record?
   after_initialize :set_default_status, if: :new_record?
+  before_validation :set_step_number, if: :new_record?
 
   enum status: {
     active: "active",

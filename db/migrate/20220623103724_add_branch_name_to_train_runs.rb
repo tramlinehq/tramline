@@ -2,7 +2,7 @@ class AddBranchNameToTrainRuns < ActiveRecord::Migration[7.0]
   def up
     add_column :train_runs, :branch_name, :string
 
-    execute <<-SQL
+    execute <<-SQL.squish
       UPDATE train_runs SET branch_name = ' '
     SQL
 

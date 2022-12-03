@@ -22,7 +22,6 @@ class Passport < ApplicationRecord
   validate :appropriate_reason
   validates :kind, presence: true
   validates :reason, presence: true
-  validates :stampable_id, presence: true
   validates :stampable_type, presence: true
 
   class << self

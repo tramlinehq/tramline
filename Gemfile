@@ -66,7 +66,6 @@ gem "oj", "~> 3.13"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
-  gem "standard"
   gem "rspec-rails"
   gem "factory_bot_rails"
   gem "faker"
@@ -75,6 +74,10 @@ group :development, :test do
   gem "bundler-audit", "~> 0.9.1", require: false
   gem "pg_query"
   gem "prosopite"
+  gem "standard", require: false
+  gem "rubocop-rails", require: false
+  gem "rubocop-rspec", require: false
+  gem "rubocop-performance", require: false
 end
 
 group :development do

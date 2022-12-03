@@ -48,9 +48,7 @@ class BitriseIntegration < ApplicationRecord
   end
 
   # Special function if acts as project
-  def list_apps
-    installation.list_apps
-  end
+  delegate :list_apps, to: :installation
 
   # CI/CD
 
