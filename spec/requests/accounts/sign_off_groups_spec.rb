@@ -1,11 +1,11 @@
 require "rails_helper"
 
 RSpec.describe "Accounts::SignOffGroups", type: :request do
-  let(:organization) { FactoryBot.create(:organization) }
-  let(:tram_app) { FactoryBot.create(:app, organization:) }
-  let(:user) { FactoryBot.create(:accounts_user, confirmed_at: Time.now, organizations: [organization]) }
-  let(:developer_1) { FactoryBot.create(:accounts_user, confirmed_at: Time.now, organizations: [organization]) }
-  let(:qa_1) { FactoryBot.create(:accounts_user, confirmed_at: Time.now, organizations: [organization]) }
+  let(:organization) { create(:organization) }
+  let(:tram_app) { create(:app, organization:) }
+  let(:user) { create(:accounts_user, confirmed_at: Time.now, organizations: [organization]) }
+  let(:developer_1) { create(:accounts_user, confirmed_at: Time.now, organizations: [organization]) }
+  let(:qa_1) { create(:accounts_user, confirmed_at: Time.now, organizations: [organization]) }
 
   describe "GET /edit" do
     it "returns http success" do
