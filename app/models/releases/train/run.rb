@@ -77,17 +77,10 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def overall_movement_status
-    steps.each do |step|
-      step_runs
-        .select { |run| run.step_id == step.id }
-        .find { |run| run.step }
+    steps.to_h do |step|
+      run = last_commit&.run_for(step)
+      [step, run.present? ? run.status_summary : {not_started: true}]
     end
-
-    step_runs
-      .map { |run| {run => {failed: run.failed?, success: run.success?, in_progress: run.in_progress?}} }
-      .reduce(&:merge)
-      .group_by { |run| run.step }
-      .map { |step, runs| runs.any? { |run| run.presence } }
   end
 
   def startable_step?(step)

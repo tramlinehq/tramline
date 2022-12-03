@@ -199,15 +199,23 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def in_progress?
-    !success? || !is_approved?
+    on_track? || ci_workflow_triggered? || ci_workflow_started? || build_ready? || deployment_started? || !is_approved?
+  end
+
+  def failed?
+    ci_workflow_unavailable? || ci_workflow_failed? || ci_workflow_halted? || deployment_failed?
   end
 
   def done?
     is_approved? && success?
   end
 
-  def failed?
-    ci_workflow_unavailable? || ci_workflow_failed? || ci_workflow_halted? || deployment_failed?
+  def status_summary
+    {
+      in_progress: in_progress?,
+      done: done?,
+      failed: failed?
+    }
   end
 
   def workflow_name
