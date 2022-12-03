@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe Releases::Step::Run, type: :model do
-  it "has valid spec" do
+  it "has a valid factory" do
     expect(create(:releases_step_run)).to be_valid
   end
 
