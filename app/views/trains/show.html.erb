@@ -122,7 +122,7 @@
         <div class="font-semibold text-left">release branch</div>
       </th>
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="font-semibold text-left">deployment channel</div>
+        <div class="font-semibold text-left">final deployment channel</div>
       </th>
     </tr>
     </thead>
@@ -161,7 +161,7 @@
 
         <td class="px-2 last:pr-5 py-3 whitespace-nowrap">
           <div>
-            <%= @train.final_deployment_channel || "–" %>
+            <%= @train.final_deployment_channel.display || "–" %>
           </div>
         </td>
       </tr>

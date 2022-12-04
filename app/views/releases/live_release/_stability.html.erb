@@ -21,16 +21,8 @@
 
         <li class="mb-10 ml-6 last:mb-0">
           <div class="flex items-center">
-            <% if step_run&.in_progress? %>
-              <%= render partial: "releases/live_release/in_progress_circle" %>
-            <% elsif step_run&.done? %>
-              <%= render partial: "releases/live_release/done_circle" %>
-            <% else %>
-              <%= render partial: "releases/live_release/future_circle" %>
-            <% end %>
-
+            <%= render partial: "releases/live_release/step_run_status", locals: { step_run: step_run } %>
             <p class="text-lg font-bold text-slate-800 pl-6"><%= step.name %></p>
-
             <% if release.on_track? && release.startable_step?(step) %>
               <%= button_to "Move to this step", start_release_step_run_path(release, step), { class: 'btn-xs ml-2 bg-indigo-500 hover:bg-indigo-600 text-white' } %>
             <% end %>

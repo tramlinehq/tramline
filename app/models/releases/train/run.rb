@@ -70,14 +70,14 @@ class Releases::Train::Run < ApplicationRecord
   after_commit :status_update_stamp!, if: -> { saved_change_to_attribute?(:status) }, on: :update
 
   scope :pending_release, -> { where(status: [:release_phase, :post_release, :on_track, :created]) }
-  delegate :app, :steps, :pre_release_prs?, to: :train
+  delegate :app, :pre_release_prs?, to: :train
 
   def tag_name
     "v#{release_version}"
   end
 
   def overall_movement_status
-    steps.to_h do |step|
+    all_steps.to_h do |step|
       run = last_commit&.run_for(step)
       [step, run.present? ? run.status_summary : {not_started: true}]
     end
@@ -117,7 +117,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def next_step
-    return train.steps.first if step_runs.empty?
+    return all_steps.first if step_runs.empty?
     step_runs.joins(:step).order(:step_number).last.step.next
   end
 
@@ -154,7 +154,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def finished_steps?
-    commits.last.step_runs.success.size == train.steps.size
+    commits.last.step_runs.success.size == all_steps.size
   end
 
   def latest_finished_step_runs
@@ -178,7 +178,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def signed?
-    last_run_for(train.steps.last)&.approval_approved?
+    last_run_for(all_steps.last)&.approval_approved?
   end
 
   def fully_qualified_branch_name_hack
@@ -189,5 +189,9 @@ class Releases::Train::Run < ApplicationRecord
     types = %w[Releases::Train::Run Releases::Step::Run Releases::Commit DeploymentRun]
     ids = [id, commits.pluck(:id), step_runs.pluck(:id), deployment_runs.pluck(:id)].flatten
     Passport.where(stampable_type: types, stampable_id: ids).order(created_at: :desc)
+  end
+
+  def all_steps
+    train.steps
   end
 end
