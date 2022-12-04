@@ -97,6 +97,7 @@
             <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
               <div class="font-semibold text-left">Train</div>
             </th>
+            <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"></th>
           </tr>
           </thead>
           <tbody class="text-sm divide-y divide-slate-200">
@@ -121,6 +122,26 @@
                 <div class="flex items-center">
                   <div class="font-medium text-slate-800">
                     <%= link_to run.train.name, app_train_path(@app, run.train) %>
+                  </div>
+                </div>
+              </td>
+
+              <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                <div class="px-4">
+                  <div class="max-w-md mx-auto w-full">
+                    <div class="relative">
+                      <div class="absolute left-0 top-1/2 -mt-px w-full h-0.5 bg-slate-200" aria-hidden="true"></div>
+                      <ul class="relative flex justify-between w-full">
+                        <% run.overall_movement_status.each do |step, status_summary| %>
+                          <li>
+                            <span class="flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold <%= movement_status_color(status_summary) %>">
+                              <%= step.step_number %>
+                              <%= status_summary.key(true) %>
+                            </span>
+                          </li>
+                        <% end %>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </td>
