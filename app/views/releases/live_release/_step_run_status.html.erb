@@ -1,0 +1,11 @@
+<div class="flex items-center">
+  <span class="flex absolute -left-5 justify-center items-center w-9 h-6 rounded-full bg-white ring-8 ring-white"></span>
+
+  <% if step_run&.in_progress? %>
+    <span class="inline-flex absolute -left-5 justify-center items-center w-9 h-6 bg-amber-600 rounded-full animate-pulse"></span>
+  <% elsif step_run&.done? %>
+    <span class="inline-flex absolute -left-5 justify-center items-center w-9 h-6 bg-indigo-600 rounded-full"></span>
+  <% else %>
+    <span class="inline-flex absolute -left-5 justify-center items-center w-9 h-6 bg-white rounded-full ring-2 ring-gray-300"></span>
+  <% end %>
+</div>
