@@ -23,4 +23,8 @@ class Accounts::Membership < ApplicationRecord
   def set_default_role
     self.role = "developer"
   end
+
+  def writer?
+    role.in? %w[owner developer]
+  end
 end

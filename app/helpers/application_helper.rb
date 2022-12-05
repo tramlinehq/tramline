@@ -1,4 +1,9 @@
 module ApplicationHelper
+  def write_only(&block)
+    return concat(content_tag(:div, capture(&block), class: "hidden")) unless writer?
+    yield(block)
+  end
+
   def sidebar_active_path(path, style)
     if current_page?(path)
       style
