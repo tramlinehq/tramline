@@ -1,4 +1,6 @@
 class SignOffGroupsController < SignedInApplicationController
+  before_action :require_write_access!, only: %i[edit update]
+
   def edit
     @app = current_organization.apps.includes(sign_off_groups: :members).friendly.find(params[:app_id])
     @organization_members = current_organization.users.map { |u| [u.full_name, u.id] }

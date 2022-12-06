@@ -1,4 +1,5 @@
 class SignOffsController < SignedInApplicationController
+  before_action :require_write_access!, only: %i[approve reject revert]
   before_action :set_step, only: [:approve, :reject, :revert]
 
   def approve

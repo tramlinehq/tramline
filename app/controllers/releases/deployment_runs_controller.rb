@@ -1,4 +1,5 @@
 class Releases::DeploymentRunsController < SignedInApplicationController
+  before_action :require_write_access!, only: %i[promote]
   before_action :set_deployment_run
   delegate :transaction, to: :DeploymentRun
 

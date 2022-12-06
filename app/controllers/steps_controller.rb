@@ -2,6 +2,7 @@ class StepsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
+  before_action :require_write_access!, only: %i[new create edit update]
   before_action :set_app, only: %i[new create]
   before_action :set_train, only: %i[new create]
   before_action :set_ci_actions, only: %i[new create]

@@ -1,5 +1,6 @@
 class IntegrationListenerController < SignedInApplicationController
   using RefinedString
+  before_action :require_write_access!, only: %i[callback]
 
   def callback
     unless valid_state?
