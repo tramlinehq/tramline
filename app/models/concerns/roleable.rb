@@ -5,7 +5,7 @@ module Roleable
     enum role: {
       owner: "owner",
       developer: "developer",
-      manager: "manager"
+      viewer: "viewer"
     }
   end
 end

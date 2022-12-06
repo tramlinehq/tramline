@@ -16,7 +16,7 @@
     <div>
       <%= form.label :role, class: "block text-sm font-medium mb-1" %>
       <%= form.select :role,
-                      options_for_select(Accounts::Membership.roles.transform_keys(&:titleize).to_a, "developer"),
+                      options_for_select(Accounts::Membership.allowed_roles, "developer"),
                       { required: true },
                       { class: "form-input w-full mb-1" } %>
     </div>
