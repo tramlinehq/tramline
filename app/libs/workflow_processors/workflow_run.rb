@@ -37,13 +37,17 @@ class WorkflowProcessors::WorkflowRun
   end
 
   def send_notification!
-    Notifiers::Slack::BuildFinished.render_json(
-      artifacts_url:,
-      code_name: release.code_name,
-      branch_name: release.release_branch,
-      build_number: step_run.build_number,
-      version_number: step_run.build_version
-    ).then { |notifier| train.notify!(message: "Your release workflow completed!", text_block: notifier) }
+    train.notify!(
+      "New build was created!",
+      :build_finished,
+      {
+        artifacts_url:,
+        code_name: release.code_name,
+        branch_name: release.release_branch,
+        build_number: step_run.build_number,
+        version_number: step_run.build_version
+      }
+    )
   end
 
   memoize def runner

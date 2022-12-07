@@ -1,4 +1,4 @@
-<% if @app.ready? && !@app.notifications? %>
+<% if @app.ready? && !@app.send_notifications? %>
   <% content_for :missing_notification_integration do %>
     <%= render partial: "shared/sticky_topbar_message",
                locals: { msg: "You haven't yet added the integration for notifications. Set it up to receive timely updates about your release!" } %>

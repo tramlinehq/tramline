@@ -72,7 +72,7 @@ class Releases::Train < ApplicationRecord
     throw(:abort) if errors.present?
   end
 
-  delegate :ready?, to: :app
+  delegate :ready?, :config, to: :app
   delegate :vcs_provider, to: :integrations
   delegate :ci_cd_provider, to: :integrations
   delegate :notification_provider, to: :integrations
@@ -111,11 +111,9 @@ class Releases::Train < ApplicationRecord
     vcs_provider.create_branch!(from, to)
   end
 
-  # FIXME: this is helpful to segregate Slack as a notification channel from deployment channel
-  # but eventually, solve that problem through a better abstraction that segregates the two
-  def notify!(message:, text_block: {}, channel: nil, provider: nil)
-    return unless app.notifications?
-    Triggers::Notification.dispatch!(train: self, message:, text_block:, channel:, provider:)
+  def notify!(message, type, params)
+    return unless app.send_notifications?
+    notification_provider.notify!(config.notification_channel_name, message, type, params)
   end
 
   def display_name
