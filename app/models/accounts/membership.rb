@@ -16,7 +16,7 @@ class Accounts::Membership < ApplicationRecord
   belongs_to :user, inverse_of: :memberships, optional: false
   belongs_to :organization, inverse_of: :memberships, optional: false
 
-  validates :user_id, uniqueness: { scope: :organization_id }
+  validates :user_id, uniqueness: {scope: :organization_id}
 
   after_initialize :set_default_role, if: :new_record?
 
