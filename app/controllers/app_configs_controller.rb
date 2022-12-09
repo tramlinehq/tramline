@@ -6,7 +6,7 @@ class AppConfigsController < SignedInApplicationController
   def edit
     @config = AppConfig.find_or_initialize_by(app: @app)
     @code_repositories = @app.vcs_provider.repos
-    @notification_channels = @app.notification_provider.channels if @app.notifications?
+    @notification_channels = @app.notification_provider.channels if @app.notifications_set_up?
     @ci_cd_provider_name = @app.ci_cd_provider.display
   end
 

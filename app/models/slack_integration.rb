@@ -43,9 +43,23 @@ class SlackIntegration < ApplicationRecord
   end
 
   def channels
-    Installations::Slack::Api.new(oauth_access_token).list_channels.map do |chan|
+    installation.list_channels.map do |chan|
       ["#" + chan["name"], {chan["id"] => chan["name"]}.to_json]
     end
+  end
+
+  def installation
+    Installations::Slack::Api.new(oauth_access_token)
+  end
+
+  def notify!(channel, message, type, params)
+    installation.rich_message(channel, message, notifier(type, params))
+  end
+
+  alias_method :deploy!, :notify! # slack can currently also be used as a deployment channel
+
+  def notifier(type, params)
+    Notifiers::Slack::Builder.build(type, **params)
   end
 
   def to_s

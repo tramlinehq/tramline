@@ -43,7 +43,7 @@ class Releases::Step::Run < ApplicationRecord
     status_update_stamp!(data: {name: step.name, sha_link: commit.url, sha: commit.short_sha})
   }, if: -> { saved_change_to_attribute?(:status) }, on: :update
 
-  STAMPABLE_REASONS = ["created", "status_changed"]
+  STAMPABLE_REASONS = %w[created status_changed]
 
   STATES = {
     on_track: "on_track",
@@ -74,12 +74,25 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: [:ci_workflow_triggered], to: :ci_workflow_started
     end
 
-    event(:ci_unavailable) { transitions from: [:on_track, :ci_workflow_triggered], to: :ci_workflow_unavailable }
-    event(:fail_ci) { transitions from: :ci_workflow_started, to: :ci_workflow_failed }
-    event(:cancel_ci) { transitions from: :ci_workflow_started, to: :ci_workflow_halted }
+    event(:ci_unavailable, after_commit: -> { notify_on_failure!("Could not find the CI workflow!") }) do
+      transitions from: [:on_track, :ci_workflow_triggered], to: :ci_workflow_unavailable
+    end
+
+    event(:fail_ci, after_commit: -> { notify_on_failure!("CI workflow failed!") }) do
+      transitions from: :ci_workflow_started, to: :ci_workflow_failed
+    end
+
+    event(:cancel_ci, after_commit: -> { notify_on_failure!("CI workflow was halted!") }) do
+      transitions from: :ci_workflow_started, to: :ci_workflow_halted
+    end
+
     event(:finish_ci) { transitions from: :ci_workflow_started, to: :build_ready }
     event(:ready_to_deploy) { transitions from: :build_ready, to: :deployment_started }
-    event(:fail_deploy) { transitions from: [:build_ready, :deployment_started], to: :deployment_failed }
+
+    event(:fail_deploy, after_commit: -> { notify_on_failure!("Deployment failed!") }) do
+      transitions from: [:build_ready, :deployment_started], to: :deployment_failed
+    end
+
     event(:finish) { transitions from: [:build_ready, :deployment_started], to: :success }
   end
 
@@ -87,10 +100,8 @@ class Releases::Step::Run < ApplicationRecord
 
   attr_accessor :current_user
 
-  delegate :train, to: :train_run
-  delegate :ci_cd_provider, to: :train
-  delegate :unzip_artifact?, to: :train
-  delegate :release_branch, to: :train_run
+  delegate :train, :release_branch, to: :train_run
+  delegate :ci_cd_provider, :unzip_artifact?, to: :train
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
   alias_method :release, :train_run
@@ -220,5 +231,9 @@ class Releases::Step::Run < ApplicationRecord
 
   def workflow_name
     step.ci_cd_channel.keys.first
+  end
+
+  def notify_on_failure!(message)
+    train.notify!(message, :step_failed, {reason: message, step_run: self})
   end
 end

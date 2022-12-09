@@ -18,6 +18,7 @@ class Releases::Train::Run < ApplicationRecord
   has_paper_trail
   include AASM
   include Passportable
+  include ActionView::Helpers::DateHelper
   self.implicit_order_column = :scheduled_at
 
   belongs_to :train, class_name: "Releases::Train"
@@ -59,7 +60,7 @@ class Releases::Train::Run < ApplicationRecord
       transitions from: :on_track, to: :post_release, guard: :finalizable?
     end
 
-    event :finish do
+    event :finish, after_commit: :notify_on_finish! do
       before { self.completed_at = Time.current }
       transitions from: :post_release, to: :finished
     end
@@ -193,5 +194,19 @@ class Releases::Train::Run < ApplicationRecord
 
   def all_steps
     train.steps
+  end
+
+  def notify_on_finish!
+    train.notify!("Release is complete!", :release_ended, finalize_phase_metadata)
+  end
+
+  def finalize_phase_metadata
+    {
+      total_run_time: distance_of_time_in_words(created_at, completed_at),
+      release_tag: tag_name,
+      release_tag_url: tag_url,
+      final_artifact_url: final_build_artifact&.download_url,
+      store_url: app.store_link
+    }
   end
 end

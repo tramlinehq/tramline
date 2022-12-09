@@ -2,26 +2,37 @@ class Deployments::Slack < ApplicationJob
   queue_as :high
   sidekiq_options retry: 0
   delegate :transaction, to: DeploymentRun
+  MESSAGE = "A wild new release has appeared!"
 
   def perform(deployment_run_id)
-    deployment_run = DeploymentRun.find(deployment_run_id)
-    deployment_run.with_lock do
-      deployment = deployment_run.deployment
+    @deployment_run = DeploymentRun.find(deployment_run_id)
+    @deployment_run.with_lock do
       return unless deployment.integration.slack_integration?
       # FIXME: this transaction can eventually be removed, just use Result objects
       transaction do
-        push(deployment, deployment_run.step_run)
-        deployment_run.complete!
+        push
+        @deployment_run.complete!
       end
     end
   end
 
-  def push(deployment, step_run)
-    train = step_run.train
-    message = "A wild new release has appeared!"
-    text_block = Notifiers::Slack::DeploymentFinished.render_json(step_run: step_run)
-    channel = deployment.build_artifact_channel.values.first
-    provider = deployment.integration.providable
-    Triggers::Notification.dispatch!(train:, message:, text_block:, channel:, provider:)
+  def push
+    provider.deploy!(channel, MESSAGE, :deployment_finished, {step_run: step_run})
+  end
+
+  def deployment
+    @deployment_run.deployment
+  end
+
+  def step_run
+    @deployment_run.step_run
+  end
+
+  def channel
+    deployment.build_artifact_channel.values.first
+  end
+
+  def provider
+    deployment.integration.providable
   end
 end
