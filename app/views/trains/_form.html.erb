@@ -146,7 +146,7 @@
 
           <div class="pl-6">
             <% if train.active_run.blank? %>
-              <%= link_to edit_step_path(step), class: "btn border-slate-300 hover:border-slate-400 text-slate-600" do %>
+              <%= authz_link_to :neutral, edit_step_path(step) do %>
                 <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
                   <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4zM4.6 14H2v-2.6l6-6L10.6 8l-6 6zM12 6.6L9.4 4 11 2.4 13.6 5 12 6.6z"></path>
                 </svg>
@@ -156,7 +156,7 @@
                 </span>
               <% end %>
             <% else %>
-              <%= button_to edit_step_path(step) do %>
+              <%= authz_link_to :neutral, edit_step_path(step) do %>
                 <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed shadow-none" disabled="disabled">
                   <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
                     <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4zM4.6 14H2v-2.6l6-6L10.6 8l-6 6zM12 6.6L9.4 4 11 2.4 13.6 5 12 6.6z"></path>
@@ -191,7 +191,7 @@
               <span class="ml-2">Add another step</span>
             </button>
           <% else %>
-            <%= link_to new_app_train_step_path(app, train), class: 'btn bg-emerald-500 hover:bg-emerald-600 text-white' do %>
+            <%= authz_link_to :green, new_app_train_step_path(app, train) do %>
               <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
                 <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"></path>
               </svg>
@@ -205,7 +205,7 @@
   </ol>
 <% elsif train.persisted? %>
   <div class="text-2xl font-bold mt-8 mb-4 pt-4 border-t border-dashed">Steps</div>
-  <%= link_to new_app_train_step_path(app, train), class: "btn bg-emerald-500 hover:bg-emerald-600 text-white" do %>
+  <%= authz_link_to :green, new_app_train_step_path(app, train) do %>
     <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
       <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
     </svg>

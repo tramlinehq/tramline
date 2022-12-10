@@ -1,22 +1,25 @@
 <% form_url = app_bitrise_integration_path(@app) %>
 
 <span data-controller="visibility">
-    <button class="btn border-slate-300 hover:border-slate-400 flex items-center"
-            data-turbo="false"
-            data-action="visibility#toggle">
-      Connect
-    </button>
+  <%= decorated_button_tag :neutral,
+                           { class: "btn-lg flex items-center",
+                             data: { turbo: "false", action: "visibility#toggle" } } do %>
+    Connect
+  <% end %>
 
   <%= modal_for("Add Personal Access Token") do %>
     <%= form_with(model: [@app, integration], url: form_url) do |form| %>
       <%= form.hidden_field :category, value: category %>
+
       <%= form.fields_for :providable do |subform| %>
         <%= subform.hidden_field :type, value: integration.providable_type %>
         <%= subform.text_field :access_token, placeholder: "Paste here..." %>
       <% end %>
 
       <div class="flex items-center mt-5 mb-5" data-controller="reveal">
-        <%= form.submit 'Create', class: "btn bg-indigo-500 hover:bg-indigo-600 flex text-white", data: { action: "reveal#toggle" } %>
+        <%= form.submit "Create",
+                        class: "btn bg-indigo-500 hover:bg-indigo-600 flex text-white",
+                        data: { action: "reveal#toggle" } %>
 
         <div class="flex text-white ml-5">
           <span class="text-slate-500" data-reveal hidden>

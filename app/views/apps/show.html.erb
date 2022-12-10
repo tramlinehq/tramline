@@ -55,7 +55,7 @@
     <% end %>
 
     <% if @app.runs.blank? %>
-      <%= authz_link_to :neutral, app_path(@app), method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } do %>
+      <%= authz_link_to :red, app_path(@app), method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } do %>
         <span>Delete</span>
       <% end %>
     <% end %>

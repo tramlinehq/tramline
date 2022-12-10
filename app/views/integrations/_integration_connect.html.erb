@@ -1,10 +1,10 @@
 <% if integration.providable.creatable? %>
   <span data-controller="visibility">
-    <button class="btn-lg border-slate-600 hover:border-slate-300 flex items-center"
-            data-turbo="false"
-            data-action="visibility#toggle">
+    <%= decorated_button_tag :neutral,
+                             { class: "btn-lg flex items-center",
+                               data: { turbo: "false", action: "visibility#toggle" } } do %>
       Connect
-    </button>
+    <% end %>
 
     <%= modal_for("Add JSON Key") do %>
       <div class="flex flex-col space-y-2">

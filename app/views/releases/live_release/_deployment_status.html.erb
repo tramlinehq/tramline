@@ -1,8 +1,9 @@
 <% if step_run.present? %>
   <% if step_run.manually_startable_deployment?(deployment) %>
-    <%= button_to "Start this deployment",
-                  start_release_step_run_deployment_path(release, step_run, deployment),
-                  { class: 'mt-2 btn-xs bg-indigo-500 hover:bg-indigo-600 text-white' } %>
+    <%= authz_button_to :blue,
+                        "Start this deployment",
+                        start_release_step_run_deployment_path(release, step_run, deployment),
+                        { class: 'mt-2 btn-xs' } %>
   <% end %>
 
   <% deployment_run = step_run.last_run_for(deployment) %>

@@ -1,11 +1,7 @@
 <% form_url = app_google_play_store_integration_path(@app) %>
 
 <span data-controller="visibility">
-    <button class="btn border-slate-300 hover:border-slate-400 flex items-center"
-            data-turbo="false"
-            data-action="visibility#toggle">
-      Connect
-    </button>
+  <%= decorated_button_tag :neutral, "Connect", data: { turbo: "false", action: "visibility#toggle" } %>
 
   <%= modal_for("Add Service Account JSON Key") do %>
     <%= form_with(model: [@app, integration], url: form_url) do |form| %>
