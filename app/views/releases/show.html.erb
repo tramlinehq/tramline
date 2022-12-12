@@ -17,9 +17,10 @@
 
   <!-- Right: Actions -->
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-    <%= link_to "Event Log", timeline_release_path(@release), class: "btn border-slate-300 hover:border-slate-400 text-slate-600" %>
+    <%= decorated_link_to :neutral, "Event Log", timeline_release_path(@release) %>
+
     <% if @release.stoppable? %>
-      <%= button_to "Stop release", release_path(@release.id), method: :delete, class: "btn bg-red-500 hover:bg-red-600 text-white" %>
+      <%= authz_button_to :red, "Stop release", release_path(@release.id), method: :delete %>
     <% end %>
   </div>
 </div>
@@ -31,6 +32,7 @@
       <%= render partial: "releases/live_release/pre_release_prs", locals: { pre_release_prs: @pre_release_prs } %>
       <%= render partial: "releases/live_release/separator" %>
     <% end %>
+
     <%= render partial: "releases/live_release/kick_off", locals: { release: @release, release_train: @train } %>
     <%= render partial: "releases/live_release/separator" %>
     <%= render partial: "releases/live_release/builds", locals: { release: @release } %>

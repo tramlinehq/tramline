@@ -1,4 +1,5 @@
 class Releases::DeploymentsController < SignedInApplicationController
+  before_action :require_write_access!, only: %i[start]
   before_action :set_release
   before_action :set_step_run
   before_action :set_deployment

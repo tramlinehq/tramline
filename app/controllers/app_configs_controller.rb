@@ -1,5 +1,7 @@
 class AppConfigsController < SignedInApplicationController
   using RefinedString
+
+  before_action :require_write_access!, only: %i[edit update]
   before_action :set_app, only: %i[edit update]
   before_action :set_ci_cd_projects, only: %i[edit]
 

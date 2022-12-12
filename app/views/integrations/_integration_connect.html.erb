@@ -1,14 +1,15 @@
 <% if integration.providable.creatable? %>
   <span data-controller="visibility">
-    <button class="btn-lg border-slate-600 hover:border-slate-300 flex items-center"
-            data-turbo="false"
-            data-action="visibility#toggle">
+    <%= decorated_button_tag :neutral,
+                             { class: "btn-lg flex items-center",
+                               data: { turbo: "false", action: "visibility#toggle" } } do %>
       Connect
-    </button>
+    <% end %>
 
     <%= modal_for("Add JSON Key") do %>
       <div class="flex flex-col space-y-2">
-        <%= form_with(model: [current_organization, @app, integration]) do |form| %>
+        <%= form_with(model: [current_organization, @app, integration],
+                      builder: ButtonHelper::AuthzForms) do |form| %>
           <div class="flex">
             <%= form.hidden_field :category, value: category %>
             <%= form.fields_for :providable do |subform| %>
@@ -18,7 +19,7 @@
           </div>
 
           <div class="flex self-end">
-            <%= form.submit 'Create', class: "btn bg-indigo-500 hover:bg-indigo-600 flex text-white items-center" %>
+            <%= form.authz_submit :blue, "Create", class: "flex items-center" %>
           </div>
         <% end %>
       </div>
@@ -27,6 +28,7 @@
 <% else %>
   <%= form_with(model: [current_organization, @app, integration],
                 method: :get,
+                builder: ButtonHelper::AuthzForms,
                 url: connect_app_integrations_path(@app, integration)) do |form| %>
     <%= form.hidden_field :category, value: category %>
 
@@ -34,8 +36,9 @@
       <%= subform.hidden_field :type, value: integration.providable_type %>
     <% end %>
 
-    <%= form.submit 'Connect',
-                    class: "btn border-slate-300 hover:border-slate-400 flex items-center",
+    <%= form.authz_submit :neutral,
+                    "Connect",
+                    class: "flex items-center",
                     "data-turbo": false %>
   <% end %>
 <% end %>

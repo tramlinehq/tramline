@@ -20,7 +20,15 @@ class Accounts::Membership < ApplicationRecord
 
   after_initialize :set_default_role, if: :new_record?
 
+  def self.allowed_roles
+    roles.except(:owner).transform_keys(&:titleize).to_a
+  end
+
   def set_default_role
     self.role = "developer"
+  end
+
+  def writer?
+    role.in? %w[owner developer]
   end
 end

@@ -1,8 +1,9 @@
 <% if step_run.present? %>
   <% if step_run.manually_startable_deployment?(deployment) %>
-    <%= button_to "Start this deployment",
-                  start_release_step_run_deployment_path(release, step_run, deployment),
-                  { class: 'mt-2 btn-xs bg-indigo-500 hover:bg-indigo-600 text-white' } %>
+    <%= authz_button_to :blue,
+                        "Start this deployment",
+                        start_release_step_run_deployment_path(release, step_run, deployment),
+                        { class: 'mt-2 btn-xs' } %>
   <% end %>
 
   <% deployment_run = step_run.last_run_for(deployment) %>
@@ -13,18 +14,20 @@
 
   <% if deployment_run&.promotable? %>
     <div class="ml-0 mt-2">
-      <%= form_with(model: [release, step_run, deployment_run], url: promote_deployment_run_path(deployment_run)) do |form| %>
+      <%= form_with(model: [release, step_run, deployment_run],
+                    url: promote_deployment_run_path(deployment_run),
+                    builder: ButtonHelper::AuthzForms) do |form| %>
         <% if deployment_run.previously_rolled_out? %>
           <%= form.number_field :initial_rollout_percentage, value: deployment_run.previous_rollout, hidden: true %>
-          <%= form.submit "Release at #{number_to_percentage deployment_run.previous_rollout}", class: "btn-xs bg-indigo-500 hover:bg-indigo-600 text-white" %>
+          <%= form.authz_submit :blue, "Release at #{number_to_percentage deployment_run.previous_rollout}", class: "btn-xs" %>
         <% elsif deployment_run.rolloutable? %>
           <div class="mt-4">
             <%= form.number_field :initial_rollout_percentage, class: "form-input w-72 mb-3", placeholder: "Initial Staged Rollout Percentage", step: ".001", min: 0, max: 99, required: true %>
-            <%= form.submit 'Release', class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
+            <%= form.authz_submit :blue, "Release" %>
           </div>
         <% else %>
           <%= form.number_field :initial_rollout_percentage, value: "100", hidden: true %>
-          <%= form.submit 'Release at 100%', class: "btn-xs bg-indigo-500 hover:bg-indigo-600 text-white" %>
+          <%= form.authz_submit :blue, "Release at 100%", class: "btn-xs" %>
         <% end %>
       <% end %>
     </div>

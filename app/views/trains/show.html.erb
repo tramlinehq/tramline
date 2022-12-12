@@ -9,14 +9,13 @@
 
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
     <% if @train.active_run %>
-      <%= link_to "Ongoing Release", live_release_app_train_releases_path(@app, @train),
-                  class: "btn bg-emerald-500 hover:bg-emerald-600 text-white" %>
+      <%= decorated_link_to :green, "Ongoing Release", live_release_app_train_releases_path(@app, @train) %>
     <% elsif @train.steps.any? %>
-      <%= button_to "Start new release", app_train_releases_path(@app, @train), class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
+      <%= decorated_button_to :blue, "Start new release", app_train_releases_path(@app, @train) %>
     <% end %>
 
     <% if @train.runs.size > 0 %>
-      <%= button_to nil, class: "btn bg-indigo-500 hover:bg-indigo-600 text-white disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed shadow-none", disabled: true do %>
+      <%= button_to "#", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed shadow-none", disabled: true do %>
         <svg xmlns="http://www.w3.org/2000/svg" class="opacity-80" width="20" height="20" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
           <line x1="14" y1="12" x2="14" y2="12.01"/>
@@ -25,11 +24,12 @@
           <line x1="12" y1="14" x2="12" y2="14.01"/>
           <path d="M4.5 12.5l8 -8a4.94 4.94 0 0 1 7 7l-8 8a4.94 4.94 0 0 1 -7 -7"/>
         </svg>
+
         <span class="ml-2">Hotfix last release</span>
       <% end %>
     <% end %>
 
-    <%= link_to edit_app_train_path(@app, @train), class: "btn border-slate-300 hover:border-slate-400 text-slate-600" do %>
+    <%= authz_link_to :neutral, edit_app_train_path(@app, @train) do %>
       <svg class="w-4 h-4 fill-current text-slate-500 shrink-0" viewBox="0 0 16 16">
         <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4zM4.6 14H2v-2.6l6-6L10.6 8l-6 6zM12 6.6L9.4 4 11 2.4 13.6 5 12 6.6z"></path>
       </svg>
@@ -37,8 +37,8 @@
     <% end %>
 
     <% if @train.runs.blank? %>
-      <%= link_to app_train_path(@app, @train), method: :delete, class: "btn bg-rose-500 hover:bg-rose-600 text-white",
-                  data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } do %>
+      <%= authz_link_to :red, app_train_path(@app, @train), method: :delete,
+                        data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } do %>
         <span>Delete</span>
       <% end %>
     <% end %>
@@ -94,7 +94,7 @@
     You need to add at least one step to run this train.
   </p>
 
-  <%= link_to new_app_train_step_path(@app, @train), class: "btn bg-indigo-500 hover:bg-indigo-600 text-white mt-4" do %>
+  <%= authz_link_to :green, new_app_train_step_path(@app, @train), class: "mt-4" do %>
     <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
       <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
     </svg>

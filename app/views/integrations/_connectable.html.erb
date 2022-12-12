@@ -27,6 +27,7 @@
               <% if integration.disconnected? %>
                 <%= form_with(model: [@app, integration],
                               method: :get,
+                              builder: ButtonHelper::AuthzForms,
                               url: connect_app_integrations_path(@app, integration)) do |form| %>
                   <%= form.hidden_field :category, value: category %>
 
@@ -34,9 +35,7 @@
                     <%= subform.hidden_field :type, value: integration.providable_type %>
                   <% end %>
 
-                  <%= form.submit 'Connect',
-                                  class: "btn border-slate-300 hover:border-slate-400 flex items-center",
-                                  "data-turbo": false %>
+                  <%= form.authz_submit :neutral, "Connect", class: "flex items-center", data: { turbo: false } %>
                 <% end %>
               <% end %>
             </div>

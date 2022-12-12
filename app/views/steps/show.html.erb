@@ -44,8 +44,7 @@
     </svg>
 
     <span class="hidden xs:block ml-2">
-    <%= link_to "Add another step",
-                new_app_train_step_path(@app, @train) %>
+    <%= authz_link_to :green, "Add another step", new_app_train_step_path(@app, @train) %>
   </span>
   </button>
 </div>

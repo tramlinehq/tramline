@@ -1,4 +1,5 @@
 class AppsController < SignedInApplicationController
+  before_action :require_write_access!, only: %i[new create edit update destroy]
   before_action :set_app, only: %i[show edit update destroy]
   before_action :set_integrations, only: %i[show destroy]
   around_action :set_time_zone
