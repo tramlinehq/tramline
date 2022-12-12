@@ -39,6 +39,7 @@
                         <% if integration.connect? %>
                           <%= form_with(model: [current_organization, app, integration],
                                         method: :get,
+                                        builder: ButtonHelper::AuthzForms,
                                         url: connect_accounts_organization_app_integrations_path(current_organization, app, integration),
                                         class: "realign-form") do |form| %>
                             <%= form.hidden_field :category, value: category %>

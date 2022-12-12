@@ -4,7 +4,7 @@
   <%= decorated_button_tag :neutral, "Connect", data: { turbo: "false", action: "visibility#toggle" } %>
 
   <%= modal_for("Add Service Account JSON Key") do %>
-    <%= form_with(model: [@app, integration], url: form_url) do |form| %>
+    <%= form_with(model: [@app, integration], builder: ButtonHelper::AuthzForms, url: form_url) do |form| %>
       <%= form.hidden_field :category, value: category %>
       <%= form.fields_for :providable do |subform| %>
         <%= subform.hidden_field :type, value: integration.providable_type %>

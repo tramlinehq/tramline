@@ -8,7 +8,9 @@
   <% end %>
 
   <%= modal_for("Add Personal Access Token") do %>
-    <%= form_with(model: [@app, integration], url: form_url) do |form| %>
+    <%= form_with(model: [@app, integration],
+                  url: form_url,
+                  builder: ButtonHelper::AuthzForms) do |form| %>
       <%= form.hidden_field :category, value: category %>
 
       <%= form.fields_for :providable do |subform| %>

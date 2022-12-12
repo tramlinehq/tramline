@@ -36,7 +36,10 @@
     </table>
   </div>
 
-  <%= form_with model: @app, url: app_sign_off_groups_path(@app), method: :put do |f| %>
+  <%= form_with(model: @app,
+                url: app_sign_off_groups_path(@app),
+                builder: ButtonHelper::AuthzForms,
+                method: :put) do |f| %>
     <template data-nested-form-target='template'>
       <%= f.fields_for :sign_off_groups, SignOffGroup.new, child_index: 'TEMPLATE_RECORD' do |g| %>
         <%= render 'sign_off_fields', form: g %>
