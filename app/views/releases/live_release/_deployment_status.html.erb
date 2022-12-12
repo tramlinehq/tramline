@@ -19,15 +19,15 @@
                     builder: ButtonHelper::AuthzForms) do |form| %>
         <% if deployment_run.previously_rolled_out? %>
           <%= form.number_field :initial_rollout_percentage, value: deployment_run.previous_rollout, hidden: true %>
-          <%= form.submit "Release at #{number_to_percentage deployment_run.previous_rollout}", class: "btn-xs bg-indigo-500 hover:bg-indigo-600 text-white" %>
+          <%= form.authz_submit :blue, "Release at #{number_to_percentage deployment_run.previous_rollout}", class: "btn-xs" %>
         <% elsif deployment_run.rolloutable? %>
           <div class="mt-4">
             <%= form.number_field :initial_rollout_percentage, class: "form-input w-72 mb-3", placeholder: "Initial Staged Rollout Percentage", step: ".001", min: 0, max: 99, required: true %>
-            <%= form.submit 'Release', class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
+            <%= form.authz_submit :blue, "Release" %>
           </div>
         <% else %>
           <%= form.number_field :initial_rollout_percentage, value: "100", hidden: true %>
-          <%= form.submit 'Release at 100%', class: "btn-xs bg-indigo-500 hover:bg-indigo-600 text-white" %>
+          <%= form.authz_submit :blue, "Release at 100%", class: "btn-xs" %>
         <% end %>
       <% end %>
     </div>

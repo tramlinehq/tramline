@@ -39,25 +39,27 @@
   <%= form_with(model: @app,
                 url: app_sign_off_groups_path(@app),
                 builder: ButtonHelper::AuthzForms,
-                method: :put) do |f| %>
+                method: :put) do |form| %>
     <template data-nested-form-target='template'>
-      <%= f.fields_for :sign_off_groups, SignOffGroup.new, child_index: 'TEMPLATE_RECORD' do |g| %>
+      <%= form.fields_for :sign_off_groups, SignOffGroup.new, child_index: 'TEMPLATE_RECORD' do |g| %>
         <%= render 'sign_off_fields', form: g %>
       <% end %>
     </template>
 
     <% if @app.sign_off_groups.blank? %>
-      <%= f.fields_for :sign_off_groups, SignOffGroup.new do |g| %>
+      <%= form.fields_for :sign_off_groups, SignOffGroup.new do |g| %>
         <%= render 'sign_off_fields', form: g %>
       <% end %>
     <% else %>
-      <%= f.fields_for :sign_off_groups do |g| %>
+      <%= form.fields_for :sign_off_groups do |g| %>
         <%= render 'sign_off_fields', form: g %>
       <% end %>
     <% end %>
 
     <div data-nested-form-target="addItem"></div>
 
-    <div class="mt-5"><%= f.submit "Update", class: 'btn bg-indigo-500 hover:bg-indigo-600 text-white' %></div>
+    <div class="mt-5">
+      <%= form.authz_submit :blue, "Update" %>
+    </div>
   <% end %>
 </div>

@@ -1,28 +1,28 @@
 module ButtonHelper
   BUTTON_OPTIONS = {
     green: {
-      class: " btn bg-emerald-500 hover:bg-emerald-600 text-white"
+      class: "btn bg-emerald-500 hover:bg-emerald-600 text-white"
     },
     blue: {
-      class: " btn bg-indigo-500 hover:bg-indigo-600 text-white"
+      class: "btn bg-indigo-500 hover:bg-indigo-600 text-white"
     },
     red: {
-      class: " btn bg-rose-500 hover:bg-rose-600 text-white"
+      class: "btn bg-rose-500 hover:bg-rose-600 text-white"
     },
     neutral: {
-      class: " btn text-slate-600 border-slate-300 hover:border-slate-400"
+      class: "btn text-slate-600 border-slate-300 hover:border-slate-400"
     },
     disabled:
       {
-        class: " btn opacity-30 disabled cursor-not-allowed border-slate-300 hover:border-slate-300",
+        class: "btn opacity-30 disabled cursor-not-allowed bg-transparent border-slate-300 hover:border-slate-300",
         disabled: true
       }
   }
 
-  def apply_options(options, new_options)
+  def apply_button_options(options, new_options)
     options ||= {}
-    options[:class] ||= " "
-    options[:class] << new_options[:class]
+    options[:class] ||= ""
+    options[:class] << " #{new_options[:class]}"
     options.merge(new_options.except(:class))
   end
 
@@ -30,9 +30,9 @@ module ButtonHelper
     new_opts = BUTTON_OPTIONS[style]
 
     if block
-      options = apply_options(options, new_opts)
+      options = apply_button_options(options, new_opts)
     else
-      html_options = apply_options(html_options, new_opts)
+      html_options = apply_button_options(html_options, new_opts)
     end
 
     [options, html_options]
@@ -81,7 +81,7 @@ module ButtonHelper
 
   # open a link in a new tab
   def link_to_external(name = nil, options = nil, html_options = nil, &block)
-    opts = {target: "_blank", rel: "nofollow noopener"}
+    opts = { target: "_blank", rel: "nofollow noopener" }
 
     if block
       options ||= {}
@@ -96,19 +96,9 @@ module ButtonHelper
 
   class AuthzForms < ActionView::Helpers::FormBuilder
     def authz_submit(style, value = nil, options = nil)
-      new_opts =
-        if @template.writer?
-          BUTTON_OPTIONS[style]
-        else
-          BUTTON_OPTIONS[:disabled]
-        end
-
-      options ||= {}
-      options[:class] ||= " "
-      options[:class] << new_opts[:class]
-      options = options.merge(new_opts.except(:class))
-
-      submit(value, options)
+      style = :disabled unless @template.writer?
+      _options, html_options = @template.apply_button_styles(style, {}, options, nil)
+      submit(value, html_options)
     end
   end
 end

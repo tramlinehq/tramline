@@ -44,10 +44,10 @@
                                         class: "realign-form") do |form| %>
                             <%= form.hidden_field :category, value: category %>
                             <%= form.hidden_field :provider, value: provider %>
-
-                            <%= form.submit 'Connect',
-                                            class: "btn-sm border-slate-200 hover:border-slate-300 shadow-sm flex items-center",
-                                            "data-turbo": false %>
+                            <%= form.authz_submit :neutral,
+                                                  "Connect",
+                                                  class: "btn-sm shadow-sm flex items-center",
+                                                  "data-turbo": false %>
                           <% end %>
                         <% end %>
                       </div>
