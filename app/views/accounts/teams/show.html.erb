@@ -71,7 +71,7 @@
       </td>
       <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <div class="text-left">
-          <%= member.role.titleize %>
+          <%= member.role_for(current_organization).titleize %>
         </div>
       </td>
     </tr>
