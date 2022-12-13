@@ -138,6 +138,8 @@ GEM
       railties (>= 3.2)
     down (5.3.1)
       addressable (~> 2.8)
+    easymon (1.6.2)
+      redis
     erubi (1.10.0)
     factory_bot (6.2.1)
       activesupport (>= 5.0.0)
@@ -547,6 +549,7 @@ DEPENDENCIES
   dogstatsd-ruby (~> 5.5)
   dotenv-rails (~> 2.7)
   down (~> 5.3)
+  easymon (~> 1.6)
   factory_bot_rails
   faker
   faraday-retry (~> 2.0)

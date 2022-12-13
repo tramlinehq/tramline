@@ -63,6 +63,7 @@ gem "device_detector", "~> 1.0"
 gem "strong_migrations", "~> 1.4"
 gem "fast_blank", "~> 1.0"
 gem "oj", "~> 3.13"
+gem "easymon", "~> 1.6"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
