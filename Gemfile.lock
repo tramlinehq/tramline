@@ -448,14 +448,11 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2)
     semantic (1.6.1)
-    sentry-rails (5.3.1)
+    sentry-rails (5.7.0)
       railties (>= 5.0)
-      sentry-ruby-core (~> 5.3.1)
-    sentry-ruby (5.3.1)
+      sentry-ruby (~> 5.7.0)
+    sentry-ruby (5.7.0)
       concurrent-ruby (~> 1.0, >= 1.0.2)
-      sentry-ruby-core (= 5.3.1)
-    sentry-ruby-core (5.3.1)
-      concurrent-ruby
     sidekiq (7.0.0)
       concurrent-ruby (< 2)
       connection_pool (>= 2.3.0)
@@ -595,8 +592,8 @@ DEPENDENCIES
   sassc-rails (~> 2.1)
   selenium-webdriver
   semantic (~> 1.6)
-  sentry-rails (~> 5.3)
-  sentry-ruby (~> 5.3)
+  sentry-rails (~> 5.7)
+  sentry-ruby (~> 5.7)
   sidekiq (< 8)
   sprockets-rails (~> 3.4)
   standard
