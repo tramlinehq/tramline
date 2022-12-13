@@ -1,4 +1,4 @@
-# README
+# site ![ci](https://github.com/tramlinehq/site/actions/workflows/ci.yml/badge.svg)
 
 The primary orchestration and frontend monolith.
 
