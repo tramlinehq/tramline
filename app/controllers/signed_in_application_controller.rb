@@ -1,6 +1,7 @@
 class SignedInApplicationController < ApplicationController
   DEFAULT_TIMEZONE = "Asia/Kolkata"
   before_action :set_paper_trail_whodunnit
+  before_action :set_sentry_context
   before_action :require_login, unless: :devise_controller?
   helper_method :current_organization
   helper_method :current_user
@@ -48,5 +49,9 @@ class SignedInApplicationController < ApplicationController
       else
         current_user.organization
       end
+  end
+
+  def set_sentry_context
+    Sentry.set_user(id: current_user.id, username: current_user.full_name, email: current_user.email) if current_user
   end
 end
