@@ -31,9 +31,30 @@ Refer to `db/seeds.rb` for credentials on how to login using the seed users.
 
 Webhooks need access to the application over the Internet and that requires tunneling on the localhost environment. We use ngrok, and you should run it like this:
 
-```
+```bash
 ngrok http https://localhost:3000
 ```
+
+If you'd like to use the custom DNS tunnel, add the following to your ngrok config file,
+
+```yaml
+version: "2"
+authtoken: # put your authtoken
+region: in
+tunnels:
+  tramline_dev:
+    proto: http
+    hostname: # add the tunnel hostname
+    addr: https://localhost:3000
+```
+
+You can run this configured tunnel via
+
+```bash
+ngrok start tramline_dev
+```
+
+or through the `Procfile.dev`
 
 ### Adding or updating gems
 
