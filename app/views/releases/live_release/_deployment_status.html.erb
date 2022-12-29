@@ -1,3 +1,12 @@
+<div class="releaseForm"
+     data-controller="domain--release-confirmation"
+     data-domain--release-confirmation-visibility-outlet=".releaseForm">
+  <%= decorated_button_tag :blue,
+                           "Release at",
+                           data: { turbo: "false", action: "domain--release-confirmation#update" },
+                           class: "btn-xs" %>
+</div>
+
 <% if step_run.present? %>
   <% if step_run.manually_startable_deployment?(deployment) %>
     <%= authz_button_to :blue,
@@ -5,19 +14,18 @@
                         start_release_step_run_deployment_path(release, step_run, deployment),
                         { class: 'mt-2 btn-xs' } %>
   <% end %>
-
   <% deployment_run = step_run.last_run_for(deployment) %>
 
   <% if deployment_run.present? %>
-    <span class="ml-2">
-      <%= deployment_run_status_badge(deployment_run) %>
-    </span>
+    <span class="ml-2"><%= deployment_run_status_badge(deployment_run) %></span>
   <% end %>
 
   <% if deployment_run&.promotable? %>
-    <div class="ml-0 mt-2"
-         data-controller="confirmation"
-         data-confirmation-comparison-value="sudo release">
+    <div class="ml-0 mt-2 releaseForm"
+         data-release="form"
+         data-controller="visibility"
+         data-controller="domain--release-confirmation"
+         data-domain--release-confirmation-visibility-outlet="[data-release='form']">
       <%= form_with(model: [release, step_run, deployment_run],
                     url: promote_deployment_run_path(deployment_run),
                     builder: ButtonHelper::AuthzForms) do |form| %>
@@ -27,9 +35,20 @@
                                 hidden: true %>
           <%= form.authz_submit :blue,
                                 "Release at #{number_to_percentage deployment_run.previous_rollout}",
-                                class: "btn-xs",
-                                data: { action: "confirmation#update" } %>
+                                data: { turbo: "false", action: "domain--release-confirmation#update" },
+                                class: "btn-xs" %>
         <% elsif deployment_run.rolloutable? %>
+          <%= modal_for("Release Confirmation") do %>
+            <div>
+              <span class="font-normal" data-domain--release-confirmation-target="message"></span>
+              <div class="flex flex-col space-y-2">
+                <div class="flex self-start">
+                  <%= form.authz_submit :blue, "Go ahead", class: "btn-xs" %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+
           <div class="mt-4">
             <%= form.number_field :initial_rollout_percentage,
                                   class: "form-input w-72 mb-3",
@@ -38,13 +57,13 @@
                                   min: 0,
                                   max: 100,
                                   required: true %>
-            <%= form.authz_submit :blue, "Release", data: { turbo_confirm: 'Are you sure?' } %>
+            <%= form.authz_submit :blue,
+                                  "Release",
+                                  data: { turbo: "false", action: "domain--release-confirmation#update" } %>
           </div>
         <% else %>
           <%= form.number_field :initial_rollout_percentage, value: "100", hidden: true %>
-          <%= form.authz_submit :blue, "Release at 100%",
-                                class: "btn-xs",
-                                data: { action: "confirmation#update" } %>
+          <%= form.authz_submit :blue, "Release at 100%", class: "btn-xs" %>
         <% end %>
       <% end %>
     </div>

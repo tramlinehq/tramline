@@ -7,7 +7,7 @@ export default class extends Controller {
     this.visibleTarget.style.visibility = "hidden"
   }
 
-  toggle() {
+  toggle(e) {
     if (this.visibleTarget.style.visibility === "hidden") {
       this.visibleTarget.style.visibility = "visible";
     } else {
