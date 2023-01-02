@@ -1,15 +1,20 @@
-<div class="last:pl-3" data-controller="build-artifacts" data-app="<%= train.app.id %>">
-  <div>
-    <%= form.label :integration_id, "Provider", class: "block text-sm font-medium mb-1" %>
-    <%= form.select :integration_id, options_for_select(@build_channel_integrations, @selected_integration),
-                                { class: "form-select" }, data: { controller: "input-select", action: 'change->build-artifacts#change' } %>
-  </div>
+<div data-controller="build-artifacts" data-app="<%= train.app.id %>">
+  <div class="flex flex-row gap-4">
+    <%= image_tag("hamburger.svg", class: "handle cursor-grabbing", width: 20) %>
 
-  <div class="mt-2">
-    <%= form.label :build_artifact_channel, "Channel", class: "block text-sm font-medium mb-1" %>
+    <%= form.select :integration_id, options_for_select(@build_channel_integrations, @selected_integration),
+                    { class: "block form-select" },
+                    data: { controller: "input-select", action: 'change->build-artifacts#change' } %>
+
     <%= form.select :build_artifact_channel,
-                                options_for_select(@selected_build_channels),
-                                { class: "form-select" },
-                                { data: { build_artifacts_target: "select", controller: "input-select" } } %>
+                    options_for_select(@selected_build_channels),
+                    { class: "block form-select" },
+                    { data: { build_artifacts_target: "select", controller: "input-select" } } %>
+
+    <button type="button" data-action="nested-form-ext#remove">
+      <%= image_tag("trash.svg", width: 65) %>
+    </button>
+
+    <%= form.hidden_field :_destroy %>
   </div>
 </div>
