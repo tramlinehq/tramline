@@ -57,7 +57,7 @@
 
       <template data-nested-form-ext-target="template">
         <li class="nested-form-wrapper pr-2 mt-4" data-new-record="<%= form.object.new_record? %>">
-          <%= form.fields_for :deployments, Deployment.new, child_index: 'TEMPLATE_RECORD' do |deployment_form| %>
+          <%= form.fields_for :deployments, Deployment.new, child_index: "NEW_RECORD" do |deployment_form| %>
             <%= render partial: "deployment", locals: { form: deployment_form, train: @train } %>
             <%= deployment_form.hidden_field :deployment_number, data: { list_position_target: "position" } %>
           <% end %>

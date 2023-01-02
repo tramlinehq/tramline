@@ -149,7 +149,7 @@ class Releases::Train < ApplicationRecord
     app
       .integrations
       .build_channel
-      .pluck(:providable_type, :id)
+      .map { |build_channel| [build_channel.providable.display, build_channel.id] }
       .push(EXTERNAL_DEPLOYMENT_CHANNEL)
   end
 
