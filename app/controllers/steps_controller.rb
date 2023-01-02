@@ -112,7 +112,7 @@ class StepsController < SignedInApplicationController
   def deployments_params
     params
       .require(:releases_step)
-      .permit(deployments_attributes: [:integration_id, :build_artifact_channel])
+      .permit(deployments_attributes: [:integration_id, :build_artifact_channel, :deployment_number])
   end
 
   def parsed_deployments_params
