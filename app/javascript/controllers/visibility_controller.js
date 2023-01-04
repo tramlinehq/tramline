@@ -4,14 +4,18 @@ export default class extends Controller {
   static targets = ["visible"]
 
   initialize() {
-    this.visibleTarget.style.visibility = "hidden"
+    if (this.hasVisibleTarget) {
+      this.visibleTarget.style.visibility = "hidden"
+    }
   }
 
-  toggle(e) {
-    if (this.visibleTarget.style.visibility === "hidden") {
-      this.visibleTarget.style.visibility = "visible";
-    } else {
-      this.visibleTarget.style.visibility = "hidden";
+  toggle() {
+    if (this.hasVisibleTarget) {
+      if (this.visibleTarget.style.visibility === "hidden") {
+        this.visibleTarget.style.visibility = "visible";
+      } else {
+        this.visibleTarget.style.visibility = "hidden";
+      }
     }
   }
 }
