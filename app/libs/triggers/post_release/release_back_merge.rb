@@ -22,7 +22,7 @@ class Triggers::PostRelease
     attr_reader :train, :release
 
     def create_and_merge_prs
-      Triggers::PullRequest.create_and_merge!(
+      (Triggers::PullRequest.create_and_merge!(
         release: release,
         new_pull_request: release.pull_requests.post_release.open.build,
         to_branch_ref: release_backmerge_branch,
@@ -37,7 +37,7 @@ class Triggers::PostRelease
           from_branch_ref: fully_qualified_release_backmerge_branch_hack,
           title: backmerge_pr_title,
           description: pr_description
-        ).ok? ? Result.new(ok?: true) : Result.new(ok?: false)
+        ).ok?) ? Result.new(ok?: true) : Result.new(ok?: false)
     end
 
     def create_tag

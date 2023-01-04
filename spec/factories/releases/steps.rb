@@ -7,5 +7,11 @@ FactoryBot.define do
     build_artifact_channel { Faker::Lorem.word }
     release_suffix { "qa-staging" }
     build_artifact_integration { "SlackIntegration" }
+
+    trait :with_deployment do
+      after(:build) do |step, _|
+        build(:deployment, step: step)
+      end
+    end
   end
 end

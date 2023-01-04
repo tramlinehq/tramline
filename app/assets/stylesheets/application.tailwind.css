@@ -1,4 +1,5 @@
 @tailwind base;
+@tailwind components;
 
 /* Override color of turbo progress bar */
 .turbo-progress-bar {
@@ -110,8 +111,8 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 .form-input,
@@ -346,7 +347,6 @@ span.flatpickr-weekday {
 .flatpickr-calendar.arrowBottom::after {
   display: none;
 }
-/* Mosaic theme ends here, keep it above Tailwind includes, otherwise shit will break */
+/* Mosaic theme ends here */
 
-@tailwind components;
 @tailwind utilities;
