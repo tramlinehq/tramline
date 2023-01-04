@@ -1,9 +1,19 @@
 @tailwind base;
+@tailwind components;
+
+body {
+  margin-bottom: 5em !important;
+}
 
 /* Override color of turbo progress bar */
 .turbo-progress-bar {
   background-color: orangered;
   height: 4px;
+}
+
+.realign-form {
+  margin-left: 0 !important;
+  margin-top: 1em !important;
 }
 
 /* Mosaic theme starts here */
@@ -110,8 +120,8 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 .form-input,
@@ -346,7 +356,6 @@ span.flatpickr-weekday {
 .flatpickr-calendar.arrowBottom::after {
   display: none;
 }
-/* Mosaic theme ends here, keep it above Tailwind includes, otherwise shit will break */
+/* Mosaic theme ends here */
 
-@tailwind components;
 @tailwind utilities;
