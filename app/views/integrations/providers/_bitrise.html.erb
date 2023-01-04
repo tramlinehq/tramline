@@ -1,9 +1,7 @@
 <% form_url = app_bitrise_integration_path(@app) %>
 
 <span data-controller="visibility">
-  <%= decorated_button_tag :neutral,
-                           { class: "btn-lg flex items-center",
-                             data: { turbo: "false", action: "visibility#toggle" } } do %>
+  <%= decorated_button_tag :neutral, { data: { turbo: "false", action: "visibility#toggle" } } do %>
     Connect
   <% end %>
 

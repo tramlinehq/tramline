@@ -1,19 +1,10 @@
 @tailwind base;
 @tailwind components;
 
-body {
-  margin-bottom: 5em !important;
-}
-
 /* Override color of turbo progress bar */
-.turbo-progress-bar {
+.}turbo-progress-bar {
   background-color: orangered;
   height: 4px;
-}
-
-.realign-form {
-  margin-left: 0 !important;
-  margin-top: 1em !important;
 }
 
 /* Mosaic theme starts here */
