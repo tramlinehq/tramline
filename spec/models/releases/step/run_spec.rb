@@ -7,7 +7,7 @@ RSpec.describe Releases::Step::Run, type: :model do
 
   describe "#previous_run" do
     let(:active_train) { create(:releases_train, :active) }
-    let(:steps) { create_list(:releases_step, 2, train: active_train) }
+    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: active_train) }
 
     it "returns the previous run for its step and train run" do
       train_run = create(:releases_train_run, train: active_train)
@@ -25,7 +25,7 @@ RSpec.describe Releases::Step::Run, type: :model do
 
   describe "#previous_runs" do
     let(:active_train) { create(:releases_train, :active) }
-    let(:steps) { create_list(:releases_step, 2, train: active_train) }
+    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: active_train) }
 
     it "returns all previous runs, not later runs" do
       train_run = create(:releases_train_run, train: active_train)
@@ -39,7 +39,7 @@ RSpec.describe Releases::Step::Run, type: :model do
 
   describe "#other_runs" do
     let(:active_train) { create(:releases_train, :active) }
-    let(:steps) { create_list(:releases_step, 2, train: active_train) }
+    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: active_train) }
 
     it "returns all runs except itself" do
       train_run = create(:releases_train_run, train: active_train)
@@ -55,7 +55,7 @@ RSpec.describe Releases::Step::Run, type: :model do
     let(:active_train) { create(:releases_train, :active) }
 
     it "is false when train is inactive" do
-      step = create(:releases_step, train: create(:releases_train, :inactive))
+      step = create(:releases_step, :with_deployment, train: create(:releases_train, :inactive))
       deployment = create(:deployment, step: step)
       step_run = create(:releases_step_run, step: step)
 
@@ -63,7 +63,7 @@ RSpec.describe Releases::Step::Run, type: :model do
     end
 
     it "is false when there are no active train runs" do
-      step = create(:releases_step, train: active_train)
+      step = create(:releases_step, :with_deployment, train: active_train)
       step_run = create(:releases_step_run, step: step)
       deployment = create(:deployment, step: step)
       _inactive_train_run = create(:releases_train_run, train: active_train, status: "finished")
@@ -72,7 +72,7 @@ RSpec.describe Releases::Step::Run, type: :model do
     end
 
     it "is false when it is the first deployment" do
-      step = create(:releases_step, train: active_train)
+      step = create(:releases_step, :with_deployment, train: active_train)
       step_run = create(:releases_step_run, step: step)
       deployment = create(:deployment, step: step)
       _active_train_run = create(:releases_train_run, train: active_train, status: "on_track")
@@ -81,7 +81,7 @@ RSpec.describe Releases::Step::Run, type: :model do
     end
 
     it "is false when no other deployment runs have happened" do
-      step = create(:releases_step, train: active_train)
+      step = create(:releases_step, :with_deployment, train: active_train)
       step_run = create(:releases_step_run, step: step)
       deployment = create(:deployment, step: step)
       _active_train_run = create(:releases_train_run, train: active_train, status: "on_track")
@@ -91,7 +91,7 @@ RSpec.describe Releases::Step::Run, type: :model do
     end
 
     it "is true when it is the running step's next-in-line deployment" do
-      step = create(:releases_step, train: active_train)
+      step = create(:releases_step, :with_deployment, train: active_train)
       _inactive_train_run = create(:releases_train_run, train: active_train, status: "finished")
       inactive_step_run = create(:releases_step_run, step: step, status: "success")
       _active_train_run = create(:releases_train_run, train: active_train, status: "on_track")

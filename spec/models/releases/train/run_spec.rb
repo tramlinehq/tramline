@@ -7,7 +7,7 @@ RSpec.describe Releases::Train::Run, type: :model do
 
   describe "#next_step" do
     subject { create(:releases_train_run) }
-    let(:steps) { create_list(:releases_step, 5, train: subject.train) }
+    let(:steps) { create_list(:releases_step, 5, :with_deployment, train: subject.train) }
 
     it "returns next step" do
       expect(subject.next_step).to be_nil
@@ -16,7 +16,7 @@ RSpec.describe Releases::Train::Run, type: :model do
 
   describe "#startable_step?" do
     let(:active_train) { create(:releases_train, :active) }
-    let(:steps) { create_list(:releases_step, 2, train: active_train) }
+    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: active_train) }
 
     it "first step can be started if there are no step runs" do
       train_run = create(:releases_train_run, train: active_train)
@@ -38,7 +38,7 @@ RSpec.describe Releases::Train::Run, type: :model do
     let(:active_train) { create(:releases_train, :active) }
 
     it "returns the status of every step of the train" do
-      steps = create_list(:releases_step, 4, train: active_train)
+      steps = create_list(:releases_step, 4, :with_deployment, train: active_train)
       train_run = create(:releases_train_run, train: active_train)
       commit = create(:releases_commit, train_run: train_run)
       _step_run_1 = create(:releases_step_run, commit:, step: steps.first, status: "success", train_run: train_run)
@@ -56,7 +56,7 @@ RSpec.describe Releases::Train::Run, type: :model do
     end
 
     it "always accounts for the last step run of a particular step" do
-      steps = create_list(:releases_step, 2, train: active_train)
+      steps = create_list(:releases_step, 2, :with_deployment, train: active_train)
       train_run = create(:releases_train_run, train: active_train)
       commit_1 = create(:releases_commit, train_run: train_run)
       commit_2 = create(:releases_commit, train_run: train_run)
