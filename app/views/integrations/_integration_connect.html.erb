@@ -36,9 +36,6 @@
       <%= subform.hidden_field :type, value: integration.providable_type %>
     <% end %>
 
-    <%= form.authz_submit :neutral,
-                    "Connect",
-                    class: "flex items-center",
-                    "data-turbo": false %>
+    <%= form.authz_submit :neutral, "Connect", class: "flex items-center", "data-turbo": false %>
   <% end %>
 <% end %>
