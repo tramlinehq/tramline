@@ -313,8 +313,8 @@ GEM
     pg (1.4.5)
     pg_query (2.2.0)
       google-protobuf (>= 3.19.2)
-    pghero (2.8.3)
-      activerecord (>= 5)
+    pghero (3.1.0)
+      activerecord (>= 6)
     postmark (1.22.2)
       json
     postmark-rails (0.21.0)
@@ -573,7 +573,7 @@ DEPENDENCIES
   paper_trail (~> 12.2)
   pg (~> 1.1)
   pg_query
-  pghero (~> 2.8)
+  pghero (~> 3.1)
   postmark-rails (~> 0.21.0)
   prosopite
   pry
@@ -608,4 +608,4 @@ RUBY VERSION
    ruby 3.2.0p0
 
 BUNDLED WITH
-   2.4.1
+   2.4.2
