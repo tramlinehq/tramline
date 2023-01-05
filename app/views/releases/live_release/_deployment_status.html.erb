@@ -13,12 +13,10 @@
   <% end %>
 
   <% if deployment_run&.promotable? %>
-    <div class="ml-0 mt-2"
-         id="release-form"
-         data-controller="visibility confirmation"
-         data-confirmation-visibility-outlet="#release-form">
+    <div class="ml-0 mt-2">
       <%= form_with(model: [release, step_run, deployment_run],
                     url: promote_deployment_run_path(deployment_run),
+                    data: { turbo_confirm: "You are about to release this build to a store channel.\n\nAre you sure?" },
                     builder: ButtonHelper::AuthzForms) do |form| %>
         <% if deployment_run.previously_rolled_out? %>
           <%= form.number_field :initial_rollout_percentage,
@@ -28,21 +26,6 @@
                                 "Release at #{number_to_percentage deployment_run.previous_rollout}",
                                 class: "btn-xs" %>
         <% elsif deployment_run.rolloutable? %>
-          <%= modal_for("Release Confirmation") do %>
-            <div>
-              <span class="font-normal">
-                You are going to start rolling out a release to your users.
-                <br/>
-                Are you sure you want to continue?
-              </span>
-              <div class="flex flex-col space-y-2 mt-4">
-                <div class="flex self-start">
-                  <%= form.authz_submit :blue, "Go ahead", class: "btn-xs" %>
-                </div>
-              </div>
-            </div>
-          <% end %>
-
           <div class="mt-4">
             <%= form.number_field :initial_rollout_percentage,
                                   class: "form-input w-72 mb-3",
@@ -51,9 +34,7 @@
                                   min: 0,
                                   max: 100,
                                   required: true %>
-            <%= form.authz_submit :blue,
-                                  "Release",
-                                  data: { turbo: "false", action: "confirmation#confirm" } %>
+            <%= form.authz_submit :blue, "Release" %>
           </div>
         <% else %>
           <%= form.number_field :initial_rollout_percentage, value: "100", hidden: true %>
