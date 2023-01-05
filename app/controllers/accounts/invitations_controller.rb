@@ -1,4 +1,6 @@
 class Accounts::InvitationsController < SignedInApplicationController
+  before_action :require_write_access!, only: %i[new create]
+
   def new
     @invite = Accounts::Invite.new(sender: current_user, organization: current_organization)
   end

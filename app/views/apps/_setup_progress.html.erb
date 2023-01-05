@@ -4,7 +4,7 @@
   <% is_app_completed = setup_instructions[:app][:completed] %>
   <li class="relative w-8/12 mb-6 sm:mb-0">
     <div class="flex items-center">
-      <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_app_completed) %> rounded-full ring-0 ring-white dark:bg-blue-900 sm:ring-8 dark:ring-gray-900 shrink-0">
+      <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_app_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
         <% if is_app_completed %>
           <svg class="w-8 h-8 fill-current text-white" viewBox="0 0 20 20">
             <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"/>
@@ -13,15 +13,15 @@
       </div>
     </div>
     <div class="mt-3 sm:pr-10">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Add an App</h3>
-      <p class="text-base font-normal text-gray-500 dark:text-gray-400">This is complete!</p>
+      <h3 class="text-lg font-semibold text-gray-900">Add an App</h3>
+      <p class="text-base font-normal text-gray-500">This is complete!</p>
     </div>
   </li>
 
   <% is_version_control_completed = setup_instructions[:version_control][:completed] %>
   <li class="relative w-full mb-6 sm:mb-0">
     <div class="flex items-center">
-      <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_version_control_completed) %> rounded-full ring-0 ring-white dark:bg-blue-900 sm:ring-8 dark:ring-gray-900 shrink-0">
+      <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_version_control_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
         <% if is_version_control_completed %>
           <svg class="w-8 h-8 fill-current text-white" viewBox="0 0 20 20">
             <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"/>
@@ -30,8 +30,8 @@
       </div>
     </div>
     <div class="mt-3 sm:pr-10">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Version Control Integration</h3>
-      <p class="text-base font-normal text-gray-500 dark:text-gray-400 mt-2">
+      <h3 class="text-lg font-semibold text-gray-900">Version Control Integration</h3>
+      <p class="text-base font-normal text-gray-500 mt-2">
         <%= link_to "Configure", app_integrations_path(@app, anchor: "version_control"), class: "underline" %>&nbsp;where your code lives.
       </p>
     </div>
@@ -40,7 +40,7 @@
   <% is_ci_cd_completed = setup_instructions[:ci_cd][:completed] %>
   <li class="relative w-full mb-6 sm:mb-0">
     <div class="flex items-center">
-      <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_ci_cd_completed) %> rounded-full ring-0 ring-white dark:bg-blue-900 sm:ring-8 dark:ring-gray-900 shrink-0">
+      <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_ci_cd_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
         <% if is_ci_cd_completed %>
           <svg class="w-8 h-8 fill-current text-white" viewBox="0 0 20 20">
             <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"/>
@@ -49,9 +49,9 @@
       </div>
     </div>
     <div class="mt-3 sm:pr-10">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">CI/CD Integration</h3>
-      <p class="text-base font-normal text-gray-500 dark:text-gray-400">
-      <p class="text-base font-normal text-gray-500 dark:text-gray-400 mt-2">
+      <h3 class="text-lg font-semibold text-gray-900">CI/CD Integration</h3>
+      <p class="text-base font-normal text-gray-500">
+      <p class="text-base font-normal text-gray-500 mt-2">
         <%= link_to "Configure", app_integrations_path(@app, anchor: "ci_cd"), class: "underline" %>&nbsp;your CI/CD provider.
       </p>
     </div>
@@ -60,19 +60,18 @@
   <% is_build_channel_completed = setup_instructions[:build_channel][:completed] %>
   <li class="relative w-full mb-6 sm:mb-0">
     <div class="flex items-center">
-      <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_build_channel_completed) %> rounded-full ring-0 ring-white dark:bg-blue-900 sm:ring-8 dark:ring-gray-900 shrink-0">
+      <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_build_channel_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
         <% if is_build_channel_completed %>
           <svg class="w-8 h-8 fill-current text-white" viewBox="0 0 20 20">
             <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"/>
           </svg>
-
         <% end %>
       </div>
     </div>
 
     <div class="mt-3 sm:pr-10">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Deployment Integration</h3>
-      <p class="text-base font-normal text-gray-500 dark:text-gray-400 mt-2">
+      <h3 class="text-lg font-semibold text-gray-900">Deployment Integration</h3>
+      <p class="text-base font-normal text-gray-500 mt-2">
         <%= link_to "Configure", app_integrations_path(@app, anchor: "build_channel" ), class: "underline" %>&nbsp;one or more deployment
         providers.
       </p>
@@ -83,7 +82,7 @@
   <% is_app_config_completed = setup_instructions[:app_config][:completed] %>
   <li class="relative w-full mb-6 sm:mb-0 <%= "opacity-30" unless is_app_config_visible %>">
     <div class="flex items-center">
-      <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_app_config_completed) %> rounded-full ring-0 ring-white dark:bg-blue-900 sm:ring-8 dark:ring-gray-900 shrink-0">
+      <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_app_config_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
         <% if is_app_config_completed %>
           <svg class="w-8 h-8 fill-current text-white" viewBox="0 0 20 20">
             <path d="M14.4 8.4L13 7l-4 4-2-2-1.4 1.4L9 13.8z"/>
@@ -93,8 +92,8 @@
     </div>
 
     <div class="mt-3 sm:pr-2">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Update Configuration</h3>
-      <p class="text-base font-normal text-gray-500 dark:text-gray-400 mt-2">
+      <h3 class="text-lg font-semibold text-gray-900">Update Configuration</h3>
+      <p class="text-base font-normal text-gray-500 mt-2">
         <% if is_app_config_visible %>
           <%= link_to "Finish", edit_app_app_config_path(@app), class: "underline" %>&nbsp;configuring your integrations!
         <% else %>

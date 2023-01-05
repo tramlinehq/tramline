@@ -5,11 +5,14 @@
   </div>
 
   <div class="mt-5">
-    <%= render "shared/note_box", message: "When a new commit lands, all steps are re-run until the last running step. This ensures that previous stakeholders are kept up-to-date." %>
+    <%= render "shared/note_box",
+               message: "When a new commit lands, all steps are re-run until the last running step.
+               This ensures that previous stakeholders are kept up-to-date." %>
   </div>
 
   <div class="mt-2">
-    <%= render "shared/note_box", message: "If your release is stuck in some unrecoverable state, just land another commit to kick things off again." %>
+    <%= render "shared/note_box",
+               message: "If your release is stuck in some unrecoverable state, just land another commit to kick things off again." %>
   </div>
 
   <p class="font-bold text-2xl mt-8 mb-2">Latest build</p>
@@ -21,18 +24,10 @@
 
         <li class="mb-10 ml-6 last:mb-0">
           <div class="flex items-center">
-            <% if step_run&.in_progress? %>
-              <%= render partial: "releases/live_release/in_progress_circle" %>
-            <% elsif step_run&.done? %>
-              <%= render partial: "releases/live_release/done_circle" %>
-            <% else %>
-              <%= render partial: "releases/live_release/future_circle" %>
-            <% end %>
-
+            <%= render partial: "releases/live_release/step_run_status", locals: { step_run: step_run } %>
             <p class="text-lg font-bold text-slate-800 pl-6"><%= step.name %></p>
-
             <% if release.on_track? && release.startable_step?(step) %>
-              <%= button_to "Move to this step", start_release_step_run_path(release, step), { class: 'btn-xs ml-2 bg-indigo-500 hover:bg-indigo-600 text-white' } %>
+              <%= authz_button_to :blue, "Move to this step", start_release_step_run_path(release, step), { class: 'btn-xs ml-2' } %>
             <% end %>
           </div>
 
@@ -46,7 +41,7 @@
 
     <% if release.finalizable? %>
       <div class="mt-9">
-        <%= button_to "Finish this release", post_release_release_path(release), class: 'btn-sm bg-indigo-500 hover:bg-indigo-600 text-white' %>
+        <%= authz_button_to :blue, "Finish this release", post_release_release_path(release), class: "btn-sm" %>
       </div>
     <% end %>
   </div>

@@ -18,6 +18,7 @@ class Releases::Train::Run < ApplicationRecord
   has_paper_trail
   include AASM
   include Passportable
+  include ActionView::Helpers::DateHelper
   self.implicit_order_column = :scheduled_at
 
   belongs_to :train, class_name: "Releases::Train"
@@ -59,7 +60,7 @@ class Releases::Train::Run < ApplicationRecord
       transitions from: :on_track, to: :post_release, guard: :finalizable?
     end
 
-    event :finish do
+    event :finish, after_commit: :notify_on_finish! do
       before { self.completed_at = Time.current }
       transitions from: :post_release, to: :finished
     end
@@ -74,6 +75,13 @@ class Releases::Train::Run < ApplicationRecord
 
   def tag_name
     "v#{release_version}"
+  end
+
+  def overall_movement_status
+    all_steps.to_h do |step|
+      run = last_commit&.run_for(step)
+      [step, run.present? ? run.status_summary : {not_started: true}]
+    end
   end
 
   def startable_step?(step)
@@ -110,7 +118,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def next_step
-    return train.steps.first if step_runs.empty?
+    return all_steps.first if step_runs.empty?
     step_runs.joins(:step).order(:step_number).last.step.next
   end
 
@@ -147,7 +155,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def finished_steps?
-    commits.last.step_runs.success.size == train.steps.size
+    commits.last.step_runs.success.size == all_steps.size
   end
 
   def latest_finished_step_runs
@@ -171,7 +179,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def signed?
-    last_run_for(train.steps.last)&.approval_approved?
+    last_run_for(all_steps.last)&.approval_approved?
   end
 
   def fully_qualified_branch_name_hack
@@ -181,7 +189,24 @@ class Releases::Train::Run < ApplicationRecord
   def events
     types = %w[Releases::Train::Run Releases::Step::Run Releases::Commit DeploymentRun]
     ids = [id, commits.pluck(:id), step_runs.pluck(:id), deployment_runs.pluck(:id)].flatten
-
     Passport.where(stampable_type: types, stampable_id: ids).order(created_at: :desc)
+  end
+
+  def all_steps
+    train.steps
+  end
+
+  def notify_on_finish!
+    train.notify!("Release is complete!", :release_ended, finalize_phase_metadata)
+  end
+
+  def finalize_phase_metadata
+    {
+      total_run_time: distance_of_time_in_words(created_at, completed_at),
+      release_tag: tag_name,
+      release_tag_url: tag_url,
+      final_artifact_url: final_build_artifact&.download_url,
+      store_url: app.store_link
+    }
   end
 end

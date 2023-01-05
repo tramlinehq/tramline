@@ -2,12 +2,12 @@ require "rails_helper"
 
 RSpec.describe Releases::Step, type: :model do
   it "has valid factory" do
-    expect(create(:releases_step)).to be_valid
+    expect(create(:releases_step, :with_deployment)).to be_valid
   end
 
   describe "#next" do
     let(:train) { create(:releases_train) }
-    let(:steps) { create_list(:releases_step, 5, train: train) }
+    let(:steps) { create_list(:releases_step, 5, :with_deployment, train: train) }
 
     it "returns next element" do
       first_step = steps.first

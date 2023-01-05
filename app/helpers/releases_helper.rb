@@ -1,4 +1,6 @@
 module ReleasesHelper
+  include Memery
+
   def approval_emoji(step_run)
     case step_run.approval_status.to_sym
     when :approved
@@ -69,14 +71,8 @@ module ReleasesHelper
     end
   end
 
-  def finalize_phase_metadata(release)
-    @finalize_phase_metadata ||=
-      {
-        total_run_time: distance_of_time_in_words(release.created_at, release.completed_at),
-        release_tag: release.tag_name,
-        release_tag_url: release.tag_url,
-        final_artifact_url: release.final_build_artifact&.download_url,
-        store_url: release.app.store_link
-      }
+  # TODO: deprecate this method, it's redundant
+  memoize def finalize_phase_metadata(release)
+    release.finalize_phase_metadata
   end
 end

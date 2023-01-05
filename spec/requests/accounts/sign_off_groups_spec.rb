@@ -3,9 +3,9 @@ require "rails_helper"
 RSpec.describe "Accounts::SignOffGroups", type: :request do
   let(:organization) { create(:organization) }
   let(:tram_app) { create(:app, organization:) }
-  let(:user) { create(:accounts_user, confirmed_at: Time.now, organizations: [organization]) }
-  let(:developer_1) { create(:accounts_user, confirmed_at: Time.now, organizations: [organization]) }
-  let(:qa_1) { create(:accounts_user, confirmed_at: Time.now, organizations: [organization]) }
+  let(:user) { create(:user, :as_developer, confirmed_at: Time.now, member_organization: organization) }
+  let(:qa_1) { create(:user, :as_developer, confirmed_at: Time.now, member_organization: organization) }
+  let(:developer_1) { create(:user, :as_developer, confirmed_at: Time.now, member_organization: organization) }
 
   describe "GET /edit" do
     it "returns http success" do
@@ -19,10 +19,14 @@ RSpec.describe "Accounts::SignOffGroups", type: :request do
     it "returns http success" do
       sign_in user
       put "/apps/#{tram_app.slug}/sign_off_groups",
-        params: {app: {sign_off_groups_attributes: [
-          {name: "Developers", member_ids: [developer_1.id]},
-          {name: "Testers", member_ids: [qa_1.id]}
-        ]}}
+        params: {
+          app: {
+            sign_off_groups_attributes: [
+              {name: "Developers", member_ids: [developer_1.id]},
+              {name: "Testers", member_ids: [qa_1.id]}
+            ]
+          }
+        }
 
       expect(tram_app.sign_off_groups.count).to eq(2)
       expect(response).to have_http_status(302)

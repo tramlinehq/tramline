@@ -18,9 +18,11 @@ class Accounts::Membership < ApplicationRecord
 
   validates :user_id, uniqueness: {scope: :organization_id}
 
-  after_initialize :set_default_role, if: :new_record?
+  def self.allowed_roles
+    roles.except(:owner).transform_keys(&:titleize).to_a
+  end
 
-  def set_default_role
-    self.role = "developer"
+  def writer?
+    role.in? %w[owner developer]
   end
 end

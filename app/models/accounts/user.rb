@@ -57,8 +57,6 @@ class Accounts::User < ApplicationRecord
 
   accepts_nested_attributes_for :organizations
 
-  delegate :role, to: :membership
-
   def onboard!
     return false unless valid?
     return false if membership.blank?
@@ -80,6 +78,14 @@ class Accounts::User < ApplicationRecord
       memberships.new(organization: invite.organization, role: invite.role)
       save!
     end
+  end
+
+  def role_for(organization)
+    memberships.find_by(organization: organization).role
+  end
+
+  def writer_for?(organization)
+    memberships.find_by(organization: organization).writer?
   end
 
   protected

@@ -4,7 +4,7 @@ RSpec.describe "Accounts::Releases::Releases", type: :request do
   describe "GET /show" do
     let(:release) { create(:releases_train_run) }
     let(:organization) { release.train.app.organization }
-    let(:user) { create(:accounts_user, confirmed_at: Time.zone.now, organizations: [organization]) }
+    let(:user) { create(:user, :as_developer, confirmed_at: Time.now, member_organization: organization) }
 
     it "returns success code" do
       sign_in user

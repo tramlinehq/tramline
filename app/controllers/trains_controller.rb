@@ -2,6 +2,7 @@ class TrainsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
+  before_action :require_write_access!, only: %i[new create deactivate edit update destroy]
   before_action :set_app, only: %i[new create show index edit update destroy deactivate start]
   around_action :set_time_zone
   before_action :set_train, only: %i[show edit update destroy deactivate start]

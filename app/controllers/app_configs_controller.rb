@@ -1,12 +1,14 @@
 class AppConfigsController < SignedInApplicationController
   using RefinedString
+
+  before_action :require_write_access!, only: %i[edit update]
   before_action :set_app, only: %i[edit update]
   before_action :set_ci_cd_projects, only: %i[edit]
 
   def edit
     @config = AppConfig.find_or_initialize_by(app: @app)
     @code_repositories = @app.vcs_provider.repos
-    @notification_channels = @app.notification_provider.channels if @app.notifications?
+    @notification_channels = @app.notification_provider.channels if @app.notifications_set_up?
     @ci_cd_provider_name = @app.ci_cd_provider.display
   end
 

@@ -1,4 +1,5 @@
 class ReleasesController < SignedInApplicationController
+  before_action :require_write_access!, only: %i[create destroy post_release]
   before_action :set_release, only: [:show, :timeline, :destroy]
 
   def create
