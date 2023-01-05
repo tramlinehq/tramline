@@ -21,7 +21,7 @@ class SignedInApplicationController < ApplicationController
 
   def user_not_authorized
     flash[:error] = "You are not authorized to perform this action."
-    referrer = (request.referrer == request.url) ? root_path : request.referrer
+    referrer = (request.referer == request.url) ? root_path : request.referer
     redirect_to(referrer || root_path)
   end
 
