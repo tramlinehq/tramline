@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe SignOffGroup, type: :model do
+describe SignOffGroup, type: :model do
   it "has a valid factory" do
     expect(build(:sign_off_group)).to be_valid
   end

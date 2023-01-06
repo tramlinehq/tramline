@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe "Accounts::Releases::SignOffs", type: :request do
+describe "Accounts::Releases::SignOffs", type: :request do
   let(:step) { create(:releases_step, :with_deployment) }
   let(:organization) { step.train.app.organization }
   let(:user) { create(:user, :as_developer, confirmed_at: Time.zone.now, member_organization: organization) }

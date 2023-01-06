@@ -29,7 +29,7 @@ class Releases::Step::Run < ApplicationRecord
   belongs_to :train_run, class_name: "Releases::Train::Run"
   belongs_to :commit, class_name: "Releases::Commit", foreign_key: :releases_commit_id, inverse_of: :step_runs
   has_one :build_artifact, foreign_key: :train_step_runs_id, inverse_of: :step_run, dependent: :destroy
-  has_many :deployment_runs, -> { includes(:deployment).order("deployments.deployment_number ASC") }, foreign_key: :train_step_run_id, inverse_of: :step_run
+  has_many :deployment_runs, -> { includes(:deployment).order("deployments.deployment_number ASC") }, foreign_key: :train_step_run_id, inverse_of: :step_run, dependent: :destroy
   has_many :deployments, through: :step
   has_many :passports, as: :stampable, dependent: :destroy
 

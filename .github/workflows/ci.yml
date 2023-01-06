@@ -53,5 +53,5 @@ jobs:
         run: bundle exec brakeman -q -w2
       - name: Lint Ruby files
         run: bundle exec standardrb
-      - name: Check autoloading
+      - name: Check auto-loading
         run: RAILS_ENV=test bundle exec rails zeitwerk:check
