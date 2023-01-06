@@ -5,9 +5,9 @@ class WebhookProcessors::Github::Push < ApplicationJob
   def perform(train_run_id, commit_attributes)
     @release = Releases::Train::Run.find(train_run_id)
     @commit_attributes = commit_attributes
-    @release.with_lock do
-      return unless release.committable?
+    return unless @release.committable?
 
+    @release.with_lock do
       commit_record = create_commit
       train.bump_version!(:patch) if release.step_runs.any?
       release.start!
