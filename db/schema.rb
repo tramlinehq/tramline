@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_01_09_131521) do
+ActiveRecord::Schema[7.0].define(version: 2023_01_09_134549) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -93,7 +93,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_09_131521) do
     t.datetime "updated_at", null: false
     t.decimal "initial_rollout_percentage", precision: 8, scale: 5
     t.index ["deployment_id", "train_step_run_id"], name: "index_deployment_runs_on_deployment_id_and_train_step_run_id", unique: true
-    t.index ["deployment_id"], name: "index_deployment_runs_on_deployment_id"
     t.index ["train_step_run_id"], name: "index_deployment_runs_on_train_step_run_id"
   end
 
@@ -184,7 +183,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_09_131521) do
     t.index ["organization_id"], name: "index_memberships_on_organization_id"
     t.index ["role"], name: "index_memberships_on_role"
     t.index ["user_id", "organization_id", "role"], name: "index_memberships_on_user_id_and_organization_id_and_role", unique: true
-    t.index ["user_id"], name: "index_memberships_on_user_id"
   end
 
   create_table "organizations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -259,7 +257,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_09_131521) do
     t.index ["source_id"], name: "index_releases_pull_requests_on_source_id"
     t.index ["state"], name: "index_releases_pull_requests_on_state"
     t.index ["train_run_id", "head_ref", "base_ref"], name: "idx_prs_on_train_run_id_and_head_ref_and_base_ref", unique: true
-    t.index ["train_run_id"], name: "index_releases_pull_requests_on_train_run_id"
   end
 
   create_table "sign_off_group_memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -288,7 +285,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_09_131521) do
     t.datetime "updated_at", null: false
     t.uuid "releases_commit_id", null: false
     t.index ["releases_commit_id", "train_step_id", "sign_off_group_id"], name: "idx_sign_offs_on_commit_step_and_group_id", unique: true
-    t.index ["releases_commit_id"], name: "index_sign_offs_on_releases_commit_id"
     t.index ["sign_off_group_id"], name: "index_sign_offs_on_sign_off_group_id"
     t.index ["train_step_id"], name: "index_sign_offs_on_train_step_id"
     t.index ["user_id"], name: "index_sign_offs_on_user_id"

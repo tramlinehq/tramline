@@ -7,7 +7,7 @@
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  organization_id :uuid             indexed, indexed => [user_id, role]
-#  user_id         :uuid             indexed, indexed => [organization_id, role]
+#  user_id         :uuid             indexed => [organization_id, role]
 #
 class Accounts::Membership < ApplicationRecord
   include Roleable
