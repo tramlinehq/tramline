@@ -14,6 +14,7 @@ AllCops:
   NewCops: enable
   Exclude:
     - bin/**/*
+    - bundle/**/*
     - public/**/*
     - vendor/**/*
     - tmp/**/*
