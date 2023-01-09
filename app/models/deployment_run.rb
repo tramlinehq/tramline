@@ -67,16 +67,18 @@ class DeploymentRun < ApplicationRecord
 
   def promote!
     save!
-    return unless promotable?
-    return unless deployment.integration.google_play_store_integration?
 
     release.with_lock do
+      return unless promotable?
+      return unless deployment.integration.google_play_store_integration?
+
       package_name = step.app.bundle_identifier
       release_version = step_run.train_run.release_version
       api = Installations::Google::PlayDeveloper::Api.new(package_name, deployment.access_key, release_version)
       api.promote(deployment.deployment_channel, step_run.build_number, initial_rollout_percentage)
 
       complete!
+
     rescue Installations::Errors::BuildNotUpgradable => e
       logger.error(e)
       Sentry.capture_exception(e)
