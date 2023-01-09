@@ -1,6 +1,5 @@
 class Releases::UploadArtifact < ApplicationJob
   queue_as :high
-  sidekiq_options retry: 0
 
   def perform(step_run_id, artifacts_url)
     step_run = Releases::Step::Run.find(step_run_id)

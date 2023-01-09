@@ -1,6 +1,5 @@
 class Deployments::Slack < ApplicationJob
   queue_as :high
-  sidekiq_options retry: 0
   delegate :transaction, to: DeploymentRun
   MESSAGE = "A wild new release has appeared!"
 

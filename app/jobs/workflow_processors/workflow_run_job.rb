@@ -1,5 +1,4 @@
 class WorkflowProcessors::WorkflowRunJob < ApplicationJob
-  sidekiq_options retry: 0
   queue_as :high
 
   def perform(step_run_id)

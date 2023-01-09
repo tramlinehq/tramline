@@ -1,6 +1,5 @@
 class Deployments::GooglePlayStore::Upload < ApplicationJob
   queue_as :high
-  sidekiq_options retry: 0
 
   API = Installations::Google::PlayDeveloper::Api
 
