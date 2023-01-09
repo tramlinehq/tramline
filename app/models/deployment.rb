@@ -3,19 +3,19 @@
 # Table name: deployments
 #
 #  id                     :uuid             not null, primary key
-#  integration_id         :uuid
-#  train_step_id          :uuid             not null
-#  build_artifact_channel :jsonb
-#  deployment_number      :integer          default(0), not null
+#  build_artifact_channel :jsonb            indexed => [integration_id, train_step_id]
+#  deployment_number      :integer          default(0), not null, indexed => [train_step_id]
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
+#  integration_id         :uuid             indexed => [build_artifact_channel, train_step_id], indexed
+#  train_step_id          :uuid             not null, indexed => [build_artifact_channel, integration_id], indexed => [deployment_number], indexed
 #
 class Deployment < ApplicationRecord
   has_paper_trail
 
   self.implicit_order_column = :deployment_number
 
-  has_many :deployment_runs
+  has_many :deployment_runs, dependent: :destroy
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :deployments
   belongs_to :integration, optional: true
 

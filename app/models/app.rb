@@ -3,16 +3,16 @@
 # Table name: apps
 #
 #  id                :uuid             not null, primary key
-#  organization_id   :uuid             not null
-#  name              :string           not null
-#  description       :string
-#  platform          :string           not null
-#  bundle_identifier :string           not null
 #  build_number      :bigint           not null
-#  timezone          :string           not null
+#  bundle_identifier :string           not null, indexed => [organization_id]
+#  description       :string
+#  name              :string           not null
+#  platform          :string           not null
 #  slug              :string
+#  timezone          :string           not null
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
+#  organization_id   :uuid             not null, indexed => [bundle_identifier], indexed
 #
 class App < ApplicationRecord
   has_paper_trail

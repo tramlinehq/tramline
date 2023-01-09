@@ -4,8 +4,8 @@
 #
 #  id                           :uuid             not null, primary key
 #  oauth_access_token           :string
-#  original_oauth_access_token  :string
 #  oauth_refresh_token          :string
+#  original_oauth_access_token  :string
 #  original_oauth_refresh_token :string
 #  created_at                   :datetime         not null
 #  updated_at                   :datetime         not null

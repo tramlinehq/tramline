@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Releases::Step::Run, type: :model do
+describe Releases::Step::Run, type: :model do
   it "has a valid factory" do
     expect(create(:releases_step_run)).to be_valid
   end
@@ -59,7 +59,7 @@ RSpec.describe Releases::Step::Run, type: :model do
       deployment = create(:deployment, step: step)
       step_run = create(:releases_step_run, step: step)
 
-      expect(step_run.manually_startable_deployment?(deployment)).to eq false
+      expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
     it "is false when there are no active train runs" do
@@ -68,7 +68,7 @@ RSpec.describe Releases::Step::Run, type: :model do
       deployment = create(:deployment, step: step)
       _inactive_train_run = create(:releases_train_run, train: active_train, status: "finished")
 
-      expect(step_run.manually_startable_deployment?(deployment)).to eq false
+      expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
     it "is false when it is the first deployment" do
@@ -77,7 +77,7 @@ RSpec.describe Releases::Step::Run, type: :model do
       deployment = create(:deployment, step: step)
       _active_train_run = create(:releases_train_run, train: active_train, status: "on_track")
 
-      expect(step_run.manually_startable_deployment?(deployment)).to eq false
+      expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
     it "is false when no other deployment runs have happened" do
@@ -87,7 +87,7 @@ RSpec.describe Releases::Step::Run, type: :model do
       _active_train_run = create(:releases_train_run, train: active_train, status: "on_track")
       _deployment_run = create(:deployment_run, step_run: step_run, deployment: deployment, status: "released")
 
-      expect(step_run.manually_startable_deployment?(deployment)).to eq false
+      expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
     it "is true when it is the running step's next-in-line deployment" do
@@ -100,10 +100,10 @@ RSpec.describe Releases::Step::Run, type: :model do
       _deployment_run1 = create(:deployment_run, step_run: running_step_run, deployment: deployment1, status: "released")
       deployment2 = create(:deployment, step: step)
 
-      expect(running_step_run.manually_startable_deployment?(deployment1)).to eq false
-      expect(running_step_run.manually_startable_deployment?(deployment2)).to eq true
-      expect(inactive_step_run.manually_startable_deployment?(deployment1)).to eq false
-      expect(inactive_step_run.manually_startable_deployment?(deployment2)).to eq false
+      expect(running_step_run.manually_startable_deployment?(deployment1)).to be false
+      expect(running_step_run.manually_startable_deployment?(deployment2)).to be true
+      expect(inactive_step_run.manually_startable_deployment?(deployment1)).to be false
+      expect(inactive_step_run.manually_startable_deployment?(deployment2)).to be false
     end
   end
 end

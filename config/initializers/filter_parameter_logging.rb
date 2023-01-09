@@ -13,7 +13,7 @@ module ParameterFiltering
     limit
   ].freeze
 
-  ALLOWED_REGEX = /(^|_)ids?|#{Regexp.union(ALLOWED_ATTRIBUTES)}/.freeze
+  ALLOWED_REGEX = /(^|_)ids?|#{Regexp.union(ALLOWED_ATTRIBUTES)}/
   # We have to explicitly exclude integer params because
   # the lambda can only filter string params.
   DISALLOWED_INTEGER_PARAMS = []

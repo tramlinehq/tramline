@@ -7,7 +7,7 @@ Rails.application.load_tasks
 
 class Nope < RuntimeError; end
 
-task :destructive do
+task destructive: :environment do
   puts "This task is destructive! Are you sure you want to continue? [y/N]"
   input = $stdin.gets.chomp
   raise Nope unless input.downcase == "y"

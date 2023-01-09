@@ -2,7 +2,6 @@ namespace :db do
   desc "Nuke everything except users, organizations and apps"
   task nuke: [:destructive, :environment] do
     Releases::CommitListener.delete_all
-    ReleaseSituation.delete_all
     BuildArtifact.delete_all
     DeploymentRun.delete_all
     Deployment.delete_all

@@ -1,11 +1,11 @@
 require "rails_helper"
 
-RSpec.describe "Accounts::SignOffGroups", type: :request do
+describe "Accounts::SignOffGroups", type: :request do
   let(:organization) { create(:organization) }
   let(:tram_app) { create(:app, organization:) }
-  let(:user) { create(:user, :as_developer, confirmed_at: Time.now, member_organization: organization) }
-  let(:qa_1) { create(:user, :as_developer, confirmed_at: Time.now, member_organization: organization) }
-  let(:developer_1) { create(:user, :as_developer, confirmed_at: Time.now, member_organization: organization) }
+  let(:user) { create(:user, :as_developer, confirmed_at: Time.zone.now, member_organization: organization) }
+  let(:qa_1) { create(:user, :as_developer, confirmed_at: Time.zone.now, member_organization: organization) }
+  let(:developer_1) { create(:user, :as_developer, confirmed_at: Time.zone.now, member_organization: organization) }
 
   describe "GET /edit" do
     it "returns http success" do
@@ -29,7 +29,7 @@ RSpec.describe "Accounts::SignOffGroups", type: :request do
         }
 
       expect(tram_app.sign_off_groups.count).to eq(2)
-      expect(response).to have_http_status(302)
+      expect(response).to have_http_status(:found)
     end
   end
 end

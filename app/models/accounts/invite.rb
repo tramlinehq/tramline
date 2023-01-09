@@ -3,15 +3,15 @@
 # Table name: invites
 #
 #  id              :uuid             not null, primary key
-#  organization_id :uuid             not null
-#  sender_id       :uuid             not null
-#  recipient_id    :uuid
-#  email           :string
-#  token           :string
-#  role            :string
 #  accepted_at     :datetime
+#  email           :string
+#  role            :string
+#  token           :string
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
+#  organization_id :uuid             not null, indexed
+#  recipient_id    :uuid             indexed
+#  sender_id       :uuid             not null, indexed
 #
 class Accounts::Invite < ApplicationRecord
   include Roleable

@@ -6,12 +6,10 @@ class Deployments::GooglePlayStore::Upload < ApplicationJob
 
   def perform(deployment_run_id)
     deployment_run = DeploymentRun.find(deployment_run_id)
-    deployment_run.with_lock do
-      deployment = deployment_run.deployment
-      return unless deployment.integration.google_play_store_integration?
-      step_run = deployment_run.step_run
-      upload(deployment_run, step_run, deployment.access_key)
-    end
+    deployment = deployment_run.deployment
+    return unless deployment.integration.google_play_store_integration?
+    step_run = deployment_run.step_run
+    deployment_run.with_lock { upload(deployment_run, step_run, deployment.access_key) }
   end
 
   def upload(deployment_run, step_run, key)

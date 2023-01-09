@@ -47,10 +47,7 @@ bundle/
 
 /node_modules
 
-# Brew-related stuff 
-Brewfile.lock.json 
-
-# Local rubocop overrides
-.rubocop.yml
+# Brew-related stuff
+Brewfile.lock.json
 
 /config/credentials/staging.key

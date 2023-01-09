@@ -3,13 +3,13 @@
 # Table name: deployment_runs
 #
 #  id                         :uuid             not null, primary key
-#  deployment_id              :uuid             not null
-#  train_step_run_id          :uuid             not null
+#  initial_rollout_percentage :decimal(8, 5)
 #  scheduled_at               :datetime         not null
 #  status                     :string
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
-#  initial_rollout_percentage :decimal(8, 5)
+#  deployment_id              :uuid             not null, indexed, indexed => [train_step_run_id]
+#  train_step_run_id          :uuid             not null, indexed => [deployment_id], indexed
 #
 class DeploymentRun < ApplicationRecord
   include AASM
@@ -67,11 +67,10 @@ class DeploymentRun < ApplicationRecord
 
   def promote!
     save!
+    return unless deployment.integration.google_play_store_integration?
 
     release.with_lock do
       return unless promotable?
-      return unless deployment.integration.google_play_store_integration?
-
       package_name = step.app.bundle_identifier
       release_version = step_run.train_run.release_version
       api = Installations::Google::PlayDeveloper::Api.new(package_name, deployment.access_key, release_version)

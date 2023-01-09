@@ -1,7 +1,8 @@
 class Notifiers::Slack::Renderers::Base
   include Rails.application.routes.url_helpers
 
-  ROOT_PATH = File.join(Rails.root, "app", "views", "notifiers", "slack")
+  NOTIFIERS_RELATIVE_PATH = "app/views/notifiers/slack".freeze
+  ROOT_PATH = Rails.root.join(NOTIFIERS_RELATIVE_PATH)
 
   def self.render_json(**args)
     new(**args).render_json

@@ -4,7 +4,7 @@
 # the maximum value specified for Puma. Default is set to 5 threads for minimum
 # and maximum; this matches the default thread size of Active Record.
 #
-max_threads_count = ENV.fetch("RAILS_MAX_THREADS") { 5 }
+max_threads_count = ENV.fetch("RAILS_MAX_THREADS", 5)
 min_threads_count = ENV.fetch("RAILS_MIN_THREADS") { max_threads_count }
 threads min_threads_count, max_threads_count
 
@@ -15,7 +15,7 @@ worker_timeout 3600 if ENV.fetch("RAILS_ENV", "development") == "development"
 
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
 #
-port ENV.fetch("PORT") { 3000 }
+port ENV.fetch("PORT", 3000)
 
 # Specifies the `environment` that Puma will run in.
 #
@@ -30,7 +30,7 @@ pidfile ENV.fetch("PIDFILE") { "tmp/pids/server.pid" }
 # Workers do not work on JRuby or Windows (both of which do not support
 # processes).
 #
-workers ENV.fetch("WEB_CONCURRENCY") { 4 }
+workers ENV.fetch("WEB_CONCURRENCY", 4)
 
 # Use the `preload_app!` method when specifying a `workers` number.
 # This directive tells Puma to first boot the application and load code
@@ -43,14 +43,14 @@ preload_app!
 plugin :tmp_restart
 
 # Use SSL with localhost
-if ENV['RAILS_ENV'] == 'development'
-  localhost_key = "#{File.join('config', 'certs', 'localhost-key.pem')}"
-  localhost_crt = "#{File.join('config', 'certs', 'localhost.pem')}"
+if ENV["RAILS_ENV"] == "development"
+  localhost_key = File.join("config", "certs", "localhost-key.pem").to_s
+  localhost_crt = File.join("config", "certs", "localhost.pem").to_s
 
   # To be able to use rake etc
-  ssl_bind '0.0.0.0', 3000, {
+  ssl_bind "0.0.0.0", 3000, {
     key: localhost_key,
     cert: localhost_crt,
-    verify_mode: 'none'
+    verify_mode: "none"
   }
 end
