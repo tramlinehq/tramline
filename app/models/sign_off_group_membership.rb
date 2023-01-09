@@ -3,10 +3,10 @@
 # Table name: sign_off_group_memberships
 #
 #  id                :uuid             not null, primary key
-#  sign_off_group_id :uuid             not null
-#  user_id           :uuid             not null
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
+#  sign_off_group_id :uuid             not null, indexed
+#  user_id           :uuid             not null, indexed
 #
 class SignOffGroupMembership < ApplicationRecord
   belongs_to :sign_off_group

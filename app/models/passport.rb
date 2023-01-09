@@ -3,15 +3,15 @@
 # Table name: passports
 #
 #  id             :uuid             not null, primary key
-#  stampable_type :string           not null
-#  stampable_id   :uuid             not null
-#  reason         :string
-#  kind           :string
+#  kind           :string           indexed
 #  message        :string
 #  metadata       :json
-#  user_id        :uuid
+#  reason         :string           indexed
+#  stampable_type :string           not null, indexed => [stampable_id]
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
+#  stampable_id   :uuid             not null, indexed => [stampable_type]
+#  user_id        :uuid
 #
 class Passport < ApplicationRecord
   belongs_to :stampable, polymorphic: true

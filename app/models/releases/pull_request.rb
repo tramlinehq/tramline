@@ -3,21 +3,21 @@
 # Table name: releases_pull_requests
 #
 #  id           :uuid             not null, primary key
-#  train_run_id :uuid             not null
-#  number       :bigint           not null
-#  source_id    :string           not null
-#  url          :string
-#  title        :string           not null
+#  base_ref     :string           not null, indexed => [train_run_id, head_ref]
 #  body         :text
-#  state        :string           not null
-#  phase        :string           not null
-#  source       :string           not null
-#  head_ref     :string           not null
-#  base_ref     :string           not null
-#  opened_at    :datetime         not null
 #  closed_at    :datetime
+#  head_ref     :string           not null, indexed => [train_run_id, base_ref]
+#  number       :bigint           not null, indexed
+#  opened_at    :datetime         not null
+#  phase        :string           not null, indexed
+#  source       :string           not null, indexed
+#  state        :string           not null, indexed
+#  title        :string           not null
+#  url          :string
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
+#  source_id    :string           not null, indexed
+#  train_run_id :uuid             not null, indexed => [head_ref, base_ref], indexed
 #
 class Releases::PullRequest < ApplicationRecord
   class UnsupportedPullRequestSource < StandardError; end

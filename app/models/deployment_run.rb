@@ -3,13 +3,13 @@
 # Table name: deployment_runs
 #
 #  id                         :uuid             not null, primary key
-#  deployment_id              :uuid             not null
-#  train_step_run_id          :uuid             not null
+#  initial_rollout_percentage :decimal(8, 5)
 #  scheduled_at               :datetime         not null
 #  status                     :string
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
-#  initial_rollout_percentage :decimal(8, 5)
+#  deployment_id              :uuid             not null, indexed, indexed => [train_step_run_id]
+#  train_step_run_id          :uuid             not null, indexed => [deployment_id], indexed
 #
 class DeploymentRun < ApplicationRecord
   include AASM

@@ -3,11 +3,11 @@
 # Table name: build_artifacts
 #
 #  id                 :uuid             not null, primary key
-#  train_step_runs_id :uuid             not null
-#  created_at         :datetime         not null
-#  updated_at         :datetime         not null
 #  generated_at       :datetime
 #  uploaded_at        :datetime
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  train_step_runs_id :uuid             not null, indexed
 #
 require "zip"
 
@@ -15,7 +15,6 @@ class BuildArtifact < ApplicationRecord
   include Rails.application.routes.url_helpers
 
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_runs_id, inverse_of: :build_artifact
-  has_one :release_situation
   has_one_attached :file
 
   delegate :unzip_artifact?, to: :step_run

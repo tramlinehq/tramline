@@ -3,11 +3,11 @@
 # Table name: memberships
 #
 #  id              :uuid             not null, primary key
-#  user_id         :uuid
-#  organization_id :uuid
-#  role            :string           not null
+#  role            :string           not null, indexed, indexed => [user_id, organization_id]
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
+#  organization_id :uuid             indexed, indexed => [user_id, role]
+#  user_id         :uuid             indexed, indexed => [organization_id, role]
 #
 class Accounts::Membership < ApplicationRecord
   include Roleable

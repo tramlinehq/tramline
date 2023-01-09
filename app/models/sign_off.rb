@@ -3,13 +3,13 @@
 # Table name: sign_offs
 #
 #  id                 :uuid             not null, primary key
-#  sign_off_group_id  :uuid             not null
-#  train_step_id      :uuid             not null
-#  user_id            :uuid             not null
 #  signed             :boolean          default(FALSE), not null
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
-#  releases_commit_id :uuid             not null
+#  releases_commit_id :uuid             not null, indexed => [train_step_id, sign_off_group_id], indexed
+#  sign_off_group_id  :uuid             not null, indexed => [releases_commit_id, train_step_id], indexed
+#  train_step_id      :uuid             not null, indexed => [releases_commit_id, sign_off_group_id], indexed
+#  user_id            :uuid             not null, indexed
 #
 class SignOff < ApplicationRecord
   belongs_to :sign_off_group

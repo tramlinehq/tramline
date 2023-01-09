@@ -3,19 +3,19 @@
 # Table name: trains
 #
 #  id                       :uuid             not null, primary key
-#  app_id                   :uuid             not null
-#  name                     :string           not null
+#  branching_strategy       :string
 #  description              :string           not null
-#  status                   :string           not null
-#  version_seeded_with      :string           not null
-#  version_current          :string
+#  name                     :string           not null
+#  release_backmerge_branch :string
+#  release_branch           :string
 #  slug                     :string
+#  status                   :string           not null
+#  version_current          :string
+#  version_seeded_with      :string           not null
+#  working_branch           :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
-#  working_branch           :string
-#  branching_strategy       :string
-#  release_branch           :string
-#  release_backmerge_branch :string
+#  app_id                   :uuid             not null, indexed
 #
 class Releases::Train < ApplicationRecord
   has_paper_trail

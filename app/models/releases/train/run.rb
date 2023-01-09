@@ -3,16 +3,16 @@
 # Table name: train_runs
 #
 #  id              :uuid             not null, primary key
-#  train_id        :uuid             not null
+#  branch_name     :string           not null
 #  code_name       :string           not null
-#  scheduled_at    :datetime         not null
 #  commit_sha      :string
+#  completed_at    :datetime
+#  release_version :string           not null
+#  scheduled_at    :datetime         not null
 #  status          :string           not null
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  branch_name     :string           not null
-#  release_version :string           not null
-#  completed_at    :datetime
+#  train_id        :uuid             not null, indexed
 #
 class Releases::Train::Run < ApplicationRecord
   has_paper_trail

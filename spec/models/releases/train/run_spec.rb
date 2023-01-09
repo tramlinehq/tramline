@@ -7,6 +7,7 @@ describe Releases::Train::Run, type: :model do
 
   describe "#next_step" do
     subject(:run) { create(:releases_train_run) }
+
     let(:steps) { create_list(:releases_step, 5, :with_deployment, train: run.train) }
 
     it "returns next step" do

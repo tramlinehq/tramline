@@ -3,13 +3,13 @@
 # Table name: integrations
 #
 #  id              :uuid             not null, primary key
-#  app_id          :uuid             not null
 #  category        :string           not null
+#  providable_type :string           indexed => [providable_id]
 #  status          :string
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  providable_id   :uuid
-#  providable_type :string
+#  app_id          :uuid             not null, indexed
+#  providable_id   :uuid             indexed => [providable_type]
 #
 class Integration < ApplicationRecord
   has_paper_trail

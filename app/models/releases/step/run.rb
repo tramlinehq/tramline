@@ -3,20 +3,20 @@
 # Table name: train_step_runs
 #
 #  id                         :uuid             not null, primary key
-#  train_step_id              :uuid             not null
-#  train_run_id               :uuid             not null
+#  approval_status            :string           default("pending"), not null
+#  build_number               :string
+#  build_version              :string           not null
+#  ci_link                    :string
+#  ci_ref                     :string
+#  initial_rollout_percentage :decimal(8, 5)
 #  scheduled_at               :datetime         not null
+#  sign_required              :boolean          default(TRUE)
 #  status                     :string           not null
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
-#  releases_commit_id         :uuid             not null
-#  build_version              :string           not null
-#  ci_ref                     :string
-#  ci_link                    :string
-#  build_number               :string
-#  sign_required              :boolean          default(TRUE)
-#  approval_status            :string           default("pending"), not null
-#  initial_rollout_percentage :decimal(8, 5)
+#  releases_commit_id         :uuid             not null, indexed
+#  train_run_id               :uuid             not null, indexed
+#  train_step_id              :uuid             not null, indexed
 #
 class Releases::Step::Run < ApplicationRecord
   has_paper_trail

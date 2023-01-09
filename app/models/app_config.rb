@@ -3,11 +3,11 @@
 # Table name: app_configs
 #
 #  id                   :uuid             not null, primary key
-#  app_id               :uuid             not null
 #  code_repository      :json
 #  notification_channel :json
 #  created_at           :datetime         not null
 #  updated_at           :datetime         not null
+#  app_id               :uuid             not null, indexed
 #  project_id           :jsonb
 #
 class AppConfig < ApplicationRecord

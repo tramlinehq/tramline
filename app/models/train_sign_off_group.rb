@@ -3,10 +3,10 @@
 # Table name: train_sign_off_groups
 #
 #  id                :uuid             not null, primary key
-#  train_id          :uuid             not null
-#  sign_off_group_id :uuid             not null
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
+#  sign_off_group_id :uuid             not null, indexed
+#  train_id          :uuid             not null, indexed
 #
 class TrainSignOffGroup < ApplicationRecord
   belongs_to :train, class_name: "Releases::Train"

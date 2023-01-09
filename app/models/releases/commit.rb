@@ -3,16 +3,16 @@
 # Table name: releases_commits
 #
 #  id           :uuid             not null, primary key
-#  commit_hash  :string           not null
-#  train_id     :uuid             not null
+#  author_email :string           not null
+#  author_name  :string           not null
+#  commit_hash  :string           not null, indexed => [train_run_id]
 #  message      :string
 #  timestamp    :datetime         not null
-#  author_name  :string           not null
-#  author_email :string           not null
 #  url          :string
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
-#  train_run_id :uuid             not null
+#  train_id     :uuid             not null, indexed
+#  train_run_id :uuid             not null, indexed => [commit_hash], indexed
 #
 class Releases::Commit < ApplicationRecord
   self.table_name = "releases_commits"

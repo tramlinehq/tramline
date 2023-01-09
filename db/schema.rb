@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_10_13_102431) do
+ActiveRecord::Schema[7.0].define(version: 2023_01_09_112125) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -96,6 +96,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_13_102431) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.decimal "initial_rollout_percentage", precision: 8, scale: 5
+    t.index ["deployment_id", "train_step_run_id"], name: "index_deployment_runs_on_deployment_id_and_train_step_run_id", unique: true
     t.index ["deployment_id"], name: "index_deployment_runs_on_deployment_id"
     t.index ["train_step_run_id"], name: "index_deployment_runs_on_train_step_run_id"
   end
@@ -235,6 +236,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_13_102431) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "train_run_id", null: false
+    t.index ["commit_hash", "train_run_id"], name: "index_releases_commits_on_commit_hash_and_train_run_id", unique: true
     t.index ["train_id"], name: "index_releases_commits_on_train_id"
     t.index ["train_run_id"], name: "index_releases_commits_on_train_runs_id"
   end
@@ -289,6 +291,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_13_102431) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "releases_commit_id", null: false
+    t.index ["releases_commit_id", "train_step_id", "sign_off_group_id"], name: "idx_sign_offs_on_commit_step_and_group_id", unique: true
     t.index ["releases_commit_id"], name: "index_sign_offs_on_releases_commit_id"
     t.index ["sign_off_group_id"], name: "index_sign_offs_on_sign_off_group_id"
     t.index ["train_step_id"], name: "index_sign_offs_on_train_step_id"

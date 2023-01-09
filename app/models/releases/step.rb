@@ -3,18 +3,18 @@
 # Table name: train_steps
 #
 #  id                         :uuid             not null, primary key
-#  train_id                   :uuid             not null
-#  name                       :string           not null
-#  description                :string           not null
-#  status                     :string           not null
-#  step_number                :integer          default(0), not null
-#  ci_cd_channel              :jsonb            not null
 #  build_artifact_channel     :json
+#  build_artifact_integration :string
+#  ci_cd_channel              :jsonb            not null, indexed => [train_id]
+#  description                :string           not null
+#  name                       :string           not null
+#  release_suffix             :string           not null
 #  slug                       :string
+#  status                     :string           not null
+#  step_number                :integer          default(0), not null, indexed => [train_id]
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
-#  release_suffix             :string           not null
-#  build_artifact_integration :string
+#  train_id                   :uuid             not null, indexed => [ci_cd_channel], indexed => [step_number], indexed
 #
 class Releases::Step < ApplicationRecord
   has_paper_trail
