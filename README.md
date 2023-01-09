@@ -1,4 +1,6 @@
-# site [![ci status](https://github.com/tramlinehq/site/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/tramlinehq/site/actions/workflows/ci.yml)
+<img alt="tram running through a street" src="logos/tram1.png" width="400"/>
+
+# site [![ci status](https://github.com/tramlinehq/site/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/tramlinehq/site/actions/workflows/ci.yml) [![](https://img.shields.io/discord/974284993641725962)](https://discord.com/invite/u7VwyvBV2Z)
 
 The primary orchestration and frontend monolith.
 
