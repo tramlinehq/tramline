@@ -26,7 +26,7 @@
 </div>
 
 <div class="grid grid-cols-2 gap-6 mt-8">
-  <%= render partial: "releases/live_release/stability", locals: { release: @release, release_train: @train } %>
+  <%= render partial: "releases/live_release/stability", locals: { release: @release, steps: @steps, release_train: @train } %>
   <div>
     <% if @release.pre_release_prs? %>
       <%= render partial: "releases/live_release/pre_release_prs", locals: { pre_release_prs: @pre_release_prs } %>
