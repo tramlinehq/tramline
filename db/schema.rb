@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_01_09_112125) do
+ActiveRecord::Schema[7.0].define(version: 2023_01_09_131521) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -48,7 +48,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_09_112125) do
     t.uuid "app_id", null: false
     t.json "code_repository"
     t.json "notification_channel"
-    t.string "working_branch"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "project_id"
@@ -352,12 +351,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_09_112125) do
     t.string "status", null: false
     t.integer "step_number", limit: 2, default: 0, null: false
     t.jsonb "ci_cd_channel", null: false
-    t.json "build_artifact_channel"
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "release_suffix", null: false
-    t.string "build_artifact_integration"
     t.index ["ci_cd_channel", "train_id"], name: "index_train_steps_on_ci_cd_channel_and_train_id", unique: true
     t.index ["step_number", "train_id"], name: "index_train_steps_on_step_number_and_train_id", unique: true
     t.index ["train_id"], name: "index_train_steps_on_train_id"
@@ -373,7 +370,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_09_112125) do
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "signoff_enabled", default: false
     t.string "working_branch"
     t.string "branching_strategy"
     t.string "release_branch"

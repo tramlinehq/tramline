@@ -22,10 +22,8 @@ class StepsController < SignedInApplicationController
     respond_to do |format|
       if @step.save
         format.html { redirect_to app_train_path(@app, @train), notice: "Step was successfully created." }
-        format.json { render :show, status: :created, location: @step }
       else
         format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @step.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -80,9 +78,7 @@ class StepsController < SignedInApplicationController
     params.require(:releases_step).permit(
       :name,
       :description,
-      :build_artifact_channel,
       :ci_cd_channel,
-      :build_artifact_integration,
       :release_suffix
     )
   end
