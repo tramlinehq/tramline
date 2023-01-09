@@ -2,7 +2,6 @@ class CleanupToAvoidCarefullyMigrating < ActiveRecord::Migration[7.0]
   # there are no active users at this point so this is safe
   def up
     Releases::CommitListener.delete_all
-    ReleaseSituation.delete_all
     BuildArtifact.delete_all
     Releases::Step::Run.delete_all
     SignOff.delete_all

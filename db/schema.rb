@@ -85,9 +85,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_09_112125) do
     t.index ["train_step_runs_id"], name: "index_build_artifacts_on_train_step_runs_id"
   end
 
-  create_table "data_migrations", primary_key: "version", id: :string, force: :cascade do |t|
-  end
-
   create_table "deployment_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "deployment_id", null: false
     t.uuid "train_step_run_id", null: false
@@ -238,7 +235,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_09_112125) do
     t.uuid "train_run_id", null: false
     t.index ["commit_hash", "train_run_id"], name: "index_releases_commits_on_commit_hash_and_train_run_id", unique: true
     t.index ["train_id"], name: "index_releases_commits_on_train_id"
-    t.index ["train_run_id"], name: "index_releases_commits_on_train_runs_id"
+    t.index ["train_run_id"], name: "index_releases_commits_on_train_run_id"
   end
 
   create_table "releases_pull_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
