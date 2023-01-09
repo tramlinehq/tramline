@@ -1,4 +1,4 @@
-# site ![ci status](https://github.com/tramlinehq/site/actions/workflows/ci.yml/badge.svg?branch=main)
+# site [![ci status](https://github.com/tramlinehq/site/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/tramlinehq/site/actions/workflows/ci.yml)
 
 The primary orchestration and frontend monolith.
 
