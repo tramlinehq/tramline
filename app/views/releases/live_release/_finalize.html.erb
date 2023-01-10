@@ -15,18 +15,27 @@
 
 
   <% if release.post_release? %>
-    <div class="text-center px-4 mb-6">
-      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-t from-slate-200 to-slate-100 mb-4 animate-pulse">
-        <svg class="w-5 h-6 fill-current" viewBox="0 0 20 24">
-          <path class="text-slate-500" d="M10 10.562l9-5-8.514-4.73a1 1 0 00-.972 0L1 5.562l9 5z"/>
-          <path class="text-slate-300" d="M9 12.294l-9-5v10.412a1 1 0 00.514.874L9 23.294v-11z"/>
-          <path class="text-slate-400" d="M11 12.294v11l8.486-4.714a1 1 0 00.514-.874V7.295l-9 4.999z"/>
-        </svg>
+    <% if post_release_prs&.exists? %>
+      <div class="mt-2">
+        <%= render "shared/note_box",
+                   type: :error,
+                   message: "We couldn't fully finalize this release, please fix any merge conflicts for your branches and try finalizing again." %>
       </div>
 
-      <h2 class="text-2xl text-slate-400 mb-6">Finishing up, give us a few!</h2>
-      <%= decorated_button_tag :blue, "Refresh", onclick: "window.location.reload();" %>
-    </div>
+      <div class="mt-6">
+        <div class="text-sm font-semibold text-slate-800 mb-1">Pull Requests</div>
+      </div>
+
+      <%= render partial: "releases/live_release/pull_requests", locals: { prs: post_release_prs } %>
+    <% else %>
+      <div class="text-center px-4 mb-6">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-t from-slate-200 to-slate-100 mb-4 animate-pulse">
+          <%= image_tag("cube.svg", class: "glowing cube", width: 20) %>
+        </div>
+        <h2 class="text-2xl text-slate-400 mb-6">Finishing up, give us a few!</h2>
+        <%= decorated_button_tag :blue, "Refresh", onclick: "window.location.reload();" %>
+      </div>
+    <% end %>
   <% end %>
 
   <% if release.finished? && release.completed_at.present? %>
@@ -93,11 +102,7 @@
               <div class="text-sm font-semibold text-slate-800 mb-1">Pull Requests</div>
             </div>
 
-            <div class="grid grid-cols-4 gap-5 mt-3">
-              <% post_release_prs.each do |pr| %>
-                <%= render partial: "releases/live_release/pull_request", locals: { pr: pr } %>
-              <% end %>
-            </div>
+            <%= render partial: "releases/live_release/pull_requests", locals: { prs: post_release_prs } %>
           <% end %>
         </div>
       </div>

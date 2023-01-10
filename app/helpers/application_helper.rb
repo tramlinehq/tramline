@@ -57,6 +57,15 @@ module ApplicationHelper
     }
   end
 
+  NOTE_BOX_COLORS = {
+    info: "text-amber-500",
+    error: "text-red-500"
+  }.freeze
+
+  def note_box_color(type)
+    NOTE_BOX_COLORS[type]
+  end
+
   def status_badge(status, style, pulse: false)
     classes = %w[text-xs uppercase tracking-wide inline-flex font-medium rounded-full text-center px-2 py-0.5]
     classes << "animate-pulse" if pulse

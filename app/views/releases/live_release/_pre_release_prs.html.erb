@@ -4,11 +4,7 @@
   </div>
 
   <% if pre_release_prs&.exists? %>
-    <div class="grid grid-cols-2 gap-3 mt-3">
-      <% pre_release_prs.each do |pr| %>
-        <%= render partial: "releases/live_release/pull_request", locals: { pr: pr } %>
-      <% end %>
-    </div>
+    <%= render partial: "releases/live_release/pull_requests", locals: { prs: pre_release_prs } %>
   <% else %>
     <div class="text-sm mt-4">
       None.
