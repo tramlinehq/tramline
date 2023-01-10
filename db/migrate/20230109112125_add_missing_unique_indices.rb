@@ -2,9 +2,11 @@ class AddMissingUniqueIndices < ActiveRecord::Migration[7.0]
   disable_ddl_transaction!
 
   def up
-    add_index :deployment_runs, [:deployment_id, :train_step_run_id], unique: true, algorithm: :concurrently
-    add_index :releases_commits, [:commit_hash, :train_run_id], unique: true, algorithm: :concurrently
-    add_index :sign_offs, [:releases_commit_id, :train_step_id, :sign_off_group_id], name: "idx_sign_offs_on_commit_step_and_group_id", unique: true, algorithm: :concurrently
+    safety_assured do
+      add_index :deployment_runs, [:deployment_id, :train_step_run_id], unique: true, algorithm: :concurrently
+      add_index :releases_commits, [:commit_hash, :train_run_id], unique: true, algorithm: :concurrently
+      add_index :sign_offs, [:releases_commit_id, :train_step_id, :sign_off_group_id], name: "idx_sign_offs_on_commit_step_and_group_id", unique: true, algorithm: :concurrently
+    end
   end
 
   def down
