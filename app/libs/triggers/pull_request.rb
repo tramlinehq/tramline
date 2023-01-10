@@ -24,7 +24,7 @@ class Triggers::PullRequest
   end
 
   def create_and_merge!
-    return Github::Result.new { allow_without_diff } unless create.ok?
+    return GitHub::Result.new { allow_without_diff } unless create.ok?
     upserted_pull_request = @new_pull_request.update_or_insert!(create.value!)
 
     GitHub::Result.new do
