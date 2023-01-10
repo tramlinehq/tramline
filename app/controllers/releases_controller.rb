@@ -17,6 +17,7 @@ class ReleasesController < SignedInApplicationController
 
   def show
     @train = @release.train
+    @steps = @train.steps.order(:step_number).includes(:runs, :train, deployments: [:integration])
     @app = @train.app
     @pre_release_prs = @release.pull_requests.pre_release
     @post_release_prs = @release.pull_requests.post_release
