@@ -3,6 +3,8 @@ module Installations
 
   class Bitrise::Api
     include Vaultable
+    using RefinedString
+
     attr_reader :access_token
 
     LIST_APPS_URL = "https://api.bitrise.io/v0.1/apps"
@@ -14,6 +16,20 @@ module Installations
 
     def initialize(access_token)
       @access_token = access_token
+    end
+
+    class << self
+      def artifact_url(app_slug, build_slug, artifact)
+        WORKFLOW_RUN_ARTIFACT_URL.expand(app_slug:, build_slug:, artifact_slug: artifact["slug"]).to_s
+      end
+
+      def filter_android(artifacts)
+        artifacts.select { |artifact| artifact["artifact_type"] == "android-apk" }
+      end
+
+      def find_biggest(artifacts)
+        artifacts.max_by { |artifact| artifact.dig("artifact_meta", "file_size_bytes")&.safe_float }
+      end
     end
 
     def list_apps
@@ -60,17 +76,9 @@ module Installations
         &.with_indifferent_access
     end
 
-    def find_artifact(app_slug, build_slug)
+    def artifacts(app_slug, build_slug)
       execute(:get, WORKFLOW_RUN_ARTIFACTS_URL.expand(app_slug:, build_slug:).to_s, {})
         .then { |response| response&.fetch("data", nil) }
-        .then { |data| data.find { |artifact| artifact["artifact_type"] == "android-apk" } }
-        .then { |artifact| artifact["slug"] }
-    end
-
-    def artifact_url(app_slug, build_slug)
-      WORKFLOW_RUN_ARTIFACT_URL
-        .expand(app_slug:, build_slug:, artifact_slug: find_artifact(app_slug, build_slug))
-        .to_s
     end
 
     def artifact_io_stream(artifact_url)

@@ -20,6 +20,8 @@ class GithubIntegration < ApplicationRecord
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://github.com/apps/{app_name}/installations/new{?params*}")
 
+  API = Installations::Github::Api
+
   def install_path
     unless integration.version_control? || integration.ci_cd?
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
@@ -56,7 +58,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def installation
-    Installations::Github::Api.new(installation_id)
+    API.new(installation_id)
   end
 
   def to_s
@@ -103,12 +105,13 @@ class GithubIntegration < ApplicationRecord
     raise Integrations::UnsupportedAction
   end
 
+  # we currently only select the largest artifact from github, since we have no information about the file types
+  # in the future, this could be smarter and/or a user input
   def download_stream(artifacts_url)
     installation
       .artifacts(artifacts_url)
-      .reject { |artifact| artifact["name"] == "version" }
-      .first["archive_download_url"]
-      .then { |url| installation.artifact_io_stream(url) }
+      .then { |artifacts| API.find_biggest(artifacts) }
+      .then { |artifact| installation.artifact_io_stream(artifact) }
   end
 
   def unzip_artifact?

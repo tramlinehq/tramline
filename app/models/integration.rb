@@ -22,6 +22,8 @@ class Integration < ApplicationRecord
 
   class UnsupportedAction < StandardError; end
 
+  class NoBuildArtifactAvailable < StandardError; end
+
   LIST = {
     "version_control" => %w[GithubIntegration GitlabIntegration],
     "ci_cd" => %w[GithubIntegration BitriseIntegration],
