@@ -20,6 +20,8 @@ class GithubIntegration < ApplicationRecord
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://github.com/apps/{app_name}/installations/new{?params*}")
 
+  API = Installations::Github::Api
+
   def install_path
     unless integration.version_control? || integration.ci_cd?
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
@@ -56,7 +58,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def installation
-    Installations::Github::Api.new(installation_id)
+    API.new(installation_id)
   end
 
   def to_s
@@ -108,8 +110,8 @@ class GithubIntegration < ApplicationRecord
   def download_stream(artifacts_url)
     installation
       .artifacts(artifacts_url)
-      .max_by { |artifact| artifact["size_in_bytes"] }
-      .then { |artifact| installation.artifact_io_stream(artifact["archive_download_url"]) }
+      .then { |artifacts| API.find_biggest(artifacts)}
+      .then { |artifact| installation.artifact_io_stream(artifact) }
   end
 
   def unzip_artifact?
