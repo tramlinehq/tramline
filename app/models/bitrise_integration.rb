@@ -15,6 +15,8 @@ class BitriseIntegration < ApplicationRecord
   include Displayable
   include Rails.application.routes.url_helpers
 
+  API = Installations::Bitrise::Api
+
   delegate :project, to: :app_config
 
   validates :access_token, presence: true
@@ -23,7 +25,7 @@ class BitriseIntegration < ApplicationRecord
   encrypts :access_token, deterministic: true
 
   def installation
-    Installations::Bitrise::Api.new(access_token)
+    API.new(access_token)
   end
 
   def to_s
@@ -73,10 +75,15 @@ class BitriseIntegration < ApplicationRecord
 
   # NOTE: this is bitrise specific right now
   def artifact_url(workflow_run_id)
-    installation.artifact_url(project, workflow_run_id)
+    installation
+      .artifacts(project, workflow_run_id)
+      .then { |artifacts| API.filter_android(artifacts) }
+      .then { |artifacts| API.find_biggest(artifacts) }
+      .then { |chosen_package| API.artifact_url(project, workflow_run_id, chosen_package) }
   end
 
   def download_stream(artifact_url)
+    raise Integrations::NoBuildArtifactAvailable if artifact_url.blank?
     installation.artifact_io_stream(artifact_url)
   end
 

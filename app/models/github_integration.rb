@@ -103,12 +103,13 @@ class GithubIntegration < ApplicationRecord
     raise Integrations::UnsupportedAction
   end
 
+  # we currently only select the largest artifact from github, since we have no information about the file types
+  # in the future, this could be smarter and/or a user input
   def download_stream(artifacts_url)
     installation
       .artifacts(artifacts_url)
-      .reject { |artifact| artifact["name"] == "version" }
-      .first["archive_download_url"]
-      .then { |url| installation.artifact_io_stream(url) }
+      .max_by { |artifact| artifact["size_in_bytes"] }
+      .then { |artifact| installation.artifact_io_stream(artifact["archive_download_url"]) }
   end
 
   def unzip_artifact?

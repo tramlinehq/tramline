@@ -22,6 +22,12 @@ module RefinedString
       Time.zone.parse(self)
     end
 
+    def safe_float
+      Float(self)
+    rescue ArgumentError, TypeError
+      0.0
+    end
+
     def safe_json_parse
       JSON.parse(self)
     rescue JSON::ParserError
