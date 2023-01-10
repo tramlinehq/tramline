@@ -1,4 +1,4 @@
-module SiteHTTP
+module SiteHttp
   class Response
     class InvalidStatus < ArgumentError; end
 

@@ -1,6 +1,6 @@
 class Triggers::Release
   include Memery
-  include SiteHTTP
+  include SiteHttp
 
   RELEASE_HANDLERS = {
     "almost_trunk" => AlmostTrunk,
