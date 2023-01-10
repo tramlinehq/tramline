@@ -78,8 +78,6 @@ class Releases::Train < ApplicationRecord
   delegate :notification_provider, to: :integrations
   delegate :unzip_artifact?, to: :ci_cd_provider
 
-  self.ignored_columns = [:signoff_enabled]
-
   def self.running?
     running.any?
   end

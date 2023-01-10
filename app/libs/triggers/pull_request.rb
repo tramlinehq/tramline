@@ -1,5 +1,10 @@
 class Triggers::PullRequest
-  Result = Struct.new(:ok?, :error, :value, keyword_init: true)
+  include Memery
+
+  class CreateError < StandardError; end
+
+  class MergeError < StandardError; end
+
   delegate :transaction, to: ::Releases::PullRequest
 
   def self.create_and_merge!(**args)
@@ -19,42 +24,43 @@ class Triggers::PullRequest
   end
 
   def create_and_merge!
-    return Result.new(ok?: allow_without_diff) unless create.ok?
-    upserted_pull_request = @new_pull_request.update_or_insert!(create.value)
+    return GitHub::Result.new { allow_without_diff } unless create.ok?
+    upserted_pull_request = @new_pull_request.update_or_insert!(create.value!)
 
-    transaction do
-      upserted_pull_request.close!
-
-      if merge.ok?
-        Result.new(ok?: true)
-      else
-        return Result.new(ok?: false, error: "Failed to create / merge the Pull Request")
+    GitHub::Result.new do
+      transaction do
+        upserted_pull_request.close!
+        merge.value!
       end
     end
   end
 
   private
 
-  attr_reader :release, :to_branch_ref, :from_branch_ref, :title, :description, :allow_without_diff
+  attr_reader :release, :to_branch_ref, :from_branch_ref, :title, :description
 
-  def create
-    @create_result ||=
-      begin
-        Result.new(ok?: true, value: repo_integration.create_pr!(repo_name, to_branch_ref, from_branch_ref, title, description))
-      rescue Installations::Errors::PullRequestAlreadyExists
-        Result.new(ok?: true, value: repo_integration.find_pr(repo_name, to_branch_ref, from_branch_ref))
-      rescue Installations::Errors::PullRequestWithoutCommits
-        release.event_stamp!(reason: :pull_request_not_required, kind: :notice, data: {to: to_branch_ref, from: from_branch_ref})
-        Result.new(ok?: false, error: "Could not create a Pull Request")
-      end
+  memoize def create
+    GitHub::Result.new do
+      repo_integration.create_pr!(repo_name, to_branch_ref, from_branch_ref, title, description)
+    rescue Installations::Errors::PullRequestAlreadyExists
+      repo_integration.find_pr(repo_name, to_branch_ref, from_branch_ref)
+    rescue Installations::Errors::PullRequestWithoutCommits
+      release.event_stamp!(reason: :pull_request_not_required, kind: :notice, data: {to: to_branch_ref, from: from_branch_ref})
+      raise CreateError, "Could not create a Pull Request"
+    end
   end
 
-  def merge
-    repo_integration.merge_pr!(repo_name, create.value[:number])
-    Result.new(ok?: true)
-  rescue Installations::Errors::PullRequestNotMergeable
-    release.event_stamp!(reason: :pull_request_not_mergeable, kind: :notice, data: {})
-    Result.new(ok?: false, error: "Failed to merge the Pull Request")
+  memoize def merge
+    GitHub::Result.new do
+      repo_integration.merge_pr!(repo_name, create.value![:number])
+    rescue Installations::Errors::PullRequestNotMergeable
+      release.event_stamp!(reason: :pull_request_not_mergeable, kind: :notice, data: {})
+      raise MergeError, "Failed to merge the Pull Request"
+    end
+  end
+
+  def allow_without_diff
+    @allow_without_diff ? true : raise(CreateError, "Could not create a Pull Request without a diff")
   end
 
   def repo_name

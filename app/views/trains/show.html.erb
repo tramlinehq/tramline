@@ -77,7 +77,7 @@
 <% if @train.steps.size > 0 %>
   <div class="flex flex-col">
     <ol class="relative border-l-4 border-gray-300 ml-3 mt-2">
-      <% @train.steps.each do |step| %>
+      <% @train.steps.includes(deployments: [:integration]).each do |step| %>
         <li class="mb-10 ml-6 last:mb-0">
           <div class="flex">
             <span class="flex absolute -left-5 justify-center items-center w-9 h-6 bg-slate-200 rounded-full ring-8 ring-white"></span>

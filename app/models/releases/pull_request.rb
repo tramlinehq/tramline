@@ -17,7 +17,7 @@
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
 #  source_id    :string           not null, indexed
-#  train_run_id :uuid             not null, indexed => [head_ref, base_ref], indexed
+#  train_run_id :uuid             not null, indexed => [head_ref, base_ref]
 #
 class Releases::PullRequest < ApplicationRecord
   class UnsupportedPullRequestSource < StandardError; end

@@ -8,7 +8,7 @@
 #  status                     :string
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
-#  deployment_id              :uuid             not null, indexed, indexed => [train_step_run_id]
+#  deployment_id              :uuid             not null, indexed => [train_step_run_id]
 #  train_step_run_id          :uuid             not null, indexed => [deployment_id], indexed
 #
 class DeploymentRun < ApplicationRecord

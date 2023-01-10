@@ -1,5 +1,5 @@
 class WebhookHandlers::Github::Push
-  Response = Struct.new(:status, :body)
+  include SiteHttp
   attr_reader :payload, :train
 
   def self.process(train, payload)

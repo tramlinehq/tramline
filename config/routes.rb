@@ -48,13 +48,13 @@ Rails.application.routes.draw do
     resource :app_config, only: %i[edit update], path: :config
     resource :sign_off_groups, only: %i[edit update]
 
-    resources :trains do
+    resources :trains, only: %i[new create edit update show destroy] do
       member do
         patch :deactivate
       end
 
       resources :steps, only: %i[new create edit update], shallow: true do
-        resource :sign_off do
+        resource :sign_off, only: [] do
           collection do
             post :approve
             post :reject
@@ -64,17 +64,17 @@ Rails.application.routes.draw do
       end
 
       resources :releases, only: %i[show create destroy], shallow: true do
-        resources :step_runs, shallow: false, module: "releases" do
+        resources :step_runs, only: [], shallow: false, module: "releases" do
           member do
             post :start
           end
 
-          resources :deployments, only: [:start] do
+          resources :deployments, only: [] do
             member do
               post :start
             end
 
-            resources :deployment_runs, shallow: true do
+            resources :deployment_runs, only: [], shallow: true do
               member do
                 patch :promote
               end

@@ -41,4 +41,5 @@ module Site
   end
 
   require "site_extensions"
+  require "site_http"
 end

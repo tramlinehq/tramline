@@ -3,7 +3,7 @@ class TrainsController < SignedInApplicationController
   using RefinedInteger
 
   before_action :require_write_access!, only: %i[new create deactivate edit update destroy]
-  before_action :set_app, only: %i[new create show index edit update destroy deactivate]
+  before_action :set_app, only: %i[new create show edit update destroy deactivate]
   around_action :set_time_zone
   before_action :set_train, only: %i[show edit update destroy deactivate]
   before_action :validate_integration_status, only: %i[new create]
@@ -65,9 +65,6 @@ class TrainsController < SignedInApplicationController
   end
 
   def show
-  end
-
-  def index
   end
 
   def edit

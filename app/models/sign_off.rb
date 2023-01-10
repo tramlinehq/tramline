@@ -6,7 +6,7 @@
 #  signed             :boolean          default(FALSE), not null
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
-#  releases_commit_id :uuid             not null, indexed => [train_step_id, sign_off_group_id], indexed
+#  releases_commit_id :uuid             not null, indexed => [train_step_id, sign_off_group_id]
 #  sign_off_group_id  :uuid             not null, indexed => [releases_commit_id, train_step_id], indexed
 #  train_step_id      :uuid             not null, indexed => [releases_commit_id, sign_off_group_id], indexed
 #  user_id            :uuid             not null, indexed

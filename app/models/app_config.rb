@@ -13,10 +13,9 @@
 class AppConfig < ApplicationRecord
   has_paper_trail
 
-  belongs_to :app
-  self.ignored_columns = [:working_branch]
-
   MINIMUM_REQUIRED_CONFIG = %i[code_repository]
+
+  belongs_to :app
 
   def ready?
     MINIMUM_REQUIRED_CONFIG.all? { |config| public_send(config).present? }

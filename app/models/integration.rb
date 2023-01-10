@@ -64,17 +64,17 @@ class Integration < ApplicationRecord
 
   class << self
     def by_categories_for(app)
+      existing_integrations = app.integrations.includes(:providable)
+
       LIST.each_with_object({}) do |(category, providers), combination|
-        existing_integration = app.integrations.where(category: category)
+        existing_integration = existing_integrations.select { |integration| integration.category.eql?(category) }
         combination[category] ||= []
 
-        if existing_integration.exists?
-          existing_integration.each do |integration|
-            combination[category] << integration
-          end
-
-          next if MULTI_INTEGRATION_CATEGORIES.exclude?(category)
+        existing_integration.each do |integration|
+          combination[category] << integration
         end
+
+        next if MULTI_INTEGRATION_CATEGORIES.exclude?(category) && combination[category].present?
 
         (providers - existing_integration.pluck(:providable_type)).each do |provider|
           next if provider.eql?("GitlabIntegration") && !Flipper.enabled?(:gitlab_integration)

@@ -33,7 +33,6 @@ class AppConfigsController < SignedInApplicationController
       .require(:app_config)
       .permit(
         :code_repository,
-        :working_branch,
         :notification_channel,
         :project_id
       )

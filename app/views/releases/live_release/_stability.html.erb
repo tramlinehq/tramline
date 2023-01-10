@@ -19,7 +19,7 @@
 
   <div class="flex flex-col mt-3">
     <ol class="relative border-l-4 border-gray-300 ml-3 mt-2">
-      <% release_train.steps.order(:step_number).includes(:train, :runs).each do |step| %>
+      <% steps.each do |step| %>
         <% step_run = release.last_run_for(step) %>
 
         <li class="mb-10 ml-6 last:mb-0">

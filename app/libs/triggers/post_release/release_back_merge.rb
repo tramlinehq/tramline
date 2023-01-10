@@ -18,18 +18,17 @@ class Triggers::PostRelease
 
     private
 
-    Result = Struct.new(:ok?, :error, :value, keyword_init: true)
     attr_reader :train, :release
 
     def create_and_merge_prs
-      (Triggers::PullRequest.create_and_merge!(
+      Triggers::PullRequest.create_and_merge!(
         release: release,
         new_pull_request: release.pull_requests.post_release.open.build,
         to_branch_ref: release_backmerge_branch,
         from_branch_ref: fully_qualified_branch_name_hack,
         title: release_pr_title,
         description: pr_description
-      ).ok? &&
+      ).then do |_|
         Triggers::PullRequest.create_and_merge!(
           release: release,
           new_pull_request: release.pull_requests.post_release.open.build,
@@ -37,19 +36,18 @@ class Triggers::PostRelease
           from_branch_ref: fully_qualified_release_backmerge_branch_hack,
           title: backmerge_pr_title,
           description: pr_description
-        ).ok?) ? Result.new(ok?: true) : Result.new(ok?: false)
+        )
+      end
     end
 
     def create_tag
-      begin
+      GitHub::Result.new do
         train.create_tag!(release.branch_name)
       rescue Installations::Errors::TagReferenceAlreadyExists
         release.event_stamp!(reason: :tag_reference_already_exists, kind: :notice, data: {})
       rescue Installations::Errors::TaggedReleaseAlreadyExists
         release.event_stamp!(reason: :tagged_release_already_exists, kind: :notice, data: {tag: release.tag_name})
       end
-
-      Result.new(ok?: true)
     end
 
     def release_pr_title

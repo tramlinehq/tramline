@@ -1,6 +1,5 @@
 class PassportJob < ApplicationJob
   queue_as :high
-  sidekiq_options retry: 0
 
   def perform(stampable_id, stampable_type, reason:, kind:, message:, metadata:)
     stampable =
