@@ -19,8 +19,7 @@ class ReleasesController < SignedInApplicationController
     @train = @release.train
     @steps = @train.steps.order(:step_number).includes(:runs, :train, deployments: [:integration])
     @app = @train.app
-    @pre_release_prs = @release.pull_requests.pre_release
-    @post_release_prs = @release.pull_requests.post_release
+    set_pull_requests
   end
 
   def timeline
@@ -34,12 +33,9 @@ class ReleasesController < SignedInApplicationController
     @train = @app.trains.friendly.find(params[:train_id])
     @steps = @train.steps.order(:step_number).includes(:runs, :train, deployments: [:integration])
     @release = @train.active_run
-
-    if @release
-      render :show
-    else
-      redirect_back fallback_location: root_path, notice: "No release in progress." unless @release
-    end
+    redirect_back(fallback_location: train_path, notice: "No release in progress.") and return unless @release
+    set_pull_requests
+    render :show
   end
 
   def destroy
@@ -61,10 +57,23 @@ class ReleasesController < SignedInApplicationController
   private
 
   def set_release
-    @release = Releases::Train::Run.joins(train: :app).where(apps: {organization: current_organization}).find(params[:id])
+    @release =
+      Releases::Train::Run
+        .joins(train: :app)
+        .where(apps: {organization: current_organization})
+        .find(params[:id])
+  end
+
+  def set_pull_requests
+    @pre_release_prs = @release.pull_requests.pre_release
+    @post_release_prs = @release.pull_requests.post_release
   end
 
   def live_release_path
     live_release_app_train_releases_path(@app, @train)
+  end
+
+  def train_path
+    app_train_path(@app, @train)
   end
 end

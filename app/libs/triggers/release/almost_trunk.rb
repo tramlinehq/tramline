@@ -13,21 +13,21 @@ class Triggers::Release
 
     def call
       create_branches
-      true
     end
 
     private
-
-    Result = Struct.new(:ok?, :error, :value, keyword_init: true)
 
     attr_reader :release, :release_branch
     delegate :train, to: :release
     delegate :fully_qualified_working_branch_hack, :working_branch, to: :train
 
+    # TODO: this should be handled gracefully rather than catching a Github-specific error
     def create_branches
-      train.create_branch!(working_branch, release_branch)
-    rescue Octokit::UnprocessableEntity
-      nil
+      GitHub::Result.new do
+        train.create_branch!(working_branch, release_branch)
+      rescue Octokit::UnprocessableEntity
+        nil
+      end
     end
   end
 end

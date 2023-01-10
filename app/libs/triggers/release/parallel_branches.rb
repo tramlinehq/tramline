@@ -12,7 +12,7 @@ class Triggers::Release
     end
 
     def call
-      create_and_merge_pr.ok?
+      create_and_merge_pr
     end
 
     private

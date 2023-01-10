@@ -30,7 +30,7 @@ class Triggers::Release
       create_webhooks
       create_webhook_listeners
 
-      if RELEASE_HANDLERS[branching_strategy].call(release, release_branch)
+      if RELEASE_HANDLERS[branching_strategy].call(release, release_branch).ok?
         Response.new(true)
       else
         return Response.new(false, "Could not start a release because kickoff PRs could not be merged!")
