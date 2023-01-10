@@ -8,7 +8,7 @@ class ReleasesController < SignedInApplicationController
 
     response = Triggers::Release.call(@train)
 
-    if response.success
+    if response.success?
       redirect_to live_release_path, notice: "A new release has started successfully."
     else
       redirect_back fallback_location: root_path, flash: {error: response.body}

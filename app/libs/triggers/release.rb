@@ -1,7 +1,6 @@
 class Triggers::Release
   include Memery
-
-  Response = Struct.new(:success, :body)
+  include SiteHTTP
 
   RELEASE_HANDLERS = {
     "almost_trunk" => AlmostTrunk,
@@ -20,10 +19,10 @@ class Triggers::Release
 
   # FIXME: should we take a lock around this train? what is someone double triggers the run?
   def call
-    return Response.new(false, "Cannot start a train that is inactive!") if train.inactive?
-    return Response.new(false, "Cannot start a train that has no steps. Please add at least one step.") if train.steps.empty?
-    return Response.new(false, "A release is already in progress!") if train.active_run.present?
-    return Response.new(false, "Cannot start a new release before wrapping up existing releases!") if train.runs.pending_release?
+    return Response.new(:unprocessable_entity, "Cannot start a train that is inactive!") if train.inactive?
+    return Response.new(:unprocessable_entity, "Cannot start a train that has no steps. Please add at least one step.") if train.steps.empty?
+    return Response.new(:unprocessable_entity, "A release is already in progress!") if train.active_run.present?
+    return Response.new(:unprocessable_entity, "Cannot start a new release before wrapping up existing releases!") if train.runs.pending_release?
 
     transaction do
       create_release
@@ -31,9 +30,9 @@ class Triggers::Release
       create_webhook_listeners
 
       if RELEASE_HANDLERS[branching_strategy].call(release, release_branch).ok?
-        Response.new(true)
+        Response.new(:ok)
       else
-        return Response.new(false, "Could not start a release because kickoff PRs could not be merged!")
+        return Response.new(:unprocessable_entity, "Could not start a release because kickoff PRs could not be merged!")
       end
     end
   end
