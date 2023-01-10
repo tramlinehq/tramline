@@ -110,7 +110,7 @@ class GithubIntegration < ApplicationRecord
   def download_stream(artifacts_url)
     installation
       .artifacts(artifacts_url)
-      .then { |artifacts| API.find_biggest(artifacts)}
+      .then { |artifacts| API.find_biggest(artifacts) }
       .then { |artifact| installation.artifact_io_stream(artifact) }
   end
 
