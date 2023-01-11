@@ -19,6 +19,7 @@ describe Deployments::GooglePlayStore::Upload, type: :job do
       described_class.new.perform(store_deployment_run.id)
 
       expect(Installations::Google::PlayDeveloper::Api).to have_received(:upload).once
+      expect(store_deployment_run.reload.uploaded?).to be(true)
     end
 
     it "marks deployment runs as uploaded if there are allowed exceptions" do

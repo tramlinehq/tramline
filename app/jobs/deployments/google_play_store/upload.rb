@@ -24,6 +24,7 @@ class Deployments::GooglePlayStore::Upload < ApplicationJob
     @deployment_run.with_lock do
       @step_run.build_artifact.file_for_playstore_upload do |file|
         API.upload(package_name, access_key, release_version, file)
+        @deployment_run.upload!
       rescue *ALLOWED_EXCEPTIONS.keys => e
         proceed!(e)
       rescue *DISALLOWED_EXCEPTIONS.keys => e
