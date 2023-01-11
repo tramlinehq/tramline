@@ -3,46 +3,66 @@ class Deployments::GooglePlayStore::Upload < ApplicationJob
 
   API = Installations::Google::PlayDeveloper::Api
 
+  ALLOWED_EXCEPTIONS = {
+    Installations::Errors::BuildExistsInBuildChannel => :duplicate_build,
+    Installations::Errors::DuplicatedBuildUploadAttempt => :duplicate_build
+  }
+
+  DISALLOWED_EXCEPTIONS = {
+    Installations::Errors::BundleIdentifierNotFound => :bundle_identifier_not_found,
+    Installations::Errors::GooglePlayDeveloperAPIInvalidPackage => :invalid_package,
+    Installations::Errors::GooglePlayDeveloperAPIAPKsAreNotAllowed => :apks_are_not_allowed
+  }
+
   def perform(deployment_run_id)
-    deployment_run = DeploymentRun.find(deployment_run_id)
-    deployment = deployment_run.deployment
-    return unless deployment.integration.google_play_store_integration?
-    step_run = deployment_run.step_run
-    deployment_run.with_lock { upload(deployment_run, step_run, deployment.access_key) }
+    @deployment_run = DeploymentRun.find(deployment_run_id)
+    @step_run = @deployment_run.step_run
+    @deployment = @deployment_run.deployment
+
+    return unless @deployment.integration.google_play_store_integration?
+
+    @deployment_run.with_lock do
+      @step_run.build_artifact.file_for_playstore_upload do |file|
+        API.upload(package_name, access_key, release_version, file)
+      rescue *ALLOWED_EXCEPTIONS.keys => e
+        proceed!(e)
+      rescue *DISALLOWED_EXCEPTIONS.keys => e
+        halt!(e)
+      end
+    end
   end
 
-  # FIXME: this is a hack because it's possible to send to play store in parallel
-  # this should be fixed as a design, maybe call deployments sequentially
-  def upload(deployment_run, step_run, key)
-    step = step_run.step
-    package_name = step.app.bundle_identifier
-    release_version = step_run.train_run.release_version
+  private
 
-    # TODO: Clean this crap up
-    step_run.build_artifact.file_for_playstore_upload do |file|
-      API.upload(package_name, key, release_version, file)
-    rescue Installations::Errors::BuildExistsInBuildChannel, Installations::Errors::DuplicatedBuildUploadAttempt => e
-      deployment_run.event_stamp!(reason: :duplicate_build, kind: :error)
-      log(e)
-    rescue Installations::Errors::BundleIdentifierNotFound => e
-      log(e)
-      deployment_run.event_stamp!(reason: :bundle_identifier_not_found, kind: :error)
-      return deployment_run.upload_fail!
-    rescue Installations::Errors::GooglePlayDeveloperAPIInvalidPackage => e
-      log(e)
-      deployment_run.event_stamp!(reason: :invalid_package, kind: :error)
-      return deployment_run.upload_fail!
-    rescue Installations::Errors::GooglePlayDeveloperAPIAPKsAreNotAllowed => e
-      log(e)
-      deployment_run.event_stamp!(reason: :apks_are_not_allowed, kind: :error)
-      return deployment_run.upload_fail!
-    end
+  def proceed!(exception)
+    log_and_stamp(exception, ALLOWED_EXCEPTIONS[exception.class])
+    @deployment_run.upload!
+  end
 
-    deployment_run.upload!
+  def halt!(exception)
+    log_and_stamp(exception, DISALLOWED_EXCEPTIONS[exception.class])
+    @deployment_run.upload_fail!
+  end
+
+  def log_and_stamp(exception, reason)
+    log(exception)
+    @deployment_run.event_stamp!(reason:, kind: :error)
   end
 
   def log(e)
     logger.error(e)
     Sentry.capture_exception(e)
+  end
+
+  def access_key
+    @deployment.access_key
+  end
+
+  def package_name
+    @step_run.step.app.bundle_identifier
+  end
+
+  def release_version
+    @step_run.train_run.release_version
   end
 end

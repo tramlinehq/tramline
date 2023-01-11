@@ -22,7 +22,7 @@ class DeploymentRun < ApplicationRecord
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   delegate :step, :release, :commit, to: :step_run
-  delegate :deployment_number, :integration, :external?, :google_play_store_integration?, :slack_integration?, to: :deployment
+  delegate :deployment_number, :integration, :external?, :google_play_store_integration?, :slack_integration?, :store?, to: :deployment
 
   STAMPABLE_REASONS = [
     "created",
@@ -53,7 +53,8 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :upload do
-      transitions from: [:created, :started], to: :uploaded
+      after { wrap_up_uploads! }
+      transitions from: :started, to: :uploaded
     end
 
     event :upload_fail do
@@ -131,25 +132,28 @@ class DeploymentRun < ApplicationRecord
     uploaded? || failed? || released?
   end
 
+  # FIXME: Is the below fixme still valid?
   # FIXME: should we take a lock around this SR? what is someone double triggers the run?
   def start_upload!
     return complete! if external?
 
-    other_deployment_runs = step_run.similar_deployment_runs_for(self)
-    return upload! if other_deployment_runs.any?(&:has_uploaded?)
-    return if other_deployment_runs.any?(&:started?)
+    if store?
+      other_deployment_runs = step_run.similar_deployment_runs_for(self)
+      return upload! if other_deployment_runs.any?(&:has_uploaded?)
+      return if other_deployment_runs.any?(&:started?)
+    end
 
     return Deployments::GooglePlayStore::Upload.perform_later(id) if google_play_store_integration?
     Deployments::Slack.perform_later(id) if slack_integration?
   end
 
-  # def already_uploaded?
-  #   step_run
-  #     .similar_deployment_runs_for(self)
-  #     .then
-  #     .detect { |runs| runs.any?(&:has_uploaded?) }
-  #     .then(&:upload!)
-  # end
+  def wrap_up_uploads!
+    return unless store?
+    step_run
+      .similar_deployment_runs_for(self)
+      .select(&:started?)
+      .each { |run| run.upload! }
+  end
 
   def previous_rollout
     initial_run.initial_rollout_percentage

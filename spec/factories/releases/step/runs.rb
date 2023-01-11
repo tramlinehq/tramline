@@ -11,5 +11,11 @@ FactoryBot.define do
     trait :deployment_started do
       status { "deployment_started" }
     end
+
+    trait :with_build_artifact do
+      after(:create) do |step_run, _|
+        create(:build_artifact, step_run: step_run)
+      end
+    end
   end
 end
