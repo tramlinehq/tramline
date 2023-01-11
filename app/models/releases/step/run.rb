@@ -188,13 +188,6 @@ class Releases::Step::Run < ApplicationRecord
     last_deployment_run.deployment.next
   end
 
-  def similar_deployment_runs_for(deployment_run)
-    deployment_runs
-      .where.not(id: deployment_run)
-      .matching_runs_for(deployment_run.integration)
-      .has_begun
-  end
-
   def reset_approval!
     return approval_approved! unless sign_required?
     return approval_approved! if is_approved?

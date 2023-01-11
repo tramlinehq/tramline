@@ -15,12 +15,30 @@ class Triggers::Deployment
     step_run
       .deployment_runs
       .create!(deployment:, scheduled_at: starting_time)
-      .dispatch_job!
+      .then { |deployment_run| dispatch_job!(deployment_run) }
   end
 
   private
 
+  delegate :external?, :slack_integration?, :google_play_store_integration?, to: :deployment
   attr_reader :deployment, :step_run, :starting_time
+
+  # FIXME: should we take a lock around this SR? what is someone double triggers the run?
+  def dispatch_job!(deployment_run)
+    if external?
+      Rails.logger.info("External deployment, doing nothing...")
+      deployment_run.complete!
+      return
+    end
+
+    deployment_run.dispatch_job!
+
+    if google_play_store_integration?
+      Deployments::GooglePlayStore::Upload.perform_later(deployment_run.id)
+    elsif slack_integration?
+      Deployments::Slack.perform_later(deployment_run.id)
+    end
+  end
 
   def first_deployment
     step_run.step.deployments.find_by(deployment_number: 1)

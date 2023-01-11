@@ -5,63 +5,6 @@ describe Releases::Step::Run, type: :model do
     expect(create(:releases_step_run)).to be_valid
   end
 
-  describe "#similar_deployment_runs_for" do
-    let(:active_train) { create(:releases_train, :active) }
-    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: active_train) }
-    let(:step_run) { create(:releases_step_run, step: steps.first) }
-
-    it "ignores itself" do
-      integration = create(:integration)
-      deployment1 = create(:deployment, step: steps.first, integration: integration)
-      deployment2 = create(:deployment, step: steps.first, integration: integration)
-      deployment3 = create(:deployment, step: steps.first, integration: integration)
-      deployment_run1 = create(:deployment_run, step_run: step_run, deployment: deployment1)
-      deployment_run2 = create(:deployment_run, :started, step_run: step_run, deployment: deployment2)
-      deployment_run3 = create(:deployment_run, :started, step_run: step_run, deployment: deployment3)
-
-      expect(step_run.similar_deployment_runs_for(deployment_run1)).to contain_exactly(deployment_run3, deployment_run2)
-    end
-
-    it "only picks deployment runs with the same integration" do
-      integration1 = create(:integration)
-      integration2 = create(:integration)
-      deployment1 = create(:deployment, step: steps.first, integration: integration1)
-      deployment2 = create(:deployment, step: steps.first, integration: integration2)
-      deployment3 = create(:deployment, step: steps.first, integration: integration1)
-      deployment_run1 = create(:deployment_run, step_run: step_run, deployment: deployment1)
-      _deployment_run2 = create(:deployment_run, :started, step_run: step_run, deployment: deployment2)
-      deployment_run3 = create(:deployment_run, :started, step_run: step_run, deployment: deployment3)
-
-      expect(step_run.similar_deployment_runs_for(deployment_run1)).to contain_exactly(deployment_run3)
-    end
-
-    it "only picks deployment runs which have begun" do
-      integration = create(:integration)
-      deployment1 = create(:deployment, step: steps.first, integration: integration)
-      deployment2 = create(:deployment, step: steps.first, integration: integration)
-      deployment3 = create(:deployment, step: steps.first, integration: integration)
-      deployment_run1 = create(:deployment_run, step_run: step_run, deployment: deployment1)
-      _deployment_run2 = create(:deployment_run, step_run: step_run, deployment: deployment2)
-      deployment_run3 = create(:deployment_run, :started, step_run: step_run, deployment: deployment3)
-
-      expect(step_run.similar_deployment_runs_for(deployment_run1)).to contain_exactly(deployment_run3)
-    end
-
-    it "only picks deployment runs from the correct step run" do
-      second_step = steps.last
-      second_step_run = create(:releases_step_run, step: second_step)
-      integration = create(:integration)
-      deployment1 = create(:deployment, step: steps.first, integration: integration)
-      deployment2 = create(:deployment, step: steps.first, integration: integration)
-      deployment3 = create(:deployment, step: second_step, integration: integration)
-      deployment_run1 = create(:deployment_run, step_run: step_run, deployment: deployment1)
-      deployment_run2 = create(:deployment_run, :started, step_run: step_run, deployment: deployment2)
-      _deployment_run3 = create(:deployment_run, :started, step_run: second_step_run, deployment: deployment3)
-
-      expect(step_run.similar_deployment_runs_for(deployment_run1)).to contain_exactly(deployment_run2)
-    end
-  end
-
   describe "#previous_run" do
     let(:active_train) { create(:releases_train, :active) }
     let(:steps) { create_list(:releases_step, 2, :with_deployment, train: active_train) }

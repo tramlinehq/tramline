@@ -26,7 +26,7 @@ class Deployments::GooglePlayStore::Upload < ApplicationJob
     rescue Installations::Errors::BundleIdentifierNotFound => e
       log(e)
       deployment_run.event_stamp!(reason: :bundle_identifier_not_found, kind: :error)
-      return deployment_run.upload_fail!
+      return deployment_run.dispatch_fail!
     end
 
     deployment_run.upload!
