@@ -22,13 +22,14 @@ class DeploymentRun < ApplicationRecord
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   delegate :step, :release, :commit, to: :step_run
-  delegate :deployment_number, to: :deployment
+  delegate :deployment_number, :integration, :external?, :google_play_store_integration?, :slack_integration?, to: :deployment
 
   STAMPABLE_REASONS = ["created", "status_changed", "duplicate_build", "bundle_identifier_not_found"]
   STATES = {
     created: "created",
     started: "started",
     uploaded: "uploaded",
+    upload_failed: "upload_failed",
     released: "released",
     failed: "failed"
   }
@@ -39,17 +40,22 @@ class DeploymentRun < ApplicationRecord
     state :created, initial: true, before_enter: -> { step_run.startable_deployment?(deployment) }
     state(*STATES.keys)
 
-    event :dispatch_job do
+    event :dispatch_job, after_commit: :start_upload! do
       transitions from: :created, to: :started
     end
 
     event :upload do
-      transitions from: :started, to: :uploaded
+      transitions from: [:created, :started], to: :uploaded
+    end
+
+    event :upload_fail do
+      after { step_run.fail_deploy! }
+      transitions from: :started, to: :upload_failed
     end
 
     event :dispatch_fail do
       after { step_run.fail_deploy! }
-      transitions from: [:started, :uploaded], to: :failed
+      transitions from: :uploaded, to: :failed
     end
 
     event :complete do
@@ -57,6 +63,9 @@ class DeploymentRun < ApplicationRecord
       transitions from: [:created, :uploaded, :started], to: :released
     end
   end
+
+  scope :matching_runs_for, ->(integration) { includes(:deployment).where(deployments: {integration: integration}) }
+  scope :has_begun, -> { where.not(status: :created) }
 
   after_commit -> {
     create_stamp!(data: {num: deployment_number, step_name: step.name, sha_link: commit.url, sha: commit.short_sha})
@@ -109,6 +118,30 @@ class DeploymentRun < ApplicationRecord
       .where.not(id:)
       .first
   end
+
+  def has_uploaded?
+    uploaded? || failed? || released?
+  end
+
+  # FIXME: should we take a lock around this SR? what is someone double triggers the run?
+  def start_upload!
+    return complete! if external?
+
+    other_deployment_runs = step_run.similar_deployment_runs_for(self)
+    return upload! if other_deployment_runs.any?(&:has_uploaded?)
+    return if other_deployment_runs.any?(&:started?)
+
+    return Deployments::GooglePlayStore::Upload.perform_later(id) if google_play_store_integration?
+    Deployments::Slack.perform_later(id) if slack_integration?
+  end
+
+  # def already_uploaded?
+  #   step_run
+  #     .similar_deployment_runs_for(self)
+  #     .then
+  #     .detect { |runs| runs.any?(&:has_uploaded?) }
+  #     .then(&:upload!)
+  # end
 
   def previous_rollout
     initial_run.initial_rollout_percentage
