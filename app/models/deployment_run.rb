@@ -24,7 +24,15 @@ class DeploymentRun < ApplicationRecord
   delegate :step, :release, :commit, to: :step_run
   delegate :deployment_number, :integration, :external?, :google_play_store_integration?, :slack_integration?, to: :deployment
 
-  STAMPABLE_REASONS = ["created", "status_changed", "duplicate_build", "bundle_identifier_not_found"]
+  STAMPABLE_REASONS = [
+    "created",
+    "status_changed",
+    "duplicate_build",
+    "bundle_identifier_not_found",
+    "invalid_package",
+    "apks_are_not_allowed"
+  ]
+
   STATES = {
     created: "created",
     started: "started",

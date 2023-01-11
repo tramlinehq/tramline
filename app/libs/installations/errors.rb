@@ -31,5 +31,9 @@ module Installations
     class GooglePlayDeveloperAPIDisabled < StandardError; end
 
     class GooglePlayDeveloperAPIPermissionDenied < StandardError; end
+
+    class GooglePlayDeveloperAPIInvalidPackage < StandardError; end
+
+    class GooglePlayDeveloperAPIAPKsAreNotAllowed < StandardError; end
   end
 end
