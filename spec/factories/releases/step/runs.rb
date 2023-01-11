@@ -7,5 +7,9 @@ FactoryBot.define do
     scheduled_at { Time.current }
     status { "on_track" }
     sequence(:build_number) { |n| 123 + n }
+
+    trait :deployment_started do
+      status { "deployment_started" }
+    end
   end
 end
