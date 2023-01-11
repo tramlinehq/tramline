@@ -71,8 +71,4 @@ module ApplicationHelper
     classes << "animate-pulse" if pulse
     content_tag(:span, status, class: classes.concat(style))
   end
-
-  def dev_show(&blk)
-    yield blk if Rails.env.development?
-  end
 end
