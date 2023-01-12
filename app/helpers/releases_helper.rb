@@ -49,6 +49,8 @@ module ReleasesHelper
         ["Running", %w[bg-indigo-100 text-indigo-600]]
       when :uploaded
         ["Uploaded", %w[bg-slate-100 text-slate-500]]
+      when :upload_failed
+        ["Upload Failed", %w[bg-rose-100 text-rose-600]]
       when :released
         ["Released", %w[bg-green-100 text-green-600]]
       when :failed
