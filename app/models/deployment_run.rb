@@ -132,11 +132,11 @@ class DeploymentRun < ApplicationRecord
     uploaded? || failed? || released?
   end
 
-  # FIXME: Is the below fixme still valid?
   # FIXME: should we take a lock around this SR? what is someone double triggers the run?
   def start_upload!
     return complete! if external?
 
+    # TODO: simplify this logic
     if store?
       other_deployment_runs = step_run.similar_deployment_runs_for(self)
       return upload! if other_deployment_runs.any?(&:has_uploaded?)
