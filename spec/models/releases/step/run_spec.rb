@@ -12,53 +12,48 @@ describe Releases::Step::Run, type: :model do
 
     it "ignores itself" do
       integration = create(:integration)
-      deployment1 = create(:deployment, step: steps.first, integration: integration)
-      deployment2 = create(:deployment, step: steps.first, integration: integration)
-      deployment3 = create(:deployment, step: steps.first, integration: integration)
-      deployment_run1 = create(:deployment_run, step_run: step_run, deployment: deployment1)
-      deployment_run2 = create(:deployment_run, :started, step_run: step_run, deployment: deployment2)
-      deployment_run3 = create(:deployment_run, :started, step_run: step_run, deployment: deployment3)
+      deployments = create_list(:deployment, 3, step: steps.first, integration: integration)
+      deployment_run = create(:deployment_run, step_run: step_run, deployment: deployments[0])
+      expected_run1 = create(:deployment_run, :started, step_run: step_run, deployment: deployments[1])
+      expected_run2 = create(:deployment_run, :started, step_run: step_run, deployment: deployments[2])
 
-      expect(step_run.similar_deployment_runs_for(deployment_run1)).to contain_exactly(deployment_run3, deployment_run2)
+      expect(step_run.similar_deployment_runs_for(deployment_run)).to contain_exactly(expected_run1, expected_run2)
     end
 
     it "only picks deployment runs with the same integration" do
-      integration1 = create(:integration)
-      integration2 = create(:integration)
-      deployment1 = create(:deployment, step: steps.first, integration: integration1)
-      deployment2 = create(:deployment, step: steps.first, integration: integration2)
-      deployment3 = create(:deployment, step: steps.first, integration: integration1)
-      deployment_run1 = create(:deployment_run, step_run: step_run, deployment: deployment1)
-      _deployment_run2 = create(:deployment_run, :started, step_run: step_run, deployment: deployment2)
-      deployment_run3 = create(:deployment_run, :started, step_run: step_run, deployment: deployment3)
+      integration = create(:integration)
+      different_integration = create(:integration)
+      deployment1 = create(:deployment, step: steps.first, integration: integration)
+      deployment2 = create(:deployment, step: steps.first, integration: different_integration)
+      deployment3 = create(:deployment, step: steps.first, integration: integration)
+      deployment_run = create(:deployment_run, step_run: step_run, deployment: deployment1)
+      _ignored_run = create(:deployment_run, :started, step_run: step_run, deployment: deployment2)
+      expected_run = create(:deployment_run, :started, step_run: step_run, deployment: deployment3)
 
-      expect(step_run.similar_deployment_runs_for(deployment_run1)).to contain_exactly(deployment_run3)
+      expect(step_run.similar_deployment_runs_for(deployment_run)).to contain_exactly(expected_run)
     end
 
     it "only picks deployment runs which have begun" do
       integration = create(:integration)
-      deployment1 = create(:deployment, step: steps.first, integration: integration)
-      deployment2 = create(:deployment, step: steps.first, integration: integration)
-      deployment3 = create(:deployment, step: steps.first, integration: integration)
-      deployment_run1 = create(:deployment_run, step_run: step_run, deployment: deployment1)
-      _deployment_run2 = create(:deployment_run, step_run: step_run, deployment: deployment2)
-      deployment_run3 = create(:deployment_run, :started, step_run: step_run, deployment: deployment3)
+      deployments = create_list(:deployment, 3, step: steps.first, integration: integration)
+      deployment_run = create(:deployment_run, step_run: step_run, deployment: deployments[0])
+      _ignored_run = create(:deployment_run, step_run: step_run, deployment: deployments[1])
+      expected_run = create(:deployment_run, :started, step_run: step_run, deployment: deployments[2])
 
-      expect(step_run.similar_deployment_runs_for(deployment_run1)).to contain_exactly(deployment_run3)
+      expect(step_run.similar_deployment_runs_for(deployment_run)).to contain_exactly(expected_run)
     end
 
     it "only picks deployment runs from the correct step run" do
       second_step = steps.last
       second_step_run = create(:releases_step_run, step: second_step)
       integration = create(:integration)
-      deployment1 = create(:deployment, step: steps.first, integration: integration)
-      deployment2 = create(:deployment, step: steps.first, integration: integration)
-      deployment3 = create(:deployment, step: second_step, integration: integration)
-      deployment_run1 = create(:deployment_run, step_run: step_run, deployment: deployment1)
-      deployment_run2 = create(:deployment_run, :started, step_run: step_run, deployment: deployment2)
-      _deployment_run3 = create(:deployment_run, :started, step_run: second_step_run, deployment: deployment3)
+      deployments = create_list(:deployment, 2, step: steps.first, integration: integration)
+      second_step_deployment = create(:deployment, step: second_step, integration: integration)
+      deployment_run = create(:deployment_run, step_run: step_run, deployment: deployments[0])
+      expected_run = create(:deployment_run, :started, step_run: step_run, deployment: deployments[1])
+      _ignored_run = create(:deployment_run, :started, step_run: second_step_run, deployment: second_step_deployment)
 
-      expect(step_run.similar_deployment_runs_for(deployment_run1)).to contain_exactly(deployment_run2)
+      expect(step_run.similar_deployment_runs_for(deployment_run)).to contain_exactly(expected_run)
     end
   end
 

@@ -21,74 +21,70 @@ describe DeploymentRun, type: :model do
       integration = create(:integration, :with_google_play_store)
       deployment1 = create(:deployment, step: step, integration: integration)
       deployment2 = create(:deployment, step: step, integration: integration)
-      _deployment_run1 = create(:deployment_run, :uploaded, deployment: deployment1, step_run: step_run)
-      deployment_run2 = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
+      _uploaded_run = create(:deployment_run, :uploaded, deployment: deployment1, step_run: step_run)
+      deployment_run = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
 
-      deployment_run2.start_upload!
-      expect(deployment_run2.reload.uploaded?).to be(true)
+      deployment_run.start_upload!
+      expect(deployment_run.reload.uploaded?).to be(true)
     end
 
     it "starts upload if there is another similar deployment but not store" do
       integration = create(:integration, :with_slack)
       deployment1 = create(:deployment, step: step, integration: integration)
       deployment2 = create(:deployment, step: step, integration: integration)
-      _deployment_run1 = create(:deployment_run, :uploaded, deployment: deployment1, step_run: step_run)
-      deployment_run2 = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
+      _uploaded_run = create(:deployment_run, :uploaded, deployment: deployment1, step_run: step_run)
+      deployment_run = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
       allow(Deployments::Slack).to receive(:perform_later)
 
-      deployment_run2.start_upload!
-      expect(Deployments::Slack).to have_received(:perform_later).with(deployment_run2.id).once
-      expect(deployment_run2.reload.started?).to be(true)
+      deployment_run.start_upload!
+      expect(Deployments::Slack).to have_received(:perform_later).with(deployment_run.id).once
+      expect(deployment_run.reload.started?).to be(true)
     end
 
     it "does nothing if there is another similar deployment which has started upload" do
       integration = create(:integration)
       deployment1 = create(:deployment, step: step, integration: integration)
       deployment2 = create(:deployment, step: step, integration: integration)
-      _deployment_run1 = create(:deployment_run, :started, deployment: deployment1, step_run: step_run)
-      deployment_run2 = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
+      _ignored_run = create(:deployment_run, :started, deployment: deployment1, step_run: step_run)
+      deployment_run = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
 
-      deployment_run2.start_upload!
-      expect(deployment_run2.reload.started?).to be(true)
+      deployment_run.start_upload!
+      expect(deployment_run.reload.started?).to be(true)
     end
 
     it "starts upload if it is the only deployment with google play store" do
-      integration = create(:integration, :with_google_play_store)
-      deployment1 = create(:deployment, step: step, integration: integration)
-      deployment_run1 = create(:deployment_run, :started, deployment: deployment1, step_run: step_run)
+      deployment = create(:deployment, :with_google_play_store, step: step)
+      deployment_run = create(:deployment_run, :started, deployment: deployment, step_run: step_run)
       allow(Deployments::GooglePlayStore::Upload).to receive(:perform_later)
 
-      deployment_run1.start_upload!
+      deployment_run.start_upload!
 
-      expect(Deployments::GooglePlayStore::Upload).to have_received(:perform_later).with(deployment_run1.id).once
-      expect(deployment_run1.reload.started?).to be(true)
+      expect(Deployments::GooglePlayStore::Upload).to have_received(:perform_later).with(deployment_run.id).once
+      expect(deployment_run.reload.started?).to be(true)
     end
 
     it "starts upload if it is the only deployment with slack" do
-      integration = create(:integration, :with_slack)
-      deployment1 = create(:deployment, step: step, integration: integration)
-      deployment_run1 = create(:deployment_run, :started, deployment: deployment1, step_run: step_run)
+      deployment = create(:deployment, :with_slack, step: step)
+      deployment_run = create(:deployment_run, :started, deployment: deployment, step_run: step_run)
       allow(Deployments::Slack).to receive(:perform_later)
 
-      deployment_run1.start_upload!
-      expect(Deployments::Slack).to have_received(:perform_later).with(deployment_run1.id).once
-      expect(deployment_run1.reload.started?).to be(true)
+      deployment_run.start_upload!
+      expect(Deployments::Slack).to have_received(:perform_later).with(deployment_run.id).once
+      expect(deployment_run.reload.started?).to be(true)
     end
 
     it "starts upload if a different deployment has happened before" do
-      integration1 = create(:integration)
-      deployment1 = create(:deployment, step: step, integration: integration1)
-      _deployment_run1 = create(:deployment_run, :released, deployment: deployment1, step_run: step_run)
+      deployment1 = create(:deployment, step: step)
+      _ignored_run = create(:deployment_run, :released, deployment: deployment1, step_run: step_run)
 
-      integration2 = create(:integration, :with_google_play_store)
-      deployment2 = create(:deployment, step: step, integration: integration2)
-      deployment_run2 = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
+      deployment2 = create(:deployment, :with_google_play_store, step: step)
+      deployment_run = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
 
       allow(Deployments::GooglePlayStore::Upload).to receive(:perform_later)
 
-      deployment_run2.start_upload!
-      expect(Deployments::GooglePlayStore::Upload).to have_received(:perform_later).with(deployment_run2.id).once
-      expect(deployment_run2.reload.started?).to be(true)
+      deployment_run.start_upload!
+      expect(Deployments::GooglePlayStore::Upload).to have_received(:perform_later).with(deployment_run.id).once
+      expect(deployment_run.reload.started?).to be(true)
     end
   end
 
@@ -97,8 +93,7 @@ describe DeploymentRun, type: :model do
     let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
 
     it "marks self as uploaded" do
-      integration = create(:integration)
-      deployment = create(:deployment, step: step, integration: integration)
+      deployment = create(:deployment, step: step)
       deployment_run = create(:deployment_run, :started, deployment: deployment, step_run: step_run)
 
       deployment_run.upload!
@@ -109,40 +104,40 @@ describe DeploymentRun, type: :model do
     it "marks other similar deployments in the step run as uploaded" do
       integration = create(:integration, :with_google_play_store)
       deployment1 = create(:deployment, step: step, integration: integration)
-      deployment_run1 = create(:deployment_run, :started, deployment: deployment1, step_run: step_run)
+      similar_run = create(:deployment_run, :started, deployment: deployment1, step_run: step_run)
       deployment2 = create(:deployment, step: step, integration: integration)
-      deployment_run2 = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
+      deployment_run = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
 
-      deployment_run2.upload!
+      deployment_run.upload!
 
-      expect(deployment_run1.reload.uploaded?).to be(true)
-      expect(deployment_run2.reload.uploaded?).to be(true)
+      expect(similar_run.reload.uploaded?).to be(true)
+      expect(deployment_run.reload.uploaded?).to be(true)
     end
 
     it "ignores other similar deployments in the step run if already uploaded" do
       integration = create(:integration, :with_google_play_store)
       deployment1 = create(:deployment, step: step, integration: integration)
-      deployment_run1 = create(:deployment_run, :uploaded, deployment: deployment1, step_run: step_run)
+      similar_uploaded_run = create(:deployment_run, :uploaded, deployment: deployment1, step_run: step_run)
       deployment2 = create(:deployment, step: step, integration: integration)
-      deployment_run2 = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
+      deployment_run = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
 
-      deployment_run2.upload!
+      deployment_run.upload!
 
-      expect(deployment_run1.reload.uploaded?).to be(true)
-      expect(deployment_run2.reload.uploaded?).to be(true)
+      expect(similar_uploaded_run.reload.uploaded?).to be(true)
+      expect(deployment_run.reload.uploaded?).to be(true)
     end
 
     it "ignores other similar deployments in the step run if not store" do
       integration = create(:integration, :with_slack)
       deployment1 = create(:deployment, step: step, integration: integration)
-      deployment_run1 = create(:deployment_run, :started, deployment: deployment1, step_run: step_run)
+      similar_run = create(:deployment_run, :started, deployment: deployment1, step_run: step_run)
       deployment2 = create(:deployment, step: step, integration: integration)
-      deployment_run2 = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
+      deployment_run = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
 
-      deployment_run2.upload!
+      deployment_run.upload!
 
-      expect(deployment_run1.reload.started?).to be(true)
-      expect(deployment_run2.reload.uploaded?).to be(true)
+      expect(similar_run.reload.started?).to be(true)
+      expect(deployment_run.reload.uploaded?).to be(true)
     end
   end
 end
