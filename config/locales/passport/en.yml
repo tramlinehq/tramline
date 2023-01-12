@@ -18,3 +18,5 @@ en:
       status_changed_html: "<a href='%{sha_link}'>[%{sha}]</a> Deployment #%{num} for step – '%{step_name}' moved from: '%{from}' → '%{to}'"
       duplicate_build_html: "Build with is already uploaded. Upload was ignored."
       bundle_identifier_not_found_html: "The configured package was not found in the store."
+      invalid_package_html: "The artifact being uploaded is not a valid package recognized by the store."
+      apks_are_not_allowed: "You can only upload signed AABs to the store."

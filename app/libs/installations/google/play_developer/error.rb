@@ -38,6 +38,18 @@ module Installations
         code: 400,
         message_matcher: /This Edit has been deleted/,
         decorated_exception: Installations::Errors::DuplicatedBuildUploadAttempt
+      },
+      {
+        status: "PERMISSION_DENIED",
+        code: 403,
+        message_matcher: /APK is not a valid ZIP archive/,
+        decorated_exception: Installations::Errors::GooglePlayDeveloperAPIInvalidPackage
+      },
+      {
+        status: "PERMISSION_DENIED",
+        code: 403,
+        message_matcher: /We have failed to run 'bundletool build-apks' on this Android App Bundle. Please ensure your bundle is valid by running 'bundletool build-apks' locally and try again. Error message output: File 'BundleConfig.pb' was not found/,
+        decorated_exception: Installations::Errors::GooglePlayDeveloperAPIAPKsAreNotAllowed
       }
     ]
 
@@ -50,6 +62,7 @@ module Installations
     end
 
     def handle
+      log
       return exception if match.nil?
       match[:decorated_exception].new
     end
@@ -57,6 +70,7 @@ module Installations
     private
 
     attr_reader :exception
+    delegate :logger, to: Rails
 
     def match
       @match ||= matched_error
@@ -87,6 +101,10 @@ module Installations
 
     def status
       error["status"]
+    end
+
+    def log
+      logger.error(error)
     end
   end
 end

@@ -9,5 +9,13 @@ FactoryBot.define do
           .save
       end
     end
+
+    trait :with_google_play_store do
+      association :integration, :with_google_play_store
+    end
+
+    trait :with_slack do
+      association :integration, :with_slack
+    end
   end
 end

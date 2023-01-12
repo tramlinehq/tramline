@@ -1,16 +1,17 @@
-lines := "1000"
+start:
+  bin/dev
 
-cop:
-  bundle exec rubocop --autocorrect
+goto session="console":
+  overmind connect {{session}}
 
 spec:
   bundle exec rspec
 
-dev:
-  bin/dev
+lint:
+  bundle exec rubocop --autocorrect
 
-serverlog:
-  tail -f -n {{ lines }} log/development.log
+devlog log_lines="1000":
+  tail -f -n {{ log_lines }} log/development.log
 
-workerlog:
-  tail -f -n {{ lines }} log/sidekiq.log
+bglog log_lines="100":
+  tail -f -n {{ log_lines }} log/sidekiq.log
