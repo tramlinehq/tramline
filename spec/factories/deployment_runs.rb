@@ -1,8 +1,7 @@
 FactoryBot.define do
   factory :deployment_run do
-    # FIXME: steps are diverging here
-    association :deployment, factory: [:deployment, :with_step]
     association :step_run, factory: [:releases_step_run, :with_build_artifact, :deployment_started]
+    deployment { association :deployment, step: step_run.step }
     status { "created" }
     scheduled_at { Time.current }
 
@@ -19,11 +18,11 @@ FactoryBot.define do
     end
 
     trait :with_google_play_store do
-      association :deployment, factory: [:deployment, :with_step, :with_google_play_store]
+      deployment { association :deployment, :with_google_play_store, step: step_run.step }
     end
 
     trait :with_slack do
-      association :deployment, factory: [:deployment, :with_step, :with_slack]
+      deployment { association :deployment, :with_slack, step: step_run.step }
     end
   end
 end
