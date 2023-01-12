@@ -151,15 +151,15 @@ class Releases::Train < ApplicationRecord
   end
 
   def fully_qualified_working_branch_hack
-    [app.config.code_repository_organization_name_hack, ":", working_branch].join
+    [app.config.code_repo_namespace, ":", working_branch].join
   end
 
   def fully_qualified_release_branch_hack
-    [app.config.code_repository_organization_name_hack, ":", release_branch].join
+    [app.config.code_repo_namespace, ":", release_branch].join
   end
 
   def fully_qualified_release_backmerge_branch_hack
-    [app.config.code_repository_organization_name_hack, ":", release_backmerge_branch].join
+    [app.config.code_repo_namespace, ":", release_backmerge_branch].join
   end
 
   def pre_release_prs?

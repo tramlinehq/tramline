@@ -31,7 +31,7 @@ class AppConfig < ApplicationRecord
     notification_channel["id"]
   end
 
-  def code_repository_organization_name_hack
+  def code_repo_namespace
     code_repository_name["namespace"]
   end
 

@@ -188,7 +188,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def fully_qualified_branch_name_hack
-    [app.config.code_repository_organization_name_hack, ":", branch_name].join
+    [app.config.code_repo_namespace, ":", branch_name].join
   end
 
   def events
