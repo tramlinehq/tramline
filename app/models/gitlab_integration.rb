@@ -26,6 +26,16 @@ class GitlabIntegration < ApplicationRecord
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://gitlab.com/oauth/authorize{?params*}")
 
+  LIST_REPOS_TRANSFORMATIONS = {
+    id: :id,
+    name: :path,
+    namespace: [:namespace, :path],
+    full_name: :path_with_namespace,
+    description: :description,
+    repo_url: :web_url,
+    avatar_url: :avatar_url
+  }
+
   def install_path
     unless integration.version_control? || integration.ci_cd?
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
@@ -46,7 +56,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def repos
-    with_api_retries { installation.list_projects }
+    with_api_retries { installation.list_projects(LIST_REPOS_TRANSFORMATIONS) }
   end
 
   def workflows
