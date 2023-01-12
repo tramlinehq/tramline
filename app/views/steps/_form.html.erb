@@ -20,7 +20,7 @@
                         placeholder: "Eg: qa-staging",
                         required: true,
                         data: { domain__release_suffix_help_target: "input",
-                                action: "domain--release-suffix-help#set" }%>
+                                action: "domain--release-suffix-help#set" } %>
     <div class="text-sm mt-1">
       This is appended to the <strong>version name</strong> of the app, as follows:&nbsp;
       <span class="font-mono" data-domain--release-suffix-help-target="helpText"></span>
@@ -39,7 +39,8 @@
     <%= form.label :ci_cd_channel, "CI workflow", class: "block text-sm font-medium mb-1" %>
     <div class="control">
       <%= form.select :ci_cd_channel,
-                      options_for_select(@ci_actions.map { |action| [action[:name], action.to_json] }, @step.ci_cd_channel.to_json),
+                      options_for_select(display_channels(@ci_actions) { |chan| chan[:name] },
+                                         @step.ci_cd_channel.to_json),
                       { class: "form-select" },
                       data: { controller: "input-select" } %>
     </div>

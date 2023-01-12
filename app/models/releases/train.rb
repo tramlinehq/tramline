@@ -143,9 +143,7 @@ class Releases::Train < ApplicationRecord
   end
 
   def build_channel_integrations
-    app
-      .integrations
-      .build_channel
+    app.integrations.build_channel
   end
 
   def final_deployment_channel

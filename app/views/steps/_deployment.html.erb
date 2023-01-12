@@ -7,7 +7,7 @@
                     data: { controller: "input-select", action: 'change->build-artifacts#change' } %>
 
     <%= form.select :build_artifact_channel,
-                    options_for_select(display_channels @selected_build_channels),
+                    options_for_select(display_channels(@selected_build_channels) { |chan| chan[:name] }),
                     { class: "block form-select" },
                     { data: { build_artifacts_target: "select", controller: "input-select" } } %>
 
