@@ -59,7 +59,7 @@ module Installations
         .post(PUBLISH_CHAT_MESSAGE_URL, json_params)
     end
 
-    def list_channels
+    def list_channels(transforms)
       params = {
         params: {
           limit: LIST_CHANNELS_LIMIT,
@@ -74,8 +74,7 @@ module Installations
         .then { |response| response.body.to_s }
         .then { |body| JSON.parse(body) }
         .then { |json| json["channels"] }
-        .then { |channels| channels&.map { |list| list.slice("id", "name") } }
-        .then { |responses| Installations::Response::Keys.normalize(responses) }
+        .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
     end
   end
 end

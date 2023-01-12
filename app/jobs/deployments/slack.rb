@@ -29,7 +29,7 @@ class Deployments::Slack < ApplicationJob
   end
 
   def channel
-    deployment.build_artifact_channel.values.first
+    deployment.deployment_channel
   end
 
   def provider

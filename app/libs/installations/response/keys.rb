@@ -44,6 +44,7 @@ class Installations::Response::Keys
           .with_indifferent_access
           .deep_slice(transforms.values)
           .transform_keys { |path| transforms.invert[path] }
+          .with_indifferent_access
       end
     end
 

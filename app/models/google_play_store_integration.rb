@@ -21,12 +21,12 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   attr_accessor :json_key_file
 
-  CHANNELS = {
-    production: "production",
-    beta: "open testing",
-    alpha: "closed testing",
-    internal: "internal testing"
-  }
+  CHANNELS = [
+    {id: :production, name: "production"},
+    {id: :beta, name: "open testing"},
+    {id: :alpha, name: "closed testing"},
+    {id: :internal, name: "internal testing"}
+  ]
 
   def creatable?
     true
@@ -45,7 +45,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def channels
-    CHANNELS.invert.map { |k, v| [k, {k => v}.to_json] }
+    CHANNELS.map(&:with_indifferent_access)
   end
 
   def correct_key

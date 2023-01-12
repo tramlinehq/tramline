@@ -15,7 +15,7 @@ export default class extends Controller {
   updateExternalChannels() {
     this.selectTarget.innerHTML = ""
     const option = document.createElement("option")
-    option.value = '{"external": "external"}'
+    option.value = '{"id": "external", "name": "External"}'
     option.innerHTML = "External"
     this.selectTarget.appendChild(option)
   }

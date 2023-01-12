@@ -100,7 +100,11 @@ class StepsController < SignedInApplicationController
   end
 
   def set_build_channels
-    @build_channel_integrations = @train.build_channel_integrations
+    @build_channel_integrations = @train
+      .build_channel_integrations
+      .map { |build_channel| [build_channel.providable.display, build_channel.id] }
+      .push(Integration::EXTERNAL_BUILD_INTEGRATION[:build_integration])
+    # TODO: what is first even?
     @selected_integration = @build_channel_integrations.first
     @selected_build_channels = Integration.find_by(id: @selected_integration).providable.channels
   end

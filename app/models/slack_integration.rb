@@ -24,6 +24,14 @@ class SlackIntegration < ApplicationRecord
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://slack.com/oauth/v2/authorize{?params*}")
 
+  LIST_CHANNELS_TRANSFORMATIONS = {
+    id: :id,
+    name: :name,
+    description: [:purpose, :value],
+    is_private: :is_private,
+    member_count: :num_members
+  }
+
   def install_path
     unless integration.notification? || integration.build_channel?
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
@@ -43,9 +51,7 @@ class SlackIntegration < ApplicationRecord
   end
 
   def channels
-    installation.list_channels.map do |chan|
-      ["#" + chan["name"], {chan["id"] => chan["name"]}.to_json]
-    end
+    installation.list_channels(LIST_CHANNELS_TRANSFORMATIONS)
   end
 
   def installation

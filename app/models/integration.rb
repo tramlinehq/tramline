@@ -51,6 +51,11 @@ class Integration < ApplicationRecord
   DEFAULT_CONNECT_STATUS = Integration.statuses[:connected].freeze
   DEFAULT_INITIAL_STATUS = Integration.statuses[:disconnected].freeze
 
+  EXTERNAL_BUILD_INTEGRATION = {
+    build_integration: ["None (outside Tramline)", nil],
+    channels: [{id: :external, name: "External"}]
+  }
+
   validates :category, presence: true
   validate :provider_in_category
 
@@ -91,6 +96,15 @@ class Integration < ApplicationRecord
         end
 
         combination
+      end
+    end
+
+    # TODO: Have a better abstraction instead of if conditions
+    def find_build_channels(id)
+      if id.blank?
+        EXTERNAL_BUILD_INTEGRATION[:channels]
+      else
+        find_by(id: id).providable.channels
       end
     end
 

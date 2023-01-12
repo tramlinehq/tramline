@@ -26,9 +26,9 @@ class AppConfig < ApplicationRecord
     code_repository["full_name"]
   end
 
-  def notification_channel_name
+  def notification_channel_id
     return unless notification_channel
-    notification_channel.values.first
+    notification_channel["id"]
   end
 
   def code_repository_organization_name_hack

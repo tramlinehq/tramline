@@ -22,7 +22,6 @@ class Releases::Train < ApplicationRecord
   using RefinedString
   extend FriendlyId
 
-  EXTERNAL_DEPLOYMENT_CHANNEL = ["None (outside Tramline)", nil]
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
     release_backmerge: "Release with Backmerge",
@@ -111,7 +110,7 @@ class Releases::Train < ApplicationRecord
 
   def notify!(message, type, params)
     return unless app.send_notifications?
-    notification_provider.notify!(config.notification_channel_name, message, type, params)
+    notification_provider.notify!(config.notification_channel_id, message, type, params)
   end
 
   def display_name
@@ -147,8 +146,6 @@ class Releases::Train < ApplicationRecord
     app
       .integrations
       .build_channel
-      .map { |build_channel| [build_channel.providable.display, build_channel.id] }
-      .push(EXTERNAL_DEPLOYMENT_CHANNEL)
   end
 
   def final_deployment_channel
