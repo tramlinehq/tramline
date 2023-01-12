@@ -65,4 +65,8 @@ RSpec.configure do |config|
   config.include Devise::Test::IntegrationHelpers, type: :request
 
   config.include FactoryBot::Syntax::Methods
+
+  require "sidekiq/testing"
+
+  Sidekiq::Testing.fake!
 end
