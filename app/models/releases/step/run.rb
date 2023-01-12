@@ -236,8 +236,8 @@ class Releases::Step::Run < ApplicationRecord
     }
   end
 
-  def workflow_name
-    step.ci_cd_channel.keys.first
+  def workflow_name # TODO: rename this to be _id
+    step.ci_cd_channel["id"]
   end
 
   def notify_on_failure!(message)

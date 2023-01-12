@@ -60,6 +60,6 @@ class Deployment < ApplicationRecord
   end
 
   def deployment_channel
-    build_artifact_channel.values["id"]
+    build_artifact_channel["id"]
   end
 end

@@ -36,6 +36,6 @@ class AppConfig < ApplicationRecord
   end
 
   def project
-    project_id["id"]
+    project_id.fetch("id", nil)
   end
 end

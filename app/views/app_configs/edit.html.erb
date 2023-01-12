@@ -24,7 +24,7 @@
         <%= form.label :notification_channel, "Notification Channel", class: "block text-sm font-medium mb-1" %>
         <%= form.select :notification_channel,
                         options_for_select(
-                          @notification_channels,
+                          display_channels(@notification_channels) { |chan| "#" + chan[:name] },
                           @config.notification_channel.to_json
                         ),
                         {},
