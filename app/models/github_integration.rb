@@ -22,6 +22,21 @@ class GithubIntegration < ApplicationRecord
 
   API = Installations::Github::Api
 
+  LIST_REPOS_TRANSFORMATIONS = {
+    id: :id,
+    name: :name,
+    namespace: [:owner, :login],
+    full_name: :full_name,
+    description: :description,
+    repo_url: :html_url,
+    avatar_url: [:owner, :avatar_url]
+  }
+
+  LIST_WORKFLOWS_TRANSFORMATIONS = {
+    id: :id,
+    name: :name
+  }
+
   def install_path
     unless integration.version_control? || integration.ci_cd?
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
@@ -34,7 +49,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def repos
-    installation.list_repos
+    installation.list_repos(LIST_REPOS_TRANSFORMATIONS)
   end
 
   def create_webhook!(url_params)
@@ -86,7 +101,7 @@ class GithubIntegration < ApplicationRecord
 
   def workflows
     return [] unless integration.ci_cd?
-    installation.list_workflows(code_repository_name)
+    installation.list_workflows(code_repository_name, LIST_WORKFLOWS_TRANSFORMATIONS)
   end
 
   def trigger_workflow_run!(ci_cd_channel, ref, inputs, _commit_hash = nil)

@@ -16,14 +16,13 @@ module Installations
       set_client
     end
 
-    def list_workflows(repo)
+    def list_workflows(repo, transforms)
       execute do
         @client
           .workflows(repo)
           .then { |response| response[:workflows] }
           .then { |workflows| workflows.select { |workflow| workflow[:state] == "active" } }
-          .then { |workflows| workflows.map { |workflow| workflow.to_h.slice(:id, :name) } }
-          .then { |responses| Installations::Response::Keys.normalize(responses) }
+          .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
       end
     end
 
@@ -53,13 +52,12 @@ module Installations
       end
     end
 
-    def list_repos
+    def list_repos(transforms)
       execute do
         @client
           .list_app_installation_repositories
           .then { |response| response[:repositories] }
-          .then { |repos| repos.map { |repository| repository.to_h.slice(:id, :full_name) } }
-          .then { |responses| Installations::Response::Keys.normalize(responses) }
+          .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
       end
     end
 

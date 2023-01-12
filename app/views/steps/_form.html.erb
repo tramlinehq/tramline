@@ -39,7 +39,7 @@
     <%= form.label :ci_cd_channel, "CI workflow", class: "block text-sm font-medium mb-1" %>
     <div class="control">
       <%= form.select :ci_cd_channel,
-                      options_for_select(@ci_actions.map { |action| [action[:name], { action[:id] => action[:name] }.to_json] }, @step.ci_cd_channel.to_json),
+                      options_for_select(@ci_actions.map { |action| [action[:name], action.to_json] }, @step.ci_cd_channel.to_json),
                       { class: "form-select" },
                       data: { controller: "input-select" } %>
     </div>
