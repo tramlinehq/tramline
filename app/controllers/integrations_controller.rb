@@ -25,7 +25,7 @@ class IntegrationsController < SignedInApplicationController
 
   def build_artifact_channels
     @target = params[:target]
-    @build_channels = Integration.find_build_channels(params[:id])
+    @build_channels = Integration.find_build_channels(params[:integration_id])
 
     respond_to(&:turbo_stream)
   end

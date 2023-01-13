@@ -99,13 +99,10 @@ class Integration < ApplicationRecord
       end
     end
 
-    # TODO: Have a better abstraction instead of if conditions
+    # FIXME: Can we make a better External Deployment abstraction?
     def find_build_channels(id)
-      if id.blank?
-        EXTERNAL_BUILD_INTEGRATION[:channels]
-      else
-        find_by(id: id).providable.channels
-      end
+      return EXTERNAL_BUILD_INTEGRATION[:channels] if id.blank?
+      find_by(id: id).providable.channels
     end
 
     def ready?
