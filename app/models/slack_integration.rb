@@ -54,6 +54,10 @@ class SlackIntegration < ApplicationRecord
     installation.list_channels(CHANNELS_TRANSFORMATIONS)
   end
 
+  def build_channels
+    channels.map { |channel| channel.slice(:id, :name) }
+  end
+
   def installation
     Installations::Slack::Api.new(oauth_access_token)
   end

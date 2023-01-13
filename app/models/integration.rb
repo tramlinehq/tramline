@@ -51,9 +51,10 @@ class Integration < ApplicationRecord
   DEFAULT_CONNECT_STATUS = Integration.statuses[:connected].freeze
   DEFAULT_INITIAL_STATUS = Integration.statuses[:disconnected].freeze
 
+  # FIXME: Can we make a better External Deployment abstraction?
   EXTERNAL_BUILD_INTEGRATION = {
     build_integration: ["None (outside Tramline)", nil],
-    channels: [{id: :external, name: "External"}]
+    build_channels: [{ id: :external, name: "External" }]
   }
 
   validates :category, presence: true
@@ -99,10 +100,9 @@ class Integration < ApplicationRecord
       end
     end
 
-    # FIXME: Can we make a better External Deployment abstraction?
     def find_build_channels(id)
-      return EXTERNAL_BUILD_INTEGRATION[:channels] if id.blank?
-      find_by(id: id).providable.channels
+      return EXTERNAL_BUILD_INTEGRATION[:build_channels] if id.blank?
+      find_by(id: id).providable.build_channels
     end
 
     def ready?

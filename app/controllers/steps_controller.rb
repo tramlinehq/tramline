@@ -102,7 +102,7 @@ class StepsController < SignedInApplicationController
   def set_build_channels
     @build_channel_integrations = set_build_channel_integrations
     @selected_integration = @build_channel_integrations.first # TODO: what is first even?
-    @selected_build_channels = Integration.find_by(id: @selected_integration).providable.channels
+    @selected_build_channels = Integration.find_build_channels(@selected_integration.last)
   end
 
   def deployments_params

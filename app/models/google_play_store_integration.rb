@@ -48,6 +48,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
     CHANNELS.map(&:with_indifferent_access)
   end
 
+  def build_channels
+    channels.map { |channel| channel.slice(:id, :name) }
+  end
+
   def correct_key
     errors.add(:json_key, :no_bundles) if developer_api.list_bundles.keys.size < 1
   rescue RuntimeError
