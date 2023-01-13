@@ -54,7 +54,7 @@ class Integration < ApplicationRecord
   # FIXME: Can we make a better External Deployment abstraction?
   EXTERNAL_BUILD_INTEGRATION = {
     build_integration: ["None (outside Tramline)", nil],
-    build_channels: [{ id: :external, name: "External" }]
+    build_channels: [{id: :external, name: "External"}]
   }
 
   validates :category, presence: true
