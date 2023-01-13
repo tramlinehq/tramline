@@ -79,26 +79,19 @@ module ButtonHelper
     decorated_button_to(style, name, options, html_options, &block)
   end
 
-  # open a link in a new tab
-  def link_to_external(name = nil, options = nil, html_options = nil, &block)
-    opts = {target: "_blank", rel: "nofollow noopener"}
-
-    if block
-      options ||= {}
-      options = options.merge(opts)
-    else
-      html_options ||= {}
-      html_options = html_options.merge(opts)
+  class AuthzForms < ActionView::Helpers::FormBuilder
+    def decorated_submit(style, value, options)
+      _options, html_options = @template.apply_button_styles(style, {}, options, nil)
+      html_options[:class] << " group"
+      button(value, html_options) do
+        @template.concat @template.content_tag(:span, value, class: "group-disabled:hidden")
+        @template.concat @template.content_tag(:span, "Processing...", class: "hidden group-disabled:inline group-disabled:opacity-60")
+      end
     end
 
-    link_to(name, options, html_options, &block)
-  end
-
-  class AuthzForms < ActionView::Helpers::FormBuilder
     def authz_submit(style, value = nil, options = nil)
       style = :disabled unless @template.writer?
-      _options, html_options = @template.apply_button_styles(style, {}, options, nil)
-      submit(value, html_options)
+      decorated_submit(style, value, options)
     end
   end
 end
