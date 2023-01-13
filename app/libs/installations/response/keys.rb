@@ -15,11 +15,13 @@ class Installations::Response::Keys
           .select_paths(transforms.values)
           .transform_keys { |path| transforms.invert[path] }
           .with_indifferent_access
-          .then { |resp| coercions(resp) }
+          .then { |resp| default_coercions(resp) }
       end
     end
 
-    def coercions(response)
+    private
+
+    def default_coercions(response)
       response
         .update_key(:id, &:to_s)
         .update_key(:name, &:to_s)
