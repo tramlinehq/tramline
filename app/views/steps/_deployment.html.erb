@@ -1,17 +1,17 @@
-<div data-controller="turbo-fetch"
-     data-turbo-fetch-target-key-value="integration_id"
-     data-turbo-fetch-url-value="<%= app_integrations_build_artifact_channels_url(train.app.id) %>">
+<div data-controller="dropdown-stream"
+     data-dropdown-stream-target-key-value="integration_id"
+     data-dropdown-stream-url-value="<%= app_integrations_build_artifact_channels_url(train.app.id) %>">
   <div class="flex flex-row gap-4">
     <%= image_tag("hamburger.svg", class: "handle cursor-grabbing", width: 20) %>
 
     <%= form.select :integration_id, options_for_select(@build_channel_integrations, @selected_integration),
                     { class: "block form-select" },
-                    data: { controller: "input-select", action: "change->turbo-fetch#change" } %>
+                    data: { controller: "input-select", action: "change->dropdown-stream#change" } %>
 
     <%= form.select :build_artifact_channel,
                     options_for_select(display_channels(@selected_build_channels) { |chan| chan[:name] }),
                     { class: "block form-select" },
-                    { data: { turbo_fetch_target: "select", controller: "input-select" } } %>
+                    { data: { dropdown_stream_target: "select", controller: "input-select" } } %>
 
     <button type="button" data-action="nested-form-ext#remove">
       <%= image_tag("trash.svg", width: 65) %>
