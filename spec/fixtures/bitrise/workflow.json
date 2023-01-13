@@ -1,0 +1,10 @@
+{
+  "status": "ok",
+  "message": "webhook processed",
+  "slug": "e92eb64365bcdd8f",
+  "service": "bitrise",
+  "build_slug": "d40e1f6c-e3a0-4c37-bbb0-1fa22ecdc8c5",
+  "build_number": 102,
+  "build_url": "https://app.bitrise.io/build/d40e1f6c-e3a0-4c37-bbb0-1fa22ecdc8c5",
+  "triggered_workflow": "deploy"
+}

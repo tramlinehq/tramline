@@ -37,6 +37,11 @@ class GithubIntegration < ApplicationRecord
     name: :name
   }
 
+  FIND_WORKFLOW_RUN_TRANSFORMATIONS = {
+    ci_ref: :id,
+    ci_link: :html_url
+  }
+
   def install_path
     unless integration.version_control? || integration.ci_cd?
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
@@ -109,7 +114,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def find_workflow_run(workflow_id, branch, commit_sha)
-    installation.find_workflow_run(code_repository_name, workflow_id, branch, commit_sha)
+    installation.find_workflow_run(code_repository_name, workflow_id, branch, commit_sha, FIND_WORKFLOW_RUN_TRANSFORMATIONS)
   end
 
   def get_workflow_run(workflow_run_id)
