@@ -32,7 +32,7 @@ class AppConfig < ApplicationRecord
   end
 
   def code_repo_namespace
-    code_repository_name["namespace"]
+    code_repository["namespace"]
   end
 
   def project
