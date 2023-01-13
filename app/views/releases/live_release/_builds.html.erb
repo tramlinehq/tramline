@@ -67,9 +67,7 @@
                   <% end %>
                 </div>
 
-                <% if Rails.env.development? %>
-                  <div class="mb-4"><%= step_run.id.strip %></div>
-                <% end %>
+                <%= dev_show { step_run.id.strip } %>
 
                 <div class="mb-4">
                   <%= build_status_badge(step_run) %>
