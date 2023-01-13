@@ -20,7 +20,7 @@ describe Installations::Github::Api, type: :integration do
       result = described_class.new(installation_id).list_repos(GithubIntegration::REPOS_TRANSFORMATIONS)
 
       expected = {
-        id: 1296269,
+        id: "1296269",
         name: "Hello-World",
         namespace: "octocat",
         full_name: "octocat/Hello-World",
@@ -41,7 +41,7 @@ describe Installations::Github::Api, type: :integration do
       result = described_class.new(installation_id).list_workflows(repo, GithubIntegration::WORKFLOWS_TRANSFORMATIONS)
 
       expected = {
-        id: 161335,
+        id: "161335",
         name: "CI"
       }
       expect(result).to contain_exactly(expected)

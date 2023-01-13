@@ -22,7 +22,7 @@ class EnhanceJsonSchemas < ActiveRecord::Migration[7.0]
         id = repo.keys.first
         name = repo.values.first
 
-        repo_map["id"] = id.to_i
+        repo_map["id"] = id.to_s
         repo_map["name"] = name.to_s
 
         config.code_repository = repo_map
@@ -34,6 +34,7 @@ class EnhanceJsonSchemas < ActiveRecord::Migration[7.0]
 
         notifs_map["id"] = id.to_s
         notifs_map["name"] = name.to_s
+        notifs_map["description"] = ""
         notifs_map["is_private"] = false
         notifs_map["member_count"] = nil
 
@@ -63,7 +64,7 @@ class EnhanceJsonSchemas < ActiveRecord::Migration[7.0]
         id = ci_cd.keys.first
         name = ci_cd.values.first
 
-        ci_cd_map["id"] = id.to_i
+        ci_cd_map["id"] = id.to_s
         ci_cd_map["name"] = name.to_s
 
         step.ci_cd_channel = ci_cd_map
@@ -93,12 +94,12 @@ class EnhanceJsonSchemas < ActiveRecord::Migration[7.0]
 
           build_artifact_map["id"] = id.to_s
           build_artifact_map["name"] = name.to_s
-          build_artifact_map["is_private"] = false
-          build_artifact_map["member_count"] = nil
 
           deployment.build_artifact_channel = build_artifact_map
         elsif deployment.integration.providable_type.eql?("GooglePlayStoreIntegration")
           build_artifact_map = _init_map([:id, :name])
+
+          # id is present as value and name is present as key (inverted from the others)
           id = build_artifact.values.first
           name = build_artifact.keys.first
 

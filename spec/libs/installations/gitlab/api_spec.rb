@@ -15,7 +15,7 @@ describe Installations::Gitlab::Api, type: :integration do
 
       expected_projects = [
         {
-          id: 4,
+          id: "4",
           name: "diaspora-client",
           namespace: "diaspora",
           full_name: "diaspora/diaspora-client",
@@ -24,7 +24,7 @@ describe Installations::Gitlab::Api, type: :integration do
           avatar_url: "https://gitlab.example.com/uploads/project/avatar/4/uploads/avatar.png"
         },
         {
-          id: 5,
+          id: "5",
           name: "diaspora-client-again",
           namespace: "diaspora",
           full_name: "diaspora/diaspora-client-again",

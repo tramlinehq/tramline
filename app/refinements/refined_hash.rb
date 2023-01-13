@@ -2,6 +2,18 @@ module RefinedHash
   class UndefinedPathError < StandardError; end
 
   refine Hash do
+    def update_key(key, &_blk)
+      value = fetch(key, nil)
+
+      unless value.nil?
+        copy = dup
+        copy[key] = yield(value)
+        return copy
+      end
+
+      self
+    end
+
     def select_paths(paths)
       paths.index_with { |path| get_in(*path) }
     end
