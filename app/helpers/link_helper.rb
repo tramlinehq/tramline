@@ -1,7 +1,7 @@
 module LinkHelper
   # open link in a new tab
   def link_to_external(name = nil, options = nil, html_options = nil, &block)
-    opts = { target: "_blank", rel: "nofollow noopener" }
+    opts = {target: "_blank", rel: "nofollow noopener"}
 
     if block
       options ||= {}
