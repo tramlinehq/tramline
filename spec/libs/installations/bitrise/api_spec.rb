@@ -7,9 +7,8 @@ describe Installations::Bitrise::Api, type: :integration do
     let(:payload) { JSON.parse(File.read("spec/fixtures/bitrise/apps.json")) }
 
     it "returns the transformed list of enabled apps" do
-      allow_any_instance_of(described_class).to receive(:execute).with(:get,
-        "https://api.bitrise.io/v0.1/apps",
-        {}).and_return(payload)
+      url = "https://api.bitrise.io/v0.1/apps"
+      allow_any_instance_of(described_class).to receive(:execute).with(:get, url, {}).and_return(payload)
       result = described_class.new(access_token).list_apps(BitriseIntegration::LIST_APPS_TRANSFORMATIONS)
 
       expected_apps = [
@@ -37,9 +36,8 @@ describe Installations::Bitrise::Api, type: :integration do
     let(:app_slug) { Faker::Lorem.characters(number: 8) }
 
     it "returns the transformed list of workflows" do
-      allow_any_instance_of(described_class).to receive(:execute).with(:get,
-        "https://api.bitrise.io/v0.1/apps/#{app_slug}/build-workflows",
-        {}).and_return(payload)
+      url = "https://api.bitrise.io/v0.1/apps/#{app_slug}/build-workflows"
+      allow_any_instance_of(described_class).to receive(:execute).with(:get, url, {}).and_return(payload)
       result = described_class.new(access_token).list_workflows(app_slug, BitriseIntegration::LIST_WORKFLOWS_TRANSFORMATIONS)
 
       expected = [
@@ -92,18 +90,18 @@ describe Installations::Bitrise::Api, type: :integration do
           }
         }
       }
-
-      allow_any_instance_of(described_class).to receive(:execute).with(:post,
-        "https://api.bitrise.io/v0.1/apps/#{app_slug}/builds",
-        params).and_return(payload)
-      result = described_class.new(access_token).run_workflow!(app_slug, workflow_id, branch, inputs, commit_hash,
-        BitriseIntegration::RUN_WORKFLOW_TRANSFORMATIONS)
+      url = "https://api.bitrise.io/v0.1/apps/#{app_slug}/builds"
+      allow_any_instance_of(described_class).to receive(:execute).with(:post, url, params).and_return(payload)
+      result =
+        described_class
+          .new(access_token)
+          .run_workflow!(app_slug, workflow_id, branch, inputs, commit_hash, BitriseIntegration::RUN_WORKFLOW_TRANSFORMATIONS)
 
       expected = {
         ci_ref: "d40e1f6c-e3a0-4c37-bbb0-1fa22ecdc8c5",
         ci_link: "https://app.bitrise.io/build/d40e1f6c-e3a0-4c37-bbb0-1fa22ecdc8c5"
       }
-      expect(result).to eq(expected.with_indifferent_access)
+      expect(result).to match(expected)
     end
   end
 end

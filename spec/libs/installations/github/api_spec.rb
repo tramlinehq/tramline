@@ -49,21 +49,25 @@ describe Installations::Github::Api, type: :integration do
   end
 
   describe "#find_workflow_run" do
+    let(:payload) { JSON.parse(File.read("spec/fixtures/github/workflow_runs.json")).to_h.with_indifferent_access }
+    let(:repo) { Faker::Lorem.characters(number: 8) }
+
     it "returns the transformed list of active workflows" do
-      payload = JSON.parse(File.read("spec/fixtures/github/workflow_runs.json")).to_h.with_indifferent_access
-      repo = Faker::Lorem.characters(number: 8)
       workflow = Faker::Lorem.characters(number: 8)
       branch = Faker::Lorem.characters(number: 8)
       head_sha = Faker::Crypto.sha1
+
       allow_any_instance_of(Octokit::Client).to receive(:workflow_runs).and_return(payload)
-      result = described_class.new(installation_id).find_workflow_run(repo, workflow, branch, head_sha,
-        GithubIntegration::FIND_WORKFLOW_RUN_TRANSFORMATIONS)
+      result =
+        described_class
+          .new(installation_id)
+          .find_workflow_run(repo, workflow, branch, head_sha, GithubIntegration::FIND_WORKFLOW_RUN_TRANSFORMATIONS)
 
       expected = {
         ci_ref: 30433642,
         ci_link: "https://github.com/octo-org/octo-repo/actions/runs/30433642"
       }
-      expect(result).to eq(expected.with_indifferent_access)
+      expect(result).to match(expected)
     end
   end
 end
