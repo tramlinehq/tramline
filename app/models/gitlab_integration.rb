@@ -21,7 +21,7 @@ class GitlabIntegration < ApplicationRecord
 
   attr_accessor :code
   before_create :complete_access
-  delegate :code_repository_name, :working_branch, to: :app_config
+  delegate :code_repository_name, :code_repo_namespace, :working_branch, to: :app_config
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://gitlab.com/oauth/authorize{?params*}")
@@ -93,6 +93,10 @@ class GitlabIntegration < ApplicationRecord
 
   def store?
     false
+  end
+
+  def namespaced_branch(branch_name)
+    [code_repo_namespace, ":", branch_name].join
   end
 
   private

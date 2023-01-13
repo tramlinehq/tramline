@@ -19,7 +19,7 @@ class Triggers::Release
 
     attr_reader :release, :release_branch
     delegate :train, to: :release
-    delegate :fully_qualified_working_branch_hack, :working_branch, to: :train
+    delegate :vcs_provider, :working_branch, to: :train
 
     PR_DESCRIPTION = "Merging this before starting release.".freeze
 
@@ -28,11 +28,15 @@ class Triggers::Release
         release: release,
         new_pull_request: release.pull_requests.pre_release.open.build,
         to_branch_ref: release_branch,
-        from_branch_ref: fully_qualified_working_branch_hack,
+        from_branch_ref: namespaced_working_branch,
         title: pr_title,
         description: PR_DESCRIPTION,
         allow_without_diff: false
       )
+    end
+
+    def namespaced_working_branch
+      vcs_provider.namespaced_branch(working_branch)
     end
 
     def pr_title

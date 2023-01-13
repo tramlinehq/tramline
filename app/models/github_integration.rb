@@ -15,7 +15,7 @@ class GithubIntegration < ApplicationRecord
   include Displayable
   include Rails.application.routes.url_helpers
 
-  delegate :code_repository_name, to: :app_config
+  delegate [:code_repository_name, :code_repo_namespace], to: :app_config
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://github.com/apps/{app_name}/installations/new{?params*}")
@@ -90,6 +90,10 @@ class GithubIntegration < ApplicationRecord
 
   def store?
     false
+  end
+
+  def namespaced_branch(branch_name)
+    [code_repo_namespace, ":", branch_name].join
   end
 
   # FIXME: what is this really?

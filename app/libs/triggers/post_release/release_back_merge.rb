@@ -1,8 +1,5 @@
 class Triggers::PostRelease
   class ReleaseBackMerge
-    delegate :fully_qualified_release_backmerge_branch_hack, :release_backmerge_branch, :working_branch, to: :train
-    delegate :fully_qualified_branch_name_hack, to: :release
-
     def self.call(release)
       new(release).call
     end
@@ -19,13 +16,15 @@ class Triggers::PostRelease
     private
 
     attr_reader :train, :release
+    delegate :vcs_provider, :release_backmerge_branch, :working_branch, to: :train
+    delegate :branch_name, to: :release
 
     def create_and_merge_prs
       Triggers::PullRequest.create_and_merge!(
         release: release,
         new_pull_request: release.pull_requests.post_release.open.build,
         to_branch_ref: release_backmerge_branch,
-        from_branch_ref: fully_qualified_branch_name_hack,
+        from_branch_ref: namespaced_release_branch,
         title: release_pr_title,
         description: pr_description
       ).then do |_|
@@ -33,7 +32,7 @@ class Triggers::PostRelease
           release: release,
           new_pull_request: release.pull_requests.post_release.open.build,
           to_branch_ref: working_branch,
-          from_branch_ref: fully_qualified_release_backmerge_branch_hack,
+          from_branch_ref: namespaced_backmerge_branch,
           title: backmerge_pr_title,
           description: pr_description
         )
@@ -48,6 +47,14 @@ class Triggers::PostRelease
       rescue Installations::Errors::TaggedReleaseAlreadyExists
         release.event_stamp!(reason: :tagged_release_already_exists, kind: :notice, data: {tag: release.tag_name})
       end
+    end
+
+    def namespaced_backmerge_branch
+      vcs_provider.namespaced_branch(release_backmerge_branch)
+    end
+
+    def namespaced_release_branch
+      vcs_provider.namespaced_branch(branch_name)
     end
 
     def release_pr_title
