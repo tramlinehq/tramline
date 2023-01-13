@@ -22,7 +22,7 @@ class GithubIntegration < ApplicationRecord
 
   API = Installations::Github::Api
 
-  LIST_REPOS_TRANSFORMATIONS = {
+  REPOS_TRANSFORMATIONS = {
     id: :id,
     name: :name,
     namespace: [:owner, :login],
@@ -32,12 +32,12 @@ class GithubIntegration < ApplicationRecord
     avatar_url: [:owner, :avatar_url]
   }
 
-  LIST_WORKFLOWS_TRANSFORMATIONS = {
+  WORKFLOWS_TRANSFORMATIONS = {
     id: :id,
     name: :name
   }
 
-  FIND_WORKFLOW_RUN_TRANSFORMATIONS = {
+  WORKFLOW_RUN_TRANSFORMATIONS = {
     ci_ref: :id,
     ci_link: :html_url
   }
@@ -54,7 +54,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def repos
-    installation.list_repos(LIST_REPOS_TRANSFORMATIONS)
+    installation.list_repos(REPOS_TRANSFORMATIONS)
   end
 
   def create_webhook!(url_params)
@@ -110,7 +110,7 @@ class GithubIntegration < ApplicationRecord
 
   def workflows
     return [] unless integration.ci_cd?
-    installation.list_workflows(code_repository_name, LIST_WORKFLOWS_TRANSFORMATIONS)
+    installation.list_workflows(code_repository_name, WORKFLOWS_TRANSFORMATIONS)
   end
 
   def trigger_workflow_run!(ci_cd_channel, ref, inputs, _commit_hash = nil)
@@ -118,7 +118,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def find_workflow_run(workflow_id, branch, commit_sha)
-    installation.find_workflow_run(code_repository_name, workflow_id, branch, commit_sha, FIND_WORKFLOW_RUN_TRANSFORMATIONS)
+    installation.find_workflow_run(code_repository_name, workflow_id, branch, commit_sha, WORKFLOW_RUN_TRANSFORMATIONS)
   end
 
   def get_workflow_run(workflow_run_id)

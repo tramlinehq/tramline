@@ -9,7 +9,7 @@ describe Installations::Bitrise::Api, type: :integration do
     it "returns the transformed list of enabled apps" do
       url = "https://api.bitrise.io/v0.1/apps"
       allow_any_instance_of(described_class).to receive(:execute).with(:get, url, {}).and_return(payload)
-      result = described_class.new(access_token).list_apps(BitriseIntegration::LIST_APPS_TRANSFORMATIONS)
+      result = described_class.new(access_token).list_apps(BitriseIntegration::APPS_TRANSFORMATIONS)
 
       expected_apps = [
         {
@@ -38,7 +38,7 @@ describe Installations::Bitrise::Api, type: :integration do
     it "returns the transformed list of workflows" do
       url = "https://api.bitrise.io/v0.1/apps/#{app_slug}/build-workflows"
       allow_any_instance_of(described_class).to receive(:execute).with(:get, url, {}).and_return(payload)
-      result = described_class.new(access_token).list_workflows(app_slug, BitriseIntegration::LIST_WORKFLOWS_TRANSFORMATIONS)
+      result = described_class.new(access_token).list_workflows(app_slug, BitriseIntegration::WORKFLOWS_TRANSFORMATIONS)
 
       expected = [
         {
@@ -95,7 +95,7 @@ describe Installations::Bitrise::Api, type: :integration do
       result =
         described_class
           .new(access_token)
-          .run_workflow!(app_slug, workflow_id, branch, inputs, commit_hash, BitriseIntegration::RUN_WORKFLOW_TRANSFORMATIONS)
+          .run_workflow!(app_slug, workflow_id, branch, inputs, commit_hash, BitriseIntegration::WORKFLOW_RUN_TRANSFORMATIONS)
 
       expected = {
         ci_ref: "d40e1f6c-e3a0-4c37-bbb0-1fa22ecdc8c5",

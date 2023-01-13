@@ -11,7 +11,7 @@ describe Installations::Gitlab::Api, type: :integration do
         "https://gitlab.com/api/v4/projects",
         {params: {membership: true}})
         .and_return(payload)
-      result = described_class.new(access_token).list_projects(GitlabIntegration::LIST_REPOS_TRANSFORMATIONS)
+      result = described_class.new(access_token).list_projects(GitlabIntegration::REPOS_TRANSFORMATIONS)
 
       expected_projects = [
         {

@@ -26,7 +26,7 @@ class GitlabIntegration < ApplicationRecord
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://gitlab.com/oauth/authorize{?params*}")
 
-  LIST_REPOS_TRANSFORMATIONS = {
+  REPOS_TRANSFORMATIONS = {
     id: :id,
     name: :path,
     namespace: [:namespace, :path],
@@ -56,7 +56,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def repos
-    with_api_retries { installation.list_projects(LIST_REPOS_TRANSFORMATIONS) }
+    with_api_retries { installation.list_projects(REPOS_TRANSFORMATIONS) }
   end
 
   def workflows

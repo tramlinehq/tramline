@@ -24,7 +24,7 @@ class SlackIntegration < ApplicationRecord
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://slack.com/oauth/v2/authorize{?params*}")
 
-  LIST_CHANNELS_TRANSFORMATIONS = {
+  CHANNELS_TRANSFORMATIONS = {
     id: :id,
     name: :name,
     description: [:purpose, :value],
@@ -51,7 +51,7 @@ class SlackIntegration < ApplicationRecord
   end
 
   def channels
-    installation.list_channels(LIST_CHANNELS_TRANSFORMATIONS)
+    installation.list_channels(CHANNELS_TRANSFORMATIONS)
   end
 
   def installation

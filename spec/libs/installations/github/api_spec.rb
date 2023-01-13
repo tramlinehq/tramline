@@ -17,7 +17,7 @@ describe Installations::Github::Api, type: :integration do
 
     it "returns the transformed list of repos" do
       allow_any_instance_of(Octokit::Client).to receive(:list_app_installation_repositories).and_return(repositories: payload)
-      result = described_class.new(installation_id).list_repos(GithubIntegration::LIST_REPOS_TRANSFORMATIONS)
+      result = described_class.new(installation_id).list_repos(GithubIntegration::REPOS_TRANSFORMATIONS)
 
       expected = {
         id: 1296269,
@@ -38,7 +38,7 @@ describe Installations::Github::Api, type: :integration do
 
     it "returns the transformed list of active workflows" do
       allow_any_instance_of(Octokit::Client).to receive(:workflows).and_return(payload)
-      result = described_class.new(installation_id).list_workflows(repo, GithubIntegration::LIST_WORKFLOWS_TRANSFORMATIONS)
+      result = described_class.new(installation_id).list_workflows(repo, GithubIntegration::WORKFLOWS_TRANSFORMATIONS)
 
       expected = {
         id: 161335,
@@ -61,7 +61,7 @@ describe Installations::Github::Api, type: :integration do
       result =
         described_class
           .new(installation_id)
-          .find_workflow_run(repo, workflow, branch, head_sha, GithubIntegration::FIND_WORKFLOW_RUN_TRANSFORMATIONS)
+          .find_workflow_run(repo, workflow, branch, head_sha, GithubIntegration::WORKFLOW_RUN_TRANSFORMATIONS)
 
       expected = {
         ci_ref: 30433642,

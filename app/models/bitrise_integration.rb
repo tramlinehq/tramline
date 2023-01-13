@@ -17,12 +17,12 @@ class BitriseIntegration < ApplicationRecord
 
   API = Installations::Bitrise::Api
 
-  LIST_WORKFLOWS_TRANSFORMATIONS = {
+  WORKFLOWS_TRANSFORMATIONS = {
     id: :id,
     name: :name
   }
 
-  LIST_APPS_TRANSFORMATIONS = {
+  APPS_TRANSFORMATIONS = {
     id: :slug,
     name: :title,
     provider: :provider,
@@ -30,7 +30,7 @@ class BitriseIntegration < ApplicationRecord
     avatar_url: :avatar_url
   }
 
-  RUN_WORKFLOW_TRANSFORMATIONS = {
+  WORKFLOW_RUN_TRANSFORMATIONS = {
     ci_ref: :build_slug,
     ci_link: :build_url
   }
@@ -69,18 +69,18 @@ class BitriseIntegration < ApplicationRecord
 
   # Special function if acts as project
   def list_apps
-    installation.list_apps(LIST_APPS_TRANSFORMATIONS)
+    installation.list_apps(APPS_TRANSFORMATIONS)
   end
 
   # CI/CD
 
   def workflows
     return [] unless integration.ci_cd?
-    installation.list_workflows(project, LIST_WORKFLOWS_TRANSFORMATIONS)
+    installation.list_workflows(project, WORKFLOWS_TRANSFORMATIONS)
   end
 
   def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
-    installation.run_workflow!(project, ci_cd_channel, branch_name, inputs, commit_hash, RUN_WORKFLOW_TRANSFORMATIONS)
+    installation.run_workflow!(project, ci_cd_channel, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
   end
 
   def find_workflow_run(_workflow_id, _branch, _commit_sha)

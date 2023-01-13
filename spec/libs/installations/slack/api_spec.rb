@@ -17,7 +17,7 @@ describe Installations::Slack::Api, type: :integration do
           }
         })
         .and_return(payload)
-      result = described_class.new(access_token).list_channels(SlackIntegration::LIST_CHANNELS_TRANSFORMATIONS)
+      result = described_class.new(access_token).list_channels(SlackIntegration::CHANNELS_TRANSFORMATIONS)
 
       expected_projects = [
         {
