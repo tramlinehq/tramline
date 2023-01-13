@@ -25,7 +25,9 @@
           <% if commit.stale? %>
             <%= commits_count - index %>
           <% else %>
-            <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">Latest</span>
+            <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">
+              Latest
+            </span>
           <% end %>
           <div class="mt-2 underline"><%= link_to_external commit.message.truncate(50), commit.url %></div>
           <div class="mt-2"><%= commit.short_sha %></div>

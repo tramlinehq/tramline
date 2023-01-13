@@ -15,7 +15,7 @@
                message: "If your release is stuck in some unrecoverable state, just land another commit to kick things off again." %>
   </div>
 
-  <p class="font-bold text-2xl mt-8 mb-2">Latest build</p>
+  <p class="font-bold text-2xl mt-8 mb-2">Latest builds</p>
 
   <div class="flex flex-col mt-3">
     <ol class="relative border-l-4 border-gray-300 ml-3 mt-2">
@@ -25,7 +25,7 @@
         <li class="mb-10 ml-6 last:mb-0">
           <div class="flex items-center">
             <%= render partial: "releases/live_release/step_run_status", locals: { step_run: step_run } %>
-            <p class="text-lg font-bold text-slate-800 pl-6"><%= step.name %></p>
+            <p class="text-xl font-bold text-slate-800 pl-6"><%= step.name %></p>
             <% if release.on_track? && release.startable_step?(step) %>
               <%= authz_button_to :blue, "Move to this step", start_release_step_run_path(release, step), { class: 'btn-xs ml-2' } %>
             <% end %>
