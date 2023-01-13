@@ -10,9 +10,6 @@ class Releases::UploadArtifact < ApplicationJob
 
       step_run.ready_to_deploy!
 
-      # FIXME: this has a bug, it only checks for _the_ previous run, not _any previous run_
-      # which means if the penultimate run had its CI fail, the deploy will stall here
-      # even if the deployment had previously run at some point
       if step_run.previous_deployments&.any?
         step_run.previous_deployments.each do |deployment|
           Triggers::Deployment.call(deployment: deployment, step_run: step_run)
