@@ -2,13 +2,11 @@ module RefinedHash
   class UndefinedPathError < StandardError; end
 
   refine Hash do
-    def deep_slice(paths)
-      paths.index_with do |path|
-        deep_fetch(*path)
-      end
+    def select_paths(paths)
+      paths.index_with { |path| get_in(*path) }
     end
 
-    def deep_fetch(*path)
+    def get_in(*path)
       path.reduce(self) do |acc, key|
         acc.fetch(key)
       rescue ArgumentError, IndexError, NoMethodError => e

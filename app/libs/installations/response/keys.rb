@@ -12,7 +12,7 @@ class Installations::Response::Keys
         response
           .to_h
           .with_indifferent_access
-          .deep_slice(transforms.values)
+          .select_paths(transforms.values)
           .transform_keys { |path| transforms.invert[path] }
           .with_indifferent_access
       end
