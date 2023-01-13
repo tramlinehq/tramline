@@ -151,8 +151,12 @@ class Releases::Step::Run < ApplicationRecord
     build_artifact.present?
   end
 
-  def previous_run
-    previous_runs.last
+  def previous_deployed_run
+    previous_runs.where(status: [:deployment_started, :deployment_failed, :success]).last
+  end
+
+  def previous_deployments
+    previous_deployed_run&.deployment_runs&.map(&:deployment)
   end
 
   def other_runs
