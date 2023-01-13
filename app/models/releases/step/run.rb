@@ -243,4 +243,8 @@ class Releases::Step::Run < ApplicationRecord
   def notify_on_failure!(message)
     train.notify!(message, :step_failed, {reason: message, step_run: self})
   end
+
+  def finished_deployments?
+    deployment_runs.released.size == step.deployments.size
+  end
 end

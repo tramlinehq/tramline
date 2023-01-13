@@ -140,4 +140,42 @@ describe DeploymentRun, type: :model do
       expect(deployment_run.reload.uploaded?).to be(true)
     end
   end
+
+  describe "#complete!" do
+    let(:step) { create(:releases_step, :with_deployment) }
+    let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
+
+    before do
+      create_list(:deployment, 2, step: step)
+    end
+
+    it "marks the deployment run as released" do
+      deployment_run = create(:deployment_run, :uploaded, deployment: step.deployments[0], step_run: step_run)
+
+      deployment_run.complete!
+
+      expect(deployment_run.reload.released?).to be(true)
+    end
+
+    it "marks the step run as success if all deployments for the step are complete" do
+      _deployment_run1 = create(:deployment_run, :released, deployment: step.deployments[0], step_run: step_run)
+      deployment_run2 = create(:deployment_run, :uploaded, deployment: step.deployments[1], step_run: step_run)
+      _deployment_run3 = create(:deployment_run, :released, deployment: step.deployments[2], step_run: step_run)
+
+      deployment_run2.complete!
+
+      expect(deployment_run2.reload.released?).to be(true)
+      expect(step_run.reload.success?).to be(true)
+    end
+
+    it "does not mark the step run as success if all deployments are not finished" do
+      _deployment_run1 = create(:deployment_run, :released, deployment: step.deployments[0], step_run: step_run)
+      deployment_run2 = create(:deployment_run, :uploaded, deployment: step.deployments[1], step_run: step_run)
+
+      deployment_run2.complete!
+
+      expect(deployment_run2.reload.released?).to be(true)
+      expect(step_run.reload.success?).to be(false)
+    end
+  end
 end
