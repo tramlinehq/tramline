@@ -8,8 +8,24 @@ FactoryBot.define do
     scheduled_at { Time.current }
     status { "on_track" }
 
+    trait :ci_workflow_failed do
+      status { "ci_workflow_failed" }
+    end
+
+    trait :build_ready do
+      status { "build_ready" }
+    end
+
     trait :deployment_started do
       status { "deployment_started" }
+    end
+
+    trait :deployment_failed do
+      status { "deployment_failed" }
+    end
+
+    trait :success do
+      status { "success" }
     end
 
     trait :with_build_artifact do
