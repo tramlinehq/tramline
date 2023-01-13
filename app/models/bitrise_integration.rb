@@ -30,6 +30,11 @@ class BitriseIntegration < ApplicationRecord
     avatar_url: :avatar_url
   }
 
+  RUN_WORKFLOW_TRANSFORMATIONS = {
+    ci_ref: :build_slug,
+    ci_link: :build_url
+  }
+
   delegate :project, to: :app_config
 
   validates :access_token, presence: true
@@ -75,7 +80,7 @@ class BitriseIntegration < ApplicationRecord
   end
 
   def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
-    installation.run_workflow!(project, ci_cd_channel, branch_name, inputs, commit_hash)
+    installation.run_workflow!(project, ci_cd_channel, branch_name, inputs, commit_hash, RUN_WORKFLOW_TRANSFORMATIONS)
   end
 
   def find_workflow_run(_workflow_id, _branch, _commit_sha)

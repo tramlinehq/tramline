@@ -26,7 +26,7 @@ module Installations
       end
     end
 
-    def find_workflow_run(repo, workflow, branch, head_sha)
+    def find_workflow_run(repo, workflow, branch, head_sha, transforms)
       options = {
         branch:,
         head_sha:
@@ -37,8 +37,7 @@ module Installations
           .workflow_runs(repo, workflow, options)
           .then { |response| response[:workflow_runs] }
           .then { |workflow_runs| workflow_runs.sort_by { |workflow_run| workflow_run[:run_number] }.reverse! }
-          .then { |workflow_runs| workflow_runs.map { |workflow_run| workflow_run.to_h.slice(:id, :html_url) } }
-          .then { |responses| Installations::Response::Keys.normalize(responses, :workflow_runs) }
+          .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
           .first
           .then { |run| run&.presence || raise(Installations::Errors::WorkflowRunNotFound) }
       end

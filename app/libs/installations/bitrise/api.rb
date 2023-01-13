@@ -46,7 +46,7 @@ module Installations
         .then { |workflows| Installations::Response::Keys.transform(workflows, transforms) }
     end
 
-    def run_workflow!(app_slug, workflow_id, branch, inputs, commit_hash)
+    def run_workflow!(app_slug, workflow_id, branch, inputs, commit_hash, transforms)
       params = {
         json: {
           build_params: {
@@ -67,8 +67,7 @@ module Installations
 
       execute(:post, TRIGGER_WORKFLOW_URL.expand(app_slug:).to_s, params)
         .tap { |response| raise Installations::Errors::WorkflowTriggerFailed if response.blank? }
-        .then { |build| build.slice("build_slug", "build_url") }
-        .then { |response| Installations::Response::Keys.normalize([response], :workflow_runs) }
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
 
