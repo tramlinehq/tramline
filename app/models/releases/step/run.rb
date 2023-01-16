@@ -94,7 +94,7 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: [:build_ready, :deployment_started], to: :deployment_failed
     end
 
-    event(:finish) { transitions from: [:build_ready, :deployment_started], to: :success }
+    event(:finish) { transitions from: [:build_ready, :deployment_started], to: :success, guard: :finished_deployments? }
   end
 
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
@@ -248,5 +248,9 @@ class Releases::Step::Run < ApplicationRecord
 
   def notify_on_failure!(message)
     train.notify!(message, :step_failed, {reason: message, step_run: self})
+  end
+
+  def finished_deployments?
+    deployment_runs.released.size == step.deployments.size
   end
 end

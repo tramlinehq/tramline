@@ -74,4 +74,34 @@ describe Releases::Train::Run, type: :model do
       expect(train_run.overall_movement_status).to eq(expectation)
     end
   end
+
+  describe "finalizable?" do
+    let(:active_train) { create(:releases_train, :active) }
+    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: active_train) }
+    let(:train_run) { create(:releases_train_run, train: active_train) }
+
+    it "is finalizable when all the steps for the last commit have succeeded" do
+      commit_1 = create(:releases_commit, train_run: train_run)
+      _commit_1_fail = create(:releases_step_run, :ci_workflow_failed, commit: commit_1, step: steps.first, train_run: train_run)
+      _commit_1_pass = create(:releases_step_run, :success, commit: commit_1, step: steps.second, train_run: train_run)
+
+      commit_2 = create(:releases_commit, train_run: train_run)
+      _commit_2_pass = create(:releases_step_run, :success, commit: commit_2, step: steps.first, train_run: train_run)
+      _commit_2_pass = create(:releases_step_run, :success, commit: commit_2, step: steps.second, train_run: train_run)
+
+      expect(train_run.finalizable?).to be(true)
+    end
+
+    it "is not finalizable when all the steps for the last commit have not succeeded" do
+      commit_1 = create(:releases_commit, train_run: train_run)
+      _commit_1_pass = create(:releases_step_run, :success, commit: commit_1, step: steps.first, train_run: train_run)
+      _commit_1_fail = create(:releases_step_run, :ci_workflow_failed, commit: commit_1, step: steps.second, train_run: train_run)
+
+      commit_2 = create(:releases_commit, train_run: train_run)
+      _commit_2_fail = create(:releases_step_run, :ci_workflow_failed, commit: commit_2, step: steps.first, train_run: train_run)
+      _commit_2_pass = create(:releases_step_run, :success, commit: commit_2, step: steps.second, train_run: train_run)
+
+      expect(train_run.finalizable?).to be(false)
+    end
+  end
 end
