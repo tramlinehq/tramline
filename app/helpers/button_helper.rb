@@ -95,19 +95,19 @@ module ButtonHelper
   end
 
   class AuthzForms < ActionView::Helpers::FormBuilder
-    def decorated_submit(style, value, options)
+    def decorated_submit(style, value, options, &block)
       _options, html_options = @template.apply_button_styles(style, {}, options, nil)
 
-      if style.eql?(:disabled)
-        button(value, html_options)
+      if block || style.eql?(:disabled)
+        button(value, html_options, &block)
       else
         button(html_options) { @template.apply_button_loader(value) }
       end
     end
 
-    def authz_submit(style, value = nil, options = nil)
+    def authz_submit(style, value = nil, options = nil, &block)
       style = :disabled unless @template.writer?
-      decorated_submit(style, value, options)
+      decorated_submit(style, value, options, &block)
     end
   end
 end
