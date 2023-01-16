@@ -21,9 +21,12 @@ class EnhanceJsonSchemas < ActiveRecord::Migration[7.0]
       if repo.present?
         id = repo.keys.first
         name = repo.values.first
+        namespace, only_name = name.split("/")
 
         repo_map["id"] = id.to_s
-        repo_map["name"] = name.to_s
+        repo_map["name"] = only_name.to_s
+        repo_map["namespace"] = namespace.to_s
+        repo_map["full_name"] = name.to_s
 
         config.code_repository = repo_map
       end
