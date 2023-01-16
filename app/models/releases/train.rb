@@ -85,11 +85,14 @@ class Releases::Train < ApplicationRecord
     self.status = Releases::Step.statuses[:active]
   end
 
+  # since callbacks can't inherently return validation errors
+  # we raise ActiveRecord::RecordInvalid to fail validations if webhook creation fails
+  # currently as a design, we assume that trains are invalid without a corresponding webhook
   def create_webhook!
     return false if Rails.env.test?
     vcs_provider.create_webhook!(train_id: id)
-  rescue Installations::Errors::WebhookLimitReached
-    errors.add(:webhooks, "We can't create any more webhooks in your VCS/CI environment!")
+  rescue Installations::Errors::WebhookLimitReached => e
+    errors.add(:webhooks, e.message)
     raise ActiveRecord::RecordInvalid, self
   end
 

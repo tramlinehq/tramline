@@ -6,7 +6,11 @@ module Installations
 
     class PullRequestNotMergeable < StandardError; end
 
-    class WebhookLimitReached < StandardError; end
+    class WebhookLimitReached < StandardError
+      def initialize(msg = "We can't create any more webhooks in your VCS/CI environment!")
+        super
+      end
+    end
 
     class PullRequestAlreadyExists < StandardError; end
 

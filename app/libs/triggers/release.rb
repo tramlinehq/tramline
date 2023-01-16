@@ -24,16 +24,10 @@ class Triggers::Release
     return Response.new(:unprocessable_entity, "A release is already in progress!") if train.active_run.present?
     return Response.new(:unprocessable_entity, "Cannot start a new release before wrapping up existing releases!") if train.runs.pending_release?
 
-    transaction do
-      create_release
-      create_webhooks
-      create_webhook_listeners
-
-      if RELEASE_HANDLERS[branching_strategy].call(release, release_branch).ok?
-        Response.new(:ok)
-      else
-        return Response.new(:unprocessable_entity, "Could not start a release because kickoff PRs could not be merged!")
-      end
+    if kickoff.ok?
+      Response.new(:ok)
+    else
+      Response.new(:unprocessable_entity, "Could not kickoff a release • #{kickoff.error.message}")
     end
   end
 
@@ -42,6 +36,17 @@ class Triggers::Release
   attr_reader :train, :release, :starting_time
   delegate :branching_strategy, to: :train
   delegate :transaction, to: ApplicationRecord
+
+  memoize def kickoff
+    GitHub::Result.new do
+      transaction do
+        create_release
+        create_webhooks.value!
+        create_webhook_listeners
+        RELEASE_HANDLERS[branching_strategy].call(release, release_branch).value!
+      end
+    end
+  end
 
   def create_release
     @release =
@@ -56,9 +61,11 @@ class Triggers::Release
   # Webhooks are created with the train and we don't need to create webhooks for each train run AKA release
   # This is a fallback to ensure that webhook gets created if it is not present against the train
   def create_webhooks
-    train.create_webhook!
-  rescue ActiveRecord::RecordInvalid, Installations::Errors::HookAlreadyExistsOnRepository
-    nil
+    GitHub::Result.new do
+      train.vcs_provider.create_webhook!(train_id: train.id)
+    rescue Installations::Errors::HookAlreadyExistsOnRepository
+      nil
+    end
   end
 
   def create_webhook_listeners
