@@ -31,6 +31,7 @@ class Releases::Step::Run < ApplicationRecord
   has_one :build_artifact, foreign_key: :train_step_runs_id, inverse_of: :step_run, dependent: :destroy
   has_many :deployment_runs, -> { includes(:deployment).order("deployments.deployment_number ASC") }, foreign_key: :train_step_run_id, inverse_of: :step_run, dependent: :destroy
   has_many :deployments, through: :step
+  has_many :running_deployments, through: :deployment_runs, source: :deployment
   has_many :passports, as: :stampable, dependent: :destroy
 
   validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
@@ -93,7 +94,7 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: [:build_ready, :deployment_started], to: :deployment_failed
     end
 
-    event(:finish) { transitions from: [:build_ready, :deployment_started], to: :success }
+    event(:finish) { transitions from: [:build_ready, :deployment_started], to: :success, guard: :finished_deployments? }
   end
 
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
@@ -156,7 +157,8 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def previous_deployments
-    previous_deployed_run&.deployment_runs&.map(&:deployment)
+    return Deployment.none if previous_deployed_run.blank?
+    previous_deployed_run.running_deployments
   end
 
   def other_runs

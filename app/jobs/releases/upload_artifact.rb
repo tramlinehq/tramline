@@ -10,7 +10,7 @@ class Releases::UploadArtifact < ApplicationJob
 
       step_run.ready_to_deploy!
 
-      if step_run.previous_deployments&.any?
+      if step_run.previous_deployments.any?
         step_run.previous_deployments.each do |deployment|
           Triggers::Deployment.call(deployment: deployment, step_run: step_run)
         end
