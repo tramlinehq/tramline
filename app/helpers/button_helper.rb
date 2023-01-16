@@ -58,7 +58,7 @@ module ButtonHelper
 
     # if there is no block, the button loader is auto-applied on clicks
     # when block is supplied, the user is expected to attach the button loader inside the block
-    if block
+    if block || style.eql?(:disabled)
       button_to(name, options, html_options, &block)
     else
       button_to(options, html_options) { apply_button_loader(name) }
@@ -97,7 +97,12 @@ module ButtonHelper
   class AuthzForms < ActionView::Helpers::FormBuilder
     def decorated_submit(style, value, options)
       _options, html_options = @template.apply_button_styles(style, {}, options, nil)
-      button(html_options) { @template.apply_button_loader(value) }
+
+      if style.eql?(:disabled)
+        button(value, html_options)
+      else
+        button(html_options) { @template.apply_button_loader(value) }
+      end
     end
 
     def authz_submit(style, value = nil, options = nil)
