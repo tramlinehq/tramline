@@ -8,6 +8,6 @@ module DeploymentsHelper
   end
 
   def show_deployment_channel(deployment)
-    deployment.build_artifact_channel.values.first
+    deployment.build_artifact_channel["name"]
   end
 end

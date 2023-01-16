@@ -16,14 +16,14 @@ class Triggers::PostRelease
     private
 
     attr_reader :train, :release
-    delegate :fully_qualified_release_branch_hack, :working_branch, to: :train
+    delegate :vcs_provider, :release_branch, :working_branch, to: :train
 
     def create_and_merge_pr
       Triggers::PullRequest.create_and_merge!(
         release: release,
         new_pull_request: release.pull_requests.post_release.open.build,
         to_branch_ref: working_branch,
-        from_branch_ref: fully_qualified_release_branch_hack,
+        from_branch_ref: namespaced_release_branch,
         title: pr_title,
         description: pr_description
       )
@@ -37,6 +37,10 @@ class Triggers::PostRelease
       rescue Installations::Errors::TaggedReleaseAlreadyExists
         release.event_stamp!(reason: :tagged_release_already_exists, kind: :notice, data: {tag: release.tag_name})
       end
+    end
+
+    def namespaced_release_branch
+      vcs_provider.namespaced_branch(release_branch)
     end
 
     def pr_title

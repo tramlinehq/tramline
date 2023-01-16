@@ -31,6 +31,7 @@ class Releases::Step::Run < ApplicationRecord
   has_one :build_artifact, foreign_key: :train_step_runs_id, inverse_of: :step_run, dependent: :destroy
   has_many :deployment_runs, -> { includes(:deployment).order("deployments.deployment_number ASC") }, foreign_key: :train_step_run_id, inverse_of: :step_run, dependent: :destroy
   has_many :deployments, through: :step
+  has_many :running_deployments, through: :deployment_runs, source: :deployment
   has_many :passports, as: :stampable, dependent: :destroy
 
   validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
@@ -127,7 +128,7 @@ class Releases::Step::Run < ApplicationRecord
     update!(build_number: version_code)
 
     ci_cd_provider
-      .trigger_workflow_run!(workflow_name, release_branch, inputs, commit_hash)
+      .trigger_workflow_run!(workflow_id, release_branch, inputs, commit_hash)
       .then { |wr| update_ci_metadata!(wr) }
   end
 
@@ -136,7 +137,7 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def find_workflow_run
-    ci_cd_provider.find_workflow_run(workflow_name, release_branch, commit_hash)
+    ci_cd_provider.find_workflow_run(workflow_id, release_branch, commit_hash)
   end
 
   def get_workflow_run
@@ -151,8 +152,13 @@ class Releases::Step::Run < ApplicationRecord
     build_artifact.present?
   end
 
-  def previous_run
-    previous_runs.last
+  def previous_deployed_run
+    previous_runs.where(status: [:deployment_started, :deployment_failed, :success]).last
+  end
+
+  def previous_deployments
+    return Deployment.none if previous_deployed_run.blank?
+    previous_deployed_run.running_deployments
   end
 
   def other_runs
@@ -236,8 +242,8 @@ class Releases::Step::Run < ApplicationRecord
     }
   end
 
-  def workflow_name
-    step.ci_cd_channel.keys.first
+  def workflow_id
+    step.ci_cd_channel["id"]
   end
 
   def notify_on_failure!(message)

@@ -47,11 +47,7 @@ class AppConfigsController < SignedInApplicationController
 
   def set_ci_cd_projects
     if @app.ci_cd_provider.belongs_to_project?
-      @ci_cd_projects =
-        @app
-          .ci_cd_provider
-          .list_apps
-          .map { |pair| ["#{pair[:name]} (#{pair[:id]})", {pair[:id] => pair[:name]}.to_json] }
+      @ci_cd_projects = @app.ci_cd_provider.list_apps
     end
   end
 end

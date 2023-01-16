@@ -15,12 +15,32 @@ class GithubIntegration < ApplicationRecord
   include Displayable
   include Rails.application.routes.url_helpers
 
-  delegate :code_repository_name, to: :app_config
+  delegate :code_repository_name, :code_repo_namespace, to: :app_config
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://github.com/apps/{app_name}/installations/new{?params*}")
 
   API = Installations::Github::Api
+
+  REPOS_TRANSFORMATIONS = {
+    id: :id,
+    name: :name,
+    namespace: [:owner, :login],
+    full_name: :full_name,
+    description: :description,
+    repo_url: :html_url,
+    avatar_url: [:owner, :avatar_url]
+  }
+
+  WORKFLOWS_TRANSFORMATIONS = {
+    id: :id,
+    name: :name
+  }
+
+  WORKFLOW_RUN_TRANSFORMATIONS = {
+    ci_ref: :id,
+    ci_link: :html_url
+  }
 
   def install_path
     unless integration.version_control? || integration.ci_cd?
@@ -34,7 +54,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def repos
-    installation.list_repos
+    installation.list_repos(REPOS_TRANSFORMATIONS)
   end
 
   def create_webhook!(url_params)
@@ -77,6 +97,10 @@ class GithubIntegration < ApplicationRecord
     false
   end
 
+  def namespaced_branch(branch_name)
+    [code_repo_namespace, ":", branch_name].join
+  end
+
   # FIXME: what is this really?
   def belongs_to_project?
     false
@@ -86,7 +110,7 @@ class GithubIntegration < ApplicationRecord
 
   def workflows
     return [] unless integration.ci_cd?
-    installation.list_workflows(code_repository_name)
+    installation.list_workflows(code_repository_name, WORKFLOWS_TRANSFORMATIONS)
   end
 
   def trigger_workflow_run!(ci_cd_channel, ref, inputs, _commit_hash = nil)
@@ -94,7 +118,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def find_workflow_run(workflow_id, branch, commit_sha)
-    installation.find_workflow_run(code_repository_name, workflow_id, branch, commit_sha)
+    installation.find_workflow_run(code_repository_name, workflow_id, branch, commit_sha, WORKFLOW_RUN_TRANSFORMATIONS)
   end
 
   def get_workflow_run(workflow_run_id)

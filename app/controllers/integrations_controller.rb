@@ -24,15 +24,8 @@ class IntegrationsController < SignedInApplicationController
   end
 
   def build_artifact_channels
-    id = params[:id]
-
     @target = params[:target]
-    @build_channels =
-      if id.blank?
-        [["External", {"external" => "external"}.to_json]] # TODO: Have a better abstraction instead of if conditions
-      else
-        Integration.find_by(id: id).providable.channels
-      end
+    @build_channels = Integration.find_build_channels(params[:integration_id])
 
     respond_to(&:turbo_stream)
   end

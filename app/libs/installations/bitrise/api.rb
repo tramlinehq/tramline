@@ -32,19 +32,21 @@ module Installations
       end
     end
 
-    def list_apps
+    def list_apps(transforms)
       execute(:get, LIST_APPS_URL, {})
         .then { |response| response&.fetch("data", nil) }
-        .then { |apps| apps&.map { |app| app.slice("slug", "title") } }
-        .then { |responses| Installations::Response::Keys.normalize(responses) }
+        .then { |apps| apps&.reject { |app| app.to_h["is_disabled"] } }
+        .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
     end
 
-    def list_workflows(app_slug)
+    def list_workflows(app_slug, transforms)
       execute(:get, LIST_WORKFLOWS_URL.expand(app_slug:).to_s, {})
-        &.fetch("data", nil)
+        &.fetch("data", [])
+        &.map { |workflow| {id: workflow, name: workflow} }
+        .then { |workflows| Installations::Response::Keys.transform(workflows, transforms) }
     end
 
-    def run_workflow!(app_slug, workflow_id, branch, inputs, commit_hash)
+    def run_workflow!(app_slug, workflow_id, branch, inputs, commit_hash, transforms)
       params = {
         json: {
           build_params: {
@@ -65,8 +67,7 @@ module Installations
 
       execute(:post, TRIGGER_WORKFLOW_URL.expand(app_slug:).to_s, params)
         .tap { |response| raise Installations::Errors::WorkflowTriggerFailed if response.blank? }
-        .then { |build| build.slice("build_slug", "build_url") }
-        .then { |response| Installations::Response::Keys.normalize([response], :workflow_runs) }
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
 

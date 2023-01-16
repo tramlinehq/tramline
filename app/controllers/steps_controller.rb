@@ -100,9 +100,9 @@ class StepsController < SignedInApplicationController
   end
 
   def set_build_channels
-    @build_channel_integrations = @train.build_channel_integrations
-    @selected_integration = @build_channel_integrations.first
-    @selected_build_channels = Integration.find_by(id: @selected_integration).providable.channels
+    @build_channel_integrations = set_build_channel_integrations
+    @selected_integration = @build_channel_integrations.first # TODO: what is first even?
+    @selected_build_channels = Integration.find_build_channels(@selected_integration.last)
   end
 
   def deployments_params
@@ -119,5 +119,12 @@ class StepsController < SignedInApplicationController
     deployments_params[:deployments_attributes].to_h.to_h do |number, attributes|
       [number, attributes.merge(build_artifact_channel: attributes[:build_artifact_channel]&.safe_json_parse)]
     end
+  end
+
+  def set_build_channel_integrations
+    @train
+      .build_channel_integrations
+      .map { |bc| [bc.providable.display, bc.id] }
+      .push(Integration::EXTERNAL_BUILD_INTEGRATION[:build_integration])
   end
 end

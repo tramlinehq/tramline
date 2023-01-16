@@ -187,10 +187,6 @@ class Releases::Train::Run < ApplicationRecord
     last_run_for(all_steps.last)&.approval_approved?
   end
 
-  def fully_qualified_branch_name_hack
-    [app.config.code_repository_organization_name_hack, ":", branch_name].join
-  end
-
   def events
     types = %w[Releases::Train::Run Releases::Step::Run Releases::Commit DeploymentRun]
     ids = [id, commits.pluck(:id), step_runs.pluck(:id), deployment_runs.pluck(:id)].flatten

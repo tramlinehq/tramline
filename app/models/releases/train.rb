@@ -22,7 +22,6 @@ class Releases::Train < ApplicationRecord
   using RefinedString
   extend FriendlyId
 
-  EXTERNAL_DEPLOYMENT_CHANNEL = ["None (outside Tramline)", nil]
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
     release_backmerge: "Release with Backmerge",
@@ -111,7 +110,7 @@ class Releases::Train < ApplicationRecord
 
   def notify!(message, type, params)
     return unless app.send_notifications?
-    notification_provider.notify!(config.notification_channel_name, message, type, params)
+    notification_provider.notify!(config.notification_channel_id, message, type, params)
   end
 
   def display_name
@@ -144,27 +143,11 @@ class Releases::Train < ApplicationRecord
   end
 
   def build_channel_integrations
-    app
-      .integrations
-      .build_channel
-      .map { |build_channel| [build_channel.providable.display, build_channel.id] }
-      .push(EXTERNAL_DEPLOYMENT_CHANNEL)
+    app.integrations.build_channel
   end
 
   def final_deployment_channel
     steps.order(:step_number).last.deployments.last&.integration&.providable
-  end
-
-  def fully_qualified_working_branch_hack
-    [app.config.code_repository_organization_name_hack, ":", working_branch].join
-  end
-
-  def fully_qualified_release_branch_hack
-    [app.config.code_repository_organization_name_hack, ":", release_branch].join
-  end
-
-  def fully_qualified_release_backmerge_branch_hack
-    [app.config.code_repository_organization_name_hack, ":", release_backmerge_branch].join
   end
 
   def pre_release_prs?

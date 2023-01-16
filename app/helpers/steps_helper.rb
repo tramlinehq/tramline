@@ -4,6 +4,6 @@ module StepsHelper
   end
 
   def show_ci_cd_channel(step)
-    step.ci_cd_channel.values.first
+    step.ci_cd_channel["name"]
   end
 end

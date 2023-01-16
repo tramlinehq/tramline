@@ -94,10 +94,6 @@ Rails.application.routes.draw do
     end
 
     resources :integrations, only: %i[index create] do
-      member do
-        get :build_artifact_channels
-      end
-
       collection do
         get :connect, to: "integrations#connect", as: :connect
         resource :google_play_store, only: [:create],
@@ -109,6 +105,8 @@ Rails.application.routes.draw do
           as: :bitrise_integration
       end
     end
+
+    get "/integrations/build_artifact_channels", to: "integrations#build_artifact_channels"
   end
 
   namespace :admin do

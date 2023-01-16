@@ -1,0 +1,8 @@
+{
+  "data": [
+    "debug",
+    "release",
+    "deploy",
+    "primary"
+  ]
+}

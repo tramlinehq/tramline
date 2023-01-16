@@ -31,6 +31,7 @@ class App < ApplicationRecord
   validate :no_trains_are_running, on: :update
   validates :bundle_identifier, uniqueness: {scope: :organization_id}
   validates :build_number, numericality: {greater_than_or_equal_to: :build_number_was}, on: :update
+  validates :build_number, numericality: {less_than: 2100000000}, if: -> { android? }
 
   enum platform: {android: "android", ios: "ios"}
 

@@ -73,7 +73,7 @@ module Installations
       end
     end
 
-    def list_projects
+    def list_projects(transforms)
       params = {
         params: {
           membership: true
@@ -81,8 +81,7 @@ module Installations
       }
 
       execute(:get, LIST_PROJECTS_URL, params)
-        .then { |repositories| repositories.map { |repo| repo.slice("id", "path_with_namespace") } }
-        .then { |responses| Installations::Response::Keys.normalize(responses) }
+        .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
     end
 
     def create_project_webhook!(project_id, url)
