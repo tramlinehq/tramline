@@ -1,28 +1,36 @@
 module ButtonHelper
+  BASE_OPTS = "btn group"
+
   BUTTON_OPTIONS = {
     green: {
-      class: "btn bg-emerald-500 hover:bg-emerald-600 text-white"
+      class: "#{BASE_OPTS} bg-emerald-500 enabled:hover:bg-emerald-600 text-white"
     },
     blue: {
-      class: "btn bg-indigo-500 hover:bg-indigo-600 text-white"
+      class: "#{BASE_OPTS} bg-indigo-500 enabled:hover:bg-indigo-600 text-white"
     },
     red: {
-      class: "btn bg-rose-500 hover:bg-rose-600 text-white"
+      class: "#{BASE_OPTS} bg-rose-500 enabled:hover:bg-rose-600 text-white"
     },
     neutral: {
-      class: "btn text-slate-600 border-slate-300 hover:border-slate-400"
+      class: "#{BASE_OPTS} border-slate-300 enabled:hover:border-slate-400 text-slate-600"
     },
     disabled:
       {
-        class: "btn opacity-30 disabled cursor-not-allowed bg-transparent border-slate-300 hover:border-slate-300",
+        class: "#{BASE_OPTS} opacity-30 disabled cursor-not-allowed bg-transparent border-slate-300 enabled:hover:border-slate-300",
         disabled: true
       }
   }
+
+  def apply_button_loader(value)
+    concat content_tag(:span, value, class: "group-disabled:hidden")
+    concat content_tag(:span, "Processing...", class: "hidden group-disabled:inline group-disabled:opacity-60")
+  end
 
   def apply_button_options(options, new_options)
     options ||= {}
     options[:class] ||= ""
     options[:class] << " #{new_options[:class]}"
+    options[:class].squish
     options.merge(new_options.except(:class))
   end
 
@@ -47,7 +55,14 @@ module ButtonHelper
   # styled button with path
   def decorated_button_to(style, name = nil, options = nil, html_options = nil, &block)
     options, html_options = apply_button_styles(style, options, html_options, block)
-    button_to(name, options, html_options, &block)
+
+    # if there is no block, the button loader is auto-applied on clicks
+    # when block is supplied, the user is expected to attach the button loader inside the block
+    if block || style.eql?(:disabled)
+      button_to(name, options, html_options, &block)
+    else
+      button_to(options, html_options) { apply_button_loader(name) }
+    end
   end
 
   # styled button tag
@@ -79,26 +94,20 @@ module ButtonHelper
     decorated_button_to(style, name, options, html_options, &block)
   end
 
-  # open a link in a new tab
-  def link_to_external(name = nil, options = nil, html_options = nil, &block)
-    opts = {target: "_blank", rel: "nofollow noopener"}
+  class AuthzForms < ActionView::Helpers::FormBuilder
+    def decorated_submit(style, value, options)
+      _options, html_options = @template.apply_button_styles(style, {}, options, nil)
 
-    if block
-      options ||= {}
-      options = options.merge(opts)
-    else
-      html_options ||= {}
-      html_options = html_options.merge(opts)
+      if style.eql?(:disabled)
+        button(value, html_options)
+      else
+        button(html_options) { @template.apply_button_loader(value) }
+      end
     end
 
-    link_to(name, options, html_options, &block)
-  end
-
-  class AuthzForms < ActionView::Helpers::FormBuilder
     def authz_submit(style, value = nil, options = nil)
       style = :disabled unless @template.writer?
-      _options, html_options = @template.apply_button_styles(style, {}, options, nil)
-      submit(value, html_options)
+      decorated_submit(style, value, options)
     end
   end
 end
