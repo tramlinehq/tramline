@@ -62,8 +62,8 @@ describe Releases::UploadArtifact, type: :job do
         create(:deployment_run, deployment: step.deployments[0], step_run: older_step_run)
         create(:deployment_run, deployment: step.deployments[1], step_run: older_step_run)
 
-        _old_failed_step_run = create(:releases_step_run, step: step, train_run: older_step_run.train_run,
-          scheduled_at: 1.minute.ago, status: "ci_workflow_failed")
+        _old_failed_step_run = create(:releases_step_run, :ci_workflow_failed, step: step,
+          train_run: older_step_run.train_run, scheduled_at: 1.minute.ago)
 
         new_step_run = create(:releases_step_run, :build_ready, step: step, train_run: older_step_run.train_run)
 

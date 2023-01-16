@@ -94,7 +94,7 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: [:build_ready, :deployment_started], to: :deployment_failed
     end
 
-    event(:finish) { transitions from: [:build_ready, :deployment_started], to: :success, guard: :finished_deployments? }
+    event(:finish) { transitions from: [:build_ready, :deployment_started], to: :success }
   end
 
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
