@@ -82,22 +82,24 @@ describe Releases::Train::Run, type: :model do
 
     it "is finalizable when all the steps for the last commit have succeeded" do
       commit_1 = create(:releases_commit, train_run: train_run)
+      _commit_1_fail = create(:releases_step_run, :ci_workflow_failed, commit: commit_1, step: steps.first, train_run: train_run)
+      _commit_1_pass = create(:releases_step_run, :success, commit: commit_1, step: steps.second, train_run: train_run)
+
       commit_2 = create(:releases_commit, train_run: train_run)
-      _step_run_1 = create(:releases_step_run, :ci_workflow_failed, commit: commit_1, step: steps.first, train_run: train_run)
-      _step_run_1 = create(:releases_step_run, :success, commit: commit_2, step: steps.first, train_run: train_run)
-      _step_run_2 = create(:releases_step_run, :success, commit: commit_1, step: steps.second, train_run: train_run)
-      _step_run_2 = create(:releases_step_run, :success, commit: commit_2, step: steps.second, train_run: train_run)
+      _commit_2_pass = create(:releases_step_run, :success, commit: commit_2, step: steps.first, train_run: train_run)
+      _commit_2_pass = create(:releases_step_run, :success, commit: commit_2, step: steps.second, train_run: train_run)
 
       expect(train_run.finalizable?).to be(true)
     end
 
     it "is not finalizable when all the steps for the last commit have not succeeded" do
       commit_1 = create(:releases_commit, train_run: train_run)
+      _commit_1_pass = create(:releases_step_run, :success, commit: commit_1, step: steps.first, train_run: train_run)
+      _commit_1_fail = create(:releases_step_run, :ci_workflow_failed, commit: commit_1, step: steps.second, train_run: train_run)
+
       commit_2 = create(:releases_commit, train_run: train_run)
-      _step_run_1 = create(:releases_step_run, :ci_workflow_failed, commit: commit_1, step: steps.first, train_run: train_run)
-      _step_run_1 = create(:releases_step_run, :ci_workflow_failed, commit: commit_2, step: steps.first, train_run: train_run)
-      _step_run_2 = create(:releases_step_run, :success, commit: commit_1, step: steps.second, train_run: train_run)
-      _step_run_2 = create(:releases_step_run, :success, commit: commit_2, step: steps.second, train_run: train_run)
+      _commit_2_fail = create(:releases_step_run, :ci_workflow_failed, commit: commit_2, step: steps.first, train_run: train_run)
+      _commit_2_pass = create(:releases_step_run, :success, commit: commit_2, step: steps.second, train_run: train_run)
 
       expect(train_run.finalizable?).to be(false)
     end
