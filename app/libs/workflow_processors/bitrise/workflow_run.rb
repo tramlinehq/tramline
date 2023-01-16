@@ -13,7 +13,7 @@ class WorkflowProcessors::Bitrise::WorkflowRun
   end
 
   def failed?
-    status == "failed"
+    status == "failed" || status == "error"
   end
 
   def halted?

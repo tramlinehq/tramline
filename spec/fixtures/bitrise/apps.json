@@ -1,0 +1,66 @@
+{
+  "data": [
+    {
+      "slug": "d3853d44004b2080",
+      "title": "ueno",
+      "project_type": null,
+      "provider": "gitlab",
+      "repo_owner": "tramline",
+      "repo_url": "git@gitlab.com:tramline/ueno.git",
+      "repo_slug": "ueno",
+      "is_disabled": false,
+      "status": 1,
+      "is_public": false,
+      "is_github_checks_enabled": false,
+      "owner": {
+        "account_type": "organization",
+        "name": "nid-personal",
+        "slug": "7a1f101b203e723d"
+      },
+      "avatar_url": null
+    },
+    {
+      "slug": "e92eb64365bcdd8f",
+      "title": "ueno",
+      "project_type": "flutter",
+      "provider": "github",
+      "repo_owner": "tramlinehq",
+      "repo_url": "https://github.com/tramlinehq/ueno.git",
+      "repo_slug": "ueno",
+      "is_disabled": false,
+      "status": 1,
+      "is_public": true,
+      "is_github_checks_enabled": false,
+      "owner": {
+        "account_type": "organization",
+        "name": "nid-personal",
+        "slug": "7a1f101b203e723d"
+      },
+      "avatar_url": null
+    },
+    {
+      "slug": "m7853d44004b2080",
+      "title": "ueno-disabled",
+      "project_type": null,
+      "provider": "gitlab",
+      "repo_owner": "tramline",
+      "repo_url": "git@gitlab.com:tramline/ueno.git",
+      "repo_slug": "ueno",
+      "is_disabled": true,
+      "status": 1,
+      "is_public": false,
+      "is_github_checks_enabled": false,
+      "owner": {
+        "account_type": "organization",
+        "name": "nid-personal",
+        "slug": "7a1f101b203e723d"
+      },
+      "avatar_url": null
+    }
+  ],
+  "paging": {
+    "total_item_count": 3,
+    "page_item_limit": 50
+  }
+}
+

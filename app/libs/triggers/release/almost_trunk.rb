@@ -19,7 +19,7 @@ class Triggers::Release
 
     attr_reader :release, :release_branch
     delegate :train, to: :release
-    delegate :fully_qualified_working_branch_hack, :working_branch, to: :train
+    delegate :working_branch, to: :train
 
     # TODO: this should be handled gracefully rather than catching a Github-specific error
     def create_branches

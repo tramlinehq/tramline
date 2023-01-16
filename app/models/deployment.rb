@@ -60,14 +60,6 @@ class Deployment < ApplicationRecord
   end
 
   def deployment_channel
-    build_artifact_channel.values.first
-  end
-
-  def available_deployment_channels
-    if external?
-      [["External", {"external" => "external"}.to_json]]
-    else
-      deployment.integration.providable.channels
-    end
+    build_artifact_channel["id"]
   end
 end

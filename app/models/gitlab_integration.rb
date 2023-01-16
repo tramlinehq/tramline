@@ -21,10 +21,20 @@ class GitlabIntegration < ApplicationRecord
 
   attr_accessor :code
   before_create :complete_access
-  delegate :code_repository_name, :working_branch, to: :app_config
+  delegate :code_repository_name, :code_repo_namespace, :working_branch, to: :app_config
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://gitlab.com/oauth/authorize{?params*}")
+
+  REPOS_TRANSFORMATIONS = {
+    id: :id,
+    name: :path,
+    namespace: [:namespace, :path],
+    full_name: :path_with_namespace,
+    description: :description,
+    repo_url: :web_url,
+    avatar_url: :avatar_url
+  }
 
   def install_path
     unless integration.version_control? || integration.ci_cd?
@@ -46,7 +56,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def repos
-    with_api_retries { installation.list_projects }
+    with_api_retries { installation.list_projects(REPOS_TRANSFORMATIONS) }
   end
 
   def workflows
@@ -83,6 +93,10 @@ class GitlabIntegration < ApplicationRecord
 
   def store?
     false
+  end
+
+  def namespaced_branch(branch_name)
+    [code_repo_namespace, ":", branch_name].join
   end
 
   private

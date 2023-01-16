@@ -12,7 +12,7 @@
       <%= form.label :code_repository, "Code Repository", class: "block text-sm font-medium mb-1" %>
       <%= form.select :code_repository,
                       options_for_select(
-                        @code_repositories.map { |chan| [chan[:name], { chan[:id] => chan[:name] }.to_json] },
+                        display_channels(@code_repositories) { |chan| chan[:full_name] },
                         @config.code_repository.to_json
                       ),
                       {},
@@ -24,7 +24,7 @@
         <%= form.label :notification_channel, "Notification Channel", class: "block text-sm font-medium mb-1" %>
         <%= form.select :notification_channel,
                         options_for_select(
-                          @notification_channels,
+                          display_channels(@notification_channels) { |chan| "#" + chan[:name] },
                           @config.notification_channel.to_json
                         ),
                         {},
@@ -42,7 +42,7 @@
         <%= form.label :project_id, "#{@ci_cd_provider_name} Project", class: "block text-sm font-medium mb-1" %>
         <%= form.select :project_id,
                         options_for_select(
-                          @ci_cd_projects,
+                          display_channels(@ci_cd_projects) { |app| "#{app[:name]} (#{app[:id]})" },
                           @config.project_id.to_json
                         ),
                         {},

@@ -127,7 +127,7 @@ class Releases::Step::Run < ApplicationRecord
     update!(build_number: version_code)
 
     ci_cd_provider
-      .trigger_workflow_run!(workflow_name, release_branch, inputs, commit_hash)
+      .trigger_workflow_run!(workflow_id, release_branch, inputs, commit_hash)
       .then { |wr| update_ci_metadata!(wr) }
   end
 
@@ -136,7 +136,7 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def find_workflow_run
-    ci_cd_provider.find_workflow_run(workflow_name, release_branch, commit_hash)
+    ci_cd_provider.find_workflow_run(workflow_id, release_branch, commit_hash)
   end
 
   def get_workflow_run
@@ -236,8 +236,8 @@ class Releases::Step::Run < ApplicationRecord
     }
   end
 
-  def workflow_name
-    step.ci_cd_channel.keys.first
+  def workflow_id
+    step.ci_cd_channel["id"]
   end
 
   def notify_on_failure!(message)

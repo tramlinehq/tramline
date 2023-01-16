@@ -30,6 +30,7 @@ class WorkflowProcessors::WorkflowRun
     step_run.finish_ci! and return if successful?
     step_run.fail_ci! and return if failed?
     step_run.cancel_ci! if halted?
+    # FIXME: add a catchall to fail the run
   end
 
   def upload_artifact!

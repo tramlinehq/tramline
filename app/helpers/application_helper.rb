@@ -75,4 +75,8 @@ module ApplicationHelper
   def dev_show(&blk)
     yield blk if Rails.env.development?
   end
+
+  def display_channels(channels)
+    channels.map { |chan| [yield(chan), chan.to_json] }
+  end
 end

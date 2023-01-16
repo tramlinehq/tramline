@@ -23,19 +23,19 @@ class AppConfig < ApplicationRecord
 
   def code_repository_name
     return unless code_repository
-    code_repository.values.first
+    code_repository["full_name"]
   end
 
-  def notification_channel_name
+  def notification_channel_id
     return unless notification_channel
-    notification_channel.values.first
+    notification_channel["id"]
   end
 
-  def code_repository_organization_name_hack
-    code_repository_name.partition("/").first
+  def code_repo_namespace
+    code_repository["namespace"]
   end
 
   def project
-    project_id.keys.first
+    project_id.fetch("id", nil)
   end
 end

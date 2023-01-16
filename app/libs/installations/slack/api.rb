@@ -41,9 +41,7 @@ module Installations
         }
       }
 
-      HTTP
-        .auth("Bearer #{oauth_access_token}")
-        .post(PUBLISH_CHAT_MESSAGE_URL, json_params)
+      execute(:post, PUBLISH_CHAT_MESSAGE_URL, json_params)
     end
 
     def rich_message(channel, text, block)
@@ -54,12 +52,10 @@ module Installations
         }.merge(block)
       }
 
-      HTTP
-        .auth("Bearer #{oauth_access_token}")
-        .post(PUBLISH_CHAT_MESSAGE_URL, json_params)
+      execute(:post, PUBLISH_CHAT_MESSAGE_URL, json_params)
     end
 
-    def list_channels
+    def list_channels(transforms)
       params = {
         params: {
           limit: LIST_CHANNELS_LIMIT,
@@ -68,14 +64,16 @@ module Installations
         }
       }
 
-      HTTP
-        .auth("Bearer #{oauth_access_token}")
-        .get(LIST_CHANNELS_URL, params)
-        .then { |response| response.body.to_s }
-        .then { |body| JSON.parse(body) }
-        .then { |json| json["channels"] }
-        .then { |channels| channels&.map { |list| list.slice("id", "name") } }
-        .then { |responses| Installations::Response::Keys.normalize(responses) }
+      execute(:get, LIST_CHANNELS_URL, params)
+        .then { |response| response["channels"] }
+        .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
+    end
+
+    private
+
+    def execute(verb, url, params)
+      response = HTTP.auth("Bearer #{oauth_access_token}").public_send(verb, url, params)
+      JSON.parse(response.body.to_s)
     end
   end
 end
