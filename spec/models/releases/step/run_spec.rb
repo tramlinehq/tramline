@@ -57,21 +57,43 @@ describe Releases::Step::Run, type: :model do
     end
   end
 
-  describe "#previous_run" do
+  describe "#previous_deployed_run" do
     let(:active_train) { create(:releases_train, :active) }
-    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: active_train) }
+    let(:step) { create(:releases_step, :with_deployment, train: active_train) }
+    let(:train_run) { create(:releases_train_run, train: active_train) }
 
-    it "returns the previous run for its step and train run" do
-      train_run = create(:releases_train_run, train: active_train)
-      step1_run1 = create(:releases_step_run, step: steps.first, train_run: train_run)
-      step1_run2 = create(:releases_step_run, step: steps.first, train_run: train_run)
-      step2_run1 = create(:releases_step_run, step: steps.second, train_run: train_run)
-      step2_run2 = create(:releases_step_run, step: steps.second, train_run: train_run)
+    context "when there is a last run that has a deployment" do
+      it "returns for deployment_started" do
+        step_run1 = create(:releases_step_run, :deployment_started, step: step, train_run: train_run)
+        step_run2 = create(:releases_step_run, step: step, train_run: train_run)
 
-      expect(step1_run2.previous_run).to eq step1_run1
-      expect(step2_run2.previous_run).to eq step2_run1
-      expect(step1_run1.previous_run).to be_nil
-      expect(step2_run1.previous_run).to be_nil
+        expect(step_run2.previous_deployed_run).to eq step_run1
+        expect(step_run1.previous_deployed_run).to be_nil
+      end
+
+      it "returns for deployment_failed" do
+        step_run1 = create(:releases_step_run, :deployment_failed, step: step, train_run: train_run)
+        step_run2 = create(:releases_step_run, step: step, train_run: train_run)
+
+        expect(step_run2.previous_deployed_run).to eq step_run1
+        expect(step_run1.previous_deployed_run).to be_nil
+      end
+
+      it "returns for success" do
+        step_run1 = create(:releases_step_run, :success, step: step, train_run: train_run)
+        step_run2 = create(:releases_step_run, step: step, train_run: train_run)
+
+        expect(step_run2.previous_deployed_run).to eq step_run1
+        expect(step_run1.previous_deployed_run).to be_nil
+      end
+    end
+
+    it "returns nothing for other statuses" do
+      step_run1 = create(:releases_step_run, :build_ready, step: step, train_run: train_run)
+      step_run2 = create(:releases_step_run, step: step, train_run: train_run)
+
+      expect(step_run2.previous_deployed_run).to be_nil
+      expect(step_run1.previous_deployed_run).to be_nil
     end
   end
 
