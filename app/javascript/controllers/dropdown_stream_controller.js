@@ -10,9 +10,9 @@ export default class extends Controller {
   static targets = ["select"]
 
   change(event) {
-    const integrationID = event.target.selectedOptions[0].value
+    const targetKeyId = event.target.selectedOptions[0].value
     let url = new URL(this.urlValue)
-    url.searchParams.set(this.targetKeyValue, integrationID);
+    url.searchParams.set(this.targetKeyValue, targetKeyId);
     url.searchParams.set('target', this.selectTarget.id);
 
     get(url, {responseKind: "turbo-stream"})

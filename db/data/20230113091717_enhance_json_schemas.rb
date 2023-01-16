@@ -88,7 +88,7 @@ class EnhanceJsonSchemas < ActiveRecord::Migration[7.0]
 
           deployment.build_artifact_channel = build_artifact_map
         elsif deployment.integration.providable_type.eql?("SlackIntegration")
-          build_artifact_map = _init_map([:id, :name, :description, :is_private, :member_count])
+          build_artifact_map = _init_map([:id, :name])
           id = build_artifact.keys.first
           name = build_artifact.values.first
 
