@@ -21,10 +21,10 @@ class DeploymentRun < ApplicationRecord
   validates :deployment_id, uniqueness: {scope: :train_step_run_id}
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
-  delegate :step, :release, :commit, to: :step_run
+  delegate :step, :release, :commit, :build_number, to: :step_run
   delegate :app, to: :step
   delegate :release_version, to: :release
-  delegate :access_key, :deployment_number, :integration, to: :deployment
+  delegate :access_key, :deployment_number, :integration, :deployment_channel, to: :deployment
   delegate :external?, :google_play_store_integration?, :slack_integration?, :store?, to: :deployment
 
   GOOGLE_API = Installations::Google::PlayDeveloper::Api
@@ -89,29 +89,31 @@ class DeploymentRun < ApplicationRecord
 
   def promote!
     save!
-    return unless deployment.integration.google_play_store_integration?
+    return unless google_play_store_integration?
 
     release.with_lock do
       return unless promotable?
-      api = GOOGLE_API.new(app.bundle_identifier, deployment.access_key, release_version)
-      api.promote(deployment.deployment_channel, step_run.build_number, initial_rollout_percentage)
 
-      complete!
-
-    rescue Installations::Errors::BuildNotUpgradable => e
-      logger.error(e)
-      Sentry.capture_exception(e)
-      dispatch_fail!
+      if integration.providable.promote(deployment_channel, build_number, release_version, initial_rollout_percentage).ok?
+        complete!
+      else
+        dispatch_fail!
+      end
     end
   end
 
   def upload_to_playstore!
-    with_lock do
-      step_run.build_artifact.with_open do |file|
-        GOOGLE_API.upload(app.bundle_identifier, access_key, release_version, file)
-      end
+    return unless google_play_store_integration?
 
-      upload!
+    step_run.build_artifact.with_open do |file|
+      result = integration.providable.upload(file)
+
+      if result.ok?
+        upload!
+      else
+        reason = GooglePlayStoreIntegration::DISALLOWED_ERRORS_WITH_REASONS[result.error.class]
+        event_stamp!(reason:, kind: :error) if reason.present?
+      end
     end
   end
 
