@@ -113,6 +113,7 @@ class DeploymentRun < ApplicationRecord
       else
         reason = GooglePlayStoreIntegration::DISALLOWED_ERRORS_WITH_REASONS[result.error.class]
         event_stamp!(reason:, kind: :error) if reason.present?
+        upload_failed!
       end
     end
   end

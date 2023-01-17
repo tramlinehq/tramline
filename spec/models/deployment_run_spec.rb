@@ -141,6 +141,36 @@ describe DeploymentRun, type: :model do
     end
   end
 
+  describe "#upload_to_playstore!" do
+    let(:slack_deployment_run) { create(:deployment_run, :started, :with_slack) }
+    let(:store_deployment_run) { create(:deployment_run, :started, :with_google_play_store) }
+
+    it "does nothing if deployment is not google play store" do
+      slack_deployment_run.upload_to_playstore!
+      expect(slack_deployment_run.reload.started?).to be true
+    end
+
+    it "uploads the package to store and marks the run as uploaded" do
+      providable = store_deployment_run.integration.providable
+      allow(providable).to receive(:upload).and_return(GitHub::Result.new)
+
+      store_deployment_run.upload_to_playstore!
+
+      expect(providable).to have_received(:upload).once
+      expect(store_deployment_run.reload.uploaded?).to be(true)
+    end
+
+    it "marks deployment runs as upload failed if upload fails" do
+      providable = store_deployment_run.integration.providable
+      allow(providable).to receive(:upload).and_return(GitHub::Result.new { raise })
+
+      store_deployment_run.upload_to_playstore!
+
+      expect(store_deployment_run.reload.uploaded?).to be(false)
+      expect(store_deployment_run.reload.upload_failed?).to be(true)
+    end
+  end
+
   describe "#complete!" do
     let(:step) { create(:releases_step, :with_deployment) }
     let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }

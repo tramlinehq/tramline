@@ -3,10 +3,10 @@ require "rails_helper"
 describe Releases::UploadArtifact, type: :job do
   describe "#perform" do
     let(:artifacts_url) { Faker::Internet.url }
-    let(:artifact_stream) { Rack::Test::UploadedFile.new("spec/fixtures/storage/test_artifact.aab.zip", "application/zip") }
+    let(:artifact_stream) { Artifacts::Stream.new(Rack::Test::UploadedFile.new("spec/fixtures/storage/test_artifact.aab.zip", "application/zip"), is_archive: true) }
 
     before do
-      allow_any_instance_of(GithubIntegration).to receive(:download_stream).and_return(artifact_stream)
+      allow_any_instance_of(GithubIntegration).to receive(:get_artifact).and_return(artifact_stream)
       allow(Triggers::Deployment).to receive(:call)
     end
 
