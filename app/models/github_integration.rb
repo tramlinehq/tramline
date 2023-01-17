@@ -136,7 +136,7 @@ class GithubIntegration < ApplicationRecord
       .artifacts(artifacts_url)
       .then { |artifacts| API.find_biggest(artifacts) }
       .then { |artifact| installation.artifact_io_stream(artifact) }
-      .then { |zip_file| DownloadStream.new(zip_file, true) }
+      .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true) }
   end
 
   def unzip_artifact?
