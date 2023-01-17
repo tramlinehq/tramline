@@ -5,7 +5,7 @@ class Releases::UploadArtifact < ApplicationJob
     step_run = Releases::Step::Run.find(step_run_id)
 
     begin
-      step_run.fetch_build_artifact(artifacts_url).with_open do |io|
+      step_run.get_build_artifact(artifacts_url).with_open do |io|
         BuildArtifact.new(step_run: step_run, generated_at: Time.current).save_file!(io)
       end
 

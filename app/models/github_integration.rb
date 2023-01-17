@@ -131,7 +131,7 @@ class GithubIntegration < ApplicationRecord
 
   # we currently only select the largest artifact from github, since we have no information about the file types
   # in the future, this could be smarter and/or a user input
-  def download_stream(artifacts_url)
+  def get_artifact(artifacts_url)
     installation
       .artifacts(artifacts_url)
       .then { |artifacts| API.find_biggest(artifacts) }

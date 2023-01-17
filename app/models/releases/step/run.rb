@@ -144,8 +144,8 @@ class Releases::Step::Run < ApplicationRecord
     ci_cd_provider.get_workflow_run(ci_ref)
   end
 
-  def fetch_build_artifact(artifacts_url)
-    ci_cd_provider.download_stream(artifacts_url)
+  def get_build_artifact(artifacts_url)
+    ci_cd_provider.get_artifact(artifacts_url)
   end
 
   def fetching_build?

@@ -35,9 +35,7 @@ class BuildArtifact < ApplicationRecord
   end
 
   def with_open
-    file.open do |file|
-      yield(file)
-    end
+    file.open { |file| yield(file) }
   end
 
   def download_url

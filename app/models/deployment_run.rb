@@ -24,7 +24,8 @@ class DeploymentRun < ApplicationRecord
   delegate :step, :release, :commit, to: :step_run
   delegate :app, to: :step
   delegate :release_version, to: :release
-  delegate :access_key, :deployment_number, :integration, :external?, :google_play_store_integration?, :slack_integration?, :store?, to: :deployment
+  delegate :access_key, :deployment_number, :integration, to: :deployment
+  delegate :external?, :google_play_store_integration?, :slack_integration?, :store?, to: :deployment
 
   GOOGLE_API = Installations::Google::PlayDeveloper::Api
   STAMPABLE_REASONS = [
