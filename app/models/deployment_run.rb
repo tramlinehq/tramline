@@ -24,7 +24,7 @@ class DeploymentRun < ApplicationRecord
   delegate :step, :release, :commit, :build_number, to: :step_run
   delegate :app, to: :step
   delegate :release_version, to: :release
-  delegate :access_key, :deployment_number, :integration, :deployment_channel, to: :deployment
+  delegate :deployment_number, :integration, :deployment_channel, to: :deployment
   delegate :external?, :google_play_store_integration?, :slack_integration?, :store?, to: :deployment
 
   GOOGLE_API = Installations::Google::PlayDeveloper::Api
