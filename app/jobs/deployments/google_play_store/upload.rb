@@ -1,8 +1,6 @@
 class Deployments::GooglePlayStore::Upload < ApplicationJob
   queue_as :high
 
-  API = Installations::Google::PlayDeveloper::Api
-
   ALLOWED_EXCEPTIONS = {
     Installations::Errors::BuildExistsInBuildChannel => :duplicate_build,
     Installations::Errors::DuplicatedBuildUploadAttempt => :duplicate_build
@@ -21,15 +19,12 @@ class Deployments::GooglePlayStore::Upload < ApplicationJob
 
     return unless @deployment.integration.google_play_store_integration?
 
-    @deployment_run.with_lock do
-      @step_run.build_artifact.file_for_playstore_upload do |file|
-        API.upload(package_name, access_key, release_version, file)
-        @deployment_run.upload!
-      rescue *ALLOWED_EXCEPTIONS.keys => e
-        proceed!(e)
-      rescue *DISALLOWED_EXCEPTIONS.keys => e
-        halt!(e)
-      end
+    begin
+      @deployment_run.upload_to_playstore!
+    rescue *ALLOWED_EXCEPTIONS.keys => e
+      proceed!(e)
+    rescue *DISALLOWED_EXCEPTIONS.keys => e
+      halt!(e)
     end
   end
 
@@ -53,17 +48,5 @@ class Deployments::GooglePlayStore::Upload < ApplicationJob
   def log(e)
     logger.error(e)
     Sentry.capture_exception(e)
-  end
-
-  def access_key
-    @deployment.access_key
-  end
-
-  def package_name
-    @step_run.step.app.bundle_identifier
-  end
-
-  def release_version
-    @step_run.train_run.release_version
   end
 end

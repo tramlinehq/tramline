@@ -5,8 +5,9 @@ class Releases::UploadArtifact < ApplicationJob
     step_run = Releases::Step::Run.find(step_run_id)
 
     begin
-      stream = step_run.ci_cd_provider.download_stream(artifacts_url)
-      BuildArtifact.new(step_run: step_run, generated_at: Time.current).save_file!(stream)
+      step_run.fetch_build_artifact(artifacts_url).with_open do |io|
+        BuildArtifact.new(step_run: step_run, generated_at: Time.current).save_file!(io)
+      end
 
       step_run.ready_to_deploy!
 

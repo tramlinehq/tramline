@@ -83,7 +83,7 @@ module Installations
     end
 
     def parsed_body
-      @parsed_body ||= exception.body.safe_json_parse
+      @parsed_body ||= exception&.body&.safe_json_parse
     end
 
     def error
@@ -104,7 +104,7 @@ module Installations
     end
 
     def log
-      logger.error(error)
+      logger.error(exception)
     end
   end
 end

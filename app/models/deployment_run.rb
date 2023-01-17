@@ -22,8 +22,11 @@ class DeploymentRun < ApplicationRecord
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   delegate :step, :release, :commit, to: :step_run
-  delegate :deployment_number, :integration, :external?, :google_play_store_integration?, :slack_integration?, :store?, to: :deployment
+  delegate :app, to: :step
+  delegate :release_version, to: :release
+  delegate :access_key, :deployment_number, :integration, :external?, :google_play_store_integration?, :slack_integration?, :store?, to: :deployment
 
+  GOOGLE_API = Installations::Google::PlayDeveloper::Api
   STAMPABLE_REASONS = [
     "created",
     "status_changed",
@@ -89,9 +92,7 @@ class DeploymentRun < ApplicationRecord
 
     release.with_lock do
       return unless promotable?
-      package_name = step.app.bundle_identifier
-      release_version = step_run.train_run.release_version
-      api = Installations::Google::PlayDeveloper::Api.new(package_name, deployment.access_key, release_version)
+      api = GOOGLE_API.new(app.bundle_identifier, deployment.access_key, release_version)
       api.promote(deployment.deployment_channel, step_run.build_number, initial_rollout_percentage)
 
       complete!
@@ -100,6 +101,16 @@ class DeploymentRun < ApplicationRecord
       logger.error(e)
       Sentry.capture_exception(e)
       dispatch_fail!
+    end
+  end
+
+  def upload_to_playstore!
+    with_lock do
+      step_run.build_artifact.with_open do |file|
+        GOOGLE_API.upload(app.bundle_identifier, access_key, release_version, file)
+      end
+
+      upload!
     end
   end
 

@@ -102,7 +102,7 @@ class BitriseIntegration < ApplicationRecord
 
   def download_stream(artifact_url)
     raise Integrations::NoBuildArtifactAvailable if artifact_url.blank?
-    installation.artifact_io_stream(artifact_url)
+    DownloadStream.new(installation.artifact_io_stream(artifact_url))
   end
 
   def unzip_artifact?
