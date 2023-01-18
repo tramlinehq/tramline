@@ -5,6 +5,33 @@ describe DeploymentRun, type: :model do
     expect(create(:deployment_run)).to be_valid
   end
 
+  describe "#dispatch_job!" do
+    let(:step) { create(:releases_step, :with_deployment) }
+    let(:step_run) { create(:releases_step_run, :build_available, step: step) }
+
+    it "marks the step run as deployment_started if first deployment regardless of order" do
+      deployment1 = step.deployments.first
+      deployment2 = create(:deployment, step: step)
+      deployment_run2 = create(:deployment_run, :created, deployment: deployment2, step_run: step_run)
+
+      deployment_run2.dispatch_job!
+      _deployment_run1 = create(:deployment_run, :created, deployment: deployment1, step_run: step_run)
+
+      expect(step_run.reload.deployment_started?).to be(true)
+    end
+
+    it "does not change the step run if not the first deployment" do
+      deployment1 = step.deployments.first
+      deployment2 = create(:deployment, step: step)
+      _deployment_run1 = create(:deployment_run, :created, deployment: deployment1, step_run: step_run)
+      deployment_run2 = create(:deployment_run, :created, deployment: deployment2, step_run: step_run)
+
+      deployment_run2.dispatch_job!
+
+      expect(step_run.reload.deployment_started?).not_to be(true)
+    end
+  end
+
   describe "#start_upload!" do
     let(:step) { create(:releases_step, :with_deployment) }
     let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }

@@ -165,8 +165,8 @@ class Releases::Step::Run < ApplicationRecord
     may_finish_ci? && build_artifact.blank?
   end
 
-  def build_available?
-    build_artifact.present?
+  def build_artifact_available?
+    build_available? || build_artifact.present?
   end
 
   def previous_deployed_run
@@ -274,7 +274,8 @@ class Releases::Step::Run < ApplicationRecord
   def add_build_artifact(url)
     return if build_artifact.present?
 
-    generated_at = Time.current # FIXME: this should be passed along from the CI workflow metadata
+    # FIXME: this should be passed along from the CI workflow metadata
+    generated_at = Time.current
 
     get_build_artifact(url).with_open do |artifact_stream|
       build_build_artifact(generated_at: generated_at).save_file!(artifact_stream)
@@ -289,7 +290,5 @@ class Releases::Step::Run < ApplicationRecord
     else
       Triggers::Deployment.call(step_run: self)
     end
-
-    ready_to_deploy!
   end
 end

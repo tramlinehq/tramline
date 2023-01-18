@@ -36,6 +36,10 @@ FactoryBot.define do
       status { "deployment_failed" }
     end
 
+    trait :build_available do
+      status { "build_available" }
+    end
+
     trait :with_build_artifact do
       after(:create) do |step_run, _|
         create(:build_artifact, step_run: step_run)

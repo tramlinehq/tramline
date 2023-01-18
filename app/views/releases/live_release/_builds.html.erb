@@ -82,7 +82,7 @@
                 </div>
 
                 <div class="mb-4">
-                  <% if step_run.build_available? %>
+                  <% if step_run.build_artifact_available? %>
                     <%= link_to_external "Download Build", step_run.download_url, class: "underline" %>
                     <div>
                       <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-2") %>
@@ -97,7 +97,7 @@
                 </div>
 
                 <div class="mb-4">
-                  <% if step_run.build_available? %>
+                  <% if step_run.build_artifact_available? %>
                     Deployments
                     <% step_run.deployment_runs.each do |deployment_run| %>
                       <% deployment = deployment_run.deployment %>
