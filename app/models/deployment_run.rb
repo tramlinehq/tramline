@@ -27,7 +27,6 @@ class DeploymentRun < ApplicationRecord
   delegate :deployment_number, :integration, :deployment_channel, to: :deployment
   delegate :external?, :google_play_store_integration?, :slack_integration?, :store?, to: :deployment
 
-  GOOGLE_API = Installations::Google::PlayDeveloper::Api
   STAMPABLE_REASONS = [
     "created",
     "status_changed",
