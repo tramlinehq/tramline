@@ -89,11 +89,12 @@ group :development do
   gem "letter_opener_web"
   gem "awesome_print"
   gem "annotate"
+  gem "stateoscope"
 end
 
 group :test do
   gem "capybara"
   gem "selenium-webdriver"
   gem "webdrivers"
-  gem "simplecov", "~> 0.22.0"
+  gem "simplecov"
 end

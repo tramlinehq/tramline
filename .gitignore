@@ -52,3 +52,5 @@ Brewfile.lock.json
 
 /config/credentials/staging.key
 coverage
+
+aasm-*.pdf
