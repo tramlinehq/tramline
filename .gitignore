@@ -51,3 +51,4 @@ bundle/
 Brewfile.lock.json
 
 /config/credentials/staging.key
+coverage

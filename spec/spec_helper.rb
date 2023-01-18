@@ -14,6 +14,19 @@
 #
 # See https://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
+  require "simplecov"
+  SimpleCov.start "rails" do
+    add_group "POROs", "app/libs"
+    add_group "Refinements", "app/refinements"
+    add_filter "app/types"
+    enable_coverage :branch
+    formatter SimpleCov::Formatter::MultiFormatter.new [SimpleCov::Formatter::HTMLFormatter]
+  end
+
+  config.after(:suite) do
+    SimpleCov.result.format!
+  end
+
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
   # assertions if you prefer.
