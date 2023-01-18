@@ -3,7 +3,9 @@ class Releases::PostReleaseJob < ApplicationJob
 
   def perform(train_run_id)
     run = Releases::Train::Run.find(train_run_id)
-    return unless run.finalizable?
-    Triggers::PostRelease.call(run)
+    run.with_lock do
+      return unless run.finalizable?
+      Triggers::PostRelease.call(run)
+    end
   end
 end

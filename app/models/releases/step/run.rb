@@ -54,6 +54,8 @@ class Releases::Step::Run < ApplicationRecord
     ci_workflow_failed: "ci_workflow_failed",
     ci_workflow_halted: "ci_workflow_halted",
     build_ready: "build_ready",
+    build_available: "build_available",
+    build_unavailable: "build_unavailable",
     deployment_started: "deployment_started",
     deployment_failed: "deployment_failed",
     success: "success"
@@ -87,19 +89,30 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: :ci_workflow_started, to: :ci_workflow_halted
     end
 
-    event(:finish_ci) { transitions from: :ci_workflow_started, to: :build_ready }
-    event(:ready_to_deploy) { transitions from: :build_ready, to: :deployment_started }
-
-    event(:fail_deploy, after_commit: -> { notify_on_failure!("Deployment failed!") }) do
-      transitions from: [:build_ready, :deployment_started], to: :deployment_failed
+    event(:finish_ci, after_commit: -> { Releases::UploadArtifact.perform_later(id, artifacts_url) }) do
+      transitions from: :ci_workflow_started, to: :build_ready
     end
 
-    event(:finish) { transitions from: [:build_ready, :deployment_started], to: :success, guard: :finished_deployments? }
+    event(:upload_artifact, after_commit: :trigger_deploys) do
+      before { add_build_artifact(artifacts_url) }
+      transitions from: :build_ready, to: :build_available
+    end
+
+    event(:build_upload_failed) { transitions from: :build_ready, to: :build_unavailable }
+
+    event(:ready_to_deploy) { transitions from: :build_available, to: :deployment_started }
+
+    event(:fail_deploy, after_commit: -> { notify_on_failure!("Deployment failed!") }) do
+      transitions from: :deployment_started, to: :deployment_failed
+    end
+
+    event(:finish) { transitions from: :deployment_started, to: :success, guard: :finished_deployments? }
   end
 
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
 
   attr_accessor :current_user
+  attr_accessor :artifacts_url
 
   delegate :train, :release_branch, to: :train_run
   delegate :ci_cd_provider, :unzip_artifact?, to: :train
@@ -152,8 +165,8 @@ class Releases::Step::Run < ApplicationRecord
     may_finish_ci? && build_artifact.blank?
   end
 
-  def build_available?
-    build_artifact.present?
+  def build_artifact_available?
+    build_available? || build_artifact.present?
   end
 
   def previous_deployed_run
@@ -256,5 +269,26 @@ class Releases::Step::Run < ApplicationRecord
 
   def finished_deployments?
     deployment_runs.released.size == step.deployments.size
+  end
+
+  def add_build_artifact(url)
+    return if build_artifact.present?
+
+    # FIXME: this should be passed along from the CI workflow metadata
+    generated_at = Time.current
+
+    get_build_artifact(url).with_open do |artifact_stream|
+      build_build_artifact(generated_at: generated_at).save_file!(artifact_stream)
+    end
+  end
+
+  def trigger_deploys
+    if previous_deployments.any?
+      previous_deployments.each do |deployment|
+        Triggers::Deployment.call(deployment: deployment, step_run: self)
+      end
+    else
+      Triggers::Deployment.call(step_run: self)
+    end
   end
 end
