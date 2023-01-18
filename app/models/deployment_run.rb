@@ -94,7 +94,7 @@ class DeploymentRun < ApplicationRecord
     release.with_lock do
       return unless promotable?
 
-      if integration.providable.promote(deployment_channel, build_number, release_version, initial_rollout_percentage).ok?
+      if provider.promote(deployment_channel, build_number, release_version, initial_rollout_percentage).ok?
         complete!
       else
         dispatch_fail!
@@ -106,7 +106,7 @@ class DeploymentRun < ApplicationRecord
     return unless google_play_store_integration?
 
     step_run.build_artifact.with_open do |file|
-      result = integration.providable.upload(file)
+      result = provider.upload(file)
 
       if result.ok?
         upload!
@@ -116,6 +116,11 @@ class DeploymentRun < ApplicationRecord
         upload_failed!
       end
     end
+  end
+
+  def push_to_slack!
+    provider.deploy!(deployment_channel, {step_run: step_run})
+    complete!
   end
 
   # FIXME: this is cheap hack around not allowing users to re-enter rollout
@@ -176,5 +181,9 @@ class DeploymentRun < ApplicationRecord
 
   def previously_rolled_out?
     rolloutable? && noninitial?
+  end
+
+  def provider
+    integration.providable
   end
 end

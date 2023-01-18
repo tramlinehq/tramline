@@ -32,6 +32,8 @@ class SlackIntegration < ApplicationRecord
     member_count: :num_members
   }
 
+  DEPLOY_MESSAGE = "A wild new release has appeared!"
+
   def install_path
     unless integration.notification? || integration.build_channel?
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
@@ -66,7 +68,9 @@ class SlackIntegration < ApplicationRecord
     installation.rich_message(channel, message, notifier(type, params))
   end
 
-  alias_method :deploy!, :notify! # slack can currently also be used as a deployment channel
+  def deploy!(channel, params)
+    notify!(channel, DEPLOY_MESSAGE, :deployment_finished, params)
+  end
 
   def notifier(type, params)
     Notifiers::Slack::Builder.build(type, **params)
