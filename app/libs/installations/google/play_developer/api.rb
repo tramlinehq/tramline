@@ -8,16 +8,11 @@ module Installations
     SCOPE = ANDROID_PUBLISHER::AUTH_ANDROIDPUBLISHER
     CONTENT_TYPE = "application/octet-stream".freeze
 
-    attr_reader :package_name, :key_file, :release_version, :client
+    attr_reader :package_name, :key_file, :client
 
-    def self.upload(package_name, key_file, release_version, file)
-      new(package_name, key_file, release_version).upload(file)
-    end
-
-    def initialize(package_name, key_file, release_version)
+    def initialize(package_name, key_file)
       @package_name = package_name
       @key_file = key_file
-      @release_version = release_version
 
       set_api_defaults
       set_client
@@ -31,12 +26,12 @@ module Installations
       end
     end
 
-    def promote(track_name, version_code, rollout_percentage)
+    def promote(track_name, version_code, release_version, rollout_percentage)
       rollout_percentage = BigDecimal(rollout_percentage)
 
       execute do
         edit = client.insert_edit(package_name)
-        edit_track(edit, track_name, version_code, rollout_percentage)
+        edit_track(edit, track_name, version_code, release_version, rollout_percentage)
         client.commit_edit(package_name, edit.id)
       end
     end
@@ -51,15 +46,23 @@ module Installations
       end
     end
 
-    def edit_track(edit, track_name, version_code, rollout_percentage)
-      client.update_edit_track(package_name, edit.id, track_name, track(track_name, version_code, rollout_percentage))
+    def edit_track(edit, track_name, version_code, release_version, rollout_percentage)
+      client.update_edit_track(
+        package_name,
+        edit.id,
+        track_name,
+        track(track_name, version_code, release_version, rollout_percentage)
+      )
     end
 
-    def track(track_name, version_code, rollout_percentage)
-      ANDROID_PUBLISHER::Track.new(track: track_name, releases: [release(version_code, rollout_percentage)])
+    def track(track_name, version_code, release_version, rollout_percentage)
+      ANDROID_PUBLISHER::Track.new(
+        track: track_name,
+        releases: [release(version_code, release_version, rollout_percentage)]
+      )
     end
 
-    def release(version_code, rollout_percentage)
+    def release(version_code, release_version, rollout_percentage)
       params = {
         name: release_version,
         status: release_status(rollout_percentage),

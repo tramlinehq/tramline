@@ -17,39 +17,25 @@ class BuildArtifact < ApplicationRecord
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_runs_id, inverse_of: :build_artifact
   has_one_attached :file
 
+  delegate :create_and_upload!, to: ActiveStorage::Blob
   delegate :unzip_artifact?, to: :step_run
   delegate :train, to: :step_run
   delegate :app, to: :train
 
-  VALID_UNZIPS = "*.{aab,apk,txt}".freeze
-
-  def save_file!(io_stream)
+  def save_file!(artifact_stream)
     transaction do
-      self.file = ActiveStorage::Blob.create_and_upload!(io: io_stream, filename:, content_type: io_stream.content_type, identify: false)
+      self.file = create_and_upload!(io: artifact_stream.file, filename: filename(artifact_stream.ext))
       self.uploaded_at = Time.current
       save!
     end
   end
 
-  def filename
-    "#{app.slug}-#{step_run.build_version}-build"
+  def filename(ext)
+    "#{app.slug}-#{step_run.build_version}-build#{ext}"
   end
 
-  def file_for_playstore_upload
-    file.open do |temp_file|
-      # FIXME: This is an expensive operation, we should not be unzipping here but before pushing to object store
-      artifact_file =
-        if unzip_artifact?
-          Zip::File.open(temp_file).glob(VALID_UNZIPS).first
-        else
-          return yield(temp_file)
-        end
-
-      Tempfile.open(%w[artifact .aab]) do |new_temp_file|
-        artifact_file.extract(new_temp_file.path) { true }
-        yield(new_temp_file)
-      end
-    end
+  def with_open
+    file.open { |file| yield(file) }
   end
 
   def download_url

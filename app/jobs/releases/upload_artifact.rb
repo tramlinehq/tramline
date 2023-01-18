@@ -3,10 +3,12 @@ class Releases::UploadArtifact < ApplicationJob
 
   def perform(step_run_id, artifacts_url)
     step_run = Releases::Step::Run.find(step_run_id)
+    generated_at = Time.current # FIXME: this should be passed along from the CI workflow metadata
 
     begin
-      stream = step_run.ci_cd_provider.download_stream(artifacts_url)
-      BuildArtifact.new(step_run: step_run, generated_at: Time.current).save_file!(stream)
+      step_run.get_build_artifact(artifacts_url).with_open do |artifact_stream|
+        BuildArtifact.new(step_run: step_run, generated_at: generated_at).save_file!(artifact_stream)
+      end
 
       step_run.ready_to_deploy!
 

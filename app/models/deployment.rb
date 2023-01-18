@@ -31,14 +31,6 @@ class Deployment < ApplicationRecord
     self.deployment_number = step.deployments.maximum(:deployment_number).to_i + 1
   end
 
-  def access_key
-    StringIO.new(integration.providable.json_key) if requires_access_key?
-  end
-
-  def requires_access_key?
-    google_play_store_integration?
-  end
-
   def external?
     integration.nil?
   end

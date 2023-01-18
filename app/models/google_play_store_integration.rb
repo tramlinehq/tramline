@@ -28,6 +28,45 @@ class GooglePlayStoreIntegration < ApplicationRecord
     {id: :internal, name: "internal testing"}
   ]
 
+  def access_key
+    StringIO.new(json_key)
+  end
+
+  def installation
+    Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier, access_key)
+  end
+
+  def promote(channel, build_number, version, rollout_percentage)
+    GitHub::Result.new do
+      installation.promote(channel, build_number, version, rollout_percentage)
+    rescue Installations::Errors::BuildNotUpgradable => e
+      log(e)
+      raise
+    end
+  end
+
+  ALLOWED_ERRORS = [
+    Installations::Errors::BuildExistsInBuildChannel,
+    Installations::Errors::DuplicatedBuildUploadAttempt
+  ]
+
+  DISALLOWED_ERRORS_WITH_REASONS = {
+    Installations::Errors::BundleIdentifierNotFound => :bundle_identifier_not_found,
+    Installations::Errors::GooglePlayDeveloperAPIInvalidPackage => :invalid_package,
+    Installations::Errors::GooglePlayDeveloperAPIAPKsAreNotAllowed => :apks_are_not_allowed
+  }
+
+  def upload(file)
+    GitHub::Result.new do
+      installation.upload(file)
+    rescue *ALLOWED_ERRORS => e
+      log(e)
+    rescue *DISALLOWED_ERRORS_WITH_REASONS.keys => e
+      log(e)
+      raise
+    end
+  end
+
   def creatable?
     true
   end
@@ -53,7 +92,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def correct_key
-    errors.add(:json_key, :no_bundles) if developer_api.list_bundles.keys.size < 1
+    errors.add(:json_key, :no_bundles) if installation.list_bundles.keys.size < 1
   rescue RuntimeError
     errors.add(:json_key, :key_format)
   rescue Installations::Errors::BundleIdentifierNotFound, Installations::Errors::GooglePlayDeveloperAPIPermissionDenied
@@ -62,7 +101,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
     errors.add(:json_key, :dev_api_not_enabled)
   end
 
-  def developer_api
-    Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier, StringIO.new(json_key), +"")
+  private
+
+  def log(e)
+    logger.error(e)
+    Sentry.capture_exception(e)
   end
 end

@@ -21,8 +21,11 @@ class DeploymentRun < ApplicationRecord
   validates :deployment_id, uniqueness: {scope: :train_step_run_id}
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
-  delegate :step, :release, :commit, to: :step_run
-  delegate :deployment_number, :integration, :external?, :google_play_store_integration?, :slack_integration?, :store?, to: :deployment
+  delegate :step, :release, :commit, :build_number, to: :step_run
+  delegate :app, to: :step
+  delegate :release_version, to: :release
+  delegate :deployment_number, :integration, :deployment_channel, to: :deployment
+  delegate :external?, :google_play_store_integration?, :slack_integration?, :store?, to: :deployment
 
   STAMPABLE_REASONS = [
     "created",
@@ -85,22 +88,40 @@ class DeploymentRun < ApplicationRecord
 
   def promote!
     save!
-    return unless deployment.integration.google_play_store_integration?
+    return unless google_play_store_integration?
 
     release.with_lock do
       return unless promotable?
-      package_name = step.app.bundle_identifier
-      release_version = step_run.train_run.release_version
-      api = Installations::Google::PlayDeveloper::Api.new(package_name, deployment.access_key, release_version)
-      api.promote(deployment.deployment_channel, step_run.build_number, initial_rollout_percentage)
 
-      complete!
-
-    rescue Installations::Errors::BuildNotUpgradable => e
-      logger.error(e)
-      Sentry.capture_exception(e)
-      dispatch_fail!
+      if provider.promote(deployment_channel, build_number, release_version, initial_rollout_percentage).ok?
+        complete!
+      else
+        dispatch_fail!
+      end
     end
+  end
+
+  def upload_to_playstore!
+    return unless google_play_store_integration?
+
+    step_run.build_artifact.with_open do |file|
+      result = provider.upload(file)
+
+      if result.ok?
+        upload!
+      else
+        reason = GooglePlayStoreIntegration::DISALLOWED_ERRORS_WITH_REASONS[result.error.class]
+        event_stamp!(reason:, kind: :error) if reason.present?
+        upload_failed!
+      end
+    end
+  end
+
+  def push_to_slack!
+    return unless slack_integration?
+
+    provider.deploy!(deployment_channel, {step_run: step_run})
+    complete!
   end
 
   # FIXME: this is cheap hack around not allowing users to re-enter rollout
@@ -161,5 +182,9 @@ class DeploymentRun < ApplicationRecord
 
   def previously_rolled_out?
     rolloutable? && noninitial?
+  end
+
+  def provider
+    integration.providable
   end
 end
