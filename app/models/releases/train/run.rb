@@ -118,7 +118,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def finalizable?
-    (on_track? || post_release?) && signed? && finished_steps?
+    (on_track? || post_release?) && finished_steps? && signed?
   end
 
   def next_step
