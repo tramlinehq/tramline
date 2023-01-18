@@ -22,9 +22,9 @@ class BuildArtifact < ApplicationRecord
   delegate :train, to: :step_run
   delegate :app, to: :train
 
-  def save_file!(io)
+  def save_file!(artifact_stream)
     transaction do
-      self.file = create_and_upload!(io: io.file, filename: filename(io.ext))
+      self.file = create_and_upload!(io: artifact_stream.file, filename: filename(artifact_stream.ext))
       self.uploaded_at = Time.current
       save!
     end
