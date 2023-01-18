@@ -1,10 +1,10 @@
 <section>
-  <div class="flex">
-    <h2 class="font-bold text-2xl">Stability</h2>
+  <div>
+    <span class="font-bold text-2xl">Stability</span>
     <span class="text-xl text-slate-400 ml-4"><%= time_ago_in_words(release.updated_at) %> ago</span>
   </div>
 
-  <div class="mt-5">
+  <div class="mt-4">
     <%= render "shared/note_box",
                message: "When a new commit lands, all steps are re-run until the last running step.
                This ensures that previous stakeholders are kept up-to-date." %>
@@ -15,9 +15,9 @@
                message: "If your release is stuck in some unrecoverable state, just land another commit to kick things off again." %>
   </div>
 
-  <p class="font-bold text-2xl mt-8 mb-2">Latest build</p>
+  <p class="font-bold text-2xl mt-8 mb-2">Latest builds</p>
 
-  <div class="flex flex-col mt-3">
+  <div class="flex flex-col mt-2">
     <ol class="relative border-l-4 border-gray-300 ml-3 mt-2">
       <% steps.each do |step| %>
         <% step_run = release.last_run_for(step) %>
@@ -25,9 +25,9 @@
         <li class="mb-10 ml-6 last:mb-0">
           <div class="flex items-center">
             <%= render partial: "releases/live_release/step_run_status", locals: { step_run: step_run } %>
-            <p class="text-lg font-bold text-slate-800 pl-6"><%= step.name %></p>
+            <p class="text-xl font-bold text-slate-800 pl-6"><%= step.name %></p>
             <% if release.on_track? && release.startable_step?(step) %>
-              <%= authz_button_to :blue, "Move to this step", start_release_step_run_path(release, step), { class: 'btn-xs ml-2' } %>
+              <%= authz_button_to :blue, "Move to this step", start_release_step_run_path(release, step), { class: 'btn-xs ml-4' } %>
             <% end %>
           </div>
 
@@ -40,7 +40,7 @@
     </ol>
 
     <% if release.finalizable? %>
-      <div class="mt-9">
+      <div class="mt-8">
         <%= authz_button_to :blue, "Finish this release", post_release_release_path(release), class: "btn-sm" %>
       </div>
     <% end %>

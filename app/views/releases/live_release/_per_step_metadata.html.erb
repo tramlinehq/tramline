@@ -1,24 +1,22 @@
-<div class="flex flex-col">
+<div class="flex flex-col pt-1">
   <div class="text-slate-500 text-sm"><%= simple_format(step.description) %></div>
 
-  <div class="text-xs text-slate-500 font-medium mt-5">
-    <%= image_tag("workflow.svg", width: 14, class: "inline-flex mr-1") %>
+  <% if step_run&.build_version %>
+    <div class="flex items-center mt-4">
+      <span class="font-medium font-mono mr-2">
+        <%= step_run.build_version %>&nbsp;(<%= step_run.build_number %>)
+      </span>
+      <span class="text-xs uppercase inline-flex tracking-wide font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">
+        Latest
+      </span>
+    </div>
+  <% end %>
+
+  <div class="text-xs align-text-bottom mt-4 mb-1">
+    <%= image_tag("workflow.svg", width: 16, class: "inline-flex mr-2") %>
     <%= render partial: "shared/display_channels",
                locals: { name: show_ci_cd_provider(step), channel: show_ci_cd_channel(step) } %>
   </div>
 
-  <% if step_run&.build_version %>
-    <div class="flex items-center">
-      <span class="text-sm mr-2">
-        <%= step_run.build_version %>&nbsp;(<%= step_run.build_number %>)
-      </span>
-
-      <span class="text-xs uppercase tracking-wide font-medium bg-indigo-100 text-indigo-600 rounded-full text-center px-2 py-0.5">Latest build</span>
-    </div>
-  <% end %>
-
-  <div class="border-t border-dashed mt-4 mb-4 w-3/4"></div>
-
   <%= render partial: "shared/deployments", locals: { step: step, step_run: step_run, release: release, show_deployment_status: true } %>
 </div>
-
