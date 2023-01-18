@@ -87,7 +87,9 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: :ci_workflow_started, to: :ci_workflow_halted
     end
 
-    event(:finish_ci) { transitions from: :ci_workflow_started, to: :build_ready }
+    event(:finish_ci, after_commit: -> { Releases::UploadArtifact.perform_later(id, artifacts_url) }) do
+      transitions from: :ci_workflow_started, to: :build_ready
+    end
     event(:ready_to_deploy) { transitions from: :build_ready, to: :deployment_started }
 
     event(:fail_deploy, after_commit: -> { notify_on_failure!("Deployment failed!") }) do
@@ -100,6 +102,7 @@ class Releases::Step::Run < ApplicationRecord
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
 
   attr_accessor :current_user
+  attr_accessor :artifacts_url
 
   delegate :train, :release_branch, to: :train_run
   delegate :ci_cd_provider, :unzip_artifact?, to: :train
