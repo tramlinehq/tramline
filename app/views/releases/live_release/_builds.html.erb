@@ -18,27 +18,30 @@
 
     <% release.commits.order(created_at: :desc).includes(step_runs: :step).each_with_index do |commit, index| %>
       <% is_stale_commit = commit.stale? %>
-
       <tbody class="text-sm border-b last:border-b-0" data-controller="reveal" data-reveal-toggle-keys-value="b">
+
       <tr>
         <td class="py-4 whitespace-nowrap">
-          <% if commit.stale? %>
-            <%= link_to_external commit.message.truncate(50), commit.url, class: "underline text-slate-500" %>
-            <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-slate-100 text-slate-400 rounded-full text-center px-2 py-0.5">
-              #<%= commits_count - index %>
-            </span>
-          <% else %>
-            <%= link_to_external commit.message.truncate(50), commit.url, class: "underline font-medium" %>
-            <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-slate-200 text-slate-600 rounded-full text-center px-2 py-0.5">
-              #<%= commits_count - index %>
-            </span>
-          <% end %>
+
+          <%
+            if is_stale_commit
+              link_text_class = "text-slate-400"
+              number_text_class = "bg-slate-100 text-slate-400"
+            else
+              link_text_class = "font-medium"
+              number_text_class = "bg-slate-200 text-slate-600"
+            end
+          %>
+
+          <%= link_to_external commit.message.truncate(50), commit.url, class: "underline #{link_text_class}" %>
+          <span class="text-xs uppercase tracking-wide inline-flex font-medium <%= number_text_class %> rounded-full text-center px-2 py-0.5">
+            #<%= commits_count - index %>
+          </span>
 
           <div class="mt-1 text-slate-500">
             <%= commit.short_sha %> • <%= ago_in_words commit.timestamp %>
           </div>
         </td>
-
         <td class="align-text-top pt-4 whitespace-nowrap w-px">
           <button
             class="text-slate-400 hover:text-slate-500 transform"
@@ -54,7 +57,7 @@
         </td>
       </tr>
 
-      <tr data-reveal <%= "hidden" if commit.stale? %>>
+      <tr data-reveal <%= "hidden" if is_stale_commit %>>
         <td colspan="2" class="pb-4 whitespace-nowrap">
           <div class="grid grid-cols-1 gap-y-1 ml-4">
             <% if is_stale_commit %>
@@ -70,7 +73,8 @@
                   <%= dev_show { step_run.id.strip } %>
                 </div>
 
-                <div class="ml-4"> <!-- per step info -->
+                <!-- per step info -->
+                <div class="ml-4">
                   <div class="mb-2">
                     <% if step_run.ci_link.present? %>
                       <%= link_to_external "CI workflow run ↗", step_run.ci_link, class: "underline" %>
@@ -98,9 +102,7 @@
                         </div>
                       </div>
                     </div>
-                  <% end %>
 
-                  <% if step_run.build_artifact_available? %>
                     <div class="mb-2">
                       Deployments
                       <% step_run.deployment_runs.each do |deployment_run| %>
@@ -135,7 +137,6 @@
                 </div>
               </div>
             <% end %>
-
           </div>
         </td>
       </tr>
