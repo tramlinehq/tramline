@@ -42,8 +42,7 @@ class Releases::Train::Run < ApplicationRecord
     created: "created",
     on_track: "on_track",
     post_release: "post_release",
-    finished: "finished",
-    error: "error"
+    finished: "finished"
   }
 
   enum status: STATES

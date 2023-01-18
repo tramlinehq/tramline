@@ -42,10 +42,6 @@ class WorkflowProcessors::WorkflowRun
     end
   end
 
-  def upload_artifact!
-    Releases::UploadArtifact.perform_later(step_run.id, artifacts_url)
-  end
-
   def send_notification!
     train.notify!(
       "New build was created!",

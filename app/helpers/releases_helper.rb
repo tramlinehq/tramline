@@ -31,6 +31,8 @@ module ReleasesHelper
         ["CI Workflow Not Found", %w[bg-rose-100 text-rose-600]]
       when :ci_workflow_halted
         ["CI Workflow Cancelled", %w[bg-yellow-100 text-yellow-600]]
+      when :build_unavailable
+        ["Build Unavailable", %w[bg-rose-100 text-rose-600]]
       when :deployment_failed
         ["Deployment Failed", %w[bg-rose-100 text-rose-600]]
       else
