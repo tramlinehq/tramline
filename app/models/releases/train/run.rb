@@ -42,8 +42,7 @@ class Releases::Train::Run < ApplicationRecord
     created: "created",
     on_track: "on_track",
     post_release: "post_release",
-    finished: "finished",
-    error: "error"
+    finished: "finished"
   }
 
   enum status: STATES
@@ -119,7 +118,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def finalizable?
-    (on_track? || post_release?) && signed? && finished_steps?
+    (on_track? || post_release?) && finished_steps? && signed?
   end
 
   def next_step

@@ -52,6 +52,7 @@ class DeploymentRun < ApplicationRecord
     state(*STATES.keys)
 
     event :dispatch_job, after_commit: :start_upload! do
+      after { step_run.ready_to_deploy! if first? }
       transitions from: :created, to: :started
     end
 
@@ -85,6 +86,10 @@ class DeploymentRun < ApplicationRecord
   after_commit -> {
     status_update_stamp!(data: {num: deployment_number, step_name: step.name, sha_link: commit.url, sha: commit.short_sha})
   }, if: -> { saved_change_to_attribute?(:status) }, on: :update
+
+  def first?
+    step_run.deployment_runs.first == self
+  end
 
   def promote!
     save!

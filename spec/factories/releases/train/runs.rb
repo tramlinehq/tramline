@@ -6,5 +6,9 @@ FactoryBot.define do
     status { "on_track" }
     branch_name { "branch" }
     release_version { "1.2.3" }
+
+    trait :created do
+      status { "created" }
+    end
   end
 end

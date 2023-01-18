@@ -3,6 +3,8 @@ class WorkflowProcessors::WorkflowRun
   GITHUB = WorkflowProcessors::Github::WorkflowRun
   BITRISE = WorkflowProcessors::Bitrise::WorkflowRun
 
+  class WorkflowRunUnknownStatus < StandardError; end
+
   def self.process(step_run)
     new(step_run).process
   end
@@ -12,29 +14,32 @@ class WorkflowProcessors::WorkflowRun
   end
 
   def process
-    WorkflowProcessors::WorkflowRunJob.set(wait: wait_time).perform_later(step_run.id) if in_progress?
-
-    return update_status! unless successful?
-    upload_artifact!
+    return re_enqueue if in_progress?
     update_status!
-    send_notification!
+    send_notification! if successful?
   end
 
   private
+
+  def re_enqueue
+    WorkflowProcessors::WorkflowRunJob.set(wait: wait_time).perform_later(step_run.id)
+  end
 
   attr_reader :step_run
   delegate :train, :release, to: :step_run
   delegate :in_progress?, :successful?, :failed?, :halted?, :artifacts_url, to: :runner
 
   def update_status!
-    step_run.finish_ci! and return if successful?
-    step_run.fail_ci! and return if failed?
-    step_run.cancel_ci! if halted?
-    # FIXME: add a catchall to fail the run
-  end
-
-  def upload_artifact!
-    Releases::UploadArtifact.perform_later(step_run.id, artifacts_url)
+    if successful?
+      step_run.artifacts_url = artifacts_url
+      step_run.finish_ci!
+    elsif failed?
+      step_run.fail_ci!
+    elsif halted?
+      step_run.cancel_ci!
+    else
+      raise WorkflowRunUnknownStatus
+    end
   end
 
   def send_notification!
@@ -52,17 +57,11 @@ class WorkflowProcessors::WorkflowRun
   end
 
   memoize def runner
-    return GITHUB.new(workflow_run) if github?
-    BITRISE.new(step_run.ci_cd_provider, workflow_run) if bitrise?
+    return GITHUB.new(workflow_run) if github_integration?
+    BITRISE.new(step_run.ci_cd_provider, workflow_run) if bitrise_integration?
   end
 
-  def github?
-    integration.github_integration?
-  end
-
-  def bitrise?
-    integration.bitrise_integration?
-  end
+  delegate :github_integration?, :bitrise_integration?, to: :integration
 
   def integration
     step_run.ci_cd_provider.integration

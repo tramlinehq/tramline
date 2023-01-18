@@ -180,4 +180,87 @@ describe Releases::Step::Run, type: :model do
       expect(inactive_step_run.manually_startable_deployment?(deployment2)).to be false
     end
   end
+
+  describe "#trigger_deploys" do
+    before do
+      allow(Triggers::Deployment).to receive(:call)
+    end
+
+    it "triggers the deployment for the step run" do
+      step_run = create(:releases_step_run, :build_available)
+
+      step_run.trigger_deploys
+
+      expect(Triggers::Deployment).to have_received(:call).with(step_run: step_run).once
+    end
+
+    context "when auto-triggering multiple deployments" do
+      let(:step) { create(:releases_step, :with_deployment) }
+
+      before do
+        create_list(:deployment, 2, step: step)
+      end
+
+      it "triggers multiple deployments when the step has run previously" do
+        old_step_run = create(:releases_step_run, :success, step: step, scheduled_at: 1.minute.ago)
+
+        step.deployments.each do |deployment|
+          create(:deployment_run, deployment: deployment, step_run: old_step_run)
+        end
+
+        new_step_run = create(:releases_step_run, :build_ready, step: step, train_run: old_step_run.train_run)
+
+        new_step_run.trigger_deploys
+
+        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[0]).once
+        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[1]).once
+        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[2]).once
+      end
+
+      it "triggers only the deployment that have run before" do
+        old_step_run = create(:releases_step_run, :deployment_started, step: step, scheduled_at: 1.minute.ago)
+        create(:deployment_run, deployment: step.deployments[0], step_run: old_step_run)
+        create(:deployment_run, deployment: step.deployments[1], step_run: old_step_run)
+
+        new_step_run = create(:releases_step_run, :build_ready, step: step, train_run: old_step_run.train_run)
+
+        new_step_run.trigger_deploys
+
+        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[0]).once
+        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[1]).once
+        expect(Triggers::Deployment).not_to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[2])
+      end
+
+      it "triggers all deployments that have run in the last deployed run" do
+        older_step_run = create(:releases_step_run, :deployment_started, step: step, scheduled_at: 2.minutes.ago)
+        create(:deployment_run, deployment: step.deployments[0], step_run: older_step_run)
+        create(:deployment_run, deployment: step.deployments[1], step_run: older_step_run)
+
+        _old_failed_step_run = create(:releases_step_run, :ci_workflow_failed, step: step,
+          train_run: older_step_run.train_run, scheduled_at: 1.minute.ago)
+
+        new_step_run = create(:releases_step_run, :build_ready, step: step, train_run: older_step_run.train_run)
+
+        new_step_run.trigger_deploys
+
+        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[0]).once
+        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[1]).once
+        expect(Triggers::Deployment).not_to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[2])
+      end
+
+      it "triggers all deployments that have run before even if they had failed" do
+        older_step_run = create(:releases_step_run, :deployment_failed, step: step, scheduled_at: 2.minutes.ago)
+        create(:deployment_run, :released, deployment: step.deployments[0], step_run: older_step_run)
+        create(:deployment_run, :failed, deployment: step.deployments[1], step_run: older_step_run)
+
+        new_step_run = create(:releases_step_run, :build_ready, step: step, train_run: older_step_run.train_run)
+
+        new_step_run.trigger_deploys
+
+        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[0]).once
+        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[1]).once
+        expect(Triggers::Deployment).not_to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[2])
+      end
+    end
+  end
 end

@@ -84,7 +84,7 @@
                     <% end %>
                   </div>
 
-                  <% if step_run.build_available? %>
+                  <% if step_run.build_artifact_available? %>
                     <div class="mb-2">
                       <%= link_to_external "Download build ↗", step_run.download_url, class: "underline" %>
                       <div class="text-slate-500">
@@ -100,7 +100,7 @@
                     </div>
                   <% end %>
 
-                  <% if step_run.build_available? %>
+                  <% if step_run.build_artifact_available? %>
                     <div class="mb-2">
                       Deployments
                       <% step_run.deployment_runs.each do |deployment_run| %>
