@@ -3,7 +3,12 @@ require "rails_helper"
 describe Releases::UploadArtifact, type: :job do
   describe "#perform" do
     let(:artifacts_url) { Faker::Internet.url }
-    let(:artifact_stream) { Artifacts::Stream.new(Rack::Test::UploadedFile.new("spec/fixtures/storage/test_artifact.aab.zip", "application/zip"), is_archive: true) }
+    let(:artifact_stream) do
+      Artifacts::Stream.new(
+        Rack::Test::UploadedFile.new("spec/fixtures/storage/test_artifact.aab.zip", "application/zip"),
+        is_archive: true
+      )
+    end
 
     before do
       allow_any_instance_of(GithubIntegration).to receive(:get_artifact).and_return(artifact_stream)
@@ -63,7 +68,7 @@ describe Releases::UploadArtifact, type: :job do
         create(:deployment_run, deployment: step.deployments[1], step_run: older_step_run)
 
         _old_failed_step_run = create(:releases_step_run, :ci_workflow_failed, step: step,
-          train_run: older_step_run.train_run, scheduled_at: 1.minute.ago)
+                                      train_run: older_step_run.train_run, scheduled_at: 1.minute.ago)
 
         new_step_run = create(:releases_step_run, :build_ready, step: step, train_run: older_step_run.train_run)
 

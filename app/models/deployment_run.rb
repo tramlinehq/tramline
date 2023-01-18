@@ -118,6 +118,8 @@ class DeploymentRun < ApplicationRecord
   end
 
   def push_to_slack!
+    return unless slack_integration?
+
     provider.deploy!(deployment_channel, {step_run: step_run})
     complete!
   end
