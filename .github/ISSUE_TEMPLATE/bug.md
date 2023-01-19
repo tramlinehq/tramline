@@ -32,6 +32,6 @@ A description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **User environment:**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Emblem Project Version [e.g. v0.5.3]
+ - OS: [e.g. macOS, Fedora, Android]
+ - Browser [e.g. Firefox, Safari]
+ - SHA of the deployed commit [e.g. 7e4c22] 
