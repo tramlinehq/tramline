@@ -31,11 +31,13 @@ class Releases::Train::Run < ApplicationRecord
 
   STAMPABLE_REASONS = [
     "created",
-    "status_changed",
     "pull_request_not_required",
     "pull_request_not_mergeable",
     "tag_reference_already_exists",
-    "tagged_release_already_exists"
+    "tagged_release_already_exists",
+    "kickoff_pr_succeeded",
+    "release_branch_created",
+    "version_changed"
   ]
 
   STATES = {
@@ -72,7 +74,6 @@ class Releases::Train::Run < ApplicationRecord
 
   before_create :set_version
   after_commit -> { create_stamp!(data: {version: release_version}) }, on: :create
-  after_commit :status_update_stamp!, if: -> { saved_change_to_attribute?(:status) }, on: :update
 
   scope :pending_release, -> { where(status: [:release_phase, :post_release, :on_track, :created]) }
   delegate :app, :pre_release_prs?, to: :train

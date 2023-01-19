@@ -9,9 +9,14 @@ class WebhookProcessors::Github::Push < ApplicationJob
       return unless release.committable?
 
       commit_record = create_commit
-      train.bump_version!(:patch) if release.step_runs.any?
-      release.start!
-      release.update(release_version: train.version_current)
+
+      if release.step_runs.any?
+        train.bump_version!(:patch)
+        release.start!
+        release.update(release_version: train.version_current)
+        release.event_stamp_now!(reason: :version_changed, kind: :notice, data: {version: release.release_version})
+      end
+
       current_step = release.current_step || 1
 
       train.steps.where("step_number <= ?", current_step).order(:step_number).each do |step|

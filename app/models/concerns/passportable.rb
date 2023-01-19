@@ -10,6 +10,17 @@ module Passportable
     )
   end
 
+  def event_stamp_now!(reason:, kind:, data: {})
+    PassportJob.perform_now(
+      id,
+      self.class.name,
+      reason:,
+      kind:,
+      message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
+      metadata: data
+    )
+  end
+
   def create_stamp!(data: {})
     event_stamp!(reason: :created, kind: :success, data: data)
   end

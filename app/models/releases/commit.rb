@@ -27,7 +27,7 @@ class Releases::Commit < ApplicationRecord
 
   STAMPABLE_REASONS = ["created"]
 
-  after_commit -> { create_stamp!(data: {sha: commit_hash}) }, on: :create
+  after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
   validates :commit_hash, uniqueness: {scope: :train_run_id}
 
   def run_for(step)
