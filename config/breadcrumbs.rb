@@ -12,6 +12,16 @@ crumb :app do |app|
   parent :apps
 end
 
+crumb :new_app do
+  link "New App"
+  parent :apps
+end
+
+crumb :edit_app do |app|
+  link "Edit"
+  parent :app, app
+end
+
 crumb :train do |train|
   link train.name, app_train_path(train.app, train)
   parent :app, train.app
@@ -22,9 +32,19 @@ crumb :step do |step|
   parent :train, step.train
 end
 
+crumb :new_step do |train|
+  link "New Step"
+  parent :train, train
+end
+
 crumb :release do |release|
-  link release.release_version, app_train_releases_path(release.train.app, release.train)
+  link release.release_version, release_path(release)
   parent :train, release.train
+end
+
+crumb :timeline_release do |release|
+  link "Event Log", timeline_release_path(release)
+  parent :release, release
 end
 
 crumb :app_config do |config|
@@ -33,7 +53,7 @@ crumb :app_config do |config|
 end
 
 crumb :integrations do |app|
-  link "integrations", app_integrations_path(app)
+  link "Integrations", app_integrations_path(app)
   parent :app, app
 end
 
