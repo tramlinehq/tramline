@@ -1,7 +1,7 @@
 class PassportJob < ApplicationJob
   queue_as :high
 
-  def perform(stampable_id, stampable_type, reason:, kind:, message:, metadata:)
+  def perform(stampable_id, stampable_type, reason:, kind:, message:, metadata:, event_timestamp:)
     stampable =
       begin
         stampable_type.constantize.find(stampable_id)
@@ -9,6 +9,6 @@ class PassportJob < ApplicationJob
         Sentry.capture_exception(e)
       end
 
-    Passport.stamp!(stampable: stampable, reason: reason, kind: kind, message: message, metadata: metadata)
+    Passport.stamp!(stampable:, reason:, kind:, message:, metadata:, event_timestamp:)
   end
 end

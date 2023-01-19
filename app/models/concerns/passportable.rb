@@ -6,7 +6,8 @@ module Passportable
       reason:,
       kind:,
       message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
-      metadata: data
+      metadata: data,
+      event_timestamp: Time.current
     )
   end
 
@@ -17,7 +18,8 @@ module Passportable
       reason:,
       kind:,
       message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
-      metadata: data
+      metadata: data,
+      event_timestamp: Time.current
     )
   end
 
