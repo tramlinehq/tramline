@@ -1,8 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-package" width="44" height="44" viewBox="0 0 24 24" stroke-width="1.5" stroke="#000000" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <polyline points="12 3 20 7.5 20 16.5 12 21 4 16.5 4 7.5 12 3" />
-  <line x1="12" y1="12" x2="20" y2="7.5" />
-  <line x1="12" y1="12" x2="12" y2="21" />
-  <line x1="12" y1="12" x2="4" y2="7.5" />
-  <line x1="16" y1="5.25" x2="8" y2="9.75" />
-</svg>
+<svg fill="none" height="44" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="44" xmlns="http://www.w3.org/2000/svg"><path d="m0 0h24v24h-24z" fill="none" stroke="none"/><path d="m12 3 8 4.5v9l-8 4.5-8-4.5v-9z"/><path d="m12 12 8-4.5"/><path d="m12 12v9"/><path d="m12 12-8-4.5"/><path d="m16 5.25-8 4.5"/></svg>
