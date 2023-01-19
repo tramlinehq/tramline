@@ -20,6 +20,7 @@ class WebhookProcessors::Github::Push < ApplicationJob
 
       current_step = release.current_step || 1
 
+      # TODO: remove this from this giant transaction and make it an after_commit hook of release instead
       train.steps.where("step_number <= ?", current_step).order(:step_number).each do |step|
         if step.step_number < current_step
           Triggers::StepRun.call(step, commit_record, false)

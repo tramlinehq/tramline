@@ -33,10 +33,13 @@ class WorkflowProcessors::WorkflowRun
     if successful?
       step_run.artifacts_url = artifacts_url
       step_run.finish_ci!
+      step_run.event_stamp!(reason: :ci_finished, kind: :success, data: {ref: step_run.ci_ref, url: step_run.ci_link})
     elsif failed?
       step_run.fail_ci!
+      step_run.event_stamp!(reason: :ci_workflow_failed, kind: :error, data: {ref: step_run.ci_ref, url: step_run.ci_link})
     elsif halted?
       step_run.cancel_ci!
+      step_run.event_stamp!(reason: :ci_workflow_halted, kind: :error, data: {ref: step_run.ci_ref, url: step_run.ci_link})
     else
       raise WorkflowRunUnknownStatus
     end

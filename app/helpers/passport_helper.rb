@@ -2,7 +2,7 @@ module PassportHelper
   BADGE = {
     success: "bg-emerald-100",
     error: "bg-rose-100",
-    notice: "bg-amber-100",
+    notice: "bg-amber-100"
   }.with_indifferent_access
 
   ICON = {

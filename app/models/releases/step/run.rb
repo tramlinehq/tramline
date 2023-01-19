@@ -41,7 +41,7 @@ class Releases::Step::Run < ApplicationRecord
   after_create :reset_approval!
   after_commit -> { create_stamp!(data: {name: step.name}) }, on: :create
 
-  STAMPABLE_REASONS = %w[created]
+  STAMPABLE_REASONS = %w[created ci_triggered ci_workflow_unavailable ci_finished ci_workflow_failed ci_workflow_halted build_available build_unavailable finished]
 
   STATES = {
     on_track: "on_track",
@@ -103,7 +103,10 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: :deployment_started, to: :deployment_failed
     end
 
-    event(:finish) { transitions from: :deployment_started, to: :success, guard: :finished_deployments? }
+    event(:finish) do
+      after { event_stamp!(reason: :finished, kind: :success, data: {name: step.name, sha: commit.short_sha}) }
+      transitions from: :deployment_started, to: :success, guard: :finished_deployments?
+    end
   end
 
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
