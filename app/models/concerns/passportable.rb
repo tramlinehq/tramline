@@ -24,15 +24,7 @@ module Passportable
   end
 
   def create_stamp!(data: {})
-    event_stamp!(reason: :created, kind: :success, data: data)
-  end
-
-  def status_update_stamp!(data: {})
-    event_stamp!(
-      reason: :status_changed,
-      kind: :success,
-      data: {from: saved_changes[:status].first, to: status}.merge(data)
-    )
+    event_stamp!(reason: :created, kind: :notice, data: data)
   end
 
   def stamp_namespace

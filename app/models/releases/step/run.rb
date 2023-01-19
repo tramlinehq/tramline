@@ -39,7 +39,7 @@ class Releases::Step::Run < ApplicationRecord
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   after_create :reset_approval!
-  after_commit -> { create_stamp!(data: {name: step.name}) }, on: :create
+  after_commit -> { create_stamp!(data: {name: step.name, sha: commit.short_sha}) }, on: :create
 
   STAMPABLE_REASONS = %w[created ci_triggered ci_workflow_unavailable ci_finished ci_workflow_failed ci_workflow_halted build_available build_unavailable finished]
 

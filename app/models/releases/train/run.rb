@@ -190,7 +190,7 @@ class Releases::Train::Run < ApplicationRecord
   def events
     types = %w[Releases::Train::Run Releases::Step::Run Releases::Commit DeploymentRun]
     ids = [id, commits.pluck(:id), step_runs.pluck(:id), deployment_runs.pluck(:id)].flatten
-    Passport.where(stampable_type: types, stampable_id: ids).order(created_at: :desc)
+    Passport.where(stampable_type: types, stampable_id: ids).order(event_timestamp: :desc)
   end
 
   def all_steps

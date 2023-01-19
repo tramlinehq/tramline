@@ -1,5 +1,6 @@
 class Triggers::Deployment
   include Memery
+  delegate :transaction, to: ::DeploymentRun
 
   def self.call(step_run:, deployment: nil)
     new(step_run:, deployment:).call
@@ -12,10 +13,12 @@ class Triggers::Deployment
   end
 
   def call
-    step_run
-      .deployment_runs
-      .create!(deployment:, scheduled_at: starting_time)
-      .dispatch_job!
+    transaction do
+      step_run
+        .deployment_runs
+        .create!(deployment:, scheduled_at: starting_time)
+        .dispatch_job!
+    end
   end
 
   private

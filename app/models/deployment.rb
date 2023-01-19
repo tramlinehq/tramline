@@ -54,4 +54,8 @@ class Deployment < ApplicationRecord
   def deployment_channel
     build_artifact_channel["id"]
   end
+
+  def deployment_channel_name
+    build_artifact_channel["name"]
+  end
 end
