@@ -16,11 +16,11 @@
               </span>
             </div>
 
-            <span class="text-xs inline-flex font-medium <%= passport_badge(passport) %> rounded-full text-center ml-2 px-2 py-1">
+            <span class="text-xs inline-flex font-medium <%= passport_badge(passport) %> rounded-full text-center mx-3 px-2 py-1">
               <%= image_tag("#{passport_icon(passport)}.svg", width: 20, class: "inline-flex") %>
             </span>
 
-            <div class="self-center ml-5 text-slate-800">
+            <div class="self-center text-slate-800">
               <%= raw passport.message %>
             </div>
           </div>
