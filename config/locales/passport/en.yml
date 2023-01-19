@@ -1,7 +1,6 @@
 en:
   passport:
     releases/train/run:
-      pull_request_already_exists_html_html: "The pull request already exists. A new one was not created"
       pull_request_not_mergeable_html: "The pull request cannot be merged. Please check for any merge conflicts"
       tag_reference_already_exists_html: "Did not create tag, since it already existed"
       tagged_release_already_exists_html: "Skipping generating a release, since a release for %{tag} already exists!"

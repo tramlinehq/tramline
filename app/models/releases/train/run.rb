@@ -188,9 +188,14 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def events
-    types = %w[Releases::Train::Run Releases::Step::Run Releases::Commit DeploymentRun]
-    ids = [id, commits.pluck(:id), step_runs.pluck(:id), deployment_runs.pluck(:id)].flatten
-    Passport.where(stampable_type: types, stampable_id: ids).order(event_timestamp: :desc)
+    step_runs
+      .left_joins(:commit, :deployment_runs)
+      .pluck("train_step_runs.id, deployment_runs.id, releases_commits.id")
+      .flatten
+      .uniq
+      .compact
+      .push(id)
+      .then { |ids| Passport.where(stampable_id: ids).order(event_timestamp: :desc) }
   end
 
   def all_steps
