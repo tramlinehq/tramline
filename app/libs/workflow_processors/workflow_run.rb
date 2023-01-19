@@ -33,13 +33,13 @@ class WorkflowProcessors::WorkflowRun
     if successful?
       step_run.artifacts_url = artifacts_url
       step_run.finish_ci!
-      step_run.event_stamp!(reason: :ci_finished, kind: :success, data: {ref: step_run.ci_ref, url: step_run.ci_link})
+      step_run.event_stamp!(reason: :ci_finished, kind: :success, data: stamp_data)
     elsif failed?
       step_run.fail_ci!
-      step_run.event_stamp!(reason: :ci_workflow_failed, kind: :error, data: {ref: step_run.ci_ref, url: step_run.ci_link})
+      step_run.event_stamp!(reason: :ci_workflow_failed, kind: :error, data: stamp_data)
     elsif halted?
       step_run.cancel_ci!
-      step_run.event_stamp!(reason: :ci_workflow_halted, kind: :error, data: {ref: step_run.ci_ref, url: step_run.ci_link})
+      step_run.event_stamp!(reason: :ci_workflow_halted, kind: :error, data: stamp_data)
     else
       raise WorkflowRunUnknownStatus
     end
@@ -80,5 +80,12 @@ class WorkflowProcessors::WorkflowRun
     else
       2.minutes
     end
+  end
+
+  def stamp_data
+    {
+      ref: step_run.ci_ref,
+      url: step_run.ci_link
+    }
   end
 end
