@@ -2,7 +2,7 @@
 name: Idea
 about: Suggest an idea or a feature request
 title: ''
-labels: 'type: big+feature, priority: p2'
+labels: ["needs triage"]
 assignees: ''
 
 ---
