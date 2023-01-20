@@ -32,7 +32,7 @@ class Releases::Commit < ApplicationRecord
   delegate :current_step, to: :train_run
 
   after_commit -> { create_stamp!(data: { sha: short_sha }) }, on: :create
-  after_commit -> { trigger_step_runs }, on: :create
+  after_commit :trigger_step_runs, on: :create
 
   def run_for(step)
     step_runs.where(step: step).last
