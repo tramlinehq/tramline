@@ -26,7 +26,7 @@ class Releases::Train::Run < ApplicationRecord
   has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
   has_many :deployment_runs, through: :step_runs
-  has_many :steps, through: :step_runs
+  has_many :running_steps, through: :step_runs, source: :step
   has_many :passports, as: :stampable, dependent: :destroy
 
   STAMPABLE_REASONS = [
@@ -53,7 +53,7 @@ class Releases::Train::Run < ApplicationRecord
     state :created, initial: true
     state(*STATES.keys)
 
-    event :start do
+    event :start, after_commit: :trigger_step_runs do
       transitions from: [:created, :on_track], to: :on_track
     end
 
@@ -156,7 +156,8 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def current_step
-    steps.order(:step_number).last&.step_number
+    return 1 if all_steps.present? && running_steps.blank?
+    running_steps.order(:step_number).last.step_number
   end
 
   def finished_steps?
@@ -196,6 +197,16 @@ class Releases::Train::Run < ApplicationRecord
       .compact
       .push(id)
       .then { |ids| Passport.where(stampable_id: ids).order(event_timestamp: :desc) }
+  end
+
+  def trigger_step_runs
+    train.ordered_steps_until(current_step).each do |step|
+      if step.step_number < current_step
+        Triggers::StepRun.call(step, commit, false)
+      else
+        Triggers::StepRun.call(step, commit)
+      end
+    end
   end
 
   def all_steps

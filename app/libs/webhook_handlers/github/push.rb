@@ -19,7 +19,7 @@ class WebhookHandlers::Github::Push
     return Response.new(:unprocessable_entity, "Invalid repo/branch") unless valid_repo_and_branch?
 
     if train.commit_listeners.exists?(branch_name:)
-      WebhookProcessors::Github::Push.perform_later(release.id, commit_attributes)
+      WebhookProcessors::Github::PushJob.perform_later(release.id, commit_attributes)
     end
 
     Response.new(:accepted)
