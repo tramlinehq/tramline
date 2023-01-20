@@ -1,16 +1,14 @@
 en:
   passport:
     releases/train/run:
-      tag_reference_already_exists_html: 'Release finalization: did not create tag, since <span class="emphasize">%{tag}</span> already existed'
-      tagged_release_already_exists_html: 'Release finalization: skipping generating a release, since a release for <span class="emphasize">%{tag}</span> already exists!'
       post_release_pr_succeeded_html: 'Post release PR created and merged <a class="emphasize-link" href="%{url}">#%{number}</a>'
-      pull_request_not_required_html: 'Did not create a PR from <span class="emphasize">%{from}</span> to <span class="emphasize">%{to}</span> because there was no diff between the two'
+      pull_request_not_mergeable_html: 'The pull request <a class="emphasize-link" href="%{url}">#%{number}</a> cannot be merged. Please check for any merge conflicts'
       created_html: 'Started a new release <span class="emphasize">%{version}<span>'
       release_branch_created_html: 'Created a release branch <span class="emphasize">%{release_branch}</span> from <span class="emphasize">%{working_branch}</span>'
       kickoff_pr_succeeded_html: 'Kickoff PR created and merged <a class="emphasize-link" href="%{url}">#%{number}</a>'
       version_changed_html: 'Updated the release version to <span class="emphasize">%{version}</span>'
       finalizing_html: 'Finalizing the release with version <span class="emphasize">%{version}</span>'
-      finished_html: 'Finished the release with version <span class="emphasize">%{version}</span>, yay'
+      finished_html: 'Finished the release with version <span class="emphasize">%{version}</span>'
     releases/step/run:
       created_html: 'Started the step <span class="emphasize">%{name}</span> for <span class="emphasize">%{sha}</span>'
       ci_triggered_html: 'CI workflow triggered for generating build <span class="emphasize">%{version}</span>'

@@ -35,9 +35,7 @@ class Releases::Train::Run < ApplicationRecord
     "kickoff_pr_succeeded",
     "version_changed",
     "finalizing",
-    "pull_request_not_required",
-    "tag_reference_already_exists",
-    "tagged_release_already_exists",
+    "pull_request_not_mergeable",
     "post_release_pr_succeeded",
     "finished"
   ]
