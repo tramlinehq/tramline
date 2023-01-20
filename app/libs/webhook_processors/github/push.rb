@@ -12,22 +12,24 @@ class WebhookProcessors::Github::Push
     release.with_lock do
       return unless release.committable?
 
-      create_commit!
-
-      if release.step_runs.any?
-        train.bump_version!(:patch)
-        stamp_version_changed
-      end
-
+      bump_version!
       release.start!
       release.update(release_version: train.version_current)
+      create_commit!
     end
   end
 
   private
 
   attr_reader :train_run, :commit_attributes
+  delegate :train, to: :release
   alias_method :release, :train_run
+
+  def bump_version!
+    return if release.step_runs.none?
+    train.bump_version!(:patch)
+    stamp_version_changed
+  end
 
   def create_commit!
     params = {
@@ -59,9 +61,11 @@ class WebhookProcessors::Github::Push
     )
   end
 
-  delegate :train, to: :release
-
   def stamp_version_changed
-    release.event_stamp_now!(reason: :version_changed, kind: :notice, data: { version: train.version_current })
+    release.event_stamp_now!(
+      reason: :version_changed,
+      kind: :notice,
+      data: { version: train.version_current }
+    )
   end
 end

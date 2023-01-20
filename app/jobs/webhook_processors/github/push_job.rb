@@ -3,7 +3,9 @@ class WebhookProcessors::Github::PushJob < ApplicationJob
 
   def perform(train_run_id, commit_attributes)
     release = Releases::Train::Run.find(train_run_id)
-    return unless release.committable?
-    release.with_lock { WebhookProcessors::Github::Push.process(release, commit_attributes) }
+    release.with_lock do
+      return unless release.committable?
+      WebhookProcessors::Github::Push.process(release, commit_attributes)
+    end
   end
 end

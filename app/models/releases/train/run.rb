@@ -53,7 +53,7 @@ class Releases::Train::Run < ApplicationRecord
     state :created, initial: true
     state(*STATES.keys)
 
-    event :start, after_commit: :trigger_step_runs do
+    event :start do
       transitions from: [:created, :on_track], to: :on_track
     end
 
@@ -197,16 +197,6 @@ class Releases::Train::Run < ApplicationRecord
       .compact
       .push(id)
       .then { |ids| Passport.where(stampable_id: ids).order(event_timestamp: :desc) }
-  end
-
-  def trigger_step_runs
-    train.ordered_steps_until(current_step).each do |step|
-      if step.step_number < current_step
-        Triggers::StepRun.call(step, commit, false)
-      else
-        Triggers::StepRun.call(step, commit)
-      end
-    end
   end
 
   def all_steps
