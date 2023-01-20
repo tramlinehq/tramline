@@ -54,7 +54,6 @@ class Triggers::PullRequest
     GitHub::Result.new do
       repo_integration.merge_pr!(repo_name, create.value![:number])
     rescue Installations::Errors::PullRequestNotMergeable
-      release.event_stamp!(reason: :pull_request_not_mergeable, kind: :notice, data: {})
       raise MergeError, "Failed to merge the Pull Request"
     end
   end

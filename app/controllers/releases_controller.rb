@@ -47,7 +47,7 @@ class ReleasesController < SignedInApplicationController
   def post_release
     @release = Releases::Train::Run.find(params[:id])
 
-    if @release.finished_steps?
+    if @release.finalizable?
       @release.start_post_release_phase!
       redirect_back fallback_location: root_path, notice: "Performing post-release steps."
     else

@@ -21,10 +21,14 @@ class Triggers::PostRelease
       GitHub::Result.new do
         train.create_tag!(release.branch_name)
       rescue Installations::Errors::TagReferenceAlreadyExists
-        release.event_stamp!(reason: :tag_reference_already_exists, kind: :notice, data: {})
+        release.event_stamp!(reason: :tag_reference_already_exists, kind: :notice, data: stamp_data)
       rescue Installations::Errors::TaggedReleaseAlreadyExists
-        release.event_stamp!(reason: :tagged_release_already_exists, kind: :notice, data: {tag: release.tag_name})
+        release.event_stamp!(reason: :tagged_release_already_exists, kind: :notice, data: stamp_data)
       end
+    end
+
+    def stamp_data
+      {tag: release.tag_name}
     end
   end
 end

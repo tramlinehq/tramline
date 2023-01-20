@@ -31,13 +31,15 @@ class Releases::Train::Run < ApplicationRecord
 
   STAMPABLE_REASONS = [
     "created",
+    "release_branch_created",
+    "kickoff_pr_succeeded",
+    "version_changed",
+    "finalizing",
     "pull_request_not_required",
-    "pull_request_not_mergeable",
     "tag_reference_already_exists",
     "tagged_release_already_exists",
-    "kickoff_pr_succeeded",
-    "release_branch_created",
-    "version_changed"
+    "post_release_pr_succeeded",
+    "finished"
   ]
 
   STATES = {
@@ -203,6 +205,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def notify_on_finish!
+    event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     train.notify!("Release is complete!", :release_ended, finalize_phase_metadata)
   end
 

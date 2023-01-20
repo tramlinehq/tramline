@@ -6,6 +6,7 @@ class Releases::PostReleaseJob < ApplicationJob
     run.with_lock do
       return unless run.finalizable?
       Triggers::PostRelease.call(run)
+      run.event_stamp!(reason: :finalizing, kind: :notice, data: {version: run.release_version})
     end
   end
 end

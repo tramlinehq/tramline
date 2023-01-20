@@ -36,6 +36,11 @@ class Triggers::PostRelease
           title: backmerge_pr_title,
           description: pr_description
         )
+      end.then do |value|
+        release.reload.pull_requests.post_release.each do |pr|
+          release.event_stamp!(reason: :post_release_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number})
+        end
+        GitHub::Result.new { value }
       end
     end
 
@@ -43,7 +48,7 @@ class Triggers::PostRelease
       GitHub::Result.new do
         train.create_tag!(release.branch_name)
       rescue Installations::Errors::TagReferenceAlreadyExists
-        release.event_stamp!(reason: :tag_reference_already_exists, kind: :notice, data: {})
+        release.event_stamp!(reason: :tag_reference_already_exists, kind: :notice, data: {tag: release.tag_name})
       rescue Installations::Errors::TaggedReleaseAlreadyExists
         release.event_stamp!(reason: :tagged_release_already_exists, kind: :notice, data: {tag: release.tag_name})
       end
