@@ -5,11 +5,11 @@ module PassportHelper
     notice: "bg-amber-100"
   }.with_indifferent_access
 
-  ICON = {
-    "DeploymentRun" => "truck_delivery",
-    "Releases::Commit" => "git_commit",
-    "Releases::Step::Run" => "box",
-    "Releases::Train::Run" => "bolt"
+  STAMPABLE_ICONS = {
+    DeploymentRun => "truck_delivery",
+    Releases::Commit => "git_commit",
+    Releases::Step::Run => "box",
+    Releases::Train::Run => "bolt"
   }
 
   def passport_badge(passport)
@@ -17,6 +17,6 @@ module PassportHelper
   end
 
   def passport_icon(passport)
-    ICON.fetch(passport.stampable_type, "aerial_lift")
+    STAMPABLE_ICONS.fetch(passport.stampable_type.constantize, "aerial_lift")
   end
 end
