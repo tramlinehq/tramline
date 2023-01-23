@@ -1,6 +1,6 @@
 Rails.application.configure do
   config.lograge.enabled = true
-  config.lograge.ignore_actions = ["IntegrationListeners::GithubController#events"]
+  # config.lograge.ignore_actions = ["IntegrationListeners::GithubController#events"]
   config.lograge.custom_options = lambda do |event|
     exceptions = %w[controller action format id]
     {

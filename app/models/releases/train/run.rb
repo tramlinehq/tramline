@@ -66,7 +66,7 @@ class Releases::Train::Run < ApplicationRecord
       transitions from: [:on_track, :post_release], to: :post_release, guard: :finalizable?
     end
 
-    event :finish, after_commit: :notify_on_finish! do
+    event :finish, after_commit: :on_finish! do
       before { self.completed_at = Time.current }
       transitions from: :post_release, to: :finished
     end
@@ -202,7 +202,7 @@ class Releases::Train::Run < ApplicationRecord
     train.steps
   end
 
-  def notify_on_finish!
+  def on_finish!
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     train.notify!("Release is complete!", :release_ended, finalize_phase_metadata)
   end

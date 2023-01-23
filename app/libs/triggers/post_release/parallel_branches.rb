@@ -17,6 +17,7 @@ class Triggers::PostRelease
 
     attr_reader :train, :release
     delegate :vcs_provider, :release_branch, :working_branch, to: :train
+    delegate :logger, to: Rails
 
     def create_and_merge_pr
       Triggers::PullRequest.create_and_merge!(
@@ -27,19 +28,23 @@ class Triggers::PostRelease
         title: pr_title,
         description: pr_description
       ).then do |value|
-        pr = release.reload.pull_requests.post_release.first
-        release.event_stamp!(reason: :post_release_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number})
+        stamp_pr_success
         GitHub::Result.new { value }
       end
+    end
+
+    def stamp_pr_success
+      pr = release.reload.pull_requests.post_release.first
+      release.event_stamp!(reason: :post_release_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number})
     end
 
     def create_tag
       GitHub::Result.new do
         train.create_tag!(release.branch_name)
       rescue Installations::Errors::TagReferenceAlreadyExists
-        Rails.logger.debug { "Release finalization: did not create tag, since #{train.tag_name} already existed" }
+        logger.debug { "Release finalization: did not create tag, since #{train.tag_name} already existed" }
       rescue Installations::Errors::TaggedReleaseAlreadyExists
-        Rails.logger.debug { "Release finalization: skipping since tagged release for #{train.tag_name} already exists!" }
+        logger.debug { "Release finalization: skipping since tagged release for #{train.tag_name} already exists!" }
       end
     end
 
