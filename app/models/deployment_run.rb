@@ -109,16 +109,19 @@ class DeploymentRun < ApplicationRecord
   def upload_to_playstore!
     return unless google_play_store_integration?
 
-    build_artifact.with_open do |file|
-      result = provider.upload(file)
+    with_lock do
+      return if uploaded?
 
-      if result.ok?
-        upload!
-      else
-        reason = GooglePlayStoreIntegration::DISALLOWED_ERRORS_WITH_REASONS.fetch(result.error.class, :upload_failed_reason_unknown)
-        event_stamp!(reason:, kind: :error, data: stamp_data)
-        upload_fail!
-        log(result.error)
+      build_artifact.with_open do |file|
+        result = provider.upload(file)
+        if result.ok?
+          upload!
+        else
+          upload_fail!
+          reason = GooglePlayStoreIntegration::DISALLOWED_ERRORS_WITH_REASONS.fetch(result.error.class, :upload_failed_reason_unknown)
+          event_stamp!(reason:, kind: :error, data: stamp_data)
+          log(result.error)
+        end
       end
     end
   end
@@ -126,9 +129,12 @@ class DeploymentRun < ApplicationRecord
   def push_to_slack!
     return unless slack_integration?
 
-    provider.deploy!(deployment_channel, {step_run: step_run})
-    complete!
-    event_stamp!(reason: :released, kind: :success, data: stamp_data)
+    with_lock do
+      return if released?
+      provider.deploy!(deployment_channel, {step_run: step_run})
+      complete!
+      event_stamp!(reason: :released, kind: :success, data: stamp_data)
+    end
   end
 
   # FIXME: this is cheap hack around not allowing users to re-enter rollout

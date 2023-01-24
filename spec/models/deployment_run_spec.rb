@@ -171,6 +171,11 @@ describe DeploymentRun, type: :model do
   describe "#upload_to_playstore!" do
     let(:slack_deployment_run) { create(:deployment_run, :started, :with_slack) }
     let(:store_deployment_run) { create(:deployment_run, :started, :with_google_play_store) }
+    let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+    end
 
     it "does nothing if deployment is not google play store" do
       slack_deployment_run.upload_to_playstore!
@@ -178,23 +183,48 @@ describe DeploymentRun, type: :model do
     end
 
     it "uploads the package to store and marks the run as uploaded" do
-      providable = store_deployment_run.integration.providable
-      allow(providable).to receive(:upload).and_return(GitHub::Result.new)
-
-      store_deployment_run.upload_to_playstore!
-
-      expect(providable).to have_received(:upload).once
-      expect(store_deployment_run.reload.uploaded?).to be(true)
+      allow(providable_dbl).to receive(:upload).and_return(GitHub::Result.new)
+      expect { store_deployment_run.upload_to_playstore! }
+        .to change(store_deployment_run, :uploaded?).from(false).to(true)
     end
 
     it "marks deployment runs as upload failed if upload fails" do
-      providable = store_deployment_run.integration.providable
-      allow(providable).to receive(:upload).and_return(GitHub::Result.new { raise })
+      allow(providable_dbl).to receive(:upload).and_return(GitHub::Result.new { raise })
 
+      expect { store_deployment_run.upload_to_playstore! }
+        .to change(store_deployment_run, :upload_failed?).from(false).to(true)
+    end
+
+    it "does not mark the run as uploaded twice or raise an exception" do
+      allow(providable_dbl).to receive(:upload).and_return(GitHub::Result.new)
       store_deployment_run.upload_to_playstore!
+      expect { store_deployment_run.upload_to_playstore! }.not_to change(store_deployment_run, :uploaded?)
+    end
+  end
 
-      expect(store_deployment_run.reload.uploaded?).to be(false)
-      expect(store_deployment_run.reload.upload_failed?).to be(true)
+  describe "#push_to_slack!" do
+    let(:slack_deployment_run) { create(:deployment_run, :started, :with_slack) }
+    let(:store_deployment_run) { create(:deployment_run, :started, :with_google_play_store) }
+    let(:providable_dbl) { instance_double(SlackIntegration) }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:deploy!)
+    end
+
+    it "does nothing if deployment is not slack" do
+      store_deployment_run.push_to_slack!
+      expect(store_deployment_run.reload.started?).to be true
+    end
+
+    it "deploys to slack and marks the run as released" do
+      expect { slack_deployment_run.push_to_slack! }.to change(slack_deployment_run, :released?).from(false).to(true)
+    end
+
+    it "does not mark the run as released twice or raise an exception" do
+      slack_deployment_run.push_to_slack!
+
+      expect { slack_deployment_run.push_to_slack! }.not_to change(slack_deployment_run, :released?)
     end
   end
 
