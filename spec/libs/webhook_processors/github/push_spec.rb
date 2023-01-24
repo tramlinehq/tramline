@@ -15,9 +15,9 @@ describe WebhookProcessors::Github::Push do
   end
 
   describe "#process" do
-    it "does not bump the patch version for first commit" do
-      train_run = create(:releases_train_run, train: train)
+    let(:train_run) { create(:releases_train_run, :created, train: train) }
 
+    it "does not bump the patch version for first commit" do
       described_class.process(train_run, commit_attributes)
 
       expect(train.reload.version_current).to eq("1.6.0")
@@ -25,7 +25,6 @@ describe WebhookProcessors::Github::Push do
     end
 
     it "bumps the train and release patch version" do
-      train_run = create(:releases_train_run, train: train)
       step = create(:releases_step, :with_deployment, train: train)
       _step_run = create(:releases_step_run, train_run:, step:)
       allow(Triggers::StepRun).to receive(:call)
@@ -37,23 +36,18 @@ describe WebhookProcessors::Github::Push do
     end
 
     it "starts the release" do
-      train_run = create(:releases_train_run, train: train)
-
       described_class.process(train_run, commit_attributes)
 
       expect(train_run.reload.on_track?).to be(true)
     end
 
     it "creates a new commit" do
-      train_run = create(:releases_train_run, train: train)
-
       expect {
         described_class.process(train_run, commit_attributes)
       }.to change(Releases::Commit, :count)
     end
 
     it "triggers step runs" do
-      train_run = create(:releases_train_run, train: train)
       step = create(:releases_step, :with_deployment, train: train)
       _step_run = create(:releases_step_run, train_run:, step:)
       allow(Triggers::StepRun).to receive(:call)

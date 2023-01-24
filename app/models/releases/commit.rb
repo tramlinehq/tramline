@@ -54,11 +54,7 @@ class Releases::Commit < ApplicationRecord
 
   def trigger_step_runs
     train.ordered_steps_until(current_step).each do |step|
-      if step.step_number < current_step
-        trigger_step_run(step, false)
-      else
-        trigger_step_run(step, true)
-      end
+      trigger_step_run(step, (step.step_number == current_step))
     end
   end
 end

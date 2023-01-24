@@ -294,11 +294,11 @@ describe Releases::Step::Run, type: :model do
       step_run = create(:releases_step_run)
       id = step_run.id
       name = step_run.class.name
-      allow(PassportJob).to receive(:perform_now)
+      allow(PassportJob).to receive(:perform_later)
 
       step_run.trigger_ci!
 
-      expect(PassportJob).to have_received(:perform_now).with(id, name, hash_including(reason: :ci_triggered)).once
+      expect(PassportJob).to have_received(:perform_later).with(id, name, hash_including(reason: :ci_triggered)).once
     end
   end
 end
