@@ -15,7 +15,7 @@ class Triggers::StepRun
     release
       .step_runs
       .create!(step:, scheduled_at: Time.current, commit:, build_version:, sign_required:)
-      .tap(&:trigger_ci!)
+      .trigger_ci!
   end
 
   private
