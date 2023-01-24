@@ -12,7 +12,7 @@
           <div class="grow flex justify-start">
             <div>
               <span class="font-medium text-stone-500">
-                <%= passport.event_timestamp.strftime("%b #{passport.event_timestamp.day.ordinalize} at %-l:%M %P") %>
+                <%= passport_timestamp(passport) %>
               </span>
             </div>
 
