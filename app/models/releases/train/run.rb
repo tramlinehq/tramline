@@ -60,11 +60,6 @@ class Releases::Train::Run < ApplicationRecord
       transitions from: [:created, :on_track], to: :on_track
     end
 
-    # FIXME: We can add a couple more statuses here that describe the post_release phase to be in started, failed state
-    # We can move from post_release_started to [post_release_failed, finished]
-    # And we can move from [post_release, post_release_failed] to post_release_started
-    # But not go from post_release to post_release repeatedly
-    # No new action should be allowed on train when it is in post_release_started state
     event :start_post_release_phase, after_commit: -> { Releases::PostReleaseJob.perform_later(id) } do
       transitions from: [:on_track, :post_release_failed], to: :post_release_started
     end

@@ -15,5 +15,23 @@ FactoryBot.define do
     trait :inactive do
       status { "inactive" }
     end
+
+    trait :with_almost_trunk do
+      branching_strategy { "almost_trunk" }
+      release_backmerge_branch { nil }
+      release_branch { nil }
+    end
+
+    trait :with_release_backmerge do
+      branching_strategy { "release_backmerge" }
+      release_backmerge_branch { "main" }
+      release_branch { nil }
+    end
+
+    trait :with_parallel_working do
+      branching_strategy { "parallel_working" }
+      release_branch { "main" }
+      release_backmerge_branch { nil }
+    end
   end
 end
