@@ -10,7 +10,7 @@ class Triggers::PostRelease
     end
 
     def call
-      release.reload.finish! if create_tag.ok? && create_and_merge_prs.ok?
+      create_tag.then { |_| create_and_merge_prs }
     end
 
     private

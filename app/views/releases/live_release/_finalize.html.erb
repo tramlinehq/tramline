@@ -13,29 +13,32 @@
     </div>
   <% end %>
 
-
-  <% if release.post_release? %>
-    <% if post_release_prs&.exists? %>
-      <div class="mt-2">
-        <%= render "shared/note_box",
-                   type: :error,
-                   message: "We couldn't fully finalize this release, please fix any merge conflicts for your branches and try finalizing again." %>
+  <% if release.post_release_started? %>
+    <div class="text-center px-4 mb-6">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-t from-slate-200 to-slate-100 mb-4 animate-pulse">
+        <%= image_tag("cube.svg", class: "glowing cube", width: 20) %>
       </div>
+      <h2 class="text-2xl text-slate-400 mb-6">Finishing up, give us a few!</h2>
+      <%= decorated_button_tag :blue, "Refresh", onclick: "window.location.reload();" %>
+    </div>
+  <% end %>
 
-      <div class="mt-6">
-        <div class="text-sm font-semibold text-slate-800 mb-1">Pull Requests</div>
-      </div>
+  <% if release.post_release_failed? %>
+    <div class="mt-2">
+      <%= render "shared/note_box",
+                 type: :error,
+                 message: "We couldn't fully finalize this release, please fix any merge conflicts for your branches and try finalizing again." %>
+    </div>
 
-      <%= render partial: "releases/live_release/pull_requests", locals: { prs: post_release_prs } %>
-    <% else %>
-      <div class="text-center px-4 mb-6">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-t from-slate-200 to-slate-100 mb-4 animate-pulse">
-          <%= image_tag("cube.svg", class: "glowing cube", width: 20) %>
-        </div>
-        <h2 class="text-2xl text-slate-400 mb-6">Finishing up, give us a few!</h2>
-        <%= decorated_button_tag :blue, "Refresh", onclick: "window.location.reload();" %>
-      </div>
-    <% end %>
+    <div class="mt-6">
+      <%= authz_button_to :blue, "Retry finalize", post_release_release_path(release), class: "btn-sm" %>
+    </div>
+
+    <div class="mt-6">
+      <div class="text-sm font-semibold text-slate-800 mb-1">Pull Requests</div>
+    </div>
+
+    <%= render partial: "releases/live_release/pull_requests", locals: { prs: post_release_prs } %>
   <% end %>
 
   <% if release.finished? && release.completed_at.present? %>

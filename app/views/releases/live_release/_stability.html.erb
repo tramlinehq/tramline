@@ -39,7 +39,7 @@
       <% end %>
     </ol>
 
-    <% if release.finalizable? %>
+    <% if release.finalizable? && release.on_track? %>
       <div class="mt-8">
         <%= authz_button_to :blue, "Finish this release", post_release_release_path(release), class: "btn-sm" %>
       </div>

@@ -37,6 +37,7 @@ class Releases::Train::Run < ApplicationRecord
     "finalizing",
     "pull_request_not_mergeable",
     "post_release_pr_succeeded",
+    "finalize_failed",
     "finished"
   ]
 
@@ -44,6 +45,8 @@ class Releases::Train::Run < ApplicationRecord
     created: "created",
     on_track: "on_track",
     post_release: "post_release",
+    post_release_started: "post_release_started",
+    post_release_failed: "post_release_failed",
     finished: "finished"
   }
 
@@ -63,19 +66,23 @@ class Releases::Train::Run < ApplicationRecord
     # But not go from post_release to post_release repeatedly
     # No new action should be allowed on train when it is in post_release_started state
     event :start_post_release_phase, after_commit: -> { Releases::PostReleaseJob.perform_later(id) } do
-      transitions from: [:on_track, :post_release], to: :post_release, guard: :finalizable?
+      transitions from: [:on_track, :post_release_failed], to: :post_release_started
+    end
+
+    event :fail_post_release_phase do
+      transitions from: :post_release_started, to: :post_release_failed
     end
 
     event :finish, after_commit: :on_finish! do
       before { self.completed_at = Time.current }
-      transitions from: :post_release, to: :finished
+      transitions from: :post_release_started, to: :finished
     end
   end
 
   before_create :set_version
   after_commit -> { create_stamp!(data: {version: release_version}) }, on: :create
 
-  scope :pending_release, -> { where(status: [:release_phase, :post_release, :on_track, :created]) }
+  scope :pending_release, -> { where.not(status: :finished) }
   delegate :app, :pre_release_prs?, to: :train
 
   def tag_name
@@ -119,7 +126,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def finalizable?
-    (on_track? || post_release?) && finished_steps? && signed?
+    may_start_post_release_phase? && finished_steps? && signed?
   end
 
   def next_step
