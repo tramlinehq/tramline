@@ -13,7 +13,11 @@ class Releases::FindWorkflowRun
   end
 
   sidekiq_retries_exhausted do |msg, ex|
-    Releases::Step::Run.find(msg["args"].first).ci_unavailable! if ex.is_a?(Installations::Errors::WorkflowRunNotFound)
+    if ex.is_a?(Installations::Errors::WorkflowRunNotFound)
+      run = Releases::Step::Run.find(msg["args"].first)
+      run.ci_unavailable!
+      run.event_stamp!(reason: :ci_unavailable, kind: :error, data: {})
+    end
   end
 
   def perform(step_run_id)

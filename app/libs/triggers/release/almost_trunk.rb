@@ -24,7 +24,10 @@ class Triggers::Release
     # TODO: this should be handled gracefully rather than catching a Github-specific error
     def create_branches
       GitHub::Result.new do
-        train.create_branch!(working_branch, release_branch)
+        train.create_branch!(working_branch, release_branch).then do |value|
+          release.event_stamp!(reason: :release_branch_created, kind: :success, data: {working_branch:, release_branch:})
+          GitHub::Result.new { value }
+        end
       rescue Octokit::UnprocessableEntity
         nil
       end

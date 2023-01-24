@@ -24,14 +24,18 @@ class BuildArtifact < ApplicationRecord
 
   def save_file!(artifact_stream)
     transaction do
-      self.file = create_and_upload!(io: artifact_stream.file, filename: filename(artifact_stream.ext))
+      self.file = create_and_upload!(io: artifact_stream.file, filename: gen_filename(artifact_stream.ext))
       self.uploaded_at = Time.current
       save!
     end
   end
 
-  def filename(ext)
+  def gen_filename(ext)
     "#{app.slug}-#{step_run.build_version}-build#{ext}"
+  end
+
+  def get_filename
+    file.blob.filename.to_s
   end
 
   def with_open

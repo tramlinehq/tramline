@@ -9,11 +9,18 @@ class WebhookProcessors::Github::Push < ApplicationJob
       return unless release.committable?
 
       commit_record = create_commit
-      train.bump_version!(:patch) if release.step_runs.any?
+
+      if release.step_runs.any?
+        train.bump_version!(:patch)
+        release.event_stamp_now!(reason: :version_changed, kind: :notice, data: {version: train.version_current})
+      end
+
       release.start!
       release.update(release_version: train.version_current)
+
       current_step = release.current_step || 1
 
+      # TODO: remove this from this giant transaction and make it an after_commit hook of release instead
       train.steps.where("step_number <= ?", current_step).order(:step_number).each do |step|
         if step.step_number < current_step
           Triggers::StepRun.call(step, commit_record, false)

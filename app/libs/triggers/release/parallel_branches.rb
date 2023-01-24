@@ -32,7 +32,11 @@ class Triggers::Release
         title: pr_title,
         description: PR_DESCRIPTION,
         allow_without_diff: false
-      )
+      ).then do |value|
+        pr = release.reload.pull_requests.pre_release.first
+        release.event_stamp!(reason: :kickoff_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number})
+        GitHub::Result.new { value }
+      end
     end
 
     def namespaced_working_branch

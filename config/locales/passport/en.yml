@@ -1,22 +1,30 @@
 en:
   passport:
     releases/train/run:
-      pull_request_already_exists_html_html: "The pull request already exists. A new one was not created"
-      pull_request_not_mergeable_html: "The pull request cannot be merged. Please check for any merge conflicts"
-      tag_reference_already_exists_html: "Did not create tag, since it already existed"
-      tagged_release_already_exists_html: "Skipping generating a release, since a release for %{tag} already exists!"
-      pull_request_not_required_html: "Did not create a PR from %{from} to %{to} because there was no diff between the two"
-      created_html: "Created a new release – %{version}"
-      status_changed_html: "Release moved from '%{from}' → '%{to}'"
+      post_release_pr_succeeded_html: 'Post release PR created and merged <a class="emphasize-link" href="%{url}">#%{number}</a>'
+      pull_request_not_mergeable_html: 'The pull request <a class="emphasize-link" href="%{url}">#%{number}</a> cannot be merged. Please check for any merge conflicts'
+      created_html: 'Started a new release <span class="emphasize">%{version}<span>'
+      release_branch_created_html: 'Created a release branch <span class="emphasize">%{release_branch}</span> from <span class="emphasize">%{working_branch}</span>'
+      kickoff_pr_succeeded_html: 'Kickoff PR created and merged <a class="emphasize-link" href="%{url}">#%{number}</a>'
+      version_changed_html: 'Updated the release version to <span class="emphasize">%{version}</span>'
+      finalizing_html: 'Finalizing the release with version <span class="emphasize">%{version}</span>'
+      finished_html: 'Finished the release with version <span class="emphasize">%{version}</span>'
     releases/step/run:
-      created_html: "Started a new run for step – '%{name}'"
-      status_changed_html: "<a href='%{sha_link}'>[%{sha}]</a> Step – '%{name}' moved from '%{from}' → '%{to}'"
+      created_html: 'Started the step <span class="emphasize">%{name}</span> for <span class="emphasize">%{sha}</span>'
+      ci_triggered_html: 'CI workflow triggered for generating build <span class="emphasize">%{version}</span>'
+      ci_workflow_unavailable_html: 'CI workflow could not be found'
+      ci_workflow_failed_html: 'CI workflow <a class="emphasize-link" href="%{url}">#%{ref}</a> has failed'
+      ci_workflow_halted_html: 'CI workflow <a class="emphasize-link" href="%{url}">#%{ref}</a> was stopped'
+      ci_finished_html: 'CI workflow <a class="emphasize-link" href="%{url}">#%{ref}</a> was completed'
+      build_available_html: 'Build <span class="emphasize">%{version}</span> is now available'
+      build_unavailable_html: 'Build <span class="emphasize">%{version}</span> is not available'
+      finished_html: 'Finished step <span class="emphasize">%{name}</span> for <span class="emphasize">%{sha}</span>'
     releases/commit:
-      created_html: "New commit – %{sha} – has landed"
+      created_html: 'New commit <span class="emphasize">%{sha}</span> has landed'
     deployment_run:
-      created_html: "<a href='%{sha_link}'>[%{sha}]</a> Started deployment #%{num} for step – '%{step_name}'"
-      status_changed_html: "<a href='%{sha_link}'>[%{sha}]</a> Deployment #%{num} for step – '%{step_name}' moved from: '%{from}' → '%{to}'"
-      duplicate_build_html: "Build with is already uploaded. Upload was ignored."
-      bundle_identifier_not_found_html: "The configured package was not found in the store."
-      invalid_package_html: "The artifact being uploaded is not a valid package recognized by the store."
-      apks_are_not_allowed: "You can only upload signed AABs to the store."
+      created_html: 'Started deployment for <span class="emphasize">%{version}</span> to <span class="emphasize">%{provider}</span> in <span class="emphasize">%{chan}</span>'
+      bundle_identifier_not_found_html: 'Deployment failed – the configured package <span class="emphasize">%{version}</span> was not found in the store'
+      invalid_package_html: 'Deployment failed – the artifact <span class="emphasize">%{file}</span> is not a valid package recognized by the store'
+      apks_are_not_allowed_html: 'Deployment failed – this <span class="emphasize">%{file}</span> is not a signed AAB, you can only upload signed AABs to the store'
+      promotion_failed_html: 'Failed to promote <span class="emphasize">%{version}</span> to <span class="emphasize">%{provider}</span> in <span class="emphasize">%{chan}</span>'
+      released_html: 'Finished deploying <span class="emphasize">%{version}</span> to <span class="emphasize">%{provider}</span> in <span class="emphasize">%{chan}</span>'

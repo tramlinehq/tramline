@@ -32,6 +32,9 @@ Rails/SkipsModelValidations:
 Rails/TransactionExitStatement:
   Enabled: false # intentional use of return inside transactions
 
+Rails/ReversibleMigration:
+  Enabled: false # use strong_migrations instead
+
 RSpec:
   Enabled: true
 
@@ -43,6 +46,9 @@ RSpec/AnyInstance:
 
 RSpec/MultipleExpectations:
   Max: 4
+
+RSpec/MultipleMemoizedHelpers:
+  Max: 10
 
 Performance:
   Enabled: true

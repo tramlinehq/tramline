@@ -6,20 +6,25 @@ module Passportable
       reason:,
       kind:,
       message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
-      metadata: data
+      metadata: data,
+      event_timestamp: Time.current
+    )
+  end
+
+  def event_stamp_now!(reason:, kind:, data: {})
+    PassportJob.perform_now(
+      id,
+      self.class.name,
+      reason:,
+      kind:,
+      message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
+      metadata: data,
+      event_timestamp: Time.current
     )
   end
 
   def create_stamp!(data: {})
-    event_stamp!(reason: :created, kind: :success, data: data)
-  end
-
-  def status_update_stamp!(data: {})
-    event_stamp!(
-      reason: :status_changed,
-      kind: :success,
-      data: {from: saved_changes[:status].first, to: status}.merge(data)
-    )
+    event_stamp!(reason: :created, kind: :notice, data: data)
   end
 
   def stamp_namespace

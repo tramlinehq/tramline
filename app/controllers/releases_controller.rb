@@ -1,4 +1,5 @@
 class ReleasesController < SignedInApplicationController
+  around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
   before_action :set_release, only: [:show, :timeline, :destroy]
 
@@ -46,7 +47,7 @@ class ReleasesController < SignedInApplicationController
   def post_release
     @release = Releases::Train::Run.find(params[:id])
 
-    if @release.finished_steps?
+    if @release.finalizable?
       @release.start_post_release_phase!
       redirect_back fallback_location: root_path, notice: "Performing post-release steps."
     else

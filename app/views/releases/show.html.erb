@@ -20,7 +20,7 @@
     <%= decorated_link_to :neutral, "Event Log", timeline_release_path(@release) %>
 
     <% if @release.stoppable? %>
-      <%= authz_button_to :red, "Stop release", release_path(@release.id), method: :delete %>
+      <%= authz_button_to :red, "Stop release", release_path(@release.id), method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } %>
     <% end %>
   </div>
 </div>

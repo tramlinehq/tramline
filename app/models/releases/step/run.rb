@@ -39,12 +39,9 @@ class Releases::Step::Run < ApplicationRecord
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   after_create :reset_approval!
-  after_commit -> { create_stamp!(data: {name: step.name}) }, on: :create
-  after_commit -> {
-    status_update_stamp!(data: {name: step.name, sha_link: commit.url, sha: commit.short_sha})
-  }, if: -> { saved_change_to_attribute?(:status) }, on: :update
+  after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 
-  STAMPABLE_REASONS = %w[created status_changed]
+  STAMPABLE_REASONS = %w[created ci_triggered ci_workflow_unavailable ci_finished ci_workflow_failed ci_workflow_halted build_available build_unavailable finished]
 
   STATES = {
     on_track: "on_track",
@@ -106,7 +103,10 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: :deployment_started, to: :deployment_failed
     end
 
-    event(:finish) { transitions from: :deployment_started, to: :success, guard: :finished_deployments? }
+    event(:finish) do
+      after { event_stamp!(reason: :finished, kind: :success, data: stamp_data) }
+      transitions from: :deployment_started, to: :success, guard: :finished_deployments?
+    end
   end
 
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
@@ -119,39 +119,6 @@ class Releases::Step::Run < ApplicationRecord
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
   alias_method :release, :train_run
-
-  def update_ci_metadata!(workflow_run)
-    return if workflow_run.try(:[], :ci_ref).blank?
-    update!(ci_ref: workflow_run[:ci_ref], ci_link: workflow_run[:ci_link])
-  end
-
-  def find_and_update_workflow_run
-    return if workflow_found?
-
-    find_workflow_run
-      .then { |wr| update_ci_metadata!(wr) }
-  end
-
-  def trigger_workflow_run
-    version_code = train.app.bump_build_number!
-    inputs = {
-      version_code: version_code,
-      build_version: build_version
-    }
-    update!(build_number: version_code)
-
-    ci_cd_provider
-      .trigger_workflow_run!(workflow_id, release_branch, inputs, commit_hash)
-      .then { |wr| update_ci_metadata!(wr) }
-  end
-
-  def workflow_found?
-    ci_ref.present?
-  end
-
-  def find_workflow_run
-    ci_cd_provider.find_workflow_run(workflow_id, release_branch, commit_hash)
-  end
 
   def get_workflow_run
     ci_cd_provider.get_workflow_run(ci_ref)
@@ -263,12 +230,53 @@ class Releases::Step::Run < ApplicationRecord
     step.ci_cd_channel["id"]
   end
 
-  def notify_on_failure!(message)
-    train.notify!(message, :step_failed, {reason: message, step_run: self})
-  end
-
   def finished_deployments?
     deployment_runs.released.size == step.deployments.size
+  end
+
+  def trigger_deploys
+    if previous_deployments.any?
+      previous_deployments.each do |deployment|
+        Triggers::Deployment.call(deployment: deployment, step_run: self)
+      end
+    else
+      Triggers::Deployment.call(step_run: self)
+    end
+  end
+
+  private
+
+  def find_and_update_workflow_run
+    return if workflow_found?
+
+    find_workflow_run
+      .then { |wr| update_ci_metadata!(wr) }
+  end
+
+  def find_workflow_run
+    ci_cd_provider.find_workflow_run(workflow_id, release_branch, commit_hash)
+  end
+
+  def update_ci_metadata!(workflow_run)
+    return if workflow_run.try(:[], :ci_ref).blank?
+    update!(ci_ref: workflow_run[:ci_ref], ci_link: workflow_run[:ci_link])
+  end
+
+  def trigger_workflow_run
+    version_code = train.app.bump_build_number!
+    inputs = {
+      version_code: version_code,
+      build_version: build_version
+    }
+    update!(build_number: version_code)
+
+    ci_cd_provider
+      .trigger_workflow_run!(workflow_id, release_branch, inputs, commit_hash)
+      .then { |wr| update_ci_metadata!(wr) }
+  end
+
+  def workflow_found?
+    ci_ref.present?
   end
 
   def add_build_artifact(url)
@@ -282,13 +290,14 @@ class Releases::Step::Run < ApplicationRecord
     end
   end
 
-  def trigger_deploys
-    if previous_deployments.any?
-      previous_deployments.each do |deployment|
-        Triggers::Deployment.call(deployment: deployment, step_run: self)
-      end
-    else
-      Triggers::Deployment.call(step_run: self)
-    end
+  def stamp_data
+    {
+      name: step.name,
+      sha: commit.short_sha
+    }
+  end
+
+  def notify_on_failure!(message)
+    train.notify!(message, :step_failed, {reason: message, step_run: self})
   end
 end

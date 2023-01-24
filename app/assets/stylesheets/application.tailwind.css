@@ -7,6 +7,19 @@
   height: 4px;
 }
 
+.emphasize {
+  @apply inline-block pr-1.5 pl-1.5 py-0;
+  @apply rounded-md;
+  @apply bg-gray-200 text-slate-700;
+}
+
+.emphasize-link {
+  @apply underline;
+  @apply inline-block pr-1.5 pl-1.5 py-0;
+  @apply rounded-md;
+  @apply bg-gray-200 text-slate-700;
+}
+
 /* Mosaic theme starts here */
 .form-select {
   @apply pr-10;

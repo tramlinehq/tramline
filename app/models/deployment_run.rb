@@ -21,19 +21,19 @@ class DeploymentRun < ApplicationRecord
   validates :deployment_id, uniqueness: {scope: :train_step_run_id}
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
-  delegate :step, :release, :commit, :build_number, to: :step_run
+  delegate :step, :release, :commit, :build_number, :build_artifact, :build_version, to: :step_run
   delegate :app, to: :step
   delegate :release_version, to: :release
-  delegate :deployment_number, :integration, :deployment_channel, to: :deployment
   delegate :external?, :google_play_store_integration?, :slack_integration?, :store?, to: :deployment
+  delegate :deployment_number, :integration, :deployment_channel, :deployment_channel_name, to: :deployment
 
   STAMPABLE_REASONS = [
     "created",
-    "status_changed",
-    "duplicate_build",
     "bundle_identifier_not_found",
     "invalid_package",
-    "apks_are_not_allowed"
+    "apks_are_not_allowed",
+    "promotion_failed",
+    "released"
   ]
 
   STATES = {
@@ -80,12 +80,7 @@ class DeploymentRun < ApplicationRecord
   scope :matching_runs_for, ->(integration) { includes(:deployment).where(deployments: {integration: integration}) }
   scope :has_begun, -> { where.not(status: :created) }
 
-  after_commit -> {
-    create_stamp!(data: {num: deployment_number, step_name: step.name, sha_link: commit.url, sha: commit.short_sha})
-  }, on: :create
-  after_commit -> {
-    status_update_stamp!(data: {num: deployment_number, step_name: step.name, sha_link: commit.url, sha: commit.short_sha})
-  }, if: -> { saved_change_to_attribute?(:status) }, on: :update
+  after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 
   def first?
     step_run.deployment_runs.first == self
@@ -100,8 +95,10 @@ class DeploymentRun < ApplicationRecord
 
       if provider.promote(deployment_channel, build_number, release_version, initial_rollout_percentage).ok?
         complete!
+        event_stamp!(reason: :released, kind: :success, data: stamp_data)
       else
         dispatch_fail!
+        event_stamp!(reason: :promotion_failed, kind: :error, data: stamp_data)
       end
     end
   end
@@ -109,15 +106,15 @@ class DeploymentRun < ApplicationRecord
   def upload_to_playstore!
     return unless google_play_store_integration?
 
-    step_run.build_artifact.with_open do |file|
+    build_artifact.with_open do |file|
       result = provider.upload(file)
 
       if result.ok?
         upload!
       else
         reason = GooglePlayStoreIntegration::DISALLOWED_ERRORS_WITH_REASONS[result.error.class]
-        event_stamp!(reason:, kind: :error) if reason.present?
-        upload_failed!
+        event_stamp!(reason:, kind: :error, data: stamp_data) if reason.present?
+        upload_fail!
       end
     end
   end
@@ -127,6 +124,7 @@ class DeploymentRun < ApplicationRecord
 
     provider.deploy!(deployment_channel, {step_run: step_run})
     complete!
+    event_stamp!(reason: :released, kind: :success, data: stamp_data)
   end
 
   # FIXME: this is cheap hack around not allowing users to re-enter rollout
@@ -191,5 +189,16 @@ class DeploymentRun < ApplicationRecord
 
   def provider
     integration.providable
+  end
+
+  private
+
+  def stamp_data
+    {
+      version: build_version,
+      chan: deployment_channel_name,
+      provider: integration&.providable&.display,
+      file: build_artifact&.get_filename
+    }
   end
 end

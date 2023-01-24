@@ -15,7 +15,8 @@ class Triggers::StepRun
     release
       .step_runs
       .create!(step:, scheduled_at: Time.current, commit:, build_version:, sign_required:)
-      .then(&:trigger_ci!)
+      .tap(&:trigger_ci!) # TODO: trigger_ci can be an after_commit hook of step run create
+      .then { |run| run.event_stamp_now!(reason: :ci_triggered, kind: :notice, data: {version: run.build_version}) }
   end
 
   private

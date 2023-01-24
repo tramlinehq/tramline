@@ -25,13 +25,10 @@ class Triggers::PullRequest
 
   def create_and_merge!
     return GitHub::Result.new { allow_without_diff } unless create.ok?
-    upserted_pull_request = @new_pull_request.update_or_insert!(create.value!)
+    @pull_request = @new_pull_request.update_or_insert!(create.value!)
 
-    GitHub::Result.new do
-      transaction do
-        upserted_pull_request.close!
-        merge.value!
-      end
+    merge.then do |value|
+      GitHub::Result.new { @pull_request.close! }
     end
   end
 
@@ -45,16 +42,15 @@ class Triggers::PullRequest
     rescue Installations::Errors::PullRequestAlreadyExists
       repo_integration.find_pr(repo_name, to_branch_ref, from_branch_ref)
     rescue Installations::Errors::PullRequestWithoutCommits
-      release.event_stamp!(reason: :pull_request_not_required, kind: :notice, data: {to: to_branch_ref, from: from_branch_ref})
       raise CreateError, "Could not create a Pull Request"
     end
   end
 
   memoize def merge
     GitHub::Result.new do
-      repo_integration.merge_pr!(repo_name, create.value![:number])
+      repo_integration.merge_pr!(repo_name, @pull_request.number)
     rescue Installations::Errors::PullRequestNotMergeable
-      release.event_stamp!(reason: :pull_request_not_mergeable, kind: :notice, data: {})
+      release.event_stamp!(reason: :pull_request_not_mergeable, kind: :error, data: {url: @pull_request.url, number: @pull_request.number})
       raise MergeError, "Failed to merge the Pull Request"
     end
   end

@@ -31,11 +31,13 @@ class Releases::Train::Run < ApplicationRecord
 
   STAMPABLE_REASONS = [
     "created",
-    "status_changed",
-    "pull_request_not_required",
+    "release_branch_created",
+    "kickoff_pr_succeeded",
+    "version_changed",
+    "finalizing",
     "pull_request_not_mergeable",
-    "tag_reference_already_exists",
-    "tagged_release_already_exists"
+    "post_release_pr_succeeded",
+    "finished"
   ]
 
   STATES = {
@@ -64,7 +66,7 @@ class Releases::Train::Run < ApplicationRecord
       transitions from: [:on_track, :post_release], to: :post_release, guard: :finalizable?
     end
 
-    event :finish, after_commit: :notify_on_finish! do
+    event :finish, after_commit: :on_finish! do
       before { self.completed_at = Time.current }
       transitions from: :post_release, to: :finished
     end
@@ -72,7 +74,6 @@ class Releases::Train::Run < ApplicationRecord
 
   before_create :set_version
   after_commit -> { create_stamp!(data: {version: release_version}) }, on: :create
-  after_commit :status_update_stamp!, if: -> { saved_change_to_attribute?(:status) }, on: :update
 
   scope :pending_release, -> { where(status: [:release_phase, :post_release, :on_track, :created]) }
   delegate :app, :pre_release_prs?, to: :train
@@ -187,16 +188,22 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def events
-    types = %w[Releases::Train::Run Releases::Step::Run Releases::Commit DeploymentRun]
-    ids = [id, commits.pluck(:id), step_runs.pluck(:id), deployment_runs.pluck(:id)].flatten
-    Passport.where(stampable_type: types, stampable_id: ids).order(created_at: :desc)
+    step_runs
+      .left_joins(:commit, :deployment_runs)
+      .pluck("train_step_runs.id, deployment_runs.id, releases_commits.id")
+      .flatten
+      .uniq
+      .compact
+      .push(id)
+      .then { |ids| Passport.where(stampable_id: ids).order(event_timestamp: :desc) }
   end
 
   def all_steps
     train.steps
   end
 
-  def notify_on_finish!
+  def on_finish!
+    event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     train.notify!("Release is complete!", :release_ended, finalize_phase_metadata)
   end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_01_09_134549) do
+ActiveRecord::Schema[7.0].define(version: 2023_01_19_121126) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -209,6 +209,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_09_134549) do
     t.uuid "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "event_timestamp", null: false
     t.index ["kind"], name: "index_passports_on_kind"
     t.index ["reason"], name: "index_passports_on_reason"
     t.index ["stampable_type", "stampable_id"], name: "index_passports_on_stampable"
