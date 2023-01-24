@@ -16,18 +16,20 @@ describe Releases::Commit, type: :model do
 
       create(:releases_commit, train: active_train, train_run: train_run)
 
-      expect(Triggers::StepRun).to have_received(:call)
+      expect(Triggers::StepRun).to have_received(:call).once
     end
 
-    xit "does it for all steps until the currently running one" do
-      # train_run = create(:releases_train_run, train: active_train)
-      # create(:releases_step, :with_deployment, train: active_train)
-      #
-      # allow(Triggers::StepRun).to receive(:call)
-      #
-      # create(:releases_commit, train: active_train, train_run: train_run)
-      #
-      # expect(Triggers::StepRun).to have_received(:call)
+    it "does it for all steps until the currently running one" do
+      train_run = create(:releases_train_run, train: active_train)
+      steps = create_list(:releases_step, 2, :with_deployment, train: active_train)
+      create(:releases_step_run, :success, step: steps.first, train_run: train_run)
+      create(:releases_step_run, step: steps.second, train_run: train_run)
+
+      allow(Triggers::StepRun).to receive(:call)
+
+      create(:releases_commit, train: active_train, train_run: train_run)
+
+      expect(Triggers::StepRun).to have_received(:call).twice
     end
   end
 end
