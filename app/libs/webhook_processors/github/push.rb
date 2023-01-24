@@ -27,6 +27,7 @@ class WebhookProcessors::Github::Push
 
   def bump_version!
     return if release.step_runs.none?
+
     train.bump_version!(:patch)
     stamp_version_changed
   end
