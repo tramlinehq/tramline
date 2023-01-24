@@ -1,4 +1,4 @@
-<% breadcrumb :apps %>
+<% breadcrumb :new_app %>
 
 <%= form_with(model: [@app], builder: ButtonHelper::AuthzForms) do |form| %>
   <%= render partial: "shared/errors", locals: { resource: @app } %>
