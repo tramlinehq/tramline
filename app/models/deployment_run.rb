@@ -14,6 +14,7 @@
 class DeploymentRun < ApplicationRecord
   include AASM
   include Passportable
+  include Loggable
 
   belongs_to :deployment, inverse_of: :deployment_runs
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
@@ -32,6 +33,7 @@ class DeploymentRun < ApplicationRecord
     "bundle_identifier_not_found",
     "invalid_package",
     "apks_are_not_allowed",
+    "upload_failed_reason_unknown",
     "promotion_failed",
     "released"
   ]
@@ -93,12 +95,14 @@ class DeploymentRun < ApplicationRecord
     release.with_lock do
       return unless promotable?
 
-      if provider.promote(deployment_channel, build_number, release_version, initial_rollout_percentage).ok?
+      result = provider.promote(deployment_channel, build_number, release_version, initial_rollout_percentage)
+      if result.ok?
         complete!
         event_stamp!(reason: :released, kind: :success, data: stamp_data)
       else
         dispatch_fail!
         event_stamp!(reason: :promotion_failed, kind: :error, data: stamp_data)
+        elog(result.error)
       end
     end
   end
@@ -106,15 +110,19 @@ class DeploymentRun < ApplicationRecord
   def upload_to_playstore!
     return unless google_play_store_integration?
 
-    build_artifact.with_open do |file|
-      result = provider.upload(file)
+    with_lock do
+      return if uploaded?
 
-      if result.ok?
-        upload!
-      else
-        reason = GooglePlayStoreIntegration::DISALLOWED_ERRORS_WITH_REASONS[result.error.class]
-        event_stamp!(reason:, kind: :error, data: stamp_data) if reason.present?
-        upload_fail!
+      build_artifact.with_open do |file|
+        result = provider.upload(file)
+        if result.ok?
+          upload!
+        else
+          upload_fail!
+          reason = GooglePlayStoreIntegration::DISALLOWED_ERRORS_WITH_REASONS.fetch(result.error.class, :upload_failed_reason_unknown)
+          event_stamp!(reason:, kind: :error, data: stamp_data)
+          elog(result.error)
+        end
       end
     end
   end
@@ -122,9 +130,12 @@ class DeploymentRun < ApplicationRecord
   def push_to_slack!
     return unless slack_integration?
 
-    provider.deploy!(deployment_channel, {step_run: step_run})
-    complete!
-    event_stamp!(reason: :released, kind: :success, data: stamp_data)
+    with_lock do
+      return if released?
+      provider.deploy!(deployment_channel, {step_run: step_run})
+      complete!
+      event_stamp!(reason: :released, kind: :success, data: stamp_data)
+    end
   end
 
   # FIXME: this is cheap hack around not allowing users to re-enter rollout

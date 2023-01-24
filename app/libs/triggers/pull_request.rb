@@ -27,9 +27,7 @@ class Triggers::PullRequest
     return GitHub::Result.new { allow_without_diff } unless create.ok?
     @pull_request = @new_pull_request.update_or_insert!(create.value!)
 
-    merge.then do |value|
-      GitHub::Result.new { @pull_request.close! }
-    end
+    merge.then { GitHub::Result.new { @pull_request.close! } }
   end
 
   private
