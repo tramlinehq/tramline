@@ -14,6 +14,7 @@
 class DeploymentRun < ApplicationRecord
   include AASM
   include Passportable
+  include Loggable
 
   belongs_to :deployment, inverse_of: :deployment_runs
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
@@ -101,7 +102,7 @@ class DeploymentRun < ApplicationRecord
       else
         dispatch_fail!
         event_stamp!(reason: :promotion_failed, kind: :error, data: stamp_data)
-        log(result.error)
+        elog(result.error)
       end
     end
   end
@@ -120,7 +121,7 @@ class DeploymentRun < ApplicationRecord
           upload_fail!
           reason = GooglePlayStoreIntegration::DISALLOWED_ERRORS_WITH_REASONS.fetch(result.error.class, :upload_failed_reason_unknown)
           event_stamp!(reason:, kind: :error, data: stamp_data)
-          log(result.error)
+          elog(result.error)
         end
       end
     end
@@ -210,10 +211,5 @@ class DeploymentRun < ApplicationRecord
       provider: integration&.providable&.display,
       file: build_artifact&.get_filename
     }
-  end
-
-  def log(e)
-    logger.error(e)
-    Sentry.capture_exception(e)
   end
 end

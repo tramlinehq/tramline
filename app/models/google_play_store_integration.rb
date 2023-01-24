@@ -14,6 +14,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   include Providable
   include Displayable
+  include Loggable
 
   delegate :app, to: :integration
 
@@ -57,8 +58,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     GitHub::Result.new do
       installation.upload(file)
     rescue *ALLOWED_ERRORS => e
-      logger.error(e)
-      Sentry.capture_exception(e)
+      elog(e)
     end
   end
 

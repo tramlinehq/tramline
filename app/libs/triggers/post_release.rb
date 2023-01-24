@@ -1,4 +1,6 @@
 class Triggers::PostRelease
+  include Loggable
+
   def self.call(release)
     new(release).call
   end
@@ -26,7 +28,7 @@ class Triggers::PostRelease
       else
         release.fail_post_release_phase!
         release.event_stamp!(reason: :finalize_failed, kind: :error, data: {version: release.release_version})
-        Sentry.capture_exception(result.error)
+        elog(result.error)
       end
     end
   end
