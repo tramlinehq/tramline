@@ -10,7 +10,7 @@ class Triggers::PostRelease
     end
 
     def call
-      create_tag.then { |_| create_and_merge_prs }
+      create_tag.then { create_and_merge_prs }
     end
 
     private
@@ -28,7 +28,7 @@ class Triggers::PostRelease
         from_branch_ref: namespaced_release_branch,
         title: release_pr_title,
         description: pr_description
-      ).then do |_|
+      ).then do
         Triggers::PullRequest.create_and_merge!(
           release: release,
           new_pull_request: release.pull_requests.post_release.open.build,

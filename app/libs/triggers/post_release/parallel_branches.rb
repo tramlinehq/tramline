@@ -10,7 +10,7 @@ class Triggers::PostRelease
     end
 
     def call
-      create_tag.then { |_| create_and_merge_pr }
+      create_tag.then { create_and_merge_pr }
     end
 
     private

@@ -61,7 +61,7 @@ class Releases::Train::Run < ApplicationRecord
     end
 
     event :start_post_release_phase, after_commit: -> { Releases::PostReleaseJob.perform_later(id) } do
-      transitions from: [:on_track, :post_release_failed], to: :post_release_started
+      transitions from: [:on_track, :post_release_failed], to: :post_release_started, guard: :ready_to_be_finalized?
     end
 
     event :fail_post_release_phase do
@@ -120,8 +120,12 @@ class Releases::Train::Run < ApplicationRecord
     created? || on_track?
   end
 
+  def start_finalize?
+    on_track? && ready_to_be_finalized?
+  end
+
   def finalizable?
-    may_start_post_release_phase? && finished_steps? && signed?
+    may_start_post_release_phase? && ready_to_be_finalized?
   end
 
   def next_step
@@ -217,5 +221,11 @@ class Releases::Train::Run < ApplicationRecord
       final_artifact_url: final_build_artifact&.download_url,
       store_url: app.store_link
     }
+  end
+
+  private
+
+  def ready_to_be_finalized?
+    finished_steps? && signed?
   end
 end

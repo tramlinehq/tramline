@@ -15,11 +15,12 @@ class Triggers::PostRelease
 
   def call
     result = POST_RELEASE_HANDLERS[train.branching_strategy].call(release)
+    release.reload
 
     if result.ok?
-      release.reload.finish!
+      release.finish!
     else
-      release.reload.fail_post_release_phase!
+      release.fail_post_release_phase!
       release.event_stamp!(reason: :finalize_failed, kind: :error, data: {version: release.release_version})
     end
   end
