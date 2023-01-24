@@ -32,6 +32,7 @@ class DeploymentRun < ApplicationRecord
     "bundle_identifier_not_found",
     "invalid_package",
     "apks_are_not_allowed",
+    "upload_failed_reason_unknown",
     "promotion_failed",
     "released"
   ]
@@ -93,12 +94,14 @@ class DeploymentRun < ApplicationRecord
     release.with_lock do
       return unless promotable?
 
-      if provider.promote(deployment_channel, build_number, release_version, initial_rollout_percentage).ok?
+      result = provider.promote(deployment_channel, build_number, release_version, initial_rollout_percentage)
+      if result.ok?
         complete!
         event_stamp!(reason: :released, kind: :success, data: stamp_data)
       else
         dispatch_fail!
         event_stamp!(reason: :promotion_failed, kind: :error, data: stamp_data)
+        log(result.error)
       end
     end
   end
@@ -112,9 +115,10 @@ class DeploymentRun < ApplicationRecord
       if result.ok?
         upload!
       else
-        reason = GooglePlayStoreIntegration::DISALLOWED_ERRORS_WITH_REASONS[result.error.class]
-        event_stamp!(reason:, kind: :error, data: stamp_data) if reason.present?
+        reason = GooglePlayStoreIntegration::DISALLOWED_ERRORS_WITH_REASONS.fetch(result.error.class, :upload_failed_reason_unknown)
+        event_stamp!(reason:, kind: :error, data: stamp_data)
         upload_fail!
+        log(result.error)
       end
     end
   end
@@ -200,5 +204,10 @@ class DeploymentRun < ApplicationRecord
       provider: integration&.providable&.display,
       file: build_artifact&.get_filename
     }
+  end
+
+  def log(e)
+    logger.error(e)
+    Sentry.capture_exception(e)
   end
 end

@@ -39,9 +39,6 @@ class GooglePlayStoreIntegration < ApplicationRecord
   def promote(channel, build_number, version, rollout_percentage)
     GitHub::Result.new do
       installation.promote(channel, build_number, version, rollout_percentage)
-    rescue Installations::Errors::BuildNotUpgradable => e
-      log(e)
-      raise
     end
   end
 
@@ -60,10 +57,8 @@ class GooglePlayStoreIntegration < ApplicationRecord
     GitHub::Result.new do
       installation.upload(file)
     rescue *ALLOWED_ERRORS => e
-      log(e)
-    rescue *DISALLOWED_ERRORS_WITH_REASONS.keys => e
-      log(e)
-      raise
+      logger.error(e)
+      Sentry.capture_exception(e)
     end
   end
 
@@ -99,12 +94,5 @@ class GooglePlayStoreIntegration < ApplicationRecord
     errors.add(:json_key, :bundle_id_not_found)
   rescue Installations::Errors::GooglePlayDeveloperAPIDisabled
     errors.add(:json_key, :dev_api_not_enabled)
-  end
-
-  private
-
-  def log(e)
-    logger.error(e)
-    Sentry.capture_exception(e)
   end
 end
