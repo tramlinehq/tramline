@@ -1,5 +1,6 @@
 class Releases::FindWorkflowRun
   include Sidekiq::Job
+  include Loggable
 
   queue_as :high
   sidekiq_options retry: 2
@@ -25,7 +26,7 @@ class Releases::FindWorkflowRun
     return unless step_run.release.on_track?
     step_run.ci_start!
   rescue => e
-    Sentry.capture_exception(e)
+    elog(e)
     raise
   end
 end

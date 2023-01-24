@@ -3,10 +3,6 @@ class Releases::PostReleaseJob < ApplicationJob
 
   def perform(train_run_id)
     run = Releases::Train::Run.find(train_run_id)
-    run.with_lock do
-      return unless run.post_release_started?
-      run.event_stamp!(reason: :finalizing, kind: :notice, data: {version: run.release_version})
-      Triggers::PostRelease.call(run)
-    end
+    Triggers::PostRelease.call(run)
   end
 end

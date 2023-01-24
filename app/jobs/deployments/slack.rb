@@ -4,6 +4,6 @@ class Deployments::Slack < ApplicationJob
   def perform(deployment_run_id)
     run = DeploymentRun.find(deployment_run_id)
     return unless run.slack_integration?
-    run.with_lock { run.push_to_slack! }
+    run.push_to_slack!
   end
 end
