@@ -65,7 +65,7 @@ class WebhookProcessors::Github::Push
     release.event_stamp_now!(
       reason: :version_changed,
       kind: :notice,
-      data: { version: train.version_current }
+      data: {version: train.version_current}
     )
   end
 end

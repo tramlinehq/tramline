@@ -16,14 +16,15 @@ class Triggers::PostRelease
     private
 
     attr_reader :train, :release
+    delegate :logger, to: Rails
 
     def create_tag
       GitHub::Result.new do
         train.create_tag!(release.branch_name)
       rescue Installations::Errors::TagReferenceAlreadyExists
-        release.event_stamp!(reason: :tag_reference_already_exists, kind: :notice, data: {})
+        logger.debug { "Release finalization: did not create tag, since #{train.tag_name} already existed" }
       rescue Installations::Errors::TaggedReleaseAlreadyExists
-        release.event_stamp!(reason: :tagged_release_already_exists, kind: :notice, data: {tag: release.tag_name})
+        logger.debug { "Release finalization: skipping since tagged release for #{train.tag_name} already exists!" }
       end
     end
   end
