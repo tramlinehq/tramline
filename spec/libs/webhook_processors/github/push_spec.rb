@@ -2,7 +2,6 @@ require "rails_helper"
 
 describe WebhookProcessors::Github::Push do
   let(:train) { create(:releases_train, version_seeded_with: "1.5.0") }
-  let(:repo_integration) { instance_double(Installations::Github::Api) }
   let(:commit_attributes) do
     {
       commit_sha: "1",
