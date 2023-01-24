@@ -37,6 +37,7 @@ class Releases::Train::Run < ApplicationRecord
     "finalizing",
     "pull_request_not_mergeable",
     "post_release_pr_succeeded",
+    "finalize_failed",
     "finished"
   ]
 
@@ -44,6 +45,8 @@ class Releases::Train::Run < ApplicationRecord
     created: "created",
     on_track: "on_track",
     post_release: "post_release",
+    post_release_started: "post_release_started",
+    post_release_failed: "post_release_failed",
     finished: "finished"
   }
 
@@ -57,25 +60,24 @@ class Releases::Train::Run < ApplicationRecord
       transitions from: [:created, :on_track], to: :on_track
     end
 
-    # FIXME: We can add a couple more statuses here that describe the post_release phase to be in started, failed state
-    # We can move from post_release_started to [post_release_failed, finished]
-    # And we can move from [post_release, post_release_failed] to post_release_started
-    # But not go from post_release to post_release repeatedly
-    # No new action should be allowed on train when it is in post_release_started state
     event :start_post_release_phase, after_commit: -> { Releases::PostReleaseJob.perform_later(id) } do
-      transitions from: [:on_track, :post_release], to: :post_release, guard: :finalizable?
+      transitions from: [:on_track, :post_release_failed], to: :post_release_started, guard: :ready_to_be_finalized?
+    end
+
+    event :fail_post_release_phase do
+      transitions from: :post_release_started, to: :post_release_failed
     end
 
     event :finish, after_commit: :on_finish! do
       before { self.completed_at = Time.current }
-      transitions from: :post_release, to: :finished
+      transitions from: :post_release_started, to: :finished
     end
   end
 
   before_create :set_version
   after_commit -> { create_stamp!(data: {version: release_version}) }, on: :create
 
-  scope :pending_release, -> { where(status: [:release_phase, :post_release, :on_track, :created]) }
+  scope :pending_release, -> { where.not(status: :finished) }
   delegate :app, :pre_release_prs?, to: :train
 
   def tag_name
@@ -118,8 +120,12 @@ class Releases::Train::Run < ApplicationRecord
     created? || on_track?
   end
 
+  def start_finalize?
+    on_track? && ready_to_be_finalized?
+  end
+
   def finalizable?
-    (on_track? || post_release?) && finished_steps? && signed?
+    may_start_post_release_phase? && ready_to_be_finalized?
   end
 
   def next_step
@@ -217,5 +223,11 @@ class Releases::Train::Run < ApplicationRecord
       final_artifact_url: final_build_artifact&.download_url,
       store_url: app.store_link
     }
+  end
+
+  private
+
+  def ready_to_be_finalized?
+    finished_steps? && signed?
   end
 end
