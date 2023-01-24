@@ -156,7 +156,8 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def current_step
-    return 1 if all_steps.present? && running_steps.blank?
+    return if all_steps.blank?
+    return 1 if running_steps.blank?
     running_steps.order(:step_number).last.step_number
   end
 

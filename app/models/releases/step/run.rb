@@ -65,6 +65,7 @@ class Releases::Step::Run < ApplicationRecord
     state(*STATES.keys)
 
     event :trigger_ci, after_commit: -> { Releases::FindWorkflowRun.perform_async(id) } do
+      before { event_stamp_now!(reason: :ci_triggered, kind: :notice, data: {version: build_version}) }
       before :trigger_workflow_run
       transitions from: :on_track, to: :ci_workflow_triggered
     end
