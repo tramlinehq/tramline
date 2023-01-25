@@ -157,6 +157,10 @@ class Releases::Train < ApplicationRecord
     branching_strategy == "parallel_working"
   end
 
+  def ordered_steps_until(step_number)
+    steps.where("step_number <= ?", step_number).order(:step_number)
+  end
+
   private
 
   def ensure_deletable

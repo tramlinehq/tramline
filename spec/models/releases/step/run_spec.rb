@@ -263,4 +263,52 @@ describe Releases::Step::Run, type: :model do
       end
     end
   end
+
+  describe "#trigger_ci!" do
+    let(:ci_ref) { Faker::Lorem.word }
+    let(:ci_link) { Faker::Internet.url }
+
+    before do
+      allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!).and_return(ci_ref:, ci_link:)
+    end
+
+    it "transitions state" do
+      step_run = create(:releases_step_run)
+
+      step_run.trigger_ci!
+
+      expect(step_run.ci_workflow_triggered?).to be(true)
+    end
+
+    it "updates ci metadata" do
+      step_run = create(:releases_step_run)
+
+      step_run.trigger_ci!
+      step_run.reload
+
+      expect(step_run.ci_ref).to eq(ci_ref)
+      expect(step_run.ci_link).to eq(ci_link)
+    end
+
+    it "stamps an event" do
+      step_run = create(:releases_step_run)
+      id = step_run.id
+      name = step_run.class.name
+      allow(PassportJob).to receive(:perform_later)
+
+      step_run.trigger_ci!
+
+      expect(PassportJob).to have_received(:perform_later).with(id, name, hash_including(reason: :ci_triggered)).once
+    end
+
+    it "triggers find workflow run" do
+      step_run = create(:releases_step_run)
+      id = step_run.id
+      allow(Releases::FindWorkflowRun).to receive(:perform_async)
+
+      step_run.trigger_ci!
+
+      expect(Releases::FindWorkflowRun).to have_received(:perform_async).with(id).once
+    end
+  end
 end

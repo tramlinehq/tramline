@@ -64,7 +64,7 @@ class Releases::Step::Run < ApplicationRecord
     state :on_track, initial: true
     state(*STATES.keys)
 
-    event :trigger_ci, after_commit: -> { Releases::FindWorkflowRun.perform_async(id) } do
+    event :trigger_ci, after_commit: :after_trigger_ci do
       before :trigger_workflow_run
       transitions from: :on_track, to: :ci_workflow_triggered
     end
@@ -299,5 +299,10 @@ class Releases::Step::Run < ApplicationRecord
 
   def notify_on_failure!(message)
     train.notify!(message, :step_failed, {reason: message, step_run: self})
+  end
+
+  def after_trigger_ci
+    Releases::FindWorkflowRun.perform_async(id)
+    event_stamp!(reason: :ci_triggered, kind: :notice, data: {version: build_version})
   end
 end

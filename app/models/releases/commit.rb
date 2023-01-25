@@ -27,8 +27,12 @@ class Releases::Commit < ApplicationRecord
 
   STAMPABLE_REASONS = ["created"]
 
-  after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
   validates :commit_hash, uniqueness: {scope: :train_run_id}
+
+  delegate :current_step_number, to: :train_run
+
+  after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
+  after_commit :trigger_step_runs, on: :create
 
   def run_for(step)
     step_runs.where(step: step).last
@@ -40,5 +44,17 @@ class Releases::Commit < ApplicationRecord
 
   def short_sha
     commit_hash[0, 5]
+  end
+
+  private
+
+  def trigger_step_run(step, sign_required)
+    Triggers::StepRun.call(step, self, sign_required)
+  end
+
+  def trigger_step_runs
+    train.ordered_steps_until(current_step_number).each do |step|
+      trigger_step_run(step, (step.step_number == current_step_number))
+    end
   end
 end

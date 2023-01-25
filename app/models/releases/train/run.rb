@@ -26,7 +26,7 @@ class Releases::Train::Run < ApplicationRecord
   has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
   has_many :deployment_runs, through: :step_runs
-  has_many :steps, through: :step_runs
+  has_many :running_steps, through: :step_runs, source: :step
   has_many :passports, as: :stampable, dependent: :destroy
 
   STAMPABLE_REASONS = [
@@ -161,8 +161,10 @@ class Releases::Train::Run < ApplicationRecord
     step_runs.where(step: step).last
   end
 
-  def current_step
-    steps.order(:step_number).last&.step_number
+  def current_step_number
+    return if all_steps.blank?
+    return 1 if running_steps.blank?
+    running_steps.order(:step_number).last.step_number
   end
 
   def finished_steps?
