@@ -1,6 +1,6 @@
 class WebhookProcessors::Github::Push
-  def self.process(train_run, commit_attributes)
-    new(train_run, commit_attributes).process
+  def self.process(release, commit_attributes)
+    new(release, commit_attributes).process
   end
 
   def initialize(release, commit_attributes)
