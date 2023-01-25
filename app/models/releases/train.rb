@@ -157,8 +157,8 @@ class Releases::Train < ApplicationRecord
     branching_strategy == "parallel_working"
   end
 
-  def ordered_steps_until(this_step)
-    steps.where("step_number <= ?", this_step).order(:step_number)
+  def ordered_steps_until(step_number)
+    steps.where("step_number <= ?", step_number).order(:step_number)
   end
 
   private

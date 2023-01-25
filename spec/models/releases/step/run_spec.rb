@@ -300,5 +300,15 @@ describe Releases::Step::Run, type: :model do
 
       expect(PassportJob).to have_received(:perform_later).with(id, name, hash_including(reason: :ci_triggered)).once
     end
+
+    it "triggers find workflow run" do
+      step_run = create(:releases_step_run)
+      id = step_run.id
+      allow(Releases::FindWorkflowRun).to receive(:perform_async)
+
+      step_run.trigger_ci!
+
+      expect(Releases::FindWorkflowRun).to have_received(:perform_async).with(id).once
+    end
   end
 end
