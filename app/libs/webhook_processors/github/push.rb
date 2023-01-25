@@ -3,8 +3,8 @@ class WebhookProcessors::Github::Push
     new(train_run, commit_attributes).process
   end
 
-  def initialize(train_run, commit_attributes)
-    @train_run = train_run
+  def initialize(release, commit_attributes)
+    @release = release
     @commit_attributes = commit_attributes
   end
 
@@ -21,9 +21,8 @@ class WebhookProcessors::Github::Push
 
   private
 
-  attr_reader :train_run, :commit_attributes
+  attr_reader :release, :commit_attributes
   delegate :train, to: :release
-  alias_method :release, :train_run
 
   def bump_version!
     return if release.step_runs.none?

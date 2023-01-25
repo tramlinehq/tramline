@@ -29,7 +29,7 @@ class Releases::Commit < ApplicationRecord
 
   validates :commit_hash, uniqueness: {scope: :train_run_id}
 
-  delegate :current_step, to: :train_run
+  delegate :current_step_number, to: :train_run
 
   after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
   after_commit :trigger_step_runs, on: :create
@@ -53,8 +53,8 @@ class Releases::Commit < ApplicationRecord
   end
 
   def trigger_step_runs
-    train.ordered_steps_until(current_step).each do |step|
-      trigger_step_run(step, (step.step_number == current_step))
+    train.ordered_steps_until(current_step_number).each do |step|
+      trigger_step_run(step, (step.step_number == current_step_number))
     end
   end
 end
