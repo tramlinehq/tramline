@@ -1,10 +1,10 @@
 class Integrations::AppStoreController < IntegrationsController
   def integration_params
     params.require(:integration)
-          .permit(
-            :category,
-            providable: [:key_id, :issuer_id, :p8_key_file, :type]
-          ).merge(current_user:)
+      .permit(
+        :category,
+        providable: [:key_id, :issuer_id, :p8_key_file, :type]
+      ).merge(current_user:)
   end
 
   def set_providable_params

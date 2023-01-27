@@ -21,6 +21,10 @@ en:
       models:
         integration:
           format: "%{message}"
+        app_store_integration:
+          attributes:
+            key_id:
+              no_app_found: "we could not verify the bundle identifier against the credentials, please check!"
         bitrise_integration:
           attributes:
             access_token:

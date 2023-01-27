@@ -106,8 +106,8 @@ Rails.application.routes.draw do
           as: :bitrise_integration
 
         resource :app_store, only: [:create],
-                 controller: "integrations/app_store",
-                 as: :appstore_integration
+          controller: "integrations/app_store",
+          as: :appstore_integration
       end
     end
 
