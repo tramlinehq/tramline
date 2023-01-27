@@ -26,6 +26,11 @@ class AppStoreIntegration < ApplicationRecord
 
   attr_accessor :p8_key_file
 
+  CHANNELS_TRANSFORMATIONS = {
+    id: :id,
+    name: :name
+  }
+
   def access_key
     OpenSSL::PKey::EC.new(p8_key)
   end
@@ -44,6 +49,10 @@ class AppStoreIntegration < ApplicationRecord
 
   def store?
     true
+  end
+
+  def build_channels
+    installation.external_groups(CHANNELS_TRANSFORMATIONS).map { |channel| channel.slice(:id, :name) }
   end
 
   def to_s

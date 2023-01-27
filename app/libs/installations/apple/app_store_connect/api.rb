@@ -9,7 +9,13 @@ module Installations
       @key = key
     end
 
+    GROUPS_URL = Addressable::Template.new "http://localhost:9292/apple/connect/v1/apps/{bundle_id}/groups"
     FIND_APP_URL = Addressable::Template.new "http://localhost:9292/apple/connect/v1/apps/{bundle_id}"
+
+    def external_groups(transforms)
+      execute(:get, GROUPS_URL.expand(bundle_id:).to_s, {})
+        .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
+    end
 
     def find_app
       execute(:get, FIND_APP_URL.expand(bundle_id:).to_s, {})
