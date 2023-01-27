@@ -128,6 +128,11 @@ class App < ApplicationRecord
     Flipper.enabled?(:sign_offs, self)
   end
 
+  def keep_builds?
+    return true if android?
+    false if ios?
+  end
+
   private
 
   def initialize_config
