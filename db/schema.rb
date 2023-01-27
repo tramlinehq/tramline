@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_01_27_075158) do
+ActiveRecord::Schema[7.0].define(version: 2023_01_27_091658) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -52,6 +52,14 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_27_075158) do
     t.datetime "updated_at", null: false
     t.jsonb "project_id"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
+  end
+
+  create_table "app_store_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "key_id"
+    t.string "p8_key"
+    t.string "issuer_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

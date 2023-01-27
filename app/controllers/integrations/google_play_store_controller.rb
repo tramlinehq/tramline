@@ -1,6 +1,4 @@
 class Integrations::GooglePlayStoreController < IntegrationsController
-  JSON_KEY_FILE_SIZE_LIMIT = 4096
-
   def integration_params
     params.require(:integration)
       .permit(
@@ -24,8 +22,7 @@ class Integrations::GooglePlayStoreController < IntegrationsController
   end
 
   def providable_params_errors
-    @providable_params_errors ||=
-      Validators::GooglePlayStore::JsonKeyValidator.validate(json_key_file).errors
+    @providable_params_errors ||= Validators::KeyFileValidator.validate(json_key_file).errors
   end
 
   def json_key_file

@@ -96,6 +96,7 @@ Rails.application.routes.draw do
     resources :integrations, only: %i[index create] do
       collection do
         get :connect, to: "integrations#connect", as: :connect
+
         resource :google_play_store, only: [:create],
           controller: "integrations/google_play_store",
           as: :google_play_store_integration
@@ -103,6 +104,10 @@ Rails.application.routes.draw do
         resource :bitrise, only: [:create],
           controller: "integrations/bitrise",
           as: :bitrise_integration
+
+        resource :app_store, only: [:create],
+                 controller: "integrations/app_store",
+                 as: :appstore_integration
       end
     end
 

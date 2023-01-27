@@ -16,7 +16,9 @@ class Integration < ApplicationRecord
   using RefinedString
 
   belongs_to :app
-  delegated_type :providable, types: %w[GithubIntegration GitlabIntegration SlackIntegration GooglePlayStoreIntegration BitriseIntegration]
+
+  ALL_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration]
+  delegated_type :providable, types: ALL_TYPES
 
   class IntegrationNotImplemented < StandardError; end
 
@@ -28,7 +30,7 @@ class Integration < ApplicationRecord
     "version_control" => %w[GithubIntegration GitlabIntegration],
     "ci_cd" => %w[GithubIntegration BitriseIntegration],
     "notification" => %w[SlackIntegration],
-    "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration]
+    "build_channel" => %w[AppStoreIntegration GooglePlayStoreIntegration SlackIntegration]
   }.freeze
 
   enum category: LIST.keys.zip(LIST.keys).to_h
@@ -54,7 +56,7 @@ class Integration < ApplicationRecord
   # FIXME: Can we make a better External Deployment abstraction?
   EXTERNAL_BUILD_INTEGRATION = {
     build_integration: ["None (outside Tramline)", nil],
-    build_channels: [{id: :external, name: "External"}]
+    build_channels: [{ id: :external, name: "External" }]
   }
 
   validates :category, presence: true

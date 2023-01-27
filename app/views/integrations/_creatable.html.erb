@@ -32,6 +32,15 @@
                                        category: category
                              } %>
                 <% end %>
+
+                <% if integration.providable.to_s == "app_store" %>
+                  <%= render partial: "integrations/providers/app_store",
+                             locals: { current_organization: current_organization,
+                                       integration: integration,
+                                       category: category
+                             } %>
+                <% end %>
+
                 <% if integration.providable.to_s == "bitrise" %>
                   <%= render partial: "integrations/providers/bitrise",
                              locals: { current_organization: current_organization,
@@ -39,7 +48,6 @@
                                        category: category
                              } %>
                 <% end %>
-
               <% end %>
             </div>
           </div>
