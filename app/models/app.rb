@@ -4,15 +4,15 @@
 #
 #  id                :uuid             not null, primary key
 #  build_number      :bigint           not null
-#  bundle_identifier :string           not null, indexed => [organization_id]
+#  bundle_identifier :string           not null, indexed => [platform, organization_id]
 #  description       :string
 #  name              :string           not null
-#  platform          :string           not null
+#  platform          :string           not null, indexed => [bundle_identifier, organization_id]
 #  slug              :string
 #  timezone          :string           not null
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
-#  organization_id   :uuid             not null, indexed => [bundle_identifier], indexed
+#  organization_id   :uuid             not null, indexed, indexed => [platform, bundle_identifier]
 #
 class App < ApplicationRecord
   has_paper_trail
@@ -29,7 +29,7 @@ class App < ApplicationRecord
   has_many :sign_off_groups, dependent: :destroy
 
   validate :no_trains_are_running, on: :update
-  validates :bundle_identifier, uniqueness: {scope: :organization_id}
+  validates :bundle_identifier, uniqueness: {scope: [:platform, :organization_id]}
   validates :build_number, numericality: {greater_than_or_equal_to: :build_number_was}, on: :update
   validates :build_number, numericality: {less_than: 2100000000}, if: -> { android? }
 
@@ -38,7 +38,6 @@ class App < ApplicationRecord
   accepts_nested_attributes_for :sign_off_groups, allow_destroy: true, reject_if: :reject_sign_off_groups?
 
   after_initialize :initialize_config, if: :new_record?
-  after_initialize :set_default_platform, if: :new_record?
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
   end
@@ -55,6 +54,13 @@ class App < ApplicationRecord
 
   def runs
     Releases::Train::Run.joins(train: :app).where(train: {app: self})
+  end
+
+  def self.allowed_platforms
+    {
+      android: "Android",
+      ios: "iOS"
+    }.invert
   end
 
   def active_runs
@@ -123,10 +129,6 @@ class App < ApplicationRecord
   end
 
   private
-
-  def set_default_platform
-    self.platform = App.platforms[:android]
-  end
 
   def initialize_config
     build_config

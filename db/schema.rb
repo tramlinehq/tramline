@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_01_19_121126) do
+ActiveRecord::Schema[7.0].define(version: 2023_01_27_075158) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -65,8 +65,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_19_121126) do
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["bundle_identifier", "organization_id"], name: "index_apps_on_bundle_identifier_and_organization_id", unique: true
     t.index ["organization_id"], name: "index_apps_on_organization_id"
+    t.index ["platform", "bundle_identifier", "organization_id"], name: "index_apps_on_platform_and_bundle_id_and_org_id", unique: true
   end
 
   create_table "bitrise_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

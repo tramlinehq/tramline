@@ -42,6 +42,7 @@
         <tr>
           <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
             <div class="flex items-center">
+              <%= image_tag("#{app.platform}.svg", width: 20, class: "inline-flex mr-3") %>
               <div class="font-medium text-slate-800">
                 <%= link_to app.name, app_path(app) %>
               </div>

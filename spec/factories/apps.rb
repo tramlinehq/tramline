@@ -5,6 +5,7 @@ FactoryBot.define do
     name { Faker::App.name }
     bundle_identifier { "com.example.com" }
     build_number { Faker::Number.number(digits: 4) }
+    platform { "android" }
 
     after(:create) do |app, _|
       create(:integration, category: "version_control", providable: create(:github_integration), app:)
