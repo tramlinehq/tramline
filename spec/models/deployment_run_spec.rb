@@ -5,7 +5,7 @@ describe DeploymentRun, type: :model do
     expect(create(:deployment_run)).to be_valid
   end
 
-  describe "#dispatch_job!" do
+  describe "#dispatch!" do
     let(:step) { create(:releases_step, :with_deployment) }
     let(:step_run) { create(:releases_step_run, :build_available, step: step) }
 
@@ -14,7 +14,7 @@ describe DeploymentRun, type: :model do
       deployment2 = create(:deployment, step: step)
       deployment_run2 = create(:deployment_run, :created, deployment: deployment2, step_run: step_run)
 
-      deployment_run2.dispatch_job!
+      deployment_run2.dispatch!
       _deployment_run1 = create(:deployment_run, :created, deployment: deployment1, step_run: step_run)
 
       expect(step_run.reload.deployment_started?).to be(true)
@@ -26,7 +26,7 @@ describe DeploymentRun, type: :model do
       _deployment_run1 = create(:deployment_run, :created, deployment: deployment1, step_run: step_run)
       deployment_run2 = create(:deployment_run, :created, deployment: deployment2, step_run: step_run)
 
-      deployment_run2.dispatch_job!
+      deployment_run2.dispatch!
 
       expect(step_run.reload.deployment_started?).not_to be(true)
     end

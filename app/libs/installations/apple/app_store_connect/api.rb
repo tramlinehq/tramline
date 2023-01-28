@@ -12,6 +12,7 @@ module Installations
     GROUPS_URL = Addressable::Template.new "http://localhost:9292/apple/connect/v1/apps/{bundle_id}/groups"
     FIND_APP_URL = Addressable::Template.new "http://localhost:9292/apple/connect/v1/apps/{bundle_id}"
     FIND_BUILD_URL = Addressable::Template.new "http://localhost:9292/apple/connect/v1/apps/{bundle_id}/builds/{build_number}"
+    ADD_BUILD_TO_GROUP_URL = Addressable::Template.new "http://localhost:9292/apple/connect/v1/apps/{bundle_id}/groups/{group_id}/add_build"
 
     def external_groups(transforms)
       execute(:get, GROUPS_URL.expand(bundle_id:).to_s, {params: {internal: false}})
@@ -25,6 +26,10 @@ module Installations
     def find_build(build_number)
       execute(:get, FIND_BUILD_URL.expand(bundle_id:, build_number:).to_s, {})
         .then { |build| build&.presence || raise(Installations::Errors::BuildNotFoundInStore) }
+    end
+
+    def add_build_to_group(group_id, build_number)
+      execute(:patch, ADD_BUILD_TO_GROUP_URL.expand(bundle_id:, group_id: group_id).to_s, {json: {build_number: build_number}})
     end
 
     private
@@ -73,12 +78,19 @@ module Installations
 
     def execute(verb, url, params)
       response = HTTP.auth(access_token.to_s).headers(appstore_connect_headers).public_send(verb, url, params)
+
       return if error?(response.status)
+      return if no_content?(response.status)
+
       JSON.parse(response.body.to_s)
     end
 
     def error?(code)
       code.between?(400, 499)
+    end
+
+    def no_content?(code)
+      code == 204
     end
   end
 end

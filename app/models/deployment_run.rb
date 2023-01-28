@@ -24,8 +24,9 @@ class DeploymentRun < ApplicationRecord
 
   delegate :step, :release, :commit, :build_number, :build_artifact, :build_version, to: :step_run
   delegate :app, to: :step
+  delegate :ios?, to: :app
   delegate :release_version, to: :release
-  delegate :external?, :google_play_store_integration?, :slack_integration?, :store?, to: :deployment
+  delegate :external?, :google_play_store_integration?, :slack_integration?, :store?, :app_store_integration?, to: :deployment
   delegate :deployment_number, :integration, :deployment_channel, :deployment_channel_name, to: :deployment
 
   STAMPABLE_REASONS = [
@@ -41,6 +42,7 @@ class DeploymentRun < ApplicationRecord
   STATES = {
     created: "created",
     started: "started",
+    submitted: "submitted",
     uploaded: "uploaded",
     upload_failed: "upload_failed",
     released: "released",
@@ -53,10 +55,12 @@ class DeploymentRun < ApplicationRecord
     state :created, initial: true, before_enter: -> { step_run.startable_deployment?(deployment) }
     state(*STATES.keys)
 
-    event :dispatch_job, after_commit: :start_upload! do
-      after { step_run.ready_to_deploy! if first? }
+    event :dispatch, after_commit: :after_dispatch do
+      after { step_run.start_deploy! if first? }
       transitions from: :created, to: :started
     end
+
+    event(:submit, guard: :ios?) { transitions from: :started, to: :submitted }
 
     event :upload do
       after { wrap_up_uploads! }
@@ -75,7 +79,7 @@ class DeploymentRun < ApplicationRecord
 
     event :complete do
       after { step_run.finish! if step_run.finished_deployments? }
-      transitions from: [:created, :uploaded, :started], to: :released
+      transitions from: [:created, :uploaded, :started, :submitted], to: :released
     end
   end
 
@@ -125,6 +129,12 @@ class DeploymentRun < ApplicationRecord
         end
       end
     end
+  end
+
+  def promote_to_appstore!
+    return unless app_store_integration?
+    provider.promote_to_testflight(deployment_channel, build_number)
+    submit!
   end
 
   def push_to_slack!
@@ -182,6 +192,11 @@ class DeploymentRun < ApplicationRecord
     Deployments::Slack.perform_later(id) if slack_integration?
   end
 
+  def start_distribution!
+    return unless store? && app_store_integration?
+    Deployments::AppStoreConnect::TestFlightPromoteJob.perform_later(id)
+  end
+
   def wrap_up_uploads!
     return unless store?
     step_run
@@ -211,5 +226,10 @@ class DeploymentRun < ApplicationRecord
       provider: integration&.providable&.display,
       file: build_artifact&.get_filename
     }
+  end
+
+  def after_dispatch
+    return start_distribution! if ios?
+    start_upload!
   end
 end

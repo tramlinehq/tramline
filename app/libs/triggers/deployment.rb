@@ -17,7 +17,7 @@ class Triggers::Deployment
       step_run
         .deployment_runs
         .create!(deployment:, scheduled_at: starting_time)
-        .dispatch_job!
+        .dispatch!
     end
   end
 

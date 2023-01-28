@@ -89,7 +89,7 @@ class Releases::Step::Run < ApplicationRecord
     end
 
     event(:finish_ci, after_commit: :after_finish_ci) { transitions from: :ci_workflow_started, to: :build_ready }
-    event(:build_found, guard: :ios?) { transitions from: :build_ready, to: :build_found_in_store }
+    event(:build_found, guard: :ios?, after_commit: :trigger_deploys) { transitions from: :build_ready, to: :build_found_in_store }
 
     event(:upload_artifact, after_commit: :trigger_deploys) do
       before { add_build_artifact(artifacts_url) }
@@ -98,7 +98,7 @@ class Releases::Step::Run < ApplicationRecord
 
     event(:build_not_found) { transitions from: :build_ready, to: :build_not_found_in_store }
     event(:build_upload_failed) { transitions from: :build_ready, to: :build_unavailable }
-    event(:ready_to_deploy) { transitions from: :build_available, to: :deployment_started }
+    event(:start_deploy) { transitions from: [:build_available, :build_found_in_store], to: :deployment_started }
 
     event(:fail_deploy, after_commit: -> { notify_on_failure!("Deployment failed!") }) do
       transitions from: :deployment_started, to: :deployment_failed

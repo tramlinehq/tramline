@@ -52,6 +52,9 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   delegate :find_build, :find_app, to: :installation
+  def promote_to_testflight(beta_group_id, build_number)
+    installation.add_build_to_group(beta_group_id, build_number)
+  end
 
   def build_channels
     installation.external_groups(CHANNELS_TRANSFORMATIONS).map { |channel| channel.slice(:id, :name) }
