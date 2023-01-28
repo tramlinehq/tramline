@@ -240,8 +240,6 @@ class Releases::Step::Run < ApplicationRecord
     deployment_runs.released.size == step.deployments.size
   end
 
-  private
-
   def trigger_deploys
     if previous_deployments.any?
       previous_deployments.each do |deployment|
@@ -251,6 +249,8 @@ class Releases::Step::Run < ApplicationRecord
       Triggers::Deployment.call(step_run: self)
     end
   end
+
+  private
 
   def find_and_update_workflow_run
     return if workflow_found?
