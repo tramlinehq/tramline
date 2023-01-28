@@ -20,6 +20,7 @@ module Installations
 
     class << self
       def artifact_url(app_slug, build_slug, artifact)
+        return if artifact.blank?
         WORKFLOW_RUN_ARTIFACT_URL.expand(app_slug:, build_slug:, artifact_slug: artifact["slug"]).to_s
       end
 

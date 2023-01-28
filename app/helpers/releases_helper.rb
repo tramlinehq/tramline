@@ -21,8 +21,14 @@ module ReleasesHelper
         ["Waiting for CI", %w[bg-sky-100 text-sky-600]]
       when :ci_workflow_started
         ["In Progress", %w[bg-sky-100 text-sky-600]]
-      when :build_ready, :deployment_started
+      when :build_ready
+        ["Looking for build to deploy", %w[bg-indigo-100 text-indigo-600]]
+      when :deployment_started
         ["Deployments Pending", %w[bg-indigo-100 text-indigo-600]]
+      when :build_found_in_store
+        ["Build found in store", %w[bg-cyan-100 text-cyan-600]]
+      when :build_not_found_in_store
+        ["Build not found in store", %w[bg-rose-100 text-rose-600]]
       when :success
         ["Success", %w[bg-green-100 text-green-600]]
       when :ci_workflow_failed

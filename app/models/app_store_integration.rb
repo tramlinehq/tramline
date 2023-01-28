@@ -51,6 +51,8 @@ class AppStoreIntegration < ApplicationRecord
     true
   end
 
+  delegate :find_build, :find_app, to: :installation
+
   def build_channels
     installation.external_groups(CHANNELS_TRANSFORMATIONS).map { |channel| channel.slice(:id, :name) }
   end
@@ -60,6 +62,6 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def correct_key
-    errors.add(:key_id, :no_app_found) if installation.find_app.blank?
+    errors.add(:key_id, :no_app_found) if find_app.blank?
   end
 end

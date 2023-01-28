@@ -11,14 +11,20 @@ module Installations
 
     GROUPS_URL = Addressable::Template.new "http://localhost:9292/apple/connect/v1/apps/{bundle_id}/groups"
     FIND_APP_URL = Addressable::Template.new "http://localhost:9292/apple/connect/v1/apps/{bundle_id}"
+    FIND_BUILD_URL = Addressable::Template.new "http://localhost:9292/apple/connect/v1/apps/{bundle_id}/builds/{build_number}"
 
     def external_groups(transforms)
-      execute(:get, GROUPS_URL.expand(bundle_id:).to_s, { params: { internal: false } })
+      execute(:get, GROUPS_URL.expand(bundle_id:).to_s, {params: {internal: false}})
         .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
     end
 
     def find_app
       execute(:get, FIND_APP_URL.expand(bundle_id:).to_s, {})
+    end
+
+    def find_build(build_number)
+      execute(:get, FIND_BUILD_URL.expand(bundle_id:, build_number:).to_s, {})
+        .then { |build| build&.presence || raise(Installations::Errors::BuildNotFoundInStore) }
     end
 
     private

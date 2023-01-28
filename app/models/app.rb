@@ -45,10 +45,7 @@ class App < ApplicationRecord
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
 
-  delegate :vcs_provider, to: :integrations, allow_nil: true
-  delegate :ci_cd_provider, to: :integrations, allow_nil: true
-  delegate :notification_provider, to: :integrations, allow_nil: true
-  delegate :slack_build_channel_provider, to: :integrations, allow_nil: true
+  delegate :vcs_provider, :ci_cd_provider, :notification_provider, to: :integrations, allow_nil: true
 
   scope :with_trains, -> { joins(:trains).distinct }
 
@@ -129,8 +126,7 @@ class App < ApplicationRecord
   end
 
   def keep_builds?
-    return true if android?
-    false if ios?
+    android?
   end
 
   private

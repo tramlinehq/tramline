@@ -24,6 +24,8 @@ module Installations
 
     class WorkflowRunNotFound < StandardError; end
 
+    class BuildNotFoundInStore < StandardError; end
+
     class WorkflowTriggerFailed < StandardError; end
 
     class BundleIdentifierNotFound < StandardError; end

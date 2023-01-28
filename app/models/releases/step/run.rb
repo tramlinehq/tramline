@@ -41,7 +41,7 @@ class Releases::Step::Run < ApplicationRecord
   after_create :reset_approval!
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 
-  STAMPABLE_REASONS = %w[created ci_triggered ci_workflow_unavailable ci_finished ci_workflow_failed ci_workflow_halted build_available build_unavailable finished]
+  STAMPABLE_REASONS = %w[created ci_triggered ci_workflow_unavailable ci_finished ci_workflow_failed ci_workflow_halted build_available build_unavailable build_not_found_in_store finished]
 
   STATES = {
     on_track: "on_track",
@@ -51,6 +51,8 @@ class Releases::Step::Run < ApplicationRecord
     ci_workflow_failed: "ci_workflow_failed",
     ci_workflow_halted: "ci_workflow_halted",
     build_ready: "build_ready",
+    build_found_in_store: "build_found_in_store",
+    build_not_found_in_store: "build_not_found_in_store",
     build_available: "build_available",
     build_unavailable: "build_unavailable",
     deployment_started: "deployment_started",
@@ -86,17 +88,16 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: :ci_workflow_started, to: :ci_workflow_halted
     end
 
-    event(:finish_ci, after_commit: -> { Releases::UploadArtifact.perform_later(id, artifacts_url) }) do
-      transitions from: :ci_workflow_started, to: :build_ready
-    end
+    event(:finish_ci, after_commit: :after_finish_ci) { transitions from: :ci_workflow_started, to: :build_ready }
+    event(:build_found, guard: :ios?) { transitions from: :build_ready, to: :build_found_in_store }
 
     event(:upload_artifact, after_commit: :trigger_deploys) do
       before { add_build_artifact(artifacts_url) }
       transitions from: :build_ready, to: :build_available
     end
 
+    event(:build_not_found) { transitions from: :build_ready, to: :build_not_found_in_store }
     event(:build_upload_failed) { transitions from: :build_ready, to: :build_unavailable }
-
     event(:ready_to_deploy) { transitions from: :build_available, to: :deployment_started }
 
     event(:fail_deploy, after_commit: -> { notify_on_failure!("Deployment failed!") }) do
@@ -115,10 +116,15 @@ class Releases::Step::Run < ApplicationRecord
   attr_accessor :artifacts_url
 
   delegate :train, :release_branch, to: :train_run
-  delegate :ci_cd_provider, :unzip_artifact?, to: :train
+  delegate :app, :app_store_connect_provider, :ci_cd_provider, :unzip_artifact?, to: :train
+  delegate :ios?, to: :app
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
   alias_method :release, :train_run
+
+  def find_build
+    app_store_connect_provider.find_build(build_number)
+  end
 
   def get_workflow_run
     ci_cd_provider.get_workflow_run(ci_ref)
@@ -133,7 +139,7 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def build_artifact_available?
-    build_available? || build_artifact.present?
+    build_available? && build_artifact.present?
   end
 
   def previous_deployed_run
@@ -234,6 +240,8 @@ class Releases::Step::Run < ApplicationRecord
     deployment_runs.released.size == step.deployments.size
   end
 
+  private
+
   def trigger_deploys
     if previous_deployments.any?
       previous_deployments.each do |deployment|
@@ -244,13 +252,9 @@ class Releases::Step::Run < ApplicationRecord
     end
   end
 
-  private
-
   def find_and_update_workflow_run
     return if workflow_found?
-
-    find_workflow_run
-      .then { |wr| update_ci_metadata!(wr) }
+    find_workflow_run.then { |wr| update_ci_metadata!(wr) }
   end
 
   def find_workflow_run
@@ -304,5 +308,10 @@ class Releases::Step::Run < ApplicationRecord
   def after_trigger_ci
     Releases::FindWorkflowRun.perform_async(id)
     event_stamp!(reason: :ci_triggered, kind: :notice, data: {version: build_version})
+  end
+
+  def after_finish_ci
+    return Releases::AppStoreConnect::FindBuild.perform_async(id) if ios?
+    Releases::UploadArtifact.perform_later(id, artifacts_url)
   end
 end

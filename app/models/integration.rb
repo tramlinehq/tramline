@@ -123,8 +123,8 @@ class Integration < ApplicationRecord
       notification.first&.providable
     end
 
-    def slack_build_channel_provider
-      build_channel.where(providable_type: "SlackIntegration").first.providable
+    def app_store_connect_provider
+      build_channel.where(providable_type: "AppStoreIntegration").first.providable
     end
 
     private
