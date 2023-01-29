@@ -211,7 +211,7 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def failed?
-    ci_workflow_unavailable? || ci_workflow_failed? || ci_workflow_halted? || deployment_failed?
+    build_unavailable? || ci_workflow_unavailable? || ci_workflow_failed? || ci_workflow_halted? || deployment_failed?
   end
 
   def done?
