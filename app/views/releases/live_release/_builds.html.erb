@@ -102,7 +102,9 @@
                         </div>
                       </div>
                     </div>
+                  <% end %>
 
+                  <% if step_run.deployment_runs.exists? %>
                     <div class="mb-2">
                       Deployments
                       <% step_run.deployment_runs.each do |deployment_run| %>

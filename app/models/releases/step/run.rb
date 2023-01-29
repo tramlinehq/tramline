@@ -139,7 +139,7 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def build_artifact_available?
-    build_available? && build_artifact.present?
+    build_artifact.present?
   end
 
   def previous_deployed_run
