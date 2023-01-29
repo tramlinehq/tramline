@@ -19,6 +19,8 @@ class DeploymentRun < ApplicationRecord
   belongs_to :deployment, inverse_of: :deployment_runs
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
 
+  has_one :external_build, dependent: :destroy
+
   validates :deployment_id, uniqueness: {scope: :train_step_run_id}
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
@@ -55,12 +57,15 @@ class DeploymentRun < ApplicationRecord
     state :created, initial: true, before_enter: -> { step_run.startable_deployment?(deployment) }
     state(*STATES.keys)
 
+    # FIXME: can we split into multiple events with guards for platforms?
     event :dispatch, after_commit: :after_dispatch do
       after { step_run.start_deploy! if first? }
       transitions from: :created, to: :started
     end
 
-    event(:submit, guard: :ios?) { transitions from: :started, to: :submitted }
+    event(:submit, guard: :ios?, after_commit: :locate_external_build) do
+      transitions from: :started, to: :submitted
+    end
 
     event :upload do
       after { wrap_up_uploads! }
@@ -90,6 +95,22 @@ class DeploymentRun < ApplicationRecord
 
   def first?
     step_run.deployment_runs.first == self
+  end
+
+  def locate_external_build
+    Deployments::AppStoreConnect::UpdateExternalBuildJob.perform_later(id)
+  end
+
+  def find_and_update_external_build!(attempt = 1)
+    external_build ||= build_external_build
+    build_info = provider.find_build(build_number)
+    external_build.update(build_info.attributes) # FIXME: this should actually update not replace
+
+    return complete! if build_info.success?
+    return failed! if build_info.failed?
+
+    # FIXME: larger number or bigger backoff
+    Deployments::AppStoreConnect::UpdateExternalBuildJob.set(wait: 5.minutes).perform_later(id)
   end
 
   def promote!

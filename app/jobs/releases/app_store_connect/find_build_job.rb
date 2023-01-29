@@ -1,4 +1,4 @@
-class Releases::AppStoreConnect::FindBuild
+class Releases::AppStoreConnect::FindBuildJob
   include Sidekiq::Job
   include Loggable
 
@@ -25,7 +25,7 @@ class Releases::AppStoreConnect::FindBuild
   def perform(step_run_id)
     run = Releases::Step::Run.find(step_run_id)
     return unless run.release.on_track?
-    run.build_found! if run.find_build.present?
+    run.build_found! if run.find_build.found?
   rescue => e
     elog(e)
     raise

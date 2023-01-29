@@ -23,9 +23,11 @@ module Installations
       execute(:get, FIND_APP_URL.expand(bundle_id:).to_s, {})
     end
 
-    def find_build(build_number)
+    def find_build(build_number, transforms)
       execute(:get, FIND_BUILD_URL.expand(bundle_id:, build_number:).to_s, {})
         .then { |build| build&.presence || raise(Installations::Errors::BuildNotFoundInStore) }
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def add_build_to_group(group_id, build_number)

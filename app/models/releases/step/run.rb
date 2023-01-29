@@ -311,7 +311,7 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def after_finish_ci
-    return Releases::AppStoreConnect::FindBuild.perform_async(id) if ios?
+    return Releases::AppStoreConnect::FindBuildJob.perform_async(id) if ios?
     Releases::UploadArtifact.perform_later(id, artifacts_url)
   end
 end

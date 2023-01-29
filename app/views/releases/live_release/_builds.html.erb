@@ -115,6 +115,7 @@
                             <%= image_tag("arrow-right.svg", width: 16, class: "inline-flex mr-1") %>
                             <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
                           </span>
+
                           <%= deployment_run_status_badge(deployment_run) %>
 
                           <% if deployment.store? && deployment_run.released? %>
@@ -124,6 +125,19 @@
                                 of the users</span>
                             </div>
                           <% end %>
+
+                          <% if deployment_run.external_build.present? %>
+                            <div class="mt-2">
+                              <%= deployment_run.external_build.name %>
+                              &nbsp;•&nbsp;
+                              <%= deployment_run.external_build.build_number %>
+                              &nbsp;•&nbsp;
+                              <span class="bg-amber-400 text-white rounded-full animate-pulse px-2 py-1"><%= deployment_run.external_build.status.titleize.upcase %></span>
+                              &nbsp;•&nbsp;
+                              <%= ago_in_words deployment_run.external_build.added_at %>
+                            </div>
+                          <% end %>
+
                         </div>
                       <% end %>
                     </div>
