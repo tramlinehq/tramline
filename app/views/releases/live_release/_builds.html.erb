@@ -106,7 +106,7 @@
 
                   <% if step_run.deployment_runs.exists? %>
                     <div class="mb-2">
-                      Deployments
+                      <%= Deployment.display.pluralize %>
                       <% step_run.deployment_runs.each do |deployment_run| %>
                         <% deployment = deployment_run.deployment %>
 

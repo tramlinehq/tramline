@@ -12,6 +12,7 @@
 #
 class Deployment < ApplicationRecord
   has_paper_trail
+  include Displayable
 
   self.implicit_order_column = :deployment_number
 
