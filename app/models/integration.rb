@@ -14,27 +14,33 @@
 class Integration < ApplicationRecord
   has_paper_trail
   using RefinedString
+  using RefinedArray
 
   belongs_to :app
 
   ALL_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration]
   delegated_type :providable, types: ALL_TYPES
 
-  class IntegrationNotImplemented < StandardError; end
+  IntegrationNotImplemented = Class.new(StandardError)
+  UnsupportedAction = Class.new(StandardError)
+  NoBuildArtifactAvailable = Class.new(StandardError)
 
-  class UnsupportedAction < StandardError; end
+  ALLOWED_INTEGRATIONS_FOR_APP = {
+    ios: {
+      "version_control" => %w[GithubIntegration GitlabIntegration],
+      "ci_cd" => %w[BitriseIntegration],
+      "notification" => %w[SlackIntegration],
+      "build_channel" => %w[AppStoreIntegration]
+    },
+    android: {
+      "version_control" => %w[GithubIntegration GitlabIntegration],
+      "ci_cd" => %w[GithubIntegration BitriseIntegration],
+      "notification" => %w[SlackIntegration],
+      "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration]
+    }
+  }.with_indifferent_access
 
-  class NoBuildArtifactAvailable < StandardError; end
-
-  LIST = {
-    "version_control" => %w[GithubIntegration GitlabIntegration],
-    "ci_cd" => %w[GithubIntegration BitriseIntegration],
-    "notification" => %w[SlackIntegration],
-    "build_channel" => %w[AppStoreIntegration GooglePlayStoreIntegration SlackIntegration]
-  }.freeze
-
-  enum category: LIST.keys.zip(LIST.keys).to_h
-
+  enum category: ALLOWED_INTEGRATIONS_FOR_APP.values.map(&:keys).flatten.uniq.zip_self.to_h
   enum status: {
     connected: "connected",
     disconnected: "disconnected"
@@ -46,9 +52,7 @@ class Integration < ApplicationRecord
     notification: "Send release activity notifications at the right time, to the right people.",
     build_channel: "Send builds to the right deployment service for the right stakeholders."
   }.freeze
-
   MULTI_INTEGRATION_CATEGORIES = ["build_channel"].freeze
-
   MINIMUM_REQUIRED_SET = [:version_control, :ci_cd, :build_channel].freeze
   DEFAULT_CONNECT_STATUS = Integration.statuses[:connected].freeze
   DEFAULT_INITIAL_STATUS = Integration.statuses[:disconnected].freeze
@@ -60,13 +64,14 @@ class Integration < ApplicationRecord
   }
 
   validates :category, presence: true
-  validate :provider_in_category
+  validate :allowed_integrations_for_app
 
   validates_associated :providable, message: proc { |_p, meta| providable_error_message(meta) }
 
   attr_accessor :current_user, :code
 
   delegate :install_path, to: :providable
+  delegate :platform, to: :app
 
   scope :ready, -> { where(category: MINIMUM_REQUIRED_SET, status: :connected) }
 
@@ -75,8 +80,9 @@ class Integration < ApplicationRecord
   class << self
     def by_categories_for(app)
       existing_integrations = app.integrations.includes(:providable)
+      integrations = ALLOWED_INTEGRATIONS_FOR_APP[app.platform]
 
-      LIST.each_with_object({}) do |(category, providers), combination|
+      integrations.each_with_object({}) do |(category, providers), combination|
         existing_integration = existing_integrations.select { |integration| integration.category.eql?(category) }
         combination[category] ||= []
 
@@ -148,13 +154,13 @@ class Integration < ApplicationRecord
     self.status = DEFAULT_CONNECT_STATUS
   end
 
-  def provider_in_category
-    unless providable_type&.in?(LIST[category])
-      errors.add(:providable_type, "Provider is not a part of this type of Integration")
-    end
-  end
-
   def store?
     build_channel? && providable.store?
+  end
+
+  def allowed_integrations_for_app
+    unless providable_type&.in?(ALLOWED_INTEGRATIONS_FOR_APP[platform][category])
+      errors.add(:providable_type, "Provider is not allowed for app type: #{platform}")
+    end
   end
 end

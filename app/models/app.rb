@@ -54,10 +54,16 @@ class App < ApplicationRecord
   end
 
   def self.allowed_platforms
-    {
-      android: "Android",
-      ios: "iOS"
-    }.invert
+    if Flipper.enabled?(:ios_apps_allowed)
+      {
+        android: "Android",
+        ios: "iOS"
+      }.invert
+    else
+      {
+        android: "Android"
+      }.invert
+    end
   end
 
   def active_runs
