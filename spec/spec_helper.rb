@@ -18,7 +18,7 @@ RSpec.configure do |config|
   SimpleCov.start "rails" do
     add_group "POROs", "app/libs"
     add_group "Refinements", "app/refinements"
-    add_filter %w[app/types app/channels app/helpers lib]
+    add_filter %w[app/types app/channels app/helpers lib/]
     enable_coverage :branch
     formatter SimpleCov::Formatter::MultiFormatter.new [SimpleCov::Formatter::HTMLFormatter]
   end
