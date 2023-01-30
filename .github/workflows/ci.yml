@@ -69,5 +69,7 @@ jobs:
         run: bundle exec brakeman -q -w2
       - name: Lint Ruby files
         run: bundle exec rubocop
+      - name: Set up database schema
+        run: bin/rails db:schema:load
       - name: Check auto-loading
         run: bundle exec rails zeitwerk:check
