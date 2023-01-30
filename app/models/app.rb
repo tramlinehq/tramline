@@ -53,8 +53,8 @@ class App < ApplicationRecord
     Releases::Train::Run.joins(train: :app).where(train: {app: self})
   end
 
-  def self.allowed_platforms
-    if Flipper.enabled?(:ios_apps_allowed)
+  def self.allowed_platforms(current_user)
+    if Flipper.enabled?(:ios_apps_allowed, current_user)
       {
         android: "Android",
         ios: "iOS"

@@ -28,6 +28,7 @@
 #  updated_at             :datetime         not null
 #
 class Accounts::User < ApplicationRecord
+  include Flipper::Identifier
   extend FriendlyId
   has_paper_trail
 
