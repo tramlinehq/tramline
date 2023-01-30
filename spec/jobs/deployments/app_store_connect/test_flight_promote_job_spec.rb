@@ -13,11 +13,7 @@ describe Deployments::AppStoreConnect::TestFlightPromoteJob do
     end
 
     context "when app store deployment" do
-      let(:app_store_deployment_run) { create(:deployment_run, :started, :with_app_store) }
-
-      before do
-        app_store_deployment_run.app.update(platform: "ios")
-      end
+      let(:app_store_deployment_run) { create_deployment_run_for_ios(:started) }
 
       it "does nothing if the train run is no longer on track" do
         app_store_deployment_run.release.update(status: "finished")

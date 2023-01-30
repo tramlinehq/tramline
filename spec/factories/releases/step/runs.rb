@@ -47,3 +47,10 @@ FactoryBot.define do
     end
   end
 end
+
+def create_step_run_for_ios(trait)
+  app = create(:app, :ios)
+  train = create(:releases_train, app: app)
+  step = create(:releases_step, :with_deployment, train: train)
+  create(:releases_step_run, trait, step: step)
+end

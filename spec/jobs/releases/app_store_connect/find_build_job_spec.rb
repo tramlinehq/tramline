@@ -2,10 +2,7 @@ require "rails_helper"
 
 describe Releases::AppStoreConnect::FindBuildJob do
   describe "#perform" do
-    let(:app) { create(:app, :ios) }
-    let(:train) { create(:releases_train, app: app) }
-    let(:step) { create(:releases_step, :with_deployment, train: train) }
-    let(:step_run) { create(:releases_step_run, :build_ready, step: step) }
+    let(:step_run) { create_step_run_for_ios(:build_ready) }
     let(:build_info) {
       {
         name: "1.2.0",
@@ -14,10 +11,6 @@ describe Releases::AppStoreConnect::FindBuildJob do
         added_at: Time.current
       }
     }
-
-    before do
-      create(:integration, :with_app_store, app: app)
-    end
 
     it "finds the build for the step run and updates step run status" do
       allow_any_instance_of(Installations::Apple::AppStoreConnect::Api).to receive(:find_build).and_return(build_info)

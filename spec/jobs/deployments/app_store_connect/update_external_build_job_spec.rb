@@ -13,7 +13,7 @@ describe Deployments::AppStoreConnect::UpdateExternalBuildJob do
     end
 
     context "when app store deployment" do
-      let(:app_store_deployment_run) { create(:deployment_run, :submitted, :with_app_store) }
+      let(:app_store_deployment_run) { create_deployment_run_for_ios(:submitted) }
       let(:base_build_info) {
         {
           name: "1.2.0",
