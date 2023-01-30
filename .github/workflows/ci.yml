@@ -40,6 +40,22 @@ jobs:
         run: bundle exec rspec
   lint:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14-alpine
+        ports:
+          - "5432:5432"
+        env:
+          POSTGRES_DB: rails_test
+          POSTGRES_USER: rails
+          POSTGRES_PASSWORD: password
+      redis:
+        image: redis:alpine
+        ports: [ "6379:6379" ]
+        options: --entrypoint redis-server
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: "postgres://rails:password@localhost:5432/rails_test"
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -54,4 +70,4 @@ jobs:
       - name: Lint Ruby files
         run: bundle exec rubocop
       - name: Check auto-loading
-        run: RAILS_ENV=test bundle exec rails zeitwerk:check
+        run: bundle exec rails zeitwerk:check
