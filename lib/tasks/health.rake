@@ -10,7 +10,7 @@ namespace :health do
     abort "No external services heartbeat URL set" unless ENV["EXT_SERVICES_HEARTBEAT_URL"]
     HTTP.get(ENV["EXT_SERVICES_HEARTBEAT_URL"]) if HTTP.get("#{ENV["APPLELINK_URL"]}/ping").status.success?
     puts "External services heartbeat passed!"
-  rescue StandardError
+  rescue
     abort "External services heartbeat failed!"
   end
 end
