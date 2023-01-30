@@ -1,0 +1,23 @@
+<% if deployment_run.external_build.present? %>
+  <div class="border-2 w-full 2xl:w-1/2 rounded-lg border-slate-100 text-slate-500 mt-2 p-2">
+    <%= image_tag("integrations/logo_testflight.png", class: "inline-flex", width: 20) %>
+
+    <div>
+      version
+      <span class="font-mono"><%= deployment_run.external_build.name %></span>
+      • build
+      <span class="font-mono"><%= deployment_run.external_build.build_number %></span>
+    </div>
+
+    <div>
+      <%= "added to TestFlight " + ago_in_words(deployment_run.external_build.added_at) %>
+    </div>
+
+    <div>
+      TestFlight status •
+      <span class="bg-slate-400 rounded-full py-1 px-2 text-xs text-white">
+        <%= deployment_run.external_build.status.titleize.upcase %>
+      </span>
+    </div>
+  </div>
+<% end %>
