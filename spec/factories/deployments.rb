@@ -17,5 +17,9 @@ FactoryBot.define do
     trait :with_slack do
       association :integration, :with_slack
     end
+
+    trait :with_app_store do
+      association :integration, :with_app_store
+    end
   end
 end

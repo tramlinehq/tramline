@@ -51,5 +51,8 @@ RSpec/MultipleExpectations:
 RSpec/MultipleMemoizedHelpers:
   Max: 10
 
+RSpec/MessageChain:
+  Enabled: false
+
 Performance:
   Enabled: true

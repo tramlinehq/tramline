@@ -78,7 +78,7 @@ class DeploymentRun < ApplicationRecord
 
     event :dispatch_fail do
       after { step_run.fail_deploy! }
-      transitions from: :uploaded, to: :failed
+      transitions from: [:uploaded, :submitted], to: :failed
     end
 
     event :complete do
@@ -107,10 +107,13 @@ class DeploymentRun < ApplicationRecord
     (external_build || build_external_build).update(build_info.attributes)
 
     GitHub::Result.new do
-      return complete! if build_info.success?
-      return dispatch_fail! if build_info.failed?
-
-      raise ExternalBuildNotInTerminalState, "Retrying in some time..."
+      if build_info.success?
+        complete!
+      elsif build_info.failed?
+        dispatch_fail!
+      else
+        raise ExternalBuildNotInTerminalState, "Retrying in some time..."
+      end
     end
   end
 

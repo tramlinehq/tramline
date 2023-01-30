@@ -4,9 +4,10 @@ class Deployments::AppStoreConnect::UpdateExternalBuildJob < ApplicationJob
 
   AttemptMustBeGreaterThanZero = Class.new(StandardError)
 
-  def perform(deployment_run_id, attempt:)
+  def perform(deployment_run_id, attempt: 1)
     run = DeploymentRun.find(deployment_run_id)
     return unless run.app_store_integration?
+    return unless run.release.on_track?
 
     unless run.update_external_build.ok?
       run.locate_external_build(attempt: attempt.succ, wait: backoff(attempt))
