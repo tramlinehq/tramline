@@ -33,7 +33,7 @@
                              } %>
                 <% end %>
 
-                <% if integration.providable.to_s == "app_store" %>
+                <% if integration.providable.to_s == "testflight" %>
                   <%= render partial: "integrations/providers/app_store",
                              locals: { current_organization: current_organization,
                                        integration: integration,

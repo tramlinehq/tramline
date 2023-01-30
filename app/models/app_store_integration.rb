@@ -77,7 +77,7 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def to_s
-    "app_store"
+    "testflight"
   end
 
   def build_info(build_info)

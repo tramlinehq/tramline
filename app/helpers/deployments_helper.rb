@@ -3,7 +3,7 @@ module DeploymentsHelper
     if deployment.external?
       "External (outside Tramline)"
     else
-      deployment.integration.providable_type.gsub("Integration", "").titleize
+      deployment.integration.providable.display
     end
   end
 
