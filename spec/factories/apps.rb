@@ -7,6 +7,14 @@ FactoryBot.define do
     build_number { Faker::Number.number(digits: 4) }
     platform { "android" }
 
+    trait :android do
+      platform { "android" }
+    end
+
+    trait :ios do
+      platform { "ios" }
+    end
+
     after(:create) do |app, _|
       create(:integration, category: "version_control", providable: create(:github_integration), app:)
       create(:integration, category: "ci_cd", providable: create(:github_integration), app:)

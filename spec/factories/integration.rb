@@ -13,5 +13,10 @@ FactoryBot.define do
       association :providable, factory: [:slack_integration, :without_callbacks_and_validations]
       category { "build_channel" }
     end
+
+    trait :with_app_store do
+      association :providable, factory: [:app_store_integration, :without_callbacks_and_validations]
+      category { "build_channel" }
+    end
   end
 end
