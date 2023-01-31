@@ -118,7 +118,7 @@
 
                           <%= deployment_run_status_badge(deployment_run) %>
 
-                          <% if deployment.store? && deployment_run.released? %>
+                          <% if deployment.store? && deployment_run.released? && !deployment_run.ios? %>
                             <div class="text-xs ml-4 mt-2">
                               <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-1") %>
                               <span>
