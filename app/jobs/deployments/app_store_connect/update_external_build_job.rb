@@ -14,6 +14,7 @@ class Deployments::AppStoreConnect::UpdateExternalBuildJob < ApplicationJob
     end
   end
 
+  # goes like: 10, 40, 90, 160, 250...
   def backoff(attempt = 1)
     raise AttemptMustBeGreaterThanZero if attempt.zero?
     (10 * (attempt**2)).to_i.minutes

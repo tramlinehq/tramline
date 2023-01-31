@@ -21,6 +21,8 @@ class App < ApplicationRecord
 
   GOOGLE_PLAY_STORE_URL_TEMPLATE =
     Addressable::Template.new("https://play.google.com/store/apps/details{?query*}")
+  APP_STORE_URL_TEMPLATE =
+    Addressable::Template.new("https://apps.apple.com/app/ueno/id{id}")
 
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
   has_one :config, class_name: "AppConfig", dependent: :destroy
@@ -86,7 +88,7 @@ class App < ApplicationRecord
     if android?
       GOOGLE_PLAY_STORE_URL_TEMPLATE.expand(query: {id: bundle_identifier}).to_s
     else
-      +""
+      APP_STORE_URL_TEMPLATE.expand(id: 1).to_s
     end
   end
 
@@ -129,10 +131,6 @@ class App < ApplicationRecord
 
   def sign_offs_enabled?
     Flipper.enabled?(:sign_offs, self)
-  end
-
-  def keep_builds?
-    android?
   end
 
   private
