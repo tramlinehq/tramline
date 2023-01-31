@@ -1,2 +1,4 @@
 <%= render partial: "shared/display_channels",
-           locals: { name: show_deployment_provider(deployment), channel: show_deployment_channel(deployment) } %>
+           locals: { name: show_deployment_provider(deployment),
+                     provider_name: deployment_integration_name(deployment),
+                     channel: show_deployment_channel(deployment) } %>

@@ -4,7 +4,6 @@
       <div class="inline-flex absolute -left-1.5 w-2.5 h-2.5 bg-slate-200 mt-2"></div>
       <div class="pl-4">
         <div>
-          <%= image_tag("package.svg", width: 14, class: "inline-flex mr-1") %>
           <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
           <%= render partial: "releases/live_release/deployment_status",
                      locals: { step_run: step_run, deployment: deployment, release: release } if show_deployment_status %>
