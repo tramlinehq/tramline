@@ -40,6 +40,12 @@ class AppStoreIntegration < ApplicationRecord
     added_at: :uploaded_date
   }
 
+  APP_TRANSFORMATIONS = {
+    id: :id,
+    name: :name,
+    bundle_id: :bundle_id
+  }
+
   raise InvalidBuildTransformations if Set.new(BUILD_TRANSFORMATIONS.keys) != Set.new(ExternalBuild.minimum_required)
 
   def access_key
@@ -66,7 +72,9 @@ class AppStoreIntegration < ApplicationRecord
     build_info(installation.find_build(build_number, BUILD_TRANSFORMATIONS))
   end
 
-  delegate :find_app, to: :installation
+  def find_app
+    installation.find_app(APP_TRANSFORMATIONS)
+  end
 
   def promote_to_testflight(beta_group_id, build_number)
     installation.add_build_to_group(beta_group_id, build_number)
@@ -150,6 +158,8 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def correct_key
-    errors.add(:key_id, :no_app_found) if find_app.blank?
+    app.set_external_details(find_app[:id])
+  rescue Installations::Errors::AppNotFoundInStore
+    errors.add(:key_id, :no_app_found)
   end
 end

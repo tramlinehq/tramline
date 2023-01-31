@@ -12,6 +12,7 @@
 #  timezone          :string           not null
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
+#  external_id       :string
 #  organization_id   :uuid             not null, indexed, indexed => [platform, bundle_identifier]
 #
 class App < ApplicationRecord
@@ -88,7 +89,7 @@ class App < ApplicationRecord
     if android?
       GOOGLE_PLAY_STORE_URL_TEMPLATE.expand(query: {id: bundle_identifier}).to_s
     else
-      APP_STORE_URL_TEMPLATE.expand(id: 1).to_s
+      APP_STORE_URL_TEMPLATE.expand(id: external_id).to_s
     end
   end
 
@@ -131,6 +132,10 @@ class App < ApplicationRecord
 
   def sign_offs_enabled?
     Flipper.enabled?(:sign_offs, self)
+  end
+
+  def set_external_details(external_id)
+    update(external_id: external_id)
   end
 
   private

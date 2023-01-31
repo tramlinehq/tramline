@@ -26,6 +26,8 @@ module Installations
 
     class BuildNotFoundInStore < StandardError; end
 
+    class AppNotFoundInStore < StandardError; end
+
     class WorkflowTriggerFailed < StandardError; end
 
     class BundleIdentifierNotFound < StandardError; end

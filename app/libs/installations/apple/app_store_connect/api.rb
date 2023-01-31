@@ -19,8 +19,11 @@ module Installations
         .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
     end
 
-    def find_app
+    def find_app(transforms)
       execute(:get, FIND_APP_URL.expand(bundle_id:).to_s, {})
+        .then { |app| app&.presence || raise(Installations::Errors::AppNotFoundInStore) }
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def find_build(build_number, transforms)
