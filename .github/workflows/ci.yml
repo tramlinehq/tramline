@@ -100,6 +100,8 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
+      - name: Set up database schema
+        run: bin/rails db:schema:load
       - name: Generate ERD diagram
         run: bundle exec erd
       - name: Generate state machine visualizations
