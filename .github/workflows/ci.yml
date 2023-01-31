@@ -73,7 +73,7 @@ jobs:
         run: bin/rails db:schema:load
       - name: Check auto-loading
         run: bundle exec rails zeitwerk:check
-  data:
+  diagrams:
     runs-on: ubuntu-latest
     services:
       postgres:

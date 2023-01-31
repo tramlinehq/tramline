@@ -80,6 +80,8 @@ group :development, :test do
   gem "rubocop-rails", require: false
   gem "rubocop-rspec", require: false
   gem "rubocop-performance", require: false
+  gem "stateoscope"
+  gem "rails-erd"
 end
 
 group :development do
@@ -89,8 +91,6 @@ group :development do
   gem "letter_opener_web"
   gem "awesome_print"
   gem "annotate"
-  gem "stateoscope"
-  gem "rails-erd"
 end
 
 group :test do
