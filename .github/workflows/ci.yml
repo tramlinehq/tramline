@@ -93,7 +93,7 @@ jobs:
       DATABASE_URL: "postgres://rails:password@localhost:5432/rails_test"
     steps:
       - name: Install graphviz
-        run: apt-get -y install graphviz
+        run: sudo apt-get -y install graphviz
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Install Ruby and gems
