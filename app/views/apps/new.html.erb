@@ -11,6 +11,14 @@
     <%= render "form", form: form, app: @app %>
 
     <div>
+      <%= form.label :platform, class: "block text-sm font-medium mb-1" %>
+      <%= form.select :platform,
+                      options_for_select(App.allowed_platforms(current_user), "Android"),
+                      { required: true },
+                      { class: "form-input w-full mb-1" } %>
+    </div>
+
+    <div>
       <%= form.label :timezone, class: "block text-sm font-medium mb-1" %>
       <%= form.time_zone_select(:timezone, @timezones, { model: ActiveSupport::TimeZone }, { :class => "form-select w-full" }) %>
     </div>

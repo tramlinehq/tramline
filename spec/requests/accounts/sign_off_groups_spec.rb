@@ -2,7 +2,7 @@ require "rails_helper"
 
 describe "Accounts::SignOffGroups", type: :request do
   let(:organization) { create(:organization) }
-  let(:tram_app) { create(:app, organization:) }
+  let(:tram_app) { create(:app, :android, organization:) }
   let(:user) { create(:user, :as_developer, confirmed_at: Time.zone.now, member_organization: organization) }
   let(:qa_1) { create(:user, :as_developer, confirmed_at: Time.zone.now, member_organization: organization) }
   let(:developer_1) { create(:user, :as_developer, confirmed_at: Time.zone.now, member_organization: organization) }

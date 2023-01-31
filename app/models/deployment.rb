@@ -12,6 +12,7 @@
 #
 class Deployment < ApplicationRecord
   has_paper_trail
+  include Displayable
 
   self.implicit_order_column = :deployment_number
 
@@ -22,7 +23,7 @@ class Deployment < ApplicationRecord
   validates :deployment_number, presence: true
   validates :build_artifact_channel, uniqueness: {scope: [:integration_id, :train_step_id], message: "Deployments should be designed to have unique providers and channels"}
 
-  delegate :google_play_store_integration?, :slack_integration?, :store?, to: :integration, allow_nil: true
+  delegate :google_play_store_integration?, :slack_integration?, :store?, :app_store_integration?, to: :integration, allow_nil: true
   delegate :train, to: :step
 
   before_save :set_deployment_number, if: :new_record?

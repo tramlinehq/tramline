@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :integration do
-    association :app, factory: :app
+    association :app, factory: [:app, :android]
     association :providable, factory: :github_integration
     category { "version_control" }
 
@@ -11,6 +11,11 @@ FactoryBot.define do
 
     trait :with_slack do
       association :providable, factory: [:slack_integration, :without_callbacks_and_validations]
+      category { "build_channel" }
+    end
+
+    trait :with_app_store do
+      association :providable, factory: [:app_store_integration, :without_callbacks_and_validations]
       category { "build_channel" }
     end
   end

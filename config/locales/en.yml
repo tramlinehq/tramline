@@ -4,8 +4,10 @@ en:
       slack_integration: "Slack"
       bitrise_integration: "Bitrise"
       google_play_store_integration: "Google Play Store"
+      app_store_integration: "TestFlight"
       gitlab_integration: "GitLab"
       github_integration: "GitHub"
+      deployment: "Distribution"
     attributes:
       bitrise_integration:
         access_token: "bitrise personal access token"
@@ -20,6 +22,10 @@ en:
       models:
         integration:
           format: "%{message}"
+        app_store_integration:
+          attributes:
+            key_id:
+              no_app_found: "we could not verify the bundle identifier against the credentials, please check!"
         bitrise_integration:
           attributes:
             access_token:

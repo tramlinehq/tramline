@@ -6,9 +6,22 @@ FactoryBot.define do
     bundle_identifier { "com.example.com" }
     build_number { Faker::Number.number(digits: 4) }
 
-    after(:create) do |app, _|
-      create(:integration, category: "version_control", providable: create(:github_integration), app:)
-      create(:integration, category: "ci_cd", providable: create(:github_integration), app:)
+    trait :android do
+      platform { "android" }
+      after(:create) do |app, _|
+        create(:integration, category: "version_control", providable: create(:github_integration), app:)
+        create(:integration, category: "ci_cd", providable: create(:github_integration), app:)
+        create(:integration, :with_google_play_store, app:)
+      end
+    end
+
+    trait :ios do
+      platform { "ios" }
+      after(:create) do |app, _|
+        create(:integration, category: "version_control", providable: create(:github_integration), app:)
+        create(:integration, category: "ci_cd", providable: create(:bitrise_integration, :without_callbacks_and_validations), app:)
+        create(:integration, :with_app_store, app:)
+      end
     end
 
     after(:build) do |app, _|

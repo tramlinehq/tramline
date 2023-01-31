@@ -20,21 +20,27 @@ module ReleasesHelper
       when :ci_workflow_triggered, :on_track
         ["Waiting for CI", %w[bg-sky-100 text-sky-600]]
       when :ci_workflow_started
-        ["In Progress", %w[bg-sky-100 text-sky-600]]
-      when :build_ready, :deployment_started
-        ["Deployments Pending", %w[bg-indigo-100 text-indigo-600]]
+        ["In progress", %w[bg-sky-100 text-sky-600]]
+      when :build_ready
+        ["Looking for build to deploy", %w[bg-indigo-100 text-indigo-600]]
+      when :deployment_started
+        ["Deployments in progress", %w[bg-indigo-100 text-indigo-600]]
+      when :build_found_in_store
+        ["Build found in store", %w[bg-cyan-100 text-cyan-600]]
+      when :build_not_found_in_store
+        ["Build not found in store", %w[bg-rose-100 text-rose-600]]
       when :success
         ["Success", %w[bg-green-100 text-green-600]]
       when :ci_workflow_failed
-        ["CI Workflow Failure", %w[bg-rose-100 text-rose-600]]
+        ["CI workflow failure", %w[bg-rose-100 text-rose-600]]
       when :ci_workflow_unavailable
-        ["CI Workflow Not Found", %w[bg-rose-100 text-rose-600]]
+        ["CI workflow not found", %w[bg-rose-100 text-rose-600]]
       when :ci_workflow_halted
-        ["CI Workflow Cancelled", %w[bg-yellow-100 text-yellow-600]]
+        ["CI workflow cancelled", %w[bg-yellow-100 text-yellow-600]]
       when :build_unavailable
-        ["Build Unavailable", %w[bg-rose-100 text-rose-600]]
+        ["Build unavailable", %w[bg-rose-100 text-rose-600]]
       when :deployment_failed
-        ["Deployment Failed", %w[bg-rose-100 text-rose-600]]
+        ["Deployment failed", %w[bg-rose-100 text-rose-600]]
       else
         ["Unknown", %w[bg-slate-100 text-slate-500]]
       end
@@ -46,13 +52,15 @@ module ReleasesHelper
     display_data =
       case deployment_run.status.to_sym
       when :created
-        ["About To Start", %w[bg-amber-100 text-amber-600]]
+        ["About to start", %w[bg-amber-100 text-amber-600]]
       when :started
         ["Running", %w[bg-indigo-100 text-indigo-600]]
+      when :submitted
+        ["Submitted for review", %w[bg-indigo-100 text-indigo-600]]
       when :uploaded
         ["Uploaded", %w[bg-slate-100 text-slate-500]]
       when :upload_failed
-        ["Upload Failed", %w[bg-rose-100 text-rose-600]]
+        ["Upload failed", %w[bg-rose-100 text-rose-600]]
       when :released
         ["Released", %w[bg-green-100 text-green-600]]
       when :failed

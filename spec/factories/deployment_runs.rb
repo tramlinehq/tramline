@@ -5,8 +5,16 @@ FactoryBot.define do
     status { "created" }
     scheduled_at { Time.current }
 
+    trait :created do
+      status { "created" }
+    end
+
     trait :started do
       status { "started" }
+    end
+
+    trait :submitted do
+      status { "submitted" }
     end
 
     trait :uploaded do
@@ -29,4 +37,13 @@ FactoryBot.define do
       deployment { association :deployment, :with_slack, step: step_run.step }
     end
   end
+end
+
+def create_deployment_run_for_ios(trait, step_run_trait: :deployment_started)
+  app = create(:app, :ios)
+  train = create(:releases_train, app: app)
+  step = create(:releases_step, :with_deployment, train: train)
+  deployment = create(:deployment, integration: train.build_channel_integrations.first, step: step)
+  step_run = create(:releases_step_run, step_run_trait, step: step)
+  create(:deployment_run, trait, deployment: deployment, step_run: step_run)
 end

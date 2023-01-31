@@ -16,7 +16,7 @@
   <div data-controller="nested-form-ext" data-nested-form-ext-list-position-outlet="#deployments">
     <div class="sm:flex sm:justify-between sm:items-center mt-8 mb-2 pb-5">
       <p class="font-bold text-xl">
-        Where should we deploy?
+        How should we distribute?
       </p>
 
       <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
@@ -32,8 +32,8 @@
 
     <div class="pb-5">
       <%= render "shared/note_box",
-                 message: "The generated build artifact above will be moved across the configured deployment
-                 channels below. These deployments are ordered and can be moved around." %>
+                 message: "The generated build artifact above will be moved across the configured #{Deployment.display.downcase}
+                 channels below. These #{Deployment.display.downcase} are ordered and can be moved around." %>
     </div>
 
     <div class="flex flex-row gap-4 mb-5">

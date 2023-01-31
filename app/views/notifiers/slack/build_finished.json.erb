@@ -7,6 +7,7 @@
         "text": ":rocket: *New build is available!*"
       }
     },
+    <% if @artifacts_url %>
     {
       "type": "section",
       "text": {
@@ -14,6 +15,7 @@
         "text": "*<<%= @artifacts_url %>|Build Artifact>*"
       }
     },
+    <% end %>
     {
       "type": "section",
       "text": {

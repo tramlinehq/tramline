@@ -4,15 +4,16 @@
 #
 #  id                :uuid             not null, primary key
 #  build_number      :bigint           not null
-#  bundle_identifier :string           not null, indexed => [organization_id]
+#  bundle_identifier :string           not null, indexed => [platform, organization_id]
 #  description       :string
 #  name              :string           not null
-#  platform          :string           not null
+#  platform          :string           not null, indexed => [bundle_identifier, organization_id]
 #  slug              :string
 #  timezone          :string           not null
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
-#  organization_id   :uuid             not null, indexed => [bundle_identifier], indexed
+#  external_id       :string
+#  organization_id   :uuid             not null, indexed, indexed => [platform, bundle_identifier]
 #
 class App < ApplicationRecord
   has_paper_trail
@@ -21,6 +22,8 @@ class App < ApplicationRecord
 
   GOOGLE_PLAY_STORE_URL_TEMPLATE =
     Addressable::Template.new("https://play.google.com/store/apps/details{?query*}")
+  APP_STORE_URL_TEMPLATE =
+    Addressable::Template.new("https://apps.apple.com/app/ueno/id{id}")
 
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
   has_one :config, class_name: "AppConfig", dependent: :destroy
@@ -29,7 +32,7 @@ class App < ApplicationRecord
   has_many :sign_off_groups, dependent: :destroy
 
   validate :no_trains_are_running, on: :update
-  validates :bundle_identifier, uniqueness: {scope: :organization_id}
+  validates :bundle_identifier, uniqueness: {scope: [:platform, :organization_id]}
   validates :build_number, numericality: {greater_than_or_equal_to: :build_number_was}, on: :update
   validates :build_number, numericality: {less_than: 2100000000}, if: -> { android? }
 
@@ -38,7 +41,6 @@ class App < ApplicationRecord
   accepts_nested_attributes_for :sign_off_groups, allow_destroy: true, reject_if: :reject_sign_off_groups?
 
   after_initialize :initialize_config, if: :new_record?
-  after_initialize :set_default_platform, if: :new_record?
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
   end
@@ -46,15 +48,25 @@ class App < ApplicationRecord
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
 
-  delegate :vcs_provider, to: :integrations, allow_nil: true
-  delegate :ci_cd_provider, to: :integrations, allow_nil: true
-  delegate :notification_provider, to: :integrations, allow_nil: true
-  delegate :slack_build_channel_provider, to: :integrations, allow_nil: true
+  delegate :vcs_provider, :ci_cd_provider, :notification_provider, to: :integrations, allow_nil: true
 
   scope :with_trains, -> { joins(:trains).distinct }
 
   def runs
     Releases::Train::Run.joins(train: :app).where(train: {app: self})
+  end
+
+  def self.allowed_platforms(current_user)
+    if Flipper.enabled?(:ios_apps_allowed, current_user)
+      {
+        android: "Android",
+        ios: "iOS"
+      }.invert
+    else
+      {
+        android: "Android"
+      }.invert
+    end
   end
 
   def active_runs
@@ -77,7 +89,7 @@ class App < ApplicationRecord
     if android?
       GOOGLE_PLAY_STORE_URL_TEMPLATE.expand(query: {id: bundle_identifier}).to_s
     else
-      +""
+      APP_STORE_URL_TEMPLATE.expand(id: external_id).to_s
     end
   end
 
@@ -122,11 +134,11 @@ class App < ApplicationRecord
     Flipper.enabled?(:sign_offs, self)
   end
 
-  private
-
-  def set_default_platform
-    self.platform = App.platforms[:android]
+  def set_external_details(external_id)
+    update(external_id: external_id)
   end
+
+  private
 
   def initialize_config
     build_config

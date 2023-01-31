@@ -13,6 +13,7 @@ AllCops:
   TargetRubyVersion: 3.1
   NewCops: enable
   Exclude:
+    - .irbrc
     - bin/**/*
     - bundle/**/*
     - public/**/*
@@ -49,6 +50,9 @@ RSpec/MultipleExpectations:
 
 RSpec/MultipleMemoizedHelpers:
   Max: 10
+
+RSpec/MessageChain:
+  Enabled: false
 
 Performance:
   Enabled: true

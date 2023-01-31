@@ -40,10 +40,21 @@ FactoryBot.define do
       status { "build_available" }
     end
 
+    trait :build_found_in_store do
+      status { "build_found_in_store" }
+    end
+
     trait :with_build_artifact do
       after(:create) do |step_run, _|
         create(:build_artifact, step_run: step_run)
       end
     end
   end
+end
+
+def create_step_run_for_ios(trait)
+  app = create(:app, :ios)
+  train = create(:releases_train, app: app)
+  step = create(:releases_step, :with_deployment, train: train)
+  create(:releases_step_run, trait, step: step)
 end

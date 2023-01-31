@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_01_19_121126) do
+ActiveRecord::Schema[7.0].define(version: 2023_01_31_071237) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -54,6 +54,14 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_19_121126) do
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
+  create_table "app_store_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "key_id"
+    t.string "p8_key"
+    t.string "issuer_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "organization_id", null: false
     t.string "name", null: false
@@ -65,8 +73,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_19_121126) do
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["bundle_identifier", "organization_id"], name: "index_apps_on_bundle_identifier_and_organization_id", unique: true
+    t.string "external_id"
     t.index ["organization_id"], name: "index_apps_on_organization_id"
+    t.index ["platform", "bundle_identifier", "organization_id"], name: "index_apps_on_platform_and_bundle_id_and_org_id", unique: true
   end
 
   create_table "bitrise_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -110,6 +119,19 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_19_121126) do
     t.index ["deployment_number", "train_step_id"], name: "index_deployments_on_deployment_number_and_train_step_id", unique: true
     t.index ["integration_id"], name: "index_deployments_on_integration_id"
     t.index ["train_step_id"], name: "index_deployments_on_train_step_id"
+  end
+
+  create_table "external_builds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "deployment_run_id", null: false
+    t.string "name"
+    t.string "build_number"
+    t.string "status"
+    t.datetime "added_at", precision: nil
+    t.integer "size_in_bytes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "external_id"
+    t.index ["deployment_run_id"], name: "index_external_builds_on_deployment_run_id"
   end
 
   create_table "flipper_features", force: :cascade do |t|
@@ -428,6 +450,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_19_121126) do
   add_foreign_key "deployment_runs", "deployments"
   add_foreign_key "deployment_runs", "train_step_runs"
   add_foreign_key "deployments", "train_steps"
+  add_foreign_key "external_builds", "deployment_runs"
   add_foreign_key "integrations", "apps"
   add_foreign_key "invites", "organizations"
   add_foreign_key "invites", "users", column: "recipient_id"
