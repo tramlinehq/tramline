@@ -81,7 +81,6 @@ group :development, :test do
   gem "rubocop-rspec", require: false
   gem "rubocop-performance", require: false
   gem "stateoscope"
-  gem "rails-erd"
 end
 
 group :development do
