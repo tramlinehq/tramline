@@ -12,11 +12,22 @@ describe Queries::AllBuilds, type: :model do
         app
       end
 
+      expected_keys = [
+        :version_name,
+        :version_code,
+        :build_generated_at,
+        :release_status,
+        :step_status,
+        :was_released,
+        :train_name,
+        :step_name
+      ]
+
       expect(apps[0].all_builds.first.keys)
-        .to contain_exactly(:version_name, :version_code, :build_generated_at, :train_name, :step_name)
+        .to contain_exactly(*expected_keys)
 
       expect(apps[1].all_builds.first.keys)
-        .to contain_exactly(:version_name, :version_code, :build_generated_at, :train_name, :step_name)
+        .to contain_exactly(*expected_keys)
     end
   end
 end

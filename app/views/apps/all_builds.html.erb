@@ -1,0 +1,95 @@
+<% breadcrumb @app %>
+
+<div class="sm:flex sm:justify-between sm:items-center mb-8">
+  <div class="mb-4 sm:mb-0">
+    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">All Builds 🔧</h1>
+  </div>
+</div>
+
+<table class="table-auto w-full">
+  <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+  <tr>
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">Version Name</div>
+    </th>
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">Version Code</div>
+    </th>
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">Generated On</div>
+    </th>
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">Was Released?</div>
+    </th>
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">Step</div>
+    </th>
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">Step Status</div>
+    </th>
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">Train</div>
+    </th>
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">Train Status</div>
+    </th>
+  </tr>
+  </thead>
+
+  <tbody class="text-sm divide-y divide-slate-200">
+  <% @all_builds.each do |build| %>
+    <tr>
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="flex items-center">
+          <div class="font-medium text-slate-800">
+            <%= build[:version_name] %>
+          </div>
+        </div>
+      </td>
+
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="text-left">
+          <%= build[:version_code] %>
+        </div>
+      </td>
+
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="text-left">
+          <%= build[:build_generated_at] %>
+        </div>
+      </td>
+
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="text-left">
+          <%= build[:was_released] %>
+        </div>
+      </td>
+
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="text-left">
+          <%= build[:train_name] %>
+        </div>
+      </td>
+
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="text-left">
+          <%= build[:release_status] %>
+        </div>
+      </td>
+
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="text-left">
+          <%= build[:step_name] %>
+        </div>
+      </td>
+
+
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="text-left">
+          <%= build[:step_status] %>
+        </div>
+      </td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>

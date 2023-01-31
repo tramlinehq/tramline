@@ -22,19 +22,23 @@ class Queries::AllBuilds
 
   def results
     GitHub::SQL.results <<~SQL.squish, app_id: app.id
-      SELECT 
-        SR.build_version AS version_name,
-        SR.build_number AS version_code,
-        BA.generated_at AS build_generated_at,
-        T.name AS train_name,
-        S.name AS step_name
-      FROM 
-        build_artifacts BA 
-        INNER JOIN train_step_runs SR ON BA.train_step_runs_id = SR.id
-        INNER JOIN train_runs TR ON SR.train_run_id = TR.id
-        INNER JOIN train_steps S ON SR.train_step_id = S.id
-        INNER JOIN trains T ON S.train_id = T.id
-        INNER JOIN apps A ON T.app_id = A.id
+      SELECT SR.build_version AS version_name,
+             SR.build_number AS version_code,
+             BA.generated_at AS build_generated_at,
+             TR.status AS release_status,
+             SR.status AS step_status,
+             CASE
+                 WHEN TR.status = 'success' THEN 'Released'
+                 ELSE 'Unreleased'
+             END AS was_released,
+             T.name AS train_name,
+             S.name AS step_name
+      FROM build_artifacts BA
+      INNER JOIN train_step_runs SR ON BA.train_step_runs_id = SR.id
+      INNER JOIN train_runs TR ON SR.train_run_id = TR.id
+      INNER JOIN train_steps S ON SR.train_step_id = S.id
+      INNER JOIN trains T ON S.train_id = T.id
+      INNER JOIN apps A ON T.app_id = A.id
       WHERE a.id = :app_id
     SQL
   end
@@ -44,6 +48,9 @@ class Queries::AllBuilds
       :version_name,
       :version_code,
       :build_generated_at,
+      :release_status,
+      :step_status,
+      :was_released,
       :train_name,
       :step_name
     ]

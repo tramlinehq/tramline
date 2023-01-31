@@ -48,6 +48,10 @@ Rails.application.routes.draw do
     resource :app_config, only: %i[edit update], path: :config
     resource :sign_off_groups, only: %i[edit update]
 
+    member do
+      get :all_builds
+    end
+
     resources :trains, only: %i[new create edit update show destroy] do
       member do
         patch :deactivate

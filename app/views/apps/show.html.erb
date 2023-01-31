@@ -59,6 +59,10 @@
         <span>Delete</span>
       <% end %>
     <% end %>
+
+    <%= authz_link_to :neutral, all_builds_app_path(@app) do %>
+      <span class="ml-2">All Builds</span>
+    <% end %>
   </div>
 </div>
 
