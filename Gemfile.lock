@@ -309,6 +309,7 @@ GEM
     os (1.1.4)
     ougai (2.0.0)
       oj (~> 3.10)
+    pagy (6.0.1)
     paper_trail (12.3.0)
       activerecord (>= 5.2)
       request_store (~> 1.1)
@@ -593,6 +594,7 @@ DEPENDENCIES
   octokit (~> 4.22)
   oj (~> 3.13)
   ougai (~> 2.0)
+  pagy (~> 6.0)
   paper_trail (~> 12.2)
   pg (~> 1.1)
   pg_query
