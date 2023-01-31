@@ -23,6 +23,7 @@ class AppStoreIntegration < ApplicationRecord
   include Loggable
 
   delegate :app, to: :integration
+  delegate :cache, to: Rails
 
   validate :correct_key, on: :create
 
@@ -81,7 +82,15 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def build_channels
-    installation.external_groups(CHANNELS_TRANSFORMATIONS).map { |channel| channel.slice(:id, :name) }
+    cache.fetch(build_channels_cache_key, expires_in: 1.hour) do
+      installation
+        .external_groups(CHANNELS_TRANSFORMATIONS)
+        .map { |channel| channel.slice(:id, :name) }
+    end
+  end
+
+  def build_channels_cache_key
+    "app/#{app.id}/app_store_integration/#{id}/build_channels"
   end
 
   def to_s

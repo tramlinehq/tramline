@@ -17,6 +17,9 @@ class SlackIntegration < ApplicationRecord
   include Displayable
   include Rails.application.routes.url_helpers
 
+  delegate :app, to: :integration
+  delegate :cache, to: Rails
+
   attr_accessor :code
 
   before_create :complete_access
@@ -57,7 +60,13 @@ class SlackIntegration < ApplicationRecord
   end
 
   def build_channels
-    channels.map { |channel| channel.slice(:id, :name) }
+    cache.fetch(build_channels_cache_key, expires_in: 30.minutes) do
+      channels.map { |channel| channel.slice(:id, :name) }
+    end
+  end
+
+  def build_channels_cache_key
+    "app/#{app.id}/slack_integration/#{id}/build_channels"
   end
 
   def installation
