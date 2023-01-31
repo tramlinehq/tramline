@@ -11,7 +11,7 @@ FactoryBot.define do
       after(:create) do |app, _|
         create(:integration, category: "version_control", providable: create(:github_integration), app:)
         create(:integration, category: "ci_cd", providable: create(:github_integration), app:)
-        create(:integration, category: "build_channel", providable: create(:google_play_store_integration, :without_callbacks_and_validations), app:)
+        create(:integration, :with_google_play_store, app:)
       end
     end
 
@@ -20,7 +20,7 @@ FactoryBot.define do
       after(:create) do |app, _|
         create(:integration, category: "version_control", providable: create(:github_integration), app:)
         create(:integration, category: "ci_cd", providable: create(:bitrise_integration, :without_callbacks_and_validations), app:)
-        create(:integration, category: "build_channel", providable: create(:app_store_integration, :without_callbacks_and_validations), app:)
+        create(:integration, :with_app_store, app:)
       end
     end
 

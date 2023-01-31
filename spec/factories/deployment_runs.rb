@@ -36,10 +36,6 @@ FactoryBot.define do
     trait :with_slack do
       deployment { association :deployment, :with_slack, step: step_run.step }
     end
-
-    trait :with_app_store do
-      deployment { association :deployment, :with_app_store, step: step_run.step }
-    end
   end
 end
 
