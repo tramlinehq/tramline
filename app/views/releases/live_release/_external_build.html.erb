@@ -3,14 +3,14 @@
     <%= image_tag("integrations/logo_testflight.png", class: "inline-flex", width: 20) %>
 
     <div class="p-1">
-      version
+      Version
       <span class="font-mono"><%= deployment_run.external_build.name %></span>
-      • build
+      • Build
       <span class="font-mono"><%= deployment_run.external_build.build_number %></span>
     </div>
 
     <div class="p-1">
-      <%= "added to TestFlight " + ago_in_words(deployment_run.external_build.added_at) %>
+      <%= "Added to TestFlight " + ago_in_words(deployment_run.external_build.added_at) %>
     </div>
 
     <div class="p-1">
@@ -18,6 +18,10 @@
       <span class="bg-slate-400 rounded-full py-1 px-2 text-xs text-white">
         <%= deployment_run.external_build.status.titleize.upcase %>
       </span>
+    </div>
+
+    <div class="p-1">
+      <%= link_to_external "Testflight build ↗", deployment_run.external_build.store_link, class: "underline" %>
     </div>
   </div>
 <% end %>

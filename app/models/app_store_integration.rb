@@ -35,6 +35,7 @@ class AppStoreIntegration < ApplicationRecord
   }
 
   BUILD_TRANSFORMATIONS = {
+    external_id: :id,
     name: :version_string,
     build_number: :build_number,
     status: :beta_external_state,
