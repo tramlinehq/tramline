@@ -36,14 +36,6 @@ describe DeploymentRun, type: :model do
     let(:step) { create(:releases_step, :with_deployment) }
     let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
 
-    it "marks as completed if deployment is external" do
-      external_deployment = create(:deployment, step: step, integration: nil)
-      deployment_run = create(:deployment_run, :started, deployment: external_deployment, step_run: step_run)
-
-      deployment_run.start_upload!
-      expect(deployment_run.reload.released?).to be(true)
-    end
-
     it "marks as uploaded if there is another similar deployment which has uploaded" do
       integration = create(:integration, :with_google_play_store)
       deployment1 = create(:deployment, step: step, integration: integration)

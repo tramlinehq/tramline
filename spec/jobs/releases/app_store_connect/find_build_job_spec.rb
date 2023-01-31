@@ -12,6 +12,10 @@ describe Releases::AppStoreConnect::FindBuildJob do
       }
     }
 
+    before do
+      create(:deployment, step: step_run.step, integration: step_run.train.build_channel_integrations.first)
+    end
+
     it "finds the build for the step run and updates step run status" do
       allow_any_instance_of(Installations::Apple::AppStoreConnect::Api).to receive(:find_build).and_return(build_info)
 
