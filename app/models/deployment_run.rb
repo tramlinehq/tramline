@@ -204,8 +204,6 @@ class DeploymentRun < ApplicationRecord
 
   # FIXME: should we take a lock around this SR? what is someone double triggers the run?
   def start_upload!
-    return complete! if external?
-
     # TODO: simplify this logic
     if store?
       other_deployment_runs = step_run.similar_deployment_runs_for(self)
@@ -254,6 +252,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def after_dispatch
+    return complete! if external?
     return start_distribution! if ios?
     start_upload!
   end
