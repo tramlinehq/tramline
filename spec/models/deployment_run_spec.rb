@@ -6,29 +6,90 @@ describe DeploymentRun, type: :model do
   end
 
   describe "#dispatch!" do
-    let(:step) { create(:releases_step, :with_deployment) }
-    let(:step_run) { create(:releases_step_run, :build_available, step: step) }
+    context "when any platform" do
+      let(:step) { create(:releases_step, :with_deployment) }
+      let(:step_run) { create(:releases_step_run, :build_available, step: step) }
 
-    it "marks the step run as deployment_started if first deployment regardless of order" do
-      deployment1 = step.deployments.first
-      deployment2 = create(:deployment, step: step)
-      deployment_run2 = create(:deployment_run, :created, deployment: deployment2, step_run: step_run)
+      it "marks the step run as deployment_started if first deployment regardless of order" do
+        deployment1 = step.deployments.first
+        deployment2 = create(:deployment, step: step)
+        deployment_run2 = create(:deployment_run, :created, deployment: deployment2, step_run: step_run)
 
-      deployment_run2.dispatch!
-      _deployment_run1 = create(:deployment_run, :created, deployment: deployment1, step_run: step_run)
+        deployment_run2.dispatch!
+        _deployment_run1 = create(:deployment_run, :created, deployment: deployment1, step_run: step_run)
 
-      expect(step_run.reload.deployment_started?).to be(true)
+        expect(step_run.reload.deployment_started?).to be(true)
+      end
+
+      it "does not change the step run if not the first deployment" do
+        deployment1 = step.deployments.first
+        deployment2 = create(:deployment, step: step)
+        _deployment_run1 = create(:deployment_run, :created, deployment: deployment1, step_run: step_run)
+        deployment_run2 = create(:deployment_run, :created, deployment: deployment2, step_run: step_run)
+
+        deployment_run2.dispatch!
+
+        expect(step_run.reload.deployment_started?).not_to be(true)
+      end
     end
 
-    it "does not change the step run if not the first deployment" do
-      deployment1 = step.deployments.first
-      deployment2 = create(:deployment, step: step)
-      _deployment_run1 = create(:deployment_run, :created, deployment: deployment1, step_run: step_run)
-      deployment_run2 = create(:deployment_run, :created, deployment: deployment2, step_run: step_run)
+    context "when android" do
+      let(:step) { create(:releases_step, :with_deployment) }
+      let(:step_run) { create(:releases_step_run, :build_available, step: step) }
 
-      deployment_run2.dispatch!
+      it "marks as completed if deployment is external" do
+        external_deployment = create(:deployment, step: step, integration: nil)
+        deployment_run = create(:deployment_run, :created, deployment: external_deployment, step_run: step_run)
 
-      expect(step_run.reload.deployment_started?).not_to be(true)
+        deployment_run.dispatch!
+        expect(deployment_run.reload.released?).to be(true)
+      end
+
+      it "starts upload for play store if deployment has google play store integration" do
+        play_upload_job = Deployments::GooglePlayStore::Upload
+        deployment = create(:deployment, integration: step.train.build_channel_integrations.first, step: step)
+        deployment_run = create(:deployment_run, :created, deployment: deployment, step_run: step_run)
+        allow(play_upload_job).to receive(:perform_later)
+
+        deployment_run.dispatch!
+        expect(play_upload_job).to have_received(:perform_later).with(deployment_run.id).once
+      end
+
+      it "starts deploy for slack if deployment has slack integration" do
+        slack_deploy_job = Deployments::Slack
+        slack_integration = create(:integration, :with_slack, app: step.app)
+        deployment = create(:deployment, integration: slack_integration, step: step)
+        deployment_run = create(:deployment_run, :created, deployment: deployment, step_run: step_run)
+        allow(slack_deploy_job).to receive(:perform_later)
+
+        deployment_run.dispatch!
+        expect(slack_deploy_job).to have_received(:perform_later).with(deployment_run.id).once
+      end
+    end
+
+    context "when ios" do
+      let(:app) { create(:app, :ios) }
+      let(:train) { create(:releases_train, app: app) }
+      let(:step) { create(:releases_step, :with_deployment, train: train) }
+      let(:step_run) { create(:releases_step_run, :build_found_in_store, step: step) }
+
+      it "marks as completed if deployment is external" do
+        external_deployment = create(:deployment, step: step, integration: nil)
+        deployment_run = create(:deployment_run, :created, deployment: external_deployment, step_run: step_run)
+
+        deployment_run.dispatch!
+        expect(deployment_run.reload.released?).to be(true)
+      end
+
+      it "starts distribution if deployment has app store integration" do
+        promote_to_testflight_job = Deployments::AppStoreConnect::TestFlightPromoteJob
+        deployment = create(:deployment, integration: train.build_channel_integrations.first, step: step)
+        deployment_run = create(:deployment_run, :created, deployment: deployment, step_run: step_run)
+        allow(promote_to_testflight_job).to receive(:perform_later)
+
+        deployment_run.dispatch!
+        expect(promote_to_testflight_job).to have_received(:perform_later).with(deployment_run.id).once
+      end
     end
   end
 
