@@ -90,6 +90,7 @@ group :development do
   gem "awesome_print"
   gem "annotate"
   gem "stateoscope"
+  gem "rails-erd"
 end
 
 group :test do
