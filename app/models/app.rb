@@ -52,8 +52,8 @@ class App < ApplicationRecord
 
   scope :with_trains, -> { joins(:trains).distinct }
 
-  def all_builds
-    Queries::AllBuilds.call(app: self)
+  def all_builds(column:, direction:)
+    Queries::AllBuilds.call(app: self, column:, direction:)
   end
 
   def runs

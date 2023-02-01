@@ -1,2 +1,9 @@
 <% breadcrumb @app %>
-<%= render AllBuildsTableComponent.new(app: @app) %>
+<%= render(
+      AllBuildsTableComponent.new(
+        app: @app,
+        path: @path,
+        sort_column: @sort_column,
+        sort_direction: @sort_direction
+      )
+    ) %>

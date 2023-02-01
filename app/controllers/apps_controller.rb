@@ -57,6 +57,9 @@ class AppsController < SignedInApplicationController
   end
 
   def all_builds
+    @path = nil
+    @sort_column = params[:sort_column]
+    @sort_direction = params[:sort_direction]
   end
 
   private
