@@ -518,6 +518,10 @@ GEM
       unf_ext
     unf_ext (0.0.8.2)
     unicode-display_width (2.4.1)
+    view_component (2.82.0)
+      activesupport (>= 5.2.0, < 8.0)
+      concurrent-ruby (~> 1.0)
+      method_source (~> 1.0)
     warden (1.2.9)
       rack (>= 2.0.9)
     web-console (4.2.0)
@@ -631,6 +635,7 @@ DEPENDENCIES
   tailwindcss-rails (~> 2.0)
   turbo-rails (~> 1.0)
   tzinfo-data (~> 1.2021)
+  view_component (~> 2.82)
   web-console
   webdrivers
 

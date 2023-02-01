@@ -57,7 +57,6 @@ class AppsController < SignedInApplicationController
   end
 
   def all_builds
-    @all_builds = @app.all_builds
   end
 
   private
