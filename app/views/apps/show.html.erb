@@ -82,6 +82,10 @@
       <%= render partial: "setup_progress", locals: { setup_instructions: @setup_instructions } %>
     <% end %>
 
+    <% if @app.latest_external_app %>
+      <%= render partial: "external_app", locals: { app: @app.latest_external_app } %>
+    <% end %>
+
     <% if @app.trains.any? %>
       <% active_runs = @app.active_runs %>
       <% if active_runs.present? %>

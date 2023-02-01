@@ -27,6 +27,7 @@ class App < ApplicationRecord
 
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
   has_one :config, class_name: "AppConfig", dependent: :destroy
+  has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :integrations, inverse_of: :app, dependent: :destroy
   has_many :trains, class_name: "Releases::Train", dependent: :destroy
   has_many :sign_off_groups, dependent: :destroy
@@ -136,6 +137,17 @@ class App < ApplicationRecord
 
   def set_external_details(external_id)
     update(external_id: external_id)
+  end
+
+  def create_external
+    return unless integrations.any?(&:store?)
+
+    external_apps.create(channel_data: integrations.find(&:store?).providable.channel_data,
+      fetched_at: Time.current)
+  end
+
+  def latest_external_app
+    external_apps.order(fetched_at: :desc).first
   end
 
   private

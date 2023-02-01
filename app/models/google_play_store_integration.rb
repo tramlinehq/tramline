@@ -22,6 +22,11 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   attr_accessor :json_key_file
 
+  after_create_commit :create_external_app
+  def create_external_app
+    app.create_external
+  end
+
   CHANNELS = [
     {id: :production, name: "production"},
     {id: :beta, name: "open testing"},
@@ -84,6 +89,15 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def build_channels
     channels.map { |channel| channel.slice(:id, :name) }
+  end
+
+  CHANNEL_DATA_TRANSFORMATIONS = {
+    name: :track,
+    releases: :releases
+  }
+
+  def channel_data
+    installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS)
   end
 
   def correct_key

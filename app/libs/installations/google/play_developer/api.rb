@@ -46,6 +46,16 @@ module Installations
       end
     end
 
+    def list_tracks(transforms)
+      execute do
+        edit = client.insert_edit(package_name)
+        client.list_edit_tracks(package_name, edit.id)
+          &.tracks
+          &.map { |t| t.to_h }
+          &.then { |tracks| Installations::Response::Keys.transform(tracks, transforms) }
+      end
+    end
+
     def edit_track(edit, track_name, version_code, release_version, rollout_percentage)
       client.update_edit_track(
         package_name,

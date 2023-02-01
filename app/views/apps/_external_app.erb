@@ -1,0 +1,29 @@
+<h3 class="text-xl font-semibold">Current status in store</h3>
+<span class="text-sm text-slate-400">Last fetched <%= ago_in_words app.fetched_at %></span>
+
+<table class="table-auto w-full">
+  <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+  <tr>
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">Name</div>
+    </th>
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+      <div class="font-semibold text-left">Releases</div>
+    </th>
+  </tr>
+  </thead>
+  <tbody class="text-sm divide-y divide-slate-200">
+  <% app.channels.each do |channel| %>
+    <tr>
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <span><%= channel[:name] %></span>
+      </td>
+      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <% channel[:releases].each do |release| %>
+          <div class="text-left"><%= release %></div>
+        <% end %>
+      </td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>

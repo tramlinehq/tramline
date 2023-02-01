@@ -85,6 +85,10 @@ class AppStoreIntegration < ApplicationRecord
     installation.add_build_to_group(beta_group_id, build_number)
   end
 
+  def channel_data
+    raise NotImplementedError
+  end
+
   def build_channels
     cache.fetch(build_channels_cache_key, expires_in: 1.hour) do
       installation
