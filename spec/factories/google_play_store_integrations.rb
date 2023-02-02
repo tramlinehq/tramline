@@ -6,7 +6,7 @@ FactoryBot.define do
       to_create { |instance| instance.save(validate: false) }
 
       after(:build) do |integration|
-        def integration.create_external_app
+        def integration.refresh_external_app
         end
       end
     end

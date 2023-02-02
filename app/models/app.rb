@@ -141,13 +141,19 @@ class App < ApplicationRecord
 
   def create_external
     return unless integrations.any?(&:store?)
+    external_app_data = integrations.find(&:store?).providable.channel_data
 
-    external_apps.create(channel_data: integrations.find(&:store?).providable.channel_data,
-      fetched_at: Time.current)
+    if latest_external_app&.channel_data != external_app_data
+      external_apps.create(channel_data: external_app_data, fetched_at: Time.current)
+    end
   end
 
   def latest_external_app
     external_apps.order(fetched_at: :desc).first
+  end
+
+  def refresh_external_app
+    RefreshExternalAppJob.perform_later(id)
   end
 
   private

@@ -24,17 +24,14 @@ class AppStoreIntegration < ApplicationRecord
 
   delegate :app, to: :integration
   delegate :cache, to: Rails
+  delegate :refresh_external_app, to: :app
 
   validate :correct_key, on: :create
   before_create :set_external_details_on_app
 
   attr_accessor :p8_key_file
 
-  after_create_commit :create_external_app
-
-  def create_external_app
-    app.create_external
-  end
+  after_create_commit :refresh_external_app
 
   CHANNELS_TRANSFORMATIONS = {
     id: :id,

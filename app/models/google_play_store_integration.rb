@@ -17,16 +17,13 @@ class GooglePlayStoreIntegration < ApplicationRecord
   include Loggable
 
   delegate :app, to: :integration
+  delegate :refresh_external_app, to: :app
 
   validate :correct_key, on: :create
 
   attr_accessor :json_key_file
 
-  after_create_commit :create_external_app
-
-  def create_external_app
-    app.create_external
-  end
+  after_create_commit :refresh_external_app
 
   CHANNELS = [
     {id: :production, name: "production"},
