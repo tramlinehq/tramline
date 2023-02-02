@@ -49,7 +49,9 @@ class AppStoreIntegration < ApplicationRecord
     bundle_id: :bundle_id
   }
 
-  raise InvalidBuildTransformations if Set.new(BUILD_TRANSFORMATIONS.keys) != Set.new(ExternalBuild.minimum_required)
+  if Set.new(BUILD_TRANSFORMATIONS.keys) != Set.new(ExternalBuild.minimum_required)
+    raise InvalidBuildTransformations
+  end
 
   def access_key
     OpenSSL::PKey::EC.new(p8_key)
@@ -172,6 +174,8 @@ class AppStoreIntegration < ApplicationRecord
     find_app[:id]
   rescue Installations::Errors::AppNotFoundInStore
     errors.add(:key_id, :no_app_found)
+  rescue Apple::AppStoreConnect::Api::UnknownError
+    errors.add(:key_id, :unknown_error)
   end
 
   def set_external_details_on_app
