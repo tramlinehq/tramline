@@ -30,6 +30,12 @@ class AppStoreIntegration < ApplicationRecord
 
   attr_accessor :p8_key_file
 
+  after_create_commit :create_external_app
+
+  def create_external_app
+    app.create_external
+  end
+
   CHANNELS_TRANSFORMATIONS = {
     id: :id,
     name: :name
@@ -85,8 +91,13 @@ class AppStoreIntegration < ApplicationRecord
     installation.add_build_to_group(beta_group_id, build_number)
   end
 
+  CHANNEL_DATA_TRANSFORMATIONS = {
+    name: :name,
+    releases: :builds
+  }
+
   def channel_data
-    raise NotImplementedError
+    installation.current_app_status(CHANNEL_DATA_TRANSFORMATIONS)
   end
 
   def build_channels

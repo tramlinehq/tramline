@@ -23,6 +23,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   attr_accessor :json_key_file
 
   after_create_commit :create_external_app
+
   def create_external_app
     app.create_external
   end
