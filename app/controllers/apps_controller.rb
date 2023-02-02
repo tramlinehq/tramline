@@ -1,4 +1,6 @@
 class AppsController < SignedInApplicationController
+  include Pagy::Backend
+
   before_action :require_write_access!, only: %i[new create edit update destroy]
   before_action :set_app, only: %i[show edit update destroy all_builds]
   before_action :set_integrations, only: %i[show destroy]
@@ -57,9 +59,10 @@ class AppsController < SignedInApplicationController
   end
 
   def all_builds
-    @path = nil
     @sort_column = params[:sort_column]
     @sort_direction = params[:sort_direction]
+    @path = nil
+    @pagy, @builds = pagy @app.all_builds(column: @sort_column, direction: @sort_direction)
   end
 
   private

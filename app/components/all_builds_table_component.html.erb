@@ -4,7 +4,7 @@
   </div>
 </div>
 
-<%= tag.turbo_frame id: "all_builds" do %>
+<%= tag.turbo_frame id: "all_builds", target: "_top", data: { turbo_action: "advance"} do %>
   <table class="table-auto w-full">
     <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
     <tr>
@@ -39,7 +39,7 @@
     </thead>
 
     <tbody class="text-sm divide-y divide-slate-200">
-    <% all_builds.each do |build| %>
+    <% builds.each do |build| %>
       <tr>
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="flex items-center">
@@ -57,7 +57,7 @@
 
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="text-left">
-            <%= build[:build_generated_at] %>
+            <%= time_format build[:build_generated_at], with_year: true %>
           </div>
         </td>
 
@@ -88,4 +88,7 @@
     <% end %>
     </tbody>
   </table>
+
+  <%== pagy_nav(paginator) %>
+  <%== pagy_info(paginator) %>
 <% end %>
