@@ -4,12 +4,14 @@
   </div>
 </div>
 
-<%= tag.turbo_frame id: "all_builds", target: "_top", data: { turbo_action: "advance"} do %>
+<%= tag.turbo_frame id: "all_builds", target: "_top", data: { turbo_action: "advance" } do %>
   <table class="table-auto w-full">
     <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
     <tr>
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="font-semibold text-left">Version Name</div>
+        <div class="font-semibold text-left">
+          <%= sort_link(column: "version_name", label: "Version Name") %>
+        </div>
       </th>
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
@@ -24,26 +26,34 @@
         </div>
       </th>
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="font-semibold text-left">Step</div>
+        <div class="font-semibold text-left">
+          <%= sort_link(column: "train_name", label: "Train") %>
+        </div>
       </th>
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="font-semibold text-left">Step Status</div>
+        <div class="font-semibold text-left">
+          <%= sort_link(column: "release_status", label: "Release Status") %>
+        </div>
       </th>
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="font-semibold text-left">Train</div>
+        <div class="font-semibold text-left">
+          <%= sort_link(column: "step_name", label: "Step") %>
+        </div>
       </th>
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="font-semibold text-left">Train Status</div>
+        <div class="font-semibold text-left">
+          <%= sort_link(column: "step_status", label: "Step Status") %>
+        </div>
       </th>
     </tr>
     </thead>
 
     <tbody class="text-sm divide-y divide-slate-200">
     <% builds.each do |build| %>
-      <tr>
+      <tr class="hover:bg-green-600 font-normal text-slate-800">
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="flex items-center">
-            <div class="font-medium text-slate-800">
+            <div class="text-slate-800">
               <%= build[:version_name] %>
             </div>
           </div>
@@ -89,6 +99,8 @@
     </tbody>
   </table>
 
-  <%== pagy_nav(paginator) %>
-  <%== pagy_info(paginator) %>
+  <div class="p-5">
+    <%== pagy_nav(paginator) %>
+    <%== pagy_info(paginator) %>
+  </div>
 <% end %>

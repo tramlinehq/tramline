@@ -14,10 +14,20 @@ class AllBuildsTableComponent < ViewComponent::Base
 
   def sort_link(column:, label:)
     if column == @sort_column
-      link_to(label, path(column, next_direction), data: turbo_data)
+      link_to(path(column, next_direction), data: turbo_data) do
+        concat tag.span(label)
+        concat sort_indicator
+      end
     else
-      link_to(label, path(column, "asc"), data: turbo_data)
+      link_to(path(column, "asc"), data: turbo_data) do
+        concat tag.span(label)
+        concat sort_indicator
+      end
     end
+  end
+
+  def sort_indicator
+    image_tag("sort_indicator.svg", class: "inline-flex mx-2", width: 8)
   end
 
   private
@@ -31,6 +41,6 @@ class AllBuildsTableComponent < ViewComponent::Base
   end
 
   def turbo_data
-    { turbo_frame: "all_builds" }
+    {turbo_frame: "all_builds"}
   end
 end
