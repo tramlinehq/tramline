@@ -27,7 +27,7 @@ class AllBuildsTableComponent < ViewComponent::Base
   end
 
   def sort_indicator
-    image_tag("sort_indicator.svg", class: "inline-flex mx-2", width: 8)
+    image_tag("sort_indicator.svg", class: "inline-flex mx-2 align-baseline", width: 8)
   end
 
   private

@@ -1,7 +1,33 @@
-<div class="sm:flex sm:justify-between sm:items-center mb-8">
+<div class="sm:flex sm:justify-between sm:items-center mb-4">
   <div class="mb-4 sm:mb-0">
     <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">All Builds 🔧</h1>
   </div>
+</div>
+
+<div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2 mb-4">
+  <button class="inline-flex text-sm justify-end font-medium rounded-full px-3 py-2 border border-transparent border-slate-200 text-slate-600">
+    Released <span class="ml-1 opacity-70 text-indigo-200">67</span>
+  </button>
+
+  <%= render DropdownComponent.new do |component| %>
+    <% component.with_icon(classes: "") do %>
+      <svg class="w-4 h-4 fill-current text-slate-500 shrink-0 mr-2" viewBox="0 0 16 16">
+        <path d="M15 2h-2V0h-2v2H9V0H7v2H5V0H3v2H1a1 1 0 00-1 1v12a1 1 0 001 1h14a1 1 0 001-1V3a1 1 0 00-1-1zm-1 12H2V6h12v8z"/>
+      </svg>
+    <% end %>
+
+    <% component.with_main_text(classes: "pr-2") do %>
+      Select a date range...
+    <% end %>
+
+    <% component.with_menu do |menu| %>
+      <%= menu.with_item(selected: true) { "Today" } %>
+      <%= menu.with_item { "Last 7 Days" } %>
+      <%= menu.with_item { "Last Month" } %>
+      <%= menu.with_item { "Last 12 Months" } %>
+      <%= menu.with_item { "All Time" } %>
+    <% end %>
+  <% end %>
 </div>
 
 <%= tag.turbo_frame id: "all_builds", target: "_top", data: { turbo_action: "advance" } do %>
@@ -16,13 +42,6 @@
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <%= sort_link(column: "version_code", label: "Version Code") %>
-        </div>
-      </th>
-      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="font-semibold text-left">
-          <div class="font-semibold text-left">
-            <%= sort_link(column: "build_generated_at", label: "Generated on") %>
-          </div>
         </div>
       </th>
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
@@ -45,6 +64,13 @@
           <%= sort_link(column: "step_status", label: "Step Status") %>
         </div>
       </th>
+      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">
+          <div class="font-semibold text-left">
+            <%= sort_link(column: "build_generated_at", label: "Generated on") %>
+          </div>
+        </div>
+      </th>
     </tr>
     </thead>
 
@@ -62,12 +88,6 @@
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="text-left">
             <%= build[:version_code] %>
-          </div>
-        </td>
-
-        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="text-left">
-            <%= time_format build[:build_generated_at], with_year: true %>
           </div>
         </td>
 
@@ -94,13 +114,18 @@
             <%= build[:step_status] %>
           </div>
         </td>
+
+        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <div class="text-left">
+            <%= time_format build[:build_generated_at], with_year: true %>
+          </div>
+        </td>
       </tr>
     <% end %>
     </tbody>
   </table>
 
   <div class="p-5">
-    <%== pagy_nav(paginator) %>
-    <%== pagy_info(paginator) %>
+    <%= render PaginationComponent.new(results: paginator, turbo_frame: "all_builds", info: true) %>
   </div>
 <% end %>
