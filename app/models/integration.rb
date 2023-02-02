@@ -19,7 +19,7 @@ class Integration < ApplicationRecord
   belongs_to :app
 
   ALL_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration]
-  delegated_type :providable, types: ALL_TYPES
+  delegated_type :providable, types: ALL_TYPES, autosave: true, validate: false
 
   IntegrationNotImplemented = Class.new(StandardError)
   UnsupportedAction = Class.new(StandardError)
@@ -65,8 +65,7 @@ class Integration < ApplicationRecord
 
   validates :category, presence: true
   validate :allowed_integrations_for_app
-
-  validates_associated :providable, message: proc { |_p, meta| providable_error_message(meta) }
+  validate :validate_providable, on: :create
 
   attr_accessor :current_user, :code
 
@@ -161,6 +160,12 @@ class Integration < ApplicationRecord
   def allowed_integrations_for_app
     unless providable_type&.in?(ALLOWED_INTEGRATIONS_FOR_APP[platform][category])
       errors.add(:providable_type, "Provider is not allowed for app type: #{platform}")
+    end
+  end
+
+  def validate_providable
+    unless providable&.valid?
+      errors.add(:base, providable.errors.full_messages[0])
     end
   end
 end
