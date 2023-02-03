@@ -65,6 +65,7 @@ gem "fast_blank", "~> 1.0"
 gem "oj", "~> 3.13"
 gem "easymon", "~> 1.6"
 gem "github-ds", "~> 0.5.2"
+gem "activerecord_json_validator", "~> 2.1"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

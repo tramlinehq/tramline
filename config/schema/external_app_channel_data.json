@@ -1,0 +1,46 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "name",
+      "releases"
+    ],
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "releases": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "version_string",
+            "build_number",
+            "status"
+          ],
+          "properties": {
+            "version_string": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "build_number": {
+              "type": "string"
+            },
+            "release_date": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "user_fraction": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
