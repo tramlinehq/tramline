@@ -47,6 +47,7 @@ class Releases::Train::Run < ApplicationRecord
     post_release: "post_release",
     post_release_started: "post_release_started",
     post_release_failed: "post_release_failed",
+    stopped: "stopped",
     finished: "finished"
   }
 
@@ -68,6 +69,11 @@ class Releases::Train::Run < ApplicationRecord
       transitions from: :post_release_started, to: :post_release_failed
     end
 
+    event :stop do
+      before {} # mark stopped_at
+      transitions to: :stopped
+    end
+
     event :finish, after_commit: :on_finish! do
       before { self.completed_at = Time.current }
       transitions from: :post_release_started, to: :finished
@@ -78,6 +84,7 @@ class Releases::Train::Run < ApplicationRecord
   after_commit -> { create_stamp!(data: {version: release_version}) }, on: :create
 
   scope :pending_release, -> { where.not(status: :finished) }
+  scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   delegate :app, :pre_release_prs?, to: :train
 
   def tag_name
