@@ -29,6 +29,7 @@ class App < ApplicationRecord
   has_one :config, class_name: "AppConfig", dependent: :destroy
   has_many :integrations, inverse_of: :app, dependent: :destroy
   has_many :trains, class_name: "Releases::Train", dependent: :destroy
+  has_many :train_runs, through: :trains
   has_many :sign_off_groups, dependent: :destroy
 
   validate :no_trains_are_running, on: :update

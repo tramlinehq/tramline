@@ -26,7 +26,6 @@ class Queries::AllBuilds
       .joins(step_run: [{train_run: [{train: :app}]}, :step])
       .where(apps: {id: app.id})
       .order("#{column} #{direction}")
-      # .select("COUNT(1) FILTER (WHERE train_runs.status = 'finished') AS released")
       .select("train_step_runs.build_version AS version_name")
       .select("train_step_runs.build_number AS version_code")
       .select("generated_at AS build_generated_at")
