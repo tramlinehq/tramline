@@ -144,7 +144,7 @@ class App < ApplicationRecord
     external_app_data = integrations.find(&:store?).providable.channel_data
 
     if latest_external_app&.channel_data != external_app_data
-      external_apps.create(channel_data: external_app_data, fetched_at: Time.current)
+      external_apps.create!(channel_data: external_app_data, fetched_at: Time.current)
     end
   end
 

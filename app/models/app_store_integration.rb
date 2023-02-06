@@ -93,8 +93,14 @@ class AppStoreIntegration < ApplicationRecord
     releases: :builds
   }
 
+  RELEASE_TRANSFORMATION = {
+    version_string: :version_string,
+    status: :status,
+    build_number: :build_number
+  }
+
   def channel_data
-    installation.current_app_status(CHANNEL_DATA_TRANSFORMATIONS)
+    installation.current_app_status(CHANNEL_DATA_TRANSFORMATIONS, RELEASE_TRANSFORMATION)
   end
 
   def build_channels

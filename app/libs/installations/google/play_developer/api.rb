@@ -36,6 +36,7 @@ module Installations
       end
     end
 
+    # NOTE: is list_bundles too expensive an operation?
     def list_bundles
       execute do
         edit = client.insert_edit(package_name)
@@ -46,13 +47,18 @@ module Installations
       end
     end
 
-    def list_tracks(transforms)
+    def list_tracks(transforms, nested_transforms)
       execute do
         edit = client.insert_edit(package_name)
         client.list_edit_tracks(package_name, edit.id)
           &.tracks
           &.map { |t| t.to_h }
-          &.then { |tracks| Installations::Response::Keys.transform(tracks, transforms) }
+          &.then do |tracks|
+          Installations::Response::Keys.transform(tracks, transforms).map do |track|
+            track[:releases] = Installations::Response::Keys.transform(track[:releases], nested_transforms)
+            track
+          end
+        end
       end
     end
 

@@ -94,8 +94,14 @@ class GooglePlayStoreIntegration < ApplicationRecord
     releases: :releases
   }
 
+  RELEASE_TRANSFORMATION = {
+    version_string: :name,
+    status: :status,
+    build_number: [:version_codes, 0]
+  }
+
   def channel_data
-    installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS)
+    installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS, RELEASE_TRANSFORMATION)
   end
 
   def correct_key
