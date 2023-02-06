@@ -1,6 +1,7 @@
 module Installations
   class Apple::AppStoreConnect::Api
     include Vaultable
+    UnknownError = Class.new(StandardError)
 
     def initialize(bundle_id, key_id, issuer_id, key)
       @bundle_id = bundle_id
@@ -84,14 +85,19 @@ module Installations
     def execute(verb, url, params)
       response = HTTP.auth(access_token.to_s).headers(appstore_connect_headers).public_send(verb, url, params)
 
-      return if error?(response.status)
+      raise UnknownError if _5xx?(response.status)
+      return if _4xx?(response.status)
       return if no_content?(response.status)
 
       JSON.parse(response.body.to_s)
     end
 
-    def error?(code)
-      code.between?(400, 499)
+    def _5xx?(code)
+      code.between?(500, 599)
+    end
+
+    def _4xx?(code)
+      code.between?(400, 599)
     end
 
     def no_content?(code)
