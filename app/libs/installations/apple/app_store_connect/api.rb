@@ -39,15 +39,10 @@ module Installations
       execute(:patch, ADD_BUILD_TO_GROUP_URL.expand(bundle_id:, group_id: group_id).to_s, {json: {build_number: build_number}})
     end
 
-    def current_app_status(transforms, nested_transforms)
+    def current_app_status(transforms)
       execute(:get, APP_CURRENT_STATUS.expand(bundle_id:).to_s, {})
         .then { |app_data| app_data&.presence || raise(Installations::Errors::AppCurrentStatusNotFoundInStore) }
-        .then do |tracks|
-        Installations::Response::Keys.transform(tracks, transforms).map do |track|
-          track[:releases] = Installations::Response::Keys.transform(track[:releases], nested_transforms)
-          track
-        end
-      end
+        .then { |tracks| Installations::Response::Keys.transform(tracks, transforms) }
     end
 
     private

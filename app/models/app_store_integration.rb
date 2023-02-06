@@ -90,17 +90,19 @@ class AppStoreIntegration < ApplicationRecord
 
   CHANNEL_DATA_TRANSFORMATIONS = {
     name: :name,
-    releases: :builds
-  }
-
-  RELEASE_TRANSFORMATION = {
-    version_string: :version_string,
-    status: :status,
-    build_number: :build_number
+    releases: {
+      builds: {
+        version_string: :version_string,
+        status: :status,
+        build_number: :build_number,
+        id: :id,
+        release_date: :release_date
+      }
+    }
   }
 
   def channel_data
-    installation.current_app_status(CHANNEL_DATA_TRANSFORMATIONS, RELEASE_TRANSFORMATION)
+    installation.current_app_status(CHANNEL_DATA_TRANSFORMATIONS)
   end
 
   def build_channels

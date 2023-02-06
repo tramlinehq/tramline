@@ -91,17 +91,18 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   CHANNEL_DATA_TRANSFORMATIONS = {
     name: :track,
-    releases: :releases
-  }
-
-  RELEASE_TRANSFORMATION = {
-    version_string: :name,
-    status: :status,
-    build_number: [:version_codes, 0]
+    releases: {
+      releases: {
+        version_string: :name,
+        status: :status,
+        build_number: [:version_codes, 0],
+        user_fraction: :user_fraction
+      }
+    }
   }
 
   def channel_data
-    installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS, RELEASE_TRANSFORMATION)
+    installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS)
   end
 
   def correct_key

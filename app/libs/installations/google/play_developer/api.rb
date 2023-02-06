@@ -47,18 +47,13 @@ module Installations
       end
     end
 
-    def list_tracks(transforms, nested_transforms)
+    def list_tracks(transforms)
       execute do
         edit = client.insert_edit(package_name)
         client.list_edit_tracks(package_name, edit.id)
           &.tracks
           &.map { |t| t.to_h }
-          &.then do |tracks|
-          Installations::Response::Keys.transform(tracks, transforms).map do |track|
-            track[:releases] = Installations::Response::Keys.transform(track[:releases], nested_transforms)
-            track
-          end
-        end
+          &.then { |tracks| Installations::Response::Keys.transform(tracks, transforms) }
       end
     end
 
