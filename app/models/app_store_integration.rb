@@ -26,6 +26,7 @@ class AppStoreIntegration < ApplicationRecord
   delegate :cache, to: Rails
 
   validate :correct_key, on: :create
+  before_create :set_external_details_on_app
 
   attr_accessor :p8_key_file
 
@@ -48,7 +49,9 @@ class AppStoreIntegration < ApplicationRecord
     bundle_id: :bundle_id
   }
 
-  raise InvalidBuildTransformations if Set.new(BUILD_TRANSFORMATIONS.keys) != Set.new(ExternalBuild.minimum_required)
+  if Set.new(BUILD_TRANSFORMATIONS.keys) != Set.new(ExternalBuild.minimum_required)
+    raise InvalidBuildTransformations
+  end
 
   def access_key
     OpenSSL::PKey::EC.new(p8_key)
@@ -75,7 +78,7 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def find_app
-    installation.find_app(APP_TRANSFORMATIONS)
+    @find_app ||= installation.find_app(APP_TRANSFORMATIONS)
   end
 
   def promote_to_testflight(beta_group_id, build_number)
@@ -168,8 +171,14 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def correct_key
-    app.set_external_details(find_app[:id])
+    find_app.present?
   rescue Installations::Errors::AppNotFoundInStore
     errors.add(:key_id, :no_app_found)
+  rescue Apple::AppStoreConnect::Api::UnknownError
+    errors.add(:key_id, :unknown_error)
+  end
+
+  def set_external_details_on_app
+    app.set_external_details(find_app[:id])
   end
 end

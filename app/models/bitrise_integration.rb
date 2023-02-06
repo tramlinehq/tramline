@@ -37,8 +37,8 @@ class BitriseIntegration < ApplicationRecord
 
   delegate :project, to: :app_config
 
-  validates :access_token, presence: true
   validate :correct_key, on: :create
+  validates :access_token, presence: true
 
   encrypts :access_token, deterministic: true
 

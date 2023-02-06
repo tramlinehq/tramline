@@ -26,6 +26,7 @@ en:
           attributes:
             key_id:
               no_app_found: "we could not verify the bundle identifier against the credentials, please check!"
+              unknown_error: "an unrecognized error occurred connecting to App Store, please try again!"
         bitrise_integration:
           attributes:
             access_token:
