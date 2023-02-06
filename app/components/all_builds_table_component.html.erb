@@ -4,22 +4,17 @@
     <tr>
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
-          <%= sort_link(column: "version_name", label: "Version Name") %>
-        </div>
-      </th>
-      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="font-semibold text-left">
           <%= sort_link(column: "version_code", label: "Version Code") %>
         </div>
       </th>
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
-          <%= sort_link(column: "train_name", label: "Train") %>
+          <%= sort_link(column: "version_name", label: "Version Name") %>
         </div>
       </th>
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
-          <%= sort_link(column: "release_status", label: "Release Status") %>
+          <%= sort_link(column: "train_name", label: "Release") %>
         </div>
       </th>
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
@@ -29,13 +24,15 @@
       </th>
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
-          <%= sort_link(column: "step_status", label: "Step Status") %>
+          <div class="font-semibold text-left">
+            <%= sort_link(column: "build_generated_at", label: "Generated on") %>
+          </div>
         </div>
       </th>
       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <div class="font-semibold text-left">
-            <%= sort_link(column: "build_generated_at", label: "Generated on") %>
+            <span>Actions</span>
           </div>
         </div>
       </th>
@@ -44,7 +41,13 @@
 
     <tbody class="text-sm divide-y divide-slate-200">
     <% builds.each do |build| %>
-      <tr class="hover:bg-green-600 font-normal text-slate-800">
+      <tr class="hover:bg-green-600 font-normal text-black-800">
+        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <div class="text-left text-green-500">
+            <%= build[:version_code] %>
+          </div>
+        </td>
+
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="flex items-center">
             <div class="text-slate-800">
@@ -55,19 +58,7 @@
 
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="text-left">
-            <%= build[:version_code] %>
-          </div>
-        </td>
-
-        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="text-left">
-            <%= build[:train_name] %>
-          </div>
-        </td>
-
-        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="text-left">
-            <%= build[:release_status] %>
+            <%= release_status(build) %>
           </div>
         </td>
 
@@ -79,13 +70,23 @@
 
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="text-left">
-            <%= build[:step_status] %>
+            <%= time_format build[:build_generated_at], with_year: true %>
           </div>
         </td>
 
         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
           <div class="text-left">
-            <%= time_format build[:build_generated_at], with_year: true %>
+            <span>
+              <% if build[:ci_link].present? %>
+                <%= link_to_external build[:ci_link] do %>
+                  <%= inline_svg('workflow.svg', classname: "inline-flex w-8") %>
+                <% end %>
+              <% end %>
+
+              <%= link_to_external build.download_url do %>
+                <%= inline_svg('download.svg', classname: "inline-flex w-8") %>
+              <% end %>
+            </span>
           </div>
         </td>
       </tr>

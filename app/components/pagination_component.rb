@@ -5,8 +5,8 @@ class PaginationComponent < ViewComponent::Base
 
   def initialize(results:, turbo_frame:, info: false)
     @results = results
-    @turbo_frame = turbo_frame
     @info = info
+    @turbo_frame = turbo_frame
   end
 
   def info?

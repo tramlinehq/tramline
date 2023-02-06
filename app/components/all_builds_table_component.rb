@@ -1,6 +1,8 @@
 class AllBuildsTableComponent < ViewComponent::Base
   include Pagy::Frontend
   include ApplicationHelper
+  include LinkHelper
+  include AssetsHelper
 
   def initialize(builds:, paginator:, path:, sort_column:, sort_direction:)
     @builds = builds
@@ -28,6 +30,13 @@ class AllBuildsTableComponent < ViewComponent::Base
 
   def sort_indicator
     image_tag("sort_indicator.svg", class: "inline-flex mx-2 align-baseline", width: 8)
+  end
+
+  def release_status(build)
+    tag.div do
+      concat tag.span build[:train_name]
+      concat status_badge(build[:release_status], %w[ml-2 bg-slate-100 text-slate-500])
+    end
   end
 
   private
