@@ -4,7 +4,7 @@ class CreateExternalApp < ActiveRecord::Migration[7.0]
       t.belongs_to :app, null: false, index: true, foreign_key: true, type: :uuid
 
       t.timestamp :fetched_at
-      t.json :channel_data
+      t.jsonb :channel_data
       t.timestamps
     end
   end

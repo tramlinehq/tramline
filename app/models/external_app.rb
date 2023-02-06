@@ -3,7 +3,7 @@
 # Table name: external_apps
 #
 #  id           :uuid             not null, primary key
-#  channel_data :json
+#  channel_data :jsonb
 #  fetched_at   :datetime
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null

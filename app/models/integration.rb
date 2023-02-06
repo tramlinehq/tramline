@@ -132,6 +132,11 @@ class Integration < ApplicationRecord
       build_channel.where(providable_type: "AppStoreIntegration").first.providable
     end
 
+    # NOTE: Assumes there can be only one store build channel
+    def store_provider
+      build_channel.find(&:store?)&.providable
+    end
+
     private
 
     def providable_error_message(meta)

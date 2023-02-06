@@ -49,7 +49,7 @@ class App < ApplicationRecord
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
 
-  delegate :vcs_provider, :ci_cd_provider, :notification_provider, to: :integrations, allow_nil: true
+  delegate :vcs_provider, :ci_cd_provider, :notification_provider, :store_provider, to: :integrations, allow_nil: true
 
   scope :with_trains, -> { joins(:trains).distinct }
 
@@ -139,9 +139,13 @@ class App < ApplicationRecord
     update(external_id: external_id)
   end
 
+  def has_store_integration?
+    integrations.any?(&:store?)
+  end
+
   def create_external
-    return unless integrations.any?(&:store?)
-    external_app_data = integrations.find(&:store?).providable.channel_data
+    return unless has_store_integration?
+    external_app_data = store_provider.channel_data
 
     if latest_external_app&.channel_data != external_app_data
       external_apps.create!(channel_data: external_app_data, fetched_at: Time.current)

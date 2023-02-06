@@ -124,7 +124,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_01_072530) do
   create_table "external_apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "app_id", null: false
     t.datetime "fetched_at", precision: nil
-    t.json "channel_data"
+    t.jsonb "channel_data"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["app_id"], name: "index_external_apps_on_app_id"
