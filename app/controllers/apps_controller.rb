@@ -59,8 +59,8 @@ class AppsController < SignedInApplicationController
   end
 
   def all_builds
-    @sort_column = params[:sort_column]
-    @sort_direction = params[:sort_direction]
+    @sort_column = params[:sort_column] || "version_code"
+    @sort_direction = params[:sort_direction] || "desc"
     @path = nil
     @pagy, @builds = pagy(@app.all_builds(column: @sort_column, direction: @sort_direction))
   end
