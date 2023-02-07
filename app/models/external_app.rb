@@ -4,7 +4,7 @@
 #
 #  id           :uuid             not null, primary key
 #  channel_data :jsonb
-#  fetched_at   :datetime
+#  fetched_at   :datetime         indexed
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
 #  app_id       :uuid             not null, indexed

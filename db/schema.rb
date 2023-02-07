@@ -128,6 +128,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_01_072530) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["app_id"], name: "index_external_apps_on_app_id"
+    t.index ["fetched_at"], name: "index_external_apps_on_fetched_at"
   end
 
   create_table "external_builds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
