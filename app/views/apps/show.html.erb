@@ -83,7 +83,7 @@
     <% end %>
 
     <% if @app.latest_external_app %>
-      <%= render partial: "external_app", locals: { app: @app.latest_external_app } %>
+      <%= render(ExternalAppComponent.new(external_app: @app.latest_external_app)) %>
     <% end %>
 
     <% if @app.trains.any? %>

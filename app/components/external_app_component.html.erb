@@ -1,0 +1,36 @@
+<h2 class="text-2xl text-slate-800 font-bold">Current Status</h2>
+<span class="text-sm text-slate-400">Last fetched <%= ago_in_words external_app.fetched_at %></span>
+<table class="table-auto w-3/4">
+  <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+  <tr>
+    <th class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
+      <div class="font-semibold text-left">Channel Name</div>
+    </th>
+    <th class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
+      <div class="font-semibold text-left">Current Releases</div>
+    </th>
+  </tr>
+  </thead>
+  <tbody class="text-sm divide-y divide-slate-200">
+  <% channels.each do |channel| %>
+    <tr>
+      <td class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
+        <span><%= channel[:name].humanize %></span>
+      </td>
+      <td class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
+        <% channel[:releases].each do |release| %>
+          <div class="mx-2 my-1">
+            <%= "#{release[:version_string]} • #{release[:build_number]}" %>
+            <%= status_badge(release[:status].titleize.humanize, %w[bg-sky-100 text-sky-600 mx-1]) %>
+            <% if release[:user_fraction] %>
+              <div class="bg-emerald-100 rounded-full h-1 mt-1.5 w-full" title="Released to <%= release[:user_fraction] * 100 %>%">
+                <div class="bg-emerald-500 h-1 rounded-full" style="width: <%= "#{release[:user_fraction] * 100}%" %>"></div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>
