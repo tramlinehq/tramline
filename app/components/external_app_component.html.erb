@@ -18,7 +18,7 @@
         <span><%= channel[:name].humanize %></span>
       </td>
       <td class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
-        <% channel[:releases].each do |release| %>
+        <% channel[:releases].sort_by { |r| r[:status] }.each do |release| %>
           <div class="mx-2 my-1">
             <%= "#{release[:version_string]} • #{release[:build_number]}" %>
             <%= status_badge(release[:status].titleize.humanize, %w[bg-sky-100 text-sky-600 mx-1]) %>
