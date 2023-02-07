@@ -8,7 +8,7 @@
 
 <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2 mb-4">
   <button class="inline-flex text-sm justify-end font-medium rounded-full px-3 py-2 border border-slate-200 text-slate-600">
-    Released <span class="ml-1 opacity-70 text-indigo-200"><%= @app.runs.released.size %></span>
+    Released <span class="ml-1 text-indigo-400"><%= @app.runs.released.size %></span>
   </button>
 
   <%#= render DropdownComponent.new do |component| %>
@@ -41,3 +41,7 @@
         sort_direction: @sort_direction
       )
     ) %>
+
+<footer>
+  <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
+</footer>
