@@ -1,6 +1,6 @@
 <%= tag.turbo_frame id: "all_builds", target: "_top", data: { turbo_action: "advance" } do %>
   <table class="table-auto w-full">
-    <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-400">
+    <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
     <tr>
       <th class="px-3 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
@@ -14,7 +14,12 @@
       </th>
       <th class="py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
-          <%= sort_link(column: "train_name", label: "Release") %>
+          <%= sort_link(column: "release_status", label: "Release Status") %>
+        </div>
+      </th>
+      <th class="py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">
+          <%= sort_link(column: "train_name", label: "Train") %>
         </div>
       </th>
       <th class="py-3 whitespace-nowrap">
@@ -41,7 +46,7 @@
 
     <tbody class="text-sm divide-y divide-slate-200">
     <% builds.each do |build| %>
-      <tr class="hover:bg-green-600 font-normal text-black-800">
+      <tr class="hover:bg-slate-100 font-normal text-black-800">
         <td class="px-3 py-3 whitespace-nowrap">
           <div class="text-left text-green-500">
             <%= build[:version_code] %>
@@ -59,6 +64,12 @@
         <td class="py-3 whitespace-nowrap">
           <div class="text-left">
             <%= release_status(build) %>
+          </div>
+        </td>
+
+        <td class="py-3 whitespace-nowrap">
+          <div class="text-left">
+            <%= build[:train_name] %>
           </div>
         </td>
 

@@ -26,7 +26,7 @@ class Queries::AllBuilds
       .joins(step_run: [{train_run: [{train: :app}]}, :step])
       .where(apps: {id: app.id})
       .order("#{column} #{direction}")
-      .select(:id)
+      .select(:id, :train_step_runs_id)
       .select("train_step_runs.build_version AS version_name")
       .select("train_step_runs.build_number AS version_code")
       .select("generated_at AS build_generated_at")

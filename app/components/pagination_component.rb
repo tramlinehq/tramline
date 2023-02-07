@@ -9,7 +9,5 @@ class PaginationComponent < ViewComponent::Base
     @turbo_frame = turbo_frame
   end
 
-  def info?
-    @info
-  end
+  def info? = @info
 end
