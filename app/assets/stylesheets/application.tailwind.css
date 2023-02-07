@@ -362,4 +362,32 @@ span.flatpickr-weekday {
 }
 /* Application theme ends here */
 
+.pagy-info {
+    @apply text-sm text-slate-500 sm:text-left mt-2
+}
+
+.page.next a {
+    @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white hover:bg-indigo-500 border border-slate-200 text-slate-600 hover:text-white shadow-sm
+}
+
+.page.prev a {
+    @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white hover:bg-indigo-500 border border-slate-200 text-slate-600 hover:text-white shadow-sm
+}
+
+.page.next.disabled {
+  @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white border border-gray-300 bg-slate-200 text-gray-500 shadow-sm
+}
+
+.page.prev.disabled {
+    @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white border border-gray-300 bg-slate-200 text-gray-500 shadow-sm
+}
+
+.page a, .page.gap {
+    @apply inline-flex items-center justify-center leading-5 px-3.5 py-2 bg-white hover:bg-indigo-500 border border-slate-200 text-slate-600 hover:text-white shadow-sm
+}
+
+.page.active {
+    @apply inline-flex items-center justify-center leading-5 px-3.5 py-2 bg-white border border-slate-200 text-indigo-500
+}
+
 @tailwind utilities;
