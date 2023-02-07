@@ -3,6 +3,8 @@ class AllBuildsTableComponent < ViewComponent::Base
   include ApplicationHelper
   include LinkHelper
   include AssetsHelper
+  include ReleasesHelper
+  include DeploymentsHelper
 
   def initialize(builds:, paginator:, path:, sort_column:, sort_direction:)
     @builds = builds
@@ -32,18 +34,17 @@ class AllBuildsTableComponent < ViewComponent::Base
     image_tag("sort_indicator.svg", class: "inline-flex mx-2 align-baseline", width: 8)
   end
 
-  RELEASE_STATUS = {
-    finished: ["Completed", %w[bg-green-100 text-slate-500]],
-    stopped: ["Stopped", %w[bg-amber-100 text-slate-500]],
-    on_track: ["Running", %w[bg-blue-100 text-slate-500]],
-    post_release: ["Finalizing", %w[bg-slate-100 text-slate-500]],
-    post_release_started: ["Finalizing", %w[bg-slate-100 text-slate-500]],
-    post_release_failed: ["Finalizing", %w[bg-slate-100 text-slate-500]]
-  }
-
   def release_status(build)
-    status, styles = RELEASE_STATUS.fetch(build[:release_status].to_sym)
-    status_badge(status, styles)
+    release_status_badge(build[:release_status])
+  end
+
+  def deployments(build)
+    build
+      .step_run
+      .deployment_runs
+      .map(&:deployment)
+      .collect { |d| show_deployment_provider(d) }
+      .to_sentence
   end
 
   private

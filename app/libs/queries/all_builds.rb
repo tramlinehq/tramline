@@ -1,10 +1,3 @@
-# version name
-# version code
-# datetime of build gen
-# was shipped?
-# train
-# step
-# deployments
 class Queries::AllBuilds
   def self.call(**params)
     new(**params).call
@@ -23,8 +16,11 @@ class Queries::AllBuilds
 
   def call
     BuildArtifact
-      .joins(step_run: [{train_run: [{train: :app}]}, :step])
-      .where(apps: {id: app.id})
+      .with_attached_file
+      .distinct
+      .joins(step_run: [{ train_run: [{ train: :app }] }, :step])
+      .includes(step_run: { deployment_runs: :deployment })
+      .where(apps: { id: app.id })
       .order("#{column} #{direction}")
       .select(:id, :train_step_runs_id)
       .select("train_step_runs.build_version AS version_name")

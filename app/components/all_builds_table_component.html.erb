@@ -7,26 +7,19 @@
           <%= sort_link(column: "version_code", label: "Version Code") %>
         </div>
       </th>
+
       <th class="py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <%= sort_link(column: "version_name", label: "Version Name") %>
         </div>
       </th>
+
       <th class="py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <%= sort_link(column: "release_status", label: "Release Status") %>
         </div>
       </th>
-      <th class="py-3 whitespace-nowrap">
-        <div class="font-semibold text-left">
-          <%= sort_link(column: "train_name", label: "Train") %>
-        </div>
-      </th>
-      <th class="py-3 whitespace-nowrap">
-        <div class="font-semibold text-left">
-          <%= sort_link(column: "step_name", label: "Step") %>
-        </div>
-      </th>
+
       <th class="py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <div class="font-semibold text-left">
@@ -34,6 +27,25 @@
           </div>
         </div>
       </th>
+
+      <th class="py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">
+          <%= sort_link(column: "train_name", label: "Train") %>
+        </div>
+      </th>
+
+      <th class="py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">
+          <%= sort_link(column: "step_name", label: "Step") %>
+        </div>
+      </th>
+
+      <th class="py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">
+          <%= Deployment.display.pluralize %>
+        </div>
+      </th>
+
       <th class="py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <div class="font-semibold text-left">
@@ -46,24 +58,28 @@
 
     <tbody class="text-sm divide-y divide-slate-200">
     <% builds.each do |build| %>
-      <tr class="hover:bg-slate-100 font-normal text-black-800">
-        <td class="px-3 py-3 whitespace-nowrap">
-          <div class="text-left text-green-500">
+      <tr class="hover:bg-slate-50 font-normal text-black-800">
+        <td class="pl-3 py-3 whitespace-nowrap">
+          <div class="text-left font-medium">
             <%= build[:version_code] %>
           </div>
         </td>
 
         <td class="py-3 whitespace-nowrap">
-          <div class="flex items-center">
-            <div class="text-slate-800">
-              <%= build[:version_name] %>
-            </div>
+          <div class="text-left">
+            <%= build[:version_name] %>
           </div>
         </td>
 
         <td class="py-3 whitespace-nowrap">
           <div class="text-left">
             <%= release_status(build) %>
+          </div>
+        </td>
+
+        <td class="py-3 whitespace-nowrap">
+          <div class="text-left">
+            <%= time_format build[:build_generated_at], with_year: true %>
           </div>
         </td>
 
@@ -81,7 +97,7 @@
 
         <td class="py-3 whitespace-nowrap">
           <div class="text-left">
-            <%= time_format build[:build_generated_at], with_year: true %>
+            <%= deployments(build) %>
           </div>
         </td>
 
