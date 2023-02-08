@@ -10,6 +10,7 @@
 #  release_version :string           not null
 #  scheduled_at    :datetime         not null
 #  status          :string           not null
+#  stopped_at      :datetime
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  train_id        :uuid             not null, indexed
