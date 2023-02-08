@@ -102,11 +102,15 @@ class GooglePlayStoreIntegration < ApplicationRecord
   }
 
   def channel_data
-    installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS)
+    @channel_data ||= installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS)
+  end
+
+  def build_present_in_tracks?
+    channel_data.pluck(:releases).any?(&:present?)
   end
 
   def correct_key
-    errors.add(:json_key, :no_bundles) if installation.list_bundles.keys.size < 1
+    errors.add(:json_key, :no_bundles) unless build_present_in_tracks?
   rescue RuntimeError
     errors.add(:json_key, :key_format)
   rescue Installations::Errors::BundleIdentifierNotFound, Installations::Errors::GooglePlayDeveloperAPIPermissionDenied
