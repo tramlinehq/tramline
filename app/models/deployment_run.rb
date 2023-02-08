@@ -202,14 +202,14 @@ class DeploymentRun < ApplicationRecord
     uploaded? || failed? || released?
   end
 
-  def other_deployment_runs
-    @other_deployment_runs ||= step_run.similar_deployment_runs_for(self)
-  end
-
   # FIXME: should we take a lock around this SR? what is someone double triggers the run?
   def start_upload!
-    return upload! if store? && other_deployment_runs.any?(&:has_uploaded?)
-    return if store? && other_deployment_runs.any?(&:started?)
+    # TODO: simplify this logic
+    if store?
+      other_deployment_runs = step_run.similar_deployment_runs_for(self)
+      return upload! if other_deployment_runs.any?(&:has_uploaded?)
+      return if other_deployment_runs.any?(&:started?)
+    end
 
     return Deployments::GooglePlayStore::Upload.perform_later(id) if google_play_store_integration?
     Deployments::Slack.perform_later(id) if slack_integration?
