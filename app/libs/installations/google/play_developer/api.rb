@@ -36,13 +36,13 @@ module Installations
       end
     end
 
-    def list_bundles
+    def list_tracks(transforms)
       execute do
         edit = client.insert_edit(package_name)
-        client
-          .list_edit_bundles(package_name, edit.id)
-          &.bundles
-          .to_h { |b| [b.sha256, {version_code: b.version_code}] } || {}
+        client.list_edit_tracks(package_name, edit.id)
+          &.tracks
+          &.map { |t| t.to_h }
+          &.then { |tracks| Installations::Response::Keys.transform(tracks, transforms) }
       end
     end
 

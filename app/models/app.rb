@@ -27,6 +27,7 @@ class App < ApplicationRecord
 
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
   has_one :config, class_name: "AppConfig", dependent: :destroy
+  has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :integrations, inverse_of: :app, dependent: :destroy
   has_many :trains, class_name: "Releases::Train", dependent: :destroy
   has_many :sign_off_groups, dependent: :destroy
@@ -48,7 +49,7 @@ class App < ApplicationRecord
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
 
-  delegate :vcs_provider, :ci_cd_provider, :notification_provider, to: :integrations, allow_nil: true
+  delegate :vcs_provider, :ci_cd_provider, :notification_provider, :store_provider, to: :integrations, allow_nil: true
 
   scope :with_trains, -> { joins(:trains).distinct }
 
@@ -136,6 +137,27 @@ class App < ApplicationRecord
 
   def set_external_details(external_id)
     update(external_id: external_id)
+  end
+
+  def has_store_integration?
+    integrations.any?(&:store?)
+  end
+
+  def create_external!
+    return unless has_store_integration?
+    external_app_data = store_provider.channel_data
+
+    if latest_external_app&.channel_data != external_app_data
+      external_apps.create!(channel_data: external_app_data, fetched_at: Time.current)
+    end
+  end
+
+  def latest_external_app
+    external_apps.order(fetched_at: :desc).first
+  end
+
+  def refresh_external_app
+    RefreshExternalAppJob.perform_later(id)
   end
 
   private

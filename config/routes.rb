@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   require "sidekiq/web"
+  require "sidekiq/cron/web"
 
   mount ActionCable.server => "/cable"
   mount Easymon::Engine => "/up"
