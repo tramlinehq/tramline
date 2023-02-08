@@ -12,7 +12,7 @@ module AssetsHelper
       asset.source
     else
       asset_path = Rails.application.assets_manifest.assets[asset_name]
-      Rails.root.join("public/assets/#{asset_path}")
+      Rails.root.join("public/assets/#{asset_path}").read
     end
   end
 end
