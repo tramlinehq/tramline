@@ -39,9 +39,11 @@ class AllBuildsTableComponent < ViewComponent::Base
   end
 
   def deployments(build)
-    build.deployments.collect do |d|
-      "#{show_deployment_provider(d)} (#{show_deployment_channel(d)})"
-    end.to_sentence
+    tag.div do
+      build.deployments.collect do |d|
+        concat tag.div "#{show_deployment_provider(d)} (#{show_deployment_channel(d)})"
+      end
+    end
   end
 
   private

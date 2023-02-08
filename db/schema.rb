@@ -268,7 +268,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_08_091724) do
     t.uuid "train_run_id", null: false
     t.index ["commit_hash", "train_run_id"], name: "index_releases_commits_on_commit_hash_and_train_run_id", unique: true
     t.index ["train_id"], name: "index_releases_commits_on_train_id"
-    t.index ["train_run_id"], name: "index_releases_commits_on_train_runs_id"
+    t.index ["train_run_id"], name: "index_releases_commits_on_train_run_id"
   end
 
   create_table "releases_pull_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
