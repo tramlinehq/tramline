@@ -121,6 +121,16 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_08_091724) do
     t.index ["train_step_id"], name: "index_deployments_on_train_step_id"
   end
 
+  create_table "external_apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "app_id", null: false
+    t.datetime "fetched_at", precision: nil
+    t.jsonb "channel_data"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["app_id"], name: "index_external_apps_on_app_id"
+    t.index ["fetched_at"], name: "index_external_apps_on_fetched_at"
+  end
+
   create_table "external_builds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "deployment_run_id", null: false
     t.string "name"
@@ -451,6 +461,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_08_091724) do
   add_foreign_key "deployment_runs", "deployments"
   add_foreign_key "deployment_runs", "train_step_runs"
   add_foreign_key "deployments", "train_steps"
+  add_foreign_key "external_apps", "apps"
   add_foreign_key "external_builds", "deployment_runs"
   add_foreign_key "integrations", "apps"
   add_foreign_key "invites", "organizations"

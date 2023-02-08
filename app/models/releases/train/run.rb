@@ -220,6 +220,7 @@ class Releases::Train::Run < ApplicationRecord
   def on_finish!
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     train.notify!("Release is complete!", :release_ended, finalize_phase_metadata)
+    app.refresh_external_app
   end
 
   def finalize_phase_metadata

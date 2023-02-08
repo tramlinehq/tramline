@@ -17,10 +17,13 @@ class GooglePlayStoreIntegration < ApplicationRecord
   include Loggable
 
   delegate :app, to: :integration
+  delegate :refresh_external_app, to: :app
 
   validate :correct_key, on: :create
 
   attr_accessor :json_key_file
+
+  after_create_commit :refresh_external_app
 
   CHANNELS = [
     {id: :production, name: "production"},
@@ -86,8 +89,28 @@ class GooglePlayStoreIntegration < ApplicationRecord
     channels.map { |channel| channel.slice(:id, :name) }
   end
 
+  CHANNEL_DATA_TRANSFORMATIONS = {
+    name: :track,
+    releases: {
+      releases: {
+        version_string: :name,
+        status: :status,
+        build_number: [:version_codes, 0],
+        user_fraction: :user_fraction
+      }
+    }
+  }
+
+  def channel_data
+    @channel_data ||= installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS)
+  end
+
+  def build_present_in_tracks?
+    channel_data.pluck(:releases).any?(&:present?)
+  end
+
   def correct_key
-    errors.add(:json_key, :no_bundles) if installation.list_bundles.keys.size < 1
+    errors.add(:json_key, :no_bundles) unless build_present_in_tracks?
   rescue RuntimeError
     errors.add(:json_key, :key_format)
   rescue Installations::Errors::BundleIdentifierNotFound, Installations::Errors::GooglePlayDeveloperAPIPermissionDenied

@@ -67,6 +67,8 @@ gem "easymon", "~> 1.6"
 gem "github-ds", "~> 0.5.2"
 gem "pagy", "~> 6.0"
 gem "view_component", "~> 2.82"
+gem "activerecord_json_validator", "~> 2.1"
+gem "sidekiq-cron", "~> 1.9"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

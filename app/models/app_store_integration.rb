@@ -24,11 +24,14 @@ class AppStoreIntegration < ApplicationRecord
 
   delegate :app, to: :integration
   delegate :cache, to: Rails
+  delegate :refresh_external_app, to: :app
 
   validate :correct_key, on: :create
   before_create :set_external_details_on_app
 
   attr_accessor :p8_key_file
+
+  after_create_commit :refresh_external_app
 
   CHANNELS_TRANSFORMATIONS = {
     id: :id,
@@ -83,6 +86,23 @@ class AppStoreIntegration < ApplicationRecord
 
   def promote_to_testflight(beta_group_id, build_number)
     installation.add_build_to_group(beta_group_id, build_number)
+  end
+
+  CHANNEL_DATA_TRANSFORMATIONS = {
+    name: :name,
+    releases: {
+      builds: {
+        version_string: :version_string,
+        status: :status,
+        build_number: :build_number,
+        id: :id,
+        release_date: :release_date
+      }
+    }
+  }
+
+  def channel_data
+    installation.current_app_status(CHANNEL_DATA_TRANSFORMATIONS)
   end
 
   def build_channels

@@ -4,6 +4,10 @@ FactoryBot.define do
 
     trait :without_callbacks_and_validations do
       to_create { |instance| instance.save(validate: false) }
+
+      after(:build) do |integration|
+        def integration.refresh_external_app = true
+      end
     end
   end
 end
