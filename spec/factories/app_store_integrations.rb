@@ -9,7 +9,7 @@ FactoryBot.define do
     end
 
     after(:build) do |integration|
-      def integration.refresh_external_app
+      def integration.refresh_external_app =
       end
     end
   end

@@ -10,7 +10,7 @@ class ExternalAppComponent < ViewComponent::Base
   private
 
   def channels
-    external_app.channel_data.map { |ch| ch.with_indifferent_access }
+    external_app.channel_data.map(&:with_indifferent_access)
   end
 
   def channel_name(channel)
