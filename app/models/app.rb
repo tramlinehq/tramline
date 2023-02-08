@@ -143,7 +143,7 @@ class App < ApplicationRecord
     integrations.any?(&:store?)
   end
 
-  def create_external
+  def create_external!
     return unless has_store_integration?
     external_app_data = store_provider.channel_data
 

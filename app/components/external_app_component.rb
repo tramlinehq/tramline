@@ -22,7 +22,19 @@ class ExternalAppComponent < ViewComponent::Base
   end
 
   def release_status(release)
-    release[:status].titleize.humanize
+    status_badge(release[:status].titleize.humanize, %w[bg-sky-100 text-sky-600 mx-1])
+  end
+
+  def release_description(release)
+    "#{release[:version_string]} • #{release[:build_number]}"
+  end
+
+  def release_fraction_title(release)
+    "Released to #{release_percent release}%"
+  end
+
+  def release_fraction_width(release)
+    "#{release_percent release}%"
   end
 
   def release_percent(release)

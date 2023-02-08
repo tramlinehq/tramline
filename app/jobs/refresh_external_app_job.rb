@@ -6,6 +6,6 @@ class RefreshExternalAppJob < ApplicationJob
     app = App.find(app_id)
     return unless app
 
-    app.create_external
+    app.create_external!
   end
 end
