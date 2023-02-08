@@ -21,7 +21,6 @@ class Triggers::Release
     delegate :train, to: :release
     delegate :working_branch, to: :train
 
-    # TODO: this should be handled gracefully rather than catching a Github-specific error
     def create_branches
       GitHub::Result.new do
         train.create_branch!(working_branch, release_branch).then do |value|
