@@ -52,6 +52,11 @@ crumb :app_config do |config|
   parent :app, config.app
 end
 
+crumb :all_builds do |app|
+  link "All builds", all_builds_app_path(app)
+  parent :app, app
+end
+
 crumb :integrations do |app|
   link "Integrations", app_integrations_path(app)
   parent :app, app

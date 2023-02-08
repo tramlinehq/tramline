@@ -62,8 +62,10 @@ class AppsController < SignedInApplicationController
     @sort_column = params[:sort_column].presence
     @sort_direction = params[:sort_direction].presence
 
+    @build_count = Queries::Builds.count(app: @app)
+
     @pagy =
-      Pagy.new(count: Queries::Builds.count(app: @app), page: params[:page])
+      Pagy.new(count: @build_count, page: params[:page])
 
     @builds =
       Queries::Builds.all(

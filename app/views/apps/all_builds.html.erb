@@ -1,47 +1,37 @@
-<% breadcrumb @app %>
+<% breadcrumb :all_builds, @app %>
 
 <div class="sm:flex sm:justify-between sm:items-center mb-4">
   <div class="mb-4 sm:mb-0">
-    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">All Builds 🔧</h1>
+    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">All Builds 🛠️</h1>
   </div>
 </div>
 
-<div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2 mb-4">
-  <button class="inline-flex text-sm justify-end font-medium rounded-full px-3 py-2 border border-slate-200 text-slate-600">
-    Released <span class="ml-1 text-indigo-400"><%= @app.runs.released.size %></span>
-  </button>
 
-  <%#= render DropdownComponent.new do |component| %>
-    <%# component.with_icon(classes: "") do %>
-<!--      <svg class="w-4 h-4 fill-current text-slate-500 shrink-0 mr-2" viewBox="0 0 16 16">-->
-<!--        <path d="M15 2h-2V0h-2v2H9V0H7v2H5V0H3v2H1a1 1 0 00-1 1v12a1 1 0 001 1h14a1 1 0 001-1V3a1 1 0 00-1-1zm-1 12H2V6h12v8z"/>-->
-<!--      </svg>-->
-    <%# end %>
+<div class="border-t border-slate-200">
+  <div class="space-y-8 mt-8">
+    <% if @build_count > 0 %>
 
-    <%# component.with_main_text(classes: "pr-2") do %>
-<!--      Select a date range...-->
-    <%# end %>
+      <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2 mb-4">
+        <button disabled class="inline-flex text-sm justify-end font-medium rounded-full px-3 py-2 border border-slate-200 text-slate-600 disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed shadow-none">
+          Released <span class="ml-1 text-indigo-400"><%= @app.runs.released.size %></span>
+        </button>
+      </div>
 
-    <%# component.with_menu do |menu| %>
-      <%#= menu.with_item(selected: true) { "Today" } %>
-      <%#= menu.with_item { "Last 7 Days" } %>
-      <%#= menu.with_item { "Last Month" } %>
-      <%#= menu.with_item { "Last 12 Months" } %>
-      <%#= menu.with_item { "All Time" } %>
-    <%# end %>
-  <%# end %>
+      <%= render(
+            AllBuildsTableComponent.new(
+              builds: @builds,
+              paginator: @pagy,
+              path: @path,
+              sort_column: @sort_column,
+              sort_direction: @sort_direction
+            )
+          ) %>
+
+      <footer>
+        <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
+      </footer>
+    <% else %>
+      <p class="text-lg text-slate-400">No builds found</p>
+    <% end %>
+  </div>
 </div>
-
-<%= render(
-      AllBuildsTableComponent.new(
-        builds: @builds,
-        paginator: @pagy,
-        path: @path,
-        sort_column: @sort_column,
-        sort_direction: @sort_direction
-      )
-    ) %>
-
-<footer>
-  <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
-</footer>
