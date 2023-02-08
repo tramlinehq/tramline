@@ -3,11 +3,6 @@ class RefreshExternalAppsJob < ApplicationJob
   queue_as :high
 
   def perform
-    apps = App.all
-    return if apps.empty?
-
-    apps.each do |app|
-      RefreshExternalAppJob.perform_later(app.id)
-    end
+    App.all.each { |app| app.refresh_external_app }
   end
 end
