@@ -35,16 +35,13 @@ class AllBuildsTableComponent < ViewComponent::Base
   end
 
   def release_status(build)
-    release_status_badge(build[:release_status])
+    release_status_badge(build.release_status)
   end
 
   def deployments(build)
-    build
-      .step_run
-      .deployment_runs
-      .map(&:deployment)
-      .collect { |d| show_deployment_provider(d) }
-      .to_sentence
+    build.deployments.collect do |d|
+      "#{show_deployment_provider(d)} (#{show_deployment_channel(d)})"
+    end.to_sentence
   end
 
   private

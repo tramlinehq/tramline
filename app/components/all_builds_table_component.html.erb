@@ -23,7 +23,7 @@
       <th class="py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <div class="font-semibold text-left">
-            <%= sort_link(column: "build_generated_at", label: "Generated on") %>
+            <%= sort_link(column: "built_at", label: "Built on") %>
           </div>
         </div>
       </th>
@@ -61,13 +61,13 @@
       <tr class="hover:bg-slate-50 font-normal text-black-800">
         <td class="pl-3 py-3 whitespace-nowrap">
           <div class="text-left font-medium">
-            <%= build[:version_code] %>
+            <%= build.version_code %>
           </div>
         </td>
 
         <td class="py-3 whitespace-nowrap">
           <div class="text-left">
-            <%= build[:version_name] %>
+            <%= build.version_name %>
           </div>
         </td>
 
@@ -79,19 +79,19 @@
 
         <td class="py-3 whitespace-nowrap">
           <div class="text-left">
-            <%= time_format build[:build_generated_at], with_year: true %>
+            <%= time_format build.built_at, with_year: true %>
           </div>
         </td>
 
         <td class="py-3 whitespace-nowrap">
           <div class="text-left">
-            <%= build[:train_name] %>
+            <%= build.train_name %>
           </div>
         </td>
 
         <td class="py-3 whitespace-nowrap">
           <div class="text-left">
-            <%= build[:step_name] %>
+            <%= build.step_name %>
           </div>
         </td>
 
@@ -104,14 +104,16 @@
         <td class="py-3 whitespace-nowrap">
           <div class="text-left">
             <span>
-              <% if build[:ci_link].present? %>
-                <%= link_to_external build[:ci_link] do %>
+              <% if build.ci_link.present? %>
+                <%= link_to_external build.ci_link do %>
                   <%= inline_svg('workflow.svg', classname: "inline-flex w-8") %>
                 <% end %>
               <% end %>
 
-              <%= link_to_external build.download_url do %>
-                <%= inline_svg('download.svg', classname: "inline-flex w-8") %>
+              <% if build.download_url.present? %>
+                <%= link_to_external build.download_url do %>
+                  <%= inline_svg('download.svg', classname: "inline-flex w-8") %>
+                <% end %>
               <% end %>
             </span>
           </div>
