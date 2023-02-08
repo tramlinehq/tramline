@@ -1,0 +1,4 @@
+refresh_external_apps:
+  cron: "0 */3 * * *"
+  class: "RefreshExternalAppsJob"
+  active_job: true
