@@ -28,8 +28,8 @@ class Triggers::Release
           release.event_stamp!(reason: :release_branch_created, kind: :success, data: {working_branch:, release_branch:})
           GitHub::Result.new { value }
         end
-      rescue Octokit::UnprocessableEntity
-        nil
+      rescue Installations::Errors::TagReferenceAlreadyExists
+        logger.debug { "Release creation: did not create branch, since #{release_branch} already existed" }
       end
     end
   end
