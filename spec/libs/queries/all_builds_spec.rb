@@ -40,7 +40,8 @@ describe Queries::AllBuilds, type: :model do
         "train_name",
         "step_name",
         "release_completed_at",
-        "ci_link"
+        "ci_link",
+        "train_step_runs_id"
       ]
 
       expect(app.all_builds.as_json(except: :id).first.keys)

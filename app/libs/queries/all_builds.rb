@@ -18,9 +18,9 @@ class Queries::AllBuilds
     BuildArtifact
       .with_attached_file
       .distinct
-      .joins(step_run: [{ train_run: [{ train: :app }] }, :step])
-      .includes(step_run: { deployment_runs: :deployment })
-      .where(apps: { id: app.id })
+      .joins(step_run: [{train_run: [{train: :app}]}, :step])
+      .includes(step_run: {deployment_runs: :deployment})
+      .where(apps: {id: app.id})
       .order("#{column} #{direction}")
       .select(:id, :train_step_runs_id)
       .select("train_step_runs.build_version AS version_name")

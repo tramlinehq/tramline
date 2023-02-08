@@ -58,6 +58,6 @@ class AllBuildsTableComponent < ViewComponent::Base
   end
 
   def turbo_data
-    { turbo_frame: "all_builds" }
+    {turbo_frame: "all_builds"}
   end
 end

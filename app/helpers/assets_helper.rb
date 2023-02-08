@@ -1,10 +1,10 @@
 module AssetsHelper
   def inline_file(asset_name)
     if (asset = Rails.application.assets&.find_asset(asset_name))
-      asset.source.html_safe
+      sanitize asset.source
     else
       asset_path = Rails.application.assets_manifest.assets[asset_name]
-      File.read(File.join(Rails.root, "public", "assets", asset_path)).html_safe
+      sanitize Rails.root.join("public/assets/#{asset_path}")
     end
   end
 
