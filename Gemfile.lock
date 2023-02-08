@@ -271,6 +271,8 @@ GEM
     libdatadog (1.0.1.1.0-x86_64-linux)
     libddwaf (1.5.1.0.1-arm64-darwin)
       ffi (~> 1.0)
+    libddwaf (1.5.1.0.1-x86_64-darwin)
+      ffi (~> 1.0)
     libddwaf (1.5.1.0.1-x86_64-linux)
       ffi (~> 1.0)
     llhttp-ffi (0.4.0)
@@ -310,6 +312,8 @@ GEM
       net-protocol
     nio4r (2.5.8)
     nokogiri (1.14.1-arm64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.14.1-x86_64-darwin)
       racc (~> 1.4)
     nokogiri (1.14.1-x86_64-linux)
       racc (~> 1.4)
@@ -518,6 +522,8 @@ GEM
     strong_password (0.0.10)
     tailwindcss-rails (2.0.21-arm64-darwin)
       railties (>= 6.0.0)
+    tailwindcss-rails (2.0.21-x86_64-darwin)
+      railties (>= 6.0.0)
     tailwindcss-rails (2.0.21-x86_64-linux)
       railties (>= 6.0.0)
     thor (1.2.1)
@@ -561,7 +567,10 @@ GEM
     zeitwerk (2.6.6)
 
 PLATFORMS
+  arm64-darwin-21
   arm64-darwin-22
+  x86_64-darwin-19
+  x86_64-darwin-21
   x86_64-linux
 
 DEPENDENCIES
