@@ -36,9 +36,7 @@ class Installations::Response::Keys
     end
 
     def transform_paths(m, transforms)
-      transforms.map do |k, v|
-        transform_path(m, v, k)
-      end.to_h
+      transforms.to_h { |k, v| transform_path(m, v, k) }
     end
   end
 end
