@@ -10,6 +10,10 @@ class IntegrationsController < SignedInApplicationController
     redirect_to(@integration.install_path, allow_other_host: true)
   end
 
+  def index
+    set_integrations_by_categories
+  end
+
   def create
     if @integration.save
       redirect_to app_path(@app), notice: "Integration was successfully created."
@@ -17,10 +21,6 @@ class IntegrationsController < SignedInApplicationController
       set_integrations_by_categories
       render :index, status: :unprocessable_entity
     end
-  end
-
-  def index
-    set_integrations_by_categories
   end
 
   def build_artifact_channels

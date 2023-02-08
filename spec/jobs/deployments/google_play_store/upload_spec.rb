@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe Deployments::GooglePlayStore::Upload, type: :job do
+describe Deployments::GooglePlayStore::Upload do
   describe "#perform" do
     let(:slack_deployment_run) { create(:deployment_run, :started, :with_slack) }
     let(:store_deployment_run) { create(:deployment_run, :started, :with_google_play_store) }

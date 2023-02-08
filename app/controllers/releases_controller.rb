@@ -3,6 +3,13 @@ class ReleasesController < SignedInApplicationController
   before_action :require_write_access!, only: %i[create destroy post_release]
   before_action :set_release, only: [:show, :timeline, :destroy]
 
+  def show
+    @train = @release.train
+    @steps = @train.steps.order(:step_number).includes(:runs, :train, deployments: [:integration])
+    @app = @train.app
+    set_pull_requests
+  end
+
   def create
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
@@ -14,13 +21,6 @@ class ReleasesController < SignedInApplicationController
     else
       redirect_back fallback_location: root_path, flash: {error: response.body}
     end
-  end
-
-  def show
-    @train = @release.train
-    @steps = @train.steps.order(:step_number).includes(:runs, :train, deployments: [:integration])
-    @app = @train.app
-    set_pull_requests
   end
 
   def timeline

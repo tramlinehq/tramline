@@ -80,7 +80,7 @@ group :development, :test do
   gem "bundler-audit", "~> 0.9.1", require: false
   gem "pg_query"
   gem "prosopite"
-  gem "standard", require: false
+  gem "standard", "~> 1.2", require: false
   gem "rubocop-rails", require: false
   gem "rubocop-rspec", require: false
   gem "rubocop-performance", require: false

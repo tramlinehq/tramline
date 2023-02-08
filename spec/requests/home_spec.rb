@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe "Homes", type: :request do
+describe "Homes" do
   describe "GET /index" do
     it "returns http success" do
       get "/"

@@ -8,8 +8,14 @@ class TrainsController < SignedInApplicationController
   before_action :set_train, only: %i[show edit update destroy deactivate]
   before_action :validate_integration_status, only: %i[new create]
 
+  def show
+  end
+
   def new
     @train = @app.trains.new
+  end
+
+  def edit
   end
 
   def create
@@ -62,12 +68,6 @@ class TrainsController < SignedInApplicationController
         format.html { render :show, status: :unprocessable_entity }
       end
     end
-  end
-
-  def show
-  end
-
-  def edit
   end
 
   private

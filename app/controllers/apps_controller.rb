@@ -6,9 +6,20 @@ class AppsController < SignedInApplicationController
   before_action :set_integrations, only: %i[show destroy]
   around_action :set_time_zone
 
+  def index
+    @apps = current_organization.apps
+  end
+
+  def show
+    @setup_instructions = @app.setup_instructions
+  end
+
   def new
     @timezones = default_timezones
     @app = current_organization.apps.new
+  end
+
+  def edit
   end
 
   def create
@@ -25,13 +36,6 @@ class AppsController < SignedInApplicationController
     end
   end
 
-  def show
-    @setup_instructions = @app.setup_instructions
-  end
-
-  def edit
-  end
-
   def update
     respond_to do |format|
       if @app.update(app_update_params)
@@ -42,10 +46,6 @@ class AppsController < SignedInApplicationController
         format.json { render json: @app.errors, status: :unprocessable_entity }
       end
     end
-  end
-
-  def index
-    @apps = current_organization.apps
   end
 
   def destroy
@@ -59,10 +59,20 @@ class AppsController < SignedInApplicationController
   end
 
   def all_builds
-    @sort_column = params[:sort_column] || "version_code"
-    @sort_direction = params[:sort_direction] || "desc"
-    @path = nil
-    @pagy, @builds = pagy(@app.all_builds(column: @sort_column, direction: @sort_direction))
+    @sort_column = params[:sort_column].presence
+    @sort_direction = params[:sort_direction].presence
+
+    @pagy =
+      Pagy.new(count: Queries::Builds.count(app: @app), page: params[:page])
+
+    @builds =
+      Queries::Builds.all(
+        app: @app,
+        limit: @pagy.items,
+        offset: @pagy.offset,
+        sort_column: @sort_column,
+        sort_direction: @sort_direction
+      )
   end
 
   private

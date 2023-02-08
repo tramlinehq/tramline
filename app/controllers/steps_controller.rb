@@ -15,6 +15,18 @@ class StepsController < SignedInApplicationController
     @step = @train.steps.new
   end
 
+  def edit
+    @step =
+      Releases::Step
+        .joins(train: :app)
+        .where(trains: {apps: {organization: current_organization}})
+        .friendly
+        .find(params[:id])
+    @train = @step.train
+    head :forbidden and return if @train.active_run
+    @ci_actions = @train.ci_cd_provider.workflows
+  end
+
   def create
     head :forbidden and return if @train.active_run
     @step = @train.steps.new(parsed_step_params)
@@ -26,18 +38,6 @@ class StepsController < SignedInApplicationController
         format.html { render :new, status: :unprocessable_entity }
       end
     end
-  end
-
-  def edit
-    @step =
-      Releases::Step
-        .joins(train: :app)
-        .where(trains: {apps: {organization: current_organization}})
-        .friendly
-        .find(params[:id])
-    @train = @step.train
-    head :forbidden and return if @train.active_run
-    @ci_actions = @train.ci_cd_provider.workflows
   end
 
   def update
