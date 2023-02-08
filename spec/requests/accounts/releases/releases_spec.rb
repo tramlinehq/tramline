@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe "Accounts::Releases::Releases", type: :request do
+describe "Accounts::Releases::Releases" do
   describe "GET /show" do
     let(:release) { create(:releases_train_run, :created) }
     let(:organization) { release.train.app.organization }

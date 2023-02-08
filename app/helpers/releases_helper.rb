@@ -1,6 +1,20 @@
 module ReleasesHelper
   include Memery
 
+  SHOW_RELEASE_STATUS = {
+    finished: ["Completed", %w[bg-green-100 text-green-600]],
+    stopped: ["Stopped", %w[bg-amber-100 text-amber-600]],
+    on_track: ["Running", %w[bg-blue-100 text-blue-600]],
+    post_release: ["Finalizing", %w[bg-slate-100 text-slate-500]],
+    post_release_started: ["Finalizing", %w[bg-slate-100 text-slate-500]],
+    post_release_failed: ["Finalizing", %w[bg-slate-100 text-slate-500]]
+  }
+
+  def release_status_badge(status)
+    status, styles = SHOW_RELEASE_STATUS.fetch(status.to_sym)
+    status_badge(status, styles)
+  end
+
   def approval_emoji(step_run)
     case step_run.approval_status.to_sym
     when :approved
@@ -15,7 +29,7 @@ module ReleasesHelper
   end
 
   def build_status_badge(step_run)
-    display_data =
+    status, styles =
       case step_run.status.to_sym
       when :ci_workflow_triggered, :on_track
         ["Waiting for CI", %w[bg-sky-100 text-sky-600]]
@@ -45,11 +59,11 @@ module ReleasesHelper
         ["Unknown", %w[bg-slate-100 text-slate-500]]
       end
 
-    status_badge(display_data.first, display_data.second)
+    status_badge(status, styles)
   end
 
   def deployment_run_status_badge(deployment_run)
-    display_data =
+    status, styles =
       case deployment_run.status.to_sym
       when :created
         ["About to start", %w[bg-amber-100 text-amber-600]]
@@ -69,7 +83,7 @@ module ReleasesHelper
         ["Unknown", %w[bg-slate-100 text-slate-500]]
       end
 
-    status_badge(display_data.first, display_data.second)
+    status_badge(status, styles)
   end
 
   def pull_request_badge(pull_request)

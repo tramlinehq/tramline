@@ -1,12 +1,25 @@
 class AppsController < SignedInApplicationController
+  include Pagy::Backend
+
   before_action :require_write_access!, only: %i[new create edit update destroy]
-  before_action :set_app, only: %i[show edit update destroy]
+  before_action :set_app, only: %i[show edit update destroy all_builds]
   before_action :set_integrations, only: %i[show destroy]
   around_action :set_time_zone
+
+  def index
+    @apps = current_organization.apps
+  end
+
+  def show
+    @setup_instructions = @app.setup_instructions
+  end
 
   def new
     @timezones = default_timezones
     @app = current_organization.apps.new
+  end
+
+  def edit
   end
 
   def create
@@ -23,13 +36,6 @@ class AppsController < SignedInApplicationController
     end
   end
 
-  def show
-    @setup_instructions = @app.setup_instructions
-  end
-
-  def edit
-  end
-
   def update
     respond_to do |format|
       if @app.update(app_update_params)
@@ -42,10 +48,6 @@ class AppsController < SignedInApplicationController
     end
   end
 
-  def index
-    @apps = current_organization.apps
-  end
-
   def destroy
     respond_to do |format|
       if @app.destroy
@@ -54,6 +56,25 @@ class AppsController < SignedInApplicationController
         format.html { render :show, status: :unprocessable_entity }
       end
     end
+  end
+
+  def all_builds
+    @sort_column = params[:sort_column].presence
+    @sort_direction = params[:sort_direction].presence
+
+    @build_count = Queries::Builds.count(app: @app)
+
+    @pagy =
+      Pagy.new(count: @build_count, page: params[:page])
+
+    @builds =
+      Queries::Builds.all(
+        app: @app,
+        limit: @pagy.items,
+        offset: @pagy.offset,
+        sort_column: @sort_column,
+        sort_direction: @sort_direction
+      )
   end
 
   private

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_02_01_072530) do
+ActiveRecord::Schema[7.0].define(version: 2023_02_08_091724) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -268,7 +268,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_01_072530) do
     t.uuid "train_run_id", null: false
     t.index ["commit_hash", "train_run_id"], name: "index_releases_commits_on_commit_hash_and_train_run_id", unique: true
     t.index ["train_id"], name: "index_releases_commits_on_train_id"
-    t.index ["train_run_id"], name: "index_releases_commits_on_train_runs_id"
+    t.index ["train_run_id"], name: "index_releases_commits_on_train_run_id"
   end
 
   create_table "releases_pull_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -344,6 +344,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_01_072530) do
     t.string "branch_name", null: false
     t.string "release_version", null: false
     t.datetime "completed_at"
+    t.datetime "stopped_at"
     t.index ["train_id"], name: "index_train_runs_on_train_id"
   end
 

@@ -65,8 +65,9 @@ gem "fast_blank", "~> 1.0"
 gem "oj", "~> 3.13"
 gem "easymon", "~> 1.6"
 gem "github-ds", "~> 0.5.2"
-gem "activerecord_json_validator", "~> 2.1"
+gem "pagy", "~> 6.0"
 gem "view_component", "~> 2.82"
+gem "activerecord_json_validator", "~> 2.1"
 gem "sidekiq-cron", "~> 1.9"
 
 group :development, :test do
@@ -79,7 +80,7 @@ group :development, :test do
   gem "bundler-audit", "~> 0.9.1", require: false
   gem "pg_query"
   gem "prosopite"
-  gem "standard", require: false
+  gem "standard", "~> 1.2", require: false
   gem "rubocop-rails", require: false
   gem "rubocop-rspec", require: false
   gem "rubocop-performance", require: false

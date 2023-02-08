@@ -79,4 +79,8 @@ module ApplicationHelper
   def display_channels(channels)
     channels.map { |chan| [yield(chan), chan.to_json] }
   end
+
+  def time_format(timestamp, with_year: false)
+    timestamp.strftime("%b #{timestamp.day.ordinalize}#{", %Y" if with_year} at %-l:%M %P")
+  end
 end

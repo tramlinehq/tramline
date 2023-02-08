@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe SignOff, type: :model do
+describe SignOff do
   it "has a valid factory" do
     expect(build(:sign_off)).to be_valid
   end

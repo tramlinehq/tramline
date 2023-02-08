@@ -3,7 +3,9 @@ require "rails_helper"
 describe Triggers::PostRelease::ParallelBranches do
   let(:release) { create(:releases_train_run, branch_name: "production") }
 
-  xit ".call" do
+  it ".call" do
+    skip "not implemented yet"
+
     repo_integration = instance_double(Installations::Github::Api)
     allow_any_instance_of(described_class).to receive(:repo_integration).and_return(repo_integration)
     allow(repo_integration).to receive(:create_pr!).and_return({number: 1})

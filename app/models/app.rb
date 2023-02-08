@@ -30,6 +30,7 @@ class App < ApplicationRecord
   has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :integrations, inverse_of: :app, dependent: :destroy
   has_many :trains, class_name: "Releases::Train", dependent: :destroy
+  has_many :train_runs, through: :trains
   has_many :sign_off_groups, dependent: :destroy
 
   validate :no_trains_are_running, on: :update
@@ -52,6 +53,10 @@ class App < ApplicationRecord
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :store_provider, to: :integrations, allow_nil: true
 
   scope :with_trains, -> { joins(:trains).distinct }
+
+  def all_builds(sort_column: nil, sort_direction: nil)
+    Queries::Builds.all(app: self, sort_column:, sort_direction:)
+  end
 
   def runs
     Releases::Train::Run.joins(train: :app).where(train: {app: self})

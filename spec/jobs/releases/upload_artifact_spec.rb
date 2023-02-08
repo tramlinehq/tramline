@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe Releases::UploadArtifact, type: :job do
+describe Releases::UploadArtifact do
   describe "#perform" do
     let(:artifacts_url) { Faker::Internet.url }
     let(:artifact_fixture) { "spec/fixtures/storage/test_artifact.aab.zip" }

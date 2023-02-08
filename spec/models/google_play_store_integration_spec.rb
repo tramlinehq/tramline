@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe GooglePlayStoreIntegration, type: :model do
+describe GooglePlayStoreIntegration do
   it "has a valid factory" do
     expect(create(:google_play_store_integration, :without_callbacks_and_validations)).to be_valid
   end

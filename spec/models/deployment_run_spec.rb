@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe DeploymentRun, type: :model do
+describe DeploymentRun do
   it "has a valid factory" do
     expect(create(:deployment_run)).to be_valid
   end

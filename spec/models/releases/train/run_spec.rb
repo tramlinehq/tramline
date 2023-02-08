@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe Releases::Train::Run, type: :model do
+describe Releases::Train::Run do
   it "has a valid factory" do
     expect(create(:releases_train_run)).to be_valid
   end

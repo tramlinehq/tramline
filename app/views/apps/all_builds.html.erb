@@ -1,0 +1,37 @@
+<% breadcrumb :all_builds, @app %>
+
+<div class="sm:flex sm:justify-between sm:items-center mb-4">
+  <div class="mb-4 sm:mb-0">
+    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">All Builds 🛠️</h1>
+  </div>
+</div>
+
+
+<div class="border-t border-slate-200">
+  <div class="space-y-8 mt-8">
+    <% if @build_count > 0 %>
+
+      <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2 mb-4">
+        <button disabled class="inline-flex text-sm justify-end font-medium rounded-full px-3 py-2 border border-slate-200 text-slate-600 disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed shadow-none">
+          Released <span class="ml-1 text-indigo-400"><%= @app.runs.released.size %></span>
+        </button>
+      </div>
+
+      <%= render(
+            AllBuildsTableComponent.new(
+              builds: @builds,
+              paginator: @pagy,
+              path: @path,
+              sort_column: @sort_column,
+              sort_direction: @sort_direction
+            )
+          ) %>
+
+      <footer>
+        <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
+      </footer>
+    <% else %>
+      <p class="text-lg text-slate-400">No builds found</p>
+    <% end %>
+  </div>
+</div>
