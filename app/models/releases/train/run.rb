@@ -70,7 +70,7 @@ class Releases::Train::Run < ApplicationRecord
     end
 
     event :stop do
-      before {} # mark stopped_at
+      before { self.stopped_at = Time.current }
       transitions to: :stopped
     end
 
