@@ -7,8 +7,14 @@ class ExternalAppComponent < ViewComponent::Base
 
   attr_reader :external_app
 
+  private
+
   def channels
     external_app.channel_data.map { |ch| ch.with_indifferent_access }
+  end
+
+  def channel_name(channel)
+    channel[:name].humanize
   end
 
   def releases(channel)

@@ -15,7 +15,7 @@
   <% channels.each do |channel| %>
     <tr>
       <td class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
-        <span><%= channel[:name].humanize %></span>
+        <span><%= channel_name channel %></span>
       </td>
       <td class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
         <% releases(channel).each do |release| %>
@@ -23,8 +23,8 @@
             <%= "#{release[:version_string]} • #{release[:build_number]}" %>
             <%= status_badge(release_status(release), %w[bg-sky-100 text-sky-600 mx-1]) %>
             <% if release[:user_fraction] %>
-              <div class="bg-emerald-100 rounded-full h-1 mt-1.5 w-full" title="Released to <%= release_percent(release) %>%">
-                <div class="bg-emerald-500 h-1 rounded-full" style="width: <%= "#{release_percent(release)}%" %>"></div>
+              <div class="bg-emerald-100 rounded-full h-1 mt-1.5 w-full" title="Released to <%= release_percent release %>%">
+                <div class="bg-emerald-500 h-1 rounded-full" style="width: <%= "#{release_percent release}%" %>"></div>
               </div>
             <% end %>
           </div>

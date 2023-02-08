@@ -115,7 +115,7 @@
             <div class="font-semibold text-left">Description</div>
           </th>
           <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="font-semibold text-left">Current Version</div>
+            <div class="font-semibold text-left">Current Release</div>
           </th>
         </tr>
         </thead>
@@ -134,7 +134,7 @@
             </td>
             <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
               <div class="text-left">
-                <%= train.runs.any? ? train.version_current : train.version_seeded_with %>
+                <%= "#{train.runs.any? ? train.version_current : train.version_seeded_with} • #{@app.build_number}" %>
               </div>
             </td>
           </tr>
