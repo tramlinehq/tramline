@@ -25,13 +25,4 @@ describe Installations::Response::Keys do
       end
     end
   end
-
-  # def error_message(admin, action, expected, got)
-  #   <<~MESSAGE
-  #     access_level: #{admin.access_level}
-  #     action: #{action}
-  #     expected: #{expected}
-  #     got: #{got.to_a}
-  #   MESSAGE
-  # end
 end
