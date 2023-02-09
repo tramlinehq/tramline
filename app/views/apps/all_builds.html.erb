@@ -8,7 +8,7 @@
 
 <div class="border-t border-slate-200">
   <div class="grid grid-cols-2 mt-8">
-    <div class="col-span-1 w-1/2">
+    <div class="col-span-1">
       <%= render SearchBarComponent.new(
         path: all_builds_app_path(@app, *@all_builds_params),
         placeholder: "Search by version code or name",
@@ -27,6 +27,7 @@
             filter_params: get_query_filter(:release_status),
             query_params: @all_builds_params) %>
         </div>
+
 
         <%= render AllBuildsTableComponent.new(
           builds: @builds,

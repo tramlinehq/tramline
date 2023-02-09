@@ -38,6 +38,14 @@ class AllBuildsTableComponent < ViewComponent::Base
     release_status_badge(build.release_status)
   end
 
+  def external_release_status?
+    builds.first.external_release_status.present?
+  end
+
+  def external_release_status(build)
+    status_badge(build.external_release_status.titleize.humanize, %w[bg-sky-100 text-sky-600 mx-1])
+  end
+
   def deployments(build)
     tag.div do
       build.deployments.collect do |d|

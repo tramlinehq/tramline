@@ -14,13 +14,10 @@ class Queries::Builds
     release_status: Releases::Train::Run.arel_table[:status]
   }
   ANDROID_ATTR_MAPPING =
-    BASE_ATTR_MAPPING.merge({built_at: BuildArtifact.arel_table[:generated_at]})
+    BASE_ATTR_MAPPING.merge(built_at: BuildArtifact.arel_table[:generated_at])
   IOS_ATTR_MAPPING =
-    BASE_ATTR_MAPPING.merge({built_at: ExternalBuild.arel_table[:added_at], external_release_status: ExternalBuild.arel_table[:status]})
-
-  # ANDROID_ATTR_MAPPING.merge(IOS_ATTR_MAPPING).each do |name, _|
-  #   attribute name, :string
-  # end
+    BASE_ATTR_MAPPING
+      .merge(built_at: ExternalBuild.arel_table[:added_at], external_release_status: ExternalBuild.arel_table[:status])
 
   attribute :version_name, :string
   attribute :version_code, :string
@@ -99,7 +96,7 @@ class Queries::Builds
       records =
         base_ios_query(app, params)
           .select(:id, :deployment_run_id)
-          .select(select_attrs(IOS_ATTR_MAPPING))
+          .select(select_attrs(IOS_ATTR_MAPPING.except(:version_code)))
           .order("#{sort_column} #{sort_direction}")
           .limit(params.limit)
           .offset(params.offset)
@@ -121,8 +118,10 @@ class Queries::Builds
         .joins(deployment_run: [join_step_run_tree])
         .includes(deployment_run: {step_run: {step: [deployments: :integration]}})
         .select("DISTINCT ON (external_builds.build_number) external_builds.build_number AS version_code")
+        .order("version_code")
         .where(apps: {id: app.id})
         .where(params.search_by(search_params))
+        .where(params.filter_by(IOS_ATTR_MAPPING))
     end
 
     def join_step_run_tree
