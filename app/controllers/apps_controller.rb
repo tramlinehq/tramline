@@ -59,10 +59,12 @@ class AppsController < SignedInApplicationController
   end
 
   def all_builds
+    @query = params[:query].presence
     @sort_column = params[:sort_column].presence
     @sort_direction = params[:sort_direction].presence
 
-    @build_count = Queries::Builds.count(app: @app)
+    build_params = Queries::Helpers::Parameters.new(q: @query)
+    @build_count = Queries::Builds.count(app: @app, params: build_params)
 
     @pagy =
       Pagy.new(count: @build_count, page: params[:page])
@@ -70,6 +72,7 @@ class AppsController < SignedInApplicationController
     @builds =
       Queries::Builds.all(
         app: @app,
+        params: build_params,
         limit: @pagy.items,
         offset: @pagy.offset,
         sort_column: @sort_column,
