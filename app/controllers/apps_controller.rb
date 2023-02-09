@@ -60,15 +60,9 @@ class AppsController < SignedInApplicationController
   end
 
   def all_builds
-    create_filters
-    set_query_params
-    set_query_search_pattern
-    set_query_filters
-    set_query_sortables
-
-    @build_count = Queries::Builds.count(app: @app, params: @query_params)
-    @pagy = Pagy.new(count: @build_count, page: params[:page])
-    @query_params.add_pagination(@pagy.items, @pagy.offset)
+    gen_query_filters(:release_status, Releases::Train::Run.statuses[:finished])
+    set_query_helpers
+    set_query_pagination(Queries::Builds.count(app: @app, params: @query_params))
 
     @builds =
       Queries::Builds.all(
@@ -80,10 +74,6 @@ class AppsController < SignedInApplicationController
   end
 
   private
-
-  def create_filters
-    gen_query_filters(:release_status, Releases::Train::Run.statuses[:finished])
-  end
 
   def set_integrations
     @integrations = @app.integrations

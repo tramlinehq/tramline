@@ -23,12 +23,12 @@
     </div>
 
     <%= tag.turbo_frame id: "all_builds", target: "_top", data: { turbo_action: "advance" }, class: "col-span-full" do %>
-      <% if @build_count > 0 %>
+      <% if @builds.present? %>
         <div class="justify-end sm:justify-end my-4">
-          <%= render FilterButtonComponent.new(on: @filters.dig(:filters, :release_status, :is_on),
+          <%= render FilterButtonComponent.new(on: @filters.dig(:release_status, :is_on),
                                                path: all_builds_app_path(@app),
                                                method: :get,
-                                               params: {filters: {release_status: @filters.dig(:filters, :release_status, :filter_value)}},
+                                               params: get_query_filter(:release_status),
                                                form_data: { turbo_frame: "all_builds" }) do |component| %>
             <% component.with_body do %>
               Released <span class="ml-1"><%= @app.runs.released.size %></span>
