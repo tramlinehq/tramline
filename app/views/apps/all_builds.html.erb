@@ -12,10 +12,13 @@
       <%= form_with url: all_builds_app_path(@app), method: :get, data: { controller: "search-form", search_form_target: "form", turbo_frame: "all_builds" } do |form| %>
         <%= form.text_field :query,
                             placeholder: "Search by version code or name",
-                            class: "form-input w-full",
+                            class: "form-input inline-flex",
                             autocomplete: "off",
                             value: params[:query],
                             data: { action: "input->search-form#search" } %>
+        <a title="clear search" class="inline-flex relative top-2 right-0" data-action="search-form#clear">
+          <%= inline_svg("x", classname: "inline-flex hover:opacity-70 w-6") %>
+        </a>
       <% end %>
     </div>
 
