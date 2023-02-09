@@ -1,0 +1,12 @@
+<%= form_with url: path, method: :get, data: { controller: "search-form", search_form_target: "form", turbo_frame: turbo_frame } do |form| %>
+  <%= form.text_field :search_pattern,
+                      placeholder: placeholder,
+                      class: "form-input inline-flex",
+                      autocomplete: "off",
+                      value: initial_value,
+                      data: { action: "input->search-form#search" } %>
+
+  <a title="clear search" class="inline-flex underline relative hover:cursor-pointer text-xs top-2 right-0 ml-1" data-action="search-form#clear">
+    clear search
+  </a>
+<% end %>

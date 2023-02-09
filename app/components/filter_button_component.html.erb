@@ -1,7 +1,14 @@
-<%= button_to path,
-              method: http_method,
-              class: styles,
-              form: { data: form_data },
-              params: params do %>
-  <%= body if body? %>
+<% if body? %>
+  <%= button_to path,
+                method: http_method,
+                class: styles,
+                params: button_params do %>
+    <%= body %>
+  <% end %>
+<% else %>
+  <%= button_to name,
+                path,
+                method: http_method,
+                class: styles,
+                params: button_params %>
 <% end %>

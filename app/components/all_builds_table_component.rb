@@ -6,10 +6,10 @@ class AllBuildsTableComponent < ViewComponent::Base
   include ReleasesHelper
   include DeploymentsHelper
 
-  def initialize(builds:, paginator:, path:, sort_column:, sort_direction:)
+  def initialize(builds:, paginator:, query_params:, sort_column:, sort_direction:)
     @builds = builds
     @paginator = paginator
-    @path = path
+    @query_params = query_params
     @sort_column = sort_column
     @sort_direction = sort_direction
   end
@@ -53,7 +53,7 @@ class AllBuildsTableComponent < ViewComponent::Base
   end
 
   def path(column, direction)
-    all_builds_app_path(sort_column: column, sort_direction: direction)
+    all_builds_app_path(@query_params.merge(sort_column: column, sort_direction: direction))
   end
 
   def turbo_data

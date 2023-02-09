@@ -1,15 +1,16 @@
 class FilterButtonComponent < ViewComponent::Base
   renders_one :body
 
-  def initialize(on:, path:, method:, params:, form_data:)
+  def initialize(on:, path:, method:, filter_params:, query_params: {}, name: nil)
+    @name = name
     @on = on
     @path = path
     @http_method = method
-    @params = params
-    @form_data = form_data
+    @filter_params = filter_params
+    @query_params = query_params
   end
 
-  attr_reader :path, :http_method, :form_data
+  attr_reader :path, :http_method, :name
 
   BASE_STYLES = "inline-flex items-center justify-center text-sm font-medium leading-5 rounded-full px-3 py-1 border "
 
@@ -21,7 +22,7 @@ class FilterButtonComponent < ViewComponent::Base
     end
   end
 
-  def params
-    @on ? {} : @params
+  def button_params
+    @on ? @query_params.except(*@filter_params.keys) : @query_params.merge(@filter_params)
   end
 end
