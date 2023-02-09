@@ -1,6 +1,15 @@
 class Queries::Helpers::Parameters
-  def initialize(q:)
-    @query = q
+  def initialize
+    @query = nil
+    @limit = nil
+    @offset = nil
+  end
+
+  attr_writer :query
+  attr_reader :limit, :offset
+
+  def paginate=(d)
+    @limit, @offset = d.values_at(:limit, :offset)
   end
 
   def search_by(table_to_cols)
@@ -19,8 +28,6 @@ class Queries::Helpers::Parameters
       acc
     end
   end
-
-  def paginate = nil
 
   def sort = nil
 

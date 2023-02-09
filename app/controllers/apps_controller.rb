@@ -63,18 +63,18 @@ class AppsController < SignedInApplicationController
     @sort_column = params[:sort_column].presence
     @sort_direction = params[:sort_direction].presence
 
-    build_params = Queries::Helpers::Parameters.new(q: @query)
-    @build_count = Queries::Builds.count(app: @app, params: build_params)
+    query_params = Queries::Helpers::Parameters.new
+    query_params.query = @query
 
-    @pagy =
-      Pagy.new(count: @build_count, page: params[:page])
+    @build_count = Queries::Builds.count(app: @app, params: query_params)
+    @pagy = Pagy.new(count: @build_count, page: params[:page])
+
+    query_params.paginate = {limit: @pagy.items, offset: @pagy.offset}
 
     @builds =
       Queries::Builds.all(
         app: @app,
-        params: build_params,
-        limit: @pagy.items,
-        offset: @pagy.offset,
+        params: query_params,
         sort_column: @sort_column,
         sort_direction: @sort_direction
       )

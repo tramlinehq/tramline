@@ -18,14 +18,14 @@ class Queries::Builds
   DEFAULT_SORT_DIRECTION = "desc"
 
   class << self
-    def all(app:, limit:, offset:, sort_column:, sort_direction:, params:)
+    def all(app:, sort_column:, sort_direction:, params:)
       sort_column ||= DEFAULT_SORT_COLUMN
       sort_direction ||= DEFAULT_SORT_DIRECTION
 
       if app.android?
-        android(app, limit, offset, sort_column, sort_direction, params)
+        android(app, sort_column, sort_direction, params)
       elsif app.ios?
-        ios(app, limit, offset, sort_column, sort_direction, params)
+        ios(app, sort_column, sort_direction, params)
       end
     end
 
@@ -39,7 +39,7 @@ class Queries::Builds
 
     private
 
-    def android(app, limit, offset, sort_column, sort_direction, params)
+    def android(app, sort_column, sort_direction, params)
       records =
         base_android_query(app, params)
           .select(:id, :train_step_runs_id)
@@ -52,8 +52,8 @@ class Queries::Builds
           .select("train_step_runs.status AS step_status")
           .select("train_step_runs.ci_link AS ci_link")
           .order("#{sort_column} #{sort_direction}")
-          .limit(limit)
-          .offset(offset)
+          .limit(params.limit)
+          .offset(params.offset)
 
       records.to_a.map do |record|
         deployments = record.step_run.step.deployments
@@ -78,7 +78,7 @@ class Queries::Builds
         .where(params.search_by(search_params))
     end
 
-    def ios(app, limit, offset, sort_column, sort_direction, params)
+    def ios(app, sort_column, sort_direction, params)
       records =
         base_ios_query(app, params)
           .select(:id, :deployment_run_id)
@@ -91,8 +91,8 @@ class Queries::Builds
           .select("train_step_runs.status AS step_status")
           .select("train_step_runs.ci_link AS ci_link")
           .order("#{sort_column} #{sort_direction}")
-          .limit(limit)
-          .offset(offset)
+          .limit(params.limit)
+          .offset(params.offset)
 
       records.to_a.map do |record|
         attributes =
