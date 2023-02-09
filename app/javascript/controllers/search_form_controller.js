@@ -11,7 +11,7 @@ export default class extends ApplicationController {
     }
 
     search() {
-        const queryLength = query.value.length
+        const queryLength = this.query.value.length
 
         if (queryLength > MIN_CHARACTERS || queryLength === 0) {
             this.formTarget.requestSubmit();
@@ -19,10 +19,10 @@ export default class extends ApplicationController {
     }
 
     clear() {
-        const queryLength = query.value.length
+        const queryLength = this.query.value.length
 
         if (queryLength > 0) {
-            query.value = ""
+            this.query.value = ""
         }
 
         if (queryLength > MIN_CHARACTERS) {
@@ -31,6 +31,6 @@ export default class extends ApplicationController {
     }
 
     get query() {
-        return this.formTarget.querySelector("input[name='query']")
+        return this.formTarget.querySelector("input[name='search_pattern']")
     }
 }

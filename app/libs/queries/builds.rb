@@ -2,6 +2,26 @@ class Queries::Builds
   include ActiveModel::Model
   include ActiveModel::Attributes
 
+  DEFAULT_SORT_COLUMN = "version_code"
+  DEFAULT_SORT_DIRECTION = "desc"
+  BASE_ATTR_MAPPING = {
+    version_code: Releases::Step::Run.arel_table[:build_number],
+    version_name: Releases::Step::Run.arel_table[:build_version],
+    ci_link: Releases::Step::Run.arel_table[:ci_link],
+    step_status: Releases::Step::Run.arel_table[:status],
+    step_name: Releases::Step.arel_table[:name],
+    train_name: Releases::Train.arel_table[:name],
+    release_status: Releases::Train::Run.arel_table[:status]
+  }
+  ANDROID_ATTR_MAPPING =
+    BASE_ATTR_MAPPING.merge({built_at: BuildArtifact.arel_table[:generated_at]})
+  IOS_ATTR_MAPPING =
+    BASE_ATTR_MAPPING.merge({built_at: ExternalBuild.arel_table[:added_at], external_release_status: ExternalBuild.arel_table[:status]})
+
+  # ANDROID_ATTR_MAPPING.merge(IOS_ATTR_MAPPING).each do |name, _|
+  #   attribute name, :string
+  # end
+
   attribute :version_name, :string
   attribute :version_code, :string
   attribute :built_at, :datetime
@@ -13,9 +33,6 @@ class Queries::Builds
   attribute :download_url, :string
   attribute :deployments, array: true, default: []
   attribute :external_release_status, :string
-
-  DEFAULT_SORT_COLUMN = "version_code"
-  DEFAULT_SORT_DIRECTION = "desc"
 
   class << self
     def all(app:, sort_column:, sort_direction:, params:)
@@ -39,18 +56,17 @@ class Queries::Builds
 
     private
 
+    def select_attrs(attrs_mapping)
+      attrs_mapping.map do |attr_name, column|
+        column.as(attr_name.to_s)
+      end
+    end
+
     def android(app, sort_column, sort_direction, params)
       records =
         base_android_query(app, params)
           .select(:id, :train_step_runs_id)
-          .select("train_step_runs.build_version AS version_name")
-          .select("train_step_runs.build_number AS version_code")
-          .select("generated_at AS built_at")
-          .select("trains.name AS train_name")
-          .select("train_runs.status AS release_status")
-          .select("train_steps.name AS step_name")
-          .select("train_step_runs.status AS step_status")
-          .select("train_step_runs.ci_link AS ci_link")
+          .select(select_attrs(ANDROID_ATTR_MAPPING))
           .order("#{sort_column} #{sort_direction}")
           .limit(params.limit)
           .offset(params.offset)
@@ -76,20 +92,14 @@ class Queries::Builds
         .includes(step_run: {step: [deployments: :integration]})
         .where(apps: {id: app.id})
         .where(params.search_by(search_params))
+        .where(params.filter_by(ANDROID_ATTR_MAPPING))
     end
 
     def ios(app, sort_column, sort_direction, params)
       records =
         base_ios_query(app, params)
           .select(:id, :deployment_run_id)
-          .select("train_step_runs.build_version AS version_name")
-          .select("external_builds.added_at AS built_at")
-          .select("trains.name AS train_name")
-          .select("train_runs.status AS release_status")
-          .select("external_builds.status AS external_release_status")
-          .select("train_steps.name AS step_name")
-          .select("train_step_runs.status AS step_status")
-          .select("train_step_runs.ci_link AS ci_link")
+          .select(select_attrs(IOS_ATTR_MAPPING))
           .order("#{sort_column} #{sort_direction}")
           .limit(params.limit)
           .offset(params.offset)
@@ -116,18 +126,11 @@ class Queries::Builds
     end
 
     def join_step_run_tree
-      {
-        step_run: [
-          {train_run: [{train: :app}]},
-          :step
-        ]
-      }
+      {step_run: [{train_run: [{train: :app}]}, :step]}
     end
 
     def search_params
-      {
-        Releases::Step::Run.arel_table => %w[build_version build_number]
-      }
+      {Releases::Step::Run.arel_table => %w[build_version build_number]}
     end
   end
 

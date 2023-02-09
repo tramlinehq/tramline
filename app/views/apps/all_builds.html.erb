@@ -10,11 +10,11 @@
   <div class="grid grid-cols-2 mt-8">
     <div class="col-span-1 w-1/2">
       <%= form_with url: all_builds_app_path(@app), method: :get, data: { controller: "search-form", search_form_target: "form", turbo_frame: "all_builds" } do |form| %>
-        <%= form.text_field :query,
+        <%= form.text_field :search_pattern,
                             placeholder: "Search by version code or name",
                             class: "form-input inline-flex",
                             autocomplete: "off",
-                            value: params[:query],
+                            value: params[:search_pattern],
                             data: { action: "input->search-form#search" } %>
         <a title="clear search" class="inline-flex relative top-2 right-0" data-action="search-form#clear">
           <%= inline_svg("x", classname: "inline-flex hover:opacity-70 w-6") %>
@@ -25,19 +25,24 @@
     <%= tag.turbo_frame id: "all_builds", target: "_top", data: { turbo_action: "advance" }, class: "col-span-full" do %>
       <% if @build_count > 0 %>
         <div class="justify-end sm:justify-end my-4">
-          <button disabled class="inline-flex text-sm justify-end font-medium rounded-full px-3 py-2 border border-slate-200 text-slate-600 disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed shadow-none">
-            Released <span class="ml-1 text-indigo-400"><%= @app.runs.released.size %></span>
-          </button>
+          <%= render FilterButtonComponent.new(on: @filters.dig(:filters, :release_status, :is_on),
+                                               path: all_builds_app_path(@app),
+                                               method: :get,
+                                               params: {filters: {release_status: @filters.dig(:filters, :release_status, :filter_value)}},
+                                               form_data: { turbo_frame: "all_builds" }) do |component| %>
+            <% component.with_body do %>
+              Released <span class="ml-1"><%= @app.runs.released.size %></span>
+            <% end %>
+          <% end %>
         </div>
-        <%= render(
-              AllBuildsTableComponent.new(
-                builds: @builds,
-                paginator: @pagy,
-                path: @path,
-                sort_column: @sort_column,
-                sort_direction: @sort_direction
-              )
-            ) %>
+
+        <%= render AllBuildsTableComponent.new(
+          builds: @builds,
+          paginator: @pagy,
+          path: @path,
+          sort_column: @sort_column,
+          sort_direction: @sort_direction)
+        %>
 
         <footer>
           <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
@@ -48,3 +53,4 @@
     <% end %>
   </div>
 </div>
+

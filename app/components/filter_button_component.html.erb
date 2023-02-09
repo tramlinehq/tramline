@@ -1,0 +1,7 @@
+<%= button_to path,
+              method: http_method,
+              class: styles,
+              form: { data: form_data },
+              params: params do %>
+  <%= body if body? %>
+<% end %>

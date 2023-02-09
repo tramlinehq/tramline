@@ -1,19 +1,28 @@
 class Queries::Helpers::Parameters
   def initialize
-    @query = nil
+    @search_pattern = nil
     @limit = nil
     @offset = nil
+    @filters = {}
   end
 
-  attr_writer :query
   attr_reader :limit, :offset
 
-  def paginate=(d)
-    @limit, @offset = d.values_at(:limit, :offset)
+  def add_search_pattern(q)
+    @search_pattern = q
+  end
+
+  def add_pagination(limit, offset)
+    @limit, @offset = limit, offset
+  end
+
+  def add_filter(col, val)
+    val = [val] unless val.is_a?(Array)
+    @filters.merge!({col.to_sym => val})
   end
 
   def search_by(table_to_cols)
-    return if @query.blank?
+    return if @search_pattern.blank?
 
     table_to_cols.reduce(nil) do |acc, (table, cols)|
       cols.each do |col|
@@ -29,11 +38,23 @@ class Queries::Helpers::Parameters
     end
   end
 
+  def filter_by(allowed_cols)
+    raise ArgumentError unless @filters.keys.all? { |col| col.in? allowed_cols }
+
+    @filters.reduce(nil) do |acc, (col, val)|
+      if acc.nil?
+        allowed_cols[col].in(val)
+      else
+        acc.or(allowed_cols[col].in(val))
+      end
+    end
+  end
+
   def sort = nil
 
   private
 
   def col_matcher(arel_table, col)
-    arel_table[col].matches("%#{@query}%")
+    arel_table[col].matches("%#{@search_pattern}%")
   end
 end
