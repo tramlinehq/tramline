@@ -7,7 +7,7 @@
 </div>
 
 <div class="border-t border-slate-200">
-  <div class="grid grid-cols-2 mt-8">
+  <div class="grid grid-cols-1 mt-8">
     <div class="col-span-1">
       <%= render SearchBarComponent.new(
         path: all_builds_app_path(@app, *@all_builds_params),
@@ -17,23 +17,21 @@
     </div>
 
     <%= tag.turbo_frame id: "all_builds", target: "_top", data: { turbo_action: "advance" }, class: "col-span-full" do %>
+      <div class="col-span-1 my-4">
+        <%= render FilterButtonComponent.new(
+          name: "Completed",
+          on: @filters.dig(:release_status, :is_on),
+          path: all_builds_app_path(@app),
+          method: :get,
+          filter_params: get_query_filter(:release_status),
+          query_params: @all_builds_params) %>
+      </div>
+
       <% if @builds.present? %>
-        <div class="justify-end sm:justify-end my-4">
-          <%= render FilterButtonComponent.new(
-            name: "Completed",
-            on: @filters.dig(:release_status, :is_on),
-            path: all_builds_app_path(@app),
-            method: :get,
-            filter_params: get_query_filter(:release_status),
-            query_params: @all_builds_params) %>
-        </div>
-
-
         <%= render AllBuildsTableComponent.new(
           builds: @builds,
           paginator: @pagy,
           query_params: @all_builds_params) %>
-
         <footer>
           <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
         </footer>

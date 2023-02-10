@@ -121,13 +121,13 @@
           <div class="text-left">
             <span>
               <% if build.ci_link.present? %>
-                <%= link_to_external build.ci_link do %>
+                <%= link_to_external build.ci_link, title: "link to CI" do %>
                   <%= inline_svg('workflow.svg', classname: "inline-flex w-8") %>
                 <% end %>
               <% end %>
 
               <% if build.download_url.present? %>
-                <%= link_to_external build.download_url do %>
+                <%= link_to_external build.download_url, title: "download build" do %>
                   <%= inline_svg('download.svg', classname: "inline-flex w-8") %>
                 <% end %>
               <% end %>

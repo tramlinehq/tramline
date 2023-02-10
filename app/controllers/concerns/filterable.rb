@@ -38,7 +38,6 @@ module Filterable
 
     def set_query_sortables
       return if filterable_params[:sort_column].blank?
-
       @query_params.add_sorting(
         filterable_params[:sort_column].presence,
         filterable_params[:sort_direction].presence
@@ -47,7 +46,6 @@ module Filterable
 
     def set_query_filters
       return if filterable_params[:filters].blank?
-
       filterable_params[:filters].keys.each do |name|
         filter_status = filterable_params[:filters][name].presence
         @query_params.add_filter(name, filter_status) if filter_status
@@ -56,7 +54,7 @@ module Filterable
 
     def set_query_search_pattern
       return if filterable_params[:search_pattern].blank?
-      @query_params.add_search_pattern(filterable_params[:search_pattern])
+      @query_params.add_search_pattern(filterable_params[:search_pattern].squish)
     end
 
     def set_query_params
