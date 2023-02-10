@@ -31,6 +31,8 @@ class DeploymentRun < ApplicationRecord
   delegate :external?, :google_play_store_integration?, :slack_integration?, :store?, :app_store_integration?, to: :deployment
   delegate :deployment_number, :integration, :deployment_channel, :deployment_channel_name, to: :deployment
 
+  scope :for_ids, ->(ids) { includes(deployment: :integration).where(id: ids) }
+
   STAMPABLE_REASONS = [
     "created",
     "bundle_identifier_not_found",
