@@ -5,7 +5,7 @@ module Filterable
     helper_method :get_query_filter
 
     def filterable_params
-      params.permit(:sort_column, :sort_direction, :page, :search_pattern, filters: {})
+      @filterable_params ||= params.permit(:id, :sort_column, :sort_direction, :page, :search_pattern, filters: {})
     end
 
     def gen_query_filters(name, value)

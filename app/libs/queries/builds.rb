@@ -75,8 +75,8 @@ class Queries::Builds
         .includes(step_run: {step: [deployments: :integration]})
         .select(:id, :train_step_runs_id)
         .where(apps: {id: app.id})
-        .where(params.search_by(search_params))
-        .where(params.filter_by(ANDROID_ATTR_MAPPING))
+        .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.search_by(search_params)))
+        .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.filter_by(ANDROID_ATTR_MAPPING)))
   end
 
   def ios_all
@@ -108,8 +108,8 @@ class Queries::Builds
         .select("DISTINCT (external_builds.build_number) AS version_code")
         .select(distinct_deployment_runs)
         .where(apps: {id: app.id})
-        .where(params.search_by(search_params))
-        .where(params.filter_by(IOS_ATTR_MAPPING))
+        .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.search_by(search_params)))
+        .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.filter_by(IOS_ATTR_MAPPING)))
   end
 
   def ios_deployments(record)
