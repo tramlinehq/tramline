@@ -6,12 +6,12 @@ class AllBuildsTableComponent < ViewComponent::Base
   include ReleasesHelper
   include DeploymentsHelper
 
-  def initialize(builds:, paginator:, query_params:, sort_column:, sort_direction:)
+  def initialize(builds:, paginator:, query_params:)
     @builds = builds
     @paginator = paginator
     @query_params = query_params
-    @sort_column = sort_column
-    @sort_direction = sort_direction
+    @sort_column = query_params[:sort_column]
+    @sort_direction = query_params[:sort_direction]
   end
 
   attr_reader :builds, :paginator

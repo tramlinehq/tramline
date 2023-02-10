@@ -1,12 +1,22 @@
 class Queries::Helpers::Parameters
+  DEFAULT_SORT_DIRECTION = "desc"
+
   def initialize
     @search_pattern = nil
     @limit = nil
     @offset = nil
     @filters = {}
+    @sort_column = nil
+    @sort_direction = DEFAULT_SORT_DIRECTION
   end
 
   attr_reader :limit, :offset
+  attr_accessor :sort_column
+
+  def add_sorting(col, dir)
+    @sort_column = col
+    @sort_direction = dir || DEFAULT_SORT_DIRECTION
+  end
 
   def add_search_pattern(q)
     @search_pattern = q
@@ -50,7 +60,9 @@ class Queries::Helpers::Parameters
     end
   end
 
-  def sort = nil
+  def sort
+    "#{@sort_column} #{@sort_direction}"
+  end
 
   private
 

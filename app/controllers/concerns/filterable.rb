@@ -37,8 +37,12 @@ module Filterable
     end
 
     def set_query_sortables
-      @sort_column = filterable_params[:sort_column].presence
-      @sort_direction = filterable_params[:sort_direction].presence
+      return if filterable_params[:sort_column].blank?
+
+      @query_params.add_sorting(
+        filterable_params[:sort_column].presence,
+        filterable_params[:sort_direction].presence
+      )
     end
 
     def set_query_filters

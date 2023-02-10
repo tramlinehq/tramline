@@ -1,6 +1,6 @@
 class Queries::Builds
   DEFAULT_SORT_COLUMN = "version_code"
-  DEFAULT_SORT_DIRECTION = "desc"
+
   BASE_ATTR_MAPPING = {
     version_code: Releases::Step::Run.arel_table[:build_number],
     version_name: Releases::Step::Run.arel_table[:build_version],
@@ -24,11 +24,10 @@ class Queries::Builds
     new(**params).count
   end
 
-  def initialize(app:, params:, sort_column: nil, sort_direction: nil)
+  def initialize(app:, params:)
     @app = app
     @params = params
-    @sort_column = sort_column || DEFAULT_SORT_COLUMN
-    @sort_direction = sort_direction || DEFAULT_SORT_DIRECTION
+    params.sort_column ||= DEFAULT_SORT_COLUMN
   end
 
   attr_reader :app, :sort_column, :sort_direction, :params
@@ -63,7 +62,7 @@ class Queries::Builds
     @selected_records ||=
       android_records
         .select(select_attrs(ANDROID_ATTR_MAPPING))
-        .order("#{sort_column} #{sort_direction}")
+        .order(params.sort)
         .limit(params.limit)
         .offset(params.offset)
   end
@@ -97,7 +96,7 @@ class Queries::Builds
     @selected_records ||=
       ios_records
         .select(select_attrs(IOS_ATTR_MAPPING.except(:version_code)))
-        .order("#{sort_column} #{sort_direction}")
+        .order(params.sort)
         .limit(params.limit)
         .offset(params.offset)
   end

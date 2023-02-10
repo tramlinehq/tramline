@@ -64,14 +64,7 @@ class AppsController < SignedInApplicationController
     gen_query_filters(:release_status, Releases::Train::Run.statuses[:finished])
     set_query_helpers
     set_query_pagination(Queries::Builds.count(app: @app, params: @query_params))
-
-    @builds =
-      Queries::Builds.all(
-        app: @app,
-        params: @query_params,
-        sort_column: @sort_column,
-        sort_direction: @sort_direction
-      )
+    @builds = Queries::Builds.all(app: @app, params: @query_params)
   end
 
   private
