@@ -1,0 +1,14 @@
+<% if body? %>
+  <%= button_to path,
+                method: http_method,
+                class: styles,
+                params: button_params do %>
+    <%= body %>
+  <% end %>
+<% else %>
+  <%= button_to name,
+                path,
+                method: http_method,
+                class: styles,
+                params: button_params %>
+<% end %>

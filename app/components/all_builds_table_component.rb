@@ -6,12 +6,12 @@ class AllBuildsTableComponent < ViewComponent::Base
   include ReleasesHelper
   include DeploymentsHelper
 
-  def initialize(builds:, paginator:, path:, sort_column:, sort_direction:)
+  def initialize(builds:, paginator:, query_params:)
     @builds = builds
     @paginator = paginator
-    @path = path
-    @sort_column = sort_column
-    @sort_direction = sort_direction
+    @query_params = query_params
+    @sort_column = query_params[:sort_column]
+    @sort_direction = query_params[:sort_direction]
   end
 
   attr_reader :builds, :paginator
@@ -38,6 +38,14 @@ class AllBuildsTableComponent < ViewComponent::Base
     release_status_badge(build.release_status)
   end
 
+  def external_release_status?
+    builds.first.external_release_status.present?
+  end
+
+  def external_release_status(build)
+    status_badge(build.external_release_status.titleize.humanize, %w[bg-sky-100 text-sky-600 mx-1])
+  end
+
   def deployments(build)
     tag.div do
       build.deployments.collect do |d|
@@ -53,7 +61,7 @@ class AllBuildsTableComponent < ViewComponent::Base
   end
 
   def path(column, direction)
-    all_builds_app_path(sort_column: column, sort_direction: direction)
+    all_builds_app_path(@query_params.merge(sort_column: column, sort_direction: direction))
   end
 
   def turbo_data

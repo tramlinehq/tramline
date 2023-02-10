@@ -6,32 +6,39 @@
   </div>
 </div>
 
-
 <div class="border-t border-slate-200">
-  <div class="space-y-8 mt-8">
-    <% if @build_count > 0 %>
+  <div class="grid grid-cols-1 mt-8">
+    <div class="col-span-1">
+      <%= render SearchBarComponent.new(
+        path: all_builds_app_path(@app, *@all_builds_params),
+        placeholder: "Search by version code or name",
+        value: params[:search_pattern],
+        turbo_frame: "all_builds") %>
+    </div>
 
-      <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2 mb-4">
-        <button disabled class="inline-flex text-sm justify-end font-medium rounded-full px-3 py-2 border border-slate-200 text-slate-600 disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed shadow-none">
-          Released <span class="ml-1 text-indigo-400"><%= @app.runs.released.size %></span>
-        </button>
+    <%= tag.turbo_frame id: "all_builds", target: "_top", data: { turbo_action: "advance" }, class: "col-span-full" do %>
+      <div class="col-span-1 my-4">
+        <%= render FilterButtonComponent.new(
+          name: "Completed",
+          on: @filters.dig(:release_status, :is_on),
+          path: all_builds_app_path(@app),
+          method: :get,
+          filter_params: get_query_filter(:release_status),
+          query_params: @all_builds_params) %>
       </div>
 
-      <%= render(
-            AllBuildsTableComponent.new(
-              builds: @builds,
-              paginator: @pagy,
-              path: @path,
-              sort_column: @sort_column,
-              sort_direction: @sort_direction
-            )
-          ) %>
-
-      <footer>
-        <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
-      </footer>
-    <% else %>
-      <p class="text-lg text-slate-400">No builds found</p>
+      <% if @builds.present? %>
+        <%= render AllBuildsTableComponent.new(
+          builds: @builds,
+          paginator: @pagy,
+          query_params: @all_builds_params) %>
+        <footer>
+          <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
+        </footer>
+      <% else %>
+        <p class="text-lg text-slate-400 my-4">No builds found</p>
+      <% end %>
     <% end %>
   </div>
 </div>
+

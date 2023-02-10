@@ -1,8 +1,6 @@
 require "irb/completion"
 require "rubygems"
 
-ActiveRecord::Base.logger.level = 1 if defined?(ActiveRecord)
-
 IRB.conf[:SAVE_HISTORY] = 1000
 IRB.conf[:HISTORY_FILE] = "#{ENV["HOME"]}/.irb-save-history"
 IRB.conf[:USE_AUTOCOMPLETE] = false

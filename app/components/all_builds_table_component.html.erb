@@ -1,26 +1,34 @@
-<%= tag.turbo_frame id: "all_builds", target: "_top", data: { turbo_action: "advance" } do %>
+<div class="overflow-x-auto">
   <table class="table-auto w-full">
     <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
     <tr>
-      <th class="px-3 py-3 whitespace-nowrap">
+      <th class="px-3 px-2 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <%= sort_link(column: "version_code", label: "Version Code") %>
         </div>
       </th>
 
-      <th class="py-3 whitespace-nowrap">
+      <th class="px-2 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <%= sort_link(column: "version_name", label: "Version Name") %>
         </div>
       </th>
 
-      <th class="py-3 whitespace-nowrap">
+      <th class="px-2 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <%= sort_link(column: "release_status", label: "Release Status") %>
         </div>
       </th>
 
-      <th class="py-3 whitespace-nowrap">
+      <% if external_release_status? %>
+        <th class="px-2 py-3 whitespace-nowrap">
+          <div class="font-semibold text-left">
+            <%= sort_link(column: "external_release_status", label: "External Status") %>
+          </div>
+        </th>
+      <% end %>
+
+      <th class="px-2 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <div class="font-semibold text-left">
             <%= sort_link(column: "built_at", label: "Built on") %>
@@ -28,25 +36,25 @@
         </div>
       </th>
 
-      <th class="py-3 whitespace-nowrap">
+      <th class="px-2 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <%= sort_link(column: "train_name", label: "Train") %>
         </div>
       </th>
 
-      <th class="py-3 whitespace-nowrap">
+      <th class="px-2 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <%= sort_link(column: "step_name", label: "Step") %>
         </div>
       </th>
 
-      <th class="py-3 whitespace-nowrap">
+      <th class="px-2 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <%= Deployment.display.pluralize %>
         </div>
       </th>
 
-      <th class="py-3 whitespace-nowrap">
+      <th class="px-2 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <div class="font-semibold text-left">
             <span>Actions</span>
@@ -59,59 +67,67 @@
     <tbody class="text-sm divide-y divide-slate-200">
     <% builds.each do |build| %>
       <tr class="hover:bg-slate-50 font-normal text-black-800">
-        <td class="pl-3 py-3 whitespace-nowrap">
+        <td class="pl-3 px-2 py-3 whitespace-nowrap">
           <div class="text-left font-medium">
             <%= build.version_code %>
           </div>
         </td>
 
-        <td class="py-3 whitespace-nowrap">
+        <td class="px-2 py-3 whitespace-nowrap">
           <div class="text-left">
             <%= build.version_name %>
           </div>
         </td>
 
-        <td class="py-3 whitespace-nowrap">
+        <td class="px-2 py-3 whitespace-nowrap">
           <div class="text-left">
             <%= release_status(build) %>
           </div>
         </td>
 
-        <td class="py-3 whitespace-nowrap">
+        <% if external_release_status? %>
+          <td class="px-2 py-3 whitespace-nowrap">
+            <div class="text-left">
+              <%= external_release_status(build) %>
+            </div>
+          </td>
+        <% end %>
+
+        <td class="px-2 py-3 whitespace-nowrap">
           <div class="text-left">
             <%= time_format build.built_at, with_year: true %>
           </div>
         </td>
 
-        <td class="py-3 whitespace-nowrap">
+        <td class="px-2 py-3 whitespace-nowrap">
           <div class="text-left">
             <%= build.train_name %>
           </div>
         </td>
 
-        <td class="py-3 whitespace-nowrap">
+        <td class="px-2 py-3 whitespace-nowrap">
           <div class="text-left">
             <%= build.step_name %>
           </div>
         </td>
 
-        <td class="py-3 whitespace-nowrap">
+        <td class="px-2 py-3 whitespace-nowrap">
           <div class="text-left">
             <%= deployments(build) %>
           </div>
         </td>
 
-        <td class="py-3 whitespace-nowrap">
+        <td class="px-2 py-3 whitespace-nowrap">
           <div class="text-left">
             <span>
               <% if build.ci_link.present? %>
-                <%= link_to_external build.ci_link do %>
+                <%= link_to_external build.ci_link, title: "link to CI" do %>
                   <%= inline_svg('workflow.svg', classname: "inline-flex w-8") %>
                 <% end %>
               <% end %>
 
               <% if build.download_url.present? %>
-                <%= link_to_external build.download_url do %>
+                <%= link_to_external build.download_url, title: "download build" do %>
                   <%= inline_svg('download.svg', classname: "inline-flex w-8") %>
                 <% end %>
               <% end %>
@@ -122,8 +138,8 @@
     <% end %>
     </tbody>
   </table>
+</div>
 
-  <div class="pt-5">
-    <%= render PaginationComponent.new(results: paginator, turbo_frame: "all_builds", info: true) %>
-  </div>
-<% end %>
+<div class="pt-5">
+  <%= render PaginationComponent.new(results: paginator, turbo_frame: "all_builds", info: true) %>
+</div>

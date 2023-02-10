@@ -1,5 +1,6 @@
 class AppsController < SignedInApplicationController
   include Pagy::Backend
+  include Filterable
 
   before_action :require_write_access!, only: %i[new create edit update destroy]
   before_action :set_app, only: %i[show edit update destroy all_builds]
@@ -59,22 +60,11 @@ class AppsController < SignedInApplicationController
   end
 
   def all_builds
-    @sort_column = params[:sort_column].presence
-    @sort_direction = params[:sort_direction].presence
-
-    @build_count = Queries::Builds.count(app: @app)
-
-    @pagy =
-      Pagy.new(count: @build_count, page: params[:page])
-
-    @builds =
-      Queries::Builds.all(
-        app: @app,
-        limit: @pagy.items,
-        offset: @pagy.offset,
-        sort_column: @sort_column,
-        sort_direction: @sort_direction
-      )
+    @all_builds_params = filterable_params.except(:id)
+    gen_query_filters(:release_status, Releases::Train::Run.statuses[:finished])
+    set_query_helpers
+    set_query_pagination(Queries::Builds.count(app: @app, params: @query_params))
+    @builds = Queries::Builds.all(app: @app, params: @query_params)
   end
 
   private
