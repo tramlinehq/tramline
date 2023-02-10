@@ -96,9 +96,4 @@ module ReleasesHelper
       "bg-slate-100 text-slate-500"
     end
   end
-
-  # TODO: deprecate this method, it's redundant
-  memoize def finalize_phase_metadata(release)
-    release.finalize_phase_metadata
-  end
 end
