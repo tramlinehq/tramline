@@ -23,6 +23,16 @@ module Site
     #
     # config.time_zone = "Central Time (US & Canada)"
 
+    ## EE-specific paths config START
+    ee_paths = config.eager_load_paths.each_with_object([]) do |path, memo|
+      ee_path = config.root.join("ee", Pathname.new(path).relative_path_from(config.root))
+      memo << ee_path.to_s if ee_path.exist?
+    end
+    config.eager_load_paths.unshift(*ee_paths)
+
+    config.paths["app/views"].unshift "#{config.root}/ee/app/views"
+    ## EE-specific paths config END
+
     config.eager_load_paths << Rails.root.join("lib")
     config.active_job.queue_adapter = :sidekiq
     config.active_model.i18n_customize_full_message = true
