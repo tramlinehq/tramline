@@ -84,7 +84,7 @@ class Releases::Train::Run < ApplicationRecord
   before_create :set_version
   after_commit -> { create_stamp!(data: {version: release_version}) }, on: :create
 
-  scope :pending_release, -> { where.not(status: :finished) }
+  scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   delegate :app, :pre_release_prs?, to: :train
 
