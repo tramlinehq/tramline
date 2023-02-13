@@ -26,7 +26,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   after_create_commit :refresh_external_app
 
   CHANNELS = [
-    {id: :production, name: "production"},
+    {id: :production, name: "production", is_production: true},
     {id: :beta, name: "open testing"},
     {id: :alpha, name: "closed testing"},
     {id: :internal, name: "internal testing"}
@@ -86,7 +86,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def build_channels
-    channels.map { |channel| channel.slice(:id, :name) }
+    channels.map { |channel| channel.slice(:id, :name, :is_production) }
   end
 
   CHANNEL_DATA_TRANSFORMATIONS = {

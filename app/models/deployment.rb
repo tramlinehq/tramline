@@ -59,4 +59,12 @@ class Deployment < ApplicationRecord
   def deployment_channel_name
     build_artifact_channel["name"]
   end
+
+  def production_channel?
+    store? && build_artifact_channel["is_production"]
+  end
+
+  def staged_rollout
+    [10, 20, 40, 80, 100]
+  end
 end

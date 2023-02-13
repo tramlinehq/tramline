@@ -175,31 +175,6 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  # FIXME: this is cheap hack around not allowing users to re-enter rollout
-  # since that can cause users to downgrade subsequent build rollouts
-  # we want users to only upgrade or keep the same initial rollout they entered the first time
-  # even after subsequent deployment runs / commits land
-  def noninitial?
-    initial_run.present?
-  end
-
-  def promotable?
-    release.on_track? && uploaded? && deployment.google_play_store_integration?
-  end
-
-  def rolloutable?
-    promotable? && deployment.last? && step.last?
-  end
-
-  def initial_run
-    deployment
-      .deployment_runs
-      .includes(step_run: :train_run)
-      .where(step_run: {train_runs: release})
-      .where.not(id:)
-      .first
-  end
-
   def has_uploaded?
     uploaded? || failed? || released?
   end
@@ -230,12 +205,52 @@ class DeploymentRun < ApplicationRecord
       .each { |run| run.upload! }
   end
 
-  def previous_rollout
-    initial_run.initial_rollout_percentage
+  def update_rollout!
+    self.initial_rollout_percentage = next_rollout_percentage
+    save!
+
+    release.with_lock do
+      return unless rolloutable?
+
+      result = provider.promote(deployment_channel, build_number, release_version, initial_rollout_percentage)
+      if result.ok?
+        complete! if next_rollout_percentage.nil?
+      else
+        dispatch_fail!
+        event_stamp!(reason: :promotion_failed, kind: :error, data: stamp_data)
+        elog(result.error)
+      end
+    end
   end
 
+  def promotable?
+    release.on_track? && step.release? && store? && uploaded?
+  end
+
+  def rolloutable?
+    promotable? && deployment.production_channel?
+  end
+
+  def non_rolloutable?
+    promotable? && !deployment.production_channel?
+  end
+
+  # check if staged rollout for this run has begun
+  # if not,
+  # find deployment's last external app, refresh it, use the rollout percentage
+  # mutative, updated on every promote
+  def last_rollout_percentage
+    initial_rollout_percentage
+  end
+
+  def next_rollout_percentage
+    return deployment.staged_rollout.first if last_rollout_percentage.blank?
+    deployment.staged_rollout[deployment.staged_rollout.find_index(last_rollout_percentage).succ]
+  end
+
+  # check if staged rollout for this run has begun
   def previously_rolled_out?
-    rolloutable? && noninitial?
+    rolloutable? && last_rollout_percentage.present?
   end
 
   def provider

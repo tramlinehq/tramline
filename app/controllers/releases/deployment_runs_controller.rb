@@ -10,6 +10,12 @@ class Releases::DeploymentRunsController < SignedInApplicationController
     redirect_back fallback_location: root_path, notice: "Promoted this deployment!"
   end
 
+  def rollout
+    @deployment_run.update_rollout!
+
+    redirect_back fallback_location: root_path, notice: "Updated the rollout for this deployment!"
+  end
+
   private
 
   def set_deployment_run
