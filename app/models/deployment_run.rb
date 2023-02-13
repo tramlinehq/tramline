@@ -84,7 +84,7 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :complete do
-      after { step_run.finish! if step_run.finished_deployments? }
+      after { step_run.finish_deployment!(deployment) }
       transitions from: [:created, :uploaded, :started, :submitted], to: :released
     end
   end

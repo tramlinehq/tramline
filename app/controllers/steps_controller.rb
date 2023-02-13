@@ -79,7 +79,8 @@ class StepsController < SignedInApplicationController
       :name,
       :description,
       :ci_cd_channel,
-      :release_suffix
+      :release_suffix,
+      :kind
     )
   end
 

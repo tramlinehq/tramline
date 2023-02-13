@@ -89,9 +89,9 @@ class Releases::Step::Run < ApplicationRecord
     end
 
     event(:finish_ci, after_commit: :after_finish_ci) { transitions from: :ci_workflow_started, to: :build_ready }
-    event(:build_found, guard: :ios?, after_commit: :trigger_deploys) { transitions from: :build_ready, to: :build_found_in_store }
+    event(:build_found, guard: :ios?, after_commit: :trigger_deployment) { transitions from: :build_ready, to: :build_found_in_store }
 
-    event(:upload_artifact, after_commit: :trigger_deploys) do
+    event(:upload_artifact, after_commit: :trigger_deployment) do
       before { add_build_artifact(artifacts_url) }
       transitions from: :build_ready, to: :build_available
     end
@@ -140,23 +140,6 @@ class Releases::Step::Run < ApplicationRecord
 
   def build_artifact_available?
     build_artifact.present?
-  end
-
-  def previous_deployed_run
-    previous_runs.where(status: [:deployment_started, :deployment_failed, :success]).last
-  end
-
-  def previous_deployments
-    return Deployment.none if previous_deployed_run.blank?
-    previous_deployed_run.running_deployments
-  end
-
-  def other_runs
-    train_run.step_runs_for(step).where.not(id:)
-  end
-
-  def previous_runs
-    other_runs.where("scheduled_at < ?", scheduled_at)
   end
 
   def startable_deployment?(deployment)
@@ -236,18 +219,21 @@ class Releases::Step::Run < ApplicationRecord
     step.ci_cd_channel["id"]
   end
 
+  def first_deployment
+    step.deployments.find_by(deployment_number: 1)
+  end
+
   def finished_deployments?
     deployment_runs.released.size == step.deployments.size
   end
 
-  def trigger_deploys
-    if previous_deployments.any?
-      previous_deployments.each do |deployment|
-        Triggers::Deployment.call(deployment: deployment, step_run: self)
-      end
-    else
-      Triggers::Deployment.call(step_run: self)
-    end
+  def finish_deployment!(deployment)
+    return finish! if finished_deployments?
+    trigger_deployment(deployment.next) if step.review?
+  end
+
+  def trigger_deployment(deployment = first_deployment)
+    Triggers::Deployment.call(step_run: self, deployment: deployment)
   end
 
   private

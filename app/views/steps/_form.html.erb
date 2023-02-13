@@ -9,7 +9,16 @@
     <%= form.text_area :description, class: "form-input w-full mb-1", placeholder: "Describe your step..." %>
   </div>
 
-  <div><!-- to push away the next field to the right--></div>
+  <div>
+    <%= form.label :kind, class: "block text-sm font-medium mb-1" %>
+    <%= form.select :kind,
+                    options_for_select(Releases::Step.kinds, "review"),
+                    { required: true },
+                    { class: "form-input w-full mb-1" } %>
+    <div class="text-sm mt-1">
+      There should be only and at least <strong>one</strong> release step for the train.
+    </div>
+  </div>
 
   <div data-controller="domain--release-suffix-help"
        data-domain--release-suffix-help-version-value="<%= @step.train.version_current %>"

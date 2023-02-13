@@ -1,5 +1,6 @@
 <div class="flex flex-col">
   <div class="text-slate-500 text-sm"><%= simple_format(step.description) %></div>
+  <div class="text-slate-500 text-xs"><%= step.kind.humanize %></div>
 
   <div class="text-xs font-medium align-text-bottom mt-4 mb-1">
     <%= image_tag("workflow.svg", width: 16, class: "inline-flex mr-2") %>
