@@ -42,6 +42,7 @@ class Releases::Train < ApplicationRecord
   scope :running, -> { includes(:runs).where(runs: {status: Releases::Train::Run.statuses[:on_track]}) }
 
   enum status: {
+    draft: "draft",
     active: "active",
     inactive: "inactive"
   }
@@ -62,11 +63,11 @@ class Releases::Train < ApplicationRecord
 
   validate :semver_compatibility
   validate :ready?, on: :create
+  validate :valid_step_configuration, on: :activate_context
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: "can only contain alphanumerics, underscores, hyphens and forward-slashes."}
 
-  before_create :set_current_version!
-  before_create :set_default_status!
-  after_create :create_webhook!
+  before_create :set_current_version
+  before_create :set_default_status
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
   end
@@ -80,15 +81,26 @@ class Releases::Train < ApplicationRecord
     running.any?
   end
 
-  def set_default_status!
-    self.status = Releases::Step.statuses[:active]
+  def set_default_status
+    self.status ||= Releases::Train.statuses[:draft]
+  end
+
+  def activate!
+    transaction do
+      self.status = Releases::Train.statuses[:active]
+      save!(context: :activate_context)
+      create_webhook!
+      true
+    end
+  rescue ActiveRecord::RecordInvalid
+    false
   end
 
   # since callbacks can't inherently return validation errors
   # we raise ActiveRecord::RecordInvalid to fail validations if webhook creation fails
   # currently as a design, we assume that trains are invalid without a corresponding webhook
   def create_webhook!
-    return false if Rails.env.test?
+    return false unless activated?
     vcs_provider.create_webhook!(train_id: id)
   rescue Installations::Errors::WebhookLimitReached => e
     errors.add(:webhooks, e.message)
@@ -96,21 +108,17 @@ class Releases::Train < ApplicationRecord
   end
 
   def create_tag!(branch_name)
-    return false if Rails.env.test?
+    return false unless activated?
     vcs_provider.create_tag!(tag_name, branch_name)
   end
 
-  def create_release!(tag_name)
-    return false if Rails.env.test?
-    vcs_provider.create_release!(tag_name)
-  end
-
   def create_branch!(from, to)
-    return false if Rails.env.test?
+    return false unless activated?
     vcs_provider.create_branch!(from, to)
   end
 
   def notify!(message, type, params)
+    return unless activated?
     return unless app.send_notifications?
     notification_provider.notify!(config.notification_channel_id, message, type, params)
   end
@@ -136,7 +144,7 @@ class Releases::Train < ApplicationRecord
     version_current
   end
 
-  def set_current_version!
+  def set_current_version
     self.version_current = version_seeded_with.semver_bump(:minor)
   end
 
@@ -170,5 +178,15 @@ class Releases::Train < ApplicationRecord
     Semantic::Version.new(version_seeded_with)
   rescue ArgumentError
     errors.add(:version_seeded_with, "Please choose a valid semver format, eg. major.minor.patch")
+  end
+
+  def valid_step_configuration
+    unless steps.release.size == 1
+      errors.add(:steps, "there should be one release step")
+    end
+  end
+
+  def activated?
+    !Rails.env.test? && active?
   end
 end

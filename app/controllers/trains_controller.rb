@@ -32,6 +32,18 @@ class TrainsController < SignedInApplicationController
     end
   end
 
+  def activate
+    respond_to do |format|
+      if @train.activate!
+        format.html { redirect_to train_path, notice: "Train was successfully activated." }
+        format.json { render :show, status: :ok, location: @train }
+      else
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: @train.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
   def deactivate
     params = {
       status: Releases::Train.statuses[:inactive]
@@ -52,7 +64,7 @@ class TrainsController < SignedInApplicationController
     respond_to do |format|
       if @train.update(train_update_params)
         format.html { redirect_to train_path, notice: "Train was updated" }
-        format.json { render :show, status: :created, location: @train }
+        format.json { render :show, status: :ok, location: @train }
       else
         format.html { render :show, status: :unprocessable_entity }
         format.json { render json: @train.errors, status: :unprocessable_entity }

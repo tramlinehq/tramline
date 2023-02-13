@@ -6,8 +6,7 @@ describe Releases::Step::Run do
   end
 
   describe "#similar_deployment_runs_for" do
-    let(:active_train) { create(:releases_train, :active) }
-    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: active_train) }
+    let(:steps) { create_list(:releases_step, 2, :with_deployment) }
     let(:step_run) { create(:releases_step_run, step: steps.first) }
 
     it "ignores itself" do
@@ -58,9 +57,8 @@ describe Releases::Step::Run do
   end
 
   describe "#previous_deployed_run" do
-    let(:active_train) { create(:releases_train, :active) }
-    let(:step) { create(:releases_step, :with_deployment, train: active_train) }
-    let(:train_run) { create(:releases_train_run, train: active_train) }
+    let(:step) { create(:releases_step, :with_deployment) }
+    let(:train_run) { create(:releases_train_run, train: step.train) }
 
     context "when there is a last run that has a deployment" do
       it "returns for deployment_started" do
@@ -98,11 +96,10 @@ describe Releases::Step::Run do
   end
 
   describe "#previous_runs" do
-    let(:active_train) { create(:releases_train, :active) }
-    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: active_train) }
+    let(:steps) { create_list(:releases_step, 2, :with_deployment) }
 
     it "returns all previous runs, not later runs" do
-      train_run = create(:releases_train_run, train: active_train)
+      train_run = create(:releases_train_run, train: steps.first.train)
       step1_run1 = create(:releases_step_run, step: steps.first, train_run: train_run)
       step1_run2 = create(:releases_step_run, step: steps.first, train_run: train_run)
       _step1_run3 = create(:releases_step_run, step: steps.first, train_run: train_run)
@@ -113,10 +110,10 @@ describe Releases::Step::Run do
 
   describe "#other_runs" do
     let(:active_train) { create(:releases_train, :active) }
-    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: active_train) }
+    let(:steps) { create_list(:releases_step, 2, :with_deployment) }
 
     it "returns all runs except itself" do
-      train_run = create(:releases_train_run, train: active_train)
+      train_run = create(:releases_train_run, train: steps.first.train)
       step1_run1 = create(:releases_step_run, step: steps.first, train_run: train_run)
       step1_run2 = create(:releases_step_run, step: steps.first, train_run: train_run)
       step1_run3 = create(:releases_step_run, step: steps.first, train_run: train_run)
@@ -126,49 +123,50 @@ describe Releases::Step::Run do
   end
 
   describe "#manually_startable_deployment?" do
-    let(:active_train) { create(:releases_train, :active) }
+    let(:train) { create(:releases_train) }
 
     it "is false when train is inactive" do
-      step = create(:releases_step, :with_deployment, train: create(:releases_train, :inactive))
+      step = create(:releases_step, :with_deployment, train: train)
       deployment = create(:deployment, step: step)
+      train.update(status: Releases::Train.statuses[:inactive])
       step_run = create(:releases_step_run, step: step)
 
       expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
     it "is false when there are no active train runs" do
-      step = create(:releases_step, :with_deployment, train: active_train)
+      step = create(:releases_step, :with_deployment, train: train)
       step_run = create(:releases_step_run, step: step)
       deployment = create(:deployment, step: step)
-      _inactive_train_run = create(:releases_train_run, train: active_train, status: "finished")
+      _inactive_train_run = create(:releases_train_run, train: train, status: "finished")
 
       expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
     it "is false when it is the first deployment" do
-      step = create(:releases_step, :with_deployment, train: active_train)
+      step = create(:releases_step, :with_deployment, train: train)
       step_run = create(:releases_step_run, step: step)
       deployment = create(:deployment, step: step)
-      _active_train_run = create(:releases_train_run, train: active_train, status: "on_track")
+      _active_train_run = create(:releases_train_run, train: train, status: "on_track")
 
       expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
     it "is false when no other deployment runs have happened" do
-      step = create(:releases_step, :with_deployment, train: active_train)
+      step = create(:releases_step, :with_deployment, train: train)
       step_run = create(:releases_step_run, step: step)
       deployment = create(:deployment, step: step)
-      _active_train_run = create(:releases_train_run, train: active_train, status: "on_track")
+      _active_train_run = create(:releases_train_run, train: train, status: "on_track")
       _deployment_run = create(:deployment_run, step_run: step_run, deployment: deployment, status: "released")
 
       expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
     it "is true when it is the running step's next-in-line deployment" do
-      step = create(:releases_step, :with_deployment, train: active_train)
-      _inactive_train_run = create(:releases_train_run, train: active_train, status: "finished")
+      step = create(:releases_step, :with_deployment, train: train)
+      _inactive_train_run = create(:releases_train_run, train: train, status: "finished")
       inactive_step_run = create(:releases_step_run, step: step, status: "success")
-      _active_train_run = create(:releases_train_run, train: active_train, status: "on_track")
+      _active_train_run = create(:releases_train_run, train: train, status: "on_track")
       running_step_run = create(:releases_step_run, step: step, status: "on_track")
       deployment1 = create(:deployment, step: step)
       _deployment_run1 = create(:deployment_run, step_run: running_step_run, deployment: deployment1, status: "released")

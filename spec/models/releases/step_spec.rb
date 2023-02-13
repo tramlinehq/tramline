@@ -35,5 +35,22 @@ describe Releases::Step do
 
       expect(step.reload.deployments.pluck(:deployment_number)).to contain_exactly(1, 2)
     end
+
+    context "when train in draft mode" do
+      let(:train) { create(:releases_train, :draft) }
+
+      it "create is allowed" do
+        create(:releases_step, :with_deployment, train: train)
+        expect(train.reload.steps.size).to be(1)
+      end
+    end
+
+    context "when train in active mode" do
+      let(:train) { create(:releases_train, :active) }
+
+      it "create is disallowed" do
+        expect(build(:releases_step, :with_deployment, train: train)).not_to be_valid
+      end
+    end
   end
 end

@@ -19,7 +19,7 @@ class Triggers::Release
 
   # FIXME: should we take a lock around this train? what is someone double triggers the run?
   def call
-    return Response.new(:unprocessable_entity, "Cannot start a train that is inactive!") if train.inactive?
+    return Response.new(:unprocessable_entity, "Cannot start a train that is not active!") unless train.active?
     return Response.new(:unprocessable_entity, "Cannot start a train that has no steps. Please add at least one step.") if train.steps.empty?
     return Response.new(:unprocessable_entity, "A release is already in progress!") if train.active_run.present?
     return Response.new(:unprocessable_entity, "Cannot start a new release before wrapping up existing releases!") if train.runs.pending_release?
@@ -50,7 +50,7 @@ class Triggers::Release
 
   def create_release
     @release =
-      train.runs.create(
+      train.runs.create!(
         code_name: Haikunator.haikunate(100),
         scheduled_at: starting_time,
         branch_name: release_branch,
