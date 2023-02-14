@@ -15,7 +15,7 @@ class StagedRollout < ApplicationRecord
   include Loggable
 
   belongs_to :deployment_run
-  delegate :promote_with, to: :deployment_run
+  delegate :release_with, to: :deployment_run
 
   validates :current_stage, numericality: {greater_than_or_equal_to: 0, allow_nil: true}
 
@@ -68,10 +68,14 @@ class StagedRollout < ApplicationRecord
     current_stage.nil? ? 0 : current_stage.succ
   end
 
+  def reached?(stage)
+    current_stage && current_stage >= stage
+  end
+
   def move_to_next_stage!
     return complete! if finished?
 
-    promote_with(next_rollout_percentage) do |_ok_result|
+    release_with(rollout_value: next_rollout_percentage) do |_ok_result|
       update!(current_stage: next_stage)
     end
   end

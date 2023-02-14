@@ -72,6 +72,7 @@ class DeploymentRun < ApplicationRecord
 
   enum status: STATES
 
+  # FIXME: write functions/events that are not tied to one particular store
   aasm safe_state_machine_params do
     state :created, initial: true, before_enter: -> { step_run.startable_deployment?(deployment) }
     state(*STATES.keys)
@@ -85,8 +86,8 @@ class DeploymentRun < ApplicationRecord
       transitions from: :started, to: :submitted
     end
 
-    event :upload do
-      after { wrap_up_uploads! }
+    event :upload, after_commit: -> { Deployments::ReleaseJob.perform_later(id) } do
+      after { wrap_up_uploads! } # FIXME: should not loop back
       transitions from: :started, to: :uploaded
     end
 
@@ -96,7 +97,7 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :start_rollout, guard: :staged_rollout? do
-      before { rollout! }
+      after { rollout! }
       transitions from: :uploaded, to: :rollout_started
     end
 
@@ -105,7 +106,7 @@ class DeploymentRun < ApplicationRecord
       transitions from: [:uploaded, :submitted, :rollout_started], to: :failed
     end
 
-    event :complete do
+    event :complete, after_commit: -> { event_stamp!(reason: :released, kind: :success, data: stamp_data) } do
       after { step_run.finish_deployment!(deployment) }
       transitions from: [:created, :uploaded, :started, :submitted, :rollout_started], to: :released
     end
@@ -141,29 +142,31 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  def rollout!
-    create_staged_rollout!(config: deployment.staged_rollout_config).move_to_next_stage!
+  # FIXME: add case for production release with staged rollout disabled on deployment
+  def start_release!
+    return unless store?
+    return start_rollout! if staged_rollout?
+    fully_release_to_playstore! if google_play_store_integration?
   end
 
-  def promote!
-    return unless store?
-    return unless google_play_store_integration?
+  def fully_release_to_playstore!
+    release_with(rollout_value: 100) { |_ok_result| complete! }
+  end
 
-    if staged_rollout?
-      start_rollout!
+  def rollout!
+    result = provider.create_draft_release(deployment_channel, build_number, release_version)
+    if result.ok?
+      create_staged_rollout!(config: deployment.staged_rollout_config)
     else
-      promote_with(100) do |_ok_result|
-        complete!
-        event_stamp!(reason: :released, kind: :success, data: stamp_data)
-      end
+      # do something
     end
   end
 
-  def promote_with(value)
+  def release_with(rollout_value:)
     release.with_lock do
       return unless promotable?
 
-      result = provider.promote(deployment_channel, build_number, release_version, value)
+      result = provider.create_release(deployment_channel, build_number, release_version, rollout_value)
       if result.ok?
         yield result
       else
@@ -194,6 +197,7 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
+  # FIXME: rename this to release_to_testflight!
   def promote_to_appstore!
     return unless app_store_integration?
     provider.promote_to_testflight(deployment_channel, build_number)
@@ -207,7 +211,6 @@ class DeploymentRun < ApplicationRecord
       return if released?
       provider.deploy!(deployment_channel, {step_run: step_run})
       complete!
-      event_stamp!(reason: :released, kind: :success, data: stamp_data)
     end
   end
 
@@ -217,7 +220,6 @@ class DeploymentRun < ApplicationRecord
 
   # FIXME: should we take a lock around this SR? what is someone double triggers the run?
   def start_upload!
-    # TODO: simplify this logic
     if store?
       other_deployment_runs = step_run.similar_deployment_runs_for(self)
       return upload! if other_deployment_runs.any?(&:has_uploaded?)
@@ -230,7 +232,7 @@ class DeploymentRun < ApplicationRecord
 
   def start_distribution!
     return unless store? && app_store_integration?
-    Deployments::AppStoreConnect::TestFlightPromoteJob.perform_later(id)
+    Deployments::AppStoreConnect::TestFlightPromoteJob.perform_later(id) # FIXME: rename this to TestFlightReleaseJob
   end
 
   def wrap_up_uploads!
@@ -246,18 +248,14 @@ class DeploymentRun < ApplicationRecord
   end
 
   def rolloutable?
-    step.release? && promotable? && deployment.staged_rollout?
+    step.release? && promotable? && deployment.staged_rollout? && rollout_started?
   end
 
-  def non_rolloutable?
-    promotable? && !deployment.staged_rollout?
-  end
+  private
 
   def provider
     integration.providable
   end
-
-  private
 
   def stamp_data
     {

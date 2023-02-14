@@ -26,12 +26,20 @@ module Installations
       end
     end
 
-    def promote(track_name, version_code, release_version, rollout_percentage)
+    def create_release(track_name, version_code, release_version, rollout_percentage)
       rollout_percentage = BigDecimal(rollout_percentage)
 
       execute do
         edit = client.insert_edit(package_name)
-        edit_track(edit, track_name, version_code, release_version, rollout_percentage)
+        edit_track(edit, track_name, version_code, release_version, rollout_percentage:)
+        client.commit_edit(package_name, edit.id)
+      end
+    end
+
+    def create_draft_release(track_name, version_code, release_version)
+      execute do
+        edit = client.insert_edit(package_name)
+        edit_track(edit, track_name, version_code, release_version, draft: true)
         client.commit_edit(package_name, edit.id)
       end
     end
@@ -46,31 +54,34 @@ module Installations
       end
     end
 
-    def edit_track(edit, track_name, version_code, release_version, rollout_percentage)
+    def edit_track(edit, track_name, version_code, release_version, rollout_percentage: nil, draft: false)
       client.update_edit_track(
         package_name,
         edit.id,
         track_name,
-        track(track_name, version_code, release_version, rollout_percentage)
+        track(track_name, version_code, release_version, rollout_percentage:, draft:)
       )
     end
 
-    def track(track_name, version_code, release_version, rollout_percentage)
+    def track(track_name, version_code, release_version, rollout_percentage: nil, draft: false)
       ANDROID_PUBLISHER::Track.new(
         track: track_name,
-        releases: [release(version_code, release_version, rollout_percentage)]
+        releases: [release(version_code, release_version, rollout_percentage:, draft:)]
       )
     end
 
-    def release(version_code, release_version, rollout_percentage)
+    def release(version_code, release_version, rollout_percentage: nil, draft: false)
+      Rails.logger.info "RELEASING TO PLAYSTORE WITH", [version_code, release_version, rollout_percentage, draft]
       params = {
         name: release_version,
-        status: release_status(rollout_percentage),
+        status: release_status(rollout_percentage, draft),
         version_codes: [version_code]
       }
 
-      user_fraction = user_fraction(rollout_percentage)
-      params[:user_fraction] = user_fraction if user_fraction < 1.0
+      if rollout_percentage
+        user_fraction = user_fraction(rollout_percentage)
+        params[:user_fraction] = user_fraction if user_fraction < 1.0
+      end
 
       ANDROID_PUBLISHER::TrackRelease.new(**params)
     end
@@ -79,7 +90,8 @@ module Installations
       rollout_percentage.to_f / 100.0
     end
 
-    def release_status(rollout_percentage)
+    def release_status(rollout_percentage, draft)
+      return "draft" if draft
       rollout_percentage.eql?(100) ? "completed" : "inProgress"
     end
 
