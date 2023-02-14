@@ -17,6 +17,8 @@ class StagedRollout < ApplicationRecord
   belongs_to :deployment_run
   delegate :promote_with, to: :deployment_run
 
+  validates :current_stage, numericality: {greater_than_or_equal_to: 0, allow_nil: true}
+
   STATES = {
     started: "started",
     paused: "paused",
@@ -50,7 +52,7 @@ class StagedRollout < ApplicationRecord
   end
 
   def last_rollout_percentage
-    config[current_stage]
+    config[current_stage] unless current_stage.nil?
   end
 
   def next_rollout_percentage

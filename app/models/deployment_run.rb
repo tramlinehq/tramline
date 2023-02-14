@@ -95,14 +95,14 @@ class DeploymentRun < ApplicationRecord
       transitions from: :started, to: :upload_failed
     end
 
-    event :dispatch_fail do
-      after { step_run.fail_deploy! }
-      transitions from: [:uploaded, :submitted], to: :failed
-    end
-
     event :start_rollout, guard: :staged_rollout? do
       before { rollout! }
       transitions from: :uploaded, to: :rollout_started
+    end
+
+    event :dispatch_fail do
+      after { step_run.fail_deploy! }
+      transitions from: [:uploaded, :submitted, :rollout_started], to: :failed
     end
 
     event :complete do
@@ -242,7 +242,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def promotable?
-    release.on_track? && store? && uploaded?
+    release.on_track? && store? && (uploaded? || rollout_started?)
   end
 
   def rolloutable?

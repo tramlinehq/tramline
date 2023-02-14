@@ -29,6 +29,14 @@ FactoryBot.define do
       status { "failed" }
     end
 
+    trait :rollout_started do
+      status { "rollout_started" }
+    end
+
+    trait :with_staged_rollout do
+      deployment { association :deployment, :with_staged_rollout, :with_google_play_store, step: step_run.step }
+    end
+
     trait :with_google_play_store do
       deployment { association :deployment, :with_google_play_store, step: step_run.step }
     end
