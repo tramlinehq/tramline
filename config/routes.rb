@@ -83,7 +83,13 @@ Rails.application.routes.draw do
             resources :deployment_runs, only: [], shallow: true do
               member do
                 patch :promote
-                patch :rollout
+              end
+
+              resource :staged_rollout, only: [] do
+                member do
+                  patch :increase
+                  patch :halt
+                end
               end
             end
           end

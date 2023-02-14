@@ -318,4 +318,97 @@ describe DeploymentRun do
       expect(step_run.reload.success?).to be(false)
     end
   end
+
+  describe "#start_rollout!" do
+    let(:step) { create(:releases_step, :with_deployment) }
+    let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
+    let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:promote).and_return(GitHub::Result.new)
+    end
+
+    it "only starts when staged rollout is enabled for the deployment" do
+      deployment = create(:deployment, :with_google_play_store, step: step_run.step)
+      run = create(:deployment_run, :uploaded, deployment:)
+
+      expect { run.start_rollout! }.to raise_error(AASM::InvalidTransition)
+    end
+
+    it "creates a staged rollout association" do
+      deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
+      run = create(:deployment_run, :uploaded, deployment:)
+
+      run.start_rollout!
+
+      expect(run.reload.staged_rollout).to be_present
+    end
+
+    it "moves the staged rollout to the next stage" do
+      staged_rollout_config = [1, 100]
+      deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, staged_rollout_config:, step: step_run.step)
+      run = create(:deployment_run, :uploaded, deployment:)
+
+      run.start_rollout!
+
+      expect(providable_dbl).to have_received(:promote)
+      expect(run.reload.staged_rollout.current_stage).to eq(0)
+      expect(run.reload.staged_rollout.last_rollout_percentage).to eq(1)
+      expect(run.reload.staged_rollout.next_rollout_percentage).to eq(100)
+    end
+
+    it "marks it as rollout_started" do
+      deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
+      run = create(:deployment_run, :uploaded, deployment:)
+
+      run.start_rollout!
+
+      expect(run.reload.rollout_started?).to be(true)
+    end
+  end
+
+  describe "#promote!" do
+    let(:step) { create(:releases_step, :with_deployment) }
+    let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
+    let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+    end
+
+    it "kicks off the rollout if possible" do
+      allow(providable_dbl).to receive(:promote).and_return(GitHub::Result.new)
+      deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
+      run = create(:deployment_run, :uploaded, deployment:)
+
+      run.promote!
+
+      expect(run.reload.rollout_started?).to be(true)
+    end
+
+    context "with no rollout" do
+      it "fully promotes to the store" do
+        full_release_value = 100
+        allow(providable_dbl).to receive(:promote).and_return(GitHub::Result.new)
+        deployment = create(:deployment, :with_google_play_store, step: step_run.step)
+        run = create(:deployment_run, :uploaded, deployment:)
+
+        run.promote!
+
+        expect(providable_dbl).to have_received(:promote).with(anything, anything, anything, full_release_value)
+        expect(run.reload.released?).to be(true)
+      end
+
+      it "completes the run" do
+        allow(providable_dbl).to receive(:promote).and_return(GitHub::Result.new)
+        deployment = create(:deployment, :with_google_play_store, step: step_run.step)
+        run = create(:deployment_run, :uploaded, deployment:)
+
+        run.promote!
+
+        expect(run.reload.released?).to be(true)
+      end
+    end
+  end
 end

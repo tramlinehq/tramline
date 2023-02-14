@@ -34,3 +34,4 @@ Rails/I18nLocaleTexts:
     - 'app/controllers/sign_offs_controller.rb'
     - 'app/controllers/sign_offs_controller.rb'
     - 'app/controllers/sign_offs_controller.rb'
+    - 'app/controllers/releases/staged_rollouts_controller.rb'

@@ -29,9 +29,12 @@ class Deployment < ApplicationRecord
 
   delegate :google_play_store_integration?, :slack_integration?, :store?, :app_store_integration?, to: :integration, allow_nil: true
   delegate :train, to: :step
-  alias_method :staged_rollout?, :is_staged_rollout
 
   before_save :set_deployment_number, if: :new_record?
+
+  def staged_rollout?
+    is_staged_rollout
+  end
 
   def set_deployment_number
     self.deployment_number = step.deployments.maximum(:deployment_number).to_i + 1

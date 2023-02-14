@@ -21,5 +21,11 @@ FactoryBot.define do
     trait :with_slack do
       association :integration, :with_slack
     end
+
+    trait :with_staged_rollout do
+      build_artifact_channel { {is_production: true} }
+      is_staged_rollout { true }
+      staged_rollout_config { [1, 100] }
+    end
   end
 end

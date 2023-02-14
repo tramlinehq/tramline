@@ -335,6 +335,16 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_14_091143) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "staged_rollouts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "deployment_run_id", null: false
+    t.decimal "config", default: [], array: true
+    t.string "status"
+    t.integer "current_stage"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["deployment_run_id"], name: "index_staged_rollouts_on_deployment_run_id"
+  end
+
   create_table "train_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "train_id", null: false
     t.string "code_name", null: false
@@ -483,6 +493,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_14_091143) do
   add_foreign_key "sign_offs", "sign_off_groups"
   add_foreign_key "sign_offs", "train_steps"
   add_foreign_key "sign_offs", "users"
+  add_foreign_key "staged_rollouts", "deployment_runs"
   add_foreign_key "train_runs", "trains"
   add_foreign_key "train_sign_off_groups", "sign_off_groups"
   add_foreign_key "train_sign_off_groups", "trains"

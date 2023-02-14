@@ -20,16 +20,32 @@ class DeploymentRun < ApplicationRecord
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
 
   has_one :external_build, dependent: :destroy
+  has_one :staged_rollout, dependent: :destroy
 
   validates :deployment_id, uniqueness: {scope: :train_step_run_id}
   validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
-  delegate :step, :release, :commit, :build_number, :build_artifact, :build_version, to: :step_run
+  delegate :step,
+    :release,
+    :commit,
+    :build_number,
+    :build_artifact,
+    :build_version,
+    to: :step_run
+  delegate :external?,
+    :google_play_store_integration?,
+    :slack_integration?,
+    :app_store_integration?,
+    :store?,
+    :deployment_number,
+    :integration,
+    :deployment_channel,
+    :deployment_channel_name,
+    :staged_rollout?,
+    to: :deployment
   delegate :app, to: :step
   delegate :ios?, to: :app
   delegate :release_version, to: :release
-  delegate :external?, :google_play_store_integration?, :slack_integration?, :store?, :app_store_integration?, to: :deployment
-  delegate :deployment_number, :integration, :deployment_channel, :deployment_channel_name, to: :deployment
 
   scope :for_ids, ->(ids) { includes(deployment: :integration).where(id: ids) }
 
@@ -49,6 +65,7 @@ class DeploymentRun < ApplicationRecord
     submitted: "submitted",
     uploaded: "uploaded",
     upload_failed: "upload_failed",
+    rollout_started: "rollout_started",
     released: "released",
     failed: "failed"
   }
@@ -83,9 +100,14 @@ class DeploymentRun < ApplicationRecord
       transitions from: [:uploaded, :submitted], to: :failed
     end
 
+    event :start_rollout, guard: :staged_rollout? do
+      before { rollout! }
+      transitions from: :uploaded, to: :rollout_started
+    end
+
     event :complete do
       after { step_run.finish_deployment!(deployment) }
-      transitions from: [:created, :uploaded, :started, :submitted], to: :released
+      transitions from: [:created, :uploaded, :started, :submitted, :rollout_started], to: :released
     end
   end
 
@@ -119,17 +141,31 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
+  def rollout!
+    create_staged_rollout!(config: deployment.staged_rollout_config).move_to_next_stage!
+  end
+
   def promote!
-    save!
+    return unless store?
     return unless google_play_store_integration?
 
+    if staged_rollout?
+      start_rollout!
+    else
+      promote_with(100) do |_ok_result|
+        complete!
+        event_stamp!(reason: :released, kind: :success, data: stamp_data)
+      end
+    end
+  end
+
+  def promote_with(value)
     release.with_lock do
       return unless promotable?
 
-      result = provider.promote(deployment_channel, build_number, release_version, initial_rollout_percentage)
+      result = provider.promote(deployment_channel, build_number, release_version, value)
       if result.ok?
-        complete!
-        event_stamp!(reason: :released, kind: :success, data: stamp_data)
+        yield result
       else
         dispatch_fail!
         event_stamp!(reason: :promotion_failed, kind: :error, data: stamp_data)
@@ -205,52 +241,16 @@ class DeploymentRun < ApplicationRecord
       .each { |run| run.upload! }
   end
 
-  def update_rollout!
-    self.initial_rollout_percentage = next_rollout_percentage
-    save!
-
-    release.with_lock do
-      return unless rolloutable?
-
-      result = provider.promote(deployment_channel, build_number, release_version, initial_rollout_percentage)
-      if result.ok?
-        complete! if next_rollout_percentage.nil?
-      else
-        dispatch_fail!
-        event_stamp!(reason: :promotion_failed, kind: :error, data: stamp_data)
-        elog(result.error)
-      end
-    end
-  end
-
   def promotable?
-    release.on_track? && step.release? && store? && uploaded?
+    release.on_track? && store? && uploaded?
   end
 
   def rolloutable?
-    promotable? && deployment.production_channel?
+    step.release? && promotable? && deployment.staged_rollout?
   end
 
   def non_rolloutable?
-    promotable? && !deployment.production_channel?
-  end
-
-  # check if staged rollout for this run has begun
-  # if not,
-  # find deployment's last external app, refresh it, use the rollout percentage
-  # mutative, updated on every promote
-  def last_rollout_percentage
-    initial_rollout_percentage
-  end
-
-  def next_rollout_percentage
-    return deployment.staged_rollout.first if last_rollout_percentage.blank?
-    deployment.staged_rollout[deployment.staged_rollout.find_index(last_rollout_percentage).succ]
-  end
-
-  # check if staged rollout for this run has begun
-  def previously_rolled_out?
-    rolloutable? && last_rollout_percentage.present?
+    promotable? && !deployment.staged_rollout?
   end
 
   def provider
