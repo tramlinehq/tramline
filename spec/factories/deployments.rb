@@ -10,6 +10,10 @@ FactoryBot.define do
       end
     end
 
+    trait :with_production_channel do
+      build_artifact_channel { {is_production: true} }
+    end
+
     trait :with_google_play_store do
       association :integration, :with_google_play_store
     end

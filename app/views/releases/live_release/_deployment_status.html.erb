@@ -32,7 +32,7 @@
         </tr>
         </thead>
         <tbody>
-        <% deployment.staged_rollout.each_with_index do |stage, idx| %>
+        <% deployment.staged_rollout_config.each_with_index do |stage, idx| %>
           <% reached = (deployment_run.initial_rollout_percentage && stage <= deployment_run.initial_rollout_percentage) %>
 
           <tr>

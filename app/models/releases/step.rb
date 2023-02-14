@@ -5,6 +5,7 @@
 #  id             :uuid             not null, primary key
 #  ci_cd_channel  :jsonb            not null, indexed => [train_id]
 #  description    :string           not null
+#  kind           :string
 #  name           :string           not null
 #  release_suffix :string           not null
 #  slug           :string
