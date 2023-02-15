@@ -86,7 +86,6 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :upload, after_commit: -> { Deployments::ReleaseJob.perform_later(id) } do
-      after { wrap_up_uploads! } # FIXME: should not loop back
       transitions from: :started, to: :uploaded
     end
 
@@ -139,6 +138,17 @@ class DeploymentRun < ApplicationRecord
         raise ExternalBuildNotInTerminalState, "Retrying in some time..."
       end
     end
+  end
+
+  def release_to_testflight!
+    return unless app_store_integration?
+    provider.release_to_testflight(deployment_channel, build_number)
+    submit!
+  end
+
+  def start_distribution!
+    return unless store? && app_store_integration?
+    Deployments::AppStoreConnect::TestFlightReleaseJob.perform_later(id)
   end
 
   # TODO: add case for production release with staged rollout disabled on deployment
@@ -197,12 +207,6 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  def release_to_testflight!
-    return unless app_store_integration?
-    provider.release_to_testflight(deployment_channel, build_number)
-    submit!
-  end
-
   def push_to_slack!
     return unless slack_integration?
 
@@ -219,27 +223,12 @@ class DeploymentRun < ApplicationRecord
 
   # FIXME: should we take a lock around this SR? what is someone double triggers the run?
   def start_upload!
-    if store?
-      other_deployment_runs = step_run.similar_deployment_runs_for(self)
-      return upload! if other_deployment_runs.any?(&:has_uploaded?)
-      return if other_deployment_runs.any?(&:started?)
+    if store? && step_run.similar_deployment_runs_for(self).any?(&:has_uploaded?)
+      return upload!
     end
 
     return Deployments::GooglePlayStore::Upload.perform_later(id) if google_play_store_integration?
     Deployments::Slack.perform_later(id) if slack_integration?
-  end
-
-  def start_distribution!
-    return unless store? && app_store_integration?
-    Deployments::AppStoreConnect::TestFlightReleaseJob.perform_later(id)
-  end
-
-  def wrap_up_uploads!
-    return unless store?
-    step_run
-      .similar_deployment_runs_for(self)
-      .select(&:started?)
-      .each { |run| run.upload! }
   end
 
   def promotable?

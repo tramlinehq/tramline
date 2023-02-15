@@ -229,6 +229,8 @@ class Releases::Step::Run < ApplicationRecord
 
   def finish_deployment!(deployment)
     return finish! if finished_deployments?
+
+    # trigger the next deployment if available
     trigger_deployment(deployment.next) if step.review?
   end
 
