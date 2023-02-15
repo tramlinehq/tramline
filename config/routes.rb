@@ -80,6 +80,14 @@ Rails.application.routes.draw do
               post :start
             end
 
+            # external --> start deployment --> immediately complete the run (❌ promote)
+            # non-store --> start deployment --> trigger the work --> which in turn completes the run (❌ promote)
+            # store but non-prod --> start deployment --> upload the artifact -- promote -> trigger a release on the store with full rollout --> after which run is completed (❌ promote)
+
+            # rollout / increase ✅
+            # store and prod --> start deployment --> upload the artifact --> trigger a draft release on the store --> start rollout --> either stage or full rollout on the draft release as specified
+            #                                                                                                                        --> increase rollout till full --> after which run is complete
+            #                                                                                                                        --> halt rollout --> after which run is complete
             resources :deployment_runs, only: [], shallow: true do
               resource :staged_rollout, only: [] do
                 member do
