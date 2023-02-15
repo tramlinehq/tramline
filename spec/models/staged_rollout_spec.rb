@@ -75,15 +75,15 @@ describe StagedRollout do
     end
 
     it "promotes the deployment run with the next stage percentage" do
-      allow(providable_dbl).to receive(:promote).and_return(GitHub::Result.new)
+      allow(providable_dbl).to receive(:create_release).and_return(GitHub::Result.new)
       rollout = create(:staged_rollout, deployment_run: deployment_run, config: [1, 80, 100], current_stage: 1)
 
       rollout.move_to_next_stage!
-      expect(providable_dbl).to have_received(:promote).with(anything, anything, anything, 100)
+      expect(providable_dbl).to have_received(:create_release).with(anything, anything, anything, 100)
     end
 
     it "updates the current stage with the next stage if promote succeeds" do
-      allow(providable_dbl).to receive(:promote).and_return(GitHub::Result.new)
+      allow(providable_dbl).to receive(:create_release).and_return(GitHub::Result.new)
       rollout = create(:staged_rollout, deployment_run: deployment_run, config: [1, 80, 100], current_stage: 1)
 
       rollout.move_to_next_stage!
@@ -91,7 +91,7 @@ describe StagedRollout do
     end
 
     it "does not update the current stage with the next stage if promote fails" do
-      allow(providable_dbl).to receive(:promote).and_return(GitHub::Result.new { raise })
+      allow(providable_dbl).to receive(:create_release).and_return(GitHub::Result.new { raise })
       rollout = create(:staged_rollout, deployment_run: deployment_run, config: [1, 80, 100], current_stage: 1)
 
       rollout.move_to_next_stage!
