@@ -9,14 +9,15 @@
   <% deployment_run = step_run.last_run_for(deployment) %>
 
   <% if deployment_run.present? %>
+    <% if deployment.staged_rollout? %><%= status_badge("Staged", ["bg-slate-100 text-slate-500"]) %><% end %>
     <span class="ml-2"><%= deployment_run_status_badge(deployment_run) %></span>
-    <span>staged? –> <%= deployment.staged_rollout? %></span>
   <% end %>
 
   <div class="ml-0 mt-2">
-    <% if deployment_run&.rolloutable? %>
+    <% if deployment_run&.staged_rollout.present? %>
       <% staged_rollout = deployment_run.staged_rollout %>
-      <table class="table-auto w-1/2 mb-2">
+      <span><%= staged_rollout_status_badge(staged_rollout) %></span>
+      <table class="table-auto w-1/2 mb-2 mt-2">
         <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
         <tr>
           <th>Stage</th>
@@ -42,7 +43,9 @@
                     builder: ButtonHelper::AuthzForms) do |form| %>
 
         <% unless staged_rollout.finished? %>
-          <% if staged_rollout.current_stage %>
+          <% if staged_rollout.failed? %>
+            <%= form.authz_submit :blue, "Retry", class: "btn-xs" %>
+          <% elsif staged_rollout.current_stage %>
             <%= form.authz_submit :blue, "Increase Rollout", class: "btn-xs" %>
           <% else %>
             <%= form.authz_submit :blue, "Start Rollout", class: "btn-xs" %>

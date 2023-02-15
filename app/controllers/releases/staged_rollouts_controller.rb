@@ -5,7 +5,12 @@ class Releases::StagedRolloutsController < SignedInApplicationController
 
   def increase
     @staged_rollout.move_to_next_stage!
-    redirect_back fallback_location: root_path, notice: "Increased the rollout!"
+
+    if @staged_rollout.failed?
+      redirect_back fallback_location: root_path, flash: {error: "Failed to increase the rollout. Please retry!"}
+    else
+      redirect_back fallback_location: root_path, notice: "Increased the rollout!"
+    end
   end
 
   def halt

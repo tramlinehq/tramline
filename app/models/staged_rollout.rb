@@ -21,23 +21,22 @@ class StagedRollout < ApplicationRecord
 
   STATES = {
     started: "started",
-    paused: "paused",
+    failed: "failed",
     completed: "completed",
     stopped: "stopped"
   }
 
   enum status: STATES
-
   aasm safe_state_machine_params do
     state :started, initial: true
     state(*STATES.keys)
 
-    event :pause do
-      transitions from: :started, to: :paused
+    event :fail do
+      transitions from: [:started, :failed], to: :failed
     end
 
-    event :resume do
-      transitions from: :paused, to: :started
+    event :retry do
+      transitions from: :failed, to: :started
     end
 
     event :halt do
@@ -47,7 +46,7 @@ class StagedRollout < ApplicationRecord
 
     event :complete do
       after { deployment_run.complete! }
-      transitions from: :started, to: :completed
+      transitions from: [:failed, :started], to: :completed
     end
   end
 
@@ -75,9 +74,15 @@ class StagedRollout < ApplicationRecord
   def move_to_next_stage!
     return if completed?
 
-    release_with(rollout_value: next_rollout_percentage) do |_ok_result|
-      update!(current_stage: next_stage)
-      complete! if finished?
+    release_with(rollout_value: next_rollout_percentage) do |result|
+      if result.ok?
+        update!(current_stage: next_stage)
+        retry! if failed?
+        complete! if finished?
+      else
+        fail!
+        elog(result.error)
+      end
     end
   end
 end

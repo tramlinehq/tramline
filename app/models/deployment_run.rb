@@ -141,7 +141,7 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  # FIXME: add case for production release with staged rollout disabled on deployment
+  # TODO: add case for production release with staged rollout disabled on deployment
   def start_release!
     return unless store?
     return start_rollout! if staged_rollout?
@@ -149,7 +149,15 @@ class DeploymentRun < ApplicationRecord
   end
 
   def fully_release_to_playstore!
-    release_with(rollout_value: 100) { |_ok_result| complete! }
+    release_with(rollout_value: 100) do |result|
+      if result.ok?
+        complete!
+      else
+        dispatch_fail!
+        event_stamp!(reason: :promotion_failed, kind: :error, data: stamp_data)
+        elog(result.error)
+      end
+    end
   end
 
   def rollout!
@@ -157,22 +165,14 @@ class DeploymentRun < ApplicationRecord
     if result.ok?
       create_staged_rollout!(config: deployment.staged_rollout_config)
     else
-      # do something
+      # TODO: do something
     end
   end
 
   def release_with(rollout_value:)
     release.with_lock do
       return unless promotable?
-
-      result = provider.create_release(deployment_channel, build_number, release_version, rollout_value)
-      if result.ok?
-        yield result
-      else
-        dispatch_fail!
-        event_stamp!(reason: :promotion_failed, kind: :error, data: stamp_data)
-        elog(result.error)
-      end
+      yield provider.create_release(deployment_channel, build_number, release_version, rollout_value)
     end
   end
 
@@ -196,7 +196,7 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  # FIXME: rename this to release_to_testflight!
+  # TODO: rename this to release_to_testflight!
   def promote_to_appstore!
     return unless app_store_integration?
     provider.promote_to_testflight(deployment_channel, build_number)
@@ -231,7 +231,7 @@ class DeploymentRun < ApplicationRecord
 
   def start_distribution!
     return unless store? && app_store_integration?
-    Deployments::AppStoreConnect::TestFlightPromoteJob.perform_later(id) # FIXME: rename this to TestFlightReleaseJob
+    Deployments::AppStoreConnect::TestFlightPromoteJob.perform_later(id) # TODO: rename this to TestFlightReleaseJob
   end
 
   def wrap_up_uploads!

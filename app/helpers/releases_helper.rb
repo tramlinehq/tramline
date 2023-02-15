@@ -76,11 +76,29 @@ module ReleasesHelper
       when :upload_failed
         ["Upload failed", %w[bg-rose-100 text-rose-600]]
       when :rollout_started
-        ["Rolling out", %w[bg-indigo-100 text-indigo-600]]
+        ["In Staged Rollout", %w[bg-indigo-100 text-indigo-600]]
       when :released
         ["Released", %w[bg-green-100 text-green-600]]
       when :failed
         ["Failed", %w[bg-rose-100 text-rose-600]]
+      else
+        ["Unknown", %w[bg-slate-100 text-slate-500]]
+      end
+
+    status_badge(status, styles)
+  end
+
+  def staged_rollout_status_badge(staged_rollout)
+    status, styles =
+      case staged_rollout.status.to_sym
+      when :started
+        ["Rollout active", %w[bg-indigo-100 text-indigo-600]]
+      when :failed
+        ["Rollout failed", %w[bg-rose-100 text-rose-600]]
+      when :completed
+        ["Rollout completed", %w[bg-green-100 text-green-600]]
+      when :halted
+        ["Rollout halted", %w[bg-emerald-100 text-emerald-500]]
       else
         ["Unknown", %w[bg-slate-100 text-slate-500]]
       end

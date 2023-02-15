@@ -96,8 +96,29 @@ describe StagedRollout do
       rollout = create(:staged_rollout, deployment_run: deployment_run, config: [1, 80, 100], current_stage: 1)
 
       rollout.move_to_next_stage!
+      expect(rollout.reload.failed?).to be(true)
       expect(rollout.reload.current_stage).to eq(1)
-      expect(rollout.reload.completed?).to be(false)
+    end
+
+    it "is retriable on failure" do
+      allow(providable_dbl).to receive(:create_release).and_return(GitHub::Result.new)
+      rollout = create(:staged_rollout, :failed, deployment_run:, config: [1, 80, 100], current_stage: 1)
+
+      rollout.move_to_next_stage!
+      expect(rollout.reload.completed?).to be(true)
+    end
+
+    it "can fail again on retry" do
+      allow(providable_dbl).to receive(:create_release).and_return(GitHub::Result.new { raise })
+      rollout = create(:staged_rollout, :started, deployment_run:, config: [1, 80, 100], current_stage: 1)
+
+      # first attempt
+      rollout.move_to_next_stage!
+      expect(rollout.reload.failed?).to be(true)
+
+      # retry attempt
+      rollout.move_to_next_stage!
+      expect(rollout.reload.failed?).to be(true)
     end
   end
 end
