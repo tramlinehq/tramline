@@ -276,10 +276,10 @@ describe DeploymentRun do
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
-      allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
     end
 
     it "only starts when staged rollout is enabled for the deployment" do
+      allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
       deployment = create(:deployment, :with_google_play_store, step: step_run.step)
       run = create(:deployment_run, :uploaded, deployment:)
 
@@ -287,6 +287,7 @@ describe DeploymentRun do
     end
 
     it "creates a staged rollout association" do
+      allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
       deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
       run = create(:deployment_run, :uploaded, deployment:)
 
@@ -296,6 +297,7 @@ describe DeploymentRun do
     end
 
     it "creates a draft release" do
+      allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
       staged_rollout_config = [1, 100]
       deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, staged_rollout_config:, step: step_run.step)
       run = create(:deployment_run, :uploaded, deployment:)
@@ -306,12 +308,23 @@ describe DeploymentRun do
     end
 
     it "marks it as rollout_started" do
+      allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
       deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
       run = create(:deployment_run, :uploaded, deployment:)
 
       run.start_rollout!
 
       expect(run.reload.rollout_started?).to be(true)
+    end
+
+    it "marks it as failed if create draft release fails" do
+      allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new { raise })
+      deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
+      run = create(:deployment_run, :uploaded, deployment:)
+
+      run.start_rollout!
+
+      expect(run.reload.failed?).to be(true)
     end
   end
 

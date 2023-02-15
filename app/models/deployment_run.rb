@@ -54,7 +54,7 @@ class DeploymentRun < ApplicationRecord
     "invalid_package",
     "apks_are_not_allowed",
     "upload_failed_reason_unknown",
-    "promotion_failed",
+    "release_failed",
     "released"
   ]
 
@@ -164,7 +164,7 @@ class DeploymentRun < ApplicationRecord
         complete!
       else
         dispatch_fail!
-        event_stamp!(reason: :promotion_failed, kind: :error, data: stamp_data)
+        event_stamp!(reason: :release_failed, kind: :error, data: stamp_data)
         elog(result.error)
       end
     end
@@ -172,10 +172,13 @@ class DeploymentRun < ApplicationRecord
 
   def rollout!
     result = provider.create_draft_release(deployment_channel, build_number, release_version)
+
     if result.ok?
       create_staged_rollout!(config: deployment.staged_rollout_config)
     else
-      # TODO: do something
+      dispatch_fail!
+      event_stamp!(reason: :release_failed, kind: :error, data: stamp_data)
+      elog(result.error)
     end
   end
 
