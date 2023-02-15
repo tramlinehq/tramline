@@ -182,11 +182,10 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  # TODO: move to next stage should maybe not keep calling 'create_release'?
   def release_with(rollout_value:)
     release.with_lock do
       return unless promotable?
-      yield provider.create_release(deployment_channel, build_number, release_version, rollout_value)
+      yield provider.rollout_release(deployment_channel, build_number, release_version, rollout_value)
     end
   end
 

@@ -350,18 +350,18 @@ describe DeploymentRun do
     context "with no rollout" do
       it "fully promotes to the store" do
         full_release_value = 100
-        allow(providable_dbl).to receive(:create_release).and_return(GitHub::Result.new)
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
         deployment = create(:deployment, :with_google_play_store, step: step_run.step)
         run = create(:deployment_run, :uploaded, deployment:)
 
         run.start_release!
 
-        expect(providable_dbl).to have_received(:create_release).with(anything, anything, anything, full_release_value)
+        expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, full_release_value)
         expect(run.reload.released?).to be(true)
       end
 
       it "completes the run" do
-        allow(providable_dbl).to receive(:create_release).and_return(GitHub::Result.new)
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
         deployment = create(:deployment, :with_google_play_store, step: step_run.step)
         run = create(:deployment_run, :uploaded, deployment:)
 
