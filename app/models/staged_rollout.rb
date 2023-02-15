@@ -3,7 +3,7 @@
 # Table name: staged_rollouts
 #
 #  id                :uuid             not null, primary key
-#  config            :decimal(, )      default([]), is an Array
+#  config            :decimal(8, 5)    default([]), is an Array
 #  current_stage     :integer
 #  status            :string
 #  created_at        :datetime         not null

@@ -23,7 +23,6 @@ class DeploymentRun < ApplicationRecord
   has_one :staged_rollout, dependent: :destroy
 
   validates :deployment_id, uniqueness: {scope: :train_step_run_id}
-  validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   delegate :step,
     :release,
@@ -253,7 +252,7 @@ class DeploymentRun < ApplicationRecord
 
   def rollout_percentage
     return staged_rollout.last_rollout_percentage if staged_rollout?
-    100.0
+    initial_rollout_percentage || 100.0
   end
 
   private

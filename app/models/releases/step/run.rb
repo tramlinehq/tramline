@@ -2,27 +2,27 @@
 #
 # Table name: train_step_runs
 #
-#  id                         :uuid             not null, primary key
-#  approval_status            :string           default("pending"), not null
-#  build_number               :string
-#  build_version              :string           not null
-#  ci_link                    :string
-#  ci_ref                     :string
-#  initial_rollout_percentage :decimal(8, 5)
-#  scheduled_at               :datetime         not null
-#  sign_required              :boolean          default(TRUE)
-#  status                     :string           not null
-#  created_at                 :datetime         not null
-#  updated_at                 :datetime         not null
-#  releases_commit_id         :uuid             not null, indexed
-#  train_run_id               :uuid             not null, indexed
-#  train_step_id              :uuid             not null, indexed
+#  id                 :uuid             not null, primary key
+#  approval_status    :string           default("pending"), not null
+#  build_number       :string
+#  build_version      :string           not null
+#  ci_link            :string
+#  ci_ref             :string
+#  scheduled_at       :datetime         not null
+#  sign_required      :boolean          default(TRUE)
+#  status             :string           not null
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  releases_commit_id :uuid             not null, indexed
+#  train_run_id       :uuid             not null, indexed
+#  train_step_id      :uuid             not null, indexed
 #
 class Releases::Step::Run < ApplicationRecord
   has_paper_trail
   include AASM
   include Passportable
 
+  self.ignored_columns += ["initial_rollout_percentage"]
   self.implicit_order_column = :scheduled_at
 
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :runs
@@ -36,7 +36,6 @@ class Releases::Step::Run < ApplicationRecord
 
   validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
   validates :train_step_id, uniqueness: {scope: :releases_commit_id}
-  validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   after_create :reset_approval!
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create

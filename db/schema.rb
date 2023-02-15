@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_02_14_091143) do
+ActiveRecord::Schema[7.0].define(version: 2023_02_15_073022) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -337,7 +337,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_14_091143) do
 
   create_table "staged_rollouts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "deployment_run_id", null: false
-    t.decimal "config", default: [], array: true
+    t.decimal "config", precision: 8, scale: 5, default: [], array: true
     t.string "status"
     t.integer "current_stage"
     t.datetime "created_at", null: false
@@ -383,7 +383,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_14_091143) do
     t.string "build_number"
     t.boolean "sign_required", default: true
     t.string "approval_status", default: "pending", null: false
-    t.decimal "initial_rollout_percentage", precision: 8, scale: 5
     t.index ["releases_commit_id"], name: "index_train_step_runs_on_releases_commit_id"
     t.index ["train_run_id"], name: "index_train_step_runs_on_train_run_id"
     t.index ["train_step_id"], name: "index_train_step_runs_on_train_step_id"
