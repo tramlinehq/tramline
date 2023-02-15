@@ -1,6 +1,6 @@
 <div class="flex flex-col pt-1">
   <div class="text-slate-500 text-sm"><%= simple_format(step.description) %></div>
-  <div class="text-slate-500 text-xs">Type of step: <%= step.kind.humanize %></div>
+  <div class="text-slate-500 text-xs">Type of step: <%= step.kind&.humanize %></div>
 
   <% if step_run&.build_version %>
     <div class="flex items-center mt-4">

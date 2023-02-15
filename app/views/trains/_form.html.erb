@@ -168,7 +168,7 @@
         </div>
 
         <div class="pl-6 pt-2">
-          <%= render partial: "per_step_metadata", locals: { step: step } %>
+          <%= render partial: "shared/per_step_metadata", locals: { step: step, step_run: nil, release: nil } %>
         </div>
       </li>
     <% end %>
