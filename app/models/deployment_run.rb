@@ -41,6 +41,7 @@ class DeploymentRun < ApplicationRecord
     :deployment_channel,
     :deployment_channel_name,
     :staged_rollout?,
+    :staged_rollout_config,
     to: :deployment
   delegate :app, to: :step
   delegate :ios?, to: :app
@@ -151,7 +152,6 @@ class DeploymentRun < ApplicationRecord
     Deployments::AppStoreConnect::TestFlightReleaseJob.perform_later(id)
   end
 
-  # TODO: add case for production release with staged rollout disabled on deployment
   def start_release!
     return unless store?
     return start_rollout! if staged_rollout?
@@ -159,7 +159,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def fully_release_to_playstore!
-    release_with(rollout_value: 100) do |result|
+    release_with(rollout_value: Deployment::FULL_ROLLOUT_VALUE) do |result|
       if result.ok?
         complete!
       else
@@ -171,21 +171,28 @@ class DeploymentRun < ApplicationRecord
   end
 
   def rollout!
-    result = provider.create_draft_release(deployment_channel, build_number, release_version)
-
-    if result.ok?
-      create_staged_rollout!(config: deployment.staged_rollout_config)
-    else
-      dispatch_fail!
-      event_stamp!(reason: :release_failed, kind: :error, data: stamp_data)
-      elog(result.error)
+    release_with(is_draft: true) do |result|
+      if result.ok?
+        create_staged_rollout!(config: staged_rollout_config)
+      else
+        dispatch_fail!
+        event_stamp!(reason: :release_failed, kind: :error, data: stamp_data)
+        elog(result.error)
+      end
     end
   end
 
-  def release_with(rollout_value:)
+  def release_with(rollout_value: nil, is_draft: false)
+    raise ArgumentError, "cannot have a rollout for a draft release" if is_draft && rollout_value.present?
+
     release.with_lock do
       return unless promotable?
-      yield provider.rollout_release(deployment_channel, build_number, release_version, rollout_value)
+
+      if is_draft
+        yield provider.create_draft_release(deployment_channel, build_number, release_version)
+      else
+        yield provider.rollout_release(deployment_channel, build_number, release_version, rollout_value)
+      end
     end
   end
 
@@ -243,7 +250,7 @@ class DeploymentRun < ApplicationRecord
 
   def rollout_percentage
     return staged_rollout.last_rollout_percentage if staged_rollout?
-    initial_rollout_percentage || 100.0
+    initial_rollout_percentage || Deployment::FULL_ROLLOUT_VALUE
   end
 
   private

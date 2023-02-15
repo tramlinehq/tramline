@@ -40,7 +40,7 @@ module Installations
       @track_name = track_name
       @version_code = version_code
       @release_version = release_version
-      @rollout_percentage = BigDecimal(rollout_percentage)
+      @rollout_percentage = rollout_percentage
 
       execute do
         edit = client.insert_edit(package_name)

@@ -32,6 +32,8 @@ class Deployment < ApplicationRecord
 
   before_save :set_deployment_number, if: :new_record?
 
+  FULL_ROLLOUT_VALUE = BigDecimal("100")
+
   def staged_rollout?
     is_staged_rollout
   end
