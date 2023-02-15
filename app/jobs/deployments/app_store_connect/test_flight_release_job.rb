@@ -1,4 +1,4 @@
-class Deployments::AppStoreConnect::TestFlightPromoteJob < ApplicationJob
+class Deployments::AppStoreConnect::TestFlightReleaseJob < ApplicationJob
   queue_as :high
 
   def perform(deployment_run_id)
@@ -6,6 +6,6 @@ class Deployments::AppStoreConnect::TestFlightPromoteJob < ApplicationJob
     return unless run.app_store_integration?
     return unless run.release.on_track?
 
-    run.promote_to_appstore!
+    run.release_to_testflight!
   end
 end

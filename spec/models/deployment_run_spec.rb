@@ -82,13 +82,13 @@ describe DeploymentRun do
       end
 
       it "starts distribution if deployment has app store integration" do
-        promote_to_testflight_job = Deployments::AppStoreConnect::TestFlightPromoteJob
+        job = Deployments::AppStoreConnect::TestFlightReleaseJob
         deployment = create(:deployment, integration: train.build_channel_integrations.first, step: step)
         deployment_run = create(:deployment_run, :created, deployment: deployment, step_run: step_run)
-        allow(promote_to_testflight_job).to receive(:perform_later)
+        allow(job).to receive(:perform_later)
 
         deployment_run.dispatch!
-        expect(promote_to_testflight_job).to have_received(:perform_later).with(deployment_run.id).once
+        expect(job).to have_received(:perform_later).with(deployment_run.id).once
       end
     end
   end

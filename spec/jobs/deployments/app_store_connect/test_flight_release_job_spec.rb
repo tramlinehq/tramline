@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe Deployments::AppStoreConnect::TestFlightPromoteJob do
+describe Deployments::AppStoreConnect::TestFlightReleaseJob do
   describe "#perform" do
     context "when non app store deployment" do
       let(:play_store_deployment_run) { create(:deployment_run, :started, :with_google_play_store) }

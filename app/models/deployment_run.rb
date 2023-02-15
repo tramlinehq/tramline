@@ -169,6 +169,7 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
+  # TODO: move to next stage should maybe not keep calling 'create_release'?
   def release_with(rollout_value:)
     release.with_lock do
       return unless promotable?
@@ -196,10 +197,9 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  # TODO: rename this to release_to_testflight!
-  def promote_to_appstore!
+  def release_to_testflight!
     return unless app_store_integration?
-    provider.promote_to_testflight(deployment_channel, build_number)
+    provider.release_to_testflight(deployment_channel, build_number)
     submit!
   end
 
@@ -231,7 +231,7 @@ class DeploymentRun < ApplicationRecord
 
   def start_distribution!
     return unless store? && app_store_integration?
-    Deployments::AppStoreConnect::TestFlightPromoteJob.perform_later(id) # TODO: rename this to TestFlightReleaseJob
+    Deployments::AppStoreConnect::TestFlightReleaseJob.perform_later(id)
   end
 
   def wrap_up_uploads!
