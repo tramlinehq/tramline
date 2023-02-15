@@ -6,7 +6,7 @@ FactoryBot.define do
     current_stage { 0 }
 
     trait :started do
-      status { "status" }
+      status { "started" }
     end
 
     trait :paused do
@@ -18,7 +18,7 @@ FactoryBot.define do
     end
 
     trait :stopped do
-      status { "stoppped" }
+      status { "stopped" }
     end
   end
 end

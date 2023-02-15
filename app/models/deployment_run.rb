@@ -251,6 +251,11 @@ class DeploymentRun < ApplicationRecord
     step.release? && promotable? && deployment.staged_rollout? && rollout_started?
   end
 
+  def rollout_percentage
+    return staged_rollout.last_rollout_percentage if staged_rollout?
+    100.0
+  end
+
   private
 
   def provider

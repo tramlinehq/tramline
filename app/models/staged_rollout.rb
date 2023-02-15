@@ -73,10 +73,11 @@ class StagedRollout < ApplicationRecord
   end
 
   def move_to_next_stage!
-    return complete! if finished?
+    return if completed?
 
     release_with(rollout_value: next_rollout_percentage) do |_ok_result|
       update!(current_stage: next_stage)
+      complete! if finished?
     end
   end
 end

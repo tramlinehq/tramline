@@ -68,15 +68,16 @@ describe StagedRollout do
     end
 
     it "completes the rollout if no more stages left" do
-      rollout = create(:staged_rollout, config: [1, 80, 100], current_stage: 2)
+      allow(providable_dbl).to receive(:create_release).and_return(GitHub::Result.new)
+      rollout = create(:staged_rollout, :started, deployment_run:, config: [1, 80, 100], current_stage: 1)
 
       rollout.move_to_next_stage!
-      expect(rollout.reload.finished?).to be(true)
+      expect(rollout.reload.completed?).to be(true)
     end
 
     it "promotes the deployment run with the next stage percentage" do
       allow(providable_dbl).to receive(:create_release).and_return(GitHub::Result.new)
-      rollout = create(:staged_rollout, deployment_run: deployment_run, config: [1, 80, 100], current_stage: 1)
+      rollout = create(:staged_rollout, :started, deployment_run:, config: [1, 80, 100], current_stage: 1)
 
       rollout.move_to_next_stage!
       expect(providable_dbl).to have_received(:create_release).with(anything, anything, anything, 100)
@@ -96,6 +97,7 @@ describe StagedRollout do
 
       rollout.move_to_next_stage!
       expect(rollout.reload.current_stage).to eq(1)
+      expect(rollout.reload.completed?).to be(false)
     end
   end
 end
