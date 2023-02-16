@@ -61,7 +61,7 @@
           <% if staged_rollout.roll_out_started? %>
             <%= form_with(model: [release, step_run, deployment_run, staged_rollout],
                           url: halt_deployment_run_staged_rollout_path(deployment_run),
-                          data: { turbo_confirm: "You are about to halt the release of this build to production.\n\nAre you sure?" },
+                          data: { turbo_confirm: "You are about to halt the rollout of this build to production, it can not be resumed.\n\nAre you sure?" },
                           builder: ButtonHelper::AuthzForms) do |form| %>
               <%= form.authz_submit :red, "Halt Rollout", class: "btn-xs" %>
             <% end %>

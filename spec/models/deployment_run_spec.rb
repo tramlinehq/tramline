@@ -371,4 +371,43 @@ describe DeploymentRun do
       end
     end
   end
+
+  describe "#halt_release_in_playstore!" do
+    let(:step) { create(:releases_step, :with_deployment) }
+    let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
+    let(:deployment) { create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step) }
+    let(:run) { create(:deployment_run, :rollout_started, deployment:, step_run:) }
+    let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+    end
+
+    it "does nothing if rollout hasn't started" do
+      create(:staged_rollout, current_stage: nil, deployment_run: run)
+      allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
+
+      run.halt_release_in_playstore!
+
+      expect(providable_dbl).not_to have_received(:halt_release)
+    end
+
+    it "halts the release on playstore" do
+      create(:staged_rollout, current_stage: 1, deployment_run: run)
+      allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
+
+      run.halt_release_in_playstore!
+
+      expect(providable_dbl).to have_received(:halt_release)
+    end
+
+    it "marks run as complete if halt succeeds" do
+      create(:staged_rollout, current_stage: 1, deployment_run: run)
+      allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
+
+      run.halt_release_in_playstore!
+
+      expect(run.reload.released?).to be(true)
+    end
+  end
 end

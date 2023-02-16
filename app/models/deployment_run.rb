@@ -196,6 +196,19 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
+  def halt_release_in_playstore!
+    release.with_lock do
+      return unless rollout_started? && staged_rollout.last_rollout_percentage.present?
+
+      result = provider.halt_release(deployment_channel, build_number, release_version, staged_rollout.last_rollout_percentage)
+      if result.ok?
+        complete!
+      else
+        dispatch_fail!
+      end
+    end
+  end
+
   def upload_to_playstore!
     return unless google_play_store_integration?
 

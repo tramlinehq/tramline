@@ -61,6 +61,19 @@ module Installations
       end
     end
 
+    def halt_release(track_name, version_code, release_version, rollout_percentage)
+      @track_name = track_name
+      @version_code = version_code
+      @release_version = release_version
+      @rollout_percentage = rollout_percentage
+
+      execute do
+        edit = client.insert_edit(package_name)
+        edit_track(edit, halted_release)
+        client.commit_edit(package_name, edit.id)
+      end
+    end
+
     private
 
     attr_writer :track_name, :version_code, :release_version, :rollout_percentage
@@ -81,6 +94,12 @@ module Installations
 
     def draft_release
       params = release_params.merge(status: "draft")
+      ANDROID_PUBLISHER::TrackRelease.new(**params)
+    end
+
+    def halted_release
+      params = release_params.merge(status: "halted")
+      params[:user_fraction] = user_fraction
       ANDROID_PUBLISHER::TrackRelease.new(**params)
     end
 

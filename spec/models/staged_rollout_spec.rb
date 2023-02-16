@@ -26,22 +26,26 @@ describe StagedRollout do
   end
 
   describe "#halt!" do
-    it "transitions state" do
-      rollout = create(:staged_rollout)
+    let(:deployment_run) { create(:deployment_run, :with_staged_rollout, :rollout_started) }
+    let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+    let(:rollout) { create(:staged_rollout, current_stage: 0, deployment_run: deployment_run) }
 
+    before do
+      allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
+    end
+
+    it "transitions state" do
+      allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
       rollout.halt!
 
       expect(rollout.reload.stopped?).to be(true)
     end
 
     it "completes the deployment run" do
-      rollout = create(:staged_rollout)
-
+      allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
       rollout.halt!
-      rollout.reload
 
-      expect(rollout.stopped?).to be(true)
-      expect(rollout.deployment_run.released?).to be(true)
+      expect(rollout.deployment_run.reload.released?).to be(true)
     end
   end
 

@@ -40,7 +40,7 @@ class StagedRollout < ApplicationRecord
     end
 
     event :halt do
-      after { deployment_run.complete! }
+      after { deployment_run.halt_release_in_playstore! }
       transitions from: [:started, :paused], to: :stopped
     end
 

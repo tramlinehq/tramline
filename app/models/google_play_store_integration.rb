@@ -52,6 +52,12 @@ class GooglePlayStoreIntegration < ApplicationRecord
     end
   end
 
+  def halt_release(channel, build_number, version, rollout_percentage)
+    GitHub::Result.new do
+      installation.halt_release(channel, build_number, version, rollout_percentage)
+    end
+  end
+
   ALLOWED_ERRORS = [
     Installations::Errors::BuildExistsInBuildChannel,
     Installations::Errors::DuplicatedBuildUploadAttempt
