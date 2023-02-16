@@ -93,9 +93,7 @@
       <%= render partial: "setup_progress", locals: { setup_instructions: @setup_instructions } %>
     <% end %>
 
-    <% if @app.latest_external_app %>
-      <%= render(ExternalAppComponent.new(external_app: @app.latest_external_app)) %>
-    <% end %>
+    <%= render(ExternalAppComponent.new(app: @app, external_app: @app.latest_external_app)) %>
 
     <% if @app.trains.any? %>
       <% active_runs = @app.active_runs %>

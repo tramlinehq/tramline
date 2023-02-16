@@ -51,6 +51,7 @@ Rails.application.routes.draw do
 
     member do
       get :all_builds
+      get :refresh_external
     end
 
     resources :trains, only: %i[new create edit update show destroy] do
