@@ -11,8 +11,12 @@ class StepsController < SignedInApplicationController
   around_action :set_time_zone
 
   def new
+    kind = params.extract!(:kind).require(:kind)
+
     head :forbidden and return if @train.active_run
-    @step = @train.steps.new
+    head :forbidden and return if kind.blank?
+
+    @step = @train.steps.new(kind:)
   end
 
   def edit
