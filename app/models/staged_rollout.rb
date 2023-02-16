@@ -71,6 +71,10 @@ class StagedRollout < ApplicationRecord
     current_stage && current_stage >= stage
   end
 
+  def roll_out_started?
+    current_stage && started?
+  end
+
   def move_to_next_stage!
     return if completed?
 

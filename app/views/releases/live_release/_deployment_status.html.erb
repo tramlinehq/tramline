@@ -1,4 +1,6 @@
 <% if step_run.present? %>
+  <% if deployment.staged_rollout? %><%= status_badge("Staged", ["bg-slate-100 text-slate-500"]) %>
+  <% end %>
   <% if step_run.manually_startable_deployment?(deployment) %>
     <%= authz_button_to :blue,
                         "Start this deployment",
@@ -9,7 +11,6 @@
   <% deployment_run = step_run.last_run_for(deployment) %>
 
   <% if deployment_run.present? %>
-    <% if deployment.staged_rollout? %><%= status_badge("Staged", ["bg-slate-100 text-slate-500"]) %><% end %>
     <span class="ml-2"><%= deployment_run_status_badge(deployment_run) %></span>
   <% end %>
 
@@ -37,21 +38,36 @@
         </tbody>
       </table>
 
-      <%= form_with(model: [release, step_run, deployment_run, staged_rollout],
-                    url: increase_deployment_run_staged_rollout_path(deployment_run),
-                    data: { turbo_confirm: "You are about to release this build to a store channel.\n\nAre you sure?" },
-                    builder: ButtonHelper::AuthzForms) do |form| %>
+      <div class="flex justify-start">
+        <div class="mr-1">
+          <%= form_with(model: [release, step_run, deployment_run, staged_rollout],
+                        url: increase_deployment_run_staged_rollout_path(deployment_run),
+                        data: { turbo_confirm: "You are about to release this build to production.\n\nAre you sure?" },
+                        builder: ButtonHelper::AuthzForms) do |form| %>
 
-        <% unless staged_rollout.finished? %>
-          <% if staged_rollout.failed? %>
-            <%= form.authz_submit :blue, "Retry", class: "btn-xs" %>
-          <% elsif staged_rollout.current_stage %>
-            <%= form.authz_submit :blue, "Increase Rollout", class: "btn-xs" %>
-          <% else %>
-            <%= form.authz_submit :blue, "Start Rollout", class: "btn-xs" %>
+            <% if staged_rollout.started? %>
+              <% if staged_rollout.failed? %>
+                <%= form.authz_submit :blue, "Retry", class: "btn-xs" %>
+              <% elsif staged_rollout.current_stage %>
+                <%= form.authz_submit :blue, "Increase Rollout", class: "btn-xs" %>
+              <% else %>
+                <%= form.authz_submit :blue, "Start Rollout", class: "btn-xs" %>
+              <% end %>
+            <% end %>
           <% end %>
-        <% end %>
-      <% end %>
+        </div>
+
+        <div>
+          <% if staged_rollout.roll_out_started? %>
+            <%= form_with(model: [release, step_run, deployment_run, staged_rollout],
+                          url: halt_deployment_run_staged_rollout_path(deployment_run),
+                          data: { turbo_confirm: "You are about to halt the release of this build to production.\n\nAre you sure?" },
+                          builder: ButtonHelper::AuthzForms) do |form| %>
+              <%= form.authz_submit :red, "Halt Rollout", class: "btn-xs" %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
     <% end %>
   </div>
 <% end %>

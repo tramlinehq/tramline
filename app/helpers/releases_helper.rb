@@ -97,8 +97,8 @@ module ReleasesHelper
         ["Rollout failed", %w[bg-rose-100 text-rose-600]]
       when :completed
         ["Rollout completed", %w[bg-green-100 text-green-600]]
-      when :halted
-        ["Rollout halted", %w[bg-emerald-100 text-emerald-500]]
+      when :stopped
+        ["Rollout halted", %w[bg-amber-100 text-amber-600]]
       else
         ["Unknown", %w[bg-slate-100 text-slate-500]]
       end
