@@ -259,12 +259,12 @@ describe DeploymentRun do
     end
 
     it "does not mark the step run as success if all deployments are not finished" do
-      _deployment_run1 = create(:deployment_run, :released, deployment: step.deployments[0], step_run: step_run)
-      deployment_run2 = create(:deployment_run, :uploaded, deployment: step.deployments[1], step_run: step_run)
+      _incomplete_run = create(:deployment_run, :uploaded, deployment: step.deployments[0], step_run: step_run)
+      completable_run = create(:deployment_run, :uploaded, deployment: step.deployments[1], step_run: step_run)
 
-      deployment_run2.complete!
+      completable_run.complete!
 
-      expect(deployment_run2.reload.released?).to be(true)
+      expect(completable_run.reload.released?).to be(true)
       expect(step_run.reload.success?).to be(false)
     end
   end

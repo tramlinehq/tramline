@@ -18,8 +18,8 @@ describe Releases::Train do
     let(:train) { create(:releases_train, :draft) }
 
     it "disallows creating more than one release step" do
-      create(:releases_step, :release, :with_deployment, train: train)
-      create(:releases_step, :release, :with_deployment, train: train)
+      build(:releases_step, :release, :with_deployment, train: train)
+      build(:releases_step, :release, :with_deployment, train: train)
 
       expect(train.activate!).to be(false)
       expect(train.errors).not_to be_empty

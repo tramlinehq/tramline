@@ -85,6 +85,14 @@ class Releases::Train < ApplicationRecord
     self.status ||= Releases::Train.statuses[:draft]
   end
 
+  def has_release_step?
+    steps.release.any?
+  end
+
+  def release_step
+    steps.release.first
+  end
+
   def activate!
     transaction do
       self.status = Releases::Train.statuses[:active]
@@ -168,6 +176,10 @@ class Releases::Train < ApplicationRecord
     steps.where("step_number <= ?", step_number).order(:step_number)
   end
 
+  def activated?
+    !Rails.env.test? && active?
+  end
+
   private
 
   def ensure_deletable
@@ -184,9 +196,5 @@ class Releases::Train < ApplicationRecord
     unless steps.release.size == 1
       errors.add(:steps, "there should be one release step")
     end
-  end
-
-  def activated?
-    !Rails.env.test? && active?
   end
 end

@@ -58,7 +58,8 @@ class Releases::Step < ApplicationRecord
   delegate :app, to: :train
 
   def set_step_number
-    self.step_number = train.steps.maximum(:step_number).to_i + 1
+    self.step_number = train.steps.review.maximum(:step_number).to_i + 1
+    train.release_step&.update!(step_number: step_number.succ) if train.draft? && review?
   end
 
   def set_default_status

@@ -86,7 +86,7 @@ describe Releases::Step::Run do
       expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
-    it "is false when no other deployment runs have happened" do
+    it "is false when the deployment run has already happened" do
       step = create(:releases_step, :with_deployment, train: train)
       step_run = create(:releases_step_run, step: step)
       deployment = create(:deployment, step: step)
@@ -96,20 +96,40 @@ describe Releases::Step::Run do
       expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
-    it "is true when it is the running step's next-in-line deployment" do
-      step = create(:releases_step, :with_deployment, train: train)
-      _inactive_train_run = create(:releases_train_run, train: train, status: "finished")
-      inactive_step_run = create(:releases_step_run, step: step, status: "success")
-      _active_train_run = create(:releases_train_run, train: train, status: "on_track")
-      running_step_run = create(:releases_step_run, step: step, status: "on_track")
-      deployment1 = create(:deployment, step: step)
-      _deployment_run1 = create(:deployment_run, step_run: running_step_run, deployment: deployment1, status: "released")
-      deployment2 = create(:deployment, step: step)
+    context "with release step" do
+      it "is true when it is the running step's next-in-line deployment" do
+        step = create(:releases_step, :release, :with_deployment, train: train)
+        _inactive_train_run = create(:releases_train_run, train: train, status: "finished")
+        inactive_step_run = create(:releases_step_run, step: step, status: "success")
+        _active_train_run = create(:releases_train_run, train: train, status: "on_track")
+        running_step_run = create(:releases_step_run, step: step, status: "on_track")
+        deployment1 = create(:deployment, step: step)
+        _deployment_run1 = create(:deployment_run, step_run: running_step_run, deployment: deployment1, status: "released")
+        deployment2 = create(:deployment, step: step)
 
-      expect(running_step_run.manually_startable_deployment?(deployment1)).to be false
-      expect(running_step_run.manually_startable_deployment?(deployment2)).to be true
-      expect(inactive_step_run.manually_startable_deployment?(deployment1)).to be false
-      expect(inactive_step_run.manually_startable_deployment?(deployment2)).to be false
+        expect(running_step_run.manually_startable_deployment?(deployment1)).to be false
+        expect(running_step_run.manually_startable_deployment?(deployment2)).to be true
+        expect(inactive_step_run.manually_startable_deployment?(deployment1)).to be false
+        expect(inactive_step_run.manually_startable_deployment?(deployment2)).to be false
+      end
+    end
+
+    context "with review step" do
+      it "is false when it is the running step's next-in-line deployment" do
+        step = create(:releases_step, :review, :with_deployment, train: train)
+        _inactive_train_run = create(:releases_train_run, train: train, status: "finished")
+        inactive_step_run = create(:releases_step_run, step: step, status: "success")
+        _active_train_run = create(:releases_train_run, train: train, status: "on_track")
+        running_step_run = create(:releases_step_run, step: step, status: "on_track")
+        deployment1 = create(:deployment, step: step)
+        _deployment_run1 = create(:deployment_run, step_run: running_step_run, deployment: deployment1, status: "released")
+        deployment2 = create(:deployment, step: step)
+
+        expect(running_step_run.manually_startable_deployment?(deployment1)).to be false
+        expect(running_step_run.manually_startable_deployment?(deployment2)).to be false
+        expect(inactive_step_run.manually_startable_deployment?(deployment1)).to be false
+        expect(inactive_step_run.manually_startable_deployment?(deployment2)).to be false
+      end
     end
   end
 
