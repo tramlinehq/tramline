@@ -1,36 +1,58 @@
-<h2 class="text-2xl text-slate-800 font-bold">Current Store Status</h2>
-<span class="text-sm text-slate-400">Last changed <%= ago_in_words external_app.fetched_at %></span>
-<table class="table-auto w-3/4">
-  <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
-  <tr>
-    <th class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
-      <div class="font-semibold text-left">Channel Name</div>
-    </th>
-    <th class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
-      <div class="font-semibold text-left">Current Releases</div>
-    </th>
-  </tr>
-  </thead>
-  <tbody class="text-sm divide-y divide-slate-200">
-  <% channels.each do |channel| %>
-    <tr>
-      <td class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
-        <span><%= channel_name channel %></span>
-      </td>
-      <td class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
-        <% releases(channel).each do |release| %>
-          <div class="mx-2 my-1">
-            <%= release_description(release) %>
-            <%= release_status(release) %>
-            <% if release[:user_fraction] %>
-              <div class="bg-emerald-100 rounded-full h-1 mt-1.5 w-full" title=<% release_fraction_title(release) %>>
-                <div class="bg-emerald-500 h-1 rounded-full" style="width: <%= release_fraction_width(release) %>"></div>
-              </div>
-            <% end %>
-          </div>
-        <% end %>
-      </td>
-    </tr>
+<div class="flex justify-between items-end w-3/4">
+  <div>
+    <h2 class="text-2xl text-slate-800 font-bold">Current Store Status</h2>
+    <span class="text-sm text-slate-400"><%= subtitle %></span>
+  </div>
+  <% if external_app %>
+    <div class="text-left">
+      <%= decorated_button_to :neutral, refresh_external_app_path(app), method: :get do %>
+        <%= inline_svg('refresh.svg', classname: "inline-flex w-4") %>
+      <% end %>
+    </div>
   <% end %>
-  </tbody>
-</table>
+</div>
+<% if external_app.present? %>
+  <table class="table-auto w-3/4">
+    <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+    <tr>
+      <th class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
+        <div class="font-semibold text-left">Channel Name</div>
+      </th>
+      <th class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
+        <div class="font-semibold text-left">Current Releases</div>
+      </th>
+    </tr>
+    </thead>
+    <tbody class="text-sm divide-y divide-slate-200">
+    <% channels.each do |channel| %>
+      <tr>
+        <td class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
+          <span><%= channel_name channel %></span>
+        </td>
+        <td class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
+          <% releases(channel).each do |release| %>
+            <div class="mx-2">
+              <div class="flex justify-between text-sm mb-2">
+                <div>
+                  <%= release_description(release) %>
+                  <%= release_status(release) %>
+                </div>
+                <% if release[:user_fraction] %>
+                  <div class="italic"><%= release_fraction_title(release) %></div>
+                <% end %>
+              </div>
+              <% if release[:user_fraction] %>
+                <div class="border-slate-200">
+                  <div class="relative w-full h-2 bg-slate-300">
+                    <div class="absolute inset-0 bg-emerald-500" aria-hidden="true" style="width: <%= release_fraction_width(release) %>"></div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+<% end %>

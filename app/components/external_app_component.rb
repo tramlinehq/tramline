@@ -1,13 +1,22 @@
 class ExternalAppComponent < ViewComponent::Base
   include ApplicationHelper
+  include ButtonHelper
+  include AssetsHelper
 
-  def initialize(external_app:)
+  def initialize(app:, external_app:)
+    @app = app
     @external_app = external_app
   end
 
-  attr_reader :external_app
+  attr_reader :external_app, :app
 
   private
+
+  def subtitle
+    return "Last changed #{ago_in_words external_app.fetched_at}" if external_app
+    return "Fetching..." if app.has_store_integration?
+    "Add store deployment integration to fetch this information"
+  end
 
   def channels
     external_app.channel_data.map(&:with_indifferent_access)

@@ -3,7 +3,7 @@ class AppsController < SignedInApplicationController
   include Filterable
 
   before_action :require_write_access!, only: %i[new create edit update destroy]
-  before_action :set_app, only: %i[show edit update destroy all_builds]
+  before_action :set_app, only: %i[show edit update destroy all_builds refresh_external]
   before_action :set_integrations, only: %i[show destroy]
   around_action :set_time_zone
 
@@ -65,6 +65,10 @@ class AppsController < SignedInApplicationController
     set_query_helpers
     set_query_pagination(Queries::Builds.count(app: @app, params: @query_params))
     @builds = Queries::Builds.all(app: @app, params: @query_params)
+  end
+
+  def refresh_external
+    @app.create_external!
   end
 
   private
