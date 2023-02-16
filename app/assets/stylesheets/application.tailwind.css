@@ -20,6 +20,11 @@
   @apply bg-gray-200 text-slate-700;
 }
 
+/* Override height of slim-select box */
+.ss-main .ss-single-selected {
+  height: 35px !important;
+}
+
 /* Application theme starts here */
 .form-select {
   @apply pr-10;
