@@ -8,6 +8,13 @@ module Installations
     SCOPE = ANDROID_PUBLISHER::AUTH_ANDROIDPUBLISHER
     CONTENT_TYPE = "application/octet-stream".freeze
 
+    RELEASE_STATUS = {
+      in_progress: "inProgress",
+      halted: "halted",
+      draft: "draft",
+      completed: "completed"
+    }.freeze
+
     attr_reader :package_name, :key_file, :client
 
     def initialize(package_name, key_file)
@@ -87,28 +94,24 @@ module Installations
     end
 
     def active_release
+      rollout_status = @rollout_percentage.eql?(100) ? RELEASE_STATUS[:completed] : RELEASE_STATUS[:in_progress]
       params = release_params.merge(status: rollout_status)
       params[:user_fraction] = user_fraction if @rollout_percentage && user_fraction < 1.0
       ANDROID_PUBLISHER::TrackRelease.new(**params)
     end
 
     def draft_release
-      params = release_params.merge(status: "draft")
+      params = release_params.merge(status: RELEASE_STATUS[:draft])
       ANDROID_PUBLISHER::TrackRelease.new(**params)
     end
 
     def halted_release
-      params = release_params.merge(status: "halted")
-      params[:user_fraction] = user_fraction
+      params = release_params.merge(status: RELEASE_STATUS[:halted], user_fraction: user_fraction)
       ANDROID_PUBLISHER::TrackRelease.new(**params)
     end
 
     def user_fraction
       @rollout_percentage.to_f / 100.0
-    end
-
-    def rollout_status
-      @rollout_percentage.eql?(100) ? "completed" : "inProgress"
     end
 
     def release_params

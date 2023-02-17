@@ -27,9 +27,9 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   CHANNELS = [
     {id: :production, name: "production", is_production: true},
-    {id: :beta, name: "open testing"},
-    {id: :alpha, name: "closed testing"},
-    {id: :internal, name: "internal testing"}
+    {id: :beta, name: "open testing", is_production: false},
+    {id: :alpha, name: "closed testing", is_production: false},
+    {id: :internal, name: "internal testing", is_production: false}
   ]
 
   def access_key
