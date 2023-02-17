@@ -100,7 +100,7 @@ class DeploymentRun < ApplicationRecord
       transitions from: :uploaded, to: :rollout_started
     end
 
-    event :dispatch_fail do
+    event :dispatch_fail, after_commit: -> { event_stamp!(reason: :release_failed, kind: :error, data: stamp_data) } do
       after { step_run.fail_deploy! }
       transitions from: [:uploaded, :submitted, :rollout_started], to: :failed
     end
@@ -164,7 +164,6 @@ class DeploymentRun < ApplicationRecord
         complete!
       else
         dispatch_fail!
-        event_stamp!(reason: :release_failed, kind: :error, data: stamp_data)
         elog(result.error)
       end
     end
@@ -176,7 +175,6 @@ class DeploymentRun < ApplicationRecord
         create_staged_rollout!(config: staged_rollout_config)
       else
         dispatch_fail!
-        event_stamp!(reason: :release_failed, kind: :error, data: stamp_data)
         elog(result.error)
       end
     end
