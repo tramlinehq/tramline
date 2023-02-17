@@ -1,6 +1,8 @@
 <% if step_run.present? %>
-  <% if deployment.staged_rollout? %><%= status_badge("Staged", ["bg-slate-100 text-slate-500"]) %>
+  <% if deployment.staged_rollout? %>
+    <%= status_badge("Staged", ["bg-slate-100 text-slate-500"]) %>
   <% end %>
+
   <% if step_run.manually_startable_deployment?(deployment) %>
     <%= authz_button_to :blue,
                         "Start this deployment",
