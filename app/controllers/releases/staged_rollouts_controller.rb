@@ -14,8 +14,13 @@ class Releases::StagedRolloutsController < SignedInApplicationController
   end
 
   def halt
-    @staged_rollout.halt!
-    redirect_back fallback_location: root_path, notice: "Halted the staged rollout!"
+    @staged_rollout.halt_release!
+
+    if @staged_rollout.stopped?
+      redirect_back fallback_location: root_path, notice: "Halted the rollout!"
+    else
+      redirect_back fallback_location: root_path, flash: {error: "Failed to halt the rollout. Please retry!"}
+    end
   end
 
   private

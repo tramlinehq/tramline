@@ -63,12 +63,12 @@ module ReleasesHelper
   end
 
   def deployment_run_status_badge(deployment_run)
-    status, styles =
+    status, styles, pulse =
       case deployment_run.status.to_sym
       when :created
         ["About to start", %w[bg-amber-100 text-amber-600]]
       when :started
-        ["Running", %w[bg-indigo-100 text-indigo-600]]
+        ["Running", %w[bg-indigo-100 text-indigo-600], true]
       when :submitted
         ["Submitted for review", %w[bg-indigo-100 text-indigo-600]]
       when :uploaded
@@ -85,7 +85,7 @@ module ReleasesHelper
         ["Unknown", %w[bg-slate-100 text-slate-500]]
       end
 
-    status_badge(status, styles)
+    status_badge(status, styles, pulse: pulse)
   end
 
   def staged_rollout_status_badge(staged_rollout)

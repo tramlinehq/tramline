@@ -25,7 +25,7 @@ describe StagedRollout do
     end
   end
 
-  describe "#halt!" do
+  describe "#halt_release!" do
     let(:deployment_run) { create(:deployment_run, :with_staged_rollout, :rollout_started) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
     let(:rollout) { create(:staged_rollout, current_stage: 0, deployment_run: deployment_run) }
@@ -34,18 +34,33 @@ describe StagedRollout do
       allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
     end
 
+    it "does nothing if there is no rollout" do
+      unrolled_rollout = create(:staged_rollout, current_stage: nil, deployment_run: deployment_run)
+      unrolled_rollout.halt_release!
+
+      expect(rollout.reload.stopped?).to be(false)
+    end
+
     it "transitions state" do
       allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
-      rollout.halt!
+      rollout.halt_release!
 
       expect(rollout.reload.stopped?).to be(true)
     end
 
-    it "completes the deployment run" do
+    it "completes the deployment run if halt succeeds" do
       allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
-      rollout.halt!
+      rollout.halt_release!
 
       expect(rollout.deployment_run.reload.released?).to be(true)
+    end
+
+    it "does not complete the deployment run if halt fails" do
+      allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new { raise })
+      rollout.halt_release!
+
+      expect(rollout.deployment_run.reload.released?).to be(false)
+      expect(rollout.reload.stopped?).to be(false)
     end
   end
 

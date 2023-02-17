@@ -384,30 +384,24 @@ describe DeploymentRun do
     end
 
     it "does nothing if rollout hasn't started" do
-      create(:staged_rollout, current_stage: nil, deployment_run: run)
+      unstarted_run = create(:deployment_run, :uploaded, deployment:, step_run:)
       allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
 
-      run.halt_release_in_playstore!
+      unstarted_run.halt_release_in_playstore!(rollout_value: 10.0) {}
 
       expect(providable_dbl).not_to have_received(:halt_release)
     end
 
     it "halts the release on playstore" do
-      create(:staged_rollout, current_stage: 1, deployment_run: run)
       allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
 
-      run.halt_release_in_playstore!
+      run.halt_release_in_playstore!(rollout_value: 10.0) {}
 
       expect(providable_dbl).to have_received(:halt_release)
     end
 
-    it "marks run as complete if halt succeeds" do
-      create(:staged_rollout, current_stage: 1, deployment_run: run)
-      allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
-
-      run.halt_release_in_playstore!
-
-      expect(run.reload.released?).to be(true)
+    it "raises an exception if no rollout value is passed" do
+      expect { run.halt_release_in_playstore!(rollout_value: nil) {} }.to raise_error(ArgumentError)
     end
   end
 end

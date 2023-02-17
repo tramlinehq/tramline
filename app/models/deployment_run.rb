@@ -196,16 +196,13 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  def halt_release_in_playstore!
-    release.with_lock do
-      return unless rollout_started? && staged_rollout.last_rollout_percentage.present?
+  def halt_release_in_playstore!(rollout_value:)
+    raise ArgumentError, "cannot halt without a rollout value" if rollout_value.blank?
 
-      result = provider.halt_release(deployment_channel, build_number, release_version, staged_rollout.last_rollout_percentage)
-      if result.ok?
-        complete!
-      else
-        dispatch_fail!
-      end
+    release.with_lock do
+      return unless rollout_started?
+
+      yield provider.halt_release(deployment_channel, build_number, release_version, rollout_value)
     end
   end
 
