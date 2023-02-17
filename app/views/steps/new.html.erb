@@ -50,7 +50,7 @@
         id="deployments">
       <li class="nested-form-wrapper pr-2 mt-4" data-new-record="<%= form.object.new_record? %>">
         <%= form.fields_for :deployments, Deployment.new do |deployment_form| %>
-          <%= render partial: "deployment", locals: { form: deployment_form, train: @train } %>
+          <%= render partial: "deployment", locals: { form: deployment_form, step: @step } %>
           <%= deployment_form.hidden_field :deployment_number, value: 1, data: { list_position_target: "position" } %>
         <% end %>
       </li>
@@ -58,7 +58,7 @@
       <template data-nested-form-ext-target="template">
         <li class="nested-form-wrapper pr-2 mt-4" data-new-record="<%= form.object.new_record? %>">
           <%= form.fields_for :deployments, Deployment.new, child_index: "NEW_RECORD" do |deployment_form| %>
-            <%= render partial: "deployment", locals: { form: deployment_form, train: @train } %>
+            <%= render partial: "deployment", locals: { form: deployment_form, step: @step } %>
             <%= deployment_form.hidden_field :deployment_number, data: { list_position_target: "position" } %>
           <% end %>
         </li>

@@ -105,7 +105,7 @@ class AppStoreIntegration < ApplicationRecord
     installation.current_app_status(CHANNEL_DATA_TRANSFORMATIONS)
   end
 
-  def build_channels
+  def build_channels(with_production:)
     cache.fetch(build_channels_cache_key, expires_in: 1.hour) do
       installation
         .external_groups(CHANNELS_TRANSFORMATIONS)

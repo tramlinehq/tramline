@@ -97,8 +97,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
     CHANNELS.map(&:with_indifferent_access)
   end
 
-  def build_channels
-    channels.map { |channel| channel.slice(:id, :name, :is_production) }
+  def build_channels(with_production: false)
+    sliced = channels.map { |chan| chan.slice(:id, :name, :is_production) }
+    return sliced if with_production
+    sliced.reject { |channel| channel[:is_production] }
   end
 
   CHANNEL_DATA_TRANSFORMATIONS = {

@@ -6,7 +6,7 @@ class StepsController < SignedInApplicationController
   before_action :set_app, only: %i[new create]
   before_action :set_train, only: %i[new create]
   before_action :set_ci_actions, only: %i[new create]
-  before_action :set_build_channels, only: %i[new create]
+  before_action :set_build_channels, only: %i[create]
   before_action :integrations_are_ready?, only: %i[new create]
   around_action :set_time_zone
 
@@ -17,6 +17,7 @@ class StepsController < SignedInApplicationController
     head :forbidden and return if kind.blank?
 
     @step = @train.steps.new(kind:)
+    set_build_channels
   end
 
   def edit
@@ -107,7 +108,8 @@ class StepsController < SignedInApplicationController
   def set_build_channels
     @build_channel_integrations = set_build_channel_integrations
     @selected_integration = @build_channel_integrations.first # TODO: what is first even?
-    @selected_build_channels = Integration.find_build_channels(@selected_integration.last)
+    @selected_build_channels =
+      Integration.find_build_channels(@selected_integration.last, with_production: @step.release?)
   end
 
   def deployments_params
