@@ -107,7 +107,7 @@ class Integration < ApplicationRecord
       end
     end
 
-    def find_build_channels(id, with_production: true)
+    def find_build_channels(id, with_production: false)
       return EXTERNAL_BUILD_INTEGRATION[:build_channels] if id.blank?
       find_by(id: id).providable.build_channels(with_production:)
     end
