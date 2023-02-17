@@ -34,7 +34,6 @@ class Releases::Step < ApplicationRecord
   validates :release_suffix, presence: true
   validates :release_suffix, format: {with: /\A[a-zA-Z\-_]+\z/, message: "only allows letters and underscore"}
   validates :deployments, presence: true, on: :create
-  validate :train_in_draft_mode, on: :create
   validate :unique_deployments, on: :create
   validate :unique_store_deployments_per_train, on: :create
 
@@ -105,11 +104,5 @@ class Releases::Step < ApplicationRecord
         .any? { |deployment| train.deployments.exists?(build_artifact_channel: deployment.build_artifact_channel, integration: deployment.integration) }
 
     errors.add(:deployments, "cannot have repeated store configurations across steps in the same train") if duplicates
-  end
-
-  def train_in_draft_mode
-    unless train.draft?
-      errors.add(:train, :not_in_draft)
-    end
   end
 end

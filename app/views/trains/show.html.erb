@@ -5,18 +5,13 @@
 <div class="sm:flex sm:justify-between sm:items-center pb-8 border-b border-slate-200">
   <div class="mb-4 sm:mb-0">
     <p class="text-2xl md:text-3xl text-slate-800 font-bold"><%= @train.name %> 🚦</p>
-    <span class="text-sm text-slate-500">Currently in configure mode. Once you are done setting up, hit activate to start creating new releases.</span>
   </div>
 
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-    <% if @train.steps.any? %>
-      <% if @train.active_run %>
-        <%= decorated_link_to :green, "Ongoing Release", live_release_app_train_releases_path(@app, @train) %>
-      <% elsif @train.activated? %>
-        <%= authz_button_to :blue, "Start new release", app_train_releases_path(@app, @train) %>
-      <% else %>
-        <%= authz_button_to :blue, "Activate", activate_app_train_path(@app, @train) %>
-      <% end %>
+    <% if @train.active_run %>
+      <%= decorated_link_to :green, "Ongoing Release", live_release_app_train_releases_path(@app, @train) %>
+    <% elsif @train.startable? %>
+      <%= authz_button_to :blue, "Start new release", app_train_releases_path(@app, @train) %>
     <% end %>
 
     <% if @train.runs.size > 0 %>

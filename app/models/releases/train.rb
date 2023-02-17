@@ -89,30 +89,15 @@ class Releases::Train < ApplicationRecord
     steps.release.any?
   end
 
+  alias_method :startable?, :has_release_step?
+
   def release_step
     steps.release.first
   end
 
   def activate!
-    transaction do
-      self.status = Releases::Train.statuses[:active]
-      save!(context: :activate_context)
-      create_webhook!
-      true
-    end
-  rescue ActiveRecord::RecordInvalid
-    false
-  end
-
-  # since callbacks can't inherently return validation errors
-  # we raise ActiveRecord::RecordInvalid to fail validations if webhook creation fails
-  # currently as a design, we assume that trains are invalid without a corresponding webhook
-  def create_webhook!
-    return false unless activated?
-    vcs_provider.create_webhook!(train_id: id)
-  rescue Installations::Errors::WebhookLimitReached => e
-    errors.add(:webhooks, e.message)
-    raise ActiveRecord::RecordInvalid, self
+    self.status = Releases::Train.statuses[:active]
+    save!(context: :activate_context)
   end
 
   def create_tag!(branch_name)

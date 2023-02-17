@@ -21,9 +21,7 @@ describe Releases::Train do
       build(:releases_step, :release, :with_deployment, train: train)
       build(:releases_step, :release, :with_deployment, train: train)
 
-      expect(train.activate!).to be(false)
-      expect(train.errors).not_to be_empty
-      expect(train.reload.active?).to be(false)
+      expect { train.activate! }.to raise_error(ActiveRecord::RecordInvalid)
     end
 
     it "allows creating multiple review steps" do

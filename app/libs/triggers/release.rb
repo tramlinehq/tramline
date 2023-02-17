@@ -19,7 +19,7 @@ class Triggers::Release
 
   # FIXME: should we take a lock around this train? what is someone double triggers the run?
   def call
-    return Response.new(:unprocessable_entity, "Cannot start a train that is not active!") unless train.active?
+    return Response.new(:unprocessable_entity, "Cannot start a train that is not active!") if train.inactive?
     return Response.new(:unprocessable_entity, "Cannot start a train that has no steps. Please add at least one step.") if train.steps.empty?
     return Response.new(:unprocessable_entity, "A release is already in progress!") if train.active_run.present?
     return Response.new(:unprocessable_entity, "Cannot start a new release before wrapping up existing releases!") if train.runs.pending_release?
@@ -40,6 +40,7 @@ class Triggers::Release
   memoize def kickoff
     GitHub::Result.new do
       transaction do
+        train.activate! unless train.active?
         create_release
         create_webhooks.value!
         create_webhook_listeners
