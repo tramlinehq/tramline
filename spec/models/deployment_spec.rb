@@ -18,7 +18,7 @@ describe Deployment do
 
   describe "validations" do
     context "with staged rollout" do
-      let(:step) { create(:releases_step, :with_deployment) }
+      let(:step) { create(:releases_step, :release, :with_deployment) }
       let(:valid_deployments) {
         [
           build(:deployment, :with_google_play_store, :with_production_channel, step: step, staged_rollout_config: [1, 2], is_staged_rollout: true),

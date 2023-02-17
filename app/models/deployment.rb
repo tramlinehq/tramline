@@ -26,6 +26,7 @@ class Deployment < ApplicationRecord
   validates :build_artifact_channel, uniqueness: {scope: [:integration_id, :train_step_id], message: "Deployments should be designed to have unique providers and channels"}
   validate :staged_rollout_is_allowed
   validate :correct_staged_rollout_config, if: :is_staged_rollout
+  validate :non_prod_build_channel, if: -> { step.review? }
 
   delegate :google_play_store_integration?, :slack_integration?, :store?, :app_store_integration?, to: :integration, allow_nil: true
   delegate :train, to: :step
@@ -76,21 +77,27 @@ class Deployment < ApplicationRecord
 
   def staged_rollout_is_allowed
     if is_staged_rollout && !production_channel?
-      errors.add(:is_staged_rollout, "only allowed for production channel")
+      errors.add(:is_staged_rollout, :prod_only)
     end
   end
 
   def correct_staged_rollout_config
     if staged_rollout_config.size < 1
-      errors.add(:staged_rollout_config, "should have at least one rollout percentage value")
+      errors.add(:staged_rollout_config, :at_least_one)
     end
 
     if staged_rollout_config[0]&.zero?
-      errors.add(:staged_rollout_config, "cannot start with zero rollout")
+      errors.add(:staged_rollout_config, :zero_rollout)
     end
 
     if staged_rollout_config.sort != staged_rollout_config
-      errors.add(:staged_rollout_config, "staged rollout should be in increasing order")
+      errors.add(:staged_rollout_config, :increasing_order)
+    end
+  end
+
+  def non_prod_build_channel
+    if production_channel?
+      errors.add(:build_artifact_channel, :prod_channel_in_review_not_allowed)
     end
   end
 end

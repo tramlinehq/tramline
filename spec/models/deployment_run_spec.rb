@@ -270,7 +270,7 @@ describe DeploymentRun do
   end
 
   describe "#start_rollout!" do
-    let(:step) { create(:releases_step, :with_deployment) }
+    let(:step) { create(:releases_step, :release, :with_deployment) }
     let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
@@ -329,7 +329,7 @@ describe DeploymentRun do
   end
 
   describe "#start_release!" do
-    let(:step) { create(:releases_step, :with_deployment) }
+    let(:step) { create(:releases_step, :release, :with_deployment) }
     let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
@@ -373,7 +373,7 @@ describe DeploymentRun do
   end
 
   describe "#halt_release_in_playstore!" do
-    let(:step) { create(:releases_step, :with_deployment) }
+    let(:step) { create(:releases_step, :release, :with_deployment) }
     let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
     let(:deployment) { create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step) }
     let(:run) { create(:deployment_run, :rollout_started, deployment:, step_run:) }

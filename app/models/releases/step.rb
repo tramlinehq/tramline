@@ -109,7 +109,7 @@ class Releases::Step < ApplicationRecord
 
   def train_in_draft_mode
     unless train.draft?
-      errors.add(:train, "can only create steps when train is in draft mode")
+      errors.add(:train, :not_in_draft)
     end
   end
 end

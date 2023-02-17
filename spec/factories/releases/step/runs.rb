@@ -49,6 +49,10 @@ FactoryBot.define do
         create(:build_artifact, step_run: step_run)
       end
     end
+
+    trait :with_release_step do
+      association :step, factory: [:releases_step, :release, :with_deployment]
+    end
   end
 end
 

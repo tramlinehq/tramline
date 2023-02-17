@@ -34,6 +34,7 @@ FactoryBot.define do
     end
 
     trait :with_staged_rollout do
+      association :step_run, factory: [:releases_step_run, :with_release_step, :with_build_artifact, :deployment_started]
       deployment { association :deployment, :with_staged_rollout, :with_google_play_store, step: step_run.step }
     end
 
