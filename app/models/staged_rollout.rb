@@ -11,6 +11,7 @@
 #  deployment_run_id :uuid             not null, indexed
 #
 class StagedRollout < ApplicationRecord
+  has_paper_trail
   include AASM
   include Loggable
 

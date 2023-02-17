@@ -12,6 +12,7 @@
 #  train_step_run_id          :uuid             not null, indexed => [deployment_id], indexed
 #
 class DeploymentRun < ApplicationRecord
+  has_paper_trail
   include AASM
   include Passportable
   include Loggable
