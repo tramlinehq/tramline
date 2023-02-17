@@ -15,10 +15,10 @@ module AppsHelper
   end
 
   def movement_status_text(status_summary)
-    movement_status(status_summary).to_s.titleize
+    (movement_status(status_summary) || :processing).to_s.titleize
   end
 
   def movement_status_color(status_summary)
-    MOVEMENT_STATUS_COLORS.fetch(movement_status(status_summary))
+    MOVEMENT_STATUS_COLORS.fetch(movement_status(status_summary), "bg-slate-100")
   end
 end
