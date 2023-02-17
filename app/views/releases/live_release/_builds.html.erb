@@ -74,7 +74,7 @@
                 </div>
 
                 <!-- per step info -->
-                <div class="ml-4">
+                <div>
                   <div class="mb-2">
                     <% if step_run.ci_link.present? %>
                       <%= link_to_external "CI workflow run ↗", step_run.ci_link, class: "underline" %>
@@ -122,7 +122,7 @@
                             <div class="text-xs ml-4 mt-2">
                               <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-1") %>
                               <span>
-                                Released to: <%= number_to_percentage deployment_run.initial_rollout_percentage %>
+                                Released to: <%= number_to_percentage deployment_run.rollout_percentage %>
                                 of the users
                               </span>
                             </div>

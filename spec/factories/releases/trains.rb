@@ -7,6 +7,11 @@ FactoryBot.define do
     branching_strategy { "release_backmerge" }
     working_branch { "dev" }
     release_backmerge_branch { "main" }
+    status { "draft" }
+
+    trait :draft do
+      status { "draft" }
+    end
 
     trait :active do
       status { "active" }

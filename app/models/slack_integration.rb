@@ -59,7 +59,7 @@ class SlackIntegration < ApplicationRecord
     installation.list_channels(CHANNELS_TRANSFORMATIONS)
   end
 
-  def build_channels
+  def build_channels(with_production:)
     cache.fetch(build_channels_cache_key, expires_in: 30.minutes) do
       channels.map { |channel| channel.slice(:id, :name) }
     end

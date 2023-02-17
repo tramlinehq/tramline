@@ -67,12 +67,12 @@
               </div>
             </li>
 
-            <% if release.last_good_step_run&.deployment_runs.last.initial_rollout_percentage.present? %>
+            <% if release.last_good_step_run&.deployment_runs.last.rollout_percentage %>
               <li class="flex items-center justify-between py-3 border-b border-indigo-200">
-                <div class="text-sm">Initial Roll-out Percentage</div>
+                <div class="text-sm">Release % to users</div>
                 <div class="flex items-center whitespace-nowrap">
-                  <%= number_to_percentage(release.last_good_step_run&.deployment_runs.last.initial_rollout_percentage) %>
-                  (<%= link_to_external "Increase on Play Store", "https://play.google.com/console/u/0/developers", class: "underline" %>
+                  <%= number_to_percentage(release.last_good_step_run&.deployment_runs.last.rollout_percentage) %>
+                  (<%= link_to_external "Edit on Play Store", "https://play.google.com/console/u/0/developers", class: "underline" %>
                   )
                 </div>
               </li>

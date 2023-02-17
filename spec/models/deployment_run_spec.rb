@@ -82,13 +82,13 @@ describe DeploymentRun do
       end
 
       it "starts distribution if deployment has app store integration" do
-        promote_to_testflight_job = Deployments::AppStoreConnect::TestFlightPromoteJob
+        job = Deployments::AppStoreConnect::TestFlightReleaseJob
         deployment = create(:deployment, integration: train.build_channel_integrations.first, step: step)
         deployment_run = create(:deployment_run, :created, deployment: deployment, step_run: step_run)
-        allow(promote_to_testflight_job).to receive(:perform_later)
+        allow(job).to receive(:perform_later)
 
         deployment_run.dispatch!
-        expect(promote_to_testflight_job).to have_received(:perform_later).with(deployment_run.id).once
+        expect(job).to have_received(:perform_later).with(deployment_run.id).once
       end
     end
   end
@@ -118,17 +118,6 @@ describe DeploymentRun do
 
       deployment_run.start_upload!
       expect(Deployments::Slack).to have_received(:perform_later).with(deployment_run.id).once
-      expect(deployment_run.reload.started?).to be(true)
-    end
-
-    it "does nothing if there is another similar deployment which has started upload" do
-      integration = create(:integration)
-      deployment1 = create(:deployment, step: step, integration: integration)
-      deployment2 = create(:deployment, step: step, integration: integration)
-      _ignored_run = create(:deployment_run, :started, deployment: deployment1, step_run: step_run)
-      deployment_run = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
-
-      deployment_run.start_upload!
       expect(deployment_run.reload.started?).to be(true)
     end
 
@@ -178,45 +167,6 @@ describe DeploymentRun do
 
       deployment_run.upload!
 
-      expect(deployment_run.reload.uploaded?).to be(true)
-    end
-
-    it "marks other similar deployments in the step run as uploaded" do
-      integration = create(:integration, :with_google_play_store)
-      deployment1 = create(:deployment, step: step, integration: integration)
-      similar_run = create(:deployment_run, :started, deployment: deployment1, step_run: step_run)
-      deployment2 = create(:deployment, step: step, integration: integration)
-      deployment_run = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
-
-      deployment_run.upload!
-
-      expect(similar_run.reload.uploaded?).to be(true)
-      expect(deployment_run.reload.uploaded?).to be(true)
-    end
-
-    it "ignores other similar deployments in the step run if already uploaded" do
-      integration = create(:integration, :with_google_play_store)
-      deployment1 = create(:deployment, step: step, integration: integration)
-      similar_uploaded_run = create(:deployment_run, :uploaded, deployment: deployment1, step_run: step_run)
-      deployment2 = create(:deployment, step: step, integration: integration)
-      deployment_run = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
-
-      deployment_run.upload!
-
-      expect(similar_uploaded_run.reload.uploaded?).to be(true)
-      expect(deployment_run.reload.uploaded?).to be(true)
-    end
-
-    it "ignores other similar deployments in the step run if not store" do
-      integration = create(:integration, :with_slack)
-      deployment1 = create(:deployment, step: step, integration: integration)
-      similar_run = create(:deployment_run, :started, deployment: deployment1, step_run: step_run)
-      deployment2 = create(:deployment, step: step, integration: integration)
-      deployment_run = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
-
-      deployment_run.upload!
-
-      expect(similar_run.reload.started?).to be(true)
       expect(deployment_run.reload.uploaded?).to be(true)
     end
   end
@@ -309,13 +259,149 @@ describe DeploymentRun do
     end
 
     it "does not mark the step run as success if all deployments are not finished" do
-      _deployment_run1 = create(:deployment_run, :released, deployment: step.deployments[0], step_run: step_run)
-      deployment_run2 = create(:deployment_run, :uploaded, deployment: step.deployments[1], step_run: step_run)
+      _incomplete_run = create(:deployment_run, :uploaded, deployment: step.deployments[0], step_run: step_run)
+      completable_run = create(:deployment_run, :uploaded, deployment: step.deployments[1], step_run: step_run)
 
-      deployment_run2.complete!
+      completable_run.complete!
 
-      expect(deployment_run2.reload.released?).to be(true)
+      expect(completable_run.reload.released?).to be(true)
       expect(step_run.reload.success?).to be(false)
+    end
+  end
+
+  describe "#start_rollout!" do
+    let(:step) { create(:releases_step, :release, :with_deployment) }
+    let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
+    let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+    end
+
+    it "only starts when staged rollout is enabled for the deployment" do
+      allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
+      deployment = create(:deployment, :with_google_play_store, step: step_run.step)
+      run = create(:deployment_run, :uploaded, deployment:)
+
+      expect { run.start_rollout! }.to raise_error(AASM::InvalidTransition)
+    end
+
+    it "creates a staged rollout association" do
+      allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
+      deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
+      run = create(:deployment_run, :uploaded, deployment:)
+
+      run.start_rollout!
+
+      expect(run.reload.staged_rollout).to be_present
+    end
+
+    it "creates a draft release" do
+      allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
+      staged_rollout_config = [1, 100]
+      deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, staged_rollout_config:, step: step_run.step)
+      run = create(:deployment_run, :uploaded, deployment:)
+
+      run.start_rollout!
+
+      expect(providable_dbl).to have_received(:create_draft_release)
+    end
+
+    it "marks it as rollout_started" do
+      allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
+      deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
+      run = create(:deployment_run, :uploaded, deployment:)
+
+      run.start_rollout!
+
+      expect(run.reload.rollout_started?).to be(true)
+    end
+
+    it "marks it as failed if create draft release fails" do
+      allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new { raise })
+      deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
+      run = create(:deployment_run, :uploaded, deployment:)
+
+      run.start_rollout!
+
+      expect(run.reload.failed?).to be(true)
+    end
+  end
+
+  describe "#start_release!" do
+    let(:step) { create(:releases_step, :release, :with_deployment) }
+    let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
+    let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+    end
+
+    it "kicks off the rollout if possible" do
+      allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
+      deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
+      run = create(:deployment_run, :uploaded, deployment:)
+
+      run.start_release!
+
+      expect(run.reload.rollout_started?).to be(true)
+    end
+
+    context "with no rollout" do
+      it "fully promotes to the store" do
+        full_release_value = 100
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+        deployment = create(:deployment, :with_google_play_store, step: step_run.step)
+        run = create(:deployment_run, :uploaded, deployment:)
+
+        run.start_release!
+
+        expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, full_release_value)
+        expect(run.reload.released?).to be(true)
+      end
+
+      it "completes the run" do
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+        deployment = create(:deployment, :with_google_play_store, step: step_run.step)
+        run = create(:deployment_run, :uploaded, deployment:)
+
+        run.start_release!
+
+        expect(run.reload.released?).to be(true)
+      end
+    end
+  end
+
+  describe "#halt_release_in_playstore!" do
+    let(:step) { create(:releases_step, :release, :with_deployment) }
+    let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
+    let(:deployment) { create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step) }
+    let(:run) { create(:deployment_run, :rollout_started, deployment:, step_run:) }
+    let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+    end
+
+    it "does nothing if rollout hasn't started" do
+      unstarted_run = create(:deployment_run, :uploaded, deployment:, step_run:)
+      allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
+
+      unstarted_run.halt_release_in_playstore!(rollout_value: 10.0) {}
+
+      expect(providable_dbl).not_to have_received(:halt_release)
+    end
+
+    it "halts the release on playstore" do
+      allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
+
+      run.halt_release_in_playstore!(rollout_value: 10.0) {}
+
+      expect(providable_dbl).to have_received(:halt_release)
+    end
+
+    it "raises an exception if no rollout value is passed" do
+      expect { run.halt_release_in_playstore!(rollout_value: nil) {} }.to raise_error(ArgumentError)
     end
   end
 end

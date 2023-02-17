@@ -56,6 +56,7 @@ Rails.application.routes.draw do
 
     resources :trains, only: %i[new create edit update show destroy] do
       member do
+        patch :activate
         patch :deactivate
       end
 
@@ -81,8 +82,11 @@ Rails.application.routes.draw do
             end
 
             resources :deployment_runs, only: [], shallow: true do
-              member do
-                patch :promote
+              resource :staged_rollout, only: [] do
+                member do
+                  patch :increase
+                  patch :halt
+                end
               end
             end
           end

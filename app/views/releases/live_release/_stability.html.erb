@@ -32,7 +32,7 @@
           </div>
 
           <div class="pl-6">
-            <%= render partial: "releases/live_release/per_step_metadata", locals: { release: release, step: step, step_run: step_run } %>
+            <%= render partial: "shared/per_step_metadata", locals: { release: release, step: step, step_run: step_run } %>
             <%= render partial: "releases/live_release/step_sign_offs", locals: { release: release, release_train: release_train, step: step, step_run: step_run } %>
           </div>
         </li>

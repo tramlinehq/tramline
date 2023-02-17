@@ -12,6 +12,7 @@
 #  train_step_run_id          :uuid             not null, indexed => [deployment_id], indexed
 #
 class DeploymentRun < ApplicationRecord
+  has_paper_trail
   include AASM
   include Passportable
   include Loggable
@@ -20,16 +21,32 @@ class DeploymentRun < ApplicationRecord
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
 
   has_one :external_build, dependent: :destroy
+  has_one :staged_rollout, dependent: :destroy
 
   validates :deployment_id, uniqueness: {scope: :train_step_run_id}
-  validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
-  delegate :step, :release, :commit, :build_number, :build_artifact, :build_version, to: :step_run
+  delegate :step,
+    :release,
+    :commit,
+    :build_number,
+    :build_artifact,
+    :build_version,
+    to: :step_run
+  delegate :external?,
+    :google_play_store_integration?,
+    :slack_integration?,
+    :app_store_integration?,
+    :store?,
+    :deployment_number,
+    :integration,
+    :deployment_channel,
+    :deployment_channel_name,
+    :staged_rollout?,
+    :staged_rollout_config,
+    to: :deployment
   delegate :app, to: :step
   delegate :ios?, to: :app
   delegate :release_version, to: :release
-  delegate :external?, :google_play_store_integration?, :slack_integration?, :store?, :app_store_integration?, to: :deployment
-  delegate :deployment_number, :integration, :deployment_channel, :deployment_channel_name, to: :deployment
 
   scope :for_ids, ->(ids) { includes(deployment: :integration).where(id: ids) }
 
@@ -39,7 +56,7 @@ class DeploymentRun < ApplicationRecord
     "invalid_package",
     "apks_are_not_allowed",
     "upload_failed_reason_unknown",
-    "promotion_failed",
+    "release_failed",
     "released"
   ]
 
@@ -49,12 +66,14 @@ class DeploymentRun < ApplicationRecord
     submitted: "submitted",
     uploaded: "uploaded",
     upload_failed: "upload_failed",
+    rollout_started: "rollout_started",
     released: "released",
     failed: "failed"
   }
 
   enum status: STATES
 
+  # FIXME: write functions/events that are not tied to one particular store
   aasm safe_state_machine_params do
     state :created, initial: true, before_enter: -> { step_run.startable_deployment?(deployment) }
     state(*STATES.keys)
@@ -68,8 +87,7 @@ class DeploymentRun < ApplicationRecord
       transitions from: :started, to: :submitted
     end
 
-    event :upload do
-      after { wrap_up_uploads! }
+    event :upload, after_commit: -> { Deployments::ReleaseJob.perform_later(id) } do
       transitions from: :started, to: :uploaded
     end
 
@@ -78,14 +96,19 @@ class DeploymentRun < ApplicationRecord
       transitions from: :started, to: :upload_failed
     end
 
-    event :dispatch_fail do
-      after { step_run.fail_deploy! }
-      transitions from: [:uploaded, :submitted], to: :failed
+    event :start_rollout, guard: :staged_rollout? do
+      after { rollout! }
+      transitions from: :uploaded, to: :rollout_started
     end
 
-    event :complete do
-      after { step_run.finish! if step_run.finished_deployments? }
-      transitions from: [:created, :uploaded, :started, :submitted], to: :released
+    event :dispatch_fail, after_commit: -> { event_stamp!(reason: :release_failed, kind: :error, data: stamp_data) } do
+      after { step_run.fail_deploy! }
+      transitions from: [:uploaded, :submitted, :rollout_started], to: :failed
+    end
+
+    event :complete, after_commit: -> { event_stamp!(reason: :released, kind: :success, data: stamp_data) } do
+      after { step_run.finish_deployment!(deployment) }
+      transitions from: [:created, :uploaded, :started, :submitted, :rollout_started], to: :released
     end
   end
 
@@ -119,22 +142,66 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  def promote!
-    save!
-    return unless google_play_store_integration?
+  def release_to_testflight!
+    return unless app_store_integration?
+    provider.release_to_testflight(deployment_channel, build_number)
+    submit!
+  end
+
+  def start_distribution!
+    return unless store? && app_store_integration?
+    Deployments::AppStoreConnect::TestFlightReleaseJob.perform_later(id)
+  end
+
+  def start_release!
+    return unless store?
+    return start_rollout! if staged_rollout?
+    fully_release_to_playstore! if google_play_store_integration?
+  end
+
+  def fully_release_to_playstore!
+    release_with(rollout_value: Deployment::FULL_ROLLOUT_VALUE) do |result|
+      if result.ok?
+        complete!
+      else
+        dispatch_fail!
+        elog(result.error)
+      end
+    end
+  end
+
+  def rollout!
+    release_with(is_draft: true) do |result|
+      if result.ok?
+        create_staged_rollout!(config: staged_rollout_config)
+      else
+        dispatch_fail!
+        elog(result.error)
+      end
+    end
+  end
+
+  def release_with(rollout_value: nil, is_draft: false)
+    raise ArgumentError, "cannot have a rollout for a draft release" if is_draft && rollout_value.present?
 
     release.with_lock do
       return unless promotable?
 
-      result = provider.promote(deployment_channel, build_number, release_version, initial_rollout_percentage)
-      if result.ok?
-        complete!
-        event_stamp!(reason: :released, kind: :success, data: stamp_data)
+      if is_draft
+        yield provider.create_draft_release(deployment_channel, build_number, release_version)
       else
-        dispatch_fail!
-        event_stamp!(reason: :promotion_failed, kind: :error, data: stamp_data)
-        elog(result.error)
+        yield provider.rollout_release(deployment_channel, build_number, release_version, rollout_value)
       end
+    end
+  end
+
+  def halt_release_in_playstore!(rollout_value:)
+    raise ArgumentError, "cannot halt without a rollout value" if rollout_value.blank?
+
+    release.with_lock do
+      return unless rollout_started?
+
+      yield provider.halt_release(deployment_channel, build_number, release_version, rollout_value)
     end
   end
 
@@ -158,12 +225,6 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  def promote_to_appstore!
-    return unless app_store_integration?
-    provider.promote_to_testflight(deployment_channel, build_number)
-    submit!
-  end
-
   def push_to_slack!
     return unless slack_integration?
 
@@ -171,33 +232,7 @@ class DeploymentRun < ApplicationRecord
       return if released?
       provider.deploy!(deployment_channel, {step_run: step_run})
       complete!
-      event_stamp!(reason: :released, kind: :success, data: stamp_data)
     end
-  end
-
-  # FIXME: this is cheap hack around not allowing users to re-enter rollout
-  # since that can cause users to downgrade subsequent build rollouts
-  # we want users to only upgrade or keep the same initial rollout they entered the first time
-  # even after subsequent deployment runs / commits land
-  def noninitial?
-    initial_run.present?
-  end
-
-  def promotable?
-    release.on_track? && uploaded? && deployment.google_play_store_integration?
-  end
-
-  def rolloutable?
-    promotable? && deployment.last? && step.last?
-  end
-
-  def initial_run
-    deployment
-      .deployment_runs
-      .includes(step_run: :train_run)
-      .where(step_run: {train_runs: release})
-      .where.not(id:)
-      .first
   end
 
   def has_uploaded?
@@ -206,43 +241,32 @@ class DeploymentRun < ApplicationRecord
 
   # FIXME: should we take a lock around this SR? what is someone double triggers the run?
   def start_upload!
-    # TODO: simplify this logic
-    if store?
-      other_deployment_runs = step_run.similar_deployment_runs_for(self)
-      return upload! if other_deployment_runs.any?(&:has_uploaded?)
-      return if other_deployment_runs.any?(&:started?)
+    if store? && step_run.similar_deployment_runs_for(self).any?(&:has_uploaded?)
+      return upload!
     end
 
     return Deployments::GooglePlayStore::Upload.perform_later(id) if google_play_store_integration?
     Deployments::Slack.perform_later(id) if slack_integration?
   end
 
-  def start_distribution!
-    return unless store? && app_store_integration?
-    Deployments::AppStoreConnect::TestFlightPromoteJob.perform_later(id)
+  def promotable?
+    release.on_track? && store? && (uploaded? || rollout_started?)
   end
 
-  def wrap_up_uploads!
-    return unless store?
-    step_run
-      .similar_deployment_runs_for(self)
-      .select(&:started?)
-      .each { |run| run.upload! }
+  def rolloutable?
+    step.release? && promotable? && deployment.staged_rollout? && rollout_started?
   end
 
-  def previous_rollout
-    initial_run.initial_rollout_percentage
+  def rollout_percentage
+    return staged_rollout.last_rollout_percentage if staged_rollout?
+    initial_rollout_percentage || Deployment::FULL_ROLLOUT_VALUE
   end
 
-  def previously_rolled_out?
-    rolloutable? && noninitial?
-  end
+  private
 
   def provider
     integration.providable
   end
-
-  private
 
   def stamp_data
     {

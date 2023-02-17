@@ -84,7 +84,7 @@ class AppStoreIntegration < ApplicationRecord
     @find_app ||= installation.find_app(APP_TRANSFORMATIONS)
   end
 
-  def promote_to_testflight(beta_group_id, build_number)
+  def release_to_testflight(beta_group_id, build_number)
     installation.add_build_to_group(beta_group_id, build_number)
   end
 
@@ -105,7 +105,7 @@ class AppStoreIntegration < ApplicationRecord
     installation.current_app_status(CHANNEL_DATA_TRANSFORMATIONS)
   end
 
-  def build_channels
+  def build_channels(with_production:)
     cache.fetch(build_channels_cache_key, expires_in: 1.hour) do
       installation
         .external_groups(CHANNELS_TRANSFORMATIONS)

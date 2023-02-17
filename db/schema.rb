@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_02_08_091724) do
+ActiveRecord::Schema[7.0].define(version: 2023_02_15_073022) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -115,6 +115,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_08_091724) do
     t.integer "deployment_number", limit: 2, default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "staged_rollout_config", default: [], array: true
+    t.boolean "is_staged_rollout", default: false
     t.index ["build_artifact_channel", "integration_id", "train_step_id"], name: "idx_deployments_on_build_artifact_chan_and_integration_and_step", unique: true
     t.index ["deployment_number", "train_step_id"], name: "index_deployments_on_deployment_number_and_train_step_id", unique: true
     t.index ["integration_id"], name: "index_deployments_on_integration_id"
@@ -333,6 +335,16 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_08_091724) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "staged_rollouts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "deployment_run_id", null: false
+    t.decimal "config", precision: 8, scale: 5, default: [], array: true
+    t.string "status"
+    t.integer "current_stage"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["deployment_run_id"], name: "index_staged_rollouts_on_deployment_run_id"
+  end
+
   create_table "train_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "train_id", null: false
     t.string "code_name", null: false
@@ -371,7 +383,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_08_091724) do
     t.string "build_number"
     t.boolean "sign_required", default: true
     t.string "approval_status", default: "pending", null: false
-    t.decimal "initial_rollout_percentage", precision: 8, scale: 5
     t.index ["releases_commit_id"], name: "index_train_step_runs_on_releases_commit_id"
     t.index ["train_run_id"], name: "index_train_step_runs_on_train_run_id"
     t.index ["train_step_id"], name: "index_train_step_runs_on_train_step_id"
@@ -388,6 +399,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_08_091724) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "release_suffix", null: false
+    t.string "kind"
     t.index ["ci_cd_channel", "train_id"], name: "index_train_steps_on_ci_cd_channel_and_train_id", unique: true
     t.index ["step_number", "train_id"], name: "index_train_steps_on_step_number_and_train_id", unique: true
     t.index ["train_id"], name: "index_train_steps_on_train_id"
@@ -480,6 +492,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_08_091724) do
   add_foreign_key "sign_offs", "sign_off_groups"
   add_foreign_key "sign_offs", "train_steps"
   add_foreign_key "sign_offs", "users"
+  add_foreign_key "staged_rollouts", "deployment_runs"
   add_foreign_key "train_runs", "trains"
   add_foreign_key "train_sign_off_groups", "sign_off_groups"
   add_foreign_key "train_sign_off_groups", "trains"

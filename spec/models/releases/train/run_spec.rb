@@ -16,18 +16,18 @@ describe Releases::Train::Run do
   end
 
   describe "#startable_step?" do
-    let(:active_train) { create(:releases_train, :active) }
-    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: active_train) }
+    let(:train) { create(:releases_train) }
+    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: train) }
 
     it "first step can be started if there are no step runs" do
-      train_run = create(:releases_train_run, train: active_train)
+      train_run = create(:releases_train_run, train: train)
 
       expect(train_run.startable_step?(steps.first)).to be(true)
       expect(train_run.startable_step?(steps.second)).to be(false)
     end
 
     it "next step can be started after finishing previous step" do
-      train_run = create(:releases_train_run, train: active_train)
+      train_run = create(:releases_train_run, train: train)
       create(:releases_step_run, step: steps.first, status: "success", train_run: train_run)
 
       expect(train_run.startable_step?(steps.first)).to be(false)
@@ -36,11 +36,11 @@ describe Releases::Train::Run do
   end
 
   describe "#overall_movement_status" do
-    let(:active_train) { create(:releases_train, :active) }
+    let(:train) { create(:releases_train) }
 
     it "returns the status of every step of the train" do
-      steps = create_list(:releases_step, 4, :with_deployment, train: active_train)
-      train_run = create(:releases_train_run, train: active_train)
+      steps = create_list(:releases_step, 4, :with_deployment, train: train)
+      train_run = create(:releases_train_run, train: train)
       commit = create(:releases_commit, train_run: train_run)
       _step_run_1 = create(:releases_step_run, commit:, step: steps.first, status: "success", train_run: train_run)
       _step_run_2 = create(:releases_step_run, commit:, step: steps.second, status: "ci_workflow_failed", train_run: train_run)
@@ -57,8 +57,8 @@ describe Releases::Train::Run do
     end
 
     it "always accounts for the last step run of a particular step" do
-      steps = create_list(:releases_step, 2, :with_deployment, train: active_train)
-      train_run = create(:releases_train_run, train: active_train)
+      steps = create_list(:releases_step, 2, :with_deployment, train: train)
+      train_run = create(:releases_train_run, train: train)
       commit_1 = create(:releases_commit, train_run: train_run)
       commit_2 = create(:releases_commit, train_run: train_run)
       _step_run_1 = create(:releases_step_run, commit: commit_1, step: steps.first, status: "success", train_run: train_run)
@@ -76,9 +76,9 @@ describe Releases::Train::Run do
   end
 
   describe "finalizable?" do
-    let(:active_train) { create(:releases_train, :active) }
-    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: active_train) }
-    let(:train_run) { create(:releases_train_run, train: active_train) }
+    let(:train) { create(:releases_train) }
+    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: train) }
+    let(:train_run) { create(:releases_train_run, train: train) }
 
     it "is finalizable when all the steps for the last commit have succeeded" do
       commit_1 = create(:releases_commit, train_run: train_run)

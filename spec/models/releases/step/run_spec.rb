@@ -6,8 +6,7 @@ describe Releases::Step::Run do
   end
 
   describe "#similar_deployment_runs_for" do
-    let(:active_train) { create(:releases_train, :active) }
-    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: active_train) }
+    let(:steps) { create_list(:releases_step, 2, :with_deployment) }
     let(:step_run) { create(:releases_step_run, step: steps.first) }
 
     it "ignores itself" do
@@ -57,210 +56,120 @@ describe Releases::Step::Run do
     end
   end
 
-  describe "#previous_deployed_run" do
-    let(:active_train) { create(:releases_train, :active) }
-    let(:step) { create(:releases_step, :with_deployment, train: active_train) }
-    let(:train_run) { create(:releases_train_run, train: active_train) }
-
-    context "when there is a last run that has a deployment" do
-      it "returns for deployment_started" do
-        step_run1 = create(:releases_step_run, :deployment_started, step: step, train_run: train_run)
-        step_run2 = create(:releases_step_run, step: step, train_run: train_run)
-
-        expect(step_run2.previous_deployed_run).to eq step_run1
-        expect(step_run1.previous_deployed_run).to be_nil
-      end
-
-      it "returns for deployment_failed" do
-        step_run1 = create(:releases_step_run, :deployment_failed, step: step, train_run: train_run)
-        step_run2 = create(:releases_step_run, step: step, train_run: train_run)
-
-        expect(step_run2.previous_deployed_run).to eq step_run1
-        expect(step_run1.previous_deployed_run).to be_nil
-      end
-
-      it "returns for success" do
-        step_run1 = create(:releases_step_run, :success, step: step, train_run: train_run)
-        step_run2 = create(:releases_step_run, step: step, train_run: train_run)
-
-        expect(step_run2.previous_deployed_run).to eq step_run1
-        expect(step_run1.previous_deployed_run).to be_nil
-      end
-    end
-
-    it "returns nothing for other statuses" do
-      step_run1 = create(:releases_step_run, :build_ready, step: step, train_run: train_run)
-      step_run2 = create(:releases_step_run, step: step, train_run: train_run)
-
-      expect(step_run2.previous_deployed_run).to be_nil
-      expect(step_run1.previous_deployed_run).to be_nil
-    end
-  end
-
-  describe "#previous_runs" do
-    let(:active_train) { create(:releases_train, :active) }
-    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: active_train) }
-
-    it "returns all previous runs, not later runs" do
-      train_run = create(:releases_train_run, train: active_train)
-      step1_run1 = create(:releases_step_run, step: steps.first, train_run: train_run)
-      step1_run2 = create(:releases_step_run, step: steps.first, train_run: train_run)
-      _step1_run3 = create(:releases_step_run, step: steps.first, train_run: train_run)
-
-      expect(step1_run2.previous_runs).to contain_exactly(step1_run1)
-    end
-  end
-
-  describe "#other_runs" do
-    let(:active_train) { create(:releases_train, :active) }
-    let(:steps) { create_list(:releases_step, 2, :with_deployment, train: active_train) }
-
-    it "returns all runs except itself" do
-      train_run = create(:releases_train_run, train: active_train)
-      step1_run1 = create(:releases_step_run, step: steps.first, train_run: train_run)
-      step1_run2 = create(:releases_step_run, step: steps.first, train_run: train_run)
-      step1_run3 = create(:releases_step_run, step: steps.first, train_run: train_run)
-
-      expect(step1_run2.other_runs).to contain_exactly(step1_run1, step1_run3)
-    end
-  end
-
   describe "#manually_startable_deployment?" do
-    let(:active_train) { create(:releases_train, :active) }
+    let(:train) { create(:releases_train) }
 
     it "is false when train is inactive" do
-      step = create(:releases_step, :with_deployment, train: create(:releases_train, :inactive))
+      step = create(:releases_step, :with_deployment, train: train)
       deployment = create(:deployment, step: step)
+      train.update(status: Releases::Train.statuses[:inactive])
       step_run = create(:releases_step_run, step: step)
 
       expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
     it "is false when there are no active train runs" do
-      step = create(:releases_step, :with_deployment, train: active_train)
+      step = create(:releases_step, :with_deployment, train: train)
       step_run = create(:releases_step_run, step: step)
       deployment = create(:deployment, step: step)
-      _inactive_train_run = create(:releases_train_run, train: active_train, status: "finished")
+      _inactive_train_run = create(:releases_train_run, train: train, status: "finished")
 
       expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
     it "is false when it is the first deployment" do
-      step = create(:releases_step, :with_deployment, train: active_train)
+      step = create(:releases_step, :with_deployment, train: train)
       step_run = create(:releases_step_run, step: step)
       deployment = create(:deployment, step: step)
-      _active_train_run = create(:releases_train_run, train: active_train, status: "on_track")
+      _active_train_run = create(:releases_train_run, train: train, status: "on_track")
 
       expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
-    it "is false when no other deployment runs have happened" do
-      step = create(:releases_step, :with_deployment, train: active_train)
+    it "is false when the deployment run has already happened" do
+      step = create(:releases_step, :with_deployment, train: train)
       step_run = create(:releases_step_run, step: step)
       deployment = create(:deployment, step: step)
-      _active_train_run = create(:releases_train_run, train: active_train, status: "on_track")
+      _active_train_run = create(:releases_train_run, train: train, status: "on_track")
       _deployment_run = create(:deployment_run, step_run: step_run, deployment: deployment, status: "released")
 
       expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
-    it "is true when it is the running step's next-in-line deployment" do
-      step = create(:releases_step, :with_deployment, train: active_train)
-      _inactive_train_run = create(:releases_train_run, train: active_train, status: "finished")
-      inactive_step_run = create(:releases_step_run, step: step, status: "success")
-      _active_train_run = create(:releases_train_run, train: active_train, status: "on_track")
-      running_step_run = create(:releases_step_run, step: step, status: "on_track")
-      deployment1 = create(:deployment, step: step)
-      _deployment_run1 = create(:deployment_run, step_run: running_step_run, deployment: deployment1, status: "released")
-      deployment2 = create(:deployment, step: step)
+    context "with release step" do
+      it "is true when it is the running step's next-in-line deployment" do
+        step = create(:releases_step, :release, :with_deployment, train: train)
+        _inactive_train_run = create(:releases_train_run, train: train, status: "finished")
+        inactive_step_run = create(:releases_step_run, step: step, status: "success")
+        _active_train_run = create(:releases_train_run, train: train, status: "on_track")
+        running_step_run = create(:releases_step_run, step: step, status: "on_track")
+        deployment1 = create(:deployment, step: step)
+        _deployment_run1 = create(:deployment_run, step_run: running_step_run, deployment: deployment1, status: "released")
+        deployment2 = create(:deployment, step: step)
 
-      expect(running_step_run.manually_startable_deployment?(deployment1)).to be false
-      expect(running_step_run.manually_startable_deployment?(deployment2)).to be true
-      expect(inactive_step_run.manually_startable_deployment?(deployment1)).to be false
-      expect(inactive_step_run.manually_startable_deployment?(deployment2)).to be false
+        expect(running_step_run.manually_startable_deployment?(deployment1)).to be false
+        expect(running_step_run.manually_startable_deployment?(deployment2)).to be true
+        expect(inactive_step_run.manually_startable_deployment?(deployment1)).to be false
+        expect(inactive_step_run.manually_startable_deployment?(deployment2)).to be false
+      end
+    end
+
+    context "with review step" do
+      it "is false when it is the running step's next-in-line deployment" do
+        step = create(:releases_step, :review, :with_deployment, train: train)
+        _inactive_train_run = create(:releases_train_run, train: train, status: "finished")
+        inactive_step_run = create(:releases_step_run, step: step, status: "success")
+        _active_train_run = create(:releases_train_run, train: train, status: "on_track")
+        running_step_run = create(:releases_step_run, step: step, status: "on_track")
+        deployment1 = create(:deployment, step: step)
+        _deployment_run1 = create(:deployment_run, step_run: running_step_run, deployment: deployment1, status: "released")
+        deployment2 = create(:deployment, step: step)
+
+        expect(running_step_run.manually_startable_deployment?(deployment1)).to be false
+        expect(running_step_run.manually_startable_deployment?(deployment2)).to be false
+        expect(inactive_step_run.manually_startable_deployment?(deployment1)).to be false
+        expect(inactive_step_run.manually_startable_deployment?(deployment2)).to be false
+      end
     end
   end
 
-  describe "#trigger_deploys" do
+  describe "#finish_deployment!" do
+    it "marks the step as finished if all deployments are finished" do
+      step = create(:releases_step, :review, :with_deployment)
+      step_run = create(:releases_step_run, :deployment_started, step: step)
+      first_deployment = step_run.step.deployments.first
+      create(:deployment_run, :released, deployment: first_deployment, step_run: step_run)
+
+      step_run.finish_deployment!(first_deployment)
+
+      expect(step_run.reload.success?).to be(true)
+    end
+
+    it "triggers the next deployment if there are any" do
+      allow(Triggers::Deployment).to receive(:call)
+      step = create(:releases_step, :review, :with_deployment)
+      second_deployment = create(:deployment, step: step)
+      step_run = create(:releases_step_run, :build_available, step: step)
+      first_deployment = step_run.step.deployments.first
+
+      step_run.finish_deployment!(first_deployment)
+
+      expect(Triggers::Deployment).to have_received(:call).with(step_run: step_run, deployment: second_deployment).once
+    end
+  end
+
+  describe "#trigger_deployment" do
     before do
       allow(Triggers::Deployment).to receive(:call)
     end
 
     it "triggers the deployment for the step run" do
       step_run = create(:releases_step_run, :build_available)
+      first_deployment = step_run.step.deployments.first
 
-      step_run.trigger_deploys
+      step_run.trigger_deployment
 
-      expect(Triggers::Deployment).to have_received(:call).with(step_run: step_run).once
-    end
-
-    context "when auto-triggering multiple deployments" do
-      let(:step) { create(:releases_step, :with_deployment) }
-
-      before do
-        create_list(:deployment, 2, step: step)
-      end
-
-      it "triggers multiple deployments when the step has run previously" do
-        old_step_run = create(:releases_step_run, :success, step: step, scheduled_at: 1.minute.ago)
-
-        step.deployments.each do |deployment|
-          create(:deployment_run, deployment: deployment, step_run: old_step_run)
-        end
-
-        new_step_run = create(:releases_step_run, :build_ready, step: step, train_run: old_step_run.train_run)
-
-        new_step_run.trigger_deploys
-
-        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[0]).once
-        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[1]).once
-        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[2]).once
-      end
-
-      it "triggers only the deployment that have run before" do
-        old_step_run = create(:releases_step_run, :deployment_started, step: step, scheduled_at: 1.minute.ago)
-        create(:deployment_run, deployment: step.deployments[0], step_run: old_step_run)
-        create(:deployment_run, deployment: step.deployments[1], step_run: old_step_run)
-
-        new_step_run = create(:releases_step_run, :build_ready, step: step, train_run: old_step_run.train_run)
-
-        new_step_run.trigger_deploys
-
-        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[0]).once
-        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[1]).once
-        expect(Triggers::Deployment).not_to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[2])
-      end
-
-      it "triggers all deployments that have run in the last deployed run" do
-        older_step_run = create(:releases_step_run, :deployment_started, step: step, scheduled_at: 2.minutes.ago)
-        create(:deployment_run, deployment: step.deployments[0], step_run: older_step_run)
-        create(:deployment_run, deployment: step.deployments[1], step_run: older_step_run)
-
-        _old_failed_step_run = create(:releases_step_run, :ci_workflow_failed, step: step,
-          train_run: older_step_run.train_run, scheduled_at: 1.minute.ago)
-
-        new_step_run = create(:releases_step_run, :build_ready, step: step, train_run: older_step_run.train_run)
-
-        new_step_run.trigger_deploys
-
-        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[0]).once
-        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[1]).once
-        expect(Triggers::Deployment).not_to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[2])
-      end
-
-      it "triggers all deployments that have run before even if they had failed" do
-        older_step_run = create(:releases_step_run, :deployment_failed, step: step, scheduled_at: 2.minutes.ago)
-        create(:deployment_run, :released, deployment: step.deployments[0], step_run: older_step_run)
-        create(:deployment_run, :failed, deployment: step.deployments[1], step_run: older_step_run)
-
-        new_step_run = create(:releases_step_run, :build_ready, step: step, train_run: older_step_run.train_run)
-
-        new_step_run.trigger_deploys
-
-        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[0]).once
-        expect(Triggers::Deployment).to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[1]).once
-        expect(Triggers::Deployment).not_to have_received(:call).with(step_run: new_step_run.reload, deployment: step.deployments[2])
-      end
+      expect(Triggers::Deployment).to have_received(:call).with(step_run: step_run, deployment: first_deployment).once
     end
   end
 

@@ -26,10 +26,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
   after_create_commit :refresh_external_app
 
   CHANNELS = [
-    {id: :production, name: "production"},
-    {id: :beta, name: "open testing"},
-    {id: :alpha, name: "closed testing"},
-    {id: :internal, name: "internal testing"}
+    {id: :production, name: "production", is_production: true},
+    {id: :beta, name: "open testing", is_production: false},
+    {id: :alpha, name: "closed testing", is_production: false},
+    {id: :internal, name: "internal testing", is_production: false}
   ]
 
   def access_key
@@ -40,9 +40,21 @@ class GooglePlayStoreIntegration < ApplicationRecord
     Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier, access_key)
   end
 
-  def promote(channel, build_number, version, rollout_percentage)
+  def rollout_release(channel, build_number, version, rollout_percentage)
     GitHub::Result.new do
-      installation.promote(channel, build_number, version, rollout_percentage)
+      installation.create_release(channel, build_number, version, rollout_percentage)
+    end
+  end
+
+  def create_draft_release(channel, build_number, version)
+    GitHub::Result.new do
+      installation.create_draft_release(channel, build_number, version)
+    end
+  end
+
+  def halt_release(channel, build_number, version, rollout_percentage)
+    GitHub::Result.new do
+      installation.halt_release(channel, build_number, version, rollout_percentage)
     end
   end
 
@@ -85,8 +97,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
     CHANNELS.map(&:with_indifferent_access)
   end
 
-  def build_channels
-    channels.map { |channel| channel.slice(:id, :name) }
+  def build_channels(with_production: false)
+    sliced = channels.map { |chan| chan.slice(:id, :name, :is_production) }
+    return sliced if with_production
+    sliced.reject { |channel| channel[:is_production] }
   end
 
   CHANNEL_DATA_TRANSFORMATIONS = {

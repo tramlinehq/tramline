@@ -2,27 +2,27 @@
 #
 # Table name: train_step_runs
 #
-#  id                         :uuid             not null, primary key
-#  approval_status            :string           default("pending"), not null
-#  build_number               :string
-#  build_version              :string           not null
-#  ci_link                    :string
-#  ci_ref                     :string
-#  initial_rollout_percentage :decimal(8, 5)
-#  scheduled_at               :datetime         not null
-#  sign_required              :boolean          default(TRUE)
-#  status                     :string           not null
-#  created_at                 :datetime         not null
-#  updated_at                 :datetime         not null
-#  releases_commit_id         :uuid             not null, indexed
-#  train_run_id               :uuid             not null, indexed
-#  train_step_id              :uuid             not null, indexed
+#  id                 :uuid             not null, primary key
+#  approval_status    :string           default("pending"), not null
+#  build_number       :string
+#  build_version      :string           not null
+#  ci_link            :string
+#  ci_ref             :string
+#  scheduled_at       :datetime         not null
+#  sign_required      :boolean          default(TRUE)
+#  status             :string           not null
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  releases_commit_id :uuid             not null, indexed
+#  train_run_id       :uuid             not null, indexed
+#  train_step_id      :uuid             not null, indexed
 #
 class Releases::Step::Run < ApplicationRecord
   has_paper_trail
   include AASM
   include Passportable
 
+  self.ignored_columns += ["initial_rollout_percentage"]
   self.implicit_order_column = :scheduled_at
 
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :runs
@@ -36,7 +36,6 @@ class Releases::Step::Run < ApplicationRecord
 
   validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
   validates :train_step_id, uniqueness: {scope: :releases_commit_id}
-  validates :initial_rollout_percentage, numericality: {greater_than: 0, less_than_or_equal_to: 100, allow_nil: true}
 
   after_create :reset_approval!
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
@@ -89,9 +88,9 @@ class Releases::Step::Run < ApplicationRecord
     end
 
     event(:finish_ci, after_commit: :after_finish_ci) { transitions from: :ci_workflow_started, to: :build_ready }
-    event(:build_found, guard: :ios?, after_commit: :trigger_deploys) { transitions from: :build_ready, to: :build_found_in_store }
+    event(:build_found, guard: :ios?, after_commit: :trigger_deployment) { transitions from: :build_ready, to: :build_found_in_store }
 
-    event(:upload_artifact, after_commit: :trigger_deploys) do
+    event(:upload_artifact, after_commit: :trigger_deployment) do
       before { add_build_artifact(artifacts_url) }
       transitions from: :build_ready, to: :build_available
     end
@@ -142,23 +141,6 @@ class Releases::Step::Run < ApplicationRecord
     build_artifact.present?
   end
 
-  def previous_deployed_run
-    previous_runs.where(status: [:deployment_started, :deployment_failed, :success]).last
-  end
-
-  def previous_deployments
-    return Deployment.none if previous_deployed_run.blank?
-    previous_deployed_run.running_deployments
-  end
-
-  def other_runs
-    train_run.step_runs_for(step).where.not(id:)
-  end
-
-  def previous_runs
-    other_runs.where("scheduled_at < ?", scheduled_at)
-  end
-
   def startable_deployment?(deployment)
     return false if train.inactive?
     return false if train.active_run.nil?
@@ -168,6 +150,7 @@ class Releases::Step::Run < ApplicationRecord
 
   def manually_startable_deployment?(deployment)
     return false if deployment.first?
+    return false if step.review?
     startable_deployment?(deployment) && last_deployment_run&.released?
   end
 
@@ -236,18 +219,25 @@ class Releases::Step::Run < ApplicationRecord
     step.ci_cd_channel["id"]
   end
 
+  def first_deployment
+    step.deployments.find_by(deployment_number: 1)
+  end
+
   def finished_deployments?
     deployment_runs.released.size == step.deployments.size
   end
 
-  def trigger_deploys
-    if previous_deployments.any?
-      previous_deployments.each do |deployment|
-        Triggers::Deployment.call(deployment: deployment, step_run: self)
-      end
-    else
-      Triggers::Deployment.call(step_run: self)
-    end
+  def finish_deployment!(deployment)
+    return finish! if finished_deployments?
+    return unless deployment.next
+    return unless step.review?
+
+    # trigger the next deployment if available
+    trigger_deployment(deployment.next)
+  end
+
+  def trigger_deployment(deployment = first_deployment)
+    Triggers::Deployment.call(step_run: self, deployment: deployment)
   end
 
   private

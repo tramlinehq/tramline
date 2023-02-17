@@ -5,6 +5,7 @@
 #  id             :uuid             not null, primary key
 #  ci_cd_channel  :jsonb            not null, indexed => [train_id]
 #  description    :string           not null
+#  kind           :string
 #  name           :string           not null
 #  release_suffix :string           not null
 #  slug           :string
@@ -44,6 +45,11 @@ class Releases::Step < ApplicationRecord
     inactive: "inactive"
   }
 
+  enum kind: {
+    review: "review",
+    release: "release"
+  }
+
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
   accepts_nested_attributes_for :deployments, allow_destroy: false, reject_if: :reject_deployments?
@@ -51,7 +57,8 @@ class Releases::Step < ApplicationRecord
   delegate :app, to: :train
 
   def set_step_number
-    self.step_number = train.steps.maximum(:step_number).to_i + 1
+    self.step_number = train.steps.review.maximum(:step_number).to_i + 1
+    train.release_step&.update!(step_number: step_number.succ) if train.draft? && review?
   end
 
   def set_default_status

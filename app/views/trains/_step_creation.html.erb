@@ -1,0 +1,19 @@
+<p class="text-sm">
+  You need to add at least one step to activate this train.
+</p>
+
+<%= authz_link_to :blue, new_app_train_step_path(app, train, kind: Releases::Step.kinds[:review]), class: "mt-4" do %>
+  <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
+    <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
+  </svg>
+
+  <span class="hidden xs:block ml-2">Add a review step</span>
+<% end %>
+
+<%= authz_link_to :green, new_app_train_step_path(app, train, kind: Releases::Step.kinds[:release]), class: "mt-4" do %>
+  <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
+    <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
+  </svg>
+
+  <span class="hidden xs:block ml-2">Add a release step</span>
+<% end %>

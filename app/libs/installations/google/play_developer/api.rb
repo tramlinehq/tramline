@@ -8,6 +8,13 @@ module Installations
     SCOPE = ANDROID_PUBLISHER::AUTH_ANDROIDPUBLISHER
     CONTENT_TYPE = "application/octet-stream".freeze
 
+    RELEASE_STATUS = {
+      in_progress: "inProgress",
+      halted: "halted",
+      draft: "draft",
+      completed: "completed"
+    }.freeze
+
     attr_reader :package_name, :key_file, :client
 
     def initialize(package_name, key_file)
@@ -26,16 +33,6 @@ module Installations
       end
     end
 
-    def promote(track_name, version_code, release_version, rollout_percentage)
-      rollout_percentage = BigDecimal(rollout_percentage)
-
-      execute do
-        edit = client.insert_edit(package_name)
-        edit_track(edit, track_name, version_code, release_version, rollout_percentage)
-        client.commit_edit(package_name, edit.id)
-      end
-    end
-
     def list_tracks(transforms)
       execute do
         edit = client.insert_edit(package_name)
@@ -46,41 +43,79 @@ module Installations
       end
     end
 
-    def edit_track(edit, track_name, version_code, release_version, rollout_percentage)
-      client.update_edit_track(
-        package_name,
-        edit.id,
-        track_name,
-        track(track_name, version_code, release_version, rollout_percentage)
-      )
+    def create_release(track_name, version_code, release_version, rollout_percentage)
+      @track_name = track_name
+      @version_code = version_code
+      @release_version = release_version
+      @rollout_percentage = rollout_percentage
+
+      execute do
+        edit = client.insert_edit(package_name)
+        edit_track(edit, active_release)
+        client.commit_edit(package_name, edit.id)
+      end
     end
 
-    def track(track_name, version_code, release_version, rollout_percentage)
-      ANDROID_PUBLISHER::Track.new(
-        track: track_name,
-        releases: [release(version_code, release_version, rollout_percentage)]
-      )
+    def create_draft_release(track_name, version_code, release_version)
+      @track_name = track_name
+      @version_code = version_code
+      @release_version = release_version
+
+      execute do
+        edit = client.insert_edit(package_name)
+        edit_track(edit, draft_release)
+        client.commit_edit(package_name, edit.id)
+      end
     end
 
-    def release(version_code, release_version, rollout_percentage)
-      params = {
-        name: release_version,
-        status: release_status(rollout_percentage),
-        version_codes: [version_code]
-      }
+    def halt_release(track_name, version_code, release_version, rollout_percentage)
+      @track_name = track_name
+      @version_code = version_code
+      @release_version = release_version
+      @rollout_percentage = rollout_percentage
 
-      user_fraction = user_fraction(rollout_percentage)
-      params[:user_fraction] = user_fraction if user_fraction < 1.0
+      execute do
+        edit = client.insert_edit(package_name)
+        edit_track(edit, halted_release)
+        client.commit_edit(package_name, edit.id)
+      end
+    end
 
+    private
+
+    attr_writer :track_name, :version_code, :release_version, :rollout_percentage
+
+    def edit_track(edit, release)
+      client.update_edit_track(package_name, edit.id, @track_name, track(release))
+    end
+
+    def track(release)
+      ANDROID_PUBLISHER::Track.new(track: @track_name, releases: [release])
+    end
+
+    def active_release
+      rollout_status = @rollout_percentage.eql?(100) ? RELEASE_STATUS[:completed] : RELEASE_STATUS[:in_progress]
+      params = release_params.merge(status: rollout_status)
+      params[:user_fraction] = user_fraction if @rollout_percentage && user_fraction < 1.0
       ANDROID_PUBLISHER::TrackRelease.new(**params)
     end
 
-    def user_fraction(rollout_percentage)
-      rollout_percentage.to_f / 100.0
+    def draft_release
+      params = release_params.merge(status: RELEASE_STATUS[:draft])
+      ANDROID_PUBLISHER::TrackRelease.new(**params)
     end
 
-    def release_status(rollout_percentage)
-      rollout_percentage.eql?(100) ? "completed" : "inProgress"
+    def halted_release
+      params = release_params.merge(status: RELEASE_STATUS[:halted], user_fraction: user_fraction)
+      ANDROID_PUBLISHER::TrackRelease.new(**params)
+    end
+
+    def user_fraction
+      @rollout_percentage.to_f / 100.0
+    end
+
+    def release_params
+      {name: @release_version, version_codes: [@version_code]}
     end
 
     def execute

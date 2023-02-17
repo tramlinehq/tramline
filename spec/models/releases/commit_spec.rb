@@ -6,28 +6,30 @@ describe Releases::Commit do
   end
 
   describe "#trigger_step_runs" do
-    let(:active_train) { create(:releases_train, :active) }
+    let(:train) { create(:releases_train) }
 
     it "does it for the first step run if first commit" do
-      train_run = create(:releases_train_run, train: active_train)
-      step = create(:releases_step, :with_deployment, train: active_train)
+      step = create(:releases_step, :with_deployment, train: train)
+      train.update(status: Releases::Train.statuses[:active])
+      train_run = create(:releases_train_run, train: train)
 
       allow(Triggers::StepRun).to receive(:call)
 
-      commit = create(:releases_commit, train: active_train, train_run: train_run)
+      commit = create(:releases_commit, train: train, train_run: train_run)
 
       expect(Triggers::StepRun).to have_received(:call).with(step, commit, true).once
     end
 
     it "does it for all steps until the currently running one" do
-      train_run = create(:releases_train_run, train: active_train)
-      steps = create_list(:releases_step, 2, :with_deployment, train: active_train)
+      steps = create_list(:releases_step, 2, :with_deployment, train: train)
+      train.update(status: Releases::Train.statuses[:active])
+      train_run = create(:releases_train_run, train: train)
       create(:releases_step_run, :success, step: steps.first, train_run: train_run)
       create(:releases_step_run, step: steps.second, train_run: train_run)
 
       allow(Triggers::StepRun).to receive(:call)
 
-      commit = create(:releases_commit, train: active_train, train_run: train_run)
+      commit = create(:releases_commit, train: train, train_run: train_run)
 
       expect(Triggers::StepRun).to have_received(:call).with(steps.first, commit, false).once
       expect(Triggers::StepRun).to have_received(:call).with(steps.second, commit, true).once

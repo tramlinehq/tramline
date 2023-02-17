@@ -9,7 +9,9 @@
     <%= form.text_area :description, class: "form-input w-full mb-1", placeholder: "Describe your step..." %>
   </div>
 
-  <div><!-- to push away the next field to the right--></div>
+  <div>
+    <%= form.hidden_field :kind, value: @step.kind %>
+  </div>
 
   <div data-controller="domain--release-suffix-help"
        data-domain--release-suffix-help-version-value="<%= @step.train.version_current %>"

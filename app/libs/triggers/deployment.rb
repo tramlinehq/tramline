@@ -2,13 +2,13 @@ class Triggers::Deployment
   include Memery
   delegate :transaction, to: ::DeploymentRun
 
-  def self.call(step_run:, deployment: nil)
+  def self.call(step_run:, deployment:)
     new(step_run:, deployment:).call
   end
 
   def initialize(step_run:, deployment:)
     @step_run = step_run
-    @deployment = deployment.presence || first_deployment
+    @deployment = deployment
     @starting_time = Time.current
   end
 
@@ -24,8 +24,4 @@ class Triggers::Deployment
   private
 
   attr_reader :deployment, :step_run, :starting_time
-
-  def first_deployment
-    step_run.step.deployments.find_by(deployment_number: 1)
-  end
 end
