@@ -12,7 +12,13 @@ module ButtonHelper
       class: "#{BASE_OPTS} bg-rose-500 enabled:hover:bg-rose-600 text-white"
     },
     neutral: {
-      class: "#{BASE_OPTS} border-slate-300 enabled:hover:border-slate-400 text-slate-600"
+      class: "#{BASE_OPTS} border-slate-300 enabled:border-slate-400 hover:border-slate-400 text-slate-600"
+    },
+    slate: {
+      class: "#{BASE_OPTS} border-slate-400 enabled:border-slate-600 hover:border-slate-600 text-slate-600"
+    },
+    amber: {
+      class: "#{BASE_OPTS} bg-amber-500 enabled:bg-amber-600 hover:bg-amber-600 text-white"
     },
     disabled:
       {

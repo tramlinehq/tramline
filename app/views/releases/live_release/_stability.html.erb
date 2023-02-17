@@ -18,24 +18,30 @@
   <p class="font-bold text-2xl mt-8 mb-2">Latest builds</p>
 
   <div class="flex flex-col mt-2">
-    <ol class="relative border-l-4 border-gray-300 ml-3 mt-2">
+    <ol class="mt-2">
       <% steps.each do |step| %>
         <% step_run = release.last_run_for(step) %>
 
-        <li class="mb-10 ml-6 last:mb-0">
+        <li>
           <div class="flex items-center">
-            <%= render partial: "releases/live_release/step_run_status", locals: { step_run: step_run } %>
-            <p class="text-xl font-bold text-slate-800 pl-6"><%= step.name %></p>
             <% if release.on_track? && release.startable_step?(step) %>
-              <%= authz_button_to :blue, "Move to this step", start_release_step_run_path(release, step), { class: 'btn-xs ml-4' } %>
+              <%= authz_button_to :blue,
+                                  "Move to this step",
+                                  start_release_step_run_path(release, step),
+                                  { class: "btn-xs mb-2" } %>
             <% end %>
           </div>
 
-          <div class="pl-6">
-            <%= render partial: "shared/per_step_metadata", locals: { release: release, step: step, step_run: step_run } %>
-            <%= render partial: "releases/live_release/step_sign_offs", locals: { release: release, release_train: release_train, step: step, step_run: step_run } %>
+          <div>
+            <%= render partial: "shared/per_step_metadata",
+                       locals: { editable: false, release: release, step: step, step_run: step_run } %>
+
+            <%= render partial: "releases/live_release/step_sign_offs",
+                       locals: { release: release, release_train: release_train, step: step, step_run: step_run } %>
           </div>
         </li>
+
+        <%= render partial: "shared/step_tree_connector", locals: { color: step_color(step.kind) } %>
       <% end %>
     </ol>
 
