@@ -28,6 +28,8 @@ class ApplicationController < ActionController::Base
   end
 
   unless Rails.env.production?
+    around_action :n_plus_one_detection if ENV["N_PLUS_ONE"]
+
     def n_plus_one_detection
       Prosopite.scan
       yield
