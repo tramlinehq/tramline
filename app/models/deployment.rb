@@ -35,9 +35,7 @@ class Deployment < ApplicationRecord
 
   FULL_ROLLOUT_VALUE = BigDecimal("100")
 
-  def staged_rollout?
-    is_staged_rollout
-  end
+  def staged_rollout? = is_staged_rollout
 
   def set_deployment_number
     self.deployment_number = step.deployments.maximum(:deployment_number).to_i + 1
