@@ -1,7 +1,29 @@
-<img alt="tramline logo" src="logos/tramline-logo-medium.png" width="200"/>
+<p align="center">
+  <img alt="tramline logo" src="logos/tramline-logo-medium.png" width="200"/>
+</p>
 
-# tramline [![ci status](https://github.com/tramlinehq/site/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/tramlinehq/site/actions/workflows/ci.yml) [![](https://img.shields.io/discord/974284993641725962)](https://discord.com/invite/u7VwyvBV2Z) [![Ruby Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://github.com/testdouble/standard)
+<h1 align="center">Tramline</h1>
 
-Release apps without drowning in process
+<p align="center">
+  Release apps without drowning in process
+</p>
 
-Codify your app's release cycle, deploy builds with increased confidence, and give visibility to the entire organization.
+<p align="center">
+  Codify your app's release cycle,<br/>
+  deploy builds with increased confidence,<br/> 
+  and give visibility to the entire organization.<br/>
+</p>
+
+<p align="center">
+  <a href="https://github.com/tramlinehq/site/actions/workflows/ci.yml">
+    <img src="https://github.com/tramlinehq/site/actions/workflows/ci.yml/badge.svg?branch=main" />
+  </a>
+
+  <a href="https://discord.com/invite/u7VwyvBV2Z">
+    <img src="https://img.shields.io/discord/974284993641725962" />
+  </a>
+
+  <a href="https://github.com/testdouble/standard">
+    <img src="https://img.shields.io/badge/code_style-standard-brightgreen.svg" />
+  </a>
+</p>
