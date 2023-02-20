@@ -17,7 +17,7 @@ describe Releases::Commit do
 
       commit = create(:releases_commit, train: train, train_run: train_run)
 
-      expect(Triggers::StepRun).to have_received(:call).with(step, commit, true).once
+      expect(Triggers::StepRun).to have_received(:call).with(step, commit).once
     end
 
     it "does it for all steps until the currently running one" do
@@ -31,8 +31,8 @@ describe Releases::Commit do
 
       commit = create(:releases_commit, train: train, train_run: train_run)
 
-      expect(Triggers::StepRun).to have_received(:call).with(steps.first, commit, false).once
-      expect(Triggers::StepRun).to have_received(:call).with(steps.second, commit, true).once
+      expect(Triggers::StepRun).to have_received(:call).with(steps.first, commit).once
+      expect(Triggers::StepRun).to have_received(:call).with(steps.second, commit).once
     end
   end
 end

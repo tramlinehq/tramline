@@ -48,13 +48,13 @@ class Releases::Commit < ApplicationRecord
 
   private
 
-  def trigger_step_run(step, sign_required)
-    Triggers::StepRun.call(step, self, sign_required)
+  def trigger_step_run(step)
+    Triggers::StepRun.call(step, self)
   end
 
   def trigger_step_runs
     train.ordered_steps_until(current_step_number).each do |step|
-      trigger_step_run(step, (step.step_number == current_step_number))
+      trigger_step_run(step)
     end
   end
 end

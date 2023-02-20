@@ -1,86 +1,41 @@
-<img alt="tram running through a street" src="logos/tram1.png" width="400"/>
+<p align="center">
+  <img alt="tramline logo" src="logos/tramline-logo-medium.png" width="200"/>
+</p>
 
-# site [![ci status](https://github.com/tramlinehq/site/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/tramlinehq/site/actions/workflows/ci.yml) [![](https://img.shields.io/discord/974284993641725962)](https://discord.com/invite/u7VwyvBV2Z) [![Ruby Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://github.com/testdouble/standard)
+<h1 align="center">Tramline</h1>
 
-The primary orchestration and frontend monolith.
+<p align="center">
+  <strong>Release apps without drowning in process</strong>
+</p>
 
-## Development Setup
+<p align="center">
+  Codify your app's release cycle,<br/>
+  deploy builds with increased confidence,<br/> 
+  and give visibility to the entire organization.<br/>
+</p>
 
-For local development on macOS, clone this repository and run the included setup script:
+<p align="center">
+  <a href="https://tramline.app">Website</a>
+  ·
+  <a href="https://tramline.substack.com">Latest Updates</a>
+  ·
+  <a href="https://tramline.app/blog">Blog</a>
+</p>
 
-```
-bin/setup.mac
-```
+<p align="center">
+  <a href="https://discord.com/invite/u7VwyvBV2Z">
+    <img src="https://img.shields.io/discord/974284993641725962" />
+  </a>
 
-Note: If you already have a previous dev environment that you're trying to refresh, the easiest thing to do is to drop your database and run setup again.
+<a href="https://github.com/tramlinehq/site/actions/workflows/ci.yml">
+    <img src="https://github.com/tramlinehq/site/actions/workflows/ci.yml/badge.svg?branch=main" />
+  </a>
 
-```bash
-rails db:drop
-bin/setup.mac
-```
-
-Refer to `db/seeds.rb` for credentials on how to login using the seed users.
-
-## Running the development environment
-- Place the `master.key` file in the `config` directory. You can get this file from our Google Cloud Storage bucket.
-- Start [ngrok](#webhooks)
-- Start PostgreSQL and Redis using [Homebrew services](https://github.com/Homebrew/homebrew-services)
-- Finally, run `bin/dev`
-
-## Developer Notes
-
-### Webhooks
-
-Webhooks need access to the application over the Internet and that requires tunneling on the localhost environment. We use ngrok, and you should run it like this:
-
-```bash
-ngrok http https://localhost:3000
-```
-
-If you'd like to use the custom DNS tunnel, add the following to your ngrok config file,
-
-```yaml
-version: "2"
-authtoken: # put your authtoken
-region: in
-tunnels:
-  tramline_dev:
-    proto: http
-    hostname: # add the tunnel hostname
-    addr: https://localhost:3000
-```
-
-You can run this configured tunnel via
-
-```bash
-ngrok start tramline_dev
-```
-
-or through the `Procfile.dev`
-
-### Adding or updating gems
-
-* Use `bundle add <gem>` to add a new gem.
-* To update a gem use `bundle update <gem>`.
-
-Using the `bundle add` tool auto-applies the [pessimistic operator](https://thoughtbot.com/blog/rubys-pessimistic-operator) in the `Gemfile`. Although `Gemfile.lock` is the correct source of gem versions, specifying the pessimistic operator makes for a simpler and safer update path through bundler for future users.
-
-Doing this for development/test groups is optional.
-
-### SSL
-
-We use SSL locally and certificates are also generated as part of the setup script. It's recommended to use https://tramline.local.gd:3000.
-
-This is the default `HOST_NAME` that can be changed via `.env.development` if necessary.
-
-### Letter Opener
-
-All e-mails are caught and can be viewed at https://tramline.local.gd:3000/letter_opener.
-
-### Sidekiq
-
-The dashboard for all background jobs can be viewed at https://tramline.local.gd:3000/sidekiq.
-
-### Flipper
-
-All feature-flags are managed through flipper. The UI can be viewed at: https://tramline.local.gd:3000/flipper.
+  <a href="https://github.com/testdouble/standard">
+    <img src="https://img.shields.io/badge/code_style-standard-brightgreen.svg" />
+  </a>
+  
+  <a href="CODE_OF_CONDUCT.md">
+    <img src="https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg" />
+  </a>  
+</p>

@@ -2,7 +2,7 @@
   <div>
     <span class="font-bold text-2xl">Finalize</span>
 
-    <% unless release.signed? %>
+    <% unless release.finished? %>
       <span class="text-xl text-slate-400 ml-4">pending</span>
     <% end %>
   </div>

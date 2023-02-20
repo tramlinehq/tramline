@@ -15,19 +15,6 @@ module ReleasesHelper
     status_badge(status, styles)
   end
 
-  def approval_emoji(step_run)
-    case step_run.approval_status.to_sym
-    when :approved
-      "✅"
-    when :rejected
-      "❌"
-    when :pending
-      "⌛"
-    else
-      "❔"
-    end
-  end
-
   def build_status_badge(step_run)
     status, styles =
       case step_run.status.to_sym

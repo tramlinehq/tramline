@@ -24,8 +24,6 @@ class Releases::Step < ApplicationRecord
 
   belongs_to :train, class_name: "Releases::Train", inverse_of: :steps
   has_many :runs, class_name: "Releases::Step::Run", inverse_of: :step, foreign_key: :train_step_id, dependent: :destroy
-  has_many :sign_offs, foreign_key: :train_step_id, inverse_of: :step, dependent: :destroy
-  has_many :sign_off_groups, through: :train
   has_many :deployments, foreign_key: :train_step_id, inverse_of: :step, dependent: :destroy
   has_many :deployment_runs, through: :deployments, class_name: "DeploymentRun"
   has_one :app, through: :train
@@ -58,7 +56,7 @@ class Releases::Step < ApplicationRecord
 
   def set_step_number
     self.step_number = train.steps.review.maximum(:step_number).to_i + 1
-    train.release_step&.update!(step_number: step_number.succ) if train.draft? && review?
+    train.release_step&.update!(step_number: step_number.succ) if review?
   end
 
   def set_default_status

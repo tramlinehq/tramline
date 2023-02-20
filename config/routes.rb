@@ -47,11 +47,10 @@ Rails.application.routes.draw do
 
   resources :apps do
     resource :app_config, only: %i[edit update], path: :config
-    resource :sign_off_groups, only: %i[edit update]
 
     member do
       get :all_builds
-      get :refresh_external
+      post :refresh_external
     end
 
     resources :trains, only: %i[new create edit update show destroy] do
@@ -60,15 +59,7 @@ Rails.application.routes.draw do
         patch :deactivate
       end
 
-      resources :steps, only: %i[new create edit update], shallow: true do
-        resource :sign_off, only: [] do
-          collection do
-            post :approve
-            post :reject
-            delete :revert
-          end
-        end
-      end
+      resources :steps, only: %i[new create edit update], shallow: true
 
       resources :releases, only: %i[show create destroy], shallow: true do
         resources :step_runs, only: [], shallow: false, module: "releases" do

@@ -52,17 +52,6 @@
       <span><%= @train.branching_strategy_name %></span>
     </div>
 
-    <% if @train.sign_off_groups.blank? %>
-      <div>
-        <!-- this is here to maintain the intended grid structure -->
-      </div>
-    <% else %>
-      <div>
-        <div class="font-bold text-slate-600 text-sm uppercase mb-1">Sign-off groups</div>
-        <span><%= @train.sign_off_groups.map(&:name).join(", ") %></span>
-      </div>
-    <% end %>
-
     <% unless @train.description.blank? %>
       <div>
         <div class="font-bold text-slate-600 text-sm uppercase mb-1">Description</div>

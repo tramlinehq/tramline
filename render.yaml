@@ -4,14 +4,12 @@ databases:
     user: tramline
     postgresMajorVersion: 14
     region: frankfurt
-    plan: starter
 
   - name: site-staging-db
     databaseName: tramline_site_staging
     user: tramline
     postgresMajorVersion: 14
     region: frankfurt
-    plan: starter
 
 services:
   # production starts here
@@ -19,7 +17,6 @@ services:
     name: site-web
     env: ruby
     region: frankfurt
-    plan: starter plus
     buildCommand: ./bin/render-build
     startCommand: "bundle exec puma -C config/puma.rb"
     initialDeployHook: ./bin/render-seed
@@ -47,7 +44,6 @@ services:
     name: site-jobs
     env: ruby
     region: frankfurt
-    plan: starter
     buildCommand: bundle install
     startCommand: bundle exec sidekiq
     autoDeploy: false
@@ -73,7 +69,6 @@ services:
   - type: redis
     name: site-redis
     region: frankfurt
-    plan: free
     ipAllowList:
       - source: 0.0.0.0/0
         description: everywhere
@@ -84,7 +79,6 @@ services:
     name: site-staging-web
     env: ruby
     region: frankfurt
-    plan: starter plus
     buildCommand: ./bin/render-build
     startCommand: "bundle exec puma -C config/puma.rb"
     initialDeployHook: ./bin/render-seed
@@ -112,7 +106,6 @@ services:
     name: site-staging-jobs
     env: ruby
     region: frankfurt
-    plan: starter
     buildCommand: bundle install
     startCommand: bundle exec sidekiq
     autoDeploy: true
@@ -138,7 +131,6 @@ services:
   - type: redis
     name: site-staging-redis
     region: frankfurt
-    plan: free
     ipAllowList:
       - source: 0.0.0.0/0
         description: everywhere

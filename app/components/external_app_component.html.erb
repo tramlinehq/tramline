@@ -5,7 +5,7 @@
   </div>
   <% if external_app %>
     <div class="text-left">
-      <%= decorated_button_to :neutral, refresh_external_app_path(app), method: :get do %>
+      <%= decorated_button_to :neutral, refresh_external_app_path(app), method: :post do %>
         <%= inline_svg('refresh.svg', classname: "inline-flex w-4") %>
       <% end %>
     </div>
