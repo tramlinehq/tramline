@@ -43,7 +43,7 @@ class AllBuildsTableComponent < ViewComponent::Base
   end
 
   def external_release_status(build)
-    status_badge(build.external_release_status.titleize.humanize, %w[bg-sky-100 text-sky-600 mx-1])
+    status_badge(build.external_release_status.titleize.humanize, STATUS_COLOR_PALETTE[:routine] + %w[mx-1])
   end
 
   def deployments(build)

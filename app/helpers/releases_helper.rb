@@ -1,13 +1,14 @@
 module ReleasesHelper
+  include ApplicationHelper
   include Memery
 
   SHOW_RELEASE_STATUS = {
-    finished: ["Completed", %w[bg-green-100 text-green-600]],
-    stopped: ["Stopped", %w[bg-amber-100 text-amber-600]],
-    on_track: ["Running", %w[bg-blue-100 text-blue-600]],
-    post_release: ["Finalizing", %w[bg-slate-100 text-slate-500]],
-    post_release_started: ["Finalizing", %w[bg-slate-100 text-slate-500]],
-    post_release_failed: ["Finalizing", %w[bg-slate-100 text-slate-500]]
+    finished: ["Completed", STATUS_COLOR_PALETTE[:success]],
+    stopped: ["Stopped", STATUS_COLOR_PALETTE[:inert]],
+    on_track: ["Running", STATUS_COLOR_PALETTE[:ongoing]],
+    post_release: ["Finalizing", STATUS_COLOR_PALETTE[:neutral]],
+    post_release_started: ["Finalizing", STATUS_COLOR_PALETTE[:neutral]],
+    post_release_failed: ["Finalizing", STATUS_COLOR_PALETTE[:neutral]]
   }
 
   def release_status_badge(status)
@@ -19,31 +20,31 @@ module ReleasesHelper
     status, styles =
       case step_run.status.to_sym
       when :ci_workflow_triggered, :on_track
-        ["Waiting for CI", %w[bg-sky-100 text-sky-600]]
+        ["Waiting for CI", STATUS_COLOR_PALETTE[:routine]]
       when :ci_workflow_started
-        ["In progress", %w[bg-sky-100 text-sky-600]]
+        ["In progress", STATUS_COLOR_PALETTE[:ongoing]]
       when :build_ready
-        ["Looking for build to deploy", %w[bg-indigo-100 text-indigo-600]]
+        ["Looking for build to deploy", STATUS_COLOR_PALETTE[:ongoing]]
       when :deployment_started
-        ["Deployments in progress", %w[bg-indigo-100 text-indigo-600]]
+        ["Deployments in progress", STATUS_COLOR_PALETTE[:ongoing]]
       when :build_found_in_store
-        ["Build found in store", %w[bg-cyan-100 text-cyan-600]]
+        ["Build found in store", STATUS_COLOR_PALETTE[:routine]]
       when :build_not_found_in_store
-        ["Build not found in store", %w[bg-rose-100 text-rose-600]]
+        ["Build not found in store", STATUS_COLOR_PALETTE[:failure]]
       when :success
-        ["Success", %w[bg-green-100 text-green-600]]
+        ["Success", STATUS_COLOR_PALETTE[:success]]
       when :ci_workflow_failed
-        ["CI workflow failure", %w[bg-rose-100 text-rose-600]]
+        ["CI workflow failure", STATUS_COLOR_PALETTE[:failure]]
       when :ci_workflow_unavailable
-        ["CI workflow not found", %w[bg-rose-100 text-rose-600]]
+        ["CI workflow not found", STATUS_COLOR_PALETTE[:failure]]
       when :ci_workflow_halted
-        ["CI workflow cancelled", %w[bg-yellow-100 text-yellow-600]]
+        ["CI workflow cancelled", STATUS_COLOR_PALETTE[:inert]]
       when :build_unavailable
-        ["Build unavailable", %w[bg-rose-100 text-rose-600]]
+        ["Build unavailable", STATUS_COLOR_PALETTE[:failure]]
       when :deployment_failed
-        ["Deployment failed", %w[bg-rose-100 text-rose-600]]
+        ["Deployment failed", STATUS_COLOR_PALETTE[:failure]]
       else
-        ["Unknown", %w[bg-slate-100 text-slate-500]]
+        ["Unknown", STATUS_COLOR_PALETTE[:neutral]]
       end
 
     status_badge(status, styles)
@@ -53,23 +54,23 @@ module ReleasesHelper
     status, styles =
       case deployment_run.status.to_sym
       when :created
-        ["About to start", %w[bg-amber-100 text-amber-600]]
+        ["About to start", STATUS_COLOR_PALETTE[:inert]]
       when :started
-        ["Running", %w[bg-indigo-100 text-indigo-600]]
+        ["Running", STATUS_COLOR_PALETTE[:ongoing]]
       when :submitted
-        ["Submitted for review", %w[bg-indigo-100 text-indigo-600]]
+        ["Submitted for review", STATUS_COLOR_PALETTE[:ongoing]]
       when :uploaded
-        ["Uploaded", %w[bg-slate-100 text-slate-500]]
+        ["Uploaded", STATUS_COLOR_PALETTE[:routine]]
       when :upload_failed
-        ["Upload failed", %w[bg-rose-100 text-rose-600]]
+        ["Upload failed", STATUS_COLOR_PALETTE[:failure]]
       when :rollout_started
-        ["In Staged Rollout", %w[bg-indigo-100 text-indigo-600]]
+        ["In Staged Rollout", STATUS_COLOR_PALETTE[:routine]]
       when :released
-        ["Released", %w[bg-green-100 text-green-600]]
+        ["Released", STATUS_COLOR_PALETTE[:success]]
       when :failed
-        ["Failed", %w[bg-rose-100 text-rose-600]]
+        ["Failed", STATUS_COLOR_PALETTE[:failure]]
       else
-        ["Unknown", %w[bg-slate-100 text-slate-500]]
+        ["Unknown", STATUS_COLOR_PALETTE[:neutral]]
       end
 
     status_badge(status, styles)
@@ -79,28 +80,31 @@ module ReleasesHelper
     status, styles =
       case staged_rollout.status.to_sym
       when :started
-        ["Rollout active", %w[bg-indigo-100 text-indigo-600]]
+        ["Rollout active", STATUS_COLOR_PALETTE[:ongoing]]
       when :failed
-        ["Rollout failed", %w[bg-rose-100 text-rose-600]]
+        ["Rollout failed", STATUS_COLOR_PALETTE[:failure]]
       when :completed
-        ["Rollout completed", %w[bg-green-100 text-green-600]]
+        ["Rollout completed", STATUS_COLOR_PALETTE[:success]]
       when :stopped
-        ["Rollout halted", %w[bg-amber-100 text-amber-600]]
+        ["Rollout halted", STATUS_COLOR_PALETTE[:inert]]
       else
-        ["Unknown", %w[bg-slate-100 text-slate-500]]
+        ["Unknown", STATUS_COLOR_PALETTE[:neutral]]
       end
 
     status_badge(status, styles)
   end
 
   def pull_request_badge(pull_request)
-    case pull_request.state.to_sym
-    when :open
-      "bg-green-100 text-green-600"
-    when :closed
-      "bg-indigo-100 text-indigo-600"
-    else
-      "bg-slate-100 text-slate-500"
-    end
+    style =
+      case pull_request.state.to_sym
+      when :open
+        STATUS_COLOR_PALETTE[:success]
+      when :closed
+        STATUS_COLOR_PALETTE[:ongoing]
+      else
+        STATUS_COLOR_PALETTE[:neutral]
+      end
+
+    status_badge(pull_request.state, style)
   end
 end
