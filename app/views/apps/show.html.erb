@@ -35,16 +35,6 @@
         <span class="ml-2">Integrations</span>
       <% end %>
 
-      <% if @app.sign_offs_enabled? %>
-        <%= authz_link_to :neutral, edit_app_sign_off_groups_path(@app) do %>
-          <svg class="shrink-0 h-4 w-4" viewBox="0 0 24 24">
-            <path class="fill-current text-slate-600" d="M18.974 8H22a2 2 0 012 2v6h-2v5a1 1 0 01-1 1h-2a1 1 0 01-1-1v-5h-2v-6a2 2 0 012-2h.974zM20 7a2 2 0 11-.001-3.999A2 2 0 0120 7zM2.974 8H6a2 2 0 012 2v6H6v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5H0v-6a2 2 0 012-2h.974zM4 7a2 2 0 11-.001-3.999A2 2 0 014 7z"/>
-            <path class="fill-current text-slate-400" d="M12 6a3 3 0 110-6 3 3 0 010 6zm2 18h-4a1 1 0 01-1-1v-6H6v-6a3 3 0 013-3h6a3 3 0 013 3v6h-3v6a1 1 0 01-1 1z"/>
-          </svg>
-          <span class="ml-2">Sign-off groups</span>
-        <% end %>
-      <% end %>
-
       <%= authz_link_to :neutral, edit_app_app_config_path(@app) do %>
         <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
           <path class="fill-current text-slate-600" d="M19.714 14.7l-7.007 7.007-1.414-1.414 7.007-7.007c-.195-.4-.298-.84-.3-1.286a3 3 0 113 3 2.969 2.969 0 01-1.286-.3z"/>

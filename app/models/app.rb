@@ -31,7 +31,6 @@ class App < ApplicationRecord
   has_many :integrations, inverse_of: :app, dependent: :destroy
   has_many :trains, class_name: "Releases::Train", dependent: :destroy
   has_many :train_runs, through: :trains
-  has_many :sign_off_groups, dependent: :destroy
 
   validate :no_trains_are_running, on: :update
   validates :bundle_identifier, uniqueness: {scope: [:platform, :organization_id]}
@@ -39,8 +38,6 @@ class App < ApplicationRecord
   validates :build_number, numericality: {less_than: 2100000000}, if: -> { android? }
 
   enum platform: {android: "android", ios: "ios"}
-
-  accepts_nested_attributes_for :sign_off_groups, allow_destroy: true, reject_if: :reject_sign_off_groups?
 
   after_initialize :initialize_config, if: :new_record?
   before_destroy :ensure_deletable, prepend: true do
@@ -132,10 +129,6 @@ class App < ApplicationRecord
       .reduce(:merge)
   end
 
-  def sign_offs_enabled?
-    Flipper.enabled?(:sign_offs, self)
-  end
-
   def set_external_details(external_id)
     update(external_id: external_id)
   end
@@ -171,10 +164,6 @@ class App < ApplicationRecord
     if trains.running? && bundle_identifier_changed?
       errors.add(:bundle_identifier, "cannot be updated if there are running trains!")
     end
-  end
-
-  def reject_sign_off_groups?(attributes)
-    attributes["name"].blank? || attributes["member_ids"].compact_blank.empty?
   end
 
   def ensure_deletable

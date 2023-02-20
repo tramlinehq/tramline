@@ -62,11 +62,6 @@ crumb :integrations do |app|
   parent :app, app
 end
 
-crumb :sign_off_groups do |app|
-  link "Sign Off Config", app_sign_off_groups_path(app)
-  parent :app, app
-end
-
 crumb :new_train do |app|
   link "New Train"
   parent :app, app

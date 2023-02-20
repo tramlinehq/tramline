@@ -14,12 +14,5 @@
       <div class="font-semibold text-slate-600 text-sm uppercase mb-1">Branching Strategy</div>
       <span class="text-sm"><%= release_train.branching_strategy_name %></span>
     </div>
-
-    <% unless release_train.sign_off_groups.blank? %>
-      <div>
-        <div class="font-bold text-slate-600 text-sm uppercase mb-1">Sign-off groups</div>
-        <span><%= release_train.sign_off_groups.map(&:name).join(", ") %></span>
-      </div>
-    <% end %>
   </div>
 </section>
