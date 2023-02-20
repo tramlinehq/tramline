@@ -31,6 +31,8 @@ class Deployment < ApplicationRecord
   delegate :google_play_store_integration?, :slack_integration?, :store?, :app_store_integration?, to: :integration, allow_nil: true
   delegate :train, to: :step
 
+  scope :sequential, -> { order("deployments.deployment_number ASC") }
+
   before_save :set_deployment_number, if: :new_record?
 
   FULL_ROLLOUT_VALUE = BigDecimal("100")

@@ -24,7 +24,7 @@ class Releases::Step < ApplicationRecord
 
   belongs_to :train, class_name: "Releases::Train", inverse_of: :steps
   has_many :runs, class_name: "Releases::Step::Run", inverse_of: :step, foreign_key: :train_step_id, dependent: :destroy
-  has_many :deployments, foreign_key: :train_step_id, inverse_of: :step, dependent: :destroy
+  has_many :deployments, -> { sequential }, foreign_key: :train_step_id, inverse_of: :step, dependent: :destroy
   has_many :deployment_runs, through: :deployments, class_name: "DeploymentRun"
   has_one :app, through: :train
 
