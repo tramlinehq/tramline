@@ -33,8 +33,6 @@ class Releases::Train < ApplicationRecord
   has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
   has_one :active_run, -> { pending_release }, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
   has_many :steps, -> { order(:step_number) }, class_name: "Releases::Step", inverse_of: :train, dependent: :destroy
-  has_many :train_sign_off_groups, dependent: :destroy
-  has_many :sign_off_groups, through: :train_sign_off_groups
   has_many :commit_listeners, class_name: "Releases::CommitListener", inverse_of: :train, dependent: :destroy
   has_many :commits, class_name: "Releases::Commit", inverse_of: :train, dependent: :destroy
   has_many :deployments, through: :steps

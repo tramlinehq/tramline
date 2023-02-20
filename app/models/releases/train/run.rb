@@ -105,7 +105,7 @@ class Releases::Train::Run < ApplicationRecord
     return true if step.first? && step_runs_for(step).empty?
     return false if step.first?
 
-    (next_step == step) && previous_step_run_for(step).approval_approved? && previous_step_run_for(step).success?
+    (next_step == step) && previous_step_run_for(step).success?
   end
 
   def step_runs_for(step)
@@ -199,10 +199,6 @@ class Releases::Train::Run < ApplicationRecord
     last_good_step_run&.build_artifact
   end
 
-  def signed?
-    last_run_for(all_steps.last)&.approval_approved?
-  end
-
   def events
     step_runs
       .left_joins(:commit, :deployment_runs)
@@ -237,6 +233,6 @@ class Releases::Train::Run < ApplicationRecord
   private
 
   def ready_to_be_finalized?
-    finished_steps? && signed?
+    finished_steps?
   end
 end

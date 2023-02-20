@@ -133,14 +133,6 @@
                       <% end %>
                     </div>
                   <% end %>
-
-                  <div class="mb-2">
-                    <% unless release.train.sign_off_groups.blank? %>
-                      <div>
-                        <span class="font-medium">Approval Status:</span> <%= approval_emoji(step_run) %>
-                      </div>
-                    <% end %>
-                  </div>
                 </div>
               </div>
             <% end %>

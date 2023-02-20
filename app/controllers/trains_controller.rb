@@ -89,16 +89,14 @@ class TrainsController < SignedInApplicationController
       :version_seeded_with,
       :branching_strategy,
       :release_backmerge_branch,
-      :release_branch,
-      sign_off_group_ids: []
+      :release_branch
     )
   end
 
   def train_update_params
     params.require(:releases_train).permit(
       :name,
-      :description,
-      sign_off_group_ids: []
+      :description
     )
   end
 

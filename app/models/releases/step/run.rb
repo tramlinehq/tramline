@@ -37,7 +37,6 @@ class Releases::Step::Run < ApplicationRecord
   validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
   validates :train_step_id, uniqueness: {scope: :releases_commit_id}
 
-  after_create :reset_approval!
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 
   STAMPABLE_REASONS = %w[created ci_triggered ci_workflow_unavailable ci_finished ci_workflow_failed ci_workflow_halted build_available build_unavailable build_not_found_in_store finished]
@@ -174,29 +173,8 @@ class Releases::Step::Run < ApplicationRecord
       .has_begun
   end
 
-  def reset_approval!
-    return approval_approved! unless sign_required?
-    return approval_approved! if is_approved?
-    return approval_rejected! if is_rejected?
-    approval_pending!
-  end
-
-  # approval needs to be from all groups
-  def is_approved?
-    train.sign_off_groups.all? do |group|
-      step.sign_offs.exists?(sign_off_group: group, signed: true, commit: commit)
-    end
-  end
-
-  # rejection needs to be from any one group
-  def is_rejected?
-    train.sign_off_groups.any? do |group|
-      step.sign_offs.exists?(sign_off_group: group, signed: false, commit: commit)
-    end
-  end
-
   def in_progress?
-    on_track? || ci_workflow_triggered? || ci_workflow_started? || build_ready? || deployment_started? || !is_approved?
+    on_track? || ci_workflow_triggered? || ci_workflow_started? || build_ready? || deployment_started?
   end
 
   def failed?
@@ -204,7 +182,7 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def done?
-    is_approved? && success?
+    success?
   end
 
   def status_summary
