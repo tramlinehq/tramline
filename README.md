@@ -34,4 +34,8 @@
   <a href="https://github.com/testdouble/standard">
     <img src="https://img.shields.io/badge/code_style-standard-brightgreen.svg" />
   </a>
+  
+  <a href="CODE_OF_CONDUCT.md">
+    <img src="https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg" />
+  </a>  
 </p>
