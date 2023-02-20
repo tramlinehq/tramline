@@ -69,6 +69,8 @@ class AppsController < SignedInApplicationController
 
   def refresh_external
     @app.create_external!
+
+    redirect_to app_path(@app), notice: "Store status was successfully refreshed."
   end
 
   private
