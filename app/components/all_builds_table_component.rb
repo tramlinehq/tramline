@@ -49,7 +49,7 @@ class AllBuildsTableComponent < ViewComponent::Base
   def deployments(build)
     tag.div do
       build.deployments.collect do |d|
-        concat tag.div "#{show_deployment_provider(d)} (#{show_deployment_channel(d)})"
+        concat tag.div show_deployment(d)
       end
     end
   end

@@ -1,13 +1,10 @@
-<ol class="relative ml-8">
+<ol>
   <% step.deployments.each do |deployment| %>
     <li class="last:mb-0 mb-1">
-      <div class="inline-flex absolute -left-1.5 w-2.5 h-2.5 bg-slate-200 mt-2"></div>
-      <div class="pl-4">
-        <div>
-          <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
-          <%= render partial: "releases/live_release/deployment_status",
-                     locals: { step_run: step_run, deployment: deployment, release: release } if show_deployment_status %>
-        </div>
+      <div>
+        <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
+        <%= render partial: "releases/live_release/deployment_status",
+                   locals: { step_run: step_run, deployment: deployment, release: release } if show_deployment_status %>
       </div>
     </li>
   <% end %>

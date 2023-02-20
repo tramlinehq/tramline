@@ -1,6 +1,6 @@
 <% if step_run.present? %>
   <% if deployment.staged_rollout? %>
-    <%= status_badge("Staged", ["bg-slate-100 text-slate-500"]) %>
+    <span class="ml-1"><%= status_badge("Staged", ["bg-slate-100 text-slate-500"]) %></span>
   <% end %>
 
   <% if step_run.manually_startable_deployment?(deployment) %>
@@ -13,7 +13,7 @@
   <% deployment_run = step_run.last_run_for(deployment) %>
 
   <% if deployment_run.present? %>
-    <span class="ml-2"><%= deployment_run_status_badge(deployment_run) %></span>
+    <span class="ml-1"><%= deployment_run_status_badge(deployment_run) %></span>
   <% end %>
 
   <div class="ml-0 mt-2">
