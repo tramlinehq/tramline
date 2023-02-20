@@ -39,6 +39,7 @@ class StepsController < SignedInApplicationController
       if @step.save
         format.html { redirect_to app_train_path(@app, @train), notice: "Step was successfully created." }
       else
+        set_build_channels
         format.html { render :new, status: :unprocessable_entity }
       end
     end
