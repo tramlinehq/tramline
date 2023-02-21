@@ -3,26 +3,26 @@ module ButtonHelper
 
   BUTTON_OPTIONS = {
     green: {
-      class: "#{BASE_OPTS} bg-emerald-500 enabled:hover:bg-emerald-600 text-white"
+      class: "#{BASE_OPTS} bg-emerald-500 hover:bg-emerald-600 text-white"
     },
     blue: {
-      class: "#{BASE_OPTS} bg-indigo-500 enabled:hover:bg-indigo-600 text-white"
+      class: "#{BASE_OPTS} bg-indigo-500 hover:bg-indigo-600 text-white"
     },
     red: {
-      class: "#{BASE_OPTS} bg-rose-500 enabled:hover:bg-rose-600 text-white"
+      class: "#{BASE_OPTS} bg-rose-500 hover:bg-rose-600 text-white"
     },
     neutral: {
-      class: "#{BASE_OPTS} border-slate-300 enabled:border-slate-400 hover:border-slate-400 text-slate-600"
+      class: "#{BASE_OPTS} border-slate-300 hover:border-slate-400 text-slate-600"
     },
     slate: {
-      class: "#{BASE_OPTS} border-slate-400 enabled:border-slate-600 hover:border-slate-600 text-slate-600"
+      class: "#{BASE_OPTS} border-slate-400 hover:border-slate-600 text-slate-600"
     },
     amber: {
-      class: "#{BASE_OPTS} bg-amber-500 enabled:bg-amber-600 hover:bg-amber-600 text-white"
+      class: "#{BASE_OPTS} bg-amber-500 hover:bg-amber-600 text-white"
     },
     disabled:
       {
-        class: "#{BASE_OPTS} opacity-30 disabled cursor-not-allowed bg-transparent border-slate-300 enabled:hover:border-slate-300",
+        class: "#{BASE_OPTS} opacity-30 disabled cursor-not-allowed bg-transparent border-slate-300 hover:border-slate-300",
         disabled: true
       }
   }
