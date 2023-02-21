@@ -1,9 +1,9 @@
 <% stream_url = app_integrations_build_artifact_channels_url(step.train.app.id, with_production: step.release?) %>
 
-<div data-controller="dropdown-stream"
-     data-dropdown-stream-target-key-value="integration_id"
+<div data-controller="dropdown-stream domain--staged-rollout-help"
+     data-dropdown-stream-dynamic-select-key-value="integration_id"
+     data-dropdown-stream-dynamic-select-url-value="<%= stream_url %>"
      data-dropdown-stream-show-element-if-value='{"is_production": true}'
-     data-dropdown-stream-url-value="<%= stream_url %>"
      class="px-2 py-6 rounded-sm">
 
   <div class="flex flex-col gap-y-4">
@@ -15,15 +15,16 @@
       <div class="flex-grow w-1/2">
         <%= form.select :integration_id, options_for_select(@build_channel_integrations, @selected_integration),
                         { class: "block form-select" },
-                        data: { controller: "input-select", action: "change->dropdown-stream#change" } %>
+                        data: { controller: "input-select",
+                                action: "dropdown-stream#fetchDynamicSelect domain--staged-rollout-help#clear" } %>
       </div>
 
       <div class="flex-grow w-1/2">
         <%= form.select :build_artifact_channel,
                         options_for_select(display_channels(@selected_build_channels) { |chan| chan[:name] }),
                         { class: "block form-select" },
-                        { data: { dropdown_stream_target: "select",
-                                  action: "change->dropdown-stream#toggleElement",
+                        { data: { dropdown_stream_target: "dynamicSelect",
+                                  action: "dropdown-stream#showElementOnDynamicSelectChange domain--staged-rollout-help#clear",
                                   controller: "input-select" } } %>
       </div>
 
@@ -36,10 +37,9 @@
       </div>
     </div>
 
-    <div class="flex flex-row items-center gap-4 w-full">
-      <div class="w-6">
-      </div>
-      <% if step.release? %>
+    <% if step.release? %>
+      <div class="flex flex-row items-center gap-4 w-full">
+        <div class="w-6"></div>
         <div class="flex-grow" data-dropdown-stream-target="showElement" hidden>
           <div data-controller="reveal" class="inline-flex gap-x-4">
             <div class="flex items-center">
@@ -48,12 +48,22 @@
               <%= form.text_field :staged_rollout_config,
                                   class: "ml-2 form-input",
                                   hidden: true,
-                                  placeholder: "5, 10, 50, 100",
-                                  data: { reveal: true } %>
+                                  placeholder: "1, 2, 5, 10, 20, 50, 100",
+                                  data: { reveal: true,
+                                          domain__staged_rollout_help_target: "input",
+                                          action: "domain--staged-rollout-help#validateString" } %>
             </div>
           </div>
         </div>
-      <% end %>
-    </div>
+      </div>
+
+      <div class="flex flex-row items-center gap-4 w-full">
+        <div class="w-6"></div>
+
+        <div class="text-sm text-slate-600 italic">
+          <span data-domain--staged-rollout-help-target="helpErrorText helpSuccessText"></span>
+        </div>
+      </div>
+    <% end %>
   </div>
 </div>

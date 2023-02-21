@@ -16,6 +16,11 @@ class StepsController < SignedInApplicationController
     head :forbidden and return if kind.blank?
 
     @step = @train.steps.new(kind:)
+
+    if @step.release? && @train.has_release_step?
+      redirect_back fallback_location: app_train_path(@app, @train), flash: {error: "You can only have one release step in a train!"}
+    end
+
     set_build_channels
   end
 

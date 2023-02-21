@@ -4,33 +4,31 @@ import {get} from "@rails/request.js"
 
 export default class extends Controller {
   static values = {
-    url: String,
-    targetKey: String,
+    dynamicSelectUrl: String,
+    dynamicSelectKey: String,
     showElementIf: String,
   }
-  static targets = ["select", "showElement"]
+  static targets = ["dynamicSelect", "showElement"]
 
   connect() {
-    useMutation(this, {  childList: true, subtree: true, element: this.selectTarget })
-    this.toggleElement()
+    useMutation(this, {  childList: true, subtree: true, element: this.dynamicSelectTarget })
+    this.showElementOnDynamicSelectChange()
   }
 
   mutate() {
-    this.toggleElement()
+    this.showElementOnDynamicSelectChange()
   }
 
-  change(event) { // FIXME: change this name
-    const targetKeyId = event.target.selectedOptions[0].value
-
-    let url = new URL(this.urlValue)
-    url.searchParams.set(this.targetKeyValue, targetKeyId);
-    url.searchParams.set('target', this.selectTarget.id);
+  fetchDynamicSelect(event) {
+    let url = new URL(this.dynamicSelectUrlValue)
+    url.searchParams.set(this.dynamicSelectKeyValue, event.target.selectedOptions[0].value);
+    url.searchParams.set('target', this.dynamicSelectTarget.id);
 
     get(url, {responseKind: "turbo-stream"})
   }
 
-  toggleElement() {
-    const selectedShowElementValue = this.selectTarget.selectedOptions[0].value
+  showElementOnDynamicSelectChange() {
+    const selectedShowElementValue = this.dynamicSelectTarget.selectedOptions[0].value
 
     if (this.showingElementAllowed()) {
       const parsedSelected = this.__safeJSONParse(selectedShowElementValue)
