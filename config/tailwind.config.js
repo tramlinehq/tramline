@@ -7,6 +7,11 @@ module.exports = {
     './app/views/**/*',
     './app/components/**/*',
   ],
+  safelist: [
+    {
+      pattern: /(bg|text)-(.*)-(.*)/,
+    },
+  ],
   theme: {
     extend: {
       boxShadow: {
