@@ -2,7 +2,7 @@
   <div class="p-1">
     <% if step.train.active_run.blank? %>
       <%= authz_link_to :neutral, edit_step_path(step) do %>
-        <%= inline_svg("edit.svg") %>
+        <%= inline_svg("edit.svg", classname: "w-4") %>
       <% end %>
     <% else %>
       <div class="flex self-end">
