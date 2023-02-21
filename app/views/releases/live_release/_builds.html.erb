@@ -120,11 +120,9 @@
 
                             <%= deployment_run_status_badge(deployment_run) %>
 
-                            <% if deployment.store? && deployment_run.released? && !deployment_run.ios? %>
+                            <% if deployment_run.released? && deployment_run.rollout_percentage %>
                               <div class="text-xs ml-6 mt-1">
-                              <span>
-                                Released to <%= number_to_percentage deployment_run.rollout_percentage %> of the users
-                              </span>
+                                <span>Released to <%= number_to_percentage deployment_run.rollout_percentage %> of the users</span>
                                 <div class="border-slate-200 w-1/2">
                                   <div class="relative w-full h-2 bg-slate-300">
                                     <div class="absolute inset-0 bg-emerald-500" aria-hidden="true" style="width: <%= deployment_run.rollout_percentage %>%"></div>

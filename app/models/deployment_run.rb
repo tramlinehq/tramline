@@ -258,6 +258,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def rollout_percentage
+    return unless google_play_store_integration?
     return staged_rollout.last_rollout_percentage if staged_rollout?
     initial_rollout_percentage || Deployment::FULL_ROLLOUT_VALUE
   end
