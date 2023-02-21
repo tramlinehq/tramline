@@ -66,7 +66,7 @@
 
 <% if @train.steps.size > 0 %>
   <div class="flex flex-col">
-    <%= render partial: "trains/step_tree_viz", locals: { train: @train, editable: false } %>
+    <%= render partial: "shared/step_tree_viz", locals: { train: @train, editable: false } %>
   </div>
 <% else %>
   <%= render partial: "trains/step_creation", locals: { app: @app, train: @train } %>

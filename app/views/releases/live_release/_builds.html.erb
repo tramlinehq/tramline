@@ -38,8 +38,8 @@
             #<%= commits_count - index %>
           </span>
 
-          <div class="mt-1 text-slate-500">
-            <%= commit.short_sha %> • <%= ago_in_words commit.timestamp %>
+          <div class="text-slate-500">
+            <code><%= commit.short_sha %></code> • <%= ago_in_words commit.timestamp %>
           </div>
         </td>
         <td class="align-text-top pt-4 whitespace-nowrap w-px">
@@ -67,14 +67,15 @@
             <% commit.step_runs.includes(:step).order(:created_at).each_with_index do |step_run| %>
               <div class="border-dashed border-t last:border-t-0 mb-2"></div>
 
-              <div class=" pt-2 <%= "opacity-50" if is_stale_commit %>">
-                <div class="mb-2 font-medium">
+              <div class="pt-2 <%= "opacity-50" if is_stale_commit %>">
+                <div class="mb-2 font-medium text-base">
                   <%= step_run.step.name %>
                   <%= dev_show { step_run.id.strip } %>
                 </div>
 
                 <!-- per step info -->
                 <div>
+                  <!-- ci link -->
                   <div class="mb-2">
                     <% if step_run.ci_link.present? %>
                       <%= link_to_external "CI workflow run ↗", step_run.ci_link, class: "underline" %>
@@ -84,53 +85,58 @@
 
                     <span class="ml-1"><%= build_status_badge(step_run) %></span>
                     <% if step_run.fetching_build? %>
-                      <%= status_badge("Waiting for build", %w[bg-green-500 hover:bg-green-600 text-white], pulse: true) %>
+                      <%= status_badge("Waiting for build", %w[bg-green-500 text-white], pulse: true) %>
                     <% end %>
                   </div>
 
+                  <!-- download build -->
                   <% if step_run.build_artifact_available? %>
                     <div class="mb-2">
                       <%= link_to_external "Download build ↗", step_run.download_url, class: "underline" %>
                       <div class="text-slate-500">
                         <div>
-                          version <span class="font-mono"><%= step_run.build_version %></span>
-                          • build <span class="font-mono"><%= step_run.build_number %></span>
+                          <span class="font-mono"><%= step_run.build_version %></span>
+                          • Build <span class="font-mono"><%= step_run.build_number %></span>
                         </div>
                         <div>
-                          <%= "built " + ago_in_words(step_run.build_artifact&.generated_at) %>
-                          • <%= "uploaded " + ago_in_words(step_run.build_artifact&.uploaded_at) %>
+                          <%= "Built " + ago_in_words(step_run.build_artifact&.generated_at) %>
+                          • <%= "Uploaded to Tramline " + ago_in_words(step_run.build_artifact&.uploaded_at) %>
                         </div>
                       </div>
                     </div>
                   <% end %>
 
+                  <!-- distributions -->
                   <% if step_run.deployment_runs.exists? %>
                     <div class="mb-2">
                       <%= Deployment.display.pluralize %>
-                      <% step_run.deployment_runs.each do |deployment_run| %>
-                        <% deployment = deployment_run.deployment %>
-
-                        <div>
-                          <span class="mr-1">
-                            <%= image_tag("arrow-right.svg", width: 16, class: "inline-flex mr-1") %>
-                            <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
-                          </span>
-
-                          <%= deployment_run_status_badge(deployment_run) %>
-
-                          <% if deployment.store? && deployment_run.released? && !deployment_run.ios? %>
-                            <div class="text-xs ml-4 mt-2">
-                              <%= image_tag("corner_down_right.svg", width: 10, class: "inline-flex mr-1") %>
-                              <span>
-                                Released to: <%= number_to_percentage deployment_run.rollout_percentage %>
-                                of the users
-                              </span>
+                      <div class="mt-2">
+                        <% step_run.deployment_runs.each do |deployment_run| %>
+                          <% deployment = deployment_run.deployment %>
+                          <div class="mb-1">
+                            <div class="mr-1 inline">
+                              <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
                             </div>
-                          <% end %>
 
-                          <%= render partial: "releases/live_release/external_build", locals: { deployment_run: } %>
-                        </div>
-                      <% end %>
+                            <%= deployment_run_status_badge(deployment_run) %>
+
+                            <% if deployment.store? && deployment_run.released? && !deployment_run.ios? %>
+                              <div class="text-xs ml-6 mt-1">
+                              <span>
+                                Released to <%= number_to_percentage deployment_run.rollout_percentage %> of the users
+                              </span>
+                                <div class="border-slate-200 w-1/2">
+                                  <div class="relative w-full h-2 bg-slate-300">
+                                    <div class="absolute inset-0 bg-emerald-500" aria-hidden="true" style="width: <%= deployment_run.rollout_percentage %>%"></div>
+                                  </div>
+                                </div>
+                              </div>
+                            <% end %>
+
+                            <%= render partial: "releases/live_release/external_build", locals: { deployment_run: } %>
+                          </div>
+                        <% end %>
+                      </div>
                     </div>
                   <% end %>
                 </div>

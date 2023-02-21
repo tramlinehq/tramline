@@ -1,14 +1,10 @@
 module DeploymentsHelper
-  def show_deployment_provider(deployment)
+  def show_deployment(deployment)
     if deployment.external?
       "External (outside Tramline)"
     else
-      deployment.integration.providable.display
+      "#{deployment.integration.providable.display} • #{deployment.build_artifact_channel["name"]}"
     end
-  end
-
-  def show_deployment_channel(deployment)
-    deployment.build_artifact_channel["name"]
   end
 
   def deployment_integration_name(deployment)
