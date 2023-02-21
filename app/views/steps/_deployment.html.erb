@@ -1,17 +1,35 @@
+<% stream_url = app_integrations_build_artifact_channels_url(step.train.app.id, with_production: step.release?) %>
+
 <div data-controller="dropdown-stream"
      data-dropdown-stream-target-key-value="integration_id"
-     data-dropdown-stream-url-value="<%= app_integrations_build_artifact_channels_url(step.train.app.id, with_production: step.release?) %>">
+     data-dropdown-stream-show-element-if-value='{"is_production": true}'
+     data-dropdown-stream-url-value="<%= stream_url %>">
+
   <div class="flex flex-row gap-4">
-    <%= image_tag("hamburger.svg", class: "handle cursor-grabbing", width: 20) %>
+    <%= inline_svg("hamburger.svg", classname: "handle cursor-grabbing self-start w-6") %>
 
-    <%= form.select :integration_id, options_for_select(@build_channel_integrations, @selected_integration),
-                    { class: "block form-select" },
-                    data: { controller: "input-select", action: "change->dropdown-stream#change" } %>
+    <div class="inline-flex w-2/3 gap-4">
+      <%= form.select :integration_id, options_for_select(@build_channel_integrations, @selected_integration),
+                      { class: "block form-select" },
+                      data: { controller: "input-select", action: "change->dropdown-stream#change" } %>
 
-    <%= form.select :build_artifact_channel,
-                    options_for_select(display_channels(@selected_build_channels) { |chan| chan[:name] }),
-                    { class: "block form-select" },
-                    { data: { dropdown_stream_target: "select", controller: "input-select" } } %>
+      <%= form.select :build_artifact_channel,
+                      options_for_select(display_channels(@selected_build_channels) { |chan| chan[:name] }),
+                      { class: "block form-select" },
+                      { data: { dropdown_stream_target: "select",
+                                action: "change->dropdown-stream#toggleElement",
+                                controller: "input-select" } } %>
+
+    </div>
+
+    <% if step.release? %>
+      <div data-dropdown-stream-target="showElement" hidden>
+        <div class="inline-flex gap-4" data-controller="reveal">
+          <%= form.check_box :is_staged_rollout, class: "form-checkbox mt-2", data: { action: "reveal#toggle" } %>
+          <%= form.text_field :staged_rollout_config, class: "form-input", hidden: true, placeholder: "5, 10, 50, 100", data: {reveal: true} %>
+        </div>
+      </div>
+    <% end %>
 
     <button type="button" data-action="nested-form-ext#remove">
       <%= inline_svg("trash.svg", classname: "w-6") %>

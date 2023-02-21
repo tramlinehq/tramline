@@ -14,10 +14,14 @@
   <%= render 'form', form: form %>
 
   <div data-controller="nested-form-ext" data-nested-form-ext-list-position-outlet="#deployments">
-    <div class="sm:flex sm:justify-between sm:items-center mt-8 mb-2 pb-5">
-      <p class="font-bold text-xl">
-        How should we distribute?
-      </p>
+    <div class="sm:flex sm:justify-between sm:items-center mt-8 mb-8">
+      <div>
+        <h2 class="font-bold text-xl">
+          How should we distribute?
+        </h2>
+
+        <%= subtitle("These #{Deployment.display.downcase.pluralize} are ordered and can be moved around") %>
+      </div>
 
       <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
         <%= button_tag type: "button", data: { action: "nested-form-ext#add" }, class: "btn bg-emerald-500 hover:bg-emerald-600 text-white" do %>
@@ -30,16 +34,11 @@
       </div>
     </div>
 
-    <div class="pb-5">
-      <%= render "shared/note_box",
-                 message: "The generated build artifact above will be moved across the configured #{Deployment.display.downcase}
-                 channels below. These #{Deployment.display.downcase} are ordered and can be moved around." %>
-    </div>
-
     <div class="flex flex-row gap-4 mb-5">
-      <div class="w-10"></div>
-      <%= form.label :integration_id, "Provider", class: "block text-sm font-medium mb-1 w-full" %>
-      <%= form.label :build_artifact_channel, "Channel", class: "block text-sm font-medium mb-1 w-full" %>
+      <div class="w-20"></div>
+      <%= form.label :integration_id, "Provider", class: "block text-sm font-medium mb-1 w-3/4" %>
+      <%= form.label :build_artifact_channel, "Channel", class: "block text-sm font-medium mb-1 w-3/4" %>
+      <%= form.label :is_staged_rollout, "Staged Rollout", class: "block text-sm font-medium mb-1 w-1/2" %>
       <div class="w-20"></div>
     </div>
 
