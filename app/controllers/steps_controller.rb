@@ -135,7 +135,13 @@ class StepsController < SignedInApplicationController
 
   def parsed_deployments_attributes
     deployments_params[:deployments_attributes].to_h.to_h do |number, attributes|
-      [number, attributes.merge(build_artifact_channel: attributes[:build_artifact_channel]&.safe_json_parse)]
+      [
+        number,
+        attributes.merge(
+          staged_rollout_config: attributes[:staged_rollout_config]&.safe_csv_parse,
+          build_artifact_channel: attributes[:build_artifact_channel]&.safe_json_parse
+        )
+      ]
     end
   end
 

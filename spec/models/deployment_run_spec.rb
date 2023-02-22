@@ -298,7 +298,7 @@ describe DeploymentRun do
 
     it "creates a draft release" do
       allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
-      staged_rollout_config = [1, 100]
+      staged_rollout_config = "1, 100"
       deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, staged_rollout_config:, step: step_run.step)
       run = create(:deployment_run, :uploaded, deployment:)
 
