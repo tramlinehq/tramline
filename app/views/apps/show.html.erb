@@ -18,40 +18,25 @@
     <% if @app.ready? %>
       <% if @app.runs.exists? %>
         <%= authz_link_to :neutral, all_builds_app_path(@app) do %>
-          <svg class="shrink-0 h-4 w-4" viewBox="0 0 24 24">
-            <path class="fill-current text-slate-500" d="M19 5h1v14h-2V7.414L5.707 19.707 5 19H4V5h2v11.586L18.293 4.293 19 5Z"/>
-            <path class="fill-current text-slate-500" d="M5 9a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm14 0a4 4 0 1 1 0-8 4 4 0 0 1 0 8ZM5 23a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm14 0a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"/>
-          </svg>
-
+          <%= inline_svg("all_builds_icon.svg", classname: "w-4") %>
           <span class="ml-2">All Builds</span>
         <% end %>
       <% end %>
 
       <%= authz_link_to :neutral, app_integrations_path(@app) do %>
-        <svg class="w-4 h-4 fill-current shrink-0 text-slate-500" viewBox="0 0 16 16">
-          <path d="M11 0c1.3 0 2.6.5 3.5 1.5 1 .9 1.5 2.2 1.5 3.5 0 1.3-.5 2.6-1.4 3.5l-1.2 1.2c-.2.2-.5.3-.7.3-.2 0-.5-.1-.7-.3-.4-.4-.4-1 0-1.4l1.1-1.2c.6-.5.9-1.3.9-2.1s-.3-1.6-.9-2.2C12 1.7 10 1.7 8.9 2.8L7.7 4c-.4.4-1 .4-1.4 0-.4-.4-.4-1 0-1.4l1.2-1.1C8.4.5 9.7 0 11 0ZM8.3 12c.4-.4 1-.5 1.4-.1.4.4.4 1 0 1.4l-1.2 1.2C7.6 15.5 6.3 16 5 16c-1.3 0-2.6-.5-3.5-1.5C.5 13.6 0 12.3 0 11c0-1.3.5-2.6 1.5-3.5l1.1-1.2c.4-.4 1-.4 1.4 0 .4.4.4 1 0 1.4L2.9 8.9c-.6.5-.9 1.3-.9 2.1s.3 1.6.9 2.2c1.1 1.1 3.1 1.1 4.2 0L8.3 12Zm1.1-6.8c.4-.4 1-.4 1.4 0 .4.4.4 1 0 1.4l-4.2 4.2c-.2.2-.5.3-.7.3-.2 0-.5-.1-.7-.3-.4-.4-.4-1 0-1.4l4.2-4.2Z"/>
-        </svg>
+        <%= inline_svg("link_icon.svg", classname: "w-4 fill-current shrink-0 text-slate-500") %>
 
         <span class="ml-2">Integrations</span>
       <% end %>
 
       <%= authz_link_to :neutral, edit_app_app_config_path(@app) do %>
-        <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
-          <path class="fill-current text-slate-600" d="M19.714 14.7l-7.007 7.007-1.414-1.414 7.007-7.007c-.195-.4-.298-.84-.3-1.286a3 3 0 113 3 2.969 2.969 0 01-1.286-.3z"/>
-          <path class="fill-current text-slate-400" d="M10.714 18.3c.4-.195.84-.298 1.286-.3a3 3 0 11-3 3c.002-.446.105-.885.3-1.286l-6.007-6.007 1.414-1.414 6.007 6.007z"/>
-          <path class="fill-current text-slate-600" d="M5.7 10.714c.195.4.298.84.3 1.286a3 3 0 11-3-3c.446.002.885.105 1.286.3l7.007-7.007 1.414 1.414L5.7 10.714z"/>
-          <path class="fill-current text-slate-400" d="M19.707 9.292a3.012 3.012 0 00-1.415 1.415L13.286 5.7c-.4.195-.84.298-1.286.3a3 3 0 113-3 2.969 2.969 0 01-.3 1.286l5.007 5.006z"/>
-        </svg>
-
+        <%= inline_svg("configure_icon.svg", classname: "w-4 fill-current shrink-0") %>
         <span class="ml-2">Configure</span>
       <% end %>
     <% end %>
 
     <%= authz_link_to :neutral, edit_app_path(@app) do %>
-      <svg class="w-4 h-4 fill-current text-slate-500 shrink-0" viewBox="0 0 16 16">
-        <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4zM4.6 14H2v-2.6l6-6L10.6 8l-6 6zM12 6.6L9.4 4 11 2.4 13.6 5 12 6.6z"/>
-      </svg>
-
+      <%= inline_svg("edit.svg", classname: "w-4 fill-current text-slate-500 shrink-0") %>
       <span class="ml-2">Settings</span>
     <% end %>
 
@@ -69,10 +54,7 @@
       <% unless @app.trains.any? %>
         <div class="grid grid-flow-col sm:auto-cols-max justify-start gap-2">
           <%= authz_link_to :green, new_app_train_path(@app) do %>
-            <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
-              <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
-            </svg>
-
+            <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
             <span class="hidden xs:block ml-2">
               Create a release train
             </span>
@@ -95,10 +77,7 @@
         <h2 class="text-2xl text-slate-800 font-bold">Release Trains</h2>
         <% if @app.trains.any? %>
           <%= authz_link_to :green, new_app_train_path(@app) do %>
-            <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
-              <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"/>
-            </svg>
-
+            <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
             <span class="hidden xs:block ml-2">Create another release train</span>
           <% end %>
         <% end %>
