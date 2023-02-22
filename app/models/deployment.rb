@@ -15,6 +15,7 @@
 class Deployment < ApplicationRecord
   has_paper_trail
   include Displayable
+  using RefinedString
 
   self.implicit_order_column = :deployment_number
 
@@ -22,8 +23,10 @@ class Deployment < ApplicationRecord
   belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :deployments
   belongs_to :integration, optional: true
 
+  before_validation :parse_staged_rollout_configs, if: :staged_rollout?
+
   validates :deployment_number, presence: true
-  validates :build_artifact_channel, uniqueness: {scope: [:integration_id, :train_step_id], message: "Deployments should be designed to have unique providers and channels"}
+  validates :build_artifact_channel, uniqueness: { scope: [:integration_id, :train_step_id], message: "Deployments should be designed to have unique providers and channels" }
   validate :staged_rollout_is_allowed
   validate :correct_staged_rollout_config, if: :is_staged_rollout
   validate :non_prod_build_channel, if: -> { step.review? }
@@ -75,6 +78,8 @@ class Deployment < ApplicationRecord
     store? && build_artifact_channel["is_production"]
   end
 
+  private
+
   def staged_rollout_is_allowed
     if is_staged_rollout && !production_channel?
       errors.add(:is_staged_rollout, :prod_only)
@@ -99,5 +104,9 @@ class Deployment < ApplicationRecord
     if production_channel?
       errors.add(:build_artifact_channel, :prod_channel_in_review_not_allowed)
     end
+  end
+
+  def parse_staged_rollout_configs
+    self.staged_rollout_config = attributes_before_type_cast["staged_rollout_config"]&.safe_csv_parse
   end
 end

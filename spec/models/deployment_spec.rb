@@ -29,14 +29,26 @@ describe Deployment do
 
       let!(:invalid_deployments) {
         [
-          {deployment: build(:deployment, :with_google_play_store, step: step, staged_rollout_config: [1, 2], is_staged_rollout: true),
-           error: {is_staged_rollout: ["only allowed for production channel"]}},
-          {deployment: build(:deployment, :with_google_play_store, :with_production_channel, step: step, staged_rollout_config: [0, 2], is_staged_rollout: true),
-           error: {staged_rollout_config: ["cannot start with zero rollout"]}},
-          {deployment: build(:deployment, :with_google_play_store, :with_production_channel, step: step, staged_rollout_config: [], is_staged_rollout: true),
-           error: {staged_rollout_config: ["should have at least one rollout percentage value"]}},
-          {deployment: build(:deployment, :with_google_play_store, :with_production_channel, step: step, staged_rollout_config: ["1.2", 1, "foo"], is_staged_rollout: true),
-           error: {staged_rollout_config: ["staged rollout should be in increasing order"]}}
+          {
+            deployment: build(:deployment, :with_google_play_store, step: step, staged_rollout_config: [1, 2], is_staged_rollout: true),
+            error: {is_staged_rollout: ["only allowed for production channel"]}
+          },
+          {
+            deployment: build(:deployment, :with_google_play_store, :with_production_channel, step: step, staged_rollout_config: [0, 2], is_staged_rollout: true),
+            error: {staged_rollout_config: ["cannot start with zero rollout"]}
+          },
+          {
+            deployment: build(:deployment, :with_google_play_store, :with_production_channel, step: step, staged_rollout_config: [], is_staged_rollout: true),
+            error: {staged_rollout_config: ["should have at least one rollout percentage value"]}
+          },
+          {
+            deployment: build(:deployment, :with_google_play_store, :with_production_channel, step: step, staged_rollout_config: ["1.2", 1, "foo"], is_staged_rollout: true),
+            error: {staged_rollout_config: ["staged rollout should be in increasing order"]}
+          },
+          {
+            deployment: build(:deployment, :with_google_play_store, :with_production_channel, step: step, staged_rollout_config: [1, "a", 0], is_staged_rollout: true),
+            error: {staged_rollout_config: ["staged rollout should be in increasing order"]}
+          }
         ]
       }
 

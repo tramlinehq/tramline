@@ -120,7 +120,13 @@ class StepsController < SignedInApplicationController
   def deployments_params
     params
       .require(:releases_step)
-      .permit(deployments_attributes: [:integration_id, :build_artifact_channel, :deployment_number, :is_staged_rollout, :staged_rollout_config])
+      .permit(deployments_attributes: [
+        :integration_id,
+        :build_artifact_channel,
+        :deployment_number,
+        :is_staged_rollout,
+        :staged_rollout_config
+      ])
   end
 
   def parsed_deployments_params
@@ -129,11 +135,7 @@ class StepsController < SignedInApplicationController
 
   def parsed_deployments_attributes
     deployments_params[:deployments_attributes].to_h.to_h do |number, attributes|
-      [number, attributes.merge(
-        build_artifact_channel: attributes[:build_artifact_channel]&.safe_json_parse,
-        is_staged_rollout: attributes[:is_staged_rollout].to_boolean,
-        staged_rollout_config: attributes[:staged_rollout_config].split(",")
-      )]
+      [number, attributes.merge(build_artifact_channel: attributes[:build_artifact_channel]&.safe_json_parse)]
     end
   end
 
