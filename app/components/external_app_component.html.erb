@@ -15,32 +15,34 @@
     </div>
   <% end %>
 
-  <% channels.each do |channel| %>
-    <% table.with_row do |row| %>
-      <% row.with_cell do %>
-        <span><%= channel_name channel %></span>
-      <% end %>
+  <% if external_app %>
+    <% channels.each do |channel| %>
+      <% table.with_row do |row| %>
+        <% row.with_cell do %>
+          <span><%= channel_name channel %></span>
+        <% end %>
 
-      <% row.with_cell do %>
-        <% releases(channel).each do |release| %>
-          <div class="mx-2">
-            <div class="flex justify-between text-sm mb-2">
-              <div>
-                <%= release_description(release) %>
-                <%= release_status(release) %>
+        <% row.with_cell do %>
+          <% releases(channel).each do |release| %>
+            <div class="mx-2">
+              <div class="flex justify-between text-sm mb-2">
+                <div>
+                  <%= release_description(release) %>
+                  <%= release_status(release) %>
+                </div>
+                <% if release[:user_fraction] %>
+                  <div class="italic"><%= release_fraction_title(release) %></div>
+                <% end %>
               </div>
               <% if release[:user_fraction] %>
-                <div class="italic"><%= release_fraction_title(release) %></div>
+                <div class="border-slate-200">
+                  <div class="relative w-full h-2 bg-slate-300">
+                    <div class="absolute inset-0 bg-emerald-500" aria-hidden="true" style="width: <%= release_fraction_width(release) %>"></div>
+                  </div>
+                </div>
               <% end %>
             </div>
-            <% if release[:user_fraction] %>
-              <div class="border-slate-200">
-                <div class="relative w-full h-2 bg-slate-300">
-                  <div class="absolute inset-0 bg-emerald-500" aria-hidden="true" style="width: <%= release_fraction_width(release) %>"></div>
-                </div>
-              </div>
-            <% end %>
-          </div>
+          <% end %>
         <% end %>
       <% end %>
     <% end %>
