@@ -16,6 +16,7 @@ class StagedRolloutComponent < ViewComponent::Base
   delegate :started?,
     :failed?,
     :stopped?,
+    :config,
     :completed?,
     :roll_out_started?,
     :current_stage,
@@ -24,6 +25,7 @@ class StagedRolloutComponent < ViewComponent::Base
   delegate :writer?, to: :helpers
 
   def release_actions(form)
+    return unless release.on_track?
     return if stopped? || completed?
 
     if failed?
@@ -54,11 +56,6 @@ class StagedRolloutComponent < ViewComponent::Base
 
   def halt_rollout_button(form)
     form.authz_submit :red, "Halt", class: "btn-xs"
-  end
-
-  def until_current?(stage)
-    return false if current_stage.nil?
-    current_stage >= stage
   end
 
   def current_stage_perc

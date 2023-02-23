@@ -1,7 +1,7 @@
 <article class="grid grid-cols-6 gap-x-1 py-6">
-  <div class="justify-start py-2 col-span-4">
+  <div class="justify-start col-span-4">
     <div class="mr-5 mb-2">
-      <div class="flex items-center my-1">
+      <div class="flex items-center">
         <div class="text-3xl font-bold text-slate-800 mr-2"><%= current_stage_perc %></div>
         <div class="text-sm text-slate-400">of users</div>
       </div>
@@ -23,23 +23,6 @@
   </div>
 
   <div class="col-span-2">
-    <dl>
-      <% staged_rollout.config.each_with_index do |stage, idx| %>
-        <dd class="grid grid-cols-6 gap-x-2 items-center">
-          <div class="col-span-2 text-xs">Stage <%= idx + 1 %></div>
-          <div class="col-span-3 border-slate-200">
-            <div class="relative w-full h-2 bg-slate-300">
-              <div class="absolute inset-0 bg-indigo-500" style="width: <%= stage_perc(stage) %>"></div>
-            </div>
-          </div>
-
-          <% if until_current?(idx) %>
-            <div class="col-span-1">
-              <%= inline_svg("progress_check.svg", classname: "w-5 fill-current text-green-600") %>
-            </div>
-          <% end %>
-        </dd>
-      <% end %>
-    </dl>
+    <%= render StagedRollout::ConfigComponent.new(config:, current_stage:) %>
   </div>
 </article>

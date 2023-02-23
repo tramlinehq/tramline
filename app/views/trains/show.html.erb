@@ -44,8 +44,10 @@
           <%= @train.branching_strategy_name %>
         <% end %>
 
-        <% mt.with_description("Description") do %>
-          <%= @train.description %>
+        <% if @train.description.present? %>
+          <% mt.with_description("Description") do %>
+            <%= @train.description %>
+          <% end %>
         <% end %>
 
         <% mt.with_description("Code Repository") do %>
