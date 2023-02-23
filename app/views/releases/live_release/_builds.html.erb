@@ -20,9 +20,9 @@
       <% is_stale_commit = commit.stale? %>
       <tbody class="text-sm border-b last:border-b-0" data-controller="reveal" data-reveal-toggle-keys-value="b">
 
+      <!-- commit details -->
       <tr>
         <td class="py-4 whitespace-nowrap">
-
           <%
             if is_stale_commit
               link_text_class = "text-slate-400"
@@ -55,6 +55,7 @@
         </td>
       </tr>
 
+      <!-- indented commit body -->
       <tr data-reveal <%= "hidden" if is_stale_commit %>>
         <td colspan="2" class="pb-4 whitespace-nowrap">
           <div class="grid grid-cols-1 gap-y-1 ml-4">
@@ -70,7 +71,6 @@
                   <%= step_run.step.name %>
                   <%= dev_show { step_run.id.strip } %>
                 </div>
-
                 <!-- per step info -->
                 <div>
                   <!-- ci link -->
