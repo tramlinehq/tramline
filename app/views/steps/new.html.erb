@@ -2,72 +2,15 @@
 
 <%= render partial: 'shared/errors', locals: { resource: @step } %>
 
-<%= form_with(model: @step,
-              url: app_train_steps_path(@app, @train),
-              builder: ButtonHelper::AuthzForms) do |form| %>
+<%= form_with(model: @step, url: app_train_steps_path(@app, @train), builder: ButtonHelper::AuthzForms) do |form| %>
   <div class="mb-8">
     <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">Create a new <%= @step.kind %> step 🪜</h1>
   </div>
 
   <div class="border-t my-8"></div>
 
-  <%= render 'form', form: form %>
-
-  <div data-controller="nested-form-ext" data-nested-form-ext-list-position-outlet="#deployments">
-    <div class="sm:flex sm:justify-between sm:items-center mt-8 mb-2 pb-5">
-      <p class="font-bold text-xl">
-        How should we distribute?
-      </p>
-
-      <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-        <%= button_tag type: "button", data: { action: "nested-form-ext#add" }, class: "btn bg-emerald-500 hover:bg-emerald-600 text-white" do %>
-          <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
-            <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z"></path>
-          </svg>
-
-          <span class="ml-2">Add a new deployment</span>
-        <% end %>
-      </div>
-    </div>
-
-    <div class="pb-5">
-      <%= render "shared/note_box",
-                 message: "The generated build artifact above will be moved across the configured #{Deployment.display.downcase}
-                 channels below. These #{Deployment.display.downcase} are ordered and can be moved around." %>
-    </div>
-
-    <div class="flex flex-row gap-4 mb-5">
-      <div class="w-10"></div>
-      <%= form.label :integration_id, "Provider", class: "block text-sm font-medium mb-1 w-full" %>
-      <%= form.label :build_artifact_channel, "Channel", class: "block text-sm font-medium mb-1 w-full" %>
-      <div class="w-20"></div>
-    </div>
-
-    <ul data-controller="sortable-list-ext list-position"
-        data-sortable-list-ext-handle-value=".handle"
-        data-sortable-list-ext-list-position-outlet="#deployments"
-        data-list-position-initial-value=1
-        id="deployments">
-      <li class="nested-form-wrapper pr-2 mt-4" data-new-record="<%= form.object.new_record? %>">
-        <%= form.fields_for :deployments, Deployment.new do |deployment_form| %>
-          <%= render partial: "deployment", locals: { form: deployment_form, step: @step } %>
-          <%= deployment_form.hidden_field :deployment_number, value: 1, data: { list_position_target: "position" } %>
-        <% end %>
-      </li>
-
-      <template data-nested-form-ext-target="template">
-        <li class="nested-form-wrapper pr-2 mt-4" data-new-record="<%= form.object.new_record? %>">
-          <%= form.fields_for :deployments, Deployment.new, child_index: "NEW_RECORD" do |deployment_form| %>
-            <%= render partial: "deployment", locals: { form: deployment_form, step: @step } %>
-            <%= deployment_form.hidden_field :deployment_number, data: { list_position_target: "position" } %>
-          <% end %>
-        </li>
-      </template>
-
-      <div data-nested-form-ext-target="target"></div>
-    </ul>
-  </div>
-
+  <%= render "form", form: form %>
+  <%= render "new_deployments", form: form %>
 
   <div class="mt-10">
     <%= form.authz_submit :blue, "Create" %>

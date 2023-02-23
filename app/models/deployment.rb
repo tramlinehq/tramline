@@ -75,6 +75,8 @@ class Deployment < ApplicationRecord
     store? && build_artifact_channel["is_production"]
   end
 
+  private
+
   def staged_rollout_is_allowed
     if is_staged_rollout && !production_channel?
       errors.add(:is_staged_rollout, :prod_only)

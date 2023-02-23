@@ -9,7 +9,6 @@ export default class extends Controller {
   connect() {
     this.slimselect = new SlimSelect({
       select: this.element,
-      addable: (value) => value,
       ...this.optionsValue
     });
   }

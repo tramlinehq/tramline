@@ -34,6 +34,12 @@ module RefinedString
       {}
     end
 
+    def safe_csv_parse
+      split(",").reject(&:empty?).map { |v| Integer(v) }
+    rescue ArgumentError
+      []
+    end
+
     def semver_bump(element)
       Semantic::Version.new(to_s).increment!(element).to_s
     end

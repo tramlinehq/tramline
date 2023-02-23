@@ -96,4 +96,8 @@ module ApplicationHelper
   def time_format(timestamp, with_year: false)
     timestamp.strftime("%b #{timestamp.day.ordinalize}#{", %Y" if with_year} at %-l:%M %P")
   end
+
+  def subtitle(text)
+    content_tag(:span, text, class: "text-sm text-slate-400")
+  end
 end

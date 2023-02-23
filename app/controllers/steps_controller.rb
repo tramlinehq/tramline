@@ -16,6 +16,11 @@ class StepsController < SignedInApplicationController
     head :forbidden and return if kind.blank?
 
     @step = @train.steps.new(kind:)
+
+    if @step.release? && @train.has_release_step?
+      redirect_back fallback_location: app_train_path(@app, @train), flash: {error: "You can only have one release step in a train!"}
+    end
+
     set_build_channels
   end
 
@@ -115,7 +120,13 @@ class StepsController < SignedInApplicationController
   def deployments_params
     params
       .require(:releases_step)
-      .permit(deployments_attributes: [:integration_id, :build_artifact_channel, :deployment_number])
+      .permit(deployments_attributes: [
+        :integration_id,
+        :build_artifact_channel,
+        :deployment_number,
+        :is_staged_rollout,
+        :staged_rollout_config
+      ])
   end
 
   def parsed_deployments_params
@@ -124,7 +135,13 @@ class StepsController < SignedInApplicationController
 
   def parsed_deployments_attributes
     deployments_params[:deployments_attributes].to_h.to_h do |number, attributes|
-      [number, attributes.merge(build_artifact_channel: attributes[:build_artifact_channel]&.safe_json_parse)]
+      [
+        number,
+        attributes.merge(
+          staged_rollout_config: attributes[:staged_rollout_config]&.safe_csv_parse,
+          build_artifact_channel: attributes[:build_artifact_channel]&.safe_json_parse
+        )
+      ]
     end
   end
 

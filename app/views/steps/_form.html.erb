@@ -1,56 +1,68 @@
 <div class="grid gap-5 md:grid-cols-2 border-b border-dashed pb-5">
   <div>
-    <%= form.label :name, class: "block text-sm font-medium mb-1" %>
-    <%= form.text_field :name, class: "form-input w-full", placeholder: "Enter step name..", required: true %>
+    <div class="mb-8">
+      <h2 class="font-bold text-xl">
+        What should we call it?
+      </h2>
+    </div>
+
+    <div class="mt-4">
+      <%= form.hidden_field :kind, value: @step.kind %>
+      <%= form.label :name, class: "block text-sm font-medium mb-1" %>
+      <%= form.text_field :name, class: "form-input w-full", placeholder: "Enter step name..", required: true %>
+    </div>
+
+    <div class="mt-4">
+      <%= form.label :description, class: "block text-sm font-medium mb-1" %>
+      <%= form.text_area :description, class: "form-input w-full", placeholder: "Describe your step..." %>
+    </div>
+
+    <div class="mt-4">
+      <div data-controller="domain--release-suffix-help"
+           data-domain--release-suffix-help-version-value="<%= @step.train.version_current %>"
+           data-domain--release-suffix-help-version-suffix-current-value="<%= @step.release_suffix %>">
+        <%= form.label :release_suffix, class: "block text-sm font-medium mb-1" %>
+        <%= form.text_field :release_suffix,
+                            class: "form-input w-full",
+                            placeholder: "Eg: qa-staging",
+                            autocomplete: "off",
+                            required: true,
+                            data: { domain__release_suffix_help_target: "input",
+                                    action: "domain--release-suffix-help#set" } %>
+        <div class="text-sm mt-1">
+          This is appended to the <strong>version name</strong> of the app, as follows:&nbsp;
+          <span class="font-mono" data-domain--release-suffix-help-target="helpText"></span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div>
-    <%= form.label :description, class: "block text-sm font-medium mb-1" %>
-    <%= form.text_area :description, class: "form-input w-full mb-1", placeholder: "Describe your step..." %>
-  </div>
+    <div class="mb-8">
+      <h2 class="font-bold text-xl">
+        How do we build your app?
+      </h2>
+    </div>
 
-  <div>
-    <%= form.hidden_field :kind, value: @step.kind %>
-  </div>
+    <div class="mt-4">
+      <%= form.label :ci_cd_channel, "CI workflow", class: "block text-sm font-medium mb-1" %>
+      <div class="control">
+        <%= form.select :ci_cd_channel,
+                        options_for_select(display_channels(@ci_actions) { |chan| chan[:name] },
+                                           @step.ci_cd_channel.to_json),
+                        { class: "form-select" },
+                        data: { controller: "input-select" } %>
+      </div>
 
-  <div data-controller="domain--release-suffix-help"
-       data-domain--release-suffix-help-version-value="<%= @step.train.version_current %>"
-       data-domain--release-suffix-help-version-suffix-current-value="<%= @step.release_suffix %>">
-    <%= form.label :release_suffix, class: "block text-sm font-medium mb-1" %>
-    <%= form.text_field :release_suffix,
-                        class: "form-input w-full",
-                        placeholder: "Eg: qa-staging",
-                        required: true,
-                        data: { domain__release_suffix_help_target: "input",
-                                action: "domain--release-suffix-help#set" } %>
-    <div class="text-sm mt-1">
-      This is appended to the <strong>version name</strong> of the app, as follows:&nbsp;
-      <span class="font-mono" data-domain--release-suffix-help-target="helpText"></span>
+      <div class="text-sm mt-1">
+        This CI workflow should generate a valid build artifact (aab/apk/ipa).
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <%= render "shared/note_box",
+                 message: "The generated build artifact above will be moved across the configured #{Deployment.display.downcase}
+                 channels below." %>
     </div>
   </div>
 </div>
-
-<div class="sm:flex sm:justify-between sm:items-center mt-8 mb-2 pb-5">
-  <p class="font-bold text-xl">
-    How do we build your app?
-  </p>
-</div>
-
-<div class="grid gap-5 md:grid-cols-1 border-b border-dashed pb-10">
-  <div class="w-1/2">
-    <%= form.label :ci_cd_channel, "CI workflow", class: "block text-sm font-medium mb-1" %>
-    <div class="control">
-      <%= form.select :ci_cd_channel,
-                      options_for_select(display_channels(@ci_actions) { |chan| chan[:name] },
-                                         @step.ci_cd_channel.to_json),
-                      { class: "form-select" },
-                      data: { controller: "input-select" } %>
-    </div>
-
-    <div class="text-sm mt-1">
-      This CI workflow should generate a valid build artifact (aab/apk/ipa).
-    </div>
-  </div>
-</div>
-
-
