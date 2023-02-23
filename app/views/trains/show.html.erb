@@ -63,48 +63,73 @@
 <% end %>
 
 <!--Releases-->
+<h2 class="text-2xl font-bold mt-8 mb-4">Releases</h2>
 
 <% releases_count = @train.runs.size %>
 
 <% if releases_count > 0 %>
-  <%= render TableComponent.new(columns: ["•", "version", "release branch", "final deployment channel"]) do |table| %>
-    <% table.with_heading do %>
-      <h2 class="text-2xl font-bold mt-8 mb-4">Releases</h2>
-    <% end %>
+  <table class="table-auto w-full">
+    <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+    <tr>
+      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">•</div>
+      </th>
+      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">version</div>
+      </th>
+      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">release branch</div>
+      </th>
+      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">final deployment channel</div>
+      </th>
+    </tr>
+    </thead>
 
+    <tbody class="text-sm divide-y divide-slate-200">
     <% @train.runs.order(scheduled_at: :desc).each_with_index do |run, index| %>
-      <% table.with_row do |row| %>
-        <% row.with_cell do %>
-          <%= releases_count - index %>
-        <% end %>
-        <% row.with_cell do %>
+      <tr>
+        <td class="px-2 first:pl-5 py-3 whitespace-nowrap">
+          <div>
+            <%= releases_count - index %>
+          </div>
+        </td>
+
+        <td class="px-2 py-3 whitespace-nowrap">
           <%= link_to release_path(run.id) do %>
-            <span class="underline">
-              <% if run.completed_at %>
-                <%= "#{run.release_version} released on #{run.completed_at.to_s(:short)}" %>
-              <% else %>
-                <%= version_in_progress(run.release_version) %>
-              <% end %>
-            </span>
+        <span class="underline">
+          <% if run.completed_at %>
+            <%= "#{run.release_version} released on #{run.completed_at.to_s(:short)}" %>
+          <% else %>
+            <%= version_in_progress(run.release_version) %>
+          <% end %>
+        </span>
             <% if @train.active_run == run %>
-              <span class="text-xs uppercase tracking-wider inline-flex font-medium bg-green-100 text-green-600 rounded-full text-center px-2 py-0.5 ml-2">
-                Ongoing
-              </span>
+            <span class="text-xs uppercase tracking-wider inline-flex font-medium bg-green-100 text-green-600 rounded-full text-center px-2 py-0.5 ml-2">
+              Ongoing
+            </span>
             <% end %>
           <% end %>
-        <% end %>
-        <% row.with_cell do %>
-          <%= run.branch_name %>
-        <% end %>
-        <% row.with_cell do %>
-          <%= @train.final_deployment_channel.display || "–" %>
-        <% end %>
-      <% end %>
+        </td>
+
+        <td class="px-2 py-3 whitespace-nowrap">
+          <div class="">
+            <%= run.branch_name %>
+          </div>
+        </td>
+
+        <td class="px-2 last:pr-5 py-3 whitespace-nowrap">
+          <div>
+            <%= @train.final_deployment_channel.display || "–" %>
+          </div>
+        </td>
+      </tr>
     <% end %>
-  <% end %>
+    </tbody>
+  </table>
 <% else %>
-  <h2 class="text-2xl font-bold mt-8 mb-4">Releases</h2>
   <p class="text-sm">
     No releases yet.
   </p>
 <% end %>
+
