@@ -9,9 +9,7 @@
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
     <%= authz_link_to :green, new_app_path do %>
       <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
-      <span class="hidden xs:block ml-2">
-        Add a new app
-      </span>
+      <span class="hidden xs:block ml-2">Add a new app</span>
     <% end %>
   </div>
 </div>
@@ -40,7 +38,7 @@
         <tr>
           <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
             <div class="flex items-center">
-              <%= image_tag("#{app.platform}.svg", width: 20, class: "inline-flex mr-3") %>
+              <%= inline_svg("#{app.platform}.svg", classname: "w-4 inline-flex mr-2") %>
               <div class="font-medium text-slate-800">
                 <%= link_to app.name, app_path(app) %>
               </div>
