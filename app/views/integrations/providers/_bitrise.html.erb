@@ -1,29 +1,28 @@
 <% form_url = app_bitrise_integration_path(@app) %>
 
-<span data-controller="reveal">
-  <%= decorated_button_tag :neutral, { data: { turbo: "false", action: "reveal#toggle" } } do %>
+<span data-controller="visibility">
+  <%= decorated_button_tag :neutral, { data: { turbo: "false", action: "visibility#toggle" } } do %>
     Connect
   <% end %>
 
-  <div data-reveal hidden>
   <%= modal_for("Add Personal Access Token") do %>
     <%= form_with(model: [@app, integration],
                   url: form_url,
                   builder: ButtonHelper::AuthzForms) do |form| %>
       <%= form.hidden_field :category, value: category %>
 
-        <%= form.fields_for :providable do |subform| %>
+      <%= form.fields_for :providable do |subform| %>
         <%= subform.hidden_field :type, value: integration.providable_type %>
-          <%= subform.text_field :access_token, placeholder: "Paste here..." %>
+        <%= subform.text_field :access_token, placeholder: "Paste here..." %>
       <% end %>
 
-        <div class="flex items-center mt-5 mb-5" data-controller="reveal">
+      <div class="flex items-center mt-5 mb-5" data-controller="reveal">
         <%= form.authz_submit :blue,
                               "Create",
                               class: "flex",
                               data: { action: "reveal#toggle" } %>
 
-          <div class="flex text-white ml-5">
+        <div class="flex text-white ml-5">
           <span class="text-slate-500" data-reveal hidden>
             Verifying
             <%= render partial: "shared/loading" %>
@@ -32,9 +31,8 @@
       </div>
     <% end %>
 
-      <%= link_to_external "How to add a personal access token?",
-                           "https://devcenter.bitrise.io/en/accounts/personal-access-tokens.html",
-                           class: "underline text-slate-500 items-end" %>
+    <%= link_to_external "How to add a personal access token?",
+                         "https://devcenter.bitrise.io/en/accounts/personal-access-tokens.html",
+                         class: "underline text-slate-500 items-end" %>
   <% end %>
-  </div>
 </span>
