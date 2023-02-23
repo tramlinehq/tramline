@@ -1,7 +1,7 @@
 class PageComponent < ViewComponent::Base
   renders_many :actions
 
-  def initialize(breadcrumb: nil, title:)
+  def initialize(title:, breadcrumb: nil)
     @breadcrumb = breadcrumb
     @page_title = title
   end
