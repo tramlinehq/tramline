@@ -15,7 +15,6 @@
 class Deployment < ApplicationRecord
   has_paper_trail
   include Displayable
-  using RefinedString
 
   self.implicit_order_column = :deployment_number
 
