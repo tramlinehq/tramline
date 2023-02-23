@@ -1,23 +1,17 @@
-<% breadcrumb :edit_app, @app %>
+<%= render PageComponent.new(breadcrumb: breadcrumb(:edit_app, @app), title: "Settings: #{@app.name} ⚙️") do %>
+  <%= form_with(model: [@app],
+                url: app_path(@app),
+                builder: ButtonHelper::AuthzForms,
+                method: :patch) do |form| %>
 
-<%= form_with(model: [@app],
-              url: app_path(@app),
-              builder: ButtonHelper::AuthzForms,
-              method: :patch) do |form| %>
+    <%= render partial: "shared/errors", locals: { resource: @app } %>
 
-  <%= render partial: "shared/errors", locals: { resource: @app } %>
+    <div class="grid gap-5 md:grid-cols-2">
+      <%= render "form", form: form, app: @app %>
+    </div>
 
-  <div class="mb-8">
-    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">Settings: <%= @app.name %> ⚙️</h1>
-  </div>
-
-  <div class="border-t my-8"></div>
-
-  <div class="grid gap-5 md:grid-cols-2">
-    <%= render "form", form: form, app: @app %>
-  </div>
-
-  <div class="mt-5">
-    <%= form.authz_submit :blue, "Update" %>
-  </div>
+    <div class="mt-5">
+      <%= form.authz_submit :blue, "Update" %>
+    </div>
+  <% end %>
 <% end %>

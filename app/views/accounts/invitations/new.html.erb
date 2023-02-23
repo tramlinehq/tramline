@@ -1,32 +1,30 @@
-<%= form_with(model: @invite,
-              url: accounts_organization_invitations_path(@invite.organization, @invite),
-              builder: ButtonHelper::AuthzForms,
-              html: { method: :post }) do |form| %>
-  <%= render "shared/errors", resource: @invite %>
+<%= render PageComponent.new(title: "Add a member to your team 📱") do %>
+  <%= form_with(model: @invite,
+                url: accounts_organization_invitations_path(@invite.organization, @invite),
+                builder: ButtonHelper::AuthzForms,
+                html: { method: :post }) do |form| %>
+    <%= render "shared/errors", resource: @invite %>
 
-  <div class="mb-8">
-    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">Add a member to your team 📱</h1>
-  </div>
+    <div class="space-y-4">
+      <%= form.hidden_field :organization_id, value: @invite.organization.id %>
 
-  <div class="space-y-4">
-    <%= form.hidden_field :organization_id, value: @invite.organization.id %>
+      <div>
+        <%= form.label :email, class: "block text-sm font-medium mb-1" %>
+        <%= form.email_field :email, autofocus: true, autocomplete: "email", class: "form-input w-full" %>
+      </div>
 
-    <div>
-      <%= form.label :email, class: "block text-sm font-medium mb-1" %>
-      <%= form.email_field :email, autofocus: true, autocomplete: "email", class: "form-input w-full" %>
+      <div>
+        <%= form.label :role, class: "block text-sm font-medium mb-1" %>
+        <%= form.select :role,
+                        options_for_select(Accounts::Membership.allowed_roles, "developer"),
+                        { required: true },
+                        { class: "form-input w-full mb-1" } %>
+      </div>
+
+      <div class="mt-5">
+        <!-- Start -->
+        <%= form.authz_submit :blue, "Create" %>
+      </div>
     </div>
-
-    <div>
-      <%= form.label :role, class: "block text-sm font-medium mb-1" %>
-      <%= form.select :role,
-                      options_for_select(Accounts::Membership.allowed_roles, "developer"),
-                      { required: true },
-                      { class: "form-input w-full mb-1" } %>
-    </div>
-
-    <div class="mt-5">
-      <!-- Start -->
-      <%= form.authz_submit :blue, "Create" %>
-    </div>
-  </div>
+  <% end %>
 <% end %>

@@ -1,33 +1,27 @@
-<% breadcrumb :new_app %>
+<%= render PageComponent.new(breadcrumb: breadcrumb(:new_app), title: "Add a new app 📱") do %>
+  <%= form_with(model: [@app], builder: ButtonHelper::AuthzForms) do |form| %>
+    <%= render partial: "shared/errors", locals: { resource: @app } %>
 
-<%= form_with(model: [@app], builder: ButtonHelper::AuthzForms) do |form| %>
-  <%= render partial: "shared/errors", locals: { resource: @app } %>
+    <div class="grid gap-5 md:grid-cols-2">
+      <%= render "form", form: form, app: @app %>
 
-  <div class="mb-8">
-    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">Add a new app 📱</h1>
-  </div>
+      <div>
+        <%= form.label :platform, class: "block text-sm font-medium mb-1" %>
+        <%= form.select :platform,
+                        options_for_select(App.allowed_platforms(current_user), "Android"),
+                        { required: true },
+                        { class: "form-input w-full mb-1" } %>
+      </div>
 
-  <div class="grid gap-5 md:grid-cols-2">
-    <%= render "form", form: form, app: @app %>
-
-    <div>
-      <%= form.label :platform, class: "block text-sm font-medium mb-1" %>
-      <%= form.select :platform,
-                      options_for_select(App.allowed_platforms(current_user), "Android"),
-                      { required: true },
-                      { class: "form-input w-full mb-1" } %>
+      <div>
+        <%= form.label :timezone, class: "block text-sm font-medium mb-1" %>
+        <%= form.time_zone_select(:timezone, @timezones, { model: ActiveSupport::TimeZone }, { :class => "form-select w-full" }) %>
+      </div>
     </div>
 
-    <div>
-      <%= form.label :timezone, class: "block text-sm font-medium mb-1" %>
-      <%= form.time_zone_select(:timezone, @timezones, { model: ActiveSupport::TimeZone }, { :class => "form-select w-full" }) %>
+    <div class="mt-5">
+      <!-- Start -->
+      <%= form.authz_submit :blue, "Create App" %>
     </div>
-  </div>
-
-  <div class="mt-5">
-    <!-- Start -->
-    <%= form.authz_submit :blue, "Create App" %>
-  </div>
+  <% end %>
 <% end %>
-
-

@@ -1,65 +1,38 @@
-<% breadcrumb :apps %>
-
-<div class="sm:flex sm:justify-between sm:items-center mb-8">
-  <!-- Left: Title -->
-  <div class="mb-4 sm:mb-0">
-    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">Apps 👩‍💻</h1>
-  </div>
-
-  <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+<%= render PageComponent.new(breadcrumb: breadcrumb(:apps), title: "Apps 👩‍💻") do |page| %>
+  <% page.with_action do %>
     <%= authz_link_to :green, new_app_path do %>
       <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
-      <span class="hidden xs:block ml-2">
-        Add a new app
-      </span>
+      <span class="hidden xs:block ml-2">Add a new app</span>
     <% end %>
-  </div>
-</div>
+  <% end %>
 
-<% if @apps.any? %>
-  <div class="overflow-x-auto">
-    <table class="table-auto w-full">
-      <!-- Table header -->
-      <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
-      <tr>
-        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">Name</div>
-        </th>
-        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">Description</div>
-        </th>
-        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div class="font-semibold text-left">Bundle Identifier</div>
-        </th>
-      </tr>
-      </thead>
-      <!-- Table body -->
-      <tbody class="text-sm divide-y divide-slate-200">
-      <!-- Row -->
-      <% @apps.each do |app| %>
-        <tr>
-          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="flex items-center">
-              <%= image_tag("#{app.platform}.svg", width: 20, class: "inline-flex mr-3") %>
-              <div class="font-medium text-slate-800">
-                <%= link_to app.name, app_path(app) %>
+  <% if @apps.any? %>
+    <div class="overflow-x-auto">
+      <%= render TableComponent.new(columns: ["Name", "Description", "Bundle Identifier"]) do |table| %>
+        <% @apps.each do |app| %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              <div class="flex items-center">
+                <%= image_tag("#{app.platform}.svg", width: 20, class: "inline-flex mr-3") %>
+                <div class="font-medium text-slate-800">
+                  <%= link_to app.name, app_path(app) %>
+                </div>
               </div>
-            </div>
-          </td>
-          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="text-left"><%= simple_format app.description %></div>
-          </td>
-          <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="text-left"><%= app.bundle_identifier %></div>
-          </td>
-        </tr>
+            <% end %>
+            <% row.with_cell do %>
+              <div class="text-left"><%= simple_format app.description %></div>
+            <% end %>
+            <% row.with_cell do %>
+              <div class="text-left"><%= app.bundle_identifier %></div>
+            <% end %>
+          <% end %>
+        <% end %>
       <% end %>
-      </tbody>
-    </table>
-  </div>
-<% else %>
-  <p>Go to the
-    <%= link_to "new app page", new_app_path %>
-    to create an app and configure their integrations.
-  </p>
+    </div>
+  <% else %>
+    <p>Go to the
+      <%= link_to "new app page", new_app_path %>
+      to create an app and configure their integrations.
+    </p>
+  <% end %>
 <% end %>
