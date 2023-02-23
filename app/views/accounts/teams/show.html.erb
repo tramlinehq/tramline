@@ -1,69 +1,62 @@
-<%= render TableComponent.new(columns: ["Email", "Status", "Preferred Name", "Full Name", "Role"]) do |table| %>
-  <% table.with_heading do %>
-    <div class="sm:flex sm:justify-between sm:items-center mb-8">
-      <!-- Left: Title -->
-      <div class="mb-4 sm:mb-0">
-        <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">Team ‍👫</h1>
-      </div>
-
-      <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-        <%= authz_link_to :green, new_accounts_organization_invitation_path(current_organization) do %>
-          <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
-          <span class="hidden xs:block ml-2">
+<%= render PageComponent.new(title: "Team ‍👫") do |page| %>
+  <% page.with_action do %>
+    <%= authz_link_to :green, new_accounts_organization_invitation_path(current_organization) do %>
+      <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
+      <span class="hidden xs:block ml-2">
         Add team member
       </span>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
-
-  <% @team.each do |member| %>
-    <% table.with_row do |row| %>
-      <% row.with_cell do %>
-        <div class="font-medium text-slate-800">
-          <%= member.email %>
-        </div>
-      <% end %>
-      <% row.with_cell do %>
-        <div class="text-xs inline-flex font-medium bg-emerald-100 text-slate-500 rounded-full text-center px-2.5 py-1">
-          Active
-        </div>
-      <% end %>
-      <% row.with_cell do %>
-        <%= member.preferred_name %>
-      <% end %>
-      <% row.with_cell do %>
-        <%= member.full_name %>
-      <% end %>
-      <% row.with_cell do %>
-        <%= member.role_for(current_organization).titleize %>
-      <% end %>
     <% end %>
   <% end %>
-  <% @invited_team.each do |invite| %>
-    <% table.with_row do |row| %>
-      <% row.with_cell do %>
-        <div class="font-medium text-slate-800">
-          <%= invite.email %>
-        </div>
+
+  <%= render TableComponent.new(columns: ["Email", "Status", "Preferred Name", "Full Name", "Role"]) do |table| %>
+    <% @team.each do |member| %>
+      <% table.with_row do |row| %>
+        <% row.with_cell do %>
+          <div class="font-medium text-slate-800">
+            <%= member.email %>
+          </div>
+        <% end %>
+        <% row.with_cell do %>
+          <div class="text-xs inline-flex font-medium bg-emerald-100 text-slate-500 rounded-full text-center px-2.5 py-1">
+            Active
+          </div>
+        <% end %>
+        <% row.with_cell do %>
+          <%= member.preferred_name %>
+        <% end %>
+        <% row.with_cell do %>
+          <%= member.full_name %>
+        <% end %>
+        <% row.with_cell do %>
+          <%= member.role_for(current_organization).titleize %>
+        <% end %>
       <% end %>
-      <% row.with_cell do %>
-        <div class="text-xs inline-flex font-medium bg-slate-100 text-slate-500 rounded-full text-center px-2.5 py-1">
-          Invited
-        </div>
-      <% end %>
-      <% row.with_cell do %>
-        <div class="font-medium text-slate-800">
-          -
-        </div>
-      <% end %>
-      <% row.with_cell do %>
-        <div class="font-medium text-slate-800">
-          -
-        </div>
-      <% end %>
-      <% row.with_cell do %>
-        <%= invite.role.titleize %>
+    <% end %>
+    <% @invited_team.each do |invite| %>
+      <% table.with_row do |row| %>
+        <% row.with_cell do %>
+          <div class="font-medium text-slate-800">
+            <%= invite.email %>
+          </div>
+        <% end %>
+        <% row.with_cell do %>
+          <div class="text-xs inline-flex font-medium bg-slate-100 text-slate-500 rounded-full text-center px-2.5 py-1">
+            Invited
+          </div>
+        <% end %>
+        <% row.with_cell do %>
+          <div class="font-medium text-slate-800">
+            -
+          </div>
+        <% end %>
+        <% row.with_cell do %>
+          <div class="font-medium text-slate-800">
+            -
+          </div>
+        <% end %>
+        <% row.with_cell do %>
+          <%= invite.role.titleize %>
+        <% end %>
       <% end %>
     <% end %>
   <% end %>

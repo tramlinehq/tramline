@@ -5,51 +5,50 @@
   <% end %>
 <% end %>
 
-<% breadcrumb @app %>
-
-<%= render partial: 'shared/errors', locals: { resource: @app } %>
-
-<div class="sm:flex sm:justify-between sm:items-center mb-8">
-  <div class="mb-4 sm:mb-0">
-    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold"><%= @app.name %> 📱</h1>
-  </div>
-
-  <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-    <% if @app.ready? %>
-      <% if @app.runs.exists? %>
+<%= render PageComponent.new(breadcrumb: breadcrumb(@app), title: "#{@app.name} 📱") do |page| %>
+  <% if @app.ready? %>
+    <% if @app.runs.exists? %>
+      <% page.with_action do %>
         <%= authz_link_to :neutral, all_builds_app_path(@app) do %>
           <%= inline_svg("all_builds_icon.svg", classname: "w-4") %>
           <span class="ml-2">All Builds</span>
         <% end %>
       <% end %>
+    <% end %>
 
+    <% page.with_action do %>
       <%= authz_link_to :neutral, app_integrations_path(@app) do %>
         <%= inline_svg("link_icon.svg", classname: "w-4 fill-current shrink-0 text-slate-500") %>
 
         <span class="ml-2">Integrations</span>
       <% end %>
+    <% end %>
 
+    <% page.with_action do %>
       <%= authz_link_to :neutral, edit_app_app_config_path(@app) do %>
         <%= inline_svg("configure_icon.svg", classname: "w-4 fill-current shrink-0") %>
         <span class="ml-2">Configure</span>
       <% end %>
     <% end %>
+  <% end %>
 
+  <% page.with_action do %>
     <%= authz_link_to :neutral, edit_app_path(@app) do %>
       <%= inline_svg("edit.svg", classname: "w-4 fill-current text-slate-500 shrink-0") %>
       <span class="ml-2">Settings</span>
     <% end %>
+  <% end %>
 
-    <% if @app.runs.blank? %>
+  <% if @app.runs.blank? %>
+    <% page.with_action do %>
       <%= authz_link_to :red, app_path(@app), method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } do %>
         <span>Delete</span>
       <% end %>
     <% end %>
-  </div>
-</div>
+  <% end %>
 
-<div class="border-t border-slate-200">
-  <div class="space-y-8 mt-8">
+  <%= render partial: 'shared/errors', locals: { resource: @app } %>
+  <div class="space-y-8">
     <% if @app.ready? %>
       <% unless @app.trains.any? %>
         <div class="grid grid-flow-col sm:auto-cols-max justify-start gap-2">
@@ -68,7 +67,6 @@
     <div class="w-3/4">
       <%= render(ExternalAppComponent.new(app: @app, external_app: @app.latest_external_app)) %>
     </div>
-
 
     <% if @app.trains.any? %>
       <% active_runs = @app.active_runs %>
@@ -109,15 +107,16 @@
       <% end %>
     <% end %>
   </div>
+  <div>
+    <% if @app.runs.size > 1 %>
+      <% n = 3 %>
 
-  <% if @app.runs.size > 1 %>
-    <% n = 3 %>
+      <div class="mb-6 mt-8">
+        <h2 class="text-2xl text-slate-800 font-bold">Release History</h2>
+        <span class="text-sm text-slate-400">Successful releases in the last <%= n %> months</span>
+      </div>
 
-    <div class="mb-6 mt-8">
-      <h2 class="text-2xl text-slate-800 font-bold">Release History</h2>
-      <span class="text-sm text-slate-400">Successful releases in the last <%= n %> months</span>
-    </div>
-
-    <%= line_chart [{ name: "Count", data: Reports::ReleaseHistory.call(app: @app, period: :month, last: n) }], ytitle: "Number of Releases", legend: "top left" %>
-  <% end %>
-</div>
+      <%= line_chart [{ name: "Count", data: Reports::ReleaseHistory.call(app: @app, period: :month, last: n) }], ytitle: "Number of Releases", legend: "top left" %>
+    <% end %>
+  </div>
+<% end %>
