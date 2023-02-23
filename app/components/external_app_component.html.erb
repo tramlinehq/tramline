@@ -1,35 +1,28 @@
-<div class="flex justify-between items-end w-3/4">
-  <div>
-    <h2 class="text-2xl text-slate-800 font-bold">Current Store Status</h2>
-    <span class="text-sm text-slate-400"><%= subtitle %></span>
-  </div>
-  <% if external_app %>
-    <div class="text-left">
-      <%= decorated_button_to :neutral, refresh_external_app_path(app), method: :post do %>
-        <%= inline_svg('refresh.svg', classname: "inline-flex w-4") %>
+<%= render TableComponent.new(columns: column_names) do |table| %>
+  <% table.with_heading do %>
+    <div class="flex justify-between w-full items-center">
+      <div>
+        <h2 class="text-2xl text-slate-800 font-bold">Current Store Status</h2>
+        <span class="text-sm text-slate-400"><%= subtitle %></span>
+      </div>
+      <% if external_app %>
+        <div class="text-left">
+          <%= decorated_button_to :neutral, refresh_external_app_path(app), method: :get do %>
+            <%= inline_svg('refresh.svg', classname: "inline-flex w-4") %>
+          <% end %>
+        </div>
       <% end %>
     </div>
   <% end %>
-</div>
-<% if external_app.present? %>
-  <table class="table-auto w-3/4">
-    <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
-    <tr>
-      <th class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
-        <div class="font-semibold text-left">Channel Name</div>
-      </th>
-      <th class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
-        <div class="font-semibold text-left">Current Releases</div>
-      </th>
-    </tr>
-    </thead>
-    <tbody class="text-sm divide-y divide-slate-200">
+
+  <% if external_app %>
     <% channels.each do |channel| %>
-      <tr>
-        <td class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
+      <% table.with_row do |row| %>
+        <% row.with_cell do %>
           <span><%= channel_name channel %></span>
-        </td>
-        <td class="px-2 first:pl-5 last:pr-5 py-2 whitespace-nowrap">
+        <% end %>
+
+        <% row.with_cell do %>
           <% releases(channel).each do |release| %>
             <div class="mx-2">
               <div class="flex justify-between text-sm mb-2">
@@ -50,9 +43,8 @@
               <% end %>
             </div>
           <% end %>
-        </td>
-      </tr>
+        <% end %>
+      <% end %>
     <% end %>
-    </tbody>
-  </table>
+  <% end %>
 <% end %>

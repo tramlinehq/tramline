@@ -5,51 +5,50 @@
   <% end %>
 <% end %>
 
-<% breadcrumb @app %>
-
-<%= render partial: 'shared/errors', locals: { resource: @app } %>
-
-<div class="sm:flex sm:justify-between sm:items-center mb-8">
-  <div class="mb-4 sm:mb-0">
-    <h1 class="text-2xl md:text-3xl text-slate-800 font-bold"><%= @app.name %> 📱</h1>
-  </div>
-
-  <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-    <% if @app.ready? %>
-      <% if @app.runs.exists? %>
+<%= render PageComponent.new(breadcrumb: breadcrumb(@app), title: "#{@app.name} 📱") do |page| %>
+  <% if @app.ready? %>
+    <% if @app.runs.exists? %>
+      <% page.with_action do %>
         <%= authz_link_to :neutral, all_builds_app_path(@app) do %>
           <%= inline_svg("all_builds_icon.svg", classname: "w-4") %>
           <span class="ml-2">All Builds</span>
         <% end %>
       <% end %>
+    <% end %>
 
+    <% page.with_action do %>
       <%= authz_link_to :neutral, app_integrations_path(@app) do %>
         <%= inline_svg("link_icon.svg", classname: "w-4 fill-current shrink-0 text-slate-500") %>
 
         <span class="ml-2">Integrations</span>
       <% end %>
+    <% end %>
 
+    <% page.with_action do %>
       <%= authz_link_to :neutral, edit_app_app_config_path(@app) do %>
         <%= inline_svg("configure_icon.svg", classname: "w-4 fill-current shrink-0") %>
         <span class="ml-2">Configure</span>
       <% end %>
     <% end %>
+  <% end %>
 
+  <% page.with_action do %>
     <%= authz_link_to :neutral, edit_app_path(@app) do %>
       <%= inline_svg("edit.svg", classname: "w-4 fill-current text-slate-500 shrink-0") %>
       <span class="ml-2">Settings</span>
     <% end %>
+  <% end %>
 
-    <% if @app.runs.blank? %>
+  <% if @app.runs.blank? %>
+    <% page.with_action do %>
       <%= authz_link_to :red, app_path(@app), method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } do %>
         <span>Delete</span>
       <% end %>
     <% end %>
-  </div>
-</div>
+  <% end %>
 
-<div class="border-t border-slate-200">
-  <div class="space-y-8 mt-8">
+  <%= render partial: 'shared/errors', locals: { resource: @app } %>
+  <div class="space-y-8">
     <% if @app.ready? %>
       <% unless @app.trains.any? %>
         <div class="grid grid-flow-col sm:auto-cols-max justify-start gap-2">
@@ -65,73 +64,59 @@
       <%= render partial: "setup_progress", locals: { setup_instructions: @setup_instructions } %>
     <% end %>
 
-    <%= render(ExternalAppComponent.new(app: @app, external_app: @app.latest_external_app)) %>
+    <div class="w-3/4">
+      <%= render(ExternalAppComponent.new(app: @app, external_app: @app.latest_external_app)) %>
+    </div>
 
     <% if @app.trains.any? %>
       <% active_runs = @app.active_runs %>
       <% if active_runs.present? %>
         <%= render partial: "ongoing_releases", locals: { app: @app } %>
       <% end %>
-
-      <div class="flex justify-between items-end">
-        <h2 class="text-2xl text-slate-800 font-bold">Release Trains</h2>
-        <% if @app.trains.any? %>
-          <%= authz_link_to :green, new_app_train_path(@app) do %>
-            <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
-            <span class="hidden xs:block ml-2">Create another release train</span>
-          <% end %>
+      <%= render TableComponent.new(columns: ["Name", "Description", "Current Release"]) do |table| %>
+        <% table.with_heading do %>
+          <div class="flex justify-between items-end mb-2">
+            <h2 class="text-2xl text-slate-800 font-bold">Release Trains</h2>
+            <% if @app.trains.any? %>
+              <%= authz_link_to :green, new_app_train_path(@app) do %>
+                <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
+                <span class="hidden xs:block ml-2">Create another release train</span>
+              <% end %>
+            <% end %>
+          </div>
         <% end %>
-      </div>
-
-      <table class="table-auto w-full">
-        <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
-        <tr>
-          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="font-semibold text-left">Name</div>
-          </th>
-          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="font-semibold text-left">Description</div>
-          </th>
-          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-            <div class="font-semibold text-left">Current Release</div>
-          </th>
-        </tr>
-        </thead>
-        <tbody class="text-sm divide-y divide-slate-200">
         <% @app.trains.each do |train| %>
-          <tr>
-            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
               <div class="flex items-center">
                 <div class="font-medium text-slate-800">
                   <%= link_to train.name, app_train_path(@app, train) %>
                 </div>
               </div>
-            </td>
-            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <% end %>
+            <% row.with_cell do %>
               <div class="text-left"><%= simple_format train.description %></div>
-            </td>
-            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <% end %>
+            <% row.with_cell do %>
               <div class="text-left">
                 <%= "#{train.runs.any? ? train.version_current : train.version_seeded_with} • #{@app.build_number}" %>
               </div>
-            </td>
-          </tr>
+            <% end %>
+          <% end %>
         <% end %>
-        </tbody>
-      </table>
+      <% end %>
     <% end %>
   </div>
+  <div>
+    <% if @app.runs.size > 1 %>
+      <% n = 3 %>
 
-  <% if @app.runs.size > 1 %>
-    <% n = 3 %>
+      <div class="mb-6 mt-8">
+        <h2 class="text-2xl text-slate-800 font-bold">Release History</h2>
+        <span class="text-sm text-slate-400">Successful releases in the last <%= n %> months</span>
+      </div>
 
-    <div class="mb-6 mt-8">
-      <h2 class="text-2xl text-slate-800 font-bold">Release History</h2>
-      <p class="text-sm text-slate-500">Successful releases in the last <%= n %> months</p>
-    </div>
-
-    <%= line_chart [{ name: "Count", data: Reports::ReleaseHistory.call(app: @app, period: :month, last: n) }], ytitle: "Number of Releases", legend: "top left" %>
-  <% end %>
-</div>
-
-
+      <%= line_chart [{ name: "Count", data: Reports::ReleaseHistory.call(app: @app, period: :month, last: n) }], ytitle: "Number of Releases", legend: "top left" %>
+    <% end %>
+  </div>
+<% end %>

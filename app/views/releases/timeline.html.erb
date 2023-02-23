@@ -1,10 +1,4 @@
-<% breadcrumb :timeline_release, @release %>
-
-<div class="sm:flex sm:justify-between sm:items-center pb-8 border-b border-slate-200">
-  <p class="text-2xl md:text-3xl text-slate-800 font-bold">Event Log</p>
-</div>
-
-<section>
+<%= render PageComponent.new(breadcrumb: breadcrumb(:timeline_release, @release), title: "Event Log") do %>
   <ul class="mt-6">
     <% @events.each do |passport| %>
       <li class="flex px-2">
@@ -28,4 +22,4 @@
       </li>
     <% end %>
   </ul>
-</section>
+<% end %>
