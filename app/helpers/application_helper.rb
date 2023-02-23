@@ -80,6 +80,7 @@ module ApplicationHelper
   end
 
   def status_badge(status, style, pulse: false)
+    style = STATUS_COLOR_PALETTE[style] if style.is_a?(Symbol)
     classes = %w[text-xs uppercase tracking-wide inline-flex font-medium rounded-full text-center px-2 py-0.5]
     classes << "animate-pulse" if pulse
     content_tag(:span, status, class: classes.concat(style))

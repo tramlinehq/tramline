@@ -1,0 +1,11 @@
+<div>
+  <code><%= step_run.build_version %></code>
+  • Build <code><%= step_run.build_number %></code>
+</div>
+
+<% if step_run.build_artifact.present? && with_artifact %>
+  <div>
+    <%= "Built " + ago_in_words(step_run.build_artifact.generated_at) %>
+    • <%= "Uploaded to Tramline " + ago_in_words(step_run.build_artifact.uploaded_at) %>
+  </div>
+<% end %>

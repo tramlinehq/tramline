@@ -1,4 +1,9 @@
 <%= image_tag("corner_down_right.svg", width: 13, class: "inline-flex mr-1 mb-2") %>
+
 <%= render partial: "shared/display_channels",
            locals: { name: show_deployment(deployment),
                      provider_name: deployment_integration_name(deployment) } %>
+
+<% if deployment.staged_rollout? %>
+  <span class="ml-1"><%= status_badge("Staged", ["bg-slate-100 text-slate-500"]) %></span>
+<% end %>

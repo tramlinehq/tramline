@@ -1,0 +1,9 @@
+<dl class="overflow-hidden bg-white shadow sm:rounded-lg">
+  <% descriptions.each_with_index do |desc, idx| %>
+    <div class="<%= bg_color(idx) %> px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+      <%= desc %>
+    </div>
+  <% end %>
+</dl>
+
+

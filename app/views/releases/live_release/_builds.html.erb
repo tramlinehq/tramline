@@ -91,15 +91,9 @@
                   <% if step_run.build_artifact_available? %>
                     <div class="mb-2">
                       <%= link_to_external "Download build ↗", step_run.download_url, class: "underline" %>
+
                       <div class="text-slate-500">
-                        <div>
-                          <span class="font-mono"><%= step_run.build_version %></span>
-                          • Build <span class="font-mono"><%= step_run.build_number %></span>
-                        </div>
-                        <div>
-                          <%= "Built " + ago_in_words(step_run.build_artifact&.generated_at) %>
-                          • <%= "Uploaded to Tramline " + ago_in_words(step_run.build_artifact&.uploaded_at) %>
-                        </div>
+                        <%= render partial: "shared/build_details", locals: { step_run:, with_artifact: true } %>
                       </div>
                     </div>
                   <% end %>
