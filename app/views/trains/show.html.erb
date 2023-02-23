@@ -68,7 +68,7 @@
 
 <% if releases_count > 0 %>
   <%= render TableComponent.new(columns: ["•", "version", "release branch", "final deployment channel"]) do |table| %>
-    <% table.with_header do %>
+    <% table.with_heading do %>
       <h2 class="text-2xl font-bold mt-8 mb-4">Releases</h2>
     <% end %>
 

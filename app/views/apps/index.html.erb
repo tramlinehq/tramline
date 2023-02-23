@@ -3,7 +3,7 @@
 <% if @apps.any? %>
   <div class="overflow-x-auto">
     <%= render TableComponent.new(columns: ["Name", "Description", "Bundle Identifier"]) do |table| %>
-      <% table.with_header do %>
+      <% table.with_heading do %>
         <div class="sm:flex sm:justify-between sm:items-center mb-8">
           <!-- Left: Title -->
           <div class="mb-4 sm:mb-0">

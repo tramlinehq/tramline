@@ -76,7 +76,7 @@
         <%= render partial: "ongoing_releases", locals: { app: @app } %>
       <% end %>
       <%= render TableComponent.new(columns: ["Name", "Description", "Current Release"]) do |table| %>
-        <% table.with_header do %>
+        <% table.with_heading do %>
           <div class="flex justify-between items-end mb-2">
             <h2 class="text-2xl text-slate-800 font-bold">Release Trains</h2>
             <% if @app.trains.any? %>
