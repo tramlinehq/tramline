@@ -1,18 +1,16 @@
 <section>
-  <div>
+  <div class="mb-4">
     <span class="font-bold text-2xl">Kick-off</span>
     <span class="text-xl text-slate-400 ml-4"><%= time_ago_in_words(release.created_at) %> ago</span>
   </div>
 
-  <div class="grid md:grid-cols-2 gap-y-4 mt-4">
-    <div>
-      <div class="font-semibold text-slate-600 text-sm uppercase mb-1">Release branch</div>
-      <span class="text-sm underline"><%= link_to_external "#{release.branch_name} ↗", release.branch_url %></span>
-    </div>
+  <%= render MetaTableComponent.new do |mt| %>
+    <% mt.with_description("Branching Strategy") do %>
+      <%= release_train.branching_strategy_name %>
+    <% end %>
 
-    <div>
-      <div class="font-semibold text-slate-600 text-sm uppercase mb-1">Branching Strategy</div>
-      <span class="text-sm"><%= release_train.branching_strategy_name %></span>
-    </div>
-  </div>
+    <% mt.with_description("Release Branch") do %>
+      <span class="underline"><%= link_to_external "#{release.branch_name} ↗", release.branch_url %></span>
+    <% end %>
+  <% end %>
 </section>

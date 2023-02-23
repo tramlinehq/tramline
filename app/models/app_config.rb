@@ -35,6 +35,10 @@ class AppConfig < ApplicationRecord
     code_repository["namespace"]
   end
 
+  def code_repo_url
+    code_repository["repo_url"]
+  end
+
   def project
     project_id.fetch("id", nil)
   end

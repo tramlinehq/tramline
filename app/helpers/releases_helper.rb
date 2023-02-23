@@ -76,24 +76,6 @@ module ReleasesHelper
     status_badge(status, styles)
   end
 
-  def staged_rollout_status_badge(staged_rollout)
-    status, styles =
-      case staged_rollout.status.to_sym
-      when :started
-        ["Rollout active", STATUS_COLOR_PALETTE[:ongoing]]
-      when :failed
-        ["Rollout failed", STATUS_COLOR_PALETTE[:failure]]
-      when :completed
-        ["Rollout completed", STATUS_COLOR_PALETTE[:success]]
-      when :stopped
-        ["Rollout halted", STATUS_COLOR_PALETTE[:inert]]
-      else
-        ["Unknown", STATUS_COLOR_PALETTE[:neutral]]
-      end
-
-    status_badge(status, styles)
-  end
-
   def pull_request_badge(pull_request)
     style =
       case pull_request.state.to_sym

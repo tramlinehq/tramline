@@ -16,7 +16,7 @@
 
     <% if @train.runs.size > 0 %>
       <%= button_to "#", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed shadow-none", disabled: true do %>
-        <%= inline_svg("band_aid.svg",  classname: "w-5 h-5 opacity-80") %>
+        <%= inline_svg("band_aid.svg", classname: "w-5 h-5 opacity-80") %>
         <span class="ml-2">Hotfix last release</span>
       <% end %>
     <% end %>
@@ -35,101 +35,100 @@
   </div>
 </div>
 
-<section class="mt-8">
-  <div class="grid md:grid-cols-2 gap-y-4 mt-4">
-    <div>
-      <div class="font-bold text-slate-600 text-sm uppercase mb-1">Branching Strategy</div>
-      <span><%= @train.branching_strategy_name %></span>
-    </div>
+<div class="grid md:grid-cols-2 gap-x-11 pb-5 mt-8">
+  <section class="w-full">
+    <!-- Train Info -->
+    <article>
+      <%= render MetaTableComponent.new do |mt| %>
+        <% mt.with_description("Branching Strategy") do %>
+          <%= @train.branching_strategy_name %>
+        <% end %>
 
-    <% unless @train.description.blank? %>
-      <div>
-        <div class="font-bold text-slate-600 text-sm uppercase mb-1">Description</div>
-        <span><%= simple_format @train.description %></span>
-      </div>
+        <% mt.with_description("Description") do %>
+          <%= @train.description %>
+        <% end %>
+
+        <% mt.with_description("Code Repository") do %>
+          <%= link_to_external("#{@train.config.code_repository_name} ↗", @train.config.code_repo_url) %>
+        <% end %>
+      <% end %>
+    </article>
+
+    <!-- Steps -->
+    <article class="w-full mt-10">
+      <h2 class="text-2xl font-bold mb-4">Steps</h2>
+
+      <% if @train.steps.size > 0 %>
+        <div class="flex flex-col">
+          <%= render partial: "shared/step_tree_viz", locals: { train: @train, editable: false } %>
+        </div>
+      <% else %>
+        <%= render partial: "trains/step_creation", locals: { app: @app, train: @train } %>
+      <% end %>
+    </article>
+  </section>
+
+  <section>
+    <!-- Releases -->
+    <h2 class="text-2xl font-bold mb-4">Releases</h2>
+
+    <% releases_count = @train.runs.size %>
+
+    <% if releases_count > 0 %>
+      <table class="table-auto w-full">
+        <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+        <tr>
+          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="font-semibold text-left">•</div>
+          </th>
+          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="font-semibold text-left">version</div>
+          </th>
+          <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div class="font-semibold text-left">release branch</div>
+          </th>
+        </tr>
+        </thead>
+
+        <tbody class="text-sm divide-y divide-slate-200">
+        <% @train.runs.order(scheduled_at: :desc).each_with_index do |run, index| %>
+          <tr>
+            <td class="px-2 first:pl-5 py-3 whitespace-nowrap">
+              <%= releases_count - index %>
+            </td>
+
+            <td class="px-2 py-3 whitespace-nowrap">
+              <%= link_to release_path(run.id) do %>
+                <span class="underline">
+                  <% if run.completed_at %>
+                    <code><%= run.release_version %></code>
+                    <%= "released on #{run.completed_at.to_s(:short)}" %>
+                  <% else %>
+                    <code><%= version_in_progress(run.release_version) %></code>
+                  <% end %>
+                </span>
+
+                <% if @train.active_run == run %>
+                  <span class="ml-2 py-0.5"><%= status_badge("Ongoing", :success) %></span>
+                <% end %>
+
+                <% if run.stopped? %>
+                  <span class="ml-2 py-0.5"><%= status_badge("Stopped", :failure) %></span>
+                <% end %>
+              <% end %>
+            </td>
+
+            <td class="px-2 py-3 whitespace-nowrap">
+              <%= run.branch_name %>
+            </td>
+          </tr>
+        <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="text-sm">
+        No releases yet.
+      </p>
     <% end %>
-  </div>
-</section>
-
-<!--Steps-->
-<h2 class="text-2xl font-bold mt-8 mb-4">Steps</h2>
-
-<% if @train.steps.size > 0 %>
-  <div class="flex flex-col">
-    <%= render partial: "shared/step_tree_viz", locals: { train: @train, editable: false } %>
-  </div>
-<% else %>
-  <%= render partial: "trains/step_creation", locals: { app: @app, train: @train } %>
-<% end %>
-
-<!--Releases-->
-<h2 class="text-2xl font-bold mt-8 mb-4">Releases</h2>
-
-<% releases_count = @train.runs.size %>
-
-<% if releases_count > 0 %>
-  <table class="table-auto w-full">
-    <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
-    <tr>
-      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="font-semibold text-left">•</div>
-      </th>
-      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="font-semibold text-left">version</div>
-      </th>
-      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="font-semibold text-left">release branch</div>
-      </th>
-      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="font-semibold text-left">final deployment channel</div>
-      </th>
-    </tr>
-    </thead>
-
-    <tbody class="text-sm divide-y divide-slate-200">
-    <% @train.runs.order(scheduled_at: :desc).each_with_index do |run, index| %>
-      <tr>
-        <td class="px-2 first:pl-5 py-3 whitespace-nowrap">
-          <div>
-            <%= releases_count - index %>
-          </div>
-        </td>
-
-        <td class="px-2 py-3 whitespace-nowrap">
-          <%= link_to release_path(run.id) do %>
-        <span class="underline">
-          <% if run.completed_at %>
-            <%= "#{run.release_version} released on #{run.completed_at.to_s(:short)}" %>
-          <% else %>
-            <%= version_in_progress(run.release_version) %>
-          <% end %>
-        </span>
-            <% if @train.active_run == run %>
-            <span class="text-xs uppercase tracking-wider inline-flex font-medium bg-green-100 text-green-600 rounded-full text-center px-2 py-0.5 ml-2">
-              Ongoing
-            </span>
-            <% end %>
-          <% end %>
-        </td>
-
-        <td class="px-2 py-3 whitespace-nowrap">
-          <div class="">
-            <%= run.branch_name %>
-          </div>
-        </td>
-
-        <td class="px-2 last:pr-5 py-3 whitespace-nowrap">
-          <div>
-            <%= @train.final_deployment_channel.display || "–" %>
-          </div>
-        </td>
-      </tr>
-    <% end %>
-    </tbody>
-  </table>
-<% else %>
-  <p class="text-sm">
-    No releases yet.
-  </p>
-<% end %>
-
+  </section>
+</div>
