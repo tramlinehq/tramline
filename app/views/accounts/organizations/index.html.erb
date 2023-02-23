@@ -1,39 +1,18 @@
-<div class="sm:flex sm:justify-between sm:items-center mb-8">
-  <div class="mb-4 sm:mb-0">
+<%= render TableComponent.new(columns: ["Name", "Actions"]) do |table| %>
+  <% table.with_header do %>
     <h1 class="text-2xl md:text-3xl text-slate-800 font-bold">Memberships 🏢</h1>
-  </div>
-</div>
-
-<table class="table-auto w-full">
-  <!-- Table header -->
-  <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
-  <tr>
-    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-      <div class="font-semibold text-left">Name</div>
-    </th>
-    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-      <div class="font-semibold text-left">Actions</div>
-    </th>
-  </tr>
-  </thead>
-  <!-- Table body -->
-  <tbody class="text-sm divide-y divide-slate-200">
-  <!-- Row -->
-  <% @organizations.each do |org| %>
-    <tr>
-      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="flex items-center">
-          <div class="font-medium text-slate-800">
-            <%= org.name %>
-          </div>
-        </div>
-      </td>
-      <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-        <div class="text-left">
-          <%= decorated_button_to :neutral, "Switch", switch_accounts_organization_path(org), method: :get %>
-        </div>
-      </td>
-    </tr>
   <% end %>
-  </tbody>
-</table>
+
+  <% @organizations.each do |org| %>
+    <% table.with_row do |row| %>
+      <% row.with_cell do %>
+        <div class="font-medium text-slate-800">
+          <%= org.name %>
+        </div>
+      <% end %>
+      <% row.with_cell do %>
+        <%= decorated_button_to :neutral, "Switch", switch_accounts_organization_path(org), method: :get %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
