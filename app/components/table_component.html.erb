@@ -1,25 +1,27 @@
 <div>
   <% if heading %>
-    <header class="border-b border-slate-100 h-16">
+    <header class="h-16">
       <%= heading %>
     </header>
   <% end %>
-  <div class="overflow-x-auto">
-    <table class="table-auto w-full">
-      <thead class="text-xs uppercase text-slate-400 bg-slate-50 rounded-sm">
-      <tr>
-        <% columns.each do |column| %>
-          <th class="p-2 whitespace-nowrap">
-            <div class="font-semibold text-left"><%= column %></div>
-          </th>
+  <% if rows.present? %>
+    <div class="border-t border-slate-100 overflow-x-auto">
+      <table class="table-auto w-full">
+        <thead class="text-xs uppercase text-slate-400 bg-slate-50 rounded-sm">
+        <tr>
+          <% columns.each do |column| %>
+            <th class="p-2 whitespace-nowrap">
+              <div class="font-semibold text-left"><%= column %></div>
+            </th>
+          <% end %>
+        </tr>
+        </thead>
+        <tbody class="text-sm divide-y divide-slate-100">
+        <% rows.each do |row| %>
+          <%= row %>
         <% end %>
-      </tr>
-      </thead>
-      <tbody class="text-sm divide-y divide-slate-100">
-      <% rows.each do |row| %>
-        <%= row %>
-      <% end %>
-      </tbody>
-    </table>
-  </div>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
 </div>

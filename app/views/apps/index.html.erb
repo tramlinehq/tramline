@@ -7,28 +7,26 @@
   <% end %>
 
   <% if @apps.any? %>
-    <div class="overflow-x-auto">
-      <%= render TableComponent.new(columns: ["Name", "Description", "Bundle Identifier"]) do |table| %>
-        <% @apps.each do |app| %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              <div class="flex items-center">
-                <%= inline_svg("#{app.platform}.svg", classname: "w-4 inline-flex mr-2") %>
-                <div class="font-medium text-slate-800">
-                  <%= link_to app.name, app_path(app) %>
-                </div>
+    <%= render TableComponent.new(columns: ["Name", "Description", "Bundle Identifier"]) do |table| %>
+      <% @apps.each do |app| %>
+        <% table.with_row do |row| %>
+          <% row.with_cell do %>
+            <div class="flex items-center">
+              <%= inline_svg("#{app.platform}.svg", classname: "w-4 inline-flex mr-2") %>
+              <div class="font-medium text-slate-800">
+                <%= link_to app.name, app_path(app) %>
               </div>
-            <% end %>
-            <% row.with_cell do %>
-              <div class="text-left"><%= simple_format app.description %></div>
-            <% end %>
-            <% row.with_cell do %>
-              <div class="text-left"><%= app.bundle_identifier %></div>
-            <% end %>
+            </div>
+          <% end %>
+          <% row.with_cell do %>
+            <div class="text-left"><%= simple_format app.description %></div>
+          <% end %>
+          <% row.with_cell do %>
+            <div class="text-left"><%= app.bundle_identifier %></div>
           <% end %>
         <% end %>
       <% end %>
-    </div>
+    <% end %>
   <% else %>
     <p>Go to the
       <%= link_to "new app page", new_app_path %>
