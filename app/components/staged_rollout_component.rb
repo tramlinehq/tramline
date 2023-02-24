@@ -39,7 +39,9 @@ class StagedRolloutComponent < ViewComponent::Base
   end
 
   def halt_action(form)
-    return unless started?
+    return unless release.on_track?
+    return unless started? || failed?
+
     halt_rollout_button(form)
   end
 

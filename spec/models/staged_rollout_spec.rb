@@ -5,6 +5,39 @@ describe StagedRollout do
     expect(create(:staged_rollout)).to be_valid
   end
 
+  describe "#start!" do
+    let(:deployment_run) { create(:deployment_run, :rollout_started, :with_staged_rollout) }
+    let(:staged_rollout) { create(:staged_rollout, :created, deployment_run:) }
+
+    it "does not start if deployment run is not rolloutable" do
+      deployment_run.release.update(status: "stopped")
+
+      expect { staged_rollout.start! }.to raise_error(AASM::InvalidTransition)
+    end
+  end
+
+  describe "#retry!" do
+    let(:deployment_run) { create(:deployment_run, :rollout_started, :with_staged_rollout) }
+    let(:staged_rollout) { create(:staged_rollout, :failed, deployment_run:) }
+
+    it "does not start if deployment run is not rolloutable" do
+      deployment_run.release.update(status: "stopped")
+
+      expect { staged_rollout.retry! }.to raise_error(AASM::InvalidTransition)
+    end
+  end
+
+  describe "#halt!" do
+    let(:deployment_run) { create(:deployment_run, :rollout_started, :with_staged_rollout) }
+    let(:staged_rollout) { create(:staged_rollout, :failed, deployment_run:) }
+
+    it "does not start if deployment run is not rolloutable" do
+      deployment_run.release.update(status: "stopped")
+
+      expect { staged_rollout.halt! }.to raise_error(AASM::InvalidTransition)
+    end
+  end
+
   describe "#complete!" do
     it "transitions state" do
       rollout = create(:staged_rollout, :started)

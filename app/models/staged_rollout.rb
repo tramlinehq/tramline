@@ -33,7 +33,7 @@ class StagedRollout < ApplicationRecord
     state :created, initial: true, before_enter: -> { deployment_run.rolloutable? }
     state(*STATES.keys)
 
-    event :start do
+    event :start, guard: -> { deployment_run.rolloutable? } do
       transitions from: :created, to: :started
     end
 
@@ -41,13 +41,13 @@ class StagedRollout < ApplicationRecord
       transitions from: [:started, :failed, :created], to: :failed
     end
 
-    event :retry do
+    event :retry, guard: -> { deployment_run.rolloutable? } do
       transitions from: :failed, to: :started
     end
 
-    event :halt do
+    event :halt, guard: -> { deployment_run.rolloutable? } do
       after { deployment_run.complete! }
-      transitions from: [:started, :paused], to: :stopped
+      transitions from: [:started, :paused, :failed], to: :stopped
     end
 
     event :complete do

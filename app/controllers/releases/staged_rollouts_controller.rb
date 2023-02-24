@@ -2,7 +2,7 @@ class Releases::StagedRolloutsController < SignedInApplicationController
   before_action :require_write_access!, only: %i[increase halt]
   before_action :set_deployment_run
   before_action :set_staged_rollout
-  before_action :ensure_live_release
+  before_action :ensure_rolloutable
 
   def increase
     @staged_rollout.move_to_next_stage!
@@ -26,9 +26,9 @@ class Releases::StagedRolloutsController < SignedInApplicationController
 
   private
 
-  def ensure_live_release
-    unless @deployment_run.release.on_track?
-      redirect_back fallback_location: root_path, flash: {error: "Cannot perform this operation. The release is locked."}
+  def ensure_rolloutable
+    unless @deployment_run.rolloutable?
+      redirect_back fallback_location: root_path, flash: {error: "Cannot perform this operation. The deployment is not rollout stage."}
     end
   end
 
