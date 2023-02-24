@@ -3,12 +3,12 @@ module ReleasesHelper
   include Memery
 
   SHOW_RELEASE_STATUS = {
-    finished: ["Completed", STATUS_COLOR_PALETTE[:success]],
-    stopped: ["Stopped", STATUS_COLOR_PALETTE[:inert]],
-    on_track: ["Running", STATUS_COLOR_PALETTE[:ongoing]],
-    post_release: ["Finalizing", STATUS_COLOR_PALETTE[:neutral]],
-    post_release_started: ["Finalizing", STATUS_COLOR_PALETTE[:neutral]],
-    post_release_failed: ["Finalizing", STATUS_COLOR_PALETTE[:neutral]]
+    finished: ["Completed", :success],
+    stopped: ["Stopped", :inert],
+    on_track: ["Running", :ongoing],
+    post_release: ["Finalizing", :neutral],
+    post_release_started: ["Finalizing", :neutral],
+    post_release_failed: ["Finalizing", :neutral]
   }
 
   def release_status_badge(status)
@@ -20,31 +20,31 @@ module ReleasesHelper
     status, styles =
       case step_run.status.to_sym
       when :ci_workflow_triggered, :on_track
-        ["Waiting for CI", STATUS_COLOR_PALETTE[:routine]]
+        ["Waiting for CI", :routine]
       when :ci_workflow_started
-        ["In progress", STATUS_COLOR_PALETTE[:ongoing]]
+        ["In progress", :ongoing]
       when :build_ready
-        ["Looking for build to deploy", STATUS_COLOR_PALETTE[:ongoing]]
+        ["Looking for build to deploy", :ongoing]
       when :deployment_started
-        ["Deployments in progress", STATUS_COLOR_PALETTE[:ongoing]]
+        ["Deployments in progress", :ongoing]
       when :build_found_in_store
-        ["Build found in store", STATUS_COLOR_PALETTE[:routine]]
+        ["Build found in store", :routine]
       when :build_not_found_in_store
-        ["Build not found in store", STATUS_COLOR_PALETTE[:failure]]
+        ["Build not found in store", :failure]
       when :success
-        ["Success", STATUS_COLOR_PALETTE[:success]]
+        ["Success", :success]
       when :ci_workflow_failed
-        ["CI workflow failure", STATUS_COLOR_PALETTE[:failure]]
+        ["CI workflow failure", :failure]
       when :ci_workflow_unavailable
-        ["CI workflow not found", STATUS_COLOR_PALETTE[:failure]]
+        ["CI workflow not found", :failure]
       when :ci_workflow_halted
-        ["CI workflow cancelled", STATUS_COLOR_PALETTE[:inert]]
+        ["CI workflow cancelled", :inert]
       when :build_unavailable
-        ["Build unavailable", STATUS_COLOR_PALETTE[:failure]]
+        ["Build unavailable", :failure]
       when :deployment_failed
-        ["Deployment failed", STATUS_COLOR_PALETTE[:failure]]
+        ["Deployment failed", :failure]
       else
-        ["Unknown", STATUS_COLOR_PALETTE[:neutral]]
+        ["Unknown", :neutral]
       end
 
     status_badge(status, styles)
@@ -54,23 +54,23 @@ module ReleasesHelper
     status, styles =
       case deployment_run.status.to_sym
       when :created
-        ["About to start", STATUS_COLOR_PALETTE[:inert]]
+        ["About to start", :inert]
       when :started
-        ["Running", STATUS_COLOR_PALETTE[:ongoing]]
+        ["Running", :ongoing]
       when :submitted
-        ["Submitted for review", STATUS_COLOR_PALETTE[:ongoing]]
+        ["Submitted for review", :ongoing]
       when :uploaded
-        ["Uploaded", STATUS_COLOR_PALETTE[:routine]]
+        ["Uploaded", :routine]
       when :upload_failed
-        ["Upload failed", STATUS_COLOR_PALETTE[:failure]]
+        ["Upload failed", :failure]
       when :rollout_started
-        ["In Staged Rollout", STATUS_COLOR_PALETTE[:routine]]
+        ["In Staged Rollout", :routine]
       when :released
-        ["Released", STATUS_COLOR_PALETTE[:success]]
+        ["Released", :success]
       when :failed
-        ["Failed", STATUS_COLOR_PALETTE[:failure]]
+        ["Failed", :failure]
       else
-        ["Unknown", STATUS_COLOR_PALETTE[:neutral]]
+        ["Unknown", :neutral]
       end
 
     status_badge(status, styles)
@@ -80,11 +80,11 @@ module ReleasesHelper
     style =
       case pull_request.state.to_sym
       when :open
-        STATUS_COLOR_PALETTE[:success]
+        :success
       when :closed
-        STATUS_COLOR_PALETTE[:ongoing]
+        :ongoing
       else
-        STATUS_COLOR_PALETTE[:neutral]
+        :neutral
       end
 
     status_badge(pull_request.state, style)

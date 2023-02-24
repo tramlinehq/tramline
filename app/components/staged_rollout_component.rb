@@ -101,17 +101,17 @@ class StagedRolloutComponent < ViewComponent::Base
     status, styles =
       case status
       when :created
-        ["Ready", STATUS_COLOR_PALETTE[:routine]]
+        ["Ready", :routine]
       when :started
-        ["Active", STATUS_COLOR_PALETTE[:ongoing]]
+        ["Active", :ongoing]
       when :failed
-        ["Failed", STATUS_COLOR_PALETTE[:failure]]
+        ["Failed", :failure]
       when :completed
-        ["Completed", STATUS_COLOR_PALETTE[:success]]
+        ["Completed", :success]
       when :stopped
-        ["Halted", STATUS_COLOR_PALETTE[:inert]]
+        ["Halted", :inert]
       else
-        ["Unknown", STATUS_COLOR_PALETTE[:neutral]]
+        ["Unknown", :neutral]
       end
 
     status_badge(status, styles)

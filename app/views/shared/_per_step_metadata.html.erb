@@ -3,8 +3,8 @@
     <div class="flex justify-between">
       <div class="flex flex-row items-center w-full">
         <h3 class="text-lg font-bold text-slate-800"><%= step.name %></h3>
-        <%= status_badge "##{step.step_number}", %w[bg-slate-200 text-slate-600 text-xs ml-2] %>
-        <%= status_badge step.kind&.humanize, %w[bg-slate-200 text-slate-600 text-xs ml-2] %>
+        <%= status_badge "##{step.step_number}", %w[text-xs ml-2], :neutral %>
+        <%= status_badge step.kind&.humanize, %w[text-xs ml-2], :neutral %>
       </div>
 
       <% if editable %>

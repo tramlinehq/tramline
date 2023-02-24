@@ -35,7 +35,7 @@ class ExternalAppComponent < ViewComponent::Base
   end
 
   def release_status(release)
-    status_badge(release[:status].titleize.humanize, STATUS_COLOR_PALETTE[:routine] + %w[mx-1])
+    status_badge(release[:status].titleize.humanize, %w[mx-1], :routine)
   end
 
   def release_description(release)

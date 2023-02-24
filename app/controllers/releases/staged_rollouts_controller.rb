@@ -28,7 +28,7 @@ class Releases::StagedRolloutsController < SignedInApplicationController
 
   def ensure_rolloutable
     unless @deployment_run.rolloutable?
-      redirect_back fallback_location: root_path, flash: {error: "Cannot perform this operation. The deployment is not rollout stage."}
+      redirect_back fallback_location: root_path, flash: {error: "Cannot perform this operation. The deployment is not in rollout stage."}
     end
   end
 

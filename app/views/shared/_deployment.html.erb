@@ -5,5 +5,5 @@
                      provider_name: deployment_integration_name(deployment) } %>
 
 <% if deployment.staged_rollout? %>
-  <span class="ml-1"><%= status_badge("Staged", ["bg-slate-100 text-slate-500"]) %></span>
+  <span class="ml-1"><%= status_badge("Staged", :neutral) %></span>
 <% end %>
