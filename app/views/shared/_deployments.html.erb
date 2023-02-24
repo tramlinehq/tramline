@@ -4,7 +4,7 @@
       <div>
         <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
 
-        <% if release.present? %>
+        <% if show_deployment_status %>
           <%= render partial: "releases/live_release/deployment_status",
                      locals: { step_run: step_run, deployment: deployment, release: release } %>
         <% else %>

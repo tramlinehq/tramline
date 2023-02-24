@@ -117,8 +117,12 @@
 
 <% if train.steps.size > 0 && train.persisted? %>
   <div class="text-2xl font-bold mt-8 mb-4 pt-4 border-t border-dashed">Steps</div>
-  <%= render partial: "shared/step_tree_viz", locals: { train: @train, editable: true } %>
+  <div class="w-1/2">
+    <%= render partial: "shared/step_tree_viz", locals: { train: @train, editable: true } %>
+  </div>
 <% elsif train.persisted? %>
   <div class="text-2xl font-bold mt-8 mb-4 pt-4 border-t border-dashed">Steps</div>
-  <%= render partial: "trains/step_creation", locals: { app: app, train: train } %>
+  <div class="w-1/2">
+    <%= render partial: "trains/step_creation", locals: { app: app, train: train } %>
+  </div>
 <% end %>

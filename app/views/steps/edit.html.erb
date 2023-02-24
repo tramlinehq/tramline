@@ -14,8 +14,8 @@
       </p>
     </div>
 
-    <div class="mb-8">
-      <%= render partial: "shared/deployments", locals: { step: @step } %>
+    <div class="mb-8 w-1/4">
+      <%= render partial: "shared/deployments", locals: { step: @step, show_deployment_status: false } %>
     </div>
 
     <div class="mt-5">

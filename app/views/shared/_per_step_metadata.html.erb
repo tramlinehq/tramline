@@ -39,7 +39,7 @@
       <div class="flex flex-row items-center w-full">
         <div class="w-6 inline-flex mr-1"></div>
         <%= render partial: "shared/deployments",
-                   locals: { step: step, step_run: step_run, release: release } %>
+                   locals: { step: step, step_run: step_run, release: release, show_deployment_status: release.present? } %>
       </div>
     </div>
   </div>
