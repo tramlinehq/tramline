@@ -9,7 +9,7 @@
                      locals: { step_run: step_run, deployment: deployment, release: release } %>
         <% else %>
           <% if deployment.staged_rollout? %>
-            <div class="my-4 pt-4 border-t border-dashed">
+            <div class="my-4 pt-4 ml-6 border-t border-dashed">
               <%= render StagedRollout::ConfigComponent.new(config: deployment.staged_rollout_config) %>
             </div>
           <% end %>
