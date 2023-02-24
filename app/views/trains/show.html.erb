@@ -50,8 +50,11 @@
           <% end %>
         <% end %>
 
+
         <% mt.with_description("Code Repository") do %>
-          <%= link_to_external("#{@train.config.code_repository_name} ↗", @train.config.code_repo_url) %>
+          <span class="underline">
+            <%= link_to_external("#{@train.config.code_repository_name} ↗", @train.config.code_repo_url) %>
+          </span>
         <% end %>
       <% end %>
     </article>
