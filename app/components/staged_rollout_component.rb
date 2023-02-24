@@ -19,6 +19,7 @@ class StagedRolloutComponent < ViewComponent::Base
     :config,
     :completed?,
     :started?,
+    :created?,
     :current_stage,
     :last_rollout_percentage,
     to: :staged_rollout
@@ -59,12 +60,8 @@ class StagedRolloutComponent < ViewComponent::Base
   end
 
   def current_stage_perc
-    stage_perc(last_rollout_percentage)
-  end
-
-  def stage_perc(stage)
-    return "0%" if stage.nil?
-    "#{stage}%"
+    return "0%" if created?
+    "#{last_rollout_percentage}%"
   end
 
   def stage_help
