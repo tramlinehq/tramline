@@ -1,18 +1,20 @@
-<% if step_run.manually_startable_deployment?(deployment) %>
-  <%= authz_button_to :blue,
-                      "Start this deployment",
-                      start_release_step_run_deployment_path(release, step_run, deployment),
-                      { class: 'mt-2 btn-xs' } %>
-<% end %>
+<% if step_run.present? %>
+  <% if step_run.manually_startable_deployment?(deployment) %>
+    <%= authz_button_to :blue,
+                        "Start this deployment",
+                        start_release_step_run_deployment_path(release, step_run, deployment),
+                        { class: 'mt-2 btn-xs' } %>
+  <% end %>
 
-<% deployment_run = step_run.last_run_for(deployment) %>
+  <% deployment_run = step_run.last_run_for(deployment) %>
 
-<% if deployment_run.present? %>
-  <span class="ml-1"><%= deployment_run_status_badge(deployment_run) %></span>
-<% end %>
+  <% if deployment_run.present? %>
+    <span class="ml-1"><%= deployment_run_status_badge(deployment_run) %></span>
+  <% end %>
 
-<% if deployment_run&.staged_rollout.present? %>
-  <div class="ml-0 mt-4 pb-1 border-t border-dashed">
-    <%= render StagedRolloutComponent.new(deployment_run.staged_rollout) %>
-  </div>
+  <% if deployment_run&.staged_rollout.present? %>
+    <div class="ml-0 mt-4 pb-1 border-t border-dashed">
+      <%= render StagedRolloutComponent.new(deployment_run.staged_rollout) %>
+    </div>
+  <% end %>
 <% end %>
