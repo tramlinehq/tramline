@@ -326,6 +326,17 @@ describe DeploymentRun do
 
       expect(run.reload.failed?).to be(true)
     end
+
+    it "fails to create staged rollout if run is not rolloutable" do
+      allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
+      deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
+      run = create(:deployment_run, :uploaded, deployment:)
+      run.release.update(status: "stopped")
+
+      run.start_rollout!
+
+      expect(run.reload.staged_rollout).not_to be_present
+    end
   end
 
   describe "#start_release!" do

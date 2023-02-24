@@ -21,6 +21,7 @@ class StagedRollout < ApplicationRecord
   validates :current_stage, numericality: {greater_than_or_equal_to: 0, allow_nil: true}
 
   STATES = {
+    created: "created",
     started: "started",
     failed: "failed",
     completed: "completed",
@@ -29,11 +30,15 @@ class StagedRollout < ApplicationRecord
 
   enum status: STATES
   aasm safe_state_machine_params do
-    state :started, initial: true
+    state :created, initial: true, before_enter: -> { deployment_run.rolloutable? }
     state(*STATES.keys)
 
+    event :start do
+      transitions from: :created, to: :started
+    end
+
     event :fail do
-      transitions from: [:started, :failed], to: :failed
+      transitions from: [:started, :failed, :created], to: :failed
     end
 
     event :retry do
@@ -52,11 +57,12 @@ class StagedRollout < ApplicationRecord
   end
 
   def last_rollout_percentage
-    config[current_stage] unless current_stage.nil?
+    return if created?
+    config[current_stage]
   end
 
   def next_rollout_percentage
-    return config.first if current_stage.nil?
+    return config.first if created?
     config[current_stage.succ]
   end
 
@@ -65,15 +71,11 @@ class StagedRollout < ApplicationRecord
   end
 
   def next_stage
-    current_stage.nil? ? 0 : current_stage.succ
+    created? ? 0 : current_stage.succ
   end
 
   def reached?(stage)
     current_stage && current_stage >= stage
-  end
-
-  def roll_out_started?
-    current_stage && started?
   end
 
   def move_to_next_stage!
@@ -82,6 +84,7 @@ class StagedRollout < ApplicationRecord
     release_with(rollout_value: next_rollout_percentage) do |result|
       if result.ok?
         update!(current_stage: next_stage)
+        start! if created?
         retry! if failed?
         complete! if finished?
       else
@@ -92,7 +95,8 @@ class StagedRollout < ApplicationRecord
   end
 
   def halt_release!
-    return if last_rollout_percentage.nil?
+    return if created?
+    return if completed?
 
     halt_release_in_playstore!(rollout_value: last_rollout_percentage) do |result|
       if result.ok?

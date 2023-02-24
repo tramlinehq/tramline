@@ -18,7 +18,7 @@ class StagedRolloutComponent < ViewComponent::Base
     :stopped?,
     :config,
     :completed?,
-    :roll_out_started?,
+    :started?,
     :current_stage,
     :last_rollout_percentage,
     to: :staged_rollout
@@ -30,7 +30,7 @@ class StagedRolloutComponent < ViewComponent::Base
 
     if failed?
       retry_button(form)
-    elsif current_stage.present?
+    elsif started?
       increase_rollout_button(form)
     else
       start_rollout_button(form)
@@ -38,7 +38,7 @@ class StagedRolloutComponent < ViewComponent::Base
   end
 
   def halt_action(form)
-    return unless roll_out_started?
+    return unless started?
     halt_rollout_button(form)
   end
 
@@ -71,7 +71,7 @@ class StagedRolloutComponent < ViewComponent::Base
     return if completed?
     return "Halted at the #{current_stage.succ.ordinalize} stage of rollout" if stopped?
 
-    if current_stage
+    if started?
       "In the #{current_stage.succ.ordinalize} stage of rollout"
     else
       "Rollout has not kicked-off yet"
@@ -98,10 +98,11 @@ class StagedRolloutComponent < ViewComponent::Base
 
   def badge
     status = staged_rollout.status.to_sym
-    return if status.eql?(:started) && current_stage.nil?
 
     status, styles =
       case status
+      when :created
+        ["Ready", STATUS_COLOR_PALETTE[:routine]]
       when :started
         ["Active", STATUS_COLOR_PALETTE[:ongoing]]
       when :failed
