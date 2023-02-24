@@ -1,0 +1,18 @@
+<dl>
+  <% config.each_with_index do |stage, idx| %>
+    <dd class="grid grid-cols-6 gap-x-2 items-center">
+      <div class="col-span-2 text-xs">Stage <%= idx + 1 %></div>
+      <div class="col-span-3 border-slate-200">
+        <div class="relative w-full h-2 bg-slate-300" title=<%= stage_perc(stage) %>>
+          <div class="absolute inset-0 bg-indigo-500" style="width: <%= stage_perc(stage) %>"></div>
+        </div>
+      </div>
+
+      <% if until_current?(idx) %>
+        <div class="col-span-1">
+          <%= inline_svg("progress_check.svg", classname: "w-5 fill-current text-green-600") %>
+        </div>
+      <% end %>
+    </dd>
+  <% end %>
+</dl>

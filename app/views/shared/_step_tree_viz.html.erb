@@ -1,4 +1,4 @@
-<ol class="mt-2 w-1/2">
+<ol class="mt-2">
   <!-- review steps -->
   <% train.steps.review.includes(deployments: [:integration]).order(:step_number).each do |step| %>
     <li><%= render partial: "shared/per_step_metadata", locals: { editable: editable, step: step, step_run: nil, release: nil } %></li>

@@ -20,9 +20,9 @@
       <% is_stale_commit = commit.stale? %>
       <tbody class="text-sm border-b last:border-b-0" data-controller="reveal" data-reveal-toggle-keys-value="b">
 
+      <!-- commit details -->
       <tr>
         <td class="py-4 whitespace-nowrap">
-
           <%
             if is_stale_commit
               link_text_class = "text-slate-400"
@@ -55,6 +55,7 @@
         </td>
       </tr>
 
+      <!-- indented commit body -->
       <tr data-reveal <%= "hidden" if is_stale_commit %>>
         <td colspan="2" class="pb-4 whitespace-nowrap">
           <div class="grid grid-cols-1 gap-y-1 ml-4">
@@ -70,7 +71,6 @@
                   <%= step_run.step.name %>
                   <%= dev_show { step_run.id.strip } %>
                 </div>
-
                 <!-- per step info -->
                 <div>
                   <!-- ci link -->
@@ -91,15 +91,9 @@
                   <% if step_run.build_artifact_available? %>
                     <div class="mb-2">
                       <%= link_to_external "Download build ↗", step_run.download_url, class: "underline" %>
+
                       <div class="text-slate-500">
-                        <div>
-                          <span class="font-mono"><%= step_run.build_version %></span>
-                          • Build <span class="font-mono"><%= step_run.build_number %></span>
-                        </div>
-                        <div>
-                          <%= "Built " + ago_in_words(step_run.build_artifact&.generated_at) %>
-                          • <%= "Uploaded to Tramline " + ago_in_words(step_run.build_artifact&.uploaded_at) %>
-                        </div>
+                        <%= render partial: "shared/build_details", locals: { step_run:, with_artifact: true } %>
                       </div>
                     </div>
                   <% end %>

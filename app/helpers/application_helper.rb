@@ -79,10 +79,25 @@ module ApplicationHelper
     NOTE_BOX_COLORS[type]
   end
 
-  def status_badge(status, style, pulse: false)
+  def status_badge(status, custom = [], fixed = nil, pulse: false)
+    styles =
+      case custom
+      when Array
+        if fixed.nil?
+          custom
+        else
+          custom.concat(STATUS_COLOR_PALETTE[fixed])
+        end
+      when Symbol
+        STATUS_COLOR_PALETTE[custom]
+      else
+        STATUS_COLOR_PALETTE[fixed] unless fixed.nil?
+      end
+
     classes = %w[text-xs uppercase tracking-wide inline-flex font-medium rounded-full text-center px-2 py-0.5]
     classes << "animate-pulse" if pulse
-    content_tag(:span, status, class: classes.concat(style))
+    classes.concat(styles) if styles
+    content_tag(:span, status, class: classes)
   end
 
   def dev_show(&blk)

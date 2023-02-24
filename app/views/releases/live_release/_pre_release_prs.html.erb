@@ -1,7 +1,5 @@
 <section>
-  <div class="flex">
-    <h3 class="font-bold text-xl">Pre-release PRs</h3>
-  </div>
+  <span class="font-bold text-2xl">Pre-release PRs</span>
 
   <% if pre_release_prs&.exists? %>
     <%= render partial: "releases/live_release/pull_requests", locals: { prs: pre_release_prs } %>

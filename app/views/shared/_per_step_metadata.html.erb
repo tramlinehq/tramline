@@ -1,10 +1,10 @@
 <div>
   <div class="px-4 py-2 bg-<%= step_color step.kind %>-50 rounded-md border-2 border-<%= step_color step.kind %>-300">
     <div class="flex justify-between">
-      <div class="flex items-center">
+      <div class="flex flex-row items-center w-full">
         <h3 class="text-lg font-bold text-slate-800"><%= step.name %></h3>
-        <%= status_badge "##{step.step_number}", %w[bg-slate-200 text-slate-600 text-xs ml-2] %>
-        <%= status_badge step.kind&.humanize, %w[bg-slate-200 text-slate-600 text-xs ml-2] %>
+        <%= status_badge "##{step.step_number}", %w[text-xs ml-2], :neutral %>
+        <%= status_badge step.kind&.humanize, %w[text-xs ml-2], :neutral %>
       </div>
 
       <% if editable %>
@@ -16,27 +16,30 @@
       <% end %>
     </div>
 
-    <div class="flex flex-col pt-1">
-      <div class="text-slate-500 text-sm"><%= simple_format(step.description) %></div>
-
-      <% if step_run&.build_version %>
-        <div class="flex items-center mt-4">
-          <span class="font-medium mr-2">
-            <%= step_run.build_version %>&nbsp;(<%= step_run.build_number %>)
-          </span>
-        </div>
-      <% end %>
-
-      <div class="text-xs align-text-bottom mt-4 mb-1">
-        <%= image_tag("workflow.svg", width: 16, class: "inline-flex mr-2") %>
-        <%= render partial: "shared/display_channels",
-                   locals: { name: show_ci_cd_provider(step),
-                             provider_name: step.train.ci_cd_provider.to_s,
-                             channel: show_ci_cd_channel(step) } %>
+    <div class="flex flex-col gap-y-5 mb-6">
+      <div class="flex flex-row items-center w-full">
+        <div class="text-slate-500 text-sm"><%= simple_format(step.description) %></div>
       </div>
 
-      <div class="ml-7">
-        <%= render partial: "shared/deployments", locals: { step: step, step_run: step_run, release: release, show_deployment_status: true } %>
+      <% if step_run&.build_version %>
+        <div class="flex flex-col w-full">
+          <%= render partial: "shared/build_details", locals: { step_run:, with_artifact: false } %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="flex flex-col gap-y-2">
+      <div class="flex flex-row items-center gap-x-2 w-full">
+        <%= inline_svg("workflow.svg", classname: "w-4 inline-flex mr-1") %>
+        <%= render partial: "shared/display_channels",
+                   locals: { name: show_ci_cd(step),
+                             provider_name: step.train.ci_cd_provider.to_s } %>
+      </div>
+
+      <div class="flex flex-row items-center w-full">
+        <div class="w-6 inline-flex mr-1"></div>
+        <%= render partial: "shared/deployments",
+                   locals: { step: step, step_run: step_run, release: release, show_deployment_status: release.present? } %>
       </div>
     </div>
   </div>

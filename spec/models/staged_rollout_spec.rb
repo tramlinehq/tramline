@@ -5,9 +5,42 @@ describe StagedRollout do
     expect(create(:staged_rollout)).to be_valid
   end
 
+  describe "#start!" do
+    let(:deployment_run) { create(:deployment_run, :rollout_started, :with_staged_rollout) }
+    let(:staged_rollout) { create(:staged_rollout, :created, deployment_run:) }
+
+    it "does not start if deployment run is not rolloutable" do
+      deployment_run.release.update(status: "stopped")
+
+      expect { staged_rollout.start! }.to raise_error(AASM::InvalidTransition)
+    end
+  end
+
+  describe "#retry!" do
+    let(:deployment_run) { create(:deployment_run, :rollout_started, :with_staged_rollout) }
+    let(:staged_rollout) { create(:staged_rollout, :failed, deployment_run:) }
+
+    it "does not retry if deployment run is not rolloutable" do
+      deployment_run.release.update(status: "stopped")
+
+      expect { staged_rollout.retry! }.to raise_error(AASM::InvalidTransition)
+    end
+  end
+
+  describe "#halt!" do
+    let(:deployment_run) { create(:deployment_run, :rollout_started, :with_staged_rollout) }
+    let(:staged_rollout) { create(:staged_rollout, :failed, deployment_run:) }
+
+    it "does not halt if deployment run is not rolloutable" do
+      deployment_run.release.update(status: "stopped")
+
+      expect { staged_rollout.halt! }.to raise_error(AASM::InvalidTransition)
+    end
+  end
+
   describe "#complete!" do
     it "transitions state" do
-      rollout = create(:staged_rollout)
+      rollout = create(:staged_rollout, :started)
 
       rollout.complete!
 
@@ -15,7 +48,7 @@ describe StagedRollout do
     end
 
     it "completes the deployment run" do
-      rollout = create(:staged_rollout)
+      rollout = create(:staged_rollout, :started)
 
       rollout.complete!
       rollout.reload
@@ -28,14 +61,21 @@ describe StagedRollout do
   describe "#halt_release!" do
     let(:deployment_run) { create(:deployment_run, :with_staged_rollout, :rollout_started) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
-    let(:rollout) { create(:staged_rollout, current_stage: 0, deployment_run: deployment_run) }
+    let(:rollout) { create(:staged_rollout, :started, current_stage: 0, deployment_run: deployment_run) }
 
     before do
       allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
     end
 
-    it "does nothing if there is no rollout" do
-      unrolled_rollout = create(:staged_rollout, current_stage: nil, deployment_run: deployment_run)
+    it "does nothing if the rollout hasn't started" do
+      unrolled_rollout = create(:staged_rollout, :created, deployment_run: deployment_run)
+      unrolled_rollout.halt_release!
+
+      expect(rollout.reload.stopped?).to be(false)
+    end
+
+    it "does nothing if the rollout is completed" do
+      unrolled_rollout = create(:staged_rollout, :completed, deployment_run: deployment_run)
       unrolled_rollout.halt_release!
 
       expect(rollout.reload.stopped?).to be(false)
@@ -66,13 +106,13 @@ describe StagedRollout do
 
   describe "#last_rollout_percentage" do
     it "returns the rollout value for the current stage" do
-      rollout = create(:staged_rollout, config: [1, 80, 100], current_stage: 1)
+      rollout = create(:staged_rollout, :started, config: [1, 80, 100], current_stage: 1)
 
       expect(rollout.last_rollout_percentage).to eq(80)
     end
 
-    it "returns nothing if current stage is unset" do
-      rollout = create(:staged_rollout, config: [1, 80, 100], current_stage: nil)
+    it "returns nothing if rollout has not started" do
+      rollout = create(:staged_rollout, :created, config: [1, 80, 100])
 
       expect(rollout.last_rollout_percentage).to be_nil
     end
@@ -94,6 +134,15 @@ describe StagedRollout do
       expect(rollout.reload.completed?).to be(true)
     end
 
+    it "starts the staged rollout if it was created" do
+      allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+      rollout = create(:staged_rollout, :created, deployment_run:, config: [1, 80, 100])
+
+      rollout.move_to_next_stage!
+      expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, 1)
+      expect(rollout.reload.started?).to be(true)
+    end
+
     it "promotes the deployment run with the next stage percentage" do
       allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
       rollout = create(:staged_rollout, :started, deployment_run:, config: [1, 80, 100], current_stage: 1)
@@ -104,7 +153,7 @@ describe StagedRollout do
 
     it "updates the current stage with the next stage if promote succeeds" do
       allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
-      rollout = create(:staged_rollout, deployment_run: deployment_run, config: [1, 80, 100], current_stage: 1)
+      rollout = create(:staged_rollout, :started, deployment_run: deployment_run, config: [1, 80, 100], current_stage: 1)
 
       rollout.move_to_next_stage!
       expect(rollout.reload.current_stage).to eq(2)
@@ -112,7 +161,7 @@ describe StagedRollout do
 
     it "does not update the current stage with the next stage if promote fails" do
       allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new { raise })
-      rollout = create(:staged_rollout, deployment_run: deployment_run, config: [1, 80, 100], current_stage: 1)
+      rollout = create(:staged_rollout, :started, deployment_run: deployment_run, config: [1, 80, 100], current_stage: 1)
 
       rollout.move_to_next_stage!
       expect(rollout.reload.failed?).to be(true)
