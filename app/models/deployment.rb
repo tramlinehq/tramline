@@ -23,7 +23,7 @@ class Deployment < ApplicationRecord
   belongs_to :integration, optional: true
 
   validates :deployment_number, presence: true
-  validates :build_artifact_channel, uniqueness: { scope: [:integration_id, :train_step_id], message: "Deployments should be designed to have unique providers and channels" }
+  validates :build_artifact_channel, uniqueness: {scope: [:integration_id, :train_step_id], message: "Deployments should be designed to have unique providers and channels"}
   validate :staged_rollout_is_allowed
   validate :correct_staged_rollout_config, if: :staged_rollout?
   validate :non_prod_build_channel, if: -> { step.review? }

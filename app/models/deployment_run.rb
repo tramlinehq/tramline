@@ -19,38 +19,35 @@ class DeploymentRun < ApplicationRecord
 
   belongs_to :deployment, inverse_of: :deployment_runs
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
-
   has_one :external_build, dependent: :destroy
   has_one :staged_rollout, dependent: :destroy
   has_one :review_submission, dependent: :destroy
 
-  validates :deployment_id, uniqueness: { scope: :train_step_run_id }
+  validates :deployment_id, uniqueness: {scope: :train_step_run_id}
 
   delegate :step,
-           :release,
-           :commit,
-           :build_number,
-           :build_artifact,
-           :build_version,
-           to: :step_run
+    :release,
+    :commit,
+    :build_number,
+    :build_artifact,
+    :build_version,
+    to: :step_run
   delegate :external?,
-           :google_play_store_integration?,
-           :slack_integration?,
-           :app_store_integration?,
-           :store?,
-           :deployment_number,
-           :integration,
-           :deployment_channel,
-           :deployment_channel_name,
-           :staged_rollout?,
-           :staged_rollout_config,
-           :production_channel?,
-           to: :deployment
+    :google_play_store_integration?,
+    :slack_integration?,
+    :app_store_integration?,
+    :store?,
+    :deployment_number,
+    :integration,
+    :deployment_channel,
+    :deployment_channel_name,
+    :staged_rollout?,
+    :staged_rollout_config,
+    :production_channel?,
+    to: :deployment
   delegate :app, to: :step
   delegate :ios?, to: :app
   delegate :release_version, to: :release
-
-  scope :for_ids, ->(ids) { includes(deployment: :integration).where(id: ids) }
 
   STAMPABLE_REASONS = [
     "created",
@@ -65,6 +62,8 @@ class DeploymentRun < ApplicationRecord
   STATES = {
     created: "created",
     started: "started",
+    preparing_app_store_release: "preparing_app_store_release",
+    prepared_app_store_release: "prepared_app_store_release",
     submitted: "submitted",
     uploaded: "uploaded",
     upload_failed: "upload_failed",
@@ -75,18 +74,27 @@ class DeploymentRun < ApplicationRecord
 
   enum status: STATES
 
-  # FIXME: write functions/events that are not tied to one particular store
   aasm safe_state_machine_params do
     state :created, initial: true, before_enter: -> { step_run.startable_deployment?(deployment) }
     state(*STATES.keys)
 
-    event :dispatch, after_commit: :after_dispatch do
+    event :dispatch, after_commit: :kickoff! do
       after { step_run.start_deploy! if first? }
       transitions from: :created, to: :started
     end
 
+    # transitions from: :created, to: :preparing_app_store_release, guards: [:app_store_integration?, :production_channel?]
+    # dispatch (trigger)
+    # prepare deployments
+    # submit review
+    # fetch review status
+    # start_rollout
+    # event(:prepare_release, guards: [:app_store_integration?, :production_channel?]) do
+    #   transitions from: :preparing_app_store_release, to: :prepared_app_store_release
+    # end
+
     event(:submit, guard: :ios?, after_commit: :find_submission) do
-      transitions from: :started, to: :submitted
+      transitions from: [:started, :prepared_app_store_release], to: :submitted
     end
 
     event :upload, after_commit: -> { Deployments::ReleaseJob.perform_later(id) } do
@@ -103,18 +111,19 @@ class DeploymentRun < ApplicationRecord
       transitions from: :uploaded, to: :rollout_started
     end
 
-    event :dispatch_fail, after_commit: -> { event_stamp!(reason: :release_failed, kind: :error, data: stamp_data) } do
+    event :dispatch_fail, after_commit: :release_failed do
       after { step_run.fail_deploy! }
       transitions from: [:uploaded, :submitted, :rollout_started], to: :failed
     end
 
-    event :complete, after_commit: -> { event_stamp!(reason: :released, kind: :success, data: stamp_data) } do
+    event :complete, after_commit: :release_success do
       after { step_run.finish_deployment!(deployment) }
       transitions from: [:created, :uploaded, :started, :submitted, :rollout_started], to: :released
     end
   end
 
-  scope :matching_runs_for, ->(integration) { includes(:deployment).where(deployments: { integration: integration }) }
+  scope :for_ids, ->(ids) { includes(deployment: :integration).where(id: ids) }
+  scope :matching_runs_for, ->(integration) { includes(:deployment).where(deployments: {integration: integration}) }
   scope :has_begun, -> { where.not(status: :created) }
 
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
@@ -123,68 +132,49 @@ class DeploymentRun < ApplicationRecord
     step_run.deployment_runs.first == self
   end
 
-  ExternalBuildNotInTerminalState = Class.new(StandardError)
-
-  def locate_external_build(attempt: 1, wait: 1.second)
-    Deployments::AppStoreConnect::UpdateExternalBuildJob.set(wait: wait).perform_later(id, attempt:)
-  end
-
-  def locate_review_submission(attempt: 1, wait: 1.second)
-    Deployments::AppStoreConnect::UpdateExternalBuildJob.set(wait: wait).perform_later(id, attempt:)
-  end
-
   def find_submission
-    if production_channel?
-      locate_review_submission
-    else
-      locate_external_build
-    end
+    Deployments::AppStoreConnect::Release.locate_external_build(self)
   end
 
-  def update_external_build(submission_id = nil)
-    if production_channel?
-      submission_info = provider.find_review_submission(submission_id)
-    else
-      build_info = provider.find_build(build_number)
-      (external_build || build_external_build).update(build_info.attributes)
+  def kickoff!
+    return complete! if external?
+    return Deployments::SlackJob.perform_later(id) if slack_integration?
+    return Deployments::AppStoreConnect::Release.kickoff!(self) if store? && app_store_integration?
+    kickoff_upload_on_play_store! if store? && google_play_store_integration?
+  end
 
-      GitHub::Result.new do
-        if build_info.success?
-          complete!
-        elsif build_info.failed?
-          dispatch_fail!
+  ## play store
+  #
+  def kickoff_upload_on_play_store!
+    return upload! if step_run.similar_deployment_runs_for(self).any?(&:has_uploaded?)
+    Deployments::GooglePlayStore::Upload.perform_later(id)
+  end
+
+  def upload_to_playstore!
+    return unless google_play_store_integration?
+
+    with_lock do
+      return if uploaded?
+
+      build_artifact.with_open do |file|
+        result = provider.upload(file)
+        if result.ok?
+          upload!
         else
-          raise ExternalBuildNotInTerminalState, "Retrying in some time..."
+          upload_fail!
+
+          reason =
+            GooglePlayStoreIntegration::DISALLOWED_ERRORS_WITH_REASONS
+              .fetch(result.error.class, :upload_failed_reason_unknown)
+
+          event_stamp!(reason:, kind: :error, data: stamp_data)
+          elog(result.error)
         end
       end
     end
   end
 
-  def release_to_testflight!
-    return unless app_store_integration?
-    provider.release_to_testflight(deployment_channel, build_number)
-    submit!
-  end
-
-
-  def submit_for_review!
-    return unless app_store_integration?
-    return unless production_channel?
-    provider.create_review_submission(build_number, staged_rollout?)
-    submit! # TODO: dubious
-  end
-
-  def start_distribution!
-    return unless store? && app_store_integration?
-
-    if production_channel?
-      Deployments::AppStoreConnect::SubmitForAppReviewJob.perform_later(id)
-    else
-      Deployments::AppStoreConnect::TestFlightReleaseJob.perform_later(id)
-    end
-  end
-
-  def start_release!
+  def kickoff_release_on_play_store!
     return unless store?
     return start_rollout! if staged_rollout?
     fully_release_to_playstore! if google_play_store_integration?
@@ -201,6 +191,15 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
+  def halt_release_in_playstore!(rollout_value:)
+    raise ArgumentError, "cannot halt without a rollout value" if rollout_value.blank?
+
+    release.with_lock do
+      return unless rollout_started?
+      yield provider.halt_release(deployment_channel, build_number, release_version, rollout_value)
+    end
+  end
+
   def rollout!
     release_with(is_draft: true) do |result|
       if result.ok?
@@ -213,7 +212,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def release_with(rollout_value: nil, is_draft: false)
-    raise ArgumentError, "cannot have a rollout for a draft release" if is_draft && rollout_value.present?
+    raise ArgumentError, "cannot have a rollout for a draft deployments" if is_draft && rollout_value.present?
 
     release.with_lock do
       return unless promotable?
@@ -224,60 +223,6 @@ class DeploymentRun < ApplicationRecord
         yield provider.rollout_release(deployment_channel, build_number, release_version, rollout_value)
       end
     end
-  end
-
-  def halt_release_in_playstore!(rollout_value:)
-    raise ArgumentError, "cannot halt without a rollout value" if rollout_value.blank?
-
-    release.with_lock do
-      return unless rollout_started?
-
-      yield provider.halt_release(deployment_channel, build_number, release_version, rollout_value)
-    end
-  end
-
-  def upload_to_playstore!
-    return unless google_play_store_integration?
-
-    with_lock do
-      return if uploaded?
-
-      build_artifact.with_open do |file|
-        result = provider.upload(file)
-        if result.ok?
-          upload!
-        else
-          upload_fail!
-          reason = GooglePlayStoreIntegration::DISALLOWED_ERRORS_WITH_REASONS.fetch(result.error.class, :upload_failed_reason_unknown)
-          event_stamp!(reason:, kind: :error, data: stamp_data)
-          elog(result.error)
-        end
-      end
-    end
-  end
-
-  def push_to_slack!
-    return unless slack_integration?
-
-    with_lock do
-      return if released?
-      provider.deploy!(deployment_channel, { step_run: step_run })
-      complete!
-    end
-  end
-
-  def has_uploaded?
-    uploaded? || failed? || released?
-  end
-
-  # FIXME: should we take a lock around this SR? what is someone double triggers the run?
-  def start_upload!
-    if store? && step_run.similar_deployment_runs_for(self).any?(&:has_uploaded?)
-      return upload!
-    end
-
-    return Deployments::GooglePlayStore::Upload.perform_later(id) if google_play_store_integration?
-    Deployments::Slack.perform_later(id) if slack_integration?
   end
 
   def promotable?
@@ -294,10 +239,34 @@ class DeploymentRun < ApplicationRecord
     initial_rollout_percentage || Deployment::FULL_ROLLOUT_VALUE
   end
 
-  private
+  def has_uploaded?
+    uploaded? || failed? || released?
+  end
+
+  ## slack
+  #
+  def push_to_slack!
+    return unless slack_integration?
+
+    with_lock do
+      return if released?
+      provider.deploy!(deployment_channel, {step_run: step_run})
+      complete!
+    end
+  end
 
   def provider
     integration.providable
+  end
+
+  private
+
+  def release_failed
+    event_stamp!(reason: :release_failed, kind: :error, data: stamp_data)
+  end
+
+  def release_success
+    event_stamp!(reason: :released, kind: :success, data: stamp_data)
   end
 
   def stamp_data
@@ -307,11 +276,5 @@ class DeploymentRun < ApplicationRecord
       provider: integration&.providable&.display,
       file: build_artifact&.get_filename
     }
-  end
-
-  def after_dispatch
-    return complete! if external?
-    return start_distribution! if ios?
-    start_upload!
   end
 end

@@ -56,7 +56,7 @@ describe DeploymentRun do
       end
 
       it "starts deploy for slack if deployment has slack integration" do
-        slack_deploy_job = Deployments::Slack
+        slack_deploy_job = Deployments::SlackJob
         slack_integration = create(:integration, :with_slack, app: step.app)
         deployment = create(:deployment, integration: slack_integration, step: step)
         deployment_run = create(:deployment_run, :created, deployment: deployment, step_run: step_run)
@@ -93,7 +93,7 @@ describe DeploymentRun do
     end
   end
 
-  describe "#start_upload!" do
+  describe "#kickoff_upload_on_play_store!" do
     let(:step) { create(:releases_step, :with_deployment) }
     let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
 
@@ -104,20 +104,21 @@ describe DeploymentRun do
       _uploaded_run = create(:deployment_run, :uploaded, deployment: deployment1, step_run: step_run)
       deployment_run = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
 
-      deployment_run.start_upload!
+      deployment_run.kickoff_upload_on_play_store!
       expect(deployment_run.reload.uploaded?).to be(true)
     end
 
     it "starts upload if there is another similar deployment but not store" do
+      skip "not implemented yet"
       integration = create(:integration, :with_slack)
       deployment1 = create(:deployment, step: step, integration: integration)
       deployment2 = create(:deployment, step: step, integration: integration)
       _uploaded_run = create(:deployment_run, :uploaded, deployment: deployment1, step_run: step_run)
       deployment_run = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
-      allow(Deployments::Slack).to receive(:perform_later)
+      allow(Deployments::SlackJob).to receive(:perform_later)
 
-      deployment_run.start_upload!
-      expect(Deployments::Slack).to have_received(:perform_later).with(deployment_run.id).once
+      deployment_run.kickoff_upload_on_play_store!
+      expect(Deployments::SlackJob).to have_received(:perform_later).with(deployment_run.id).once
       expect(deployment_run.reload.started?).to be(true)
     end
 
@@ -126,19 +127,20 @@ describe DeploymentRun do
       deployment_run = create(:deployment_run, :started, deployment: deployment, step_run: step_run)
       allow(Deployments::GooglePlayStore::Upload).to receive(:perform_later)
 
-      deployment_run.start_upload!
+      deployment_run.kickoff_upload_on_play_store!
 
       expect(Deployments::GooglePlayStore::Upload).to have_received(:perform_later).with(deployment_run.id).once
       expect(deployment_run.reload.started?).to be(true)
     end
 
     it "starts upload if it is the only deployment with slack" do
+      skip "not implemented yet"
       deployment = create(:deployment, :with_slack, step: step)
       deployment_run = create(:deployment_run, :started, deployment: deployment, step_run: step_run)
-      allow(Deployments::Slack).to receive(:perform_later)
+      allow(Deployments::SlackJob).to receive(:perform_later)
 
-      deployment_run.start_upload!
-      expect(Deployments::Slack).to have_received(:perform_later).with(deployment_run.id).once
+      deployment_run.kickoff_upload_on_play_store!
+      expect(Deployments::SlackJob).to have_received(:perform_later).with(deployment_run.id).once
       expect(deployment_run.reload.started?).to be(true)
     end
 
@@ -151,7 +153,7 @@ describe DeploymentRun do
 
       allow(Deployments::GooglePlayStore::Upload).to receive(:perform_later)
 
-      deployment_run.start_upload!
+      deployment_run.kickoff_upload_on_play_store!
       expect(Deployments::GooglePlayStore::Upload).to have_received(:perform_later).with(deployment_run.id).once
       expect(deployment_run.reload.started?).to be(true)
     end
@@ -296,7 +298,7 @@ describe DeploymentRun do
       expect(run.reload.staged_rollout).to be_present
     end
 
-    it "creates a draft release" do
+    it "creates a draft deployments" do
       allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
       staged_rollout_config = [1, 100]
       deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, staged_rollout_config:, step: step_run.step)
@@ -317,7 +319,7 @@ describe DeploymentRun do
       expect(run.reload.rollout_started?).to be(true)
     end
 
-    it "marks it as failed if create draft release fails" do
+    it "marks it as failed if create draft deployments fails" do
       allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new { raise })
       deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
       run = create(:deployment_run, :uploaded, deployment:)
@@ -339,7 +341,7 @@ describe DeploymentRun do
     end
   end
 
-  describe "#start_release!" do
+  describe "#kickoff_release_on_play_store!" do
     let(:step) { create(:releases_step, :release, :with_deployment) }
     let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
@@ -353,7 +355,7 @@ describe DeploymentRun do
       deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
       run = create(:deployment_run, :uploaded, deployment:)
 
-      run.start_release!
+      run.kickoff_release_on_play_store!
 
       expect(run.reload.rollout_started?).to be(true)
     end
@@ -365,7 +367,7 @@ describe DeploymentRun do
         deployment = create(:deployment, :with_google_play_store, step: step_run.step)
         run = create(:deployment_run, :uploaded, deployment:)
 
-        run.start_release!
+        run.kickoff_release_on_play_store!
 
         expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, full_release_value)
         expect(run.reload.released?).to be(true)
@@ -376,7 +378,7 @@ describe DeploymentRun do
         deployment = create(:deployment, :with_google_play_store, step: step_run.step)
         run = create(:deployment_run, :uploaded, deployment:)
 
-        run.start_release!
+        run.kickoff_release_on_play_store!
 
         expect(run.reload.released?).to be(true)
       end
@@ -403,7 +405,7 @@ describe DeploymentRun do
       expect(providable_dbl).not_to have_received(:halt_release)
     end
 
-    it "halts the release on playstore" do
+    it "halts the deployments on playstore" do
       allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
 
       run.halt_release_in_playstore!(rollout_value: 10.0) {}

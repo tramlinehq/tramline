@@ -65,14 +65,14 @@ class AppStoreIntegration < ApplicationRecord
     }
   }
 
-  REVIEW_SUBMISSION_TRANSFORMATIONS = {
+  PREP_RELEASE_TRANSFORMATIONS = {
     id: :id,
     platform: :platform,
     submitted_at: :submitted_date,
     status: :state
   }
 
-  PROD_CHANNEL = { id: :app_store, name: "App Store", is_production: true }
+  PROD_CHANNEL = {id: :app_store, name: "App Store", is_production: true}
 
   if Set.new(BUILD_TRANSFORMATIONS.keys) != Set.new(ExternalBuild.minimum_required)
     raise InvalidBuildTransformations
@@ -114,12 +114,8 @@ class AppStoreIntegration < ApplicationRecord
     installation.add_build_to_group(beta_group_id, build_number)
   end
 
-  def find_review_submission(submission_id)
-    installation.find_release_submission(submission_id, REVIEW_SUBMISSION_TRANSFORMATIONS)
-  end
-
-  def create_review_submission(build_number, is_phased_release)
-    installation.create_release_submission(build_number, is_phased_release, REVIEW_SUBMISSION_TRANSFORMATIONS)
+  def prepare_release(build_number, version, is_phased_rollout)
+    installation.prepare_release(build_number, version, is_phased_rollout, PREP_RELEASE_TRANSFORMATIONS)
   end
 
   def channel_data

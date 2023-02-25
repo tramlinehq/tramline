@@ -1,4 +1,4 @@
-class Deployments::Slack < ApplicationJob
+class Deployments::SlackJob < ApplicationJob
   queue_as :high
 
   def perform(deployment_run_id)

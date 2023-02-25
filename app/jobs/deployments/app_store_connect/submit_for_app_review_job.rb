@@ -7,6 +7,6 @@ class Deployments::AppStoreConnect::SubmitForAppReviewJob < ApplicationJob
     return unless run.release.on_track?
     return unless run.production_channel?
 
-    run.submit_for_review!
+    run.prepare_for_release!
   end
 end
