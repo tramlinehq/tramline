@@ -11,6 +11,7 @@ module Installations
     WorkflowRunNotFound = Class.new(StandardError)
     BuildNotFoundInStore = Class.new(StandardError)
     AppCurrentStatusNotFoundInStore = Class.new(StandardError)
+    SubmissionCreationError = Class.new(StandardError)
     AppNotFoundInStore = Class.new(StandardError)
     WorkflowTriggerFailed = Class.new(StandardError)
     BundleIdentifierNotFound = Class.new(StandardError)

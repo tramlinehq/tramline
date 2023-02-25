@@ -22,28 +22,30 @@ class DeploymentRun < ApplicationRecord
 
   has_one :external_build, dependent: :destroy
   has_one :staged_rollout, dependent: :destroy
+  has_one :review_submission, dependent: :destroy
 
-  validates :deployment_id, uniqueness: {scope: :train_step_run_id}
+  validates :deployment_id, uniqueness: { scope: :train_step_run_id }
 
   delegate :step,
-    :release,
-    :commit,
-    :build_number,
-    :build_artifact,
-    :build_version,
-    to: :step_run
+           :release,
+           :commit,
+           :build_number,
+           :build_artifact,
+           :build_version,
+           to: :step_run
   delegate :external?,
-    :google_play_store_integration?,
-    :slack_integration?,
-    :app_store_integration?,
-    :store?,
-    :deployment_number,
-    :integration,
-    :deployment_channel,
-    :deployment_channel_name,
-    :staged_rollout?,
-    :staged_rollout_config,
-    to: :deployment
+           :google_play_store_integration?,
+           :slack_integration?,
+           :app_store_integration?,
+           :store?,
+           :deployment_number,
+           :integration,
+           :deployment_channel,
+           :deployment_channel_name,
+           :staged_rollout?,
+           :staged_rollout_config,
+           :production_channel?,
+           to: :deployment
   delegate :app, to: :step
   delegate :ios?, to: :app
   delegate :release_version, to: :release
@@ -83,7 +85,7 @@ class DeploymentRun < ApplicationRecord
       transitions from: :created, to: :started
     end
 
-    event(:submit, guard: :ios?, after_commit: :locate_external_build) do
+    event(:submit, guard: :ios?, after_commit: :find_submission) do
       transitions from: :started, to: :submitted
     end
 
@@ -112,7 +114,7 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  scope :matching_runs_for, ->(integration) { includes(:deployment).where(deployments: {integration: integration}) }
+  scope :matching_runs_for, ->(integration) { includes(:deployment).where(deployments: { integration: integration }) }
   scope :has_begun, -> { where.not(status: :created) }
 
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
@@ -127,17 +129,33 @@ class DeploymentRun < ApplicationRecord
     Deployments::AppStoreConnect::UpdateExternalBuildJob.set(wait: wait).perform_later(id, attempt:)
   end
 
-  def update_external_build
-    build_info = provider.find_build(build_number)
-    (external_build || build_external_build).update(build_info.attributes)
+  def locate_review_submission(attempt: 1, wait: 1.second)
+    Deployments::AppStoreConnect::UpdateExternalBuildJob.set(wait: wait).perform_later(id, attempt:)
+  end
 
-    GitHub::Result.new do
-      if build_info.success?
-        complete!
-      elsif build_info.failed?
-        dispatch_fail!
-      else
-        raise ExternalBuildNotInTerminalState, "Retrying in some time..."
+  def find_submission
+    if production_channel?
+      locate_review_submission
+    else
+      locate_external_build
+    end
+  end
+
+  def update_external_build(submission_id = nil)
+    if production_channel?
+      submission_info = provider.find_review_submission(submission_id)
+    else
+      build_info = provider.find_build(build_number)
+      (external_build || build_external_build).update(build_info.attributes)
+
+      GitHub::Result.new do
+        if build_info.success?
+          complete!
+        elsif build_info.failed?
+          dispatch_fail!
+        else
+          raise ExternalBuildNotInTerminalState, "Retrying in some time..."
+        end
       end
     end
   end
@@ -148,9 +166,22 @@ class DeploymentRun < ApplicationRecord
     submit!
   end
 
+
+  def submit_for_review!
+    return unless app_store_integration?
+    return unless production_channel?
+    provider.create_review_submission(build_number, staged_rollout?)
+    submit! # TODO: dubious
+  end
+
   def start_distribution!
     return unless store? && app_store_integration?
-    Deployments::AppStoreConnect::TestFlightReleaseJob.perform_later(id)
+
+    if production_channel?
+      Deployments::AppStoreConnect::SubmitForAppReviewJob.perform_later(id)
+    else
+      Deployments::AppStoreConnect::TestFlightReleaseJob.perform_later(id)
+    end
   end
 
   def start_release!
@@ -230,7 +261,7 @@ class DeploymentRun < ApplicationRecord
 
     with_lock do
       return if released?
-      provider.deploy!(deployment_channel, {step_run: step_run})
+      provider.deploy!(deployment_channel, { step_run: step_run })
       complete!
     end
   end

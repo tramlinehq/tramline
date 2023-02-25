@@ -52,6 +52,28 @@ class AppStoreIntegration < ApplicationRecord
     bundle_id: :bundle_id
   }
 
+  CHANNEL_DATA_TRANSFORMATIONS = {
+    name: :name,
+    releases: {
+      builds: {
+        version_string: :version_string,
+        status: :status,
+        build_number: :build_number,
+        id: :id,
+        release_date: :release_date
+      }
+    }
+  }
+
+  REVIEW_SUBMISSION_TRANSFORMATIONS = {
+    id: :id,
+    platform: :platform,
+    submitted_at: :submitted_date,
+    status: :state
+  }
+
+  PROD_CHANNEL = { id: :app_store, name: "App Store", is_production: true }
+
   if Set.new(BUILD_TRANSFORMATIONS.keys) != Set.new(ExternalBuild.minimum_required)
     raise InvalidBuildTransformations
   end
@@ -76,6 +98,10 @@ class AppStoreIntegration < ApplicationRecord
     true
   end
 
+  def controllable_rollout?
+    false
+  end
+
   def find_build(build_number)
     build_info(installation.find_build(build_number, BUILD_TRANSFORMATIONS))
   end
@@ -88,29 +114,29 @@ class AppStoreIntegration < ApplicationRecord
     installation.add_build_to_group(beta_group_id, build_number)
   end
 
-  CHANNEL_DATA_TRANSFORMATIONS = {
-    name: :name,
-    releases: {
-      builds: {
-        version_string: :version_string,
-        status: :status,
-        build_number: :build_number,
-        id: :id,
-        release_date: :release_date
-      }
-    }
-  }
+  def find_review_submission(submission_id)
+    installation.find_release_submission(submission_id, REVIEW_SUBMISSION_TRANSFORMATIONS)
+  end
+
+  def create_review_submission(build_number, is_phased_release)
+    installation.create_release_submission(build_number, is_phased_release, REVIEW_SUBMISSION_TRANSFORMATIONS)
+  end
 
   def channel_data
     installation.current_app_status(CHANNEL_DATA_TRANSFORMATIONS)
   end
 
   def build_channels(with_production:)
-    cache.fetch(build_channels_cache_key, expires_in: 1.hour) do
-      installation
-        .external_groups(CHANNELS_TRANSFORMATIONS)
-        .map { |channel| channel.slice(:id, :name) }
-    end
+    sliced =
+      cache.fetch(build_channels_cache_key, expires_in: 1.hour) do
+        installation
+          .external_groups(CHANNELS_TRANSFORMATIONS)
+          .push(PROD_CHANNEL)
+          .map { |channel| channel.slice(:id, :name, :is_production) }
+      end
+
+    return sliced if with_production
+    sliced.reject { |channel| channel[:is_production] }
   end
 
   def build_channels_cache_key
@@ -118,11 +144,23 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def to_s
-    "testflight"
+    "app_store"
   end
 
   def build_info(build_info)
     TestFlightInfo.new(build_info)
+  end
+
+  def correct_key
+    find_app.present?
+  rescue Installations::Errors::AppNotFoundInStore
+    errors.add(:key_id, :no_app_found)
+  rescue Apple::AppStoreConnect::Api::UnknownError
+    errors.add(:key_id, :unknown_error)
+  end
+
+  def set_external_details_on_app
+    app.set_external_details(find_app[:id])
   end
 
   class TestFlightInfo
@@ -188,17 +226,5 @@ class AppStoreIntegration < ApplicationRecord
         ]
       )
     end
-  end
-
-  def correct_key
-    find_app.present?
-  rescue Installations::Errors::AppNotFoundInStore
-    errors.add(:key_id, :no_app_found)
-  rescue Apple::AppStoreConnect::Api::UnknownError
-    errors.add(:key_id, :unknown_error)
-  end
-
-  def set_external_details_on_app
-    app.set_external_details(find_app[:id])
   end
 end

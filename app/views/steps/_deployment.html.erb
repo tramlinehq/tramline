@@ -1,4 +1,4 @@
-<% stream_url = app_integrations_build_artifact_channels_url(step.train.app.id, with_production: step.release?) %>
+<% stream_url = app_integrations_build_artifact_channels_url(step.app.id, with_production: step.release?) %>
 
 <div data-controller="dropdown-stream domain--staged-rollout-help"
      data-dropdown-stream-dynamic-select-key-value="integration_id"
@@ -44,14 +44,19 @@
           <div data-controller="reveal" class="inline-flex gap-x-4">
             <div class="flex items-center">
               <%= form.check_box :is_staged_rollout, class: "form-checkbox", data: { action: "reveal#toggle" } %>
-              <%= form.label :is_staged_rollout, "Enable Staged Rollout?", class: "text-sm ml-2" %>
-              <%= form.text_field :staged_rollout_config,
-                                  class: "ml-2 form-input",
-                                  hidden: true,
-                                  placeholder: "1, 2, 5, 10, 20, 50, 100",
-                                  data: { reveal: true,
-                                          domain__staged_rollout_help_target: "input",
-                                          action: "domain--staged-rollout-help#validateString" } %>
+              <%= form.label :is_staged_rollout, t("staged_rollout.#{step.app.platform}.checkbox"), class: "text-sm ml-2" %>
+
+              <% if step.app.ios? %>
+                <span class="ml-2 text-xs text-slate-400">Phased release in App Store goes from 1%, 2%, 5%, 10%, 20%, 50% to 100% over 7 days</span>
+              <% else %>
+                <%= form.text_field :staged_rollout_config,
+                                    class: "ml-2 form-input",
+                                    hidden: true,
+                                    placeholder: "1, 2, 5, 10, 20, 50, 100",
+                                    data: { reveal: true,
+                                            domain__staged_rollout_help_target: "input",
+                                            action: "domain--staged-rollout-help#validateString" } %>
+              <% end %>
             </div>
           </div>
         </div>

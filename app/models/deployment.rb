@@ -23,9 +23,9 @@ class Deployment < ApplicationRecord
   belongs_to :integration, optional: true
 
   validates :deployment_number, presence: true
-  validates :build_artifact_channel, uniqueness: {scope: [:integration_id, :train_step_id], message: "Deployments should be designed to have unique providers and channels"}
+  validates :build_artifact_channel, uniqueness: { scope: [:integration_id, :train_step_id], message: "Deployments should be designed to have unique providers and channels" }
   validate :staged_rollout_is_allowed
-  validate :correct_staged_rollout_config, if: :is_staged_rollout
+  validate :correct_staged_rollout_config, if: :staged_rollout?
   validate :non_prod_build_channel, if: -> { step.review? }
 
   delegate :google_play_store_integration?, :slack_integration?, :store?, :app_store_integration?, to: :integration, allow_nil: true
@@ -38,6 +38,11 @@ class Deployment < ApplicationRecord
   FULL_ROLLOUT_VALUE = BigDecimal("100")
 
   def staged_rollout? = is_staged_rollout
+
+  def staged_rollout_config
+    return [1, 2, 5, 10, 20, 50, 100] if app_store_integration?
+    staged_rollout_config
+  end
 
   def set_deployment_number
     self.deployment_number = step.deployments.maximum(:deployment_number).to_i + 1
@@ -84,6 +89,11 @@ class Deployment < ApplicationRecord
   end
 
   def correct_staged_rollout_config
+    if app_store_integration?
+      errors.add(:staged_rollout_config, :not_allowed) if staged_rollout_config
+      return
+    end
+
     if staged_rollout_config.size < 1
       errors.add(:staged_rollout_config, :at_least_one)
     end

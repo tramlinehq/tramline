@@ -1,10 +1,15 @@
 en:
+  staged_rollout:
+    ios:
+      checkbox: "Enable Phased Release?"
+    android:
+      checkbox: "Enable Staged Rollout?"
   activerecord:
     models:
       slack_integration: "Slack"
       bitrise_integration: "Bitrise"
       google_play_store_integration: "Google Play Store"
-      app_store_integration: "TestFlight"
+      app_store_integration: "App Store & TestFlight"
       gitlab_integration: "GitLab"
       github_integration: "GitHub"
       deployment: "Distribution"
@@ -31,6 +36,7 @@ en:
             is_staged_rollout:
               prod_only: "only allowed for production channel"
             staged_rollout_config:
+              not_allowed: "staged rollout config is not allowed"
               at_least_one: "should have at least one rollout percentage value"
               zero_rollout: "cannot start with zero rollout"
               increasing_order: "staged rollout should be in increasing order"

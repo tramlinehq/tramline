@@ -15,9 +15,11 @@ module Installations
     FIND_BUILD_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/builds/{build_number}"
     ADD_BUILD_TO_GROUP_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/groups/{group_id}/add_build"
     APP_CURRENT_STATUS = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/current_status"
+    CREATE_RELEASE_SUBMISSION = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id/release_submissions"
+    FIND_RELEASE_SUBMISSION = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release_submissions/{submission_id}"
 
     def external_groups(transforms)
-      execute(:get, GROUPS_URL.expand(bundle_id:).to_s, {params: {internal: false}})
+      execute(:get, GROUPS_URL.expand(bundle_id:).to_s, { params: { internal: false } })
         .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
     end
 
@@ -36,13 +38,25 @@ module Installations
     end
 
     def add_build_to_group(group_id, build_number)
-      execute(:patch, ADD_BUILD_TO_GROUP_URL.expand(bundle_id:, group_id: group_id).to_s, {json: {build_number: build_number}})
+      execute(:patch, ADD_BUILD_TO_GROUP_URL.expand(bundle_id:, group_id: group_id).to_s, { json: { build_number: } })
     end
 
     def current_app_status(transforms)
       execute(:get, APP_CURRENT_STATUS.expand(bundle_id:).to_s, {})
         .then { |app_data| app_data&.presence || raise(Installations::Errors::AppCurrentStatusNotFoundInStore) }
         .then { |tracks| Installations::Response::Keys.transform(tracks, transforms) }
+    end
+
+    def find_release_submission(submission_id, transforms)
+      execute(:get, FIND_RELEASE_SUBMISSION.expand(bundle_id:, submission_id:).to_s, {})
+        .then { |submission| Installations::Response::Keys.transform([submission], transforms) }
+        .first
+    end
+
+    def create_release_submission(build_number, is_phased_release, transforms)
+      execute(:post, CREATE_RELEASE_SUBMISSION.expand(bundle_id:).to_s, { json: { build_number:, phased_release: is_phased_release } })
+        .then { |submission| Installations::Response::Keys.transform([submission], transforms) }
+        .first
     end
 
     private
