@@ -125,6 +125,18 @@ class AppStoreIntegration < ApplicationRecord
     TestFlightInfo.new(build_info)
   end
 
+  def correct_key
+    find_app.present?
+  rescue Installations::Errors::AppNotFoundInStore
+    errors.add(:key_id, :no_app_found)
+  rescue Installations::Apple::AppStoreConnect::Api::UnknownError
+    errors.add(:key_id, :unknown_error)
+  end
+
+  def set_external_details_on_app
+    app.set_external_details(find_app[:id])
+  end
+
   class TestFlightInfo
     def initialize(build_info)
       raise ArgumentError, "build_info must be a Hash" unless build_info.is_a?(Hash)
@@ -188,17 +200,5 @@ class AppStoreIntegration < ApplicationRecord
         ]
       )
     end
-  end
-
-  def correct_key
-    find_app.present?
-  rescue Installations::Errors::AppNotFoundInStore
-    errors.add(:key_id, :no_app_found)
-  rescue Apple::AppStoreConnect::Api::UnknownError
-    errors.add(:key_id, :unknown_error)
-  end
-
-  def set_external_details_on_app
-    app.set_external_details(find_app[:id])
   end
 end

@@ -22,9 +22,9 @@ class Triggers::PostRelease
       GitHub::Result.new do
         train.create_tag!(release.branch_name)
       rescue Installations::Errors::TagReferenceAlreadyExists
-        logger.debug { "Release finalization: did not create tag, since #{train.tag_name} already existed" }
+        logger.debug("Release finalization: did not create tag, since #{train.tag_name} already existed")
       rescue Installations::Errors::TaggedReleaseAlreadyExists
-        logger.debug { "Release finalization: skipping since tagged release for #{train.tag_name} already exists!" }
+        logger.debug("Release finalization: skipping since tagged release for #{train.tag_name} already exists!")
       end
     end
   end
