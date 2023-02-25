@@ -62,8 +62,7 @@ class DeploymentRun < ApplicationRecord
   STATES = {
     created: "created",
     started: "started",
-    preparing_app_store_release: "preparing_app_store_release",
-    prepared_app_store_release: "prepared_app_store_release",
+    prepared_release: "prepared_release",
     submitted: "submitted",
     uploaded: "uploaded",
     upload_failed: "upload_failed",
@@ -89,12 +88,12 @@ class DeploymentRun < ApplicationRecord
     # submit review
     # fetch review status
     # start_rollout
-    # event(:prepare_release, guards: [:app_store_integration?, :production_channel?]) do
-    #   transitions from: :preparing_app_store_release, to: :prepared_app_store_release
-    # end
+    event(:prepare_release, guards: [:app_store_integration?, :production_channel?]) do
+      transitions from: :started, to: :prepared_release
+    end
 
     event(:submit, guard: :ios?, after_commit: :find_submission) do
-      transitions from: [:started, :prepared_app_store_release], to: :submitted
+      transitions from: [:started, :prepared_release], to: :submitted
     end
 
     event :upload, after_commit: -> { Deployments::ReleaseJob.perform_later(id) } do

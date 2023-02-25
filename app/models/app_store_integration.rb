@@ -115,7 +115,7 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def prepare_release(build_number, version, is_phased_rollout)
-    installation.prepare_release(build_number, version, is_phased_rollout, PREP_RELEASE_TRANSFORMATIONS)
+    installation.prepare_release(build_number, version, is_phased_rollout)
   end
 
   def channel_data

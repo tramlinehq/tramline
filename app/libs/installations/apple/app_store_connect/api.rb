@@ -15,7 +15,8 @@ module Installations
     FIND_BUILD_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/builds/{build_number}"
     ADD_BUILD_TO_GROUP_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/groups/{group_id}/add_build"
     APP_CURRENT_STATUS = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/current_status"
-    PREPARE_RELEASE = Addressable::Template.new "#{ENV["APPLELINK_URL"]}apple/connect/v1/apps/com.tramline.ueno/deployments/prepare"
+    PREPARE_RELEASE = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/prepare"
+    SUBMIT_RELEASE = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/submit"
 
     def external_groups(transforms)
       execute(:get, GROUPS_URL.expand(bundle_id:).to_s, {params: {internal: false}})
@@ -47,20 +48,22 @@ module Installations
         .then { |tracks| Installations::Response::Keys.transform(tracks, transforms) }
     end
 
-    def prepare_release(build_number, version, is_phased_release, transforms)
+    def prepare_release(build_number, version, is_phased_release, transforms = {})
       params = {
         build_number:,
         version:,
         is_phased_release:,
         metadata: {
           description: "the distortion is way too clear",
-          whats_new: "indecision antidote"
+          whats_new: "indecision antidote, bastardized biology"
         }
       }
 
       execute(:post, PREPARE_RELEASE.expand(bundle_id:).to_s, {json: params})
-        .then { |submission| Installations::Response::Keys.transform([submission], transforms) }
-        .first
+    end
+
+    def submit_release(build_number, transforms = {})
+      execute(:post, PREPARE_RELEASE.expand(bundle_id:).to_s, {json: {build_number:}})
     end
 
     private

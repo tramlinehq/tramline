@@ -20,17 +20,16 @@ class Deployments::AppStoreConnect::Release
   delegate :production_channel?, :provider, :deployment_channel, :build_number, to: :run
 
   def prepare_for_release!
-    return nil
     return unless allowed? && production_channel?
     provider.prepare_release(build_number, release_version, staged_rollout?)
-    submit! # TODO: dubious
+    run.prepare_release!
   end
 
   def kickoff!
     return unless allowed?
 
     if production_channel?
-      Deployments::AppStoreConnect::SubmitForAppReviewJob.perform_later(run.id)
+      Deployments::AppStoreConnect::PrepareForReleaseJob.perform_later(run.id)
     else
       Deployments::AppStoreConnect::TestFlightReleaseJob.perform_later(run.id)
     end
