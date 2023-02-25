@@ -155,7 +155,7 @@ class AppStoreIntegration < ApplicationRecord
     find_app.present?
   rescue Installations::Errors::AppNotFoundInStore
     errors.add(:key_id, :no_app_found)
-  rescue Apple::AppStoreConnect::Api::UnknownError
+  rescue Installations::Apple::AppStoreConnect::Api::UnknownError
     errors.add(:key_id, :unknown_error)
   end
 

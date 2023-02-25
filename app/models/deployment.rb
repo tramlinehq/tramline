@@ -39,11 +39,6 @@ class Deployment < ApplicationRecord
 
   def staged_rollout? = is_staged_rollout
 
-  def staged_rollout_config
-    return [1, 2, 5, 10, 20, 50, 100] if app_store_integration?
-    staged_rollout_config
-  end
-
   def set_deployment_number
     self.deployment_number = step.deployments.maximum(:deployment_number).to_i + 1
   end
@@ -78,6 +73,11 @@ class Deployment < ApplicationRecord
 
   def production_channel?
     store? && build_artifact_channel["is_production"]
+  end
+
+  def staged_rollout_values
+    return [1, 2, 5, 10, 20, 50, 100] if app_store_integration?
+    staged_rollout_config
   end
 
   private

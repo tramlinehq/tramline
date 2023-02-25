@@ -20,6 +20,7 @@ class Triggers::Release
     attr_reader :release, :release_branch
     delegate :train, to: :release
     delegate :working_branch, to: :train
+    delegate :logger, to: Rails
 
     def create_branches
       GitHub::Result.new do
@@ -28,7 +29,7 @@ class Triggers::Release
           GitHub::Result.new { value }
         end
       rescue Installations::Errors::TagReferenceAlreadyExists
-        logger.debug { "Release creation: did not create branch, since #{release_branch} already existed" }
+        logger.debug("Release creation: did not create branch, since #{release_branch} already existed")
       end
     end
   end
