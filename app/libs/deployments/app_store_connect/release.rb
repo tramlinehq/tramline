@@ -4,7 +4,7 @@ class Deployments::AppStoreConnect::Release
   end
 
   def self.locate_external_build(deployment_run)
-    new(deployment_run).locate_external_build
+    new(deployment_run).locate_external_release
   end
 
   def self.to_test_flight!(deployment_run)
@@ -19,10 +19,24 @@ class Deployments::AppStoreConnect::Release
   alias_method :run, :deployment_run
   delegate :production_channel?, :provider, :deployment_channel, :build_number, to: :run
 
+  # TODO:
+  # - validate correct build_number and version
+  # - validate status to be in PREPARE_FOR_SUBMISSION
   def prepare_for_release!
     return unless allowed? && production_channel?
     provider.prepare_release(build_number, release_version, staged_rollout?)
     run.prepare_release!
+  end
+
+  def submit_for_review!
+    # magic
+    run.submit!
+  end
+
+  def to_test_flight!
+    return unless allowed?
+    provider.release_to_testflight(deployment_channel, build_number)
+    run.submit!
   end
 
   def kickoff!
@@ -35,24 +49,23 @@ class Deployments::AppStoreConnect::Release
     end
   end
 
-  def to_test_flight!
+  def locate_external_release(attempt: 1, wait: 1.second)
     return unless allowed?
-    provider.release_to_testflight(deployment_channel, build_number)
-    run.submit!
+    Deployments::AppStoreConnect::UpdateExternalReleaseJob.set(wait: wait).perform_later(run.id, attempt:)
   end
 
-  def locate_external_build(attempt: 1, wait: 1.second)
-    return unless allowed?
-    Deployments::AppStoreConnect::UpdateExternalBuildJob.set(wait: wait).perform_later(run.id, attempt:)
+  ExternalReleaseNotInTerminalState = Class.new(StandardError)
+
+  def find_release
+    return provider.find_release if production_channel?
+    provider.find_build(build_number)
   end
 
-  ExternalBuildNotInTerminalState = Class.new(StandardError)
-
-  def update_external_build
+  def update_external_release
     return GitHub::Result.new unless allowed?
 
-    build_info = provider.find_build(build_number)
-    (run.external_build || run.build_external_build).update(build_info.attributes)
+    build_info = find_release
+    (run.external_release || run.build_external_release).update(build_info.attributes)
 
     GitHub::Result.new do
       if build_info.success?
@@ -60,7 +73,7 @@ class Deployments::AppStoreConnect::Release
       elsif build_info.failed?
         run.dispatch_fail!
       else
-        raise ExternalBuildNotInTerminalState, "Retrying in some time..."
+        raise ExternalReleaseNotInTerminalState, "Retrying in some time..."
       end
     end
   end

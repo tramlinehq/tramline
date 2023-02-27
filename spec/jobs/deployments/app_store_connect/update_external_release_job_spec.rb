@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe Deployments::AppStoreConnect::UpdateExternalBuildJob do
+describe Deployments::AppStoreConnect::UpdateExternalReleaseJob do
   describe "#perform" do
     context "when non app store deployment" do
       let(:play_store_deployment_run) { create(:deployment_run, :submitted, :with_google_play_store) }

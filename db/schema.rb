@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_02_15_073022) do
+ActiveRecord::Schema[7.0].define(version: 2023_02_27_145000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -133,7 +133,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_15_073022) do
     t.index ["fetched_at"], name: "index_external_apps_on_fetched_at"
   end
 
-  create_table "external_builds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "external_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "deployment_run_id", null: false
     t.string "name"
     t.string "build_number"
@@ -143,7 +143,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_15_073022) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "external_id"
-    t.index ["deployment_run_id"], name: "index_external_builds_on_deployment_run_id"
+    t.index ["deployment_run_id"], name: "index_external_releases_on_deployment_run_id"
   end
 
   create_table "flipper_features", force: :cascade do |t|
@@ -474,7 +474,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_15_073022) do
   add_foreign_key "deployment_runs", "train_step_runs"
   add_foreign_key "deployments", "train_steps"
   add_foreign_key "external_apps", "apps"
-  add_foreign_key "external_builds", "deployment_runs"
+  add_foreign_key "external_releases", "deployment_runs"
   add_foreign_key "integrations", "apps"
   add_foreign_key "invites", "organizations"
   add_foreign_key "invites", "users", column: "recipient_id"

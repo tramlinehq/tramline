@@ -19,7 +19,7 @@ class DeploymentRun < ApplicationRecord
 
   belongs_to :deployment, inverse_of: :deployment_runs
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
-  has_one :external_build, dependent: :destroy
+  has_one :external_release, dependent: :destroy
   has_one :staged_rollout, dependent: :destroy
   has_one :review_submission, dependent: :destroy
 
@@ -45,8 +45,6 @@ class DeploymentRun < ApplicationRecord
     :staged_rollout_config,
     :production_channel?,
     to: :deployment
-  delegate :app, to: :step
-  delegate :ios?, to: :app
   delegate :release_version, to: :release
 
   STAMPABLE_REASONS = [
@@ -92,7 +90,7 @@ class DeploymentRun < ApplicationRecord
       transitions from: :started, to: :prepared_release
     end
 
-    event(:submit, guard: :ios?, after_commit: :find_submission) do
+    event(:submit, after_commit: :find_submission) do
       transitions from: [:started, :prepared_release], to: :submitted
     end
 
@@ -132,14 +130,14 @@ class DeploymentRun < ApplicationRecord
   end
 
   def find_submission
-    Deployments::AppStoreConnect::Release.locate_external_build(self)
+    Deployments::AppStoreConnect::Release.locate_external_release(self)
   end
 
   def kickoff!
     return complete! if external?
     return Deployments::SlackJob.perform_later(id) if slack_integration?
-    return Deployments::AppStoreConnect::Release.kickoff!(self) if store? && app_store_integration?
-    kickoff_upload_on_play_store! if store? && google_play_store_integration?
+    return Deployments::AppStoreConnect::Release.kickoff!(self) if app_store_integration?
+    kickoff_upload_on_play_store! if google_play_store_integration?
   end
 
   ## play store

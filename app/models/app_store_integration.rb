@@ -65,16 +65,16 @@ class AppStoreIntegration < ApplicationRecord
     }
   }
 
-  PREP_RELEASE_TRANSFORMATIONS = {
+  RELEASE_TRANSFORMATIONS = {
     id: :id,
-    platform: :platform,
-    submitted_at: :submitted_date,
-    status: :state
+    status: :app_store_state,
+    build_number: :build_number,
+    name: :version_name
   }
 
   PROD_CHANNEL = {id: :app_store, name: "App Store", is_production: true}
 
-  if Set.new(BUILD_TRANSFORMATIONS.keys) != Set.new(ExternalBuild.minimum_required)
+  if Set.new(BUILD_TRANSFORMATIONS.keys) != Set.new(ExternalRelease.minimum_required)
     raise InvalidBuildTransformations
   end
 
@@ -106,6 +106,10 @@ class AppStoreIntegration < ApplicationRecord
     build_info(installation.find_build(build_number, BUILD_TRANSFORMATIONS))
   end
 
+  def find_release(build_number)
+    build_info(installation.find_release(build_number, RELEASE_TRANSFORMATIONS))
+  end
+
   def find_app
     @find_app ||= installation.find_app(APP_TRANSFORMATIONS)
   end
@@ -114,9 +118,7 @@ class AppStoreIntegration < ApplicationRecord
     installation.add_build_to_group(beta_group_id, build_number)
   end
 
-  def prepare_release(build_number, version, is_phased_rollout)
-    installation.prepare_release(build_number, version, is_phased_rollout)
-  end
+  delegate :prepare_release, to: :installation
 
   def channel_data
     installation.current_app_status(CHANNEL_DATA_TRANSFORMATIONS)

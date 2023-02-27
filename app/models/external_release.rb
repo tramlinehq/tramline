@@ -13,7 +13,7 @@
 #  deployment_run_id :uuid             not null, indexed
 #  external_id       :string
 #
-class ExternalBuild < ApplicationRecord
+class ExternalRelease < ApplicationRecord
   belongs_to :deployment_run
   delegate :app, :app_store_integration?, to: :deployment_run
 

@@ -14,7 +14,7 @@ class Queries::Builds
     BASE_ATTR_MAPPING.merge(built_at: BuildArtifact.arel_table[:generated_at])
   IOS_ATTR_MAPPING =
     BASE_ATTR_MAPPING
-      .merge(built_at: ExternalBuild.arel_table[:added_at], external_release_status: ExternalBuild.arel_table[:status])
+      .merge(built_at: ExternalRelease.arel_table[:added_at], external_release_status: ExternalRelease.arel_table[:status])
 
   def self.all(**params)
     new(**params).all
@@ -103,7 +103,7 @@ class Queries::Builds
 
   def ios_records
     @records ||=
-      ExternalBuild
+      ExternalRelease
         .joins(deployment_run: [join_step_run_tree])
         .select("DISTINCT (external_builds.build_number) AS version_code")
         .select(distinct_deployment_runs)
@@ -161,8 +161,8 @@ class Queries::Builds
   end
 
   def distinct_deployment_runs
-    array_agg = Arel::Nodes::NamedFunction.new "array_agg", [ExternalBuild.arel_table[:deployment_run_id]]
-    window = Arel::Nodes::Window.new.partition(ExternalBuild.arel_table[:build_number])
+    array_agg = Arel::Nodes::NamedFunction.new "array_agg", [ExternalRelease.arel_table[:deployment_run_id]]
+    window = Arel::Nodes::Window.new.partition(ExternalRelease.arel_table[:build_number])
     array_agg.over(window).as("deployment_run_ids")
   end
 end
