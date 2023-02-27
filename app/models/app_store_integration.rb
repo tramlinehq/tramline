@@ -66,7 +66,7 @@ class AppStoreIntegration < ApplicationRecord
   }
 
   RELEASE_TRANSFORMATIONS = {
-    id: :id,
+    external_id: :id,
     status: :app_store_state,
     build_number: :build_number,
     name: :version_name
@@ -74,7 +74,7 @@ class AppStoreIntegration < ApplicationRecord
 
   PROD_CHANNEL = {id: :app_store, name: "App Store", is_production: true}
 
-  if Set.new(BUILD_TRANSFORMATIONS.keys) != Set.new(ExternalRelease.minimum_required)
+  unless Set.new(BUILD_TRANSFORMATIONS.keys).superset?(Set.new(ExternalRelease.minimum_required))
     raise InvalidBuildTransformations
   end
 
@@ -107,7 +107,7 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def find_release(build_number)
-    build_info(installation.find_release(build_number, RELEASE_TRANSFORMATIONS))
+    release_info(installation.find_release(build_number, RELEASE_TRANSFORMATIONS))
   end
 
   def find_app
@@ -118,7 +118,7 @@ class AppStoreIntegration < ApplicationRecord
     installation.add_build_to_group(beta_group_id, build_number)
   end
 
-  delegate :prepare_release, to: :installation
+  delegate :prepare_release, :submit_release, to: :installation
 
   def channel_data
     installation.current_app_status(CHANNEL_DATA_TRANSFORMATIONS)
@@ -147,6 +147,10 @@ class AppStoreIntegration < ApplicationRecord
 
   def build_info(build_info)
     TestFlightInfo.new(build_info)
+  end
+
+  def release_info(build_info)
+    AppStoreReleaseInfo.new(build_info)
   end
 
   def correct_key
@@ -221,6 +225,56 @@ class AppStoreIntegration < ApplicationRecord
           BuildInternalState::PROCESSING_EXCEPTION,
           BuildInternalState::MISSING_EXPORT_COMPLIANCE,
           BuildInternalState::EXPIRED
+        ]
+      )
+    end
+  end
+
+  class AppStoreReleaseInfo
+    def initialize(release_info)
+      raise ArgumentError, "release_info must be a Hash" unless release_info.is_a?(Hash)
+      @release_info = release_info
+    end
+
+    attr_reader :release_info
+    module AppStoreState
+      READY_FOR_SALE = "READY_FOR_SALE"
+      PROCESSING_FOR_APP_STORE = "PROCESSING_FOR_APP_STORE"
+      PENDING_DEVELOPER_RELEASE = "PENDING_DEVELOPER_RELEASE"
+      PENDING_APPLE_RELEASE = "PENDING_APPLE_RELEASE"
+      IN_REVIEW = "IN_REVIEW"
+      WAITING_FOR_REVIEW = "WAITING_FOR_REVIEW"
+      DEVELOPER_REJECTED = "DEVELOPER_REJECTED"
+      DEVELOPER_REMOVED_FROM_SALE = "DEVELOPER_REMOVED_FROM_SALE"
+      REJECTED = "REJECTED"
+      PREPARE_FOR_SUBMISSION = "PREPARE_FOR_SUBMISSION"
+      METADATA_REJECTED = "METADATA_REJECTED"
+      INVALID_BINARY = "INVALID_BINARY"
+    end
+
+    def attributes
+      release_info
+    end
+
+    def found?
+      release_info.present?
+    end
+
+    def success?
+      release_info[:status].in?(
+        [
+          AppStoreState::PENDING_DEVELOPER_RELEASE
+        ]
+      )
+    end
+
+    def failed?
+      release_info[:status].in?(
+        [
+          AppStoreState::REJECTED,
+          AppStoreState::INVALID_BINARY,
+          AppStoreState::DEVELOPER_REJECTED,
+          AppStoreState::METADATA_REJECTED
         ]
       )
     end

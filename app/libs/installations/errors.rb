@@ -10,6 +10,7 @@ module Installations
     BuildExistsInBuildChannel = Class.new(StandardError)
     WorkflowRunNotFound = Class.new(StandardError)
     BuildNotFoundInStore = Class.new(StandardError)
+    ReleaseNotFoundInStore = Class.new(StandardError)
     AppCurrentStatusNotFoundInStore = Class.new(StandardError)
     SubmissionCreationError = Class.new(StandardError)
     AppNotFoundInStore = Class.new(StandardError)

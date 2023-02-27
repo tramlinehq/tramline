@@ -17,6 +17,7 @@ module Installations
     APP_CURRENT_STATUS = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/current_status"
     PREPARE_RELEASE = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/prepare"
     SUBMIT_RELEASE = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/submit"
+    FIND_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release"
 
     def external_groups(transforms)
       execute(:get, GROUPS_URL.expand(bundle_id:).to_s, {params: {internal: false}})
@@ -33,6 +34,13 @@ module Installations
     def find_build(build_number, transforms)
       execute(:get, FIND_BUILD_URL.expand(bundle_id:, build_number:).to_s, {})
         .then { |build| build&.presence || raise(Installations::Errors::BuildNotFoundInStore) }
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
+    end
+
+    def find_release(build_number, transforms)
+      execute(:get, FIND_RELEASE_URL.expand(bundle_id:).to_s, {params: {build_number:}})
+        .then { |release| release&.presence || raise(Installations::Errors::ReleaseNotFoundInStore) }
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
@@ -54,8 +62,8 @@ module Installations
         version:,
         is_phased_release:,
         metadata: {
-          description: "the distortion is way too clear",
-          whats_new: "indecision antidote, bastardized biology"
+          description: "The true Yamanote line aural aesthetic.",
+          whats_new: "We now have the total distance covered by each station across the line!"
         }
       }
 
@@ -63,7 +71,7 @@ module Installations
     end
 
     def submit_release(build_number, transforms = {})
-      execute(:post, PREPARE_RELEASE.expand(bundle_id:).to_s, {json: {build_number:}})
+      execute(:patch, SUBMIT_RELEASE.expand(bundle_id:).to_s, {json: {build_number:}})
     end
 
     private
@@ -114,8 +122,8 @@ module Installations
       response = HTTP.auth(access_token.to_s).headers(appstore_connect_headers).public_send(verb, url, params)
 
       raise UnknownError if _5xx?(response.status)
-      return if _4xx?(response.status)
-      return if no_content?(response.status)
+      return false if _4xx?(response.status)
+      return true if no_content?(response.status)
 
       JSON.parse(response.body.to_s)
     end

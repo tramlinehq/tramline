@@ -1,25 +1,25 @@
-<% if deployment_run.external_build.present? %>
+<% if deployment_run.external_release.present? %>
   <div class="border-2 border-dashed w-full 2xl:w-1/2 rounded-lg border-slate-100 text-slate-500 my-2 px-2 py-1">
     <div class="py-1">
       Version
-      <span class="font-mono"><%= deployment_run.external_build.name %></span>
+      <span class="font-mono"><%= deployment_run.external_release.name %></span>
       • Build
-      <span class="font-mono"><%= deployment_run.external_build.build_number %></span>
+      <span class="font-mono"><%= deployment_run.external_release.build_number %></span>
     </div>
 
     <div class="py-1">
-      <%= "Added to TestFlight " + ago_in_words(deployment_run.external_build.added_at) %>
+      <%= "Added to TestFlight " + ago_in_words(deployment_run.external_release.added_at) %>
     </div>
 
     <div class="py-1">
       TestFlight status •
       <span class="bg-slate-400 rounded-full py-1 px-2 text-xs text-white">
-        <%= deployment_run.external_build.status.titleize.upcase %>
+        <%= deployment_run.external_release.status.titleize.upcase %>
       </span>
     </div>
 
     <div class="py-1">
-      <%= link_to_external "Testflight build ↗", deployment_run.external_build.store_link, class: "underline" %>
+      <%= link_to_external "Testflight build ↗", deployment_run.external_release.store_link, class: "underline" %>
     </div>
   </div>
 <% end %>

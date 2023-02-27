@@ -57,6 +57,8 @@ module ReleasesHelper
         ["About to start", :inert]
       when :started
         ["Running", :ongoing]
+      when :prepared_release
+        ["Ready for review", :ongoing]
       when :submitted
         ["Submitted for review", :ongoing]
       when :uploaded

@@ -46,6 +46,7 @@ class DeploymentRun < ApplicationRecord
     :production_channel?,
     to: :deployment
   delegate :release_version, to: :release
+  delegate :app, to: :release
 
   STAMPABLE_REASONS = [
     "created",
