@@ -43,7 +43,7 @@ crumb :release do |release|
 end
 
 crumb :timeline_release do |release|
-  link "Event Log", timeline_release_path(release)
+  link "Event Timeline", timeline_release_path(release)
   parent :release, release
 end
 
