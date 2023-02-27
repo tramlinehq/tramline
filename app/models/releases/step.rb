@@ -26,7 +26,6 @@ class Releases::Step < ApplicationRecord
   has_many :runs, class_name: "Releases::Step::Run", inverse_of: :step, foreign_key: :train_step_id, dependent: :destroy
   has_many :deployments, -> { sequential }, foreign_key: :train_step_id, inverse_of: :step, dependent: :destroy
   has_many :deployment_runs, through: :deployments, class_name: "DeploymentRun"
-  has_one :app, through: :train
 
   validates :ci_cd_channel, presence: true, uniqueness: {scope: :train_id, message: "you have already used this in another step of this train!"}
   validates :release_suffix, presence: true

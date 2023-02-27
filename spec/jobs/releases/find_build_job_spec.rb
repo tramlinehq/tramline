@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe Releases::AppStoreConnect::FindBuildJob do
+describe Releases::FindBuildJob do
   describe "#perform" do
     let(:step_run) { create_step_run_for_ios(:build_ready) }
     let(:build_info) {

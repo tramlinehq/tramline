@@ -29,7 +29,7 @@ class Deployment < ApplicationRecord
   validate :non_prod_build_channel, if: -> { step.review? }
 
   delegate :google_play_store_integration?, :slack_integration?, :store?, :app_store_integration?, to: :integration, allow_nil: true
-  delegate :train, to: :step
+  delegate :train, :app, to: :step
 
   scope :sequential, -> { order("deployments.deployment_number ASC") }
 
@@ -45,6 +45,14 @@ class Deployment < ApplicationRecord
 
   def external?
     integration.nil?
+  end
+
+  def uploadable?
+    app.android? && (slack_integration? || google_play_store_integration? || external?)
+  end
+
+  def findable?
+    app.ios? && app_store_integration?
   end
 
   def first?

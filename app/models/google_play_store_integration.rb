@@ -77,6 +77,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
     end
   end
 
+  def find_build(_)
+    raise Integrations::UnsupportedAction
+  end
+
   def creatable?
     true
   end

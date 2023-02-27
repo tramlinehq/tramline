@@ -1,4 +1,4 @@
-class Releases::AppStoreConnect::FindBuildJob
+class Releases::FindBuildJob
   include Sidekiq::Job
   include Loggable
 
