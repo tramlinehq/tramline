@@ -40,8 +40,8 @@ class Deployments::AppStoreConnect::Release
     new(deployment_run).to_test_flight!
   end
 
-  def self.start_rollout!(deployment_run)
-    new(deployment_run).start_rollout!
+  def self.start_release!(deployment_run)
+    new(deployment_run).start_release!
   end
 
   def initialize(deployment_run)
@@ -70,11 +70,15 @@ class Deployments::AppStoreConnect::Release
     run.submit! if provider.submit_release(build_number)
   end
 
-  def start_rollout!
+  def start_release!
     return unless allowed? && production_channel?
 
+    # FIXME: this should be handled gracefully
     if provider.start_release(build_number)
-      run.create_staged_rollout!(config: staged_rollout_config) if staged_rollout?
+      if staged_rollout?
+        run.create_staged_rollout!(config: staged_rollout_config)
+      end
+
       Deployments::AppStoreConnect::FindLiveReleaseJob.perform_later(run.id)
     else
       run.dispatch_fail!

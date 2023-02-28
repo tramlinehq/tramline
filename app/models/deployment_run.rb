@@ -103,7 +103,6 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :start_rollout, guard: :staged_rollout? do
-      after { rollout! }
       transitions from: [:uploaded, :ready_to_release], to: :rollout_started
     end
 
@@ -170,10 +169,19 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  def kickoff_release_on_play_store!
+  def start_release! # function that gets called from controller
     return unless store?
-    return start_rollout! if staged_rollout?
-    fully_release_to_playstore! if google_play_store_integration?
+
+    if google_play_store_integration?
+      if staged_rollout?
+        start_rollout!
+        rollout_to_playstore!
+      else
+        fully_release_to_playstore!
+      end
+    end
+
+    Deployments::AppStoreConnect::Release.start_release! if app_store_integration?
   end
 
   def fully_release_to_playstore!
@@ -194,11 +202,6 @@ class DeploymentRun < ApplicationRecord
       return unless rollout_started?
       yield provider.halt_release(deployment_channel, build_number, release_version, rollout_value)
     end
-  end
-
-  def rollout!
-    return Deployments::AppStoreConnect::Release.rollout! if app_store_integration?
-    rollout_to_playstore! if google_play_store_integration?
   end
 
   def rollout_to_playstore!
