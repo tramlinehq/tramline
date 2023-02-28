@@ -34,6 +34,7 @@ class Deployment < ApplicationRecord
   scope :sequential, -> { order("deployments.deployment_number ASC") }
 
   before_save :set_deployment_number, if: :new_record?
+  before_save :set_default_staged_rollout, if: [:new_record?, :app_store_integration?, :staged_rollout?]
 
   FULL_ROLLOUT_VALUE = BigDecimal("100")
 
@@ -83,12 +84,11 @@ class Deployment < ApplicationRecord
     store? && build_artifact_channel["is_production"]
   end
 
-  def staged_rollout_values
-    return [1, 2, 5, 10, 20, 50, 100] if app_store_integration?
-    staged_rollout_config
-  end
-
   private
+
+  def set_default_staged_rollout
+    self.staged_rollout_config = AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE
+  end
 
   def staged_rollout_is_allowed
     if is_staged_rollout && !production_channel?

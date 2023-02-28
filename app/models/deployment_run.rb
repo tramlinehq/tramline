@@ -21,7 +21,6 @@ class DeploymentRun < ApplicationRecord
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
   has_one :external_release, dependent: :destroy
   has_one :staged_rollout, dependent: :destroy
-  has_one :review_submission, dependent: :destroy
 
   validates :deployment_id, uniqueness: {scope: :train_step_run_id}
 
@@ -65,6 +64,7 @@ class DeploymentRun < ApplicationRecord
     submitted: "submitted",
     uploaded: "uploaded",
     upload_failed: "upload_failed",
+    ready_to_release: "ready_to_release",
     rollout_started: "rollout_started",
     released: "released",
     failed: "failed"
@@ -81,12 +81,6 @@ class DeploymentRun < ApplicationRecord
       transitions from: :created, to: :started
     end
 
-    # transitions from: :created, to: :preparing_app_store_release, guards: [:app_store_integration?, :production_channel?]
-    # dispatch (trigger)
-    # prepare deployments
-    # submit review
-    # fetch review status
-    # start_rollout
     event(:prepare_release, guards: [:app_store_integration?, :production_channel?]) do
       transitions from: :started, to: :prepared_release
     end
@@ -104,9 +98,13 @@ class DeploymentRun < ApplicationRecord
       transitions from: :started, to: :upload_failed
     end
 
+    event :ready_to_release do
+      transitions from: :submitted, to: :ready_to_release
+    end
+
     event :start_rollout, guard: :staged_rollout? do
       after { rollout! }
-      transitions from: :uploaded, to: :rollout_started
+      transitions from: [:uploaded, :ready_to_release], to: :rollout_started
     end
 
     event :dispatch_fail, after_commit: :release_failed do
@@ -116,7 +114,7 @@ class DeploymentRun < ApplicationRecord
 
     event :complete, after_commit: :release_success do
       after { step_run.finish_deployment!(deployment) }
-      transitions from: [:created, :uploaded, :started, :submitted, :rollout_started], to: :released
+      transitions from: [:created, :uploaded, :started, :submitted, :rollout_started, :ready_to_release], to: :released
     end
   end
 
@@ -199,6 +197,11 @@ class DeploymentRun < ApplicationRecord
   end
 
   def rollout!
+    return Deployments::AppStoreConnect::Release.rollout! if app_store_integration?
+    rollout_to_playstore! if google_play_store_integration?
+  end
+
+  def rollout_to_playstore!
     release_with(is_draft: true) do |result|
       if result.ok?
         create_staged_rollout!(config: staged_rollout_config)

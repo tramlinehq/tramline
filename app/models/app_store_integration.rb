@@ -33,6 +33,8 @@ class AppStoreIntegration < ApplicationRecord
 
   after_create_commit :refresh_external_app
 
+  DEFAULT_PHASED_RELEASE_SEQUENCE = [1, 2, 5, 10, 20, 50, 100]
+
   CHANNELS_TRANSFORMATIONS = {
     id: :id,
     name: :name
@@ -69,7 +71,9 @@ class AppStoreIntegration < ApplicationRecord
     external_id: :id,
     status: :app_store_state,
     build_number: :build_number,
-    name: :version_name
+    name: :version_name,
+    phased_release_day: [:phased_release, :current_day_number],
+    phased_release_status: [:phased_release, :phased_release_state]
   }
 
   PROD_CHANNEL = {id: :app_store, name: "App Store", is_production: true}
@@ -110,6 +114,10 @@ class AppStoreIntegration < ApplicationRecord
     release_info(installation.find_release(build_number, RELEASE_TRANSFORMATIONS))
   end
 
+  def find_live_release
+    release_info(installation.find_live_release(RELEASE_TRANSFORMATIONS))
+  end
+
   def find_app
     @find_app ||= installation.find_app(APP_TRANSFORMATIONS)
   end
@@ -118,7 +126,7 @@ class AppStoreIntegration < ApplicationRecord
     installation.add_build_to_group(beta_group_id, build_number)
   end
 
-  delegate :prepare_release, :submit_release, to: :installation
+  delegate :prepare_release, :submit_release, :start_release, to: :installation
 
   def channel_data
     installation.current_app_status(CHANNEL_DATA_TRANSFORMATIONS)
@@ -237,6 +245,7 @@ class AppStoreIntegration < ApplicationRecord
     end
 
     attr_reader :release_info
+
     module AppStoreState
       READY_FOR_SALE = "READY_FOR_SALE"
       PROCESSING_FOR_APP_STORE = "PROCESSING_FOR_APP_STORE"
@@ -258,6 +267,14 @@ class AppStoreIntegration < ApplicationRecord
 
     def found?
       release_info.present?
+    end
+
+    def phased_release_stage
+      release_info[:phased_release_day].pred
+    end
+
+    def live?(build_number)
+      release_info[:build_number] == build_number && release_info[:status] == AppStoreState::READY_FOR_SALE
     end
 
     def success?

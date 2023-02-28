@@ -56,6 +56,13 @@ class StagedRollout < ApplicationRecord
     end
   end
 
+  def update_stage(stage)
+    update(current_stage: stage)
+    start! if created?
+    retry! if failed?
+    complete! if finished?
+  end
+
   def last_rollout_percentage
     return if created?
     config[current_stage]
@@ -83,10 +90,7 @@ class StagedRollout < ApplicationRecord
 
     release_with(rollout_value: next_rollout_percentage) do |result|
       if result.ok?
-        update!(current_stage: next_stage)
-        start! if created?
-        retry! if failed?
-        complete! if finished?
+        update_stage(next_stage)
       else
         fail!
         elog(result.error)

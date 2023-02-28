@@ -15,9 +15,11 @@ module Installations
     FIND_BUILD_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/builds/{build_number}"
     ADD_BUILD_TO_GROUP_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/groups/{group_id}/add_build"
     APP_CURRENT_STATUS = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/current_status"
-    PREPARE_RELEASE = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/prepare"
-    SUBMIT_RELEASE = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/submit"
+    PREPARE_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/prepare"
+    SUBMIT_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/submit"
+    START_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/start"
     FIND_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release"
+    FIND_LIVE_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live"
 
     def external_groups(transforms)
       execute(:get, GROUPS_URL.expand(bundle_id:).to_s, {params: {internal: false}})
@@ -45,6 +47,13 @@ module Installations
         .first
     end
 
+    def find_live_release(transforms)
+      execute(:get, FIND_LIVE_RELEASE_URL.expand(bundle_id:).to_s, {})
+        .then { |release| release&.presence || raise(Installations::Errors::ReleaseNotFoundInStore) }
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
+    end
+
     def add_build_to_group(group_id, build_number)
       execute(:patch, ADD_BUILD_TO_GROUP_URL.expand(bundle_id:, group_id: group_id).to_s,
         {json: {build_number:}})
@@ -67,11 +76,15 @@ module Installations
         }
       }
 
-      execute(:post, PREPARE_RELEASE.expand(bundle_id:).to_s, {json: params})
+      execute(:post, PREPARE_RELEASE_URL.expand(bundle_id:).to_s, {json: params})
     end
 
     def submit_release(build_number, transforms = {})
-      execute(:patch, SUBMIT_RELEASE.expand(bundle_id:).to_s, {json: {build_number:}})
+      execute(:patch, SUBMIT_RELEASE_URL.expand(bundle_id:).to_s, {json: {build_number:}})
+    end
+
+    def start_release(build_number, transforms = {})
+      execute(:patch, START_RELEASE_URL.expand(bundle_id:).to_s, {json: {build_number:}})
     end
 
     private
