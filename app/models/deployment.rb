@@ -98,7 +98,7 @@ class Deployment < ApplicationRecord
 
   def correct_staged_rollout_config
     if app_store_integration?
-      errors.add(:staged_rollout_config, :not_allowed) if staged_rollout_config
+      errors.add(:staged_rollout_config, :not_allowed) if staged_rollout_config.present?
       return
     end
 
