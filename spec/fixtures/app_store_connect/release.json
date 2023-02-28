@@ -1,0 +1,27 @@
+{
+  "id": "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+  "version_name": "1.8.0",
+  "app_store_state": "READY_FOR_SALE",
+  "release_type": "MANUAL",
+  "earliest_release_date": null,
+  "downloadable": true,
+  "created_date": "2023-02-25T03:02:46-08:00",
+  "build_number": "33417",
+  "phased_release": {
+    "id": "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+    "phased_release_state": "ACTIVE",
+    "start_date": "2023-02-28T06:38:39Z",
+    "total_pause_duration": 0,
+    "current_day_number": 1
+  },
+  "details": {
+    "id": "ef59d099-6154-4ccb-826b-3ffe6005ed59",
+    "description": "The true Yamanote line aural aesthetic.",
+    "locale": "en-US",
+    "keywords": "japanese, aural, subway",
+    "marketing_url": null,
+    "promotional_text": null,
+    "support_url": "http://tramline.app",
+    "whats_new": "We now have the total distance covered by each station across the line!"
+  }
+}
