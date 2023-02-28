@@ -87,6 +87,7 @@ class Deployments::AppStoreConnect::Release
 
   def track_live_release_status(attempt: 1, wait: 1.second)
     release_info = provider.find_live_release
+
     if release_info.live?(build_number)
       return run.staged_rollout.update_stage(release_info.phased_release_stage) if staged_rollout?
       return run.complete!
