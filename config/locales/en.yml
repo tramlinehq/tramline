@@ -14,6 +14,12 @@ en:
       github_integration: "GitHub"
       deployment: "Distribution"
     attributes:
+      integration:
+        categories:
+          version_control: "Version Control"
+          ci_cd: "Build Servers"
+          notification: "Notifications"
+          build_channel: "Distributions"
       bitrise_integration:
         access_token: "bitrise personal access token"
       google_play_store_integration:
