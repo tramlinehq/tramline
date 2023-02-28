@@ -10,6 +10,7 @@ class Releases::FindBuildJob
     if exception.is_a?(Installations::Errors::BuildNotFoundInStore)
       30 * (count**2)
     else
+      elog(exception)
       :kill
     end
   end
@@ -26,8 +27,5 @@ class Releases::FindBuildJob
     run = Releases::Step::Run.find(step_run_id)
     return unless run.release.on_track?
     run.build_found! if run.find_build.found?
-  rescue => e
-    elog(e)
-    raise
   end
 end

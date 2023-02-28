@@ -21,6 +21,16 @@ module Installations
     FIND_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release"
     FIND_LIVE_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live"
 
+    # bundle id not found - Installations::Errors::AppNotFoundInStore
+    # build not found
+    # beta group not found
+    # export compliance not found
+    # prepare not allowed because of existing release
+    # release for review not found
+    # review already in progress
+    # build mismatch between tramline and appstore
+    # release already submitted
+
     def external_groups(transforms)
       execute(:get, GROUPS_URL.expand(bundle_id:).to_s, {params: {internal: false}})
         .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
@@ -135,18 +145,19 @@ module Installations
       response = HTTP.auth(access_token.to_s).headers(appstore_connect_headers).public_send(verb, url, params)
 
       raise UnknownError if _5xx?(response.status)
-      return false if _4xx?(response.status)
       return true if no_content?(response.status)
 
-      JSON.parse(response.body.to_s)
+      body = JSON.parse(response.body.to_s)
+      return body unless error?(response.status)
+      raise Installations::Apple::AppStoreConnect::Error.handle(body)
     end
 
     def _5xx?(code)
       code.between?(500, 599)
     end
 
-    def _4xx?(code)
-      code.between?(400, 599)
+    def error?(code)
+      code.between?(400, 499)
     end
 
     def no_content?(code)
