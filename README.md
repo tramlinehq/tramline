@@ -18,18 +18,18 @@
 </p>
 
 <p align="center">
-  <a href="https://tramline.app">Website</a>
+  <a href="https://tramline.app" target="_blank" rel="noopener noreferrer">Website</a>
   ·
-  <a href="https://tramline.substack.com">Latest Updates</a>
+  <a href="https://tramline.substack.com" target="_blank" rel="noopener noreferrer">Latest Updates</a>
   ·
-  <a href="https://tramline.app/blog">Blog</a>
+  <a href="https://tramline.app/blog" target="_blank" rel="noopener noreferrer">Blog</a>
 </p>
 
 <p align="center">
-  <a href="https://twitter.com/tramlinehq/">
+  <a href="https://twitter.com/tramlinehq/" target="_blank" rel="noopener noreferrer">
     <img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/tramlinehq?style=social">
   </a>
-  <a href="https://discord.gg/u7VwyvBV2Z">
+  <a href="https://discord.gg/u7VwyvBV2Z" target="_blank" rel="noopener noreferrer">
     <img alt="Discord" src="https://img.shields.io/discord/974284993641725962?style=plastic">
   </a>
 
