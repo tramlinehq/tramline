@@ -48,5 +48,5 @@
     <img src="https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg" />
   </a>
 
-  <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/w/tramlinehq/tramline">
+  <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/tramlinehq/tramline">
 </p>
