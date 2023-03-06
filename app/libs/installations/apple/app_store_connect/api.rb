@@ -38,28 +38,24 @@ module Installations
 
     def find_app(transforms)
       execute(:get, FIND_APP_URL.expand(bundle_id:).to_s, {})
-        .then { |app| app&.presence || raise(Installations::Errors::AppNotFoundInStore) }
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
 
     def find_build(build_number, transforms)
       execute(:get, FIND_BUILD_URL.expand(bundle_id:, build_number:).to_s, {})
-        .then { |build| build&.presence || raise(Installations::Errors::BuildNotFoundInStore) }
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
 
     def find_release(build_number, transforms)
       execute(:get, FIND_RELEASE_URL.expand(bundle_id:).to_s, {params: {build_number:}})
-        .then { |release| release&.presence || raise(Installations::Errors::ReleaseNotFoundInStore) }
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
 
     def find_live_release(transforms)
       execute(:get, FIND_LIVE_RELEASE_URL.expand(bundle_id:).to_s, {})
-        .then { |release| release&.presence || raise(Installations::Errors::ReleaseNotFoundInStore) }
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
@@ -71,7 +67,6 @@ module Installations
 
     def current_app_status(transforms)
       execute(:get, APP_CURRENT_STATUS.expand(bundle_id:).to_s, {})
-        .then { |app_data| app_data&.presence || raise(Installations::Errors::AppCurrentStatusNotFoundInStore) }
         .then { |tracks| Installations::Response::Keys.transform(tracks, transforms) }
     end
 

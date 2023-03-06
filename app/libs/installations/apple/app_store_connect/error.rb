@@ -2,11 +2,60 @@ module Installations
   class Apple::AppStoreConnect::Error
     ERRORS = [
       {
-        resource: "PullRequest",
-        code: "custom",
-        message_matcher: /No commits between/,
-        decorated_exception: Installations::Errors::PullRequestWithoutCommits
+        resource: "app",
+        code: "not_found",
+        decorated_exception: Installations::Errors::AppNotFoundInStore
       },
+      {
+        resource: "build",
+        code: "not_found",
+        decorated_exception: Installations::Errors::BuildNotFoundInStore
+      },
+      {
+        resource: "build",
+        code: "export_compliance_not_updateable",
+        decorated_exception: Installations::Errors::AppStoreBuildNotSubmittable
+      },
+      {
+        resource: "beta_group",
+        code: "not_found",
+        decorated_exception: Installations::Errors::BetaGroupNotFound
+      },
+      {
+        resource: "release",
+        code: "not_found",
+        decorated_exception: Installations::Errors::ReleaseNotFoundInStore
+      },
+      {
+        resource: "release",
+        code: "review_submission_not_allowed",
+        decorated_exception: Installations::Errors::AppStoreReviewSubmissionNotAllowed
+      },
+      {
+        resource: "release",
+        code: "build_mismatch",
+        decorated_exception: Installations::Errors::AppStoreBuildMismatch
+      },
+      {
+        resource: "release",
+        code: "review_in_progress",
+        decorated_exception: Installations::Errors::AppStoreReviewInProgress
+      },
+      {
+        resource: "release",
+        code: "review_already_created",
+        decorated_exception: Installations::Errors::AppStoreReviewSubmissionExists
+      },
+      {
+        resource: "release",
+        code: "phased_release_not_found",
+        decorated_exception: Installations::Errors::PhasedReleaseNotFound
+      },
+      {
+        resource: "release",
+        code: "release_already_prepared",
+        decorated_exception: Installations::Errors::ReleaseAlreadyExists
+      }
     ]
 
     def self.handle(response_body)
