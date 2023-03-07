@@ -19,10 +19,10 @@ class DeploymentRun < ApplicationRecord
   include Loggable
   using RefinedArray
 
-  belongs_to :deployment, inverse_of: :deployment_runs
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
-  has_one :external_release, dependent: :destroy
+  belongs_to :deployment, inverse_of: :deployment_runs
   has_one :staged_rollout, dependent: :destroy
+  has_one :external_release, dependent: :destroy
 
   validates :deployment_id, uniqueness: {scope: :train_step_run_id}
 
@@ -186,7 +186,7 @@ class DeploymentRun < ApplicationRecord
       end
     end
 
-    Deployments::AppStoreConnect::Release.start_release! if app_store_integration?
+    Deployments::AppStoreConnect::Release.start_release!(self) if app_store_integration?
   end
 
   def fully_release_to_playstore!
@@ -240,6 +240,14 @@ class DeploymentRun < ApplicationRecord
 
   def rolloutable?
     step.release? && promotable? && deployment.staged_rollout? && rollout_started?
+  end
+
+  def app_store_release?
+    step.release? && release.on_track? && app_store_integration? && production_channel?
+  end
+
+  def reviewable?
+    app_store_release? && may_submit?
   end
 
   def rollout_percentage

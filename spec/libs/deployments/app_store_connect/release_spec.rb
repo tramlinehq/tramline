@@ -22,8 +22,9 @@ describe Deployments::AppStoreConnect::Release do
 
     context "when production channel" do
       it "starts preparing the release" do
-        deployment = create(:deployment, :with_app_store, :with_production_channel)
-        run = create(:deployment_run, deployment:)
+        step_run = create(:releases_step_run, :with_release_step)
+        deployment = create(:deployment, :with_app_store, :with_production_channel, step: step_run.step)
+        run = create(:deployment_run, step_run:, deployment:)
 
         described_class.kickoff!(run)
 
@@ -33,8 +34,9 @@ describe Deployments::AppStoreConnect::Release do
 
     context "when not production channel" do
       it "starts adding to beta group when testflight" do
-        deployment = create(:deployment, :with_step, :with_app_store)
-        run = create(:deployment_run, deployment:)
+        step_run = create(:releases_step_run, :with_release_step)
+        deployment = create(:deployment, :with_step, :with_app_store, step: step_run.step)
+        run = create(:deployment_run, step_run:, deployment:)
 
         described_class.kickoff!(run)
 
@@ -51,8 +53,9 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     it "does nothing if not allowed" do
-      deployment = create(:deployment, :with_app_store, :with_production_channel)
-      run = create(:deployment_run, :started, deployment:)
+      step_run = create(:releases_step_run, :with_release_step)
+      deployment = create(:deployment, :with_app_store, :with_production_channel, step: step_run.step)
+      run = create(:deployment_run, :started, step_run:, deployment:)
 
       expect(described_class.to_test_flight!(run)).to be_nil
 
@@ -60,8 +63,9 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when successful" do
-      let(:deployment) { create(:deployment, :with_step, :with_app_store) }
-      let(:run) { create(:deployment_run, :started, deployment:) }
+      let(:step_run) { create(:releases_step_run, :with_release_step) }
+      let(:deployment) { create(:deployment, :with_step, :with_app_store, step: step_run.step) }
+      let(:run) { create(:deployment_run, :started, step_run:, deployment:) }
 
       before do
         allow(providable_dbl).to receive(:release_to_testflight).and_return(GitHub::Result.new)
@@ -81,8 +85,9 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when failure" do
-      let(:deployment) { create(:deployment, :with_step, :with_app_store) }
-      let(:run) { create(:deployment_run, :started, deployment:) }
+      let(:step_run) { create(:releases_step_run, :deployment_started, :with_release_step) }
+      let(:deployment) { create(:deployment, :with_step, :with_app_store, step: step_run.step) }
+      let(:run) { create(:deployment_run, :started, step_run:, deployment:) }
       let(:error) { Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "beta_group", "code" => "not_found"}}) }
 
       before do
@@ -119,8 +124,9 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when successful" do
-      let(:deployment) { create(:deployment, :with_app_store, :with_production_channel) }
-      let(:run) { create(:deployment_run, :started, deployment:) }
+      let(:step_run) { create(:releases_step_run, :with_release_step) }
+      let(:deployment) { create(:deployment, :with_app_store, :with_production_channel, step: step_run.step) }
+      let(:run) { create(:deployment_run, :started, step_run:, deployment:) }
 
       before do
         allow(providable_dbl).to receive(:prepare_release).and_return(GitHub::Result.new)
@@ -185,8 +191,9 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when successful" do
-      let(:deployment) { create(:deployment, :with_app_store, :with_production_channel) }
-      let(:run) { create(:deployment_run, :prepared_release, deployment:) }
+      let(:step_run) { create(:releases_step_run, :with_release_step) }
+      let(:deployment) { create(:deployment, :with_app_store, :with_production_channel, step: step_run.step) }
+      let(:run) { create(:deployment_run, :prepared_release, step_run:, deployment:) }
 
       before do
         allow(providable_dbl).to receive(:submit_release).and_return(GitHub::Result.new)

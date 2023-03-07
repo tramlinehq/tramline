@@ -40,17 +40,26 @@ module Deployments
 
       attr_reader :deployment_run
       alias_method :run, :deployment_run
-      delegate :production_channel?, :provider, :deployment_channel, :build_number, :release_version, :staged_rollout?, :staged_rollout_config, to: :run
+      delegate :provider,
+        :deployment_channel,
+        :build_number,
+        :release_version,
+        :staged_rollout?,
+        :app_store_release?,
+        :app_store_integration?,
+        :production_channel?,
+        :staged_rollout_config,
+        to: :run
 
       def kickoff!
-        return unless allowed?
+        return unless run.release.on_track? && app_store_integration?
 
-        return Deployments::AppStoreConnect::PrepareForReleaseJob.perform_later(run.id) if production_channel?
+        return Deployments::AppStoreConnect::PrepareForReleaseJob.perform_later(run.id) if app_store_release?
         Deployments::AppStoreConnect::TestFlightReleaseJob.perform_later(run.id)
       end
 
       def to_test_flight!
-        return unless allowed?
+        return unless run.release.on_track? && app_store_integration?
         return if production_channel?
 
         result = provider.release_to_testflight(deployment_channel, build_number)
@@ -60,7 +69,8 @@ module Deployments
       end
 
       def prepare_for_release!
-        return unless allowed? && production_channel?
+        return unless app_store_release?
+
         result = provider.prepare_release(build_number, release_version, staged_rollout?)
         return run.fail_with_error(result.error) unless result.ok?
 
@@ -68,7 +78,8 @@ module Deployments
       end
 
       def submit_for_review!
-        return unless allowed? && production_channel?
+        return unless app_store_release?
+
         result = provider.submit_release(build_number)
         return run.fail_with_error(result.error) unless result.ok?
 
@@ -76,7 +87,7 @@ module Deployments
       end
 
       def update_external_release
-        return unless allowed?
+        return unless run.release.on_track? && app_store_integration?
 
         result = find_release
         return run.fail_with_error(result.error) unless result.ok?
@@ -94,7 +105,7 @@ module Deployments
       end
 
       def start_release!
-        return unless allowed? && production_channel?
+        return unless app_store_release?
 
         result = provider.start_release(build_number)
         return run.fail_with_error(result.error) unless result.ok?
@@ -107,7 +118,7 @@ module Deployments
       end
 
       def track_live_release_status
-        return unless allowed? && production_channel?
+        return unless app_store_release?
 
         result = provider.find_live_release
         return run.fail_with_error(result.error) unless result.ok?
@@ -134,10 +145,6 @@ module Deployments
       def release_success
         return run.ready_to_release! if production_channel?
         run.complete!
-      end
-
-      def allowed?
-        run.app_store_integration? && run.release.on_track?
       end
     end
   end

@@ -8,7 +8,7 @@ class Deployments::AppStoreConnect::FindLiveReleaseJob
 
   sidekiq_retry_in do |count, ex|
     if ex.is_a?(Deployments::AppStoreConnect::Release::ReleaseNotFullyLive)
-      backoff_in(count, :minutes).seconds
+      backoff_in(count, :minutes).to_i
     else
       elog(ex)
       :kill

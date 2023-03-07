@@ -80,7 +80,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
           is_phased_release:,
           metadata: {
             description: "The true Yamanote line aural aesthetic.",
-            whats_new: "We now have the total distance covered by each station across the line!"
+            whats_new: "Every station now has the JR Shinkansen badges for connecting Shinkansen lines."
           }
         }
       }
@@ -99,7 +99,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
           is_phased_release:,
           metadata: {
             description: "The true Yamanote line aural aesthetic.",
-            whats_new: "We now have the total distance covered by each station across the line!"
+            whats_new: "Every station now has the JR Shinkansen badges for connecting Shinkansen lines."
           }
         }
       }

@@ -9,7 +9,7 @@ class Releases::FindBuildJob
   # goes like: 60, 120, 270...
   sidekiq_retry_in do |count, ex|
     if ex.is_a?(Installations::Error) && ex.reason == :build_not_found
-      backoff_in(count, :minutes).seconds
+      backoff_in(count, :minutes).to_i
     else
       elog(ex)
       :kill

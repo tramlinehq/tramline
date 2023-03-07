@@ -25,3 +25,4 @@ Rails/I18nLocaleTexts:
     - 'app/controllers/releases/deployments_controller.rb'
     - 'app/controllers/releases/step_runs_controller.rb'
     - 'app/controllers/releases/staged_rollouts_controller.rb'
+    - 'app/controllers/releases/deployment_runs_controller.rb'

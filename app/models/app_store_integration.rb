@@ -270,7 +270,7 @@ class AppStoreIntegration < ApplicationRecord
     end
 
     def attributes
-      release_info
+      release_info.except(:phased_release_day, :phased_release_status)
     end
 
     def found?
