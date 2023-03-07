@@ -13,8 +13,8 @@
 #
 class Integration < ApplicationRecord
   has_paper_trail
-  using RefinedString
   using RefinedArray
+  using RefinedString
 
   belongs_to :app
 
@@ -40,7 +40,7 @@ class Integration < ApplicationRecord
     }
   }.with_indifferent_access
 
-  enum category: ALLOWED_INTEGRATIONS_FOR_APP.values.map(&:keys).flatten.uniq.zip_self.to_h
+  enum category: ALLOWED_INTEGRATIONS_FOR_APP.values.map(&:keys).flatten.uniq.zip_map_self
   enum status: {
     connected: "connected",
     disconnected: "disconnected"

@@ -26,13 +26,14 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
       expect(result).to eq(expected_release)
     end
 
-    it "raises an error when release for build not found" do
+    it "raises an error when release not found for build number" do
       url = "http://localhost:4000/apple/connect/v1/apps/#{bundle_id}/release"
-      allow_any_instance_of(described_class).to receive(:execute).with(:get, url, {params: {build_number:}}).and_return(false)
+      error = Installations::Apple::AppStoreConnect::Error.new({"error" => {"code" => "not_found", "resource" => "release"}})
+      allow_any_instance_of(described_class).to receive(:execute).with(:get, url, {params: {build_number:}}).and_raise(error)
 
       expect {
         described_class.new(bundle_id, key_id, issuer_id, key).find_release(build_number, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
-      }.to raise_error(Installations::Errors::ReleaseNotFoundInStore)
+      }.to raise_error(error)
     end
   end
 
@@ -57,11 +58,12 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
 
     it "raises an error when live release is not found" do
       url = "http://localhost:4000/apple/connect/v1/apps/#{bundle_id}/release/live"
-      allow_any_instance_of(described_class).to receive(:execute).with(:get, url, {}).and_return(false)
+      error = Installations::Apple::AppStoreConnect::Error.new({"error" => {"code" => "not_found", "resource" => "release"}})
+      allow_any_instance_of(described_class).to receive(:execute).with(:get, url, {}).and_raise(error)
 
       expect {
         described_class.new(bundle_id, key_id, issuer_id, key).find_live_release(AppStoreIntegration::RELEASE_TRANSFORMATIONS)
-      }.to raise_error(Installations::Errors::ReleaseNotFoundInStore)
+      }.to raise_error(error)
     end
   end
 

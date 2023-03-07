@@ -35,10 +35,12 @@ describe Deployments::AppStoreConnect::UpdateExternalReleaseJob do
       end
 
       it "creates external build for the deployment run" do
-        allow_any_instance_of(Installations::Apple::AppStoreConnect::Api).to receive(:find_build).and_return(initial_build_info)
+        allow_any_instance_of(Installations::Apple::AppStoreConnect::Api)
+          .to receive(:find_build).and_return(initial_build_info)
 
         expect(app_store_deployment_run.external_release).not_to be_present
-        described_class.new.perform(app_store_deployment_run.id)
+        expect { described_class.new.perform(app_store_deployment_run.id) }
+          .to raise_error(Deployments::AppStoreConnect::Release::ExternalReleaseNotInTerminalState)
 
         expect(app_store_deployment_run.reload.submitted?).to be(true)
         expect(app_store_deployment_run.reload.external_release).to be_present
@@ -46,9 +48,11 @@ describe Deployments::AppStoreConnect::UpdateExternalReleaseJob do
 
       it "updates external build for the deployment run" do
         app_store_deployment_run.create_external_release(initial_build_info)
-        allow_any_instance_of(Installations::Apple::AppStoreConnect::Api).to receive(:find_build).and_return(in_progress_build_info)
+        allow_any_instance_of(Installations::Apple::AppStoreConnect::Api)
+          .to receive(:find_build).and_return(in_progress_build_info)
 
-        described_class.new.perform(app_store_deployment_run.id)
+        expect { described_class.new.perform(app_store_deployment_run.id) }
+          .to raise_error(Deployments::AppStoreConnect::Release::ExternalReleaseNotInTerminalState)
 
         expect(app_store_deployment_run.reload.submitted?).to be(true)
         expect(app_store_deployment_run.external_release.reload.status).to eq(in_progress_build_info[:status])
@@ -56,7 +60,8 @@ describe Deployments::AppStoreConnect::UpdateExternalReleaseJob do
 
       it "marks deployment run as released when build is successful" do
         app_store_deployment_run.create_external_release(in_progress_build_info)
-        allow_any_instance_of(Installations::Apple::AppStoreConnect::Api).to receive(:find_build).and_return(success_build_info)
+        allow_any_instance_of(Installations::Apple::AppStoreConnect::Api)
+          .to receive(:find_build).and_return(success_build_info)
 
         described_class.new.perform(app_store_deployment_run.id)
 
@@ -66,7 +71,8 @@ describe Deployments::AppStoreConnect::UpdateExternalReleaseJob do
 
       it "marks deployment run as failed when build is a failure" do
         app_store_deployment_run.create_external_release(in_progress_build_info)
-        allow_any_instance_of(Installations::Apple::AppStoreConnect::Api).to receive(:find_build).and_return(failure_build_info)
+        allow_any_instance_of(Installations::Apple::AppStoreConnect::Api)
+          .to receive(:find_build).and_return(failure_build_info)
 
         described_class.new.perform(app_store_deployment_run.id)
 
@@ -74,15 +80,16 @@ describe Deployments::AppStoreConnect::UpdateExternalReleaseJob do
         expect(app_store_deployment_run.external_release.reload.status).to eq(failure_build_info[:status])
       end
 
-      it "enqueues another job with increased attempt if build is still in progress" do
-        app_store_deployment_run.create_external_release(initial_build_info)
-        allow_any_instance_of(Installations::Apple::AppStoreConnect::Api).to receive(:find_build).and_return(in_progress_build_info)
+      it "retries if the build is not in terminal state" do
+        expect(
+          described_class.sidekiq_retry_in_block.call(1, Deployments::AppStoreConnect::Release::ExternalReleaseNotInTerminalState.new)
+        ).to be >= 600.seconds
+      end
 
-        expect(described_class).to receive_message_chain("set.perform_later").with(
-          app_store_deployment_run.id,
-          attempt: 2
-        )
-        described_class.new.perform(app_store_deployment_run.id)
+      it "does not retry if there are unexpected errors" do
+        expect(
+          described_class.sidekiq_retry_in_block.call(1, StandardError.new)
+        ).to be(:kill)
       end
     end
   end

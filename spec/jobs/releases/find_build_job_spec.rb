@@ -25,7 +25,7 @@ describe Releases::FindBuildJob do
     end
 
     it "raises appropriate exception if build is not found" do
-      build_not_found_error = Installations::Errors::BuildNotFoundInStore
+      build_not_found_error = Installations::Apple::AppStoreConnect::Error.new({"error" => {"code" => "not_found", "resource" => "build"}})
       allow_any_instance_of(Installations::Apple::AppStoreConnect::Api).to receive(:find_build).and_raise(build_not_found_error)
 
       expect { described_class.new.perform(step_run.id) }.to raise_error(build_not_found_error)

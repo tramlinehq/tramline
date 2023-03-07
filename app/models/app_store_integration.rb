@@ -107,26 +107,36 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def find_build(build_number)
-    build_info(installation.find_build(build_number, BUILD_TRANSFORMATIONS))
+    GitHub::Result.new { build_info(installation.find_build(build_number, BUILD_TRANSFORMATIONS)) }
   end
 
   def find_release(build_number)
-    release_info(installation.find_release(build_number, RELEASE_TRANSFORMATIONS))
+    GitHub::Result.new { release_info(installation.find_release(build_number, RELEASE_TRANSFORMATIONS)) }
   end
 
   def find_live_release
-    release_info(installation.find_live_release(RELEASE_TRANSFORMATIONS))
+    GitHub::Result.new { release_info(installation.find_live_release(RELEASE_TRANSFORMATIONS)) }
+  end
+
+  def release_to_testflight(beta_group_id, build_number)
+    GitHub::Result.new { installation.add_build_to_group(beta_group_id, build_number) }
+  end
+
+  def prepare_release(build_number, version, is_phased_release)
+    GitHub::Result.new { installation.prepare_release(build_number, version, is_phased_release) }
+  end
+
+  def submit_release(build_number)
+    GitHub::Result.new { installation.submit_release(build_number) }
+  end
+
+  def start_release(build_number)
+    GitHub::Result.new { installation.start_release(build_number) }
   end
 
   def find_app
     @find_app ||= installation.find_app(APP_TRANSFORMATIONS)
   end
-
-  def release_to_testflight(beta_group_id, build_number)
-    installation.add_build_to_group(beta_group_id, build_number)
-  end
-
-  delegate :prepare_release, :submit_release, :start_release, to: :installation
 
   def channel_data
     installation.current_app_status(CHANNEL_DATA_TRANSFORMATIONS)
@@ -163,10 +173,8 @@ class AppStoreIntegration < ApplicationRecord
 
   def correct_key
     find_app.present?
-  rescue Installations::Errors::AppNotFoundInStore
-    errors.add(:key_id, :no_app_found)
-  rescue Installations::Apple::AppStoreConnect::Api::UnknownError
-    errors.add(:key_id, :unknown_error)
+  rescue Installations::Apple::AppStoreConnect::Error => ex
+    errors.add(:key_id, ex.reason)
   end
 
   def set_external_details_on_app

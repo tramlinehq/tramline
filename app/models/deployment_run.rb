@@ -3,6 +3,7 @@
 # Table name: deployment_runs
 #
 #  id                         :uuid             not null, primary key
+#  failure_reason             :string
 #  initial_rollout_percentage :decimal(8, 5)
 #  scheduled_at               :datetime         not null
 #  status                     :string
@@ -16,6 +17,7 @@ class DeploymentRun < ApplicationRecord
   include AASM
   include Passportable
   include Loggable
+  using RefinedArray
 
   belongs_to :deployment, inverse_of: :deployment_runs
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
@@ -71,6 +73,9 @@ class DeploymentRun < ApplicationRecord
   }
 
   enum status: STATES
+  enum failure_reason: {
+    unknown_failure: "unknown_failure"
+  }.merge(Installations::Apple::AppStoreConnect::Error.reasons.zip_map_self)
 
   aasm safe_state_machine_params do
     state :created, initial: true, before_enter: -> { step_run.startable_deployment?(deployment) }
@@ -106,9 +111,9 @@ class DeploymentRun < ApplicationRecord
       transitions from: [:uploaded, :ready_to_release], to: :rollout_started
     end
 
-    event :dispatch_fail, after_commit: :release_failed do
-      after { step_run.fail_deploy! }
+    event :dispatch_fail, before: :set_reason, after_commit: :release_failed do
       transitions from: [:uploaded, :submitted, :rollout_started], to: :failed
+      after { step_run.fail_deploy! }
     end
 
     event :complete, after_commit: :release_success do
@@ -128,7 +133,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def find_submission
-    Deployments::AppStoreConnect::Release.locate_external_release(self)
+    Deployments::AppStoreConnect::UpdateExternalReleaseJob.perform_async(id)
   end
 
   def kickoff!
@@ -263,7 +268,20 @@ class DeploymentRun < ApplicationRecord
     integration.providable
   end
 
+  def fail_with_error(error)
+    elog(error)
+    if error.is_a?(Installations::Error)
+      dispatch_fail!(reason: error.reason)
+    else
+      dispatch_fail!
+    end
+  end
+
   private
+
+  def set_reason(args = nil)
+    self.failure_reason = args&.fetch(:reason, :unknown_failure)
+  end
 
   def release_failed
     event_stamp!(reason: :release_failed, kind: :error, data: stamp_data)

@@ -27,6 +27,6 @@ class Releases::FindWorkflowRun
     step_run.ci_start!
   rescue => e
     elog(e)
-    raise
+    raise # TODO: remove this and elog in the retry-kill case
   end
 end

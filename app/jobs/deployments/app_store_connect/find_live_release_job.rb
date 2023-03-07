@@ -1,9 +1,21 @@
-class Deployments::AppStoreConnect::FindLiveReleaseJob < ApplicationJob
-  include Loggable
-  queue_as :high
+class Deployments::AppStoreConnect::FindLiveReleaseJob
+  include Sidekiq::Job
+  extend Loggable
+  extend Backoffable
 
-  def perform(deployment_run_id, attempt: 1)
-    release = Deployments::AppStoreConnect::Release.new(DeploymentRun.find(deployment_run_id))
-    release.track_live_release_status(attempt: attempt.succ, wait: backoff_in_minutes(attempt))
+  queue_as :high
+  sidekiq_options retry: 14
+
+  sidekiq_retry_in do |count, ex|
+    if ex.is_a?(Deployments::AppStoreConnect::Release::ReleaseNotLive)
+      backoff_in(count, :minutes).seconds
+    else
+      elog(ex)
+      :kill
+    end
+  end
+
+  def perform(deployment_run_id)
+    Deployments::AppStoreConnect::Release.track_live_release_status(DeploymentRun.find(deployment_run_id))
   end
 end

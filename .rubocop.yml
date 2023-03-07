@@ -37,6 +37,9 @@ Rails/TransactionExitStatement:
 Rails/ReversibleMigration:
   Enabled: false # use strong_migrations instead
 
+Rails/UniqBeforePluck:
+  Enabled: false # https://github.com/rubocop/rubocop/issues/3148
+
 RSpec:
   Enabled: true
 

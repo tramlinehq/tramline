@@ -63,19 +63,19 @@ describe AppStoreIntegration do
       end
 
       it "finds live release and returns a ReleaseInfo" do
-        result = app_store_integration.find_live_release
+        result = app_store_integration.find_live_release.value!
 
         expect(result).to be_a(AppStoreIntegration::AppStoreReleaseInfo)
       end
 
       it "live release to be live for the correct build number" do
-        result = app_store_integration.find_live_release
+        result = app_store_integration.find_live_release.value!
 
         expect(result.live?("33417")).to be(true)
       end
 
       it "live release to be not live for the incorrect build number" do
-        result = app_store_integration.find_live_release
+        result = app_store_integration.find_live_release.value!
 
         expect(result.live?("9000")).to be(false)
       end
@@ -83,29 +83,33 @@ describe AppStoreIntegration do
 
     it "returns success to be true when live release is pending developer release" do
       allow(api_double).to receive(:find_live_release).and_return(pending_dev_release_response)
-      result = app_store_integration.find_live_release
+      result = app_store_integration.find_live_release.value!
 
       expect(result.success?).to be(true)
     end
 
     it "returns failed to be true when live release is rejected" do
       allow(api_double).to receive(:find_live_release).and_return(rejected_release_response)
-      result = app_store_integration.find_live_release
+      result = app_store_integration.find_live_release.value!
 
       expect(result.failed?).to be(true)
     end
 
     it "returns neither success nor failed to be true when live release is in review" do
       allow(api_double).to receive(:find_live_release).and_return(in_review_release_response)
-      result = app_store_integration.find_live_release
+      result = app_store_integration.find_live_release.value!
 
       expect(result.success?).to be(false)
       expect(result.failed?).to be(false)
     end
 
-    it "raises release not found error when live release not found" do
-      allow(api_double).to receive(:find_live_release).and_raise(Installations::Errors::ReleaseNotFoundInStore)
-      expect { app_store_integration.find_live_release }.to raise_error(Installations::Errors::ReleaseNotFoundInStore)
+    it "returns failed result with release not found reason when live release not found" do
+      error = Installations::Apple::AppStoreConnect::Error.new({"error" => {"code" => "not_found", "resource" => "release"}})
+      allow(api_double).to receive(:find_live_release).and_raise(error)
+      result = app_store_integration.find_live_release
+
+      expect(result.ok?).to be(false)
+      expect(result.error.reason).to be(:release_not_found)
     end
   end
 
@@ -150,7 +154,7 @@ describe AppStoreIntegration do
 
       it "finds build for build number and returns a TestFlightInfo" do
         allow(api_double).to receive(:find_build).with(build_number, AppStoreIntegration::BUILD_TRANSFORMATIONS).and_return(build_response)
-        result = app_store_integration.find_build(build_number)
+        result = app_store_integration.find_build(build_number).value!
 
         expect(result).to be_a(AppStoreIntegration::TestFlightInfo)
         expect(result.found?).to be(true)
@@ -158,7 +162,7 @@ describe AppStoreIntegration do
 
       it "returns neither success nor failed to be true when build is in process" do
         allow(api_double).to receive(:find_build).with(build_number, AppStoreIntegration::BUILD_TRANSFORMATIONS).and_return(build_response)
-        result = app_store_integration.find_build(build_number)
+        result = app_store_integration.find_build(build_number).value!
 
         expect(result.success?).to be(false)
         expect(result.failed?).to be(false)
@@ -166,7 +170,7 @@ describe AppStoreIntegration do
 
       it "returns success to be true when successful build" do
         allow(api_double).to receive(:find_build).with(build_number, AppStoreIntegration::BUILD_TRANSFORMATIONS).and_return(successful_build_response)
-        result = app_store_integration.find_build(build_number)
+        result = app_store_integration.find_build(build_number).value!
 
         expect(result.success?).to be(true)
         expect(result.failed?).to be(false)
@@ -174,7 +178,7 @@ describe AppStoreIntegration do
 
       it "returns failed to be true when failed build" do
         allow(api_double).to receive(:find_build).with(build_number, AppStoreIntegration::BUILD_TRANSFORMATIONS).and_return(failure_build_response)
-        result = app_store_integration.find_build(build_number)
+        result = app_store_integration.find_build(build_number).value!
 
         expect(result.success?).to be(false)
         expect(result.failed?).to be(true)
@@ -182,9 +186,14 @@ describe AppStoreIntegration do
     end
 
     context "when build not found" do
-      it "raises build not found error" do
-        allow(api_double).to receive(:find_build).with(build_number, AppStoreIntegration::BUILD_TRANSFORMATIONS).and_raise(Installations::Errors::BuildNotFoundInStore)
-        expect { app_store_integration.find_build(build_number) }.to raise_error(Installations::Errors::BuildNotFoundInStore)
+      it "returns a failed result with build not found reason" do
+        error = Installations::Apple::AppStoreConnect::Error.new({"error" => {"code" => "not_found", "resource" => "build"}})
+        allow(api_double).to receive(:find_build).with(build_number, AppStoreIntegration::BUILD_TRANSFORMATIONS).and_raise(error)
+
+        result = app_store_integration.find_build(build_number)
+
+        expect(result.ok?).to be(false)
+        expect(result.error.reason).to be(:build_not_found)
       end
     end
   end

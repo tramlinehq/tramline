@@ -1,6 +1,7 @@
 module Installations
   class Apple::AppStoreConnect::Api
     include Vaultable
+
     UnknownError = Class.new(StandardError)
 
     def initialize(bundle_id, key_id, issuer_id, key)
@@ -20,16 +21,6 @@ module Installations
     START_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/start"
     FIND_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release"
     FIND_LIVE_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live"
-
-    # bundle id not found - Installations::Errors::AppNotFoundInStore
-    # build not found
-    # beta group not found
-    # export compliance not found
-    # prepare not allowed because of existing release
-    # release for review not found
-    # review already in progress
-    # build mismatch between tramline and appstore
-    # release already submitted
 
     def external_groups(transforms)
       execute(:get, GROUPS_URL.expand(bundle_id:).to_s, {params: {internal: false}})
@@ -138,13 +129,12 @@ module Installations
 
     def execute(verb, url, params)
       response = HTTP.auth(access_token.to_s).headers(appstore_connect_headers).public_send(verb, url, params)
-
       raise UnknownError if _5xx?(response.status)
-      return true if no_content?(response.status)
 
+      return true if no_content?(response.status)
       body = JSON.parse(response.body.to_s)
-      return body unless error?(response.status)
-      raise Installations::Apple::AppStoreConnect::Error.handle(body)
+      raise Installations::Apple::AppStoreConnect::Error.new(body) if error?(response.status)
+      body
     end
 
     def _5xx?(code)

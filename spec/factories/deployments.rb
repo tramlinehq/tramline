@@ -13,6 +13,13 @@ FactoryBot.define do
     end
 
     trait :with_production_channel do
+      before(:create) do |deployment, _|
+        train = create(:releases_train, app: deployment.integration.app)
+        build(:releases_step, :release, train: train)
+          .tap { |step| step.deployments << deployment }
+          .save
+      end
+
       build_artifact_channel { {is_production: true} }
     end
 

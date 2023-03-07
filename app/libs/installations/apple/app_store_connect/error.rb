@@ -1,81 +1,80 @@
 module Installations
-  class Apple::AppStoreConnect::Error
+  class Apple::AppStoreConnect::Error < Installations::Error
     ERRORS = [
       {
         resource: "app",
         code: "not_found",
-        decorated_exception: Installations::Errors::AppNotFoundInStore
+        decorated_reason: :app_not_found
       },
       {
         resource: "build",
         code: "not_found",
-        decorated_exception: Installations::Errors::BuildNotFoundInStore
+        decorated_reason: :build_not_found
       },
       {
         resource: "build",
         code: "export_compliance_not_updateable",
-        decorated_exception: Installations::Errors::AppStoreBuildNotSubmittable
+        decorated_reason: :missing_export_compliance
       },
       {
         resource: "beta_group",
         code: "not_found",
-        decorated_exception: Installations::Errors::BetaGroupNotFound
+        decorated_reason: :beta_group_not_found
       },
       {
         resource: "release",
         code: "not_found",
-        decorated_exception: Installations::Errors::ReleaseNotFoundInStore
+        decorated_reason: :release_not_found
       },
       {
         resource: "release",
         code: "review_submission_not_allowed",
-        decorated_exception: Installations::Errors::AppStoreReviewSubmissionNotAllowed
+        decorated_reason: :build_not_submittable
       },
       {
         resource: "release",
         code: "build_mismatch",
-        decorated_exception: Installations::Errors::AppStoreBuildMismatch
+        decorated_reason: :build_mismatch
       },
       {
         resource: "release",
         code: "review_in_progress",
-        decorated_exception: Installations::Errors::AppStoreReviewInProgress
+        decorated_reason: :review_in_progress
       },
       {
         resource: "release",
         code: "review_already_created",
-        decorated_exception: Installations::Errors::AppStoreReviewSubmissionExists
+        decorated_reason: :review_submission_exists
       },
       {
         resource: "release",
         code: "phased_release_not_found",
-        decorated_exception: Installations::Errors::PhasedReleaseNotFound
+        decorated_reason: :phased_release_not_found
       },
       {
         resource: "release",
         code: "release_already_prepared",
-        decorated_exception: Installations::Errors::ReleaseAlreadyExists
+        decorated_reason: :release_already_exists
       }
     ]
 
-    def self.handle(response_body)
-      new(response_body).handle
+    def self.reasons
+      ERRORS.pluck(:decorated_reason).uniq
     end
 
-    def initialize(response_body)
+    def initialize(response_body = nil)
       @response_body = response_body
+      super(handle)
     end
-
-    alias_method :body, :response_body
 
     def handle
-      return exception if match.nil?
-      match[:decorated_exception].new
+      return :unknown_failure if response_body.blank? || match.nil?
+      match[:decorated_reason]
     end
 
     private
 
-    attr_reader :exception
+    attr_reader :response_body
 
     def match
       @match ||= matched_error
@@ -89,7 +88,7 @@ module Installations
     end
 
     def error
-      body["error"]
+      response_body["error"]
     end
   end
 end

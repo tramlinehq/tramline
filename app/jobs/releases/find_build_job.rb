@@ -1,22 +1,23 @@
 class Releases::FindBuildJob
   include Sidekiq::Job
-  include Loggable
+  extend Loggable
+  extend Backoffable
 
   queue_as :high
   sidekiq_options retry: 5
 
   # goes like: 60, 120, 270...
-  sidekiq_retry_in do |count, exception|
-    if exception.is_a?(Installations::Errors::BuildNotFoundInStore)
-      30 * (count**2)
+  sidekiq_retry_in do |count, ex|
+    if ex.is_a?(Installations::Error) && ex.reason == :build_not_found
+      backoff_in(count, :minutes).seconds
     else
-      elog(exception)
+      elog(ex)
       :kill
     end
   end
 
   sidekiq_retries_exhausted do |msg, ex|
-    if ex.is_a?(Installations::Errors::BuildNotFoundInStore)
+    if ex.is_a?(Installations::Error) && ex.reason == :build_not_found
       run = Releases::Step::Run.find(msg["args"].first)
       run.build_not_found!
       run.event_stamp!(reason: :build_not_found_in_store, kind: :error, data: {version: run.build_version})
@@ -26,6 +27,7 @@ class Releases::FindBuildJob
   def perform(step_run_id)
     run = Releases::Step::Run.find(step_run_id)
     return unless run.release.on_track?
-    run.build_found! if run.find_build.found?
+    result = run.find_build.value!
+    run.build_found! if result.found?
   end
 end

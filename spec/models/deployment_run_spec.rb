@@ -93,6 +93,22 @@ describe DeploymentRun do
     end
   end
 
+  describe "#dispatch_fail!" do
+    it "sets the failure reason during transitioning" do
+      run = create(:deployment_run, :uploaded)
+      run.dispatch_fail!(reason: :unknown_failure)
+
+      expect(run.reload.failure_reason).to eq("unknown_failure")
+    end
+
+    it "does not set the failure reason during transitioning if no reason is passed" do
+      run = create(:deployment_run, :uploaded)
+      run.dispatch_fail!
+
+      expect(run.reload.failure_reason).to be_nil
+    end
+  end
+
   describe "#kickoff_upload_on_play_store!" do
     let(:step) { create(:releases_step, :with_deployment) }
     let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
