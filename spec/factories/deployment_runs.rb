@@ -13,8 +13,16 @@ FactoryBot.define do
       status { "started" }
     end
 
+    trait :prepared_release do
+      status { "prepared_release" }
+    end
+
     trait :submitted do
       status { "submitted" }
+    end
+
+    trait :ready_to_release do
+      status { "ready_to_release" }
     end
 
     trait :uploaded do
@@ -48,11 +56,11 @@ FactoryBot.define do
   end
 end
 
-def create_deployment_run_for_ios(trait, deployment_trait: nil, step_trait: :review, step_run_trait: :deployment_started)
+def create_deployment_run_for_ios(trait, deployment_traits: [], step_trait: :review, step_run_trait: :deployment_started)
   app = create(:app, :ios)
   train = create(:releases_train, app: app)
   step = create(:releases_step, :with_deployment, step_trait, train: train)
-  deployment = create(:deployment, deployment_trait, integration: train.build_channel_integrations.first, step: step)
+  deployment = create(:deployment, *deployment_traits, integration: train.build_channel_integrations.first, step: step)
   step_run = create(:releases_step_run, step_run_trait, step: step)
   create(:deployment_run, trait, deployment: deployment, step_run: step_run)
 end

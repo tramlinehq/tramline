@@ -278,7 +278,12 @@ class AppStoreIntegration < ApplicationRecord
     end
 
     def phased_release_stage
+      return DEFAULT_PHASED_RELEASE_SEQUENCE.count.pred if phased_release_complete?
       release_info[:phased_release_day].pred
+    end
+
+    def phased_release_complete?
+      release_info[:phased_release_status] == "COMPLETE"
     end
 
     def live?(build_number)

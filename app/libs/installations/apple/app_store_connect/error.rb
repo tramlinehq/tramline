@@ -59,7 +59,7 @@ module Installations
     ]
 
     def self.reasons
-      ERRORS.pluck(:decorated_reason).uniq
+      ERRORS.pluck(:decorated_reason).uniq.map(&:to_s)
     end
 
     def initialize(response_body = nil)

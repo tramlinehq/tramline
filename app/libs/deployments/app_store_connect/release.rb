@@ -4,7 +4,7 @@ module Deployments
       include Loggable
 
       ExternalReleaseNotInTerminalState = Class.new(StandardError)
-      ReleaseNotLive = Class.new(StandardError)
+      ReleaseNotFullyLive = Class.new(StandardError)
 
       def self.kickoff!(deployment_run)
         new(deployment_run).kickoff!
@@ -51,8 +51,25 @@ module Deployments
 
       def to_test_flight!
         return unless allowed?
+        return if production_channel?
 
         result = provider.release_to_testflight(deployment_channel, build_number)
+        return run.fail_with_error(result.error) unless result.ok?
+
+        run.submit!
+      end
+
+      def prepare_for_release!
+        return unless allowed? && production_channel?
+        result = provider.prepare_release(build_number, release_version, staged_rollout?)
+        return run.fail_with_error(result.error) unless result.ok?
+
+        run.prepare_release!
+      end
+
+      def submit_for_review!
+        return unless allowed? && production_channel?
+        result = provider.submit_release(build_number)
         return run.fail_with_error(result.error) unless result.ok?
 
         run.submit!
@@ -76,22 +93,6 @@ module Deployments
         end
       end
 
-      def prepare_for_release!
-        return unless allowed? && production_channel?
-        result = provider.prepare_release(build_number, release_version, staged_rollout?)
-        return run.fail_with_error(result.error) unless result.ok?
-
-        run.prepare_release!
-      end
-
-      def submit_for_review!
-        return unless allowed? && production_channel?
-        result = provider.submit_release(build_number)
-        return run.fail_with_error(result.error) unless result.ok?
-
-        run.submit!
-      end
-
       def start_release!
         return unless allowed? && production_channel?
 
@@ -102,21 +103,25 @@ module Deployments
           run.create_staged_rollout!(config: staged_rollout_config)
         end
 
-        Deployments::AppStoreConnect::FindLiveReleaseJob.perform_later(run.id)
+        Deployments::AppStoreConnect::FindLiveReleaseJob.perform_async(run.id)
       end
 
       def track_live_release_status
+        return unless allowed? && production_channel?
+
         result = provider.find_live_release
         return run.fail_with_error(result.error) unless result.ok?
 
         release_info = result.value!
 
         if release_info.live?(build_number)
-          return run.staged_rollout.update_stage(release_info.phased_release_stage) if staged_rollout?
-          return run.complete!
+          return run.complete! unless staged_rollout?
+
+          run.staged_rollout.update_stage(release_info.phased_release_stage)
+          return if release_info.phased_release_complete?
         end
 
-        raise ReleaseNotLive, "Retrying in some time..."
+        raise ReleaseNotFullyLive, "Retrying in some time..."
       end
 
       private
