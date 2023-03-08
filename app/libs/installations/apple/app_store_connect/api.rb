@@ -70,10 +70,7 @@ module Installations
         build_number:,
         version:,
         is_phased_release:,
-        metadata: {
-          description: "The true Yamanote line aural aesthetic.",
-          whats_new: "Every station now has the JR Shinkansen badges for connecting Shinkansen lines."
-        }
+        metadata: { whats_new: "The latest version contains bug fixes and performance improvements." }
       }
 
       execute(:post, PREPARE_RELEASE_URL.expand(bundle_id:).to_s, {json: params})
