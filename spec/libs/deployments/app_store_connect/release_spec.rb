@@ -21,11 +21,15 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when production channel" do
-      it "starts preparing the release" do
-        step_run = create(:releases_step_run, :with_release_step)
-        deployment = create(:deployment, :with_app_store, :with_production_channel, step: step_run.step)
-        run = create(:deployment_run, step_run:, deployment:)
+      let(:run) {
+        create_deployment_run_for_ios(
+          :started,
+          deployment_traits: [:with_app_store, :with_production_channel],
+          step_trait: :release
+        )
+      }
 
+      it "starts preparing the release" do
         described_class.kickoff!(run)
 
         expect(app_store_job).to have_received(:perform_later).with(run.id).once
@@ -33,11 +37,15 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when not production channel" do
-      it "starts adding to beta group when testflight" do
-        step_run = create(:releases_step_run, :with_release_step)
-        deployment = create(:deployment, :with_step, :with_app_store, step: step_run.step)
-        run = create(:deployment_run, step_run:, deployment:)
+      let(:run) {
+        create_deployment_run_for_ios(
+          :started,
+          deployment_traits: [:with_app_store],
+          step_trait: :review
+        )
+      }
 
+      it "starts adding to beta group when testflight" do
         described_class.kickoff!(run)
 
         expect(test_flight_job).to have_received(:perform_later).with(run.id).once
@@ -53,9 +61,11 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     it "does nothing if not allowed" do
-      step_run = create(:releases_step_run, :with_release_step)
-      deployment = create(:deployment, :with_app_store, :with_production_channel, step: step_run.step)
-      run = create(:deployment_run, :started, step_run:, deployment:)
+      run = create_deployment_run_for_ios(
+        :started,
+        deployment_traits: [:with_app_store, :with_production_channel],
+        step_trait: :release
+      )
 
       expect(described_class.to_test_flight!(run)).to be_nil
 
@@ -63,9 +73,13 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when successful" do
-      let(:step_run) { create(:releases_step_run, :with_release_step) }
-      let(:deployment) { create(:deployment, :with_step, :with_app_store, step: step_run.step) }
-      let(:run) { create(:deployment_run, :started, step_run:, deployment:) }
+      let(:run) {
+        create_deployment_run_for_ios(
+          :started,
+          deployment_traits: [:with_app_store],
+          step_trait: :release
+        )
+      }
 
       before do
         allow(providable_dbl).to receive(:release_to_testflight).and_return(GitHub::Result.new)
@@ -85,9 +99,13 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when failure" do
-      let(:step_run) { create(:releases_step_run, :deployment_started, :with_release_step) }
-      let(:deployment) { create(:deployment, :with_step, :with_app_store, step: step_run.step) }
-      let(:run) { create(:deployment_run, :started, step_run:, deployment:) }
+      let(:run) {
+        create_deployment_run_for_ios(
+          :started,
+          deployment_traits: [:with_app_store],
+          step_trait: :release
+        )
+      }
       let(:error) { Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "beta_group", "code" => "not_found"}}) }
 
       before do
@@ -124,9 +142,13 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when successful" do
-      let(:step_run) { create(:releases_step_run, :with_release_step) }
-      let(:deployment) { create(:deployment, :with_app_store, :with_production_channel, step: step_run.step) }
-      let(:run) { create(:deployment_run, :started, step_run:, deployment:) }
+      let(:run) {
+        create_deployment_run_for_ios(
+          :started,
+          deployment_traits: [:with_app_store, :with_production_channel],
+          step_trait: :release
+        )
+      }
 
       before do
         allow(providable_dbl).to receive(:prepare_release).and_return(GitHub::Result.new)
@@ -153,7 +175,13 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when failure" do
-      let(:run) { create_deployment_run_for_ios(:started, deployment_traits: [:with_app_store, :with_production_channel], step_trait: :release) }
+      let(:run) {
+        create_deployment_run_for_ios(
+          :started,
+          deployment_traits: [:with_app_store, :with_production_channel],
+          step_trait: :release
+        )
+      }
       let(:error) { Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "build", "code" => "not_found"}}) }
 
       before do
@@ -191,9 +219,13 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when successful" do
-      let(:step_run) { create(:releases_step_run, :with_release_step) }
-      let(:deployment) { create(:deployment, :with_app_store, :with_production_channel, step: step_run.step) }
-      let(:run) { create(:deployment_run, :prepared_release, step_run:, deployment:) }
+      let(:run) {
+        create_deployment_run_for_ios(
+          :prepared_release,
+          deployment_traits: [:with_app_store, :with_production_channel],
+          step_trait: :release
+        )
+      }
 
       before do
         allow(providable_dbl).to receive(:submit_release).and_return(GitHub::Result.new)
@@ -329,13 +361,21 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when production" do
-      let(:run) { create_deployment_run_for_ios(:submitted, deployment_traits: [:with_app_store, :with_production_channel], step_trait: :release) }
+      let(:run) {
+        create_deployment_run_for_ios(
+          :submitted,
+          deployment_traits: [:with_app_store, :with_production_channel],
+          step_trait: :release
+        )
+      }
       let(:base_release_info) {
         {
           external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
           name: "1.2.0",
           build_number: "123",
-          added_at: 1.day.ago
+          added_at: 1.day.ago,
+          phased_release_status: "INACTIVE",
+          phased_release_day: 0
         }
       }
       let(:initial_release_info) { AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "WAITING_FOR_REVIEW")) }
@@ -411,9 +451,11 @@ describe Deployments::AppStoreConnect::Release do
   describe ".start_release!" do
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
     let(:run) {
-      create_deployment_run_for_ios(:ready_to_release,
+      create_deployment_run_for_ios(
+        :ready_to_release,
         deployment_traits: [:with_app_store, :with_production_channel],
-        step_trait: :release)
+        step_trait: :release
+      )
     }
 
     before do
