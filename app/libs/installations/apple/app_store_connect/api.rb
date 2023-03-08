@@ -21,6 +21,10 @@ module Installations
     START_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/start"
     FIND_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release"
     FIND_LIVE_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live"
+    PAUSE_LIVE_ROLLOUT_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live/pause_rollout"
+    RESUME_LIVE_ROLLOUT_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live/resume_rollout"
+    HALT_LIVE_ROLLOUT_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live/halt_rollout"
+    COMPLETE_LIVE_ROLLOUT_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live/complete_rollout"
 
     def external_groups(transforms)
       execute(:get, GROUPS_URL.expand(bundle_id:).to_s, {params: {internal: false}})
@@ -81,6 +85,22 @@ module Installations
 
     def start_release(build_number, transforms = {})
       execute(:patch, START_RELEASE_URL.expand(bundle_id:).to_s, {json: {build_number:}})
+    end
+
+    def pause_phased_release
+      execute(:patch, PAUSE_LIVE_ROLLOUT_URL.expand(bundle_id:).to_s, {})
+    end
+
+    def resume_phased_release
+      execute(:patch, RESUME_LIVE_ROLLOUT_URL.expand(bundle_id:).to_s, {})
+    end
+
+    def halt_phased_release
+      execute(:patch, HALT_LIVE_ROLLOUT_URL.expand(bundle_id:).to_s, {})
+    end
+
+    def complete_phased_release
+      execute(:patch, COMPLETE_LIVE_ROLLOUT_URL.expand(bundle_id:).to_s, {})
     end
 
     private
