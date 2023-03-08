@@ -682,4 +682,57 @@ describe Deployments::AppStoreConnect::Release do
       end
     end
   end
+
+  describe ".complete_phased_release!" do
+    let(:providable_dbl) { instance_double(AppStoreIntegration) }
+    let(:run) {
+      create_deployment_run_for_ios(
+        :rollout_started,
+        deployment_traits: [:with_app_store, :with_phased_release],
+        step_trait: :release
+      )
+    }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+    end
+
+    context "when successful" do
+      before do
+        allow(providable_dbl).to receive(:complete_phased_release).and_return(GitHub::Result.new)
+      end
+
+      it "completes the phased release" do
+        described_class.complete_phased_release!(run)
+
+        expect(providable_dbl).to have_received(:complete_phased_release).once
+      end
+
+      it "releases the deployment run" do
+        described_class.complete_phased_release!(run)
+
+        expect(run.reload.released?).to be(true)
+      end
+    end
+
+    context "when failed" do
+      let(:error) { Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "release", "code" => "phased_release_not_found"}}) }
+
+      before do
+        allow(providable_dbl).to receive(:complete_phased_release).and_return(GitHub::Result.new { raise error })
+      end
+
+      it "fails the deployment run" do
+        described_class.complete_phased_release!(run)
+
+        expect(run.reload.failed?).to be(true)
+      end
+
+      it "adds the failure reason to the deployment run" do
+        described_class.complete_phased_release!(run)
+
+        expect(run.reload.failure_reason).to eq("phased_release_not_found")
+      end
+    end
+  end
 end

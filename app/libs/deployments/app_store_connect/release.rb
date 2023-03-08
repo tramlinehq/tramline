@@ -34,6 +34,10 @@ module Deployments
         new(deployment_run).track_live_release_status
       end
 
+      def self.complete_phased_release!(deployment_run)
+        new(deployment_run).complete_phased_release!
+      end
+
       def initialize(deployment_run)
         @deployment_run = deployment_run
       end
@@ -138,6 +142,17 @@ module Deployments
         end
 
         raise ReleaseNotFullyLive, "Retrying in some time..."
+      end
+
+      def complete_phased_release!
+        return unless app_store_release?
+        return unless run.rolloutable?
+
+        result = provider.complete_phased_release
+
+        return run.fail_with_error(result.error) unless result.ok?
+
+        run.complete!
       end
 
       private

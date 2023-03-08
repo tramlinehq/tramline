@@ -75,6 +75,7 @@ Rails.application.routes.draw do
             resources :deployment_runs, only: [], shallow: true do
               member do
                 patch :submit_for_review
+                patch :fully_release
               end
 
               resource :staged_rollout, only: [] do
