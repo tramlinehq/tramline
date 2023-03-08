@@ -126,10 +126,15 @@ module Deployments
         release_info = result.value!
 
         if release_info.live?(build_number)
-          return run.complete! unless staged_rollout?
+          unless staged_rollout?
+            run.external_release.update(released_at: Time.current)
+            return run.complete!
+          end
 
           run.staged_rollout.update_stage(release_info.phased_release_stage)
-          return if release_info.phased_release_complete?
+          if release_info.phased_release_complete?
+            return run.external_release.update(released_at: Time.current)
+          end
         end
 
         raise ReleaseNotFullyLive, "Retrying in some time..."
@@ -143,6 +148,8 @@ module Deployments
       end
 
       def release_success
+        run.external_release.update(reviewed_at: Time.current)
+
         return run.ready_to_release! if production_channel?
         run.complete!
       end

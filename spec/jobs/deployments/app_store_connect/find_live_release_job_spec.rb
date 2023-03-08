@@ -12,6 +12,7 @@ describe Deployments::AppStoreConnect::FindLiveReleaseJob do
 
     it "marks something if release is live" do
       run = create_deployment_run_for_ios(:started, deployment_traits: [:with_production_channel], step_trait: :release)
+      run.create_external_release
       live_release = release_info.merge(status: "READY_FOR_SALE", build_number: run.build_number)
       allow_any_instance_of(Installations::Apple::AppStoreConnect::Api).to receive(:find_live_release).and_return(live_release)
 

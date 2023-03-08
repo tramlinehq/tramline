@@ -313,6 +313,8 @@ describe Deployments::AppStoreConnect::Release do
           .to raise_error(Deployments::AppStoreConnect::Release::ExternalReleaseNotInTerminalState)
 
         expect(run.reload.external_release).to be_present
+        expect(run.reload.external_release.attributes.with_indifferent_access.slice(:added_at, :build_number, :external_id, :name, :status))
+          .to eq(initial_build_info.attributes.with_indifferent_access)
       end
 
       it "updates external release if it exists" do
@@ -322,7 +324,8 @@ describe Deployments::AppStoreConnect::Release do
         expect { described_class.update_external_release(run) }
           .to raise_error(Deployments::AppStoreConnect::Release::ExternalReleaseNotInTerminalState)
 
-        expect(run.external_release.reload.status).to eq("IN_BETA_REVIEW")
+        expect(run.reload.external_release.attributes.with_indifferent_access.slice(:added_at, :build_number, :external_id, :name, :status))
+          .to eq(in_progress_build_info.attributes.with_indifferent_access)
       end
 
       it "marks deployment run as completed if build is successful" do
@@ -331,6 +334,16 @@ describe Deployments::AppStoreConnect::Release do
         described_class.update_external_release(run)
 
         expect(run.reload.released?).to be(true)
+      end
+
+      it "adds reviewed at to external release if build is successful" do
+        allow(providable_dbl).to receive(:find_build).and_return(GitHub::Result.new { success_build_info })
+
+        freeze_time do
+          described_class.update_external_release(run)
+
+          expect(run.external_release.reload.reviewed_at).to eq(Time.current)
+        end
       end
 
       it "marks the deployment run as failed when failure" do
@@ -587,6 +600,7 @@ describe Deployments::AppStoreConnect::Release do
 
       before do
         run_with_staged_rollout.step_run.update(build_number: build_number)
+        run_with_staged_rollout.create_external_release(initial_release_info.attributes)
         run_with_staged_rollout.create_staged_rollout!(config: run_with_staged_rollout.staged_rollout_config)
       end
 
@@ -609,6 +623,16 @@ describe Deployments::AppStoreConnect::Release do
         expect(run_with_staged_rollout.staged_rollout.reload.last_rollout_percentage).to eq(100.0)
         expect(run_with_staged_rollout.reload.released?).to be(true)
       end
+
+      it "adds released at to the external release" do
+        allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { fully_live_phased_release_info })
+
+        freeze_time do
+          described_class.track_live_release_status(run_with_staged_rollout)
+
+          expect(run_with_staged_rollout.external_release.released_at).to eq(Time.current)
+        end
+      end
     end
 
     context "when no staged rollout" do
@@ -616,6 +640,7 @@ describe Deployments::AppStoreConnect::Release do
 
       before do
         run.step_run.update(build_number: build_number)
+        run.create_external_release(initial_release_info.attributes)
       end
 
       it "completes the run" do
@@ -624,6 +649,16 @@ describe Deployments::AppStoreConnect::Release do
         described_class.track_live_release_status(run)
 
         expect(run.reload.released?).to be(true)
+      end
+
+      it "adds released at to the external release" do
+        allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { live_release_info })
+
+        freeze_time do
+          described_class.track_live_release_status(run)
+
+          expect(run.external_release.released_at).to eq(Time.current)
+        end
       end
     end
 

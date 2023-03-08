@@ -6,6 +6,8 @@
 #  added_at          :datetime
 #  build_number      :string
 #  name              :string
+#  released_at       :datetime
+#  reviewed_at       :datetime
 #  size_in_bytes     :integer
 #  status            :string
 #  created_at        :datetime         not null
@@ -21,7 +23,7 @@ class ExternalRelease < ApplicationRecord
     Addressable::Template.new("https://appstoreconnect.apple.com/apps/{app_id}/testflight/ios/{external_id}")
 
   def self.minimum_required
-    column_names.map(&:to_sym).filter { |name| name.in? [:name, :status, :build_number, :external_id] }
+    column_names.map(&:to_sym).filter { |name| name.in? [:name, :status, :build_number, :external_id, :added_at] }
   end
 
   def store_link
