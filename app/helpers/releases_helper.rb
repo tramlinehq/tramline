@@ -59,7 +59,7 @@ module ReleasesHelper
         ["Running", :ongoing]
       when :prepared_release
         ["Ready for review", :ongoing]
-      when :submitted
+      when :submitted_for_review
         ["Submitted for review", :ongoing]
       when :ready_to_release
         ["Review approved", :ongoing]
@@ -68,7 +68,7 @@ module ReleasesHelper
       when :upload_failed
         ["Upload failed", :failure]
       when :rollout_started
-        ["In Staged Rollout", :routine]
+        ["Release in progress", :routine]
       when :released
         ["Released", :success]
       when :failed

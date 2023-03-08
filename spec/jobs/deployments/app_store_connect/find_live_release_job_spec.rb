@@ -23,6 +23,7 @@ describe Deployments::AppStoreConnect::FindLiveReleaseJob do
 
     it "raises error if release is not live" do
       run = create_deployment_run_for_ios(:started, deployment_traits: [:with_production_channel], step_trait: :release)
+      run.create_external_release
       allow_any_instance_of(Installations::Apple::AppStoreConnect::Api).to receive(:find_live_release).and_return(release_info)
 
       expect { described_class.new.perform(run.id) }.to raise_error(Deployments::AppStoreConnect::Release::ReleaseNotFullyLive)

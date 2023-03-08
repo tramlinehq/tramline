@@ -94,7 +94,7 @@ describe Deployments::AppStoreConnect::Release do
       it "marks the deployment run as submitted" do
         described_class.to_test_flight!(run)
 
-        expect(run.reload.submitted?).to be(true)
+        expect(run.reload.submitted_for_review?).to be(true)
       end
     end
 
@@ -240,7 +240,7 @@ describe Deployments::AppStoreConnect::Release do
       it "marks the deployment run as submitted" do
         described_class.submit_for_review!(run)
 
-        expect(run.reload.submitted?).to be(true)
+        expect(run.reload.submitted_for_review?).to be(true)
       end
     end
 
@@ -274,15 +274,15 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     it "does nothing if not allowed" do
-      run = create(:deployment_run, :submitted)
+      run = create(:deployment_run, :submitted_for_review)
 
       expect(described_class.update_external_release(run)).to be_nil
 
-      expect(run.reload.submitted?).to be(true)
+      expect(run.reload.submitted_for_review?).to be(true)
     end
 
     context "when testflight" do
-      let(:run) { create_deployment_run_for_ios(:submitted, deployment_traits: [:with_app_store]) }
+      let(:run) { create_deployment_run_for_ios(:submitted_for_review, deployment_traits: [:with_app_store]) }
       let(:base_build_info) {
         {
           external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
@@ -376,7 +376,7 @@ describe Deployments::AppStoreConnect::Release do
     context "when production" do
       let(:run) {
         create_deployment_run_for_ios(
-          :submitted,
+          :submitted_for_review,
           deployment_traits: [:with_app_store, :with_production_channel],
           step_trait: :release
         )
@@ -504,6 +504,12 @@ describe Deployments::AppStoreConnect::Release do
         expect(run_with_staged_rollout.reload.staged_rollout).to be_present
       end
 
+      it "starts release on the deployment run" do
+        described_class.start_release!(run)
+
+        expect(run.reload.rollout_started?).to be(true)
+      end
+
       it "start the live release poll job" do
         poll_job = Deployments::AppStoreConnect::FindLiveReleaseJob
         allow(poll_job).to receive(:perform_async)
@@ -557,6 +563,7 @@ describe Deployments::AppStoreConnect::Release do
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      run.create_external_release
     end
 
     it "does nothing if not allowed" do
@@ -685,6 +692,7 @@ describe Deployments::AppStoreConnect::Release do
 
   describe ".complete_phased_release!" do
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
+    let(:build_number) { "123" }
     let(:run) {
       create_deployment_run_for_ios(
         :rollout_started,
@@ -698,8 +706,26 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when successful" do
+      let(:live_release_info) {
+        AppStoreIntegration::AppStoreReleaseInfo.new(
+          {
+            external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+            name: "1.2.0",
+            build_number: build_number,
+            added_at: 1.day.ago,
+            status: "READY_FOR_SALE",
+            phased_release_day: 1,
+            phased_release_status: "COMPLETE"
+          }
+        )
+      }
+
       before do
+        run.step_run.update(build_number: build_number)
+        run.create_external_release
+        run.create_staged_rollout(config: run.deployment.staged_rollout_config)
         allow(providable_dbl).to receive(:complete_phased_release).and_return(GitHub::Result.new)
+        allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { live_release_info })
       end
 
       it "completes the phased release" do

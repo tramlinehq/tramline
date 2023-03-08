@@ -287,27 +287,6 @@ describe DeploymentRun do
     end
   end
 
-  describe "#start_rollout!" do
-    let(:step) { create(:releases_step, :release, :with_deployment) }
-    let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
-
-    it "only starts when staged rollout is enabled for the deployment" do
-      deployment = create(:deployment, :with_google_play_store, step: step_run.step)
-      run = create(:deployment_run, :uploaded, deployment:)
-
-      expect { run.start_rollout! }.to raise_error(AASM::InvalidTransition)
-    end
-
-    it "marks it as rollout_started" do
-      deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
-      run = create(:deployment_run, :uploaded, deployment:)
-
-      run.start_rollout!
-
-      expect(run.reload.rollout_started?).to be(true)
-    end
-  end
-
   describe "#start_release!" do
     let(:step) { create(:releases_step, :release, :with_deployment) }
     let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }

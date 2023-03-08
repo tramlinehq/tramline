@@ -3,17 +3,17 @@ require "rails_helper"
 describe Deployments::AppStoreConnect::UpdateExternalReleaseJob do
   describe "#perform" do
     context "when non app store deployment" do
-      let(:play_store_deployment_run) { create(:deployment_run, :submitted, :with_google_play_store) }
+      let(:play_store_deployment_run) { create(:deployment_run, :submitted_for_review, :with_google_play_store) }
 
       it "does nothing if deployment is not for app store" do
         described_class.new.perform(play_store_deployment_run.id)
 
-        expect(play_store_deployment_run.reload.submitted?).to be(true)
+        expect(play_store_deployment_run.reload.submitted_for_review?).to be(true)
       end
     end
 
     context "when app store deployment" do
-      let(:app_store_deployment_run) { create_deployment_run_for_ios(:submitted) }
+      let(:app_store_deployment_run) { create_deployment_run_for_ios(:submitted_for_review) }
       let(:base_build_info) {
         {
           name: "1.2.0",
@@ -31,7 +31,7 @@ describe Deployments::AppStoreConnect::UpdateExternalReleaseJob do
 
         described_class.new.perform(app_store_deployment_run.id)
 
-        expect(app_store_deployment_run.reload.submitted?).to be(true)
+        expect(app_store_deployment_run.reload.submitted_for_review?).to be(true)
       end
 
       it "creates external build for the deployment run" do
@@ -42,7 +42,7 @@ describe Deployments::AppStoreConnect::UpdateExternalReleaseJob do
         expect { described_class.new.perform(app_store_deployment_run.id) }
           .to raise_error(Deployments::AppStoreConnect::Release::ExternalReleaseNotInTerminalState)
 
-        expect(app_store_deployment_run.reload.submitted?).to be(true)
+        expect(app_store_deployment_run.reload.submitted_for_review?).to be(true)
         expect(app_store_deployment_run.reload.external_release).to be_present
       end
 
@@ -54,7 +54,7 @@ describe Deployments::AppStoreConnect::UpdateExternalReleaseJob do
         expect { described_class.new.perform(app_store_deployment_run.id) }
           .to raise_error(Deployments::AppStoreConnect::Release::ExternalReleaseNotInTerminalState)
 
-        expect(app_store_deployment_run.reload.submitted?).to be(true)
+        expect(app_store_deployment_run.reload.submitted_for_review?).to be(true)
         expect(app_store_deployment_run.external_release.reload.status).to eq(in_progress_build_info[:status])
       end
 

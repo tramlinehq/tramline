@@ -63,12 +63,12 @@ class DeploymentRun < ApplicationRecord
     created: "created",
     started: "started",
     prepared_release: "prepared_release",
-    submitted: "submitted",
+    submitted_for_review: "submitted_for_review",
     uploaded: "uploaded",
-    upload_failed: "upload_failed",
     ready_to_release: "ready_to_release",
     rollout_started: "rollout_started",
     released: "released",
+    upload_failed: "upload_failed",
     failed: "failed"
   }
 
@@ -90,8 +90,8 @@ class DeploymentRun < ApplicationRecord
       transitions from: :started, to: :prepared_release
     end
 
-    event(:submit, after_commit: :find_submission) do
-      transitions from: [:started, :prepared_release], to: :submitted
+    event(:submit_for_review, after_commit: :find_submission) do
+      transitions from: [:started, :prepared_release], to: :submitted_for_review
     end
 
     event :upload, after_commit: -> { Deployments::ReleaseJob.perform_later(id) } do
@@ -104,21 +104,21 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :ready_to_release do
-      transitions from: :submitted, to: :ready_to_release
+      transitions from: :submitted_for_review, to: :ready_to_release
     end
 
-    event :start_rollout, guard: :staged_rollout? do
+    event :engage_release do
       transitions from: [:uploaded, :ready_to_release], to: :rollout_started
     end
 
     event :dispatch_fail, before: :set_reason, after_commit: :release_failed do
-      transitions from: [:started, :uploaded, :submitted, :ready_to_release, :rollout_started], to: :failed
+      transitions from: [:started, :uploaded, :submitted_for_review, :ready_to_release, :rollout_started], to: :failed
       after { step_run.fail_deploy! }
     end
 
     event :complete, after_commit: :release_success do
       after { step_run.finish_deployment!(deployment) }
-      transitions from: [:created, :uploaded, :started, :submitted, :rollout_started, :ready_to_release], to: :released
+      transitions from: [:created, :uploaded, :started, :submitted_for_review, :rollout_started, :ready_to_release], to: :released
     end
   end
 
@@ -179,7 +179,7 @@ class DeploymentRun < ApplicationRecord
 
     if google_play_store_integration?
       if staged_rollout?
-        start_rollout!
+        engage_release!
         rollout_to_playstore!
       else
         fully_release_to_playstore!
@@ -257,11 +257,11 @@ class DeploymentRun < ApplicationRecord
   end
 
   def reviewable?
-    app_store_release? && may_submit?
+    app_store_release? && may_submit_for_review?
   end
 
   def releasable?
-    app_store_release? && may_start_rollout?
+    app_store_release? && may_engage_release?
   end
 
   def rollout_percentage

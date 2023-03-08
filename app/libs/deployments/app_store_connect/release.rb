@@ -69,7 +69,7 @@ module Deployments
         result = provider.release_to_testflight(deployment_channel, build_number)
         return run.fail_with_error(result.error) unless result.ok?
 
-        run.submit!
+        run.submit_for_review!
       end
 
       def prepare_for_release!
@@ -91,10 +91,10 @@ module Deployments
           return
         end
 
-        run.submit!
+        run.submit_for_review!
       end
 
-      def update_external_release
+      def update_external_release # TODO: txn
         return unless run.release.on_track? && app_store_integration?
 
         result = find_release
@@ -112,27 +112,26 @@ module Deployments
         end
       end
 
-      def start_release!
+      def start_release! # TODO: txn
         return unless app_store_release?
 
         result = provider.start_release(build_number)
         return run.fail_with_error(result.error) unless result.ok?
 
-        if staged_rollout?
-          run.create_staged_rollout!(config: staged_rollout_config)
-          run.start_rollout!
-        end
+        run.create_staged_rollout!(config: staged_rollout_config) if staged_rollout?
+        run.engage_release!
 
         Deployments::AppStoreConnect::FindLiveReleaseJob.perform_async(run.id)
       end
 
-      def track_live_release_status
+      def track_live_release_status # TODO: txn
         return unless app_store_release?
 
         result = provider.find_live_release
         return run.fail_with_error(result.error) unless result.ok?
 
         release_info = result.value!
+        run.external_release.update(release_info.attributes)
 
         if release_info.live?(build_number)
           unless staged_rollout?
@@ -155,9 +154,12 @@ module Deployments
 
         result = provider.complete_phased_release
 
-        return run.fail_with_error(result.error) unless result.ok?
+        unless result.ok?
+          run.fail_with_error(result.error)
+          return
+        end
 
-        run.complete!
+        track_live_release_status
       end
 
       private
