@@ -87,8 +87,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
           version:,
           is_phased_release:,
           metadata: {
-            description: "The true Yamanote line aural aesthetic.",
-            whats_new: "Every station now has the JR Shinkansen badges for connecting Shinkansen lines."
+            whats_new: "The latest version contains bug fixes and performance improvements."
           }
         }
       }

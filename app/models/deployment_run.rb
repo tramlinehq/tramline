@@ -33,18 +33,18 @@ class DeploymentRun < ApplicationRecord
     :build_artifact,
     :build_version,
     to: :step_run
-  delegate :external?,
+  delegate :deployment_number,
+    :integration,
+    :deployment_channel,
+    :deployment_channel_name,
+    :external?,
     :google_play_store_integration?,
     :slack_integration?,
     :app_store_integration?,
     :store?,
-    :deployment_number,
-    :integration,
-    :deployment_channel,
-    :deployment_channel_name,
+    :production_channel?,
     :staged_rollout?,
     :staged_rollout_config,
-    :production_channel?,
     to: :deployment
   delegate :release_version, to: :release
   delegate :app, to: :release
@@ -174,7 +174,7 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  def start_release! # function that gets called from controller
+  def start_release!
     return unless store?
 
     if google_play_store_integration?
@@ -239,15 +239,29 @@ class DeploymentRun < ApplicationRecord
   end
 
   def rolloutable?
-    step.release? && promotable? && deployment.staged_rollout? && rollout_started?
+    step.release? &&
+      promotable? &&
+      deployment.staged_rollout? &&
+      rollout_started?
+  end
+
+  def controllable_rollout?
+    rolloutable? && deployment.controllable_rollout?
   end
 
   def app_store_release?
-    step.release? && release.on_track? && app_store_integration? && production_channel?
+    step.release? &&
+      release.on_track? &&
+      app_store_integration? &&
+      production_channel?
   end
 
   def reviewable?
     app_store_release? && may_submit?
+  end
+
+  def releasable?
+    app_store_release? && may_start_rollout?
   end
 
   def rollout_percentage

@@ -28,7 +28,11 @@ class Deployment < ApplicationRecord
   validate :correct_staged_rollout_config, if: :staged_rollout?
   validate :non_prod_build_channel, if: -> { step.review? }
 
-  delegate :google_play_store_integration?, :slack_integration?, :store?, :app_store_integration?, to: :integration, allow_nil: true
+  delegate :google_play_store_integration?,
+    :slack_integration?,
+    :store?,
+    :app_store_integration?,
+    :controllable_rollout?, to: :integration, allow_nil: true
   delegate :train, :app, to: :step
 
   scope :sequential, -> { order("deployments.deployment_number ASC") }

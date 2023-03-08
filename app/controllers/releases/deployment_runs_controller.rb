@@ -1,6 +1,7 @@
 class Releases::DeploymentRunsController < SignedInApplicationController
   before_action :set_deployment_run
-  before_action :ensure_submittable, only: [:submit_for_review]
+  before_action :ensure_reviewable, only: [:submit_for_review]
+  before_action :ensure_releasable, only: [:start_release]
   before_action :ensure_rolloutable, only: [:fully_release]
 
   def submit_for_review
@@ -19,11 +20,27 @@ class Releases::DeploymentRunsController < SignedInApplicationController
     end
   end
 
+  def start_release
+    if @deployment_run.start_release!
+      redirect_back fallback_location: root_path, notice: "The release has kicked-off!"
+    else
+      redirect_back fallback_location: root_path, flash: {error: "Failed to start the release!"}
+    end
+  end
+
   private
 
-  def ensure_submittable
+  def ensure_reviewable
     unless @deployment_run.reviewable?
-      redirect_back fallback_location: root_path, flash: {error: "Cannot perform this operation. This deployment cannot be submitted for a review."}
+      redirect_back fallback_location: root_path,
+        flash: {error: "Cannot perform this operation. This deployment cannot be submitted for a review."}
+    end
+  end
+
+  def ensure_releasable
+    unless @deployment_run.releasable?
+      redirect_back fallback_location: root_path,
+        flash: {error: "Cannot perform this operation. This deployment cannot be released."}
     end
   end
 

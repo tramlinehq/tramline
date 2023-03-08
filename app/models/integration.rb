@@ -158,6 +158,10 @@ class Integration < ApplicationRecord
     build_channel? && providable.store?
   end
 
+  def controllable_rollout?
+    build_channel? && providable.controllable_rollout?
+  end
+
   def allowed_integrations_for_app
     unless providable_type&.in?(ALLOWED_INTEGRATIONS_FOR_APP[platform][category])
       errors.add(:providable_type, "Provider is not allowed for app type: #{platform}")

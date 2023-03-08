@@ -85,7 +85,11 @@ module Deployments
         return unless app_store_release?
 
         result = provider.submit_release(build_number)
-        return run.fail_with_error(result.error) unless result.ok?
+
+        unless result.ok?
+          run.fail_with_error(result.error)
+          return
+        end
 
         run.submit!
       end
@@ -116,6 +120,7 @@ module Deployments
 
         if staged_rollout?
           run.create_staged_rollout!(config: staged_rollout_config)
+          run.start_rollout!
         end
 
         Deployments::AppStoreConnect::FindLiveReleaseJob.perform_async(run.id)

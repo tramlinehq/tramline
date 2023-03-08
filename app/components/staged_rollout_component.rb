@@ -16,17 +16,17 @@ class StagedRolloutComponent < ViewComponent::Base
   delegate :started?,
     :failed?,
     :stopped?,
-    :config,
     :completed?,
+    :config,
     :started?,
     :created?,
     :current_stage,
     :last_rollout_percentage,
     to: :staged_rollout
-  delegate :writer?, to: :helpers
+  delegate :controllable_rollout?, to: :deployment_run
 
   def release_actions(form)
-    return unless release.on_track?
+    return unless controllable_rollout?
     return if stopped? || completed?
 
     if failed?
@@ -39,7 +39,7 @@ class StagedRolloutComponent < ViewComponent::Base
   end
 
   def halt_action(form)
-    return unless release.on_track?
+    return unless controllable_rollout?
     return unless started? || failed?
 
     halt_rollout_button(form)
@@ -79,6 +79,7 @@ class StagedRolloutComponent < ViewComponent::Base
 
   private
 
+  delegate :writer?, to: :helpers
   attr_reader :release, :step_run, :deployment_run, :staged_rollout
 
   def release_form_url

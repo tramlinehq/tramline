@@ -70,7 +70,7 @@ module Installations
         build_number:,
         version:,
         is_phased_release:,
-        metadata: { whats_new: "The latest version contains bug fixes and performance improvements." }
+        metadata: {whats_new: "The latest version contains bug fixes and performance improvements."}
       }
 
       execute(:post, PREPARE_RELEASE_URL.expand(bundle_id:).to_s, {json: params})
