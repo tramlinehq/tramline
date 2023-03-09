@@ -25,7 +25,7 @@
                           { method: :patch, class: 'mt-2 btn-xs' } %>
     <% end %>
 
-    <% if deployment_run.rolloutable? %>
+    <% if deployment_run.app_store_release? && deployment_run.rolloutable? %>
       <%= authz_button_to :blue,
                           "Release to all users",
                           fully_release_deployment_run_path(deployment_run),

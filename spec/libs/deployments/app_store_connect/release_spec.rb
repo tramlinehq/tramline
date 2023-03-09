@@ -288,7 +288,7 @@ describe Deployments::AppStoreConnect::Release do
           external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
           name: "1.2.0",
           build_number: "123",
-          added_at: 1.day.ago
+          added_at: "2023-02-25T03:02:46-08:00"
         }
       }
       let(:initial_build_info) { AppStoreIntegration::TestFlightInfo.new(base_build_info.merge(status: "WAITING_FOR_BETA_REVIEW")) }
