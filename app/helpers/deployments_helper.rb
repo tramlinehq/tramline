@@ -14,4 +14,8 @@ module DeploymentsHelper
       deployment.integration.providable.to_s
     end
   end
+
+  def deployment_external_integration_name(deployment)
+    Deployment.human_attr_value(:integration_type, deployment.integration_type)
+  end
 end

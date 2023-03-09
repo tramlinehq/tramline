@@ -13,6 +13,11 @@ en:
       gitlab_integration: "GitLab"
       github_integration: "GitHub"
       deployment: "Distribution"
+    values:
+      deployment:
+        integration_type:
+          app_store: "App Store"
+          test_flight: "TestFlight"
     attributes:
       integration:
         categories:

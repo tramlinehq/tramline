@@ -1,0 +1,41 @@
+<% if deployment_run.external_release.present? %>
+  <div class="w-full 2xl:w-1/2 bg-white shadow-sm mt-3 rounded-sm border border-slate-200 px-1">
+    <div class="flex flex-col h-full p-4">
+      <header>
+        <div class="flex gap-x-2">
+          <%= image_tag("integrations/logo_#{deployment_run.deployment.integration_type.to_s}.png", width: 18) %>
+          <h2 class="text-md leading-snug font-semibold">
+            <%= "Added to #{deployment_external_integration_name(deployment_run.deployment)} " + ago_in_words(deployment_run.external_release.added_at) %>
+          </h2>
+        </div>
+      </header>
+
+      <div class="grow mt-2">
+        <div class="text-sm">
+          Version
+          <span class="font-mono"><%= deployment_run.external_release.name %></span>
+          • Build
+          <span class="font-mono"><%= deployment_run.external_release.build_number %></span>
+        </div>
+      </div>
+
+      <footer class="mt-5">
+        <div class="text-sm font-medium text-slate-500 mb-2">
+          <%= external_release_status_timestamp(deployment_run.external_release) %>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <span class="bg-slate-400 rounded-full py-1 px-2 text-xs text-white">
+            <%= deployment_run.external_release.status.titleize.upcase %>
+          </span>
+
+          <div>
+            <%= link_to_external "Store ↗",
+                                 deployment_run.external_release.store_link,
+                                 class: "underline text-sm font-medium text-indigo-500 hover:text-indigo-600" %>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+<% end %>

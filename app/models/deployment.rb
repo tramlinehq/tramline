@@ -93,6 +93,19 @@ class Deployment < ApplicationRecord
     staged_rollout_config
   end
 
+  def integration_type
+    return :app_store if app_store?
+    return :test_flight if test_flight?
+  end
+
+  def test_flight?
+    !production_channel? && app_store_integration?
+  end
+
+  def app_store?
+    production_channel? && app_store_integration?
+  end
+
   private
 
   def set_default_staged_rollout

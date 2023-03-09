@@ -19,4 +19,9 @@ class ApplicationRecord < ActiveRecord::Base
     enum_i18n_key = enum_name.to_s.pluralize
     I18n.t("activerecord.attributes.#{model_name.i18n_key}.#{enum_i18n_key}.#{enum_value}")
   end
+
+  def self.human_attr_value(attribute, value)
+    attr_i18n_key = attribute.to_s
+    I18n.t("activerecord.values.#{model_name.i18n_key}.#{attr_i18n_key}.#{value}")
+  end
 end

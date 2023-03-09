@@ -52,7 +52,7 @@ module Deployments
         :app_store_release?,
         :test_flight_release?,
         :app_store_integration?,
-        :production_channel?,
+        :app_store?,
         :staged_rollout_config,
         to: :run
 
@@ -114,7 +114,7 @@ module Deployments
         (run.external_release || run.build_external_release).update(release_info.attributes)
 
         if release_info.success?
-          return run.ready_to_release! if production_channel?
+          return run.ready_to_release! if app_store?
           run.complete!
         elsif release_info.failed?
           run.dispatch_fail! # TODO: add a reason?
@@ -179,7 +179,7 @@ module Deployments
       private
 
       def find_release
-        return provider.find_release(build_number) if production_channel?
+        return provider.find_release(build_number) if app_store?
         provider.find_build(build_number)
       end
     end

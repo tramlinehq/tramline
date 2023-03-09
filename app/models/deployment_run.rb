@@ -41,8 +41,9 @@ class DeploymentRun < ApplicationRecord
     :google_play_store_integration?,
     :slack_integration?,
     :app_store_integration?,
+    :app_store?,
+    :test_flight?,
     :store?,
-    :production_channel?,
     :staged_rollout?,
     :staged_rollout_config,
     to: :deployment
@@ -86,7 +87,7 @@ class DeploymentRun < ApplicationRecord
       transitions from: :created, to: :started
     end
 
-    event(:prepare_release, guards: [:app_store_integration?, :production_channel?]) do
+    event(:prepare_release, guard: :app_store?) do
       transitions from: :started, to: :prepared_release
     end
 
@@ -112,7 +113,7 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :dispatch_fail, before: :set_reason, after_commit: :release_failed do
-      transitions from: [:started, :uploaded, :submitted_for_review, :ready_to_release, :rollout_started], to: :failed
+      transitions from: [:started, :prepared_release, :uploaded, :submitted_for_review, :ready_to_release, :rollout_started], to: :failed
       after { step_run.fail_deploy! }
     end
 
@@ -251,14 +252,11 @@ class DeploymentRun < ApplicationRecord
   end
 
   def app_store_release?
-    step.release? &&
-      release.on_track? &&
-      app_store_integration? &&
-      production_channel?
+    step.release? && release.on_track? && deployment.app_store?
   end
 
   def test_flight_release?
-    release.on_track? && app_store_integration? && !production_channel?
+    release.on_track? && deployment.test_flight?
   end
 
   def reviewable?
