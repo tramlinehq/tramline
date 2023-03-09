@@ -285,6 +285,31 @@ describe DeploymentRun do
       expect(completable_run.reload.released?).to be(true)
       expect(step_run.reload.success?).to be(false)
     end
+
+    context "when external release" do
+      it "updates timestamps on the external release" do
+        deployment_run = create(:deployment_run, :uploaded, :with_external_release, deployment: step.deployments[0], step_run: step_run)
+
+        freeze_time do
+          deployment_run.complete!
+
+          expect(deployment_run.external_release.released_at).to eq(Time.current)
+          expect(deployment_run.external_release.reviewed_at).to eq(Time.current)
+        end
+      end
+
+      it "does not update the reviewed_at timestamp if already set" do
+        deployment_run = create(:deployment_run, :uploaded, :with_external_release, deployment: step.deployments[0], step_run: step_run)
+        deployment_run.external_release.update(reviewed_at: 1.hour.ago)
+
+        freeze_time do
+          deployment_run.complete!
+
+          expect(deployment_run.external_release.released_at).to eq(Time.current)
+          expect(deployment_run.external_release.reviewed_at).not_to eq(Time.current)
+        end
+      end
+    end
   end
 
   describe "#start_release!" do

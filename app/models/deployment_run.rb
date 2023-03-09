@@ -103,7 +103,7 @@ class DeploymentRun < ApplicationRecord
       transitions from: :started, to: :upload_failed
     end
 
-    event :ready_to_release do
+    event :ready_to_release, after_commit: -> { external_release.update(reviewed_at: Time.current) } do
       transitions from: :submitted_for_review, to: :ready_to_release
     end
 
@@ -310,6 +310,11 @@ class DeploymentRun < ApplicationRecord
   end
 
   def release_success
+    if external_release
+      now = Time.current
+      external_release.update(released_at: now, reviewed_at: external_release.reviewed_at.presence || now)
+    end
+
     event_stamp!(reason: :released, kind: :success, data: stamp_data)
   end
 

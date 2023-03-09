@@ -282,7 +282,7 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when testflight" do
-      let(:run) { create_deployment_run_for_ios(:submitted_for_review, deployment_traits: [:with_app_store]) }
+      let(:run) { create_deployment_run_for_ios(:submitted_for_review, :with_external_release, deployment_traits: [:with_app_store]) }
       let(:base_build_info) {
         {
           external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
@@ -306,19 +306,19 @@ describe Deployments::AppStoreConnect::Release do
       end
 
       it "creates external release" do
+        run_without_external_release = create_deployment_run_for_ios(:submitted_for_review, deployment_traits: [:with_app_store])
         allow(providable_dbl).to receive(:find_build).and_return(GitHub::Result.new { initial_build_info })
 
-        expect(run.external_release).not_to be_present
-        expect { described_class.update_external_release(run) }
+        expect(run_without_external_release.external_release).not_to be_present
+        expect { described_class.update_external_release(run_without_external_release) }
           .to raise_error(Deployments::AppStoreConnect::Release::ExternalReleaseNotInTerminalState)
 
-        expect(run.reload.external_release).to be_present
-        expect(run.reload.external_release.attributes.with_indifferent_access.slice(:added_at, :build_number, :external_id, :name, :status))
+        expect(run_without_external_release.reload.external_release).to be_present
+        expect(run_without_external_release.reload.external_release.attributes.with_indifferent_access.slice(:added_at, :build_number, :external_id, :name, :status))
           .to eq(initial_build_info.attributes.with_indifferent_access)
       end
 
       it "updates external release if it exists" do
-        run.create_external_release(initial_build_info.attributes)
         allow(providable_dbl).to receive(:find_build).and_return(GitHub::Result.new { in_progress_build_info })
 
         expect { described_class.update_external_release(run) }
@@ -416,7 +416,6 @@ describe Deployments::AppStoreConnect::Release do
       end
 
       it "updates external release if it exists" do
-        run.create_external_release(initial_release_info.attributes)
         allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { in_progress_release_info })
 
         expect { described_class.update_external_release(run) }
@@ -547,6 +546,7 @@ describe Deployments::AppStoreConnect::Release do
     let(:run) {
       create_deployment_run_for_ios(
         :rollout_started,
+        :with_external_release,
         deployment_traits: [:with_app_store, :with_production_channel],
         step_trait: :release
       )
@@ -563,7 +563,6 @@ describe Deployments::AppStoreConnect::Release do
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
-      run.create_external_release
     end
 
     it "does nothing if not allowed" do
@@ -600,6 +599,7 @@ describe Deployments::AppStoreConnect::Release do
       let(:run_with_staged_rollout) {
         create_deployment_run_for_ios(
           :rollout_started,
+          :with_external_release,
           deployment_traits: [:with_app_store, :with_phased_release],
           step_trait: :release
         )
@@ -607,7 +607,6 @@ describe Deployments::AppStoreConnect::Release do
 
       before do
         run_with_staged_rollout.step_run.update(build_number: build_number)
-        run_with_staged_rollout.create_external_release(initial_release_info.attributes)
         run_with_staged_rollout.create_staged_rollout!(config: run_with_staged_rollout.staged_rollout_config)
       end
 
@@ -637,7 +636,7 @@ describe Deployments::AppStoreConnect::Release do
         freeze_time do
           described_class.track_live_release_status(run_with_staged_rollout)
 
-          expect(run_with_staged_rollout.external_release.released_at).to eq(Time.current)
+          expect(run_with_staged_rollout.external_release.reload.released_at).to eq(Time.current)
         end
       end
     end
@@ -647,7 +646,6 @@ describe Deployments::AppStoreConnect::Release do
 
       before do
         run.step_run.update(build_number: build_number)
-        run.create_external_release(initial_release_info.attributes)
       end
 
       it "completes the run" do
@@ -696,6 +694,7 @@ describe Deployments::AppStoreConnect::Release do
     let(:run) {
       create_deployment_run_for_ios(
         :rollout_started,
+        :with_external_release,
         deployment_traits: [:with_app_store, :with_phased_release],
         step_trait: :release
       )
@@ -722,7 +721,6 @@ describe Deployments::AppStoreConnect::Release do
 
       before do
         run.step_run.update(build_number: build_number)
-        run.create_external_release
         run.create_staged_rollout(config: run.deployment.staged_rollout_config)
         allow(providable_dbl).to receive(:complete_phased_release).and_return(GitHub::Result.new)
         allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { live_release_info })

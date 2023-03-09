@@ -94,7 +94,7 @@ module Deployments
         run.submit_for_review!
       end
 
-      def update_external_release # TODO: txn
+      def update_external_release
         return unless run.release.on_track? && app_store_integration?
 
         result = find_release
@@ -104,7 +104,8 @@ module Deployments
         (run.external_release || run.build_external_release).update(release_info.attributes)
 
         if release_info.success?
-          release_success
+          return run.ready_to_release! if production_channel?
+          run.complete!
         elsif release_info.failed?
           run.dispatch_fail! # TODO: add a reason?
         else
@@ -112,37 +113,33 @@ module Deployments
         end
       end
 
-      def start_release! # TODO: txn
+      def start_release!
         return unless app_store_release?
+
+        run.engage_release!
 
         result = provider.start_release(build_number)
         return run.fail_with_error(result.error) unless result.ok?
-
         run.create_staged_rollout!(config: staged_rollout_config) if staged_rollout?
-        run.engage_release!
 
         Deployments::AppStoreConnect::FindLiveReleaseJob.perform_async(run.id)
       end
 
-      def track_live_release_status # TODO: txn
+      def track_live_release_status
         return unless app_store_release?
 
         result = provider.find_live_release
-        return run.fail_with_error(result.error) unless result.ok?
+        unless result.ok?
+          return run.fail_with_error(result.error)
+        end
 
         release_info = result.value!
         run.external_release.update(release_info.attributes)
 
         if release_info.live?(build_number)
-          unless staged_rollout?
-            run.external_release.update(released_at: Time.current)
-            return run.complete!
-          end
-
+          return run.complete! unless staged_rollout?
           run.staged_rollout.update_stage(release_info.phased_release_stage)
-          if release_info.phased_release_complete?
-            return run.external_release.update(released_at: Time.current)
-          end
+          return if release_info.phased_release_complete?
         end
 
         raise ReleaseNotFullyLive, "Retrying in some time..."
@@ -159,7 +156,7 @@ module Deployments
           return
         end
 
-        track_live_release_status
+        track_live_release_status # TODO: should not be sync?
       end
 
       private
@@ -167,13 +164,6 @@ module Deployments
       def find_release
         return provider.find_release(build_number) if production_channel?
         provider.find_build(build_number)
-      end
-
-      def release_success
-        run.external_release.update(reviewed_at: Time.current)
-
-        return run.ready_to_release! if production_channel?
-        run.complete!
       end
     end
   end
