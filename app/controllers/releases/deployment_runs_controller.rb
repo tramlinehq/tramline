@@ -4,6 +4,8 @@ class Releases::DeploymentRunsController < SignedInApplicationController
   before_action :ensure_releasable, only: [:start_release]
   before_action :ensure_rolloutable, only: [:fully_release]
 
+  # TODO: for all these actions, check for fail state instead of relying on if-checks from action methods
+
   def submit_for_review
     if Deployments::AppStoreConnect::Release.submit_for_review!(@deployment_run)
       redirect_back fallback_location: root_path, notice: "Submitted for review!"
