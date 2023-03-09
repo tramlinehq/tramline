@@ -88,11 +88,6 @@ class Deployment < ApplicationRecord
     store? && build_artifact_channel["is_production"]
   end
 
-  def staged_rollout_values
-    return [1, 2, 5, 10, 20, 50, 100] if app_store_integration?
-    staged_rollout_config
-  end
-
   def integration_type
     return :app_store if app_store?
     return :testflight if test_flight?
