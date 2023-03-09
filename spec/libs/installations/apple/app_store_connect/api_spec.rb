@@ -19,7 +19,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
     it "returns the transformed release for the build number" do
       request = stub_request(:get, url).to_return(body: File.read("spec/fixtures/app_store_connect/release.json"))
       expected_release = {
-        external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+        external_id: "31aafef2-d5fb-45d4-9b02-f0ab5911c1b2",
         status: "READY_FOR_SALE",
         build_number: "33417",
         name: "1.8.0",
@@ -51,7 +51,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
     it "returns the transformed live release" do
       request = stub_request(:get, url).to_return(body: File.read("spec/fixtures/app_store_connect/release.json"))
       expected_release = {
-        external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+        external_id: "31aafef2-d5fb-45d4-9b02-f0ab5911c1b2",
         status: "READY_FOR_SALE",
         build_number: "33417",
         name: "1.8.0",

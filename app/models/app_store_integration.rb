@@ -68,7 +68,7 @@ class AppStoreIntegration < ApplicationRecord
   }
 
   RELEASE_TRANSFORMATIONS = {
-    external_id: :id,
+    external_id: :build_id,
     status: :app_store_state,
     build_number: :build_number,
     name: :version_name,
