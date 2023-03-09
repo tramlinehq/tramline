@@ -18,20 +18,24 @@
 </p>
 
 <p align="center">
-  <a href="https://tramline.app">Website</a>
+  <a href="https://tramline.app" target="_blank" rel="noopener noreferrer">Website</a>
   ·
-  <a href="https://tramline.substack.com">Latest Updates</a>
+  <a href="https://tramline.substack.com" target="_blank" rel="noopener noreferrer">Latest Updates</a>
   ·
-  <a href="https://tramline.app/blog">Blog</a>
+  <a href="https://tramline.app/blog" target="_blank" rel="noopener noreferrer">Blog</a>
 </p>
 
 <p align="center">
-  <img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/tramlinehq?style=social">
-  <img alt="Discord" src="https://img.shields.io/discord/974284993641725962?style=plastic">
+  <a href="https://twitter.com/tramlinehq/" target="_blank" rel="noopener noreferrer">
+    <img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/tramlinehq?style=social">
+  </a>
+  <a href="https://discord.gg/u7VwyvBV2Z" target="_blank" rel="noopener noreferrer">
+    <img alt="Discord" src="https://img.shields.io/discord/974284993641725962?style=plastic">
+  </a>
 
-  <br/>  
   <br/>
-  
+  <br/>
+
   <a href="https://github.com/tramlinehq/site/actions/workflows/ci.yml">
     <img src="https://github.com/tramlinehq/site/actions/workflows/ci.yml/badge.svg?branch=main" />
   </a>
@@ -43,6 +47,6 @@
   <a href="CODE_OF_CONDUCT.md">
     <img src="https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg" />
   </a>
-  
-  <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/w/tramlinehq/tramline">
+
+  <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/tramlinehq/tramline">
 </p>
