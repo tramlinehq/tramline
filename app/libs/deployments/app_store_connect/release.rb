@@ -50,24 +50,26 @@ module Deployments
         :release_version,
         :staged_rollout?,
         :app_store_release?,
+        :test_flight_release?,
         :app_store_integration?,
         :production_channel?,
         :staged_rollout_config,
         to: :run
 
       def kickoff!
-        return unless run.release.on_track? && app_store_integration?
-
         return Deployments::AppStoreConnect::PrepareForReleaseJob.perform_later(run.id) if app_store_release?
-        Deployments::AppStoreConnect::TestFlightReleaseJob.perform_later(run.id)
+        Deployments::AppStoreConnect::TestFlightReleaseJob.perform_later(run.id) if test_flight_release?
       end
 
       def to_test_flight!
-        return unless run.release.on_track? && app_store_integration?
-        return if production_channel?
+        return unless test_flight_release?
 
         result = provider.release_to_testflight(deployment_channel, build_number)
-        return run.fail_with_error(result.error) unless result.ok?
+
+        unless result.ok?
+          run.fail_with_error(result.error)
+          return
+        end
 
         run.submit_for_review!
       end
@@ -76,7 +78,11 @@ module Deployments
         return unless app_store_release?
 
         result = provider.prepare_release(build_number, release_version, staged_rollout?)
-        return run.fail_with_error(result.error) unless result.ok?
+
+        unless result.ok?
+          run.fail_with_error(result.error)
+          return
+        end
 
         run.prepare_release!
       end
@@ -98,7 +104,11 @@ module Deployments
         return unless run.release.on_track? && app_store_integration?
 
         result = find_release
-        return run.fail_with_error(result.error) unless result.ok?
+
+        unless result.ok?
+          run.fail_with_error(result.error)
+          return
+        end
 
         release_info = result.value!
         (run.external_release || run.build_external_release).update(release_info.attributes)
@@ -134,8 +144,10 @@ module Deployments
         return unless app_store_release?
 
         result = provider.find_live_release
+
         unless result.ok?
-          return run.fail_with_error(result.error)
+          run.fail_with_error(result.error)
+          return
         end
 
         release_info = result.value!

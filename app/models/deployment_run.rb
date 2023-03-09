@@ -256,6 +256,10 @@ class DeploymentRun < ApplicationRecord
       production_channel?
   end
 
+  def test_flight_release?
+    release.on_track? && app_store_integration? && !production_channel?
+  end
+
   def reviewable?
     app_store_release? && may_submit_for_review?
   end
