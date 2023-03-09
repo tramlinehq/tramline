@@ -16,9 +16,9 @@ module RefinedHash
 
     def get_in(*path)
       path.reduce(self) do |acc, key|
-        acc.fetch(key, nil)
-      rescue ArgumentError, IndexError, NoMethodError => e
-        raise UndefinedPathError, "Could not fetch path (#{path.join(" > ")}) at #{key}", e.backtrace
+        acc&.fetch(key, nil)
+      rescue ArgumentError, IndexError => e
+        raise UndefinedPathError, "Could not fetch path (#{path.join(" > ")}) at #{key} for #{e.class}", e.backtrace
       end
     end
   end
