@@ -96,6 +96,10 @@ class Deployment < ApplicationRecord
     :external
   end
 
+  def display_channel?
+    !external? && !app_store?
+  end
+
   def test_flight?
     !production_channel? && app_store_integration?
   end

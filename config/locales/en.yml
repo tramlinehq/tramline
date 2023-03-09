@@ -9,14 +9,14 @@ en:
       slack_integration: "Slack"
       bitrise_integration: "Bitrise"
       google_play_store_integration: "Google Play Store"
-      app_store_integration: "App Store & TestFlight"
+      app_store_integration: "App Store Connect & TestFlight"
       gitlab_integration: "GitLab"
       github_integration: "GitHub"
       deployment: "Distribution"
     values:
       deployment:
         integration_type:
-          app_store: "App Store"
+          app_store: "App Store (production)"
           testflight: "TestFlight"
           google_play_store: "Google Play Store"
           slack: "Slack"

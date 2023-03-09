@@ -77,7 +77,7 @@ class AppStoreIntegration < ApplicationRecord
     phased_release_status: [:phased_release, :phased_release_state]
   }
 
-  PROD_CHANNEL = {id: :app_store, name: "App Store", is_production: true}
+  PROD_CHANNEL = {id: :app_store, name: "App Store (production)", is_production: true}
 
   unless Set.new(BUILD_TRANSFORMATIONS.keys).superset?(Set.new(ExternalRelease.minimum_required))
     raise InvalidTransformations
