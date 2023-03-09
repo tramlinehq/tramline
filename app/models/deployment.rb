@@ -95,7 +95,10 @@ class Deployment < ApplicationRecord
 
   def integration_type
     return :app_store if app_store?
-    return :test_flight if test_flight?
+    return :testflight if test_flight?
+    return :google_play_store if google_play_store_integration?
+    return :slack if slack_integration?
+    :external
   end
 
   def test_flight?

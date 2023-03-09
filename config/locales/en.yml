@@ -17,7 +17,10 @@ en:
       deployment:
         integration_type:
           app_store: "App Store"
-          test_flight: "TestFlight"
+          testflight: "TestFlight"
+          google_play_store: "Google Play Store"
+          slack: "Slack"
+          external: "External (outside Tramline)"
     attributes:
       integration:
         categories:

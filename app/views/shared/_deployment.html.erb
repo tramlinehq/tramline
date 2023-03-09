@@ -2,7 +2,7 @@
 
 <%= render partial: "shared/display_channels",
            locals: { name: show_deployment(deployment),
-                     provider_name: deployment_integration_name(deployment) } %>
+                     provider_name: deployment.integration_type.to_s } %>
 
 <% if deployment.staged_rollout? %>
   <span class="ml-1"><%= status_badge("Staged rollout enabled", :neutral) %></span>
