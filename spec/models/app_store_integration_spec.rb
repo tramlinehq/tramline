@@ -157,7 +157,7 @@ describe AppStoreIntegration do
         result = app_store_integration.find_build(build_number).value!
 
         expect(result).to be_a(AppStoreIntegration::TestFlightInfo)
-        expect(result.found?).to be(true)
+        expect(result.build_info).to be_present
       end
 
       it "returns neither success nor failed to be true when build is in process" do

@@ -68,7 +68,7 @@ class DeploymentRun < ApplicationRecord
     ready_to_release: "ready_to_release",
     rollout_started: "rollout_started",
     released: "released",
-    upload_failed: "upload_failed",
+    upload_failed: "upload_failed", # TODO: migrate to failure_reason
     failed: "failed"
   }
 
@@ -220,6 +220,7 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
+  # TODO: handle known errors gracefully and show to users
   def release_with(rollout_value: nil, is_draft: false)
     raise ArgumentError, "cannot have a rollout for a draft deployments" if is_draft && rollout_value.present?
 

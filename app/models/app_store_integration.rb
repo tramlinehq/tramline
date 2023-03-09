@@ -12,7 +12,7 @@
 class AppStoreIntegration < ApplicationRecord
   has_paper_trail
 
-  InvalidBuildTransformations = Class.new(StandardError)
+  InvalidTransformations = Class.new(StandardError)
 
   encrypts :key_id, deterministic: true
   encrypts :p8_key, deterministic: true
@@ -80,7 +80,11 @@ class AppStoreIntegration < ApplicationRecord
   PROD_CHANNEL = {id: :app_store, name: "App Store", is_production: true}
 
   unless Set.new(BUILD_TRANSFORMATIONS.keys).superset?(Set.new(ExternalRelease.minimum_required))
-    raise InvalidBuildTransformations
+    raise InvalidTransformations
+  end
+
+  unless Set.new(RELEASE_TRANSFORMATIONS.keys).superset?(Set.new(ExternalRelease.minimum_required))
+    raise InvalidTransformations
   end
 
   def access_key
@@ -194,44 +198,22 @@ class AppStoreIntegration < ApplicationRecord
 
     attr_reader :build_info
 
-    module BuildInternalState
-      PROCESSING = "PROCESSING"
-      PROCESSING_EXCEPTION = "PROCESSING_EXCEPTION"
-      MISSING_EXPORT_COMPLIANCE = "MISSING_EXPORT_COMPLIANCE"
-      READY_FOR_BETA_TESTING = "READY_FOR_BETA_TESTING"
-      IN_BETA_TESTING = "IN_BETA_TESTING"
-      EXPIRED = "EXPIRED"
-      IN_EXPORT_COMPLIANCE_REVIEW = "IN_EXPORT_COMPLIANCE_REVIEW"
-    end
-
-    module BuildExternalState
-      PROCESSING = "PROCESSING"
-      PROCESSING_EXCEPTION = "PROCESSING_EXCEPTION"
-      MISSING_EXPORT_COMPLIANCE = "MISSING_EXPORT_COMPLIANCE"
-      READY_FOR_BETA_TESTING = "READY_FOR_BETA_TESTING"
-      IN_BETA_TESTING = "IN_BETA_TESTING"
-      EXPIRED = "EXPIRED"
-      READY_FOR_BETA_SUBMISSION = "READY_FOR_BETA_SUBMISSION"
-      IN_EXPORT_COMPLIANCE_REVIEW = "IN_EXPORT_COMPLIANCE_REVIEW"
-      WAITING_FOR_BETA_REVIEW = "WAITING_FOR_BETA_REVIEW"
-      IN_BETA_REVIEW = "IN_BETA_REVIEW"
-      BETA_REJECTED = "BETA_REJECTED"
-      BETA_APPROVED = "BETA_APPROVED"
-    end
+    MISSING_EXPORT_COMPLIANCE = "MISSING_EXPORT_COMPLIANCE"
+    EXPIRED = "EXPIRED"
+    BETA_REJECTED = "BETA_REJECTED"
+    PROCESSING_EXCEPTION = "PROCESSING_EXCEPTION"
+    BETA_APPROVED = "BETA_APPROVED"
+    IN_BETA_TESTING = "IN_BETA_TESTING"
 
     def attributes
       build_info
     end
 
-    def found?
-      build_info.present?
-    end
-
     def success?
       build_info[:status].in?(
         [
-          BuildExternalState::BETA_APPROVED,
-          BuildInternalState::IN_BETA_TESTING
+          BETA_APPROVED,
+          IN_BETA_TESTING
         ]
       )
     end
@@ -239,13 +221,10 @@ class AppStoreIntegration < ApplicationRecord
     def failed?
       build_info[:status].in?(
         [
-          BuildExternalState::PROCESSING_EXCEPTION,
-          BuildExternalState::MISSING_EXPORT_COMPLIANCE,
-          BuildExternalState::EXPIRED,
-          BuildExternalState::BETA_REJECTED,
-          BuildInternalState::PROCESSING_EXCEPTION,
-          BuildInternalState::MISSING_EXPORT_COMPLIANCE,
-          BuildInternalState::EXPIRED
+          BETA_REJECTED,
+          PROCESSING_EXCEPTION,
+          MISSING_EXPORT_COMPLIANCE,
+          EXPIRED
         ]
       )
     end
@@ -259,27 +238,17 @@ class AppStoreIntegration < ApplicationRecord
 
     attr_reader :release_info
 
-    module AppStoreState
-      READY_FOR_SALE = "READY_FOR_SALE"
-      PROCESSING_FOR_APP_STORE = "PROCESSING_FOR_APP_STORE"
-      PENDING_DEVELOPER_RELEASE = "PENDING_DEVELOPER_RELEASE"
-      PENDING_APPLE_RELEASE = "PENDING_APPLE_RELEASE"
-      IN_REVIEW = "IN_REVIEW"
-      WAITING_FOR_REVIEW = "WAITING_FOR_REVIEW"
-      DEVELOPER_REJECTED = "DEVELOPER_REJECTED"
-      DEVELOPER_REMOVED_FROM_SALE = "DEVELOPER_REMOVED_FROM_SALE"
-      REJECTED = "REJECTED"
-      PREPARE_FOR_SUBMISSION = "PREPARE_FOR_SUBMISSION"
-      METADATA_REJECTED = "METADATA_REJECTED"
-      INVALID_BINARY = "INVALID_BINARY"
-    end
+    READY_FOR_SALE = "READY_FOR_SALE"
+    PENDING_DEVELOPER_RELEASE = "PENDING_DEVELOPER_RELEASE"
+    DEVELOPER_REJECTED = "DEVELOPER_REJECTED"
+    DEVELOPER_REMOVED_FROM_SALE = "DEVELOPER_REMOVED_FROM_SALE"
+    REJECTED = "REJECTED"
+    METADATA_REJECTED = "METADATA_REJECTED"
+    INVALID_BINARY = "INVALID_BINARY"
+    PHASED_RELEASE_COMPLETE = "COMPLETE"
 
     def attributes
       release_info.except(:phased_release_day, :phased_release_status)
-    end
-
-    def found?
-      release_info.present?
     end
 
     def phased_release_stage
@@ -288,17 +257,17 @@ class AppStoreIntegration < ApplicationRecord
     end
 
     def phased_release_complete?
-      release_info[:phased_release_status] == "COMPLETE"
+      release_info[:phased_release_status] == PHASED_RELEASE_COMPLETE
     end
 
     def live?(build_number)
-      release_info[:build_number] == build_number && release_info[:status] == AppStoreState::READY_FOR_SALE
+      release_info[:build_number] == build_number && release_info[:status] == READY_FOR_SALE
     end
 
     def success?
       release_info[:status].in?(
         [
-          AppStoreState::PENDING_DEVELOPER_RELEASE
+          PENDING_DEVELOPER_RELEASE
         ]
       )
     end
@@ -306,10 +275,10 @@ class AppStoreIntegration < ApplicationRecord
     def failed?
       release_info[:status].in?(
         [
-          AppStoreState::REJECTED,
-          AppStoreState::INVALID_BINARY,
-          AppStoreState::DEVELOPER_REJECTED,
-          AppStoreState::METADATA_REJECTED
+          REJECTED,
+          INVALID_BINARY,
+          DEVELOPER_REJECTED,
+          METADATA_REJECTED
         ]
       )
     end

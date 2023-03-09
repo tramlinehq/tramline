@@ -62,7 +62,7 @@ class StagedRolloutComponent < ViewComponent::Base
   end
 
   def current_stage_perc
-    return "0%" if created?
+    return "0%" if last_rollout_percentage.nil?
     "#{last_rollout_percentage}%"
   end
 

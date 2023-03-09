@@ -105,7 +105,7 @@ class Queries::Builds
     @records ||=
       ExternalRelease
         .joins(deployment_run: [join_step_run_tree])
-        .select("DISTINCT (external_builds.build_number) AS version_code")
+        .select("DISTINCT (external_releases.build_number) AS version_code")
         .select(distinct_deployment_runs)
         .where(apps: {id: app.id})
         .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.search_by(search_params)))

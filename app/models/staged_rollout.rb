@@ -64,7 +64,7 @@ class StagedRollout < ApplicationRecord
   end
 
   def last_rollout_percentage
-    return if created?
+    return if created? || current_stage.nil?
     config[current_stage]
   end
 

@@ -94,7 +94,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def controllable_rollout?
-    false
+    true
   end
 
   def to_s

@@ -26,7 +26,7 @@ class Releases::FindBuildJob
   def perform(step_run_id)
     run = Releases::Step::Run.find(step_run_id)
     return unless run.release.on_track?
-    result = run.find_build.value!
-    run.build_found! if result.found?
+    run.find_build.value!
+    run.build_found!
   end
 end
