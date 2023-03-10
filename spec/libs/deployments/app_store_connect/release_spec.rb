@@ -354,6 +354,14 @@ describe Deployments::AppStoreConnect::Release do
         expect(run.reload.failed?).to be(true)
       end
 
+      it "adds the failure reason as review failed when failure" do
+        allow(providable_dbl).to receive(:find_build).and_return(GitHub::Result.new { failure_build_info })
+
+        described_class.update_external_release(run)
+
+        expect(run.reload.failure_reason).to eq("review_failed")
+      end
+
       it "marks the deployment run as failed when find build fails" do
         error = Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "build", "code" => "not_found"}})
         allow(providable_dbl).to receive(:find_build).and_return(GitHub::Result.new { raise(error) })
@@ -438,6 +446,14 @@ describe Deployments::AppStoreConnect::Release do
         described_class.update_external_release(run)
 
         expect(run.reload.failed?).to be(true)
+      end
+
+      it "adds the failure reason as review failed when failure" do
+        allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { failure_release_info })
+
+        described_class.update_external_release(run)
+
+        expect(run.reload.failure_reason).to eq("review_failed")
       end
 
       it "marks the deployment run as failed when find build fails" do

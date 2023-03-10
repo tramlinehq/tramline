@@ -14,6 +14,21 @@ en:
       github_integration: "GitHub"
       deployment: "Distribution"
     values:
+      deployment_run:
+        failure_reason:
+          unknown_failure: "an unknown error, contact support!"
+          review_failed: "the store review failure"
+          app_not_found: "the app not being available in store"
+          build_not_found: "the build not being available in store"
+          missing_export_compliance: "the release missing export compliance"
+          beta_group_not_found: "the beta group not existing in store"
+          release_not_found: "the release not being present in store"
+          build_not_submittable: "the build not being submittable "
+          build_mismatch: "the build not matching the release that exists in store"
+          review_in_progress: "a review already being in progress"
+          review_submission_exists: "a release already being added for review in the store"
+          phased_release_not_found: "the release not being phased release enabled"
+          release_already_exists: "a release already being present in the store"
       deployment:
         integration_type:
           app_store: "App Store (production)"

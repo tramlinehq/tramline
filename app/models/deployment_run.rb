@@ -17,6 +17,7 @@ class DeploymentRun < ApplicationRecord
   include AASM
   include Passportable
   include Loggable
+  include Displayable
   using RefinedArray
 
   belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
@@ -75,6 +76,7 @@ class DeploymentRun < ApplicationRecord
 
   enum status: STATES
   enum failure_reason: {
+    review_failed: "review_failed",
     unknown_failure: "unknown_failure"
   }.merge(Installations::Apple::AppStoreConnect::Error.reasons.zip_map_self)
 
@@ -268,7 +270,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def rollout_percentage
-    return unless google_play_store_integration?
+    return unless store?
     return staged_rollout.last_rollout_percentage if staged_rollout?
     initial_rollout_percentage || Deployment::FULL_ROLLOUT_VALUE
   end

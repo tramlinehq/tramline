@@ -117,7 +117,7 @@ module Deployments
           return run.ready_to_release! if app_store?
           run.complete!
         elsif release_info.failed?
-          run.dispatch_fail! # TODO: add a reason?
+          run.dispatch_fail!(reason: :review_failed)
         else
           raise ExternalReleaseNotInTerminalState, "Retrying in some time..."
         end
