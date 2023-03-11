@@ -143,99 +143,26 @@ class DeploymentRun < ApplicationRecord
     return complete! if external?
     return Deployments::SlackJob.perform_later(id) if slack_integration?
     return Deployments::AppStoreConnect::Release.kickoff!(self) if app_store_integration?
-    kickoff_upload_on_play_store! if google_play_store_integration?
-  end
-
-  ## play store
-  #
-  def kickoff_upload_on_play_store!
-    return upload! if step_run.similar_deployment_runs_for(self).any?(&:has_uploaded?)
-    Deployments::GooglePlayStore::Upload.perform_later(id)
-  end
-
-  def upload_to_playstore!
-    return unless google_play_store_integration?
-
-    with_lock do
-      return if uploaded?
-
-      build_artifact.with_open do |file|
-        result = provider.upload(file)
-        if result.ok?
-          upload!
-        else
-          upload_fail!
-
-          reason =
-            GooglePlayStoreIntegration::DISALLOWED_ERRORS_WITH_REASONS
-              .fetch(result.error.class, :upload_failed_reason_unknown)
-
-          event_stamp!(reason:, kind: :error, data: stamp_data)
-          elog(result.error)
-        end
-      end
-    end
+    Deployments::GooglePlayStore::Release.kickoff!(self) if google_play_store_integration?
   end
 
   def start_release!
     return unless store?
 
-    if google_play_store_integration?
-      if staged_rollout?
-        engage_release!
-        rollout_to_playstore!
-      else
-        fully_release_to_playstore!
-      end
-    end
-
+    return Deployments::GooglePlayStore::Release.start_release!(self) if google_play_store_integration?
     Deployments::AppStoreConnect::Release.start_release!(self) if app_store_integration?
   end
 
-  def fully_release_to_playstore!
-    release_with(rollout_value: Deployment::FULL_ROLLOUT_VALUE) do |result|
-      if result.ok?
-        complete!
-      else
-        dispatch_fail!
-        elog(result.error)
-      end
-    end
+  def release_with(rollout_value:, &blk)
+    return unless controllable_rollout?
+
+    Deployments::GooglePlayStore::Release.new(self).release_with(rollout_value:, &blk) if google_play_store_integration?
   end
 
-  def halt_release_in_playstore!(rollout_value:)
-    raise ArgumentError, "cannot halt without a rollout value" if rollout_value.blank?
+  def halt_release!(&blk)
+    return unless store? && google_play_store_integration?
 
-    release.with_lock do
-      return unless rollout_started?
-      yield provider.halt_release(deployment_channel, build_number, release_version, rollout_value)
-    end
-  end
-
-  def rollout_to_playstore!
-    release_with(is_draft: true) do |result|
-      if result.ok?
-        create_staged_rollout!(config: staged_rollout_config)
-      else
-        dispatch_fail!
-        elog(result.error)
-      end
-    end
-  end
-
-  # TODO: handle known errors gracefully and show to users
-  def release_with(rollout_value: nil, is_draft: false)
-    raise ArgumentError, "cannot have a rollout for a draft deployments" if is_draft && rollout_value.present?
-
-    release.with_lock do
-      return unless promotable?
-
-      if is_draft
-        yield provider.create_draft_release(deployment_channel, build_number, release_version)
-      else
-        yield provider.rollout_release(deployment_channel, build_number, release_version, rollout_value)
-      end
-    end
+    Deployments::GooglePlayStore::Release.halt_release!(self, &blk)
   end
 
   def promotable?
@@ -304,6 +231,15 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
+  def stamp_data
+    {
+      version: build_version,
+      chan: deployment_channel_name,
+      provider: integration&.providable&.display,
+      file: build_artifact&.get_filename
+    }
+  end
+
   private
 
   def set_reason(args = nil)
@@ -321,14 +257,5 @@ class DeploymentRun < ApplicationRecord
     end
 
     event_stamp!(reason: :released, kind: :success, data: stamp_data)
-  end
-
-  def stamp_data
-    {
-      version: build_version,
-      chan: deployment_channel_name,
-      provider: integration&.providable&.display,
-      file: build_artifact&.get_filename
-    }
   end
 end

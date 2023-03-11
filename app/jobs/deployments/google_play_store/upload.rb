@@ -4,6 +4,7 @@ class Deployments::GooglePlayStore::Upload < ApplicationJob
   def perform(deployment_run_id)
     run = DeploymentRun.find(deployment_run_id)
     return unless run.google_play_store_integration?
-    run.upload_to_playstore!
+
+    Deployments::GooglePlayStore::Release.upload!(run)
   end
 end

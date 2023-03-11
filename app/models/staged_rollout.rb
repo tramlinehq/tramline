@@ -16,7 +16,7 @@ class StagedRollout < ApplicationRecord
   include Loggable
 
   belongs_to :deployment_run
-  delegate :release_with, :halt_release_in_playstore!, to: :deployment_run
+  delegate :release_with, to: :deployment_run
 
   validates :current_stage, numericality: {greater_than_or_equal_to: 0, allow_nil: true}
 
@@ -102,7 +102,7 @@ class StagedRollout < ApplicationRecord
     return if created?
     return if completed?
 
-    halt_release_in_playstore!(rollout_value: last_rollout_percentage) do |result|
+    deployment_run.halt_release! do |result|
       if result.ok?
         halt!
       else

@@ -40,7 +40,7 @@ class StagedRolloutComponent < ViewComponent::Base
 
   def halt_action(form)
     return unless controllable_rollout?
-    return unless started? || failed?
+    return unless last_rollout_percentage
 
     halt_rollout_button(form)
   end
