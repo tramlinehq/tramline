@@ -227,15 +227,6 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  def stamp_data
-    {
-      version: build_version,
-      chan: deployment_channel_name,
-      provider: integration&.providable&.display,
-      file: build_artifact&.get_filename
-    }
-  end
-
   private
 
   def set_reason(args = nil)
@@ -253,5 +244,14 @@ class DeploymentRun < ApplicationRecord
     end
 
     event_stamp!(reason: :released, kind: :success, data: stamp_data)
+  end
+
+  def stamp_data
+    {
+      version: build_version,
+      chan: deployment_channel_name,
+      provider: integration&.providable&.display,
+      file: build_artifact&.get_filename
+    }
   end
 end

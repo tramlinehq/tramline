@@ -36,7 +36,6 @@ module Deployments
         :staged_rollout?,
         :google_play_store_integration?,
         :staged_rollout_config,
-        :stamp_data,
         :promotable?,
         :release,
         to: :run
