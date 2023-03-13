@@ -60,7 +60,7 @@ The service archicture looks like this,
 
 If you want to deploy with App Store support, you would additionally need applelink deployed as well.
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/tramlinehq/tramline)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/tramlinehq/tramline/tree/chore/readme)
 
 ## Development
 
