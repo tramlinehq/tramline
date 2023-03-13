@@ -1,19 +1,22 @@
 databases:
   - name: site-db
+    plan: free
     databaseName: tramline_site_production
     user: tramline
     postgresMajorVersion: 14
     region: frankfurt
 
   - name: site-staging-db
+    plan: free
     databaseName: tramline_site_staging
     user: tramline
     postgresMajorVersion: 14
     region: frankfurt
 
+
 services:
-  # production starts here
   - type: web
+    plan: free
     name: site-web
     env: ruby
     region: frankfurt
@@ -41,6 +44,7 @@ services:
         sync: false
 
   - type: worker
+    plan: free
     name: site-jobs
     env: ruby
     region: frankfurt
@@ -67,71 +71,9 @@ services:
         sync: false
 
   - type: redis
+    plan: free
     name: site-redis
     region: frankfurt
     ipAllowList:
       - source: 0.0.0.0/0
         description: everywhere
-  # production ends here
-
-  # staging starts here
-  - type: web
-    name: site-staging-web
-    env: ruby
-    region: frankfurt
-    buildCommand: ./bin/render-build
-    startCommand: "bundle exec puma -C config/puma.rb"
-    initialDeployHook: ./bin/render-seed
-    autoDeploy: true
-    branch: main
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: site-staging-db
-          property: connectionString
-      - key: SIDEKIQ_REDIS_URL
-        fromService:
-          type: redis
-          name: site-staging-redis
-          property: connectionString
-      - key: DEFAULT_REDIS_URL
-        fromService:
-          type: redis
-          name: site-staging-redis
-          property: connectionString
-      - key: RAILS_MASTER_KEY
-        sync: false
-
-  - type: worker
-    name: site-staging-jobs
-    env: ruby
-    region: frankfurt
-    buildCommand: bundle install
-    startCommand: bundle exec sidekiq
-    autoDeploy: true
-    branch: main
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: site-staging-db
-          property: connectionString
-      - key: SIDEKIQ_REDIS_URL
-        fromService:
-          type: redis
-          name: site-staging-redis
-          property: connectionString
-      - key: DEFAULT_REDIS_URL
-        fromService:
-          type: redis
-          name: site-staging-redis
-          property: connectionString
-      - key: RAILS_MASTER_KEY
-        sync: false
-
-  - type: redis
-    name: site-staging-redis
-    region: frankfurt
-    ipAllowList:
-      - source: 0.0.0.0/0
-        description: everywhere
-  # staging ends here
