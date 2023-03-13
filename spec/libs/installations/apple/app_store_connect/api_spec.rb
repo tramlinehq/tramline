@@ -13,6 +13,19 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
     allow_any_instance_of(described_class).to receive(:appstore_connect_token).and_return(Faker::Lorem.word)
   end
 
+  context "when 5xx from applelink" do
+    let(:url) { "http://localhost:4000/apple/connect/v1/apps/#{bundle_id}/release?build_number=#{build_number}" }
+
+    it "raises an error with unknown failure as reason" do
+      request = stub_request(:get, url).to_return(status: 500)
+
+      expect {
+        described_class.new(bundle_id, key_id, issuer_id, key).find_release(build_number, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
+      }.to raise_error(Installations::Apple::AppStoreConnect::Error) { |error| expect(error.reason).to eq(:unknown_failure) }
+      expect(request).to have_been_made
+    end
+  end
+
   describe "#find_release" do
     let(:url) { "http://localhost:4000/apple/connect/v1/apps/#{bundle_id}/release?build_number=#{build_number}" }
 
