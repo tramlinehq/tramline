@@ -738,8 +738,7 @@ describe Deployments::AppStoreConnect::Release do
       before do
         run.step_run.update(build_number: build_number)
         run.create_staged_rollout(config: run.deployment.staged_rollout_config)
-        allow(providable_dbl).to receive(:complete_phased_release).and_return(GitHub::Result.new)
-        allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { live_release_info })
+        allow(providable_dbl).to receive(:complete_phased_release).and_return(GitHub::Result.new { live_release_info })
       end
 
       it "completes the phased release" do

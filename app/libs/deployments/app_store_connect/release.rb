@@ -173,7 +173,9 @@ module Deployments
           return
         end
 
-        track_live_release_status # TODO: should not be sync?
+        release_info = result.value!
+        run.external_release.update(release_info.attributes)
+        run.staged_rollout.update_stage(release_info.phased_release_stage)
       end
 
       private

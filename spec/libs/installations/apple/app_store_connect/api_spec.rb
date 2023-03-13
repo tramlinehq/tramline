@@ -13,6 +13,19 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
     allow_any_instance_of(described_class).to receive(:appstore_connect_token).and_return(Faker::Lorem.word)
   end
 
+  context "when 5xx from applelink" do
+    let(:url) { "http://localhost:4000/apple/connect/v1/apps/#{bundle_id}/release?build_number=#{build_number}" }
+
+    it "raises an error with unknown failure as reason" do
+      request = stub_request(:get, url).to_return(status: 500)
+
+      expect {
+        described_class.new(bundle_id, key_id, issuer_id, key).find_release(build_number, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
+      }.to raise_error(Installations::Apple::AppStoreConnect::Error) { |error| expect(error.reason).to eq(:unknown_failure) }
+      expect(request).to have_been_made
+    end
+  end
+
   describe "#find_release" do
     let(:url) { "http://localhost:4000/apple/connect/v1/apps/#{bundle_id}/release?build_number=#{build_number}" }
 
@@ -169,6 +182,38 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
         .to raise_error(Installations::Apple::AppStoreConnect::Error) { |error| expect(error.reason).to eq(:build_not_found) }
 
       expect(request.with(body: params[:json])).to have_been_made
+    end
+  end
+
+  describe "#complete_phased_release!" do
+    let(:url) { "http://localhost:4000/apple/connect/v1/apps/#{bundle_id}/release/live/rollout/complete" }
+
+    it "returns live release info when success" do
+      request = stub_request(:patch, url).to_return(status: 200, body: File.read("spec/fixtures/app_store_connect/live_release.json"))
+      result = described_class.new(bundle_id, key_id, issuer_id, key).complete_phased_release(AppStoreIntegration::RELEASE_TRANSFORMATIONS)
+
+      expected_release = {
+        external_id: "31aafef2-d5fb-45d4-9b02-f0ab5911c1b2",
+        status: "READY_FOR_SALE",
+        build_number: "33417",
+        name: "1.8.0",
+        added_at: "2023-02-25T03:02:46-08:00",
+        phased_release_day: 4,
+        phased_release_status: "COMPLETE"
+      }.with_indifferent_access
+
+      expect(result).to eq(expected_release)
+      expect(request).to have_been_made
+    end
+
+    it "raises an error when failure" do
+      error_payload = {error: {resource: "release", code: "phased_release_not_found"}}.to_json
+      request = stub_request(:patch, url).to_return(status: 404, body: error_payload)
+
+      expect { described_class.new(bundle_id, key_id, issuer_id, key).complete_phased_release(AppStoreIntegration::RELEASE_TRANSFORMATIONS) }
+        .to raise_error(Installations::Apple::AppStoreConnect::Error) { |error| expect(error.reason).to eq(:phased_release_not_found) }
+
+      expect(request).to have_been_made
     end
   end
 end
