@@ -69,4 +69,6 @@ RSpec.configure do |config|
   require "sidekiq/testing"
 
   Sidekiq::Testing.fake!
+
+  config.include ActiveSupport::Testing::TimeHelpers
 end

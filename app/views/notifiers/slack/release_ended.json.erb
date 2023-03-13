@@ -11,7 +11,7 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*Total Run Time:* <%= @total_run_time %>\n*Release Tag:* <<%= @release_tag_url %>|<%= @release_tag %>>\n*Final Artifact:* <<%= @final_artifact_url %>|Download>\n*Store Link:* <%= @store_url %>"
+        "text": "<%= Regexp.escape @main_text %>"
       },
       "accessory": {
         "type": "image",

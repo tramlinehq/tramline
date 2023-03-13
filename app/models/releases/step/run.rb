@@ -87,7 +87,7 @@ class Releases::Step::Run < ApplicationRecord
     end
 
     event(:finish_ci, after_commit: :after_finish_ci) { transitions from: :ci_workflow_started, to: :build_ready }
-    event(:build_found, guard: :ios?, after_commit: :trigger_deployment) { transitions from: :build_ready, to: :build_found_in_store }
+    event(:build_found, after_commit: :trigger_deployment) { transitions from: :build_ready, to: :build_found_in_store }
 
     event(:upload_artifact, after_commit: :trigger_deployment) do
       before { add_build_artifact(artifacts_url) }
@@ -96,7 +96,7 @@ class Releases::Step::Run < ApplicationRecord
 
     event(:build_not_found) { transitions from: :build_ready, to: :build_not_found_in_store }
     event(:build_upload_failed) { transitions from: :build_ready, to: :build_unavailable }
-    event(:start_deploy) { transitions from: [:build_available, :build_found_in_store], to: :deployment_started }
+    event(:start_deploy) { transitions from: [:build_available, :build_found_in_store, :build_ready], to: :deployment_started }
 
     event(:fail_deploy, after_commit: -> { notify_on_failure!("Deployment failed!") }) do
       transitions from: :deployment_started, to: :deployment_failed
@@ -114,14 +114,13 @@ class Releases::Step::Run < ApplicationRecord
   attr_accessor :artifacts_url
 
   delegate :train, :release_branch, to: :train_run
-  delegate :app, :app_store_connect_provider, :ci_cd_provider, :unzip_artifact?, to: :train
-  delegate :ios?, to: :app
+  delegate :app, :store_provider, :ci_cd_provider, :unzip_artifact?, to: :train
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
   alias_method :release, :train_run
 
   def find_build
-    app_store_connect_provider.find_build(build_number)
+    store_provider.find_build(build_number)
   end
 
   def get_workflow_run
@@ -278,8 +277,17 @@ class Releases::Step::Run < ApplicationRecord
     event_stamp!(reason: :ci_triggered, kind: :notice, data: {version: build_version})
   end
 
+  def has_uploadables?
+    deployments.any?(&:uploadable?)
+  end
+
+  def has_findables?
+    deployments.any?(&:findable?)
+  end
+
   def after_finish_ci
-    return Releases::AppStoreConnect::FindBuildJob.perform_async(id) if ios?
-    Releases::UploadArtifact.perform_later(id, artifacts_url)
+    return Releases::FindBuildJob.perform_async(id) if has_findables?
+    return Releases::UploadArtifact.perform_later(id, artifacts_url) if has_uploadables?
+    trigger_deployment
   end
 end

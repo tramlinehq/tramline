@@ -28,7 +28,7 @@ describe Deployments::AppStoreConnect::TestFlightReleaseJob do
 
         described_class.new.perform(app_store_deployment_run.id)
 
-        expect(app_store_deployment_run.reload.submitted?).to be(true)
+        expect(app_store_deployment_run.reload.submitted_for_review?).to be(true)
       end
     end
   end

@@ -13,8 +13,8 @@
 #
 class Integration < ApplicationRecord
   has_paper_trail
-  using RefinedString
   using RefinedArray
+  using RefinedString
 
   belongs_to :app
 
@@ -40,7 +40,7 @@ class Integration < ApplicationRecord
     }
   }.with_indifferent_access
 
-  enum category: ALLOWED_INTEGRATIONS_FOR_APP.values.map(&:keys).flatten.uniq.zip_self.to_h
+  enum category: ALLOWED_INTEGRATIONS_FOR_APP.values.map(&:keys).flatten.uniq.zip_map_self
   enum status: {
     connected: "connected",
     disconnected: "disconnected"
@@ -128,10 +128,6 @@ class Integration < ApplicationRecord
       notification.first&.providable
     end
 
-    def app_store_connect_provider
-      build_channel.where(providable_type: "AppStoreIntegration").first.providable
-    end
-
     # NOTE: Assumes there can be only one store build channel
     def store_provider
       build_channel.find(&:store?)&.providable
@@ -160,6 +156,10 @@ class Integration < ApplicationRecord
 
   def store?
     build_channel? && providable.store?
+  end
+
+  def controllable_rollout?
+    build_channel? && providable.controllable_rollout?
   end
 
   def allowed_integrations_for_app

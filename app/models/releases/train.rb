@@ -70,8 +70,7 @@ class Releases::Train < ApplicationRecord
     throw(:abort) if errors.present?
   end
 
-  delegate :vcs_provider, :ci_cd_provider, :notification_provider, to: :integrations
-  delegate :app_store_connect_provider, to: :integrations
+  delegate :vcs_provider, :ci_cd_provider, :notification_provider, :store_provider, to: :integrations
   delegate :unzip_artifact?, to: :ci_cd_provider
   delegate :ready?, :config, to: :app
 

@@ -10,11 +10,32 @@
 
   <% if deployment_run.present? %>
     <span class="ml-1"><%= deployment_run_status_badge(deployment_run) %></span>
-  <% end %>
 
-  <% if deployment_run&.staged_rollout.present? %>
-    <div class="ml-0 mt-4 pb-1 border-t border-dashed">
-      <%= render StagedRolloutComponent.new(deployment_run.staged_rollout) %>
-    </div>
+    <% if deployment_run.reviewable? %>
+      <%= authz_button_to :blue,
+                          "Submit for review",
+                          submit_for_review_deployment_run_path(deployment_run),
+                          { method: :patch, class: 'mt-2 btn-xs' } %>
+    <% end %>
+
+    <% if deployment_run.releasable? %>
+      <%= authz_button_to :blue,
+                          "Start release",
+                          start_release_deployment_run_path(deployment_run),
+                          { method: :patch, class: 'mt-2 btn-xs' } %>
+    <% end %>
+
+    <% if deployment_run.app_store_release? && deployment_run.rolloutable? %>
+      <%= authz_button_to :blue,
+                          "Release to all users",
+                          fully_release_deployment_run_path(deployment_run),
+                          { method: :patch, class: 'mt-2 btn-xs' } %>
+    <% end %>
+
+    <% if deployment_run.staged_rollout.present? %>
+      <div class="ml-0 mt-4 pb-1 border-t border-dashed">
+        <%= render StagedRolloutComponent.new(deployment_run.staged_rollout) %>
+      </div>
+    <% end %>
   <% end %>
 <% end %>

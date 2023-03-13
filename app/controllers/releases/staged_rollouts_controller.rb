@@ -2,7 +2,7 @@ class Releases::StagedRolloutsController < SignedInApplicationController
   before_action :require_write_access!, only: %i[increase halt]
   before_action :set_deployment_run
   before_action :set_staged_rollout
-  before_action :ensure_rolloutable
+  before_action :ensure_rolloutable, only: [:increase, :halt]
 
   def increase
     @staged_rollout.move_to_next_stage!

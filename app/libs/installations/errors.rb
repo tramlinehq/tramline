@@ -7,12 +7,11 @@ module Installations
     PullRequestWithoutCommits = Class.new(StandardError)
     HookAlreadyExistsOnRepository = Class.new(StandardError)
     ResourceNotFound = Class.new(StandardError)
-    BuildExistsInBuildChannel = Class.new(StandardError)
     WorkflowRunNotFound = Class.new(StandardError)
-    BuildNotFoundInStore = Class.new(StandardError)
-    AppCurrentStatusNotFoundInStore = Class.new(StandardError)
-    AppNotFoundInStore = Class.new(StandardError)
     WorkflowTriggerFailed = Class.new(StandardError)
+
+    # play store errors
+    BuildExistsInBuildChannel = Class.new(StandardError)
     BundleIdentifierNotFound = Class.new(StandardError)
     BuildNotUpgradable = Class.new(StandardError)
     DuplicatedBuildUploadAttempt = Class.new(StandardError)

@@ -8,13 +8,13 @@
 
     <%= render 'form', form: form %>
 
-    <div class="sm:flex sm:justify-between sm:items-center mt-8 mb-2 pb-5">
-      <p class="font-bold text-xl">
-        <%= Deployment.display.pluralize %>
-      </p>
-    </div>
+    <div class="mb-8 w-1/2 2xl:w-1/3">
+      <div class="sm:flex sm:justify-between sm:items-center mt-8 mb-2 pb-5">
+        <p class="font-bold text-xl">
+          <%= Deployment.display.pluralize %>
+        </p>
+      </div>
 
-    <div class="mb-8 w-1/4">
       <%= render partial: "shared/deployments", locals: { step: @step, show_deployment_status: false } %>
     </div>
 

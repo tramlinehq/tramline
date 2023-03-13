@@ -9,5 +9,9 @@ module Displayable
 
   included do
     delegate :display, to: self
+
+    def display_attr(attr)
+      self.class.human_attr_value(attr, public_send(attr))
+    end
   end
 end

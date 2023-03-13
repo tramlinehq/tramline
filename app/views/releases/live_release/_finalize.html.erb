@@ -68,7 +68,7 @@
             </li>
 
             <% last_deployment_run = release.last_good_step_run&.deployment_runs.last %>
-            <% if last_deployment_run&.rollout_percentage %>
+            <% if last_deployment_run&.deployment.controllable_rollout? %>
               <li class="flex items-center justify-between py-3 border-b border-indigo-200">
                 <div>Release % to users</div>
                 <div class="flex items-center whitespace-nowrap">

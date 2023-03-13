@@ -41,7 +41,7 @@ class ReleasesController < SignedInApplicationController
 
   def destroy
     @release.stop!
-    redirect_to app_train_path(@release.train.app, @release.train), notice: "Release marked as finished."
+    redirect_to app_train_path(@release.train.app, @release.train), notice: "The release was stopped."
   end
 
   def post_release

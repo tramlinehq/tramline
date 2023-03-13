@@ -77,6 +77,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
     end
   end
 
+  def find_build(_)
+    raise Integrations::UnsupportedAction
+  end
+
   def creatable?
     true
   end
@@ -86,6 +90,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def store?
+    true
+  end
+
+  def controllable_rollout?
     true
   end
 

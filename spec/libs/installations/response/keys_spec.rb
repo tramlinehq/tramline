@@ -15,7 +15,12 @@ describe Installations::Response::Keys do
           [{new_key1: 1}]],
         [[{key1: 1, key2: [{nested_key: 2}, {nested_key: 3}]}],
           {new_key1: :key1, new_key2: {key2: {new_nested_key: :nested_key}}},
-          [{new_key1: 1, new_key2: [{new_nested_key: 2}, {new_nested_key: 3}]}]]
+          [{new_key1: 1, new_key2: [{new_nested_key: 2}, {new_nested_key: 3}]}]],
+        [[{key1: 1, key2: {nested_key: 2}}],
+          {new_key1: :key1,
+           new_key2: [:key2, :nested_key],
+           new_keys3: [:invalid_key, :invalid_nested_key]},
+          [{"new_key1" => 1, "new_key2" => 2, "new_keys3" => nil}]]
       ]
     }
 

@@ -25,15 +25,20 @@ class Deployment < ApplicationRecord
   validates :deployment_number, presence: true
   validates :build_artifact_channel, uniqueness: {scope: [:integration_id, :train_step_id], message: "Deployments should be designed to have unique providers and channels"}
   validate :staged_rollout_is_allowed
-  validate :correct_staged_rollout_config, if: :is_staged_rollout
+  validate :correct_staged_rollout_config, if: :staged_rollout?
   validate :non_prod_build_channel, if: -> { step.review? }
 
-  delegate :google_play_store_integration?, :slack_integration?, :store?, :app_store_integration?, to: :integration, allow_nil: true
-  delegate :train, to: :step
+  delegate :google_play_store_integration?,
+    :slack_integration?,
+    :store?,
+    :app_store_integration?,
+    :controllable_rollout?, to: :integration, allow_nil: true
+  delegate :train, :app, to: :step
 
   scope :sequential, -> { order("deployments.deployment_number ASC") }
 
   before_save :set_deployment_number, if: :new_record?
+  before_save :set_default_staged_rollout, if: [:new_record?, :app_store_integration?, :staged_rollout?]
 
   FULL_ROLLOUT_VALUE = BigDecimal("100")
 
@@ -45,6 +50,14 @@ class Deployment < ApplicationRecord
 
   def external?
     integration.nil?
+  end
+
+  def uploadable?
+    app.android? && (slack_integration? || google_play_store_integration? || external?)
+  end
+
+  def findable?
+    app.ios? && app_store_integration?
   end
 
   def first?
@@ -75,12 +88,31 @@ class Deployment < ApplicationRecord
     store? && build_artifact_channel["is_production"]
   end
 
-  def staged_rollout_values
-    return [1, 2, 5, 10, 20, 50, 100] if app_store_integration?
-    staged_rollout_config
+  def integration_type
+    return :app_store if app_store?
+    return :testflight if test_flight?
+    return :google_play_store if google_play_store_integration?
+    return :slack if slack_integration?
+    :external
+  end
+
+  def display_channel?
+    !external? && !app_store?
+  end
+
+  def test_flight?
+    !production_channel? && app_store_integration?
+  end
+
+  def app_store?
+    production_channel? && app_store_integration?
   end
 
   private
+
+  def set_default_staged_rollout
+    self.staged_rollout_config = AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE
+  end
 
   def staged_rollout_is_allowed
     if is_staged_rollout && !production_channel?
@@ -89,6 +121,11 @@ class Deployment < ApplicationRecord
   end
 
   def correct_staged_rollout_config
+    if app_store_integration?
+      errors.add(:staged_rollout_config, :not_allowed) if staged_rollout_config.present?
+      return
+    end
+
     if staged_rollout_config.size < 1
       errors.add(:staged_rollout_config, :at_least_one)
     end
