@@ -57,14 +57,7 @@ module Deployments
             if result.ok?
               run.upload!
             else
-              run.upload_fail!
-
-              reason =
-                GooglePlayStoreIntegration::DISALLOWED_ERRORS_WITH_REASONS
-                  .fetch(result.error.class, :upload_failed_reason_unknown)
-
-              run.event_stamp!(reason:, kind: :error, data: stamp_data)
-              elog(result.error)
+              run.fail_with_error(result.error)
             end
           end
         end

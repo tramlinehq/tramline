@@ -58,22 +58,14 @@ class GooglePlayStoreIntegration < ApplicationRecord
     end
   end
 
-  ALLOWED_ERRORS = [
-    Installations::Errors::BuildExistsInBuildChannel,
-    Installations::Errors::DuplicatedBuildUploadAttempt
-  ]
-
-  DISALLOWED_ERRORS_WITH_REASONS = {
-    Installations::Errors::BundleIdentifierNotFound => :bundle_identifier_not_found,
-    Installations::Errors::GooglePlayDeveloperAPIInvalidPackage => :invalid_package,
-    Installations::Errors::GooglePlayDeveloperAPIAPKsAreNotAllowed => :apks_are_not_allowed
-  }
+  ALLOWED_ERRORS = [:build_exists_in_build_channel, :duplicate_build_upload]
 
   def upload(file)
     GitHub::Result.new do
       installation.upload(file)
-    rescue *ALLOWED_ERRORS => e
-      elog(e)
+    rescue Installations::Google::PlayDeveloper::Error => ex
+      raise ex unless ALLOWED_ERRORS.include?(ex.reason)
+      elog(ex)
     end
   end
 
@@ -135,9 +127,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     errors.add(:json_key, :no_bundles) unless build_present_in_tracks?
   rescue RuntimeError
     errors.add(:json_key, :key_format)
-  rescue Installations::Errors::BundleIdentifierNotFound, Installations::Errors::GooglePlayDeveloperAPIPermissionDenied
-    errors.add(:json_key, :bundle_id_not_found)
-  rescue Installations::Errors::GooglePlayDeveloperAPIDisabled
-    errors.add(:json_key, :dev_api_not_enabled)
+  rescue Installations::Google::PlayDeveloper::Error => ex
+    errors.add(:json_key, ex.reason)
   end
 end

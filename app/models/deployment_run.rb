@@ -70,7 +70,7 @@ class DeploymentRun < ApplicationRecord
     ready_to_release: "ready_to_release",
     rollout_started: "rollout_started",
     released: "released",
-    upload_failed: "upload_failed", # TODO: migrate to failure_reason
+    upload_failed: "upload_failed", # NOTE: This is now deprecated
     failed: "failed"
   }
 
@@ -79,6 +79,7 @@ class DeploymentRun < ApplicationRecord
     review_failed: "review_failed",
     unknown_failure: "unknown_failure"
   }.merge(Installations::Apple::AppStoreConnect::Error.reasons.zip_map_self)
+    .merge(Installations::Google::PlayDeveloper::Error.reasons.zip_map_self)
 
   aasm safe_state_machine_params do
     state :created, initial: true, before_enter: -> { step_run.startable_deployment?(deployment) }
@@ -99,11 +100,6 @@ class DeploymentRun < ApplicationRecord
 
     event :upload, after_commit: -> { Deployments::ReleaseJob.perform_later(id) } do
       transitions from: :started, to: :uploaded
-    end
-
-    event :upload_fail do
-      after { step_run.fail_deploy! }
-      transitions from: :started, to: :upload_failed
     end
 
     event :ready_to_release, after_commit: -> { external_release.update(reviewed_at: Time.current) } do

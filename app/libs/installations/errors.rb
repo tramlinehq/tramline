@@ -10,16 +10,6 @@ module Installations
     WorkflowRunNotFound = Class.new(StandardError)
     WorkflowTriggerFailed = Class.new(StandardError)
 
-    # play store errors
-    BuildExistsInBuildChannel = Class.new(StandardError)
-    BundleIdentifierNotFound = Class.new(StandardError)
-    BuildNotUpgradable = Class.new(StandardError)
-    DuplicatedBuildUploadAttempt = Class.new(StandardError)
-    GooglePlayDeveloperAPIDisabled = Class.new(StandardError)
-    GooglePlayDeveloperAPIPermissionDenied = Class.new(StandardError)
-    GooglePlayDeveloperAPIInvalidPackage = Class.new(StandardError)
-    GooglePlayDeveloperAPIAPKsAreNotAllowed = Class.new(StandardError)
-
     class WebhookLimitReached < StandardError
       def initialize(msg = "We can't create any more webhooks in your VCS/CI environment!")
         super

@@ -121,7 +121,7 @@ module Installations
     def execute
       yield if block_given?
     rescue ::Google::Apis::ServerError, ::Google::Apis::ClientError => e
-      raise Installations::Google::PlayDeveloper::Error.handle(e)
+      raise Installations::Google::PlayDeveloper::Error.new(api_error: e)
     end
 
     def set_client

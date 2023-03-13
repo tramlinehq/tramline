@@ -1,5 +1,5 @@
 module Installations
-  class Google::PlayDeveloper::Error
+  class Google::PlayDeveloper::Error < Installations::Error
     using RefinedString
 
     ERRORS = [
@@ -7,69 +7,70 @@ module Installations
         status: "PERMISSION_DENIED",
         code: 403,
         message_matcher: /APK specifies a version code that has already been used/,
-        decorated_exception: Installations::Errors::BuildExistsInBuildChannel
+        decorated_reason: :build_exists_in_build_channel
       },
       {
         status: "NOT_FOUND",
         code: 404,
         message_matcher: /Package not found:/,
-        decorated_exception: Installations::Errors::BundleIdentifierNotFound
+        decorated_reason: :app_not_found
       },
       {
         status: "PERMISSION_DENIED",
         code: 403,
         message_matcher: /You cannot rollout this release because it does not allow any existing users to upgrade to the newly added APKs/,
-        decorated_exception: Installations::Errors::BuildNotUpgradable
+        decorated_reason: :build_not_upgradable
       },
       {
         status: "PERMISSION_DENIED",
         code: 403,
         message_matcher: /The caller does not have permission/,
-        decorated_exception: Installations::Errors::GooglePlayDeveloperAPIPermissionDenied
+        decorated_reason: :permission_denied
       },
       {
         status: "PERMISSION_DENIED",
         code: 403,
         message_matcher: /Google Play Android Developer API has not been used in project/,
-        decorated_exception: Installations::Errors::GooglePlayDeveloperAPIDisabled
+        decorated_reason: :api_disabled
       },
       {
         status: "FAILED_PRECONDITION",
         code: 400,
         message_matcher: /This Edit has been deleted/,
-        decorated_exception: Installations::Errors::DuplicatedBuildUploadAttempt
+        decorated_reason: :duplicate_build_upload
       },
       {
         status: "PERMISSION_DENIED",
         code: 403,
         message_matcher: /APK is not a valid ZIP archive/,
-        decorated_exception: Installations::Errors::GooglePlayDeveloperAPIInvalidPackage
+        decorated_reason: :invalid_api_package
       },
       {
         status: "PERMISSION_DENIED",
         code: 403,
         message_matcher: /We have failed to run 'bundletool build-apks' on this Android App Bundle. Please ensure your bundle is valid by running 'bundletool build-apks' locally and try again. Error message output: File 'BundleConfig.pb' was not found/,
-        decorated_exception: Installations::Errors::GooglePlayDeveloperAPIAPKsAreNotAllowed
+        decorated_reason: :apks_not_allowed
       }
     ]
 
-    def self.handle(exception)
-      new(exception).handle
+    def self.reasons
+      ERRORS.pluck(:decorated_reason).uniq.map(&:to_s)
     end
 
-    def initialize(exception)
-      @exception = exception
+    def initialize(api_error:)
+      @api_error = api_error
+      log
+      super(handle)
     end
 
     def handle
-      log
-      return exception if match.nil?
-      match[:decorated_exception].new
+      return :unknown_failure if match.nil?
+      match[:decorated_reason]
     end
 
     private
 
-    attr_reader :exception
+    attr_reader :api_error
     delegate :logger, to: Rails
 
     def match
@@ -78,16 +79,18 @@ module Installations
 
     def matched_error
       ERRORS.find do |known_error|
-        known_error[:status].eql?(status) && known_error[:code].eql?(code) && known_error[:message_matcher] =~ message
+        known_error[:status].eql?(status) &&
+          known_error[:code].eql?(code) &&
+          known_error[:message_matcher] =~ message
       end
     end
 
     def parsed_body
-      @parsed_body ||= exception&.body&.safe_json_parse
+      @parsed_body ||= api_error&.body&.safe_json_parse
     end
 
     def error
-      return exception.body if parsed_body.blank?
+      return api_error.body if parsed_body.blank?
       parsed_body["error"]
     end
 
@@ -104,7 +107,7 @@ module Installations
     end
 
     def log
-      logger.error(exception)
+      logger.error(api_error)
     end
   end
 end
