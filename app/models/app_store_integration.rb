@@ -140,7 +140,7 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def complete_phased_release
-    GitHub::Result.new { installation.complete_phased_release }
+    GitHub::Result.new { release_info(installation.complete_phased_release(RELEASE_TRANSFORMATIONS)) }
   end
 
   def find_app

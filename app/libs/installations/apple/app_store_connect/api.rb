@@ -21,10 +21,10 @@ module Installations
     START_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/start"
     FIND_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release"
     FIND_LIVE_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live"
-    PAUSE_LIVE_ROLLOUT_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live/pause_rollout"
-    RESUME_LIVE_ROLLOUT_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live/resume_rollout"
-    HALT_LIVE_ROLLOUT_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live/halt_rollout"
-    COMPLETE_LIVE_ROLLOUT_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live/complete_rollout"
+    PAUSE_LIVE_ROLLOUT_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live/rollout/pause"
+    RESUME_LIVE_ROLLOUT_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live/rollout/resume"
+    HALT_LIVE_ROLLOUT_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live/rollout/halt"
+    COMPLETE_LIVE_ROLLOUT_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live/rollout/complete"
 
     def external_groups(transforms)
       execute(:get, GROUPS_URL.expand(bundle_id:).to_s, {params: {internal: false}})
@@ -96,8 +96,10 @@ module Installations
       execute(:patch, HALT_LIVE_ROLLOUT_URL.expand(bundle_id:).to_s, {})
     end
 
-    def complete_phased_release
+    def complete_phased_release(transforms)
       execute(:patch, COMPLETE_LIVE_ROLLOUT_URL.expand(bundle_id:).to_s, {})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     private
