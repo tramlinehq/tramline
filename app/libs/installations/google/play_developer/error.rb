@@ -57,7 +57,7 @@ module Installations
       ERRORS.pluck(:decorated_reason).uniq.map(&:to_s)
     end
 
-    def initialize(api_error:)
+    def initialize(api_error)
       @api_error = api_error
       log
       super(handle)

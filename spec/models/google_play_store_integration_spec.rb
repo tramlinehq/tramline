@@ -25,7 +25,7 @@ describe GooglePlayStoreIntegration do
     it "returns successful result if there are allowed exceptions" do
       error_body = {"error" => {"status" => "PERMISSION_DENIED", "code" => 403, "message" => "APK specifies a version code that has already been used"}}
       error = ::Google::Apis::ClientError.new("Error", body: error_body.to_json)
-      allow(api_double).to receive(:upload).and_raise(Installations::Google::PlayDeveloper::Error.new(api_error: error))
+      allow(api_double).to receive(:upload).and_raise(Installations::Google::PlayDeveloper::Error.new(error))
 
       expect(google_integration.upload(file).ok?).to be true
       expect(api_double).to have_received(:upload).with(file).once
@@ -34,7 +34,7 @@ describe GooglePlayStoreIntegration do
     it "returns failed result if there are disallowed exceptions" do
       error_body = {"error" => {"status" => "NOT_FOUND", "code" => 404, "message" => "Package not found:"}}
       error = ::Google::Apis::ClientError.new("Error", body: error_body.to_json)
-      allow(api_double).to receive(:upload).and_raise(Installations::Google::PlayDeveloper::Error.new(api_error: error))
+      allow(api_double).to receive(:upload).and_raise(Installations::Google::PlayDeveloper::Error.new(error))
 
       expect(google_integration.upload(file).ok?).to be false
       expect(api_double).to have_received(:upload).with(file).once

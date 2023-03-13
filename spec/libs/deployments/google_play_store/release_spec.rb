@@ -97,7 +97,7 @@ describe Deployments::GooglePlayStore::Release do
     it "adds failure reason to deployment run if upload fails" do
       error_body = {"error" => {"status" => "PERMISSION_DENIED", "code" => 403, "message" => "We have failed to run 'bundletool build-apks' on this Android App Bundle. Please ensure your bundle is valid by running 'bundletool build-apks' locally and try again. Error message output: File 'BundleConfig.pb' was not found"}}
       error = ::Google::Apis::ClientError.new("Error", body: error_body.to_json)
-      allow(providable_dbl).to receive(:upload).and_return(GitHub::Result.new { raise Installations::Google::PlayDeveloper::Error.new(api_error: error) })
+      allow(providable_dbl).to receive(:upload).and_return(GitHub::Result.new { raise Installations::Google::PlayDeveloper::Error.new(error) })
 
       expect { described_class.upload!(store_deployment_run) }
         .to change(store_deployment_run, :failure_reason).from(nil).to("apks_not_allowed")
