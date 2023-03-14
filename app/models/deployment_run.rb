@@ -51,15 +51,7 @@ class DeploymentRun < ApplicationRecord
   delegate :release_version, to: :release
   delegate :app, to: :release
 
-  STAMPABLE_REASONS = [
-    "created",
-    "bundle_identifier_not_found",
-    "invalid_package",
-    "apks_are_not_allowed",
-    "upload_failed_reason_unknown",
-    "release_failed",
-    "released"
-  ]
+  STAMPABLE_REASONS = %w[created release_failed released]
 
   STATES = {
     created: "created",
@@ -70,7 +62,6 @@ class DeploymentRun < ApplicationRecord
     ready_to_release: "ready_to_release",
     rollout_started: "rollout_started",
     released: "released",
-    upload_failed: "upload_failed", # NOTE: This is now deprecated
     failed: "failed"
   }
 
@@ -78,8 +69,12 @@ class DeploymentRun < ApplicationRecord
   enum failure_reason: {
     review_failed: "review_failed",
     unknown_failure: "unknown_failure"
-  }.merge(Installations::Apple::AppStoreConnect::Error.reasons.zip_map_self)
-    .merge(Installations::Google::PlayDeveloper::Error.reasons.zip_map_self)
+  }.merge(
+    *[
+      Installations::Apple::AppStoreConnect::Error.reasons,
+      Installations::Google::PlayDeveloper::Error.reasons
+    ].map(&:zip_map_self)
+  )
 
   aasm safe_state_machine_params do
     state :created, initial: true, before_enter: -> { step_run.startable_deployment?(deployment) }
@@ -251,7 +246,8 @@ class DeploymentRun < ApplicationRecord
       version: build_version,
       chan: deployment_channel_name,
       provider: integration&.providable&.display,
-      file: build_artifact&.get_filename
+      file: build_artifact&.get_filename,
+      failure_reason: (display_attr(:failure_reason) if failure_reason.present?)
     }
   end
 end
