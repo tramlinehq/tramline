@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="logos/tramline-fff-medium.png">
-    <img alt="the tramline logo" src="logos/tramline-logo-medium.png">
+    <source media="(prefers-color-scheme: dark)" srcset="art/tramline-fff-medium.png">
+    <img alt="the tramline logo" src="art/tramline-logo-medium.png">
   </picture>
 </p>
 
@@ -51,16 +51,81 @@
   <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/tramlinehq/tramline">
 </p>
 
-
 ## Features
 
 ## Getting Started
 
-The service archicture looks like this,
+The service architecture looks like this,
+
+<figure>
+  <img alt="setup architecture" src="art/arch@1x.png" />
+  <figcaption>Fig: high-level setup diagram</figcaption>
+</figure>
 
 If you want to deploy with App Store support, you would additionally need applelink deployed as well.
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/tramlinehq/tramline/tree/chore/readme)
+
+* Fork the repo
+* Delete the credentials production file (better way later)
+* Generate a new production credentials file
+* Fill in the required integration details in that file
+* Click on Deploy to Render button
+* Connect your repo to Render
+* Fill in the Rails Master Key and other required env variables
+* Launch
+
+```yaml
+active_record_encryption:
+  primary_key:
+  deterministic_key:
+  key_derivation_salt:
+
+dependencies:
+  postmark:
+    api_token:
+
+  gcp:
+    project_id:
+    private_key_id:
+    private_key: |
+    client_email:
+    client_id:
+    client_x509_cert_url:
+
+integrations:
+  slack:
+    app_id:
+    client_id:
+    client_secret:
+    signing_secret:
+    verification_token:
+    scopes: "app_mentions:read,channels:join,channels:manage,channels:read,chat:write,chat:write.public,files:write,groups:read,groups:write,im:read,im:write,usergroups:read,users.profile:read,users:read,users:read.email,commands,usergroups:write"
+
+  applelink:
+    iss: "tramline.dev"
+    aud: "applelink"
+    secret: "password"
+
+  github:
+    app_name:
+    app_id:
+    private_pem: |
+
+
+secret_key_base:
+```
+
+```
+RACK_ENV=production
+WEB_CONCURRENCY=2
+MAX_THREADS=1
+PORT=3001
+AUTH_ISSUER=""
+AUTH_SECRET=""
+AUTH_AUD=""
+SENTRY_DSN=""
+```
 
 ## Development
 
@@ -72,7 +137,8 @@ For local development on macOS, clone this repository and run the included setup
 bin/setup.mac
 ```
 
-**Note:** If you already have a previous dev environment that you're trying to refresh, the easiest thing to do is to drop your database and run setup again.
+**Note:** If you already have a previous dev environment that you're trying to refresh, the easiest thing to do is to
+drop your database and run setup again.
 
 ```bash
 rails db:drop
@@ -90,7 +156,8 @@ Refer to `db/seeds.rb` for credentials on how to login using the seed users.
 
 #### Webhooks
 
-Webhooks need access to the application over the Internet and that requires tunneling on the localhost environment. We use ngrok, and you should run it like this:
+Webhooks need access to the application over the Internet and that requires tunneling on the localhost environment. We
+use ngrok, and you should run it like this:
 
 ```bash
 ngrok http https://localhost:3000
@@ -122,13 +189,17 @@ or through the `Procfile.dev`
 * Use `bundle add <gem>` to add a new gem.
 * To update a gem use `bundle update <gem>`.
 
-Using the `bundle add` tool auto-applies the [pessimistic operator](https://thoughtbot.com/blog/rubys-pessimistic-operator) in the `Gemfile`. Although `Gemfile.lock` is the correct source of gem versions, specifying the pessimistic operator makes for a simpler and safer update path through bundler for future users.
+Using the `bundle add` tool auto-applies
+the [pessimistic operator](https://thoughtbot.com/blog/rubys-pessimistic-operator) in the `Gemfile`.
+Although `Gemfile.lock` is the correct source of gem versions, specifying the pessimistic operator makes for a simpler
+and safer update path through bundler for future users.
 
 Doing this for development/test groups is optional.
 
 #### SSL
 
-We use SSL locally and certificates are also generated as part of the setup script. It's recommended to use https://tramline.local.gd:3000.
+We use SSL locally and certificates are also generated as part of the setup script. It's recommended to
+use https://tramline.local.gd:3000.
 
 This is the default `HOST_NAME` that can be changed via `.env.development` if necessary.
 
@@ -144,7 +215,6 @@ The dashboard for all background jobs can be viewed [here](https://tramline.loca
 
 All feature-flags are managed through flipper. The UI can be viewed [here](https://tramline.local.gd:3000/flipper).
 
-
 ## Contributing
 
 We are early and listening. We would <3 feedback in any of the following ways:
@@ -153,9 +223,9 @@ We are early and listening. We would <3 feedback in any of the following ways:
 - Submit a [feature request or bug report](https://github.com/tramlinehq/tramline/issues/new/choose)
 - Open a PR (see our instructions on local development here.)
 
-
 ## Open-source vs. paid
 
-This repo is available under the [MIT expat](/LICENSE) license, except for the `ee` directory (which has it's license [here](https://github.com/tramlinehq/tramline/blob/main/ee/LICENSE)) if applicable.
+This repo is available under the [MIT expat](/LICENSE) license, except for the `ee` directory (which has it's
+license [here](https://github.com/tramlinehq/tramline/blob/main/ee/LICENSE)) if applicable.
 
 There are currently no EE-exclusive features in the repository.
