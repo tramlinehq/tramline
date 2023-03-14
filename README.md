@@ -161,7 +161,11 @@ integrations:
 ```
 Save the credentials file and commit your changes. Use this button **from your fork** to kick-off a Render deployment.
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
+<p>
+  <a href="https://render.com/deploy?repo=https://github.com/tramlinehq/tramline/tree/chore/readme" target="_blank">
+  <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render">
+  </a>
+</p>
 
 The blueprint will ask for the `RAILS_MASTER_KEY`. Use the contents of `production.key` from the previous step.
 
