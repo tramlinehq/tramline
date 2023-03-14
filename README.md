@@ -55,25 +55,65 @@
 
 ## Getting Started
 
-The service architecture looks like this,
+The following instructions are for self-hosting Tramline on [Render](https://render.com). The steps should be easily translatable to a Heroku deployment as well. Instructions for other platforms, including a dockerized setup will come in the future.
+
+**Note:** Since Render does not offer background workers under the free plan, you will have to put in your payment details to fully complete this deployment.
+
+You need the bare-minimum of the following to stand up Tramline:
+
+* This repository setup as the primary monolithic backend
+* This repository setup as a background worker
+* Applelink for communicating with App Store Connect
+* Postgres Database
+* Redis instance (ideally persistent)
+
+Additionally, you'd need some prep-work around integrations for Tramline to be useful,
+
+* GitHub app
+* Slack app
+* Google Cloud Storage Account
+* Postmark account for sending emails
+
+On a high-level the architecture looks like this,
 
 <figure>
-  <img alt="setup architecture" src="art/arch@1x.png" />
-  <figcaption>Fig: high-level setup diagram</figcaption>
+  <img alt="setup architecture" src="art/arch@1x.png" width="90%" />
+  <figcaption>High-level setup diagram</figcaption>
 </figure>
 
-If you want to deploy with App Store support, you would additionally need applelink deployed as well.
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/tramlinehq/tramline/tree/chore/readme)
+To kick things off, first clone this repo. This ensures everything that you do is fully under your control.
 
-* Fork the repo
-* Delete the credentials production file (better way later)
-* Generate a new production credentials file
-* Fill in the required integration details in that file
-* Click on Deploy to Render button
-* Connect your repo to Render
-* Fill in the Rails Master Key and other required env variables
-* Launch
+In case you'd like to run this locally first, please follow [[Development Setup]].
+
+To directly host it, you first need to prep your fork a little bit.
+
+1. Setup rails
+
+```bash
+bin/setup.mac
+```
+
+2. Generate production credentials
+
+```bash
+bin/setup-creds
+```
+
+Keep the generated `production.key` safe with you and do not commit this.
+
+3. Update production credentials
+
+After adding the encryption credentials, you will have to fill the following details in `production.yml.enc`. You can do this by running `bin/rails credentials:edit --environment production`.
+
+Use the template below to add the correct information.
+
+* Getting Postmark API token
+* Setting Google Cloud Platform keys
+* Creating a Slack app
+* Creating a GitHub app
+
+For `applelink`, choose any string as your `secret`. We will use this later.
 
 ```yaml
 active_record_encryption:
@@ -105,7 +145,7 @@ integrations:
   applelink:
     iss: "tramline.dev"
     aud: "applelink"
-    secret: "password"
+    secret: "any password"
 
   github:
     app_name:
@@ -115,15 +155,22 @@ integrations:
 
 secret_key_base:
 ```
+Save the credentials file and commit your changes. Use this button **from your fork** to kick-off a Render deployment.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
+
+The blueprint will ask for the `RAILS_MASTER_KEY`. Use the contents of `production.key` from the previous step.
+
+Additionally, create a `Secret File` under `applelink > Settings > Environment > Secret Files` called `.env` and update with the following details by putting the applelink secret from the previous step under `AUTH_SECRET`:
 
 ```
 RACK_ENV=production
 WEB_CONCURRENCY=2
 MAX_THREADS=1
 PORT=3001
-AUTH_ISSUER=""
+AUTH_ISSUER="tramline.dev"
+AUTH_AUD="applelink"
 AUTH_SECRET=""
-AUTH_AUD=""
 SENTRY_DSN=""
 ```
 
