@@ -4,28 +4,31 @@ databases:
     databaseName: tramline_site_production
     user: tramline
     postgresMajorVersion: 14
-    region: frankfurt
-
-  - name: site-staging-db
-    plan: free
-    databaseName: tramline_site_staging
-    user: tramline
-    postgresMajorVersion: 14
-    region: frankfurt
-
 
 services:
   - type: web
     plan: free
     name: site-web
     env: ruby
-    region: frankfurt
     buildCommand: ./bin/render-build
     startCommand: "bundle exec puma -C config/puma.rb"
     initialDeployHook: ./bin/render-seed
+    repo: https://github.com/tramlinehq/tramline.git
     autoDeploy: false
     branch: main
     envVars:
+      - key: HOSTNAME
+        fromService:
+          type: web
+          name: site-web
+          property: host
+      - key: ARTIFACT_BUILDS_BUCKET_NAME
+        value: artifacts-build-prod
+      - key: APPLELINK_URL
+        fromService:
+          type: web
+          name: applelink
+          property: hostport
       - key: DATABASE_URL
         fromDatabase:
           name: site-db
@@ -44,15 +47,26 @@ services:
         sync: false
 
   - type: worker
-    plan: free
     name: site-jobs
     env: ruby
-    region: frankfurt
     buildCommand: bundle install
     startCommand: bundle exec sidekiq
     autoDeploy: false
+    repo: https://github.com/tramlinehq/tramline.git
     branch: main
     envVars:
+      - key: HOSTNAME
+        fromService:
+          type: web
+          name: site-web
+          property: host
+      - key: ARTIFACT_BUILDS_BUCKET_NAME
+        value: artifacts-build-prod
+      - key: APPLELINK_URL
+        fromService:
+          type: web
+          name: applelink
+          property: hostport
       - key: DATABASE_URL
         fromDatabase:
           name: site-db
@@ -70,10 +84,19 @@ services:
       - key: RAILS_MASTER_KEY
         sync: false
 
+  - type: web
+    name: applelink
+    env: ruby
+    plan: free
+    repo: https://github.com/tramlinehq/applelink.git
+    buildCommand: bundle install
+    startCommand: ./bin/prod
+    autoDeploy: false
+    branch: main
+
   - type: redis
     plan: free
     name: site-redis
-    region: frankfurt
     ipAllowList:
       - source: 0.0.0.0/0
         description: everywhere

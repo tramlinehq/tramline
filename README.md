@@ -51,9 +51,15 @@
   <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/tramlinehq/tramline">
 </p>
 
-## Features
+## Features ✨
 
-## Getting Started
+* Release Trains: Model your dynamic workflows with multiple trains and steps across different deployment channels
+* Integrations: We have integrations to VCS, Notifications, CI/CD and both App Store and Google Play Store. Many more incoming!
+* Release Dashboards: Track all your releases and their statuses from one place
+* Analytics: Get overall release metadata, like frequency, cycle time, build times, review times etc.
+* Automations: Cutting release branches to submitting builds to stores, many things are automatic and many more to come!
+
+## Getting Started ⚙️
 
 The following instructions are for self-hosting Tramline on [Render](https://render.com). The steps should be easily translatable to a Heroku deployment as well. Instructions for other platforms, including a dockerized setup will come in the future.
 
@@ -64,7 +70,7 @@ You need the bare-minimum of the following to stand up Tramline:
 * This repository setup as the primary monolithic backend
 * This repository setup as a background worker
 * Applelink for communicating with App Store Connect
-* Postgres Database
+* Postgres database
 * Redis instance (ideally persistent)
 
 Additionally, you'd need some prep-work around integrations for Tramline to be useful,
@@ -78,7 +84,6 @@ On a high-level the architecture looks like this,
 
 <figure>
   <img alt="setup architecture" src="art/arch@1x.png" width="90%" />
-  <figcaption>High-level setup diagram</figcaption>
 </figure>
 
 
@@ -97,10 +102,10 @@ bin/setup.mac
 2. Generate production credentials
 
 ```bash
-bin/setup-creds
+bin/setup-creds prod
 ```
 
-Keep the generated `production.key` safe with you and do not commit this.
+Keep the generated `production.key` file safe with you and do not commit it.
 
 3. Update production credentials
 
@@ -108,8 +113,8 @@ After adding the encryption credentials, you will have to fill the following det
 
 Use the template below to add the correct information.
 
-* Getting Postmark API token
-* Setting Google Cloud Platform keys
+* [Postmark API token](https://postmarkapp.com/support/article/1008-what-are-the-account-and-server-api-tokens)
+* Google Cloud Platform keys
 * Creating a Slack app
 * Creating a GitHub app
 
@@ -120,6 +125,8 @@ active_record_encryption:
   primary_key:
   deterministic_key:
   key_derivation_salt:
+
+secret_key_base:
 
 dependencies:
   postmark:
@@ -151,9 +158,6 @@ integrations:
     app_name:
     app_id:
     private_pem: |
-
-
-secret_key_base:
 ```
 Save the credentials file and commit your changes. Use this button **from your fork** to kick-off a Render deployment.
 
@@ -174,7 +178,7 @@ AUTH_SECRET=""
 SENTRY_DSN=""
 ```
 
-## Development
+## Development 🛠️
 
 #### Setup
 
@@ -262,7 +266,7 @@ The dashboard for all background jobs can be viewed [here](https://tramline.loca
 
 All feature-flags are managed through flipper. The UI can be viewed [here](https://tramline.local.gd:3000/flipper).
 
-## Contributing
+## Contributing 🧑‍💻
 
 We are early and listening. We would <3 feedback in any of the following ways:
 
@@ -270,7 +274,7 @@ We are early and listening. We would <3 feedback in any of the following ways:
 - Submit a [feature request or bug report](https://github.com/tramlinehq/tramline/issues/new/choose)
 - Open a PR (see our instructions on local development here.)
 
-## Open-source vs. paid
+## Open-source vs. paid 💡
 
 This repo is available under the [MIT expat](/LICENSE) license, except for the `ee` directory (which has it's
 license [here](https://github.com/tramlinehq/tramline/blob/main/ee/LICENSE)) if applicable.

@@ -1,66 +1,135 @@
 #!/usr/bin/env bash
 
-# exit on error
 set -o errexit
+environment=""
+
+usage() {
+  echo "Usage: $0 [-e <prod|dev>]" 1>&2
+  exit 1
+}
+
+check_dependencies() {
+  if ! command -v rails &>/dev/null; then
+    echo "ERROR: Rails is not installed. Please install it and try again."
+    exit 1
+  fi
+}
+
+init() {
+  check_dependencies
+
+  case "$environment" in
+  prod)
+    for_prod
+    ;;
+  dev)
+    for_dev
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+  esac
+
+  newline
+  echo "🚃"
+}
 
 newline() {
   printf "\n"
 }
 
-newline
-read -p "Setup fresh production credentials? [y/n] ➡ " -n 1 -r
-newline
+ask_env() {
+  while getopts ":e:" flag; do
+    case "${flag}" in
+    e)
+      environment=${OPTARG}
+      ;;
+    *)
+      usage
+      ;;
+    esac
+  done
 
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  echo "---------------------------------------"
-  echo "Deleting existing production.yml.enc..."
-  echo "---------------------------------------"
-  rm -f config/credentials/production.key
-  rm -f config/credentials/production.yml.enc
-  echo "Done."
+  if [[ -z "$environment" ]]; then
+    echo "Please specify an environment with the -e flag."
+    usage
+  fi
+}
 
+for_prod() {
+  read -p "Setup fresh production credentials? [y/n] ➡ " -n 1 -r
   newline
 
-  echo "-----------------------------------"
-  echo "Printing out new encryption keys..."
-  echo "-----------------------------------"
-  bin/rails db:encryption:init
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "---------------------------------------"
+    echo "Deleting existing production.yml.enc..."
+    echo "---------------------------------------"
+    rm -f config/credentials/production.key
+    rm -f config/credentials/production.yml.enc
+    echo "Done."
+
+    newline
+
+    echo "-----------------------------------"
+    echo "Printing out new encryption keys..."
+    echo "-----------------------------------"
+    bin/rails db:encryption:init
+    newline
+    echo "secret_key_base: $(./bin/rails secret)"
+    newline
+
+    echo "---------------------------------------------"
+    echo "Generating new production credentials file..."
+    echo "---------------------------------------------"
+    read -p "Copy the above encryption keys and the secret key YAML to your clipboard and press enter..." -n 1
+    bin/rails credentials:edit --environment production
+  fi
+}
+
+for_dev() {
+  read -p "Setup fresh development credentials? [y/n] ➡ " -n 1 -r
   newline
 
-  echo "---------------------------------------------"
-  echo "Generating new production credentials file..."
-  echo "---------------------------------------------"
-  read -p "Copy the encryption keys above to your clipboard and press enter..." -n 1 -r
-  bin/rails credentials:edit --environment production
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "---------------------------------------"
+    echo "Deleting existing credentials.yml.enc..."
+    echo "---------------------------------------"
+    rm -f config/master.key
+    rm -f config/credentials.yml.enc
+    echo "Done."
+    newline
+    newline
+
+    echo "-----------------------------------"
+    echo "Printing out new encryption keys..."
+    echo "-----------------------------------"
+    bin/rails db:encryption:init
+    newline
+    newline
+
+    echo "---------------------------------------------"
+    echo "Generating new dev credentials file..."
+    echo "---------------------------------------------"
+    read -p "Copy the encryption keys above to your clipboard and press enter..." -n 1 -r
+    bin/rails credentials:edit
+  fi
+}
+
+while getopts ":e:" flag; do
+  case "${flag}" in
+  e)
+    environment=${OPTARG}
+    ;;
+  *)
+    usage
+    ;;
+  esac
+done
+
+if [[ -z "$environment" ]]; then
+  echo "Please specify an environment with the -e flag."
+  usage
 fi
 
-newline
-echo "𑗊"
-newline
-
-read -p "Setup fresh development credentials? [y/n] ➡ " -n 1 -r
-newline
-
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  echo "---------------------------------------"
-  echo "Deleting existing credentials.yml.enc..."
-  echo "---------------------------------------"
-  rm -f config/master.key
-  rm -f config/credentials.yml.enc
-  echo "Done."
-  newline
-  newline
-
-  echo "-----------------------------------"
-  echo "Printing out new encryption keys..."
-  echo "-----------------------------------"
-  bin/rails db:encryption:init
-  newline
-  newline
-
-  echo "---------------------------------------------"
-  echo "Generating new dev credentials file..."
-  echo "---------------------------------------------"
-  read -p "Copy the encryption keys above to your clipboard and press enter..." -n 1 -r
-  bin/rails credentials:edit
-fi
+init
