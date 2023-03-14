@@ -25,7 +25,8 @@ class StagedRollout < ApplicationRecord
     started: "started",
     failed: "failed",
     completed: "completed",
-    stopped: "stopped"
+    stopped: "stopped",
+    fully_released: "fully_released"
   }
 
   enum status: STATES
@@ -54,6 +55,11 @@ class StagedRollout < ApplicationRecord
       after { deployment_run.complete! }
       transitions from: [:failed, :started], to: :completed
     end
+
+    event :full_rollout do
+      after { deployment_run.complete! }
+      transitions from: [:failed, :started], to: :fully_released
+    end
   end
 
   def update_stage(stage)
@@ -64,6 +70,7 @@ class StagedRollout < ApplicationRecord
   end
 
   def last_rollout_percentage
+    return Deployment::FULL_ROLLOUT_VALUE if fully_released?
     return if created? || current_stage.nil?
     config[current_stage]
   end
@@ -81,12 +88,8 @@ class StagedRollout < ApplicationRecord
     created? ? 0 : current_stage.succ
   end
 
-  def reached?(stage)
-    current_stage && current_stage >= stage
-  end
-
   def move_to_next_stage!
-    return if completed?
+    return if completed? || fully_released?
 
     release_with(rollout_value: next_rollout_percentage) do |result|
       if result.ok?
@@ -100,11 +103,23 @@ class StagedRollout < ApplicationRecord
 
   def halt_release!
     return if created?
-    return if completed?
+    return if completed? || fully_released?
 
     deployment_run.halt_release! do |result|
       if result.ok?
         halt!
+      else
+        elog(result.error)
+      end
+    end
+  end
+
+  def fully_release!
+    return if created? || completed? || stopped?
+
+    deployment_run.fully_release! do |result|
+      if result.ok?
+        full_rollout!
       else
         elog(result.error)
       end

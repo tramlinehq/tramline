@@ -144,6 +144,13 @@ class DeploymentRun < ApplicationRecord
     Deployments::AppStoreConnect::Release.start_release!(self) if app_store_integration?
   end
 
+  def fully_release!(&blk)
+    return unless store? && rolloutable?
+
+    return Deployments::GooglePlayStore::Release.release_to_all!(self, &blk) if google_play_store_integration?
+    Deployments::AppStoreConnect::Release.complete_phased_release!(self, &blk) if app_store_integration?
+  end
+
   def release_with(rollout_value:, &blk)
     return unless controllable_rollout?
 

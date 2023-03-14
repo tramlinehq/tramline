@@ -1,12 +1,13 @@
 class StagedRollout::ConfigComponent < ViewComponent::Base
   include AssetsHelper
 
-  def initialize(config:, current_stage: nil)
+  def initialize(config:, current_stage: nil, disabled: false)
     @config = config
     @current_stage = current_stage
+    @disabled = disabled
   end
 
-  attr_reader :config, :current_stage
+  attr_reader :config, :current_stage, :disabled
 
   def stage_perc(stage)
     return "0%" if stage.nil?

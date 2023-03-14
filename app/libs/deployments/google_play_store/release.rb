@@ -23,6 +23,10 @@ module Deployments
         new(deployment_run).halt_release!(&blk)
       end
 
+      def self.release_to_all!(deployment_run, &blk)
+        new(deployment_run).release_to_all!(&blk)
+      end
+
       def initialize(deployment_run)
         @deployment_run = deployment_run
       end
@@ -74,30 +78,18 @@ module Deployments
       end
 
       def halt_release!
+        return unless google_play_store_integration?
+
         release.with_lock do
           return unless run.rollout_started?
           yield provider.halt_release(deployment_channel, build_number, release_version, run.staged_rollout.last_rollout_percentage)
         end
       end
 
-      def fully_release!
-        release_with(rollout_value: Deployment::FULL_ROLLOUT_VALUE) do |result|
-          if result.ok?
-            run.complete!
-          else
-            run.fail_with_error(result.error)
-          end
-        end
-      end
+      def release_to_all!(&blk)
+        return unless google_play_store_integration?
 
-      def rollout!
-        release_with(is_draft: true) do |result|
-          if result.ok?
-            run.create_staged_rollout!(config: staged_rollout_config)
-          else
-            run.fail_with_error(result.error)
-          end
-        end
+        release_with(rollout_value: Deployment::FULL_ROLLOUT_VALUE, &blk)
       end
 
       # TODO: handle known errors gracefully and show to users
@@ -111,6 +103,30 @@ module Deployments
             yield provider.create_draft_release(deployment_channel, build_number, release_version)
           else
             yield provider.rollout_release(deployment_channel, build_number, release_version, rollout_value)
+          end
+        end
+      end
+
+      private
+
+      def fully_release!
+        release_with(rollout_value: Deployment::FULL_ROLLOUT_VALUE) do |result|
+          if result.ok?
+            run.complete!
+          else
+            run.fail_with_error(result.error)
+          end
+        end
+      end
+
+      def rollout!
+        return unless google_play_store_integration?
+
+        release_with(is_draft: true) do |result|
+          if result.ok?
+            run.create_staged_rollout!(config: staged_rollout_config)
+          else
+            run.fail_with_error(result.error)
           end
         end
       end

@@ -2,7 +2,8 @@ class Releases::StagedRolloutsController < SignedInApplicationController
   before_action :require_write_access!, only: %i[increase halt]
   before_action :set_deployment_run
   before_action :set_staged_rollout
-  before_action :ensure_rolloutable, only: [:increase, :halt]
+  before_action :ensure_controlled_rolloutable, only: [:increase, :halt]
+  before_action :ensure_rolloutable, only: [:fully_release]
 
   def increase
     @staged_rollout.move_to_next_stage!
@@ -24,9 +25,25 @@ class Releases::StagedRolloutsController < SignedInApplicationController
     end
   end
 
+  def fully_release
+    @staged_rollout.fully_release!
+
+    if @staged_rollout.fully_released?
+      redirect_back fallback_location: root_path, notice: "Released to all users!"
+    else
+      redirect_back fallback_location: root_path, flash: {error: "Failed to release to all users due to #{@deployment_run.display_attr(:failure_reason)}"}
+    end
+  end
+
   private
 
   def ensure_rolloutable
+    unless @deployment_run.rolloutable?
+      redirect_back fallback_location: root_path, flash: {error: "Cannot perform this operation. The deployment is not in rollout stage."}
+    end
+  end
+
+  def ensure_controlled_rolloutable
     unless @deployment_run.controllable_rollout?
       redirect_back fallback_location: root_path, flash: {error: "Cannot perform this operation. The deployment is not in rollout stage."}
     end
