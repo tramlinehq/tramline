@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+# exit on error
+set -o errexit
+
+newline() {
+  printf "\n"
+}
+
+newline
+read -p "Setup fresh production credentials? [y/n] ➡ " -n 1 -r
+newline
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+  echo "---------------------------------------"
+  echo "Deleting existing production.yml.enc..."
+  echo "---------------------------------------"
+  rm -f config/credentials/production.key
+  rm -f config/credentials/production.yml.enc
+  echo "Done."
+
+  newline
+
+  echo "-----------------------------------"
+  echo "Printing out new encryption keys..."
+  echo "-----------------------------------"
+  bin/rails db:encryption:init
+  newline
+
+  echo "---------------------------------------------"
+  echo "Generating new production credentials file..."
+  echo "---------------------------------------------"
+  read -p "Copy the encryption keys above to your clipboard and press enter..." -n 1 -r
+  bin/rails credentials:edit --environment production
+fi
+
+newline
+echo "𑗊"
+newline
+
+read -p "Setup fresh development credentials? [y/n] ➡ " -n 1 -r
+newline
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+  echo "---------------------------------------"
+  echo "Deleting existing credentials.yml.enc..."
+  echo "---------------------------------------"
+  rm -f config/master.key
+  rm -f config/credentials.yml.enc
+  echo "Done."
+  newline
+  newline
+
+  echo "-----------------------------------"
+  echo "Printing out new encryption keys..."
+  echo "-----------------------------------"
+  bin/rails db:encryption:init
+  newline
+  newline
+
+  echo "---------------------------------------------"
+  echo "Generating new dev credentials file..."
+  echo "---------------------------------------------"
+  read -p "Copy the encryption keys above to your clipboard and press enter..." -n 1 -r
+  bin/rails credentials:edit
+fi
