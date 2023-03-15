@@ -80,7 +80,7 @@ Additionally, you'd need some prep-work around integrations for Tramline to be u
 * Google Cloud Storage Account
 * Postmark account for sending emails
 
-On a high-level the architecture looks like this,
+On a high-level the deployment architecture looks like this,
 
 <figure>
   <img alt="setup architecture" src="art/arch@1x.png" width="90%" />
@@ -272,11 +272,11 @@ All feature-flags are managed through flipper. The UI can be viewed [here](https
 
 ## Contributing 🧑‍💻
 
-We are early and listening. We would <3 feedback in any of the following ways:
+We are in early-stages and listening. We would <3 feedback in any of the following ways:
 
 - Join our [Discord](https://discord.com/invite/u7VwyvBV2Z) and ask us questions and/or let us know your thoughts
 - Submit a [feature request or bug report](https://github.com/tramlinehq/tramline/issues/new/choose)
-- Open a PR (see our instructions on local development here.)
+- Open a PR (see our instructions on local development here)
 
 ## Open-source vs. paid 💡
 

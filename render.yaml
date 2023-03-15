@@ -12,10 +12,9 @@ services:
     env: ruby
     buildCommand: ./bin/render-build
     startCommand: "bundle exec puma -C config/puma.rb"
-    initialDeployHook: ./bin/render-seed
     repo: https://github.com/tramlinehq/tramline.git
     autoDeploy: false
-    branch: main
+    branch: chore/readme
     envVars:
       - key: HOSTNAME
         fromService:
@@ -53,7 +52,7 @@ services:
     startCommand: bundle exec sidekiq
     autoDeploy: false
     repo: https://github.com/tramlinehq/tramline.git
-    branch: main
+    branch: chore/readme
     envVars:
       - key: HOSTNAME
         fromService:
