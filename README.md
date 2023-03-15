@@ -76,10 +76,10 @@ You'll need the following minimum requirements to get Tramline up and running:
 
 You'll also need to set up integrations for Tramline to be useful:
 
-- GitHub app
-- Slack app
-- Google Cloud Storage Account
-- Postmark account for sending emails
+* [Postmark API token](https://postmarkapp.com/support/article/1008-what-are-the-account-and-server-api-tokens)
+* [Google Cloud Service Account](https://kinsta.com/knowledgebase/google-cloud-storage-backup/#create-a-service-account)
+* [Creating a Slack app](https://api.slack.com/authentication/basics)
+* [Creating a GitHub app](https://docs.github.com/en/apps/creating-github-apps/creating-github-apps/creating-a-github-app)
 
 The deployment architecture looks like this:
 
@@ -111,10 +111,7 @@ Keep the `production.key` file safe and don't commit it.
 
 After adding the encryption credentials, fill in the following details for the integrations in `production.yml.enc` by running `bin/rails credentials:edit --environment production`.
 
-* [Postmark API token](https://postmarkapp.com/support/article/1008-what-are-the-account-and-server-api-tokens)
-* Google Cloud Platform keys
-* Creating a Slack app
-* Creating a GitHub app
+Follow the links mentioned earlier to setup the bare-minimum integrations.
 
 For `applelink`, choose any string as your `secret`. We will use this later.
 
