@@ -1,16 +1,16 @@
 <div class="max-w-sm mx-auto px-4 py-8">
-  <div class="flex mb-8 -ml-2">
+  <div class="flex mb-8">
     <%= inline_svg("tramline.svg") %>
   </div>
 
-  <%= render partial: 'shared/flash' %>
+  <%= render partial: "shared/flash" %>
 
   <!-- Form -->
   <%= form_for(resource, as: resource_name, html: { 'data-turbo' => "false" }, url: session_path(resource_name)) do |f| %>
-    <div class="space-y-4">
+    <div class="space-y-6">
       <div>
         <%= f.label :email, class: "block text-sm font-medium mb-1" %>
-        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-input w-full" %>
+        <%= f.email_field :email, autofocus: false, autocomplete: "email", class: "form-input w-full" %>
       </div>
 
       <div>
@@ -25,11 +25,15 @@
         </label>
       <% end %>
 
-      <div class="flex items-center justify-between mt-6">
+      <div class="flex items-center justify-between">
         <div class="mr-1">
           <%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
             <%= link_to "Forgot your password?", new_password_path(resource_name), class: "text-sm underline hover:no-underline" %>
           <% end %>
+
+          <div>
+            <%= link_to "Sign up", new_registration_path(resource_name), class: "text-sm underline hover:no-underline" %>
+          </div>
         </div>
         <%= f.submit "Log in", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white ml-3" %>
       </div>

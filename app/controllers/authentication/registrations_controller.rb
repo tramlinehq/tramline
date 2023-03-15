@@ -8,7 +8,7 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
   def new
     super do |usr|
       @organization = usr.organizations.build
-      @user.email = @invite.email
+      @user.email = @invite&.email
     end
   end
 
@@ -25,7 +25,8 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
       user.add!(@invite)
     else
       build_resource(sign_up_params)
-      user.onboard!
+      Accounts::User.onboard!(user)
+      user.reload
     end
 
     finish_sign_up
@@ -47,7 +48,7 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
     else
       clean_up_passwords(user)
       set_minimum_password_length
-      respond_with user
+      respond_with(user, location: after_sign_up_path_for(user))
     end
   end
 
