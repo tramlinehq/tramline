@@ -86,7 +86,6 @@ On a high-level the deployment architecture looks like this,
   <img alt="setup architecture" src="art/arch@1x.png" width="90%" />
 </figure>
 
-
 To kick things off, first clone this repo. This ensures everything that you do is fully under your control.
 
 In case you'd like to run this locally first, please follow [[Development Setup]].
@@ -181,6 +180,14 @@ AUTH_AUD="applelink"
 AUTH_SECRET=""
 SENTRY_DSN=""
 ```
+
+Once all services on Render are green, it should look like this,
+
+<figure>
+  <img alt="render.com services" src="art/render_dotcom_services.png" width="90%" />
+</figure>
+
+That should be it! There's a lot more that one can configure and tweak, but this should be good to get one started. You can use the default DNS from `site-web` to launch.
 
 ## Development 🛠️
 
