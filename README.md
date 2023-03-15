@@ -61,56 +61,55 @@
 
 ## Getting Started ⚙️
 
-The following instructions are for self-hosting Tramline on [Render](https://render.com). The steps should be easily translatable to a Heroku deployment as well. Instructions for other platforms, including a dockerized setup will come in the future.
+
+To self-host Tramline on Render, follow these instructions. These steps can also be adapted for a Heroku deployment. Instructions for other platforms, including a dockerized setup will come in the future.
 
 **Note:** Since Render does not offer background workers under the free plan, you will have to put in your payment details to fully complete this deployment.
 
-You need the bare-minimum of the following to stand up Tramline:
+You'll need the following minimum requirements to get Tramline up and running:
 
-* This repository setup as the primary monolithic backend
-* This repository setup as a background worker
-* Applelink for communicating with App Store Connect
-* Postgres database
-* Redis instance (ideally persistent)
+- This repository set up as the primary monolithic backend
+- This repository set up as a background worker
+- Applelink to communicate with App Store Connect
+- Postgres database
+- Redis instance (preferably persistent)
 
-Additionally, you'd need some prep-work around integrations for Tramline to be useful,
+You'll also need to set up integrations for Tramline to be useful:
 
-* GitHub app
-* Slack app
-* Google Cloud Storage Account
-* Postmark account for sending emails
+- GitHub app
+- Slack app
+- Google Cloud Storage Account
+- Postmark account for sending emails
 
-On a high-level the deployment architecture looks like this,
+The deployment architecture looks like this:
 
 <figure>
   <img alt="setup architecture" src="art/arch@1x.png" width="90%" />
 </figure>
 
-To kick things off, first clone this repo. This ensures everything that you do is fully under your control.
+To begin, first clone this repo. This ensures everything that you do is fully under your control.
 
-In case you'd like to run this locally first, please follow [[Development Setup]].
+In case you'd like to run this locally first, please follow [Development](#development-).
 
-To directly host it, you first need to prep your fork a little bit.
+To host Tramline directly, you'll need to prep your fork:
 
-1. Setup rails
+1. Set up Rails
 
 ```bash
 bin/setup.mac
 ```
 
-2. Generate production credentials
+2. Generate production credentials and follow the instructions
 
 ```bash
 bin/setup.creds -e prod
 ```
 
-Keep the generated `production.key` file safe with you and do not commit it.
+Keep the `production.key` file safe and don't commit it.
 
 3. Update production credentials
 
-After adding the encryption credentials, you will have to fill the following details in `production.yml.enc`. You can do this by running `bin/rails credentials:edit --environment production`.
-
-Use the template below to add the correct information.
+After adding the encryption credentials, fill in the following details for the integrations in `production.yml.enc` by running `bin/rails credentials:edit --environment production`.
 
 * [Postmark API token](https://postmarkapp.com/support/article/1008-what-are-the-account-and-server-api-tokens)
 * Google Cloud Platform keys
@@ -118,6 +117,8 @@ Use the template below to add the correct information.
 * Creating a GitHub app
 
 For `applelink`, choose any string as your `secret`. We will use this later.
+
+Use the following template:
 
 ```yaml
 active_record_encryption:
@@ -181,13 +182,13 @@ AUTH_SECRET=""
 SENTRY_DSN=""
 ```
 
-Once all services on Render are green, it should look like this,
+Once all services on Render are green, your setup should look like this:
 
 <figure>
   <img alt="render.com services" src="art/render_dotcom_services.png" width="90%" />
 </figure>
 
-That should be it! There's a lot more that one can configure and tweak, but this should be good to get one started. You can use the default DNS from `site-web` to launch.
+That should be it! You can use the default DNS from `site-web` to launch Tramline. You can configure and tweak more settings later.
 
 ## Development 🛠️
 
@@ -279,11 +280,12 @@ All feature-flags are managed through flipper. The UI can be viewed [here](https
 
 ## Contributing 🧑‍💻
 
-We are in early-stages and listening. We would <3 feedback in any of the following ways:
+We are still in the early stages and would <3 any feedback you have to offer. You can get in touch with us in several ways:
 
-- Join our [Discord](https://discord.com/invite/u7VwyvBV2Z) and ask us questions and/or let us know your thoughts
+- Join our [Discord](https://discord.com/invite/u7VwyvBV2Z) server to ask us questions or share your thoughts
 - Submit a [feature request or bug report](https://github.com/tramlinehq/tramline/issues/new/choose)
-- Open a PR (see our instructions on local development here)
+- Open a pull request (see instructions for local setup [here](#development-))
+
 
 ## Open-source vs. paid 💡
 
