@@ -45,9 +45,6 @@ class Accounts::User < ApplicationRecord
 
   has_many :memberships, dependent: :delete_all, inverse_of: :user
   has_many :organizations, -> { where(status: :active) }, through: :memberships
-  # NOTE: For now assume that user has only one organisation
-  has_one :membership, dependent: :delete, inverse_of: :user
-  has_one :organization, -> { where(status: :active) }, through: :membership
   has_many :all_organizations, through: :memberships, source: :organization
   has_many :sent_invites, class_name: "Invite", foreign_key: "sender_id", inverse_of: :sender, dependent: :destroy
   has_many :invitations, class_name: "Invite", foreign_key: "recipient_id", inverse_of: :recipient, dependent: :destroy
