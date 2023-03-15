@@ -742,13 +742,13 @@ describe Deployments::AppStoreConnect::Release do
       end
 
       it "completes the phased release" do
-        described_class.complete_phased_release!(run) {}
+        described_class.complete_phased_release!(run)
 
         expect(providable_dbl).to have_received(:complete_phased_release).once
       end
 
       it "updates the external release" do
-        described_class.complete_phased_release!(run) {}
+        described_class.complete_phased_release!(run)
 
         expect(run.external_release.reload.status).to eq("READY_FOR_SALE")
       end
@@ -762,13 +762,13 @@ describe Deployments::AppStoreConnect::Release do
       end
 
       it "fails the deployment run" do
-        described_class.complete_phased_release!(run) {}
+        described_class.complete_phased_release!(run)
 
         expect(run.reload.failed?).to be(true)
       end
 
       it "adds the failure reason to the deployment run" do
-        described_class.complete_phased_release!(run) {}
+        described_class.complete_phased_release!(run)
 
         expect(run.reload.failure_reason).to eq("phased_release_not_found")
       end

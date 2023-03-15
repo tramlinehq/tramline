@@ -15,16 +15,16 @@ module Deployments
         new(deployment_run).start_release!
       end
 
-      def self.rollout_release!(deployment_run, rollout_value:, &blk)
-        new(deployment_run).rollout_release!(rollout_value:, &blk)
+      def self.release_with(deployment_run, rollout_value:)
+        new(deployment_run).release_with(rollout_value:)
       end
 
-      def self.halt_release!(deployment_run, &blk)
-        new(deployment_run).halt_release!(&blk)
+      def self.halt_release!(deployment_run)
+        new(deployment_run).halt_release!
       end
 
-      def self.release_to_all!(deployment_run, &blk)
-        new(deployment_run).release_to_all!(&blk)
+      def self.release_to_all!(deployment_run)
+        new(deployment_run).release_to_all!
       end
 
       def initialize(deployment_run)
@@ -40,8 +40,6 @@ module Deployments
         :staged_rollout?,
         :google_play_store_integration?,
         :staged_rollout_config,
-        :promotable?,
-        :release,
         to: :run
 
       def kickoff!
@@ -80,54 +78,45 @@ module Deployments
       def halt_release!
         return unless google_play_store_integration?
 
-        release.with_lock do
-          return unless run.rollout_started?
-          yield provider.halt_release(deployment_channel, build_number, release_version, run.staged_rollout.last_rollout_percentage)
-        end
+        return unless run.rollout_started?
+        provider.halt_release(deployment_channel, build_number, release_version, run.staged_rollout.last_rollout_percentage)
       end
 
-      def release_to_all!(&blk)
+      def release_to_all!
         return unless google_play_store_integration?
 
-        release_with(rollout_value: Deployment::FULL_ROLLOUT_VALUE, &blk)
+        result = provider.rollout_release(deployment_channel, build_number, release_version, Deployment::FULL_ROLLOUT_VALUE)
+
+        run.fail_with_error(result.error) unless result.ok?
+        result
       end
 
-      # TODO: handle known errors gracefully and show to users
-      def release_with(rollout_value: nil, is_draft: false)
-        raise ArgumentError, "cannot have a rollout for a draft deployments" if is_draft && rollout_value.present?
+      def release_with(rollout_value:)
+        return unless google_play_store_integration?
 
-        release.with_lock do
-          return unless promotable?
+        result = provider.rollout_release(deployment_channel, build_number, release_version, rollout_value)
 
-          if is_draft
-            yield provider.create_draft_release(deployment_channel, build_number, release_version)
-          else
-            yield provider.rollout_release(deployment_channel, build_number, release_version, rollout_value)
-          end
-        end
+        run.fail_with_error(result.error) unless result.ok?
+        result
       end
 
       private
 
       def fully_release!
-        release_with(rollout_value: Deployment::FULL_ROLLOUT_VALUE) do |result|
-          if result.ok?
-            run.complete!
-          else
-            run.fail_with_error(result.error)
-          end
+        result = provider.rollout_release(deployment_channel, build_number, release_version, Deployment::FULL_ROLLOUT_VALUE)
+        if result.ok?
+          run.complete!
+        else
+          run.fail_with_error(result.error)
         end
       end
 
       def rollout!
-        return unless google_play_store_integration?
-
-        release_with(is_draft: true) do |result|
-          if result.ok?
-            run.create_staged_rollout!(config: staged_rollout_config)
-          else
-            run.fail_with_error(result.error)
-          end
+        result = provider.create_draft_release(deployment_channel, build_number, release_version)
+        if result.ok?
+          run.create_staged_rollout!(config: staged_rollout_config)
+        else
+          run.fail_with_error(result.error)
         end
       end
     end

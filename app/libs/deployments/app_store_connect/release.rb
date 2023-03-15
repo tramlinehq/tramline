@@ -34,8 +34,8 @@ module Deployments
         new(deployment_run).track_live_release_status
       end
 
-      def self.complete_phased_release!(deployment_run, &blk)
-        new(deployment_run).complete_phased_release!(&blk)
+      def self.complete_phased_release!(deployment_run)
+        new(deployment_run).complete_phased_release!
       end
 
       def initialize(deployment_run)
@@ -173,7 +173,8 @@ module Deployments
         else
           run.fail_with_error(result.error)
         end
-        yield result
+
+        result
       end
 
       private

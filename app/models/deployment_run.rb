@@ -122,6 +122,8 @@ class DeploymentRun < ApplicationRecord
 
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 
+  UnknownStoreError = Class.new(StandardError)
+
   def first?
     step_run.deployment_runs.first == self
   end
@@ -138,33 +140,57 @@ class DeploymentRun < ApplicationRecord
   end
 
   def start_release!
-    return unless store?
+    return unless release_startable?
 
-    return Deployments::GooglePlayStore::Release.start_release!(self) if google_play_store_integration?
-    Deployments::AppStoreConnect::Release.start_release!(self) if app_store_integration?
+    release.with_lock do
+      if google_play_store_integration?
+        Deployments::GooglePlayStore::Release.start_release!(self)
+      elsif app_store_integration?
+        Deployments::AppStoreConnect::Release.start_release!(self)
+      else
+        raise UnknownStoreError
+      end
+    end
   end
 
-  def fully_release!(&blk)
+  def on_fully_release!
     return unless store? && rolloutable?
 
-    return Deployments::GooglePlayStore::Release.release_to_all!(self, &blk) if google_play_store_integration?
-    Deployments::AppStoreConnect::Release.complete_phased_release!(self, &blk) if app_store_integration?
+    release.with_lock do
+      if google_play_store_integration?
+        result = Deployments::GooglePlayStore::Release.release_to_all!(self)
+      elsif app_store_integration?
+        result = Deployments::AppStoreConnect::Release.complete_phased_release!(self)
+      else
+        raise UnknownStoreError
+      end
+
+      yield result
+    end
   end
 
-  def release_with(rollout_value:, &blk)
-    return unless controllable_rollout?
+  def on_release_with(rollout_value:)
+    return unless store? && controllable_rollout?
 
-    Deployments::GooglePlayStore::Release.new(self).release_with(rollout_value:, &blk) if google_play_store_integration?
+    release.with_lock do
+      yield Deployments::GooglePlayStore::Release.release_with(self, rollout_value:) if google_play_store_integration?
+    end
   end
 
-  def halt_release!(&blk)
+  def on_halt_release!
     return unless store? && google_play_store_integration?
 
-    Deployments::GooglePlayStore::Release.halt_release!(self, &blk)
+    release.with_lock do
+      yield Deployments::GooglePlayStore::Release.halt_release!(self)
+    end
   end
 
   def promotable?
     release.on_track? && store? && (uploaded? || rollout_started?)
+  end
+
+  def release_startable?
+    release.on_track? && store? && may_engage_release?
   end
 
   def rolloutable?

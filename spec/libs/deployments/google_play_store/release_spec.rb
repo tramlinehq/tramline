@@ -125,7 +125,7 @@ describe Deployments::GooglePlayStore::Release do
       unstarted_run = create(:deployment_run, :uploaded, deployment:, step_run:)
       allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
 
-      described_class.halt_release!(unstarted_run) {}
+      described_class.halt_release!(unstarted_run)
 
       expect(providable_dbl).not_to have_received(:halt_release)
     end
@@ -134,7 +134,7 @@ describe Deployments::GooglePlayStore::Release do
       run.create_staged_rollout!(config: run.staged_rollout_config)
       allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
 
-      described_class.halt_release!(run) {}
+      described_class.halt_release!(run)
 
       expect(providable_dbl).to have_received(:halt_release)
     end
