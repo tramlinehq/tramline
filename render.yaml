@@ -10,7 +10,7 @@ services:
     plan: free
     name: site-web
     env: ruby
-    buildCommand: ./bin/render-build
+    buildCommand: ./bin/render.build
     startCommand: "bundle exec puma -C config/puma.rb"
     repo: https://github.com/tramlinehq/tramline.git
     autoDeploy: false
@@ -25,7 +25,7 @@ services:
         value: artifacts-build-prod
       - key: APPLELINK_URL
         fromService:
-          type: web
+          type: pserv
           name: applelink
           property: hostport
       - key: DATABASE_URL
@@ -63,7 +63,7 @@ services:
         value: artifacts-build-prod
       - key: APPLELINK_URL
         fromService:
-          type: web
+          type: pserv
           name: applelink
           property: hostport
       - key: DATABASE_URL
@@ -83,7 +83,7 @@ services:
       - key: RAILS_MASTER_KEY
         sync: false
 
-  - type: web
+  - type: pserv
     name: applelink
     env: ruby
     plan: free

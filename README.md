@@ -101,7 +101,7 @@ bin/setup.mac
 2. Generate production credentials
 
 ```bash
-bin/setup-creds prod
+bin/setup.creds -e prod
 ```
 
 Keep the generated `production.key` file safe with you and do not commit it.
