@@ -48,7 +48,7 @@ class DeploymentRun < ApplicationRecord
     :staged_rollout?,
     :staged_rollout_config,
     to: :deployment
-  delegate :release_version, to: :release
+  delegate :release_version, :release_metadata, to: :release
   delegate :app, to: :release
 
   STAMPABLE_REASONS = %w[created release_failed released]

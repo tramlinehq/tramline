@@ -26,9 +26,12 @@ class Releases::Train::Run < ApplicationRecord
   has_many :pull_requests, class_name: "Releases::PullRequest", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
+  has_one :release_metadata, class_name: "ReleaseMetadata", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
   has_many :passports, as: :stampable, dependent: :destroy
+
+  DEFAULT_LOCALE = "en-US"
 
   STAMPABLE_REASONS = [
     "created",
@@ -82,11 +85,24 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   before_create :set_version
+  after_create :create_default_release_metadata
   after_commit -> { create_stamp!(data: {version: release_version}) }, on: :create
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   delegate :app, :pre_release_prs?, to: :train
+
+  def create_default_release_metadata
+    create_release_metadata!(locale: DEFAULT_LOCALE, release_notes: "The latest version contains bug fixes and performance improvements.")
+  end
+
+  def metadata_editable?
+    on_track? && !started_store_release?
+  end
+
+  def started_store_release?
+    step_runs_for(train.release_step).last&.deployment_runs&.find { |dr| dr.deployment.production_channel? }.present?
+  end
 
   def tag_name
     "v#{release_version}"

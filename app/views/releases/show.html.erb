@@ -19,6 +19,8 @@
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
     <%= decorated_link_to :neutral, "Event Timeline", timeline_release_path(@release) %>
 
+    <%= authz_link_to (@release.metadata_editable? ? :blue : :disabled), "Edit Release Metadata", edit_release_release_metadatum_path(@release) %>
+
     <% if @release.stoppable? %>
       <%= authz_button_to :red, "Stop release", release_path(@release.id), method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } %>
     <% end %>

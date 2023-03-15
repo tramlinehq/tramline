@@ -54,6 +54,7 @@ module Deployments
         :app_store_integration?,
         :app_store?,
         :staged_rollout_config,
+        :release_metadata,
         to: :run
 
       def kickoff!
@@ -77,7 +78,7 @@ module Deployments
       def prepare_for_release!
         return unless app_store_release?
 
-        result = provider.prepare_release(build_number, release_version, staged_rollout?)
+        result = provider.prepare_release(build_number, release_version, staged_rollout?, release_metadata)
 
         unless result.ok?
           run.fail_with_error(result.error)

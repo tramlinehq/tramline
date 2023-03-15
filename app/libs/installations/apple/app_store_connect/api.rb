@@ -65,12 +65,12 @@ module Installations
         .then { |tracks| Installations::Response::Keys.transform(tracks, transforms) }
     end
 
-    def prepare_release(build_number, version, is_phased_release, transforms = {})
+    def prepare_release(build_number, version, is_phased_release, metadata, transforms = {})
       params = {
         build_number:,
         version:,
         is_phased_release:,
-        metadata: {whats_new: "The latest version contains bug fixes and performance improvements."}
+        metadata: metadata
       }
 
       execute(:post, PREPARE_RELEASE_URL.expand(bundle_id:).to_s, {json: params})

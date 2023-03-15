@@ -1,0 +1,30 @@
+<%= render PageComponent.new(breadcrumb: breadcrumb(:release, @release), title: "Edit Release Metadata") do %>
+  <%= render partial: 'shared/errors', locals: { resource: @release } %>
+
+  <%= form_with(model: @release_metadata,
+                url: release_release_metadatum_path(@release),
+                builder: ButtonHelper::AuthzForms,
+                method: :patch) do |form| %>
+
+    <div class="mt-4">
+      <%= render "shared/note_box",
+                 message: "The release metadata is uploaded to the store during the production deployment of the release, if any." %>
+    </div>
+
+
+    <div class="mt-4">
+      <%= form.label :release_notes, class: "block text-sm font-medium mb-1" %>
+      <%= form.text_area :release_notes, class: "form-input w-full", value: @release_metadata.release_notes %>
+    </div>
+
+    <div class="mt-4">
+      <%= form.label :promo_text, class: "block text-sm font-medium mb-1" %>
+      <%= form.text_area :promo_text, class: "form-input w-full", value: @release_metadata.promo_text %>
+    </div>
+
+
+    <div class="mt-5">
+      <%= form.authz_submit :blue, "Update" %>
+    </div>
+  <% end %>
+<% end %>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_03_08_093440) do
+ActiveRecord::Schema[7.0].define(version: 2023_03_14_135804) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -252,6 +252,17 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_08_093440) do
     t.index ["stampable_type", "stampable_id"], name: "index_passports_on_stampable"
   end
 
+  create_table "release_metadata", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_run_id", null: false
+    t.string "locale", null: false
+    t.text "release_notes"
+    t.text "promo_text"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["train_run_id", "locale"], name: "index_release_metadata_on_train_run_id_and_locale", unique: true
+    t.index ["train_run_id"], name: "index_release_metadata_on_train_run_id"
+  end
+
   create_table "releases_commit_listeners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "train_id", null: false
     t.string "branch_name", null: false
@@ -484,6 +495,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_03_08_093440) do
   add_foreign_key "invites", "users", column: "sender_id"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
+  add_foreign_key "release_metadata", "train_runs"
   add_foreign_key "releases_commit_listeners", "trains"
   add_foreign_key "releases_commits", "train_runs"
   add_foreign_key "releases_commits", "trains"

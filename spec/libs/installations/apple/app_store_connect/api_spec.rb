@@ -93,15 +93,14 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
   describe "#prepare_release!" do
     let(:version) { "1.2.0" }
     let(:is_phased_release) { true }
+    let(:metadata) { {whats_new: "The latest version contains bug fixes and performance improvements."} }
     let(:params) {
       {
         json: {
           build_number:,
           version:,
           is_phased_release:,
-          metadata: {
-            whats_new: "The latest version contains bug fixes and performance improvements."
-          }
+          metadata: metadata
         }
       }
     }
@@ -111,7 +110,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
       payload = File.read("spec/fixtures/app_store_connect/release.json")
 
       request = stub_request(:post, url).to_return(body: payload)
-      result = described_class.new(bundle_id, key_id, issuer_id, key).prepare_release(build_number, version, is_phased_release)
+      result = described_class.new(bundle_id, key_id, issuer_id, key).prepare_release(build_number, version, is_phased_release, metadata)
 
       expect(result).to eq(JSON.parse(payload))
       expect(request.with(body: params[:json])).to have_been_made
@@ -121,7 +120,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
       error_payload = {error: {code: "export_compliance_not_updateable", resource: "build"}}.to_json
       request = stub_request(:post, url).to_return(status: 422, body: error_payload)
 
-      expect { described_class.new(bundle_id, key_id, issuer_id, key).prepare_release(build_number, version, is_phased_release) }
+      expect { described_class.new(bundle_id, key_id, issuer_id, key).prepare_release(build_number, version, is_phased_release, metadata) }
         .to raise_error(Installations::Apple::AppStoreConnect::Error) { |error| expect(error.reason).to eq(:missing_export_compliance) }
       expect(request.with(body: params[:json])).to have_been_made
     end

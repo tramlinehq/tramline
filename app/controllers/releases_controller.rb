@@ -1,6 +1,6 @@
 class ReleasesController < SignedInApplicationController
   around_action :set_time_zone
-  before_action :require_write_access!, only: %i[create destroy post_release]
+  before_action :require_write_access!, only: %i[create destroy]
   before_action :set_release, only: [:show, :timeline, :destroy]
 
   def show
@@ -42,17 +42,6 @@ class ReleasesController < SignedInApplicationController
   def destroy
     @release.stop!
     redirect_to app_train_path(@release.train.app, @release.train), notice: "The release was stopped."
-  end
-
-  def post_release
-    @release = Releases::Train::Run.find(params[:id])
-
-    if @release.finalizable?
-      @release.start_post_release_phase!
-      redirect_back fallback_location: root_path, notice: "Performing post-release steps."
-    else
-      redirect_back fallback_location: root_path, notice: "Train is still running."
-    end
   end
 
   private
