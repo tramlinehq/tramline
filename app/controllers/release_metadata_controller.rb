@@ -1,9 +1,7 @@
 class ReleaseMetadataController < SignedInApplicationController
-  using RefinedString
-
   before_action :require_write_access!, only: %i[edit update]
   before_action :set_release, only: %i[edit update]
-  before_action :ensure_editable
+  before_action :ensure_editable, only: %i[edit update]
 
   def edit
     @train = @release.train

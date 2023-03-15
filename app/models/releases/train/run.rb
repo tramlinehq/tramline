@@ -101,7 +101,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def started_store_release?
-    step_runs_for(train.release_step).last&.deployment_runs&.find { |dr| dr.deployment.production_channel? }.present?
+    last_run_for(train.release_step)&.deployment_runs&.find { |dr| dr.deployment.production_channel? }.present?
   end
 
   def tag_name
