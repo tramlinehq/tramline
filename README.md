@@ -85,7 +85,7 @@ You'll also need to set up integrations for Tramline to be useful:
 The deployment architecture looks like this:
 
 <figure>
-  <img alt="setup architecture" src="art/arch@1x.png" width="90%" />
+  <img alt="setup architecture" src="art/overall-arch@1x.png" width="90%" />
 </figure>
 
 To begin, first clone this repo. This ensures everything that you do is fully under your control.
@@ -304,7 +304,7 @@ We are still in the early stages and would <3 any feedback you have to offer. Yo
 
 - Join our [Discord](https://discord.com/invite/u7VwyvBV2Z) server to ask us questions or share your thoughts
 - Submit a [feature request or bug report](https://github.com/tramlinehq/tramline/issues/new/choose)
-- Open a pull request (see instructions for local setup [here](#development-))
+- Open a pull request (see instructions for local setup [here](##development-%EF%B8%8F))
 
 
 ## Open-source vs. paid 💡
