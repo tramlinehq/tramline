@@ -164,18 +164,17 @@ module Deployments
 
       def complete_phased_release!
         return unless app_store_release?
-        return unless run.rolloutable?
 
         result = provider.complete_phased_release
 
-        unless result.ok?
+        if result.ok?
+          release_info = result.value!
+          run.external_release.update(release_info.attributes)
+        else
           run.fail_with_error(result.error)
-          return
         end
 
-        release_info = result.value!
-        run.external_release.update(release_info.attributes)
-        run.staged_rollout.update_stage(release_info.phased_release_stage)
+        result
       end
 
       private

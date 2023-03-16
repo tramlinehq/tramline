@@ -747,10 +747,10 @@ describe Deployments::AppStoreConnect::Release do
         expect(providable_dbl).to have_received(:complete_phased_release).once
       end
 
-      it "releases the deployment run" do
+      it "updates the external release" do
         described_class.complete_phased_release!(run)
 
-        expect(run.reload.released?).to be(true)
+        expect(run.external_release.reload.status).to eq("READY_FOR_SALE")
       end
     end
 

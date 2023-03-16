@@ -51,15 +51,7 @@ class DeploymentRun < ApplicationRecord
   delegate :release_version, to: :release
   delegate :app, to: :release
 
-  STAMPABLE_REASONS = [
-    "created",
-    "bundle_identifier_not_found",
-    "invalid_package",
-    "apks_are_not_allowed",
-    "upload_failed_reason_unknown",
-    "release_failed",
-    "released"
-  ]
+  STAMPABLE_REASONS = %w[created release_failed released]
 
   STATES = {
     created: "created",
@@ -70,7 +62,6 @@ class DeploymentRun < ApplicationRecord
     ready_to_release: "ready_to_release",
     rollout_started: "rollout_started",
     released: "released",
-    upload_failed: "upload_failed", # TODO: migrate to failure_reason
     failed: "failed"
   }
 
@@ -78,7 +69,12 @@ class DeploymentRun < ApplicationRecord
   enum failure_reason: {
     review_failed: "review_failed",
     unknown_failure: "unknown_failure"
-  }.merge(Installations::Apple::AppStoreConnect::Error.reasons.zip_map_self)
+  }.merge(
+    *[
+      Installations::Apple::AppStoreConnect::Error.reasons,
+      Installations::Google::PlayDeveloper::Error.reasons
+    ].map(&:zip_map_self)
+  )
 
   aasm safe_state_machine_params do
     state :created, initial: true, before_enter: -> { step_run.startable_deployment?(deployment) }
@@ -99,11 +95,6 @@ class DeploymentRun < ApplicationRecord
 
     event :upload, after_commit: -> { Deployments::ReleaseJob.perform_later(id) } do
       transitions from: :started, to: :uploaded
-    end
-
-    event :upload_fail do
-      after { step_run.fail_deploy! }
-      transitions from: :started, to: :upload_failed
     end
 
     event :ready_to_release, after_commit: -> { external_release.update(reviewed_at: Time.current) } do
@@ -131,6 +122,8 @@ class DeploymentRun < ApplicationRecord
 
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 
+  UnknownStoreError = Class.new(StandardError)
+
   def first?
     step_run.deployment_runs.first == self
   end
@@ -143,103 +136,69 @@ class DeploymentRun < ApplicationRecord
     return complete! if external?
     return Deployments::SlackJob.perform_later(id) if slack_integration?
     return Deployments::AppStoreConnect::Release.kickoff!(self) if app_store_integration?
-    kickoff_upload_on_play_store! if google_play_store_integration?
-  end
-
-  ## play store
-  #
-  def kickoff_upload_on_play_store!
-    return upload! if step_run.similar_deployment_runs_for(self).any?(&:has_uploaded?)
-    Deployments::GooglePlayStore::Upload.perform_later(id)
-  end
-
-  def upload_to_playstore!
-    return unless google_play_store_integration?
-
-    with_lock do
-      return if uploaded?
-
-      build_artifact.with_open do |file|
-        result = provider.upload(file)
-        if result.ok?
-          upload!
-        else
-          upload_fail!
-
-          reason =
-            GooglePlayStoreIntegration::DISALLOWED_ERRORS_WITH_REASONS
-              .fetch(result.error.class, :upload_failed_reason_unknown)
-
-          event_stamp!(reason:, kind: :error, data: stamp_data)
-          elog(result.error)
-        end
-      end
-    end
+    Deployments::GooglePlayStore::Release.kickoff!(self) if google_play_store_integration?
   end
 
   def start_release!
     return unless store?
 
-    if google_play_store_integration?
-      if staged_rollout?
-        engage_release!
-        rollout_to_playstore!
-      else
-        fully_release_to_playstore!
-      end
-    end
+    release.with_lock do
+      return unless release_startable?
 
-    Deployments::AppStoreConnect::Release.start_release!(self) if app_store_integration?
-  end
-
-  def fully_release_to_playstore!
-    release_with(rollout_value: Deployment::FULL_ROLLOUT_VALUE) do |result|
-      if result.ok?
-        complete!
+      if google_play_store_integration?
+        Deployments::GooglePlayStore::Release.start_release!(self)
+      elsif app_store_integration?
+        Deployments::AppStoreConnect::Release.start_release!(self)
       else
-        dispatch_fail!
-        elog(result.error)
+        raise UnknownStoreError
       end
     end
   end
 
-  def halt_release_in_playstore!(rollout_value:)
-    raise ArgumentError, "cannot halt without a rollout value" if rollout_value.blank?
+  def on_fully_release!
+    return unless store?
 
     release.with_lock do
-      return unless rollout_started?
-      yield provider.halt_release(deployment_channel, build_number, release_version, rollout_value)
-    end
-  end
+      return unless rolloutable?
 
-  def rollout_to_playstore!
-    release_with(is_draft: true) do |result|
-      if result.ok?
-        create_staged_rollout!(config: staged_rollout_config)
+      if google_play_store_integration?
+        result = Deployments::GooglePlayStore::Release.release_to_all!(self)
+      elsif app_store_integration?
+        result = Deployments::AppStoreConnect::Release.complete_phased_release!(self)
       else
-        dispatch_fail!
-        elog(result.error)
+        raise UnknownStoreError
       end
+
+      yield result
     end
   end
 
-  # TODO: handle known errors gracefully and show to users
-  def release_with(rollout_value: nil, is_draft: false)
-    raise ArgumentError, "cannot have a rollout for a draft deployments" if is_draft && rollout_value.present?
+  def on_release(rollout_value:)
+    return unless store? && google_play_store_integration?
 
     release.with_lock do
-      return unless promotable?
+      return unless controllable_rollout?
 
-      if is_draft
-        yield provider.create_draft_release(deployment_channel, build_number, release_version)
-      else
-        yield provider.rollout_release(deployment_channel, build_number, release_version, rollout_value)
-      end
+      yield Deployments::GooglePlayStore::Release.release_with(self, rollout_value:)
+    end
+  end
+
+  def on_halt_release!
+    return unless store? && google_play_store_integration?
+
+    release.with_lock do
+      return unless controllable_rollout?
+
+      yield Deployments::GooglePlayStore::Release.halt_release!(self)
     end
   end
 
   def promotable?
     release.on_track? && store? && (uploaded? || rollout_started?)
+  end
+
+  def release_startable?
+    release.on_track? && may_engage_release?
   end
 
   def rolloutable?
@@ -328,7 +287,8 @@ class DeploymentRun < ApplicationRecord
       version: build_version,
       chan: deployment_channel_name,
       provider: integration&.providable&.display,
-      file: build_artifact&.get_filename
+      file: build_artifact&.get_filename,
+      failure_reason: (display_attr(:failure_reason) if failure_reason.present?)
     }
   end
 end

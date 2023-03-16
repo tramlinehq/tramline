@@ -87,7 +87,7 @@ en:
             json_key:
               no_bundles: "you don't have any uploaded bundles for this app, please release at least once manually from play console!"
               key_format: "the supplied key format is incorrect, please check your key!"
-              bundle_id_not_found: "the bundle identifier configured against the supplied key is incorrect, check your app settings!"
+              app_not_found: "the bundle identifier configured against the supplied key is incorrect, check your app settings!"
               dev_api_not_enabled: "your Google Play Developer account does not have the Play Developer API enabled!"
   invitation:
     flash:

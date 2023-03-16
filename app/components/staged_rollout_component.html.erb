@@ -10,9 +10,13 @@
     </div>
 
     <div class="justify-start">
-      <div class="inline-flex gap-x-1">
+      <div class="grid grid-cols-1 gap-y-1">
         <%= form_with(**release_form_url, data: { turbo_confirm: RELEASE_CONFIRM }, builder: ButtonHelper::AuthzForms) do |form| %>
           <% release_actions(form) %>
+        <% end %>
+
+        <%= form_with(**fully_release_form_url, data: { turbo_confirm: FULLY_RELEASE_CONFIRM }, builder: ButtonHelper::AuthzForms) do |form| %>
+          <% fully_rollout_action(form) %>
         <% end %>
 
         <%= form_with(**halt_form_url, data: { turbo_confirm: HALT_CONFIRM }, builder: ButtonHelper::AuthzForms) do |form| %>
@@ -23,6 +27,6 @@
   </div>
 
   <div class="col-span-3 justify-self-end">
-    <%= render StagedRollout::ConfigComponent.new(config:, current_stage:) %>
+    <%= render StagedRollout::ConfigComponent.new(config:, current_stage:, disabled: fully_released?) %>
   </div>
 </article>
