@@ -9,12 +9,16 @@ ADMIN_EMAIL = "admin@tramline.app"
 ADMIN_PASSWORD = "why aroma enclose startup"
 
 admin_user = lambda do
-  Accounts::User.find_or_initialize_by(
+  user = Accounts::User.find_or_initialize_by(
     full_name: ADMIN_FULL_NAME,
     preferred_name: ADMIN_PREFERRED_NAME,
     email: ADMIN_EMAIL,
     admin: true
-  ).update!(password: ADMIN_PASSWORD, confirmed_at: DateTime.now)
+  )
+
+  unless user.persisted?
+    user.update!(password: ADMIN_PASSWORD, confirmed_at: DateTime.now)
+  end
 
   puts "Added/updated admin user."
 end
@@ -33,8 +37,10 @@ owner_user = lambda do
     email: OWNER_EMAIL
   )
 
-  user.update!(password: OWNER_PASSWORD, confirmed_at: DateTime.now)
-  user.reload
+  unless user.persisted?
+    user.update!(password: OWNER_PASSWORD, confirmed_at: DateTime.now)
+    user.reload
+  end
 
   organization = Accounts::Organization.find_or_create_by!(
     name: "Tramline Test 1",
@@ -65,8 +71,10 @@ developer_user = lambda do
     email: DEVELOPER_EMAIL
   )
 
-  user.update!(password: DEVELOPER_PASSWORD, confirmed_at: DateTime.now)
-  user.reload
+  unless user.persisted?
+    user.update!(password: DEVELOPER_PASSWORD, confirmed_at: DateTime.now)
+    user.reload
+  end
 
   organization = Accounts::Organization.find_or_create_by!(
     name: "Tramline Test (developer)",
