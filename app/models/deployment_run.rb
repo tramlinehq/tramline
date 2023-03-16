@@ -140,9 +140,11 @@ class DeploymentRun < ApplicationRecord
   end
 
   def start_release!
-    return unless release_startable?
+    return unless store?
 
     release.with_lock do
+      return unless release_startable?
+
       if google_play_store_integration?
         Deployments::GooglePlayStore::Release.start_release!(self)
       elsif app_store_integration?
@@ -154,9 +156,11 @@ class DeploymentRun < ApplicationRecord
   end
 
   def on_fully_release!
-    return unless store? && rolloutable?
+    return unless store?
 
     release.with_lock do
+      return unless rolloutable?
+
       if google_play_store_integration?
         result = Deployments::GooglePlayStore::Release.release_to_all!(self)
       elsif app_store_integration?
@@ -169,11 +173,13 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  def on_release_with(rollout_value:)
-    return unless store? && controllable_rollout?
+  def on_release(rollout_value:)
+    return unless store? && google_play_store_integration?
 
     release.with_lock do
-      yield Deployments::GooglePlayStore::Release.release_with(self, rollout_value:) if google_play_store_integration?
+      return unless controllable_rollout?
+
+      yield Deployments::GooglePlayStore::Release.release_with(self, rollout_value:)
     end
   end
 
@@ -181,6 +187,8 @@ class DeploymentRun < ApplicationRecord
     return unless store? && google_play_store_integration?
 
     release.with_lock do
+      return unless controllable_rollout?
+
       yield Deployments::GooglePlayStore::Release.halt_release!(self)
     end
   end
@@ -190,7 +198,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def release_startable?
-    release.on_track? && store? && may_engage_release?
+    release.on_track? && may_engage_release?
   end
 
   def rolloutable?
