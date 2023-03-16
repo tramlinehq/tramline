@@ -13,7 +13,7 @@ services:
     buildCommand: ./bin/render.build
     startCommand: "bundle exec puma -C config/puma.rb"
     autoDeploy: false
-    branch: chore/readme
+    branch: main
     envVars:
       - key: HOSTNAME
         fromService:
@@ -45,7 +45,7 @@ services:
     buildCommand: bundle install
     startCommand: bundle exec sidekiq
     autoDeploy: false
-    branch: chore/readme
+    branch: main
     envVars:
       - key: HOSTNAME
         fromService:
