@@ -184,12 +184,40 @@ class DeploymentRun < ApplicationRecord
   end
 
   def on_halt_release!
-    return unless store? && google_play_store_integration?
+    return unless store?
 
     release.with_lock do
       return unless controllable_rollout?
 
-      yield Deployments::GooglePlayStore::Release.halt_release!(self)
+      if google_play_store_integration?
+        result = Deployments::GooglePlayStore::Release.halt_release!(self)
+      elsif app_store_integration?
+        result = Deployments::AppStoreConnect::Release.halt_phased_release!(self)
+      else
+        raise UnknownStoreError
+      end
+
+      yield result
+    end
+  end
+
+  def on_pause_release!
+    return unless store? && app_store_integration?
+
+    release.with_lock do
+      return unless automatic_rollout?
+
+      yield Deployments::AppStoreConnect::Release.pause_phased_release!(self)
+    end
+  end
+
+  def on_resume_release!
+    return unless store? && app_store_integration?
+
+    release.with_lock do
+      return unless automatic_rollout?
+
+      yield Deployments::AppStoreConnect::Release.resume_phased_release!(self)
     end
   end
 
@@ -210,6 +238,10 @@ class DeploymentRun < ApplicationRecord
 
   def controllable_rollout?
     rolloutable? && deployment.controllable_rollout?
+  end
+
+  def automatic_rollout?
+    rolloutable? && !deployment.controllable_rollout?
   end
 
   def app_store_release?

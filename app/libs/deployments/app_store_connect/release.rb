@@ -38,6 +38,18 @@ module Deployments
         new(deployment_run).complete_phased_release!
       end
 
+      def self.pause_phased_release!(deployment_run)
+        new(deployment_run).pause_phased_release!
+      end
+
+      def self.resume_phased_release!(deployment_run)
+        new(deployment_run).resume_phased_release!
+      end
+
+      def self.halt_phased_release!(deployment_run)
+        new(deployment_run).halt_phased_release!
+      end
+
       def initialize(deployment_run)
         @deployment_run = deployment_run
       end
@@ -176,6 +188,38 @@ module Deployments
         end
 
         result
+      end
+
+      def pause_phased_release!
+        return unless app_store_release?
+
+        result = provider.pause_phased_release
+
+        if result.ok?
+          release_info = result.value!
+          run.external_release.update(release_info.attributes)
+        end
+
+        result
+      end
+
+      def resume_phased_release!
+        return unless app_store_release?
+
+        result = provider.resume_phased_release
+
+        if result.ok?
+          release_info = result.value!
+          run.external_release.update(release_info.attributes)
+        end
+
+        result
+      end
+
+      def halt_phased_release!
+        return unless app_store_release?
+
+        provider.halt_phased_release
       end
 
       private

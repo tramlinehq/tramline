@@ -84,12 +84,16 @@ module Installations
       execute(:patch, START_RELEASE_URL.expand(bundle_id:).to_s, {json: {build_number:}})
     end
 
-    def pause_phased_release
+    def pause_phased_release(transforms)
       execute(:patch, PAUSE_LIVE_ROLLOUT_URL.expand(bundle_id:).to_s, {})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
-    def resume_phased_release
+    def resume_phased_release(transforms)
       execute(:patch, RESUME_LIVE_ROLLOUT_URL.expand(bundle_id:).to_s, {})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def halt_phased_release

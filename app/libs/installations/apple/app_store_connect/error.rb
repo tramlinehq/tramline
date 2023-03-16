@@ -55,6 +55,16 @@ module Installations
         resource: "release",
         code: "release_already_prepared",
         decorated_reason: :release_already_exists
+      },
+      {
+        resource: "release",
+        code: "release_fully_live",
+        decorated_reason: :release_fully_live
+      },
+      {
+        resource: "release",
+        code: "release_already_halted",
+        decorated_reason: :release_already_halted
       }
     ]
 

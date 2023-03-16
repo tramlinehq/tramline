@@ -22,6 +22,7 @@ class StagedRollout < ApplicationRecord
   STATES = {
     created: "created",
     started: "started",
+    paused: "paused",
     failed: "failed",
     completed: "completed",
     stopped: "stopped",
@@ -35,6 +36,14 @@ class StagedRollout < ApplicationRecord
 
     event :start, guard: -> { deployment_run.rolloutable? } do
       transitions from: :created, to: :started
+    end
+
+    event :pause, guard: -> { deployment_run.automatic_rollout? } do
+      transitions from: :started, to: :paused
+    end
+
+    event :resume, guard: -> { deployment_run.automatic_rollout? } do
+      transitions from: :paused, to: :started
     end
 
     event :fail do
@@ -119,6 +128,30 @@ class StagedRollout < ApplicationRecord
     deployment_run.on_fully_release! do |result|
       if result.ok?
         full_rollout!
+      else
+        elog(result.error)
+      end
+    end
+  end
+
+  def pause_release!
+    return unless started?
+
+    deployment_run.on_pause_release! do |result|
+      if result.ok?
+        pause!
+      else
+        elog(result.error)
+      end
+    end
+  end
+
+  def resume_release!
+    return unless paused?
+
+    deployment_run.on_fully_release! do |result|
+      if result.ok?
+        resume!
       else
         elog(result.error)
       end
