@@ -26,7 +26,6 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
     else
       build_resource(sign_up_params)
       Accounts::User.onboard!(user)
-      user.reload
     end
 
     finish_sign_up
