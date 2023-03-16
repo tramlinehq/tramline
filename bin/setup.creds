@@ -83,7 +83,7 @@ for_prod() {
     echo "Generating new production credentials file..."
     echo "---------------------------------------------"
     read -p "Copy the above encryption keys and the secret key YAML to your clipboard and press enter..." -n 1
-    bin/rails credentials:edit --environment production
+    EDITOR=vi bin/rails credentials:edit --environment production
   fi
 }
 
@@ -112,7 +112,7 @@ for_dev() {
     echo "Generating new dev credentials file..."
     echo "---------------------------------------------"
     read -p "Copy the encryption keys above to your clipboard and press enter..." -n 1 -r
-    bin/rails credentials:edit
+    EDITOR=vi bin/rails credentials:edit
   fi
 }
 

@@ -25,7 +25,7 @@ services:
         value: artifacts-build-prod
       - key: APPLELINK_URL
         fromService:
-          type: pserv
+          type: web
           name: applelink
           property: hostport
       - key: DATABASE_URL
@@ -63,7 +63,7 @@ services:
         value: artifacts-build-prod
       - key: APPLELINK_URL
         fromService:
-          type: pserv
+          type: web
           name: applelink
           property: hostport
       - key: DATABASE_URL
@@ -83,7 +83,7 @@ services:
       - key: RAILS_MASTER_KEY
         sync: false
 
-  - type: pserv
+  - type: web
     name: applelink
     env: ruby
     plan: free
