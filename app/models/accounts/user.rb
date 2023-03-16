@@ -45,9 +45,6 @@ class Accounts::User < ApplicationRecord
 
   has_many :memberships, dependent: :delete_all, inverse_of: :user
   has_many :organizations, -> { where(status: :active) }, through: :memberships
-  # NOTE: For now assume that user has only one organisation
-  has_one :membership, dependent: :delete, inverse_of: :user
-  has_one :organization, -> { where(status: :active) }, through: :membership
   has_many :all_organizations, through: :memberships, source: :organization
   has_many :sent_invites, class_name: "Invite", foreign_key: "sender_id", inverse_of: :sender, dependent: :destroy
   has_many :invitations, class_name: "Invite", foreign_key: "recipient_id", inverse_of: :recipient, dependent: :destroy
@@ -58,17 +55,21 @@ class Accounts::User < ApplicationRecord
 
   accepts_nested_attributes_for :organizations
 
-  def onboard!
-    return false unless valid?
-    return false if membership.blank?
-    return false if organization.blank?
+  def self.onboard!(user)
+    if find_by(email: user.email)
+      user.errors.add(:account_exists, "you already have an account with tramline!")
+      return user
+    end
 
-    membership&.role = Accounts::Membership.roles[:owner]
-    organization.created_by = email
-    organization.status = Accounts::Organization.statuses[:active]
-    save!
-
-    self
+    new_organization = user.organizations.first
+    new_membership = user.memberships.first
+    new_organization.status = Accounts::Organization.statuses[:active]
+    new_organization.created_by = user.email
+    new_membership.role = Accounts::Membership.roles[:owner]
+    new_membership.organization = new_organization
+    user.memberships << new_membership
+    user.save!
+    user
   end
 
   def add!(invite)

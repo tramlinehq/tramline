@@ -76,13 +76,13 @@ Rails.application.routes.draw do
               member do
                 patch :submit_for_review
                 patch :start_release
-                patch :fully_release
               end
 
               resource :staged_rollout, only: [] do
                 member do
                   patch :increase
                   patch :halt
+                  patch :fully_release
                 end
               end
             end

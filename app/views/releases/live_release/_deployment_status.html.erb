@@ -25,13 +25,6 @@
                           { method: :patch, class: 'mt-2 btn-xs' } %>
     <% end %>
 
-    <% if deployment_run.app_store_release? && deployment_run.rolloutable? %>
-      <%= authz_button_to :blue,
-                          "Release to all users",
-                          fully_release_deployment_run_path(deployment_run),
-                          { method: :patch, class: 'mt-2 btn-xs' } %>
-    <% end %>
-
     <% if deployment_run.staged_rollout.present? %>
       <div class="ml-0 mt-4 pb-1 border-t border-dashed">
         <%= render StagedRolloutComponent.new(deployment_run.staged_rollout) %>

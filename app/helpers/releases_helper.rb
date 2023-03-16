@@ -65,8 +65,6 @@ module ReleasesHelper
         ["Review approved", :ongoing]
       when :uploaded
         ["Uploaded", :routine]
-      when :upload_failed
-        ["Upload failed", :failure]
       when :rollout_started
         ["Release in progress", :routine]
       when :released
