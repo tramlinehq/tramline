@@ -55,7 +55,7 @@ class Accounts::User < ApplicationRecord
 
   accepts_nested_attributes_for :organizations
 
-  def self.onboard!(user)
+  def self.onboard(user)
     if find_by(email: user.email)
       user.errors.add(:account_exists, "you already have an account with tramline!")
       return user
@@ -68,7 +68,7 @@ class Accounts::User < ApplicationRecord
     new_membership.role = Accounts::Membership.roles[:owner]
     new_membership.organization = new_organization
     user.memberships << new_membership
-    user.save!
+    user.save
     user
   end
 

@@ -1,5 +1,6 @@
 module ExceptionHandler
   extend ActiveSupport::Concern
+  include Loggable
 
   included do
     rescue_from StandardError, with: :internal_server_error
@@ -35,9 +36,7 @@ module ExceptionHandler
   end
 
   def respond_with_error(code, exception)
-    if code >= 500
-      logger.error exception.full_message
-    end
+    elog(e) if code >= 500
 
     respond_to do |format|
       @code = code
