@@ -93,13 +93,6 @@ class StagedRolloutComponent < ViewComponent::Base
     fully_release_deployment_run_staged_rollout_path(deployment_run)
   end
 
-  def build_action(url, confirm, type, name)
-    {form_url: url,
-     confirm: confirm,
-     type: type,
-     name: name}
-  end
-
   def badge
     status = staged_rollout.status.to_sym
 
