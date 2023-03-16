@@ -1,4 +1,5 @@
-Rails.logger.debug "Seeding database..."
+# rubocop:disable Rails/Output
+puts "Seeding database..."
 
 # Admin user
 # ----------
@@ -8,16 +9,14 @@ ADMIN_EMAIL = "admin@tramline.app"
 ADMIN_PASSWORD = "why aroma enclose startup"
 
 admin_user = lambda do
-  Accounts::User.create!(
+  Accounts::User.find_or_initialize_by(
     full_name: ADMIN_FULL_NAME,
     preferred_name: ADMIN_PREFERRED_NAME,
     email: ADMIN_EMAIL,
-    password: ADMIN_PASSWORD,
-    admin: true,
-    confirmed_at: DateTime.now
-  )
+    admin: true
+  ).update!(password: ADMIN_PASSWORD, confirmed_at: DateTime.now)
 
-  Rails.logger.debug "Added admin user."
+  puts "Added/updated admin user."
 end
 
 # Owner user
@@ -28,27 +27,28 @@ OWNER_EMAIL = "owner@tramline.app"
 OWNER_PASSWORD = "why aroma enclose startup"
 
 owner_user = lambda do
-  user = Accounts::User.create!(
+  user = Accounts::User.find_or_initialize_by(
     full_name: OWNER_FULL_NAME,
     preferred_name: OWNER_PREFERRED_NAME,
-    email: OWNER_EMAIL,
-    password: OWNER_PASSWORD,
-    confirmed_at: DateTime.now
+    email: OWNER_EMAIL
   )
 
-  organization = Accounts::Organization.create!(
+  user.update!(password: OWNER_PASSWORD, confirmed_at: DateTime.now)
+  user.reload
+
+  organization = Accounts::Organization.find_or_create_by!(
     name: "Tramline Test 1",
     status: Accounts::Organization.statuses[:active],
     created_by: user.email
   )
 
-  Accounts::Membership.create!(
+  Accounts::Membership.find_or_create_by!(
     user:,
     organization:,
     role: Accounts::Membership.roles[:owner]
   )
 
-  Rails.logger.debug "Added owner user."
+  puts "Added/updated owner user."
 end
 
 # Developer user
@@ -59,27 +59,28 @@ DEVELOPER_EMAIL = "developer@tramline.app"
 DEVELOPER_PASSWORD = "why aroma enclose startup"
 
 developer_user = lambda do
-  user = Accounts::User.create!(
+  user = Accounts::User.find_or_initialize_by(
     full_name: DEVELOPER_FULL_NAME,
     preferred_name: DEVELOPER_PREFERRED_NAME,
-    email: DEVELOPER_EMAIL,
-    password: DEVELOPER_PASSWORD,
-    confirmed_at: DateTime.now
+    email: DEVELOPER_EMAIL
   )
 
-  organization = Accounts::Organization.create!(
+  user.update!(password: DEVELOPER_PASSWORD, confirmed_at: DateTime.now)
+  user.reload
+
+  organization = Accounts::Organization.find_or_create_by!(
     name: "Tramline Test (developer)",
     status: Accounts::Organization.statuses[:active],
     created_by: user.email
   )
 
-  Accounts::Membership.create!(
+  Accounts::Membership.find_or_create_by!(
     user:,
     organization:,
     role: Accounts::Membership.roles[:developer]
   )
 
-  Rails.logger.debug "Added developer user."
+  puts "Added/updated developer user."
 end
 
 ActiveRecord::Base.transaction do
@@ -87,3 +88,4 @@ ActiveRecord::Base.transaction do
   owner_user.call
   developer_user.call
 end
+# rubocop:enable Rails/Output
