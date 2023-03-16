@@ -53,11 +53,16 @@
 
 ## Features ✨
 
-* Release Trains: With our dynamic workflow model, you can setup multiple trains and steps that chug along different deployment channels.
-* Integrations: We integrate with all the essential tools you need, including VCS, Notifications, CI/CD, and both App Store and Google Play Store. And we're always expanding to include even more.
-* Release Dashboards: A control center where you can monitor all your releases and their statuses from one convenient location.
-* Analytics: Track all the release metadata you need to make informed decisions. From frequency and cycle time to build times and review times.
-* Automations: Cutting release branches to submitting builds to stores, many things are already automatic and many more to come!
+#### Release Trains
+With our dynamic workflow model, you can setup multiple trains and steps that chug along different deployment channels.
+#### Integrations
+We integrate with all the essential tools you need, including VCS, Notifications, CI/CD, and both App Store and Google Play Store. And we're always expanding to include even more.
+#### Release Dashboards
+A control center where you can monitor all your releases and their statuses from one convenient location.
+#### Analytics
+Track all the release metadata you need to make informed decisions. From frequency and cycle time to build times and review times.
+#### Automations
+Cutting release branches to submitting builds to stores, many things are already automatic and many more to come!
 
 ## Getting Started ⚙️
 
@@ -82,11 +87,13 @@ You'll also need to set up integrations for Tramline to be useful:
 * [Creating a Slack app](https://api.slack.com/authentication/basics)
 * [Creating a GitHub app](https://docs.github.com/en/apps/creating-github-apps/creating-github-apps/creating-a-github-app)
 
+#### Setting up integration apps
+
+The guides above should help you setup the OAuth apps as necessary. They may ask you to fill up a redirect URL, this URL should be updated with the final DNS after everything is setup towards the end.
 
 #### Google Cloud Platform
 
 We need to setup GCP for storing builds in Tramline. After creating your service account as mentioned above, please create a GCS bucket named `artifact-builds-prod` to host your builds.
-
 
 The deployment architecture looks like this:
 
