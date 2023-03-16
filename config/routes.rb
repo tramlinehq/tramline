@@ -85,6 +85,8 @@ Rails.application.routes.draw do
                   patch :increase
                   patch :halt
                   patch :fully_release
+                  patch :pause
+                  patch :resume
                 end
               end
             end
@@ -93,6 +95,7 @@ Rails.application.routes.draw do
 
         member do
           get :timeline
+          post :post_release
         end
 
         collection do

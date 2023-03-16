@@ -44,6 +44,17 @@ class ReleasesController < SignedInApplicationController
     redirect_to app_train_path(@release.train.app, @release.train), notice: "The release was stopped."
   end
 
+  def post_release
+    @release = Releases::Train::Run.find(params[:id])
+
+    if @release.finalizable?
+      @release.start_post_release_phase!
+      redirect_back fallback_location: root_path, notice: "Performing post-release steps."
+    else
+      redirect_back fallback_location: root_path, notice: "Train is still running."
+    end
+  end
+
   private
 
   def set_release
