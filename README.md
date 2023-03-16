@@ -82,6 +82,12 @@ You'll also need to set up integrations for Tramline to be useful:
 * [Creating a Slack app](https://api.slack.com/authentication/basics)
 * [Creating a GitHub app](https://docs.github.com/en/apps/creating-github-apps/creating-github-apps/creating-a-github-app)
 
+
+#### Google Cloud Platform
+
+We need to setup GCP for storing builds in Tramline. After creating your service account as mentioned above, please create a GCS bucket named `artifact-builds-prod` to host your builds.
+
+
 The deployment architecture looks like this:
 
 <figure>
@@ -148,7 +154,7 @@ integrations:
     scopes: "app_mentions:read,channels:join,channels:manage,channels:read,chat:write,chat:write.public,files:write,groups:read,groups:write,im:read,im:write,usergroups:read,users.profile:read,users:read,users:read.email,commands,usergroups:write"
 
   applelink:
-    iss: "tramline.dev"
+    iss: "tramline"
     aud: "applelink"
     secret: "any password"
 
@@ -189,7 +195,7 @@ RACK_ENV=production
 WEB_CONCURRENCY=2
 MAX_THREADS=1
 PORT=3001
-AUTH_ISSUER="tramline.dev"
+AUTH_ISSUER="tramline"
 AUTH_AUD="applelink"
 AUTH_SECRET=""
 SENTRY_DSN=""
@@ -199,8 +205,8 @@ SENTRY_DSN=""
 
 Before we wrap up, we need to fix a couple of ENV variables:
 
-1. If you have setup applelink in the previous step, you must add an `APPLELINK_URL` with the final DNS for the render service.
-2. The `HOSTNAME` in `site-web` and `site-jobs` must be updated to point to the DNS for `site-web` (without the protocol).
+1. If you have setup applelink in the previous step, you must add an `APPLELINK_URL` to `site-web` with the final DNS of the `applelink` service.
+2. The `HOSTNAME` in `site-web` and `site-jobs` must be updated to point to the DNS of `site-web` (without the protocol).
 
 Once all services on Render are green, your setup should look like this:
 
