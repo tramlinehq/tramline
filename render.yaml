@@ -12,7 +12,6 @@ services:
     env: ruby
     buildCommand: ./bin/render.build
     startCommand: "bundle exec puma -C config/puma.rb"
-    repo: https://github.com/tramlinehq/tramline.git
     autoDeploy: false
     branch: chore/readme
     envVars:
@@ -46,7 +45,6 @@ services:
     buildCommand: bundle install
     startCommand: bundle exec sidekiq
     autoDeploy: false
-    repo: https://github.com/tramlinehq/tramline.git
     branch: chore/readme
     envVars:
       - key: HOSTNAME
