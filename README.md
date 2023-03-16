@@ -275,7 +275,7 @@ The dashboard for all background jobs can be viewed [here](https://tramline.loca
 
 All feature-flags are managed through flipper. The UI can be viewed [here](https://tramline.local.gd:3000/flipper).
 
-## Contributing 🧑‍💻
+## Contributing 👩🏻‍💻
 
 We are still in the early stages and would <3 any feedback you have to offer. You can get in touch with us in several ways:
 
