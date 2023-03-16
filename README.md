@@ -66,11 +66,12 @@ To self-host Tramline on Render, follow these instructions. These steps can also
 
 **Note:** Since Render does not offer background workers under the free plan, you will have to put in your payment details to fully complete this deployment.
 
-You'll need the following minimum requirements to get Tramline up and running:
+#### Requirements
+
+You'll need the following minimum to get Tramline up and running:
 
 - This repository set up as the primary monolithic backend
 - This repository set up as a background worker
-- Applelink to communicate with App Store Connect
 - Postgres database
 - Redis instance (preferably persistent)
 
@@ -93,13 +94,13 @@ In case you'd like to run this locally first, please follow [Development](#devel
 
 To host Tramline directly, you'll need to prep your fork:
 
-1. Set up Rails
+#### Set up Rails
 
 ```bash
 bin/setup.mac
 ```
 
-2. Generate production credentials and follow the instructions
+#### Generate production credentials and follow the instructions
 
 ```bash
 bin/setup.creds -e prod
@@ -107,7 +108,7 @@ bin/setup.creds -e prod
 
 Keep the `production.key` file safe and don't commit it.
 
-3. Update production credentials
+#### Update production credentials
 
 After adding the encryption credentials, fill in the following details for the integrations in `production.yml.enc` by running `bin/rails credentials:edit --environment production`.
 
@@ -166,7 +167,22 @@ Save the credentials file and commit your changes. Use this button **from your f
 
 The blueprint will ask for the `RAILS_MASTER_KEY`. Use the contents of `production.key` from the previous step.
 
-Additionally, create a `Secret File` under `applelink > Settings > Environment > Secret Files` called `.env` and update with the following details by putting the applelink secret from the previous step under `AUTH_SECRET`:
+#### Setup applelink
+
+If you would like to use the App Store integration, you'd have to configure the `applelink` service. You can skip this section otherwise.
+
+1. To start off, in your fork, uncomment the `applelink` section from the `render.yaml` file.
+2. Secondly, to your encryption file, add this to the integrations section, by running `bin/rails credentials:edit --environment production`. Choose a secret key for authorization.
+
+```yaml
+integrations:
+  applelink:
+    iss: "tramline.dev"
+    aud: "applelink"
+    secret: "any password"
+```
+
+3. Commit your changes and resync the blueprint on Render. This will kick-off the `applelink` service. This will most likely fail to deploy on the first attempt, because it requires certain environment configuration. To do that, create a `Secret File` under `applelink > Settings > Environment > Secret Files` called `.env` and update with the following details by putting the applelink secret from the previous step under `AUTH_SECRET`:
 
 ```
 RACK_ENV=production
@@ -178,6 +194,13 @@ AUTH_AUD="applelink"
 AUTH_SECRET=""
 SENTRY_DSN=""
 ```
+
+#### Wrap up
+
+Before we wrap up, we need to fix a couple of ENV variables:
+
+1. If you have setup applelink in the previous step, you must add an `APPLELINK_URL` with the final DNS for the render service.
+2. The `HOSTNAME` in `site-web` and `site-jobs` must be updated to point to the DNS for `site-web` (without the protocol).
 
 Once all services on Render are green, your setup should look like this:
 
