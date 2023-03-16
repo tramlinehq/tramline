@@ -159,7 +159,7 @@ integrations:
 Save the credentials file and commit your changes. Use this button **from your fork** to kick-off a Render deployment.
 
 <p>
-  <a href="https://render.com/deploy?repo=https://github.com/tramlinehq/tramline/tree/chore/readme" target="_blank">
+  <a href="https://render.com/deploy" target="_blank">
   <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render">
   </a>
 </p>
