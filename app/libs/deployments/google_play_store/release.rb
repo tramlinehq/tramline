@@ -77,8 +77,8 @@ module Deployments
 
       def halt_release!
         return unless google_play_store_integration?
-
         return unless run.rollout_started?
+
         provider.halt_release(deployment_channel, build_number, release_version, run.staged_rollout.last_rollout_percentage)
       end
 
@@ -104,6 +104,7 @@ module Deployments
 
       def fully_release!
         result = provider.rollout_release(deployment_channel, build_number, release_version, Deployment::FULL_ROLLOUT_VALUE)
+
         if result.ok?
           run.complete!
         else
@@ -113,6 +114,7 @@ module Deployments
 
       def rollout!
         result = provider.create_draft_release(deployment_channel, build_number, release_version)
+
         if result.ok?
           run.create_staged_rollout!(config: staged_rollout_config)
         else
