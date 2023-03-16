@@ -62,7 +62,7 @@ A control center where you can monitor all your releases and their statuses from
 #### Analytics
 Track all the release metadata you need to make informed decisions. From frequency and cycle time to build times and review times.
 #### Automations
-Cutting release branches to submitting builds to stores, many things are already automatic and many more to come!
+Cutting release branches to submitting builds to stores, many things are already automatic and many more to come soon! [Keep an eye out](https://www.tramline.app/integrations)!
 
 ## Getting Started ⚙️
 
