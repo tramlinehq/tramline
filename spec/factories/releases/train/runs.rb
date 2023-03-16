@@ -11,6 +11,10 @@ FactoryBot.define do
       status { "created" }
     end
 
+    trait :on_track do
+      status { "on_track" }
+    end
+
     trait :post_release_started do
       status { "post_release_started" }
     end

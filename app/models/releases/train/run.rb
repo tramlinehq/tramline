@@ -32,6 +32,7 @@ class Releases::Train::Run < ApplicationRecord
   has_many :passports, as: :stampable, dependent: :destroy
 
   DEFAULT_LOCALE = "en-US"
+  DEFAULT_RELEASE_NOTES = "The latest version contains bug fixes and performance improvements."
 
   STAMPABLE_REASONS = [
     "created",
@@ -93,15 +94,11 @@ class Releases::Train::Run < ApplicationRecord
   delegate :app, :pre_release_prs?, to: :train
 
   def create_default_release_metadata
-    create_release_metadata!(locale: DEFAULT_LOCALE, release_notes: "The latest version contains bug fixes and performance improvements.")
+    create_release_metadata!(locale: DEFAULT_LOCALE, release_notes: DEFAULT_RELEASE_NOTES)
   end
 
   def metadata_editable?
     on_track? && !started_store_release?
-  end
-
-  def started_store_release?
-    last_run_for(train.release_step)&.deployment_runs&.find { |dr| dr.deployment.production_channel? }.present?
   end
 
   def tag_name
@@ -250,5 +247,9 @@ class Releases::Train::Run < ApplicationRecord
 
   def ready_to_be_finalized?
     finished_steps?
+  end
+
+  def started_store_release?
+    last_run_for(train.release_step)&.deployment_runs&.find { |dr| dr.deployment.production_channel? }.present?
   end
 end
