@@ -95,6 +95,9 @@ The guides above should help you setup the OAuth apps as necessary. They may ask
 
 We need to setup GCP for storing builds in Tramline. After creating your service account as mentioned above, please create a GCS bucket named `artifact-builds-prod` to host your builds.
 
+
+#### Setting up Tramline
+
 The deployment architecture looks like this:
 
 <figure>
