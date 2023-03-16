@@ -189,4 +189,112 @@ describe StagedRollout do
       expect(rollout.reload.failed?).to be(true)
     end
   end
+
+  describe "#fully_release!" do
+    let(:deployment_run) { create(:deployment_run, :with_staged_rollout, :rollout_started) }
+    let(:rollout) { create(:staged_rollout, :started, current_stage: 0, deployment_run: deployment_run) }
+
+    it "does nothing if the rollout hasn't started" do
+      unrolled_rollout = create(:staged_rollout, :created, deployment_run: deployment_run)
+      unrolled_rollout.fully_release!
+
+      expect(rollout.reload.fully_released?).to be(false)
+    end
+
+    it "does nothing if the rollout is completed" do
+      unrolled_rollout = create(:staged_rollout, :completed, deployment_run: deployment_run)
+      unrolled_rollout.fully_release!
+
+      expect(rollout.reload.fully_released?).to be(false)
+    end
+
+    it "does nothing if the rollout is stopped" do
+      unrolled_rollout = create(:staged_rollout, :stopped, deployment_run: deployment_run)
+      unrolled_rollout.fully_release!
+
+      expect(rollout.reload.fully_released?).to be(false)
+    end
+
+    context "when google play store" do
+      let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+
+      before do
+        allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
+      end
+
+      it "transitions state" do
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+        rollout.fully_release!
+
+        expect(rollout.reload.fully_released?).to be(true)
+      end
+
+      it "completes the deployment run if rollout succeeds" do
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+        rollout.fully_release!
+
+        expect(rollout.deployment_run.reload.released?).to be(true)
+      end
+
+      it "does not complete the deployment run if rollout fails" do
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new { raise })
+        rollout.fully_release!
+
+        expect(rollout.deployment_run.reload.released?).to be(false)
+        expect(rollout.reload.fully_released?).to be(false)
+      end
+    end
+
+    context "when app store" do
+      let(:deployment_run) {
+        create_deployment_run_for_ios(
+          :rollout_started,
+          :with_external_release,
+          deployment_traits: [:with_app_store, :with_phased_release],
+          step_trait: :release
+        )
+      }
+      let(:rollout) { create(:staged_rollout, :started, current_stage: 0, deployment_run: deployment_run) }
+      let(:providable_dbl) { instance_double(AppStoreIntegration) }
+      let(:live_release_info) {
+        AppStoreIntegration::AppStoreReleaseInfo.new(
+          {
+            external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+            name: "1.2.0",
+            build_number: 9012,
+            added_at: 1.day.ago,
+            status: "READY_FOR_SALE",
+            phased_release_day: 1,
+            phased_release_status: "COMPLETE"
+          }
+        )
+      }
+
+      before do
+        allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
+      end
+
+      it "transitions state" do
+        allow(providable_dbl).to receive(:complete_phased_release).and_return(GitHub::Result.new { live_release_info })
+        rollout.fully_release!
+
+        expect(rollout.reload.fully_released?).to be(true)
+      end
+
+      it "completes the deployment run if rollout succeeds" do
+        allow(providable_dbl).to receive(:complete_phased_release).and_return(GitHub::Result.new { live_release_info })
+        rollout.fully_release!
+
+        expect(rollout.deployment_run.reload.released?).to be(true)
+      end
+
+      it "does not complete the deployment run if rollout fails" do
+        allow(providable_dbl).to receive(:complete_phased_release).and_return(GitHub::Result.new { raise })
+        rollout.fully_release!
+
+        expect(rollout.deployment_run.reload.released?).to be(false)
+        expect(rollout.reload.fully_released?).to be(false)
+      end
+    end
+  end
 end
