@@ -22,7 +22,7 @@
 
       <div>
         <%= f.label :email, class: "block text-sm font-medium mb-1" %>
-        <%= f.email_field :email, autocomplete: "email", class: "form-input w-full", readonly: true %>
+        <%= f.email_field :email, autocomplete: "email", class: "form-input w-full", readonly: @invite.present? %>
       </div>
 
       <% if @token.blank? %>
