@@ -59,7 +59,7 @@ DEVELOPER_EMAIL = "developer@tramline.app"
 DEVELOPER_PASSWORD = "why aroma enclose startup"
 
 developer_user = lambda do
-  user = Accounts::User.find_or_create_by!(
+  user = Accounts::User.find_or_initialize_by(
     full_name: DEVELOPER_FULL_NAME,
     preferred_name: DEVELOPER_PREFERRED_NAME,
     email: DEVELOPER_EMAIL
