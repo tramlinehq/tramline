@@ -53,11 +53,11 @@
 
 ## Features ✨
 
-* Release Trains: Model your dynamic workflows with multiple trains and steps across different deployment channels
-* Integrations: We have integrations to VCS, Notifications, CI/CD and both App Store and Google Play Store. Many more incoming!
-* Release Dashboards: Track all your releases and their statuses from one place
-* Analytics: Get overall release metadata, like frequency, cycle time, build times, review times etc.
-* Automations: Cutting release branches to submitting builds to stores, many things are automatic and many more to come!
+* Release Trains: With our dynamic workflow model, you can setup multiple trains and steps that chug along different deployment channels.
+* Integrations: We integrate with all the essential tools you need, including VCS, Notifications, CI/CD, and both App Store and Google Play Store. And we're always expanding to include even more.
+* Release Dashboards: A control center where you can monitor all your releases and their statuses from one convenient location.
+* Analytics: Track all the release metadata you need to make informed decisions. From frequency and cycle time to build times and review times.
+* Automations: Cutting release branches to submitting builds to stores, many things are already automatic and many more to come!
 
 ## Getting Started ⚙️
 
