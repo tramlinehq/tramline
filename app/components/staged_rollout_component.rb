@@ -38,16 +38,16 @@ class StagedRolloutComponent < ViewComponent::Base
       actions.append({form_url: increase_release_path, confirm: START_RELEASE_CONFIRM, type: :blue, name: "Start Rollout"}) if created?
       actions.append({form_url: increase_release_path, confirm: RELEASE_CONFIRM, type: :blue, name: "Increase Rollout"}) if started?
       actions.append({form_url: increase_release_path, confirm: RELEASE_CONFIRM, type: :blue, name: "Retry"}) if failed?
-
-      if last_rollout_percentage
-        actions.append({form_url: full_release_path, confirm: FULLY_RELEASE_CONFIRM, type: :blue, name: "Release to 100%"})
-        actions.append({form_url: halt_release_path, confirm: HALT_CONFIRM, type: :red, name: "Halt"})
-      end
     end
 
     if automatic_rollout?
       actions.append({form_url: pause_release_path, confirm: PAUSE_RELEASE_CONFIRM, type: :red, name: "Pause Phased Release"}) if started?
-      actions.append({form_url: resume_release_path, confirm: RESUME_RELEASE_CONFIRM, type: :red, name: "Resume Phased Release"}) if paused?
+      actions.append({form_url: resume_release_path, confirm: RESUME_RELEASE_CONFIRM, type: :blue, name: "Resume Phased Release"}) if paused?
+    end
+
+    if last_rollout_percentage
+      actions.append({form_url: full_release_path, confirm: FULLY_RELEASE_CONFIRM, type: :blue, name: "Release to 100%"})
+      actions.append({form_url: halt_release_path, confirm: HALT_CONFIRM, type: :red, name: "Halt"})
     end
 
     actions
@@ -61,6 +61,7 @@ class StagedRolloutComponent < ViewComponent::Base
   def stage_help
     return if completed? || fully_released?
     return "Halted at the #{current_stage.succ.ordinalize} stage of rollout" if stopped?
+    return "Paused at the #{current_stage.succ.ordinalize} stage of rollout" if paused?
 
     if started?
       "In the #{current_stage.succ.ordinalize} stage of rollout"
@@ -111,6 +112,8 @@ class StagedRolloutComponent < ViewComponent::Base
         ["Halted", :inert]
       when :fully_released
         ["Released to all users", :success]
+      when :paused
+        ["Paused phased release", :ongoing]
       else
         ["Unknown", :neutral]
       end
