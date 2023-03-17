@@ -10,7 +10,7 @@
     </div>
 
     <div class="justify-start">
-      <div class="grid grid-cols-1 gap-y-1">
+      <div class="grid grid-cols-1 gap-y-1 mt-1">
         <% actions.each do |action| %>
           <%= form_with(model: [release, step_run, deployment_run, staged_rollout], url: action[:form_url],
                         data: { turbo_confirm: action[:confirm] }, builder: ButtonHelper::AuthzForms) do |form| %>
