@@ -36,7 +36,7 @@ module ExceptionHandler
   end
 
   def respond_with_error(code, exception)
-    elog(e) if code >= 500
+    elog(exception) if code >= 500
 
     respond_to do |format|
       @code = code
