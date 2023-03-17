@@ -40,14 +40,12 @@ class StagedRolloutComponent < ViewComponent::Base
       actions.append({form_url: increase_release_path, confirm: RELEASE_CONFIRM, type: :blue, name: "Retry"}) if failed?
     end
 
-    if automatic_rollout?
-      actions.append({form_url: pause_release_path, confirm: PAUSE_RELEASE_CONFIRM, type: :red, name: "Pause Phased Release"}) if started?
-      actions.append({form_url: resume_release_path, confirm: RESUME_RELEASE_CONFIRM, type: :blue, name: "Resume Phased Release"}) if paused?
-    end
+    actions.append({form_url: resume_release_path, confirm: RESUME_RELEASE_CONFIRM, type: :blue, name: "Resume Phased Release"}) if paused? && automatic_rollout?
 
     if last_rollout_percentage
-      actions.append({form_url: full_release_path, confirm: FULLY_RELEASE_CONFIRM, type: :blue, name: "Release to 100%"})
-      actions.append({form_url: halt_release_path, confirm: HALT_CONFIRM, type: :red, name: "Halt"})
+      actions.append({form_url: full_release_path, confirm: FULLY_RELEASE_CONFIRM, type: :blue, name: "Release to 100%"}) if started?
+      actions.append({form_url: pause_release_path, confirm: PAUSE_RELEASE_CONFIRM, type: :slate, name: "Pause Phased Release"}) if started? && automatic_rollout?
+      actions.append({form_url: halt_release_path, confirm: HALT_CONFIRM, type: :red, name: "Halt"}) if started? || paused?
     end
 
     actions
