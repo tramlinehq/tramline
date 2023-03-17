@@ -10,7 +10,7 @@ module Backoffable
 
   # goes roughly like: 10, 20, 40, 80, 160, 320, 640, 1280, 2560... for exponential
   # goes roughly like: 10, 15, 20, 25, 30, 35, 40, 45, 50, 55... for linear
-  def backoff_in(attempt: 1, period: :minutes, type: :exponential)
+  def backoff_in(attempt: 1, period: :minutes, type: :exponential, factor: LINEAR_BACKOFF_FACTOR)
     raise InvalidPeriod unless period.in?(ALLOWED_PERIODS)
     raise InvalidType unless type.in?(ALLOWED_TYPES)
     raise AttemptMustBeGreaterThanZero if attempt.zero?
@@ -21,7 +21,7 @@ module Backoffable
     when :exponential
       base_delay * 2**attempt
     when :linear
-      base_delay + (LINEAR_BACKOFF_FACTOR * attempt)
+      base_delay + (factor * attempt)
     end
 
     delay += rand(0..1000) / 1000.0 # add some jitter
