@@ -81,7 +81,7 @@ module Installations
       ERRORS.find do |known_error|
         known_error[:status].eql?(status) &&
           known_error[:code].eql?(code) &&
-          known_error[:message_matcher] =~ message
+          known_error[:message_matcher] =~ error_message
       end
     end
 
@@ -89,21 +89,21 @@ module Installations
       @parsed_body ||= api_error&.body&.safe_json_parse
     end
 
-    def error
+    def error_body
       return api_error.body if parsed_body.blank?
       parsed_body["error"]
     end
 
-    def message
-      error["message"]
+    def error_message
+      error_body["message"]
     end
 
     def code
-      error["code"]
+      error_body["code"]
     end
 
     def status
-      error["status"]
+      error_body["status"]
     end
 
     def log
