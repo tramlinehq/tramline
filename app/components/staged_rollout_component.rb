@@ -21,6 +21,7 @@ class StagedRolloutComponent < ViewComponent::Base
     :failed?,
     :stopped?,
     :completed?,
+    :paused?,
     :fully_released?,
     :config,
     :started?,
