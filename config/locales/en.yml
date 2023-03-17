@@ -29,6 +29,13 @@ en:
           review_submission_exists: "a release already being added for review in the store"
           phased_release_not_found: "the release not being phased release enabled"
           release_already_exists: "a release already being present in the store"
+          build_exists_in_build_channel: "the build already being present in the deployment channel"
+          build_not_upgradable: "the build number being lower than the current build in the deployment channel"
+          permission_denied: "permission denied by the store"
+          api_disabled: "api disabled in the store"
+          duplicate_build_upload: "build already being present in the store"
+          invalid_api_package: "the build artifact being invalid for the store"
+          apks_not_allowed: "the build artifact being an apk, which is not accepted by the store"
       deployment:
         integration_type:
           app_store: "App Store (production)"
