@@ -25,7 +25,7 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
       user.add!(@invite)
     else
       build_resource(sign_up_params)
-      Accounts::User.onboard!(user)
+      Accounts::User.onboard(user)
     end
 
     finish_sign_up
