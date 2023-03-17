@@ -187,7 +187,7 @@ class DeploymentRun < ApplicationRecord
     return unless store?
 
     release.with_lock do
-      return unless controllable_rollout?
+      return unless rolloutable?
 
       if google_play_store_integration?
         result = Deployments::GooglePlayStore::Release.halt_release!(self)

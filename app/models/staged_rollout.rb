@@ -149,7 +149,7 @@ class StagedRollout < ApplicationRecord
   def resume_release!
     return unless paused?
 
-    deployment_run.on_fully_release! do |result|
+    deployment_run.on_resume_release! do |result|
       if result.ok?
         resume!
       else
