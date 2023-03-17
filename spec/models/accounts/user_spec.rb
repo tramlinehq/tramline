@@ -3,12 +3,12 @@
 require "rails_helper"
 
 describe Accounts::User do
-  describe ".onboard!" do
+  describe ".onboard" do
     it "creates a new user and an org-membership" do
       org = build(:organization)
       user = build(:user, organizations: [org])
 
-      user = described_class.onboard! user
+      user = described_class.onboard user
 
       expect(user).to be_persisted
       expect(user.organizations.first).to eq(org)
@@ -22,7 +22,7 @@ describe Accounts::User do
         new_org = build(:organization)
         new_user = build(:user, email: existing_user.email, organizations: [new_org])
 
-        user = described_class.onboard! new_user
+        user = described_class.onboard new_user
 
         expect(user).not_to be_valid
         expect(user).not_to be_persisted
@@ -33,7 +33,7 @@ describe Accounts::User do
         new_org = build(:organization)
         new_user = build(:user, email: existing_user.email, organizations: [new_org])
 
-        described_class.onboard! new_user
+        described_class.onboard new_user
 
         expect(described_class.first.memberships.size).to eq(1)
         expect(described_class.first.organizations.size).to eq(1)
