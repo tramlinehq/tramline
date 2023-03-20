@@ -110,7 +110,7 @@ module Deployments
       def submit_for_review!
         return unless app_store_release?
 
-        result = provider.submit_release(build_number)
+        result = provider.submit_release(build_number, release_version)
 
         unless result.ok?
           run.fail_with_error(result.error)
@@ -148,7 +148,7 @@ module Deployments
 
         run.engage_release!
 
-        result = provider.start_release(build_number)
+        result = provider.start_release(build_number, release_version)
 
         unless result.ok?
           run.fail_with_error(result.error)

@@ -140,10 +140,12 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
   end
 
   describe "#submit_release!" do
+    let(:version) { Faker::Lorem.word }
     let(:params) {
       {
         json: {
-          build_number: build_number
+          build_number: build_number,
+          version: version
         }
       }
     }
@@ -151,17 +153,17 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
 
     it "returns true when submitting release is a success" do
       request = stub_request(:patch, url).to_return(status: 204)
-      result = described_class.new(bundle_id, key_id, issuer_id, key).submit_release(build_number)
+      result = described_class.new(bundle_id, key_id, issuer_id, key).submit_release(build_number, version)
 
       expect(result).to be(true)
       expect(request.with(body: params[:json])).to have_been_made
     end
 
-    it "returns false when submitting release is a failure" do
+    it "returns error when submitting release is a failure" do
       error_payload = {error: {resource: "release", code: "review_in_progress"}}.to_json
       request = stub_request(:patch, url).to_return(status: 422, body: error_payload)
 
-      expect { described_class.new(bundle_id, key_id, issuer_id, key).submit_release(build_number) }
+      expect { described_class.new(bundle_id, key_id, issuer_id, key).submit_release(build_number, version) }
         .to raise_error(Installations::Apple::AppStoreConnect::Error) { |error| expect(error.reason).to eq(:review_in_progress) }
 
       expect(request.with(body: params[:json])).to have_been_made
@@ -169,10 +171,12 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
   end
 
   describe "#start_release!" do
+    let(:version) { Faker::Lorem.word }
     let(:params) {
       {
         json: {
-          build_number: build_number
+          build_number: build_number,
+          version: version
         }
       }
     }
@@ -180,17 +184,17 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
 
     it "returns true when starting release is a success" do
       request = stub_request(:patch, url).to_return(status: 204)
-      result = described_class.new(bundle_id, key_id, issuer_id, key).start_release(build_number)
+      result = described_class.new(bundle_id, key_id, issuer_id, key).start_release(build_number, version)
 
       expect(result).to be(true)
       expect(request.with(body: params[:json])).to have_been_made
     end
 
-    it "returns false when starting release is a failure" do
+    it "returns error when starting release is a failure" do
       error_payload = {error: {resource: "build", code: "not_found"}}.to_json
       request = stub_request(:patch, url).to_return(status: 404, body: error_payload)
 
-      expect { described_class.new(bundle_id, key_id, issuer_id, key).start_release(build_number) }
+      expect { described_class.new(bundle_id, key_id, issuer_id, key).start_release(build_number, version) }
         .to raise_error(Installations::Apple::AppStoreConnect::Error) { |error| expect(error.reason).to eq(:build_not_found) }
 
       expect(request.with(body: params[:json])).to have_been_made
