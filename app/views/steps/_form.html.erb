@@ -17,24 +17,26 @@
       <%= form.text_area :description, class: "form-input w-full", placeholder: "Describe your step..." %>
     </div>
 
-    <div class="mt-4">
-      <div data-controller="domain--release-suffix-help"
-           data-domain--release-suffix-help-version-value="<%= @step.train.version_current %>"
-           data-domain--release-suffix-help-version-suffix-current-value="<%= @step.release_suffix %>">
-        <%= form.label :release_suffix, class: "block text-sm font-medium mb-1" %>
-        <%= form.text_field :release_suffix,
-                            class: "form-input w-full",
-                            placeholder: "Eg: qa-staging",
-                            autocomplete: "off",
-                            required: true,
-                            data: { domain__release_suffix_help_target: "input",
-                                    action: "domain--release-suffix-help#set" } %>
-        <div class="text-sm mt-1">
-          This is appended to the <strong>version name</strong> of the app, as follows:&nbsp;
-          <span class="font-mono" data-domain--release-suffix-help-target="helpText"></span>
+    <% if @app.android? %>
+      <div class="mt-4">
+        <div data-controller="domain--release-suffix-help"
+             data-domain--release-suffix-help-version-value="<%= @step.train.version_current %>"
+             data-domain--release-suffix-help-version-suffix-current-value="<%= @step.release_suffix %>">
+          <%= form.label :release_suffix, class: "block text-sm font-medium mb-1" %>
+          <%= form.text_field :release_suffix,
+                              class: "form-input w-full",
+                              placeholder: "Eg: qa-staging",
+                              autocomplete: "off",
+                              required: true,
+                              data: { domain__release_suffix_help_target: "input",
+                                      action: "domain--release-suffix-help#set" } %>
+          <div class="text-sm mt-1">
+            This is appended to the <strong>version name</strong> of the app, as follows:&nbsp;
+            <span class="font-mono" data-domain--release-suffix-help-target="helpText"></span>
+          </div>
         </div>
       </div>
-    </div>
+    <% end %>
   </div>
 
   <div>

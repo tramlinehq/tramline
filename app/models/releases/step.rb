@@ -7,7 +7,7 @@
 #  description    :string           not null
 #  kind           :string
 #  name           :string           not null
-#  release_suffix :string           not null
+#  release_suffix :string
 #  slug           :string
 #  status         :string           not null
 #  step_number    :integer          default(0), not null, indexed => [train_id]
@@ -28,8 +28,8 @@ class Releases::Step < ApplicationRecord
   has_many :deployment_runs, through: :deployments, class_name: "DeploymentRun"
 
   validates :ci_cd_channel, presence: true, uniqueness: {scope: :train_id, message: "you have already used this in another step of this train!"}
-  validates :release_suffix, presence: true
-  validates :release_suffix, format: {with: /\A[a-zA-Z\-_]+\z/, message: "only allows letters and underscore"}
+  validates :release_suffix, presence: true, if: :android?
+  validates :release_suffix, format: {with: /\A[a-zA-Z\-_]+\z/, message: "only allows letters and underscore"}, if: :release_suffix
   validates :deployments, presence: true, on: :create
   validate :unique_deployments, on: :create
   validate :unique_store_deployments_per_train, on: :create
@@ -52,6 +52,7 @@ class Releases::Step < ApplicationRecord
   accepts_nested_attributes_for :deployments, allow_destroy: false, reject_if: :reject_deployments?
 
   delegate :app, to: :train
+  delegate :android?, to: :app
 
   def set_step_number
     self.step_number = train.steps.review.maximum(:step_number).to_i + 1
