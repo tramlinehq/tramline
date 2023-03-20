@@ -68,6 +68,7 @@ class DeploymentRun < ApplicationRecord
   enum status: STATES
   enum failure_reason: {
     review_failed: "review_failed",
+    invalid_release: "invalid_release",
     unknown_failure: "unknown_failure"
   }.merge(
     *[

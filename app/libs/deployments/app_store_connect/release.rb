@@ -97,6 +97,13 @@ module Deployments
           return
         end
 
+        unless valid_release?(result.value!)
+          run.dispatch_fail!(reason: :invalid_release)
+          return
+        end
+
+        create_or_update_external_release(result.value!)
+
         run.prepare_release!
       end
 
@@ -124,7 +131,7 @@ module Deployments
         end
 
         release_info = result.value!
-        (run.external_release || run.build_external_release).update(release_info.attributes)
+        create_or_update_external_release(release_info)
 
         if release_info.success?
           return run.ready_to_release! if app_store?
@@ -164,7 +171,7 @@ module Deployments
         end
 
         release_info = result.value!
-        run.external_release.update(release_info.attributes)
+        create_or_update_external_release(release_info)
 
         if release_info.live?(build_number)
           return run.complete! unless staged_rollout?
@@ -181,8 +188,7 @@ module Deployments
         result = provider.complete_phased_release
 
         if result.ok?
-          release_info = result.value!
-          run.external_release.update(release_info.attributes)
+          create_or_update_external_release(result.value!)
         else
           run.fail_with_error(result.error)
         end
@@ -196,8 +202,7 @@ module Deployments
         result = provider.pause_phased_release
 
         if result.ok?
-          release_info = result.value!
-          run.external_release.update(release_info.attributes)
+          create_or_update_external_release(result.value!)
         end
 
         result
@@ -209,8 +214,7 @@ module Deployments
         result = provider.resume_phased_release
 
         if result.ok?
-          release_info = result.value!
-          run.external_release.update(release_info.attributes)
+          create_or_update_external_release(result.value!)
         end
 
         result
@@ -227,6 +231,14 @@ module Deployments
       def find_release
         return provider.find_release(build_number) if app_store?
         provider.find_build(build_number)
+      end
+
+      def create_or_update_external_release(release_info)
+        (run.external_release || run.build_external_release).update(release_info.attributes)
+      end
+
+      def valid_release?(release_info)
+        release_info.valid?(build_number, release_version, staged_rollout?)
       end
     end
   end

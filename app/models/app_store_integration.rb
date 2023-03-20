@@ -133,7 +133,7 @@ class AppStoreIntegration < ApplicationRecord
         whats_new: release_metadata.release_notes,
         promotional_text: release_metadata.promo_text
       }
-      installation.prepare_release(build_number, version, is_phased_release, metadata)
+      release_info(installation.prepare_release(build_number, version, is_phased_release, metadata, RELEASE_TRANSFORMATIONS))
     end
   end
 
@@ -264,6 +264,7 @@ class AppStoreIntegration < ApplicationRecord
     METADATA_REJECTED = "METADATA_REJECTED"
     INVALID_BINARY = "INVALID_BINARY"
     PHASED_RELEASE_COMPLETE = "COMPLETE"
+    PHASED_RELEASE_INACTIVE = "INACTIVE"
 
     def attributes
       release_info.except(:phased_release_day, :phased_release_status)
@@ -280,6 +281,19 @@ class AppStoreIntegration < ApplicationRecord
 
     def live?(build_number)
       release_info[:build_number] == build_number && release_info[:status] == READY_FOR_SALE
+    end
+
+    def valid?(build_number, version_name, staged_rollout_enabled)
+      base_validation = release_info[:build_number] == build_number &&
+        release_info[:name] == version_name
+
+      return false unless base_validation
+
+      if staged_rollout_enabled
+        release_info[:phased_release_status] == PHASED_RELEASE_INACTIVE
+      else
+        release_info[:phased_release_status].nil?
+      end
     end
 
     def success?

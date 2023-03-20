@@ -29,6 +29,7 @@ en:
           review_submission_exists: "a release already being added for review in the store"
           phased_release_not_found: "the release not being phased release enabled"
           release_already_exists: "a release already being present in the store"
+          version_already_exists: "the version already being released in the store"
       deployment:
         integration_type:
           app_store: "App Store (production)"

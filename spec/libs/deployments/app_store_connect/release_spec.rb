@@ -149,9 +149,18 @@ describe Deployments::AppStoreConnect::Release do
           step_trait: :release
         )
       }
+      let(:base_release_info) {
+        {
+          external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+          name: run.release_version,
+          build_number: run.build_number,
+          added_at: 1.day.ago
+        }
+      }
+      let(:prepared_release_info) { AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "PREPARE_FOR_SUBMISSION")) }
 
       before do
-        allow(providable_dbl).to receive(:prepare_release).and_return(GitHub::Result.new)
+        allow(providable_dbl).to receive(:prepare_release).and_return(GitHub::Result.new { prepared_release_info })
       end
 
       it "prepares the release" do
@@ -198,6 +207,70 @@ describe Deployments::AppStoreConnect::Release do
         described_class.prepare_for_release!(run)
 
         expect(run.reload.failure_reason).to eq("build_not_found")
+      end
+    end
+
+    context "when invalid release" do
+      let(:run) {
+        create_deployment_run_for_ios(
+          :started,
+          deployment_traits: [:with_app_store, :with_phased_release],
+          step_trait: :release
+        )
+      }
+      let(:base_release_info) {
+        {
+          external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+          name: run.release_version,
+          build_number: run.build_number,
+          added_at: 1.day.ago,
+          phased_release_status: "INACTIVE",
+          phased_release_day: 0
+        }
+      }
+
+      it "marks the deployment run as failed when invalid release due to version name mismatch" do
+        invalid_release_info = AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(
+          {status: "PREPARE_FOR_SUBMISSION",
+           name: "invalid"}
+        ))
+        allow(providable_dbl).to receive(:prepare_release).and_return(GitHub::Result.new { invalid_release_info })
+        described_class.prepare_for_release!(run)
+
+        expect(run.reload.failed?).to be(true)
+      end
+
+      it "marks the deployment run as failed when invalid release due to build number mismatch" do
+        invalid_release_info = AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(
+          {status: "PREPARE_FOR_SUBMISSION",
+           build_number: 123}
+        ))
+        allow(providable_dbl).to receive(:prepare_release).and_return(GitHub::Result.new { invalid_release_info })
+        described_class.prepare_for_release!(run)
+
+        expect(run.reload.failed?).to be(true)
+      end
+
+      it "marks the deployment run as failed when invalid release due to staged rollout mismatch" do
+        invalid_release_info = AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(
+          {status: "PREPARE_FOR_SUBMISSION",
+           phased_release_status: nil}
+        ))
+        allow(providable_dbl).to receive(:prepare_release).and_return(GitHub::Result.new { invalid_release_info })
+        described_class.prepare_for_release!(run)
+
+        expect(run.reload.failed?).to be(true)
+      end
+
+      it "adds the reason of failure to deployment run" do
+        invalid_release_info = AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(
+          {status: "PREPARE_FOR_SUBMISSION",
+           build_number: 123}
+        ))
+        allow(providable_dbl).to receive(:prepare_release).and_return(GitHub::Result.new { invalid_release_info })
+        described_class.prepare_for_release!(run)
+
+        expect(run.reload.failure_reason).to eq("invalid_release")
       end
     end
   end

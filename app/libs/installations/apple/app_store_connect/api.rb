@@ -65,7 +65,7 @@ module Installations
         .then { |tracks| Installations::Response::Keys.transform(tracks, transforms) }
     end
 
-    def prepare_release(build_number, version, is_phased_release, metadata, transforms = {})
+    def prepare_release(build_number, version, is_phased_release, metadata, transforms)
       params = {
         build_number:,
         version:,
@@ -74,6 +74,8 @@ module Installations
       }
 
       execute(:post, PREPARE_RELEASE_URL.expand(bundle_id:).to_s, {json: params})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def submit_release(build_number, transforms = {})

@@ -106,13 +106,23 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
     }
     let(:url) { "http://localhost:4000/apple/connect/v1/apps/#{bundle_id}/release/prepare" }
 
-    it "returns true when submitting release is a success" do
+    it "returns the prepared release when success" do
       payload = File.read("spec/fixtures/app_store_connect/release.json")
+      expected_release = {
+        external_id: "31aafef2-d5fb-45d4-9b02-f0ab5911c1b2",
+        status: "READY_FOR_SALE",
+        build_number: "33417",
+        name: "1.8.0",
+        added_at: "2023-02-25T03:02:46-08:00",
+        phased_release_day: 1,
+        phased_release_status: "ACTIVE"
+      }.with_indifferent_access
 
       request = stub_request(:post, url).to_return(body: payload)
-      result = described_class.new(bundle_id, key_id, issuer_id, key).prepare_release(build_number, version, is_phased_release, metadata)
+      result = described_class.new(bundle_id, key_id, issuer_id, key)
+        .prepare_release(build_number, version, is_phased_release, metadata, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
 
-      expect(result).to eq(JSON.parse(payload))
+      expect(result).to eq(expected_release)
       expect(request.with(body: params[:json])).to have_been_made
     end
 
@@ -120,7 +130,10 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
       error_payload = {error: {code: "export_compliance_not_updateable", resource: "build"}}.to_json
       request = stub_request(:post, url).to_return(status: 422, body: error_payload)
 
-      expect { described_class.new(bundle_id, key_id, issuer_id, key).prepare_release(build_number, version, is_phased_release, metadata) }
+      expect {
+        described_class.new(bundle_id, key_id, issuer_id, key)
+          .prepare_release(build_number, version, is_phased_release, metadata, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
+      }
         .to raise_error(Installations::Apple::AppStoreConnect::Error) { |error| expect(error.reason).to eq(:missing_export_compliance) }
       expect(request.with(body: params[:json])).to have_been_made
     end
