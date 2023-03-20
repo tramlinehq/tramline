@@ -52,9 +52,6 @@ class SignedInApplicationController < ApplicationController
   end
 
   def set_sentry_context
-    Rails.logger.info("Just measuring a counter...")
-    Rails.logger.debug("Pushing some data", user: { name: "Taro", age: 19 })
-
     Sentry.set_user(id: current_user.id, username: current_user.full_name, email: current_user.email) if current_user
   end
 end
