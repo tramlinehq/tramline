@@ -3,6 +3,8 @@ Rails.application.configure do
   config.lograge.custom_options = lambda do |event|
     exceptions = %w[controller action format id]
     {
+      exception: event.payload[:exception],
+      exception_object: event.payload[:exception_object],
       params: event.payload[:params].except(*exceptions),
       remote_ip: event.payload[:remote_ip],
       ip: event.payload[:ip],
