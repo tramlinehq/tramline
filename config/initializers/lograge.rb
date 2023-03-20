@@ -8,7 +8,7 @@ Rails.application.configure do
       params: event.payload[:params].except(*exceptions),
       remote_ip: event.payload[:remote_ip],
       ip: event.payload[:ip],
-      request_id: event.payload[:headers]['action_dispatch.request_id'],
+      request_id: event.payload[:headers]["action_dispatch.request_id"]
     }
   end
   config.lograge.formatter = Class.new do |fmt|
@@ -20,7 +20,7 @@ Rails.application.configure do
           "Request"
         end
 
-      { msg: message }.merge(data)
+      {msg: message}.merge(data)
     end
   end
   config.lograge.custom_payload do |controller|
