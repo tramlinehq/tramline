@@ -580,7 +580,7 @@ describe Deployments::AppStoreConnect::Release do
       it "starts the release" do
         described_class.start_release!(run)
 
-        expect(providable_dbl).to have_received(:start_release).with(run.build_number, run.release_version).once
+        expect(providable_dbl).to have_received(:start_release).with(run.build_number).once
       end
 
       it "creates staged rollout if staged rollout enabled" do

@@ -148,7 +148,7 @@ module Deployments
 
         run.engage_release!
 
-        result = provider.start_release(build_number, release_version)
+        result = provider.start_release(build_number)
 
         unless result.ok?
           run.fail_with_error(result.error)

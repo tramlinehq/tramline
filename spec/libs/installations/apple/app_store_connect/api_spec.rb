@@ -171,12 +171,10 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
   end
 
   describe "#start_release!" do
-    let(:version) { Faker::Lorem.word }
     let(:params) {
       {
         json: {
-          build_number: build_number,
-          version: version
+          build_number: build_number
         }
       }
     }
@@ -184,7 +182,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
 
     it "returns true when starting release is a success" do
       request = stub_request(:patch, url).to_return(status: 204)
-      result = described_class.new(bundle_id, key_id, issuer_id, key).start_release(build_number, version)
+      result = described_class.new(bundle_id, key_id, issuer_id, key).start_release(build_number)
 
       expect(result).to be(true)
       expect(request.with(body: params[:json])).to have_been_made
@@ -194,7 +192,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
       error_payload = {error: {resource: "build", code: "not_found"}}.to_json
       request = stub_request(:patch, url).to_return(status: 404, body: error_payload)
 
-      expect { described_class.new(bundle_id, key_id, issuer_id, key).start_release(build_number, version) }
+      expect { described_class.new(bundle_id, key_id, issuer_id, key).start_release(build_number) }
         .to raise_error(Installations::Apple::AppStoreConnect::Error) { |error| expect(error.reason).to eq(:build_not_found) }
 
       expect(request.with(body: params[:json])).to have_been_made

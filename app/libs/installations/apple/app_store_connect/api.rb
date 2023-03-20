@@ -82,8 +82,8 @@ module Installations
       execute(:patch, SUBMIT_RELEASE_URL.expand(bundle_id:).to_s, {json: {build_number:, version:}})
     end
 
-    def start_release(build_number, version, transforms = {})
-      execute(:patch, START_RELEASE_URL.expand(bundle_id:).to_s, {json: {build_number:, version:}})
+    def start_release(build_number, transforms = {})
+      execute(:patch, START_RELEASE_URL.expand(bundle_id:).to_s, {json: {build_number:}})
     end
 
     def pause_phased_release(transforms)

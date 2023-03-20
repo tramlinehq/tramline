@@ -141,8 +141,8 @@ class AppStoreIntegration < ApplicationRecord
     GitHub::Result.new { installation.submit_release(build_number, version) }
   end
 
-  def start_release(build_number, version)
-    GitHub::Result.new { installation.start_release(build_number, version) }
+  def start_release(build_number)
+    GitHub::Result.new { installation.start_release(build_number) }
   end
 
   def complete_phased_release
