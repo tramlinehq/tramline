@@ -15,6 +15,8 @@ class ReleaseMetadata < ApplicationRecord
 
   belongs_to :train_run, class_name: "Releases::Train::Run"
 
-  validates :release_notes, format: {with: /\A[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?\s]+\z/, message: :no_special_characters}
-  validates :promo_text, format: {with: /\A[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?\s]+\z/, message: :no_special_characters}, if: :promo_text
+  PLAINTEXT_REGEX = /\A[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.\/?\s]+\z/
+
+  validates :release_notes, format: {with: PLAINTEXT_REGEX, message: :no_special_characters}
+  validates :promo_text, format: {with: PLAINTEXT_REGEX, message: :no_special_characters}, if: :promo_text
 end
