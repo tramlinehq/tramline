@@ -79,6 +79,12 @@ en:
               increasing_order: "staged rollout should be in increasing order"
             build_artifact_channel:
               prod_channel_in_review_not_allowed: "cannot add production deployment to review step"
+        release_metadata:
+          attributes:
+            release_notes:
+              no_special_characters: "only allows letters, numbers, and some special characters"
+            promo_text:
+              no_special_characters: "only allows letters, numbers, and some special characters"
         integration:
           format: "%{message}"
         app_store_integration:

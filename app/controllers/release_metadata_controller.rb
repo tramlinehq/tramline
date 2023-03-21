@@ -10,9 +10,9 @@ class ReleaseMetadataController < SignedInApplicationController
   end
 
   def update
-    @metadata = ReleaseMetadata.find_or_initialize_by(train_run: @release)
+    @release_metadata = ReleaseMetadata.find_or_initialize_by(train_run: @release)
 
-    if @metadata.update(release_metadata_params)
+    if @release_metadata.update(release_metadata_params)
       redirect_to release_path(@release), notice: "Release metadata was successfully updated."
     else
       render :edit, status: :unprocessable_entity
