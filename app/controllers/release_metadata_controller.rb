@@ -29,11 +29,7 @@ class ReleaseMetadataController < SignedInApplicationController
   end
 
   def set_release
-    @release =
-      Releases::Train::Run
-        .joins(train: :app)
-        .where(apps: {organization: current_organization})
-        .find(params[:release_id])
+    @release = Releases::Train::Run.find(params[:release_id])
   end
 
   def ensure_editable

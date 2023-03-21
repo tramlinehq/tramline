@@ -11,7 +11,6 @@
                  message: "The release metadata is uploaded to the store during the production deployment of the release, if any." %>
     </div>
 
-
     <div class="mt-4">
       <%= form.label :release_notes, class: "block text-sm font-medium mb-1" %>
       <%= form.text_area :release_notes, class: "form-input w-full", value: @release_metadata.release_notes %>
@@ -21,7 +20,6 @@
       <%= form.label :promo_text, class: "block text-sm font-medium mb-1" %>
       <%= form.text_area :promo_text, class: "form-input w-full", value: @release_metadata.promo_text %>
     </div>
-
 
     <div class="mt-5">
       <%= form.authz_submit :blue, "Update" %>

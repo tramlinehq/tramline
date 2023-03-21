@@ -35,17 +35,19 @@ class StagedRolloutComponent < ViewComponent::Base
     actions = []
 
     if controllable_rollout?
-      actions.append({form_url: increase_release_path, confirm: START_RELEASE_CONFIRM, type: :blue, name: "Start Rollout"}) if created?
-      actions.append({form_url: increase_release_path, confirm: RELEASE_CONFIRM, type: :blue, name: "Increase Rollout"}) if started?
-      actions.append({form_url: increase_release_path, confirm: RELEASE_CONFIRM, type: :blue, name: "Retry"}) if failed?
+      actions << {form_url: increase_release_path, confirm: START_RELEASE_CONFIRM, type: :blue, name: "Start Rollout"} if created?
+      actions << {form_url: increase_release_path, confirm: RELEASE_CONFIRM, type: :blue, name: "Increase Rollout"} if started?
+      actions << {form_url: increase_release_path, confirm: RELEASE_CONFIRM, type: :blue, name: "Retry"} if failed?
     end
 
-    actions.append({form_url: resume_release_path, confirm: RESUME_RELEASE_CONFIRM, type: :blue, name: "Resume Phased Release"}) if paused? && automatic_rollout?
+    if automatic_rollout?
+      actions << {form_url: resume_release_path, confirm: RESUME_RELEASE_CONFIRM, type: :blue, name: "Resume Phased Release"} if paused?
+      actions << {form_url: pause_release_path, confirm: PAUSE_RELEASE_CONFIRM, type: :amber, name: "Pause Phased Release"} if started? && last_rollout_percentage
+    end
 
     if last_rollout_percentage
-      actions.append({form_url: full_release_path, confirm: FULLY_RELEASE_CONFIRM, type: :blue, name: "Release to 100%"}) if started?
-      actions.append({form_url: pause_release_path, confirm: PAUSE_RELEASE_CONFIRM, type: :amber, name: "Pause Phased Release"}) if started? && automatic_rollout?
-      actions.append({form_url: halt_release_path, confirm: HALT_CONFIRM, type: :red, name: "Halt"}) if started? || paused?
+      actions << {form_url: halt_release_path, confirm: HALT_CONFIRM, type: :red, name: "Halt"} if started? || paused?
+      actions << {form_url: full_release_path, confirm: FULLY_RELEASE_CONFIRM, type: :blue, name: "Release to 100%"} if started?
     end
 
     actions
