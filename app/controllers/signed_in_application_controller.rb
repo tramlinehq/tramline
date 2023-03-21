@@ -1,7 +1,7 @@
 class SignedInApplicationController < ApplicationController
   DEFAULT_TIMEZONE = "Asia/Kolkata"
   before_action :set_paper_trail_whodunnit
-  before_action :set_sentry_context
+  before_action :set_sentry_context, if: -> { Rails.env.production? }
   before_action :require_login, unless: :devise_controller?
   helper_method :current_organization
   helper_method :current_user
