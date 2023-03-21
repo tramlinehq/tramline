@@ -79,7 +79,7 @@ module Installations
 
     def initialize(response_body = nil)
       @response_body = response_body
-      super(handle)
+      super(error&.fetch("message", nil), reason: handle)
     end
 
     def handle
@@ -103,7 +103,7 @@ module Installations
     end
 
     def error
-      response_body["error"]
+      response_body&.fetch("error", nil)
     end
   end
 end

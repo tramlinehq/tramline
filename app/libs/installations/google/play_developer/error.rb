@@ -60,7 +60,7 @@ module Installations
     def initialize(api_error)
       @api_error = api_error
       log
-      super(handle)
+      super(error_message, reason: handle)
     end
 
     def handle

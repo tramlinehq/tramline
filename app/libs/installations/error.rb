@@ -1,8 +1,8 @@
 class Installations::Error < StandardError
   attr_reader :reason
 
-  def initialize(reason = nil)
+  def initialize(msg, reason: nil)
     @reason = reason
-    super(@reason.to_s.humanize)
+    super(msg)
   end
 end
