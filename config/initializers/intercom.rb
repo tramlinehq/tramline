@@ -21,7 +21,7 @@ IntercomRails.config do |config|
   # The method/variable that contains the logged in user in your controllers.
   # If it is `current_user` or `@user`, then you can ignore this
   #
-  config.user.current = Proc.new { current_user }
+  config.user.current = proc { current_user }
   # config.user.current = [Proc.new { current_user }]
 
   # == Include for logged out Users
@@ -53,8 +53,8 @@ IntercomRails.config do |config|
   # user object, or a Proc which will be passed the current user.
   #
   config.user.custom_data = {
-    :name => Proc.new { |current_user| current_user.full_name },
-    :preferred_name => Proc.new { |current_user| current_user.preferred_name },
+    name: proc { |current_user| current_user.full_name },
+    preferred_name: proc { |current_user| current_user.preferred_name }
   }
 
   # == Current company method/variable
@@ -62,7 +62,7 @@ IntercomRails.config do |config|
   # in your controllers. 'Companies' are generic groupings of users, so this
   # could be a company, app or group.
   #
-  config.company.current = Proc.new { current_organization }
+  config.company.current = proc { current_organization }
   #
   # Or if you are using devise you can just use the following config
   #
@@ -79,8 +79,8 @@ IntercomRails.config do |config|
   # This works the same as User custom data above.
   #
   config.company.custom_data = {
-    :id => Proc.new { |current_organization| current_organization.id },
-    :name => Proc.new { |current_organization| current_organization.name },
+    id: proc { |current_organization| current_organization.id },
+    name: proc { |current_organization| current_organization.name }
   }
 
   # == Company Plan name
