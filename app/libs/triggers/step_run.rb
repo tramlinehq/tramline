@@ -22,7 +22,8 @@ class Triggers::StepRun
   attr_reader :step, :release, :commit
 
   def build_version
-    return release.release_version unless step.release_suffix
-    release.release_version + "-" + step.release_suffix
+    version = release.release_version
+    version +=  "-" + step.release_suffix if step.release_suffix
+    version
   end
 end
