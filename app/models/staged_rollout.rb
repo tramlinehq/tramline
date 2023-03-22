@@ -61,7 +61,7 @@ class StagedRollout < ApplicationRecord
 
     event :complete do
       after { deployment_run.complete! }
-      transitions from: [:failed, :started], to: :completed
+      transitions from: [:failed, :started, :paused], to: :completed
     end
 
     event :full_rollout do
@@ -151,7 +151,7 @@ class StagedRollout < ApplicationRecord
 
     deployment_run.on_resume_release! do |result|
       if result.ok?
-        resume!
+        resume! unless completed?
       else
         elog(result.error)
       end

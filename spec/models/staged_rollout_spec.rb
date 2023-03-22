@@ -417,7 +417,7 @@ describe StagedRollout do
         deployment_traits: [:with_app_store, :with_phased_release],
         step_trait: :release)
     }
-    let(:rollout) { create(:staged_rollout, :paused, current_stage: 0, deployment_run: deployment_run) }
+    let(:rollout) { create(:staged_rollout, :paused, current_stage: 0, deployment_run: deployment_run, config: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE) }
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
     let(:resumed_release_info) {
       AppStoreIntegration::AppStoreReleaseInfo.new(
@@ -459,6 +459,24 @@ describe StagedRollout do
       rollout.resume_release!
 
       expect(rollout.reload.started?).to be(true)
+    end
+
+    it "does not mark the rollout as started if completed" do
+      completed_release_info = AppStoreIntegration::AppStoreReleaseInfo.new(
+        {
+          external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+          name: "1.2.0",
+          build_number: 9012,
+          added_at: 1.day.ago,
+          status: "READY_FOR_SALE",
+          phased_release_day: 8,
+          phased_release_status: "COMPLETED"
+        }
+      )
+      allow(providable_dbl).to receive(:resume_phased_release).and_return(GitHub::Result.new { completed_release_info })
+      rollout.resume_release!
+
+      expect(rollout.reload.completed?).to be(true)
     end
 
     it "does not resume the rollout if store call fails" do

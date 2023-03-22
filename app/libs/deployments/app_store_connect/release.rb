@@ -202,7 +202,9 @@ module Deployments
         result = provider.pause_phased_release
 
         if result.ok?
-          create_or_update_external_release(result.value!)
+          release_info = result.value!
+          create_or_update_external_release(release_info)
+          run.staged_rollout.update_stage(release_info.phased_release_stage)
         end
 
         result
@@ -214,7 +216,9 @@ module Deployments
         result = provider.resume_phased_release
 
         if result.ok?
-          create_or_update_external_release(result.value!)
+          release_info = result.value!
+          create_or_update_external_release(release_info)
+          run.staged_rollout.update_stage(release_info.phased_release_stage)
         end
 
         result
