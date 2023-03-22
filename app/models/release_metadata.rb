@@ -18,5 +18,5 @@ class ReleaseMetadata < ApplicationRecord
   PLAINTEXT_REGEX = /\A[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.\/?\s]+\z/
 
   validates :release_notes, format: {with: PLAINTEXT_REGEX, message: :no_special_characters}
-  validates :promo_text, format: {with: PLAINTEXT_REGEX, message: :no_special_characters}, if: :promo_text
+  validates :promo_text, format: {with: PLAINTEXT_REGEX, message: :no_special_characters, allow_blank: true}
 end
