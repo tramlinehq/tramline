@@ -264,7 +264,7 @@ class DeploymentRun < ApplicationRecord
   def rollout_percentage
     return unless store?
     return staged_rollout.last_rollout_percentage if staged_rollout?
-    initial_rollout_percentage || Deployment::FULL_ROLLOUT_VALUE
+    initial_rollout_percentage || Deployment::FULL_ROLLOUT_VALUE if deployment.controllable_rollout?
   end
 
   def has_uploaded?
