@@ -175,7 +175,10 @@ class AppStoreIntegration < ApplicationRecord
         installation
           .external_groups(CHANNELS_TRANSFORMATIONS)
           .push(PROD_CHANNEL)
-          .map { |channel| channel.slice(:id, :name, :is_production) }
+          .map { |channel|
+          channel.slice(:id, :name, :is_production)
+            .tap { |c| c[:name] += " (TestFlight)" unless c[:is_production] }
+        }
       end
 
     return sliced if with_production
