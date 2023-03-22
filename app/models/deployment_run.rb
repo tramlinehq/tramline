@@ -254,7 +254,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def reviewable?
-    app_store_release? && may_submit_for_review?
+    app_store_release? && prepared_release?
   end
 
   def releasable?
