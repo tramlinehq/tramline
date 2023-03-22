@@ -46,7 +46,7 @@ class StagedRolloutComponent < ViewComponent::Base
     end
 
     if last_rollout_percentage
-      actions << {form_url: halt_release_path, confirm: HALT_CONFIRM, type: :red, name: "Halt"} if started? || paused?
+      actions << {form_url: halt_release_path, confirm: HALT_CONFIRM, type: :red, name: "Halt Release"} if started? || paused?
       actions << {form_url: full_release_path, confirm: FULLY_RELEASE_CONFIRM, type: :blue, name: "Release to 100%"} if started?
     end
 
