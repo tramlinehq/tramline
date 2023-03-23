@@ -23,7 +23,21 @@ class Releases::DeploymentRunsController < SignedInApplicationController
     end
   end
 
+  def prepare_release
+    Deployments::AppStoreConnect::Release.prepare_for_release!(@deployment_run, force: deployment_run_params[:force])
+
+    if @deployment_run.failed? || @deployment_run.failed_prepare_release?
+      redirect_back fallback_location: root_path, flash: {error: "Failed to prepare the release due to #{@deployment_run.display_attr(:failure_reason)}."}
+    else
+      redirect_back fallback_location: root_path, notice: "The new release has been prepared."
+    end
+  end
+
   private
+
+  def deployment_run_params
+    params.require(:deployment_run).permit(:force)
+  end
 
   def ensure_reviewable
     unless @deployment_run.reviewable?

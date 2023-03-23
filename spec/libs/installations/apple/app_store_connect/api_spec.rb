@@ -100,6 +100,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
           build_number:,
           version:,
           is_phased_release:,
+          is_force: true,
           metadata: metadata
         }
       }
@@ -120,7 +121,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
 
       request = stub_request(:post, url).to_return(body: payload)
       result = described_class.new(bundle_id, key_id, issuer_id, key)
-        .prepare_release(build_number, version, is_phased_release, metadata, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
+        .prepare_release(build_number, version, is_phased_release, metadata, true, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
 
       expect(result).to eq(expected_release)
       expect(request.with(body: params[:json])).to have_been_made
@@ -132,7 +133,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
 
       expect {
         described_class.new(bundle_id, key_id, issuer_id, key)
-          .prepare_release(build_number, version, is_phased_release, metadata, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
+          .prepare_release(build_number, version, is_phased_release, metadata, true, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
       }
         .to raise_error(Installations::Apple::AppStoreConnect::Error) { |error| expect(error.reason).to eq(:missing_export_compliance) }
       expect(request.with(body: params[:json])).to have_been_made
