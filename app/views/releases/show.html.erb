@@ -34,6 +34,9 @@
     <% end %>
 
     <%= render partial: "releases/live_release/kick_off", locals: { release: @release, release_train: @train } %>
+    <% if @release.release_metadata.present? %>
+      <%= render partial: "releases/live_release/release_metadata", locals: { release: @release, release_metadata: @release.release_metadata } %>
+    <% end %>
     <%= render partial: "releases/live_release/separator", locals: { margin_only: true } %>
     <%= render partial: "releases/live_release/builds", locals: { release: @release } %>
   </div>

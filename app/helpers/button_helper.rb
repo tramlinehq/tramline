@@ -81,12 +81,10 @@ module ButtonHelper
   def authz_link_to(style, name = nil, options = nil, html_options = nil, &block)
     style = :disabled unless writer?
 
-    if block
-      unless writer?
+    if style == :disabled
+      if block
         name = "javascript:void(0);"
-      end
-    else
-      unless writer?
+      else
         options = "javascript:void(0);"
       end
     end

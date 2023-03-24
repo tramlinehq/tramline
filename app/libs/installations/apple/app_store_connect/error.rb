@@ -55,6 +55,21 @@ module Installations
         resource: "release",
         code: "release_already_prepared",
         decorated_reason: :release_already_exists
+      },
+      {
+        resource: "release",
+        code: "release_fully_live",
+        decorated_reason: :release_fully_live
+      },
+      {
+        resource: "release",
+        code: "release_already_halted",
+        decorated_reason: :release_already_halted
+      },
+      {
+        resource: "release",
+        code: "version_already_exists",
+        decorated_reason: :version_already_exists
       }
     ]
 
@@ -64,7 +79,7 @@ module Installations
 
     def initialize(response_body = nil)
       @response_body = response_body
-      super(handle)
+      super(error&.fetch("message", nil), reason: handle)
     end
 
     def handle
@@ -88,7 +103,7 @@ module Installations
     end
 
     def error
-      response_body["error"]
+      response_body&.fetch("error", nil)
     end
   end
 end

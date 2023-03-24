@@ -93,27 +93,36 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
   describe "#prepare_release!" do
     let(:version) { "1.2.0" }
     let(:is_phased_release) { true }
+    let(:metadata) { {whats_new: "The latest version contains bug fixes and performance improvements."} }
     let(:params) {
       {
         json: {
           build_number:,
           version:,
           is_phased_release:,
-          metadata: {
-            whats_new: "The latest version contains bug fixes and performance improvements."
-          }
+          metadata: metadata
         }
       }
     }
     let(:url) { "http://localhost:4000/apple/connect/v1/apps/#{bundle_id}/release/prepare" }
 
-    it "returns true when submitting release is a success" do
+    it "returns the prepared release when success" do
       payload = File.read("spec/fixtures/app_store_connect/release.json")
+      expected_release = {
+        external_id: "31aafef2-d5fb-45d4-9b02-f0ab5911c1b2",
+        status: "READY_FOR_SALE",
+        build_number: "33417",
+        name: "1.8.0",
+        added_at: "2023-02-25T03:02:46-08:00",
+        phased_release_day: 1,
+        phased_release_status: "ACTIVE"
+      }.with_indifferent_access
 
       request = stub_request(:post, url).to_return(body: payload)
-      result = described_class.new(bundle_id, key_id, issuer_id, key).prepare_release(build_number, version, is_phased_release)
+      result = described_class.new(bundle_id, key_id, issuer_id, key)
+        .prepare_release(build_number, version, is_phased_release, metadata, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
 
-      expect(result).to eq(JSON.parse(payload))
+      expect(result).to eq(expected_release)
       expect(request.with(body: params[:json])).to have_been_made
     end
 
@@ -121,17 +130,22 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
       error_payload = {error: {code: "export_compliance_not_updateable", resource: "build"}}.to_json
       request = stub_request(:post, url).to_return(status: 422, body: error_payload)
 
-      expect { described_class.new(bundle_id, key_id, issuer_id, key).prepare_release(build_number, version, is_phased_release) }
+      expect {
+        described_class.new(bundle_id, key_id, issuer_id, key)
+          .prepare_release(build_number, version, is_phased_release, metadata, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
+      }
         .to raise_error(Installations::Apple::AppStoreConnect::Error) { |error| expect(error.reason).to eq(:missing_export_compliance) }
       expect(request.with(body: params[:json])).to have_been_made
     end
   end
 
   describe "#submit_release!" do
+    let(:version) { Faker::Lorem.word }
     let(:params) {
       {
         json: {
-          build_number: build_number
+          build_number: build_number,
+          version: version
         }
       }
     }
@@ -139,17 +153,17 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
 
     it "returns true when submitting release is a success" do
       request = stub_request(:patch, url).to_return(status: 204)
-      result = described_class.new(bundle_id, key_id, issuer_id, key).submit_release(build_number)
+      result = described_class.new(bundle_id, key_id, issuer_id, key).submit_release(build_number, version)
 
       expect(result).to be(true)
       expect(request.with(body: params[:json])).to have_been_made
     end
 
-    it "returns false when submitting release is a failure" do
+    it "returns error when submitting release is a failure" do
       error_payload = {error: {resource: "release", code: "review_in_progress"}}.to_json
       request = stub_request(:patch, url).to_return(status: 422, body: error_payload)
 
-      expect { described_class.new(bundle_id, key_id, issuer_id, key).submit_release(build_number) }
+      expect { described_class.new(bundle_id, key_id, issuer_id, key).submit_release(build_number, version) }
         .to raise_error(Installations::Apple::AppStoreConnect::Error) { |error| expect(error.reason).to eq(:review_in_progress) }
 
       expect(request.with(body: params[:json])).to have_been_made
@@ -174,7 +188,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
       expect(request.with(body: params[:json])).to have_been_made
     end
 
-    it "returns false when starting release is a failure" do
+    it "returns error when starting release is a failure" do
       error_payload = {error: {resource: "build", code: "not_found"}}.to_json
       request = stub_request(:patch, url).to_return(status: 404, body: error_payload)
 

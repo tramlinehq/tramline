@@ -4,6 +4,7 @@ class Releases::StagedRolloutsController < SignedInApplicationController
   before_action :set_staged_rollout
   before_action :ensure_controlled_rolloutable, only: [:increase, :halt]
   before_action :ensure_rolloutable, only: [:fully_release]
+  before_action :ensure_auto_rolloutable, only: [:pause, :resume]
 
   def increase
     @staged_rollout.move_to_next_stage!
@@ -12,6 +13,26 @@ class Releases::StagedRolloutsController < SignedInApplicationController
       redirect_back fallback_location: root_path, flash: {error: "Failed to increase the rollout. Please retry!"}
     else
       redirect_back fallback_location: root_path, notice: "Increased the rollout!"
+    end
+  end
+
+  def pause
+    @staged_rollout.pause_release!
+
+    if @staged_rollout.paused?
+      redirect_back fallback_location: root_path, notice: "Paused the rollout!"
+    else
+      redirect_back fallback_location: root_path, flash: {error: "Failed to pause the rollout. Please retry!"}
+    end
+  end
+
+  def resume
+    @staged_rollout.resume_release!
+
+    if @staged_rollout.started?
+      redirect_back fallback_location: root_path, notice: "Resumed the rollout!"
+    else
+      redirect_back fallback_location: root_path, flash: {error: "Failed to resume the rollout. Please retry!"}
     end
   end
 
@@ -45,6 +66,12 @@ class Releases::StagedRolloutsController < SignedInApplicationController
 
   def ensure_controlled_rolloutable
     unless @deployment_run.controllable_rollout?
+      redirect_back fallback_location: root_path, flash: {error: "Cannot perform this operation. The deployment is not in rollout stage."}
+    end
+  end
+
+  def ensure_auto_rolloutable
+    unless @deployment_run.automatic_rollout?
       redirect_back fallback_location: root_path, flash: {error: "Cannot perform this operation. The deployment is not in rollout stage."}
     end
   end

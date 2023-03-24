@@ -127,12 +127,18 @@ class AppStoreIntegration < ApplicationRecord
     GitHub::Result.new { installation.add_build_to_group(beta_group_id, build_number) }
   end
 
-  def prepare_release(build_number, version, is_phased_release)
-    GitHub::Result.new { installation.prepare_release(build_number, version, is_phased_release) }
+  def prepare_release(build_number, version, is_phased_release, release_metadata)
+    GitHub::Result.new do
+      metadata = {
+        whats_new: release_metadata.release_notes,
+        promotional_text: release_metadata.promo_text
+      }
+      release_info(installation.prepare_release(build_number, version, is_phased_release, metadata, RELEASE_TRANSFORMATIONS))
+    end
   end
 
-  def submit_release(build_number)
-    GitHub::Result.new { installation.submit_release(build_number) }
+  def submit_release(build_number, version)
+    GitHub::Result.new { installation.submit_release(build_number, version) }
   end
 
   def start_release(build_number)
@@ -141,6 +147,18 @@ class AppStoreIntegration < ApplicationRecord
 
   def complete_phased_release
     GitHub::Result.new { release_info(installation.complete_phased_release(RELEASE_TRANSFORMATIONS)) }
+  end
+
+  def pause_phased_release
+    GitHub::Result.new { release_info(installation.pause_phased_release(RELEASE_TRANSFORMATIONS)) }
+  end
+
+  def resume_phased_release
+    GitHub::Result.new { release_info(installation.resume_phased_release(RELEASE_TRANSFORMATIONS)) }
+  end
+
+  def halt_phased_release
+    GitHub::Result.new { release_info(installation.halt_phased_release(RELEASE_TRANSFORMATIONS)) }
   end
 
   def find_app
@@ -246,6 +264,7 @@ class AppStoreIntegration < ApplicationRecord
     METADATA_REJECTED = "METADATA_REJECTED"
     INVALID_BINARY = "INVALID_BINARY"
     PHASED_RELEASE_COMPLETE = "COMPLETE"
+    PHASED_RELEASE_INACTIVE = "INACTIVE"
 
     def attributes
       release_info.except(:phased_release_day, :phased_release_status)
@@ -262,6 +281,19 @@ class AppStoreIntegration < ApplicationRecord
 
     def live?(build_number)
       release_info[:build_number] == build_number && release_info[:status] == READY_FOR_SALE
+    end
+
+    def valid?(build_number, version_name, staged_rollout_enabled)
+      base_validation = release_info[:build_number] == build_number &&
+        release_info[:name] == version_name
+
+      return false unless base_validation
+
+      if staged_rollout_enabled
+        release_info[:phased_release_status] == PHASED_RELEASE_INACTIVE
+      else
+        release_info[:phased_release_status].nil?
+      end
     end
 
     def success?

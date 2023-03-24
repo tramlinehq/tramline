@@ -5,6 +5,51 @@ describe Releases::Train::Run do
     expect(create(:releases_train_run)).to be_valid
   end
 
+  describe ".create" do
+    it "creates the release metadata with default locale" do
+      run = create(:releases_train_run)
+
+      expect(run.release_metadata).to be_present
+      expect(run.release_metadata.locale).to eq(described_class::DEFAULT_LOCALE)
+      expect(run.release_metadata.release_notes).to eq(described_class::DEFAULT_RELEASE_NOTES)
+    end
+  end
+
+  describe "#metadata_editable" do
+    let(:train) { create(:releases_train) }
+    let(:review_step) { create(:releases_step, :review, :with_deployment, train: train) }
+    let(:release_step) { create(:releases_step, :release, :with_deployment, train: train) }
+    let(:regular_deployment) { create(:deployment, :with_google_play_store, step: release_step) }
+    let(:production_deployment) { create(:deployment, :with_google_play_store, :with_staged_rollout, step: release_step) }
+    let(:train_run) { create(:releases_train_run, :on_track, train: train) }
+
+    it "is true when release is on track and does not have deployment runs" do
+      expect(train_run.metadata_editable?).to be(true)
+    end
+
+    it "is true when release is on track and does not have a release step run" do
+      _review_step_run = create(:releases_step_run, step: review_step, train_run:)
+      expect(train_run.metadata_editable?).to be(true)
+    end
+
+    it "is true when release is on track, has a release step run but no production deployment run" do
+      release_step_run = create(:releases_step_run, step: release_step, train_run:)
+      create(:deployment_run, deployment: regular_deployment, step_run: release_step_run)
+      expect(train_run.metadata_editable?).to be(true)
+    end
+
+    it "is false when release is on track, has a release step run and production deployment run" do
+      release_step_run = create(:releases_step_run, step: release_step, train_run:)
+      create(:deployment_run, deployment: production_deployment, step_run: release_step_run)
+      expect(train_run.metadata_editable?).to be(false)
+    end
+
+    it "is false release train is finished" do
+      train_run.update(status: "finished")
+      expect(train_run.metadata_editable?).to be(false)
+    end
+  end
+
   describe "#next_step" do
     subject(:run) { create(:releases_train_run) }
 

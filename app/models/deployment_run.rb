@@ -48,7 +48,7 @@ class DeploymentRun < ApplicationRecord
     :staged_rollout?,
     :staged_rollout_config,
     to: :deployment
-  delegate :release_version, to: :release
+  delegate :release_version, :release_metadata, to: :release
   delegate :app, to: :release
 
   STAMPABLE_REASONS = %w[created release_failed released]
@@ -68,6 +68,7 @@ class DeploymentRun < ApplicationRecord
   enum status: STATES
   enum failure_reason: {
     review_failed: "review_failed",
+    invalid_release: "invalid_release",
     unknown_failure: "unknown_failure"
   }.merge(
     *[
@@ -184,12 +185,40 @@ class DeploymentRun < ApplicationRecord
   end
 
   def on_halt_release!
-    return unless store? && google_play_store_integration?
+    return unless store?
 
     release.with_lock do
-      return unless controllable_rollout?
+      return unless rolloutable?
 
-      yield Deployments::GooglePlayStore::Release.halt_release!(self)
+      if google_play_store_integration?
+        result = Deployments::GooglePlayStore::Release.halt_release!(self)
+      elsif app_store_integration?
+        result = Deployments::AppStoreConnect::Release.halt_phased_release!(self)
+      else
+        raise UnknownStoreError
+      end
+
+      yield result
+    end
+  end
+
+  def on_pause_release!
+    return unless store? && app_store_integration?
+
+    release.with_lock do
+      return unless automatic_rollout?
+
+      yield Deployments::AppStoreConnect::Release.pause_phased_release!(self)
+    end
+  end
+
+  def on_resume_release!
+    return unless store? && app_store_integration?
+
+    release.with_lock do
+      return unless automatic_rollout?
+
+      yield Deployments::AppStoreConnect::Release.resume_phased_release!(self)
     end
   end
 
@@ -212,6 +241,10 @@ class DeploymentRun < ApplicationRecord
     rolloutable? && deployment.controllable_rollout?
   end
 
+  def automatic_rollout?
+    rolloutable? && !deployment.controllable_rollout?
+  end
+
   def app_store_release?
     step.release? && release.on_track? && deployment.app_store?
   end
@@ -221,7 +254,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def reviewable?
-    app_store_release? && may_submit_for_review?
+    app_store_release? && prepared_release?
   end
 
   def releasable?
@@ -231,7 +264,7 @@ class DeploymentRun < ApplicationRecord
   def rollout_percentage
     return unless store?
     return staged_rollout.last_rollout_percentage if staged_rollout?
-    initial_rollout_percentage || Deployment::FULL_ROLLOUT_VALUE
+    initial_rollout_percentage || Deployment::FULL_ROLLOUT_VALUE if deployment.controllable_rollout?
   end
 
   def has_uploaded?

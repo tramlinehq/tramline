@@ -65,31 +65,37 @@ module Installations
         .then { |tracks| Installations::Response::Keys.transform(tracks, transforms) }
     end
 
-    def prepare_release(build_number, version, is_phased_release, transforms = {})
+    def prepare_release(build_number, version, is_phased_release, metadata, transforms)
       params = {
         build_number:,
         version:,
         is_phased_release:,
-        metadata: {whats_new: "The latest version contains bug fixes and performance improvements."}
+        metadata: metadata
       }
 
       execute(:post, PREPARE_RELEASE_URL.expand(bundle_id:).to_s, {json: params})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
-    def submit_release(build_number, transforms = {})
-      execute(:patch, SUBMIT_RELEASE_URL.expand(bundle_id:).to_s, {json: {build_number:}})
+    def submit_release(build_number, version, transforms = {})
+      execute(:patch, SUBMIT_RELEASE_URL.expand(bundle_id:).to_s, {json: {build_number:, version:}})
     end
 
     def start_release(build_number, transforms = {})
       execute(:patch, START_RELEASE_URL.expand(bundle_id:).to_s, {json: {build_number:}})
     end
 
-    def pause_phased_release
+    def pause_phased_release(transforms)
       execute(:patch, PAUSE_LIVE_ROLLOUT_URL.expand(bundle_id:).to_s, {})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
-    def resume_phased_release
+    def resume_phased_release(transforms)
       execute(:patch, RESUME_LIVE_ROLLOUT_URL.expand(bundle_id:).to_s, {})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def halt_phased_release

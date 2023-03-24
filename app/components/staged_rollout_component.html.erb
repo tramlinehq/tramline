@@ -10,17 +10,12 @@
     </div>
 
     <div class="justify-start">
-      <div class="grid grid-cols-1 gap-y-1">
-        <%= form_with(**release_form_url, data: { turbo_confirm: RELEASE_CONFIRM }, builder: ButtonHelper::AuthzForms) do |form| %>
-          <% release_actions(form) %>
-        <% end %>
-
-        <%= form_with(**fully_release_form_url, data: { turbo_confirm: FULLY_RELEASE_CONFIRM }, builder: ButtonHelper::AuthzForms) do |form| %>
-          <% fully_rollout_action(form) %>
-        <% end %>
-
-        <%= form_with(**halt_form_url, data: { turbo_confirm: HALT_CONFIRM }, builder: ButtonHelper::AuthzForms) do |form| %>
-          <% halt_action(form) %>
+      <div class="grid grid-cols-1 gap-y-1 mt-1">
+        <% actions.each do |action| %>
+          <%= form_with(model: [release, step_run, deployment_run, staged_rollout], url: action[:form_url],
+                        data: { turbo_confirm: action[:confirm] }, builder: ButtonHelper::AuthzForms) do |form| %>
+            <% form.authz_submit action[:type], action[:name], class: "btn-xs" %>
+          <% end %>
         <% end %>
       </div>
     </div>

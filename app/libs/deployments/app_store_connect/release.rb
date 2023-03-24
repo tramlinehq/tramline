@@ -38,6 +38,18 @@ module Deployments
         new(deployment_run).complete_phased_release!
       end
 
+      def self.pause_phased_release!(deployment_run)
+        new(deployment_run).pause_phased_release!
+      end
+
+      def self.resume_phased_release!(deployment_run)
+        new(deployment_run).resume_phased_release!
+      end
+
+      def self.halt_phased_release!(deployment_run)
+        new(deployment_run).halt_phased_release!
+      end
+
       def initialize(deployment_run)
         @deployment_run = deployment_run
       end
@@ -54,6 +66,7 @@ module Deployments
         :app_store_integration?,
         :app_store?,
         :staged_rollout_config,
+        :release_metadata,
         to: :run
 
       def kickoff!
@@ -77,12 +90,19 @@ module Deployments
       def prepare_for_release!
         return unless app_store_release?
 
-        result = provider.prepare_release(build_number, release_version, staged_rollout?)
+        result = provider.prepare_release(build_number, release_version, staged_rollout?, release_metadata)
 
         unless result.ok?
           run.fail_with_error(result.error)
           return
         end
+
+        unless valid_release?(result.value!)
+          run.dispatch_fail!(reason: :invalid_release)
+          return
+        end
+
+        create_or_update_external_release(result.value!)
 
         run.prepare_release!
       end
@@ -90,7 +110,7 @@ module Deployments
       def submit_for_review!
         return unless app_store_release?
 
-        result = provider.submit_release(build_number)
+        result = provider.submit_release(build_number, release_version)
 
         unless result.ok?
           run.fail_with_error(result.error)
@@ -111,7 +131,7 @@ module Deployments
         end
 
         release_info = result.value!
-        (run.external_release || run.build_external_release).update(release_info.attributes)
+        create_or_update_external_release(release_info)
 
         if release_info.success?
           return run.ready_to_release! if app_store?
@@ -151,7 +171,7 @@ module Deployments
         end
 
         release_info = result.value!
-        run.external_release.update(release_info.attributes)
+        create_or_update_external_release(release_info)
 
         if release_info.live?(build_number)
           return run.complete! unless staged_rollout?
@@ -168,8 +188,7 @@ module Deployments
         result = provider.complete_phased_release
 
         if result.ok?
-          release_info = result.value!
-          run.external_release.update(release_info.attributes)
+          create_or_update_external_release(result.value!)
         else
           run.fail_with_error(result.error)
         end
@@ -177,11 +196,53 @@ module Deployments
         result
       end
 
+      def pause_phased_release!
+        return unless app_store_release?
+
+        result = provider.pause_phased_release
+
+        if result.ok?
+          release_info = result.value!
+          create_or_update_external_release(release_info)
+          run.staged_rollout.update_stage(release_info.phased_release_stage)
+        end
+
+        result
+      end
+
+      def resume_phased_release!
+        return unless app_store_release?
+
+        result = provider.resume_phased_release
+
+        if result.ok?
+          release_info = result.value!
+          create_or_update_external_release(release_info)
+          run.staged_rollout.update_stage(release_info.phased_release_stage)
+        end
+
+        result
+      end
+
+      def halt_phased_release!
+        return unless app_store_release?
+
+        provider.halt_phased_release
+      end
+
       private
 
       def find_release
         return provider.find_release(build_number) if app_store?
         provider.find_build(build_number)
+      end
+
+      def create_or_update_external_release(release_info)
+        (run.external_release || run.build_external_release).update(release_info.attributes)
+      end
+
+      def valid_release?(release_info)
+        release_info.valid?(build_number, release_version, staged_rollout?)
       end
     end
   end

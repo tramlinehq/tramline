@@ -62,6 +62,8 @@ Rails.application.routes.draw do
       resources :steps, only: %i[new create edit update], shallow: true
 
       resources :releases, only: %i[show create destroy], shallow: true do
+        resource :release_metadatum, only: %i[edit update], path: :metadata
+
         resources :step_runs, only: [], shallow: false, module: "releases" do
           member do
             post :start
@@ -83,6 +85,8 @@ Rails.application.routes.draw do
                   patch :increase
                   patch :halt
                   patch :fully_release
+                  patch :pause
+                  patch :resume
                 end
               end
             end

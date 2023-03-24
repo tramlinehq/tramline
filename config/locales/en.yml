@@ -29,6 +29,7 @@ en:
           review_submission_exists: "a release already being added for review in the store"
           phased_release_not_found: "the release not being phased release enabled"
           release_already_exists: "a release already being present in the store"
+          version_already_exists: "the version already being released in the store"
           build_exists_in_build_channel: "the build already being present in the deployment channel"
           build_not_upgradable: "the build number being lower than the current build in the deployment channel"
           permission_denied: "permission denied by the store"
@@ -78,6 +79,12 @@ en:
               increasing_order: "staged rollout should be in increasing order"
             build_artifact_channel:
               prod_channel_in_review_not_allowed: "cannot add production deployment to review step"
+        release_metadata:
+          attributes:
+            release_notes:
+              no_special_characters: "only allows letters, numbers, and some special characters"
+            promo_text:
+              no_special_characters: "only allows letters, numbers, and some special characters"
         integration:
           format: "%{message}"
         app_store_integration:
