@@ -1,6 +1,6 @@
 class ReleasesController < SignedInApplicationController
   around_action :set_time_zone
-  before_action :require_write_access!, only: %i[create destroy]
+  before_action :require_write_access!, only: %i[create destroy post_release]
   before_action :set_release, only: [:show, :timeline, :destroy]
 
   def show
