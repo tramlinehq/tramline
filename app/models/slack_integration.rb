@@ -37,6 +37,10 @@ class SlackIntegration < ApplicationRecord
 
   DEPLOY_MESSAGE = "A wild new release has appeared!"
 
+  def controllable_rollout?
+    false
+  end
+
   def install_path
     unless integration.notification? || integration.build_channel?
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
