@@ -26,6 +26,10 @@ module Deployments
         new(deployment_run).submit_for_review!
       end
 
+      def self.cancel_release!(deployment_run)
+        new(deployment_run).cancel_release!
+      end
+
       def self.start_release!(deployment_run)
         new(deployment_run).start_release!
       end
@@ -145,6 +149,20 @@ module Deployments
         else
           raise ExternalReleaseNotInTerminalState, "Retrying in some time..."
         end
+      end
+
+      def cancel_release!
+        return unless app_store_release?
+        return unless run.submitted_for_review?
+
+        result = provider.cancel_release(build_number)
+
+        unless result.ok?
+          run.fail_with_error(result.error)
+          return
+        end
+
+        run.cancel!
       end
 
       def start_release!

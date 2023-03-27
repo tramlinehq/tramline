@@ -201,7 +201,7 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def finished_deployments?
-    deployment_runs.released.size == step.deployments.size
+    step.deployments.size == deployment_runs.count { |dr| dr.released? || dr.cancelled? }
   end
 
   def finish_deployment!(deployment)

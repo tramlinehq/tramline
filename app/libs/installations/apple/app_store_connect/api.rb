@@ -19,6 +19,7 @@ module Installations
     PREPARE_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/prepare"
     SUBMIT_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/submit"
     START_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/start"
+    CANCEL_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/cancel"
     FIND_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release"
     FIND_LIVE_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live"
     PAUSE_LIVE_ROLLOUT_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live/rollout/pause"
@@ -85,6 +86,10 @@ module Installations
 
     def start_release(build_number, transforms = {})
       execute(:patch, START_RELEASE_URL.expand(bundle_id:).to_s, {json: {build_number:}})
+    end
+
+    def cancel_release(build_number, transforms = {})
+      execute(:patch, CANCEL_RELEASE_URL.expand(bundle_id:).to_s, {json: {build_number:}})
     end
 
     def pause_phased_release(transforms)

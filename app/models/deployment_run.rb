@@ -63,6 +63,7 @@ class DeploymentRun < ApplicationRecord
     ready_to_release: "ready_to_release",
     rollout_started: "rollout_started",
     released: "released",
+    cancelled: "cancelled",
     failed: "failed"
   }
 
@@ -121,6 +122,11 @@ class DeploymentRun < ApplicationRecord
     event :complete, after_commit: :release_success do
       after { step_run.finish_deployment!(deployment) }
       transitions from: [:created, :uploaded, :started, :submitted_for_review, :rollout_started, :ready_to_release], to: :released
+    end
+
+    event :cancel do
+      after { step_run.finish_deployment!(deployment) }
+      transitions from: :submitted_for_review, to: :cancelled
     end
   end
 

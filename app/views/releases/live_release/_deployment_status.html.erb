@@ -18,6 +18,15 @@
                           { method: :patch, class: 'mt-2 btn-xs' } %>
     <% end %>
 
+    <% if deployment_run.submitted_for_review? %>
+      <%= authz_button_to :red,
+                          "Cancel release",
+                          cancel_release_deployment_run_path(deployment_run),
+                          { method: :patch,
+                            class: 'mt-2 btn-xs',
+                            data: { turbo_confirm: "This will developer reject the current inflight release submission, are you sure?"} } %>
+    <% end %>
+
     <% if deployment_run.releasable? %>
       <%= authz_button_to :blue,
                           "Start release",

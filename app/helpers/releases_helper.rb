@@ -73,6 +73,8 @@ module ReleasesHelper
         ["Released", :success]
       when :failed
         ["Failed", :failure]
+      when :cancelled
+        ["Cancelled", :inert]
       else
         ["Unknown", :neutral]
       end

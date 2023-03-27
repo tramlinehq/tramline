@@ -13,6 +13,16 @@ class Releases::DeploymentRunsController < SignedInApplicationController
     end
   end
 
+  def cancel_release
+    Deployments::AppStoreConnect::Release.cancel_release!(@deployment_run)
+
+    if @deployment_run.cancelled?
+      redirect_back fallback_location: root_path, notice: "Cancelled the release!"
+    else
+      redirect_back fallback_location: root_path, flash: {error: "Failed to cancel for release due to #{@deployment_run.display_attr(:failure_reason)}"}
+    end
+  end
+
   def start_release
     @deployment_run.start_release!
 
