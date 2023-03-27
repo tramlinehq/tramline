@@ -27,12 +27,12 @@
 
     <% if deployment_run.failed_prepare_release? %>
       <%= authz_button_to :blue,
-                          "Prepare new release",
+                          "Over-write inflight release",
                           prepare_release_deployment_run_path(deployment_run),
                           { method: :patch,
                             class: 'mt-2 btn-xs',
                             params: {deployment_run: {force: true}},
-                            data: { turbo_confirm: "This will over-write the previous release submission, are you sure?"} } %>
+                            data: { turbo_confirm: "This will over-write the current inflight release submission, are you sure?"} } %>
     <% end %>
 
     <% if deployment_run.staged_rollout.present? %>

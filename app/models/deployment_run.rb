@@ -114,7 +114,7 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :dispatch_fail, before: :set_reason, after_commit: :release_failed do
-      transitions from: [:started, :prepared_release, :uploaded, :submitted_for_review, :ready_to_release, :rollout_started], to: :failed
+      transitions from: [:started, :prepared_release, :uploaded, :submitted_for_review, :ready_to_release, :rollout_started, :failed_prepare_release], to: :failed
       after { step_run.fail_deploy! }
     end
 
