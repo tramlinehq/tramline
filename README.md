@@ -53,15 +53,20 @@
 
 ## Features ✨
 
-#### Release Trains
+### Release Trains
+
 With our dynamic workflow model, you can setup multiple trains and steps that chug along different deployment channels.
-#### Integrations
+
+### Integrations
 We integrate with all the essential tools you need, including VCS, Notifications, CI/CD, and both App Store and Google Play Store. And we're always expanding to include even more.
-#### Release Dashboards
+
+### Release Dashboards
 A control center where you can monitor all your releases and their statuses from one convenient location.
-#### Analytics
+
+### Analytics
 Track all the release metadata you need to make informed decisions. From frequency and cycle time to build times and review times.
-#### Automations
+
+### Automations
 Cutting release branches to submitting builds to stores, many things are already automatic and many more to come soon! [Keep an eye out](https://www.tramline.app/integrations)!
 
 ## Getting Started ⚙️
@@ -71,7 +76,7 @@ To self-host Tramline on Render, follow these instructions. These steps can also
 
 **Note:** Since Render does not offer background workers under the free plan, you will have to put in your payment details to fully complete this deployment.
 
-#### Requirements
+### Requirements
 
 You'll need the following minimum to get Tramline up and running:
 
@@ -87,16 +92,15 @@ You'll also need to set up integrations for Tramline to be useful:
 * [Creating a Slack app](https://api.slack.com/authentication/basics)
 * [Creating a GitHub app](https://docs.github.com/en/apps/creating-github-apps/creating-github-apps/creating-a-github-app)
 
-#### Setting up integration apps
+### Setting up integration apps
 
 The guides above should help you setup the OAuth apps as necessary. They may ask you to fill up a redirect URL, this URL should be updated with the final DNS after everything is setup towards the end.
 
-#### Google Cloud Platform
+### Google Cloud Platform
 
 We need to setup GCP for storing builds in Tramline. After creating your service account as mentioned above, please create a GCS bucket named `artifact-builds-prod` to host your builds.
 
-
-#### Setting up Tramline
+### Setting up Tramline
 
 The deployment architecture looks like this:
 
@@ -110,13 +114,13 @@ In case you'd like to run this locally first, please follow [Development](#devel
 
 To host Tramline directly, you'll need to prep your fork:
 
-#### Set up Rails
+### Set up Rails
 
 ```bash
 bin/setup.mac
 ```
 
-#### Generate production credentials and follow the instructions
+### Generate production credentials and follow the instructions
 
 ```bash
 bin/setup.creds -e prod
@@ -124,7 +128,7 @@ bin/setup.creds -e prod
 
 Keep the `production.key` file safe and don't commit it.
 
-#### Update production credentials
+### Update production credentials
 
 After adding the encryption credentials, fill in the following details for the integrations in `production.yml.enc` by running `bin/rails credentials:edit --environment production`.
 
@@ -183,7 +187,7 @@ Save the credentials file and commit your changes. Use this button **from your f
 
 The blueprint will ask for the `RAILS_MASTER_KEY`. Use the contents of `production.key` from the previous step.
 
-#### Setup applelink
+### Setup applelink
 
 If you would like to use the App Store integration, you'd have to configure the `applelink` service. You can skip this section otherwise.
 
@@ -211,7 +215,7 @@ AUTH_SECRET=""
 SENTRY_DSN=""
 ```
 
-#### Wrap up
+### Wrap up
 
 Before we wrap up, we need to fix a couple of ENV variables:
 
@@ -228,7 +232,7 @@ That should be it! You can use the default DNS from `site-web` to launch Tramlin
 
 ## Development 🛠️
 
-#### Setup
+### Setup
 
 For local development on macOS, clone this repository and run the included setup script:
 
@@ -246,14 +250,14 @@ bin/setup.mac
 
 Refer to `db/seeds.rb` for credentials on how to login using the seed users.
 
-#### Running
+### Running
 
 - Place the `master.key` file in the `config` directory.
 - Start [ngrok](#webhooks).
 - Start PostgreSQL and Redis using [Homebrew services](https://github.com/Homebrew/homebrew-services).
 - Finally, run `bin/dev`.
 
-#### Webhooks
+### Webhooks
 
 Webhooks need access to the application over the Internet and that requires tunneling on the localhost environment. We
 use ngrok, and you should run it like this:
@@ -283,7 +287,7 @@ ngrok start tramline_dev
 
 or through the `Procfile.dev`
 
-#### Adding or updating gems
+### Adding or updating gems
 
 * Use `bundle add <gem>` to add a new gem.
 * To update a gem use `bundle update <gem>`.
@@ -295,22 +299,22 @@ and safer update path through bundler for future users.
 
 Doing this for development/test groups is optional.
 
-#### SSL
+### SSL
 
 We use SSL locally and certificates are also generated as part of the setup script. It's recommended to
 use https://tramline.local.gd:3000.
 
 This is the default `HOST_NAME` that can be changed via `.env.development` if necessary.
 
-#### Letter Opener
+### Letter Opener
 
 All e-mails are caught and can be viewed [here](https://tramline.local.gd:3000/letter_opener).
 
-#### Sidekiq
+### Sidekiq
 
 The dashboard for all background jobs can be viewed [here](https://tramline.local.gd:3000/sidekiq).
 
-#### Flipper
+### Flipper
 
 All feature-flags are managed through flipper. The UI can be viewed [here](https://tramline.local.gd:3000/flipper).
 
