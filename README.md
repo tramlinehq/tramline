@@ -80,20 +80,20 @@ Save time and reduce human error across the board by automating release-specific
 Track and visualize release-specific metadata that you need to make informed decisions: release frequency, build times, review times, etc. 
 
 
-## Getting Started ⚙️
+## How to self-host ⚙️
 
-To self-host Tramline on Render, follow these instructions. These steps can also be adapted for a Heroku deployment. Instructions for other platforms, including a dockerized setup will come in the future.
+To self-host Tramline on [Render](https://render.com), follow these instructions. These steps can also be adapted for a [Heroku](https://heroku.com) deployment. Instructions for other platforms, including a Dockerized setup will come in the future.
 
-**Note:** Since Render does not offer background workers under the free plan, you will have to put in your payment details to fully complete this deployment.
+> **Note:** Since Render does not offer background workers under the free plan, you will have to put in your payment details to fully complete this deployment.
 
 ### Requirements
 
-You'll need the following minimum to get Tramline up and running:
+At minimum, you'll need the following to get Tramline up and running:
 
 - This repository set up as the primary monolithic backend
 - This repository set up as a background worker
 - Postgres database
-- Redis instance (preferably persistent)
+- Redis, preferably persistent
 
 You'll also need to set up integrations for Tramline to be useful:
 
@@ -120,7 +120,7 @@ The deployment architecture looks like this:
 
 To begin, first clone this repo. This ensures everything that you do is fully under your control.
 
-In case you'd like to run this locally first, please follow [Development](#development-%EF%B8%8F).
+In case you'd like to run this locally first, please follow the [local development instructions](#local-development-%EF%B8%8F).
 
 To host Tramline directly, you'll need to prep your fork:
 
@@ -136,7 +136,7 @@ bin/setup.mac
 bin/setup.creds -e prod
 ```
 
-Keep the `production.key` file safe and don't commit it.
+Keep the `production.key` file safe and don't commit it! 
 
 ### Update production credentials
 
@@ -240,7 +240,7 @@ Once all services on Render are green, your setup should look like this:
 
 That should be it! You can use the default DNS from `site-web` to launch Tramline. You can configure and tweak more settings later.
 
-## Development 🛠️
+## Local development 🛠️
 
 ### Setup
 
@@ -334,4 +334,4 @@ We are still in the early stages and would <3 any feedback you have to offer. Yo
 
 - Join our [Discord](https://discord.com/invite/u7VwyvBV2Z) server to ask us questions or share your thoughts
 - Submit a [feature request or bug report](https://github.com/tramlinehq/tramline/issues/new/choose)
-- Open a pull request (see instructions for local setup [here](##development-%EF%B8%8F))
+- Open a pull request (see instructions for local setup [here](#local-development-%EF%B8%8F))
