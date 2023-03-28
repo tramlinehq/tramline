@@ -53,24 +53,34 @@
 
 ## Features ✨
 
-### Release Trains
+### Release dashboards
 
-With our dynamic workflow model, you can setup multiple trains and steps that chug along different deployment channels.
+A centralized dashboard to monitor and control all your mobile releases, that gives visibility into the release process to all stakeholders.
+
+### Release trains 
+
+Using the release train model, you can setup different types of releases as separate trains comprising of different steps. For e.g. your production release train can look completely different from the release train that does frequent internal deploys.
 
 ### Integrations
-We integrate with all the essential tools you need, including VCS, Notifications, CI/CD, and both App Store and Google Play Store. And we're always expanding to include even more.
 
-### Release Dashboards
-A control center where you can monitor all your releases and their statuses from one convenient location.
-
-### Analytics
-Track all the release metadata you need to make informed decisions. From frequency and cycle time to build times and review times.
+Connect with all the [essential tools](https://www.tramline.app/integrations) you use during your release cycle: version control, notifications, CI/CD (build) servers, distribution services, and both App Store and Play Store.
 
 ### Automations
-Cutting release branches to submitting builds to stores, many things are already automatic and many more to come soon! [Keep an eye out](https://www.tramline.app/integrations)!
+
+Save time and reduce human error across the board by automating release-specific chores. For e.g. 
+
+- Create a new release branch for every release
+- Create and merge release-specific branches, as determined by your branching strategy 
+- Submit build to the Store only after explicit approval 
+- Tag the final release build commit 
+- Don't allow starting a new release unless previous release-specific commits have landed in the working branch
+
+### Analytics
+
+Track and visualize release-specific metadata that you need to make informed decisions: release frequency, build times, review times, etc. 
+
 
 ## Getting Started ⚙️
-
 
 To self-host Tramline on Render, follow these instructions. These steps can also be adapted for a Heroku deployment. Instructions for other platforms, including a dockerized setup will come in the future.
 
@@ -110,7 +120,7 @@ The deployment architecture looks like this:
 
 To begin, first clone this repo. This ensures everything that you do is fully under your control.
 
-In case you'd like to run this locally first, please follow [Development](#development-).
+In case you'd like to run this locally first, please follow [Development](#development-%EF%B8%8F).
 
 To host Tramline directly, you'll need to prep your fork:
 
@@ -253,7 +263,7 @@ Refer to `db/seeds.rb` for credentials on how to login using the seed users.
 ### Running
 
 - Place the `master.key` file in the `config` directory.
-- Start [ngrok](#webhooks).
+- Start ngrok for [webhooks](#webhooks).
 - Start PostgreSQL and Redis using [Homebrew services](https://github.com/Homebrew/homebrew-services).
 - Finally, run `bin/dev`.
 
