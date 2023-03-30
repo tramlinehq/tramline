@@ -59,7 +59,7 @@ Rails.application.routes.draw do
         patch :deactivate
       end
 
-      resources :steps, only: %i[new create edit update], shallow: true
+      resources :steps, only: %i[new create edit update]
 
       resources :releases, only: %i[show create destroy], shallow: true do
         resource :release_metadatum, only: %i[edit update], path: :metadata
