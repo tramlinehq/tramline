@@ -2,7 +2,7 @@
   <%= render partial: 'shared/errors', locals: { resource: @step } %>
 
   <%= form_with(model: @step,
-                url: step_path(@step),
+                url: app_train_step_path(@app, @train, @step),
                 builder: ButtonHelper::AuthzForms,
                 method: :patch) do |form| %>
 
