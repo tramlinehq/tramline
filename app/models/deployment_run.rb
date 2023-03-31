@@ -58,6 +58,7 @@ class DeploymentRun < ApplicationRecord
     started: "started",
     prepared_release: "prepared_release",
     submitted_for_review: "submitted_for_review",
+    failed_prepare_release: "failed_prepare_release",
     uploaded: "uploaded",
     ready_to_release: "ready_to_release",
     rollout_started: "rollout_started",
@@ -86,11 +87,17 @@ class DeploymentRun < ApplicationRecord
       transitions from: :created, to: :started
     end
 
-    event(:prepare_release, guard: :app_store?) do
-      transitions from: :started, to: :prepared_release
+    event :prepare_release, guard: :app_store? do
+      transitions from: [:started, :failed_prepare_release], to: :prepared_release
     end
 
-    event(:submit_for_review, after_commit: :find_submission) do
+    event :fail_prepare_release, before: :set_reason do
+      transitions from: :started, to: :failed_prepare_release do
+        guard { |_| app_store? }
+      end
+    end
+
+    event :submit_for_review, after_commit: :find_submission do
       transitions from: [:started, :prepared_release], to: :submitted_for_review
     end
 
@@ -107,7 +114,7 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :dispatch_fail, before: :set_reason, after_commit: :release_failed do
-      transitions from: [:started, :prepared_release, :uploaded, :submitted_for_review, :ready_to_release, :rollout_started], to: :failed
+      transitions from: [:started, :prepared_release, :uploaded, :submitted_for_review, :ready_to_release, :rollout_started, :failed_prepare_release], to: :failed
       after { step_run.fail_deploy! }
     end
 

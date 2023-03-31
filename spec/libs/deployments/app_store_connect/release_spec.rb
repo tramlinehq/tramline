@@ -166,7 +166,7 @@ describe Deployments::AppStoreConnect::Release do
       it "prepares the release" do
         described_class.prepare_for_release!(run)
 
-        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, false, run.release.release_metadata).once
+        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, false, run.release.release_metadata, false).once
       end
 
       it "marks the deployment run as prepared release" do
@@ -179,7 +179,13 @@ describe Deployments::AppStoreConnect::Release do
         run = create_deployment_run_for_ios(:started, deployment_traits: [:with_phased_release, :with_app_store], step_trait: :release)
         described_class.prepare_for_release!(run)
 
-        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, true, run.release.release_metadata).once
+        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, true, run.release.release_metadata, false).once
+      end
+
+      it "prepares the release with force" do
+        described_class.prepare_for_release!(run, force: true)
+
+        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, false, run.release.release_metadata, true).once
       end
     end
 
@@ -207,6 +213,33 @@ describe Deployments::AppStoreConnect::Release do
         described_class.prepare_for_release!(run)
 
         expect(run.reload.failure_reason).to eq("build_not_found")
+      end
+    end
+
+    context "when retryable failure" do
+      let(:run) {
+        create_deployment_run_for_ios(
+          :started,
+          deployment_traits: [:with_app_store, :with_production_channel],
+          step_trait: :release
+        )
+      }
+      let(:error) { Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "release", "code" => "release_already_prepared"}}) }
+
+      before do
+        allow(providable_dbl).to receive(:prepare_release).and_return(GitHub::Result.new { raise error })
+      end
+
+      it "marks the deployment run as failed to prepare release" do
+        described_class.prepare_for_release!(run)
+
+        expect(run.reload.failed_prepare_release?).to be(true)
+      end
+
+      it "adds the reason of failure to deployment run" do
+        described_class.prepare_for_release!(run)
+
+        expect(run.reload.failure_reason).to eq("release_already_exists")
       end
     end
 

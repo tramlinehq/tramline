@@ -18,8 +18,8 @@ module Deployments
         new(deployment_run).to_test_flight!
       end
 
-      def self.prepare_for_release!(deployment_run)
-        new(deployment_run).prepare_for_release!
+      def self.prepare_for_release!(deployment_run, force: false)
+        new(deployment_run).prepare_for_release!(force:)
       end
 
       def self.submit_for_review!(deployment_run)
@@ -87,13 +87,17 @@ module Deployments
         run.submit_for_review!
       end
 
-      def prepare_for_release!
+      def prepare_for_release!(force: false)
         return unless app_store_release?
 
-        result = provider.prepare_release(build_number, release_version, staged_rollout?, release_metadata)
+        result = provider.prepare_release(build_number, release_version, staged_rollout?, release_metadata, force)
 
         unless result.ok?
-          run.fail_with_error(result.error)
+          if result.error.reason.in? [:release_already_exists]
+            run.fail_prepare_release!(reason: result.error.reason)
+          else
+            run.fail_with_error(result.error)
+          end
           return
         end
 

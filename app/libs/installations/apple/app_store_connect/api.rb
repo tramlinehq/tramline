@@ -65,11 +65,12 @@ module Installations
         .then { |tracks| Installations::Response::Keys.transform(tracks, transforms) }
     end
 
-    def prepare_release(build_number, version, is_phased_release, metadata, transforms)
+    def prepare_release(build_number, version, is_phased_release, metadata, is_force, transforms)
       params = {
         build_number:,
         version:,
         is_phased_release:,
+        is_force:,
         metadata: metadata
       }
 
