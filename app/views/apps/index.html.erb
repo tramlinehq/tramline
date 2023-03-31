@@ -1,3 +1,8 @@
+<% content_for :sticky_page_message do %>
+  <%= render partial: "shared/sticky_topbar_message",
+             locals: { msg: "Contact us via the chat in the bottom right corner and we'll help you get setup with your release process." } %>
+<% end %>
+
 <%= render PageComponent.new(breadcrumb: breadcrumb(:apps), title: "Apps 👩‍💻") do |page| %>
   <% page.with_action do %>
     <%= authz_link_to :green, new_app_path do %>
