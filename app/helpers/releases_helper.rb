@@ -60,7 +60,7 @@ module ReleasesHelper
       when :prepared_release
         ["Ready for review", :ongoing]
       when :failed_prepare_release
-        ["Failed start release", :inert]
+        ["Failed to start release", :inert]
       when :submitted_for_review
         ["Submitted for review", :ongoing]
       when :ready_to_release

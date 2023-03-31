@@ -27,7 +27,7 @@
 
     <% if deployment_run.failed_prepare_release? %>
       <%= authz_button_to :blue,
-                          "Over-write inflight release",
+                          "Replace inflight release",
                           prepare_release_deployment_run_path(deployment_run),
                           { method: :patch,
                             class: 'mt-2 btn-xs',
