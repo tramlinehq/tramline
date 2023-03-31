@@ -4,7 +4,7 @@ namespace :metrics do
     # collect data
     data = {}
     started_at = Time.current
-    new_organizations = Accounts::Organization.where(created_at: args[:hours].to_i.hours.ago..Time.current)
+    new_organizations = Accounts::Organization.where(created_at: args[:hours].to_i.hours.ago..Time.current).includes(:users)
     new_apps = App.where(created_at: args[:hours].to_i.hours.ago..Time.current).includes(:integrations, trains: [:runs])
     new_releases = Releases::Train::Run.where(created_at: args[:hours].to_i.hours.ago..Time.current).includes(train: [steps: [:deployments]])
 
