@@ -55,8 +55,8 @@ module Installations
             commit_hash: commit_hash,
             workflow_id: workflow_id,
             environments: [
-              {mapped_to: "BUILD_VERSION", value: inputs[:build_version]},
-              {mapped_to: "BUILD_NUMBER", value: inputs[:version_code]}
+              {mapped_to: "versionName", value: inputs[:build_version]},
+              {mapped_to: "versionCode", value: inputs[:version_code]}
             ]
           },
 
