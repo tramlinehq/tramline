@@ -1,12 +1,12 @@
 namespace :metrics do
   desc "Superficial details on users and basic usage patterns"
-  task :uptick, %i[hours] => :environment do |_, args|
+  task :uptick, %i[hours webhook_url] => :environment do |_, args|
     # collect data
     data = {}
     started_at = Time.current
     new_organizations = Accounts::Organization.where(created_at: args[:hours].to_i.hours.ago..Time.current)
-    new_apps = App.where(created_at: args[:hours].to_i.hours.ago..Time.current)
-    new_releases = Releases::Train::Run.where(created_at: args[:hours].to_i.hours.ago..Time.current)
+    new_apps = App.where(created_at: args[:hours].to_i.hours.ago..Time.current).includes(:integrations, trains: [:runs])
+    new_releases = Releases::Train::Run.where(created_at: args[:hours].to_i.hours.ago..Time.current).includes(train: [steps: [:deployments]])
 
     # format data
     data[:accounts] =
@@ -17,9 +17,8 @@ namespace :metrics do
         DEETS
       end
 
-    apps = new_apps.includes(:integrations, trains: [runs: [step_runs: [:step, deployment_runs: [:deployment]]]])
     data[:apps] =
-      apps.map do |app|
+      new_apps.map do |app|
         integrations = app.integrations
         trains = app.trains
         releases = trains.flat_map(&:runs)
@@ -49,7 +48,7 @@ namespace :metrics do
 
     # print data
     print_buf = ""
-    print_buf << "_Run at #{started_at.strftime("%H:%M – %d.%m.%Y")}\n\n"
+    print_buf << "Run at #{started_at.strftime("%H:%M – %d.%m.%Y")}\n\n"
     data.each do |k, values|
       next if values.blank?
       key = k.to_s.titleize
@@ -66,8 +65,8 @@ namespace :metrics do
     puts print_buf.chop! if print_buf.present?
 
     # send to slack
-    payload = {channel: "CHAN", text: print_buf}.to_json
-    cmd = "curl -X POST --data-urlencode 'payload=#{payload}' URL"
+    payload = {text: print_buf}.to_json
+    cmd = "curl -X POST --data-urlencode 'payload=#{payload}' #{args[:webhook_url]}"
     system(cmd)
   end
 end
