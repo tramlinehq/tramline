@@ -70,8 +70,8 @@ namespace :metrics do
     puts print_buf
 
     # send to slack
-    # payload = {text: print_buf}.to_json
-    # cmd = "curl -X POST --data-urlencode 'payload=#{payload}' #{args[:webhook_url]}"
-    # system(cmd)
+    payload = {text: print_buf}.to_json
+    cmd = "curl -X POST --data-urlencode 'payload=#{payload}' #{args[:webhook_url]}"
+    system(cmd)
   end
 end
