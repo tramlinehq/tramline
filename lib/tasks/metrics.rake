@@ -46,9 +46,8 @@ namespace :metrics do
         DEETS
       end
 
-    # print data
+    # prepare data
     print_buf = ""
-    print_buf << "Run at #{started_at.strftime("%H:%M – %d.%m.%Y")}\n\n"
     data.each do |k, values|
       next if values.blank?
       key = k.to_s.titleize
@@ -62,7 +61,12 @@ namespace :metrics do
       print_buf.chop!
       print_buf << "```\n"
     end
-    puts print_buf.chop! if print_buf.present?
+    print_buf.chop!
+    print_buf << "No data" if print_buf.blank?
+    print_buf.prepend "Run at #{started_at.strftime("%H:%M – %d.%m.%Y")}\n\n"
+
+    # send to stdout
+    puts print_buf
 
     # send to slack
     payload = {text: print_buf}.to_json
