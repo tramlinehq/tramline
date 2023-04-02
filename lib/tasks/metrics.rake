@@ -4,9 +4,10 @@ namespace :metrics do
     # collect data
     data = {}
     started_at = Time.current
-    new_organizations = Accounts::Organization.where(created_at: args[:hours].to_i.hours.ago..Time.current).includes(:users)
-    new_apps = App.where(created_at: args[:hours].to_i.hours.ago..Time.current).includes(:integrations, trains: [:runs])
-    new_releases = Releases::Train::Run.where(created_at: args[:hours].to_i.hours.ago..Time.current).includes(train: [steps: [:deployments]])
+    ago = args[:hours].to_i
+    new_organizations = Accounts::Organization.where(created_at: ago.hours.ago..Time.current).includes(:users)
+    new_apps = App.where(created_at: ago.hours.ago..Time.current).includes(:integrations, trains: [:runs])
+    new_releases = Releases::Train::Run.where(created_at: ago.hours.ago..Time.current).includes(train: [steps: [:deployments]])
 
     # format data
     data[:accounts] =
@@ -51,7 +52,7 @@ namespace :metrics do
     data.each do |k, values|
       next if values.blank?
       key = k.to_s.titleize
-      print_buf << "New *#{key}* in the last #{args[:hours]} hours"
+      print_buf << "New *#{key}*"
       print_buf << "\n\n"
       print_buf << "```\n"
       values.each do |v|
@@ -62,15 +63,15 @@ namespace :metrics do
       print_buf << "```\n"
     end
     print_buf.chop!
-    print_buf << "No data" if print_buf.blank?
-    print_buf.prepend "Run at #{started_at.strftime("%H:%M – %d.%m.%Y")}\n\n"
+    print_buf << "No new data" if print_buf.blank?
+    print_buf.prepend "Run at #{started_at.strftime("%H:%M%Z – %d.%m.%Y")} | Data from the last #{ago} hours\n\n"
 
     # send to stdout
     puts print_buf
 
     # send to slack
-    payload = {text: print_buf}.to_json
-    cmd = "curl -X POST --data-urlencode 'payload=#{payload}' #{args[:webhook_url]}"
-    system(cmd)
+    # payload = {text: print_buf}.to_json
+    # cmd = "curl -X POST --data-urlencode 'payload=#{payload}' #{args[:webhook_url]}"
+    # system(cmd)
   end
 end
