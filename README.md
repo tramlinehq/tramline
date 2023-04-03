@@ -82,7 +82,7 @@ Track and visualize release-specific metadata that you need to make informed dec
 
 ## How to set it up yourself ⚙️
 
-These steps assume [Render](https://render.com) for hosting instructions. However, the instructions are standard enough to be adapted for a [Heroku](https://heroku.com) deployment or even bare-metal. A Dockerized setup is in the works and will come shortly.
+These steps assume setting it up on [Render](https://render.com) only. However, the instructions are standard enough to be adapted for a [Heroku](https://heroku.com) deployment or even bare-metal. A Dockerized setup is in the works and will come shortly.
 
 > **Note:** Since Render does not offer background workers under the free plan, you will have to put in your payment details to fully complete this deployment.
 
