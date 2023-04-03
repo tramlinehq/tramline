@@ -1,14 +1,15 @@
 <div class="max-w-sm mx-auto px-4 py-8">
   <h1 class="text-3xl text-slate-800 font-bold mb-8">Forgot your password?</h1>
-  <%= render partial: "shared/errors" %>
+
+  <%= render "shared/flash" %>
+  <%= render "shared/errors" %>
 
   <!-- Form -->
-  <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+  <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post, 'data-turbo' => "false" }) do |f| %>
     <div class="space-y-4">
-
       <div>
         <%= f.label :email, class: "block text-sm font-medium mb-1" %>
-        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-input w-full" %>
+        <%= f.email_field :email, required: true, autofocus: true, autocomplete: "email", class: "form-input w-full" %>
       </div>
 
       <div class="flex items-center justify-center mt-6">

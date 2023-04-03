@@ -1,25 +1,41 @@
-<h2>Change your password</h2>
-
-<%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
-  <%= f.hidden_field :reset_password_token %>
-
-  <div class="field">
-    <%= f.label :password, "New password" %><br />
-    <% if @minimum_password_length %>
-      <em>(<%= @minimum_password_length %> characters minimum)</em><br />
-    <% end %>
-    <%= f.password_field :password, autofocus: true, autocomplete: "new-password" %>
+<div class="max-w-sm mx-auto px-4 py-8">
+  <div class="flex mb-8">
+    <%= inline_svg("tramline.svg") %>
   </div>
 
-  <div class="field">
-    <%= f.label :password_confirmation, "Confirm new password" %><br />
-    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
-  </div>
+  <%= render "shared/errors" %>
+  <%= render "shared/flash" %>
 
-  <div class="actions">
-    <%= f.submit "Change my password" %>
-  </div>
-<% end %>
+  <h1 class="text-3xl text-slate-800 font-bold mb-6">Reset password 🔏</h1>
 
-<%= render "devise/shared/links" %>
+  <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put, 'data-turbo' => "false" }) do |f| %>
+    <div class="space-y-6">
+      <%= render "shared/flash", resource: resource %>
+      <%= f.hidden_field :reset_password_token %>
+
+      <div>
+        <%= f.label :password, "New password", class: "block text-sm font-medium mb-1" %>
+        <%= f.password_field :password, required: true, autofocus: true, autocomplete: "new-password", class: "form-input w-full" %>
+      </div>
+
+      <div class="field">
+        <%= f.label :password_confirmation, "Confirm new password", class: "block text-sm font-medium mb-1" %>
+        <%= f.password_field :password_confirmation, required: true, autocomplete: "new-password", class: "form-input w-full" %>
+      </div>
+
+      <div class="actions">
+        <%= f.submit "Reset", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="pt-5 mt-6 border-t border-slate-200">
+    <div class="text-sm">
+      <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
+        <%= link_to "Sign up", new_registration_path(resource_name), class: "font-medium text-indigo-500 hover:text-indigo-600" %>
+      <% end %>
+      or,
+      <%= link_to "Sign In", user_session_path, class: "font-medium text-indigo-500 hover:text-indigo-600" %>
+    </div>
+  </div>
+</div>
