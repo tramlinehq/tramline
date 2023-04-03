@@ -21,6 +21,8 @@ class Accounts::Organization < ApplicationRecord
 
   enum status: {active: "active", dormant: "dormant", guest: "guest"}
 
+  validates :name, presence: true
+
   friendly_id :name, use: :slugged
 
   auto_strip_attributes :name, squish: true
