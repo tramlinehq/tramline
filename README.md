@@ -80,9 +80,9 @@ Save time and reduce human error across the board by automating release-specific
 Track and visualize release-specific metadata that you need to make informed decisions: release frequency, build times, review times, etc. 
 
 
-## How to self-host ⚙️
+## How to set it up yourself ⚙️
 
-To self-host Tramline on [Render](https://render.com), follow these instructions. These steps can also be adapted for a [Heroku](https://heroku.com) deployment. Instructions for other platforms, including a Dockerized setup will come in the future.
+These steps assume [Render](https://render.com) for hosting instructions. However, the instructions are standard enough to be adapted for a [Heroku](https://heroku.com) deployment or even bare-metal. A Dockerized setup is in the works and will come shortly.
 
 > **Note:** Since Render does not offer background workers under the free plan, you will have to put in your payment details to fully complete this deployment.
 
