@@ -12,7 +12,7 @@
     <div class="space-y-4">
       <div>
         <%= f.label :full_name, class: "block text-sm font-medium mb-1" %>
-        <%= f.text_field :full_name, autofocus: true, autocomplete: "full-name", class: "form-input w-full" %>
+        <%= f.text_field :full_name, required: true, autofocus: true, autocomplete: "full-name", class: "form-input w-full" %>
       </div>
 
       <div>
@@ -22,26 +22,26 @@
 
       <div>
         <%= f.label :email, class: "block text-sm font-medium mb-1" %>
-        <%= f.email_field :email, autocomplete: "email", class: "form-input w-full", readonly: @invite.present? %>
+        <%= f.email_field :email, required: true, autocomplete: "email", class: "form-input w-full", readonly: @invite.present? %>
       </div>
 
       <% if @token.blank? %>
         <div>
           <%= f.fields_for :organizations, @organization do |m| %>
             <%= m.label :name, "Organization Name", class: "block text-sm font-medium mb-1" %>
-            <%= m.text_field :name, autofocus: true, autocomplete: "organization-name", class: "form-input w-full" %>
+            <%= m.text_field :name, required: true, autofocus: true, autocomplete: "organization-name", class: "form-input w-full" %>
           <% end %>
         </div>
       <% end %>
 
       <div class="field">
         <%= f.label :password, class: "block text-sm font-medium mb-1" %>
-        <%= f.password_field :password, autocomplete: "new-password", placeholder: "Minimum #{@minimum_password_length} characters", class: "form-input w-full" %>
+        <%= f.password_field :password, required: true, autocomplete: "new-password", placeholder: "Minimum #{@minimum_password_length} characters", class: "form-input w-full" %>
       </div>
 
       <div class="field">
         <%= f.label :password_confirmation, class: "block text-sm font-medium mb-1" %>
-        <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-input w-full" %>
+        <%= f.password_field :password_confirmation, required: true, autocomplete: "new-password", class: "form-input w-full" %>
       </div>
 
       <div class="flex items-center justify-between mt-6">
