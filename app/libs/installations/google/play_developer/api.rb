@@ -48,7 +48,10 @@ module Installations
       @version_code = version_code
       @release_version = release_version
       @rollout_percentage = rollout_percentage
-      @release_notes = release_notes
+      @release_notes = {
+        language: "en-US",
+        text: "The latest version contains bug fixes and performance improvements."
+      }
 
       execute do
         edit = client.insert_edit(package_name)
@@ -61,7 +64,10 @@ module Installations
       @track_name = track_name
       @version_code = version_code
       @release_version = release_version
-      @release_notes = release_notes
+      @release_notes = {
+        language: "en-US",
+        text: "The latest version contains bug fixes and performance improvements."
+      }
 
       execute do
         edit = client.insert_edit(package_name)
@@ -97,13 +103,13 @@ module Installations
 
     def active_release
       rollout_status = @rollout_percentage.eql?(100) ? RELEASE_STATUS[:completed] : RELEASE_STATUS[:in_progress]
-      params = release_params.merge(status: rollout_status, release_notes: @release_notes)
+      params = release_params.merge(status: rollout_status, release_notes: [@release_notes])
       params[:user_fraction] = user_fraction if @rollout_percentage && user_fraction < 1.0
       ANDROID_PUBLISHER::TrackRelease.new(**params)
     end
 
     def draft_release
-      params = release_params.merge(status: RELEASE_STATUS[:draft], release_notes: @release_notes)
+      params = release_params.merge(status: RELEASE_STATUS[:draft], release_notes: [@release_notes])
       ANDROID_PUBLISHER::TrackRelease.new(**params)
     end
 
@@ -117,7 +123,7 @@ module Installations
     end
 
     def release_params
-      {name: @release_version, version_codes: [@version_code]}
+      { name: @release_version, version_codes: [@version_code] }
     end
 
     def execute
