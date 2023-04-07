@@ -1,11 +1,6 @@
-<div class="max-w-sm mx-auto px-4 py-8">
-  <div class="flex mb-8">
-    <%= inline_svg("tramline.svg") %>
-  </div>
+<div class="max-w-md mx-auto px-4 py-8">
+  <%= render partial: "authentication/shared/header", locals: { heading: "Sign in to your account ✨"} %>
 
-  <%= render partial: "shared/flash" %>
-
-  <!-- Form -->
   <%= form_for(resource, as: resource_name, html: { 'data-turbo' => "false" }, url: session_path(resource_name)) do |f| %>
     <div class="space-y-6">
       <div>
@@ -16,6 +11,13 @@
       <div>
         <%= f.label :password, class: "block text-sm font-medium mb-1" %>
         <%= f.password_field :password, autocomplete: "current-password", class: "form-input w-full" %>
+
+        <div class="text-sm mt-2">
+          <%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
+            <%= link_to "Forgot your password?", new_password_path(resource_name),
+                        class: "font-medium text-indigo-500 hover:text-indigo-600" %>
+          <% end %>
+        </div>
       </div>
 
       <% if devise_mapping.rememberable? %>
@@ -25,23 +27,17 @@
         </label>
       <% end %>
 
-      <div class="flex items-center justify-between">
-        <div class="mr-1">
-          <%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
-            <%= link_to "Forgot your password?", new_password_path(resource_name), class: "text-sm underline hover:no-underline" %>
-          <% end %>
+      <%= f.submit "Log in", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white w-full" %>
 
-          <div>
-            <%= link_to "Sign up", new_registration_path(resource_name), class: "text-sm underline hover:no-underline" %>
-          </div>
+      <div class="mr-1">
+        <div class="text-sm">
+          Don't have an account?
+          <%= link_to "Sign up", new_registration_path(resource_name),
+                      class: "font-medium text-indigo-500 hover:text-indigo-600" %>
         </div>
-        <%= f.submit "Log in", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white ml-3" %>
       </div>
     </div>
   <% end %>
 
-  <!-- Footer -->
-  <div class="flex mt-8 pt-4 border-t border-slate-200 justify-center">
-    <span class="text-xs text-slate-400">Copyright <%= Date.current.year %>, Tramline Inc.</span>
-  </div>
+  <%= render partial: "authentication/shared/footer" %>
 </div>
