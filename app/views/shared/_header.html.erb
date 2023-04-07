@@ -1,13 +1,16 @@
 <header class="sticky top-0 <%= dynamic_header_color %> border-b border-slate-200 z-30">
-  <div class="px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between h-16 -mb-px">
+  <div class="w-full max-w-7xl mx-auto">
+    <div class="flex items-center justify-between h-16">
       <!-- Header: Left side -->
-      <div class="flex"></div>
+      <div class="flex">
+        <a class="block" href="/">
+          <%= inline_svg("tramline.svg", classname: "inline-flex w-12") %>
+        </a>
+      </div>
+
       <!-- Header: Right side -->
       <div class="flex items-center space-x-3">
-        <!-- Divider -->
         <hr class="w-px h-6 bg-slate-200"/>
-        <!-- User button -->
         <div class="relative inline-flex" data-controller="reveal" data-reveal-away-value="true">
           <button
             class="inline-flex justify-center items-center group"
