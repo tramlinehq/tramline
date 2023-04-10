@@ -1,5 +1,5 @@
 module Passportable
-  def event_stamp!(reason:, kind:, data: {})
+  def event_stamp!(reason:, kind:, data: {}, ts: Time.current)
     PassportJob.perform_later(
       id,
       self.class.name,
@@ -7,7 +7,7 @@ module Passportable
       kind:,
       message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
       metadata: data,
-      event_timestamp: Time.current
+      event_timestamp: ts
     )
   end
 
@@ -24,7 +24,7 @@ module Passportable
   end
 
   def create_stamp!(data: {})
-    event_stamp!(reason: :created, kind: :notice, data: data)
+    event_stamp!(reason: :created, kind: :notice, data: data, ts: created_at)
   end
 
   def stamp_namespace

@@ -25,7 +25,7 @@ class Triggers::Release
     def create_branches
       GitHub::Result.new do
         train.create_branch!(working_branch, release_branch).then do |value|
-          release.event_stamp!(reason: :release_branch_created, kind: :success, data: {working_branch:, release_branch:})
+          release.event_stamp_now!(reason: :release_branch_created, kind: :success, data: {working_branch:, release_branch:})
           GitHub::Result.new { value }
         end
       rescue Installations::Errors::TagReferenceAlreadyExists
