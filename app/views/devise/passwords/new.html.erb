@@ -1,31 +1,29 @@
-<div class="max-w-sm mx-auto px-4 py-8">
-  <h1 class="text-3xl text-slate-800 font-bold mb-8">Forgot your password?</h1>
+<div class="max-w-md mx-auto px-4 py-8">
+  <%= render partial: "authentication/shared/header", locals: { heading: "Forgot your password? 🧐"} %>
 
-  <%= render "shared/flash" %>
-  <%= render "shared/errors" %>
-
-  <!-- Form -->
-  <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post, 'data-turbo' => "false" }) do |f| %>
-    <div class="space-y-4">
+  <%= form_for(resource, as: resource_name, url: password_path(resource_name),
+               html: { method: :post, 'data-turbo' => "false" }) do |f| %>
+    <div class="space-y-6">
       <div>
         <%= f.label :email, class: "block text-sm font-medium mb-1" %>
         <%= f.email_field :email, required: true, autofocus: true, autocomplete: "email", class: "form-input w-full" %>
       </div>
 
-      <div class="flex items-center justify-center mt-6">
-        <%= f.submit "Send reset password instructions", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white ml-3" %>
+      <div class="">
+        <%= f.submit "Send reset instructions", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white w-full" %>
+      </div>
+
+      <div class="text-sm">
+        Or
+        <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
+          <%= link_to "Sign up", new_registration_path(resource_name),
+                      class: "font-medium text-indigo-500 hover:text-indigo-600" %>
+        <% end %>
+        or,
+        <%= link_to "Sign In", user_session_path, class: "font-medium text-indigo-500 hover:text-indigo-600" %>
       </div>
     </div>
   <% end %>
 
-  <!-- Footer -->
-  <div class="pt-5 mt-6 border-t border-slate-200">
-    <div class="text-sm">
-      <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
-        <%= link_to "Sign up", new_registration_path(resource_name), class: "font-medium text-indigo-500 hover:text-indigo-600" %>
-      <% end %>
-      or,
-      <%= link_to "Sign In", user_session_path, class: "font-medium text-indigo-500 hover:text-indigo-600" %>
-    </div>
-  </div>
+  <%= render partial: "authentication/shared/footer" %>
 </div>
