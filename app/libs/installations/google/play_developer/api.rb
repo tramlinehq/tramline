@@ -50,7 +50,7 @@ module Installations
       @rollout_percentage = rollout_percentage
       @release_notes = {
         language: "en-US",
-        text: "The latest version contains bug fixes and performance improvements."
+        text: release_notes
       }
 
       execute do
@@ -66,7 +66,7 @@ module Installations
       @release_version = release_version
       @release_notes = {
         language: "en-US",
-        text: "The latest version contains bug fixes and performance improvements."
+        text: release_notes
       }
 
       execute do
@@ -123,7 +123,7 @@ module Installations
     end
 
     def release_params
-      { name: @release_version, version_codes: [@version_code] }
+      {name: @release_version, version_codes: [@version_code]}
     end
 
     def execute

@@ -1,3 +1,5 @@
+<% release_metadata = release.release_metadata %>
+
 <section class="mt-8">
   <div class="flex justify-between items-center mb-4">
     <span class="font-bold text-2xl">Release Metadata</span>
@@ -9,8 +11,10 @@
       <%= simple_format release_metadata.release_notes %>
     <% end %>
 
-    <% mt.with_description("Promotional Text") do %>
-      <%= simple_format release_metadata.promo_text %>
+    <% unless is_android %>
+      <% mt.with_description("Promotional Text") do %>
+        <%= simple_format release_metadata.promo_text %>
+      <% end %>
     <% end %>
   <% end %>
 </section>

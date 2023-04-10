@@ -166,6 +166,7 @@ describe StagedRollout do
   describe "#move_to_next_stage!" do
     let(:deployment_run) { create(:deployment_run, :with_staged_rollout, :rollout_started) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+    let(:default_release_notes) { Releases::Train::Run::DEFAULT_RELEASE_NOTES }
 
     before do
       allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
@@ -184,7 +185,7 @@ describe StagedRollout do
       rollout = create(:staged_rollout, :created, deployment_run:, config: [1, 80, 100])
 
       rollout.move_to_next_stage!
-      expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, 1)
+      expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, 1, default_release_notes)
       expect(rollout.reload.started?).to be(true)
     end
 
@@ -193,7 +194,7 @@ describe StagedRollout do
       rollout = create(:staged_rollout, :started, deployment_run:, config: [1, 80, 100], current_stage: 1)
 
       rollout.move_to_next_stage!
-      expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, 100)
+      expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, 100, default_release_notes)
     end
 
     it "updates the current stage with the next stage if promote succeeds" do
