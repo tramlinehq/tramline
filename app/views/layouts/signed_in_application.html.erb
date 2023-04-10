@@ -17,17 +17,18 @@
 
 <body>
 <div class="flex h-screen overflow-hidden">
-  <%= render partial: 'shared/sidebar', locals: { active_apps: current_organization.apps.with_trains } %>
-  <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+  <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden h-full">
     <%= render partial: 'shared/header' %>
 
-    <main>
-      <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+    <main class="mb-64">
+      <div class="py-8 w-full max-w-7xl mx-auto">
         <%= render partial: 'shared/flash' %>
         <%= breadcrumbs fragment_class: 'text-slate-500', separator: ' » ', class: 'text-sm text-slate-500 mb-4' %>
         <%= yield %>
       </div>
     </main>
+
+    <%= render partial: 'shared/footer' %>
   </div>
 </div>
 </body>

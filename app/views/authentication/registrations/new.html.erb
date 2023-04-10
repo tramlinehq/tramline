@@ -31,7 +31,7 @@
           <%= f.fields_for :organizations, @organization do |m| %>
             <%= m.label :name, "Organization name", class: "block text-sm font-medium mb-1" %>
             <%= m.text_field :name, required: true, autofocus: true, autocomplete: "organization-name",
-                             placeholder: "Use your name for a personal account", class: "form-input w-full" %>
+                             placeholder: "Use your own name for a personal account", class: "form-input w-full" %>
           <% end %>
         </div>
       <% end %>

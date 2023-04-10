@@ -1,0 +1,25 @@
+<footer class="mt-auto border-t">
+  <div class="w-full mx-auto max-w-screen-xl flex items-center justify-between py-4">
+    <div class="text-sm text-gray-500">
+      <div>
+        Ver. <code><%= current_deploy[:ref] %></code> • <%= current_deploy[:ago] %>
+      </div>
+
+      Copyright © <%= Date.current.year %>
+
+      <a href="https://tramline.app" class="hover:underline">Tramline Inc.</a>
+    </div>
+
+    <ul class="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-500">
+      <li>
+        <a href="https://tramline.app/why" class="mr-4 hover:underline md:mr-6 ">About</a>
+      </li>
+      <li>
+        <a href="https://docs.tramline.app" class="mr-4 hover:underline md:mr-6">Docs</a>
+      </li>
+      <li>
+        <a href="https://docs.tramline.app/getting-support" class="hover:underline">Support</a>
+      </li>
+    </ul>
+  </div>
+</footer>
