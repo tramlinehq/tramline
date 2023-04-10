@@ -20,6 +20,7 @@ en:
       build_available_html: 'Build <span class="emphasize">%{version}</span> is now available'
       build_unavailable_html: 'Build <span class="emphasize">%{version}</span> is not available'
       build_not_found_in_store_html: 'Build <span class="emphasize">%{version}</span> was not found in the store'
+      build_found_in_store_html: 'Build <span class="emphasize">%{version}</span> located in the store'
       finished_html: 'Finished step <span class="emphasize">%{name}</span> for <span class="emphasize">%{sha}</span>'
     releases/commit:
       created_html: 'New commit <span class="emphasize">%{sha}</span> has landed'

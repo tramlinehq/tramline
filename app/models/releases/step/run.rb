@@ -39,7 +39,19 @@ class Releases::Step::Run < ApplicationRecord
 
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 
-  STAMPABLE_REASONS = %w[created ci_triggered ci_workflow_unavailable ci_finished ci_workflow_failed ci_workflow_halted build_available build_unavailable build_not_found_in_store finished]
+  STAMPABLE_REASONS = %w[
+    created
+    ci_triggered
+    ci_workflow_unavailable
+    ci_finished
+    ci_workflow_failed
+    ci_workflow_halted
+    build_available
+    build_unavailable
+    build_not_found_in_store
+    build_found_in_store
+    finished
+  ]
 
   STATES = {
     on_track: "on_track",
@@ -94,7 +106,9 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: :build_ready, to: :build_available
     end
 
-    event(:build_not_found) { transitions from: :build_ready, to: :build_not_found_in_store }
+    event(:build_not_found, after_commit: -> { notify_on_failure!("Build not found in store!") }) do
+      transitions from: :build_ready, to: :build_not_found_in_store
+    end
     event(:build_upload_failed) { transitions from: :build_ready, to: :build_unavailable }
     event(:start_deploy) { transitions from: [:build_available, :build_found_in_store, :build_ready], to: :deployment_started }
 

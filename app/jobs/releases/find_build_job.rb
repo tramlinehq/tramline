@@ -28,5 +28,6 @@ class Releases::FindBuildJob
     return unless run.release.on_track?
     run.find_build.value!
     run.build_found!
+    run.event_stamp!(reason: :build_found_in_store, kind: :notice, data: {version: run.build_version})
   end
 end
