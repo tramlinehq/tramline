@@ -51,7 +51,15 @@ class DeploymentRun < ApplicationRecord
   delegate :release_version, :release_metadata, to: :release
   delegate :app, to: :release
 
-  STAMPABLE_REASONS = %w[created release_failed released]
+  STAMPABLE_REASONS = %w[
+    created
+    release_failed
+    prepare_release_failed
+    inflight_release_replaced
+    submitted_for_review
+    review_approved
+    release_started released
+  ]
 
   STATES = {
     created: "created",
@@ -303,6 +311,16 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
+  def stamp_data
+    {
+      version: build_version,
+      chan: deployment_channel_name,
+      provider: integration&.providable&.display,
+      file: build_artifact&.get_filename,
+      failure_reason: (display_attr(:failure_reason) if failure_reason.present?)
+    }
+  end
+
   private
 
   def set_reason(args = nil)
@@ -320,15 +338,5 @@ class DeploymentRun < ApplicationRecord
     end
 
     event_stamp!(reason: :released, kind: :success, data: stamp_data)
-  end
-
-  def stamp_data
-    {
-      version: build_version,
-      chan: deployment_channel_name,
-      provider: integration&.providable&.display,
-      file: build_artifact&.get_filename,
-      failure_reason: (display_attr(:failure_reason) if failure_reason.present?)
-    }
   end
 end

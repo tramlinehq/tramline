@@ -27,4 +27,9 @@ en:
     deployment_run:
       created_html: 'Started deployment for <span class="emphasize">%{version}</span> to <span class="emphasize">%{provider}</span> in <span class="emphasize">%{chan}</span>'
       release_failed_html: 'Failed to release <span class="emphasize">%{version}</span> to <span class="emphasize">%{provider}</span> in <span class="emphasize">%{chan}</span> due to <span class="emphasize">%{failure_reason}</span>'
-      released_html: 'Finished deploying <span class="emphasize">%{version}</span> to <span class="emphasize">%{provider}</span> in <span class="emphasize">%{chan}</span>'
+      prepare_release_failed_html: 'Failed to prepare release for <span class="emphasize">%{version}</span> to submit for review in store'
+      inflight_release_replaced_html: 'Replaced existing inflight release in store with <span class="emphasize">%{version}</span>'
+      submitted_for_review_html: 'Submitted release for <span class="emphasize">%{version}</span> for review to the store'
+      review_approved_html: 'Review for release for <span class="emphasize">%{version}</span> approved by the store'
+      release_started_html: 'Started the release of <span class="emphasize">%{version}</span> to <span class="emphasize">%{provider}</span> in <span class="emphasize">%{chan}</span>'
+      released_html: 'Finished releasing <span class="emphasize">%{version}</span> to <span class="emphasize">%{provider}</span> in <span class="emphasize">%{chan}</span>'

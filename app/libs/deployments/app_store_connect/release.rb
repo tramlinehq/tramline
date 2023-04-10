@@ -67,6 +67,7 @@ module Deployments
         :app_store?,
         :staged_rollout_config,
         :release_metadata,
+        :stamp_data,
         to: :run
 
       def kickoff!
@@ -85,6 +86,7 @@ module Deployments
         end
 
         run.submit_for_review!
+        run.event_stamp!(reason: :submitted_for_review, kind: :notice, data: stamp_data)
       end
 
       def prepare_for_release!(force: false)
@@ -95,6 +97,7 @@ module Deployments
         unless result.ok?
           if result.error.reason.in? [:release_already_exists]
             run.fail_prepare_release!(reason: result.error.reason)
+            run.event_stamp!(reason: :prepare_release_failed, kind: :error, data: stamp_data)
           else
             run.fail_with_error(result.error)
           end
@@ -109,6 +112,7 @@ module Deployments
         create_or_update_external_release(result.value!)
 
         run.prepare_release!
+        run.event_stamp!(reason: :inflight_release_replaced, kind: :notice, data: stamp_data) if force
       end
 
       def submit_for_review!
@@ -122,6 +126,7 @@ module Deployments
         end
 
         run.submit_for_review!
+        run.event_stamp!(reason: :submitted_for_review, kind: :notice, data: stamp_data)
       end
 
       def update_external_release
@@ -138,7 +143,11 @@ module Deployments
         create_or_update_external_release(release_info)
 
         if release_info.success?
-          return run.ready_to_release! if app_store?
+          if app_store?
+            run.ready_to_release!
+            run.event_stamp!(reason: :review_approved, kind: :success, data: stamp_data)
+            return
+          end
           run.complete!
         elsif release_info.failed?
           run.dispatch_fail!(reason: :review_failed)
@@ -151,6 +160,7 @@ module Deployments
         return unless app_store_release?
 
         run.engage_release!
+        run.event_stamp!(reason: :release_started, kind: :notice, data: stamp_data)
 
         result = provider.start_release(build_number)
 
