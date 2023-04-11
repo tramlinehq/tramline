@@ -284,7 +284,16 @@ describe DeploymentRun do
 
         run.start_release!
 
-        expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, full_release_value)
+        expect(providable_dbl).to(
+          have_received(:rollout_release)
+            .with(
+              anything,
+              anything,
+              anything,
+              full_release_value,
+              [run.step_run.train_run.release_metadata]
+            )
+        )
         expect(run.reload.released?).to be(true)
       end
 
