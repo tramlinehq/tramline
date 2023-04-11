@@ -41,7 +41,6 @@ module Deployments
         :release_metadata,
         :google_play_store_integration?,
         :staged_rollout_config,
-        :stamp_data,
         to: :run
 
       def kickoff!

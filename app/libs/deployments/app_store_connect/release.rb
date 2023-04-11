@@ -96,7 +96,6 @@ module Deployments
         unless result.ok?
           if result.error.reason.in? [:release_already_exists]
             run.fail_prepare_release!(reason: result.error.reason)
-            run.event_stamp!(reason: :prepare_release_failed, kind: :error, data: stamp_data)
           else
             run.fail_with_error(result.error)
           end
