@@ -38,6 +38,7 @@ module Deployments
         :build_number,
         :release_version,
         :staged_rollout?,
+        :release_metadata,
         :google_play_store_integration?,
         :staged_rollout_config,
         :stamp_data,
@@ -81,13 +82,24 @@ module Deployments
         return unless google_play_store_integration?
         return unless run.rollout_started?
 
-        provider.halt_release(deployment_channel, build_number, release_version, run.staged_rollout.last_rollout_percentage)
+        provider.halt_release(
+          deployment_channel,
+          build_number,
+          release_version,
+          run.staged_rollout.last_rollout_percentage
+        )
       end
 
       def release_to_all!
         return unless google_play_store_integration?
 
-        result = provider.rollout_release(deployment_channel, build_number, release_version, Deployment::FULL_ROLLOUT_VALUE)
+        result = provider.rollout_release(
+          deployment_channel,
+          build_number,
+          release_version,
+          Deployment::FULL_ROLLOUT_VALUE,
+          [release_metadata]
+        )
 
         run.fail_with_error(result.error) unless result.ok?
         result
@@ -96,7 +108,13 @@ module Deployments
       def release_with(rollout_value:)
         return unless google_play_store_integration?
 
-        result = provider.rollout_release(deployment_channel, build_number, release_version, rollout_value)
+        result = provider.rollout_release(
+          deployment_channel,
+          build_number,
+          release_version,
+          rollout_value,
+          [release_metadata]
+        )
 
         run.fail_with_error(result.error) unless result.ok?
         result
@@ -105,7 +123,13 @@ module Deployments
       private
 
       def fully_release!
-        result = provider.rollout_release(deployment_channel, build_number, release_version, Deployment::FULL_ROLLOUT_VALUE)
+        result = provider.rollout_release(
+          deployment_channel,
+          build_number,
+          release_version,
+          Deployment::FULL_ROLLOUT_VALUE,
+          [release_metadata]
+        )
 
         if result.ok?
           run.complete!
@@ -115,7 +139,12 @@ module Deployments
       end
 
       def rollout!
-        result = provider.create_draft_release(deployment_channel, build_number, release_version)
+        result = provider.create_draft_release(
+          deployment_channel,
+          build_number,
+          release_version,
+          [release_metadata]
+        )
 
         if result.ok?
           run.create_staged_rollout!(config: staged_rollout_config)
