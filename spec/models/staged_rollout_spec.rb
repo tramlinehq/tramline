@@ -165,9 +165,8 @@ describe StagedRollout do
 
   describe "#move_to_next_stage!" do
     let(:deployment_run) { create(:deployment_run, :with_staged_rollout, :rollout_started) }
+    let(:release_metadata) { deployment_run.step_run.train_run.release_metadata }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
-    let(:default_release_notes) { Releases::Train::Run::DEFAULT_RELEASE_NOTES }
-    let(:default_release_notes_locale) { Releases::Train::Run::DEFAULT_LOCALE }
 
     before do
       allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
@@ -188,7 +187,7 @@ describe StagedRollout do
       rollout.move_to_next_stage!
       expect(providable_dbl).to(
         have_received(:rollout_release)
-          .with(anything, anything, anything, 1, default_release_notes, default_release_notes_locale)
+          .with(anything, anything, anything, 1, [release_metadata])
       )
       expect(rollout.reload.started?).to be(true)
     end
@@ -200,7 +199,7 @@ describe StagedRollout do
       rollout.move_to_next_stage!
       expect(providable_dbl).to(
         have_received(:rollout_release)
-          .with(anything, anything, anything, 100, default_release_notes, default_release_notes_locale)
+          .with(anything, anything, anything, 100, [release_metadata])
       )
     end
 

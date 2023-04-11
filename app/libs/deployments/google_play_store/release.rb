@@ -96,8 +96,7 @@ module Deployments
           build_number,
           release_version,
           Deployment::FULL_ROLLOUT_VALUE,
-          release_metadata.release_notes,
-          release_metadata.locale
+          [release_metadata]
         )
 
         run.fail_with_error(result.error) unless result.ok?
@@ -112,8 +111,7 @@ module Deployments
           build_number,
           release_version,
           rollout_value,
-          release_metadata.release_notes,
-          release_metadata.locale
+          [release_metadata]
         )
 
         run.fail_with_error(result.error) unless result.ok?
@@ -128,8 +126,7 @@ module Deployments
           build_number,
           release_version,
           Deployment::FULL_ROLLOUT_VALUE,
-          release_metadata.release_notes,
-          release_metadata.locale
+          [release_metadata]
         )
 
         if result.ok?
@@ -144,8 +141,7 @@ module Deployments
           deployment_channel,
           build_number,
           release_version,
-          release_metadata.release_notes,
-          release_metadata.locale
+          [release_metadata]
         )
 
         if result.ok?

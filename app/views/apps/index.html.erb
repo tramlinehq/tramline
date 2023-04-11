@@ -17,7 +17,7 @@
         <% table.with_row do |row| %>
           <% row.with_cell do %>
             <div class="flex items-center">
-              <%= inline_svg("#{app.platform}.svg", classname: "w-4 inline-flex mr-2") %>
+              <%= inline_svg("#{app.platform}.svg", classname: "w-6 inline-flex mr-2") %>
               <div class="font-medium text-slate-800">
                 <%= link_to app.name, app_path(app) %>
               </div>

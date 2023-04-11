@@ -277,8 +277,6 @@ describe DeploymentRun do
 
     context "with no rollout" do
       it "fully promotes to the store" do
-        default_release_notes = Releases::Train::Run::DEFAULT_RELEASE_NOTES
-        default_release_notes_locale = Releases::Train::Run::DEFAULT_LOCALE
         full_release_value = 100
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
         deployment = create(:deployment, :with_google_play_store, step: step_run.step)
@@ -293,8 +291,7 @@ describe DeploymentRun do
               anything,
               anything,
               full_release_value,
-              default_release_notes,
-              default_release_notes_locale
+              [run.step_run.train_run.release_metadata]
             )
         )
         expect(run.reload.released?).to be(true)
