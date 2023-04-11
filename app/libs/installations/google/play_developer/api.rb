@@ -97,13 +97,13 @@ module Installations
 
     def active_release
       rollout_status = @rollout_percentage.eql?(100) ? RELEASE_STATUS[:completed] : RELEASE_STATUS[:in_progress]
-      params = release_params.merge(status: rollout_status, release_notes: [@release_notes])
+      params = release_params.merge(status: rollout_status, release_notes: @release_notes)
       params[:user_fraction] = user_fraction if @rollout_percentage && user_fraction < 1.0
       ANDROID_PUBLISHER::TrackRelease.new(**params)
     end
 
     def draft_release
-      params = release_params.merge(status: RELEASE_STATUS[:draft], release_notes: [@release_notes])
+      params = release_params.merge(status: RELEASE_STATUS[:draft], release_notes: @release_notes)
       ANDROID_PUBLISHER::TrackRelease.new(**params)
     end
 
