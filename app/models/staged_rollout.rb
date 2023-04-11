@@ -14,10 +14,22 @@ class StagedRollout < ApplicationRecord
   has_paper_trail
   include AASM
   include Loggable
+  include Passportable
 
   belongs_to :deployment_run
 
   validates :current_stage, numericality: {greater_than_or_equal_to: 0, allow_nil: true}
+
+  STAMPABLE_REASONS = %w[
+    started
+    paused
+    failed
+    resumed
+    increased
+    completed
+    halted
+    fully_released
+  ]
 
   STATES = {
     created: "created",
@@ -72,14 +84,26 @@ class StagedRollout < ApplicationRecord
 
   def update_stage(stage)
     update(current_stage: stage)
-    start! if created?
+
     retry! if failed?
-    complete! if finished?
+
+    if created?
+      start!
+      event_stamp!(reason: :started, kind: :notice, data: stamp_data)
+    else
+      event_stamp!(reason: :increased, kind: :notice, data: stamp_data)
+    end
+
+    if finished?
+      complete!
+      event_stamp!(reason: :completed, kind: :success, data: stamp_data)
+    end
   end
 
   def last_rollout_percentage
     return Deployment::FULL_ROLLOUT_VALUE if fully_released?
     return if created? || current_stage.nil?
+    return config.last if finished?
     config[current_stage]
   end
 
@@ -104,6 +128,7 @@ class StagedRollout < ApplicationRecord
         update_stage(next_stage)
       else
         fail!
+        event_stamp!(reason: :failed, kind: :error, data: stamp_data)
         elog(result.error)
       end
     end
@@ -116,6 +141,7 @@ class StagedRollout < ApplicationRecord
     deployment_run.on_halt_release! do |result|
       if result.ok?
         halt!
+        event_stamp!(reason: :halted, kind: :notice, data: stamp_data)
       else
         elog(result.error)
       end
@@ -128,6 +154,9 @@ class StagedRollout < ApplicationRecord
     deployment_run.on_fully_release! do |result|
       if result.ok?
         full_rollout!
+        event_stamp!(reason: :fully_released,
+          kind: :success,
+          data: {rollout_percentage: "%.2f" % config[current_stage]})
       else
         elog(result.error)
       end
@@ -140,6 +169,7 @@ class StagedRollout < ApplicationRecord
     deployment_run.on_pause_release! do |result|
       if result.ok?
         pause!
+        event_stamp!(reason: :paused, kind: :notice, data: stamp_data)
       else
         elog(result.error)
       end
@@ -151,10 +181,22 @@ class StagedRollout < ApplicationRecord
 
     deployment_run.on_resume_release! do |result|
       if result.ok?
-        resume! unless completed?
+        unless completed?
+          resume!
+          event_stamp!(reason: :resumed, kind: :success, data: stamp_data)
+        end
       else
         elog(result.error)
       end
     end
+  end
+
+  private
+
+  def stamp_data
+    {
+      current_stage: (current_stage || 0).succ,
+      rollout_percentage: "%.2f" % last_rollout_percentage
+    }
   end
 end

@@ -214,8 +214,8 @@ class Releases::Train::Run < ApplicationRecord
 
   def events
     step_runs
-      .left_joins(:commit, :deployment_runs)
-      .pluck("train_step_runs.id, deployment_runs.id, releases_commits.id")
+      .left_joins(:commit, deployment_runs: :staged_rollout)
+      .pluck("train_step_runs.id, deployment_runs.id, releases_commits.id, staged_rollouts.id")
       .flatten
       .uniq
       .compact
