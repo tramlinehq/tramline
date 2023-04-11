@@ -86,7 +86,6 @@ module Deployments
         end
 
         run.submit_for_review!
-        run.event_stamp!(reason: :submitted_for_review, kind: :notice, data: stamp_data)
       end
 
       def prepare_for_release!(force: false)
@@ -126,7 +125,6 @@ module Deployments
         end
 
         run.submit_for_review!
-        run.event_stamp!(reason: :submitted_for_review, kind: :notice, data: stamp_data)
       end
 
       def update_external_release
@@ -143,11 +141,7 @@ module Deployments
         create_or_update_external_release(release_info)
 
         if release_info.success?
-          if app_store?
-            run.ready_to_release!
-            run.event_stamp!(reason: :review_approved, kind: :success, data: stamp_data)
-            return
-          end
+          return run.ready_to_release! if app_store?
           run.complete!
         elsif release_info.failed?
           run.dispatch_fail!(reason: :review_failed)
@@ -160,7 +154,6 @@ module Deployments
         return unless app_store_release?
 
         run.engage_release!
-        run.event_stamp!(reason: :release_started, kind: :notice, data: stamp_data)
 
         result = provider.start_release(build_number)
 

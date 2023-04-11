@@ -113,11 +113,11 @@ class DeploymentRun < ApplicationRecord
       transitions from: :started, to: :uploaded
     end
 
-    event :ready_to_release, after_commit: -> { external_release.update(reviewed_at: Time.current) } do
+    event :ready_to_release, after_commit: :mark_reviewed do
       transitions from: :submitted_for_review, to: :ready_to_release
     end
 
-    event :engage_release do
+    event :engage_release, after_commit: -> { event_stamp!(reason: :release_started, kind: :notice, data: stamp_data) } do
       transitions from: [:uploaded, :ready_to_release], to: :rollout_started
     end
 
@@ -145,6 +145,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def find_submission
+    event_stamp!(reason: :submitted_for_review, kind: :notice, data: stamp_data)
     Deployments::AppStoreConnect::UpdateExternalReleaseJob.perform_async(id)
   end
 
@@ -322,6 +323,11 @@ class DeploymentRun < ApplicationRecord
   end
 
   private
+
+  def mark_reviewed
+    external_release.update(reviewed_at: Time.current)
+    event_stamp!(reason: :review_approved, kind: :success, data: stamp_data)
+  end
 
   def set_reason(args = nil)
     self.failure_reason = args&.fetch(:reason, :unknown_failure)

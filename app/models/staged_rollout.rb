@@ -46,19 +46,19 @@ class StagedRollout < ApplicationRecord
     state :created, initial: true, before_enter: -> { deployment_run.rolloutable? }
     state(*STATES.keys)
 
-    event :start, guard: -> { deployment_run.rolloutable? } do
+    event :start, guard: -> { deployment_run.rolloutable? }, after_commit: -> { event_stamp!(reason: :started, kind: :notice, data: stamp_data) } do
       transitions from: :created, to: :started
     end
 
-    event :pause, guard: -> { deployment_run.automatic_rollout? } do
+    event :pause, guard: -> { deployment_run.automatic_rollout? }, after_commit: -> { event_stamp!(reason: :paused, kind: :notice, data: stamp_data) } do
       transitions from: :started, to: :paused
     end
 
-    event :resume, guard: -> { deployment_run.automatic_rollout? } do
+    event :resume, guard: -> { deployment_run.automatic_rollout? }, after_commit: -> { event_stamp!(reason: :resumed, kind: :success, data: stamp_data) } do
       transitions from: :paused, to: :started
     end
 
-    event :fail do
+    event :fail, after_commit: -> { event_stamp!(reason: :failed, kind: :error, data: stamp_data) } do
       transitions from: [:started, :failed, :created], to: :failed
     end
 
@@ -66,17 +66,17 @@ class StagedRollout < ApplicationRecord
       transitions from: :failed, to: :started
     end
 
-    event :halt, guard: -> { deployment_run.rolloutable? } do
+    event :halt, guard: -> { deployment_run.rolloutable? }, after_commit: -> { event_stamp!(reason: :halted, kind: :notice, data: stamp_data) } do
       after { deployment_run.complete! }
       transitions from: [:started, :paused, :failed], to: :stopped
     end
 
-    event :complete do
+    event :complete, after_commit: -> { event_stamp!(reason: :completed, kind: :success, data: stamp_data) } do
       after { deployment_run.complete! }
       transitions from: [:failed, :started, :paused], to: :completed
     end
 
-    event :full_rollout do
+    event :full_rollout, after_commit: -> { event_stamp!(reason: :fully_released, kind: :success, data: {rollout_percentage: "%.2f" % config[current_stage]}) } do
       after { deployment_run.complete! }
       transitions from: [:failed, :started], to: :fully_released
     end
@@ -85,19 +85,14 @@ class StagedRollout < ApplicationRecord
   def update_stage(stage)
     update(current_stage: stage)
 
-    retry! if failed?
-
     if created?
       start!
-      event_stamp!(reason: :started, kind: :notice, data: stamp_data)
     else
       event_stamp!(reason: :increased, kind: :notice, data: stamp_data)
     end
 
-    if finished?
-      complete!
-      event_stamp!(reason: :completed, kind: :success, data: stamp_data)
-    end
+    retry! if failed?
+    complete! if finished?
   end
 
   def last_rollout_percentage
@@ -128,7 +123,6 @@ class StagedRollout < ApplicationRecord
         update_stage(next_stage)
       else
         fail!
-        event_stamp!(reason: :failed, kind: :error, data: stamp_data)
         elog(result.error)
       end
     end
@@ -141,7 +135,6 @@ class StagedRollout < ApplicationRecord
     deployment_run.on_halt_release! do |result|
       if result.ok?
         halt!
-        event_stamp!(reason: :halted, kind: :notice, data: stamp_data)
       else
         elog(result.error)
       end
@@ -154,9 +147,6 @@ class StagedRollout < ApplicationRecord
     deployment_run.on_fully_release! do |result|
       if result.ok?
         full_rollout!
-        event_stamp!(reason: :fully_released,
-          kind: :success,
-          data: {rollout_percentage: "%.2f" % config[current_stage]})
       else
         elog(result.error)
       end
@@ -169,7 +159,6 @@ class StagedRollout < ApplicationRecord
     deployment_run.on_pause_release! do |result|
       if result.ok?
         pause!
-        event_stamp!(reason: :paused, kind: :notice, data: stamp_data)
       else
         elog(result.error)
       end
@@ -181,10 +170,7 @@ class StagedRollout < ApplicationRecord
 
     deployment_run.on_resume_release! do |result|
       if result.ok?
-        unless completed?
-          resume!
-          event_stamp!(reason: :resumed, kind: :success, data: stamp_data)
-        end
+        resume! unless completed?
       else
         elog(result.error)
       end

@@ -71,7 +71,6 @@ module Deployments
 
         if staged_rollout?
           run.engage_release!
-          run.event_stamp!(reason: :release_started, kind: :notice, data: stamp_data)
           rollout!
         else
           fully_release!
