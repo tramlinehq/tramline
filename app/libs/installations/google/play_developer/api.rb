@@ -43,15 +43,12 @@ module Installations
       end
     end
 
-    def create_release(track_name, version_code, release_version, rollout_percentage, release_notes = "")
+    def create_release(track_name, version_code, release_version, rollout_percentage, release_notes = "", language = "en-US")
       @track_name = track_name
       @version_code = version_code
       @release_version = release_version
       @rollout_percentage = rollout_percentage
-      @release_notes = {
-        language: "en-US",
-        text: release_notes
-      }
+      @release_notes = {language: language, text: release_notes}
 
       execute do
         edit = client.insert_edit(package_name)
@@ -60,14 +57,11 @@ module Installations
       end
     end
 
-    def create_draft_release(track_name, version_code, release_version, release_notes = "")
+    def create_draft_release(track_name, version_code, release_version, release_notes = "", language = "en-US")
       @track_name = track_name
       @version_code = version_code
       @release_version = release_version
-      @release_notes = {
-        language: "en-US",
-        text: release_notes
-      }
+      @release_notes = {language: language, text: release_notes}
 
       execute do
         edit = client.insert_edit(package_name)

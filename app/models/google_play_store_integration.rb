@@ -40,15 +40,15 @@ class GooglePlayStoreIntegration < ApplicationRecord
     Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier, access_key)
   end
 
-  def rollout_release(channel, build_number, version, rollout_percentage, release_notes)
+  def rollout_release(channel, build_number, version, rollout_percentage, release_notes, locale)
     GitHub::Result.new do
-      installation.create_release(channel, build_number, version, rollout_percentage, release_notes)
+      installation.create_release(channel, build_number, version, rollout_percentage, release_notes, locale)
     end
   end
 
-  def create_draft_release(channel, build_number, version, release_notes)
+  def create_draft_release(channel, build_number, version, release_notes, locale)
     GitHub::Result.new do
-      installation.create_draft_release(channel, build_number, version, release_notes)
+      installation.create_draft_release(channel, build_number, version, release_notes, locale)
     end
   end
 

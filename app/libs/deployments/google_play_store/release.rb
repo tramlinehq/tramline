@@ -42,7 +42,6 @@ module Deployments
         :google_play_store_integration?,
         :staged_rollout_config,
         to: :run
-      delegate :release_notes, to: :release_metadata
 
       def kickoff!
         return run.upload! if run.step_run.similar_deployment_runs_for(run).any?(&:has_uploaded?)
@@ -81,7 +80,12 @@ module Deployments
         return unless google_play_store_integration?
         return unless run.rollout_started?
 
-        provider.halt_release(deployment_channel, build_number, release_version, run.staged_rollout.last_rollout_percentage)
+        provider.halt_release(
+          deployment_channel,
+          build_number,
+          release_version,
+          run.staged_rollout.last_rollout_percentage
+        )
       end
 
       def release_to_all!
@@ -92,7 +96,8 @@ module Deployments
           build_number,
           release_version,
           Deployment::FULL_ROLLOUT_VALUE,
-          release_notes
+          release_metadata.release_notes,
+          release_metadata.locale
         )
 
         run.fail_with_error(result.error) unless result.ok?
@@ -107,7 +112,8 @@ module Deployments
           build_number,
           release_version,
           rollout_value,
-          release_notes
+          release_metadata.release_notes,
+          release_metadata.locale
         )
 
         run.fail_with_error(result.error) unless result.ok?
@@ -122,7 +128,8 @@ module Deployments
           build_number,
           release_version,
           Deployment::FULL_ROLLOUT_VALUE,
-          release_notes
+          release_metadata.release_notes,
+          release_metadata.locale
         )
 
         if result.ok?
@@ -133,7 +140,13 @@ module Deployments
       end
 
       def rollout!
-        result = provider.create_draft_release(deployment_channel, build_number, release_version, release_notes)
+        result = provider.create_draft_release(
+          deployment_channel,
+          build_number,
+          release_version,
+          release_metadata.release_notes,
+          release_metadata.locale
+        )
 
         if result.ok?
           run.create_staged_rollout!(config: staged_rollout_config)
