@@ -109,6 +109,7 @@ module Deployments
         create_or_update_external_release(result.value!)
 
         run.prepare_release!
+        run.event_stamp!(reason: :inflight_release_replaced, kind: :notice, data: {version: release_version}) if force
       end
 
       def submit_for_review!

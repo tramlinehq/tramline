@@ -34,7 +34,7 @@ class Triggers::Release
         allow_without_diff: false
       ).then do |value|
         pr = release.reload.pull_requests.pre_release.first
-        release.event_stamp!(reason: :kickoff_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number})
+        release.event_stamp_now!(reason: :kickoff_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number})
         GitHub::Result.new { value }
       end
     end

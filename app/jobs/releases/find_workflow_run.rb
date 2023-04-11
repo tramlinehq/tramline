@@ -17,7 +17,7 @@ class Releases::FindWorkflowRun
     if ex.is_a?(Installations::Errors::WorkflowRunNotFound)
       run = Releases::Step::Run.find(msg["args"].first)
       run.ci_unavailable!
-      run.event_stamp!(reason: :ci_unavailable, kind: :error, data: {})
+      run.event_stamp!(reason: :ci_workflow_unavailable, kind: :error, data: {})
     end
   end
 
