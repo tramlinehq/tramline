@@ -40,7 +40,7 @@ describe StagedRollout do
 
   describe "#complete!" do
     it "transitions state" do
-      rollout = create(:staged_rollout, :started)
+      rollout = create(:staged_rollout, :started, current_stage: 1)
 
       rollout.complete!
 
@@ -48,7 +48,7 @@ describe StagedRollout do
     end
 
     it "completes the deployment run" do
-      rollout = create(:staged_rollout, :started)
+      rollout = create(:staged_rollout, :started, current_stage: 1)
 
       rollout.complete!
       rollout.reload
