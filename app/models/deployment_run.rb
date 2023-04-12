@@ -101,7 +101,7 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :fail_prepare_release, before: :set_reason, after_commit: -> { event_stamp!(reason: :prepare_release_failed, kind: :error, data: stamp_data) } do
-      transitions from: :started, to: :failed_prepare_release do
+      transitions from: [:started, :failed_prepare_release], to: :failed_prepare_release do
         guard { |_| app_store? }
       end
     end

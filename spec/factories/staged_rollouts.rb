@@ -3,7 +3,7 @@ FactoryBot.define do
     association :deployment_run
 
     config { [1, 100] }
-    current_stage { 0 }
+    current_stage { nil }
 
     trait :started do
       status { "started" }
