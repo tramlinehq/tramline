@@ -83,6 +83,8 @@ class StagedRollout < ApplicationRecord
   end
 
   def update_stage(stage)
+    return if stage == current_stage
+
     update(current_stage: stage)
 
     if created?
