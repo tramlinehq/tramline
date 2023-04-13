@@ -107,16 +107,4 @@
       <% end %>
     <% end %>
   </div>
-  <div>
-    <% if @app.runs.size > 1 %>
-      <% n = 3 %>
-
-      <div class="mb-6 mt-8">
-        <h2 class="text-2xl text-slate-800 font-bold">Release History</h2>
-        <span class="text-sm text-slate-400">Successful releases in the last <%= n %> months</span>
-      </div>
-
-      <%= line_chart [{ name: "Count", data: Reports::ReleaseHistory.call(app: @app, period: :month, last: n) }], ytitle: "Number of Releases", legend: "top left" %>
-    <% end %>
-  </div>
 <% end %>
