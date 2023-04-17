@@ -28,7 +28,7 @@ class Integration < ApplicationRecord
   ALLOWED_INTEGRATIONS_FOR_APP = {
     ios: {
       "version_control" => %w[GithubIntegration GitlabIntegration],
-      "ci_cd" => %w[BitriseIntegration],
+      "ci_cd" => %w[BitriseIntegration GithubIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[AppStoreIntegration]
     },
