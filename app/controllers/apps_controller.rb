@@ -13,6 +13,7 @@ class AppsController < SignedInApplicationController
 
   def show
     @setup_instructions = @app.setup_instructions
+    @release_metrics = Queries::ReleaseMetrics.call(app: @app)
   end
 
   def new

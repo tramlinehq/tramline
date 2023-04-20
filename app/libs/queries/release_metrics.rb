@@ -9,21 +9,24 @@ class Queries::ReleaseMetrics
 
   def call
     {
-      history: history,
-      avg_length: avg_length,
+      release_history: release_history,
+      avg_release_length: avg_release_length,
       avg_patches: avg_patches
     }
   end
 
   private
 
+  attr_reader :app
+
   def avg_patches
     inner =
-      @app
+      app
         .train_runs
-        .left_outer_joins(:commits)
+        .joins(:commits)
         .select("train_runs.id, COUNT(releases_commits.id) AS commit_count")
         .group("train_runs.id")
+        .having("COUNT(releases_commits.id) > 1") # the base commit of the release branch is not counted as a patch
 
     Releases::Commit
       .select("AVG(commit_count) as average_commit_count")
@@ -34,18 +37,22 @@ class Queries::ReleaseMetrics
       &.to_f
   end
 
-  def avg_length
-    @app
+  def avg_release_length
+    app
       .train_runs
       .where
       .not(completed_at: nil)
       .average("(train_runs.completed_at - train_runs.created_at)")
   end
 
-  def history
-    @app
-      .train_runs
-      .group_by_month(:created_at)
+  HISTORY_DATE_FORMAT = "%b %Y"
+  DEFAULT_HISTORY_PERIOD = :month
+
+  def release_history
+    app
+      .runs
+      .finished
+      .group_by_period(DEFAULT_HISTORY_PERIOD, :completed_at, last: 10, current: true, format: HISTORY_DATE_FORMAT)
       .count
   end
 end
