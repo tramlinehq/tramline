@@ -18,7 +18,7 @@ class Integration < ApplicationRecord
 
   belongs_to :app
 
-  ALL_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration]
+  ALL_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration]
   delegated_type :providable, types: ALL_TYPES, autosave: true, validate: false
 
   IntegrationNotImplemented = Class.new(StandardError)
@@ -36,7 +36,7 @@ class Integration < ApplicationRecord
       "version_control" => %w[GithubIntegration GitlabIntegration],
       "ci_cd" => %w[GithubIntegration BitriseIntegration],
       "notification" => %w[SlackIntegration],
-      "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration]
+      "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration]
     }
   }.with_indifferent_access
 

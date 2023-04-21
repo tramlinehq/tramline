@@ -120,6 +120,10 @@ Rails.application.routes.draw do
         resource :app_store, only: [:create],
           controller: "integrations/app_store",
           as: :appstore_integration
+
+        resource :google_firebase, only: [:create],
+          controller: "integrations/google_firebase",
+          as: :google_firebase_integration
       end
     end
 

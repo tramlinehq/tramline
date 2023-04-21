@@ -12,6 +12,7 @@ en:
       app_store_integration: "App Store Connect & TestFlight"
       gitlab_integration: "GitLab"
       github_integration: "GitHub"
+      google_firebase_integration: "Firebase App Distribution"
       deployment: "Distribution"
     values:
       deployment_run:
@@ -44,6 +45,7 @@ en:
           google_play_store: "Google Play Store"
           slack: "Slack"
           external: "External (outside Tramline)"
+          firebase: "Firebase App Distribution"
     attributes:
       integration:
         categories:

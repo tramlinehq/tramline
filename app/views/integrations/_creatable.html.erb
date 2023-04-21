@@ -48,6 +48,14 @@
                                        category: category
                              } %>
                 <% end %>
+
+                <% if integration.providable.to_s == "firebase" %>
+                  <%= render partial: "integrations/providers/google_firebase",
+                             locals: { current_organization: current_organization,
+                                       integration: integration,
+                                       category: category
+                             } %>
+                <% end %>
               <% end %>
             </div>
           </div>

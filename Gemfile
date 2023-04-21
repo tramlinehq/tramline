@@ -70,6 +70,7 @@ gem "view_component", "~> 2.82"
 gem "activerecord_json_validator", "~> 2.1"
 gem "sidekiq-cron", "~> 1.9"
 gem "intercom-rails", "~> 0.4.2"
+gem 'google-apis-firebaseappdistribution_v1', '~> 0.1'
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

@@ -32,7 +32,8 @@ class Deployment < ApplicationRecord
     :slack_integration?,
     :store?,
     :app_store_integration?,
-    :controllable_rollout?, to: :integration, allow_nil: true
+    :controllable_rollout?,
+    :google_firebase_integration?, to: :integration, allow_nil: true
   delegate :train, :app, to: :step
 
   scope :sequential, -> { order("deployments.deployment_number ASC") }
@@ -93,6 +94,7 @@ class Deployment < ApplicationRecord
     return :testflight if test_flight?
     return :google_play_store if google_play_store_integration?
     return :slack if slack_integration?
+    return :firebase if google_firebase_integration?
     :external
   end
 

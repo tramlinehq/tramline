@@ -189,7 +189,7 @@ GEM
       activesupport (>= 5.0)
     google-apis-androidpublisher_v3 (0.16.0)
       google-apis-core (>= 0.4, < 2.a)
-    google-apis-core (0.10.0)
+    google-apis-core (0.11.0)
       addressable (~> 2.5, >= 2.5.1)
       googleauth (>= 0.16.2, < 2.a)
       httpclient (>= 2.8.1, < 3.a)
@@ -198,6 +198,8 @@ GEM
       retriable (>= 2.0, < 4.a)
       rexml
       webrick
+    google-apis-firebaseappdistribution_v1 (0.1.0)
+      google-apis-core (>= 0.11.0, < 2.a)
     google-apis-iamcredentials_v1 (0.16.0)
       google-apis-core (>= 0.9.1, < 2.a)
     google-apis-storage_v1 (0.19.0)
@@ -541,6 +543,8 @@ GEM
       railties (>= 6.0.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
+    tzinfo-data (1.2023.3)
+      tzinfo (>= 1.0.0)
     uber (0.1.0)
     unf (0.1.4)
       unf_ext
@@ -616,6 +620,7 @@ DEPENDENCIES
   friendly_id (~> 5.4)
   github-ds (~> 0.5.2)
   google-apis-androidpublisher_v3 (~> 0.16.0)
+  google-apis-firebaseappdistribution_v1 (~> 0.1)
   google-cloud-storage (~> 1.37)
   googleauth (~> 1.1)
   gretel (~> 4.4)
