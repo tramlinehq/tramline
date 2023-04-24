@@ -59,7 +59,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
     member_count: :tester_count
   }
 
-  EMPTY_CHANNEL = { id: :no_testers, name: "No testers (upload only)" }
+  EMPTY_CHANNEL = {id: :no_testers, name: "No testers (upload only)"}
 
   def channels
     installation.list_groups(GROUPS_TRANSFORMATIONS)
@@ -85,13 +85,18 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   def get_upload_status(op_name)
     GitHub::Result.new do
-      installation.get_upload_status(op_name)
+      upload_status = installation.get_upload_status(op_name)
+      if upload_status[:done] && upload_status[:error]
+        raise Installations::Error.new(upload_status[:error][:message], reason: :upload_failed)
+      end
+      upload_status
     end
   end
 
   def release(release_name, group)
     GitHub::Result.new do
-      installation.send_to_group(release_name, group)
+      group_name = group.split("/").last
+      installation.send_to_group(release_name, group_name)
     end
   end
 
