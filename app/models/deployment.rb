@@ -54,11 +54,11 @@ class Deployment < ApplicationRecord
   end
 
   def uploadable?
-    app.android? && (slack_integration? || google_play_store_integration? || external?)
+    app.android?
   end
 
   def findable?
-    app.ios? && app_store_integration?
+    app.ios?
   end
 
   def first?

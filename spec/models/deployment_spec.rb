@@ -87,7 +87,7 @@ describe Deployment do
   end
 
   describe "#uploadable?" do
-    it "is true when app is android and deployment is slack, google or external" do
+    it "is true when app is android" do
       step = create(:releases_step, :with_deployment)
       d1 = create(:deployment, :with_google_play_store, step: step)
       d2 = create(:deployment, :with_slack, step: step)
@@ -99,27 +99,28 @@ describe Deployment do
     end
 
     it "is false when app is ios and deployment is app store" do
-      step = create(:releases_step, :with_deployment)
-      deployment = create(:deployment, :with_app_store, step: step)
+      app = create(:app, :ios)
+      train = create(:releases_train, app: app)
+      step = create(:releases_step, :with_deployment, train: train)
+      deployment = create(:deployment, integration: train.build_channel_integrations.first, step: step)
 
       expect(deployment.uploadable?).to be(false)
     end
   end
 
   describe "#findable?" do
-    it "is false when app is android and deployment is slack, google or external" do
+    it "is false when app is android" do
       step = create(:releases_step, :with_deployment)
-      d1 = create(:deployment, :with_google_play_store, step: step)
-      d2 = create(:deployment, :with_slack, step: step)
-      d3 = create(:deployment, :with_external, step: step)
+      deployment = create(:deployment, step: step)
 
-      expect(d1.findable?).to be(false)
-      expect(d2.findable?).to be(false)
-      expect(d3.findable?).to be(false)
+      expect(deployment.findable?).to be(false)
     end
 
-    it "is false when app is ios and deployment is app store" do
-      deployment = create(:deployment, :with_step, :with_app_store)
+    it "is true when app is ios and deployment is app store" do
+      app = create(:app, :ios)
+      train = create(:releases_train, app: app)
+      step = create(:releases_step, :with_deployment, train: train)
+      deployment = create(:deployment, integration: train.build_channel_integrations.first, step: step)
 
       expect(deployment.findable?).to be(true)
     end
