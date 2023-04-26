@@ -4,7 +4,7 @@ class Deployments::GoogleFirebase::UpdateUploadStatusJob
   extend Backoffable
 
   queue_as :high
-  sidekiq_options retry: 21
+  sidekiq_options retry: 5
 
   sidekiq_retry_in do |count, ex|
     if ex.is_a?(Deployments::GoogleFirebase::Release::UploadNotComplete)
