@@ -65,6 +65,8 @@ module ReleasesHelper
         ["Submitted for review", :ongoing]
       when :ready_to_release
         ["Review approved", :ongoing]
+      when :uploading
+        ["Uploading", :routine]
       when :uploaded
         ["Uploaded", :routine]
       when :rollout_started

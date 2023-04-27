@@ -1,7 +1,5 @@
 module Installations
   class Google::PlayDeveloper::Api
-    include Vaultable
-
     ANDROID_PUBLISHER = ::Google::Apis::AndroidpublisherV3
     SERVICE = ANDROID_PUBLISHER::AndroidPublisherService
     SERVICE_ACCOUNT = ::Google::Auth::ServiceAccountCredentials

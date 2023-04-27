@@ -12,6 +12,7 @@ en:
       app_store_integration: "App Store Connect & TestFlight"
       gitlab_integration: "GitLab"
       github_integration: "GitHub"
+      google_firebase_integration: "Firebase App Distribution"
       deployment: "Distribution"
     values:
       deployment_run:
@@ -44,6 +45,7 @@ en:
           google_play_store: "Google Play Store"
           slack: "Slack"
           external: "External (outside Tramline)"
+          firebase: "Firebase App Distribution"
     attributes:
       integration:
         categories:
@@ -103,6 +105,12 @@ en:
               key_format: "the supplied key format is incorrect, please check your key!"
               app_not_found: "the bundle identifier configured against the supplied key is incorrect, check your app settings!"
               dev_api_not_enabled: "your Google Play Developer account does not have the Play Developer API enabled!"
+        google_firebase_integration:
+          attributes:
+            json_key:
+              key_format: "the supplied key format is incorrect, please check your key!"
+              invalid_config: "configuration is invalid, please check!"
+              permission_denied: "permission denied to access the project using the key!"
   invitation:
     flash:
       invite_issued: "Invitation issued"

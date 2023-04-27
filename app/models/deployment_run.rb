@@ -47,6 +47,7 @@ class DeploymentRun < ApplicationRecord
     :store?,
     :staged_rollout?,
     :staged_rollout_config,
+    :google_firebase_integration?,
     to: :deployment
   delegate :release_version, :release_metadata, to: :release
   delegate :app, to: :release
@@ -68,6 +69,7 @@ class DeploymentRun < ApplicationRecord
     prepared_release: "prepared_release",
     submitted_for_review: "submitted_for_review",
     failed_prepare_release: "failed_prepare_release",
+    uploading: "uploading",
     uploaded: "uploaded",
     ready_to_release: "ready_to_release",
     rollout_started: "rollout_started",
@@ -83,7 +85,9 @@ class DeploymentRun < ApplicationRecord
   }.merge(
     *[
       Installations::Apple::AppStoreConnect::Error.reasons,
-      Installations::Google::PlayDeveloper::Error.reasons
+      Installations::Google::PlayDeveloper::Error.reasons,
+      Installations::Google::Firebase::Error.reasons,
+      Installations::Google::Firebase::OpError.reasons
     ].map(&:zip_map_self)
   )
 
@@ -110,8 +114,12 @@ class DeploymentRun < ApplicationRecord
       transitions from: [:started, :prepared_release], to: :submitted_for_review
     end
 
+    event :start_upload, after: :get_upload_status do
+      transitions from: :started, to: :uploading
+    end
+
     event :upload, after_commit: -> { Deployments::ReleaseJob.perform_later(id) } do
-      transitions from: :started, to: :uploaded
+      transitions from: [:started, :uploading], to: :uploaded
     end
 
     event :ready_to_release, after_commit: :mark_reviewed do
@@ -123,7 +131,7 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :dispatch_fail, before: :set_reason, after_commit: :release_failed do
-      transitions from: [:started, :prepared_release, :uploaded, :submitted_for_review, :ready_to_release, :rollout_started, :failed_prepare_release], to: :failed
+      transitions from: [:started, :prepared_release, :uploading, :uploaded, :submitted_for_review, :ready_to_release, :rollout_started, :failed_prepare_release], to: :failed
       after { step_run.fail_deploy! }
     end
 
@@ -150,11 +158,16 @@ class DeploymentRun < ApplicationRecord
     Deployments::AppStoreConnect::UpdateExternalReleaseJob.perform_async(id)
   end
 
+  def get_upload_status(args)
+    Deployments::GoogleFirebase::UpdateUploadStatusJob.perform_async(id, args&.fetch(:op_name))
+  end
+
   def kickoff!
     return complete! if external?
     return Deployments::SlackJob.perform_later(id) if slack_integration?
     return Deployments::AppStoreConnect::Release.kickoff!(self) if app_store_integration?
-    Deployments::GooglePlayStore::Release.kickoff!(self) if google_play_store_integration?
+    return Deployments::GooglePlayStore::Release.kickoff!(self) if google_play_store_integration?
+    Deployments::GoogleFirebase::Release.kickoff!(self) if google_firebase_integration?
   end
 
   def start_release!
@@ -167,6 +180,8 @@ class DeploymentRun < ApplicationRecord
         Deployments::GooglePlayStore::Release.start_release!(self)
       elsif app_store_integration?
         Deployments::AppStoreConnect::Release.start_release!(self)
+      elsif google_firebase_integration?
+        Deployments::GoogleFirebase::Release.start_release!(self)
       else
         raise UnknownStoreError
       end
