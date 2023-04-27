@@ -1,8 +1,5 @@
 module Installations
   class Google::Firebase::Api
-    include Vaultable
-    using RefinedString
-
     FIREBASE_PUBLISHER = ::Google::Apis::FirebaseappdistributionV1
     SERVICE = FIREBASE_PUBLISHER::FirebaseAppDistributionService
     SERVICE_ACCOUNT = ::Google::Auth::ServiceAccountCredentials
@@ -43,7 +40,7 @@ module Installations
       execute do
         client.list_project_groups(project_name)
           &.groups
-          &.map { |t| t.to_h }
+          &.map { |g| g.to_h }
           &.then { |groups| Installations::Response::Keys.transform(groups, transforms) }
       end
     end
@@ -52,7 +49,7 @@ module Installations
       execute do
         client.list_project_app_releases(app_name, page_size: 2)
           &.releases
-          &.map { |t| t.to_h }
+          &.map { |r| r.to_h }
       end
     end
 

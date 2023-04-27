@@ -182,7 +182,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_04_20_053452) do
 
   create_table "google_firebase_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "json_key"
-    t.string "original_json_key"
     t.string "project_number"
     t.string "app_id"
     t.datetime "created_at", null: false

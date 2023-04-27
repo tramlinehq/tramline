@@ -87,7 +87,6 @@ module Deployments
 
         result = provider.release(run.external_release.external_id, deployment_channel)
 
-        Rails.logger.info("started release -- ", result.value!)
         unless result.ok?
           run.fail_with_error(result.error)
           return
