@@ -81,12 +81,13 @@ class DeploymentRun < ApplicationRecord
   enum failure_reason: {
     review_failed: "review_failed",
     invalid_release: "invalid_release",
-    upload_failed: "upload_failed",
     unknown_failure: "unknown_failure"
   }.merge(
     *[
       Installations::Apple::AppStoreConnect::Error.reasons,
-      Installations::Google::PlayDeveloper::Error.reasons
+      Installations::Google::PlayDeveloper::Error.reasons,
+      Installations::Google::Firebase::Error.reasons,
+      Installations::Google::Firebase::OpError.reasons
     ].map(&:zip_map_self)
   )
 

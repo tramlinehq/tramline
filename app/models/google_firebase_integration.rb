@@ -85,11 +85,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   def get_upload_status(op_name)
     GitHub::Result.new do
-      upload_status = installation.get_upload_status(op_name)
-      if upload_status[:done] && upload_status[:error]
-        raise Installations::Error.new(upload_status[:error][:message], reason: :upload_failed)
-      end
-      upload_status
+      ReleaseInfo.new(installation.get_upload_status(op_name))
     end
   end
 
@@ -98,6 +94,36 @@ class GoogleFirebaseIntegration < ApplicationRecord
       group_name = group.split("/").last
       installation.send_to_group(release_name, group_name)
     end
+  end
+
+  class ReleaseInfo
+    def initialize(release_info)
+      raise ArgumentError, "release_info must be a Hash" unless release_info.is_a?(Hash)
+      @release_info = release_info
+      validate_op
+    end
+
+    attr_reader :release_info
+
+    def validate_op
+      raise Installations::Google::Firebase::OpError.new(release_info[:error]) if done? && error?
+    end
+
+    def release = release_info.dig(:response, :release)
+
+    def name = release&.dig(:displayVersion)
+
+    def id = release&.dig(:name)
+
+    def build_number = release&.dig(:buildVersion)
+
+    def added_at = release&.dig(:createTime)
+
+    def status = release_info&.dig(:response, :result)
+
+    def done? = release_info[:done]
+
+    def error? = release_info[:error].present?
   end
 
   private

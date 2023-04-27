@@ -27,8 +27,10 @@ module Installations
     end
 
     def send_to_group(release, group)
-      distro_request = FIREBASE_PUBLISHER::GoogleFirebaseAppdistroV1DistributeReleaseRequest.new(group_aliases: [group])
-      client.distribute_project_app_release(release, distro_request)
+      execute do
+        distro_request = FIREBASE_PUBLISHER::GoogleFirebaseAppdistroV1DistributeReleaseRequest.new(group_aliases: [group])
+        client.distribute_project_app_release(release, distro_request)
+      end
     end
 
     def get_upload_status(op_name)

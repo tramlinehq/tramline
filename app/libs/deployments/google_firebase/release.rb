@@ -36,6 +36,10 @@ module Deployments
         to: :run
 
       def kickoff!
+        if (similar_run = run.step_run.similar_deployment_runs_for(run).find(&:has_uploaded?))
+          run.create_external_release(similar_run.external_release.attributes.except("id", "created_at", "updated_at"))
+          return run.upload!
+        end
         Deployments::GoogleFirebase::UploadJob.perform_later(run.id)
       end
 
@@ -65,24 +69,15 @@ module Deployments
           return
         end
 
-        upload_status = result.value!
-        if upload_status[:done]
-          Rails.logger.info("upload is done", upload_status)
-          if upload_status[:error]
-            run.dispatch_fail!(reason: :upload_failed)
-          else
-            external_release = result.value![:response][:release]
-            external_status = result.value![:response][:result]
-            run.create_external_release(external_id: external_release[:name],
-              name: external_release[:displayVersion],
-              build_number: external_release[:buildVersion],
-              added_at: external_release[:createTime],
-              status: external_status)
-            run.upload!
-          end
-        else
-          raise UploadNotComplete
-        end
+        release_info = result.value!
+        raise UploadNotComplete unless release_info.done?
+
+        run.create_external_release(external_id: release_info.id,
+          name: release_info.name,
+          build_number: release_info.build_number,
+          added_at: release_info.added_at,
+          status: release_info.status)
+        run.upload!
       end
 
       def start_release!

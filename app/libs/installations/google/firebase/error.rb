@@ -2,7 +2,20 @@ module Installations
   class Google::Firebase::Error < Installations::Error
     using RefinedString
 
-    ERRORS = []
+    ERRORS = [
+      {
+        status: "PERMISSION_DENIED",
+        code: 403,
+        message_matcher: /Project .* has been deleted/,
+        decorated_reason: :permission_denied
+      },
+      {
+        status: "INVALID_ARGUMENT",
+        code: 400,
+        message_matcher: /Request contains an invalid argument/,
+        decorated_reason: :invalid_config
+      }
+    ]
 
     def self.reasons
       ERRORS.pluck(:decorated_reason).uniq.map(&:to_s)
