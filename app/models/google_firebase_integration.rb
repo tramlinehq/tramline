@@ -91,8 +91,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   def release(release_name, group)
     GitHub::Result.new do
-      group_name = group.split("/").last
-      installation.send_to_group(release_name, group_name)
+      installation.send_to_group(release_name, group_name(group))
     end
   end
 
@@ -127,6 +126,10 @@ class GoogleFirebaseIntegration < ApplicationRecord
   end
 
   private
+
+  def group_name(group)
+    group.split("/").last
+  end
 
   def releases_present?
     installation.list_releases

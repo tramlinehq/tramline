@@ -63,7 +63,7 @@ module Installations
     end
 
     def app_name
-      "projects/#{project_number}/apps/#{app_id}"
+      "#{project_name}/apps/#{app_id}"
     end
 
     def execute
