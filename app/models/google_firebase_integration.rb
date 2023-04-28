@@ -41,7 +41,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   end
 
   def store?
-    true
+    false
   end
 
   def controllable_rollout?
