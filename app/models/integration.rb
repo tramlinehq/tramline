@@ -30,7 +30,7 @@ class Integration < ApplicationRecord
       "version_control" => %w[GithubIntegration GitlabIntegration],
       "ci_cd" => %w[BitriseIntegration GithubIntegration],
       "notification" => %w[SlackIntegration],
-      "build_channel" => %w[AppStoreIntegration]
+      "build_channel" => %w[AppStoreIntegration GoogleFirebaseIntegration]
     },
     android: {
       "version_control" => %w[GithubIntegration GitlabIntegration],

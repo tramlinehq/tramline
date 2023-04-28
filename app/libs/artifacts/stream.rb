@@ -2,7 +2,7 @@ require "zip"
 
 module Artifacts
   class Stream
-    VALID_UNZIPS = "*.{aab,apk,txt}".freeze
+    VALID_UNZIPS = "*.{aab,apk,txt,ipa}".freeze
 
     class SingleUnzipSupportedOnly < StandardError; end
 
