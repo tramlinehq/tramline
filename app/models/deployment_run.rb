@@ -171,8 +171,6 @@ class DeploymentRun < ApplicationRecord
   end
 
   def start_release!
-    return unless store?
-
     release.with_lock do
       return unless release_startable?
 
