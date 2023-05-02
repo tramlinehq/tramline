@@ -79,6 +79,9 @@ class AppStoreIntegration < ApplicationRecord
 
   PROD_CHANNEL = {id: :app_store, name: "App Store (production)", is_production: true}
 
+  APP_STORE_CONNECT_URL_TEMPLATE =
+    Addressable::Template.new("https://appstoreconnect.apple.com/apps/{app_id}/testflight/ios/{external_id}")
+
   unless Set.new(BUILD_TRANSFORMATIONS.keys).superset?(Set.new(ExternalRelease.minimum_required))
     raise InvalidTransformations
   end
@@ -191,11 +194,11 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def build_info(build_info)
-    TestFlightInfo.new(build_info)
+    TestFlightInfo.new(build_info.merge(external_link: APP_STORE_CONNECT_URL_TEMPLATE.expand(app_id: app.external_id, external_id: build_info[:external_id]).to_s))
   end
 
   def release_info(build_info)
-    AppStoreReleaseInfo.new(build_info)
+    AppStoreReleaseInfo.new(build_info.merge(external_link: APP_STORE_CONNECT_URL_TEMPLATE.expand(app_id: app.external_id, external_id: build_info[:external_id]).to_s))
   end
 
   def correct_key

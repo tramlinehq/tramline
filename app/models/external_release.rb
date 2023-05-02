@@ -5,6 +5,7 @@
 #  id                :uuid             not null, primary key
 #  added_at          :datetime
 #  build_number      :string
+#  external_link     :string
 #  name              :string
 #  released_at       :datetime
 #  reviewed_at       :datetime
@@ -19,15 +20,7 @@ class ExternalRelease < ApplicationRecord
   belongs_to :deployment_run
   delegate :app, :app_store_integration?, to: :deployment_run
 
-  APP_STORE_CONNECT_URL_TEMPLATE =
-    Addressable::Template.new("https://appstoreconnect.apple.com/apps/{app_id}/testflight/ios/{external_id}")
-
   def self.minimum_required
     column_names.map(&:to_sym).filter { |name| name.in? [:name, :status, :build_number, :external_id, :added_at] }
-  end
-
-  def store_link
-    return unless app_store_integration?
-    APP_STORE_CONNECT_URL_TEMPLATE.expand(app_id: app.external_id, external_id:).to_s
   end
 end

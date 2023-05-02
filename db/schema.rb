@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_04_20_053452) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_01_102257) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -146,6 +146,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_04_20_053452) do
     t.string "external_id"
     t.datetime "reviewed_at"
     t.datetime "released_at"
+    t.string "external_link"
     t.index ["deployment_run_id"], name: "index_external_releases_on_deployment_run_id"
   end
 
