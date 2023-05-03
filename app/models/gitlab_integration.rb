@@ -12,7 +12,7 @@
 #
 class GitlabIntegration < ApplicationRecord
   has_paper_trail
-  # encrypts :oauth_access_token, deterministic: true
+  encrypts :oauth_access_token, deterministic: true
 
   include Vaultable
   include Providable
@@ -75,6 +75,14 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.create_branch!(code_repository_name, from, to) }
   end
 
+  def branch_url(repo, branch_name)
+    "https://gitlab.com/#{repo}/tree/#{branch_name}"
+  end
+
+  def tag_url(repo, tag_name)
+    "https://gitlab.com/#{repo}/releases/tag/#{tag_name}"
+  end
+
   def installation
     Installations::Gitlab::Api.new(oauth_access_token)
   end
@@ -97,6 +105,19 @@ class GitlabIntegration < ApplicationRecord
 
   def namespaced_branch(branch_name)
     [code_repo_namespace, ":", branch_name].join
+  end
+
+  COMMIT_TRANSFORMATIONS = {
+    commit_sha: :id,
+    author_email: :author_email,
+    author_name: :author_name,
+    message: :message,
+    url: :web_url,
+    timestamp: :authored_date
+  }
+
+  def get_commit(sha)
+    with_api_retries { installation.get_commit(app_config.code_repository["id"], sha, COMMIT_TRANSFORMATIONS) }
   end
 
   private

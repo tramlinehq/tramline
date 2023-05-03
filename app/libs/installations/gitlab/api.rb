@@ -13,6 +13,7 @@ module Installations
     MR_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests"
     MR_MERGE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests/{merge_request_iid}/merge"
     COMPARE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/compare"
+    GET_COMMIT_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/commits/{sha}"
 
     WEBHOOK_PERMISSIONS = {
       deployment_events: true,
@@ -71,6 +72,12 @@ module Installations
           .detect(&:present?)
           .then { |tokens| OpenStruct.new tokens }
       end
+    end
+
+    def get_commit(project_id, sha, transforms)
+      execute(:get, GET_COMMIT_URL.expand(project_id:, sha:).to_s, {})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def list_projects(transforms)

@@ -2,8 +2,6 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   skip_before_action :verify_authenticity_token, only: [:events]
   skip_before_action :require_login, only: [:events]
 
-  delegate :active_run, to: :train
-
   def providable_params
     super.merge(installation_id:)
   end
