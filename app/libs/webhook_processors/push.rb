@@ -1,4 +1,4 @@
-class WebhookProcessors::Github::Push
+class WebhookProcessors::Push
   def self.process(release, commit_attributes)
     new(release, commit_attributes).process
   end
