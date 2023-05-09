@@ -32,11 +32,11 @@ class WebhookHandlers::Push
   private
 
   delegate :vcs_provider, to: :train
-  delegate :head_commit, :branch_name, :repository_name, :valid_branch?, :valid_tag?, to: :runner
+  delegate :head_commit, :branch_name, :repository_name, :valid_branch?, :valid_tag?, :commit_attributes, to: :runner
 
   memoize def runner
     return GITHUB.new(payload) if vcs_provider.integration.github_integration?
-    GITLAB.new(payload) if vcs_provider.integration.gitlab_integration?
+    GITLAB.new(payload, train) if vcs_provider.integration.gitlab_integration?
   end
 
   def relevant_commit?

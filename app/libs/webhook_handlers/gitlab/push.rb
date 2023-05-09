@@ -1,8 +1,9 @@
 class WebhookHandlers::Gitlab::Push
-  attr_reader :train
+  attr_reader :payload, :train
 
-  def initialize(payload)
+  def initialize(payload, train)
     @payload = payload
+    @train = train
   end
 
   def commit_attributes
@@ -17,6 +18,10 @@ class WebhookHandlers::Gitlab::Push
       url: commit[:url],
       branch_name: branch_name
     }
+  end
+
+  def valid_tag?
+    true
   end
 
   def valid_branch?

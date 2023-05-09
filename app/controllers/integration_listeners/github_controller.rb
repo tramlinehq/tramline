@@ -22,7 +22,7 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def handle_push
-    response = WebhookHandlers::Github::Push.process(train, params)
+    response = WebhookHandlers::Push.process(train, params)
     Rails.logger.debug response.body
     head response.status
   end
