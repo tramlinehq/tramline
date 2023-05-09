@@ -76,7 +76,8 @@ module Deployments
           name: release_info.name,
           build_number: release_info.build_number,
           added_at: release_info.added_at,
-          status: release_info.status)
+          status: release_info.status,
+          external_link: release_info.console_link)
         run.upload!
       end
 

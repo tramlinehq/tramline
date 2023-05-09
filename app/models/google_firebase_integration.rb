@@ -119,6 +119,8 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
     def status = release_info&.dig(:response, :result)
 
+    def console_link = release&.dig(:firebaseConsoleUri)
+
     def done? = release_info[:done]
 
     def error? = release_info[:error].present?
