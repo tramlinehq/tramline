@@ -42,7 +42,7 @@ class Triggers::Release
       transaction do
         train.activate! unless train.active?
         create_release
-        create_webhooks.value!
+        train.create_webhook!
         create_webhook_listeners
         RELEASE_HANDLERS[branching_strategy].call(release, release_branch).value!
       end
@@ -57,16 +57,6 @@ class Triggers::Release
         branch_name: release_branch,
         release_version: train.version_current
       )
-  end
-
-  # Webhooks are created with the train and we don't need to create webhooks for each train run AKA release
-  # This is a fallback to ensure that webhook gets created if it is not present against the train
-  def create_webhooks
-    GitHub::Result.new do
-      train.vcs_provider.create_webhook!(train_id: train.id)
-    rescue Installations::Errors::HookAlreadyExistsOnRepository
-      nil
-    end
   end
 
   def create_webhook_listeners

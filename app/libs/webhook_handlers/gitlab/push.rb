@@ -21,7 +21,7 @@ class WebhookHandlers::Gitlab::Push
   end
 
   def valid_tag?
-    true
+    false
   end
 
   def valid_branch?

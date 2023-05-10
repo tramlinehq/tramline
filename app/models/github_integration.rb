@@ -57,8 +57,27 @@ class GithubIntegration < ApplicationRecord
     installation.list_repos(REPOS_TRANSFORMATIONS)
   end
 
-  def create_webhook!(url_params)
-    installation.create_repo_webhook!(code_repository_name, events_url(url_params))
+  WEBHOOK_TRANSFORMATIONS = {
+    id: :id,
+    events: :events,
+    url: [:config, :url]
+  }
+
+  def find_or_create_webhook!(id:, train_id:)
+    GitHub::Result.new do
+      if id
+        webhook = installation.find_webhook(code_repository_name, id, WEBHOOK_TRANSFORMATIONS)
+        if webhook[:url] == events_url(train_id:) && (installation.class::WEBHOOK_EVENTS - webhook[:events]).empty?
+          webhook
+        else
+          create_webhook!(train_id:)
+        end
+      else
+        create_webhook!(train_id:)
+      end
+    rescue Installations::Errors::ResourceNotFound
+      create_webhook!(train_id:)
+    end
   end
 
   def create_tag!(tag_name, branch)
@@ -144,6 +163,10 @@ class GithubIntegration < ApplicationRecord
   end
 
   private
+
+  def create_webhook!(url_params)
+    installation.create_repo_webhook!(code_repository_name, events_url(url_params), WEBHOOK_TRANSFORMATIONS)
+  end
 
   def app_config
     integration.app.config

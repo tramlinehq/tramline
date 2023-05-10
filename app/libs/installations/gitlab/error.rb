@@ -23,6 +23,10 @@ module Installations
       {
         message_matcher: /Tag (.*) already exists/,
         decorated_exception: Installations::Errors::TagReferenceAlreadyExists
+      },
+      {
+        message_matcher: /Not found/,
+        decorated_exception: Installations::Errors::ResourceNotFound
       }
     ]
 

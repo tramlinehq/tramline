@@ -6,12 +6,12 @@ module Installations
     attr_reader :app_name, :installation_id, :jwt, :client
 
     WEBHOOK_NAME = "web"
-    WEBHOOK_EVENTS = %w[workflow_run push]
+    WEBHOOK_EVENTS = %w[push]
 
     def initialize(installation_id)
       @app_name = creds.integrations.github.app_name
       @installation_id = installation_id
-      @jwt = Github::Jwt.new(creds.integrations.github.app_id)
+      @jwt = Installations::Github::Jwt.new(creds.integrations.github.app_id)
 
       set_client
     end
@@ -73,7 +73,7 @@ module Installations
       end
     end
 
-    def create_repo_webhook!(repo, url)
+    def create_repo_webhook!(repo, url, transforms)
       execute do
         @client.create_hook(
           repo,
@@ -86,7 +86,16 @@ module Installations
             events: WEBHOOK_EVENTS,
             active: true
           }
-        )
+        ).then { |response| Installations::Response::Keys.transform([response], transforms) }.first
+      end
+    end
+
+    def find_webhook(repo, id, transforms)
+      execute do
+        @client
+          .hook(repo, id)
+          .then { |response| Installations::Response::Keys.transform([response], transforms) }
+          .first
       end
     end
 

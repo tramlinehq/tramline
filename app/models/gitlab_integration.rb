@@ -63,8 +63,32 @@ class GitlabIntegration < ApplicationRecord
     nil
   end
 
+  WEBHOOK_TRANSFORMATIONS = {
+    id: :id,
+    url: :url,
+    push_events: :push_events
+  }
+
+  def find_or_create_webhook!(id:, train_id:)
+    GitHub::Result.new do
+      if id
+        webhook = with_api_retries { installation.find_webhook(code_repository_name, id, WEBHOOK_TRANSFORMATIONS) }
+
+        if webhook[:url] == events_url(train_id:) && installation.class::WEBHOOK_PERMISSIONS.keys.all? { |k| webhook[k] }
+          webhook
+        else
+          create_webhook!(train_id:)
+        end
+      else
+        create_webhook!(train_id:)
+      end
+    rescue Installations::Errors::ResourceNotFound
+      create_webhook!(train_id:)
+    end
+  end
+
   def create_webhook!(url_params)
-    with_api_retries { installation.create_project_webhook!(code_repository_name, events_url(url_params)) }
+    with_api_retries { installation.create_project_webhook!(code_repository_name, events_url(url_params), WEBHOOK_TRANSFORMATIONS) }
   end
 
   def create_tag!(tag_name, branch)
