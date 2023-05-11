@@ -36,17 +36,4 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   def train
     @train ||= Releases::Train.find(params[:train_id])
   end
-
-  def workflow_payload
-    params.permit(
-      :train_id,
-      github: {},
-      action: {},
-      workflow_run: {},
-      workflow: {},
-      repository: {},
-      organization: {},
-      sender: {}
-    )
-  end
 end
