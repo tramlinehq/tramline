@@ -25,8 +25,16 @@ module Installations
         decorated_exception: Installations::Errors::TagReferenceAlreadyExists
       },
       {
-        message_matcher: /Not found/,
+        message_matcher: /Not found/i,
         decorated_exception: Installations::Errors::ResourceNotFound
+      },
+      {
+        message_matcher: /Branch cannot be merged/i,
+        decorated_exception: Installations::Errors::PullRequestNotMergeable
+      },
+      {
+        message_matcher: /open merge request already exists/i,
+        decorated_exception: Installations::Errors::PullRequestAlreadyExists
       }
     ]
 
@@ -35,6 +43,7 @@ module Installations
     end
 
     def initialize(response_body)
+      Rails.logger.debug "GitLab error", response_body
       @response_body = response_body
     end
 

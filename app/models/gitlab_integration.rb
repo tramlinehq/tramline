@@ -128,7 +128,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def namespaced_branch(branch_name)
-    [code_repo_namespace, ":", branch_name].join
+    branch_name
   end
 
   COMMIT_TRANSFORMATIONS = {

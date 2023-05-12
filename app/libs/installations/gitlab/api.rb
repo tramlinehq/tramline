@@ -129,7 +129,7 @@ module Installations
 
     def create_pr!(project_id, target_branch, source_branch, title, description)
       # gitlab allows creating merge requests without any changes, but we avoid it
-      raise Installations::Errors::PullRequestWithoutCommits unless diff?(project_id, source_branch, target_branch)
+      raise Installations::Errors::PullRequestWithoutCommits unless diff?(project_id, target_branch, source_branch)
 
       params = {
         form: {
@@ -148,7 +148,7 @@ module Installations
         form: {
           source_branch:,
           target_branch:,
-          state: "open"
+          state: "opened"
         }
       }
 
