@@ -35,6 +35,12 @@ module Installations
       {
         message_matcher: /open merge request already exists/i,
         decorated_exception: Installations::Errors::PullRequestAlreadyExists
+      },
+      # NOTE: This is a temporary solution till GitLab starts sending correct message for the merge failure
+      # See: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/115088
+      {
+        message_matcher: /405 Method Not Allowed/i,
+        decorated_exception: Installations::Errors::PullRequestNotMergeable
       }
     ]
 

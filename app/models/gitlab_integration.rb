@@ -144,6 +144,18 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.get_commit(app_config.code_repository["id"], sha, COMMIT_TRANSFORMATIONS) }
   end
 
+  def create_pr!(to_branch_ref, from_branch_ref, title, description)
+    with_api_retries { installation.create_pr!(app_config.code_repository_name, to_branch_ref, from_branch_ref, title, description) }
+  end
+
+  def find_pr(to_branch_ref, from_branch_ref)
+    with_api_retries { installation.find_pr(app_config.code_repository_name, to_branch_ref, from_branch_ref) }
+  end
+
+  def merge_pr!(pr_number)
+    with_api_retries { installation.merge_pr!(app_config.code_repository_name, pr_number) }
+  end
+
   private
 
   # retry once (2 attempts in total)

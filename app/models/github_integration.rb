@@ -162,6 +162,18 @@ class GithubIntegration < ApplicationRecord
     true
   end
 
+  def create_pr!(to_branch_ref, from_branch_ref, title, description)
+    installation.create_pr!(app_config.code_repository_name, to_branch_ref, from_branch_ref, title, description)
+  end
+
+  def find_pr(to_branch_ref, from_branch_ref)
+    installation.find_pr(app_config.code_repository_name, to_branch_ref, from_branch_ref)
+  end
+
+  def merge_pr!(pr_number)
+    installation.merge_pr!(app_config.code_repository_name, pr_number)
+  end
+
   private
 
   def create_webhook!(url_params)

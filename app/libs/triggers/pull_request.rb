@@ -36,9 +36,9 @@ class Triggers::PullRequest
 
   memoize def create
     GitHub::Result.new do
-      repo_integration.create_pr!(repo_name, to_branch_ref, from_branch_ref, title, description)
+      repo_integration.create_pr!(to_branch_ref, from_branch_ref, title, description)
     rescue Installations::Errors::PullRequestAlreadyExists
-      repo_integration.find_pr(repo_name, to_branch_ref, from_branch_ref)
+      repo_integration.find_pr(to_branch_ref, from_branch_ref)
     rescue Installations::Errors::PullRequestWithoutCommits
       raise CreateError, "Could not create a Pull Request"
     end
@@ -46,7 +46,7 @@ class Triggers::PullRequest
 
   memoize def merge
     GitHub::Result.new do
-      repo_integration.merge_pr!(repo_name, @pull_request.number)
+      repo_integration.merge_pr!(@pull_request.number)
     rescue Installations::Errors::PullRequestNotMergeable
       release.event_stamp!(reason: :pull_request_not_mergeable, kind: :error, data: {url: @pull_request.url, number: @pull_request.number})
       raise MergeError, "Failed to merge the Pull Request"
@@ -57,11 +57,7 @@ class Triggers::PullRequest
     @allow_without_diff ? true : raise(CreateError, "Could not create a Pull Request without a diff")
   end
 
-  def repo_name
-    train.app.config.code_repository_name
-  end
-
   def repo_integration
-    train.vcs_provider.installation
+    train.vcs_provider
   end
 end
