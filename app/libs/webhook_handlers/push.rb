@@ -17,10 +17,10 @@ class WebhookHandlers::Push
 
   def process
     return Response.new(:accepted) if valid_tag?
-    return Response.new(:unprocessable_entity, "No release") unless release
+    return Response.new(:accepted, "No release") unless release
     return Response.new(:accepted) unless release.committable?
-    return Response.new(:unprocessable_entity, "Skipping the commit") unless relevant_commit?
-    return Response.new(:unprocessable_entity, "Invalid repo/branch") unless valid_repo_and_branch?
+    return Response.new(:accepted, "Skipping the commit") unless relevant_commit?
+    return Response.new(:accepted, "Invalid repo/branch") unless valid_repo_and_branch?
 
     if train.commit_listeners.exists?(branch_name:)
       WebhookProcessors::PushJob.perform_later(release.id, commit_attributes)
