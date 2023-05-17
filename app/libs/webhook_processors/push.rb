@@ -12,6 +12,7 @@ class WebhookProcessors::Push
     release.with_lock do
       return unless release.committable?
 
+      release.close_pre_release_prs
       bump_version!
       release.start!
       release.update(release_version: train.version_current)

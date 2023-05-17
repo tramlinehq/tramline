@@ -243,6 +243,14 @@ class Releases::Train::Run < ApplicationRecord
     }
   end
 
+  def close_pre_release_prs
+    return unless pull_requests.pre_release.present?
+
+    # if pre_release_mr is closed
+    # mark it closed in db
+    # otherwise blow up
+  end
+
   private
 
   def ready_to_be_finalized?

@@ -2,12 +2,6 @@ class Triggers::Release
   include Memery
   include SiteHttp
 
-  RELEASE_HANDLERS = {
-    "almost_trunk" => AlmostTrunk,
-    "parallel_working" => ParallelBranches,
-    "release_backmerge" => ReleaseBackMerge
-  }
-
   def self.call(train)
     new(train).call
   end
@@ -44,7 +38,7 @@ class Triggers::Release
         create_release
         train.create_webhook!
         create_webhook_listeners
-        RELEASE_HANDLERS[branching_strategy].call(release, release_branch).value!
+        Releases::PreReleaseJob.perform_later(release.id)
       end
     end
   end
@@ -59,13 +53,13 @@ class Triggers::Release
       )
   end
 
-  def create_webhook_listeners
-    train.commit_listeners.create(branch_name: release_branch)
-  end
-
   memoize def release_branch
     return new_branch_name if branching_strategy.in?(%w[almost_trunk release_backmerge])
     train.release_branch
+  end
+
+  def create_webhook_listeners
+    train.commit_listeners.create(branch_name: release_branch)
   end
 
   memoize def new_branch_name
