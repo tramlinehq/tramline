@@ -2,12 +2,12 @@
 #
 # Table name: google_firebase_integrations
 #
-#  id             :uuid             not null, primary key
-#  json_key       :string
-#  project_number :string
-#  created_at     :datetime         not null
-#  updated_at     :datetime         not null
-#  app_id         :string
+#  id                :uuid             not null, primary key
+#  json_key          :string
+#  project_number    :string
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  app_id            :string
 #
 class GoogleFirebaseIntegration < ApplicationRecord
   has_paper_trail

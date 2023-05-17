@@ -38,7 +38,8 @@ class Releases::PullRequest < ApplicationRecord
   }
 
   enum source: {
-    github: "github"
+    github: "github",
+    gitlab: "gitlab"
   }
 
   def update_or_insert!(response)
@@ -46,6 +47,8 @@ class Releases::PullRequest < ApplicationRecord
       case repository_source_name
       when "github"
         attributes_for_github(response)
+      when "gitlab"
+        attributes_for_gitlab(response)
       else
         raise UnsupportedPullRequestSource
       end
@@ -81,11 +84,37 @@ class Releases::PullRequest < ApplicationRecord
     }
   end
 
+  def attributes_for_gitlab(response)
+    {
+      source: Releases::PullRequest.sources[:gitlab],
+      source_id: response["id"],
+      number: response["iid"],
+      title: response["title"],
+      body: response["description"],
+      url: response["web_url"],
+      state: gitlab_state(response["state"]),
+      head_ref: response["sha"],
+      base_ref: response["sha"], # TODO: this is a temporary fix, we should fetch the correct sha from GitLab and fill this
+      opened_at: response["created_at"]
+    }
+  end
+
   def generic_attributes
     {
       train_run_id: train_run.id,
       phase: phase
     }
+  end
+
+  def gitlab_state(response_state)
+    case response_state
+    when "opened", "locked"
+      Releases::PullRequest.states[:open]
+    when "merged", "closed"
+      Releases::PullRequest.states[:closed]
+    else
+      Releases::PullRequest.states[:closed]
+    end
   end
 
   def repository_source_name

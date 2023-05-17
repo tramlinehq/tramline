@@ -7,21 +7,18 @@ module Installations
 
     LIST_PROJECTS_URL = "https://gitlab.com/api/v4/projects"
     PROJECT_HOOKS_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/hooks"
+    PROJECT_HOOK_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/hooks/{hook_id}"
     CREATE_TAG_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/tags"
     BRANCH_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/branches/{branch_name}"
     CREATE_BRANCH_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/branches"
     MR_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests"
+    GET_MR_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests/{merge_request_iid}"
     MR_MERGE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests/{merge_request_iid}/merge"
     COMPARE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/compare"
+    GET_COMMIT_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/commits/{sha}"
 
     WEBHOOK_PERMISSIONS = {
-      deployment_events: true,
-      job_events: true,
-      merge_requests_events: true,
-      pipeline_events: true,
-      push_events: true,
-      releases_events: true,
-      tag_push_events: true
+      push_events: true
     }
 
     def initialize(oauth_access_token)
@@ -73,6 +70,12 @@ module Installations
       end
     end
 
+    def get_commit(project_id, sha, transforms)
+      execute(:get, GET_COMMIT_URL.expand(project_id:, sha:).to_s, {})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
+    end
+
     def list_projects(transforms)
       params = {
         params: {
@@ -84,7 +87,7 @@ module Installations
         .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
     end
 
-    def create_project_webhook!(project_id, url)
+    def create_project_webhook!(project_id, url, transforms)
       params = {
         form: {
           id: project_id,
@@ -93,6 +96,14 @@ module Installations
       }
 
       execute(:post, PROJECT_HOOKS_URL.expand(project_id:).to_s, params)
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
+    end
+
+    def find_webhook(project_id, hook_id, transforms)
+      execute(:get, PROJECT_HOOK_URL.expand(project_id:, hook_id:).to_s, {})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def create_branch!(project_id, from_branch_name, new_branch_name)
@@ -119,7 +130,7 @@ module Installations
 
     def create_pr!(project_id, target_branch, source_branch, title, description)
       # gitlab allows creating merge requests without any changes, but we avoid it
-      raise Installations::Errors::PullRequestWithoutCommits unless diff?(project_id, source_branch, target_branch)
+      raise Installations::Errors::PullRequestWithoutCommits unless diff?(project_id, target_branch, source_branch)
 
       params = {
         form: {
@@ -138,11 +149,17 @@ module Installations
         form: {
           source_branch:,
           target_branch:,
-          state: "open"
+          state: "opened"
         }
       }
 
       execute(:get, MR_URL.expand(project_id:).to_s, params).first
+    end
+
+    def get_pr(project_id, pr_number, transforms)
+      execute(:get, GET_MR_URL.expand(project_id:, merge_request_iid: pr_number).to_s, {})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def merge_pr!(project_id, pr_number)

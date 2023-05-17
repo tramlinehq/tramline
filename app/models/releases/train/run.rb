@@ -34,16 +34,17 @@ class Releases::Train::Run < ApplicationRecord
   DEFAULT_LOCALE = "en-US"
   DEFAULT_RELEASE_NOTES = "The latest version contains bug fixes and performance improvements."
 
-  STAMPABLE_REASONS = [
-    "created",
-    "release_branch_created",
-    "kickoff_pr_succeeded",
-    "version_changed",
-    "finalizing",
-    "pull_request_not_mergeable",
-    "post_release_pr_succeeded",
-    "finalize_failed",
-    "finished"
+  STAMPABLE_REASONS = %w[
+    created
+    release_branch_created
+    kickoff_pr_succeeded
+    version_changed
+    finalizing
+    pre_release_pr_not_creatable
+    pull_request_not_mergeable
+    post_release_pr_succeeded
+    finalize_failed
+    finished
   ]
 
   STATES = {
@@ -88,6 +89,7 @@ class Releases::Train::Run < ApplicationRecord
   before_create :set_version
   after_create :create_default_release_metadata
   after_commit -> { create_stamp!(data: {version: release_version}) }, on: :create
+  after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
@@ -241,6 +243,22 @@ class Releases::Train::Run < ApplicationRecord
       final_artifact_url: final_build_artifact&.download_url,
       store_url: app.store_link
     }
+  end
+
+  class PreReleaseUnfinishedError < StandardError; end
+
+  def close_pre_release_prs
+    return if pull_requests.pre_release.blank?
+
+    pull_requests.pre_release.each do |pr|
+      created_pr = train.vcs_provider.get_pr(pr.number)
+
+      if created_pr[:state].in? %w[open opened]
+        raise PreReleaseUnfinishedError, "Pre-release pull request is not merged yet."
+      else
+        pr.close!
+      end
+    end
   end
 
   private

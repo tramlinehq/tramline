@@ -115,4 +115,8 @@ module ApplicationHelper
   def subtitle(text)
     content_tag(:span, text, class: "text-sm text-slate-400")
   end
+
+  def short_sha(sha)
+    sha[0, 7]
+  end
 end

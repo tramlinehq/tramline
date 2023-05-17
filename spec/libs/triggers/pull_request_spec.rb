@@ -12,7 +12,7 @@ describe Triggers::PullRequest do
   let(:repo_name) { release.train.app.config.code_repository_name }
 
   before do
-    allow_any_instance_of(described_class).to receive(:repo_integration).and_return(repo_integration)
+    allow(Installations::Github::Api).to receive(:new).and_return(repo_integration)
   end
 
   describe ".create_and_merge!" do

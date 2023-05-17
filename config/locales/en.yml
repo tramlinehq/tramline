@@ -111,6 +111,7 @@ en:
               key_format: "the supplied key format is incorrect, please check your key!"
               invalid_config: "configuration is invalid, please check!"
               permission_denied: "permission denied to access the project using the key!"
+              unknown_failure: "an unrecognized error occurred connecting to Firebase, please try again!"
   invitation:
     flash:
       invite_issued: "Invitation issued"

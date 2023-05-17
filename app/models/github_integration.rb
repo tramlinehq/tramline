@@ -57,8 +57,27 @@ class GithubIntegration < ApplicationRecord
     installation.list_repos(REPOS_TRANSFORMATIONS)
   end
 
-  def create_webhook!(url_params)
-    installation.create_repo_webhook!(code_repository_name, events_url(url_params))
+  WEBHOOK_TRANSFORMATIONS = {
+    id: :id,
+    events: :events,
+    url: [:config, :url]
+  }
+
+  def find_or_create_webhook!(id:, train_id:)
+    GitHub::Result.new do
+      if id
+        webhook = installation.find_webhook(code_repository_name, id, WEBHOOK_TRANSFORMATIONS)
+        if webhook[:url] == events_url(train_id:) && (installation.class::WEBHOOK_EVENTS - webhook[:events]).empty?
+          webhook
+        else
+          create_webhook!(train_id:)
+        end
+      else
+        create_webhook!(train_id:)
+      end
+    rescue Installations::Errors::ResourceNotFound
+      create_webhook!(train_id:)
+    end
   end
 
   def create_tag!(tag_name, branch)
@@ -143,7 +162,39 @@ class GithubIntegration < ApplicationRecord
     true
   end
 
+  PR_TRANSFORMATIONS = {
+    source_id: :id,
+    number: :number,
+    title: :title,
+    body: :body,
+    url: :html_url,
+    state: :state,
+    head_ref: [:head, :ref],
+    base_ref: [:base, :ref],
+    opened_at: :created_at
+  }
+
+  def create_pr!(to_branch_ref, from_branch_ref, title, description)
+    installation.create_pr!(app_config.code_repository_name, to_branch_ref, from_branch_ref, title, description)
+  end
+
+  def find_pr(to_branch_ref, from_branch_ref)
+    installation.find_pr(app_config.code_repository_name, to_branch_ref, from_branch_ref)
+  end
+
+  def get_pr(pr_number)
+    installation.get_pr(app_config.code_repository_name, pr_number, PR_TRANSFORMATIONS)
+  end
+
+  def merge_pr!(pr_number)
+    installation.merge_pr!(app_config.code_repository_name, pr_number)
+  end
+
   private
+
+  def create_webhook!(url_params)
+    installation.create_repo_webhook!(code_repository_name, events_url(url_params), WEBHOOK_TRANSFORMATIONS)
+  end
 
   def app_config
     integration.app.config

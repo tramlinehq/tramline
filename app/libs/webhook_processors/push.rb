@@ -1,4 +1,4 @@
-class WebhookProcessors::Github::Push
+class WebhookProcessors::Push
   def self.process(release, commit_attributes)
     new(release, commit_attributes).process
   end
@@ -12,6 +12,7 @@ class WebhookProcessors::Github::Push
     release.with_lock do
       return unless release.committable?
 
+      release.close_pre_release_prs
       bump_version!
       release.start!
       release.update(release_version: train.version_current)

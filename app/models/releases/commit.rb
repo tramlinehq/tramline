@@ -42,7 +42,7 @@ class Releases::Commit < ApplicationRecord
   end
 
   def short_sha
-    commit_hash[0, 5]
+    commit_hash[0, 7]
   end
 
   private

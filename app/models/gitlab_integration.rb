@@ -12,7 +12,8 @@
 #
 class GitlabIntegration < ApplicationRecord
   has_paper_trail
-  # encrypts :oauth_access_token, deterministic: true
+  encrypts :oauth_access_token, deterministic: true
+  encrypts :oauth_refresh_token, deterministic: true
 
   include Vaultable
   include Providable
@@ -63,8 +64,32 @@ class GitlabIntegration < ApplicationRecord
     nil
   end
 
+  WEBHOOK_TRANSFORMATIONS = {
+    id: :id,
+    url: :url,
+    push_events: :push_events
+  }
+
+  def find_or_create_webhook!(id:, train_id:)
+    GitHub::Result.new do
+      if id
+        webhook = with_api_retries { installation.find_webhook(code_repository_name, id, WEBHOOK_TRANSFORMATIONS) }
+
+        if webhook[:url] == events_url(train_id:) && installation.class::WEBHOOK_PERMISSIONS.keys.all? { |k| webhook[k] }
+          webhook
+        else
+          create_webhook!(train_id:)
+        end
+      else
+        create_webhook!(train_id:)
+      end
+    rescue Installations::Errors::ResourceNotFound
+      create_webhook!(train_id:)
+    end
+  end
+
   def create_webhook!(url_params)
-    with_api_retries { installation.create_project_webhook!(code_repository_name, events_url(url_params)) }
+    with_api_retries { installation.create_project_webhook!(code_repository_name, events_url(url_params), WEBHOOK_TRANSFORMATIONS) }
   end
 
   def create_tag!(tag_name, branch)
@@ -73,6 +98,14 @@ class GitlabIntegration < ApplicationRecord
 
   def create_branch!(from, to)
     with_api_retries { installation.create_branch!(code_repository_name, from, to) }
+  end
+
+  def branch_url(repo, branch_name)
+    "https://gitlab.com/#{repo}/tree/#{branch_name}"
+  end
+
+  def tag_url(repo, tag_name)
+    "https://gitlab.com/#{repo}/-/tags/#{tag_name}"
   end
 
   def installation
@@ -96,7 +129,48 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def namespaced_branch(branch_name)
-    [code_repo_namespace, ":", branch_name].join
+    branch_name
+  end
+
+  COMMIT_TRANSFORMATIONS = {
+    commit_sha: :id,
+    author_email: :author_email,
+    author_name: :author_name,
+    message: :message,
+    url: :web_url,
+    timestamp: :authored_date
+  }
+
+  def get_commit(sha)
+    with_api_retries { installation.get_commit(app_config.code_repository["id"], sha, COMMIT_TRANSFORMATIONS) }
+  end
+
+  PR_TRANSFORMATIONS = {
+    source_id: :id,
+    number: :iid,
+    title: :title,
+    body: :description,
+    url: :web_url,
+    state: :state,
+    head_ref: :sha,
+    base_ref: :sha,
+    opened_at: :created_at
+  }
+
+  def create_pr!(to_branch_ref, from_branch_ref, title, description)
+    with_api_retries { installation.create_pr!(app_config.code_repository_name, to_branch_ref, from_branch_ref, title, description) }
+  end
+
+  def find_pr(to_branch_ref, from_branch_ref)
+    with_api_retries { installation.find_pr(app_config.code_repository_name, to_branch_ref, from_branch_ref) }
+  end
+
+  def get_pr(pr_number)
+    with_api_retries { installation.get_pr(app_config.code_repository_name, pr_number, PR_TRANSFORMATIONS) }
+  end
+
+  def merge_pr!(pr_number)
+    with_api_retries { installation.merge_pr!(app_config.code_repository_name, pr_number) }
   end
 
   private
