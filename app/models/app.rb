@@ -129,6 +129,16 @@ class App < ApplicationRecord
       .reduce(:merge)
   end
 
+  # FIXME: this is probably quite inefficient for a lot of apps/trains
+  def high_level_overview
+    trains.only_with_runs.index_with do |train|
+      {
+        in_review: train.runs.on_track.first,
+        last_released: train.runs.released.order("completed_at DESC").first
+      }
+    end
+  end
+
   def set_external_details(external_id)
     update(external_id: external_id)
   end

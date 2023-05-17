@@ -109,6 +109,7 @@ module ApplicationHelper
   end
 
   def time_format(timestamp, with_year: false)
+    return unless timestamp
     timestamp.strftime("%b #{timestamp.day.ordinalize}#{", %Y" if with_year} at %-l:%M %P")
   end
 

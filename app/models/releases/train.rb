@@ -38,6 +38,7 @@ class Releases::Train < ApplicationRecord
   has_many :deployments, through: :steps
 
   scope :running, -> { includes(:runs).where(runs: {status: Releases::Train::Run.statuses[:on_track]}) }
+  scope :only_with_runs, -> { joins(:runs).distinct }
 
   enum status: {
     draft: "draft",

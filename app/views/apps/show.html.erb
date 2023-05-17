@@ -64,6 +64,8 @@
       <%= render partial: "setup_progress", locals: { setup_instructions: @setup_instructions } %>
     <% end %>
 
+    <%= render "shared/demo/release_pilot" %>
+
     <div class="w-1/2">
       <%= render(ExternalAppComponent.new(app: @app, external_app: @app.latest_external_app)) %>
     </div>
