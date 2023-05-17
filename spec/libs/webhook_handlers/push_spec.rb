@@ -6,8 +6,8 @@ describe WebhookHandlers::Push do
   let(:handler) { described_class.new(train, payload) }
 
   describe "#process" do
-    it "returns unprocessable_entity when release not present" do
-      expect(handler.process.status).to be_eql(:unprocessable_entity)
+    it "returns accepted when release not present" do
+      expect(handler.process.status).to be_eql(:accepted)
     end
   end
 end

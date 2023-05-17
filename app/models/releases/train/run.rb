@@ -43,7 +43,8 @@ class Releases::Train::Run < ApplicationRecord
     pre_release_pr_not_creatable
     pull_request_not_mergeable
     post_release_pr_succeeded
-    finalize_failed finished
+    finalize_failed
+    finished
   ]
 
   STATES = {
