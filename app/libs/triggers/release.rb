@@ -38,7 +38,6 @@ class Triggers::Release
         create_release
         train.create_webhook!
         create_webhook_listeners
-        Releases::PreReleaseJob.perform_later(release.id)
       end
     end
   end

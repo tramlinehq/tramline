@@ -88,6 +88,7 @@ class Releases::Train::Run < ApplicationRecord
   before_create :set_version
   after_create :create_default_release_metadata
   after_commit -> { create_stamp!(data: {version: release_version}) }, on: :create
+  after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
