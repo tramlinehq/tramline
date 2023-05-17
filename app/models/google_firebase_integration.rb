@@ -4,7 +4,6 @@
 #
 #  id                :uuid             not null, primary key
 #  json_key          :string
-#  original_json_key :string
 #  project_number    :string
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
