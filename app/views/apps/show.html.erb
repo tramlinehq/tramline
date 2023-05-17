@@ -64,10 +64,18 @@
       <%= render partial: "setup_progress", locals: { setup_instructions: @setup_instructions } %>
     <% end %>
 
-    <%= render "shared/demo/release_pilot" %>
+    <div class="grid md:grid-cols-2 gap-x-20 pb-5 mt-8">
+      <section>
+        <article class="w-full">
+          <%= render(ExternalAppComponent.new(app: @app, external_app: @app.latest_external_app)) %>
+        </article>
+      </section>
 
-    <div class="w-1/2">
-      <%= render(ExternalAppComponent.new(app: @app, external_app: @app.latest_external_app)) %>
+      <section>
+        <article class="w-full">
+          <%= render "shared/demo/release_pilot" %>
+        </article>
+      </section>
     </div>
 
     <% if @app.trains.any? %>

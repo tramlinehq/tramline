@@ -1,19 +1,20 @@
-<div>
-  <h2 class="text-2xl text-slate-800 font-bold">Release Pilot</h2>
-  <div class="flex mb-2 mt-4">
-    <a class="relative inline-flex items-start mr-5" href="#0">
-      <div class="absolute top-0 right-0 -mr-2 bg-white rounded-full shadow" aria-hidden="true">
+<% if current_organization.demo? %>
+  <section>
+    <h2 class="text-2xl text-slate-800 font-bold">Release Driver</h2>
+    <span class="text-sm text-slate-400">The release driver is rotated every 2 weeks</span>
+    <div class="flex mb-2 mt-4">
+      <div class="relative inline-flex items-start mr-5">
+        <div class="absolute top-0 right-0 -mr-2 bg-white rounded-full shadow" aria-hidden="true"></div>
+        <%= image_tag("demo/alicia.jpg", width: 86, class: "rounded-full") %>
       </div>
-      <%= image_tag("demo/alicia.jpg", width: 64, class: "rounded-full") %>
-    </a>
-    <div class="mt-1 pr-1">
-      <a class="inline-flex text-slate-800 hover:text-slate-900" href="#0">
+      <div class="mt-1 pr-1">
         <h2 class="text-xl leading-snug justify-center font-medium">Alisha Acharya</h2>
-      </a>
-      <div class="flex items-center text-sm">
-        <span class="font-medium text-slate-400 -mt-0.5 mr-1">-&gt;</span>
-        <span>Will be rotated out on <%= Date.today + 5.days %></span>
+
+        <div class="flex items-center text-sm text-slate-500">
+          <span class="text-sm text-slate-400">Will be rotated out on <%= Date.today + 5.days %></span>
+        </div>
+        <div class="mt-1"><%= authz_button_to :blue, "Become Driver", "#0", { class: "btn-xs mb-2" } %></div>
       </div>
     </div>
-  </div>
-</div>
+  </section>
+<% end %>
