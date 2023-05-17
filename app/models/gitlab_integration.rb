@@ -13,6 +13,7 @@
 class GitlabIntegration < ApplicationRecord
   has_paper_trail
   encrypts :oauth_access_token, deterministic: true
+  encrypts :oauth_refresh_token, deterministic: true
 
   include Vaultable
   include Providable
@@ -104,7 +105,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def tag_url(repo, tag_name)
-    "https://gitlab.com/#{repo}/releases/tag/#{tag_name}"
+    "https://gitlab.com/#{repo}/-/tags/#{tag_name}"
   end
 
   def installation

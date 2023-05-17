@@ -92,7 +92,7 @@ class Releases::PullRequest < ApplicationRecord
       title: response["title"],
       body: response["description"],
       url: response["web_url"],
-      state: response["state"],
+      state: gitlab_state(response["state"]),
       head_ref: response["sha"],
       base_ref: response["sha"], # TODO: this is a temporary fix, we should fetch the correct sha from GitLab and fill this
       opened_at: response["created_at"]
@@ -104,6 +104,17 @@ class Releases::PullRequest < ApplicationRecord
       train_run_id: train_run.id,
       phase: phase
     }
+  end
+
+  def gitlab_state(response_state)
+    case response_state
+    when "opened", "locked"
+      Releases::PullRequest.states[:open]
+    when "merged", "closed"
+      Releases::PullRequest.states[:closed]
+    else
+      Releases::PullRequest.states[:closed]
+    end
   end
 
   def repository_source_name

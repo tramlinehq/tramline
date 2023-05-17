@@ -20,6 +20,7 @@ class WebhookHandlers::Gitlab::Push
     }
   end
 
+  # we do not listen to gitlab tag events, they are not included in the push events as with github
   def valid_tag?
     false
   end

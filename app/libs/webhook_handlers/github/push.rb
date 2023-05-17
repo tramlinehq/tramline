@@ -25,6 +25,7 @@ class WebhookHandlers::Github::Push
     payload["ref"]&.include?("refs/heads/")
   end
 
+  # github adds tag events as part of the push events
   def valid_tag?
     payload["ref"]&.include?("refs/tags/")
   end
