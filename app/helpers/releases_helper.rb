@@ -84,7 +84,7 @@ module ReleasesHelper
 
   def pull_request_badge(pull_request)
     style =
-      case pull_request.state&.to_sym
+      case pull_request.state.to_sym
       when :open
         :success
       when :closed
