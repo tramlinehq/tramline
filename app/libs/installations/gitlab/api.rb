@@ -12,6 +12,7 @@ module Installations
     BRANCH_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/branches/{branch_name}"
     CREATE_BRANCH_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/branches"
     MR_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests"
+    GET_MR_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests/{merge_request_iid}"
     MR_MERGE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests/{merge_request_iid}/merge"
     COMPARE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/compare"
     GET_COMMIT_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/commits/{sha}"
@@ -153,6 +154,12 @@ module Installations
       }
 
       execute(:get, MR_URL.expand(project_id:).to_s, params).first
+    end
+
+    def get_pr(project_id, pr_number, transforms)
+      execute(:get, GET_MR_URL.expand(project_id:, merge_request_iid: pr_number).to_s, {})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def merge_pr!(project_id, pr_number)

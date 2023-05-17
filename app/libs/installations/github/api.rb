@@ -143,6 +143,15 @@ module Installations
       end
     end
 
+    def get_pr(repo, pr_number, transforms)
+      execute do
+        @client
+          .pull_request(repo, pr_number)
+          .then { |response| Installations::Response::Keys.transform([response], transforms) }
+          .first
+      end
+    end
+
     def merge_pr!(repo, pr_number)
       execute do
         @client.merge_pull_request(repo, pr_number)

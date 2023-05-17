@@ -22,10 +22,9 @@ class Triggers::PreRelease
   def call
     RELEASE_HANDLERS[branching_strategy].call(release, release_branch).value!
   rescue Triggers::PullRequest::CreateError
-    # fail the release, audit it
+    release.event_stamp!(reason: :pre_release_pr_not_creatable, kind: :error, data: {release_branch:})
+    release.stop!
   rescue Triggers::PullRequest::MergeError
-    # audit it
-    # move it to a pre_release state
-    # handle pre_release -> on_track transition to close the PR
+    Rails.logger.debug "Pre-release pull request not merged", release.pull_requests.pre_release
   end
 end

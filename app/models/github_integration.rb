@@ -162,12 +162,28 @@ class GithubIntegration < ApplicationRecord
     true
   end
 
+  PR_TRANSFORMATIONS = {
+    source_id: :id,
+    number: :number,
+    title: :title,
+    body: :body,
+    url: :html_url,
+    state: :state,
+    head_ref: [:head, :ref],
+    base_ref: [:base, :ref],
+    opened_at: :created_at
+  }
+
   def create_pr!(to_branch_ref, from_branch_ref, title, description)
     installation.create_pr!(app_config.code_repository_name, to_branch_ref, from_branch_ref, title, description)
   end
 
   def find_pr(to_branch_ref, from_branch_ref)
     installation.find_pr(app_config.code_repository_name, to_branch_ref, from_branch_ref)
+  end
+
+  def get_pr(pr_number)
+    installation.get_pr(app_config.code_repository_name, pr_number, PR_TRANSFORMATIONS)
   end
 
   def merge_pr!(pr_number)
