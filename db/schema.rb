@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_01_102257) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_09_181556) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -443,6 +443,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_01_102257) do
     t.string "branching_strategy"
     t.string "release_branch"
     t.string "release_backmerge_branch"
+    t.string "vcs_webhook_id"
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 

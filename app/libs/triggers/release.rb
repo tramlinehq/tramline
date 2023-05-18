@@ -2,12 +2,6 @@ class Triggers::Release
   include Memery
   include SiteHttp
 
-  RELEASE_HANDLERS = {
-    "almost_trunk" => AlmostTrunk,
-    "parallel_working" => ParallelBranches,
-    "release_backmerge" => ReleaseBackMerge
-  }
-
   def self.call(train)
     new(train).call
   end
@@ -42,9 +36,8 @@ class Triggers::Release
       transaction do
         train.activate! unless train.active?
         create_release
-        create_webhooks.value!
+        train.create_webhook!
         create_webhook_listeners
-        RELEASE_HANDLERS[branching_strategy].call(release, release_branch).value!
       end
     end
   end
@@ -59,23 +52,13 @@ class Triggers::Release
       )
   end
 
-  # Webhooks are created with the train and we don't need to create webhooks for each train run AKA release
-  # This is a fallback to ensure that webhook gets created if it is not present against the train
-  def create_webhooks
-    GitHub::Result.new do
-      train.vcs_provider.create_webhook!(train_id: train.id)
-    rescue Installations::Errors::HookAlreadyExistsOnRepository
-      nil
-    end
+  memoize def release_branch
+    return new_branch_name if branching_strategy.in?(%w[almost_trunk release_backmerge])
+    train.release_branch
   end
 
   def create_webhook_listeners
     train.commit_listeners.create(branch_name: release_branch)
-  end
-
-  memoize def release_branch
-    return new_branch_name if branching_strategy.in?(%w[almost_trunk release_backmerge])
-    train.release_branch
   end
 
   memoize def new_branch_name

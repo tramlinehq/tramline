@@ -16,6 +16,7 @@
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
 #  app_id                   :uuid             not null, indexed
+#  vcs_webhook_id           :string
 #
 class Releases::Train < ApplicationRecord
   has_paper_trail
@@ -74,6 +75,14 @@ class Releases::Train < ApplicationRecord
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :store_provider, to: :integrations
   delegate :unzip_artifact?, to: :ci_cd_provider
   delegate :ready?, :config, to: :app
+
+  def create_webhook!
+    return false if Rails.env.test?
+    result = vcs_provider.find_or_create_webhook!(id: vcs_webhook_id, train_id: id)
+
+    self.vcs_webhook_id = result.value![:id]
+    save!
+  end
 
   def self.running?
     running.any?

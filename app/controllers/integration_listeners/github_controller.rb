@@ -2,8 +2,6 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   skip_before_action :verify_authenticity_token, only: [:events]
   skip_before_action :require_login, only: [:events]
 
-  delegate :active_run, to: :train
-
   def providable_params
     super.merge(installation_id:)
   end
@@ -24,7 +22,7 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def handle_push
-    response = WebhookHandlers::Github::Push.process(train, params)
+    response = WebhookHandlers::Push.process(train, params)
     Rails.logger.debug response.body
     head response.status
   end
@@ -37,18 +35,5 @@ class IntegrationListeners::GithubController < IntegrationListenerController
 
   def train
     @train ||= Releases::Train.find(params[:train_id])
-  end
-
-  def workflow_payload
-    params.permit(
-      :train_id,
-      github: {},
-      action: {},
-      workflow_run: {},
-      workflow: {},
-      repository: {},
-      organization: {},
-      sender: {}
-    )
   end
 end

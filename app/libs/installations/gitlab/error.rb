@@ -23,6 +23,24 @@ module Installations
       {
         message_matcher: /Tag (.*) already exists/,
         decorated_exception: Installations::Errors::TagReferenceAlreadyExists
+      },
+      {
+        message_matcher: /Not found/i,
+        decorated_exception: Installations::Errors::ResourceNotFound
+      },
+      {
+        message_matcher: /Branch cannot be merged/i,
+        decorated_exception: Installations::Errors::PullRequestNotMergeable
+      },
+      {
+        message_matcher: /open merge request already exists/i,
+        decorated_exception: Installations::Errors::PullRequestAlreadyExists
+      },
+      # NOTE: This is a temporary solution till GitLab starts sending correct message for the merge failure
+      # See: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/115088
+      {
+        message_matcher: /405 Method Not Allowed/i,
+        decorated_exception: Installations::Errors::PullRequestNotMergeable
       }
     ]
 
@@ -31,6 +49,7 @@ module Installations
     end
 
     def initialize(response_body)
+      Rails.logger.debug "GitLab error", response_body
       @response_body = response_body
     end
 

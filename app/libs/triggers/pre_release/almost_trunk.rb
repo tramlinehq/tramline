@@ -1,4 +1,4 @@
-class Triggers::Release
+class Triggers::PreRelease
   class AlmostTrunk
     include ApplicationHelper
 

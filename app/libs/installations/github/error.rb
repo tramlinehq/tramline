@@ -16,7 +16,7 @@ module Installations
       {
         resource: "Hook",
         code: "custom",
-        message_matcher: /The "workflow_run" event cannot have more than 20 hooks/,
+        message_matcher: /event cannot have more than 20 hooks/,
         decorated_exception: Installations::Errors::WebhookLimitReached
       },
       {

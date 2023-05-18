@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe WebhookProcessors::Github::Push do
+describe WebhookProcessors::Push do
   let(:train) { create(:releases_train, version_seeded_with: "1.5.0") }
   let(:commit_attributes) do
     {
