@@ -8,6 +8,8 @@
 
   <% deployment_run = step_run.last_run_for(deployment) %>
 
+  <% render partial: "shared/demo/release_approvals", locals: { step_run: step_run, deployment_run: deployment_run } %>
+
   <% if deployment_run.present? %>
     <span class="ml-1"><%= deployment_run_status_badge(deployment_run) %></span>
 
@@ -33,30 +35,6 @@
                             class: 'mt-2 btn-xs',
                             params: { deployment_run: { force: true } },
                             data: { turbo_confirm: "This will over-write the current inflight release submission, are you sure?" } } %>
-    <% end %>
-
-    <% if step_run.manually_startable_deployment?(deployment) %>
-      <div class="flex flex-col ml-5 mt-2 w-full bg-slate-200 p-2 mb-2 border-l-8 border-green-500 rounded-sm text-sm">
-        <div><strong>Approved</strong> by <span class="underline">Alisha Acharya</span> from the
-          <span class="underline">QA Team</span></div>
-        <%= authz_button_to :red,
-                            "Reject",
-                            "#0",
-                            { method: :patch, class: 'mt-2 btn-xs' } %>
-      </div>
-      <div class="flex flex-col ml-5 mt-2 w-full bg-slate-200 p-2 mb-2 border-l-8 border-amber-500 rounded-sm text-sm">
-        <div><strong>Awaiting</strong> approval from the <span class="underline">Product Team</span></div>
-        <div class="inline-flex">
-          <%= authz_button_to :blue,
-                              "Approve",
-                              start_release_step_run_deployment_path(release, step_run, deployment),
-                              { method: :patch, class: 'mt-2 btn-xs' } %>
-          <%= authz_button_to :red,
-                              "Reject",
-                              "#0",
-                              { method: :patch, class: 'ml-1 mt-2 btn-xs' } %>
-        </div>
-      </div>
     <% end %>
 
     <% if deployment_run.staged_rollout.present? %>
