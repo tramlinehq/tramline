@@ -34,7 +34,7 @@ class ReleasesController < SignedInApplicationController
     @train = @app.trains.friendly.find(params[:train_id])
     @steps = @train.steps.order(:step_number).includes(:runs, :train, deployments: [:integration])
     @release = @train.active_run
-    redirect_back(fallback_location: train_path, notice: "No release in progress.") and return unless @release
+    redirect_to train_path, notice: "No release in progress." and return unless @release
     set_pull_requests
     render :show
   end
