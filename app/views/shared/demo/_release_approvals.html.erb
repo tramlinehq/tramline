@@ -1,23 +1,38 @@
-<div class="flex flex-col mt-2 w-full bg-slate-200 p-2 mb-2 border-l-8 border-green-500 rounded-sm text-sm">
-  <div>
-    <strong>Approved</strong> by <span class="underline">Alisha Acharya</span> from the
-    <span class="underline">QA Team</span>
-  </div>
-  <%= authz_button_to :red,
-                      "Reject",
-                      "#0",
-                      { method: :patch, class: 'mt-2 btn-xs' } %>
-</div>
-<div class="flex flex-col mt-2 w-full bg-slate-200 p-2 mb-2 border-l-8 border-amber-500 rounded-sm text-sm">
-  <div><strong>Awaiting</strong> approval from the <span class="underline">Product Team</span></div>
-  <div class="inline-flex">
-    <%= authz_button_to :blue,
-                        "Approve",
-                        start_release_step_run_deployment_path(release, step_run, deployment),
-                        { method: :patch, class: 'mt-2 btn-xs' } %>
-    <%= authz_button_to :red,
-                        "Reject",
-                        "#0",
-                        { method: :patch, class: 'ml-1 mt-2 btn-xs' } %>
-  </div>
-</div>
+<%
+  release = step_run.release
+  done = "border-green-500"
+  waiting = "border-amber-500"
+%>
+
+<% unless deployment.production_channel? %>
+  <% if step_run.success? %>
+    <div class="flex flex-col mt-2 w-full bg-slate-200 p-2 mb-2 border-l-8 <%= done %> rounded-sm text-sm">
+      <div>
+        <strong>Approved</strong> by <span class="underline">Alisha Acharya</span> from the
+        <span class="underline"><%= ["QA Team", "Product Team", "Design Team", "Business Stakeholder"].sample %></span>
+      </div>
+      <%= authz_button_to :red,
+                          "Reject",
+                          "#0",
+                          { method: :patch, class: 'mt-2 btn-xs' } %>
+    </div>
+  <% end %>
+
+  <% if step_run.in_progress? %>
+    <div class="flex flex-col mt-2 w-full bg-slate-200 p-2 mb-2 border-l-8 <%= waiting %> rounded-sm text-sm">
+      <div><strong>Awaiting</strong> approval from the <span class="underline">
+        <%= ["QA Team", "Product Team", "Design Team", "Business Stakeholder"].sample %>
+      </span></div>
+      <div class="inline-flex">
+        <%= authz_button_to :blue,
+                            "Approve",
+                            "#0",
+                            { method: :patch, class: 'mt-2 btn-xs' } %>
+        <%= authz_button_to :red,
+                            "Reject",
+                            "#0",
+                            { method: :patch, class: 'ml-1 mt-2 btn-xs' } %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

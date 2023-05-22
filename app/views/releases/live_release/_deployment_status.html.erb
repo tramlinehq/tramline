@@ -8,8 +8,6 @@
 
   <% deployment_run = step_run.last_run_for(deployment) %>
 
-  <% render partial: "shared/demo/release_approvals", locals: { step_run: step_run, deployment_run: deployment_run } %>
-
   <% if deployment_run.present? %>
     <span class="ml-1"><%= deployment_run_status_badge(deployment_run) %></span>
 
@@ -43,4 +41,6 @@
       </div>
     <% end %>
   <% end %>
+
+  <%= render partial: "shared/demo/release_approvals", locals: { step_run: step_run, deployment: deployment, deployment_run: deployment_run } %>
 <% end %>
