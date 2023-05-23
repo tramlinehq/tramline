@@ -262,7 +262,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def staged_rollout_in_progress?
-    false
+    started_store_release?
   end
 
   private
