@@ -35,6 +35,8 @@
   </div>
 </div>
 
+<%= render partial: "shared/demo/release_schedule" %>
+
 <div class="grid md:grid-cols-2 gap-x-11 pb-5 mt-8">
   <section class="w-full">
     <!-- Train Info -->
@@ -50,6 +52,23 @@
           <% end %>
         <% end %>
 
+        <% if @train.working_branch.present? %>
+          <% mt.with_description("Working Branch") do %>
+            <%= @train.working_branch %>
+          <% end %>
+        <% end %>
+
+        <% if @train.release_branch.present? %>
+          <% mt.with_description("Release Branch") do %>
+            <%= @train.release_branch %>
+          <% end %>
+        <% end %>
+
+        <% if @train.release_backmerge_branch.present? %>
+          <% mt.with_description("Release Backmerge Branch") do %>
+            <%= @train.release_backmerge_branch %>
+          <% end %>
+        <% end %>
 
         <% mt.with_description("Code Repository") do %>
           <span class="underline">

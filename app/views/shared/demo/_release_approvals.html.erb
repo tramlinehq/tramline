@@ -1,0 +1,32 @@
+<% if !deployment.production_channel? && @current_organization.demo? %>
+  <% if step_run.success? || deployment_run.released? %>
+    <div class="flex flex-col mt-2 w-full bg-slate-200 p-2 mb-2 border-l-8 border-green-500 rounded-sm text-sm">
+      <div>
+        <strong>Approved</strong> by <span class="underline">Alisha Acharya</span> from the
+        <span class="underline"><%= ["QA Team", "Product Team", "Design Team", "Business Stakeholder"].sample %></span>
+      </div>
+      <%= authz_button_to :red,
+                          "Reject",
+                          "#0",
+                          { method: :patch, class: 'mt-2 btn-xs' } %>
+    </div>
+  <% end %>
+
+  <% if step_run.in_progress? && !deployment_run&.released? %>
+    <div class="flex flex-col mt-2 w-full bg-slate-200 p-2 mb-2 border-l-8 border-amber-500 rounded-sm text-sm">
+      <div><strong>Awaiting</strong> approval from the <span class="underline">
+        <%= ["QA Team", "Product Team", "Design Team", "Business Stakeholder"].sample %>
+      </span></div>
+      <div class="inline-flex">
+        <%= authz_button_to :blue,
+                            "Approve",
+                            "#0",
+                            { method: :patch, class: 'mt-2 btn-xs' } %>
+        <%= authz_button_to :red,
+                            "Reject",
+                            "#0",
+                            { method: :patch, class: 'ml-1 mt-2 btn-xs' } %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

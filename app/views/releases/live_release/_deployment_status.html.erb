@@ -31,8 +31,8 @@
                           prepare_release_deployment_run_path(deployment_run),
                           { method: :patch,
                             class: 'mt-2 btn-xs',
-                            params: {deployment_run: {force: true}},
-                            data: { turbo_confirm: "This will over-write the current inflight release submission, are you sure?"} } %>
+                            params: { deployment_run: { force: true } },
+                            data: { turbo_confirm: "This will over-write the current inflight release submission, are you sure?" } } %>
     <% end %>
 
     <% if deployment_run.staged_rollout.present? %>
@@ -41,4 +41,6 @@
       </div>
     <% end %>
   <% end %>
+
+  <%= render partial: "shared/demo/release_approvals", locals: { step_run: step_run, deployment: deployment, deployment_run: deployment_run } %>
 <% end %>

@@ -161,6 +161,7 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def manually_startable_deployment?(deployment)
+    return false unless release.on_track?
     return false if deployment.first?
     return false if step.review?
     startable_deployment?(deployment) && last_deployment_run&.released?

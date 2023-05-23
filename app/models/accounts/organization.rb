@@ -26,4 +26,8 @@ class Accounts::Organization < ApplicationRecord
   friendly_id :name, use: :slugged
 
   auto_strip_attributes :name, squish: true
+
+  def demo?
+    Flipper.enabled?(:demo_mode, self)
+  end
 end
