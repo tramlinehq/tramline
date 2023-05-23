@@ -3,6 +3,7 @@ class AppConfigsController < SignedInApplicationController
 
   before_action :require_write_access!, only: %i[edit update]
   before_action :set_app, only: %i[edit update]
+  before_action :require_integration_setup, only: %i[edit update]
   before_action :set_ci_cd_projects, only: %i[edit]
 
   def edit
@@ -43,11 +44,18 @@ class AppConfigsController < SignedInApplicationController
       .merge(code_repository: app_config_params[:code_repository]&.safe_json_parse)
       .merge(notification_channel: app_config_params[:notification_channel]&.safe_json_parse)
       .merge(project_id: app_config_params[:project_id]&.safe_json_parse)
+      .compact
   end
 
   def set_ci_cd_projects
     if @app.ci_cd_provider.belongs_to_project?
       @ci_cd_projects = @app.ci_cd_provider.list_apps
+    end
+  end
+
+  def require_integration_setup
+    unless @app.setup_instructions[:app_config][:visible]
+      redirect_to app_path(@app), flash: {notice: "Finish the integration setup before configuring the app."}
     end
   end
 end

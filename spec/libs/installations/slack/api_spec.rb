@@ -11,9 +11,10 @@ describe Installations::Slack::Api, type: :integration do
         "https://slack.com/api/conversations.list",
         {
           params: {
-            limit: 1000,
+            limit: 200,
             exclude_archived: true,
-            types: "public_channel,private_channel"
+            types: "public_channel,private_channel",
+            cursor: nil
           }
         })
         .and_return(payload)
@@ -35,7 +36,8 @@ describe Installations::Slack::Api, type: :integration do
           member_count: 4
         }
       ]
-      expect(result).to contain_exactly(*expected_projects)
+      expect(result[:channels]).to contain_exactly(*expected_projects)
+      expect(result[:next_cursor]).to eq("dGVhbTpDMDYxRkE1UEI=")
     end
   end
 end

@@ -5,7 +5,7 @@ module Installations
 
     PUBLISH_CHAT_MESSAGE_URL = "https://slack.com/api/chat.postMessage"
     LIST_CHANNELS_URL = "https://slack.com/api/conversations.list"
-    LIST_CHANNELS_LIMIT = 1000
+    LIST_CHANNELS_LIMIT = 200
 
     def initialize(oauth_access_token)
       @oauth_access_token = oauth_access_token
@@ -55,18 +55,22 @@ module Installations
       execute(:post, PUBLISH_CHAT_MESSAGE_URL, json_params)
     end
 
-    def list_channels(transforms)
+    def list_channels(transforms, cursor = nil)
       params = {
         params: {
           limit: LIST_CHANNELS_LIMIT,
           exclude_archived: true,
-          types: "public_channel,private_channel"
+          types: "public_channel,private_channel",
+          cursor:
         }
       }
 
       execute(:get, LIST_CHANNELS_URL, params)
-        .then { |response| response["channels"] }
-        .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
+        .then { |response| response.slice("channels", "response_metadata") }
+        .then { |responses|
+        {channels: Installations::Response::Keys.transform(responses["channels"], transforms),
+         next_cursor: responses["response_metadata"]["next_cursor"]}
+      }
     end
 
     private
