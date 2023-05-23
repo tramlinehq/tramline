@@ -261,6 +261,10 @@ class Releases::Train::Run < ApplicationRecord
     end
   end
 
+  def staged_rollout_in_progress?
+    false
+  end
+
   private
 
   def ready_to_be_finalized?

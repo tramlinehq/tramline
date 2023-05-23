@@ -26,6 +26,7 @@ class WebhookProcessors::Push
   delegate :train, to: :release
 
   def bump_version!
+    return unless release.staged_rollout_in_progress?
     return if release.step_runs.none?
 
     train.bump_version!(:patch)

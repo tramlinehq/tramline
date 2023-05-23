@@ -34,7 +34,7 @@ class Releases::Step::Run < ApplicationRecord
   has_many :running_deployments, through: :deployment_runs, source: :deployment
   has_many :passports, as: :stampable, dependent: :destroy
 
-  validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
+  # validates :build_version, uniqueness: {scope: :train_run_id}
   validates :train_step_id, uniqueness: {scope: :releases_commit_id}
 
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
