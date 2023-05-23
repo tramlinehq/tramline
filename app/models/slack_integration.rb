@@ -70,9 +70,10 @@ class SlackIntegration < ApplicationRecord
   end
 
   def channels
-    cache.fetch(channels_cache_key, expires_in: CACHE_EXPIRY) do
+    chans = cache.fetch(channels_cache_key, expires_in: CACHE_EXPIRY) do
       get_all_channels
     end
+    chans.map { |channel| channel.slice(:id, :name, :is_private) }
   end
 
   def build_channels(with_production:)
