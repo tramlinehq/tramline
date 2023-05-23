@@ -104,8 +104,11 @@ module ApplicationHelper
     yield blk if Rails.env.development?
   end
 
-  def display_channels(channels)
-    channels.map { |chan| [yield(chan), chan.to_json] }
+  def display_channels(channels, with_none: false)
+    channels
+      .map { |chan| [yield(chan), chan.to_json] }
+      .tap { |list| with_none ? list.unshift(["None", nil]) : nil }
+      .compact
   end
 
   def time_format(timestamp, with_year: false)

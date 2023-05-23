@@ -12,7 +12,7 @@
                           @config.code_repository.to_json
                         ),
                         {},
-                        { class: "form-input w-full" } %>
+                        { class: "form-select w-full" } %>
       </div>
 
       <% if @app.notifications_set_up? %>
@@ -20,11 +20,11 @@
           <%= form.label :notification_channel, "Notification Channel", class: "block text-sm font-medium mb-1" %>
           <%= form.select :notification_channel,
                           options_for_select(
-                            display_channels(@notification_channels) { |chan| "#" + chan[:name] },
+                            display_channels(@notification_channels, with_none: true) { |chan| "#" + chan[:name] },
                             @config.notification_channel.to_json
                           ),
-                          {},
-                          { class: "form-input w-full", data: { controller: "input-select" } } %>
+                          { class: "form-select w-full" },
+                          { data: { controller: "input-select" } } %>
 
           <div class="text-sm mt-1">
             To receive notifications in <strong>private</strong> channels, <code>/invite @Tramline</code> into your
