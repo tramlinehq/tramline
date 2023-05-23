@@ -5,7 +5,7 @@ module Installations
 
     PUBLISH_CHAT_MESSAGE_URL = "https://slack.com/api/chat.postMessage"
     LIST_CHANNELS_URL = "https://slack.com/api/conversations.list"
-    LIST_CHANNELS_LIMIT = 200
+    LIST_CHANNELS_LIMIT = 1000
 
     def initialize(oauth_access_token)
       @oauth_access_token = oauth_access_token
