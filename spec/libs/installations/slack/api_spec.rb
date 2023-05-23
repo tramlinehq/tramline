@@ -11,7 +11,7 @@ describe Installations::Slack::Api, type: :integration do
         "https://slack.com/api/conversations.list",
         {
           params: {
-            limit: 200,
+            limit: 1000,
             exclude_archived: true,
             types: "public_channel,private_channel"
           }
