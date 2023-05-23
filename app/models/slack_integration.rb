@@ -23,6 +23,7 @@ class SlackIntegration < ApplicationRecord
   attr_accessor :code
 
   before_create :complete_access
+  after_create_commit :fetch_channels
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://slack.com/oauth/v2/authorize{?params*}")
@@ -36,6 +37,7 @@ class SlackIntegration < ApplicationRecord
   }
 
   DEPLOY_MESSAGE = "A wild new release has appeared!"
+  CACHE_EXPIRY = 30.minutes
 
   def controllable_rollout?
     false
@@ -59,18 +61,29 @@ class SlackIntegration < ApplicationRecord
     self.oauth_access_token = Installations::Slack::Api.oauth_access_token(code)
   end
 
-  def channels
-    installation.list_channels(CHANNELS_TRANSFORMATIONS)
+  def fetch_channels
+    RefreshSlackChannelsJob.perform_later(id)
   end
 
-  def build_channels(with_production:)
-    cache.fetch(build_channels_cache_key, expires_in: 30.minutes) do
-      channels.map { |channel| channel.slice(:id, :name) }
+  def populate_channels!
+    cache.write(channels_cache_key, get_all_channels, expires_in: CACHE_EXPIRY)
+  end
+
+  def channels
+    cache.fetch(channels_cache_key, expires_in: CACHE_EXPIRY) do
+      get_all_channels
     end
   end
 
-  def build_channels_cache_key
-    "app/#{app.id}/slack_integration/#{id}/build_channels"
+  def build_channels(with_production:)
+    chans = cache.fetch(channels_cache_key, expires_in: CACHE_EXPIRY) do
+      get_all_channels
+    end
+    chans.map { |channel| channel.slice(:id, :name) }
+  end
+
+  def channels_cache_key
+    "app/#{app.id}/slack_integration/#{id}/channels"
   end
 
   def installation
@@ -106,6 +119,17 @@ class SlackIntegration < ApplicationRecord
   end
 
   private
+
+  def get_all_channels(cursor = nil, channels = [])
+    resp = installation.list_channels(CHANNELS_TRANSFORMATIONS, cursor)
+    channels.concat(resp[:channels])
+
+    if resp[:next_cursor].present?
+      get_all_channels(resp[:next_cursor], channels)
+    else
+      channels
+    end
+  end
 
   def redirect_uri
     if Rails.env.development?

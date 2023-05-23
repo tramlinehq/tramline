@@ -44,6 +44,7 @@ class AppConfigsController < SignedInApplicationController
       .merge(code_repository: app_config_params[:code_repository]&.safe_json_parse)
       .merge(notification_channel: app_config_params[:notification_channel]&.safe_json_parse)
       .merge(project_id: app_config_params[:project_id]&.safe_json_parse)
+      .compact
   end
 
   def set_ci_cd_projects
@@ -54,7 +55,7 @@ class AppConfigsController < SignedInApplicationController
 
   def require_integration_setup
     unless @app.setup_instructions[:app_config][:visible]
-      redirect_to app_path(@app), flash: { notice: "Finish the integration setup before configuring the app." }
+      redirect_to app_path(@app), flash: {notice: "Finish the integration setup before configuring the app."}
     end
   end
 end
