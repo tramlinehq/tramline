@@ -87,7 +87,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   before_create :set_version
-  after_create :create_default_release_metadata
+  after_create :set_default_release_metadata
   after_commit -> { create_stamp!(data: {version: release_version}) }, on: :create
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
 
@@ -95,7 +95,7 @@ class Releases::Train::Run < ApplicationRecord
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   delegate :app, :pre_release_prs?, to: :train
 
-  def create_default_release_metadata
+  def set_default_release_metadata
     create_release_metadata!(locale: DEFAULT_LOCALE, release_notes: DEFAULT_RELEASE_NOTES)
   end
 
