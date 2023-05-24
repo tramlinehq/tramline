@@ -28,8 +28,9 @@ describe Triggers::PullRequest do
         title: pr_title,
         description: pr_description
       )
+      namespaced_release_branch = "#{release.train.app.config.code_repo_namespace}:#{release_branch}"
 
-      expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, release_branch, pr_title, pr_description)
+      expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, namespaced_release_branch, pr_title, pr_description)
       expect(repo_integration).to have_received(:merge_pr!)
       expect(result.ok?).to be(true)
       expect(release.reload.pull_requests.closed.size).to eq(1)
@@ -47,8 +48,9 @@ describe Triggers::PullRequest do
         title: pr_title,
         description: pr_description
       )
+      namespaced_release_branch = "#{release.train.app.config.code_repo_namespace}:#{release_branch}"
 
-      expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, release_branch, pr_title, pr_description)
+      expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, namespaced_release_branch, pr_title, pr_description)
       expect(repo_integration).not_to have_received(:merge_pr!)
       expect(result.ok?).to be(true)
       expect(release.reload.pull_requests.size).to eq(0)
@@ -67,8 +69,9 @@ describe Triggers::PullRequest do
         description: pr_description,
         allow_without_diff: false
       )
+      namespaced_release_branch = "#{release.train.app.config.code_repo_namespace}:#{release_branch}"
 
-      expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, release_branch, pr_title, pr_description)
+      expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, namespaced_release_branch, pr_title, pr_description)
       expect(repo_integration).not_to have_received(:merge_pr!)
       expect(result.ok?).to be(false)
       expect(release.reload.pull_requests.size).to eq(0)
@@ -86,8 +89,9 @@ describe Triggers::PullRequest do
         title: pr_title,
         description: pr_description
       )
+      namespaced_release_branch = "#{release.train.app.config.code_repo_namespace}:#{release_branch}"
 
-      expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, release_branch, pr_title, pr_description)
+      expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, namespaced_release_branch, pr_title, pr_description)
       expect(repo_integration).to have_received(:merge_pr!)
       expect(result.ok?).to be(false)
       expect(release.reload.pull_requests.open.size).to eq(1)

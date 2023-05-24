@@ -28,7 +28,7 @@ class Triggers::PreRelease
         release: release,
         new_pull_request: release.pull_requests.pre_release.open.build,
         to_branch_ref: release_branch,
-        from_branch_ref: namespaced_working_branch,
+        from_branch_ref: working_branch,
         title: pr_title,
         description: PR_DESCRIPTION,
         allow_without_diff: false
@@ -37,10 +37,6 @@ class Triggers::PreRelease
         release.event_stamp_now!(reason: :kickoff_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number})
         GitHub::Result.new { value }
       end
-    end
-
-    def namespaced_working_branch
-      vcs_provider.namespaced_branch(working_branch)
     end
 
     def pr_title

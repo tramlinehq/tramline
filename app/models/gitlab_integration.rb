@@ -128,10 +128,6 @@ class GitlabIntegration < ApplicationRecord
     false
   end
 
-  def namespaced_branch(branch_name)
-    branch_name
-  end
-
   COMMIT_TRANSFORMATIONS = {
     commit_sha: :id,
     author_email: :author_email,

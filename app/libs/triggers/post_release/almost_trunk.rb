@@ -25,7 +25,7 @@ class Triggers::PostRelease
         release: release,
         new_pull_request: release.pull_requests.post_release.open.build,
         to_branch_ref: working_branch,
-        from_branch_ref: namespaced_release_branch,
+        from_branch_ref: release_branch,
         title: pr_title,
         description: pr_description
       ).then do |value|
@@ -48,10 +48,6 @@ class Triggers::PostRelease
       rescue Installations::Errors::TaggedReleaseAlreadyExists
         logger.debug("Release finalization: skipping since tagged release for #{train.tag_name} already exists!")
       end
-    end
-
-    def namespaced_release_branch
-      vcs_provider.namespaced_branch(release_branch)
     end
 
     def pr_title
