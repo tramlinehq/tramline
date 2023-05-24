@@ -57,7 +57,7 @@ class Triggers::PostRelease
     def pr_description
       <<~TEXT
         The release train #{train.name} with version #{release.release_version} has finished.
-        The #{release_branch} branch has to be merged into #{working_branch} branch, as per #{train.branching_strategy_name} branching strategy.
+        The #{release_branch} branch has to be merged into #{working_branch} branch.
       TEXT
     end
   end

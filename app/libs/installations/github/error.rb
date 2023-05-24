@@ -48,6 +48,7 @@ module Installations
     ]
 
     def self.handle(exception)
+      Rails.logger.error(exception)
       new(exception).handle
     end
 

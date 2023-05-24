@@ -27,7 +27,7 @@ class Triggers::PostRelease
         to_branch_ref: release_backmerge_branch,
         from_branch_ref: branch_name,
         title: release_pr_title,
-        description: pr_description
+        description: pr_description(branch_name, release_backmerge_branch)
       ).then do
         Triggers::PullRequest.create_and_merge!(
           release: release,
@@ -35,7 +35,7 @@ class Triggers::PostRelease
           to_branch_ref: working_branch,
           from_branch_ref: release_backmerge_branch,
           title: backmerge_pr_title,
-          description: pr_description
+          description: pr_description(release_backmerge_branch, working_branch)
         )
       end.then do |value|
         stamp_pr_success
@@ -67,9 +67,10 @@ class Triggers::PostRelease
       "[#{release.release_version}] Backmerge to working branch"
     end
 
-    def pr_description
+    def pr_description(from, to)
       <<~TEXT
-        Verbose description for #{train.name} release on #{release.scheduled_at}
+        The release train #{train.name} with version #{release.release_version} has finished.
+        The #{from} branch has to be merged into #{to} branch.
       TEXT
     end
   end
