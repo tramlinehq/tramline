@@ -21,7 +21,7 @@ module Installations
     def list_workflows(repo, transforms)
       execute do
         @client
-          .workflows(repo, {per_page: LIST_WORKFLOW_LIMIT})
+          .workflows(repo, {per_page: LIST_WORKFLOWS_LIMIT})
           .then { |response| response[:workflows] }
           .then { |workflows| workflows.select { |workflow| workflow[:state] == "active" } }
           .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
