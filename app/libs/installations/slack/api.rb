@@ -69,7 +69,7 @@ module Installations
         .then { |response| response.slice("channels", "response_metadata") }
         .then { |responses|
         {channels: Installations::Response::Keys.transform(responses["channels"], transforms),
-         next_cursor: responses["response_metadata"]["next_cursor"]}
+         next_cursor: responses.dig("response_metadata", "next_cursor")}
       }
     end
 
