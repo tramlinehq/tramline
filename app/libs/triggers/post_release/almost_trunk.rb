@@ -17,7 +17,7 @@ class Triggers::PostRelease
 
     attr_reader :train, :release
     delegate :logger, to: Rails
-    delegate :vcs_provider, :working_branch, to: :train
+    delegate :working_branch, to: :train
     delegate :release_branch, to: :release
 
     def create_and_merge_pr

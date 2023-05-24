@@ -16,7 +16,7 @@ class Triggers::PostRelease
     private
 
     attr_reader :train, :release
-    delegate :vcs_provider, :release_backmerge_branch, :working_branch, to: :train
+    delegate :release_backmerge_branch, :working_branch, to: :train
     delegate :branch_name, to: :release
     delegate :logger, to: Rails
 
