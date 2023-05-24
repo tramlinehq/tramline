@@ -10,13 +10,35 @@ class Triggers::PostRelease
     end
 
     def call
-      create_tag
+      create_tag.then { create_and_merge_pr }
     end
 
     private
 
     attr_reader :train, :release
     delegate :logger, to: Rails
+    delegate :vcs_provider, :working_branch, to: :train
+    delegate :release_branch, to: :release
+
+    def create_and_merge_pr
+      Triggers::PullRequest.create_and_merge!(
+        release: release,
+        new_pull_request: release.pull_requests.post_release.open.build,
+        to_branch_ref: working_branch,
+        from_branch_ref: namespaced_release_branch,
+        title: pr_title,
+        description: pr_description
+      ).then do |value|
+        Rails.logger.info "AT: Create and merge PR result", value
+        stamp_pr_success
+        GitHub::Result.new { value }
+      end
+    end
+
+    def stamp_pr_success
+      pr = release.reload.pull_requests.post_release.first
+      release.event_stamp!(reason: :post_release_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number}) if pr
+    end
 
     def create_tag
       GitHub::Result.new do
@@ -26,6 +48,21 @@ class Triggers::PostRelease
       rescue Installations::Errors::TaggedReleaseAlreadyExists
         logger.debug("Release finalization: skipping since tagged release for #{train.tag_name} already exists!")
       end
+    end
+
+    def namespaced_release_branch
+      vcs_provider.namespaced_branch(release_branch)
+    end
+
+    def pr_title
+      "[#{release.release_version}] Post-release merge"
+    end
+
+    def pr_description
+      <<~TEXT
+        The release train #{train.name} with version #{release.release_version} has finished.
+        The #{release_branch} branch has to be merged into #{working_branch} branch, as per #{train.branching_strategy_name} branching strategy.
+      TEXT
     end
   end
 end
