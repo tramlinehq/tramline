@@ -16,7 +16,7 @@ class Triggers::PostRelease
     private
 
     attr_reader :train, :release
-    delegate :vcs_provider, :release_branch, :working_branch, to: :train
+    delegate :release_branch, :working_branch, to: :train
     delegate :logger, to: Rails
 
     def create_and_merge_pr
@@ -24,7 +24,7 @@ class Triggers::PostRelease
         release: release,
         new_pull_request: release.pull_requests.post_release.open.build,
         to_branch_ref: working_branch,
-        from_branch_ref: namespaced_release_branch,
+        from_branch_ref: release_branch,
         title: pr_title,
         description: pr_description
       ).then do |value|
@@ -48,18 +48,14 @@ class Triggers::PostRelease
       end
     end
 
-    def namespaced_release_branch
-      vcs_provider.namespaced_branch(release_branch)
-    end
-
     def pr_title
       "[#{release.release_version}] Post-release merge"
     end
 
     def pr_description
       <<~TEXT
-        New release train #{train.name} triggered.
-        The #{working_branch} branch has been merged into #{release.branch_name} branch, as per #{train.branching_strategy_name} branching strategy.
+        The release train #{train.name} with version #{release.release_version} has finished.
+        The #{release_branch} branch has to be merged into #{working_branch} branch.
       TEXT
     end
   end
