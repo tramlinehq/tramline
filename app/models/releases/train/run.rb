@@ -194,7 +194,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def finished_steps?
-    commits.last.step_runs.success.size == all_steps.size
+    commits.last&.step_runs&.success&.size == all_steps.size
   end
 
   def latest_finished_step_runs
@@ -264,6 +264,8 @@ class Releases::Train::Run < ApplicationRecord
     end
   end
 
+  # since we do not currently support staged-rollouts on non-production channels
+  # this check internally assumes production
   def staged_rollout_in_progress?
     started_store_release?
   end
