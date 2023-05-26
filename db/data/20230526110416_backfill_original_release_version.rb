@@ -15,14 +15,14 @@ class BackfillOriginalReleaseVersion < ActiveRecord::Migration[7.0]
         release_patch_int = release_patch.to_i
 
         # ignore releases that already adhere to not bumping patch version on every commit
-        # this should not really be the case on production, but it's just a failsafe.
+        # this should not really be the case on production, but it's just a failsafe for dev/staging.
         if release_patch_int != (commit_count - 1)
           release.original_release_version = release.release_version
           release.save!
           next
         end
 
-        corrected_release_patch_int = release_patch_int - (commit_count - 1)
+        corrected_release_patch_int = 0
         original_release_semver = Semantic::Version.new("#{release_major}.#{release_minor}.#{corrected_release_patch_int}")
         release.original_release_version = original_release_semver.to_s
       end
