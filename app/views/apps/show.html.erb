@@ -51,13 +51,16 @@
   <div class="space-y-8">
     <% if @app.ready? %>
       <% unless @app.trains.any? %>
-        <div class="grid grid-flow-col sm:auto-cols-max justify-start gap-2">
+        <div>
           <%= authz_link_to :green, new_app_train_path(@app) do %>
             <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
             <span class="hidden xs:block ml-2">
               Create a release train
             </span>
           <% end %>
+          <p class="mt-2 w-1/2">
+            Tramline automatically triggers your CI/CD workflows and tracks the latest build artifacts that are generated. If you don't have any workflows setup refer to the <a href="https://docs.tramline.app/integrations/ci-cd" class="underline">docs</a> to help write Tramline-compatible workflows. Check out macige
+          </p>
         </div>
       <% end %>
     <% else %>

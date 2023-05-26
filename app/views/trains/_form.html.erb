@@ -92,26 +92,16 @@
   </div>
 
   <% unless train.persisted? %>
-    <div class="mt-4">
-      <span class="font-semibold">Almost Trunk</span> is the simplest strategy and the one that we recommend. For every
-      release, we will create a new release branch from the HEAD of the working branch. Release-specific fixes should
-      not be committed to the release branch directly. Instead, you should land the fixes on your working branch, and
-      then cherry-pick them on to the release branch.
-      <br/> <br/>
-      <span class="font-semibold">Release with Backmerge</span> creates a new release branch from the HEAD of the
-      working branch, for every release. Once the release is finalized, two things happen: 1/ the release branch is
-      merged into the backmerge (production) branch, and 2/ the backmerge branch is "backmerged" into the working
-      branch.
-      <br/> <br/>
-      <span class="font-semibold">Parallel Working and Release</span> does not create a new release branch for every
-      release. Instead, at the start of a release, the working branch is merged into the release branch.
-      Release-specific fixes land on the release branch directly. At the end of the release, the release branch is
-      merged back into the working branch.
+    <div class="text-sm mt-4">
+      Refer to the <%= link_to_external "docs", "https://docs.tramline.app/branching-strategies", class: "underline" %> to learn more about our supported branching strategies.
     </div>
   <% end %>
 
-  <div class="mt-5">
+  <div class="mt-10">
     <%= form.authz_submit :blue, train.persisted? ? "Update Train" : "Create Train" %>
+    <div class="text-sm mt-4">
+      <p>Release trains offer various automations to your release cycle like creating branches, and creating releases on your VCS. <%= link_to_external "Learn more about the automations", "https://docs.tramline.app/branching-strategies", class: "underline" %>.</p>
+    </div>
   </div>
 <% end %>
 
