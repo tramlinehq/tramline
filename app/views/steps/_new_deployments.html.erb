@@ -9,6 +9,15 @@
     </div>
 
     <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+      <div class="py-2">
+        <% if @app. %>
+        <%= authz_link_to :blue,
+                          "Refresh channels",
+                          refresh_channels_app_integration_slack_integration_path(@step.train.app,
+                                                                                  @step.train.app.notification_provider.integration,
+                                                                                  @step.train.app.notification_provider),
+                          method: :post, data: { turbo_method: :post } %>
+      </div>
       <%= button_tag type: "button", data: { action: "nested-form-ext#add" }, class: "btn bg-emerald-500 hover:bg-emerald-600 text-white" do %>
         <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
         <span class="ml-2">Add a new <%= Deployment.display.downcase %></span>

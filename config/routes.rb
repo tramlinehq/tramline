@@ -125,6 +125,14 @@ Rails.application.routes.draw do
           controller: "integrations/google_firebase",
           as: :google_firebase_integration
       end
+
+      resources :slack, only: [],
+        controller: "integrations/slack",
+        as: :slack_integration do
+        member do
+          post :refresh_channels
+        end
+      end
     end
 
     get "/integrations/build_artifact_channels", to: "integrations#build_artifact_channels"

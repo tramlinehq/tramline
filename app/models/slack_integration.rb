@@ -37,7 +37,7 @@ class SlackIntegration < ApplicationRecord
   }
 
   DEPLOY_MESSAGE = "A wild new release has appeared!"
-  CACHE_EXPIRY = 30.minutes
+  CACHE_EXPIRY = 1.month
 
   def controllable_rollout?
     false
@@ -70,17 +70,15 @@ class SlackIntegration < ApplicationRecord
   end
 
   def channels
-    chans = cache.fetch(channels_cache_key, expires_in: CACHE_EXPIRY) do
-      get_all_channels
-    end
-    chans.map { |channel| channel.slice(:id, :name, :is_private) }
+    cache
+      .fetch(channels_cache_key, expires_in: CACHE_EXPIRY) { get_all_channels }
+      .map { |c| c.slice(:id, :name, :is_private) }
   end
 
   def build_channels(with_production:)
-    chans = cache.fetch(channels_cache_key, expires_in: CACHE_EXPIRY) do
-      get_all_channels
-    end
-    chans.map { |channel| channel.slice(:id, :name) }
+    cache
+      .fetch(channels_cache_key, expires_in: CACHE_EXPIRY) { get_all_channels }
+      .map { |c| c.slice(:id, :name) }
   end
 
   def channels_cache_key

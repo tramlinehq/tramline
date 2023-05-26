@@ -47,7 +47,11 @@ class App < ApplicationRecord
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
 
-  delegate :vcs_provider, :ci_cd_provider, :notification_provider, :store_provider, to: :integrations, allow_nil: true
+  delegate :vcs_provider,
+    :ci_cd_provider,
+    :notification_provider,
+    :store_provider,
+    :slack_notifications?, to: :integrations, allow_nil: true
 
   scope :with_trains, -> { joins(:trains).distinct }
 

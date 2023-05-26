@@ -133,6 +133,10 @@ class Integration < ApplicationRecord
       build_channel.find(&:store?)&.providable
     end
 
+    def slack_notifications?
+      notification.first&.slack_integration?
+    end
+
     private
 
     def providable_error_message(meta)

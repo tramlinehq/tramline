@@ -30,6 +30,15 @@
             To receive notifications in <strong>private</strong> channels, <code>/invite @Tramline</code> into your
             private channel and then select it from this list.
           </div>
+
+          <div class="py-2">
+            <%= authz_link_to :blue,
+                              "Refresh channels",
+                              refresh_channels_app_integration_slack_integration_path(@app,
+                                                                                      @app.notification_provider.integration,
+                                                                                      @app.notification_provider),
+                              method: :post, data: { turbo_method: :post } %>
+          </div>
         </div>
       <% end %>
 
