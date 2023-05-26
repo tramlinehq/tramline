@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_09_181556) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -380,6 +380,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_09_181556) do
     t.string "release_version", null: false
     t.datetime "completed_at"
     t.datetime "stopped_at"
+    t.string "original_release_version"
     t.index ["train_id"], name: "index_train_runs_on_train_id"
   end
 

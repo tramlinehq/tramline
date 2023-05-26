@@ -2,18 +2,19 @@
 #
 # Table name: train_runs
 #
-#  id              :uuid             not null, primary key
-#  branch_name     :string           not null
-#  code_name       :string           not null
-#  commit_sha      :string
-#  completed_at    :datetime
-#  release_version :string           not null
-#  scheduled_at    :datetime         not null
-#  status          :string           not null
-#  stopped_at      :datetime
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  train_id        :uuid             not null, indexed
+#  id                       :uuid             not null, primary key
+#  branch_name              :string           not null
+#  code_name                :string           not null
+#  commit_sha               :string
+#  completed_at             :datetime
+#  original_release_version :string
+#  release_version          :string           not null
+#  scheduled_at             :datetime         not null
+#  status                   :string           not null
+#  stopped_at               :datetime
+#  created_at               :datetime         not null
+#  updated_at               :datetime         not null
+#  train_id                 :uuid             not null, indexed
 #
 class Releases::Train::Run < ApplicationRecord
   has_paper_trail
@@ -165,7 +166,9 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def set_version
-    self.release_version = train.bump_version!.to_s
+    new_version = train.bump_version!.to_s
+    self.release_version = new_version
+    self.original_release_version = new_version
   end
 
   def branch_url
@@ -263,6 +266,11 @@ class Releases::Train::Run < ApplicationRecord
 
   def staged_rollout_in_progress?
     started_store_release?
+  end
+
+  def hotfix?
+    return false unless on_track?
+    Semantic::Version.new(release_version) > Semantic::Version.new(original_release_version)
   end
 
   private

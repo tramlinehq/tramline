@@ -1,4 +1,13 @@
 <section>
+  <% if release.hotfix? %>
+    <div class="flex flex-col bg-green-100 rounded-sm py-5 px-4 mb-4">
+      <div class="uppercase tracking-wide text-2xl drop-shadow-md">
+        <%= inline_svg("band_aid.svg", classname: "w-10 opacity-80 inline-flex align-bottom") %>
+        <span class="align-baseline pl-2">release is now in <span class="underline">hotfix</span> mode</span>
+      </div>
+    </div>
+  <% end %>
+
   <div>
     <span class="font-bold text-2xl">Stability</span>
     <span class="text-xl text-slate-400 ml-4"><%= time_ago_in_words(release.updated_at) %> ago</span>
