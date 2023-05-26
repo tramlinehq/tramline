@@ -53,7 +53,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   end
 
   def connection_data
-    project_number
+    "Project: #{project_number}"
   end
 
   GROUPS_TRANSFORMATIONS = {

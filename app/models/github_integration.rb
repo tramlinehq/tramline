@@ -134,7 +134,7 @@ class GithubIntegration < ApplicationRecord
 
   def connection_data
     return unless integration.metadata
-    "#{integration.metadata["account_name"]} (#{integration.metadata["account_id"]})"
+    "Organization: #{integration.metadata["account_name"]} (#{integration.metadata["account_id"]})"
   end
 
   def metadata

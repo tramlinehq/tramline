@@ -81,7 +81,7 @@ class SlackIntegration < ApplicationRecord
 
   def connection_data
     return unless integration.metadata
-    "#{integration.metadata["name"]} (#{integration.metadata["domain"]})"
+    "Workspace: #{integration.metadata["name"]} (#{integration.metadata["domain"]})"
   end
 
   def fetch_channels

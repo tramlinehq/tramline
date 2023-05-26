@@ -98,7 +98,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def connection_data
-    app.bundle_identifier
+    "Bundle Identifier: #{app.bundle_identifier}"
   end
 
   def channels

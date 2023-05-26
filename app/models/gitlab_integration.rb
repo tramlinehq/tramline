@@ -141,7 +141,7 @@ class GitlabIntegration < ApplicationRecord
 
   def connection_data
     return unless integration.metadata
-    "#{integration.metadata["name"]} (#{integration.metadata["username"]})"
+    "Organization: #{integration.metadata["name"]} (#{integration.metadata["username"]})"
   end
 
   COMMIT_TRANSFORMATIONS = {

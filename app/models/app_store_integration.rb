@@ -119,7 +119,7 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def connection_data
-    app.bundle_identifier
+    "Bundle Identifier: #{app.bundle_identifier}"
   end
 
   def find_build(build_number)

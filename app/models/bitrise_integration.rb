@@ -75,7 +75,7 @@ class BitriseIntegration < ApplicationRecord
 
   def connection_data
     return unless integration.metadata
-    integration.metadata.map { |m| "#{m["name"]} (#{m["id"]})" }.join(" -- ")
+    "Teams: " + integration.metadata.map { |m| "#{m["name"]} (#{m["id"]})" }.join(", ")
   end
 
   # Special function if acts as project
