@@ -54,7 +54,7 @@ class AppConfigsController < SignedInApplicationController
   end
 
   def require_integration_setup
-    unless @app.setup_instructions[:app_config][:visible]
+    unless @app.app_setup_instructions[:app_config][:visible]
       redirect_to app_path(@app), flash: {notice: "Finish the integration setup before configuring the app."}
     end
   end
