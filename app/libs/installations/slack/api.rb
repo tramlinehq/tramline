@@ -76,7 +76,7 @@ module Installations
 
     def team_info(transforms)
       execute(:get, GET_TEAM_URL, {})
-        .then { |response| response["team"] }
+        .then { |response| response&.fetch("team", nil) }
         .then { |team| Installations::Response::Keys.transform([team], transforms) }
         .first
     end
