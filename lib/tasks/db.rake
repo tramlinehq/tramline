@@ -43,6 +43,7 @@ namespace :db do
 
   def nuke_app(app)
     app.config.delete
+    app.external_apps.delete_all
     app.integrations.delete_all
     app.trains.each do |train|
       nuke_train(train)
