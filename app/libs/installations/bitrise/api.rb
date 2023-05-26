@@ -7,6 +7,7 @@ module Installations
 
     attr_reader :access_token
 
+    LIST_ORGS_URL = "https://api.bitrise.io/v0.1/organizations"
     LIST_APPS_URL = "https://api.bitrise.io/v0.1/apps"
     LIST_WORKFLOWS_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/build-workflows")
     TRIGGER_WORKFLOW_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/builds")
@@ -31,6 +32,12 @@ module Installations
       def find_biggest(artifacts)
         artifacts.max_by { |artifact| artifact.dig("artifact_meta", "file_size_bytes")&.safe_float }
       end
+    end
+
+    def list_organizations(transforms)
+      execute(:get, LIST_ORGS_URL, {})
+        .then { |response| response&.fetch("data", nil) }
+        .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
     end
 
     def list_apps(transforms)

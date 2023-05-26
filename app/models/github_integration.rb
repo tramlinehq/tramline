@@ -42,6 +42,13 @@ class GithubIntegration < ApplicationRecord
     ci_link: :html_url
   }
 
+  INSTALLATION_TRANSFORMATIONS = {
+    id: :id,
+    account_name: [:account, :login],
+    account_id: [:account, :id],
+    avatar_url: [:account, :avatar_url]
+  }
+
   def install_path
     unless integration.version_control? || integration.ci_cd?
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
@@ -123,6 +130,15 @@ class GithubIntegration < ApplicationRecord
   # FIXME: what is this really?
   def belongs_to_project?
     false
+  end
+
+  def connection_data
+    return unless integration.metadata
+    "#{integration.metadata["account_name"]} (#{integration.metadata["account_id"]})"
+  end
+
+  def metadata
+    installation.get_installation(installation_id, INSTALLATION_TRANSFORMATIONS)
   end
 
   ## CI/CD

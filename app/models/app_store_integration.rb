@@ -114,6 +114,14 @@ class AppStoreIntegration < ApplicationRecord
     false
   end
 
+  def metadata
+    {}
+  end
+
+  def connection_data
+    app.bundle_identifier
+  end
+
   def find_build(build_number)
     GitHub::Result.new { build_info(installation.find_build(build_number, BUILD_TRANSFORMATIONS)) }
   end

@@ -37,6 +37,19 @@ class GitlabIntegration < ApplicationRecord
     avatar_url: :avatar_url
   }
 
+  WEBHOOK_TRANSFORMATIONS = {
+    id: :id,
+    url: :url,
+    push_events: :push_events
+  }
+
+  USER_INFO_TRANSFORMATIONS = {
+    id: :id,
+    username: :username,
+    name: :name,
+    avatar_url: :avatar_url
+  }
+
   def install_path
     unless integration.version_control? || integration.ci_cd?
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
@@ -63,12 +76,6 @@ class GitlabIntegration < ApplicationRecord
   def workflows
     nil
   end
-
-  WEBHOOK_TRANSFORMATIONS = {
-    id: :id,
-    url: :url,
-    push_events: :push_events
-  }
 
   def find_or_create_webhook!(id:, train_id:)
     GitHub::Result.new do
@@ -100,6 +107,10 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.create_branch!(code_repository_name, from, to) }
   end
 
+  def metadata
+    installation.user_info(USER_INFO_TRANSFORMATIONS)
+  end
+
   def branch_url(repo, branch_name)
     "https://gitlab.com/#{repo}/tree/#{branch_name}"
   end
@@ -126,6 +137,11 @@ class GitlabIntegration < ApplicationRecord
 
   def store?
     false
+  end
+
+  def connection_data
+    return unless integration.metadata
+    "#{integration.metadata["name"]} (#{integration.metadata["username"]})"
   end
 
   COMMIT_TRANSFORMATIONS = {

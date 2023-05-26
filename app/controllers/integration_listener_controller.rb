@@ -4,7 +4,7 @@ class IntegrationListenerController < SignedInApplicationController
 
   def callback
     unless valid_state?
-      redirect_to app_path(state_app), notice: "Failed to create the notification, please try again."
+      redirect_to app_path(state_app), notice: "Failed to create the integration, please try again."
       return
     end
 
@@ -14,7 +14,7 @@ class IntegrationListenerController < SignedInApplicationController
     if @integration.save
       redirect_to app_path(state_app), notice: "Integration was successfully created."
     else
-      render :new, status: :unprocessable_entity
+      redirect_to app_integrations_path(state_app), notice: "Failed to create the integration -- #{@integration.errors.full_messages}"
     end
   end
 

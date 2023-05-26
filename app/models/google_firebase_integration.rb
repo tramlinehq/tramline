@@ -2,12 +2,12 @@
 #
 # Table name: google_firebase_integrations
 #
-#  id                :uuid             not null, primary key
-#  json_key          :string
-#  project_number    :string
-#  created_at        :datetime         not null
-#  updated_at        :datetime         not null
-#  app_id            :string
+#  id             :uuid             not null, primary key
+#  json_key       :string
+#  project_number :string
+#  created_at     :datetime         not null
+#  updated_at     :datetime         not null
+#  app_id         :string
 #
 class GoogleFirebaseIntegration < ApplicationRecord
   has_paper_trail
@@ -52,6 +52,10 @@ class GoogleFirebaseIntegration < ApplicationRecord
     "firebase"
   end
 
+  def connection_data
+    project_number
+  end
+
   GROUPS_TRANSFORMATIONS = {
     id: :name,
     name: :display_name,
@@ -92,6 +96,10 @@ class GoogleFirebaseIntegration < ApplicationRecord
     GitHub::Result.new do
       installation.send_to_group(release_name, group_name(group))
     end
+  end
+
+  def metadata
+    {}
   end
 
   class ReleaseInfo

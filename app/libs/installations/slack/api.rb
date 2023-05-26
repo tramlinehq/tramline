@@ -5,6 +5,7 @@ module Installations
 
     PUBLISH_CHAT_MESSAGE_URL = "https://slack.com/api/chat.postMessage"
     LIST_CHANNELS_URL = "https://slack.com/api/conversations.list"
+    GET_TEAM_URL = "https://slack.com/api/team.info"
     LIST_CHANNELS_LIMIT = 200
 
     def initialize(oauth_access_token)
@@ -68,9 +69,16 @@ module Installations
       execute(:get, LIST_CHANNELS_URL, params)
         .then { |response| response.slice("channels", "response_metadata") }
         .then { |responses|
-        {channels: Installations::Response::Keys.transform(responses["channels"], transforms),
-         next_cursor: responses.dig("response_metadata", "next_cursor")}
-      }
+          {channels: Installations::Response::Keys.transform(responses["channels"], transforms),
+           next_cursor: responses.dig("response_metadata", "next_cursor")}
+        }
+    end
+
+    def team_info(transforms)
+      execute(:get, GET_TEAM_URL, {})
+        .then { |response| response["team"] }
+        .then { |team| Installations::Response::Keys.transform([team], transforms) }
+        .first
     end
 
     private

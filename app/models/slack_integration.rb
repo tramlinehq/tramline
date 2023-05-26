@@ -36,6 +36,16 @@ class SlackIntegration < ApplicationRecord
     member_count: :num_members
   }
 
+  TEAM_TRANSFORMATIONS = {
+    id: :id,
+    name: :name,
+    domain: :domain,
+    email_domain: :email_domain,
+    icon: [:icon, :image_34],
+    enterprise_id: :enterprise_id,
+    enterprise_name: :enterprise_name
+  }
+
   DEPLOY_MESSAGE = "A wild new release has appeared!"
   CACHE_EXPIRY = 30.minutes
 
@@ -59,6 +69,19 @@ class SlackIntegration < ApplicationRecord
 
   def complete_access
     self.oauth_access_token = Installations::Slack::Api.oauth_access_token(code)
+  end
+
+  def installation
+    Installations::Slack::Api.new(oauth_access_token)
+  end
+
+  def metadata
+    installation.team_info(TEAM_TRANSFORMATIONS)
+  end
+
+  def connection_data
+    return unless integration.metadata
+    "#{integration.metadata["name"]} (#{integration.metadata["domain"]})"
   end
 
   def fetch_channels
@@ -85,10 +108,6 @@ class SlackIntegration < ApplicationRecord
 
   def channels_cache_key
     "app/#{app.id}/slack_integration/#{id}/channels"
-  end
-
-  def installation
-    Installations::Slack::Api.new(oauth_access_token)
   end
 
   def notify!(channel, message, type, params)
