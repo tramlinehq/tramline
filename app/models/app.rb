@@ -34,11 +34,11 @@ class App < ApplicationRecord
   has_many :steps, through: :trains
 
   validate :no_trains_are_running, on: :update
-  validates :bundle_identifier, uniqueness: { scope: [:platform, :organization_id] }
-  validates :build_number, numericality: { greater_than_or_equal_to: :build_number_was }, on: :update
-  validates :build_number, numericality: { less_than: 2100000000 }, if: -> { android? }
+  validates :bundle_identifier, uniqueness: {scope: [:platform, :organization_id]}
+  validates :build_number, numericality: {greater_than_or_equal_to: :build_number_was}, on: :update
+  validates :build_number, numericality: {less_than: 2100000000}, if: -> { android? }
 
-  enum platform: { android: "android", ios: "ios" }
+  enum platform: {android: "android", ios: "ios"}
 
   after_initialize :initialize_config, if: :new_record?
   before_destroy :ensure_deletable, prepend: true do
@@ -53,7 +53,7 @@ class App < ApplicationRecord
   scope :with_trains, -> { joins(:trains).distinct }
 
   def runs
-    Releases::Train::Run.joins(train: :app).where(train: { app: self })
+    Releases::Train::Run.joins(train: :app).where(train: {app: self})
   end
 
   def self.allowed_platforms(current_user)
@@ -87,7 +87,7 @@ class App < ApplicationRecord
 
   def store_link
     if android?
-      GOOGLE_PLAY_STORE_URL_TEMPLATE.expand(query: { id: bundle_identifier }).to_s
+      GOOGLE_PLAY_STORE_URL_TEMPLATE.expand(query: {id: bundle_identifier}).to_s
     else
       APP_STORE_URL_TEMPLATE.expand(id: external_id).to_s
     end
