@@ -280,6 +280,10 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def started_store_release?
-    last_run_for(train.release_step)&.deployment_runs&.find { |dr| dr.deployment.production_channel? }.present?
+    last_run_for(train.release_step)
+      &.deployment_runs
+      &.not_failed
+      &.find { |dr| dr.deployment.production_channel? }
+      .present?
   end
 end
