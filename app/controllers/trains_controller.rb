@@ -23,7 +23,7 @@ class TrainsController < SignedInApplicationController
 
     respond_to do |format|
       if @train.save
-        format.html { redirect_to train_path, notice: "Train was successfully created." }
+        format.html { new_train_redirect }
         format.json { render :show, status: :created, location: @train }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -71,6 +71,14 @@ class TrainsController < SignedInApplicationController
   end
 
   private
+
+  def new_train_redirect
+    if @train.in_creation?
+      redirect_to app_path(@app), notice: "Train was successfully created."
+    else
+      redirect_to train_path, notice: "Train was successfully created."
+    end
+  end
 
   def set_train
     @train = @app.trains.friendly.find(params[:id])

@@ -42,7 +42,7 @@ class StepsController < SignedInApplicationController
 
     respond_to do |format|
       if @step.save
-        format.html { redirect_to app_train_path(@app, @train), notice: "Step was successfully created." }
+        format.html { new_step_redirect }
       else
         set_build_channels
         format.html { render :new, status: :unprocessable_entity }
@@ -71,6 +71,14 @@ class StepsController < SignedInApplicationController
   end
 
   private
+
+  def new_step_redirect
+    if @step.train.in_creation?
+      redirect_to app_path(@app), notice: "Step was successfully created."
+    else
+      redirect_to app_train_path(@app, @train), notice: "Step was successfully created."
+    end
+  end
 
   def set_step
     @step = @train.steps.friendly.find(params[:id])

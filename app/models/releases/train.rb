@@ -172,6 +172,10 @@ class Releases::Train < ApplicationRecord
     !Rails.env.test? && active?
   end
 
+  def in_creation?
+    steps.release.none? && !steps.review.any?
+  end
+
   private
 
   def ensure_deletable
