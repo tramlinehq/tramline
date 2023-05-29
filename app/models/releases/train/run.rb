@@ -144,10 +144,6 @@ class Releases::Train::Run < ApplicationRecord
     created? || on_track?
   end
 
-  def start_finalize?
-    on_track? && ready_to_be_finalized?
-  end
-
   def finalizable?
     may_start_post_release_phase? && ready_to_be_finalized?
   end
