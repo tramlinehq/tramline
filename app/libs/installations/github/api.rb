@@ -7,6 +7,7 @@ module Installations
 
     WEBHOOK_NAME = "web"
     WEBHOOK_EVENTS = %w[push]
+    LIST_WORKFLOWS_LIMIT = 99
 
     def initialize(installation_id)
       @app_name = creds.integrations.github.app_name
@@ -16,7 +17,15 @@ module Installations
       set_client
     end
 
-    LIST_WORKFLOWS_LIMIT = 99
+    def get_installation(id, transforms)
+      execute do
+        Octokit::Client.new(bearer_token: jwt.get)
+          .installation(id)
+          .tap { |response| Rails.logger.info "Github response", response }
+          .then { |responses| Installations::Response::Keys.transform([responses], transforms) }
+          .first
+      end
+    end
 
     def list_workflows(repo, transforms)
       execute do

@@ -4,6 +4,7 @@
 #
 #  id              :uuid             not null, primary key
 #  category        :string           not null
+#  metadata        :jsonb
 #  providable_type :string           indexed => [providable_id]
 #  status          :string
 #  created_at      :datetime         not null
@@ -75,6 +76,7 @@ class Integration < ApplicationRecord
   scope :ready, -> { where(category: MINIMUM_REQUIRED_SET, status: :connected) }
 
   before_create :set_connected
+  after_create_commit -> { IntegrationMetadataJob.perform_later(id) }
 
   class << self
     def by_categories_for(app)
@@ -138,6 +140,13 @@ class Integration < ApplicationRecord
     def providable_error_message(meta)
       meta[:value].errors.full_messages[0]
     end
+  end
+
+  delegate :connection_data, to: :providable
+
+  def set_metadata!
+    self.metadata = providable.metadata
+    save!
   end
 
   def installation_state

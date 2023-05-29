@@ -5,6 +5,7 @@ module Installations
 
     class TokenExpired < StandardError; end
 
+    USER_INFO_URL = "https://gitlab.com/api/v4/user"
     LIST_PROJECTS_URL = "https://gitlab.com/api/v4/projects"
     PROJECT_HOOKS_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/hooks"
     PROJECT_HOOK_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/hooks/{hook_id}"
@@ -68,6 +69,12 @@ module Installations
           .detect(&:present?)
           .then { |tokens| OpenStruct.new tokens }
       end
+    end
+
+    def user_info(transforms)
+      execute(:get, USER_INFO_URL, {})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def get_commit(project_id, sha, transforms)

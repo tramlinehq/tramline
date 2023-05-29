@@ -35,6 +35,12 @@ class BitriseIntegration < ApplicationRecord
     ci_link: :build_url
   }
 
+  ORGANIZATIONS_TRANSFORMATIONS = {
+    icon_url: :avatar_icon_url,
+    name: :name,
+    id: :slug
+  }
+
   delegate :project, to: :app_config
 
   validate :correct_key, on: :create
@@ -67,9 +73,18 @@ class BitriseIntegration < ApplicationRecord
     true
   end
 
+  def connection_data
+    return unless integration.metadata
+    "Teams: " + integration.metadata.map { |m| "#{m["name"]} (#{m["id"]})" }.join(", ")
+  end
+
   # Special function if acts as project
   def list_apps
     installation.list_apps(APPS_TRANSFORMATIONS)
+  end
+
+  def metadata
+    installation.list_organizations(ORGANIZATIONS_TRANSFORMATIONS)
   end
 
   # CI/CD
