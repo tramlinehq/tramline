@@ -173,7 +173,7 @@ class Releases::Train < ApplicationRecord
   end
 
   def in_creation?
-    !steps.review.any? || !steps.release.any?
+    steps.release.none? && !steps.review.any?
   end
 
   private
