@@ -25,32 +25,36 @@ describe WebhookProcessors::Push do
     end
 
     context "when hotfix" do
-      it "bumps the patch version when its a production store distribution channel" do
-        pick_any_store = [:with_google_play_store, :with_app_store].sample
-        step = create(:releases_step, :release, :with_deployment, train: train)
-        deployment = create(:deployment, :with_production_channel, pick_any_store, step: step)
-        step_run = create(:releases_step_run, train_run:, step:)
-        _deployment_run = create(:deployment_run, :created, deployment: deployment, step_run: step_run)
+      [[:with_google_play_store, :with_production_channel],
+        [:with_google_play_store, :with_staged_rollout],
+        [:with_app_store, :with_production_channel],
+        [:with_app_store, :with_phased_release]].each do |test_case|
+        test_case_help = test_case.join(", ").humanize.downcase
+        it "bumps the patch version #{test_case_help} in rollout mode" do
+          step = create(:releases_step, :release, :with_deployment, train: train)
+          deployment = create(:deployment, *test_case, step: step)
+          step_run = create(:releases_step_run, train_run:, step:)
+          _deployment_run = create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
 
-        allow(Triggers::StepRun).to receive(:call)
-        described_class.process(train_run.reload, commit_attributes)
+          allow(Triggers::StepRun).to receive(:call)
+          described_class.process(train_run.reload, commit_attributes)
 
-        expect(train.reload.version_current).to eq("1.6.1")
-        expect(train_run.reload.release_version).to eq("1.6.1")
-      end
+          expect(train.reload.version_current).to eq("1.6.1")
+          expect(train_run.reload.release_version).to eq("1.6.1")
+        end
 
-      it "does not bump the original release version even when a patch version bump takes place" do
-        pick_any_store = [:with_google_play_store, :with_app_store].sample
-        step = create(:releases_step, :release, :with_deployment, train: train)
-        deployment = create(:deployment, :with_production_channel, pick_any_store, step: step)
-        step_run = create(:releases_step_run, train_run:, step:)
-        _deployment_run = create(:deployment_run, :created, deployment: deployment, step_run: step_run)
+        it "does not bump the original release version for a patch version bump #{test_case_help}" do
+          step = create(:releases_step, :release, :with_deployment, train: train)
+          deployment = create(:deployment, *test_case, step: step)
+          step_run = create(:releases_step_run, train_run:, step:)
+          _deployment_run = create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
 
-        allow(Triggers::StepRun).to receive(:call)
-        described_class.process(train_run.reload, commit_attributes)
+          allow(Triggers::StepRun).to receive(:call)
+          described_class.process(train_run.reload, commit_attributes)
 
-        expect(train_run.reload.release_version).to eq("1.6.1")
-        expect(train_run.reload.original_release_version).to eq("1.6.0")
+          expect(train_run.reload.release_version).to eq("1.6.1")
+          expect(train_run.reload.original_release_version).to eq("1.6.0")
+        end
       end
 
       it "does not bump the patch version when its any other distribution channel" do
@@ -58,7 +62,7 @@ describe WebhookProcessors::Push do
         step = create(:releases_step, :release, :with_deployment, train: train)
         deployment = create(:deployment, :with_production_channel, non_store, step: step)
         step_run = create(:releases_step_run, train_run:, step:)
-        _deployment_run = create(:deployment_run, :created, deployment: deployment, step_run: step_run)
+        _deployment_run = create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
 
         allow(Triggers::StepRun).to receive(:call)
         described_class.process(train_run.reload, commit_attributes)

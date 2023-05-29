@@ -115,8 +115,9 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: :deployment_started, to: :deployment_failed
     end
 
-    event(:finish, after_commit: :finalize_release) do
+    event(:finish) do
       after { event_stamp!(reason: :finished, kind: :success, data: stamp_data) }
+      after { finalize_release }
       transitions from: :deployment_started, to: :success, guard: :finished_deployments?
     end
   end

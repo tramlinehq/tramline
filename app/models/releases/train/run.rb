@@ -263,7 +263,7 @@ class Releases::Train::Run < ApplicationRecord
   # since we do not currently support staged-rollouts on non-production channels
   # this check internally assumes production
   def staged_rollout_in_progress?
-    started_store_release?
+    latest_store_release&.rollout_started?
   end
 
   def hotfix?
@@ -278,10 +278,13 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def started_store_release?
+    latest_store_release.present?
+  end
+
+  def latest_store_release
     last_run_for(train.release_step)
       &.deployment_runs
       &.not_failed
       &.find { |dr| dr.deployment.production_channel? }
-      .present?
   end
 end
