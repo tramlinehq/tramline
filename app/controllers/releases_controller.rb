@@ -44,6 +44,8 @@ class ReleasesController < SignedInApplicationController
     redirect_to app_train_path(@release.train.app, @release.train), notice: "The release was stopped."
   end
 
+  # TODO: This action can be deprecated once there are no more releases with pending manual finalize
+  # Since finalize as of https://github.com/tramlinehq/tramline/pull/440 is automatic
   def post_release
     @release = Releases::Train::Run.find(params[:id])
 

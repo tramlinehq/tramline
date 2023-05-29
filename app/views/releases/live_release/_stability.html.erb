@@ -1,4 +1,13 @@
 <section>
+  <% if release.hotfix? %>
+    <div class="flex flex-col bg-slate-800 text-white rounded-sm py-5 mb-5 text-center pr-8">
+      <div class="uppercase tracking-wide text-2xl drop-shadow-md">
+        <%= inline_svg("band_aid.svg", classname: "w-10 opacity-80 inline-flex align-bottom") %>
+        <span class="align-baseline pl-2">release is now in <span class="underline">hotfix</span> mode</span>
+      </div>
+    </div>
+  <% end %>
+
   <div>
     <span class="font-bold text-2xl">Stability</span>
     <span class="text-xl text-slate-400 ml-4"><%= time_ago_in_words(release.updated_at) %> ago</span>
@@ -41,11 +50,5 @@
         <%= render partial: "shared/step_tree_connector", locals: { color: step_color(step.kind) } %>
       <% end %>
     </ol>
-
-    <% if release.start_finalize? %>
-      <div class="mt-8">
-        <%= authz_button_to :blue, "Finish this release", post_release_release_path(release), class: "btn-sm" %>
-      </div>
-    <% end %>
   </div>
 </section>

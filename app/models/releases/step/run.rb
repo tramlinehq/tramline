@@ -34,7 +34,6 @@ class Releases::Step::Run < ApplicationRecord
   has_many :running_deployments, through: :deployment_runs, source: :deployment
   has_many :passports, as: :stampable, dependent: :destroy
 
-  validates :build_version, uniqueness: {scope: [:train_step_id, :train_run_id]}
   validates :train_step_id, uniqueness: {scope: :releases_commit_id}
 
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
@@ -116,7 +115,7 @@ class Releases::Step::Run < ApplicationRecord
       transitions from: :deployment_started, to: :deployment_failed
     end
 
-    event(:finish) do
+    event(:finish, after_commit: :finalize_release) do
       after { event_stamp!(reason: :finished, kind: :success, data: stamp_data) }
       transitions from: :deployment_started, to: :success, guard: :finished_deployments?
     end
@@ -304,5 +303,9 @@ class Releases::Step::Run < ApplicationRecord
     return Releases::FindBuildJob.perform_async(id) if has_findables?
     return Releases::UploadArtifact.perform_later(id, artifacts_url) if has_uploadables?
     trigger_deployment
+  end
+
+  def finalize_release
+    release.start_post_release_phase! if release.finalizable?
   end
 end

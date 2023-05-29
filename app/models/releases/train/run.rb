@@ -2,18 +2,19 @@
 #
 # Table name: train_runs
 #
-#  id              :uuid             not null, primary key
-#  branch_name     :string           not null
-#  code_name       :string           not null
-#  commit_sha      :string
-#  completed_at    :datetime
-#  release_version :string           not null
-#  scheduled_at    :datetime         not null
-#  status          :string           not null
-#  stopped_at      :datetime
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  train_id        :uuid             not null, indexed
+#  id                       :uuid             not null, primary key
+#  branch_name              :string           not null
+#  code_name                :string           not null
+#  commit_sha               :string
+#  completed_at             :datetime
+#  original_release_version :string
+#  release_version          :string           not null
+#  scheduled_at             :datetime         not null
+#  status                   :string           not null
+#  stopped_at               :datetime
+#  created_at               :datetime         not null
+#  updated_at               :datetime         not null
+#  train_id                 :uuid             not null, indexed
 #
 class Releases::Train::Run < ApplicationRecord
   has_paper_trail
@@ -87,7 +88,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   before_create :set_version
-  after_create :create_default_release_metadata
+  after_create :set_default_release_metadata
   after_commit -> { create_stamp!(data: {version: release_version}) }, on: :create
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
 
@@ -95,7 +96,7 @@ class Releases::Train::Run < ApplicationRecord
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   delegate :app, :pre_release_prs?, to: :train
 
-  def create_default_release_metadata
+  def set_default_release_metadata
     create_release_metadata!(locale: DEFAULT_LOCALE, release_notes: DEFAULT_RELEASE_NOTES)
   end
 
@@ -143,10 +144,6 @@ class Releases::Train::Run < ApplicationRecord
     created? || on_track?
   end
 
-  def start_finalize?
-    on_track? && ready_to_be_finalized?
-  end
-
   def finalizable?
     may_start_post_release_phase? && ready_to_be_finalized?
   end
@@ -165,7 +162,9 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def set_version
-    self.release_version = train.bump_version!.to_s
+    new_version = train.bump_version!.to_s
+    self.release_version = new_version
+    self.original_release_version = new_version
   end
 
   def branch_url
@@ -191,7 +190,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def finished_steps?
-    commits.last.step_runs.success.size == all_steps.size
+    commits.last&.step_runs&.success&.size == all_steps.size
   end
 
   def latest_finished_step_runs
@@ -261,6 +260,17 @@ class Releases::Train::Run < ApplicationRecord
     end
   end
 
+  # since we do not currently support staged-rollouts on non-production channels
+  # this check internally assumes production
+  def staged_rollout_in_progress?
+    started_store_release?
+  end
+
+  def hotfix?
+    return false unless on_track?
+    Semantic::Version.new(release_version) > Semantic::Version.new(original_release_version)
+  end
+
   private
 
   def ready_to_be_finalized?
@@ -268,6 +278,10 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def started_store_release?
-    last_run_for(train.release_step)&.deployment_runs&.find { |dr| dr.deployment.production_channel? }.present?
+    last_run_for(train.release_step)
+      &.deployment_runs
+      &.not_failed
+      &.find { |dr| dr.deployment.production_channel? }
+      .present?
   end
 end
