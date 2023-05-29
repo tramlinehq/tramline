@@ -21,16 +21,14 @@ class Triggers::PreRelease
     delegate :train, to: :release
     delegate :vcs_provider, :working_branch, to: :train
 
-    PR_DESCRIPTION = "Merging this before starting release.".freeze
-
     def create_and_merge_pr
       Triggers::PullRequest.create_and_merge!(
         release: release,
         new_pull_request: release.pull_requests.pre_release.open.build,
         to_branch_ref: release_branch,
-        from_branch_ref: namespaced_working_branch,
+        from_branch_ref: working_branch,
         title: pr_title,
-        description: PR_DESCRIPTION,
+        description: pr_description,
         allow_without_diff: false
       ).then do |value|
         pr = release.reload.pull_requests.pre_release.first
@@ -39,12 +37,12 @@ class Triggers::PreRelease
       end
     end
 
-    def namespaced_working_branch
-      vcs_provider.namespaced_branch(working_branch)
-    end
-
     def pr_title
       "[#{version_in_progress(train.version_current)}] Pre-release merge"
+    end
+
+    def pr_description
+      "A new release train #{train.name} is starting. The #{working_branch} branch has to be merged into #{release_branch} branch."
     end
   end
 end

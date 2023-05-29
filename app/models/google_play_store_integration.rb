@@ -69,6 +69,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
     end
   end
 
+  def metadata
+    {}
+  end
+
   def find_build(_)
     raise Integrations::UnsupportedAction
   end
@@ -91,6 +95,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def to_s
     "google_play_store"
+  end
+
+  def connection_data
+    "Bundle Identifier: #{app.bundle_identifier}"
   end
 
   def channels

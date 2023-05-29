@@ -42,6 +42,13 @@ class GithubIntegration < ApplicationRecord
     ci_link: :html_url
   }
 
+  INSTALLATION_TRANSFORMATIONS = {
+    id: :id,
+    account_name: [:account, :login],
+    account_id: [:account, :id],
+    avatar_url: [:account, :avatar_url]
+  }
+
   def install_path
     unless integration.version_control? || integration.ci_cd?
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
@@ -125,6 +132,15 @@ class GithubIntegration < ApplicationRecord
     false
   end
 
+  def connection_data
+    return unless integration.metadata
+    "Organization: #{integration.metadata["account_name"]} (#{integration.metadata["account_id"]})"
+  end
+
+  def metadata
+    installation.get_installation(installation_id, INSTALLATION_TRANSFORMATIONS)
+  end
+
   ## CI/CD
 
   def workflows
@@ -175,11 +191,11 @@ class GithubIntegration < ApplicationRecord
   }
 
   def create_pr!(to_branch_ref, from_branch_ref, title, description)
-    installation.create_pr!(app_config.code_repository_name, to_branch_ref, from_branch_ref, title, description)
+    installation.create_pr!(app_config.code_repository_name, to_branch_ref, namespaced_branch(from_branch_ref), title, description)
   end
 
   def find_pr(to_branch_ref, from_branch_ref)
-    installation.find_pr(app_config.code_repository_name, to_branch_ref, from_branch_ref)
+    installation.find_pr(app_config.code_repository_name, to_branch_ref, namespaced_branch(from_branch_ref))
   end
 
   def get_pr(pr_number)

@@ -22,12 +22,12 @@ class AppConfig < ApplicationRecord
   end
 
   def code_repository_name
-    return unless code_repository
+    return if code_repository.blank?
     code_repository["full_name"]
   end
 
   def notification_channel_id
-    return unless notification_channel
+    return if notification_channel.blank?
     notification_channel["id"]
   end
 

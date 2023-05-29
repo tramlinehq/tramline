@@ -204,6 +204,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
     t.datetime "updated_at", null: false
     t.uuid "providable_id"
     t.string "providable_type"
+    t.jsonb "metadata"
     t.index ["app_id"], name: "index_integrations_on_app_id"
     t.index ["providable_type", "providable_id"], name: "index_integrations_on_providable_type_and_providable_id", unique: true
   end

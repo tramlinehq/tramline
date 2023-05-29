@@ -14,6 +14,12 @@ module Installations
         code: 400,
         message_matcher: /Request contains an invalid argument/,
         decorated_reason: :invalid_config
+      },
+      {
+        status: "PERMISSION_DENIED",
+        code: 403,
+        message_matcher: /The caller does not have permission/,
+        decorated_reason: :permission_denied
       }
     ]
 

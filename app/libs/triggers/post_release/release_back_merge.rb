@@ -16,7 +16,7 @@ class Triggers::PostRelease
     private
 
     attr_reader :train, :release
-    delegate :vcs_provider, :release_backmerge_branch, :working_branch, to: :train
+    delegate :release_backmerge_branch, :working_branch, to: :train
     delegate :branch_name, to: :release
     delegate :logger, to: Rails
 
@@ -25,17 +25,17 @@ class Triggers::PostRelease
         release: release,
         new_pull_request: release.pull_requests.post_release.open.build,
         to_branch_ref: release_backmerge_branch,
-        from_branch_ref: namespaced_release_branch,
+        from_branch_ref: branch_name,
         title: release_pr_title,
-        description: pr_description
+        description: pr_description(branch_name, release_backmerge_branch)
       ).then do
         Triggers::PullRequest.create_and_merge!(
           release: release,
           new_pull_request: release.pull_requests.post_release.open.build,
           to_branch_ref: working_branch,
-          from_branch_ref: namespaced_backmerge_branch,
+          from_branch_ref: release_backmerge_branch,
           title: backmerge_pr_title,
-          description: pr_description
+          description: pr_description(release_backmerge_branch, working_branch)
         )
       end.then do |value|
         stamp_pr_success
@@ -59,14 +59,6 @@ class Triggers::PostRelease
       end
     end
 
-    def namespaced_backmerge_branch
-      vcs_provider.namespaced_branch(release_backmerge_branch)
-    end
-
-    def namespaced_release_branch
-      vcs_provider.namespaced_branch(branch_name)
-    end
-
     def release_pr_title
       "[#{release.release_version}] Merge to finalize release"
     end
@@ -75,9 +67,10 @@ class Triggers::PostRelease
       "[#{release.release_version}] Backmerge to working branch"
     end
 
-    def pr_description
+    def pr_description(from, to)
       <<~TEXT
-        Verbose description for #{train.name} release on #{release.scheduled_at}
+        The release train #{train.name} with version #{release.release_version} has finished.
+        The #{from} branch has to be merged into #{to} branch.
       TEXT
     end
   end

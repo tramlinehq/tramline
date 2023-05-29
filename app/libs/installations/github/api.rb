@@ -7,6 +7,7 @@ module Installations
 
     WEBHOOK_NAME = "web"
     WEBHOOK_EVENTS = %w[push]
+    LIST_WORKFLOWS_LIMIT = 99
 
     def initialize(installation_id)
       @app_name = creds.integrations.github.app_name
@@ -16,10 +17,20 @@ module Installations
       set_client
     end
 
+    def get_installation(id, transforms)
+      execute do
+        Octokit::Client.new(bearer_token: jwt.get)
+          .installation(id)
+          .tap { |response| Rails.logger.info "Github response", response }
+          .then { |responses| Installations::Response::Keys.transform([responses], transforms) }
+          .first
+      end
+    end
+
     def list_workflows(repo, transforms)
       execute do
         @client
-          .workflows(repo)
+          .workflows(repo, {per_page: LIST_WORKFLOWS_LIMIT})
           .then { |response| response[:workflows] }
           .then { |workflows| workflows.select { |workflow| workflow[:state] == "active" } }
           .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
@@ -127,7 +138,7 @@ module Installations
     # creates a lightweight tag and a GitHub release simultaneously
     def create_release!(repo, tag_name, branch_name)
       execute do
-        @client.create_release(repo, tag_name, target_commitish: branch_name, generate_release_notes: true)
+        @client.create_release(repo, tag_name, target_commitish: branch_name, generate_release_notes: false)
       end
     end
 

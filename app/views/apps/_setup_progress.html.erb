@@ -28,7 +28,8 @@
     <div class="mt-3 sm:pr-10">
       <h3 class="text-lg font-semibold text-gray-900">Version Control Integration</h3>
       <p class="text-base font-normal text-gray-500 mt-2">
-        <%= link_to "Configure", app_integrations_path(@app, anchor: "version_control"), class: "underline" %>&nbsp;where your code lives.
+        <%= link_to "Configure", app_integrations_path(@app, anchor: "version_control"), class: "underline" %>&nbsp;where
+        your code lives.
       </p>
     </div>
   </li>
@@ -46,7 +47,8 @@
       <h3 class="text-lg font-semibold text-gray-900">CI/CD Integration</h3>
       <p class="text-base font-normal text-gray-500">
       <p class="text-base font-normal text-gray-500 mt-2">
-        <%= link_to "Configure", app_integrations_path(@app, anchor: "ci_cd"), class: "underline" %>&nbsp;your CI/CD provider.
+        <%= link_to "Configure", app_integrations_path(@app, anchor: "ci_cd"), class: "underline" %>&nbsp;your CI/CD
+        provider.
       </p>
     </div>
   </li>
@@ -64,7 +66,8 @@
     <div class="mt-3 sm:pr-10">
       <h3 class="text-lg font-semibold text-gray-900">Deployment Integration</h3>
       <p class="text-base font-normal text-gray-500 mt-2">
-        <%= link_to "Configure", app_integrations_path(@app, anchor: "build_channel" ), class: "underline" %>&nbsp;one or more deployment
+        <%= link_to "Configure", app_integrations_path(@app, anchor: "build_channel"), class: "underline" %>&nbsp;one
+        or more deployment
         providers.
       </p>
     </div>
@@ -85,10 +88,11 @@
       <h3 class="text-lg font-semibold text-gray-900">Update Configuration</h3>
       <p class="text-base font-normal text-gray-500 mt-2">
         <% if is_app_config_visible %>
-          <%= link_to "Finish", edit_app_app_config_path(@app), class: "underline" %>&nbsp;configuring your integrations!
+          <%= link_to "Finish", edit_app_app_config_path(@app), class: "underline" %>&nbsp;configuring your
+          integrations!
         <% else %>
           Finish setting up your integrations first.
-      <% end %>
+        <% end %>
       </p>
     </div>
   </li>

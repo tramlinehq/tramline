@@ -19,7 +19,7 @@
           </div>
         <% else %>
           <div class="font-mono text-xs mt-2">
-            <%= short_sha(pr.base_ref) %> ← <%= short_sha(pr.head_ref) %>
+            <%= pr.base_ref %> ← <%= pr.head_ref %>
           </div>
         <% end %>
 
