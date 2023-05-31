@@ -49,6 +49,7 @@ class Releases::Train < ApplicationRecord
 
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
+  attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed
 
   validates :branching_strategy, :working_branch, presence: true
   validates :release_backmerge_branch, presence: true,
@@ -64,7 +65,7 @@ class Releases::Train < ApplicationRecord
   validate :semver_compatibility
   validate :ready?, on: :create
   validate :valid_step_configuration, on: :activate_context
-  validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: "can only contain alphanumerics, underscores, hyphens and forward-slashes."}
+  validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
 
   before_create :set_current_version
   before_create :set_default_status
