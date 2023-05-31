@@ -268,7 +268,8 @@ class Releases::Train::Run < ApplicationRecord
 
   def hotfix?
     return false unless on_track?
-    Semantic::Version.new(release_version) > Semantic::Version.new(original_release_version)
+    VersioningStrategies::Semverish.new(release_version) >
+      VersioningStrategies::Semverish.new(original_release_version)
   end
 
   private

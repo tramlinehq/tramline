@@ -47,8 +47,7 @@ module ApplicationHelper
   end
 
   def version_in_progress(version)
-    semver = Semantic::Version.new(version)
-    "#{semver.major}.#{semver.minor}.*"
+    VersioningStrategies::Semverish.new(version).to_s(patch_glob: true)
   end
 
   def text_field_classes(is_disabled:)

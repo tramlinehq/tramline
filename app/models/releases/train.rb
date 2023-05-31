@@ -184,7 +184,7 @@ class Releases::Train < ApplicationRecord
   end
 
   def semver_compatibility
-    Semantic::Version.new(version_seeded_with)
+    VersioningStrategies::Semverish.new(version_seeded_with)
   rescue ArgumentError
     errors.add(:version_seeded_with, "Please choose a valid semver format, eg. major.minor.patch")
   end
