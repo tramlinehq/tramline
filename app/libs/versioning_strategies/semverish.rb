@@ -13,15 +13,16 @@ class VersioningStrategies::Semverish
 
   DEFAULT_TEMPLATE = :pn
 
-  # This is a modified semver regex that makes the patch version, the prerelease version and the build metadata optional
-  SEMVER_REGEX = /\A(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z0-9-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][a-zA-Z0-9-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?\Z/
+  # adapted from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+  # makes the patch version optional
+  # and removes support for the prerelease version and the build metadata
+  SEMVER_REGEX = /\A(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?\Z/
 
   attr_accessor :major, :minor, :patch, :pre, :build
   attr_reader :version
 
   def initialize(version_str)
     v = version_str.match(SEMVER_REGEX)
-
     raise ArgumentError.new("#{version_str} is not a valid Semverish") if v.nil?
 
     @major = v[1].to_i
@@ -30,7 +31,6 @@ class VersioningStrategies::Semverish
     @pre = v[4]
     @build = v[5]
     @version = version_str
-    @is_proper_semver = !@patch.nil?
   end
 
   def increment!(term, template_type: DEFAULT_TEMPLATE)
@@ -39,7 +39,7 @@ class VersioningStrategies::Semverish
     new_value = INCREMENTS[template_type].call(send(term))
     new_version.send("#{term}=", new_value)
     new_version.minor = 0 if term == :major
-    new_version.patch = 0 if semver? && (term == :major || term == :minor)
+    new_version.patch = 0 if proper? && (term == :major || term == :minor)
     new_version.build = new_version.pre = nil
     new_version
   end
@@ -47,11 +47,11 @@ class VersioningStrategies::Semverish
   def <=>(other)
     other = new(other) if other.is_a? String
 
-    if other.partial_semver? != partial_semver?
-      raise ArgumentError.new("cannot compare #{@version} with partial version #{other.version}")
+    if other.partial? != partial?
+      raise ArgumentError.new("cannot compare #{version} with version #{other.version}")
     end
 
-    [:major, :minor, (semver? ? :patch : nil)].compact.each do |part|
+    [:major, :minor, (proper? ? :patch : nil)].compact.each do |part|
       c = (send(part) <=> other.send(part))
 
       if c != 0
@@ -66,8 +66,12 @@ class VersioningStrategies::Semverish
     [@major, @minor, @patch].compact
   end
 
-  def to_s
-    to_a.join "."
+  def to_s(patch_glob: false)
+    to_a
+      .take(patch_glob ? 2 : 3)
+      .concat([patch_glob ? "*" : nil])
+      .compact
+      .join(".")
   end
 
   def to_h
@@ -83,11 +87,11 @@ class VersioningStrategies::Semverish
     hash == other.hash
   end
 
-  def partial_semver?
-    !semver?
+  def partial?
+    !proper?
   end
 
-  def semver?
+  def proper?
     !@patch.nil?
   end
 end
