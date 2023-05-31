@@ -7,7 +7,7 @@ class VersioningStrategies::Semverish
   }
 
   INCREMENTS = {
-    pn: proc { |v| (!v.nil?) ? v + 1 : nil },
+    pn: proc { |v| (!v.nil?) ? v.abs + 1 : nil },
     yyyy: proc { |_v| Time.current.year }
   }
 
@@ -18,7 +18,7 @@ class VersioningStrategies::Semverish
   # and removes support for the prerelease version and the build metadata
   SEMVER_REGEX = /\A(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?\Z/
 
-  attr_accessor :major, :minor, :patch, :pre, :build
+  attr_accessor :major, :minor, :patch
   attr_reader :version
 
   def initialize(version_str)
@@ -28,8 +28,6 @@ class VersioningStrategies::Semverish
     @major = v[1].to_i
     @minor = v[2].to_i
     @patch = v[3].presence && v[3].to_i
-    @pre = v[4]
-    @build = v[5]
     @version = version_str
   end
 
