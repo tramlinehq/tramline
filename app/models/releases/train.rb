@@ -136,9 +136,20 @@ class Releases::Train < ApplicationRecord
     "v#{version_current}"
   end
 
-  def bump_version!(element = :minor)
+  def bump_fix!
     if runs.any?
-      self.version_current = version_current.ver_bump(element)
+      semverish = version_current.to_semverish
+      self.version_current = semverish.bump!(:patch).to_s if semverish.proper?
+      self.version_current = semverish.bump!(:minor).to_s if semverish.partial?
+      save!
+    end
+
+    version_current
+  end
+
+  def bump_release!
+    if runs.any?
+      self.version_current = version_current.ver_bump(:minor)
       save!
     end
 

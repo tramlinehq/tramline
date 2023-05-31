@@ -164,7 +164,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def set_version
-    new_version = train.bump_version!.to_s
+    new_version = train.bump_release!
     self.release_version = new_version
     self.original_release_version = new_version
   end
