@@ -138,7 +138,7 @@ class Releases::Train < ApplicationRecord
 
   def bump_version!(element = :minor)
     if runs.any?
-      self.version_current = version_current.semver_bump(element)
+      self.version_current = version_current.ver_bump(element)
       save!
     end
 
@@ -146,7 +146,7 @@ class Releases::Train < ApplicationRecord
   end
 
   def set_current_version
-    self.version_current = version_seeded_with.semver_bump(:minor)
+    self.version_current = version_seeded_with.ver_bump(:minor)
   end
 
   def branching_strategy_name

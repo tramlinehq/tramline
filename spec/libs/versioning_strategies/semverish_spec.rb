@@ -1,30 +1,29 @@
-rbeuire "rails_helper"
+require "rails_helper"
 
 describe VersioningStrategies::Semverish do
   describe "validity" do
     it "follows the semver rules for every term" do
-      expect(described_class.new("1.2.1").to_s).to be("1.2.1")
-      expect(described_class.new("1.2.0").to_s).to be("1.2.0")
-      expect(described_class.new("0.2").to_s).to be("0.2")
+      expect(described_class.new("1.2.1").to_s).to eq("1.2.1")
+      expect(described_class.new("1.2.0").to_s).to eq("1.2.0")
+      expect(described_class.new("0.2").to_s).to eq("0.2")
     end
 
     it "rejects invalids" do
-      expect { described_class.new("1.02").to_s }.to raise_error(ArgumentError)
-      expect { described_class.new("01.02").to_s }.to raise_error(ArgumentError)
-      expect { described_class.new("1.02.1").to_s }.to raise_error(ArgumentError)
-      expect { described_class.new("01.2.1").to_s }.to raise_error(ArgumentError)
+      expect { described_class.new("1.02") }.to raise_error(ArgumentError)
+      expect { described_class.new("01.02") }.to raise_error(ArgumentError)
+      expect { described_class.new("1.02.1") }.to raise_error(ArgumentError)
+      expect { described_class.new("01.2.1") }.to raise_error(ArgumentError)
     end
 
-    it "rejects prerelease / buildmetadat" do
-      expect { described_class.new("1.2.1+1").to_s }.to raise_error(ArgumentError)
-      expect { described_class.new("1.2.1-alpha").to_s }.to raise_error(ArgumentError)
-      expect { described_class.new("1.2.1-alpha+1").to_s }.to raise_error(ArgumentError)
+    it "rejects pre-release and build metadata" do
+      expect { described_class.new("1.2.1+1") }.to raise_error(ArgumentError)
+      expect { described_class.new("1.2.1-alpha") }.to raise_error(ArgumentError)
+      expect { described_class.new("1.2.1-alpha+1") }.to raise_error(ArgumentError)
     end
   end
 
   describe "comparisons" do
-    subject(:partial_semverish) { described_class.new("1.2") }
-
+    let(:partial_semverish) { described_class.new("1.2") }
     let(:semverish) { described_class.new("1.2.1") }
 
     it "compares using > or <" do
@@ -67,41 +66,40 @@ describe VersioningStrategies::Semverish do
       pv4 = described_class.new("1.3")
       pv5 = described_class.new("0.1")
 
-      expect([v1, v2, v3, v4].sort).to be([v3, v1, v2, v4])
-      expect([pv1, pv2, pv3, pv4, pv5].sort).to be([pv5, pv3, pv4, pv1, pv2])
+      expect([v1, v2, v3, v4].sort).to eq([v3, v1, v2, v4])
+      expect([pv1, pv2, pv3, pv4, pv5].sort).to eq([pv5, pv3, pv4, pv1, pv2])
     end
   end
 
   describe "#bump!" do
-    subject(:partial_semverish) { described_class.new("1.2") }
-
+    let(:partial_semverish) { described_class.new("1.2") }
     let(:semverish) { described_class.new("1.2.1") }
 
     context "when semverish based on positive numbers" do
       it "bumps up major" do
-        expect(semverish.bump!(:major, template_type: :pn).to_s).to be("2.0.0")
+        expect(semverish.bump!(:major, template_type: :pn).to_s).to eq("2.0.0")
       end
 
       it "bumps up minor" do
-        expect(semverish.bump!(:minor, template_type: :pn).to_s).to be("1.3.0")
+        expect(semverish.bump!(:minor, template_type: :pn).to_s).to eq("1.3.0")
       end
 
       it "bumps up patch" do
-        expect(semverish.bump!(:patch, template_type: :pn).to_s).to be("1.2.2")
+        expect(semverish.bump!(:patch, template_type: :pn).to_s).to eq("1.2.2")
       end
     end
 
     context "with partial semverish based on positive numbers" do
       it "bumps up major" do
-        expect(partial_semverish.bump!(:major, template_type: :pn).to_s).to be("2.0")
+        expect(partial_semverish.bump!(:major, template_type: :pn).to_s).to eq("2.0")
       end
 
       it "bumps up minor" do
-        expect(partial_semverish.bump!(:minor, template_type: :pn).to_s).to be("1.3")
+        expect(partial_semverish.bump!(:minor, template_type: :pn).to_s).to eq("1.3")
       end
 
       it "does not do anything if patch" do
-        expect(partial_semverish.bump!(:patch, template_type: :pn).to_s).to be("1.2")
+        expect(partial_semverish.bump!(:patch, template_type: :pn).to_s).to eq("1.2")
       end
     end
   end

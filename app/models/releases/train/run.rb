@@ -21,6 +21,8 @@ class Releases::Train::Run < ApplicationRecord
   include AASM
   include Passportable
   include ActionView::Helpers::DateHelper
+  include RefinedString
+
   self.implicit_order_column = :scheduled_at
 
   belongs_to :train, class_name: "Releases::Train"
@@ -268,8 +270,7 @@ class Releases::Train::Run < ApplicationRecord
 
   def hotfix?
     return false unless on_track?
-    VersioningStrategies::Semverish.new(release_version) >
-      VersioningStrategies::Semverish.new(original_release_version)
+    release_version.to_semverish > original_release_version.to_semverish
   end
 
   private
