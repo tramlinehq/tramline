@@ -18,8 +18,9 @@ describe VersioningStrategies::Semverish do
   end
 
   describe "comparisons" do
-    subject(:semverish) { described_class.new("1.2.1") }
     subject(:partial_semverish) { described_class.new("1.2") }
+
+    let(:semverish) { described_class.new("1.2.1") }
 
     it "compares using > or <" do
       v1 = described_class.new("1.2.1")
@@ -67,8 +68,9 @@ describe VersioningStrategies::Semverish do
   end
 
   describe "#increment!" do
-    subject(:semverish) { described_class.new("1.2.1") }
     subject(:partial_semverish) { described_class.new("1.2") }
+
+    let(:semverish) { described_class.new("1.2.1") }
 
     context "semverish" do
       context "updates the correct term based on positive numbers" do

@@ -76,9 +76,7 @@ class VersioningStrategies::Semverish
     keys.zip(to_a).to_h
   end
 
-  def hash
-    to_a.hash
-  end
+  delegate :hash, to: :to_a
 
   def eql?(other)
     hash == other.hash
