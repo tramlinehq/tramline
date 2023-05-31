@@ -97,6 +97,7 @@ class Releases::Train::Run < ApplicationRecord
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   delegate :app, :pre_release_prs?, to: :train
+  attr_accessor :manually_set_major_version
 
   def set_default_release_metadata
     create_release_metadata!(locale: DEFAULT_LOCALE, release_notes: DEFAULT_RELEASE_NOTES)
@@ -164,7 +165,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def set_version
-    new_version = train.bump_release!
+    new_version = train.bump_release!(manually_set_major_version)
     self.release_version = new_version
     self.original_release_version = new_version
   end
