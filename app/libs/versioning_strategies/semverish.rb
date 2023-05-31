@@ -34,11 +34,10 @@ class VersioningStrategies::Semverish
   def increment!(term, template_type: DEFAULT_TEMPLATE)
     term = term.to_sym
     new_version = clone
-    new_value = INCREMENTS[template_type].call(send(term))
-    new_version.send("#{term}=", new_value)
+    new_value = INCREMENTS[template_type].call(public_send(term))
+    new_version.public_send("#{term}=", new_value)
     new_version.minor = 0 if term == :major
     new_version.patch = 0 if proper? && (term == :major || term == :minor)
-    new_version.build = new_version.pre = nil
     new_version
   end
 
@@ -50,7 +49,7 @@ class VersioningStrategies::Semverish
     end
 
     [:major, :minor, (proper? ? :patch : nil)].compact.each do |part|
-      c = (send(part) <=> other.send(part))
+      c = (public_send(part) <=> other.public_send(part))
 
       if c != 0
         return c
