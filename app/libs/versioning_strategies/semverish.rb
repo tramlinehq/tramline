@@ -2,16 +2,16 @@ class VersioningStrategies::Semverish
   include Comparable
 
   TEMPLATES = {
-    pn: "Positive Number",
-    yyyy: "Current Year"
+    "Positive Number" => :pn,
+    "Current Year" => :yyyy
   }
 
   INCREMENTS = {
-    pn: proc { |v| (!v.nil?) ? v.abs + 1 : nil },
-    yyyy: proc { |_v| Time.current.year }
+    TEMPLATES["Positive Number"] => proc { |v| (!v.nil?) ? v.abs + 1 : nil },
+    TEMPLATES["Current Year"] => proc { |_v| Time.current.year }
   }
 
-  DEFAULT_TEMPLATE = :pn
+  DEFAULT_TEMPLATE = TEMPLATES["Positive Number"]
 
   # adapted from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
   # makes the patch version optional
@@ -31,7 +31,7 @@ class VersioningStrategies::Semverish
     @version = version_str
   end
 
-  def increment!(term, template_type: DEFAULT_TEMPLATE)
+  def bump!(term, template_type: DEFAULT_TEMPLATE)
     term = term.to_sym
     new_version = clone
     new_value = INCREMENTS[template_type].call(public_send(term))

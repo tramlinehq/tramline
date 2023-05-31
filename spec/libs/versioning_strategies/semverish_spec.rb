@@ -67,7 +67,7 @@ describe VersioningStrategies::Semverish do
     end
   end
 
-  describe "#increment!" do
+  describe "#bump!" do
     subject(:partial_semverish) { described_class.new("1.2") }
 
     let(:semverish) { described_class.new("1.2.1") }
@@ -75,15 +75,15 @@ describe VersioningStrategies::Semverish do
     context "semverish" do
       context "updates the correct term based on positive numbers" do
         it "bumps up major" do
-          expect(semverish.increment!(:major, template_type: :pn).to_s).to eq("2.0.0")
+          expect(semverish.bump!(:major, template_type: :pn).to_s).to eq("2.0.0")
         end
 
         it "bumps up minor" do
-          expect(semverish.increment!(:minor, template_type: :pn).to_s).to eq("1.3.0")
+          expect(semverish.bump!(:minor, template_type: :pn).to_s).to eq("1.3.0")
         end
 
         it "bumps up patch" do
-          expect(semverish.increment!(:patch, template_type: :pn).to_s).to eq("1.2.2")
+          expect(semverish.bump!(:patch, template_type: :pn).to_s).to eq("1.2.2")
         end
       end
     end
@@ -91,15 +91,15 @@ describe VersioningStrategies::Semverish do
     context "partial semverish" do
       context "updates the correct term based on positive numbers" do
         it "bumps up major" do
-          expect(partial_semverish.increment!(:major, template_type: :pn).to_s).to eq("2.0")
+          expect(partial_semverish.bump!(:major, template_type: :pn).to_s).to eq("2.0")
         end
 
         it "bumps up minor" do
-          expect(partial_semverish.increment!(:minor, template_type: :pn).to_s).to eq("1.3")
+          expect(partial_semverish.bump!(:minor, template_type: :pn).to_s).to eq("1.3")
         end
 
         it "does not do anything if patch" do
-          expect(partial_semverish.increment!(:patch, template_type: :pn).to_s).to eq("1.2")
+          expect(partial_semverish.bump!(:patch, template_type: :pn).to_s).to eq("1.2")
         end
       end
     end
