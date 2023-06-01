@@ -147,12 +147,11 @@ class Releases::Train < ApplicationRecord
     version_current
   end
 
-  def bump_release!(major_version = nil)
-    semverish = version_current.to_semverish
-    bump_term = (major_version.present? && major_version > semverish.major) ? :major : :minor
+  def bump_release!(has_major_bump = false)
+    bump_term = has_major_bump ? :major : :minor
 
     if runs.any?
-      self.version_current = semverish.bump!(bump_term).to_s
+      self.version_current = version_current.ver_bump(bump_term)
       save!
     end
 
