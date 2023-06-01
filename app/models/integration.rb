@@ -166,10 +166,6 @@ class Integration < ApplicationRecord
     build_channel? && providable.store?
   end
 
-  def slack_build_channel?
-    build_channel? && slack_integration?
-  end
-
   def controllable_rollout?
     build_channel? && providable.controllable_rollout?
   end
