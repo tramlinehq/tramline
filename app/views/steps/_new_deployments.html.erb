@@ -8,22 +8,27 @@
       <%= subtitle("#{Deployment.display.downcase.pluralize.titleize} are run in the specified order. You may drag and change the order.") %>
     </div>
 
-    <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-      <div class="py-2">
-        <% if @app. %>
-        <%= authz_link_to :blue,
-                          "Refresh channels",
-                          refresh_channels_app_integration_slack_integration_path(@step.train.app,
-                                                                                  @step.train.app.notification_provider.integration,
-                                                                                  @step.train.app.notification_provider),
-                          method: :post, data: { turbo_method: :post } %>
-      </div>
+    <div class="grid grid-flow-col justify-end sm:justify-end gap-2">
       <%= button_tag type: "button", data: { action: "nested-form-ext#add" }, class: "btn bg-emerald-500 hover:bg-emerald-600 text-white" do %>
         <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
         <span class="ml-2">Add a new <%= Deployment.display.downcase %></span>
       <% end %>
     </div>
   </div>
+
+  <% if app.slack_build_channel_provider.present? %>
+    <div class="border-t py-4">
+      <p class="pb-2">
+        Refresh the Slack channels from here, if you can't find your channel in the list.
+      </p>
+      <%= authz_link_to :neutral,
+                        "Refresh Slack Channels",
+                        refresh_channels_app_integration_slack_integration_path(app,
+                                                                                app.slack_build_channel_provider.integration,
+                                                                                app.slack_build_channel_provider),
+                        class: "btn-xs", method: :post, data: { turbo_method: :post } %>
+    </div>
+  <% end %>
 
   <ul data-controller="sortable-list-ext list-position"
       data-sortable-list-ext-handle-value=".handle"

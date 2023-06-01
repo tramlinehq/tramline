@@ -51,6 +51,8 @@ class App < ApplicationRecord
     :ci_cd_provider,
     :notification_provider,
     :store_provider,
+    :slack_build_channel?,
+    :slack_build_channel_provider,
     :slack_notifications?, to: :integrations, allow_nil: true
 
   scope :with_trains, -> { joins(:trains).distinct }

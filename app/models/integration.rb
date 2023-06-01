@@ -133,6 +133,10 @@ class Integration < ApplicationRecord
       build_channel.find(&:store?)&.providable
     end
 
+    def slack_build_channel_provider
+      build_channel.find(&:slack_integration?)&.providable
+    end
+
     def slack_notifications?
       notification.first&.slack_integration?
     end
@@ -160,6 +164,10 @@ class Integration < ApplicationRecord
 
   def store?
     build_channel? && providable.store?
+  end
+
+  def slack_build_channel?
+    build_channel? && slack_integration?
   end
 
   def controllable_rollout?
