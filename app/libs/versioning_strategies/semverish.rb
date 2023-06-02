@@ -22,6 +22,7 @@ class VersioningStrategies::Semverish
   attr_reader :version
 
   def self.build(major, minor, patch)
+    raise ArgumentError.new("Cannot build a Semverish without a minor") if major.present? && patch.present? && minor.blank?
     new([major, minor, patch].compact_blank.join("."))
   end
 
