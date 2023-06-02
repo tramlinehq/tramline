@@ -21,7 +21,7 @@ class Releases::Train::Run < ApplicationRecord
   include AASM
   include Passportable
   include ActionView::Helpers::DateHelper
-  include RefinedString
+  using RefinedString
 
   self.implicit_order_column = :scheduled_at
 

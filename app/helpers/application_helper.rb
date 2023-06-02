@@ -1,5 +1,5 @@
 module ApplicationHelper
-  include RefinedString
+  using RefinedString
 
   STATUS_COLOR_PALETTE = {
     success: %w[bg-green-100 text-green-600],
