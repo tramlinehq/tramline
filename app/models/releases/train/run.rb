@@ -107,7 +107,7 @@ class Releases::Train::Run < ApplicationRecord
 
   def fetch_commit_log
     if previous_release.present?
-      cache.fetch("app/#{app.id}/train/#{train.id}/releases/#{id}/commit_log", expires_in: 10.minutes) do
+      cache.fetch("app/#{app.id}/train/#{train.id}/releases/#{id}/commit_log", expires_in: 30.days) do
         vcs_provider.commit_log(previous_release.tag_name, train.working_branch)
       end
     end
