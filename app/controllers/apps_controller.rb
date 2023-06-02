@@ -12,7 +12,9 @@ class AppsController < SignedInApplicationController
   end
 
   def show
-    @setup_instructions = @app.setup_instructions
+    @app_setup_instructions = @app.app_setup_instructions
+    @train_setup_instructions = @app.train_setup_instructions
+    @train_in_creation = @app.trains.first if @app.trains.size == 1
   end
 
   def new

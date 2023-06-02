@@ -64,7 +64,7 @@
             <% end %>
 
             <% commit.step_runs.includes(:step).order(:created_at).each_with_index do |step_run| %>
-              <div class="border-dashed border-t last:border-t-0 mb-2"></div>
+              <div class="border-dashed border-t border-slate-700 last:border-t-0 mb-2"></div>
 
               <div class="pt-2 <%= "opacity-50" if is_stale_commit %>">
                 <div class="mb-2 font-medium text-base">

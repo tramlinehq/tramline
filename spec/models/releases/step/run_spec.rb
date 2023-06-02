@@ -156,6 +156,21 @@ describe Releases::Step::Run do
 
       expect(Triggers::Deployment).to have_received(:call).with(step_run: step_run, deployment: second_deployment).once
     end
+
+    it "automatically finalizes the release if the release step has completed" do
+      train = create(:releases_train)
+      train_run = create(:releases_train_run, train: train)
+      _commit_1 = create(:releases_commit, train_run: train_run)
+      step = create(:releases_step, :release, :with_deployment)
+      step_run = create(:releases_step_run, :deployment_started, step: step, train_run: train_run)
+      first_deployment = step_run.step.deployments.first
+      create(:deployment_run, :released, deployment: first_deployment, step_run: step_run)
+
+      step_run.finish_deployment!(first_deployment)
+
+      expect(step_run.reload.success?).to be(true)
+      expect(step_run.release.post_release_started?).to be(true)
+    end
   end
 
   describe "#trigger_deployment" do

@@ -31,6 +31,7 @@ class App < ApplicationRecord
   has_many :integrations, inverse_of: :app, dependent: :destroy
   has_many :trains, class_name: "Releases::Train", dependent: :destroy
   has_many :train_runs, through: :trains
+  has_many :steps, through: :trains
 
   validate :no_trains_are_running, on: :update
   validates :bundle_identifier, uniqueness: {scope: [:platform, :organization_id]}
@@ -106,7 +107,7 @@ class App < ApplicationRecord
   end
 
   # this helps power initial setup instructions after an app is created
-  def setup_instructions
+  def app_setup_instructions
     app_setup = {
       app: {
         visible: persisted?, completed: persisted?
@@ -130,6 +131,28 @@ class App < ApplicationRecord
     }
 
     [app_setup, integration_setup, app_config_setup]
+      .flatten
+      .reduce(:merge)
+  end
+
+  def train_setup_instructions
+    train_setup = {
+      train: {
+        visible: !trains.any?, completed: trains.any?
+      }
+    }
+
+    steps_setup =
+      {
+        review_step: {
+          visible: trains.any?, completed: steps.review.any?
+        },
+        release_step: {
+          visible: trains.any?, completed: steps.release.any?
+        }
+      }
+
+    [train_setup, steps_setup]
       .flatten
       .reduce(:merge)
   end

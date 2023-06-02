@@ -22,6 +22,9 @@
                 <div class="text-xs inline-flex font-medium uppercase tracking-wide bg-green-100 text-green-600 rounded-full text-center px-2.5 py-1">
                   Connected
                 </div>
+                <div class="text-xs my-2">
+                  <%= integration.connection_data -%>
+                </div>
               <% end %>
 
               <% if integration.disconnected? %>

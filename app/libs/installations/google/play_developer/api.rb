@@ -132,10 +132,10 @@ module Installations
     end
 
     def set_api_defaults
-      ::Google::Apis::ClientOptions.default.read_timeout_sec = 150
-      ::Google::Apis::ClientOptions.default.open_timeout_sec = 150
-      ::Google::Apis::ClientOptions.default.send_timeout_sec = 150
-      ::Google::Apis::RequestOptions.default.retries = 3
+      ::Google::Apis::ClientOptions.default.read_timeout_sec = 300
+      ::Google::Apis::ClientOptions.default.open_timeout_sec = 300
+      ::Google::Apis::ClientOptions.default.send_timeout_sec = 300
+      ::Google::Apis::RequestOptions.default.retries = 5
     end
   end
 end
