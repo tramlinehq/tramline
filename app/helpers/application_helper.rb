@@ -1,4 +1,6 @@
 module ApplicationHelper
+  using RefinedString
+
   STATUS_COLOR_PALETTE = {
     success: %w[bg-green-100 text-green-600],
     failure: %w[bg-rose-100 text-rose-600],
@@ -47,8 +49,7 @@ module ApplicationHelper
   end
 
   def version_in_progress(version)
-    semver = Semantic::Version.new(version)
-    "#{semver.major}.#{semver.minor}.*"
+    version.to_semverish.to_s(patch_glob: true)
   end
 
   def text_field_classes(is_disabled:)

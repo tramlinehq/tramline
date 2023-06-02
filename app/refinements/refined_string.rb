@@ -40,8 +40,12 @@ module RefinedString
       []
     end
 
-    def semver_bump(element)
-      Semantic::Version.new(to_s).increment!(element).to_s
+    def to_semverish
+      VersioningStrategies::Semverish.new(to_s)
+    end
+
+    def ver_bump(term)
+      to_semverish.bump!(term).to_s
     end
   end
 end

@@ -21,6 +21,8 @@ class Releases::Train::Run < ApplicationRecord
   include AASM
   include Passportable
   include ActionView::Helpers::DateHelper
+  using RefinedString
+
   self.implicit_order_column = :scheduled_at
 
   belongs_to :train, class_name: "Releases::Train"
@@ -95,6 +97,7 @@ class Releases::Train::Run < ApplicationRecord
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   delegate :app, :pre_release_prs?, to: :train
+  attr_accessor :has_major_bump
 
   def set_default_release_metadata
     create_release_metadata!(locale: DEFAULT_LOCALE, release_notes: DEFAULT_RELEASE_NOTES)
@@ -162,7 +165,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def set_version
-    new_version = train.bump_version!.to_s
+    new_version = train.bump_release!(has_major_bump)
     self.release_version = new_version
     self.original_release_version = new_version
   end
@@ -268,7 +271,7 @@ class Releases::Train::Run < ApplicationRecord
 
   def hotfix?
     return false unless on_track?
-    Semantic::Version.new(release_version) > Semantic::Version.new(original_release_version)
+    release_version.to_semverish > original_release_version.to_semverish
   end
 
   private

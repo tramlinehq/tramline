@@ -12,6 +12,7 @@
       <%= decorated_link_to :green, "Ongoing Release", live_release_app_train_releases_path(@app, @train) %>
     <% elsif @train.startable? %>
       <%= authz_button_to :blue, "Start new release", app_train_releases_path(@app, @train) %>
+      <%= authz_button_to :amber, "Start new major release", app_train_releases_path(@app, @train, has_major_bump: true) %>
     <% end %>
 
     <% if @train.runs.size > 0 %>

@@ -2,13 +2,14 @@ class Triggers::Release
   include Memery
   include SiteHttp
 
-  def self.call(train)
-    new(train).call
+  def self.call(train, has_major_bump: false)
+    new(train, has_major_bump:).call
   end
 
-  def initialize(train)
+  def initialize(train, has_major_bump: false)
     @train = train
     @starting_time = Time.current
+    @has_major_bump = has_major_bump
   end
 
   # FIXME: should we take a lock around this train? what is someone double triggers the run?
@@ -48,7 +49,8 @@ class Triggers::Release
         code_name: Haikunator.haikunate(100),
         scheduled_at: starting_time,
         branch_name: release_branch,
-        release_version: train.version_current
+        release_version: train.version_current,
+        has_major_bump: major_release?
       )
   end
 
@@ -70,5 +72,9 @@ class Triggers::Release
     end
 
     branch_name
+  end
+
+  def major_release?
+    @has_major_bump
   end
 end

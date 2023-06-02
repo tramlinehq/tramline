@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# FIXME: All uses of the `Semantic::Version` library have been replaced with an internal SemVer handler.
+# But the gem is kept around because this backfill migration depends on it.
 class BackfillOriginalReleaseVersion < ActiveRecord::Migration[7.0]
   def up
     Releases::Train::Run.all.each do |release|

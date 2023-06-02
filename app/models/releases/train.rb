@@ -49,6 +49,7 @@ class Releases::Train < ApplicationRecord
 
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
+  attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed
 
   validates :branching_strategy, :working_branch, presence: true
   validates :release_backmerge_branch, presence: true,
@@ -61,11 +62,13 @@ class Releases::Train < ApplicationRecord
     }
   validates :branching_strategy, inclusion: {in: BRANCHING_STRATEGIES.keys.map(&:to_s)}
 
-  validate :semver_compatibility
+  validate :semver_compatibility, on: :create
   validate :ready?, on: :create
   validate :valid_step_configuration, on: :activate_context
-  validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: "can only contain alphanumerics, underscores, hyphens and forward-slashes."}
+  validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
 
+  after_initialize :set_constituent_seed_versions, if: :persisted?
+  before_validation :set_version_seeded_with, if: :new_record?
   before_create :set_current_version
   before_create :set_default_status
   before_destroy :ensure_deletable, prepend: true do
@@ -86,10 +89,6 @@ class Releases::Train < ApplicationRecord
 
   def self.running?
     running.any?
-  end
-
-  def set_default_status
-    self.status ||= Releases::Train.statuses[:draft]
   end
 
   def has_release_step?
@@ -135,17 +134,26 @@ class Releases::Train < ApplicationRecord
     "v#{version_current}"
   end
 
-  def bump_version!(element = :minor)
+  def bump_fix!
     if runs.any?
-      self.version_current = version_current.semver_bump(element)
+      semverish = version_current.to_semverish
+      self.version_current = semverish.bump!(:patch).to_s if semverish.proper?
+      self.version_current = semverish.bump!(:minor).to_s if semverish.partial?
       save!
     end
 
     version_current
   end
 
-  def set_current_version
-    self.version_current = version_seeded_with.semver_bump(:minor)
+  def bump_release!(has_major_bump = false)
+    bump_term = has_major_bump ? :major : :minor
+
+    if runs.any?
+      self.version_current = version_current.ver_bump(bump_term)
+      save!
+    end
+
+    version_current
   end
 
   def branching_strategy_name
@@ -178,19 +186,39 @@ class Releases::Train < ApplicationRecord
 
   private
 
+  def set_version_seeded_with
+    self.version_seeded_with =
+      VersioningStrategies::Semverish.build(major_version_seed, minor_version_seed, patch_version_seed)
+  rescue ArgumentError
+    nil
+  end
+
+  def set_current_version
+    self.version_current = version_seeded_with.ver_bump(:minor)
+  end
+
+  def set_default_status
+    self.status ||= Releases::Train.statuses[:draft]
+  end
+
   def ensure_deletable
     errors.add(:trains, "cannot delete a train if there are releases made from it!") if runs.present?
   end
 
   def semver_compatibility
-    Semantic::Version.new(version_seeded_with)
+    VersioningStrategies::Semverish.new(version_seeded_with)
   rescue ArgumentError
-    errors.add(:version_seeded_with, "Please choose a valid semver format, eg. major.minor.patch")
+    errors.add(:version_seeded_with, "Please choose a valid semver-like format, eg. major.minor.patch or major.minor")
   end
 
   def valid_step_configuration
     unless steps.release.size == 1
       errors.add(:steps, "there should be one release step")
     end
+  end
+
+  def set_constituent_seed_versions
+    semverish = version_seeded_with.to_semverish
+    self.major_version_seed, self.minor_version_seed, self.patch_version_seed = semverish.major, semverish.minor, semverish.patch
   end
 end

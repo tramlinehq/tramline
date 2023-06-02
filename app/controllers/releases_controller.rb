@@ -1,4 +1,5 @@
 class ReleasesController < SignedInApplicationController
+  using RefinedString
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
   before_action :set_release, only: [:show, :timeline, :destroy]
@@ -13,8 +14,9 @@ class ReleasesController < SignedInApplicationController
   def create
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
+    @has_major_bump = params[:has_major_bump]&.to_boolean
 
-    response = Triggers::Release.call(@train)
+    response = Triggers::Release.call(@train, has_major_bump: @has_major_bump)
 
     if response.success?
       redirect_to live_release_path, notice: "A new release has started successfully."
