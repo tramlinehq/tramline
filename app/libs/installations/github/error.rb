@@ -42,7 +42,11 @@ module Installations
         decorated_exception: Installations::Errors::TagReferenceAlreadyExists
       },
       {
-        message_matcher: /Pull Request is not mergeable/,
+        message_matcher: /Pull Request is not mergeable/i,
+        decorated_exception: Installations::Errors::PullRequestNotMergeable
+      },
+      {
+        message_matcher: /At least 1 approving review is required by reviewers/i,
         decorated_exception: Installations::Errors::PullRequestNotMergeable
       }
     ]

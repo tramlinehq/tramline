@@ -35,7 +35,7 @@ module RefinedString
     end
 
     def safe_csv_parse
-      split(",").reject(&:empty?).map { |v| Integer(v) }
+      split(",").reject(&:empty?).map { |v| Float(v) }
     rescue ArgumentError
       []
     end

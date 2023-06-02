@@ -3,7 +3,7 @@
 
   <%= form_with(model: @step, url: app_train_steps_path(@app, @train), builder: ButtonHelper::AuthzForms) do |form| %>
     <%= render "form", form: form %>
-    <%= render "new_deployments", form: form %>
+    <%= render "new_deployments", app: @app, form: form %>
 
     <div class="mt-10">
       <%= form.authz_submit :blue, "Create" %>
