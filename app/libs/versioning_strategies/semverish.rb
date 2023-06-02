@@ -21,8 +21,12 @@ class VersioningStrategies::Semverish
   attr_accessor :major, :minor, :patch
   attr_reader :version
 
+  def self.build(major, minor, patch)
+    new([major, minor, patch].compact_blank.join("."))
+  end
+
   def initialize(version_str)
-    v = version_str.match(SEMVER_REGEX)
+    v = version_str&.match(SEMVER_REGEX)
     raise ArgumentError.new("#{version_str} is not a valid Semverish") if v.nil?
 
     @major = v[1].to_i

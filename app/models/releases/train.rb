@@ -62,11 +62,13 @@ class Releases::Train < ApplicationRecord
     }
   validates :branching_strategy, inclusion: {in: BRANCHING_STRATEGIES.keys.map(&:to_s)}
 
-  validate :semver_compatibility
+  validate :semver_compatibility, on: :create
   validate :ready?, on: :create
   validate :valid_step_configuration, on: :activate_context
+  validates :version_seeded_with, presence: true, on: :create
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
 
+  before_validation :set_version_seeded_with, if: :new_record?
   before_create :set_current_version
   before_create :set_default_status
   before_destroy :ensure_deletable, prepend: true do
@@ -87,10 +89,6 @@ class Releases::Train < ApplicationRecord
 
   def self.running?
     running.any?
-  end
-
-  def set_default_status
-    self.status ||= Releases::Train.statuses[:draft]
   end
 
   def has_release_step?
@@ -158,10 +156,6 @@ class Releases::Train < ApplicationRecord
     version_current
   end
 
-  def set_current_version
-    self.version_current = version_seeded_with.ver_bump(:minor)
-  end
-
   def branching_strategy_name
     BRANCHING_STRATEGIES[branching_strategy.to_sym]
   end
@@ -192,6 +186,21 @@ class Releases::Train < ApplicationRecord
 
   private
 
+  def set_version_seeded_with
+    self.version_seeded_with =
+      VersioningStrategies::Semverish.build(major_version_seed, minor_version_seed, patch_version_seed)
+  rescue ArgumentError
+    nil
+  end
+
+  def set_current_version
+    self.version_current = version_seeded_with.ver_bump(:minor)
+  end
+
+  def set_default_status
+    self.status ||= Releases::Train.statuses[:draft]
+  end
+
   def ensure_deletable
     errors.add(:trains, "cannot delete a train if there are releases made from it!") if runs.present?
   end
@@ -199,7 +208,7 @@ class Releases::Train < ApplicationRecord
   def semver_compatibility
     VersioningStrategies::Semverish.new(version_seeded_with)
   rescue ArgumentError
-    errors.add(:version_seeded_with, "Please choose a valid semver format, eg. major.minor.patch")
+    errors.add(:version_seeded_with, "Please choose a valid semver-like format, eg. major.minor.patch or major.minor")
   end
 
   def valid_step_configuration

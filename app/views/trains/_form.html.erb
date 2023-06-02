@@ -20,40 +20,36 @@
           <span class="font-mono" data-domain--branch-name-help-target="helpTextVal"></span>
         </p>
       </div>
+
+      <div>
+        <%= form.label :description, class: "block text-sm font-medium mb-1" %>
+        <%= form.text_area :description, class: "form-input w-full h-24",
+                           placeholder: "Describe the purpose of your train..." %>
+      </div>
     </div>
 
     <div>
-      <%= form.label :description, class: "block text-sm font-medium mb-1" %>
-      <%= form.text_area :description, class: "form-input w-full h-24",
-                         placeholder: "Describe the purpose of your train..." %>
-    </div>
-
-    <div data-controller="domain--version-name-help"
-         data-domain--version-name-help-disabled-value="<%= train.persisted? %>"
-         data-domain--version-name-help-version-current-value="<%= train.version_current %>">
-      <%= form.label :version_seeded_with, class: "block text-sm font-medium mb-1" %>
-      <%= form.text_field :version_seeded_with,
-                          class: text_field_classes(is_disabled: train.persisted?),
-                          placeholder: "eg., 0.1.0",
+      <%= form.label :major_version_seed, "Current Major Version", class: "inline-flex text-sm font-medium mb-1" %>
+      <%= form.text_field :major_version_seed,
+                          class: text_field_classes(is_disabled: false),
+                          placeholder: "will only be bumped manually",
                           required: true,
-                          disabled: train.persisted?,
                           data: { domain__version_name_help_target: "input",
                                   action: "domain--version-name-help#bump" } %>
-      <div class="text-sm mt-1">
-        <p class="italic">
-          <span data-domain--version-name-help-target="helpTextTitle"></span>&nbsp;
-          <span class="font-mono" data-domain--version-name-help-target="helpTextVal"></span>
-        </p>
-        <p class="pt-2">
-          Tramline increments the version name for every release build created, which guarantees that every build can be
-          uniquely identified. We follow <a href="https://semver.org" class="underline">SemVer</a>.
-        </p>
-        <p class="pt-1">
-          Every new release will increment the minor version.
-          Every build generated during a release itself will increment the patch version. Once this is setup, teams do
-          not need to worry about manually incrementing the version name for every release.
-        </p>
-      </div>
+      <%= form.label :minor_version_seed, "Current Minor Version", class: "inline-flex text-sm font-medium mb-1" %>
+      <%= form.text_field :minor_version_seed,
+                          class: text_field_classes(is_disabled: false),
+                          placeholder: "bumped for every new release",
+                          required: true,
+                          data: { domain__version_name_help_target: "input",
+                                  action: "domain--version-name-help#bump" } %>
+      <%= form.label :patch_version_seed, "Current Point Version (optional)", class: "inline-flex text-sm font-medium mb-1" %>
+      <%= form.text_field :patch_version_seed,
+                          class: text_field_classes(is_disabled: false),
+                          placeholder: "bumped only for hotfixes",
+                          required: false,
+                          data: { domain__version_name_help_target: "input",
+                                  action: "domain--version-name-help#bump" } %>
     </div>
   </div>
 
