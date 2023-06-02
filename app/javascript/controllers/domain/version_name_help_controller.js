@@ -80,8 +80,6 @@ export default class extends Controller {
   }
 
   __allButMinorMissing() {
-    return this.__is_present(this.majorVersion) &&
-      this.__is_present(this.patchVersion) &&
-      !this.__is_present(this.minorVersion)
+    return this.__is_present(this.majorVersion) && this.__is_present(this.patchVersion) && !this.__is_present(this.minorVersion)
   }
 }
