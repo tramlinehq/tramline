@@ -2,8 +2,8 @@ en:
   passport:
     releases/train/run:
       post_release_pr_succeeded_html: 'Post release PR created and merged <a class="emphasize-link" href="%{url}">#%{number}</a>'
-      pre_release_pr_not_creatable_html: 'A pre-release pull request for <span class="emphasize">%{release_branch}</span> could not be created.'
-      pull_request_not_mergeable_html: 'The pull request <a class="emphasize-link" href="%{url}">#%{number}</a> cannot be merged. Please check for any merge conflicts'
+      pre_release_pr_not_creatable_html: 'A pre-release pull request for <span class="emphasize">%{release_branch}</span> could not be created'
+      pull_request_not_mergeable_html: 'The pull request <a class="emphasize-link" href="%{url}">#%{number}</a> cannot be merged. Please check for any merge conflicts and/or branch protection rules.'
       created_html: 'Started a new release <span class="emphasize">%{version}</span>'
       release_branch_created_html: 'Created a release branch <span class="emphasize">%{release_branch}</span> from <span class="emphasize">%{working_branch}</span>'
       kickoff_pr_succeeded_html: 'Kickoff PR created and merged <a class="emphasize-link" href="%{url}">#%{number}</a>'
