@@ -1,4 +1,4 @@
-<section class="max-h-96 overflow-y-scroll" data-controller="reveal" data-reveal-toggle-keys-value="b">
+<section class="max-h-96 overflow-y-scroll overflow-x-hidden" data-controller="reveal" data-reveal-toggle-keys-value="b">
   <span class="font-bold text-2xl">Commits since last release</span>
 
   <% if release.previous_release.present? %>
@@ -19,15 +19,21 @@
       <% release.fetch_commit_log.each_with_index do |commit, index| %>
 
         <tr>
-          <td class="py-4 whitespace-nowrap">
-            <div class="text-slate-500">
-            <span class="text-xs uppercase tracking-wide font-medium rounded-full text-center px-1 py-0.5">
-            #<%= index + 1 %>
-            </span>
-              <code><%= short_sha(commit[:sha]) %></code>
-              <%= link_to_external commit[:message].truncate(50), commit[:url], class: "underline font-medium" %>
-              <%= ago_in_words commit[:author_timestamp] %>
-              by <%= link_to_external (commit[:author_login] || commit[:author_name]), (commit[:author_url] || commit[:author_email]), class: "underline" %>
+          <td class="py-4 whitespace-nowrap text-slate-500">
+            <div class="flex flex-row">
+              <div class="text-xs uppercase tracking-wide font-medium rounded-full text-center px-2 py-0.5">
+                #<%= index + 1 %>
+              </div>
+              <div class="flex flex-col">
+                <div>
+                  <code><%= short_sha(commit[:sha]) %></code>
+                  <%= link_to_external commit[:message].truncate(80), commit[:url], class: "underline font-medium" %>
+                </div>
+                <div class="mt-1">
+                  <%= link_to_external (commit[:author_login] || commit[:author_name]), (commit[:author_url] || commit[:author_email]), class: "underline" %>
+                  committed <%= ago_in_words commit[:author_timestamp] %>
+                </div>
+              </div>
             </div>
           </td>
         </tr>
