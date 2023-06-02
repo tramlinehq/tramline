@@ -185,6 +185,20 @@ module Installations
       execute(:get, COMPARE_URL.expand(project_id:).to_s, params)["diffs"].present?
     end
 
+    def commits_between(project_id, from, to, transforms)
+      params = {
+        params: {
+          from:,
+          to:,
+          straight: false # `git diff from...to`
+        }
+      }
+
+      execute(:get, COMPARE_URL.expand(project_id:).to_s, params)
+        .dig("commits")
+        .then { |commits| Installations::Response::Keys.transform(commits, transforms) }
+    end
+
     private
 
     def execute(verb, url, params)

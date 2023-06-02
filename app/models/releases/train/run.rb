@@ -93,14 +93,28 @@ class Releases::Train::Run < ApplicationRecord
   after_create :set_default_release_metadata
   after_commit -> { create_stamp!(data: {version: release_version}) }, on: :create
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
+  after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
-  delegate :app, :pre_release_prs?, to: :train
   attr_accessor :has_major_bump
+  delegate :app, :pre_release_prs?, :vcs_provider, to: :train
+  delegate :cache, to: Rails
 
   def set_default_release_metadata
     create_release_metadata!(locale: DEFAULT_LOCALE, release_notes: DEFAULT_RELEASE_NOTES)
+  end
+
+  def fetch_commit_log
+    if previous_release.present?
+      cache.fetch("app/#{app.id}/train/#{train.id}/releases/#{id}/commit_log", expires_in: 10.minutes) do
+        vcs_provider.commit_log(previous_release.tag_name, train.working_branch)
+      end
+    end
+  end
+
+  def previous_release
+    train.runs.where(status: "finished").order(completed_at: :desc).first
   end
 
   def metadata_editable?

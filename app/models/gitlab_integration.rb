@@ -50,6 +50,15 @@ class GitlabIntegration < ApplicationRecord
     avatar_url: :avatar_url
   }
 
+  COMMITS_TRANSFORMATIONS = {
+    url: :web_url,
+    sha: :id,
+    message: :title,
+    author_name: :author_name,
+    author_timestamp: :created_at,
+    author_email: :author_email
+  }
+
   def install_path
     unless integration.version_control? || integration.ci_cd?
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
@@ -183,6 +192,10 @@ class GitlabIntegration < ApplicationRecord
 
   def merge_pr!(pr_number)
     with_api_retries { installation.merge_pr!(app_config.code_repository_name, pr_number) }
+  end
+
+  def commit_log(from_branch, to_branch)
+    with_api_retries { installation.commits_between(app_config.code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS) }
   end
 
   private

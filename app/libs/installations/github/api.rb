@@ -169,6 +169,15 @@ module Installations
       end
     end
 
+    def commits_between(repo, from_branch, to_branch, transforms)
+      execute do
+        @client
+          .compare(repo, from_branch, to_branch)
+          .dig(:commits)
+          .then { |commits| Installations::Response::Keys.transform(commits, transforms) }
+      end
+    end
+
     def head(repo, working_branch_name)
       execute do
         # FIXME: this method is unsupported and could get deprecated, find a way around it
