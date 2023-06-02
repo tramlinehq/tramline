@@ -1,52 +1,87 @@
 import {Controller} from "@hotwired/stimulus";
 import bumpVersion from "semver-increment";
 
-// https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-const semVerRegex = new RegExp('^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$')
-const initialHelpNotice = "Enter a versionName in SemVer format."
-const baseHelpText = "Next version name will be: "
+const compatibilityMessage = "Only MAJOR.MINOR.PATCH or MAJOR.MINOR supported. Each term should only be numbers."
+const semVerRegex = new RegExp('^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:\\.(0|[1-9]\\d*))?$')
+const emptyVersion = "X.X"
 
 export default class extends Controller {
   static values = {
-    versionCurrent: String,
     disabled: Boolean,
   }
 
   static targets = [
-    "input",
-    "helpTextTitle",
+    "majorInput",
+    "minorInput",
+    "patchInput",
+    "nextVersion",
+    "currentVersion",
     "helpTextVal"
   ]
 
   initialize() {
-    this.__minorVerBump(this.versionCurrentValue);
+    this.majorVersion = ""
+    this.minorVersion = ""
+    this.patchVersion = ""
+    this.helpTextValTarget.hidden = true
   }
 
   bump() {
-    this.__minorVerBump(this.inputTarget.value);
-  }
-
-  __minorVerBump(value) {
     if (this.disabledValue) {
       return;
     }
 
-    if (value.length === 0) {
-      this.helpTextTitleTarget.innerHTML = initialHelpNotice
-      this.helpTextValTarget.innerHTML = ""
-      return;
-    }
+    this.majorVersion = this.majorInputTarget.value
+    this.minorVersion = this.minorInputTarget.value
+    this.patchVersion = this.patchInputTarget.value
 
-    if (this.__isSemVer(value)) {
-      this.helpTextTitleTarget.innerHTML = baseHelpText
-      this.helpTextValTarget.innerHTML = bumpVersion([0, 1, 0], value);
+    this.__verChange();
+  }
+
+  __verChange() {
+    if (!this.__isSemVer(this.__versionString())) {
+      this.helpTextValTarget.hidden = false
+      this.helpTextValTarget.innerHTML = compatibilityMessage
+      this.nextVersionTarget.innerHTML = emptyVersion
+      this.currentVersionTarget.innerHTML = emptyVersion
     } else {
-      this.helpTextTitleTarget.innerHTML = "Invalid semver format!"
-      this.helpTextValTarget.innerHTML = ""
+      this.helpTextValTarget.hidden = true;
+      this.nextVersionTarget.innerHTML = this.__nextReleaseVersion()
+      this.currentVersionTarget.innerHTML = this.__versionString()
     }
   }
 
   __isSemVer(value) {
     return semVerRegex.test(value)
+  }
+
+  __nextReleaseVersion() {
+    try {
+      return bumpVersion([0, 1, 0], this.__versionString())
+    } catch (error) {
+      return emptyVersion
+    }
+  }
+
+  __versionString() {
+    if (this.__allButMinorMissing()) {
+      return emptyVersion
+    } else {
+      return this.__compactArray([this.majorVersion, this.minorVersion, this.patchVersion]).join(".")
+    }
+  }
+
+  __compactArray(arr) {
+    return arr.filter(item => this.__is_present(item))
+  }
+
+  __is_present(item) {
+    return item !== "" && item !== null && item !== undefined
+  }
+
+  __allButMinorMissing() {
+    return this.__is_present(this.majorVersion) &&
+      this.__is_present(this.patchVersion) &&
+      !this.__is_present(this.minorVersion)
   }
 }

@@ -65,9 +65,9 @@ class Releases::Train < ApplicationRecord
   validate :semver_compatibility, on: :create
   validate :ready?, on: :create
   validate :valid_step_configuration, on: :activate_context
-  validates :version_seeded_with, presence: true, on: :create
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
 
+  after_initialize :set_constituent_seed_versions, if: :persisted?
   before_validation :set_version_seeded_with, if: :new_record?
   before_create :set_current_version
   before_create :set_default_status
@@ -215,5 +215,10 @@ class Releases::Train < ApplicationRecord
     unless steps.release.size == 1
       errors.add(:steps, "there should be one release step")
     end
+  end
+
+  def set_constituent_seed_versions
+    semverish = version_seeded_with.to_semverish
+    self.major_version_seed, self.minor_version_seed, self.patch_version_seed = semverish.major, semverish.minor, semverish.patch
   end
 end
