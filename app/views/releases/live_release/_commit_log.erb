@@ -30,7 +30,7 @@
                   <%= link_to_external commit[:message].truncate(80), commit[:url], class: "underline font-medium" %>
                 </div>
                 <div class="mt-1">
-                  <%= link_to_external (commit[:author_login] || commit[:author_name]), (commit[:author_url] || commit[:author_email]), class: "underline" %>
+                  <%= link_to_external (commit[:author_login] || commit[:author_name]), (commit[:author_url] || "mailto:#{commit[:author_email]}"), class: "underline" %>
                   committed <%= ago_in_words commit[:author_timestamp] %>
                 </div>
               </div>
