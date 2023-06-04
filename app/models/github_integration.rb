@@ -49,6 +49,16 @@ class GithubIntegration < ApplicationRecord
     avatar_url: [:account, :avatar_url]
   }
 
+  COMMITS_TRANSFORMATIONS = {
+    url: :html_url,
+    sha: :sha,
+    message: [:commit, :message],
+    author_name: [:commit, :author, :name],
+    author_timestamp: [:commit, :author, :date],
+    author_login: [:author, :login],
+    author_url: [:author, :html_url]
+  }
+
   def install_path
     unless integration.version_control? || integration.ci_cd?
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"
@@ -204,6 +214,10 @@ class GithubIntegration < ApplicationRecord
 
   def merge_pr!(pr_number)
     installation.merge_pr!(app_config.code_repository_name, pr_number)
+  end
+
+  def commit_log(from_branch, to_branch)
+    installation.commits_between(app_config.code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS)
   end
 
   private
