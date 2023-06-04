@@ -28,11 +28,11 @@
                 </div>
                 <div class="flex flex-col">
                   <div>
-                    <code><%= short_sha(commit[:sha]) %></code>
-                    <%= link_to_external commit[:message].truncate(62), commit[:url], class: "underline font-medium" %>
+                    <%= link_to_external commit[:message].truncate(62), commit[:url], class: "underline font-medium text-black" %>
                   </div>
                   <div class="mt-1">
-                    <%= link_to_external (commit[:author_login] || commit[:author_name]), (commit[:author_url] || "mailto:#{commit[:author_email]}"), class: "underline" %>
+                    <code><%= short_sha(commit[:sha]) %></code>
+                    • <%= link_to_external (commit[:author_login] || commit[:author_name]), (commit[:author_url] || "mailto:#{commit[:author_email]}"), class: "underline" %>
                     committed <%= ago_in_words commit[:author_timestamp] %>
                   </div>
                 </div>
