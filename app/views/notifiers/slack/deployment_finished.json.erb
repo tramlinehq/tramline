@@ -4,14 +4,14 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": ":new: *Release <%= @version_number %> is now live!* :new:"
+        "text": ":new: *Release <%= @version_number %> (<%= @build_number %>) is now live!* :new:"
       }
     },
     {
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*Artifact:* <<%= @artifact_download_link %>|Download>\n*Release Train:* <%= @train_name %>\n*Step Name:* <%= @step_name %>\n*App Version:* <%= @version_number %>"
+        "text": "*Artifact:* <<%= @artifact_download_link %>|Download>\n*Release Train:* <%= @train_name %>\n*Step Name:* <%= @step_name %>\n*App Version:* <%= @version_number %>\n*Build Number:* <%= @build_number %>"
       },
       "accessory": {
         "type": "image",
