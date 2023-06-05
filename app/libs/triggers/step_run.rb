@@ -23,7 +23,7 @@ class Triggers::StepRun
 
   def build_version
     version = release.release_version
-    version += "-" + step.release_suffix if step.release_suffix
+    version += "-" + step.release_suffix if step.release_suffix.present?
     version
   end
 end

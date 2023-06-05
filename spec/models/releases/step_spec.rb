@@ -93,18 +93,7 @@ describe Releases::Step do
       expect(step.reload.deployments.pluck(:deployment_number)).to contain_exactly(1, 2)
     end
 
-    it "validates presence of release suffix for android apps" do
-      app = create(:app, :android)
-      train = create(:releases_train, app: app)
-      step = build(:releases_step, :with_deployment, train: train, release_suffix: nil)
-
-      step.save
-
-      expect(step.persisted?).to be(false)
-      expect(step.errors).to contain_exactly("release suffix →\ncan't be blank")
-    end
-
-    it "validates release suffix to be valid for android apps" do
+    it "validates release suffix to be valid if present" do
       app = create(:app, :android)
       train = create(:releases_train, app: app)
       step = build(:releases_step, :with_deployment, train: train, release_suffix: "%^&")
@@ -117,6 +106,17 @@ describe Releases::Step do
 
     it "allows release suffix to be nil for ios apps" do
       app = create(:app, :ios)
+      train = create(:releases_train, app: app)
+      step = build(:releases_step, :with_deployment, train: train, release_suffix: nil)
+
+      step.save
+
+      expect(step.persisted?).to be(true)
+      expect(step.errors).to be_empty
+    end
+
+    it "allows release suffix to be nil for android apps" do
+      app = create(:app, :android)
       train = create(:releases_train, app: app)
       step = build(:releases_step, :with_deployment, train: train, release_suffix: nil)
 
