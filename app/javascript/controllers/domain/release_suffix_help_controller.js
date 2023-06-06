@@ -20,7 +20,10 @@ export default class extends Controller {
   }
 
   __set(suffix) {
-    this.helpTextTarget.innerHTML = this.versionValue + "-" + suffix;
+    if (suffix !== "") {
+      this.helpTextTarget.innerHTML = this.versionValue + "-" + suffix;
+    } else {
+      this.helpTextTarget.innerHTML = this.versionValue;
+    }
   }
 }
-
