@@ -112,7 +112,36 @@
     </div>
   </div>
 
-  <div class="text-xl text-slate-600 font-medium mt-8 mb-2">Branching strategy</div>
+  <% if @current_organization.demo? %>
+    <div class="text-xl text-slate-600 font-medium mt-8 mb-4">Release Schedule</div>
+
+    <div class="grid md:grid-cols-1 w-1/2" data-controller="demo--release-schedule-help">
+      <div>
+        <%= form.label "This release will repeat every", class: "wblock text-sm font-medium mb-1" %>
+        <%= form.text_field :release_schedule_value,
+                            value: 7,
+                            class: text_field_classes(is_disabled: false),
+                            data: { action: 'demo--release-schedule-help#change',
+                                    demo__release_schedule_help_target: "nextDateNumber" },
+                            placeholder: "1" %>
+      </div>
+      <div>
+        <%= form.select :release_schedule_unit,
+                        options_for_select(%w[day(s) week(s) month(s)], "day(s)"),
+                        { required: false, },
+                        { class: text_field_classes(is_disabled: train.persisted?),
+                          data: { action: 'demo--release-schedule-help#change',
+                                  demo__release_schedule_help_target: "nextDateUnit" }
+                        } %>
+      </div>
+      <div class="text-sm italic mt-2">
+        <span>If you start the release today, your next release will be on: </span>
+        <span data-demo--release-schedule-help-target="output"></span>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="text-xl text-slate-600 font-medium mt-8 mb-4">Branching strategy</div>
 
   <div class="grid gap-x-5 md:grid-cols-2">
     <div data-controller="branching-selector">
