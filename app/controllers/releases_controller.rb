@@ -9,6 +9,10 @@ class ReleasesController < SignedInApplicationController
     @steps = @train.steps.order(:step_number).includes(:runs, :train, deployments: [:integration])
     @app = @train.app
     set_pull_requests
+
+    if @current_organization.demo?
+      render :show_demo and return
+    end
   end
 
   def create
