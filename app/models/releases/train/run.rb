@@ -287,7 +287,7 @@ class Releases::Train::Run < ApplicationRecord
 
   def hotfix?
     return false unless on_track?
-    release_version.to_semverish > original_release_version.to_semverish
+    release_version.to_semverish > original_release_version.to_semverish && production_release_started?
   end
 
   private
@@ -319,5 +319,9 @@ class Releases::Train::Run < ApplicationRecord
       .where(step: step)
       .not_failed
       .last
+  end
+
+  def production_release_started?
+    latest_non_failure_store_release&.status&.in? [DeploymentRun::STATES[:rollout_started], DeploymentRun::STATES[:released]]
   end
 end
