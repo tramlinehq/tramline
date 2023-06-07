@@ -184,6 +184,10 @@ class Releases::Train < ApplicationRecord
     steps.release.none? && !steps.review.any?
   end
 
+  def demo?
+    Flipper.enabled?(:demo_mode, self)
+  end
+
   private
 
   def set_version_seeded_with

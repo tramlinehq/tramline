@@ -231,7 +231,7 @@ class Releases::Train::Run < ApplicationRecord
     last_good_step_run&.build_artifact
   end
 
-  def events
+  def events(limit = nil)
     step_runs
       .left_joins(:commit, deployment_runs: :staged_rollout)
       .pluck("train_step_runs.id, deployment_runs.id, releases_commits.id, staged_rollouts.id")
@@ -239,7 +239,7 @@ class Releases::Train::Run < ApplicationRecord
       .uniq
       .compact
       .push(id)
-      .then { |ids| Passport.where(stampable_id: ids).order(event_timestamp: :desc) }
+      .then { |ids| Passport.where(stampable_id: ids).order(event_timestamp: :desc).limit(limit) }
   end
 
   def all_steps

@@ -1,4 +1,4 @@
-<% if !deployment.production_channel? && @current_organization.demo? %>
+<% if !deployment.production_channel? && demo_org? %>
   <% if step_run.success? || deployment_run&.released? %>
     <div class="flex flex-col mt-2 w-full bg-slate-200 p-2 mb-2 border-l-8 border-green-500 rounded-sm text-sm">
       <div>

@@ -9,6 +9,13 @@ class ReleasesController < SignedInApplicationController
     @steps = @train.steps.order(:step_number).includes(:runs, :train, deployments: [:integration])
     @app = @train.app
     set_pull_requests
+    set_demo_mode_things
+
+    if demo_train?
+      render :show_demo
+    else
+      render :show
+    end
   end
 
   def create
@@ -38,7 +45,13 @@ class ReleasesController < SignedInApplicationController
     @release = @train.active_run
     redirect_to train_path, notice: "No release in progress." and return unless @release
     set_pull_requests
-    render :show
+    set_demo_mode_things
+
+    if demo_train?
+      render :show_demo
+    else
+      render :show
+    end
   end
 
   def destroy
@@ -76,6 +89,10 @@ class ReleasesController < SignedInApplicationController
 
   def live_release_path
     live_release_app_train_releases_path(@app, @train)
+  end
+
+  def set_demo_mode_things
+    @events = @release.events(10)
   end
 
   def train_path

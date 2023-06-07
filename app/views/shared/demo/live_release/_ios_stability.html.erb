@@ -1,0 +1,39 @@
+<% release =
+     Releases::Train::Run.find_by(id: Flipper.feature("demo_mode_ios_release")&.actors_value&.first&.split(";")&.last)
+   release_train = release&.train
+   steps = release_train&.steps
+%>
+
+<% if @train.demo? && release.present? %>
+  <section>
+    <div>
+      <span class="font-bold text-xl">iOS Release</span>
+    </div>
+
+    <div class="flex flex-col mt-2">
+      <ol class="mt-2">
+        <% steps.each do |step| %>
+          <% step_run = release.last_run_for(step) %>
+
+          <li>
+            <div class="flex items-center">
+              <% if release.on_track? && release.startable_step?(step) %>
+                <%= authz_button_to :blue,
+                                    "Move to this step",
+                                    start_release_step_run_path(release, step),
+                                    { class: "btn-xs mb-2" } %>
+              <% end %>
+            </div>
+
+            <div>
+              <%= render partial: "shared/per_step_metadata",
+                         locals: { editable: false, release: release, step: step, step_run: step_run } %>
+            </div>
+          </li>
+
+          <%= render partial: "shared/step_tree_connector", locals: { color: step_color(step.kind) } %>
+        <% end %>
+      </ol>
+    </div>
+  </section>
+<% end %>
