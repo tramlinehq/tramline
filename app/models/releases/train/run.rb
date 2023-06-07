@@ -100,6 +100,7 @@ class Releases::Train::Run < ApplicationRecord
   attr_accessor :has_major_bump
   delegate :app, :pre_release_prs?, :vcs_provider, to: :train
   delegate :cache, to: Rails
+  delegate :android?, to: :app
 
   def set_default_release_metadata
     create_release_metadata!(locale: DEFAULT_LOCALE, release_notes: DEFAULT_RELEASE_NOTES)
@@ -279,8 +280,9 @@ class Releases::Train::Run < ApplicationRecord
 
   # since we do not currently support staged-rollouts on non-production channels
   # this check internally assumes production
-  def staged_rollout_in_progress?
-    latest_store_release&.rollout_started?
+  def version_bump_required?
+    return latest_store_release&.rollout_started? if android?
+    latest_store_release&.status&.in? [:ready_to_release, :rollout_started]
   end
 
   def hotfix?
