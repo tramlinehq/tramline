@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_07_144655) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -260,6 +260,15 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
     t.index ["kind"], name: "index_passports_on_kind"
     t.index ["reason"], name: "index_passports_on_reason"
     t.index ["stampable_type", "stampable_id"], name: "index_passports_on_stampable"
+  end
+
+  create_table "release_commit_logs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_run_id", null: false
+    t.string "from", null: false
+    t.jsonb "commits"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["train_run_id"], name: "index_release_commit_logs_on_train_run_id"
   end
 
   create_table "release_metadata", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

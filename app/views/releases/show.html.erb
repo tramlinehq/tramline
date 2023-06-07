@@ -28,10 +28,9 @@
 <div class="grid grid-cols-2 gap-6 mt-8">
   <%= render partial: "releases/live_release/stability", locals: { release: @release, steps: @steps, release_train: @train } %>
   <div>
-    <% if @release.on_track? %>
-      <%= render partial: "releases/live_release/commit_log", locals: { release: @release } %>
-      <%= render partial: "releases/live_release/separator" %>
-    <% end %>
+    <%= render partial: "releases/live_release/commit_log", locals: { release: @release } %>
+    <%= render partial: "releases/live_release/separator" %>
+    <%= render partial: "releases/live_release/separator", locals: { margin_only: true } %>
 
     <% if @release.pre_release_prs? %>
       <%= render partial: "releases/live_release/pre_release_prs", locals: { pre_release_prs: @pre_release_prs } %>

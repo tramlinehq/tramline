@@ -30,6 +30,7 @@ class Releases::Train::Run < ApplicationRecord
   has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
   has_one :release_metadata, class_name: "ReleaseMetadata", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
+  has_one :release_commit_log, class_name: "ReleaseCommitLog", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
   has_many :passports, as: :stampable, dependent: :destroy
@@ -108,9 +109,10 @@ class Releases::Train::Run < ApplicationRecord
 
   def fetch_commit_log
     if previous_release.present?
-      cache.fetch("app/#{app.id}/train/#{train.id}/releases/#{id}/commit_log", expires_in: 30.days) do
-        vcs_provider.commit_log(previous_release.tag_name, train.working_branch)
-      end
+      create_release_commit_log!(
+        commits: vcs_provider.commit_log(previous_release.tag_name, train.working_branch),
+        from: previous_release.tag_name
+      )
     end
   end
 
