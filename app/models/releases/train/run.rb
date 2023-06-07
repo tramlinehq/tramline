@@ -281,8 +281,8 @@ class Releases::Train::Run < ApplicationRecord
   # since we do not currently support staged-rollouts on non-production channels
   # this check internally assumes production
   def version_bump_required?
-    return latest_store_release&.rollout_started? if android?
-    latest_store_release&.status&.in? [:ready_to_release, :rollout_started]
+    return latest_non_failure_store_release&.rollout_started? if android?
+    latest_non_failure_store_release&.status&.in? ["ready_to_release", "rollout_started"]
   end
 
   def hotfix?
@@ -305,5 +305,19 @@ class Releases::Train::Run < ApplicationRecord
       &.deployment_runs
       &.not_failed
       &.find { |dr| dr.deployment.production_channel? }
+  end
+
+  def latest_non_failure_store_release
+    last_successful_run_for(train.release_step)
+      &.deployment_runs
+      &.not_failed
+      &.find { |dr| dr.deployment.production_channel? }
+  end
+
+  def last_successful_run_for(step)
+    step_runs
+      .where(step: step)
+      .not_failed
+      .last
   end
 end

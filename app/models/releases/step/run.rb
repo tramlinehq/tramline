@@ -132,6 +132,7 @@ class Releases::Step::Run < ApplicationRecord
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
   alias_method :release, :train_run
+  scope :not_failed, -> { where.not(status: [:ci_workflow_failed, :ci_workflow_halted, :build_not_found_in_store, :build_unavailable, :deployment_failed]) }
 
   def find_build
     store_provider.find_build(build_number)
