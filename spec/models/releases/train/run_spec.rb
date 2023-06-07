@@ -149,4 +149,117 @@ describe Releases::Train::Run do
       expect(train_run.finalizable?).to be(false)
     end
   end
+
+  describe "#hotfix?" do
+    let(:train) { create(:releases_train) }
+    let(:review_step) { create(:releases_step, :review, :with_deployment, train: train) }
+    let(:release_step) { create(:releases_step, :release, :with_deployment, train: train) }
+    let(:regular_deployment) { create(:deployment, :with_google_play_store, step: release_step) }
+    let(:production_deployment) { create(:deployment, :with_google_play_store, :with_staged_rollout, step: release_step) }
+    let(:train_run) { create(:releases_train_run, :on_track, train: train) }
+
+    it "is false when it has step run and production deployment run has not started rollout" do
+      release_step_run = create(:releases_step_run, step: release_step, train_run:)
+      create(:deployment_run, deployment: production_deployment, step_run: release_step_run)
+      train.bump_fix!
+      train_run.update!(release_version: train.version_current)
+      expect(train_run).not_to be_hotfix
+    end
+
+    it "is true when it has step run and production deployment run has started rollout" do
+      release_step_run = create(:releases_step_run, step: release_step, train_run:)
+      create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
+      train.bump_fix!
+      train_run.update!(release_version: train.version_current)
+      expect(train_run).to be_hotfix
+    end
+
+    it "is false release train is finished" do
+      train_run.update(status: "finished")
+      expect(train_run).not_to be_hotfix
+    end
+  end
+
+  describe "#version_bump_required?" do
+    context "when android app" do
+      let(:app) { create(:app, :android) }
+      let(:train) { create(:releases_train, app:) }
+      let(:review_step) { create(:releases_step, :review, :with_deployment, train: train) }
+      let(:release_step) { create(:releases_step, :release, :with_deployment, train: train) }
+      let(:regular_deployment) { create(:deployment, :with_google_play_store, step: release_step) }
+      let(:production_deployment) { create(:deployment, :with_google_play_store, :with_staged_rollout, step: release_step) }
+      let(:train_run) { create(:releases_train_run, :on_track, train: train) }
+
+      it "is false when it does not have a release step run" do
+        _review_step_run = create(:releases_step_run, step: review_step, train_run:)
+        expect(train_run).not_to be_version_bump_required
+      end
+
+      it "is false when it has a release step run but no production deployment run" do
+        release_step_run = create(:releases_step_run, step: release_step, train_run:)
+        create(:deployment_run, deployment: regular_deployment, step_run: release_step_run)
+        expect(train_run).not_to be_version_bump_required
+      end
+
+      it "is false when it has step run and production deployment run has not started rollout" do
+        release_step_run = create(:releases_step_run, step: release_step, train_run:)
+        create(:deployment_run, deployment: production_deployment, step_run: release_step_run)
+        expect(train_run).not_to be_version_bump_required
+      end
+
+      it "is true when it has step run and production deployment run has started rollout" do
+        release_step_run = create(:releases_step_run, step: release_step, train_run:)
+        create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
+        expect(train_run).to be_version_bump_required
+      end
+
+      it "is false release train is finished" do
+        train_run.update(status: "finished")
+        expect(train_run.metadata_editable?).to be(false)
+      end
+
+      it "is true when rollout has started for production deployment" do
+        expect(train_run.metadata_editable?).to be(true)
+      end
+    end
+
+    context "when iOS app" do
+      let(:app) { create(:app, :ios) }
+      let(:train) { create(:releases_train, app:) }
+      let(:review_step) { create(:releases_step, :review, :with_deployment, train: train) }
+      let(:release_step) { create(:releases_step, :release, :with_deployment, train: train) }
+      let(:regular_deployment) { create(:deployment, :with_app_store, step: release_step) }
+      let(:production_deployment) { create(:deployment, :with_app_store, :with_phased_release, step: release_step) }
+      let(:train_run) { create(:releases_train_run, :on_track, train: train) }
+
+      it "is false when it does not have a release step run" do
+        _review_step_run = create(:releases_step_run, step: review_step, train_run:)
+        expect(train_run).not_to be_version_bump_required
+      end
+
+      it "is false when it has a release step run but no production deployment run" do
+        release_step_run = create(:releases_step_run, step: release_step, train_run:)
+        create(:deployment_run, deployment: regular_deployment, step_run: release_step_run)
+        expect(train_run).not_to be_version_bump_required
+      end
+
+      it "is false when it has step run and production deployment run has not started rollout" do
+        release_step_run = create(:releases_step_run, step: release_step, train_run:)
+        create(:deployment_run, deployment: production_deployment, step_run: release_step_run)
+        expect(train_run).not_to be_version_bump_required
+      end
+
+      it "is true when it has step run and production deployment run has started rollout" do
+        release_step_run = create(:releases_step_run, step: release_step, train_run:)
+        create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
+        expect(train_run).to be_version_bump_required
+      end
+
+      it "is true when it has step run and production deployment run has been review approved" do
+        release_step_run = create(:releases_step_run, step: release_step, train_run:)
+        create(:deployment_run, :ready_to_release, deployment: production_deployment, step_run: release_step_run)
+        expect(train_run).to be_version_bump_required
+      end
+    end
+  end
 end
