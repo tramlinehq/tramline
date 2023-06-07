@@ -278,14 +278,17 @@ class Releases::Train::Run < ApplicationRecord
     end
   end
 
+  # Play store does not have constraints around version name
+  # App Store requires a higher version name than that of the previously approved version name
+  # and so a version bump is required for iOS once the build has been approved as well
   def version_bump_required?
-    return latest_non_failure_store_release&.rollout_started? if android?
-    latest_non_failure_store_release&.status&.in? [DeploymentRun::STATES[:rollout_started], DeploymentRun::STATES[:ready_to_release]]
+    return latest_deployed_store_release&.rollout_started? if android?
+    latest_deployed_store_release&.status&.in? [DeploymentRun::STATES[:rollout_started], DeploymentRun::STATES[:ready_to_release]]
   end
 
   def hotfix?
     return false unless on_track?
-    release_version.to_semverish > original_release_version.to_semverish && production_release_started?
+    (release_version.to_semverish > original_release_version.to_semverish) && production_release_started?
   end
 
   private
@@ -305,7 +308,7 @@ class Releases::Train::Run < ApplicationRecord
       &.find { |dr| dr.deployment.production_channel? }
   end
 
-  def latest_non_failure_store_release
+  def latest_deployed_store_release
     last_successful_run_for(train.release_step)
       &.deployment_runs
       &.not_failed
@@ -320,6 +323,6 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def production_release_started?
-    latest_non_failure_store_release&.status&.in? [DeploymentRun::STATES[:rollout_started], DeploymentRun::STATES[:released]]
+    latest_deployed_store_release&.status&.in? [DeploymentRun::STATES[:rollout_started], DeploymentRun::STATES[:released]]
   end
 end
