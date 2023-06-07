@@ -278,8 +278,6 @@ class Releases::Train::Run < ApplicationRecord
     end
   end
 
-  # since we do not currently support staged-rollouts on non-production channels
-  # this check internally assumes production
   def version_bump_required?
     return latest_non_failure_store_release&.rollout_started? if android?
     latest_non_failure_store_release&.status&.in? [DeploymentRun::STATES[:rollout_started], DeploymentRun::STATES[:ready_to_release]]
