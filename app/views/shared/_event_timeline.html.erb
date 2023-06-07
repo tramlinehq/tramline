@@ -9,13 +9,15 @@
               </span>
           </div>
 
-          <span class="text-xs inline-flex font-medium <%= passport_badge(passport) %> rounded-full text-center mr-3 ml-2 px-2 py-1">
+          <span class="w-3/4 inline-flex">
+            <span class="text-xs font-medium <%= passport_badge(passport) %> rounded-full text-center mr-3 ml-2 px-2 py-1">
               <%= image_tag("#{passport_icon(passport)}.svg", width: 20, class: "inline-flex") %>
             </span>
 
-          <div class="self-center text-slate-800 <%= short_width ? "truncate" : nil %>">
-            <%= raw passport.message %>
-          </div>
+            <span class="self-center text-slate-800 <%= short_width ? "truncate" : nil %>">
+              <%= raw passport.message %>
+            </span>
+          </span>
         </div>
       </div>
     </li>
