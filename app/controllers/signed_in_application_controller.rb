@@ -12,12 +12,14 @@ class SignedInApplicationController < ApplicationController
 
   protected
 
+  helper_method :demo_org?, :demo_train?
+
   def demo_org?
-    @current_organization.demo?
+    @current_organization&.demo?
   end
 
   def demo_train?
-    demo_org? && @train.demo?
+    demo_org? && @train&.demo?
   end
 
   def require_login
