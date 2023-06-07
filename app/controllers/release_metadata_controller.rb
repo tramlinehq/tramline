@@ -1,11 +1,11 @@
 class ReleaseMetadataController < SignedInApplicationController
   before_action :require_write_access!, only: %i[edit update]
   before_action :set_release, only: %i[edit update]
+  before_action :set_train, only: %i[edit update]
+  before_action :set_app, only: %i[edit update]
   before_action :ensure_editable, only: %i[edit update]
 
   def edit
-    @train = @release.train
-    @app = @train.app
     @release_metadata = @release.release_metadata
   end
 
@@ -26,6 +26,14 @@ class ReleaseMetadataController < SignedInApplicationController
       :release_notes,
       :promo_text
     )
+  end
+
+  def set_train
+    @train = @release.train
+  end
+
+  def set_app
+    @app = @train.app
   end
 
   def set_release
