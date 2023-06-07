@@ -75,7 +75,7 @@
   <div>
     <span class="font-bold text-2xl">Release Events</span>
     <%= render partial: "shared/event_timeline", locals: { events: @events, short_width: true } %>
-    <span class="text-sm text-slate-400">Showing the last 10 events, <span class="underline">view all</span>.</span>
+    <span class="text-sm text-slate-400">Showing the last 10 events, <%= link_to "view all", timeline_release_path(@release), class: "underline" %></span>
   </div>
 
   <div>
