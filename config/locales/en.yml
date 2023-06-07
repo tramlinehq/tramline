@@ -84,9 +84,9 @@ en:
         release_metadata:
           attributes:
             release_notes:
-              no_special_characters: "only allows letters, numbers, and some special characters"
+              no_special_characters: "only allows letters, numbers, emojis, and some special characters"
             promo_text:
-              no_special_characters: "only allows letters, numbers, and some special characters"
+              no_special_characters: "only allows letters, numbers, emojis, and some special characters"
         integration:
           format: "%{message}"
         app_store_integration:
