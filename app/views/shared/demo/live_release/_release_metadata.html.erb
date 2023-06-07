@@ -1,7 +1,7 @@
 <% release_metadata = release.release_metadata %>
 
-<section>
-  <div class="flex justify-between items-center mb-4">
+<section class="max-h-96 h-44">
+  <div class="flex justify-between items-center mb-3">
     <span class="font-bold text-2xl">Release Metadata</span>
     <%= authz_link_to (release.metadata_editable? ? :neutral : :disabled), "Edit", edit_release_release_metadatum_path(release) %>
   </div>

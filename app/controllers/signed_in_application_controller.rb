@@ -12,6 +12,14 @@ class SignedInApplicationController < ApplicationController
 
   protected
 
+  def demo_org?
+    @current_organization.demo?
+  end
+
+  def demo_train?
+    demo_org? && @train.demo?
+  end
+
   def require_login
     unless current_user
       flash[:error] = t("errors.messages.not_logged_in")

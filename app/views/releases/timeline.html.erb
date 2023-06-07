@@ -1,25 +1,3 @@
 <%= render PageComponent.new(breadcrumb: breadcrumb(:timeline_release, @release), title: "Event Timeline") do %>
-  <ul class="mt-6">
-    <% @events.each do |passport| %>
-      <li class="flex px-2">
-        <div class="grow flex items-center border-b border-slate-100 text-sm py-2">
-          <div class="grow flex justify-start">
-            <div class="w-36">
-              <span class="font-medium text-stone-500">
-                <%= time_format(passport.event_timestamp) %>
-              </span>
-            </div>
-
-            <span class="text-xs inline-flex font-medium <%= passport_badge(passport) %> rounded-full text-center mr-3 ml-2 px-2 py-1">
-              <%= image_tag("#{passport_icon(passport)}.svg", width: 20, class: "inline-flex") %>
-            </span>
-
-            <div class="self-center text-slate-800">
-              <%= raw passport.message %>
-            </div>
-          </div>
-        </div>
-      </li>
-    <% end %>
-  </ul>
+  <%= render partial: "shared/event_timeline", locals: { events: @events, short_width: false } %>
 <% end %>

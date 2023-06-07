@@ -29,23 +29,15 @@
   <div>
     <%= render partial: "shared/demo/live_release/kick_off", locals: { release: @release, release_train: @train } %>
 
-    <%= render partial: "releases/live_release/separator", locals: { margin_only: true } %>
-
-    <% if @release.release_metadata.present? %>
-      <%= render partial: "shared/demo/live_release/release_metadata",
-                 locals: { release: @release, is_android: @release.app.android? } %>
+    <% if @release.pre_release_prs? %>
+      <%= render partial: "shared/demo/live_release/pre_release_prs", locals: { pre_release_prs: @pre_release_prs } %>
     <% end %>
   </div>
 
   <div>
-    <% if @release.on_track? %>
-      <%= render partial: "shared/demo/live_release/commit_log", locals: { release: @release } %>
-
-      <%= render partial: "releases/live_release/separator", locals: { margin_only: true } %>
-
-      <% if @release.pre_release_prs? %>
-        <%= render partial: "shared/demo/live_release/pre_release_prs", locals: { pre_release_prs: @pre_release_prs } %>
-      <% end %>
+    <% if @release.release_metadata.present? %>
+      <%= render partial: "shared/demo/live_release/release_metadata",
+                 locals: { release: @release, is_android: @release.app.android? } %>
     <% end %>
   </div>
 </div>
@@ -66,17 +58,29 @@
   <span class="text-xl text-slate-400 ml-4"><%= time_ago_in_words(@release.updated_at) %> ago</span>
 </div>
 
-
 <div class="grid grid-cols-2 gap-6 mt-8">
   <%= render partial: "shared/demo/live_release/stability", locals: { platform: "Android release", release: @release, steps: @steps, release_train: @train } %>
-  <%= render partial: "shared/demo/live_release/stability", locals: { platform: "iOS release", release: @release, steps: @steps, release_train: @train } %>
+  <%= render partial: "shared/demo/live_release/ios_stability", locals: { release: @release, steps: @steps, release_train: @train } %>
 </div>
 
 <%= render partial: "releases/live_release/separator" %>
 
 <div class="mt-8">
-  <!--commits after live release kickoff-->
   <%= render partial: "shared/demo/live_release/builds", locals: { release: @release } %>
+</div>
+
+<%= render partial: "releases/live_release/separator" %>
+
+<div class="grid grid-cols-2 gap-6 mt-8">
+  <div>
+    <span class="font-bold text-2xl">Release Events</span>
+    <%= render partial: "shared/event_timeline", locals: { events: @events, short_width: true } %>
+    <span class="text-sm text-slate-400">Showing the last 10 events, <span class="underline">view all</span>.</span>
+  </div>
+
+  <div>
+    <%= render partial: "shared/demo/live_release/commit_log", locals: { release: @release } %>
+  </div>
 </div>
 
 <%= render partial: "releases/live_release/separator" %>

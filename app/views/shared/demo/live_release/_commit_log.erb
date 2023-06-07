@@ -1,4 +1,4 @@
-<section data-controller="reveal" data-reveal-toggle-keys-value="b">
+<section data-controller="reveal">
   <span class="font-bold text-2xl">Commits since last release</span>
 
   <% if release.previous_release.present? %>
@@ -19,7 +19,6 @@
 
         <tbody data-reveal class="text-sm border-b last:border-b-0" data-controller="reveal" data-reveal-toggle-keys-value="b">
         <% release.fetch_commit_log.each_with_index do |commit, index| %>
-
           <tr>
             <td class="py-4 whitespace-nowrap text-slate-500">
               <div class="flex flex-row items-start">
