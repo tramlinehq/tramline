@@ -100,6 +100,7 @@ class Releases::Train::Run < ApplicationRecord
   attr_accessor :has_major_bump
   delegate :app, :pre_release_prs?, :vcs_provider, to: :train
   delegate :cache, to: Rails
+  delegate :android?, to: :app
 
   def set_default_release_metadata
     create_release_metadata!(locale: DEFAULT_LOCALE, release_notes: DEFAULT_RELEASE_NOTES)
@@ -277,15 +278,17 @@ class Releases::Train::Run < ApplicationRecord
     end
   end
 
-  # since we do not currently support staged-rollouts on non-production channels
-  # this check internally assumes production
-  def staged_rollout_in_progress?
-    latest_store_release&.rollout_started?
+  # Play store does not have constraints around version name
+  # App Store requires a higher version name than that of the previously approved version name
+  # and so a version bump is required for iOS once the build has been approved as well
+  def version_bump_required?
+    return latest_deployed_store_release&.rollout_started? if android?
+    latest_deployed_store_release&.status&.in? [DeploymentRun::STATES[:rollout_started], DeploymentRun::STATES[:ready_to_release]]
   end
 
   def hotfix?
     return false unless on_track?
-    release_version.to_semverish > original_release_version.to_semverish
+    (release_version.to_semverish > original_release_version.to_semverish) && production_release_started?
   end
 
   private
@@ -303,5 +306,23 @@ class Releases::Train::Run < ApplicationRecord
       &.deployment_runs
       &.not_failed
       &.find { |dr| dr.deployment.production_channel? }
+  end
+
+  def latest_deployed_store_release
+    last_successful_run_for(train.release_step)
+      &.deployment_runs
+      &.not_failed
+      &.find { |dr| dr.deployment.production_channel? }
+  end
+
+  def last_successful_run_for(step)
+    step_runs
+      .where(step: step)
+      .not_failed
+      .last
+  end
+
+  def production_release_started?
+    latest_deployed_store_release&.status&.in? [DeploymentRun::STATES[:rollout_started], DeploymentRun::STATES[:released]]
   end
 end
