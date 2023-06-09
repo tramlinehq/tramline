@@ -188,6 +188,15 @@ class Releases::Train < ApplicationRecord
     Flipper.enabled?(:demo_mode, self)
   end
 
+  def notification_params
+    app.notification_params.merge(
+      {
+        train_name: name,
+        train_current_version: version_current
+      }
+    )
+  end
+
   private
 
   def set_version_seeded_with

@@ -192,6 +192,13 @@ class App < ApplicationRecord
     RefreshExternalAppJob.perform_later(id)
   end
 
+  def notification_params
+    {
+      app_name: name,
+      app_platform: platform
+    }
+  end
+
   private
 
   def initialize_config

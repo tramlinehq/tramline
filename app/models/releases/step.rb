@@ -78,6 +78,14 @@ class Releases::Step < ApplicationRecord
     train.steps.where("step_number < ?", step_number).last
   end
 
+  def notification_params
+    train.notification_params.merge(
+      {
+        step_type: kind
+      }
+    )
+  end
+
   private
 
   def reject_deployments?(attributes)

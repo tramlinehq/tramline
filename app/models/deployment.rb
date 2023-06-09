@@ -110,6 +110,19 @@ class Deployment < ApplicationRecord
     production_channel? && app_store_integration?
   end
 
+  def notification_params
+    step.notification_params
+      .merge(train.notification_params)
+      .merge(
+        {
+          staged_rollout_deployment: staged_rollout?,
+          production_channel?: production_channel?,
+          deployment_channel_type: integration_type,
+          deployment_channel_name: deployment_channel_name
+        }
+      )
+  end
+
   private
 
   def set_default_staged_rollout

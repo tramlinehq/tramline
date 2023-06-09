@@ -327,6 +327,8 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
+  delegate :notification_params, to: :deployment
+
   private
 
   def mark_reviewed

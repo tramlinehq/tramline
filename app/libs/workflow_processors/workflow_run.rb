@@ -51,7 +51,6 @@ class WorkflowProcessors::WorkflowRun
       :build_finished,
       {
         artifacts_url:,
-        code_name: release.code_name,
         branch_name: release.release_branch,
         build_number: step_run.build_number,
         version_number: step_run.build_version

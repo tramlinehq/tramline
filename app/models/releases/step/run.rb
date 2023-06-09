@@ -233,6 +233,20 @@ class Releases::Step::Run < ApplicationRecord
     Triggers::Deployment.call(step_run: self, deployment: deployment)
   end
 
+  def notification_params
+    step.notification_params
+      .merge(train_run.notification_params)
+      .merge(
+        {
+          ci_link: ci_link,
+          build_number: build_number,
+          commit_sha: commit.short_sha,
+          commit_message: commit.message,
+          commit_url: commit.url
+        }
+      )
+  end
+
   private
 
   def find_and_update_workflow_run

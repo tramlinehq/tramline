@@ -126,6 +126,16 @@ class Releases::Train::Run < ApplicationRecord
     "v#{release_version}"
   end
 
+  def live_release_link
+    if Rails.env.development?
+      Rails.application.routes.url_helpers
+        .release_url(self, host: ENV["HOST_NAME"], protocol: "https", port: ENV["PORT_NUM"])
+    else
+      Rails.application.routes.url_helpers
+        .release_url(self, host: ENV["HOST_NAME"], protocol: "https")
+    end
+  end
+
   def overall_movement_status
     all_steps.to_h do |step|
       run = last_commit&.run_for(step)
@@ -289,6 +299,16 @@ class Releases::Train::Run < ApplicationRecord
   def hotfix?
     return false unless on_track?
     (release_version.to_semverish > original_release_version.to_semverish) && production_release_started?
+  end
+
+  def notification_params
+    train.notification_params.merge(
+      {
+        release_branch: branch_name,
+        release_branch_url: branch_url,
+        release_url: live_release_link
+      }
+    )
   end
 
   private
