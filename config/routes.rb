@@ -60,6 +60,7 @@ Rails.application.routes.draw do
       end
 
       resources :release_groups, only: %i[show create destroy], shallow: true do
+        resource :release_metadatum, only: %i[edit update], path: :metadata
         collection do
           get :live_release
         end

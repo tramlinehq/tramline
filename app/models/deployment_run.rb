@@ -49,7 +49,7 @@ class DeploymentRun < ApplicationRecord
     :staged_rollout_config,
     :google_firebase_integration?,
     to: :deployment
-  delegate :release_version, :release_metadata, to: :release
+  delegate :release_version, :get_release_metadata, to: :release
   delegate :app, to: :release
 
   STAMPABLE_REASONS = %w[
@@ -149,6 +149,10 @@ class DeploymentRun < ApplicationRecord
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 
   UnknownStoreError = Class.new(StandardError)
+
+  def release_metadata
+    get_release_metadata
+  end
 
   def first?
     step_run.deployment_runs.first == self

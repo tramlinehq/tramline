@@ -38,7 +38,7 @@
 
     <% if @release.release_metadata.present? %>
       <%= render partial: "shared/demo/live_release/release_metadata",
-                 locals: { release: @release, is_android: @release.app.android? } %>
+                 locals: { release: @release, is_android: false, edit_path: edit_release_group_release_metadatum_path(@release) } %>
     <% end %>
   </div>
 

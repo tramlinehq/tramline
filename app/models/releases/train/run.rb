@@ -5,7 +5,7 @@
 #  id                       :uuid             not null, primary key
 #  branch_name              :string           not null
 #  code_name                :string           not null
-#  commit_sha               :string
+#  commit_sha               :string # TODO: do we need this?
 #  completed_at             :datetime
 #  original_release_version :string
 #  release_version          :string           not null
@@ -102,7 +102,17 @@ class Releases::Train::Run < ApplicationRecord
   delegate :cache, to: Rails
 
   def set_default_release_metadata
-    create_release_metadata!(locale: ReleaseMetadata::DEFAULT_LOCALE, release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES)
+    if train_group_run.blank?
+      create_release_metadata!(locale: ReleaseMetadata::DEFAULT_LOCALE, release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES)
+    end
+  end
+
+  def get_release_metadata
+    if train_group_run.present?
+      train_group_run.release_metadata
+    else
+      release_metadata
+    end
   end
 
   def fetch_commit_log

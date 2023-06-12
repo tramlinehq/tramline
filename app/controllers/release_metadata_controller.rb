@@ -7,14 +7,22 @@ class ReleaseMetadataController < SignedInApplicationController
 
   def edit
     @release_metadata = @release.release_metadata
+    @action_path = if @release.is_a?(Releases::Train::Run)
+      release_release_metadatum_path(@release)
+    else
+      release_group_release_metadatum_path(@release)
+    end
   end
 
-  # FIXME: fix this for train group run
   def update
-    @release_metadata = ReleaseMetadata.find_or_initialize_by(train_run: @release)
+    @release_metadata = if @release.is_a?(Releases::Train::Run)
+      ReleaseMetadata.find_or_initialize_by(train_run: @release)
+    else
+      ReleaseMetadata.find_or_initialize_by(train_group_run: @release)
+    end
 
     if @release_metadata.update(release_metadata_params)
-      redirect_to release_path(@release), notice: "Release metadata was successfully updated."
+      redirect_to parent_release_path, notice: "Release metadata was successfully updated."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -38,12 +46,24 @@ class ReleaseMetadataController < SignedInApplicationController
   end
 
   def set_release
-    @release = Releases::Train::Run.find(params[:release_id])
+    @release = if params[:release_id].present?
+      Releases::Train::Run.find(params[:release_id])
+    else
+      Releases::TrainGroup::Run.find(params[:release_group_id])
+    end
+  end
+
+  def parent_release_path
+    if @release.is_a?(Releases::Train::Run)
+      release_path(@release)
+    else
+      release_group_path(@release)
+    end
   end
 
   def ensure_editable
     unless @release.metadata_editable?
-      redirect_back fallback_location: release_path(@release),
+      redirect_back fallback_location: parent_release_path,
         flash: {error: "Cannot update the release metadata once the production release has begun."}
     end
   end
