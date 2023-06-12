@@ -77,41 +77,35 @@ class Releases::TrainGroup < ApplicationRecord
   end
 
   def ios_train
-    trains.ios.first
+    trains.ios&.first
   end
 
   def android_train
-    trains.android.first
+    trains.android&.first
   end
 
   def create_trains
     Rails.logger.info("Creating trains for groups!")
-    trains.create!(
-      platform: Releases::Train.platforms[:ios],
-      branching_strategy:,
-      description:,
-      name: name + " iOS",
-      release_backmerge_branch:,
-      release_branch:,
-      working_branch:,
-      app: app,
-      version_seeded_with:,
-      version_current:,
-      status: Releases::Train.statuses[:draft]
-    )
-    trains.create!(
-      platform: Releases::Train.platforms[:android],
-      branching_strategy:,
-      description:,
-      name: name + " Android",
-      release_backmerge_branch:,
-      release_branch:,
-      working_branch:,
-      app: app,
-      version_seeded_with:,
-      version_current:,
-      status: Releases::Train.statuses[:draft]
-    )
+    platforms = if app.cross_platform?
+      Releases::Train.platforms.values
+    else
+      [app.platform]
+    end
+    platforms.each do |platform|
+      trains.create!(
+        platform: platform,
+        branching_strategy:,
+        description:,
+        name: "#{name} #{platform}",
+        release_backmerge_branch:,
+        release_branch:,
+        working_branch:,
+        app: app,
+        version_seeded_with:,
+        version_current:,
+        status: Releases::Train.statuses[:draft]
+      )
+    end
     Rails.logger.info("Created trains for groups!")
   end
 
@@ -126,8 +120,8 @@ class Releases::TrainGroup < ApplicationRecord
   def activate!
     self.status = Releases::TrainGroup.statuses[:active]
     save!(context: :activate_context)
-    ios_train.activate!
-    android_train.activate!
+    ios_train&.activate!
+    android_train&.activate!
   end
 
   def in_creation?
@@ -184,8 +178,8 @@ class Releases::TrainGroup < ApplicationRecord
     if runs.any?
       self.version_current = version_current.ver_bump(bump_term)
       save!
-      ios_train.update!(version_current: version_current)
-      android_train.update!(version_current: version_current)
+      ios_train&.update!(version_current: version_current)
+      android_train&.update!(version_current: version_current)
     end
 
     version_current

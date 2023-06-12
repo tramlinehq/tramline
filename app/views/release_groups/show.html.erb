@@ -66,8 +66,12 @@
 </div>
 
 <div class="grid grid-cols-2 gap-6 mt-8">
-  <%= render partial: "shared/live_release/stability", locals: { platform: "Android release", release: @release.android_run, steps: @android_steps, release_train: @android_train } %>
-  <%= render partial: "shared/live_release/stability", locals: { platform: "iOS release", release: @release.ios_run, steps: @ios_steps, release_train: @ios_train } %>
+  <% if @release.android_run.present? %>
+    <%= render partial: "shared/live_release/stability", locals: { platform: "Android release", release: @release.android_run, steps: @android_steps, release_train: @android_train } %>
+  <% end %>
+  <% if @release.ios_run.present? %>
+    <%= render partial: "shared/live_release/stability", locals: { platform: "iOS release", release: @release.ios_run, steps: @ios_steps, release_train: @ios_train } %>
+  <% end %>
 </div>
 
 <%= render partial: "shared/live_release/separator" %>
@@ -79,17 +83,21 @@
 <%= render partial: "shared/live_release/separator" %>
 
 <div class="grid grid-cols-2 gap-6 mt-8">
-  <div>
-    <span class="font-bold text-2xl">Android Release Events</span>
-    <%= render partial: "shared/event_timeline", locals: { events: @android_events, short_width: true } %>
-    <span class="text-sm text-slate-400">Showing the last 10 events, <%= link_to "view all", timeline_release_group_path(@release), class: "underline" %></span>
-  </div>
+  <% if @release.android_run.present? %>
+    <div>
+      <span class="font-bold text-2xl">Android Release Events</span>
+      <%= render partial: "shared/event_timeline", locals: { events: @android_events, short_width: true } %>
+      <span class="text-sm text-slate-400">Showing the last 10 events, <%= link_to "view all", timeline_release_group_path(@release), class: "underline" %></span>
+    </div>
+  <% end %>
 
-  <div>
-    <span class="font-bold text-2xl">iOS Release Events</span>
-    <%= render partial: "shared/event_timeline", locals: { events: @ios_events, short_width: true } %>
-    <span class="text-sm text-slate-400">Showing the last 10 events, <%= link_to "view all", timeline_release_group_path(@release), class: "underline" %></span>
-  </div>
+  <% if @release.ios_run.present? %>
+    <div>
+      <span class="font-bold text-2xl">iOS Release Events</span>
+      <%= render partial: "shared/event_timeline", locals: { events: @ios_events, short_width: true } %>
+      <span class="text-sm text-slate-400">Showing the last 10 events, <%= link_to "view all", timeline_release_group_path(@release), class: "underline" %></span>
+    </div>
+  <% end %>
 </div>
 
 <%= render partial: "shared/live_release/separator" %>

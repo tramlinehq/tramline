@@ -8,16 +8,16 @@ class Triggers::ReleaseGroup
 
   def initialize(train_group, has_major_bump: false)
     @train_group = train_group
-    @ios_train = train_group.ios_train
-    @android_train = train_group.android_train
+    @ios_train = train_group&.ios_train
+    @android_train = train_group&.android_train
     @starting_time = Time.current
     @has_major_bump = has_major_bump
   end
 
   def call
     return Response.new(:unprocessable_entity, "Cannot start a train that is not active!") if train_group.inactive?
-    return Response.new(:unprocessable_entity, "Cannot start a train that has no steps. Please add at least one step to iOS train.") if @ios_train.steps.empty?
-    return Response.new(:unprocessable_entity, "Cannot start a train that has no steps. Please add at least one step to Android train.") if @android_train.steps.empty?
+    return Response.new(:unprocessable_entity, "Cannot start a train that has no steps. Please add at least one step to iOS train.") if @ios_train && @ios_train.steps.empty?
+    return Response.new(:unprocessable_entity, "Cannot start a train that has no steps. Please add at least one step to Android train.") if @android_train && @android_train.steps.empty?
     return Response.new(:unprocessable_entity, "A release is already in progress!") if train_group.active_run.present?
     return Response.new(:unprocessable_entity, "Cannot start a new release before wrapping up existing releases!") if train_group.runs.pending_release?
 

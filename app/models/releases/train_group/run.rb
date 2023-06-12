@@ -108,22 +108,16 @@ class Releases::TrainGroup::Run < ApplicationRecord
   end
 
   def create_train_runs
-    train_runs.create!(
-      code_name: "dummy",
-      scheduled_at:,
-      branch_name:,
-      release_version:,
-      has_major_bump:,
-      train: train_group.ios_train
-    )
-    train_runs.create!(
-      code_name: "dummy",
-      scheduled_at:,
-      branch_name:,
-      release_version:,
-      has_major_bump:,
-      train: train_group.android_train
-    )
+    train_group.trains.each do |train|
+      train_runs.create!(
+        code_name: "dummy",
+        scheduled_at:,
+        branch_name:,
+        release_version:,
+        has_major_bump:,
+        train: train
+      )
+    end
   end
 
   def start_train_runs!
@@ -212,7 +206,7 @@ class Releases::TrainGroup::Run < ApplicationRecord
   end
 
   def version_bump_required?
-    ios_run.version_bump_required? || android_run.version_bump_required?
+    train_runs.any?(&:version_bump_required?)
   end
 
   def ready_to_be_finalized?
