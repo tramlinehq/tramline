@@ -2,7 +2,7 @@ class ReleaseGroupsController < SignedInApplicationController
   using RefinedString
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
-  before_action :set_release, only: [:show, :destroy]
+  before_action :set_release, only: [:show, :timeline, :destroy]
 
   def show
     @train_group = @release.train_group
@@ -55,6 +55,12 @@ class ReleaseGroupsController < SignedInApplicationController
     else
       redirect_back fallback_location: root_path, notice: "Train is still running."
     end
+  end
+
+  def timeline
+    @train = @release.train
+    @app = @train.app
+    @events = @release.events
   end
 
   private

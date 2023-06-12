@@ -91,3 +91,8 @@ crumb :release_group do |release|
   link release.release_version, release_group_path(release)
   parent :train_group, release.train_group
 end
+
+crumb :timeline_release_group do |release|
+  link "Event Timeline", timeline_release_group_path(release)
+  parent :release_group, release
+end

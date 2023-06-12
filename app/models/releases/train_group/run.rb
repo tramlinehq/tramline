@@ -208,4 +208,8 @@ class Releases::TrainGroup::Run < ApplicationRecord
       store_url: app.store_link
     }
   end
+
+  def events(limit = nil)
+    ios_run&.events(limit)&.or(android_run&.events(limit))
+  end
 end

@@ -17,7 +17,7 @@
 
   <!-- Right: Actions -->
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-    <%#= decorated_link_to :neutral, "Event Timeline", timeline_release_path(@release) %>
+    <%= decorated_link_to :neutral, "Event Timeline", timeline_release_group_path(@release) %>
 
     <% if @release.stoppable? %>
       <%= authz_button_to :red, "Stop release", release_group_path(@release.id), method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } %>
@@ -81,13 +81,13 @@
   <div>
     <span class="font-bold text-2xl">Android Release Events</span>
     <%= render partial: "shared/event_timeline", locals: { events: @android_events, short_width: true } %>
-<!--    <span class="text-sm text-slate-400">Showing the last 10 events, <%#= link_to "view all", timeline_release_path(@release), class: "underline" %></span>-->
+    <span class="text-sm text-slate-400">Showing the last 10 events, <%= link_to "view all", timeline_release_group_path(@release), class: "underline" %></span>
   </div>
 
   <div>
     <span class="font-bold text-2xl">iOS Release Events</span>
     <%= render partial: "shared/event_timeline", locals: { events: @ios_events, short_width: true } %>
-<!--    <span class="text-sm text-slate-400">Showing the last 10 events, <%#= link_to "view all", timeline_release_path(@release), class: "underline" %></span>-->
+    <span class="text-sm text-slate-400">Showing the last 10 events, <%= link_to "view all", timeline_release_group_path(@release), class: "underline" %></span>
   </div>
 </div>
 
