@@ -92,7 +92,7 @@
         <% table.with_heading do %>
           <h2 class="text-2xl font-bold">Releases</h2>
         <% end %>
-        <% @train_group.runs.order(scheduled_at: :desc).each_with_index do |run, index| %>
+        <% @train_group.runs.order(scheduled_at: :desc).take(10).each_with_index do |run, index| %>
           <% table.with_row do |row| %>
             <% row.with_cell do %>
               <%= @train_group.runs.size - index %>
