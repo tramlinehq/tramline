@@ -5,7 +5,7 @@ class Triggers::StepRun
 
   def initialize(step, commit)
     @step = step
-    @release = step.train.active_run
+    @release = commit.train_run
     @commit = commit
   end
 

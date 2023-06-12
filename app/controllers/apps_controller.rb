@@ -14,7 +14,9 @@ class AppsController < SignedInApplicationController
   def show
     @app_setup_instructions = @app.app_setup_instructions
     @train_setup_instructions = @app.train_setup_instructions
+    @train_group_setup_instructions = @app.train_group_setup_instructions
     @train_in_creation = @app.trains.first if @app.trains.size == 1
+    @train_group_in_creation = @app.train_groups.first if @app.train_groups.any?
   end
 
   def new

@@ -9,6 +9,7 @@ class ReleaseMetadataController < SignedInApplicationController
     @release_metadata = @release.release_metadata
   end
 
+  # FIXME: fix this for train group run
   def update
     @release_metadata = ReleaseMetadata.find_or_initialize_by(train_run: @release)
 

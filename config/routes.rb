@@ -53,6 +53,19 @@ Rails.application.routes.draw do
       post :refresh_external
     end
 
+    resources :train_groups, only: %i[new create edit update show destroy] do
+      member do
+        patch :activate
+        patch :deactivate
+      end
+
+      resources :release_groups, only: %i[show create destroy], shallow: true do
+        collection do
+          get :live_release
+        end
+      end
+    end
+
     resources :trains, only: %i[new create edit update show destroy] do
       member do
         patch :activate

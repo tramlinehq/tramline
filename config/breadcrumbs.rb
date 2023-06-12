@@ -71,3 +71,23 @@ crumb :edit_train do |train|
   link "Edit"
   parent :train, train
 end
+
+crumb :new_train_group do |app|
+  link "New Train Group"
+  parent :app, app
+end
+
+crumb :edit_train_group do |train_group|
+  link "Edit"
+  parent :train_group, train_group
+end
+
+crumb :train_group do |train_group|
+  link train_group.name, app_train_group_path(train_group.app, train_group)
+  parent :app, train_group.app
+end
+
+crumb :release_group do |release|
+  link release.release_version, release_group_path(release)
+  parent :train_group, release.train_group
+end

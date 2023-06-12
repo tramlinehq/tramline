@@ -6,6 +6,7 @@
 #  branching_strategy       :string
 #  description              :string           not null
 #  name                     :string           not null
+#  platform                 :string
 #  release_backmerge_branch :string
 #  release_branch           :string
 #  slug                     :string
@@ -16,6 +17,7 @@
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
 #  app_id                   :uuid             not null, indexed
+#  train_group_id           :uuid
 #  vcs_webhook_id           :string
 #
 class Releases::Train < ApplicationRecord
@@ -30,12 +32,12 @@ class Releases::Train < ApplicationRecord
   }.freeze
 
   belongs_to :app, optional: false
+  belongs_to :train_group, class_name: "Releases::TrainGroup", optional: true
   has_many :integrations, through: :app
   has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
   has_one :active_run, -> { pending_release }, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
   has_many :steps, -> { order(:step_number) }, class_name: "Releases::Step", inverse_of: :train, dependent: :destroy
   has_many :commit_listeners, class_name: "Releases::CommitListener", inverse_of: :train, dependent: :destroy
-  has_many :commits, class_name: "Releases::Commit", inverse_of: :train, dependent: :destroy
   has_many :deployments, through: :steps
 
   scope :running, -> { includes(:runs).where(runs: {status: Releases::Train::Run.statuses[:on_track]}) }
@@ -46,11 +48,13 @@ class Releases::Train < ApplicationRecord
     active: "active",
     inactive: "inactive"
   }
+  enum platform: {android: "android", ios: "ios"}
 
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
   attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed
 
+  # validates :belongs_to_either_app_or_train_group
   validates :branching_strategy, :working_branch, presence: true
   validates :release_backmerge_branch, presence: true,
     if: lambda { |record|
@@ -71,6 +75,7 @@ class Releases::Train < ApplicationRecord
   before_validation :set_version_seeded_with, if: :new_record?
   before_create :set_current_version
   before_create :set_default_status
+  before_create :set_default_platform
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
   end
@@ -188,21 +193,28 @@ class Releases::Train < ApplicationRecord
     Flipper.enabled?(:demo_mode, self)
   end
 
+  def valid_steps?
+    steps.release.size == 1
+  end
+
   private
 
   def set_version_seeded_with
-    self.version_seeded_with =
-      VersioningStrategies::Semverish.build(major_version_seed, minor_version_seed, patch_version_seed)
+    self.version_seeded_with ||= VersioningStrategies::Semverish.build(major_version_seed, minor_version_seed, patch_version_seed)
   rescue ArgumentError
     nil
   end
 
   def set_current_version
-    self.version_current = version_seeded_with.ver_bump(:minor)
+    self.version_current ||= version_seeded_with.ver_bump(:minor)
   end
 
   def set_default_status
     self.status ||= Releases::Train.statuses[:draft]
+  end
+
+  def set_default_platform
+    self.platform ||= app.platform
   end
 
   def ensure_deletable
@@ -216,7 +228,7 @@ class Releases::Train < ApplicationRecord
   end
 
   def valid_step_configuration
-    unless steps.release.size == 1
+    unless valid_steps?
       errors.add(:steps, "there should be one release step")
     end
   end

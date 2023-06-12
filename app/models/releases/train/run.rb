@@ -14,6 +14,7 @@
 #  stopped_at               :datetime
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
+#  train_group_run_id       :uuid
 #  train_id                 :uuid             not null, indexed
 #
 class Releases::Train::Run < ApplicationRecord
@@ -26,6 +27,7 @@ class Releases::Train::Run < ApplicationRecord
   self.implicit_order_column = :scheduled_at
 
   belongs_to :train, class_name: "Releases::Train"
+  belongs_to :train_group_run, class_name: "Releases::TrainGroup::Run", optional: true
   has_many :pull_requests, class_name: "Releases::PullRequest", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
@@ -33,9 +35,6 @@ class Releases::Train::Run < ApplicationRecord
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
   has_many :passports, as: :stampable, dependent: :destroy
-
-  DEFAULT_LOCALE = "en-US"
-  DEFAULT_RELEASE_NOTES = "The latest version contains bug fixes and performance improvements."
 
   STAMPABLE_REASONS = %w[
     created
@@ -67,6 +66,7 @@ class Releases::Train::Run < ApplicationRecord
     state(*STATES.keys)
 
     event :start do
+      after { train_group_run&.start! }
       transitions from: [:created, :on_track], to: :on_track
     end
 
@@ -92,18 +92,17 @@ class Releases::Train::Run < ApplicationRecord
   before_create :set_version
   after_create :set_default_release_metadata
   after_commit -> { create_stamp!(data: {version: release_version}) }, on: :create
-  after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
-  after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
+  after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create, if: -> { train_group_run.blank? }
+  after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create, if: -> { train_group_run.blank? }
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   attr_accessor :has_major_bump
   delegate :app, :pre_release_prs?, :vcs_provider, to: :train
   delegate :cache, to: Rails
-  delegate :android?, to: :app
 
   def set_default_release_metadata
-    create_release_metadata!(locale: DEFAULT_LOCALE, release_notes: DEFAULT_RELEASE_NOTES)
+    create_release_metadata!(locale: ReleaseMetadata::DEFAULT_LOCALE, release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES)
   end
 
   def fetch_commit_log
@@ -180,7 +179,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def set_version
-    new_version = train.bump_release!(has_major_bump)
+    new_version = train_group_run&.release_version || train.bump_release!(has_major_bump)
     self.release_version = new_version
     self.original_release_version = new_version
   end
@@ -250,6 +249,8 @@ class Releases::Train::Run < ApplicationRecord
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     train.notify!("Release is complete!", :release_ended, finalize_phase_metadata)
     app.refresh_external_app
+
+    train_group_run&.start_post_release_phase!
   end
 
   def finalize_phase_metadata
@@ -265,6 +266,7 @@ class Releases::Train::Run < ApplicationRecord
   class PreReleaseUnfinishedError < StandardError; end
 
   def close_pre_release_prs
+    return train_group_run.close_pre_release_prs if train_group_run.present?
     return if pull_requests.pre_release.blank?
 
     pull_requests.pre_release.each do |pr|
@@ -282,7 +284,7 @@ class Releases::Train::Run < ApplicationRecord
   # App Store requires a higher version name than that of the previously approved version name
   # and so a version bump is required for iOS once the build has been approved as well
   def version_bump_required?
-    return latest_deployed_store_release&.rollout_started? if android?
+    return latest_deployed_store_release&.rollout_started? if train.android? # FIXME: old trains should have a platform
     latest_deployed_store_release&.status&.in? [DeploymentRun::STATES[:rollout_started], DeploymentRun::STATES[:ready_to_release]]
   end
 

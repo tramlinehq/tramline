@@ -2,17 +2,18 @@
 #
 # Table name: releases_commits
 #
-#  id           :uuid             not null, primary key
-#  author_email :string           not null
-#  author_name  :string           not null
-#  commit_hash  :string           not null, indexed => [train_run_id]
-#  message      :string
-#  timestamp    :datetime         not null
-#  url          :string
-#  created_at   :datetime         not null
-#  updated_at   :datetime         not null
-#  train_id     :uuid             not null, indexed
-#  train_run_id :uuid             not null, indexed => [commit_hash], indexed
+#  id                 :uuid             not null, primary key
+#  author_email       :string           not null
+#  author_name        :string           not null
+#  commit_hash        :string           not null, indexed => [train_run_id]
+#  message            :string
+#  timestamp          :datetime         not null
+#  url                :string
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  train_group_run_id :uuid
+#  train_id           :uuid             indexed
+#  train_run_id       :uuid             indexed => [commit_hash], indexed
 #
 class Releases::Commit < ApplicationRecord
   self.table_name = "releases_commits"
@@ -20,12 +21,14 @@ class Releases::Commit < ApplicationRecord
   include Passportable
 
   belongs_to :train
-  belongs_to :train_run, class_name: "Releases::Train::Run"
+  belongs_to :train_run, class_name: "Releases::Train::Run", optional: true
+  belongs_to :train_group_run, class_name: "Releases::TrainGroup::Run", optional: true
   has_many :step_runs, class_name: "Releases::Step::Run", dependent: :nullify, foreign_key: "releases_commit_id", inverse_of: :commit
   has_many :passports, as: :stampable, dependent: :destroy
 
   STAMPABLE_REASONS = ["created"]
 
+  # TODO: validate one of belongs to
   validates :commit_hash, uniqueness: {scope: :train_run_id}
 
   delegate :current_step_number, to: :train_run

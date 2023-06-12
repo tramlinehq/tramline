@@ -22,7 +22,15 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def handle_push
-    response = WebhookHandlers::Push.process(train, params)
+    if train
+      response = WebhookHandlers::Push.process(train, params)
+    elsif train_group
+      response = WebhookHandlers::Push.process(train_group, params)
+    else
+      Rails.logger.debug "No train found to handle event"
+      return head :ok
+    end
+
     Rails.logger.debug response.body
     head response.status
   end
@@ -34,6 +42,10 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def train
-    @train ||= Releases::Train.find(params[:train_id])
+    @train ||= Releases::Train.where(id: params[:train_id]).first
+  end
+
+  def train_group
+    @train_group ||= Releases::TrainGroup.where(id: params[:train_id]).first
   end
 end

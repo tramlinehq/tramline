@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_09_063722) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -263,27 +263,29 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
   end
 
   create_table "release_metadata", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "train_run_id", null: false
+    t.uuid "train_run_id"
     t.string "locale", null: false
     t.text "release_notes"
     t.text "promo_text"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "train_group_run_id"
     t.index ["train_run_id", "locale"], name: "index_release_metadata_on_train_run_id_and_locale", unique: true
     t.index ["train_run_id"], name: "index_release_metadata_on_train_run_id"
   end
 
   create_table "releases_commit_listeners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "train_id", null: false
+    t.uuid "train_id"
     t.string "branch_name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "train_group_id"
     t.index ["train_id"], name: "index_releases_commit_listeners_on_train_id"
   end
 
   create_table "releases_commits", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "commit_hash", null: false
-    t.uuid "train_id", null: false
+    t.uuid "train_id"
     t.string "message"
     t.datetime "timestamp", null: false
     t.string "author_name", null: false
@@ -291,14 +293,15 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
     t.string "url"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "train_run_id", null: false
+    t.uuid "train_run_id"
+    t.uuid "train_group_run_id"
     t.index ["commit_hash", "train_run_id"], name: "index_releases_commits_on_commit_hash_and_train_run_id", unique: true
     t.index ["train_id"], name: "index_releases_commits_on_train_id"
     t.index ["train_run_id"], name: "index_releases_commits_on_train_run_id"
   end
 
   create_table "releases_pull_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "train_run_id", null: false
+    t.uuid "train_run_id"
     t.bigint "number", null: false
     t.string "source_id", null: false
     t.string "url"
@@ -313,6 +316,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
     t.datetime "closed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "train_group_run_id"
     t.index ["number"], name: "index_releases_pull_requests_on_number"
     t.index ["phase"], name: "index_releases_pull_requests_on_phase"
     t.index ["source"], name: "index_releases_pull_requests_on_source"
@@ -369,6 +373,39 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
     t.index ["deployment_run_id"], name: "index_staged_rollouts_on_deployment_run_id"
   end
 
+  create_table "train_group_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_group_id", null: false
+    t.string "branch_name", null: false
+    t.string "status", null: false
+    t.string "original_release_version"
+    t.string "release_version"
+    t.datetime "scheduled_at", precision: nil
+    t.datetime "completed_at", precision: nil
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "stopped_at", precision: nil
+    t.datetime "finished_at", precision: nil
+    t.index ["train_group_id"], name: "index_train_group_runs_on_train_group_id"
+  end
+
+  create_table "train_groups", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "app_id", null: false
+    t.string "name", null: false
+    t.string "description", null: false
+    t.string "status", null: false
+    t.string "branching_strategy", null: false
+    t.string "release_branch"
+    t.string "release_backmerge_branch"
+    t.string "working_branch"
+    t.string "vcs_webhook_id"
+    t.string "slug"
+    t.string "version_seeded_with"
+    t.string "version_current"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["app_id"], name: "index_train_groups_on_app_id"
+  end
+
   create_table "train_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "train_id", null: false
     t.string "code_name", null: false
@@ -382,6 +419,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
     t.datetime "completed_at"
     t.datetime "stopped_at"
     t.string "original_release_version"
+    t.uuid "train_group_run_id"
     t.index ["train_id"], name: "index_train_runs_on_train_id"
   end
 
@@ -445,6 +483,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
     t.string "release_branch"
     t.string "release_backmerge_branch"
     t.string "vcs_webhook_id"
+    t.uuid "train_group_id"
+    t.string "platform"
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
@@ -520,6 +560,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
   add_foreign_key "sign_offs", "train_steps"
   add_foreign_key "sign_offs", "users"
   add_foreign_key "staged_rollouts", "deployment_runs"
+  add_foreign_key "train_group_runs", "train_groups"
+  add_foreign_key "train_groups", "apps"
   add_foreign_key "train_runs", "trains"
   add_foreign_key "train_sign_off_groups", "sign_off_groups"
   add_foreign_key "train_sign_off_groups", "trains"

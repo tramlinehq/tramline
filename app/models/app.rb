@@ -18,7 +18,6 @@
 class App < ApplicationRecord
   has_paper_trail
   extend FriendlyId
-  include Flipper::Identifier
 
   GOOGLE_PLAY_STORE_URL_TEMPLATE =
     Addressable::Template.new("https://play.google.com/store/apps/details{?query*}")
@@ -26,19 +25,26 @@ class App < ApplicationRecord
     Addressable::Template.new("https://apps.apple.com/app/ueno/id{id}")
 
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
+  belongs_to :app_group, optional: true
   has_one :config, class_name: "AppConfig", dependent: :destroy
   has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :integrations, inverse_of: :app, dependent: :destroy
-  has_many :trains, class_name: "Releases::Train", dependent: :destroy
-  has_many :train_runs, through: :trains
-  has_many :steps, through: :trains
 
+  has_many :train_groups, class_name: "Releases::TrainGroup", dependent: :destroy
+  has_many :train_group_runs, class_name: "Releases::TrainGroup::Run", through: :train_groups
+
+  has_many :trains, class_name: "Releases::Train", dependent: :destroy
+  has_many :train_runs, class_name: "Releases::Train::Run", through: :trains
+  has_many :steps, through: :trains # TODO: figure this out through train groups somehow
+
+  # validate :no_trains_for_cross_platform_apps
+  # validate :train_groups_for_cross_platform_apps
   validate :no_trains_are_running, on: :update
   validates :bundle_identifier, uniqueness: {scope: [:platform, :organization_id]}
   validates :build_number, numericality: {greater_than_or_equal_to: :build_number_was}, on: :update
   validates :build_number, numericality: {less_than: 2100000000}, if: -> { android? }
 
-  enum platform: {android: "android", ios: "ios"}
+  enum platform: {android: "android", ios: "ios", cross_platform: "cross_platform"}
 
   after_initialize :initialize_config, if: :new_record?
   before_destroy :ensure_deletable, prepend: true do
@@ -61,17 +67,12 @@ class App < ApplicationRecord
     Releases::Train::Run.joins(train: :app).where(train: {app: self})
   end
 
-  def self.allowed_platforms(current_user)
-    if Flipper.enabled?(:ios_apps_allowed, current_user)
-      {
-        android: "Android",
-        ios: "iOS"
-      }.invert
-    else
-      {
-        android: "Android"
-      }.invert
-    end
+  def self.allowed_platforms(_)
+    {
+      android: "Android",
+      ios: "iOS",
+      cross_platform: "Cross Platform"
+    }.invert
   end
 
   def active_runs
@@ -93,8 +94,10 @@ class App < ApplicationRecord
   def store_link
     if android?
       GOOGLE_PLAY_STORE_URL_TEMPLATE.expand(query: {id: bundle_identifier}).to_s
-    else
+    elsif ios?
       APP_STORE_URL_TEMPLATE.expand(id: external_id).to_s
+    else
+      "google.com"
     end
   end
 
@@ -153,6 +156,38 @@ class App < ApplicationRecord
       }
 
     [train_setup, steps_setup]
+      .flatten
+      .reduce(:merge)
+  end
+
+  def train_group_setup_instructions
+    train_group_setup = {
+      train_group: {
+        visible: !train_groups.any?, completed: train_groups.any?
+      }
+    }
+
+    ios_steps_setup =
+      {
+        ios_review_step: {
+          visible: train_groups.any?, completed: train_groups.first&.trains&.ios&.first&.steps&.review&.any?
+        },
+        ios_release_step: {
+          visible: train_groups.any?, completed: train_groups.first&.trains&.ios&.first&.steps&.release&.any?
+        }
+      }
+
+    android_steps_setup =
+      {
+        android_review_step: {
+          visible: train_groups.any?, completed: train_groups.first&.trains&.android&.first&.steps&.review&.any?
+        },
+        android_release_step: {
+          visible: train_groups.any?, completed: train_groups.first&.trains&.android&.first&.steps&.release&.any?
+        }
+      }
+
+    [train_group_setup, ios_steps_setup, android_steps_setup]
       .flatten
       .reduce(:merge)
   end

@@ -3,6 +3,11 @@ class Releases::PostReleaseJob < ApplicationJob
 
   def perform(train_run_id)
     run = Releases::Train::Run.find(train_run_id)
-    Triggers::PostRelease.call(run)
+
+    if run.train_group_run.present?
+      run.finish!
+    else
+      Triggers::PostRelease.call(run)
+    end
   end
 end

@@ -23,7 +23,12 @@ class WebhookHandlers::Push
     return Response.new(:accepted, "Invalid repo/branch") unless valid_repo_and_branch?
 
     if train.commit_listeners.exists?(branch_name:)
-      WebhookProcessors::PushJob.perform_later(release.id, commit_attributes)
+      if release.is_a?(Releases::TrainGroup::Run)
+        WebhookProcessors::PushJob.perform_later(release.ios_run.id, commit_attributes)
+        WebhookProcessors::PushJob.perform_later(release.android_run.id, commit_attributes)
+      else
+        WebhookProcessors::PushJob.perform_later(release.id, commit_attributes)
+      end
     end
 
     Response.new(:accepted)
