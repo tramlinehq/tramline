@@ -18,21 +18,7 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*Release <%= @train_current_version %>* is complete! :confetti_ball:"
-      }
-    },
-    {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": "The *total run time* was *<%= @total_run_time %>*"
-      }
-    },
-    {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": "<%= Regexp.escape @final_artifact %>"
+        "text": "*Release <%= @train_current_version %>*  was stopped :octagonal_sign:"
       }
     },
     {
@@ -48,21 +34,7 @@
         },
         {
           "type": "mrkdwn",
-          "text": "<<%= @release_url %>|Release page>"
-        }
-      ]
-    },
-    {
-      "type": "context",
-      "elements": [
-        {
-          "type": "image",
-          "image_url": "https://storage.googleapis.com/tramline-public-assets/github-small.png",
-          "alt_text": "github"
-        },
-        {
-          "type": "mrkdwn",
-          "text": "<<%= @release_tag_url %>|Release tag – <%= @release_tag %>>"
+          "text": "<<%= @release_url %>|Live release>"
         }
       ]
     },
@@ -77,20 +49,6 @@
         {
           "type": "mrkdwn",
           "text": "<<%= @release_branch_url %>|Release branch – <%= @release_branch %>>"
-        }
-      ]
-    },
-    {
-      "type": "context",
-      "elements": [
-        {
-          "type": "image",
-          "image_url": "https://storage.googleapis.com/tramline-public-assets/github-small.png",
-          "alt_text": "github"
-        },
-        {
-          "type": "mrkdwn",
-          "text": "<<%= @store_url %>|Store link>"
         }
       ]
     },

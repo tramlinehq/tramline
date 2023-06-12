@@ -66,7 +66,7 @@ class Releases::Train::Run < ApplicationRecord
     state :created, initial: true
     state(*STATES.keys)
 
-    event :start do
+    event :start, after_commit: :on_start! do
       transitions from: [:created, :on_track], to: :on_track
     end
 
@@ -78,7 +78,7 @@ class Releases::Train::Run < ApplicationRecord
       transitions from: :post_release_started, to: :post_release_failed
     end
 
-    event :stop do
+    event :stop, after_commit: :on_stop! do
       before { self.stopped_at = Time.current }
       transitions to: :stopped
     end
@@ -98,7 +98,7 @@ class Releases::Train::Run < ApplicationRecord
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   attr_accessor :has_major_bump
-  delegate :app, :pre_release_prs?, :vcs_provider, to: :train
+  delegate :app, :pre_release_prs?, :vcs_provider, :notify!, to: :train
   delegate :cache, to: Rails
   delegate :android?, to: :app
 
@@ -256,9 +256,17 @@ class Releases::Train::Run < ApplicationRecord
     train.steps
   end
 
+  def on_start!
+    notify!("New release has commenced!", :release_started, notification_params)
+  end
+
+  def on_stop!
+    notify!("Release has stopped!", :release_stopped, notification_params)
+  end
+
   def on_finish!
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
-    train.notify!("Release is complete!", :release_ended, finalize_phase_metadata)
+    notify!("Release has finished!", :release_ended, notification_params.merge(finalize_phase_metadata))
     app.refresh_external_app
   end
 
@@ -306,7 +314,8 @@ class Releases::Train::Run < ApplicationRecord
       {
         release_branch: branch_name,
         release_branch_url: branch_url,
-        release_url: live_release_link
+        release_url: live_release_link,
+        release_notes: release_metadata.release_notes
       }
     )
   end

@@ -1,3 +1,15 @@
+<%
+ if @is_play_store_production
+ publishing = "managed publishing"
+ company = "Google"
+ store = "Play Store"
+ elsif @is_app_store_production
+ publishing = "manual release"
+ company = "Apple"
+ store = "App Store"
+ end
+ %>
+
 {
   "blocks": [
     {
@@ -18,22 +30,35 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*Release <%= @train_current_version %>* is complete! :confetti_ball:"
+        "text": "*<%= @app_name %> (<%= @app_platform %>)* <%= @train_current_version %> has been submitted for review! :tada:"
       }
     },
     {
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "The *total run time* was *<%= @total_run_time %>*"
+        "text": ":spiral_note_pad: What's New\n\n`<%= @release_notes %>`"
       }
     },
     {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": "<%= Regexp.escape @final_artifact %>"
-      }
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "- If <%= publishing %> is disabled, this update will auto-start the rollout upon approval by <%= company %>.",
+          "emoji": true
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "- If <%= publishing %> is enabled, you'll need to manually release this update through the <%= store %>.",
+          "emoji": true
+        }
+      ]
     },
     {
       "type": "divider"
@@ -48,21 +73,7 @@
         },
         {
           "type": "mrkdwn",
-          "text": "<<%= @release_url %>|Release page>"
-        }
-      ]
-    },
-    {
-      "type": "context",
-      "elements": [
-        {
-          "type": "image",
-          "image_url": "https://storage.googleapis.com/tramline-public-assets/github-small.png",
-          "alt_text": "github"
-        },
-        {
-          "type": "mrkdwn",
-          "text": "<<%= @release_tag_url %>|Release tag – <%= @release_tag %>>"
+          "text": "<<%= @release_url %>|Live release>"
         }
       ]
     },
@@ -81,20 +92,6 @@
       ]
     },
     {
-      "type": "context",
-      "elements": [
-        {
-          "type": "image",
-          "image_url": "https://storage.googleapis.com/tramline-public-assets/github-small.png",
-          "alt_text": "github"
-        },
-        {
-          "type": "mrkdwn",
-          "text": "<<%= @store_url %>|Store link>"
-        }
-      ]
-    },
-    {
       "type": "divider"
     },
     {
@@ -103,6 +100,11 @@
         {
           "type": "plain_text",
           "text": "Release train: <%= @train_name %>",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "<%= @step_type %> step: <%= @step_name %>",
           "emoji": true
         }
       ]

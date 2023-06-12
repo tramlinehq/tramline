@@ -63,6 +63,8 @@ module Deployments
             end
           end
         end
+
+        run.notify!("Submitted for review!", :submit_for_review, run.notification_params)
       end
 
       def start_release!

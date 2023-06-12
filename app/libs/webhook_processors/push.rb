@@ -18,8 +18,6 @@ class WebhookProcessors::Push
       release.update(release_version: train.version_current)
       create_commit!
     end
-
-    send_notification!
   end
 
   private
@@ -48,11 +46,6 @@ class WebhookProcessors::Push
     }
 
     Releases::Commit.find_or_create_by!(params)
-  end
-
-  def send_notification!
-    return unless release.commits.size.eql?(1)
-    train.notify!("New release has commenced!", :release_started, release.notification_params)
   end
 
   def stamp_version_changed

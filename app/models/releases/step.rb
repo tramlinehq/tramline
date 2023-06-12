@@ -50,7 +50,7 @@ class Releases::Step < ApplicationRecord
   auto_strip_attributes :name, squish: true
   accepts_nested_attributes_for :deployments, allow_destroy: false, reject_if: :reject_deployments?
 
-  delegate :app, to: :train
+  delegate :app, :notify!, to: :train
   delegate :android?, to: :app
 
   def set_step_number
@@ -81,7 +81,8 @@ class Releases::Step < ApplicationRecord
   def notification_params
     train.notification_params.merge(
       {
-        step_type: kind
+        step_type: kind.titleize,
+        step_name: name
       }
     )
   end

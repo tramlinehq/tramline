@@ -34,7 +34,7 @@ class Deployment < ApplicationRecord
     :app_store_integration?,
     :controllable_rollout?,
     :google_firebase_integration?, to: :integration, allow_nil: true
-  delegate :train, :app, to: :step
+  delegate :train, :app, :notify!, to: :step
 
   scope :sequential, -> { order("deployments.deployment_number ASC") }
 
@@ -115,9 +115,11 @@ class Deployment < ApplicationRecord
       .merge(train.notification_params)
       .merge(
         {
-          staged_rollout_deployment: staged_rollout?,
-          production_channel?: production_channel?,
-          deployment_channel_type: integration_type,
+          is_staged_rollout_deployment: staged_rollout?,
+          is_production_channel: production_channel?,
+          is_play_store_production: production_channel? && google_play_store_integration?,
+          is_app_store_production: app_store?,
+          deployment_channel_type: integration_type&.to_s&.titleize,
           deployment_channel_name: deployment_channel_name
         }
       )

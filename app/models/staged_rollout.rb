@@ -18,7 +18,9 @@ class StagedRollout < ApplicationRecord
 
   belongs_to :deployment_run
 
-  validates :current_stage, numericality: {greater_than_or_equal_to: 0, allow_nil: true}
+  validates :current_stage, numericality: { greater_than_or_equal_to: 0, allow_nil: true }
+
+  delegate :notify!, to: :deployment_run
 
   STAMPABLE_REASONS = %w[
     started
@@ -76,7 +78,7 @@ class StagedRollout < ApplicationRecord
       transitions from: [:failed, :started, :paused], to: :completed
     end
 
-    event :full_rollout, after_commit: -> { event_stamp!(reason: :fully_released, kind: :success, data: {rollout_percentage: "%.2f" % config[current_stage]}) } do
+    event :full_rollout, after_commit: -> { event_stamp!(reason: :fully_released, kind: :success, data: { rollout_percentage: "%.2f" % config[current_stage] }) } do
       after { deployment_run.complete! }
       transitions from: [:failed, :started], to: :fully_released
     end
@@ -91,6 +93,7 @@ class StagedRollout < ApplicationRecord
       start!
     else
       event_stamp!(reason: :increased, kind: :notice, data: stamp_data)
+      notify!("Staged rollout was updated!", :staged_rollout_updated, notification_params)
     end
 
     retry! if failed?
@@ -179,20 +182,17 @@ class StagedRollout < ApplicationRecord
     end
   end
 
-  def notification_params
-    deployment_run.notification_params.merge(
-      {
-        current_stage: current_stage
-      }
-    )
-  end
-
   private
+
+  def notification_params
+    deployment_run.notification_params.merge(stamp_data)
+  end
 
   def stamp_data
     {
       current_stage: (current_stage || 0).succ,
-      rollout_percentage: "%.2f" % last_rollout_percentage
+      rollout_percentage: "%.2f" % last_rollout_percentage,
+      is_fully_released: fully_released?
     }
   end
 end

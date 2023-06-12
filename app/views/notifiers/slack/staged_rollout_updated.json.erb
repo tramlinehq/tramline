@@ -1,3 +1,13 @@
+<%
+if @is_fully_released
+main_text = "Your staged rollout is *complete*, and your update has rolled out to all users."
+secondary_text = "View your release on the Play Console."
+else
+main_text = "Your staged rollout is *active*, and you are currently on stage *#{@current_stage} (#{@rollout_percentage}%)*."
+secondary_text = "You can choose to *Pause* or *Release to 100%*."
+end
+ %>
+
 {
   "blocks": [
     {
@@ -18,21 +28,14 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*Release <%= @train_current_version %>* is complete! :confetti_ball:"
+        "text": "<%= main_text %>"
       }
     },
     {
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "The *total run time* was *<%= @total_run_time %>*"
-      }
-    },
-    {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": "<%= Regexp.escape @final_artifact %>"
+        "text": "<%= secondary_text %>"
       }
     },
     {
@@ -48,21 +51,7 @@
         },
         {
           "type": "mrkdwn",
-          "text": "<<%= @release_url %>|Release page>"
-        }
-      ]
-    },
-    {
-      "type": "context",
-      "elements": [
-        {
-          "type": "image",
-          "image_url": "https://storage.googleapis.com/tramline-public-assets/github-small.png",
-          "alt_text": "github"
-        },
-        {
-          "type": "mrkdwn",
-          "text": "<<%= @release_tag_url %>|Release tag – <%= @release_tag %>>"
+          "text": "<<%= @release_url %>|Live release>"
         }
       ]
     },
@@ -81,20 +70,6 @@
       ]
     },
     {
-      "type": "context",
-      "elements": [
-        {
-          "type": "image",
-          "image_url": "https://storage.googleapis.com/tramline-public-assets/github-small.png",
-          "alt_text": "github"
-        },
-        {
-          "type": "mrkdwn",
-          "text": "<<%= @store_url %>|Store link>"
-        }
-      ]
-    },
-    {
       "type": "divider"
     },
     {
@@ -103,6 +78,11 @@
         {
           "type": "plain_text",
           "text": "Release train: <%= @train_name %>",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "<%= @step_type %> step: <%= @step_name %>",
           "emoji": true
         }
       ]

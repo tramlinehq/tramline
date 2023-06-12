@@ -128,7 +128,7 @@ class Releases::Step::Run < ApplicationRecord
   attr_accessor :artifacts_url
 
   delegate :train, :release_branch, to: :train_run
-  delegate :app, :store_provider, :ci_cd_provider, :unzip_artifact?, to: :train
+  delegate :app, :store_provider, :ci_cd_provider, :unzip_artifact?, :notify!, to: :train
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
   alias_method :release, :train_run
@@ -242,7 +242,8 @@ class Releases::Step::Run < ApplicationRecord
           build_number: build_number,
           commit_sha: commit.short_sha,
           commit_message: commit.message,
-          commit_url: commit.url
+          commit_url: commit.url,
+          artifact_download_link: build_artifact&.download_url&.presence || train_run.live_release_link
         }
       )
   end
@@ -299,12 +300,13 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def notify_on_failure!(message)
-    train.notify!(message, :step_failed, {reason: message, step_run: self})
+    notify!(message, :step_failed, notification_params.merge(step_fail_reason: message))
   end
 
   def after_trigger_ci
     Releases::FindWorkflowRun.perform_async(id)
     event_stamp!(reason: :ci_triggered, kind: :notice, data: {version: build_version})
+    notify!("Step has been triggered!", :step_started, notification_params)
   end
 
   def has_uploadables?
