@@ -27,29 +27,29 @@
 
 <div class="grid grid-cols-2 gap-6 mt-8">
   <div>
-    <%= render partial: "releases/live_release/kick_off", locals: { release: @release, release_train: @train_group } %>
+    <%= render partial: "shared/live_release/kick_off", locals: { release: @release, release_train: @train_group } %>
 
     <% if @release.pre_release_prs? %>
-      <%= render partial: "releases/live_release/separator", locals: { margin_only: true } %>
-      <%= render partial: "shared/demo/live_release/pre_release_prs", locals: { pre_release_prs: @pre_release_prs } %>
+      <%= render partial: "shared/live_release/separator", locals: { margin_only: true } %>
+      <%= render partial: "shared/live_release/pre_release_prs", locals: { pre_release_prs: @pre_release_prs } %>
     <% end %>
 
-    <%= render partial: "releases/live_release/separator", locals: { margin_only: true } %>
+    <%= render partial: "shared/live_release/separator", locals: { margin_only: true } %>
 
     <% if @release.release_metadata.present? %>
-      <%= render partial: "shared/demo/live_release/release_metadata",
+      <%= render partial: "shared/live_release/release_metadata",
                  locals: { release: @release, is_android: false, edit_path: edit_release_group_release_metadatum_path(@release) } %>
     <% end %>
   </div>
 
   <% if @release.on_track? %>
     <div>
-      <%= render partial: "shared/demo/live_release/commit_log", locals: { release: @release } %>
+      <%= render partial: "shared/live_release/commit_log", locals: { release: @release } %>
     </div>
   <% end %>
 </div>
 
-<%= render partial: "releases/live_release/separator" %>
+<%= render partial: "shared/live_release/separator" %>
 
 <% if @release.hotfix? %>
   <div class="flex flex-col bg-slate-800 text-white rounded-sm py-5 mb-5 text-center pr-8">
@@ -66,18 +66,17 @@
 </div>
 
 <div class="grid grid-cols-2 gap-6 mt-8">
-  <%= render partial: "shared/demo/live_release/stability", locals: { platform: "Android release", release: @release.android_run, steps: @android_steps, release_train: @android_train } %>
-  <%= render partial: "shared/demo/live_release/stability", locals: { platform: "iOS release", release: @release.ios_run, steps: @ios_steps, release_train: @ios_train } %>
+  <%= render partial: "shared/live_release/stability", locals: { platform: "Android release", release: @release.android_run, steps: @android_steps, release_train: @android_train } %>
+  <%= render partial: "shared/live_release/stability", locals: { platform: "iOS release", release: @release.ios_run, steps: @ios_steps, release_train: @ios_train } %>
 </div>
 
-<%= render partial: "releases/live_release/separator" %>
+<%= render partial: "shared/live_release/separator" %>
 
-<div class="grid grid-cols-2 gap-6 mt-8">
-  <%= render partial: "shared/demo/live_release/builds", locals: { release: @release.android_run } %>
-  <%= render partial: "shared/demo/live_release/builds", locals: { release: @release.ios_run } %>
+<div class="grid grid-cols-1 gap-6 mt-8">
+  <%= render partial: "shared/live_release/builds", locals: { release: @release } %>
 </div>
 
-<%= render partial: "releases/live_release/separator" %>
+<%= render partial: "shared/live_release/separator" %>
 
 <div class="grid grid-cols-2 gap-6 mt-8">
   <div>
@@ -93,8 +92,8 @@
   </div>
 </div>
 
-<%= render partial: "releases/live_release/separator" %>
+<%= render partial: "shared/live_release/separator" %>
 
 <div class="mt-8">
-  <%= render partial: "shared/demo/live_release/finalize", locals: { release: @release, post_release_prs: @post_release_prs } %>
+  <%= render partial: "shared/live_release/finalize", locals: { release: @release, post_release_prs: @post_release_prs } %>
 </div>

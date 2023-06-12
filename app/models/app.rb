@@ -25,7 +25,6 @@ class App < ApplicationRecord
     Addressable::Template.new("https://apps.apple.com/app/ueno/id{id}")
 
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
-  belongs_to :app_group, optional: true
   has_one :config, class_name: "AppConfig", dependent: :destroy
   has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :integrations, inverse_of: :app, dependent: :destroy
@@ -37,8 +36,6 @@ class App < ApplicationRecord
   has_many :train_runs, class_name: "Releases::Train::Run", through: :trains
   has_many :steps, through: :trains # TODO: figure this out through train groups somehow
 
-  # validate :no_trains_for_cross_platform_apps
-  # validate :train_groups_for_cross_platform_apps
   validate :no_trains_are_running, on: :update
   validates :bundle_identifier, uniqueness: {scope: [:platform, :organization_id]}
   validates :build_number, numericality: {greater_than_or_equal_to: :build_number_was}, on: :update
@@ -138,28 +135,6 @@ class App < ApplicationRecord
       .reduce(:merge)
   end
 
-  def train_setup_instructions
-    train_setup = {
-      train: {
-        visible: !trains.any?, completed: trains.any?
-      }
-    }
-
-    steps_setup =
-      {
-        review_step: {
-          visible: trains.any?, completed: steps.review.any?
-        },
-        release_step: {
-          visible: trains.any?, completed: steps.release.any?
-        }
-      }
-
-    [train_setup, steps_setup]
-      .flatten
-      .reduce(:merge)
-  end
-
   def train_group_setup_instructions
     train_group_setup = {
       train_group: {
@@ -187,9 +162,15 @@ class App < ApplicationRecord
         }
       }
 
-    [train_group_setup, ios_steps_setup, android_steps_setup]
-      .flatten
-      .reduce(:merge)
+    instructions = if cross_platform?
+      [train_group_setup, ios_steps_setup, android_steps_setup]
+    elsif android?
+      [train_group_setup, android_steps_setup]
+    else
+      [train_group_setup, ios_steps_setup]
+    end
+
+    instructions.flatten.reduce(:merge)
   end
 
   # FIXME: this is probably quite inefficient for a lot of apps/trains

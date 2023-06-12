@@ -31,13 +31,12 @@ class Releases::Train < ApplicationRecord
     parallel_working: "Parallel Working and Release"
   }.freeze
 
-  belongs_to :app, optional: false
-  belongs_to :train_group, class_name: "Releases::TrainGroup", optional: true
-  has_many :integrations, through: :app
+  belongs_to :app
+  belongs_to :train_group, class_name: "Releases::TrainGroup"
+  has_many :integrations, through: :train_group
   has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
   has_one :active_run, -> { pending_release }, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
   has_many :steps, -> { order(:step_number) }, class_name: "Releases::Step", inverse_of: :train, dependent: :destroy
-  has_many :commit_listeners, class_name: "Releases::CommitListener", inverse_of: :train, dependent: :destroy
   has_many :deployments, through: :steps
 
   scope :running, -> { includes(:runs).where(runs: {status: Releases::Train::Run.statuses[:on_track]}) }
@@ -52,45 +51,21 @@ class Releases::Train < ApplicationRecord
 
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
-  attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed
-
-  # validates :belongs_to_either_app_or_train_group
-  validates :branching_strategy, :working_branch, presence: true
-  validates :release_backmerge_branch, presence: true,
-    if: lambda { |record|
-      record.branching_strategy == "release_backmerge"
-    }
-  validates :release_branch, presence: true,
-    if: lambda { |record|
-      record.branching_strategy == "parallel_working"
-    }
-  validates :branching_strategy, inclusion: {in: BRANCHING_STRATEGIES.keys.map(&:to_s)}
 
   validate :semver_compatibility, on: :create
   validate :ready?, on: :create
   validate :valid_step_configuration, on: :activate_context
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
 
-  after_initialize :set_constituent_seed_versions, if: :persisted?
-  before_validation :set_version_seeded_with, if: :new_record?
-  before_create :set_current_version
-  before_create :set_default_status
-  before_create :set_default_platform
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
   end
 
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :store_provider, to: :integrations
   delegate :unzip_artifact?, to: :ci_cd_provider
+  delegate :app, to: :train_group
   delegate :ready?, :config, to: :app
-
-  def create_webhook!
-    return false if Rails.env.test?
-    result = vcs_provider.find_or_create_webhook!(id: vcs_webhook_id, train_id: id)
-
-    self.vcs_webhook_id = result.value![:id]
-    save!
-  end
+  # delegate :branching_strategy, :release_backmerge_branch, :release_branch, :version_current, :version_seeded_with, :working_branch, to: :train_group
 
   def self.running?
     running.any?
@@ -111,16 +86,6 @@ class Releases::Train < ApplicationRecord
     save!(context: :activate_context)
   end
 
-  def create_tag!(branch_name)
-    return false unless activated?
-    vcs_provider.create_tag!(tag_name, branch_name)
-  end
-
-  def create_branch!(from, to)
-    return false unless activated?
-    vcs_provider.create_branch!(from, to)
-  end
-
   def notify!(message, type, params)
     return unless activated?
     return unless app.send_notifications?
@@ -131,50 +96,12 @@ class Releases::Train < ApplicationRecord
     name&.parameterize
   end
 
-  def release_branch_name_fmt
-    "r/#{display_name}/%Y-%m-%d"
-  end
-
-  def tag_name
-    "v#{version_current}"
-  end
-
-  def bump_fix!
-    if runs.any?
-      semverish = version_current.to_semverish
-      self.version_current = semverish.bump!(:patch).to_s if semverish.proper?
-      self.version_current = semverish.bump!(:minor).to_s if semverish.partial?
-      save!
-    end
-
-    version_current
-  end
-
-  def bump_release!(has_major_bump = false)
-    bump_term = has_major_bump ? :major : :minor
-
-    if runs.any?
-      self.version_current = version_current.ver_bump(bump_term)
-      save!
-    end
-
-    version_current
-  end
-
-  def branching_strategy_name
-    BRANCHING_STRATEGIES[branching_strategy.to_sym]
-  end
-
   def build_channel_integrations
     app.integrations.build_channel
   end
 
   def final_deployment_channel
     steps.order(:step_number).last.deployments.last&.integration&.providable
-  end
-
-  def pre_release_prs?
-    branching_strategy == "parallel_working"
   end
 
   def ordered_steps_until(step_number)
@@ -198,20 +125,6 @@ class Releases::Train < ApplicationRecord
   end
 
   private
-
-  def set_version_seeded_with
-    self.version_seeded_with ||= VersioningStrategies::Semverish.build(major_version_seed, minor_version_seed, patch_version_seed)
-  rescue ArgumentError
-    nil
-  end
-
-  def set_current_version
-    self.version_current ||= version_seeded_with.ver_bump(:minor)
-  end
-
-  def set_default_status
-    self.status ||= Releases::Train.statuses[:draft]
-  end
 
   def set_default_platform
     self.platform ||= app.platform

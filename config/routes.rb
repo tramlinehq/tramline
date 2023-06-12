@@ -80,9 +80,7 @@ Rails.application.routes.draw do
 
       resources :steps, only: %i[new create edit update]
 
-      resources :releases, only: %i[show create destroy], shallow: true do
-        resource :release_metadatum, only: %i[edit update], path: :metadata
-
+      resources :releases, only: [], shallow: true do
         resources :step_runs, only: [], shallow: false, module: "releases" do
           member do
             post :start
@@ -111,15 +109,6 @@ Rails.application.routes.draw do
               end
             end
           end
-        end
-
-        member do
-          get :timeline
-          post :post_release
-        end
-
-        collection do
-          get :live_release
         end
       end
     end

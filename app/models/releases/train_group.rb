@@ -96,7 +96,8 @@ class Releases::TrainGroup < ApplicationRecord
       working_branch:,
       app: app,
       version_seeded_with:,
-      version_current:
+      version_current:,
+      status: Releases::Train.statuses[:draft]
     )
     trains.create!(
       platform: Releases::Train.platforms[:android],
@@ -108,7 +109,8 @@ class Releases::TrainGroup < ApplicationRecord
       working_branch:,
       app: app,
       version_seeded_with:,
-      version_current:
+      version_current:,
+      status: Releases::Train.statuses[:draft]
     )
     Rails.logger.info("Created trains for groups!")
   end
@@ -124,6 +126,8 @@ class Releases::TrainGroup < ApplicationRecord
   def activate!
     self.status = Releases::TrainGroup.statuses[:active]
     save!(context: :activate_context)
+    ios_train.activate!
+    android_train.activate!
   end
 
   def in_creation?

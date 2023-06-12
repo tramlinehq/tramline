@@ -35,8 +35,7 @@ class WebhookProcessors::Push
 
   def create_commit!
     params = {
-      train:,
-      train_run: release,
+      train_group_run: release,
       commit_hash: commit_attributes[:commit_sha],
       message: commit_attributes[:message],
       timestamp: commit_attributes[:timestamp],

@@ -5,33 +5,28 @@
 #  id                 :uuid             not null, primary key
 #  author_email       :string           not null
 #  author_name        :string           not null
-#  commit_hash        :string           not null, indexed => [train_run_id]
+#  commit_hash        :string           not null, indexed => [train_group_run_id]
 #  message            :string
 #  timestamp          :datetime         not null
 #  url                :string
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
-#  train_group_run_id :uuid
+#  train_group_run_id :uuid             indexed => [commit_hash]
 #  train_id           :uuid             indexed
-#  train_run_id       :uuid             indexed => [commit_hash], indexed
+#  train_run_id       :uuid             indexed
 #
 class Releases::Commit < ApplicationRecord
   self.table_name = "releases_commits"
 
   include Passportable
 
-  belongs_to :train
-  belongs_to :train_run, class_name: "Releases::Train::Run", optional: true
-  belongs_to :train_group_run, class_name: "Releases::TrainGroup::Run", optional: true
+  belongs_to :train_group_run, class_name: "Releases::TrainGroup::Run"
   has_many :step_runs, class_name: "Releases::Step::Run", dependent: :nullify, foreign_key: "releases_commit_id", inverse_of: :commit
   has_many :passports, as: :stampable, dependent: :destroy
 
   STAMPABLE_REASONS = ["created"]
 
-  # TODO: validate one of belongs to
-  validates :commit_hash, uniqueness: {scope: :train_run_id}
-
-  delegate :current_step_number, to: :train_run
+  validates :commit_hash, uniqueness: {scope: :train_group_run_id}
 
   after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
   after_commit :trigger_step_runs, on: :create
@@ -41,7 +36,7 @@ class Releases::Commit < ApplicationRecord
   end
 
   def stale?
-    train_run.commits.last != self
+    train_group_run.commits.last != self
   end
 
   def short_sha
@@ -50,13 +45,11 @@ class Releases::Commit < ApplicationRecord
 
   private
 
-  def trigger_step_run(step)
-    Triggers::StepRun.call(step, self)
-  end
-
   def trigger_step_runs
-    train.ordered_steps_until(current_step_number).each do |step|
-      trigger_step_run(step)
+    train_group_run.train_runs.each do |train_run|
+      train_run.train.ordered_steps_until(train_run.current_step_number).each do |step|
+        Triggers::StepRun.call(step, self, train_run)
+      end
     end
   end
 end

@@ -14,8 +14,7 @@
 class ReleaseMetadata < ApplicationRecord
   has_paper_trail
 
-  belongs_to :train_run, class_name: "Releases::Train::Run", optional: true
-  belongs_to :train_group_run, class_name: "Releases::TrainGroup::Run", optional: true
+  belongs_to :train_group_run, class_name: "Releases::TrainGroup::Run"
 
   DEFAULT_LOCALE = "en-US"
   DEFAULT_RELEASE_NOTES = "The latest version contains bug fixes and performance improvements."

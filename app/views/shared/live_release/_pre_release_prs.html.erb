@@ -1,13 +1,12 @@
 <section>
-  <span class="font-bold text-2xl">Pre-release PRs</span>
-
+  <span class="font-bold text-xl">Pre-release PRs</span>
   <% if pre_release_prs&.exists? %>
     <% if pre_release_prs.any?(&:open?) %>
       <div class="mt-4">
         <%= render "shared/note_box", message: "Please merge the pre-release PR to continue the release.", type: :error %>
       </div>
     <% end %>
-    <%= render partial: "releases/live_release/pull_requests", locals: { prs: pre_release_prs } %>
+    <%= render partial: "shared/live_release/pull_requests", locals: { prs: pre_release_prs } %>
   <% else %>
     <div class="text-sm mt-4">
       None.

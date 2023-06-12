@@ -34,6 +34,19 @@ class Releases::TrainGroup::Run < ApplicationRecord
 
   alias_method :train, :train_group
 
+  STAMPABLE_REASONS = %w[
+    created
+    release_branch_created
+    kickoff_pr_succeeded
+    version_changed
+    finalizing
+    pre_release_pr_not_creatable
+    pull_request_not_mergeable
+    post_release_pr_succeeded
+    finalize_failed
+    finished
+  ]
+
   STATES = {
     created: "created",
     on_track: "on_track",
@@ -51,6 +64,7 @@ class Releases::TrainGroup::Run < ApplicationRecord
     state(*STATES.keys)
 
     event :start do
+      after { start_train_runs! }
       transitions from: [:created, :on_track], to: :on_track
     end
 
@@ -110,6 +124,11 @@ class Releases::TrainGroup::Run < ApplicationRecord
       has_major_bump:,
       train: train_group.android_train
     )
+  end
+
+  def start_train_runs!
+    ios_run&.start!
+    android_run&.start!
   end
 
   def ios_run
@@ -211,5 +230,9 @@ class Releases::TrainGroup::Run < ApplicationRecord
 
   def events(limit = nil)
     ios_run&.events(limit)&.or(android_run&.events(limit))
+  end
+
+  def last_commit
+    commits.order(:created_at).last
   end
 end

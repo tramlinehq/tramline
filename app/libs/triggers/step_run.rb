@@ -1,11 +1,11 @@
 class Triggers::StepRun
-  def self.call(step, commit)
-    new(step, commit).call
+  def self.call(step, commit, train_run)
+    new(step, commit, train_run).call
   end
 
-  def initialize(step, commit)
+  def initialize(step, commit, train_run)
     @step = step
-    @release = commit.train_run
+    @release = train_run
     @commit = commit
   end
 

@@ -3,10 +3,10 @@
 # Table name: releases_pull_requests
 #
 #  id                 :uuid             not null, primary key
-#  base_ref           :string           not null, indexed => [train_run_id, head_ref]
+#  base_ref           :string           not null, indexed => [train_group_run_id, head_ref]
 #  body               :text
 #  closed_at          :datetime
-#  head_ref           :string           not null, indexed => [train_run_id, base_ref]
+#  head_ref           :string           not null, indexed => [train_group_run_id, base_ref]
 #  number             :bigint           not null, indexed
 #  opened_at          :datetime         not null
 #  phase              :string           not null, indexed
@@ -17,8 +17,8 @@
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
 #  source_id          :string           not null, indexed
-#  train_group_run_id :uuid
-#  train_run_id       :uuid             indexed => [head_ref, base_ref]
+#  train_group_run_id :uuid             indexed => [head_ref, base_ref]
+#  train_run_id       :uuid
 #
 class Releases::PullRequest < ApplicationRecord
   class UnsupportedPullRequestSource < StandardError; end
@@ -26,7 +26,7 @@ class Releases::PullRequest < ApplicationRecord
   self.table_name = "releases_pull_requests"
 
   belongs_to :train_run, class_name: "Releases::Train::Run", optional: true
-  belongs_to :train_group_run, class_name: "Releases::TrainGroup::Run", optional: true
+  belongs_to :train_group_run, class_name: "Releases::TrainGroup::Run"
 
   enum phase: {
     pre_release: "pre_release",
@@ -44,25 +44,6 @@ class Releases::PullRequest < ApplicationRecord
     gitlab: "gitlab"
   }
 
-  def update_or_insert_for_group!(response)
-    attributes =
-      case repository_source_name
-      when "github"
-        attributes_for_github(response)
-      when "gitlab"
-        attributes_for_gitlab(response)
-      else
-        raise UnsupportedPullRequestSource
-      end
-
-    Releases::PullRequest
-      .upsert(generic_attributes.merge(attributes), unique_by: [:train_group_run_id, :head_ref, :base_ref])
-      .rows
-      .first
-      .first
-      .then { |id| Releases::PullRequest.find_by(id: id) }
-  end
-
   def update_or_insert!(response)
     attributes =
       case repository_source_name
@@ -75,7 +56,7 @@ class Releases::PullRequest < ApplicationRecord
       end
 
     Releases::PullRequest
-      .upsert(generic_attributes.merge(attributes), unique_by: [:train_run_id, :head_ref, :base_ref])
+      .upsert(generic_attributes.merge(attributes), unique_by: [:train_group_run_id, :head_ref, :base_ref])
       .rows
       .first
       .first

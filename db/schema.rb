@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_09_063722) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_12_192348) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -295,7 +295,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_09_063722) do
     t.datetime "updated_at", null: false
     t.uuid "train_run_id"
     t.uuid "train_group_run_id"
-    t.index ["commit_hash", "train_run_id"], name: "index_releases_commits_on_commit_hash_and_train_run_id", unique: true
+    t.index ["commit_hash", "train_group_run_id"], name: "index_releases_commits_on_commit_hash_and_train_group_run_id", unique: true
     t.index ["train_id"], name: "index_releases_commits_on_train_id"
     t.index ["train_run_id"], name: "index_releases_commits_on_train_run_id"
   end
@@ -322,7 +322,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_09_063722) do
     t.index ["source"], name: "index_releases_pull_requests_on_source"
     t.index ["source_id"], name: "index_releases_pull_requests_on_source_id"
     t.index ["state"], name: "index_releases_pull_requests_on_state"
-    t.index ["train_run_id", "head_ref", "base_ref"], name: "idx_prs_on_train_run_id_and_head_ref_and_base_ref", unique: true
+    t.index ["train_group_run_id", "head_ref", "base_ref"], name: "idx_prs_on_train_group_run_id_and_head_ref_and_base_ref", unique: true
   end
 
   create_table "sign_off_group_memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

@@ -12,7 +12,7 @@
       <% end %>
 
       <% if release.present? %>
-        <%= render partial: "releases/live_release/step_run_status", locals: { step_run: step_run, step: step } %>
+        <%= render partial: "shared/live_release/step_run_status", locals: { step_run: step_run, step: step } %>
       <% end %>
     </div>
 

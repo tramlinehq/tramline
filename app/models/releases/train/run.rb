@@ -5,7 +5,7 @@
 #  id                       :uuid             not null, primary key
 #  branch_name              :string           not null
 #  code_name                :string           not null
-#  commit_sha               :string # TODO: do we need this?
+#  commit_sha               :string
 #  completed_at             :datetime
 #  original_release_version :string
 #  release_version          :string           not null
@@ -27,34 +27,17 @@ class Releases::Train::Run < ApplicationRecord
   self.implicit_order_column = :scheduled_at
 
   belongs_to :train, class_name: "Releases::Train"
-  belongs_to :train_group_run, class_name: "Releases::TrainGroup::Run", optional: true
+  belongs_to :train_group_run, class_name: "Releases::TrainGroup::Run"
   has_many :pull_requests, class_name: "Releases::PullRequest", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
-  has_many :commits, class_name: "Releases::Commit", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
   has_one :release_metadata, class_name: "ReleaseMetadata", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
   has_many :passports, as: :stampable, dependent: :destroy
 
-  STAMPABLE_REASONS = %w[
-    created
-    release_branch_created
-    kickoff_pr_succeeded
-    version_changed
-    finalizing
-    pre_release_pr_not_creatable
-    pull_request_not_mergeable
-    post_release_pr_succeeded
-    finalize_failed
-    finished
-  ]
-
   STATES = {
     created: "created",
     on_track: "on_track",
-    post_release: "post_release",
-    post_release_started: "post_release_started",
-    post_release_failed: "post_release_failed",
     stopped: "stopped",
     finished: "finished"
   }
@@ -66,16 +49,7 @@ class Releases::Train::Run < ApplicationRecord
     state(*STATES.keys)
 
     event :start do
-      after { train_group_run&.start! }
       transitions from: [:created, :on_track], to: :on_track
-    end
-
-    event :start_post_release_phase, after_commit: -> { Releases::PostReleaseJob.perform_later(id) } do
-      transitions from: [:on_track, :post_release_failed], to: :post_release_started, guard: :ready_to_be_finalized?
-    end
-
-    event :fail_post_release_phase do
-      transitions from: :post_release_started, to: :post_release_failed
     end
 
     event :stop do
@@ -85,54 +59,19 @@ class Releases::Train::Run < ApplicationRecord
 
     event :finish, after_commit: :on_finish! do
       before { self.completed_at = Time.current }
-      transitions from: :post_release_started, to: :finished
+      transitions from: :on_track, to: :finished
     end
   end
-
-  before_create :set_version
-  after_create :set_default_release_metadata
-  after_commit -> { create_stamp!(data: {version: release_version}) }, on: :create
-  after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create, if: -> { train_group_run.blank? }
-  after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create, if: -> { train_group_run.blank? }
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   attr_accessor :has_major_bump
   delegate :app, :pre_release_prs?, :vcs_provider, to: :train
   delegate :cache, to: Rails
-
-  def set_default_release_metadata
-    if train_group_run.blank?
-      create_release_metadata!(locale: ReleaseMetadata::DEFAULT_LOCALE, release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES)
-    end
-  end
-
-  def get_release_metadata
-    if train_group_run.present?
-      train_group_run.release_metadata
-    else
-      release_metadata
-    end
-  end
-
-  def fetch_commit_log
-    if previous_release.present?
-      cache.fetch("app/#{app.id}/train/#{train.id}/releases/#{id}/commit_log", expires_in: 30.days) do
-        vcs_provider.commit_log(previous_release.tag_name, train.working_branch)
-      end
-    end
-  end
-
-  def previous_release
-    train.runs.where(status: "finished").order(completed_at: :desc).first
-  end
+  delegate :release_branch, :branch_name, :last_commit, :commits, :tag_name, :tag_url, to: :train_group_run
 
   def metadata_editable?
     on_track? && !started_store_release?
-  end
-
-  def tag_name
-    "v#{release_version}"
   end
 
   def overall_movement_status
@@ -163,16 +102,12 @@ class Releases::Train::Run < ApplicationRecord
     pending_release.exists?
   end
 
-  def committable?
-    created? || on_track?
-  end
-
   def stoppable?
     created? || on_track?
   end
 
   def finalizable?
-    may_start_post_release_phase? && ready_to_be_finalized?
+    may_finish? && ready_to_be_finalized?
   end
 
   def next_step
@@ -182,28 +117,6 @@ class Releases::Train::Run < ApplicationRecord
 
   def running_step?
     step_runs.on_track.exists?
-  end
-
-  def release_branch
-    branch_name
-  end
-
-  def set_version
-    new_version = train_group_run&.release_version || train.bump_release!(has_major_bump)
-    self.release_version = new_version
-    self.original_release_version = new_version
-  end
-
-  def branch_url
-    train.vcs_provider&.branch_url(train.app.config&.code_repository_name, branch_name)
-  end
-
-  def tag_url
-    train.vcs_provider&.tag_url(train.app.config&.code_repository_name, tag_name)
-  end
-
-  def last_commit
-    commits.order(:created_at).last
   end
 
   def last_run_for(step)
@@ -217,7 +130,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def finished_steps?
-    commits.last&.step_runs&.success&.size == all_steps.size
+    commits.last&.step_runs&.where(train_run: self)&.success&.size == all_steps.size
   end
 
   def latest_finished_step_runs
@@ -260,7 +173,8 @@ class Releases::Train::Run < ApplicationRecord
     train.notify!("Release is complete!", :release_ended, finalize_phase_metadata)
     app.refresh_external_app
 
-    train_group_run&.start_post_release_phase!
+    Rails.logger.debug "Post release start!", train_group_run.attributes
+    train_group_run.start_post_release_phase!
   end
 
   def finalize_phase_metadata
@@ -271,23 +185,6 @@ class Releases::Train::Run < ApplicationRecord
       final_artifact_url: final_build_artifact&.download_url,
       store_url: app.store_link
     }
-  end
-
-  class PreReleaseUnfinishedError < StandardError; end
-
-  def close_pre_release_prs
-    return train_group_run.close_pre_release_prs if train_group_run.present?
-    return if pull_requests.pre_release.blank?
-
-    pull_requests.pre_release.each do |pr|
-      created_pr = train.vcs_provider.get_pr(pr.number)
-
-      if created_pr[:state].in? %w[open opened]
-        raise PreReleaseUnfinishedError, "Pre-release pull request is not merged yet."
-      else
-        pr.close!
-      end
-    end
   end
 
   # Play store does not have constraints around version name

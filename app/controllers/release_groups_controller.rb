@@ -68,10 +68,10 @@ class ReleaseGroupsController < SignedInApplicationController
   def set_train_stuff
     @ios_train = @train_group.ios_train
     @android_train = @train_group.android_train
-    @ios_steps = @ios_train.steps.order(:step_number).includes(:runs, :train, deployments: [:integration])
-    @android_steps = @android_train.steps.order(:step_number).includes(:runs, :train, deployments: [:integration])
-    @android_events = @release.android_run.events(10)
-    @ios_events = @release.ios_run.events(10)
+    @ios_steps = @ios_train.steps.order(:step_number).includes(:runs, :train, deployments: [:integration]) if @ios_train
+    @android_steps = @android_train.steps.order(:step_number).includes(:runs, :train, deployments: [:integration]) if @android_train
+    @android_events = @release.android_run.events(10) if @android_train
+    @ios_events = @release.ios_run.events(10) if @ios_train
   end
 
   def set_release

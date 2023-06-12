@@ -11,6 +11,5 @@
 #
 class Releases::CommitListener < ApplicationRecord
   self.table_name = "releases_commit_listeners"
-  belongs_to :train, class_name: "Releases::Train", optional: true
-  belongs_to :train_group, class_name: "Releases::TrainGroup", optional: true
+  belongs_to :train_group, class_name: "Releases::TrainGroup"
 end

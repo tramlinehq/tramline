@@ -308,6 +308,6 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def finalize_release
-    release.start_post_release_phase! if release.finalizable?
+    release.finish! if release.finalizable?
   end
 end
