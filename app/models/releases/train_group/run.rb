@@ -223,7 +223,11 @@ class Releases::TrainGroup::Run < ApplicationRecord
   end
 
   def events(limit = nil)
-    ios_run&.events(limit)&.or(android_run&.events(limit))
+    if app.cross_platform?
+      ios_run&.events(limit)&.or(android_run&.events(limit))
+    else
+      ios_run&.events(limit) || android_run&.events(limit)
+    end
   end
 
   def last_commit
