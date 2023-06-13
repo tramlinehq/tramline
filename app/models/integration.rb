@@ -70,7 +70,7 @@ class Integration < ApplicationRecord
 
   attr_accessor :current_user, :code
 
-  delegate :install_path, to: :providable
+  delegate :install_path, :connection_data, :project_link, :public_icon_img, to: :providable
   delegate :platform, to: :app
 
   scope :ready, -> { where(category: MINIMUM_REQUIRED_SET, status: :connected) }
@@ -150,8 +150,6 @@ class Integration < ApplicationRecord
     end
   end
 
-  delegate :connection_data, to: :providable
-
   def set_metadata!
     self.metadata = providable.metadata
     save!
@@ -174,10 +172,6 @@ class Integration < ApplicationRecord
   def store?
     build_channel? && providable.store?
   end
-
-  delegate :project_link, to: :providable
-
-  delegate :public_asset_link, to: :providable
 
   def controllable_rollout?
     build_channel? && providable.controllable_rollout?

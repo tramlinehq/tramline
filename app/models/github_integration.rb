@@ -220,7 +220,7 @@ class GithubIntegration < ApplicationRecord
     installation.commits_between(app_config.code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS)
   end
 
-  def public_asset_link
+  def public_icon_img
     "https://storage.googleapis.com/tramline-public-assets/github-small.png".freeze
   end
 

@@ -123,7 +123,7 @@ class AppStoreIntegration < ApplicationRecord
     "https://appstoreconnect.apple.com/apps".freeze
   end
 
-  def public_asset_link
+  def public_icon_img
     CONSOLE_ICON
   end
 

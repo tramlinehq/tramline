@@ -1,15 +1,3 @@
-<%
- if @is_play_store_production
- publishing = "managed publishing"
- company = "Google"
- store = "Play Store"
- elsif @is_app_store_production
- publishing = "manual release"
- company = "Apple"
- store = "App Store"
- end
-%>
-
 {
   "blocks": [
     {
@@ -17,7 +5,7 @@
       "elements": [
         {
           "type": "image",
-          "image_url": "<%= @platform_asset_link %>",
+          "image_url": "<%= @platform_public_img %>",
           "alt_text": "app"
         },
         {
@@ -45,7 +33,7 @@
       "elements": [
         {
           "type": "plain_text",
-          "text": "- If <%= publishing %> is disabled, this update will auto-start the rollout upon approval by <%= company %>.",
+          "text": "- If <%= @publishing_text %> is disabled, this update will auto-start the rollout upon approval by <%= @company_text %>.",
           "emoji": false
         }
       ]
@@ -55,7 +43,7 @@
       "elements": [
         {
           "type": "plain_text",
-          "text": "- If <%= publishing %> is enabled, you'll need to manually release this update through the <%= store %>.",
+          "text": "- If <%= @publishing_text %> is enabled, you'll need to manually release this update through the <%= @store_text %>.",
           "emoji": false
         }
       ]
@@ -82,7 +70,7 @@
       "elements": [
         {
           "type": "image",
-          "image_url": "<%= @vcs_asset_link %>",
+          "image_url": "<%= @vcs_public_icon_img %>",
           "alt_text": "vcs"
         },
         {

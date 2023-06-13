@@ -310,7 +310,7 @@ class DeploymentRun < ApplicationRecord
 
     with_lock do
       return if released?
-      provider.deploy!(deployment_channel, {step_run: step_run})
+      provider.deploy!(deployment_channel, notification_params)
       complete!
     end
   end

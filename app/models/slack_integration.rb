@@ -142,7 +142,7 @@ class SlackIntegration < ApplicationRecord
     "https://slack.com".freeze
   end
 
-  def public_asset_link
+  def public_icon_img
     "https://storage.googleapis.com/tramline-public-assets/default_ios.png".freeze
   end
 

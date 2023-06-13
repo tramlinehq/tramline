@@ -147,7 +147,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     DEVELOPER_URL_TEMPLATE.expand(project_id:).to_s
   end
 
-  def public_asset_link
+  def public_icon_img
     CONSOLE_ICON
   end
 

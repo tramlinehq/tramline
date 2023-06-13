@@ -1,13 +1,3 @@
-<%
-if @is_fully_released
-main_text = "Your staged rollout is *complete*, and your update has rolled out to all users."
-secondary_text = "View your release on the Play Console."
-else
-main_text = "Your staged rollout is *active*, and you are currently on stage *#{@current_stage} (#{@rollout_percentage}%)*."
-secondary_text = "You can choose to *Pause* or *Release to 100%*."
-end
-%>
-
 {
   "blocks": [
     {
@@ -15,7 +5,7 @@ end
       "elements": [
         {
           "type": "image",
-          "image_url": "<%= @platform_asset_link %>",
+          "image_url": "<%= @platform_public_img %>",
           "alt_text": "app"
         },
         {
@@ -28,14 +18,14 @@ end
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "<%= main_text %>"
+        "text": "<%= @main_text %>"
       }
     },
     {
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "<%= secondary_text %>"
+        "text": "<%= @secondary_text %>"
       }
     },
     {
@@ -60,7 +50,7 @@ end
       "elements": [
         {
           "type": "image",
-          "image_url": "<%= @vcs_asset_link %>",
+          "image_url": "<%= @vcs_public_icon_img %>",
           "alt_text": "vcs"
         },
         {

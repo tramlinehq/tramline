@@ -107,7 +107,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
     "https://console.firebase.google.com/u/0".freeze
   end
 
-  def public_asset_link
+  def public_icon_img
     "https://storage.googleapis.com/tramline-public-assets/firebase_small.png".freeze
   end
 

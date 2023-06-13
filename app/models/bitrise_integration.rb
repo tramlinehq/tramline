@@ -124,7 +124,7 @@ class BitriseIntegration < ApplicationRecord
     false
   end
 
-  def public_asset_link
+  def public_icon_img
     "https://storage.googleapis.com/tramline-public-assets/bitrise_small.png".freeze
   end
 

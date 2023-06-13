@@ -5,7 +5,7 @@
       "elements": [
         {
           "type": "image",
-          "image_url": "<%= @platform_asset_link %>",
+          "image_url": "<%= @platform_public_img %>",
           "alt_text": "app"
         },
         {
@@ -28,13 +28,15 @@
         "text": "The *total run time* was *<%= @total_run_time %>*"
       }
     },
+    <% if @final_artifact_url %>
     {
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "<%= Regexp.escape @final_artifact %>"
+        "text": "*Download* the <#{@final_artifact_url}|final artifact>"
       }
     },
+    <% end %>
     {
       "type": "divider"
     },
@@ -57,7 +59,7 @@
       "elements": [
         {
           "type": "image",
-          "image_url": "<%= @vcs_asset_link %>",
+          "image_url": "<%= @vcs_public_icon_img %>",
           "alt_text": "vcs"
         },
         {
@@ -71,7 +73,7 @@
       "elements": [
         {
           "type": "image",
-          "image_url": "<%= @vcs_asset_link %>",
+          "image_url": "<%= @vcs_public_icon_img %>",
           "alt_text": "vcs"
         },
         {
@@ -85,7 +87,7 @@
       "elements": [
         {
           "type": "image",
-          "image_url": "<%= @platform_store_asset_link %>",
+          "image_url": "<%= @platform_store_img %>",
           "alt_text": "store"
         },
         {

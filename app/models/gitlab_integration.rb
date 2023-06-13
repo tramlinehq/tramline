@@ -198,7 +198,7 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.commits_between(app_config.code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS) }
   end
 
-  def public_asset_link
+  def public_icon_img
     "https://storage.googleapis.com/tramline-public-assets/gitlab_small.png".freeze
   end
 
