@@ -34,6 +34,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   DEVELOPER_URL_TEMPLATE =
     Addressable::Template.new("https://play.google.com/console/u/0/developers/{project_id}")
+  CONSOLE_ICON = "https://storage.googleapis.com/tramline-public-assets/play-console.png".freeze
 
   def access_key
     StringIO.new(json_key)
@@ -147,7 +148,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def public_asset_link
-    "https://storage.googleapis.com/tramline-public-assets/play-console.png".freeze
+    CONSOLE_ICON
   end
 
   private

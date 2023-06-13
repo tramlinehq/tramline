@@ -6,7 +6,7 @@ else
 main_text = "Your staged rollout is *active*, and you are currently on stage *#{@current_stage} (#{@rollout_percentage}%)*."
 secondary_text = "You can choose to *Pause* or *Release to 100%*."
 end
- %>
+%>
 
 {
   "blocks": [
@@ -104,7 +104,6 @@ end
           "text": "Deployment: <%= @deployment_channel_type %> + <%= @deployment_channel_name %>",
           "emoji": true
         }
-
       ]
     }
   ]

@@ -197,7 +197,8 @@ class App < ApplicationRecord
       app_name: name,
       app_platform: platform,
       vcs_asset_link: vcs_provider.public_asset_link,
-      platform_asset_link: platform_public_asset_link
+      platform_asset_link: platform_public_asset_link,
+      platform_store_asset_link: platform_store_asset_link
     }
   end
 
@@ -207,6 +208,10 @@ class App < ApplicationRecord
     else
       "https://storage.googleapis.com/tramline-public-assets/default_ios.png"
     end
+  end
+
+  def platform_store_asset_link
+    android? ? GooglePlayStoreIntegration::CONSOLE_ICON : AppStoreIntegration::CONSOLE_ICON
   end
 
   private
