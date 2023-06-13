@@ -56,19 +56,27 @@
       <%= render partial: "apps/setup_progress", locals: { setup_instructions: @app_setup_instructions } %>
     <% end %>
 
-    <div class="grid md:grid-cols-2 gap-x-20 pb-5 mt-8">
-      <section>
-        <article class="w-full">
+    <section class="grid md:grid-cols-2 gap-x-20 pb-5 mt-8">
+      <% if @app.cross_platform? %>
+        <article>
+          <%= render(ExternalAppComponent.new(app: @app,
+                                              external_app: @app.latest_external_apps[:android],
+                                              heading: "Current Play Store Status")) %>
+        </article>
+        <article>
+          <%= render(ExternalAppComponent.new(app: @app,
+                                              external_app: @app.latest_external_apps[:ios],
+                                              heading: "Current App Store Status")) %>
+        </article>
+      <% else %>
+        <article>
           <%= render(ExternalAppComponent.new(app: @app, external_app: @app.latest_external_app)) %>
         </article>
-      </section>
-
-      <section>
         <article class="w-full">
           <%= render "shared/demo/release_pilot" %>
         </article>
-      </section>
-    </div>
+      <% end %>
+    </section>
 
     <% if @app.train_groups.any? %>
       <%= render TableComponent.new(columns: ["Name", "Description", "Current Release"]) do |table| %>

@@ -55,6 +55,8 @@ class App < ApplicationRecord
     :ci_cd_provider,
     :notification_provider,
     :store_provider,
+    :ios_store_provider,
+    :android_store_provider,
     :slack_build_channel_provider,
     :slack_notifications?, to: :integrations, allow_nil: true
 
@@ -193,15 +195,32 @@ class App < ApplicationRecord
 
   def create_external!
     return unless has_store_integration?
-    external_app_data = store_provider.channel_data
+
+    if cross_platform?
+      update_external_app(:android, android_store_provider)
+      update_external_app(:ios, ios_store_provider)
+    elsif android?
+      update_external_app(:android, android_store_provider)
+    else
+      update_external_app(:ios, ios_store_provider)
+    end
+  end
+
+  def update_external_app(platform, provider)
+    external_app_data = provider.channel_data
 
     if latest_external_app&.channel_data != external_app_data
-      external_apps.create!(channel_data: external_app_data, fetched_at: Time.current)
+      external_apps.create!(channel_data: external_app_data, fetched_at: Time.current, platform:)
     end
   end
 
   def latest_external_app
     external_apps.order(fetched_at: :desc).first
+  end
+
+  def latest_external_apps
+    {android: external_apps.where(platform: "android").order(fetched_at: :desc).first,
+     ios: external_apps.where(platform: "ios").order(fetched_at: :desc).first}
   end
 
   def refresh_external_app

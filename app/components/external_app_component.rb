@@ -3,12 +3,13 @@ class ExternalAppComponent < ViewComponent::Base
   include ButtonHelper
   include AssetsHelper
 
-  def initialize(app:, external_app:)
+  def initialize(app:, external_app:, heading: "Current Store Status")
     @app = app
     @external_app = external_app
+    @heading = heading
   end
 
-  attr_reader :external_app, :app
+  attr_reader :external_app, :app, :heading
 
   private
 

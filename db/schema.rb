@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_12_192348) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_13_132539) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -130,6 +130,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_12_192348) do
     t.jsonb "channel_data"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "platform"
     t.index ["app_id"], name: "index_external_apps_on_app_id"
     t.index ["fetched_at"], name: "index_external_apps_on_fetched_at"
   end

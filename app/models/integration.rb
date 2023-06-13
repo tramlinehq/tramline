@@ -138,6 +138,14 @@ class Integration < ApplicationRecord
       build_channel.find(&:store?)&.providable
     end
 
+    def android_store_provider
+      build_channel.find { |chan| chan.providable_type == "GooglePlayStoreIntegration" }&.providable
+    end
+
+    def ios_store_provider
+      build_channel.find { |chan| chan.providable_type == "AppStoreIntegration" }&.providable
+    end
+
     def slack_build_channel_provider
       build_channel.find(&:slack_integration?)&.providable
     end
