@@ -118,6 +118,14 @@ class AppStoreIntegration < ApplicationRecord
     {}
   end
 
+  def project_link
+    "https://appstoreconnect.apple.com/apps".freeze
+  end
+
+  def public_asset_link
+    "https://storage.googleapis.com/tramline-public-assets/app-store.png".freeze
+  end
+
   def connection_data
     "Bundle Identifier: #{app.bundle_identifier}"
   end

@@ -195,8 +195,18 @@ class App < ApplicationRecord
   def notification_params
     {
       app_name: name,
-      app_platform: platform
+      app_platform: platform,
+      vcs_asset_link: vcs_provider.public_asset_link,
+      platform_asset_link: platform_public_asset_link
     }
+  end
+
+  def platform_public_asset_link
+    if android?
+      "https://storage.googleapis.com/tramline-public-assets/default_android.png"
+    else
+      "https://storage.googleapis.com/tramline-public-assets/default_ios.png"
+    end
   end
 
   private

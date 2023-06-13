@@ -5,7 +5,7 @@
       "elements": [
         {
           "type": "image",
-          "image_url": "https://storage.googleapis.com/tramline-public-assets/default_android.png",
+          "image_url": "<%= @platform_asset_link %>",
           "alt_text": "app"
         },
         {
@@ -43,12 +43,26 @@
       "elements": [
         {
           "type": "image",
-          "image_url": "https://storage.googleapis.com/tramline-public-assets/github-small.png",
-          "alt_text": "github"
+          "image_url": "<%= @vcs_asset_link %>",
+          "alt_text": "vcs"
         },
         {
           "type": "mrkdwn",
           "text": "<<%= @release_branch_url %>|Release branch – <%= @release_branch %>>"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "image",
+          "image_url": "<%= @deployment_channel_asset_link %>",
+          "alt_text": "console"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @project_link %>|View on console>"
         }
       ]
     },
@@ -66,6 +80,11 @@
         {
           "type": "plain_text",
           "text": "<%= @step_type %> step: <%= @step_name %>",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "Deployment: <%= @deployment_channel_type %> + <%= @deployment_channel_name %>",
           "emoji": true
         }
       ]

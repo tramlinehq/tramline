@@ -136,6 +136,16 @@ class SlackIntegration < ApplicationRecord
     false
   end
 
+  # FIXME: This is just a stub.
+  # Eventually remove Slack as a distribution channel.
+  def store_link
+    "https://slack.com".freeze
+  end
+
+  def public_asset_link
+    "https://storage.googleapis.com/tramline-public-assets/default_ios.png".freeze
+  end
+
   private
 
   def get_all_channels(cursor = nil, channels = [])

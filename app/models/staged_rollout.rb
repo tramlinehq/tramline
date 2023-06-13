@@ -18,7 +18,7 @@ class StagedRollout < ApplicationRecord
 
   belongs_to :deployment_run
 
-  validates :current_stage, numericality: { greater_than_or_equal_to: 0, allow_nil: true }
+  validates :current_stage, numericality: {greater_than_or_equal_to: 0, allow_nil: true}
 
   delegate :notify!, to: :deployment_run
 
@@ -78,7 +78,7 @@ class StagedRollout < ApplicationRecord
       transitions from: [:failed, :started, :paused], to: :completed
     end
 
-    event :full_rollout, after_commit: -> { event_stamp!(reason: :fully_released, kind: :success, data: { rollout_percentage: "%.2f" % config[current_stage] }) } do
+    event :full_rollout, after_commit: -> { event_stamp!(reason: :fully_released, kind: :success, data: {rollout_percentage: "%.2f" % config[current_stage]}) } do
       after { deployment_run.complete! }
       transitions from: [:failed, :started], to: :fully_released
     end
@@ -93,7 +93,6 @@ class StagedRollout < ApplicationRecord
       start!
     else
       event_stamp!(reason: :increased, kind: :notice, data: stamp_data)
-      notify!("Staged rollout was updated!", :staged_rollout_updated, notification_params)
     end
 
     retry! if failed?
@@ -126,6 +125,7 @@ class StagedRollout < ApplicationRecord
     deployment_run.on_release(rollout_value: next_rollout_percentage) do |result|
       if result.ok?
         update_stage(next_stage)
+        notify!("Staged rollout was updated!", :staged_rollout_updated, notification_params)
       else
         fail!
         elog(result.error)

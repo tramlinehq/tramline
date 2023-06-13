@@ -33,7 +33,7 @@ class Deployment < ApplicationRecord
     :store?,
     :app_store_integration?,
     :controllable_rollout?,
-    :google_firebase_integration?, to: :integration, allow_nil: true
+    :google_firebase_integration?, :project_link, to: :integration, allow_nil: true
   delegate :train, :app, :notify!, to: :step
 
   scope :sequential, -> { order("deployments.deployment_number ASC") }
@@ -120,7 +120,9 @@ class Deployment < ApplicationRecord
           is_play_store_production: production_channel? && google_play_store_integration?,
           is_app_store_production: app_store?,
           deployment_channel_type: integration_type&.to_s&.titleize,
-          deployment_channel_name: deployment_channel_name
+          deployment_channel_name: deployment_channel_name,
+          project_link: project_link,
+          deployment_channel_asset_link: integration.public_asset_link
         }
       )
   end

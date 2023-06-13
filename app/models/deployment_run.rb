@@ -25,31 +25,31 @@ class DeploymentRun < ApplicationRecord
   has_one :staged_rollout, dependent: :destroy
   has_one :external_release, dependent: :destroy
 
-  validates :deployment_id, uniqueness: { scope: :train_step_run_id }
+  validates :deployment_id, uniqueness: {scope: :train_step_run_id}
 
   delegate :step,
-           :release,
-           :commit,
-           :build_number,
-           :build_artifact,
-           :build_version,
-           to: :step_run
+    :release,
+    :commit,
+    :build_number,
+    :build_artifact,
+    :build_version,
+    to: :step_run
   delegate :deployment_number,
-           :notify!,
-           :integration,
-           :deployment_channel,
-           :deployment_channel_name,
-           :external?,
-           :google_play_store_integration?,
-           :slack_integration?,
-           :app_store_integration?,
-           :app_store?,
-           :test_flight?,
-           :store?,
-           :staged_rollout?,
-           :staged_rollout_config,
-           :google_firebase_integration?,
-           to: :deployment
+    :notify!,
+    :integration,
+    :deployment_channel,
+    :deployment_channel_name,
+    :external?,
+    :google_play_store_integration?,
+    :slack_integration?,
+    :app_store_integration?,
+    :app_store?,
+    :test_flight?,
+    :store?,
+    :staged_rollout?,
+    :staged_rollout_config,
+    :google_firebase_integration?,
+    to: :deployment
   delegate :release_version, :release_metadata, to: :release
   delegate :app, to: :release
 
@@ -143,7 +143,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   scope :for_ids, ->(ids) { includes(deployment: :integration).where(id: ids) }
-  scope :matching_runs_for, ->(integration) { includes(:deployment).where(deployments: { integration: integration }) }
+  scope :matching_runs_for, ->(integration) { includes(:deployment).where(deployments: {integration: integration}) }
   scope :has_begun, -> { where.not(status: :created) }
   scope :not_failed, -> { where.not(status: [:failed, :failed_prepare_release]) }
 
@@ -310,7 +310,7 @@ class DeploymentRun < ApplicationRecord
 
     with_lock do
       return if released?
-      provider.deploy!(deployment_channel, { step_run: step_run })
+      provider.deploy!(deployment_channel, {step_run: step_run})
       complete!
     end
   end

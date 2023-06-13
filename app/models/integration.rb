@@ -175,6 +175,10 @@ class Integration < ApplicationRecord
     build_channel? && providable.store?
   end
 
+  delegate :project_link, to: :providable
+
+  delegate :public_asset_link, to: :providable
+
   def controllable_rollout?
     build_channel? && providable.controllable_rollout?
   end

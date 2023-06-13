@@ -102,6 +102,15 @@ class GoogleFirebaseIntegration < ApplicationRecord
     {}
   end
 
+  # FIXME: This is an incomplete URL. The full URL should contain the project id.
+  def project_link
+    "https://console.firebase.google.com/u/0".freeze
+  end
+
+  def public_asset_link
+    "https://storage.googleapis.com/tramline-public-assets/firebase_small.png".freeze
+  end
+
   class ReleaseInfo
     def initialize(release_info)
       raise ArgumentError, "release_info must be a Hash" unless release_info.is_a?(Hash)

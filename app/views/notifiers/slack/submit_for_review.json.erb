@@ -17,7 +17,7 @@
       "elements": [
         {
           "type": "image",
-          "image_url": "https://storage.googleapis.com/tramline-public-assets/default_android.png",
+          "image_url": "<%= @platform_asset_link %>",
           "alt_text": "app"
         },
         {
@@ -46,7 +46,7 @@
         {
           "type": "plain_text",
           "text": "- If <%= publishing %> is disabled, this update will auto-start the rollout upon approval by <%= company %>.",
-          "emoji": true
+          "emoji": false
         }
       ]
     },
@@ -56,7 +56,7 @@
         {
           "type": "plain_text",
           "text": "- If <%= publishing %> is enabled, you'll need to manually release this update through the <%= store %>.",
-          "emoji": true
+          "emoji": false
         }
       ]
     },
@@ -82,8 +82,8 @@
       "elements": [
         {
           "type": "image",
-          "image_url": "https://storage.googleapis.com/tramline-public-assets/github-small.png",
-          "alt_text": "github"
+          "image_url": "<%= @vcs_asset_link %>",
+          "alt_text": "vcs"
         },
         {
           "type": "mrkdwn",
@@ -105,6 +105,11 @@
         {
           "type": "plain_text",
           "text": "<%= @step_type %> step: <%= @step_name %>",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": "Deployment: <%= @deployment_channel_type %> + <%= @deployment_channel_name %>",
           "emoji": true
         }
       ]
