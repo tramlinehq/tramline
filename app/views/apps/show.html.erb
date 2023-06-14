@@ -51,7 +51,7 @@
 
   <div class="space-y-8">
     <% if @app.ready? %>
-      <%= render partial: "train_groups/setup_progress", locals: { setup_instructions: @train_setup_instructions, app: @app, train_in_creation: @train_in_creation } %>
+      <%= render partial: "trains/setup_progress", locals: { setup_instructions: @train_setup_instructions, app: @app, train_in_creation: @train_in_creation } %>
     <% else %>
       <%= render partial: "apps/setup_progress", locals: { setup_instructions: @app_setup_instructions } %>
     <% end %>
@@ -90,7 +90,7 @@
             <% row.with_cell do %>
               <div class="flex items-center">
                 <div class="font-medium text-slate-800">
-                  <%= link_to train.name, app_train_group_path(@app, train) %>
+                  <%= link_to train.name, app_train_path(@app, train) %>
                 </div>
               </div>
             <% end %>

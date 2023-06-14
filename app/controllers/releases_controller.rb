@@ -1,12 +1,13 @@
-class ReleaseGroupsController < SignedInApplicationController
+class ReleasesController < SignedInApplicationController
   using RefinedString
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
   before_action :set_release, only: [:show, :timeline, :destroy]
 
   def show
-    @train_group = @release.train
-    @app = @train_group.app
+    @train = @release.train
+    @app = @train.app
+
     set_train_stuff
     set_pull_requests
 
@@ -15,10 +16,10 @@ class ReleaseGroupsController < SignedInApplicationController
 
   def create
     @app = current_organization.apps.friendly.find(params[:app_id])
-    @train_group = @app.trains.friendly.find(params[:train_group_id])
+    @train = @app.trains.friendly.find(params[:train_id])
     @has_major_bump = params[:has_major_bump]&.to_boolean
 
-    response = Triggers::Release.call(@train_group, has_major_bump: @has_major_bump)
+    response = Triggers::Release.call(@train, has_major_bump: @has_major_bump)
 
     if response.success?
       redirect_to live_release_path, notice: "A new release has started successfully."
@@ -29,9 +30,10 @@ class ReleaseGroupsController < SignedInApplicationController
 
   def live_release
     @app = current_organization.apps.friendly.find(params[:app_id])
-    @train_group = @app.trains.friendly.find(params[:train_group_id])
-    @release = @train_group.active_run
-    redirect_to train_group_path, notice: "No release in progress." and return unless @release
+    @train = @app.trains.friendly.find(params[:train_id])
+    @release = @train.active_run
+
+    redirect_to train_path, notice: "No release in progress." and return unless @release
 
     set_train_stuff
     set_pull_requests
@@ -41,7 +43,7 @@ class ReleaseGroupsController < SignedInApplicationController
 
   def destroy
     @release.stop!
-    redirect_to app_train_group_path(@release.train.app, @release.train), notice: "The release was stopped."
+    redirect_to app_train_path(@release.train.app, @release.train), notice: "The release was stopped."
   end
 
   # TODO: This action can be deprecated once there are no more releases with pending manual finalize
@@ -66,8 +68,8 @@ class ReleaseGroupsController < SignedInApplicationController
   private
 
   def set_train_stuff
-    @ios_train = @train_group.ios_train
-    @android_train = @train_group.android_train
+    @ios_train = @train.ios_train
+    @android_train = @train.android_train
     @ios_steps = @ios_train.steps.order(:step_number).includes(:step_runs, :release_platform, deployments: [:integration]) if @ios_train
     @android_steps = @android_train.steps.order(:step_number).includes(:step_runs, :release_platform, deployments: [:integration]) if @android_train
     @android_events = @release.android_run.events(10) if @android_train
@@ -88,10 +90,10 @@ class ReleaseGroupsController < SignedInApplicationController
   end
 
   def live_release_path
-    live_release_app_train_group_release_groups_path(@app, @train_group)
+    live_release_app_train_releases_path(@app, @train)
   end
 
-  def train_group_path
-    app_train_group_path(@app, @train_group)
+  def train_path
+    app_train_path(@app, @train)
   end
 end

@@ -38,7 +38,7 @@
         <% if is_train_completed %>
           <p class="text-base font-normal text-gray-500">This is complete!</p>
         <% else %>
-          <%= authz_link_to :green, new_app_train_group_path(@app) do %>
+          <%= authz_link_to :green, new_app_train_path(@app) do %>
             <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
             <span class="hidden xs:block ml-2">Create</span>
           <% end %>
@@ -64,7 +64,7 @@
           <% else %>
             <p class="text-base font-normal text-gray-500">Configure your iOS review / debug workflows</p>
             <% if train_in_creation %>
-              <%= authz_link_to :blue, new_app_train_step_path(app, train_in_creation.ios_train, kind: Step.kinds[:review]), class: "mt-4" do %>
+              <%= authz_link_to :blue, new_app_train_platform_step_path(app, train_in_creation, train_in_creation.ios_train, kind: Step.kinds[:review]), class: "mt-4" do %>
                 <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
                 <span class="hidden xs:block ml-2">Add a review step</span>
               <% end %>
@@ -93,7 +93,7 @@
           <% else %>
             <p class="text-base font-normal text-gray-500">Configure your iOS release candidate workflow</p>
             <% if train_in_creation %>
-              <%= authz_link_to :blue, new_app_train_step_path(app, train_in_creation.ios_train, kind: Step.kinds[:release]), class: "mt-4" do %>
+              <%= authz_link_to :blue, new_app_train_platform_step_path(app, train_in_creation, train_in_creation.ios_train, kind: Step.kinds[:release]), class: "mt-4" do %>
                 <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
                 <span class="hidden xs:block ml-2">Add a release step</span>
               <% end %>
@@ -121,7 +121,7 @@
           <% else %>
             <p class="text-base font-normal text-gray-500">Configure your Android review / debug workflows</p>
             <% if train_in_creation %>
-              <%= authz_link_to :blue, new_app_train_step_path(app, train_in_creation.android_train, kind: Step.kinds[:review]), class: "mt-4" do %>
+              <%= authz_link_to :blue, new_app_train_platform_step_path(app, train_in_creation, train_in_creation.android_train, kind: Step.kinds[:review]), class: "mt-4" do %>
                 <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
                 <span class="hidden xs:block ml-2">Add a review step</span>
               <% end %>
@@ -150,7 +150,7 @@
           <% else %>
             <p class="text-base font-normal text-gray-500">Configure your Android release candidate workflow</p>
             <% if train_in_creation %>
-              <%= authz_link_to :blue, new_app_train_step_path(app, train_in_creation.android_train, kind: Step.kinds[:release]), class: "mt-4" do %>
+              <%= authz_link_to :blue, new_app_train_platform_step_path(app, train_in_creation, train_in_creation.android_train, kind: Step.kinds[:release]), class: "mt-4" do %>
                 <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
                 <span class="hidden xs:block ml-2">Add a release step</span>
               <% end %>

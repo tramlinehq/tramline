@@ -28,7 +28,7 @@ crumb :train do |train|
 end
 
 crumb :step do |step|
-  link step.name, app_train_steps_path(step.release_platform.app, step.release_platform)
+  link step.name, app_train_platform_steps_path(step.release_platform.app, step.release_platform)
   parent :train, step.release_platform
 end
 
@@ -72,27 +72,7 @@ crumb :edit_train do |train|
   parent :train, train
 end
 
-crumb :new_train_group do |app|
-  link "New Train Group"
-  parent :app, app
-end
-
-crumb :edit_train_group do |train_group|
-  link "Edit"
-  parent :train_group, train_group
-end
-
-crumb :train_group do |train_group|
-  link train_group.name, app_train_group_path(train_group.app, train_group)
-  parent :app, train_group.app
-end
-
-crumb :release_group do |release|
-  link release.release_version, release_group_path(release)
-  parent :train_group, release.train
-end
-
-crumb :timeline_release_group do |release|
-  link "Event Timeline", timeline_release_group_path(release)
-  parent :release_group, release
+crumb :edit_release_platform do |name, release_platform|
+  link "Edit #{name}"
+  parent :train, release_platform.train
 end

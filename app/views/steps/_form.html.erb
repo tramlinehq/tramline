@@ -20,7 +20,7 @@
     <% if @app.android? %>
       <div class="mt-4">
         <div data-controller="domain--release-suffix-help"
-             data-domain--release-suffix-help-version-value="<%= @step.release_platform.version_current %>"
+             data-domain--release-suffix-help-version-value="<%= @release_platform.version_current %>"
              data-domain--release-suffix-help-version-suffix-current-value="<%= @step.release_suffix %>">
           <%= form.label :release_suffix, class: "block text-sm font-medium mb-1" %>
           <%= form.text_field :release_suffix,

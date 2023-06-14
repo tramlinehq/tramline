@@ -8,7 +8,7 @@
     </div>
   </div>
 <% else %>
-  <%= authz_link_to step_color(kind).to_sym, new_app_train_step_path(train.app, train, kind: kind) do %>
+  <%= authz_link_to step_color(kind).to_sym, new_app_train_platform_step_path(train.app, train, release_platform, kind: kind) do %>
     <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
     <span class="ml-2">Add a <%= kind %> step</span>
   <% end %>

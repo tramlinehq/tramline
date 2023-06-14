@@ -1,4 +1,0 @@
-<%= render PageComponent.new(breadcrumb: breadcrumb(:edit_train, @train), title: "Settings: #{@train.name}") do %>
-  <%= render partial: 'shared/errors', locals: { resource: @train } %>
-  <%= render 'form', app: @app, train: @train %>
-<% end %>

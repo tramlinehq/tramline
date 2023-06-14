@@ -1,0 +1,3 @@
+<%= render PageComponent.new(breadcrumb: breadcrumb(:timeline_release, @release), title: "Event Timeline") do %>
+  <%= render partial: "shared/event_timeline", locals: { events: @events, short_width: false } %>
+<% end %>

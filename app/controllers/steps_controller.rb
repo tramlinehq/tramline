@@ -5,6 +5,7 @@ class StepsController < SignedInApplicationController
   before_action :require_write_access!, only: %i[new create edit update]
   before_action :set_app, only: %i[new create edit update]
   before_action :set_train, only: %i[new create edit update]
+  before_action :set_release_platform, only: %i[new create edit update]
   before_action :set_ci_actions, only: %i[new create]
   before_action :integrations_are_ready?, only: %i[new create]
   around_action :set_time_zone
@@ -15,9 +16,9 @@ class StepsController < SignedInApplicationController
     head :forbidden and return if @train.active_run
     head :forbidden and return if kind.blank?
 
-    @step = @train.steps.new(kind:)
+    @step = @release_platform.steps.new(kind:)
 
-    if @step.release? && @train.has_release_step?
+    if @step.release? && @release_platform.has_release_step?
       redirect_back fallback_location: app_train_path(@app, @train), flash: {error: "You can only have one release step in a train!"}
     end
 
@@ -31,14 +32,13 @@ class StepsController < SignedInApplicationController
         .where(release_platforms: {apps: {organization: current_organization}})
         .friendly
         .find(params[:id])
-    @train = @step.release_platform
     head :forbidden and return if @train.active_run
     @ci_actions = @train.ci_cd_provider.workflows
   end
 
   def create
     head :forbidden and return if @train.active_run
-    @step = @train.steps.new(parsed_step_params)
+    @step = @release_platform.steps.new(parsed_step_params)
 
     respond_to do |format|
       if @step.save
@@ -57,13 +57,10 @@ class StepsController < SignedInApplicationController
         .where(release_platforms: {apps: {organization: current_organization}})
         .friendly
         .find(params[:id])
-    @train = @step.release_platform
     head :forbidden and return if @train.active_run
 
-    @app = @train.app
-
     if @step.update(parsed_step_params)
-      redirect_to edit_app_train_path(@app, @train), notice: "Step was successfully updated."
+      redirect_to edit_app_train_platform_path(@app, @train, @release_platform), notice: "Step was successfully updated."
     else
       @ci_actions = @train.ci_cd_provider.workflows
       render :edit, status: :unprocessable_entity
@@ -76,7 +73,7 @@ class StepsController < SignedInApplicationController
     if @step.release_platform.train.in_creation?
       redirect_to app_path(@app), notice: "Step was successfully created."
     else
-      redirect_to app_train_group_path(@app, @step.release_platform.train), notice: "Step was successfully created."
+      redirect_to app_train_path(@app, @train), notice: "Step was successfully created."
     end
   end
 
@@ -85,7 +82,11 @@ class StepsController < SignedInApplicationController
   end
 
   def set_train
-    @train = @app.release_platforms.friendly.find(params[:train_id])
+    @train = @app.trains.friendly.find(params[:train_id])
+  end
+
+  def set_release_platform
+    @release_platform = @train.release_platforms.friendly.find(params[:platform_id])
   end
 
   def set_app
@@ -154,7 +155,7 @@ class StepsController < SignedInApplicationController
   end
 
   def set_build_channel_integrations
-    @train
+    @release_platform
       .build_channel_integrations
       .map { |bc| [bc.providable.display, bc.id] }
       .push(Integration::EXTERNAL_BUILD_INTEGRATION[:build_integration])

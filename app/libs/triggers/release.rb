@@ -30,7 +30,7 @@ class Triggers::Release
 
   private
 
-  attr_reader :train, :release_group, :starting_time
+  attr_reader :train, :starting_time
   delegate :branching_strategy, to: :train
   delegate :transaction, to: ApplicationRecord
 
@@ -46,13 +46,12 @@ class Triggers::Release
   end
 
   def create_release
-    @release_group =
-      train.releases.create!(
-        scheduled_at: starting_time,
-        branch_name: release_branch,
-        release_version: train.version_current,
-        has_major_bump: major_release?
-      )
+    train.releases.create!(
+      scheduled_at: starting_time,
+      branch_name: release_branch,
+      release_version: train.version_current,
+      has_major_bump: major_release?
+    )
   end
 
   memoize def release_branch

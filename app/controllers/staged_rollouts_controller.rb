@@ -1,4 +1,4 @@
-class Releases::StagedRolloutsController < SignedInApplicationController
+class StagedRolloutsController < SignedInApplicationController
   before_action :require_write_access!, only: %i[increase halt]
   before_action :set_deployment_run
   before_action :set_staged_rollout

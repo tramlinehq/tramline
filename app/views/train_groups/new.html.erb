@@ -1,4 +1,0 @@
-<%= render PageComponent.new(breadcrumb: breadcrumb(:new_train_group, @app), title: "Create a new train for iOS and Android 🚦") do %>
-  <%= render partial: 'shared/errors', locals: { resource: @train_group } %>
-  <%= render 'form', app: @app, train_group: @train_group %>
-<% end %>

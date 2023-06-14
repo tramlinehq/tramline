@@ -53,25 +53,13 @@ Rails.application.routes.draw do
       post :refresh_external
     end
 
-    resources :train_groups, only: %i[new create edit update show destroy] do
-      resources :release_groups, only: %i[show create destroy], shallow: true do
-        resource :release_metadatum, only: %i[edit update], path: :metadata
-
-        collection do
-          get :live_release
-        end
-
-        member do
-          get :timeline
-        end
+    resources :trains, only: %i[new create edit update show destroy] do
+      resources :release_platforms, only: %i[edit show], path: :platforms, as: :platforms do
+        resources :steps, only: %i[new create edit update]
       end
-    end
 
-    resources :trains, only: %i[edit update show destroy] do
-      resources :steps, only: %i[new create edit update]
-
-      resources :releases, only: [], shallow: true do
-        resources :step_runs, only: [], shallow: false, module: "releases" do
+      resources :releases, only: %i[show create destroy], shallow: true do
+        resources :step_runs, only: [], shallow: false do
           member do
             post :start
           end
@@ -99,6 +87,16 @@ Rails.application.routes.draw do
               end
             end
           end
+        end
+
+        resource :release_metadatum, only: %i[edit update], path: :metadata
+
+        collection do
+          get :live_release
+        end
+
+        member do
+          get :timeline
         end
       end
     end

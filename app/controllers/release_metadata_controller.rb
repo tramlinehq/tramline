@@ -13,7 +13,7 @@ class ReleaseMetadataController < SignedInApplicationController
     @release_metadata = ReleaseMetadata.find_or_initialize_by(release: @release)
 
     if @release_metadata.update(release_metadata_params)
-      redirect_to parent_release_path, notice: "Release metadata was successfully updated."
+      redirect_to release_path(@release), notice: "Release metadata was successfully updated."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -37,16 +37,12 @@ class ReleaseMetadataController < SignedInApplicationController
   end
 
   def set_release
-    @release = Release.find(params[:release_group_id])
-  end
-
-  def parent_release_path
-    release_group_path(@release)
+    @release = Release.find(params[:release_id])
   end
 
   def ensure_editable
     unless @release.metadata_editable?
-      redirect_back fallback_location: parent_release_path,
+      redirect_back fallback_location: release_path(@release),
         flash: {error: "Cannot update the release metadata once the production release has begun."}
     end
   end

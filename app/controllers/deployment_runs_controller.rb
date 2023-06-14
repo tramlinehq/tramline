@@ -1,4 +1,4 @@
-class Releases::DeploymentRunsController < SignedInApplicationController
+class DeploymentRunsController < SignedInApplicationController
   before_action :set_deployment_run
   before_action :ensure_reviewable, only: [:submit_for_review]
   before_action :ensure_releasable, only: [:start_release]

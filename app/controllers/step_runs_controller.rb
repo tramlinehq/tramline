@@ -1,4 +1,4 @@
-class Releases::StepRunsController < SignedInApplicationController
+class StepRunsController < SignedInApplicationController
   before_action :require_write_access!, only: %i[start]
   before_action :set_release
 
