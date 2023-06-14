@@ -73,12 +73,10 @@ class StepsController < SignedInApplicationController
   private
 
   def new_step_redirect
-    if @step.train.in_creation? || @step.train.train_group&.in_creation?
+    if @step.train.train_group&.in_creation?
       redirect_to app_path(@app), notice: "Step was successfully created."
-    elsif @step.train.train_group.present?
-      redirect_to app_train_group_path(@app, @step.train.train_group), notice: "Step was successfully created."
     else
-      redirect_to app_train_path(@app, @train), notice: "Step was successfully created."
+      redirect_to app_train_group_path(@app, @step.train.train_group), notice: "Step was successfully created."
     end
   end
 

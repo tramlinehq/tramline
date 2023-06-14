@@ -1,8 +1,8 @@
-<%= render PageComponent.new(breadcrumb: breadcrumb(:release, @release), title: "Edit Release Metadata") do %>
+<%= render PageComponent.new(breadcrumb: breadcrumb(:release_group, @release), title: "Edit Release Metadata") do %>
   <%= render partial: 'shared/errors', locals: { resource: @release_metadata } %>
 
   <%= form_with(model: @release_metadata,
-                url: @action_path,
+                url: release_group_release_metadatum_path(@release),
                 builder: ButtonHelper::AuthzForms,
                 method: :patch) do |form| %>
 
