@@ -13,8 +13,8 @@ class AppsController < SignedInApplicationController
 
   def show
     @app_setup_instructions = @app.app_setup_instructions
-    @train_group_setup_instructions = @app.train_group_setup_instructions
-    @train_group_in_creation = @app.train_groups.first if @app.train_groups.size == 1
+    @train_setup_instructions = @app.train_setup_instructions
+    @train_in_creation = @app.trains.first if @app.trains.size == 1
   end
 
   def new
@@ -63,7 +63,7 @@ class AppsController < SignedInApplicationController
 
   def all_builds
     @all_builds_params = filterable_params.except(:id)
-    gen_query_filters(:release_status, Releases::Train::Run.statuses[:finished])
+    gen_query_filters(:release_status, ReleasePlatformRun.statuses[:finished])
     set_query_helpers
     set_query_pagination(Queries::Builds.count(app: @app, params: @query_params))
     @builds = Queries::Builds.all(app: @app, params: @query_params)

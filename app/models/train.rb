@@ -1,6 +1,6 @@
 # == Schema Information
 #
-# Table name: train_groups
+# Table name: trains
 #
 #  id                       :uuid             not null, primary key
 #  branching_strategy       :string           not null
@@ -18,7 +18,7 @@
 #  app_id                   :uuid             not null, indexed
 #  vcs_webhook_id           :string
 #
-class Releases::TrainGroup < ApplicationRecord
+class Train < ApplicationRecord
   has_paper_trail
   using RefinedString
   extend FriendlyId
@@ -29,12 +29,14 @@ class Releases::TrainGroup < ApplicationRecord
     parallel_working: "Parallel Working and Release"
   }.freeze
 
-  belongs_to :app, optional: false
-  has_many :runs, class_name: "Releases::TrainGroup::Run", inverse_of: :train_group, dependent: :destroy
-  has_one :active_run, -> { pending_release }, class_name: "Releases::TrainGroup::Run", inverse_of: :train_group, dependent: :destroy
-  has_many :trains, class_name: "Releases::Train", dependent: :destroy
+  belongs_to :app
+  has_many :releases, inverse_of: :train, dependent: :destroy
+  has_one :active_run, -> { pending_release }, class_name: "Release", inverse_of: :train, dependent: :destroy
+  has_many :release_platforms, dependent: :destroy
   has_many :integrations, through: :app
-  has_many :commit_listeners, class_name: "Releases::CommitListener", inverse_of: :train_group, dependent: :destroy
+  has_many :commit_listeners, inverse_of: :train, dependent: :destroy
+  has_many :steps, through: :release_platforms
+  has_many :deployments, through: :steps
 
   delegate :ready?, :config, to: :app
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :store_provider, to: :integrations
@@ -62,7 +64,7 @@ class Releases::TrainGroup < ApplicationRecord
   before_create :set_current_version
   before_create :set_default_status
 
-  after_create :create_trains
+  after_create :create_release_platforms
 
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
@@ -77,22 +79,18 @@ class Releases::TrainGroup < ApplicationRecord
   end
 
   def ios_train
-    trains.ios&.first
+    release_platforms.ios&.first
   end
 
   def android_train
-    trains.android&.first
+    release_platforms.android&.first
   end
 
-  def create_trains
-    Rails.logger.info("Creating trains for groups!")
-    platforms = if app.cross_platform?
-      Releases::Train.platforms.values
-    else
-      [app.platform]
-    end
+  def create_release_platforms
+    Rails.logger.info("Creating release_platforms for groups!")
+    platforms = app.cross_platform? ? ReleasePlatform.platforms.values : [app.platform]
     platforms.each do |platform|
-      trains.create!(
+      release_platforms.create!(
         platform: platform,
         branching_strategy:,
         description:,
@@ -103,10 +101,10 @@ class Releases::TrainGroup < ApplicationRecord
         app: app,
         version_seeded_with:,
         version_current:,
-        status: Releases::Train.statuses[:draft]
+        status: ReleasePlatform.statuses[:draft]
       )
     end
-    Rails.logger.info("Created trains for groups!")
+    Rails.logger.info("Created release_platforms for groups!")
   end
 
   def display_name
@@ -118,18 +116,18 @@ class Releases::TrainGroup < ApplicationRecord
   end
 
   def activate!
-    self.status = Releases::TrainGroup.statuses[:active]
+    self.status = Train.statuses[:active]
     save!(context: :activate_context)
     ios_train&.activate!
     android_train&.activate!
   end
 
   def in_creation?
-    trains.any?(&:in_creation?)
+    release_platforms.any?(&:in_creation?)
   end
 
   def startable?
-    trains.all?(&:startable?)
+    release_platforms.all?(&:startable?)
   end
 
   def branching_strategy_name
@@ -159,23 +157,23 @@ class Releases::TrainGroup < ApplicationRecord
   end
 
   def set_default_status
-    self.status ||= Releases::TrainGroup.statuses[:draft]
+    self.status ||= Train.statuses[:draft]
   end
 
   def ensure_deletable
-    errors.add(:train_groups, "cannot delete a train if there are releases made from it!") if runs.present?
+    errors.add(:trains, "cannot delete a train if there are releases made from it!") if releases.present?
   end
 
   def valid_train_configuration
-    unless trains.all?(&:valid_steps?)
-      errors.add(:trains, "there should be one release step")
+    unless release_platforms.all?(&:valid_steps?)
+      errors.add(:release_platforms, "there should be one release step")
     end
   end
 
   def bump_release!(has_major_bump = false)
     bump_term = has_major_bump ? :major : :minor
 
-    if runs.any?
+    if releases.any?
       self.version_current = version_current.ver_bump(bump_term)
       save!
       ios_train&.update!(version_current: version_current)

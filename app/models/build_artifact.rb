@@ -2,25 +2,23 @@
 #
 # Table name: build_artifacts
 #
-#  id                 :uuid             not null, primary key
-#  generated_at       :datetime
-#  uploaded_at        :datetime
-#  created_at         :datetime         not null
-#  updated_at         :datetime         not null
-#  train_step_runs_id :uuid             not null, indexed
+#  id           :uuid             not null, primary key
+#  generated_at :datetime
+#  uploaded_at  :datetime
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#  step_run_id  :uuid             not null, indexed
 #
 require "zip"
 
 class BuildArtifact < ApplicationRecord
   include Rails.application.routes.url_helpers
 
-  belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_runs_id, inverse_of: :build_artifact
+  belongs_to :step_run, inverse_of: :build_artifact
   has_one_attached :file
 
   delegate :create_and_upload!, to: ActiveStorage::Blob
   delegate :unzip_artifact?, to: :step_run
-  delegate :train, to: :step_run
-  delegate :app, to: :train
 
   def save_file!(artifact_stream)
     transaction do
@@ -50,5 +48,9 @@ class BuildArtifact < ApplicationRecord
     else
       rails_blob_url(file, protocol: "https", disposition: "attachment")
     end
+  end
+
+  def app
+    step_run.release_platform.app
   end
 end

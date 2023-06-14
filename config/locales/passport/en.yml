@@ -1,6 +1,6 @@
 en:
   passport:
-    releases/train/run:
+    release:
       post_release_pr_succeeded_html: 'Post release PR created and merged <a class="emphasize-link" href="%{url}">#%{number}</a>'
       pre_release_pr_not_creatable_html: 'A pre-release pull request for <span class="emphasize">%{release_branch}</span> could not be created'
       pull_request_not_mergeable_html: 'The pull request <a class="emphasize-link" href="%{url}">#%{number}</a> cannot be merged. Please check for any merge conflicts and/or branch protection rules.'
@@ -11,7 +11,7 @@ en:
       finalizing_html: 'Finalizing the release with version <span class="emphasize">%{version}</span>'
       finalize_failed_html: 'Failed to finalize the release with version <span class="emphasize">%{version}</span>'
       finished_html: 'Finished the release with version <span class="emphasize">%{version}</span>'
-    releases/step/run:
+    step_run:
       created_html: 'Started the step <span class="emphasize">%{name}</span> for <span class="emphasize">%{sha}</span>'
       ci_triggered_html: 'CI workflow triggered for generating build <span class="emphasize">%{version}</span>'
       ci_workflow_unavailable_html: 'CI workflow could not be found'
@@ -23,7 +23,7 @@ en:
       build_not_found_in_store_html: 'Build <span class="emphasize">%{version}</span> was not found in the store'
       build_found_in_store_html: 'Build <span class="emphasize">%{version}</span> located in the store'
       finished_html: 'Finished step <span class="emphasize">%{name}</span> for <span class="emphasize">%{sha}</span>'
-    releases/commit:
+    commit:
       created_html: 'New commit <span class="emphasize">%{sha}</span> has landed'
     deployment_run:
       created_html: 'Started distribution for <span class="emphasize">%{version}</span> to <span class="emphasize">%{provider}</span> in <span class="emphasize">%{chan}</span>'

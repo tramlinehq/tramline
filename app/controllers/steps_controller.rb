@@ -26,12 +26,12 @@ class StepsController < SignedInApplicationController
 
   def edit
     @step =
-      Releases::Step
-        .joins(train: :app)
-        .where(trains: {apps: {organization: current_organization}})
+      Step
+        .joins(release_platform: :app)
+        .where(release_platforms: {apps: {organization: current_organization}})
         .friendly
         .find(params[:id])
-    @train = @step.train
+    @train = @step.release_platform
     head :forbidden and return if @train.active_run
     @ci_actions = @train.ci_cd_provider.workflows
   end
@@ -52,12 +52,12 @@ class StepsController < SignedInApplicationController
 
   def update
     @step =
-      Releases::Step
-        .joins(train: :app)
-        .where(trains: {apps: {organization: current_organization}})
+      Step
+        .joins(release_platform: :app)
+        .where(release_platforms: {apps: {organization: current_organization}})
         .friendly
         .find(params[:id])
-    @train = @step.train
+    @train = @step.release_platform
     head :forbidden and return if @train.active_run
 
     @app = @train.app
@@ -73,10 +73,10 @@ class StepsController < SignedInApplicationController
   private
 
   def new_step_redirect
-    if @step.train.train_group&.in_creation?
+    if @step.release_platform.train.in_creation?
       redirect_to app_path(@app), notice: "Step was successfully created."
     else
-      redirect_to app_train_group_path(@app, @step.train.train_group), notice: "Step was successfully created."
+      redirect_to app_train_group_path(@app, @step.release_platform.train), notice: "Step was successfully created."
     end
   end
 
@@ -85,7 +85,7 @@ class StepsController < SignedInApplicationController
   end
 
   def set_train
-    @train = @app.trains.friendly.find(params[:train_id])
+    @train = @app.release_platforms.friendly.find(params[:train_id])
   end
 
   def set_app
@@ -93,7 +93,7 @@ class StepsController < SignedInApplicationController
   end
 
   def step_params
-    params.require(:releases_step).permit(
+    params.require(:step).permit(
       :name,
       :description,
       :ci_cd_channel,
@@ -127,7 +127,7 @@ class StepsController < SignedInApplicationController
 
   def deployments_params
     params
-      .require(:releases_step)
+      .require(:step)
       .permit(deployments_attributes: [
         :integration_id,
         :build_artifact_channel,

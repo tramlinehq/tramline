@@ -8,16 +8,18 @@ class Triggers::Release
 
   def initialize(train, has_major_bump: false)
     @train = train
+    @ios_train = train&.ios_train
+    @android_train = train&.android_train
     @starting_time = Time.current
     @has_major_bump = has_major_bump
   end
 
-  # FIXME: should we take a lock around this train? what is someone double triggers the run?
   def call
     return Response.new(:unprocessable_entity, "Cannot start a train that is not active!") if train.inactive?
-    return Response.new(:unprocessable_entity, "Cannot start a train that has no steps. Please add at least one step.") if train.steps.empty?
+    return Response.new(:unprocessable_entity, "Cannot start a train that has no steps. Please add at least one step to iOS train.") if @ios_train && @ios_train.steps.empty?
+    return Response.new(:unprocessable_entity, "Cannot start a train that has no steps. Please add at least one step to Android train.") if @android_train && @android_train.steps.empty?
     return Response.new(:unprocessable_entity, "A release is already in progress!") if train.active_run.present?
-    return Response.new(:unprocessable_entity, "Cannot start a new release before wrapping up existing releases!") if train.runs.pending_release?
+    return Response.new(:unprocessable_entity, "Cannot start a new release before wrapping up existing releases!") if train.releases.pending_release?
 
     if kickoff.ok?
       Response.new(:ok)
@@ -28,7 +30,7 @@ class Triggers::Release
 
   private
 
-  attr_reader :train, :release, :starting_time
+  attr_reader :train, :release_group, :starting_time
   delegate :branching_strategy, to: :train
   delegate :transaction, to: ApplicationRecord
 
@@ -44,9 +46,8 @@ class Triggers::Release
   end
 
   def create_release
-    @release =
-      train.runs.create!(
-        code_name: Haikunator.haikunate(100),
+    @release_group =
+      train.releases.create!(
         scheduled_at: starting_time,
         branch_name: release_branch,
         release_version: train.version_current,
@@ -66,9 +67,9 @@ class Triggers::Release
   memoize def new_branch_name
     branch_name = starting_time.strftime(train.release_branch_name_fmt)
 
-    if train.runs.exists?(branch_name:)
+    if train.releases.exists?(branch_name:)
       branch_name += "-1"
-      branch_name = branch_name.succ while train.runs.exists?(branch_name:)
+      branch_name = branch_name.succ while train.releases.exists?(branch_name:)
     end
 
     branch_name

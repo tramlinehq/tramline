@@ -9,8 +9,8 @@
 #  status                     :string
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
-#  deployment_id              :uuid             not null, indexed => [train_step_run_id]
-#  train_step_run_id          :uuid             not null, indexed => [deployment_id], indexed
+#  deployment_id              :uuid             not null, indexed => [step_run_id]
+#  step_run_id                :uuid             not null, indexed => [deployment_id], indexed
 #
 class DeploymentRun < ApplicationRecord
   has_paper_trail
@@ -20,12 +20,12 @@ class DeploymentRun < ApplicationRecord
   include Displayable
   using RefinedArray
 
-  belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
+  belongs_to :step_run, inverse_of: :deployment_runs
   belongs_to :deployment, inverse_of: :deployment_runs
   has_one :staged_rollout, dependent: :destroy
   has_one :external_release, dependent: :destroy
 
-  validates :deployment_id, uniqueness: {scope: :train_step_run_id}
+  validates :deployment_id, uniqueness: {scope: :step_run_id}
 
   delegate :step,
     :release,
@@ -49,7 +49,7 @@ class DeploymentRun < ApplicationRecord
     :staged_rollout_config,
     :google_firebase_integration?,
     to: :deployment
-  delegate :release_version, :get_release_metadata, to: :release
+  delegate :release_version, :release_metadata, to: :release
   delegate :app, to: :release
 
   STAMPABLE_REASONS = %w[
@@ -149,10 +149,6 @@ class DeploymentRun < ApplicationRecord
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 
   UnknownStoreError = Class.new(StandardError)
-
-  def release_metadata
-    get_release_metadata
-  end
 
   def first?
     step_run.deployment_runs.first == self

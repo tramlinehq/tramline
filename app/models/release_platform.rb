@@ -1,6 +1,6 @@
 # == Schema Information
 #
-# Table name: trains
+# Table name: release_platforms
 #
 #  id                       :uuid             not null, primary key
 #  branching_strategy       :string
@@ -17,10 +17,16 @@
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
 #  app_id                   :uuid             not null, indexed
-#  train_group_id           :uuid
+#  train_id                 :uuid
 #  vcs_webhook_id           :string
 #
-class Releases::Train < ApplicationRecord
+
+# TrainGroups -> Train
+# TrainGroupRun -> Release
+# Train -> Releases::Platform
+# TrainRun -> Releases::PlatformRun
+
+class ReleasePlatform < ApplicationRecord
   has_paper_trail
   using RefinedString
   extend FriendlyId
@@ -32,15 +38,18 @@ class Releases::Train < ApplicationRecord
   }.freeze
 
   belongs_to :app
-  belongs_to :train_group, class_name: "Releases::TrainGroup"
-  has_many :integrations, through: :train_group
-  has_many :runs, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
-  has_one :active_run, -> { pending_release }, class_name: "Releases::Train::Run", inverse_of: :train, dependent: :destroy
-  has_many :steps, -> { order(:step_number) }, class_name: "Releases::Step", inverse_of: :train, dependent: :destroy
+  belongs_to :train
+
+  has_many :integrations, through: :train
+  has_many :release_platform_runs, inverse_of: :release_platform, dependent: :destroy
+  has_one :active_run, -> { pending_release }, class_name: "ReleasePlatformRun", inverse_of: :release_platform, dependent: :destroy
+  has_many :steps, -> { order(:step_number) }, inverse_of: :release_platform, dependent: :destroy
   has_many :deployments, through: :steps
 
-  scope :running, -> { includes(:runs).where(runs: {status: Releases::Train::Run.statuses[:on_track]}) }
-  scope :only_with_runs, -> { joins(:runs).where.not(runs: {status: "stopped"}).distinct }
+  alias_method :runs, :release_platform_runs
+
+  scope :running, -> { includes(:release_platform_runs).where(release_platform_runs: {status: ReleasePlatformRun.statuses[:on_track]}) }
+  scope :only_with_runs, -> { joins(:release_platform_runs).where.not(release_platform_runs: {status: "stopped"}).distinct }
 
   enum status: {
     draft: "draft",
@@ -52,7 +61,6 @@ class Releases::Train < ApplicationRecord
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
 
-  validate :semver_compatibility, on: :create
   validate :ready?, on: :create
   validate :valid_step_configuration, on: :activate_context
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
@@ -63,9 +71,9 @@ class Releases::Train < ApplicationRecord
 
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :store_provider, to: :integrations
   delegate :unzip_artifact?, to: :ci_cd_provider
-  delegate :app, to: :train_group
+  delegate :app, to: :train
   delegate :ready?, :config, to: :app
-  # delegate :branching_strategy, :release_backmerge_branch, :release_branch, :version_current, :version_seeded_with, :working_branch, to: :train_group
+  # delegate :branching_strategy, :release_backmerge_branch, :release_branch, :version_current, :version_seeded_with, :working_branch, to: :train
 
   def self.running?
     running.any?
@@ -82,7 +90,7 @@ class Releases::Train < ApplicationRecord
   end
 
   def activate!
-    self.status = Releases::Train.statuses[:active]
+    self.status = Platform.statuses[:active]
     save!(context: :activate_context)
   end
 
@@ -134,20 +142,9 @@ class Releases::Train < ApplicationRecord
     errors.add(:trains, "cannot delete a train if there are releases made from it!") if runs.present?
   end
 
-  def semver_compatibility
-    VersioningStrategies::Semverish.new(version_seeded_with)
-  rescue ArgumentError
-    errors.add(:version_seeded_with, "Please choose a valid semver-like format, eg. major.minor.patch or major.minor")
-  end
-
   def valid_step_configuration
     unless valid_steps?
       errors.add(:steps, "there should be one release step")
     end
-  end
-
-  def set_constituent_seed_versions
-    semverish = version_seeded_with.to_semverish
-    self.major_version_seed, self.minor_version_seed, self.patch_version_seed = semverish.major, semverish.minor, semverish.patch
   end
 end

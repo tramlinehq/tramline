@@ -28,8 +28,8 @@ crumb :train do |train|
 end
 
 crumb :step do |step|
-  link step.name, app_train_steps_path(step.train.app, step.train)
-  parent :train, step.train
+  link step.name, app_train_steps_path(step.release_platform.app, step.release_platform)
+  parent :train, step.release_platform
 end
 
 crumb :new_step do |train|
@@ -89,7 +89,7 @@ end
 
 crumb :release_group do |release|
   link release.release_version, release_group_path(release)
-  parent :train_group, release.train_group
+  parent :train_group, release.train
 end
 
 crumb :timeline_release_group do |release|

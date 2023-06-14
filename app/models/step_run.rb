@@ -1,23 +1,23 @@
 # == Schema Information
 #
-# Table name: train_step_runs
+# Table name: step_runs
 #
-#  id                 :uuid             not null, primary key
-#  approval_status    :string           default("pending"), not null
-#  build_number       :string
-#  build_version      :string           not null
-#  ci_link            :string
-#  ci_ref             :string
-#  scheduled_at       :datetime         not null
-#  sign_required      :boolean          default(TRUE)
-#  status             :string           not null
-#  created_at         :datetime         not null
-#  updated_at         :datetime         not null
-#  releases_commit_id :uuid             not null, indexed
-#  train_run_id       :uuid             not null, indexed
-#  train_step_id      :uuid             not null, indexed
+#  id                      :uuid             not null, primary key
+#  approval_status         :string           default("pending"), not null
+#  build_number            :string
+#  build_version           :string           not null
+#  ci_link                 :string
+#  ci_ref                  :string
+#  scheduled_at            :datetime         not null
+#  sign_required           :boolean          default(TRUE)
+#  status                  :string           not null
+#  created_at              :datetime         not null
+#  updated_at              :datetime         not null
+#  commit_id               :uuid             not null, indexed
+#  release_platform_run_id :uuid             not null, indexed
+#  step_id                 :uuid             not null, indexed
 #
-class Releases::Step::Run < ApplicationRecord
+class StepRun < ApplicationRecord
   has_paper_trail
   include AASM
   include Passportable
@@ -25,16 +25,16 @@ class Releases::Step::Run < ApplicationRecord
   self.ignored_columns += ["initial_rollout_percentage"]
   self.implicit_order_column = :scheduled_at
 
-  belongs_to :step, class_name: "Releases::Step", foreign_key: :train_step_id, inverse_of: :runs
-  belongs_to :train_run, class_name: "Releases::Train::Run"
-  belongs_to :commit, class_name: "Releases::Commit", foreign_key: :releases_commit_id, inverse_of: :step_runs
-  has_one :build_artifact, foreign_key: :train_step_runs_id, inverse_of: :step_run, dependent: :destroy
-  has_many :deployment_runs, -> { includes(:deployment).merge(Deployment.sequential) }, foreign_key: :train_step_run_id, inverse_of: :step_run, dependent: :destroy
+  belongs_to :step, inverse_of: :step_runs
+  belongs_to :release_platform_run
+  belongs_to :commit, inverse_of: :step_runs
+  has_one :build_artifact, inverse_of: :step_run, dependent: :destroy
+  has_many :deployment_runs, -> { includes(:deployment).merge(Deployment.sequential) }, inverse_of: :step_run, dependent: :destroy
   has_many :deployments, through: :step
   has_many :running_deployments, through: :deployment_runs, source: :deployment
   has_many :passports, as: :stampable, dependent: :destroy
 
-  validates :train_step_id, uniqueness: {scope: :releases_commit_id}
+  validates :step_id, uniqueness: {scope: :commit_id}
 
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 
@@ -127,11 +127,11 @@ class Releases::Step::Run < ApplicationRecord
   attr_accessor :current_user
   attr_accessor :artifacts_url
 
-  delegate :train, :release_branch, to: :train_run
-  delegate :app, :store_provider, :ci_cd_provider, :unzip_artifact?, to: :train
+  delegate :release_platform, :release_branch, to: :release_platform_run
+  delegate :app, :store_provider, :ci_cd_provider, :unzip_artifact?, to: :release_platform
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
-  alias_method :release, :train_run
+  alias_method :release, :release_platform_run
   scope :not_failed, -> { where.not(status: [:ci_workflow_failed, :ci_workflow_halted, :build_not_found_in_store, :build_unavailable, :deployment_failed]) }
 
   def find_build
@@ -155,8 +155,8 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def startable_deployment?(deployment)
-    return false if train.inactive?
-    return false if train.active_run.nil?
+    return false if release_platform.inactive?
+    return false if release_platform.active_run.nil?
     return true if deployment.first? && deployment_runs.empty?
     next_deployment == deployment
   end
@@ -250,7 +250,7 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def trigger_workflow_run
-    version_code = train.app.bump_build_number!
+    version_code = release_platform.app.bump_build_number!
     inputs = {
       version_code: version_code,
       build_version: build_version
@@ -285,7 +285,7 @@ class Releases::Step::Run < ApplicationRecord
   end
 
   def notify_on_failure!(message)
-    train.notify!(message, :step_failed, {reason: message, step_run: self})
+    release_platform.notify!(message, :step_failed, {reason: message, step_run: self})
   end
 
   def after_trigger_ci

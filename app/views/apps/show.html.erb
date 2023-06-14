@@ -51,7 +51,7 @@
 
   <div class="space-y-8">
     <% if @app.ready? %>
-      <%= render partial: "train_groups/setup_progress", locals: { setup_instructions: @train_group_setup_instructions, app: @app, train_group_in_creation: @train_group_in_creation } %>
+      <%= render partial: "train_groups/setup_progress", locals: { setup_instructions: @train_setup_instructions, app: @app, train_in_creation: @train_in_creation } %>
     <% else %>
       <%= render partial: "apps/setup_progress", locals: { setup_instructions: @app_setup_instructions } %>
     <% end %>
@@ -78,28 +78,28 @@
       <% end %>
     </section>
 
-    <% if @app.train_groups.any? %>
+    <% if @app.trains.any? %>
       <%= render TableComponent.new(columns: ["Name", "Description", "Current Release"]) do |table| %>
         <% table.with_heading do %>
           <div class="flex justify-between items-end mb-2">
             <h2 class="text-2xl text-slate-800 font-bold">Release Train</h2>
           </div>
         <% end %>
-        <% @app.train_groups.each do |train_group| %>
+        <% @app.trains.each do |train| %>
           <% table.with_row do |row| %>
             <% row.with_cell do %>
               <div class="flex items-center">
                 <div class="font-medium text-slate-800">
-                  <%= link_to train_group.name, app_train_group_path(@app, train_group) %>
+                  <%= link_to train.name, app_train_group_path(@app, train) %>
                 </div>
               </div>
             <% end %>
             <% row.with_cell do %>
-              <div class="text-left"><%= simple_format train_group.description %></div>
+              <div class="text-left"><%= simple_format train.description %></div>
             <% end %>
             <% row.with_cell do %>
               <div class="text-left">
-                <%= "#{train_group.runs.any? ? train_group.version_current : train_group.version_seeded_with} • #{@app.build_number}" %>
+                <%= "#{train.releases.any? ? train.version_current : train.version_seeded_with} • #{@app.build_number}" %>
               </div>
             <% end %>
           <% end %>

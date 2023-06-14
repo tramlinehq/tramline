@@ -64,7 +64,7 @@
           <% end %>
           <div class="grid grid-cols-2 gap-y-1 ml-4">
             <div>
-              <% commit.step_runs.where(train_run: release.android_run).includes(:step).order(:created_at).each_with_index do |step_run| %>
+              <% commit.step_runs.where(release_platform_run: release.android_run).includes(:step).order(:created_at).each_with_index do |step_run| %>
                 <div class="border-dashed border-t border-slate-700 last:border-t-0 mb-2"></div>
 
                 <div class="pt-2 <%= "opacity-50" if is_stale_commit %>">
@@ -136,7 +136,7 @@
             </div>
 
             <div>
-              <% commit.step_runs.where(train_run: release.ios_run).includes(:step).order(:created_at).each_with_index do |step_run| %>
+              <% commit.step_runs.where(release_platform_run: release.ios_run).includes(:step).order(:created_at).each_with_index do |step_run| %>
                 <div class="border-dashed border-t border-slate-700 last:border-t-0 mb-2"></div>
 
                 <div class="pt-2 <%= "opacity-50" if is_stale_commit %>">

@@ -1,6 +1,6 @@
 # == Schema Information
 #
-# Table name: train_runs
+# Table name: release_platform_runs
 #
 #  id                       :uuid             not null, primary key
 #  branch_name              :string           not null
@@ -14,10 +14,10 @@
 #  stopped_at               :datetime
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
-#  train_group_run_id       :uuid
-#  train_id                 :uuid             not null, indexed
+#  release_id               :uuid
+#  release_platform_id      :uuid             not null, indexed
 #
-class Releases::Train::Run < ApplicationRecord
+class ReleasePlatformRun < ApplicationRecord
   has_paper_trail
   include AASM
   include Passportable
@@ -26,11 +26,11 @@ class Releases::Train::Run < ApplicationRecord
 
   self.implicit_order_column = :scheduled_at
 
-  belongs_to :train, class_name: "Releases::Train"
-  belongs_to :train_group_run, class_name: "Releases::TrainGroup::Run"
-  has_many :pull_requests, class_name: "Releases::PullRequest", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
-  has_many :step_runs, class_name: "Releases::Step::Run", foreign_key: :train_run_id, dependent: :destroy, inverse_of: :train_run
-  has_one :release_metadata, class_name: "ReleaseMetadata", foreign_key: "train_run_id", dependent: :destroy, inverse_of: :train_run
+  belongs_to :release_platform
+  belongs_to :release
+  has_many :pull_requests, dependent: :destroy, inverse_of: :release_platform_run
+  has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
+  has_one :release_metadata, dependent: :destroy, inverse_of: :release_platform_run
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
   has_many :passports, as: :stampable, dependent: :destroy
@@ -66,9 +66,9 @@ class Releases::Train::Run < ApplicationRecord
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   attr_accessor :has_major_bump
-  delegate :app, :pre_release_prs?, :vcs_provider, to: :train
+  delegate :app, :pre_release_prs?, :vcs_provider, to: :release_platform
   delegate :cache, to: Rails
-  delegate :release_branch, :branch_name, :last_commit, :commits, :tag_name, :tag_url, to: :train_group_run
+  delegate :release_branch, :branch_name, :last_commit, :commits, :tag_name, :tag_url, to: :release
 
   def metadata_editable?
     on_track? && !started_store_release?
@@ -82,7 +82,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def startable_step?(step)
-    return false if train.inactive?
+    return false if release_platform.inactive?
     return false unless on_track?
     return true if step.first? && step_runs_for(step).empty?
     return false if step.first?
@@ -130,19 +130,19 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def finished_steps?
-    commits.last&.step_runs&.where(train_run: self)&.success&.size == all_steps.size
+    commits.last&.step_runs&.where(release_platform_run: self)&.success&.size == all_steps.size
   end
 
   def latest_finished_step_runs
     step_runs
-      .select("DISTINCT ON (train_step_id) *")
-      .where(status: Releases::Step::Run.statuses[:success])
-      .order(:train_step_id, created_at: :desc)
+      .select("DISTINCT ON (step_id) *")
+      .where(status: StepRun.statuses[:success])
+      .order(:step_id, created_at: :desc)
   end
 
   def last_good_step_run
     step_runs
-      .where(status: Releases::Step::Run.statuses[:success])
+      .where(status: StepRun.statuses[:success])
       .joins(:step)
       .order(step_number: :desc, updated_at: :desc)
       .first
@@ -156,7 +156,7 @@ class Releases::Train::Run < ApplicationRecord
   def events(limit = nil)
     step_runs
       .left_joins(:commit, deployment_runs: :staged_rollout)
-      .pluck("train_step_runs.id, deployment_runs.id, releases_commits.id, staged_rollouts.id")
+      .pluck("step_runs.id, deployment_runs.id, commits.id, staged_rollouts.id")
       .flatten
       .uniq
       .compact
@@ -165,16 +165,16 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def all_steps
-    train.steps
+    release_platform.steps
   end
 
   def on_finish!
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
-    train.notify!("Release is complete!", :release_ended, finalize_phase_metadata)
+    release_platform.notify!("Release is complete!", :release_ended, finalize_phase_metadata)
     app.refresh_external_app
 
-    Rails.logger.debug "Post release start!", train_group_run.attributes
-    train_group_run.start_post_release_phase!
+    Rails.logger.debug "Post release start!", release.attributes
+    release.start_post_release_phase!
   end
 
   def finalize_phase_metadata
@@ -191,7 +191,7 @@ class Releases::Train::Run < ApplicationRecord
   # App Store requires a higher version name than that of the previously approved version name
   # and so a version bump is required for iOS once the build has been approved as well
   def version_bump_required?
-    return latest_deployed_store_release&.rollout_started? if train.android? # FIXME: old trains should have a platform
+    return latest_deployed_store_release&.rollout_started? if release_platform.android? # FIXME: old trains should have a platform
     latest_deployed_store_release&.status&.in? [DeploymentRun::STATES[:rollout_started], DeploymentRun::STATES[:ready_to_release]]
   end
 
@@ -211,14 +211,14 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def latest_store_release
-    last_run_for(train.release_step)
+    last_run_for(release_platform.release_step)
       &.deployment_runs
       &.not_failed
       &.find { |dr| dr.deployment.production_channel? }
   end
 
   def latest_deployed_store_release
-    last_successful_run_for(train.release_step)
+    last_successful_run_for(release_platform.release_step)
       &.deployment_runs
       &.not_failed
       &.find { |dr| dr.deployment.production_channel? }

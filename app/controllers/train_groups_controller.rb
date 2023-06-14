@@ -12,16 +12,14 @@ class TrainGroupsController < SignedInApplicationController
   end
 
   def new
-    @train_group = @app.train_groups.new
-    @ios_train = @train_group.trains.new(app: @app)
-    @android_train = @train_group.trains.new(app: @app)
+    @train_group = @app.trains.new
   end
 
   def edit
   end
 
   def create
-    @train_group = @app.train_groups.new(train_group_params)
+    @train_group = @app.trains.new(train_group_params)
 
     respond_to do |format|
       if @train_group.save
@@ -67,7 +65,7 @@ class TrainGroupsController < SignedInApplicationController
   end
 
   def set_train_group
-    @train_group = @app.train_groups.friendly.find(params[:id])
+    @train_group = @app.trains.friendly.find(params[:id])
   end
 
   def set_app

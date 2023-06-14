@@ -13,8 +13,8 @@ class Releases::DeploymentsController < SignedInApplicationController
 
   def set_release
     @release =
-      Releases::Train::Run
-        .joins(train: :app)
+      ReleasePlatformRun
+        .joins(release_platform: :app)
         .where(apps: {organization: current_organization})
         .find_by(id: params[:release_id])
   end

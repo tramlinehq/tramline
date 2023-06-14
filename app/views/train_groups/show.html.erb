@@ -15,7 +15,7 @@
       <%= authz_button_to :amber, "Start new major release", app_train_group_release_groups_path(@app, @train_group, has_major_bump: true) %>
     <% end %>
 
-    <% if @train_group.runs.size > 0 %>
+    <% if @train_group.releases.size > 0 %>
       <%= button_to "#", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed shadow-none", disabled: true do %>
         <%= inline_svg("band_aid.svg", classname: "w-5 h-5 opacity-80") %>
         <span class="ml-2">Hotfix last release</span>
@@ -36,7 +36,7 @@
       <% end %>
     <% end %>
 
-    <% if @train_group.runs.blank? %>
+    <% if @train_group.releases.blank? %>
       <%= authz_link_to :red, app_train_path(@app, @train_group), method: :delete,
                         data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } do %>
         <span>Delete</span>
@@ -91,15 +91,15 @@
 
   <section>
     <!-- Releases -->
-    <% if @train_group.runs.size > 0 %>
+    <% if @train_group.releases.size > 0 %>
       <%= render TableComponent.new(columns: ["•", "version", "release branch"]) do |table| %>
         <% table.with_heading do %>
           <h2 class="text-2xl font-bold">Releases</h2>
         <% end %>
-        <% @train_group.runs.order(scheduled_at: :desc).take(10).each_with_index do |run, index| %>
+        <% @train_group.releases.order(scheduled_at: :desc).take(10).each_with_index do |run, index| %>
           <% table.with_row do |row| %>
             <% row.with_cell do %>
-              <%= @train_group.runs.size - index %>
+              <%= @train_group.releases.size - index %>
             <% end %>
 
             <% row.with_cell do %>
@@ -142,32 +142,30 @@
   </section>
 
   <!-- Steps -->
-  <% android_train = @train_group.android_train %>
-  <% if android_train.present? %>
+  <% if @train_group.android_train.present? %>
     <section class="w-full mt-10">
       <h2 class="text-2xl font-bold mb-4">Android Steps</h2>
 
-      <% if android_train.steps.size > 0 %>
+      <% if @train_group.android_train.steps.size > 0 %>
         <div class="flex flex-col">
-          <%= render partial: "shared/step_tree_viz", locals: { train: android_train, editable: false } %>
+          <%= render partial: "shared/step_tree_viz", locals: { train: @train_group.android_train, editable: false } %>
         </div>
       <% else %>
-        <%= render partial: "trains/step_creation", locals: { app: @app, train: android_train } %>
+        <%= render partial: "trains/step_creation", locals: { app: @app, train: @train_group.android_train } %>
       <% end %>
     </section>
   <% end %>
 
-  <% ios_train = @train_group.trains.ios.first %>
-  <% if ios_train.present? %>
+  <% if @train_group.ios_train.present? %>
     <section class="w-full mt-10">
       <h2 class="text-2xl font-bold mb-4">iOS Steps</h2>
 
-      <% if ios_train.steps.size > 0 %>
+      <% if @train_group.ios_train.steps.size > 0 %>
         <div class="flex flex-col">
-          <%= render partial: "shared/step_tree_viz", locals: { train: ios_train, editable: false } %>
+          <%= render partial: "shared/step_tree_viz", locals: { train: @train_group.ios_train, editable: false } %>
         </div>
       <% else %>
-        <%= render partial: "trains/step_creation", locals: { app: @app, train: ios_train } %>
+        <%= render partial: "trains/step_creation", locals: { app: @app, train: @train_group.ios_train } %>
       <% end %>
     </section>
   <% end %>

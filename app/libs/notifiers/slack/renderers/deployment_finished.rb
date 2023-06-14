@@ -6,10 +6,10 @@ module Notifiers
       def initialize(**params)
         @step_run = params[:step_run]
         @step_name = @step_run.step.name
-        @train_run = @step_run.train_run
+        @train_run = @step_run.release_platform_run
         @version_number = @step_run.build_version
         @build_number = @step_run.build_number
-        @train_name = @train_run.train.name
+        @train_name = @train_run.release_platform.name
         @artifact_download_link = artifact_download_link
         super
       end

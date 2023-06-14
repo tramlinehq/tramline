@@ -28,7 +28,7 @@ class TrainsController < SignedInApplicationController
   private
 
   def set_train
-    @train = @app.trains.friendly.find(params[:id])
+    @train = @app.release_platforms.friendly.find(params[:id])
   end
 
   def set_app

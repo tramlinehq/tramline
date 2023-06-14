@@ -29,12 +29,12 @@ class App < ApplicationRecord
   has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :integrations, inverse_of: :app, dependent: :destroy
 
-  has_many :train_groups, class_name: "Releases::TrainGroup", dependent: :destroy
-  has_many :train_group_runs, class_name: "Releases::TrainGroup::Run", through: :train_groups
+  has_many :trains, dependent: :destroy
+  has_many :releases, through: :trains
 
-  has_many :trains, class_name: "Releases::Train", dependent: :destroy
-  has_many :train_runs, class_name: "Releases::Train::Run", through: :trains
-  has_many :steps, through: :trains # TODO: figure this out through train groups somehow
+  has_many :release_platforms, dependent: :destroy
+  has_many :release_platform_runs, through: :releases
+  has_many :steps, through: :release_platforms
 
   validate :no_trains_are_running, on: :update
   validates :bundle_identifier, uniqueness: {scope: [:platform, :organization_id]}
@@ -63,7 +63,8 @@ class App < ApplicationRecord
   scope :with_trains, -> { joins(:trains).distinct }
 
   def runs
-    Releases::Train::Run.joins(train: :app).where(train: {app: self})
+    release_platform_runs
+    # ReleasePlatformRun.joins(train: :app).where(train: { app: self})
   end
 
   def self.allowed_platforms(_)
@@ -96,7 +97,7 @@ class App < ApplicationRecord
     elsif ios?
       APP_STORE_URL_TEMPLATE.expand(id: external_id).to_s
     else
-      "google.com"
+      "google.com" # FIXME
     end
   end
 
@@ -137,39 +138,39 @@ class App < ApplicationRecord
       .reduce(:merge)
   end
 
-  def train_group_setup_instructions
-    train_group_setup = {
-      train_group: {
-        visible: !train_groups.any?, completed: train_groups.any?
+  def train_setup_instructions
+    train_setup = {
+      train: {
+        visible: !trains.any?, completed: trains.any?
       }
     }
 
     ios_steps_setup =
       {
         ios_review_step: {
-          visible: train_groups.any?, completed: train_groups.first&.trains&.ios&.first&.steps&.review&.any?
+          visible: trains.any?, completed: trains.first&.release_platforms&.ios&.first&.steps&.review&.any?
         },
         ios_release_step: {
-          visible: train_groups.any?, completed: train_groups.first&.trains&.ios&.first&.steps&.release&.any?
+          visible: trains.any?, completed: trains.first&.release_platforms&.ios&.first&.steps&.release&.any?
         }
       }
 
     android_steps_setup =
       {
         android_review_step: {
-          visible: train_groups.any?, completed: train_groups.first&.trains&.android&.first&.steps&.review&.any?
+          visible: trains.any?, completed: trains.first&.release_platforms&.android&.first&.steps&.review&.any?
         },
         android_release_step: {
-          visible: train_groups.any?, completed: train_groups.first&.trains&.android&.first&.steps&.release&.any?
+          visible: trains.any?, completed: trains.first&.release_platforms&.android&.first&.steps&.release&.any?
         }
       }
 
     instructions = if cross_platform?
-      [train_group_setup, ios_steps_setup, android_steps_setup]
+      [train_setup, ios_steps_setup, android_steps_setup]
     elsif android?
-      [train_group_setup, android_steps_setup]
+      [train_setup, android_steps_setup]
     else
-      [train_group_setup, ios_steps_setup]
+      [train_setup, ios_steps_setup]
     end
 
     instructions.flatten.reduce(:merge)
@@ -177,10 +178,10 @@ class App < ApplicationRecord
 
   # FIXME: this is probably quite inefficient for a lot of apps/trains
   def high_level_overview
-    trains.only_with_runs.index_with do |train|
+    release_platforms.only_with_runs.index_with do |release_platform|
       {
-        in_review: train.runs.on_track.first,
-        last_released: train.runs.released.order("completed_at DESC").first
+        in_review: release_platform.runs.on_track.first,
+        last_released: release_platform.runs.released.order("completed_at DESC").first
       }
     end
   end
@@ -234,7 +235,7 @@ class App < ApplicationRecord
   end
 
   def no_trains_are_running
-    if trains.running? && bundle_identifier_changed?
+    if release_platforms.running? && bundle_identifier_changed?
       errors.add(:bundle_identifier, "cannot be updated if there are running trains!")
     end
   end

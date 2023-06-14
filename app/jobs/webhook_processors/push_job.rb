@@ -2,7 +2,7 @@ class WebhookProcessors::PushJob < ApplicationJob
   queue_as :high
 
   def perform(train_run_id, commit_attributes)
-    run = Releases::TrainGroup::Run.find(train_run_id)
+    run = Release.find(train_run_id)
     return unless run.committable?
 
     WebhookProcessors::Push.process(run, commit_attributes)

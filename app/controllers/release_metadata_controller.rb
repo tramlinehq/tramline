@@ -10,7 +10,7 @@ class ReleaseMetadataController < SignedInApplicationController
   end
 
   def update
-    @release_metadata = ReleaseMetadata.find_or_initialize_by(train_group_run: @release)
+    @release_metadata = ReleaseMetadata.find_or_initialize_by(release: @release)
 
     if @release_metadata.update(release_metadata_params)
       redirect_to parent_release_path, notice: "Release metadata was successfully updated."
@@ -37,7 +37,7 @@ class ReleaseMetadataController < SignedInApplicationController
   end
 
   def set_release
-    @release = Releases::TrainGroup::Run.find(params[:release_group_id])
+    @release = Release.find(params[:release_group_id])
   end
 
   def parent_release_path
