@@ -54,11 +54,6 @@ Rails.application.routes.draw do
     end
 
     resources :train_groups, only: %i[new create edit update show destroy] do
-      member do
-        patch :activate
-        patch :deactivate
-      end
-
       resources :release_groups, only: %i[show create destroy], shallow: true do
         resource :release_metadatum, only: %i[edit update], path: :metadata
 
@@ -72,12 +67,7 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :trains, only: %i[new create edit update show destroy] do
-      member do
-        patch :activate
-        patch :deactivate
-      end
-
+    resources :trains, only: %i[edit update show destroy] do
       resources :steps, only: %i[new create edit update]
 
       resources :releases, only: [], shallow: true do
