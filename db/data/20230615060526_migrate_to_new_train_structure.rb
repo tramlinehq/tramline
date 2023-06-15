@@ -15,7 +15,6 @@ class MigrateToNewTrainStructure < ActiveRecord::Migration[7.0]
         release_branch = attributes.release_branch
         release_backmerge_branch = attributes.release_backmerge_branch
         working_branch = attributes.working_branch
-        vcs_webhook_id = attributes.vcs_webhook_id
         slug = attributes.slug
         version_seeded_with = attributes.version_seeded_with
         version_current = attributes.version_current
@@ -30,7 +29,7 @@ class MigrateToNewTrainStructure < ActiveRecord::Migration[7.0]
           release_branch:,
           release_backmerge_branch:,
           working_branch:,
-          vcs_webhook_id:,
+          vcs_webhook_id: nil,
           slug:,
           version_seeded_with:,
           version_current:
