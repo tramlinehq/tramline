@@ -67,6 +67,7 @@ class Train < ApplicationRecord
   before_create :set_current_version, unless: :in_data_migration_mode
   before_create :set_default_status, unless: :in_data_migration_mode
   after_create :create_release_platforms, unless: :in_data_migration_mode
+  after_create :create_webhook!, if: :in_data_migration_mode
 
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
