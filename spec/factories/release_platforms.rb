@@ -1,6 +1,7 @@
 FactoryBot.define do
-  factory :releases_train, class: "Releases::Train" do
-    app { association :app, :android }
+  factory :release_platform do
+    train { association :train }
+    app { train.app }
     version_seeded_with { "1.1.1" }
     name { "train" }
     description { "train description" }
@@ -8,6 +9,7 @@ FactoryBot.define do
     working_branch { "dev" }
     release_backmerge_branch { "main" }
     status { "draft" }
+    platform { "android" }
 
     trait :draft do
       status { "draft" }

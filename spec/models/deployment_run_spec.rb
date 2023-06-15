@@ -7,8 +7,8 @@ describe DeploymentRun do
 
   describe "#dispatch!" do
     context "when any platform" do
-      let(:step) { create(:releases_step, :with_deployment) }
-      let(:step_run) { create(:releases_step_run, :build_available, step: step) }
+      let(:step) { create(:step, :with_deployment) }
+      let(:step_run) { create(:step_run, :build_available, step: step) }
 
       it "marks the step run as deployment_started if first deployment regardless of order" do
         deployment1 = step.deployments.first
@@ -34,8 +34,8 @@ describe DeploymentRun do
     end
 
     context "when android" do
-      let(:step) { create(:releases_step, :with_deployment) }
-      let(:step_run) { create(:releases_step_run, :build_available, step: step) }
+      let(:step) { create(:step, :with_deployment) }
+      let(:step_run) { create(:step_run, :build_available, step: step) }
 
       it "marks as completed if deployment is external" do
         external_deployment = create(:deployment, step: step, integration: nil)
@@ -47,7 +47,7 @@ describe DeploymentRun do
 
       it "starts upload for play store if deployment has google play store integration" do
         play_upload_job = Deployments::GooglePlayStore::Upload
-        deployment = create(:deployment, integration: step.train.build_channel_integrations.first, step: step)
+        deployment = create(:deployment, integration: step.release_platform.build_channel_integrations.first, step: step)
         deployment_run = create(:deployment_run, :created, deployment: deployment, step_run: step_run)
         allow(play_upload_job).to receive(:perform_later)
 
@@ -69,9 +69,10 @@ describe DeploymentRun do
 
     context "when ios" do
       let(:app) { create(:app, :ios) }
-      let(:train) { create(:releases_train, app: app) }
-      let(:step) { create(:releases_step, :with_deployment, train: train) }
-      let(:step_run) { create(:releases_step_run, :build_found_in_store, step: step) }
+      let(:train) { create(:train, app: app) }
+      let(:release_platform) { create(:release_platform, train: train, platform: "ios") }
+      let(:step) { create(:step, :with_deployment, release_platform:) }
+      let(:step_run) { create(:step_run, :build_found_in_store, step: step) }
 
       it "marks as completed if deployment is external" do
         external_deployment = create(:deployment, step: step, integration: nil)
@@ -83,7 +84,7 @@ describe DeploymentRun do
 
       it "starts distribution if deployment has app store integration" do
         job = Deployments::AppStoreConnect::TestFlightReleaseJob
-        deployment = create(:deployment, integration: train.build_channel_integrations.first, step: step)
+        deployment = create(:deployment, integration: release_platform.build_channel_integrations.first, step: step)
         deployment_run = create(:deployment_run, :created, deployment: deployment, step_run: step_run)
         allow(job).to receive(:perform_later)
 
@@ -110,8 +111,8 @@ describe DeploymentRun do
   end
 
   describe "#upload!" do
-    let(:step) { create(:releases_step, :with_deployment) }
-    let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
+    let(:step) { create(:step, :with_deployment) }
+    let(:step_run) { create(:step_run, :deployment_started, step: step) }
 
     it "marks self as uploaded" do
       deployment = create(:deployment, step: step)
@@ -150,8 +151,8 @@ describe DeploymentRun do
   end
 
   describe "#complete!" do
-    let(:step) { create(:releases_step, :with_deployment) }
-    let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
+    let(:step) { create(:step, :with_deployment) }
+    let(:step_run) { create(:step_run, :deployment_started, step: step) }
 
     before do
       create_list(:deployment, 2, step: step)
@@ -213,8 +214,8 @@ describe DeploymentRun do
   end
 
   describe "#start_release!" do
-    let(:step) { create(:releases_step, :release, :with_deployment) }
-    let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
+    let(:step) { create(:step, :release, :with_deployment) }
+    let(:step_run) { create(:step_run, :deployment_started, step: step) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
     before do
@@ -291,7 +292,7 @@ describe DeploymentRun do
               anything,
               anything,
               full_release_value,
-              [run.step_run.train_run.release_metadata]
+              [run.step_run.release.release_metadata]
             )
         )
         expect(run.reload.released?).to be(true)

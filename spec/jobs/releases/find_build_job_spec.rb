@@ -13,7 +13,7 @@ describe Releases::FindBuildJob do
     }
 
     before do
-      create(:deployment, step: step_run.step, integration: step_run.train.build_channel_integrations.first)
+      create(:deployment, step: step_run.step, integration: step_run.release_platform.build_channel_integrations.first)
     end
 
     it "finds the build for the step run and updates step run status" do
@@ -34,7 +34,7 @@ describe Releases::FindBuildJob do
     end
 
     it "does nothing if release is not on track" do
-      step_run.train_run.update(status: "finished")
+      step_run.platform_release.update(status: "finished")
 
       described_class.new.perform(step_run.id)
 

@@ -5,8 +5,9 @@ FactoryBot.define do
 
     trait :with_step do
       before(:create) do |deployment, _|
-        train = create(:releases_train, app: deployment.integration.app)
-        build(:releases_step, train: train)
+        train = create(:train, app: deployment.integration.app)
+        release_platform = create(:release_platform, train: train)
+        build(:step, release_platform: release_platform)
           .tap { |step| step.deployments << deployment }
           .save
       end
@@ -14,8 +15,9 @@ FactoryBot.define do
 
     trait :with_production_channel do
       before(:create) do |deployment, _|
-        train = create(:releases_train, app: deployment.integration.app)
-        build(:releases_step, :release, train: train)
+        train = create(:train, app: deployment.integration.app)
+        release_platform = create(:release_platform, train: train)
+        build(:step, :release, release_platform: release_platform)
           .tap { |step| step.deployments << deployment }
           .save
       end

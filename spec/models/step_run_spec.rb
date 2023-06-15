@@ -1,13 +1,13 @@
 require "rails_helper"
 
-describe Releases::Step::Run do
+describe StepRun do
   it "has a valid factory" do
-    expect(create(:releases_step_run)).to be_valid
+    expect(create(:step_run)).to be_valid
   end
 
   describe "#similar_deployment_runs_for" do
-    let(:steps) { create_list(:releases_step, 2, :with_deployment) }
-    let(:step_run) { create(:releases_step_run, step: steps.first) }
+    let(:steps) { create_list(:step, 2, :with_deployment) }
+    let(:step_run) { create(:step_run, step: steps.first) }
 
     it "ignores itself" do
       integration = create(:integration)
@@ -44,7 +44,7 @@ describe Releases::Step::Run do
 
     it "only picks deployment runs from the correct step run" do
       second_step = steps.last
-      second_step_run = create(:releases_step_run, step: second_step)
+      second_step_run = create(:step_run, step: second_step)
       integration = create(:integration)
       deployments = create_list(:deployment, 2, step: steps.first, integration: integration)
       second_step_deployment = create(:deployment, step: second_step, integration: integration)
@@ -57,40 +57,40 @@ describe Releases::Step::Run do
   end
 
   describe "#manually_startable_deployment?" do
-    let(:train) { create(:releases_train) }
+    let(:release_platform) { create(:release_platform) }
 
     it "is false when train is inactive" do
-      step = create(:releases_step, :with_deployment, train: train)
+      step = create(:step, :with_deployment, release_platform: release_platform)
       deployment = create(:deployment, step: step)
-      train.update(status: Releases::Train.statuses[:inactive])
-      step_run = create(:releases_step_run, step: step)
+      release_platform.update(status: ReleasePlatform.statuses[:inactive])
+      step_run = create(:step_run, step: step)
 
       expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
     it "is false when there are no active train runs" do
-      step = create(:releases_step, :with_deployment, train: train)
-      step_run = create(:releases_step_run, step: step)
+      step = create(:step, :with_deployment, release_platform: release_platform)
+      step_run = create(:step_run, step: step)
       deployment = create(:deployment, step: step)
-      _inactive_train_run = create(:releases_train_run, train: train, status: "finished")
+      _inactive_train_run = create(:release_platform_run, release_platform: release_platform, status: "finished")
 
       expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
     it "is false when it is the first deployment" do
-      step = create(:releases_step, :with_deployment, train: train)
-      step_run = create(:releases_step_run, step: step)
+      step = create(:step, :with_deployment, release_platform: release_platform)
+      step_run = create(:step_run, step: step)
       deployment = create(:deployment, step: step)
-      _active_train_run = create(:releases_train_run, train: train, status: "on_track")
+      _active_train_run = create(:release_platform_run, release_platform: release_platform, status: "on_track")
 
       expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
     it "is false when the deployment run has already happened" do
-      step = create(:releases_step, :with_deployment, train: train)
-      step_run = create(:releases_step_run, step: step)
+      step = create(:step, :with_deployment, release_platform: release_platform)
+      step_run = create(:step_run, step: step)
       deployment = create(:deployment, step: step)
-      _active_train_run = create(:releases_train_run, train: train, status: "on_track")
+      _active_train_run = create(:release_platform_run, release_platform: release_platform, status: "on_track")
       _deployment_run = create(:deployment_run, step_run: step_run, deployment: deployment, status: "released")
 
       expect(step_run.manually_startable_deployment?(deployment)).to be false
@@ -98,11 +98,11 @@ describe Releases::Step::Run do
 
     context "with release step" do
       it "is true when it is the running step's next-in-line deployment" do
-        step = create(:releases_step, :release, :with_deployment, train: train)
-        _inactive_train_run = create(:releases_train_run, train: train, status: "finished")
-        inactive_step_run = create(:releases_step_run, step: step, status: "success")
-        _active_train_run = create(:releases_train_run, train: train, status: "on_track")
-        running_step_run = create(:releases_step_run, step: step, status: "on_track")
+        step = create(:step, :release, :with_deployment, release_platform: release_platform)
+        _inactive_train_run = create(:release_platform_run, release_platform: release_platform, status: "finished")
+        inactive_step_run = create(:step_run, step: step, status: "success")
+        _active_train_run = create(:release_platform_run, release_platform: release_platform, status: "on_track")
+        running_step_run = create(:step_run, step: step, status: "on_track")
         deployment1 = create(:deployment, step: step)
         _deployment_run1 = create(:deployment_run, step_run: running_step_run, deployment: deployment1, status: "released")
         deployment2 = create(:deployment, step: step)
@@ -116,11 +116,11 @@ describe Releases::Step::Run do
 
     context "with review step" do
       it "is false when it is the running step's next-in-line deployment" do
-        step = create(:releases_step, :review, :with_deployment, train: train)
-        _inactive_train_run = create(:releases_train_run, train: train, status: "finished")
-        inactive_step_run = create(:releases_step_run, step: step, status: "success")
-        _active_train_run = create(:releases_train_run, train: train, status: "on_track")
-        running_step_run = create(:releases_step_run, step: step, status: "on_track")
+        step = create(:step, :review, :with_deployment, release_platform: release_platform)
+        _inactive_train_run = create(:release_platform_run, release_platform: release_platform, status: "finished")
+        inactive_step_run = create(:step_run, step: step, status: "success")
+        _active_train_run = create(:release_platform_run, release_platform: release_platform, status: "on_track")
+        running_step_run = create(:step_run, step: step, status: "on_track")
         deployment1 = create(:deployment, step: step)
         _deployment_run1 = create(:deployment_run, step_run: running_step_run, deployment: deployment1, status: "released")
         deployment2 = create(:deployment, step: step)
@@ -135,8 +135,8 @@ describe Releases::Step::Run do
 
   describe "#finish_deployment!" do
     it "marks the step as finished if all deployments are finished" do
-      step = create(:releases_step, :review, :with_deployment)
-      step_run = create(:releases_step_run, :deployment_started, step: step)
+      step = create(:step, :review, :with_deployment)
+      step_run = create(:step_run, :deployment_started, step: step)
       first_deployment = step_run.step.deployments.first
       create(:deployment_run, :released, deployment: first_deployment, step_run: step_run)
 
@@ -147,9 +147,9 @@ describe Releases::Step::Run do
 
     it "triggers the next deployment if there are any" do
       allow(Triggers::Deployment).to receive(:call)
-      step = create(:releases_step, :review, :with_deployment)
+      step = create(:step, :review, :with_deployment)
       second_deployment = create(:deployment, step: step)
-      step_run = create(:releases_step_run, :build_available, step: step)
+      step_run = create(:step_run, :build_available, step: step)
       first_deployment = step_run.step.deployments.first
 
       step_run.finish_deployment!(first_deployment)
@@ -157,19 +157,21 @@ describe Releases::Step::Run do
       expect(Triggers::Deployment).to have_received(:call).with(step_run: step_run, deployment: second_deployment).once
     end
 
-    it "automatically finalizes the release if the release step has completed" do
-      train = create(:releases_train)
-      train_run = create(:releases_train_run, train: train)
-      _commit_1 = create(:releases_commit, train_run: train_run)
-      step = create(:releases_step, :release, :with_deployment)
-      step_run = create(:releases_step_run, :deployment_started, step: step, train_run: train_run)
+    it "automatically finishes the release if the release step has completed" do
+      train = create(:train)
+      release = create(:release, train:)
+      release_platform = create(:release_platform, train:)
+      platform_release = create(:release_platform_run, release_platform:, release:)
+      commit_1 = create(:commit, release:)
+      step = create(:step, :release, :with_deployment, release_platform:)
+      step_run = create(:step_run, :deployment_started, step:, release_platform_run: platform_release, commit: commit_1)
       first_deployment = step_run.step.deployments.first
       create(:deployment_run, :released, deployment: first_deployment, step_run: step_run)
 
       step_run.finish_deployment!(first_deployment)
 
       expect(step_run.reload.success?).to be(true)
-      expect(step_run.release.post_release_started?).to be(true)
+      expect(step_run.platform_release.finished?).to be(true)
     end
   end
 
@@ -179,7 +181,7 @@ describe Releases::Step::Run do
     end
 
     it "triggers the deployment for the step run" do
-      step_run = create(:releases_step_run, :build_available)
+      step_run = create(:step_run, :build_available)
       first_deployment = step_run.step.deployments.first
 
       step_run.trigger_deployment
@@ -197,7 +199,7 @@ describe Releases::Step::Run do
     end
 
     it "transitions state" do
-      step_run = create(:releases_step_run)
+      step_run = create(:step_run)
 
       step_run.trigger_ci!
 
@@ -205,7 +207,7 @@ describe Releases::Step::Run do
     end
 
     it "updates ci metadata" do
-      step_run = create(:releases_step_run)
+      step_run = create(:step_run)
 
       step_run.trigger_ci!
       step_run.reload
@@ -215,7 +217,7 @@ describe Releases::Step::Run do
     end
 
     it "stamps an event" do
-      step_run = create(:releases_step_run)
+      step_run = create(:step_run)
       id = step_run.id
       name = step_run.class.name
       allow(PassportJob).to receive(:perform_later)
@@ -226,7 +228,7 @@ describe Releases::Step::Run do
     end
 
     it "triggers find workflow run" do
-      step_run = create(:releases_step_run)
+      step_run = create(:step_run)
       id = step_run.id
       allow(Releases::FindWorkflowRun).to receive(:perform_async)
 

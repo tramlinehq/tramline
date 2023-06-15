@@ -10,7 +10,6 @@ class ChangePassportToNewStampableTypes < ActiveRecord::Migration[7.0]
     }
 
     Passport.where(stampable_type: changed_stampable_types.keys).each do |passport|
-      puts changed_stampable_types[passport.stampable_type]
       passport.update!(stampable_type: changed_stampable_types[passport.stampable_type])
     end
   end

@@ -1,6 +1,6 @@
 FactoryBot.define do
-  factory :releases_step, class: "Releases::Step" do
-    association :train, factory: :releases_train
+  factory :step do
+    release_platform { association :release_platform }
     name { Faker::Lorem.word }
     description { Faker::Lorem.sentence }
     sequence(:ci_cd_channel) { |n| Faker::Lorem.word + n.to_s }

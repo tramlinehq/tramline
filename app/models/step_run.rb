@@ -127,11 +127,11 @@ class StepRun < ApplicationRecord
   attr_accessor :current_user
   attr_accessor :artifacts_url
 
-  delegate :release_platform, :release_branch, to: :release_platform_run
+  delegate :release_platform, :release_branch, :release, to: :release_platform_run
   delegate :app, :store_provider, :ci_cd_provider, :unzip_artifact?, to: :release_platform
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
-  alias_method :release, :release_platform_run
+  alias_method :platform_release, :release_platform_run
   scope :not_failed, -> { where.not(status: [:ci_workflow_failed, :ci_workflow_halted, :build_not_found_in_store, :build_unavailable, :deployment_failed]) }
 
   def find_build
@@ -162,7 +162,7 @@ class StepRun < ApplicationRecord
   end
 
   def manually_startable_deployment?(deployment)
-    return false unless release.on_track?
+    return false unless platform_release.on_track?
     return false if deployment.first?
     return false if step.review?
     startable_deployment?(deployment) && last_deployment_run&.released?
@@ -308,6 +308,6 @@ class StepRun < ApplicationRecord
   end
 
   def finalize_release
-    release.finish! if release.finalizable?
+    platform_release.finish! if platform_release.finalizable?
   end
 end

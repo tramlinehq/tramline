@@ -14,7 +14,7 @@
 class ReleaseMetadata < ApplicationRecord
   has_paper_trail
 
-  belongs_to :release
+  belongs_to :release, inverse_of: :release_metadata
 
   DEFAULT_LOCALE = "en-US"
   DEFAULT_RELEASE_NOTES = "The latest version contains bug fixes and performance improvements."

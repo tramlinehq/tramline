@@ -31,8 +31,8 @@ class Commit < ApplicationRecord
 
   delegate :release_platform_runs, to: :release
 
-  def run_for(step)
-    step_runs.where(step: step).last
+  def run_for(step, release_platform_run)
+    step_runs.where(step:, release_platform_run:).last
   end
 
   def stale?

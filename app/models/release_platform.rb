@@ -90,7 +90,7 @@ class ReleasePlatform < ApplicationRecord
   end
 
   def activate!
-    self.status = Platform.statuses[:active]
+    self.status = ReleasePlatform.statuses[:active]
     save!(context: :activate_context)
   end
 

@@ -29,6 +29,7 @@ class Release < ApplicationRecord
   has_many :release_platform_runs, dependent: :destroy, inverse_of: :release
   has_many :commits, dependent: :destroy, inverse_of: :release
   has_many :pull_requests, dependent: :destroy, inverse_of: :release
+  has_many :step_runs, through: :release_platform_runs
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 

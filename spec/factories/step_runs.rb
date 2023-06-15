@@ -1,10 +1,10 @@
 FactoryBot.define do
-  factory :releases_step_run, class: "Releases::Step::Run" do
+  factory :step_run do
     sequence(:build_number) { |n| 123 + n }
     sequence(:build_version) { |n| "1.1.#{n}-dev" }
-    association :commit, factory: :releases_commit
-    association :step, factory: [:releases_step, :with_deployment]
-    train_run { association :releases_train_run, train: step.train }
+    association :commit
+    step { association :step, :with_deployment }
+    release_platform_run { association :release_platform_run, release_platform: step.release_platform }
     scheduled_at { Time.current }
     status { "on_track" }
 
@@ -51,14 +51,17 @@ FactoryBot.define do
     end
 
     trait :with_release_step do
-      association :step, factory: [:releases_step, :release, :with_deployment]
+      association :step, factory: [:step, :release, :with_deployment]
     end
   end
 end
 
 def create_step_run_for_ios(trait)
   app = create(:app, :ios)
-  train = create(:releases_train, app: app)
-  step = create(:releases_step, :with_deployment, train: train)
-  create(:releases_step_run, trait, step: step)
+  train = create(:train, app: app)
+  release = create(:release, train:)
+  release_platform = create(:release_platform, train:)
+  release_platform_run = create(:release_platform_run, release_platform:, release:)
+  step = create(:step, :with_deployment, release_platform:)
+  create(:step_run, trait, step:, release_platform_run:)
 end

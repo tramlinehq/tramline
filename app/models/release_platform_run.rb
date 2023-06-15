@@ -76,7 +76,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   def overall_movement_status
     all_steps.to_h do |step|
-      run = last_commit&.run_for(step)
+      run = last_commit&.run_for(step, self)
       [step, run.present? ? run.status_summary : {not_started: true}]
     end
   end
@@ -174,7 +174,7 @@ class ReleasePlatformRun < ApplicationRecord
     app.refresh_external_app
 
     Rails.logger.debug "Post release start!", release.attributes
-    release.start_post_release_phase!
+    release.start_post_release_phase! if release.ready_to_be_finalized?
   end
 
   def finalize_phase_metadata

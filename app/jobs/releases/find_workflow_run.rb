@@ -23,7 +23,7 @@ class Releases::FindWorkflowRun
 
   def perform(step_run_id)
     step_run = StepRun.find(step_run_id)
-    return unless step_run.release.on_track?
+    return unless step_run.platform_release.on_track?
     step_run.ci_start!
   rescue => e
     elog(e)

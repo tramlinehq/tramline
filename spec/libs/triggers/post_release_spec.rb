@@ -8,8 +8,8 @@ describe Triggers::PostRelease do
       %w[parallel_working Triggers::PostRelease::ParallelBranches]
     ].each do |branching_strategy, post_release_class|
       context "Given branching strategy – #{branching_strategy}" do
-        let(:train) { create(:releases_train, "with_#{branching_strategy}".to_sym) }
-        let(:release) { create(:releases_train_run, :post_release_started, train: train) }
+        let(:train) { create(:train, "with_#{branching_strategy}".to_sym) }
+        let(:release) { create(:release, :post_release_started, train:) }
 
         it "dispatches to #{post_release_class} and marks release as finished on success" do
           allow(post_release_class.constantize).to receive(:call).and_return(GitHub::Result.new { true })

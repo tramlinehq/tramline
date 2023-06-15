@@ -1,6 +1,7 @@
 FactoryBot.define do
-  factory :releases_pull_request, class: "Releases::PullRequest" do
-    number { "" }
+  factory :pull_request do
+    association :release
+    number { "1" }
     source_id { "MyString" }
     url { "MyString" }
     title { "MyString" }

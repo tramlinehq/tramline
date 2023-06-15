@@ -7,7 +7,7 @@ describe Deployment do
 
   describe "#create" do
     it "adds incremented deployment numbers" do
-      step = create(:releases_step, :with_deployment)
+      step = create(:step, :with_deployment)
       d1 = create(:deployment, step: step)
       d2 = create(:deployment, step: step)
 
@@ -18,7 +18,7 @@ describe Deployment do
 
   describe "validations" do
     context "with staged rollout" do
-      let(:step) { create(:releases_step, :release, :with_deployment) }
+      let(:step) { create(:step, :release, :with_deployment) }
       let(:valid_deployments) {
         [
           build(:deployment, :with_google_play_store, :with_production_channel, step: step, staged_rollout_config: [1, 2], is_staged_rollout: true),
@@ -72,14 +72,14 @@ describe Deployment do
 
   describe "#set_default_staged_rollout" do
     it "sets app store default rollout sequence" do
-      step = create(:releases_step, :release, :with_deployment)
+      step = create(:step, :release, :with_deployment)
       app_store_deployment = create(:deployment, :with_app_store, :with_phased_release, step: step)
 
       expect(app_store_deployment.staged_rollout_config).to eq(AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE)
     end
 
     it "does not set app store default rollout sequence if not app store" do
-      step = create(:releases_step, :release, :with_deployment)
+      step = create(:step, :release, :with_deployment)
       deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step)
 
       expect(deployment.staged_rollout_config).not_to eq(AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE)
@@ -88,7 +88,7 @@ describe Deployment do
 
   describe "#uploadable?" do
     it "is true when app is android" do
-      step = create(:releases_step, :with_deployment)
+      step = create(:step, :with_deployment)
       d1 = create(:deployment, :with_google_play_store, step: step)
       d2 = create(:deployment, :with_slack, step: step)
       d3 = create(:deployment, :with_external, step: step)
@@ -100,9 +100,10 @@ describe Deployment do
 
     it "is false when app is ios and deployment is app store" do
       app = create(:app, :ios)
-      train = create(:releases_train, app: app)
-      step = create(:releases_step, :with_deployment, train: train)
-      deployment = create(:deployment, integration: train.build_channel_integrations.first, step: step)
+      train = create(:train, app: app)
+      release_platform = create(:release_platform, train: train, platform: "ios")
+      step = create(:step, :with_deployment, release_platform:)
+      deployment = create(:deployment, integration: release_platform.build_channel_integrations.first, step: step)
 
       expect(deployment.uploadable?).to be(false)
     end
@@ -110,7 +111,7 @@ describe Deployment do
 
   describe "#findable?" do
     it "is false when app is android" do
-      step = create(:releases_step, :with_deployment)
+      step = create(:step, :with_deployment)
       deployment = create(:deployment, step: step)
 
       expect(deployment.findable?).to be(false)
@@ -118,9 +119,10 @@ describe Deployment do
 
     it "is true when app is ios and deployment is app store" do
       app = create(:app, :ios)
-      train = create(:releases_train, app: app)
-      step = create(:releases_step, :with_deployment, train: train)
-      deployment = create(:deployment, integration: train.build_channel_integrations.first, step: step)
+      train = create(:train, app: app)
+      release_platform = create(:release_platform, train: train, platform: "ios")
+      step = create(:step, :with_deployment, release_platform:)
+      deployment = create(:deployment, integration: release_platform.build_channel_integrations.first, step: step)
 
       expect(deployment.findable?).to be(true)
     end

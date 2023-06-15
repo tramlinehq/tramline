@@ -29,6 +29,7 @@ class DeploymentRun < ApplicationRecord
 
   delegate :step,
     :release,
+    :platform_release,
     :commit,
     :build_number,
     :build_artifact,
@@ -172,7 +173,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def start_release!
-    release.with_lock do
+    platform_release.with_lock do
       return unless release_startable?
 
       if google_play_store_integration?
@@ -190,7 +191,7 @@ class DeploymentRun < ApplicationRecord
   def on_fully_release!
     return unless store?
 
-    release.with_lock do
+    platform_release.with_lock do
       return unless rolloutable?
 
       if google_play_store_integration?
@@ -208,7 +209,7 @@ class DeploymentRun < ApplicationRecord
   def on_release(rollout_value:)
     return unless store? && google_play_store_integration?
 
-    release.with_lock do
+    platform_release.with_lock do
       return unless controllable_rollout?
 
       yield Deployments::GooglePlayStore::Release.release_with(self, rollout_value:)
@@ -218,7 +219,7 @@ class DeploymentRun < ApplicationRecord
   def on_halt_release!
     return unless store?
 
-    release.with_lock do
+    platform_release.with_lock do
       return unless rolloutable?
 
       if google_play_store_integration?
@@ -236,7 +237,7 @@ class DeploymentRun < ApplicationRecord
   def on_pause_release!
     return unless store? && app_store_integration?
 
-    release.with_lock do
+    platform_release.with_lock do
       return unless automatic_rollout?
 
       yield Deployments::AppStoreConnect::Release.pause_phased_release!(self)
@@ -246,7 +247,7 @@ class DeploymentRun < ApplicationRecord
   def on_resume_release!
     return unless store? && app_store_integration?
 
-    release.with_lock do
+    platform_release.with_lock do
       return unless automatic_rollout?
 
       yield Deployments::AppStoreConnect::Release.resume_phased_release!(self)
@@ -254,7 +255,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def promotable?
-    release.on_track? && store? && (uploaded? || rollout_started?)
+    platform_release.on_track? && store? && (uploaded? || rollout_started?)
   end
 
   def release_startable?
@@ -277,11 +278,11 @@ class DeploymentRun < ApplicationRecord
   end
 
   def app_store_release?
-    step.release? && release.on_track? && deployment.app_store?
+    step.release? && platform_release.on_track? && deployment.app_store?
   end
 
   def test_flight_release?
-    release.on_track? && deployment.test_flight?
+    platform_release.on_track? && deployment.test_flight?
   end
 
   def reviewable?

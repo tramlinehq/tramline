@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :deployment_run do
-    association :step_run, factory: [:releases_step_run, :with_build_artifact, :deployment_started]
+    association :step_run, factory: [:step_run, :with_build_artifact, :deployment_started]
     deployment { association :deployment, step: step_run.step }
     status { "created" }
     scheduled_at { Time.current }
@@ -48,7 +48,7 @@ FactoryBot.define do
     end
 
     trait :with_staged_rollout do
-      association :step_run, factory: [:releases_step_run, :with_release_step, :with_build_artifact, :deployment_started]
+      association :step_run, factory: [:step_run, :with_release_step, :with_build_artifact, :deployment_started]
       deployment { association :deployment, :with_staged_rollout, :with_google_play_store, step: step_run.step }
     end
 
@@ -64,9 +64,12 @@ end
 
 def create_deployment_run_for_ios(*traits, deployment_traits: [], step_trait: :review, step_run_trait: :deployment_started)
   app = create(:app, :ios)
-  train = create(:releases_train, app: app)
-  step = create(:releases_step, :with_deployment, step_trait, train: train)
-  deployment = create(:deployment, *deployment_traits, integration: train.build_channel_integrations.first, step: step)
-  step_run = create(:releases_step_run, step_run_trait, step: step)
+  train = create(:train, app: app)
+  release = create(:release, train:)
+  release_platform = create(:release_platform, train:)
+  release_platform_run = create(:release_platform_run, release_platform:, release:)
+  step = create(:step, :with_deployment, step_trait, release_platform: release_platform)
+  deployment = create(:deployment, *deployment_traits, integration: release_platform.build_channel_integrations.first, step: step)
+  step_run = create(:step_run, step_run_trait, step: step, release_platform_run:)
   create(:deployment_run, *traits, deployment: deployment, step_run: step_run)
 end

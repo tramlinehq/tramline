@@ -183,6 +183,17 @@ class Train < ApplicationRecord
     version_current
   end
 
+  def bump_fix!
+    if releases.any?
+      semverish = version_current.to_semverish
+      self.version_current = semverish.bump!(:patch).to_s if semverish.proper?
+      self.version_current = semverish.bump!(:minor).to_s if semverish.partial?
+      save!
+    end
+
+    version_current
+  end
+
   def pre_release_prs?
     branching_strategy == "parallel_working"
   end
