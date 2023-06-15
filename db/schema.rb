@@ -371,10 +371,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_14_094114) do
     t.string "release_version"
     t.datetime "scheduled_at", precision: nil
     t.datetime "completed_at", precision: nil
+    t.datetime "stopped_at", precision: nil
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.datetime "stopped_at", precision: nil
-    t.datetime "finished_at", precision: nil
     t.index ["train_id"], name: "index_releases_on_train_id"
   end
 

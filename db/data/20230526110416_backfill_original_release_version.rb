@@ -4,6 +4,9 @@
 # But the gem is kept around because this backfill migration depends on it.
 class BackfillOriginalReleaseVersion < ActiveRecord::Migration[7.0]
   def up
+    # This migration is blowing up when run from scratch
+    return
+
     ReleasePlatformRun.all.each do |release|
       commit_count = release.commits.size
 
