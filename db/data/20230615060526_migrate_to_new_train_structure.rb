@@ -37,6 +37,7 @@ class MigrateToNewTrainStructure < ActiveRecord::Migration[7.0]
         )
         train.in_data_migration_mode = true
         train.save!
+        train.create_webhook!
 
         platform.update!(train:)
 
