@@ -97,6 +97,7 @@ class StagedRollout < ApplicationRecord
 
     retry! if failed?
     complete! if finished?
+    notify!("Staged rollout was updated!", :staged_rollout_updated, notification_params)
   end
 
   def last_rollout_percentage
@@ -125,7 +126,6 @@ class StagedRollout < ApplicationRecord
     deployment_run.on_release(rollout_value: next_rollout_percentage) do |result|
       if result.ok?
         update_stage(next_stage)
-        notify!("Staged rollout was updated!", :staged_rollout_updated, notification_params)
       else
         fail!
         elog(result.error)
