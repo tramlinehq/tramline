@@ -58,13 +58,12 @@ module Deployments
             result = provider.upload(file)
             if result.ok?
               run.upload!
+              run.notify!("Submitted for review!", :submit_for_review, run.notification_params)
             else
               run.fail_with_error(result.error)
             end
           end
         end
-
-        run.notify!("Submitted for review!", :submit_for_review, run.notification_params)
       end
 
       def start_release!
