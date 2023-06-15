@@ -118,6 +118,8 @@ class GithubIntegration < ApplicationRecord
     API.new(installation_id)
   end
 
+  def project_link = nil
+
   def to_s
     "github"
   end

@@ -148,6 +148,8 @@ class GitlabIntegration < ApplicationRecord
     false
   end
 
+  def project_link = nil
+
   def connection_data
     return unless integration.metadata
     "Organization: #{integration.metadata["name"]} (#{integration.metadata["username"]})"

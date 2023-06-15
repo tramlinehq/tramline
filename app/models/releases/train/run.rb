@@ -91,7 +91,7 @@ class Releases::Train::Run < ApplicationRecord
 
   before_create :set_version
   after_create :set_default_release_metadata
-  after_commit -> { create_stamp!(data: { version: release_version }) }, on: :create
+  after_commit -> { create_stamp!(data: {version: release_version}) }, on: :create
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
   after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
 
@@ -127,19 +127,21 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def live_release_link
+    return if Rails.env.test?
+
     if Rails.env.development?
       Rails.application.routes.url_helpers
-           .release_url(self, host: ENV["HOST_NAME"], protocol: "https", port: ENV["PORT_NUM"])
+        .release_url(self, host: ENV["HOST_NAME"], protocol: "https", port: ENV["PORT_NUM"])
     else
       Rails.application.routes.url_helpers
-           .release_url(self, host: ENV["HOST_NAME"], protocol: "https")
+        .release_url(self, host: ENV["HOST_NAME"], protocol: "https")
     end
   end
 
   def overall_movement_status
     all_steps.to_h do |step|
       run = last_commit&.run_for(step)
-      [step, run.present? ? run.status_summary : { not_started: true }]
+      [step, run.present? ? run.status_summary : {not_started: true}]
     end
   end
 
@@ -265,7 +267,7 @@ class Releases::Train::Run < ApplicationRecord
   end
 
   def on_finish!
-    event_stamp!(reason: :finished, kind: :success, data: { version: release_version })
+    event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     notify!("Release has finished!", :release_ended, notification_params.merge(finalize_phase_metadata))
     app.refresh_external_app
   end
