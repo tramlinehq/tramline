@@ -15,6 +15,7 @@ class SlackIntegration < ApplicationRecord
   include Vaultable
   include Providable
   include Displayable
+  include Loggable
   include Rails.application.routes.url_helpers
 
   delegate :app, to: :integration
@@ -110,6 +111,8 @@ class SlackIntegration < ApplicationRecord
 
   def notify!(channel, message, type, params)
     installation.rich_message(channel, message, notifier(type, params))
+  rescue => e
+    elog(e)
   end
 
   def deploy!(channel, params)
