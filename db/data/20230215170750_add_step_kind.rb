@@ -1,5 +1,7 @@
 class AddStepKind < ActiveRecord::Migration[7.0]
   def up
+    return
+
     ReleasePlatform.all.each do |train|
       if train.steps.present?
         max_step_number = train.steps.map(&:step_number).max
