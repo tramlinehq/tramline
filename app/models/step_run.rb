@@ -13,9 +13,9 @@
 #  status                  :string           not null
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
-#  commit_id               :uuid             not null, indexed
+#  commit_id               :uuid             not null, indexed, indexed => [step_id]
 #  release_platform_run_id :uuid             not null, indexed
-#  step_id                 :uuid             not null, indexed
+#  step_id                 :uuid             not null, indexed, indexed => [commit_id]
 #
 class StepRun < ApplicationRecord
   has_paper_trail

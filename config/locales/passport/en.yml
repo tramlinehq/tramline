@@ -11,6 +11,8 @@ en:
       finalizing_html: 'Finalizing the release with version <span class="emphasize">%{version}</span>'
       finalize_failed_html: 'Failed to finalize the release with version <span class="emphasize">%{version}</span>'
       finished_html: 'Finished the release with version <span class="emphasize">%{version}</span>'
+    release_platform_run:
+      finished_html: 'Finished the platform release with version <span class="emphasize">%{version}</span>'
     step_run:
       created_html: 'Started the step <span class="emphasize">%{name}</span> for <span class="emphasize">%{sha}</span>'
       ci_triggered_html: 'CI workflow triggered for generating build <span class="emphasize">%{version}</span>'

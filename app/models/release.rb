@@ -122,8 +122,8 @@ class Release < ApplicationRecord
   end
 
   def start_release_platform_runs!
-    ios_run&.start!
-    android_run&.start!
+    ios_run&.start! unless ios_run&.finished?
+    android_run&.start! unless android_run&.finished?
   end
 
   def ios_run

@@ -76,7 +76,6 @@ describe ReleasePlatformRun do
     let(:release) { create(:release, train:) }
 
     it "returns the status of every step of the train" do
-      puts train.ci_cd_provider.attributes
       release_platform_run = create(:release_platform_run, release_platform:, release:)
       commit = create(:commit, release:)
       steps = create_list(:step, 4, :with_deployment, release_platform:)
@@ -119,11 +118,11 @@ describe ReleasePlatformRun do
     let(:release_platform_run) { create(:release_platform_run, release_platform:) }
 
     it "is finalizable when all the steps for the last commit have succeeded" do
-      commit_1 = create(:commit, release: release_platform_run.release)
+      commit_1 = create(:commit, :without_trigger, release: release_platform_run.release)
       _commit_1_fail = create(:step_run, :ci_workflow_failed, commit: commit_1, step: steps.first, release_platform_run:)
       _commit_1_pass = create(:step_run, :success, commit: commit_1, step: steps.second, release_platform_run:)
 
-      commit_2 = create(:commit, release: release_platform_run.release)
+      commit_2 = create(:commit, :without_trigger, release: release_platform_run.release)
       _commit_2_pass = create(:step_run, :success, commit: commit_2, step: steps.first, release_platform_run:)
       _commit_2_pass = create(:step_run, :success, commit: commit_2, step: steps.second, release_platform_run:)
 
@@ -131,11 +130,11 @@ describe ReleasePlatformRun do
     end
 
     it "is not finalizable when all the steps for the last commit have not succeeded" do
-      commit_1 = create(:commit, release: release_platform_run.release)
+      commit_1 = create(:commit, :without_trigger, release: release_platform_run.release)
       _commit_1_pass = create(:step_run, :success, commit: commit_1, step: steps.first, release_platform_run:)
       _commit_1_fail = create(:step_run, :ci_workflow_failed, commit: commit_1, step: steps.second, release_platform_run:)
 
-      commit_2 = create(:commit, release: release_platform_run.release)
+      commit_2 = create(:commit, :without_trigger, release: release_platform_run.release)
       _commit_2_fail = create(:step_run, :ci_workflow_failed, commit: commit_2, step: steps.first, release_platform_run:)
       _commit_2_pass = create(:step_run, :success, commit: commit_2, step: steps.second, release_platform_run:)
 

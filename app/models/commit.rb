@@ -46,7 +46,7 @@ class Commit < ApplicationRecord
   private
 
   def trigger_step_runs
-    release_platform_runs.each do |run|
+    release_platform_runs.pending_release.each do |run|
       run.release_platform.ordered_steps_until(run.current_step_number).each do |step|
         Triggers::StepRun.call(step, self, run)
       end

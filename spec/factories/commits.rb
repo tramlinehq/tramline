@@ -7,5 +7,11 @@ FactoryBot.define do
     author_name { "Jon Doe" }
     author_email { "jon@doe.com" }
     url { "https://sample.com" }
+
+    trait :without_trigger do
+      after(:build) do |commit|
+        def commit.trigger_step_runs = true
+      end
+    end
   end
 end

@@ -35,6 +35,8 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :running_steps, through: :step_runs, source: :step
   has_many :passports, as: :stampable, dependent: :destroy
 
+  STAMPABLE_REASONS = %w[finished]
+
   STATES = {
     created: "created",
     on_track: "on_track",

@@ -35,12 +35,14 @@ class Queries::Builds
 
   def all
     return android_all if android?
-    ios_all if ios?
+    return ios_all if ios?
+    [] # FIXME: handle cross platform app
   end
 
   def count
     return android_records.size if android?
-    ios_records.size if ios?
+    return ios_records.size if ios?
+    0 # FIXME: handle cross platform app
   end
 
   def android_all
