@@ -94,15 +94,8 @@ class Train < ApplicationRecord
     platforms.each do |platform|
       release_platforms.create!(
         platform: platform,
-        branching_strategy:,
-        description:,
         name: "#{name} #{platform}",
-        release_backmerge_branch:,
-        release_branch:,
-        working_branch:,
         app: app,
-        version_seeded_with:,
-        version_current:,
         status: ReleasePlatform.statuses[:draft]
       )
     end
@@ -178,8 +171,6 @@ class Train < ApplicationRecord
     if releases.any?
       self.version_current = version_current.ver_bump(bump_term)
       save!
-      ios_train&.update!(version_current: version_current)
-      android_train&.update!(version_current: version_current)
     end
 
     version_current

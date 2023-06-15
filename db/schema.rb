@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_15_111522) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_15_155635) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -334,8 +334,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_15_111522) do
     t.string "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "branch_name", null: false
-    t.string "release_version", null: false
+    t.string "branch_name"
+    t.string "release_version"
     t.datetime "completed_at"
     t.datetime "stopped_at"
     t.string "original_release_version"
@@ -346,9 +346,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_15_111522) do
   create_table "release_platforms", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "app_id", null: false
     t.string "name", null: false
-    t.string "description", null: false
+    t.string "description"
     t.string "status", null: false
-    t.string "version_seeded_with", null: false
+    t.string "version_seeded_with"
     t.string "version_current"
     t.string "slug"
     t.datetime "created_at", null: false

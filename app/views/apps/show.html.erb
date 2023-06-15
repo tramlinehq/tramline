@@ -7,7 +7,7 @@
 
 <%= render PageComponent.new(breadcrumb: breadcrumb(@app), title: "#{@app.name} 📱") do |page| %>
   <% if @app.ready? %>
-    <% if @app.runs.exists? %>
+    <% if @app.releases.exists? %>
       <% page.with_action do %>
         <%= authz_link_to :neutral, all_builds_app_path(@app) do %>
           <%= inline_svg("all_builds_icon.svg", classname: "w-4") %>
@@ -39,7 +39,7 @@
     <% end %>
   <% end %>
 
-  <% if @app.runs.blank? %>
+  <% if @app.releases.blank? %>
     <% page.with_action do %>
       <%= authz_link_to :red, app_path(@app), method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } do %>
         <span>Delete</span>

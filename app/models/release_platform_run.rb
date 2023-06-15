@@ -2,20 +2,16 @@
 #
 # Table name: release_platform_runs
 #
-#  id                       :uuid             not null, primary key
-#  branch_name              :string           not null
-#  code_name                :string           not null
-#  commit_sha               :string
-#  completed_at             :datetime
-#  original_release_version :string
-#  release_version          :string           not null
-#  scheduled_at             :datetime         not null
-#  status                   :string           not null
-#  stopped_at               :datetime
-#  created_at               :datetime         not null
-#  updated_at               :datetime         not null
-#  release_id               :uuid
-#  release_platform_id      :uuid             not null, indexed
+#  id                  :uuid             not null, primary key
+#  code_name           :string           not null
+#  completed_at        :datetime
+#  scheduled_at        :datetime         not null
+#  status              :string           not null
+#  stopped_at          :datetime
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
+#  release_id          :uuid
+#  release_platform_id :uuid             not null, indexed
 #
 class ReleasePlatformRun < ApplicationRecord
   has_paper_trail
@@ -24,6 +20,7 @@ class ReleasePlatformRun < ApplicationRecord
   include ActionView::Helpers::DateHelper
   using RefinedString
 
+  self.ignored_columns += %w[branch_name commit_sha original_release_version release_version]
   self.implicit_order_column = :scheduled_at
 
   belongs_to :release_platform
@@ -70,7 +67,7 @@ class ReleasePlatformRun < ApplicationRecord
   attr_accessor :has_major_bump
   delegate :app, :pre_release_prs?, :vcs_provider, to: :release_platform
   delegate :cache, to: Rails
-  delegate :release_branch, :branch_name, :last_commit, :commits, :tag_name, :tag_url, to: :release
+  delegate :release_branch, :branch_name, :last_commit, :commits, :tag_name, :tag_url, :original_release_version, :release_version, to: :release
 
   def metadata_editable?
     on_track? && !started_store_release?
@@ -172,28 +169,16 @@ class ReleasePlatformRun < ApplicationRecord
 
   def on_finish!
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
-    release_platform.notify!("Release is complete!", :release_ended, finalize_phase_metadata)
     app.refresh_external_app
 
-    Rails.logger.debug "Post release start!", release.attributes
     release.start_post_release_phase! if release.ready_to_be_finalized?
-  end
-
-  def finalize_phase_metadata
-    {
-      total_run_time: distance_of_time_in_words(created_at, completed_at),
-      release_tag: tag_name,
-      release_tag_url: tag_url,
-      final_artifact_url: final_build_artifact&.download_url,
-      store_url: app.store_link
-    }
   end
 
   # Play store does not have constraints around version name
   # App Store requires a higher version name than that of the previously approved version name
   # and so a version bump is required for iOS once the build has been approved as well
   def version_bump_required?
-    return latest_deployed_store_release&.rollout_started? if release_platform.android? # FIXME: old trains should have a platform
+    return latest_deployed_store_release&.rollout_started? if release_platform.android?
     latest_deployed_store_release&.status&.in? [DeploymentRun::STATES[:rollout_started], DeploymentRun::STATES[:ready_to_release]]
   end
 

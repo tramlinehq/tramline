@@ -38,7 +38,7 @@ class MigrateToNewTrainStructure < ActiveRecord::Migration[7.0]
         train.save!
         train.create_webhook!
 
-        platform.update!(train:)
+        platform.update!(train:, platform: platform.app.platform)
 
         CommitListener.where(release_platform_id: platform.id).each do |listener|
           listener.update!(train:)

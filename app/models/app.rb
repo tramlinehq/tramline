@@ -62,28 +62,16 @@ class App < ApplicationRecord
 
   scope :with_trains, -> { joins(:trains).distinct }
 
-  def runs
-    release_platform_runs
-    # ReleasePlatformRun.joins(train: :app).where(train: { app: self})
-  end
-
-  def self.allowed_platforms(current_organization)
-    if Flipper.enabled?(:cross_platform_apps, current_organization)
-      {
-        android: "Android",
-        ios: "iOS",
-        cross_platform: "Cross Platform"
-      }.invert
-    else
-      {
-        android: "Android",
-        ios: "iOS",
-      }.invert
-    end
+  def self.allowed_platforms(_)
+    {
+      android: "Android",
+      ios: "iOS",
+      cross_platform: "Cross Platform"
+    }.invert
   end
 
   def active_runs
-    runs.on_track
+    releases.on_track
   end
 
   def ready?
@@ -248,6 +236,6 @@ class App < ApplicationRecord
   end
 
   def ensure_deletable
-    errors.add(:trains, "cannot delete an app if there are any releases made from it!") if runs.present?
+    errors.add(:trains, "cannot delete an app if there are any releases made from it!") if releases.present?
   end
 end

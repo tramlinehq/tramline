@@ -165,7 +165,7 @@ describe ReleasePlatformRun do
       create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
       train.bump_fix!
       release.update!(release_version: train.version_current)
-      expect(release_platform_run).not_to be_hotfix
+      expect(release_platform_run).to be_hotfix
     end
 
     it "is false release train is finished" do

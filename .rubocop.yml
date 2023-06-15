@@ -60,3 +60,7 @@ RSpec/MessageChain:
 
 Performance:
   Enabled: true
+
+Lint/UnreachableCode:
+  Exclude:
+    - db/data/*

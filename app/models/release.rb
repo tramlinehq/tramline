@@ -113,9 +113,6 @@ class Release < ApplicationRecord
       release_platform_runs.create!(
         code_name: "dummy",
         scheduled_at:,
-        branch_name:,
-        release_version:,
-        has_major_bump:,
         release_platform: release_platform
       )
     end

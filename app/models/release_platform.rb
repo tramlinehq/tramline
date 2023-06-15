@@ -2,34 +2,23 @@
 #
 # Table name: release_platforms
 #
-#  id                       :uuid             not null, primary key
-#  branching_strategy       :string
-#  description              :string           not null
-#  name                     :string           not null
-#  platform                 :string
-#  release_backmerge_branch :string
-#  release_branch           :string
-#  slug                     :string
-#  status                   :string           not null
-#  version_current          :string
-#  version_seeded_with      :string           not null
-#  working_branch           :string
-#  created_at               :datetime         not null
-#  updated_at               :datetime         not null
-#  app_id                   :uuid             not null, indexed
-#  train_id                 :uuid
-#  vcs_webhook_id           :string
+#  id         :uuid             not null, primary key
+#  name       :string           not null
+#  platform   :string
+#  slug       :string
+#  status     :string           not null
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#  app_id     :uuid             not null, indexed
+#  train_id   :uuid
 #
-
-# TrainGroups -> Train
-# TrainGroupRun -> Release
-# Train -> Releases::Platform
-# TrainRun -> Releases::PlatformRun
 
 class ReleasePlatform < ApplicationRecord
   has_paper_trail
   using RefinedString
   extend FriendlyId
+
+  self.ignored_columns += %w[branching_strategy description release_backmerge_branch release_branch version_current version_seeded_with working_branch vcs_webhook_id]
 
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
@@ -73,7 +62,7 @@ class ReleasePlatform < ApplicationRecord
   delegate :unzip_artifact?, to: :ci_cd_provider
   delegate :app, to: :train
   delegate :ready?, :config, to: :app
-  # delegate :branching_strategy, :release_backmerge_branch, :release_branch, :version_current, :version_seeded_with, :working_branch, to: :train
+  delegate :branching_strategy, :description, :release_backmerge_branch, :release_branch, :version_current, :version_seeded_with, :working_branch, to: :train
 
   def self.running?
     running.any?
