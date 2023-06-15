@@ -20,6 +20,8 @@ class StagedRollout < ApplicationRecord
 
   validates :current_stage, numericality: {greater_than_or_equal_to: 0, allow_nil: true}
 
+  delegate :notify!, to: :deployment_run
+
   STAMPABLE_REASONS = %w[
     started
     paused
@@ -123,6 +125,7 @@ class StagedRollout < ApplicationRecord
     deployment_run.on_release(rollout_value: next_rollout_percentage) do |result|
       if result.ok?
         update_stage(next_stage)
+        notify!("Staged rollout was updated!", :staged_rollout_updated, notification_params)
       else
         fail!
         elog(result.error)
@@ -181,10 +184,15 @@ class StagedRollout < ApplicationRecord
 
   private
 
+  def notification_params
+    deployment_run.notification_params.merge(stamp_data)
+  end
+
   def stamp_data
     {
       current_stage: (current_stage || 0).succ,
-      rollout_percentage: "%.2f" % last_rollout_percentage
+      rollout_percentage: "%.2f" % last_rollout_percentage,
+      is_fully_released: fully_released?
     }
   end
 end

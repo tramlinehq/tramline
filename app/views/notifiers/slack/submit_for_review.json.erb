@@ -18,8 +18,35 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "The *<%= @step_type %>* step *<%= @step_name %>* failed because – <%= @step_fail_reason %> :rotating_light:"
+        "text": "*<%= @app_name %> (<%= @app_platform %>)* <%= @train_current_version %> has been submitted for review! :tada:"
       }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": ":spiral_note_pad: What's New\n\n`<%= @release_notes %>`"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "- If <%= @publishing_text %> is disabled, this update will auto-start the rollout upon approval by <%= @company_text %>.",
+          "emoji": false
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "- If <%= @publishing_text %> is enabled, you'll need to manually release this update through the <%= @store_text %>.",
+          "emoji": false
+        }
+      ]
     },
     {
       "type": "divider"
@@ -71,6 +98,16 @@
         {
           "type": "plain_text",
           "text": "<%= @step_type %> step: <%= @step_name %>",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": " • ",
+          "emoji": false
+        },
+        {
+          "type": "plain_text",
+          "text": "Deployment: <%= @deployment_channel_type %> + <%= @deployment_channel_name %>",
           "emoji": true
         }
       ]

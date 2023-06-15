@@ -18,7 +18,7 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "The *<%= @step_type %>* step *<%= @step_name %>* failed because – <%= @step_fail_reason %> :rotating_light:"
+        "text": "*Release <%= @train_current_version %>*  was stopped :octagonal_sign:"
       }
     },
     {
@@ -61,16 +61,6 @@
         {
           "type": "plain_text",
           "text": "Release train: <%= @train_name %>",
-          "emoji": true
-        },
-        {
-          "type": "plain_text",
-          "text": " • ",
-          "emoji": false
-        },
-        {
-          "type": "plain_text",
-          "text": "<%= @step_type %> step: <%= @step_name %>",
           "emoji": true
         }
       ]

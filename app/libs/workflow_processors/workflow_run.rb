@@ -16,7 +16,6 @@ class WorkflowProcessors::WorkflowRun
   def process
     return re_enqueue if in_progress?
     update_status!
-    send_notification! if successful?
   end
 
   private
@@ -43,20 +42,6 @@ class WorkflowProcessors::WorkflowRun
     else
       raise WorkflowRunUnknownStatus
     end
-  end
-
-  def send_notification!
-    train.notify!(
-      "New build was created!",
-      :build_finished,
-      {
-        artifacts_url:,
-        code_name: release.code_name,
-        branch_name: release.release_branch,
-        build_number: step_run.build_number,
-        version_number: step_run.build_version
-      }
-    )
   end
 
   memoize def runner

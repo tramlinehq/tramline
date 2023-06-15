@@ -32,6 +32,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
     {id: :internal, name: "internal testing", is_production: false}
   ]
 
+  DEVELOPER_URL_TEMPLATE =
+    Addressable::Template.new("https://play.google.com/console/u/0/developers/{project_id}")
+  PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/play-console.png".freeze
+
   def access_key
     StringIO.new(json_key)
   end
@@ -139,7 +143,19 @@ class GooglePlayStoreIntegration < ApplicationRecord
     errors.add(:json_key, ex.reason)
   end
 
+  def project_link
+    DEVELOPER_URL_TEMPLATE.expand(project_id:).to_s
+  end
+
+  def public_icon_img
+    PUBLIC_ICON
+  end
+
   private
+
+  def project_id
+    JSON.parse(json_key)["project_id"]&.split("-")&.third
+  end
 
   def release_notes(release_metadata)
     return [] if release_metadata.blank?

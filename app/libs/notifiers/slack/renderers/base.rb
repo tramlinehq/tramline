@@ -9,6 +9,11 @@ class Notifiers::Slack::Renderers::Base
   end
 
   def initialize(**args)
+    args.each do |key, value|
+      instance_variable_set("@#{key}", value)
+      self.class.send(:attr_accessor, key)
+    end
+
     @template_file = template_file
   end
 

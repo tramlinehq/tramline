@@ -35,6 +35,7 @@ class DeploymentRun < ApplicationRecord
     :build_version,
     to: :step_run
   delegate :deployment_number,
+    :notify!,
     :integration,
     :deployment_channel,
     :deployment_channel_name,
@@ -309,7 +310,7 @@ class DeploymentRun < ApplicationRecord
 
     with_lock do
       return if released?
-      provider.deploy!(deployment_channel, {step_run: step_run})
+      provider.deploy!(deployment_channel, notification_params)
       complete!
     end
   end
@@ -325,6 +326,10 @@ class DeploymentRun < ApplicationRecord
     else
       dispatch_fail!
     end
+  end
+
+  def notification_params
+    deployment.notification_params.merge(step_run.notification_params)
   end
 
   private
@@ -349,6 +354,7 @@ class DeploymentRun < ApplicationRecord
     end
 
     event_stamp!(reason: :released, kind: :success, data: stamp_data)
+    notify!("Deployment was successful!", :deployment_finished, notification_params)
   end
 
   def stamp_data

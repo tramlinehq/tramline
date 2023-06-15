@@ -1,23 +1,105 @@
 {
   "blocks": [
     {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": ":new: *Release <%= @version_number %> (<%= @build_number %>) is now live!* :new:"
-      }
+      "type": "context",
+      "elements": [
+        {
+          "type": "image",
+          "image_url": "<%= @platform_public_img %>",
+          "alt_text": "app"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*<%= @app_name %> (<%= @app_platform %>)* <%= @train_current_version %>"
+        }
+      ]
     },
     {
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*Artifact:* <<%= @artifact_download_link %>|Download>\n*Release Train:* <%= @train_name %>\n*Step Name:* <%= @step_name %>\n*App Version:* <%= @version_number %>\n*Build Number:* <%= @build_number %>"
-      },
-      "accessory": {
-        "type": "image",
-        "image_url": "https://avatars.githubusercontent.com/u/92373487?s=400&u=b9b89bb428dc401abf44c2bddc64d4215f1dbde6.jpg",
-        "alt_text": "Tramline"
+        "text": "The *<%= @deployment_channel_type %>* deployment to *<%= @deployment_channel_name %>* was successful! :sparkles:"
       }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "image",
+          "image_url": "https://storage.googleapis.com/tramline-public-assets/tramline-small.png",
+          "alt_text": "tramline"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @release_url %>|Live release>"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "image",
+          "image_url": "<%= @vcs_public_icon_img %>",
+          "alt_text": "vcs"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @release_branch_url %>|Release branch – <%= @release_branch %>>"
+        }
+      ]
+    },
+    <% if @deployment_channel_asset_link && @project_link %>
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "image",
+          "image_url": "<%= @deployment_channel_asset_link %>",
+          "alt_text": "console"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @project_link %>|View on console>"
+        }
+      ]
+    },
+    <% end %>
+    {
+      "type": "divider"
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "Release train: <%= @train_name %>",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": " • ",
+          "emoji": false
+        },
+        {
+          "type": "plain_text",
+          "text": "<%= @step_type %> step: <%= @step_name %>",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": " • ",
+          "emoji": false
+        },
+        {
+          "type": "plain_text",
+          "text": "Deployment: <%= @deployment_channel_type %> + <%= @deployment_channel_name %>",
+          "emoji": true
+        }
+      ]
     }
   ]
 }

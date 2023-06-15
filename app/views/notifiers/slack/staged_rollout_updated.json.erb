@@ -18,7 +18,14 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "The *<%= @step_type %>* step *<%= @step_name %>* failed because – <%= @step_fail_reason %> :rotating_light:"
+        "text": "<%= @main_text %>"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "<%= @secondary_text %>"
       }
     },
     {
@@ -52,6 +59,22 @@
         }
       ]
     },
+    <% if @deployment_channel_asset_link && @project_link %>
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "image",
+          "image_url": "<%= @deployment_channel_asset_link %>",
+          "alt_text": "console"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @project_link %>|View on console>"
+        }
+      ]
+    },
+    <% end %>
     {
       "type": "divider"
     },
@@ -71,6 +94,16 @@
         {
           "type": "plain_text",
           "text": "<%= @step_type %> step: <%= @step_name %>",
+          "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": " • ",
+          "emoji": false
+        },
+        {
+          "type": "plain_text",
+          "text": "Deployment: <%= @deployment_channel_type %> + <%= @deployment_channel_name %>",
           "emoji": true
         }
       ]

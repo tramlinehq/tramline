@@ -18,7 +18,14 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "The *<%= @step_type %>* step *<%= @step_name %>* failed because – <%= @step_fail_reason %> :rotating_light:"
+        "text": "The *<%= @step_type %>* step *<%= @step_name %>* has started! :sparkles:"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "The next *build <%= @build_number %>* will be built against the commit *<<%= @commit_url %>|<%= @commit_sha %>>*"
       }
     },
     {

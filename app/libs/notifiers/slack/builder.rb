@@ -1,12 +1,17 @@
 module Notifiers
   module Slack
     class Builder
+      # there are individual classes for each message so that any state, if necessary, can be encapsulated
+      # think of them as view components
       RENDERERS = {
-        build_finished: Renderers::BuildFinished,
         deployment_finished: Renderers::DeploymentFinished,
         release_ended: Renderers::ReleaseEnded,
+        release_stopped: Renderers::ReleaseStopped,
+        release_started: Renderers::ReleaseStarted,
+        step_started: Renderers::StepStarted,
         step_failed: Renderers::StepFailed,
-        release_started: Renderers::ReleaseStarted
+        submit_for_review: Renderers::SubmitForReview,
+        staged_rollout_updated: Renderers::StagedRolloutUpdated
       }
 
       class RendererNotFound < ArgumentError; end
