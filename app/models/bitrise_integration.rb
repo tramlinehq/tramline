@@ -15,6 +15,8 @@ class BitriseIntegration < ApplicationRecord
   include Displayable
   include Rails.application.routes.url_helpers
 
+  PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/bitrise_small.png".freeze
+
   API = Installations::Bitrise::Api
 
   WORKFLOWS_TRANSFORMATIONS = {
@@ -125,7 +127,7 @@ class BitriseIntegration < ApplicationRecord
   end
 
   def public_icon_img
-    "https://storage.googleapis.com/tramline-public-assets/bitrise_small.png".freeze
+    PUBLIC_ICON
   end
 
   private

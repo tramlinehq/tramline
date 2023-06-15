@@ -52,6 +52,7 @@
         }
       ]
     },
+    <% if @deployment_channel_asset_link %>
     {
       "type": "context",
       "elements": [
@@ -66,6 +67,7 @@
         }
       ]
     },
+    <% end %>
     {
       "type": "divider"
     },
@@ -79,8 +81,18 @@
         },
         {
           "type": "plain_text",
+          "text": " • ",
+          "emoji": false
+        },
+        {
+          "type": "plain_text",
           "text": "<%= @step_type %> step: <%= @step_name %>",
           "emoji": true
+        },
+        {
+          "type": "plain_text",
+          "text": " • ",
+          "emoji": false
         },
         {
           "type": "plain_text",

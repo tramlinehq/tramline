@@ -19,6 +19,7 @@ class GithubIntegration < ApplicationRecord
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://github.com/apps/{app_name}/installations/new{?params*}")
+  PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/github-small.png".freeze
 
   API = Installations::Github::Api
 
@@ -221,7 +222,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def public_icon_img
-    "https://storage.googleapis.com/tramline-public-assets/github-small.png".freeze
+    PUBLIC_ICON
   end
 
   private

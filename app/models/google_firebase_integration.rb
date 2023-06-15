@@ -24,6 +24,8 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   attr_accessor :json_key_file
 
+  PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/firebase_small.png".freeze
+
   def access_key
     StringIO.new(json_key)
   end
@@ -108,7 +110,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   end
 
   def public_icon_img
-    "https://storage.googleapis.com/tramline-public-assets/firebase_small.png".freeze
+    PUBLIC_ICON
   end
 
   class ReleaseInfo

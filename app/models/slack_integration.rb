@@ -136,14 +136,12 @@ class SlackIntegration < ApplicationRecord
     false
   end
 
-  # FIXME: This is just a stub.
-  # Eventually remove Slack as a distribution channel.
-  def store_link
-    "https://slack.com".freeze
+  def public_icon_img
+    nil
   end
 
-  def public_icon_img
-    "https://storage.googleapis.com/tramline-public-assets/default_ios.png".freeze
+  def project_link
+    nil
   end
 
   private

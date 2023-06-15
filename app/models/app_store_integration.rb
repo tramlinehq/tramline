@@ -34,7 +34,7 @@ class AppStoreIntegration < ApplicationRecord
   after_create_commit :refresh_external_app
 
   DEFAULT_PHASED_RELEASE_SEQUENCE = [1, 2, 5, 10, 20, 50, 100]
-  CONSOLE_ICON = "https://storage.googleapis.com/tramline-public-assets/app-store.png".freeze
+  PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/app-store.png".freeze
 
   CHANNELS_TRANSFORMATIONS = {
     id: :id,
@@ -124,7 +124,7 @@ class AppStoreIntegration < ApplicationRecord
   end
 
   def public_icon_img
-    CONSOLE_ICON
+    PUBLIC_ICON
   end
 
   def connection_data

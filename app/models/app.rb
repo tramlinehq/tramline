@@ -209,7 +209,7 @@ class App < ApplicationRecord
   end
 
   def platform_store_img
-    android? ? GooglePlayStoreIntegration::CONSOLE_ICON : AppStoreIntegration::CONSOLE_ICON
+    android? ? GooglePlayStoreIntegration::PUBLIC_ICON : AppStoreIntegration::PUBLIC_ICON
   end
 
   private
