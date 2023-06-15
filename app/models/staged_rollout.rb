@@ -182,11 +182,11 @@ class StagedRollout < ApplicationRecord
     end
   end
 
-  private
-
   def notification_params
     deployment_run.notification_params.merge(stamp_data)
   end
+
+  private
 
   def stamp_data
     {
