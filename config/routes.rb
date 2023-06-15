@@ -97,6 +97,7 @@ Rails.application.routes.draw do
 
         member do
           get :timeline
+          post :post_release
         end
       end
     end

@@ -49,9 +49,9 @@ class ReleasesController < SignedInApplicationController
   # TODO: This action can be deprecated once there are no more releases with pending manual finalize
   # Since finalize as of https://github.com/tramlinehq/tramline/pull/440 is automatic
   def post_release
-    @release = ReleasePlatformRun.find(params[:id])
+    @release = Release.find(params[:id])
 
-    if @release.finalizable?
+    if @release.ready_to_be_finalized?
       @release.start_post_release_phase!
       redirect_back fallback_location: root_path, notice: "Performing post-release steps."
     else
