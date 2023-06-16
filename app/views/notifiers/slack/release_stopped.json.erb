@@ -18,7 +18,7 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "The *<%= @deployment_channel_type %>* deployment to *<%= @deployment_channel_name %>* was successful! :sparkles:"
+        "text": "*Release <%= @train_current_version %>*  was stopped :octagonal_sign:"
       }
     },
     {
@@ -52,48 +52,12 @@
         }
       ]
     },
-    <% if @deployment_channel_asset_link && @project_link %>
-    {
-      "type": "context",
-      "elements": [
-        {
-          "type": "image",
-          "image_url": "<%= @deployment_channel_asset_link %>",
-          "alt_text": "console"
-        },
-        {
-          "type": "mrkdwn",
-          "text": "<<%= @project_link %>|View on console>"
-        }
-      ]
-    },
-    <% end %>
     {
       "type": "context",
       "elements": [
         {
           "type": "plain_text",
           "text": "Release train: <%= @train_name %>",
-          "emoji": true
-        },
-        {
-          "type": "plain_text",
-          "text": " • ",
-          "emoji": false
-        },
-        {
-          "type": "plain_text",
-          "text": "<%= @step_type %> step: <%= @step_name %>",
-          "emoji": true
-        },
-        {
-          "type": "plain_text",
-          "text": " • ",
-          "emoji": false
-        },
-        {
-          "type": "plain_text",
-          "text": "Deployment: <%= @deployment_channel_type %> + <%= @deployment_channel_name %>",
           "emoji": true
         }
       ]

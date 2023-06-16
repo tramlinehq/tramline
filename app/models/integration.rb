@@ -76,7 +76,7 @@ class Integration < ApplicationRecord
 
   attr_accessor :current_user, :code
 
-  delegate :install_path, to: :providable
+  delegate :install_path, :connection_data, :project_link, :public_icon_img, to: :providable
   delegate :platform, to: :app
 
   scope :ready, -> { where(category: MINIMUM_REQUIRED_SET, status: :connected) }
@@ -160,8 +160,6 @@ class Integration < ApplicationRecord
       meta[:value].errors.full_messages[0]
     end
   end
-
-  delegate :connection_data, to: :providable
 
   def set_metadata!
     self.metadata = providable.metadata

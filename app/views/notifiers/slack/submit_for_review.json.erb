@@ -18,9 +18,38 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "The *<%= @deployment_channel_type %>* deployment to *<%= @deployment_channel_name %>* was successful! :sparkles:"
+        "text": "*<%= @app_name %> (<%= @app_platform %>)* <%= @train_current_version %> has been submitted for review to <%= @deployment_channel_type %> (<%= @deployment_channel_name %>)! :tada:"
       }
     },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": ":spiral_note_pad: What's New\n\n`<%= @release_notes %>`"
+      }
+    },
+    <% if @is_production_channel %>
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "- If <%= @publishing_text %> is disabled, this update will auto-start the rollout upon approval by <%= @company_text %>.",
+          "emoji": false
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "- If <%= @publishing_text %> is enabled, you'll need to manually release this update through the <%= @store_text %>.",
+          "emoji": false
+        }
+      ]
+    },
+    <% end %>
     {
       "type": "divider"
     },
@@ -52,22 +81,6 @@
         }
       ]
     },
-    <% if @deployment_channel_asset_link && @project_link %>
-    {
-      "type": "context",
-      "elements": [
-        {
-          "type": "image",
-          "image_url": "<%= @deployment_channel_asset_link %>",
-          "alt_text": "console"
-        },
-        {
-          "type": "mrkdwn",
-          "text": "<<%= @project_link %>|View on console>"
-        }
-      ]
-    },
-    <% end %>
     {
       "type": "context",
       "elements": [

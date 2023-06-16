@@ -18,7 +18,14 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "The *<%= @deployment_channel_type %>* deployment to *<%= @deployment_channel_name %>* was successful! :sparkles:"
+        "text": "<%= @main_text %>"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "<%= @secondary_text %>"
       }
     },
     {

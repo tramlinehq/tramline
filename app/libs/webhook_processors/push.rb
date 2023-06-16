@@ -47,21 +47,6 @@ class WebhookProcessors::Push
     Commit.find_or_create_by!(params)
   end
 
-  def send_notification!
-    return unless release.commits.size.eql?(1)
-
-    train.notify!(
-      "New release has commenced!",
-      :release_started,
-      {
-        train_name: train.name,
-        version_number: train.version_current,
-        commit_msg: commit_attributes[:message],
-        branch_name: commit_attributes[:branch_name]
-      }
-    )
-  end
-
   def stamp_version_changed
     release.event_stamp_now!(
       reason: :version_changed,

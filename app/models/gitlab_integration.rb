@@ -148,6 +148,8 @@ class GitlabIntegration < ApplicationRecord
     false
   end
 
+  def project_link = nil
+
   def connection_data
     return unless integration.metadata
     "Organization: #{integration.metadata["name"]} (#{integration.metadata["username"]})"
@@ -196,6 +198,10 @@ class GitlabIntegration < ApplicationRecord
 
   def commit_log(from_branch, to_branch)
     with_api_retries { installation.commits_between(app_config.code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS) }
+  end
+
+  def public_icon_img
+    "https://storage.googleapis.com/tramline-public-assets/gitlab_small.png".freeze
   end
 
   private

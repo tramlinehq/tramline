@@ -23,6 +23,8 @@ class App < ApplicationRecord
     Addressable::Template.new("https://play.google.com/store/apps/details{?query*}")
   APP_STORE_URL_TEMPLATE =
     Addressable::Template.new("https://apps.apple.com/app/ueno/id{id}")
+  PUBLIC_ANDROID_ICON = "https://storage.googleapis.com/tramline-public-assets/default_android.png"
+  PUBLIC_IOS_ICON = "https://storage.googleapis.com/tramline-public-assets/default_ios.png"
 
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
   has_one :config, class_name: "AppConfig", dependent: :destroy
@@ -221,6 +223,24 @@ class App < ApplicationRecord
 
   def refresh_external_app
     RefreshExternalAppJob.perform_later(id)
+  end
+
+  def notification_params
+    {
+      app_name: name,
+      app_platform: platform,
+      platform_store_img: platform_store_img,
+      platform_public_img: platform_public_img,
+      vcs_public_icon_img: vcs_provider.public_icon_img
+    }
+  end
+
+  def platform_public_img
+    android? ? PUBLIC_ANDROID_ICON : PUBLIC_IOS_ICON
+  end
+
+  def platform_store_img
+    android? ? GooglePlayStoreIntegration::PUBLIC_ICON : AppStoreIntegration::PUBLIC_ICON
   end
 
   private

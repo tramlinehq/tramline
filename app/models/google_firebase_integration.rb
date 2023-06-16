@@ -24,6 +24,8 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   attr_accessor :json_key_file
 
+  PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/firebase_small.png".freeze
+
   def access_key
     StringIO.new(json_key)
   end
@@ -100,6 +102,15 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   def metadata
     {}
+  end
+
+  # FIXME: This is an incomplete URL. The full URL should contain the project id.
+  def project_link
+    "https://console.firebase.google.com/u/0".freeze
+  end
+
+  def public_icon_img
+    PUBLIC_ICON
   end
 
   class ReleaseInfo

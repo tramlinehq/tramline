@@ -49,7 +49,7 @@ class Step < ApplicationRecord
   auto_strip_attributes :name, squish: true
   accepts_nested_attributes_for :deployments, allow_destroy: false, reject_if: :reject_deployments?
 
-  delegate :app, to: :release_platform
+  delegate :app, :notify!, to: :release_platform
   delegate :android?, to: :app
 
   def set_step_number
@@ -75,6 +75,15 @@ class Step < ApplicationRecord
 
   def previous
     release_platform.steps.where("step_number < ?", step_number).last
+  end
+
+  def notification_params
+    train.notification_params.merge(
+      {
+        step_type: kind.titleize,
+        step_name: name
+      }
+    )
   end
 
   private

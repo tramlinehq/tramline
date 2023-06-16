@@ -61,7 +61,7 @@ class Release < ApplicationRecord
     state :created, initial: true
     state(*STATES.keys)
 
-    event :start do
+    event :start, after_commit: :on_start! do
       after { start_release_platform_runs! }
       transitions from: [:created, :on_track], to: :on_track
     end
@@ -74,7 +74,7 @@ class Release < ApplicationRecord
       transitions from: :post_release_started, to: :post_release_failed
     end
 
-    event :stop do
+    event :stop, after_commit: :on_stop! do
       before { self.stopped_at = Time.current }
       after { stop_runs }
       transitions to: :stopped
@@ -224,6 +224,17 @@ class Release < ApplicationRecord
     }
   end
 
+  def notification_params
+    train.notification_params.merge(
+      {
+        release_branch: branch_name,
+        release_branch_url: branch_url,
+        release_url: live_release_link,
+        release_notes: release_metadata.release_notes
+      }
+    )
+  end
+
   # FIXME: commits can be fetched via step_runs
   def events(limit = nil)
     release_platform_runs
@@ -241,7 +252,16 @@ class Release < ApplicationRecord
     commits.order(:created_at).last
   end
 
+  def on_start!
+    notify!("New release has commenced!", :release_started, notification_params) if commits.size.eql?(1)
+  end
+
+  def on_stop!
+    notify!("Release has stopped!", :release_stopped, notification_params)
+  end
+
   def on_finish!
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
+    notify!("Release has finished!", :release_ended, notification_params.merge(finalize_phase_metadata))
   end
 end
