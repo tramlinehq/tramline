@@ -80,7 +80,7 @@ class Release < ApplicationRecord
       transitions to: :stopped
     end
 
-    event :finish do
+    event :finish, after_commit: :on_finish do
       before { self.completed_at = Time.current }
       transitions from: :post_release_started, to: :finished
     end
@@ -221,14 +221,22 @@ class Release < ApplicationRecord
   end
 
   def events(limit = nil)
-    if app.cross_platform?
-      ios_run&.events(limit)&.or(android_run&.events(limit))
-    else
-      ios_run&.events(limit) || android_run&.events(limit)
-    end
+    release_platform_runs
+      .left_joins(step_runs: [deployment_runs: :staged_rollout])
+      .pluck("release_platform_runs.id, step_runs.id, deployment_runs.id, staged_rollouts.id")
+      .flatten
+      .uniq
+      .concat(commits.pluck(:id))
+      .compact
+      .push(id)
+      .then { |ids| Passport.where(stampable_id: ids).order(event_timestamp: :desc).limit(limit) }
   end
 
   def last_commit
     commits.order(:created_at).last
+  end
+
+  def on_finish!
+    event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
   end
 end

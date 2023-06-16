@@ -9,7 +9,8 @@ module PassportHelper
     DeploymentRun => "truck_delivery",
     Commit => "git_commit",
     StepRun => "box",
-    ReleasePlatformRun => "bolt"
+    ReleasePlatformRun => "bolt",
+    Release => "bolt"
   }
 
   def passport_badge(passport)

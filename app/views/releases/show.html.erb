@@ -80,25 +80,26 @@
   <%= render partial: "shared/live_release/builds", locals: { release: @release } %>
 </div>
 
-<%= render partial: "shared/live_release/separator" %>
+<% if @app.cross_platform? %>
+  <%= render partial: "shared/live_release/separator" %>
+  <div class="grid grid-cols-2 gap-6 mt-8">
+    <% if @release.android_run.present? %>
+      <div>
+        <span class="font-bold text-2xl">Android Release Events</span>
+        <%= render partial: "shared/event_timeline", locals: { events: @android_events, short_width: true } %>
+        <span class="text-sm text-slate-400">Showing the last 10 events, <%= link_to "view all", timeline_release_path(@release), class: "underline" %></span>
+      </div>
+    <% end %>
 
-<div class="grid grid-cols-2 gap-6 mt-8">
-  <% if @release.android_run.present? %>
-    <div>
-      <span class="font-bold text-2xl">Android Release Events</span>
-      <%= render partial: "shared/event_timeline", locals: { events: @android_events, short_width: true } %>
-      <span class="text-sm text-slate-400">Showing the last 10 events, <%= link_to "view all", timeline_release_path(@release), class: "underline" %></span>
-    </div>
-  <% end %>
-
-  <% if @release.ios_run.present? %>
-    <div>
-      <span class="font-bold text-2xl">iOS Release Events</span>
-      <%= render partial: "shared/event_timeline", locals: { events: @ios_events, short_width: true } %>
-      <span class="text-sm text-slate-400">Showing the last 10 events, <%= link_to "view all", timeline_release_path(@release), class: "underline" %></span>
-    </div>
-  <% end %>
-</div>
+    <% if @release.ios_run.present? %>
+      <div>
+        <span class="font-bold text-2xl">iOS Release Events</span>
+        <%= render partial: "shared/event_timeline", locals: { events: @ios_events, short_width: true } %>
+        <span class="text-sm text-slate-400">Showing the last 10 events, <%= link_to "view all", timeline_release_path(@release), class: "underline" %></span>
+      </div>
+    <% end %>
+  </div>
+<% end %>
 
 <%= render partial: "shared/live_release/separator" %>
 
