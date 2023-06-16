@@ -14,9 +14,8 @@ class Triggers::Release
 
   def call
     return Response.new(:unprocessable_entity, "Cannot start a train that is not active!") if train.inactive?
-    return Response.new(:unprocessable_entity, "Cannot start a train that has no steps. Please add at least one step to the platform train.") if @train.release_platforms.any? { |p| p.steps.empty? }
+    return Response.new(:unprocessable_entity, "Cannot start a train that has no release step. Please add at least one release step to the train.") if train.release_platforms.any?(&:has_release_step?)
     return Response.new(:unprocessable_entity, "A release is already in progress!") if train.active_run.present?
-    return Response.new(:unprocessable_entity, "Cannot start a new release before wrapping up existing releases!") if train.releases.pending_release?
 
     if kickoff.ok?
       Response.new(:ok)
