@@ -205,7 +205,6 @@ class Release < ApplicationRecord
     release_platform_runs.all?(&:finished?)
   end
 
-  # FIXME: add build artifact if available
   def finalize_phase_metadata
     {
       total_run_time: distance_of_time_in_words(created_at, completed_at),
