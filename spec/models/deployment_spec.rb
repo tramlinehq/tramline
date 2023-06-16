@@ -103,7 +103,7 @@ describe Deployment do
       train = create(:train, app: app)
       release_platform = create(:release_platform, train: train, platform: "ios")
       step = create(:step, :with_deployment, release_platform:)
-      deployment = create(:deployment, integration: release_platform.build_channel_integrations.first, step: step)
+      deployment = create(:deployment, integration: train.build_channel_integrations.first, step: step)
 
       expect(deployment.uploadable?).to be(false)
     end
@@ -122,7 +122,7 @@ describe Deployment do
       train = create(:train, app: app)
       release_platform = create(:release_platform, train: train, platform: "ios")
       step = create(:step, :with_deployment, release_platform:)
-      deployment = create(:deployment, integration: release_platform.build_channel_integrations.first, step: step)
+      deployment = create(:deployment, integration: train.build_channel_integrations.first, step: step)
 
       expect(deployment.findable?).to be(true)
     end

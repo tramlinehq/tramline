@@ -47,7 +47,7 @@ describe DeploymentRun do
 
       it "starts upload for play store if deployment has google play store integration" do
         play_upload_job = Deployments::GooglePlayStore::Upload
-        deployment = create(:deployment, integration: step.release_platform.build_channel_integrations.first, step: step)
+        deployment = create(:deployment, integration: step.train.build_channel_integrations.first, step: step)
         deployment_run = create(:deployment_run, :created, deployment: deployment, step_run: step_run)
         allow(play_upload_job).to receive(:perform_later)
 
@@ -84,7 +84,7 @@ describe DeploymentRun do
 
       it "starts distribution if deployment has app store integration" do
         job = Deployments::AppStoreConnect::TestFlightReleaseJob
-        deployment = create(:deployment, integration: release_platform.build_channel_integrations.first, step: step)
+        deployment = create(:deployment, integration: train.build_channel_integrations.first, step: step)
         deployment_run = create(:deployment_run, :created, deployment: deployment, step_run: step_run)
         allow(job).to receive(:perform_later)
 

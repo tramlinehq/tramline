@@ -34,7 +34,7 @@ class ReleasePlatform < ApplicationRecord
 
   validate :ready?, on: :create
 
-  delegate :app, :build_channel_integrations, :version_current, to: :train
+  delegate :app, to: :train
   delegate :ready?, to: :app
 
   def has_release_step?

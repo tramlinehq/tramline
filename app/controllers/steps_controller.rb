@@ -155,7 +155,7 @@ class StepsController < SignedInApplicationController
   end
 
   def set_build_channel_integrations
-    @release_platform
+    @train
       .build_channel_integrations
       .map { |bc| [bc.providable.display, bc.id] }
       .push(Integration::EXTERNAL_BUILD_INTEGRATION[:build_integration])

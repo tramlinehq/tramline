@@ -69,7 +69,7 @@ def create_deployment_run_for_ios(*traits, deployment_traits: [], step_trait: :r
   release_platform = create(:release_platform, train:)
   release_platform_run = create(:release_platform_run, release_platform:, release:)
   step = create(:step, :with_deployment, step_trait, release_platform: release_platform)
-  deployment = create(:deployment, *deployment_traits, integration: release_platform.build_channel_integrations.first, step: step)
+  deployment = create(:deployment, *deployment_traits, integration: train.build_channel_integrations.first, step: step)
   step_run = create(:step_run, step_run_trait, step: step, release_platform_run:)
   create(:deployment_run, *traits, deployment: deployment, step_run: step_run)
 end
