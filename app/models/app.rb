@@ -64,12 +64,19 @@ class App < ApplicationRecord
 
   scope :with_trains, -> { joins(:trains).distinct }
 
-  def self.allowed_platforms(_)
-    {
-      android: "Android",
-      ios: "iOS",
-      cross_platform: "Cross Platform"
-    }.invert
+  def self.allowed_platforms(current_organization)
+    if Flipper.enabled?(:cross_platform_apps, current_organization)
+      {
+        android: "Android",
+        ios: "iOS",
+        cross_platform: "Cross Platform"
+      }.invert
+    else
+      {
+        android: "Android",
+        ios: "iOS"
+      }.invert
+    end
   end
 
   def active_runs
