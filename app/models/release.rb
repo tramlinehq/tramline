@@ -211,7 +211,8 @@ class Release < ApplicationRecord
       total_run_time: distance_of_time_in_words(created_at, completed_at),
       release_tag: tag_name,
       release_tag_url: tag_url,
-      store_url: app.store_link
+      store_url: app.store_link,
+      final_artifact_url: release_platform_runs.first&.final_build_artifact&.download_url
     }
   end
 
