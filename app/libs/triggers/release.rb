@@ -36,7 +36,6 @@ class Triggers::Release
         train.activate! unless train.active?
         create_release
         train.create_webhook!
-        create_webhook_listeners
       end
     end
   end
@@ -53,10 +52,6 @@ class Triggers::Release
   memoize def release_branch
     return new_branch_name if branching_strategy.in?(%w[almost_trunk release_backmerge])
     train.release_branch
-  end
-
-  def create_webhook_listeners
-    train.commit_listeners.create(branch_name: release_branch)
   end
 
   memoize def new_branch_name

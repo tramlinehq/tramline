@@ -34,7 +34,6 @@ class Train < ApplicationRecord
   has_one :active_run, -> { pending_release }, class_name: "Release", inverse_of: :train, dependent: :destroy
   has_many :release_platforms, dependent: :destroy
   has_many :integrations, through: :app
-  has_many :commit_listeners, inverse_of: :train, dependent: :destroy
   has_many :steps, through: :release_platforms
   has_many :deployments, through: :steps
 

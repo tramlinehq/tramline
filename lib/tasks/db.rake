@@ -54,7 +54,6 @@ namespace :db do
   end
 
   def nuke_train(train)
-    train.commit_listeners.delete_all
     train.releases.each do |run|
       run.release_platform_runs do |prun|
         prun.step_runs.each do |srun|
