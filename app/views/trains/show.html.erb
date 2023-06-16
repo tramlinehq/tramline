@@ -25,14 +25,14 @@
     <% if @train.ios_train.present? %>
       <%= authz_link_to :neutral, edit_app_train_platform_path(@app, @train, @train.ios_train) do %>
         <%= inline_svg("edit.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
-        <span class="ml-2">iOS Settings</span>
+        <span class="ml-2">iOS Train Settings</span>
       <% end %>
     <% end %>
 
     <% if @train.android_train.present? %>
       <%= authz_link_to :neutral, edit_app_train_platform_path(@app, @train, @train.android_train) do %>
         <%= inline_svg("edit.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
-        <span class="ml-2">Android Settings</span>
+        <span class="ml-2">Android Train Settings</span>
       <% end %>
     <% end %>
 
