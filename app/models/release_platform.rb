@@ -20,24 +20,22 @@ class ReleasePlatform < ApplicationRecord
 
   self.ignored_columns += %w[branching_strategy description release_backmerge_branch release_branch version_current version_seeded_with working_branch vcs_webhook_id]
 
-  BRANCHING_STRATEGIES = {
-    almost_trunk: "Almost Trunk",
-    release_backmerge: "Release with Backmerge",
-    parallel_working: "Parallel Working and Release"
-  }.freeze
-
   belongs_to :app
   belongs_to :train
 
+  # FIXME: remove this move to train
   has_many :integrations, through: :train
   has_many :release_platform_runs, inverse_of: :release_platform, dependent: :destroy
+  # FIXME: remove this move to train
   has_one :active_run, -> { pending_release }, class_name: "ReleasePlatformRun", inverse_of: :release_platform, dependent: :destroy
   has_many :steps, -> { order(:step_number) }, inverse_of: :release_platform, dependent: :destroy
   has_many :deployments, through: :steps
 
   alias_method :runs, :release_platform_runs
 
+  # FIXME: remove this perhaps?
   scope :running, -> { includes(:release_platform_runs).where(release_platform_runs: {status: ReleasePlatformRun.statuses[:on_track]}) }
+  # FIXME: remove this and move to train
   scope :only_with_runs, -> { joins(:release_platform_runs).where.not(release_platform_runs: {status: "stopped"}).distinct }
 
   enum status: {
@@ -48,22 +46,33 @@ class ReleasePlatform < ApplicationRecord
   enum platform: {android: "android", ios: "ios"}
 
   friendly_id :name, use: :slugged
+
+  # FIXME: remove this no need since no user input
   auto_strip_attributes :name, squish: true
 
   validate :ready?, on: :create
   validate :valid_step_configuration, on: :activate_context
+  # FIXME: remove this move to train
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
 
+  # FIXME: remove this move to train
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
   end
 
+  # FIXME: remove this move to train
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :store_provider, to: :integrations
+  # FIXME: remove this move to train
   delegate :unzip_artifact?, to: :ci_cd_provider
+
   delegate :app, to: :train
-  delegate :ready?, :config, to: :app
+  delegate :ready?, to: :app
+  # FIXME: remove this perhaps?
+  delegate :config, to: :app
   delegate :branching_strategy, :description, :release_backmerge_branch, :release_branch, :version_current, :version_seeded_with, :working_branch, to: :train
 
+  # FIXME: remove this perhaps?
+  # see app.rb
   def self.running?
     running.any?
   end
@@ -78,11 +87,14 @@ class ReleasePlatform < ApplicationRecord
     steps.release.first
   end
 
+  # FIXME: remove this perhaps?
+  # just activate from train
   def activate!
     self.status = ReleasePlatform.statuses[:active]
     save!(context: :activate_context)
   end
 
+  # FIXME: remove this and just use train
   def notify!(message, type, params)
     return unless activated?
     return unless app.send_notifications?
@@ -93,10 +105,12 @@ class ReleasePlatform < ApplicationRecord
     name&.parameterize
   end
 
+  # FIXME: remove this and just use train
   def build_channel_integrations
     app.integrations.build_channel
   end
 
+  # FIXME: remove this unused
   def final_deployment_channel
     steps.order(:step_number).last.deployments.last&.integration&.providable
   end
@@ -105,6 +119,7 @@ class ReleasePlatform < ApplicationRecord
     steps.where("step_number <= ?", step_number).order(:step_number)
   end
 
+  # FIXME: remove this technically unused
   def activated?
     !Rails.env.test? && active?
   end
@@ -113,6 +128,7 @@ class ReleasePlatform < ApplicationRecord
     steps.release.none? && !steps.review.any?
   end
 
+  # FIXME: remove this and just use train
   def demo?
     Flipper.enabled?(:demo_mode, self)
   end
@@ -127,6 +143,7 @@ class ReleasePlatform < ApplicationRecord
     self.platform ||= app.platform
   end
 
+  # FIXME: remove this move to train
   def ensure_deletable
     errors.add(:trains, "cannot delete a train if there are releases made from it!") if runs.present?
   end

@@ -25,9 +25,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   belongs_to :release_platform
   belongs_to :release
-  has_many :pull_requests, dependent: :destroy, inverse_of: :release_platform_run
   has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
-  has_one :release_metadata, dependent: :destroy, inverse_of: :release_platform_run
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
   has_many :passports, as: :stampable, dependent: :destroy
@@ -62,17 +60,27 @@ class ReleasePlatformRun < ApplicationRecord
     end
   end
 
+  # FIXME: remove this move to release
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
+
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
-  attr_accessor :has_major_bump
-  delegate :app, :pre_release_prs?, :vcs_provider, to: :release_platform
-  delegate :cache, to: Rails
-  delegate :release_branch, :branch_name, :last_commit, :commits, :tag_name, :tag_url, :original_release_version, :release_version, to: :release
+
+  delegate :app, to: :release_platform
+  delegate :release_branch,
+    :branch_name,
+    :last_commit,
+    :commits,
+    :tag_name,
+    :tag_url,
+    :original_release_version,
+    :release_version,
+    to: :release
 
   def metadata_editable?
     on_track? && !started_store_release?
   end
 
+  # FIXME: remove this move to release
   def overall_movement_status
     all_steps.to_h do |step|
       run = last_commit&.run_for(step, self)
@@ -97,16 +105,18 @@ class ReleasePlatformRun < ApplicationRecord
     last_run_for(step.previous)
   end
 
+  # FIXME: remove this move to release
   def self.pending_release?
     pending_release.exists?
   end
 
+  # FIXME: remove this move to release
   def stoppable?
     created? || on_track?
   end
 
   def finalizable?
-    may_finish? && ready_to_be_finalized?
+    may_finish? && finished_steps?
   end
 
   def next_step
@@ -132,6 +142,7 @@ class ReleasePlatformRun < ApplicationRecord
     commits.last&.step_runs&.where(release_platform_run: self)&.success&.size == all_steps.size
   end
 
+  # FIXME: remove this move to release
   def latest_finished_step_runs
     step_runs
       .select("DISTINCT ON (step_id) *")
@@ -170,7 +181,6 @@ class ReleasePlatformRun < ApplicationRecord
   def on_finish!
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     app.refresh_external_app
-
     release.start_post_release_phase! if release.ready_to_be_finalized?
   end
 
@@ -188,10 +198,6 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   private
-
-  def ready_to_be_finalized?
-    finished_steps?
-  end
 
   def started_store_release?
     latest_store_release.present?

@@ -97,7 +97,7 @@ class Release < ApplicationRecord
 
   attr_accessor :has_major_bump
 
-  delegate :app, :pre_release_prs?, :vcs_provider, to: :train
+  delegate :app, :pre_release_prs?, :vcs_provider, :release_platforms, to: :train
   delegate :cache, to: Rails
 
   def self.pending_release?
@@ -109,7 +109,7 @@ class Release < ApplicationRecord
   end
 
   def create_train_runs
-    train.release_platforms.each do |release_platform|
+    release_platforms.each do |release_platform|
       release_platform_runs.create!(
         code_name: "dummy",
         scheduled_at:,
@@ -118,6 +118,7 @@ class Release < ApplicationRecord
     end
   end
 
+  # FIXME: just iterate
   def start_release_platform_runs!
     ios_run&.start! unless ios_run&.finished?
     android_run&.start! unless android_run&.finished?
@@ -131,6 +132,7 @@ class Release < ApplicationRecord
     release_platform_runs.where(release_platform: train.android_train).first
   end
 
+  # FIXME: just iterate
   def stop_runs
     ios_run&.stop!
     android_run&.stop!
@@ -162,6 +164,7 @@ class Release < ApplicationRecord
     "v#{release_version}"
   end
 
+  # FIXME: either of release platform runs should be in hotfix
   def hotfix?
     return false unless on_track?
     release_version.to_semverish > original_release_version.to_semverish
@@ -211,6 +214,7 @@ class Release < ApplicationRecord
     release_platform_runs.all?(&:finished?)
   end
 
+  # FIXME: add build artifact if available
   def finalize_phase_metadata
     {
       total_run_time: distance_of_time_in_words(created_at, completed_at),
@@ -220,6 +224,7 @@ class Release < ApplicationRecord
     }
   end
 
+  # FIXME: commits can be fetched via step_runs
   def events(limit = nil)
     release_platform_runs
       .left_joins(step_runs: [deployment_runs: :staged_rollout])

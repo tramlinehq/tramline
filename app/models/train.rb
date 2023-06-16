@@ -110,6 +110,7 @@ class Train < ApplicationRecord
     "r/#{display_name}/%Y-%m-%d"
   end
 
+  # FIXME: iterate
   def activate!
     self.status = Train.statuses[:active]
     save!(context: :activate_context)
