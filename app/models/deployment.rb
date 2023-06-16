@@ -34,7 +34,7 @@ class Deployment < ApplicationRecord
     :app_store_integration?,
     :controllable_rollout?,
     :google_firebase_integration?, :project_link, to: :integration, allow_nil: true
-  delegate :train, :app, :notify!, to: :step
+  delegate :train, :app, :notify!, :release_platform, to: :step
 
   scope :sequential, -> { order("deployments.deployment_number ASC") }
 

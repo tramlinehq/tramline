@@ -51,7 +51,7 @@ class Step < ApplicationRecord
 
   delegate :app, :train, to: :release_platform
   delegate :android?, to: :app
-  delegate :ci_cd_provider, to: :train
+  delegate :ci_cd_provider, :notify!, to: :train
 
   def set_step_number
     self.step_number = release_platform.steps.review.maximum(:step_number).to_i + 1

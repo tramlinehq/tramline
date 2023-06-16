@@ -129,7 +129,7 @@ class StepRun < ApplicationRecord
 
   delegate :release_platform, :release_branch, :release, to: :release_platform_run
   delegate :train, to: :release_platform
-  delegate :app, :store_provider, :ci_cd_provider, :unzip_artifact?, to: :train
+  delegate :app, :store_provider, :ci_cd_provider, :unzip_artifact?, :notify!, to: :train
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
   alias_method :platform_release, :release_platform_run
@@ -236,7 +236,7 @@ class StepRun < ApplicationRecord
 
   def notification_params
     step.notification_params
-      .merge(train_run.notification_params)
+      .merge(release.notification_params)
       .merge(
         {
           ci_link: ci_link,
@@ -244,7 +244,7 @@ class StepRun < ApplicationRecord
           commit_sha: commit.short_sha,
           commit_message: commit.message,
           commit_url: commit.url,
-          artifact_download_link: build_artifact&.download_url&.presence || train_run.live_release_link
+          artifact_download_link: build_artifact&.download_url&.presence || release.live_release_link
         }
       )
   end
@@ -301,7 +301,7 @@ class StepRun < ApplicationRecord
   end
 
   def notify_on_failure!(message)
-    train.notify!(message, :step_failed, {reason: message, step_run: self})
+    notify!(message, :step_failed, notification_params.merge(step_fail_reason: message))
   end
 
   def after_trigger_ci

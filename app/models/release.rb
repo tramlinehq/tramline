@@ -19,6 +19,7 @@ class Release < ApplicationRecord
   include AASM
   include Passportable
   include ActionView::Helpers::DateHelper
+  include Rails.application.routes.url_helpers
   using RefinedString
 
   self.implicit_order_column = :scheduled_at
@@ -98,7 +99,7 @@ class Release < ApplicationRecord
 
   attr_accessor :has_major_bump
 
-  delegate :app, :pre_release_prs?, :vcs_provider, :release_platforms, to: :train
+  delegate :app, :pre_release_prs?, :vcs_provider, :release_platforms, :notify!, to: :train
   delegate :cache, to: Rails
 
   def self.pending_release?
@@ -212,6 +213,16 @@ class Release < ApplicationRecord
       release_tag_url: tag_url,
       store_url: app.store_link
     }
+  end
+
+  def live_release_link
+    return if Rails.env.test?
+
+    if Rails.env.development?
+      release_url(self, host: ENV["HOST_NAME"], protocol: "https", port: ENV["PORT_NUM"])
+    else
+      release_url(self, host: ENV["HOST_NAME"], protocol: "https")
+    end
   end
 
   def notification_params

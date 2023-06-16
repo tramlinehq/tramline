@@ -182,6 +182,15 @@ class Train < ApplicationRecord
     notification_provider.notify!(config.notification_channel_id, message, type, params)
   end
 
+  def notification_params
+    app.notification_params.merge(
+      {
+        train_name: name,
+        train_current_version: version_current
+      }
+    )
+  end
+
   private
 
   def set_constituent_seed_versions
