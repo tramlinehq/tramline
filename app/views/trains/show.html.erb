@@ -142,30 +142,16 @@
   </section>
 
   <!-- Steps -->
-  <% if @train.android_train.present? %>
+  <% @train.release_platforms.each do |release_platform| %>
     <section class="w-full mt-10">
-      <h2 class="text-2xl font-bold mb-4">Android Steps</h2>
+      <h2 class="text-2xl font-bold mb-4"><%= release_platform.display_attr(:platform) %> Steps</h2>
 
-      <% if @train.android_train.steps.size > 0 %>
+      <% if release_platform.steps.size > 0 %>
         <div class="flex flex-col">
-          <%= render partial: "shared/step_tree_viz", locals: { train: @train, release_platform: @train.android_train, editable: false } %>
+          <%= render partial: "shared/step_tree_viz", locals: { train: @train, release_platform: release_platform, editable: false } %>
         </div>
       <% else %>
-        <%= render partial: "release_platforms/step_creation", locals: { app: @app, train: @train, release_platform: @train.android_train } %>
-      <% end %>
-    </section>
-  <% end %>
-
-  <% if @train.ios_train.present? %>
-    <section class="w-full mt-10">
-      <h2 class="text-2xl font-bold mb-4">iOS Steps</h2>
-
-      <% if @train.ios_train.steps.size > 0 %>
-        <div class="flex flex-col">
-          <%= render partial: "shared/step_tree_viz", locals: { train: @train, release_platform: @train.ios_train, editable: false } %>
-        </div>
-      <% else %>
-        <%= render partial: "release_platforms/step_creation", locals: { app: @app, train: @train, release_platform: @train.ios_train } %>
+        <%= render partial: "release_platforms/step_creation", locals: { app: @app, train: @train, release_platform: release_platform } %>
       <% end %>
     </section>
   <% end %>

@@ -347,7 +347,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_15_155635) do
     t.uuid "app_id", null: false
     t.string "name", null: false
     t.string "description"
-    t.string "status", null: false
+    t.string "status"
     t.string "version_seeded_with"
     t.string "version_current"
     t.string "slug"
@@ -417,7 +417,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_15_155635) do
   create_table "steps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_id", null: false
     t.string "name", null: false
-    t.string "description", null: false
+    t.string "description"
     t.string "status", null: false
     t.integer "step_number", limit: 2, default: 0, null: false
     t.jsonb "ci_cd_channel", null: false

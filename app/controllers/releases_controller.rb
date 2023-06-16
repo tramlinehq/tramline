@@ -8,7 +8,6 @@ class ReleasesController < SignedInApplicationController
     @train = @release.train
     @app = @train.app
 
-    set_train_stuff
     set_pull_requests
 
     render :show
@@ -35,7 +34,6 @@ class ReleasesController < SignedInApplicationController
 
     redirect_to train_path, notice: "No release in progress." and return unless @release
 
-    set_train_stuff
     set_pull_requests
 
     render :show
@@ -66,15 +64,6 @@ class ReleasesController < SignedInApplicationController
   end
 
   private
-
-  def set_train_stuff
-    @ios_train = @train.ios_train
-    @android_train = @train.android_train
-    @ios_steps = @ios_train.steps.order(:step_number).includes(:step_runs, :release_platform, deployments: [:integration]) if @ios_train
-    @android_steps = @android_train.steps.order(:step_number).includes(:step_runs, :release_platform, deployments: [:integration]) if @android_train
-    @android_events = @release.android_run.events(10) if @android_train
-    @ios_events = @release.ios_run.events(10) if @ios_train
-  end
 
   def set_release
     @release =

@@ -31,6 +31,7 @@ class Release < ApplicationRecord
   has_many :step_runs, through: :release_platform_runs
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
+  scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
 
   STAMPABLE_REASONS = %w[
     created
@@ -80,7 +81,7 @@ class Release < ApplicationRecord
       transitions to: :stopped
     end
 
-    event :finish, after_commit: :on_finish do
+    event :finish, after_commit: :on_finish! do
       before { self.completed_at = Time.current }
       transitions from: :post_release_started, to: :finished
     end
@@ -118,24 +119,14 @@ class Release < ApplicationRecord
     end
   end
 
-  # FIXME: just iterate
   def start_release_platform_runs!
-    ios_run&.start! unless ios_run&.finished?
-    android_run&.start! unless android_run&.finished?
+    release_platform_runs.each do |run|
+      run&.start! unless run&.finished?
+    end
   end
 
-  def ios_run
-    release_platform_runs.where(release_platform: train.ios_train).first
-  end
-
-  def android_run
-    release_platform_runs.where(release_platform: train.android_train).first
-  end
-
-  # FIXME: just iterate
   def stop_runs
-    ios_run&.stop!
-    android_run&.stop!
+    release_platform_runs.each(&:stop!)
   end
 
   def set_version
@@ -162,12 +153,6 @@ class Release < ApplicationRecord
 
   def tag_name
     "v#{release_version}"
-  end
-
-  # FIXME: either of release platform runs should be in hotfix
-  def hotfix?
-    return false unless on_track?
-    release_version.to_semverish > original_release_version.to_semverish
   end
 
   def stoppable?
@@ -210,6 +195,11 @@ class Release < ApplicationRecord
     release_platform_runs.any?(&:version_bump_required?)
   end
 
+  def hotfix?
+    return false unless on_track?
+    release_platform_runs.any?(&:hotfix?)
+  end
+
   def ready_to_be_finalized?
     release_platform_runs.all?(&:finished?)
   end
@@ -235,14 +225,12 @@ class Release < ApplicationRecord
     )
   end
 
-  # FIXME: commits can be fetched via step_runs
   def events(limit = nil)
     release_platform_runs
-      .left_joins(step_runs: [deployment_runs: :staged_rollout])
-      .pluck("release_platform_runs.id, step_runs.id, deployment_runs.id, staged_rollouts.id")
+      .left_joins(step_runs: [:commit, [deployment_runs: :staged_rollout]])
+      .pluck("commits.id, release_platform_runs.id, step_runs.id, deployment_runs.id, staged_rollouts.id")
       .flatten
       .uniq
-      .concat(commits.pluck(:id))
       .compact
       .push(id)
       .then { |ids| Passport.where(stampable_id: ids).order(event_timestamp: :desc).limit(limit) }

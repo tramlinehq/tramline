@@ -62,7 +62,7 @@ describe StepRun do
     it "is false when train is inactive" do
       step = create(:step, :with_deployment, release_platform: release_platform)
       deployment = create(:deployment, step: step)
-      release_platform.update(status: ReleasePlatform.statuses[:inactive])
+      release_platform.train.update(status: Train.statuses[:inactive])
       step_run = create(:step_run, step: step)
 
       expect(step_run.manually_startable_deployment?(deployment)).to be false

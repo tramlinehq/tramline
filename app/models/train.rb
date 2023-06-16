@@ -38,6 +38,9 @@ class Train < ApplicationRecord
   has_many :steps, through: :release_platforms
   has_many :deployments, through: :steps
 
+  scope :running, -> { includes(:releases).where(releases: {status: Release.statuses[:on_track]}) }
+  scope :only_with_runs, -> { joins(:releases).where.not(releases: {status: "stopped"}).distinct }
+
   delegate :ready?, :config, to: :app
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :store_provider, to: :integrations
 
@@ -72,6 +75,10 @@ class Train < ApplicationRecord
     throw(:abort) if errors.present?
   end
 
+  def self.running?
+    running.any?
+  end
+
   def create_webhook!
     return false if Rails.env.test?
     result = vcs_provider.find_or_create_webhook!(id: vcs_webhook_id, train_id: id)
@@ -89,17 +96,14 @@ class Train < ApplicationRecord
   end
 
   def create_release_platforms
-    Rails.logger.info("Creating release_platforms for groups!")
     platforms = app.cross_platform? ? ReleasePlatform.platforms.values : [app.platform]
     platforms.each do |platform|
       release_platforms.create!(
         platform: platform,
         name: "#{name} #{platform}",
-        app: app,
-        status: ReleasePlatform.statuses[:draft]
+        app: app
       )
     end
-    Rails.logger.info("Created release_platforms for groups!")
   end
 
   def display_name
@@ -110,12 +114,10 @@ class Train < ApplicationRecord
     "r/#{display_name}/%Y-%m-%d"
   end
 
-  # FIXME: iterate
   def activate!
+    release_platforms.all?(&:valid_steps?)
     self.status = Train.statuses[:active]
     save!(context: :activate_context)
-    ios_train&.activate!
-    android_train&.activate!
   end
 
   def in_creation?
@@ -130,40 +132,8 @@ class Train < ApplicationRecord
     BRANCHING_STRATEGIES[branching_strategy.to_sym]
   end
 
-  def set_constituent_seed_versions
-    semverish = version_seeded_with.to_semverish
-    self.major_version_seed, self.minor_version_seed, self.patch_version_seed = semverish.major, semverish.minor, semverish.patch
-  end
-
-  def semver_compatibility
-    VersioningStrategies::Semverish.new(version_seeded_with)
-  rescue ArgumentError
-    errors.add(:version_seeded_with, "Please choose a valid semver-like format, eg. major.minor.patch or major.minor")
-  end
-
-  def set_version_seeded_with
-    self.version_seeded_with =
-      VersioningStrategies::Semverish.build(major_version_seed, minor_version_seed, patch_version_seed)
-  rescue ArgumentError
-    nil
-  end
-
-  def set_current_version
-    self.version_current = version_seeded_with.ver_bump(:minor)
-  end
-
-  def set_default_status
-    self.status ||= Train.statuses[:draft]
-  end
-
-  def ensure_deletable
-    errors.add(:trains, "cannot delete a train if there are releases made from it!") if releases.present?
-  end
-
-  def valid_train_configuration
-    unless release_platforms.all?(&:valid_steps?)
-      errors.add(:release_platforms, "there should be one release step")
-    end
+  def build_channel_integrations
+    integrations.build_channel
   end
 
   def bump_release!(has_major_bump = false)
@@ -206,13 +176,51 @@ class Train < ApplicationRecord
     vcs_provider.create_branch!(from, to)
   end
 
-  def activated?
-    !Rails.env.test? && active?
-  end
-
   def notify!(message, type, params)
     return unless activated?
     return unless app.send_notifications?
     notification_provider.notify!(config.notification_channel_id, message, type, params)
+  end
+
+  private
+
+  def set_constituent_seed_versions
+    semverish = version_seeded_with.to_semverish
+    self.major_version_seed, self.minor_version_seed, self.patch_version_seed = semverish.major, semverish.minor, semverish.patch
+  end
+
+  def semver_compatibility
+    VersioningStrategies::Semverish.new(version_seeded_with)
+  rescue ArgumentError
+    errors.add(:version_seeded_with, "Please choose a valid semver-like format, eg. major.minor.patch or major.minor")
+  end
+
+  def set_version_seeded_with
+    self.version_seeded_with =
+      VersioningStrategies::Semverish.build(major_version_seed, minor_version_seed, patch_version_seed)
+  rescue ArgumentError
+    nil
+  end
+
+  def set_current_version
+    self.version_current = version_seeded_with.ver_bump(:minor)
+  end
+
+  def set_default_status
+    self.status ||= Train.statuses[:draft]
+  end
+
+  def ensure_deletable
+    errors.add(:trains, "cannot delete a train if there are releases made from it!") if releases.present?
+  end
+
+  def valid_train_configuration
+    unless release_platforms.all?(&:valid_steps?)
+      errors.add(:release_platforms, "there should be one release step")
+    end
+  end
+
+  def activated?
+    !Rails.env.test? && active?
   end
 end

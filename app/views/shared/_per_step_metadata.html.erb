@@ -33,7 +33,7 @@
         <%= inline_svg("workflow.svg", classname: "w-4 inline-flex mr-1") %>
         <%= render partial: "shared/display_channels",
                    locals: { name: show_ci_cd(step),
-                             provider_name: step.release_platform.ci_cd_provider.to_s } %>
+                             provider_name: step.ci_cd_provider.to_s } %>
       </div>
 
       <div class="flex flex-row items-center w-full">

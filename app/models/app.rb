@@ -175,10 +175,10 @@ class App < ApplicationRecord
 
   # FIXME: this is probably quite inefficient for a lot of apps/trains
   def high_level_overview
-    release_platforms.only_with_runs.index_with do |release_platform|
+    trains.only_with_runs.index_with do |train|
       {
-        in_review: release_platform.runs.on_track.first,
-        last_released: release_platform.runs.released.order("completed_at DESC").first
+        in_review: train.releases.on_track.first,
+        last_released: train.releases.released.order("completed_at DESC").first
       }
     end
   end
@@ -250,7 +250,7 @@ class App < ApplicationRecord
   end
 
   def no_trains_are_running
-    if release_platforms.running? && bundle_identifier_changed?
+    if trains.running? && bundle_identifier_changed?
       errors.add(:bundle_identifier, "cannot be updated if there are running trains!")
     end
   end

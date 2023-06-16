@@ -49,8 +49,9 @@ class Step < ApplicationRecord
   auto_strip_attributes :name, squish: true
   accepts_nested_attributes_for :deployments, allow_destroy: false, reject_if: :reject_deployments?
 
-  delegate :app, :notify!, to: :release_platform
+  delegate :app, :train, to: :release_platform
   delegate :android?, to: :app
+  delegate :ci_cd_provider, to: :train
 
   def set_step_number
     self.step_number = release_platform.steps.review.maximum(:step_number).to_i + 1

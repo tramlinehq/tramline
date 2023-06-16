@@ -18,6 +18,7 @@ class ReleasePlatformRun < ApplicationRecord
   include AASM
   include Passportable
   include ActionView::Helpers::DateHelper
+  include Displayable
   using RefinedString
 
   self.ignored_columns += %w[branch_name commit_sha original_release_version release_version]
@@ -60,12 +61,9 @@ class ReleasePlatformRun < ApplicationRecord
     end
   end
 
-  # FIXME: remove this move to release
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
-  scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
-
-  delegate :app, to: :release_platform
+  delegate :app, :platform, to: :release_platform
   delegate :release_branch,
     :branch_name,
     :last_commit,
@@ -75,21 +73,22 @@ class ReleasePlatformRun < ApplicationRecord
     :original_release_version,
     :release_version,
     to: :release
+  delegate :steps, :train, to: :release_platform
 
   def metadata_editable?
     on_track? && !started_store_release?
   end
 
-  # FIXME: remove this move to release
+  # FIXME: move to release and change it for proper movement UI
   def overall_movement_status
-    all_steps.to_h do |step|
+    steps.to_h do |step|
       run = last_commit&.run_for(step, self)
       [step, run.present? ? run.status_summary : {not_started: true}]
     end
   end
 
   def startable_step?(step)
-    return false if release_platform.inactive?
+    return false if train.inactive?
     return false unless on_track?
     return true if step.first? && step_runs_for(step).empty?
     return false if step.first?
@@ -105,22 +104,12 @@ class ReleasePlatformRun < ApplicationRecord
     last_run_for(step.previous)
   end
 
-  # FIXME: remove this move to release
-  def self.pending_release?
-    pending_release.exists?
-  end
-
-  # FIXME: remove this move to release
-  def stoppable?
-    created? || on_track?
-  end
-
   def finalizable?
     may_finish? && finished_steps?
   end
 
   def next_step
-    return all_steps.first if step_runs.empty?
+    return steps.first if step_runs.empty?
     step_runs.joins(:step).order(:step_number).last.step.next
   end
 
@@ -133,21 +122,13 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def current_step_number
-    return if all_steps.blank?
+    return if steps.blank?
     return 1 if running_steps.blank?
     running_steps.order(:step_number).last.step_number
   end
 
   def finished_steps?
-    commits.last&.step_runs&.where(release_platform_run: self)&.success&.size == all_steps.size
-  end
-
-  # FIXME: remove this move to release
-  def latest_finished_step_runs
-    step_runs
-      .select("DISTINCT ON (step_id) *")
-      .where(status: StepRun.statuses[:success])
-      .order(:step_id, created_at: :desc)
+    commits.last&.step_runs&.where(release_platform_run: self)&.success&.size == steps.size
   end
 
   def last_good_step_run
@@ -172,10 +153,6 @@ class ReleasePlatformRun < ApplicationRecord
       .compact
       .push(id)
       .then { |ids| Passport.where(stampable_id: ids).order(event_timestamp: :desc).limit(limit) }
-  end
-
-  def all_steps
-    release_platform.steps
   end
 
   def on_finish!

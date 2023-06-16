@@ -67,8 +67,8 @@
               </div>
             </li>
 
-            <% if release.android_run.present? %>
-              <% last_deployment_run = release.android_run.last_good_step_run&.deployment_runs.last %>
+            <% release.release_platform_runs.each do |run| %>
+              <% last_deployment_run = run.last_good_step_run&.deployment_runs.last %>
               <% if last_deployment_run&.deployment.controllable_rollout? %>
                 <li class="flex items-center justify-between py-3 border-b border-indigo-200">
                   <div>Release % to users</div>

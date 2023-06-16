@@ -63,83 +63,9 @@
             <span class="font-medium mb-2">This commit has been replaced by a newer commit.</span>
           <% end %>
           <div class="grid grid-cols-2 gap-y-1 ml-4">
-            <% if release.android_run.present? %>
+            <% release.release_platform_runs.each do |run| %>
               <div>
-                <% commit.step_runs.where(release_platform_run: release.android_run).includes(:step).order(:created_at).each_with_index do |step_run| %>
-                  <div class="border-dashed border-t border-slate-700 last:border-t-0 mb-2"></div>
-
-                  <div class="pt-2 <%= "opacity-50" if is_stale_commit %>">
-                    <div class="mb-2 font-medium text-base">
-                      <%= step_run.step.name %>
-                      <%= dev_show { step_run.id.strip } %>
-                    </div>
-                    <!-- per step info -->
-                    <div>
-                      <!-- ci link -->
-                      <div class="mb-2">
-                        <% if step_run.ci_link.present? %>
-                          <%= link_to_external "CI workflow run ↗", step_run.ci_link, class: "underline" %>
-                        <% else %>
-                          CI workflow running
-                        <% end %>
-
-                        <span class="ml-1"><%= build_status_badge(step_run) %></span>
-                        <% if step_run.fetching_build? %>
-                          <%= status_badge("Waiting for build", %w[bg-green-500 text-white], pulse: true) %>
-                        <% end %>
-                      </div>
-
-                      <!-- download build -->
-                      <% if step_run.build_artifact_available? %>
-                        <div class="mb-2">
-                          <%= link_to_external "Download build ↗", step_run.download_url, class: "underline" %>
-
-                          <div class="text-slate-500">
-                            <%= render partial: "shared/build_details", locals: { step_run:, with_artifact: true } %>
-                          </div>
-                        </div>
-                      <% end %>
-
-                      <!-- distributions -->
-                      <% if step_run.deployment_runs.exists? %>
-                        <div class="mb-2">
-                          <%= Deployment.display.pluralize %>
-                          <div class="mt-2">
-                            <% step_run.deployment_runs.each do |deployment_run| %>
-                              <% deployment = deployment_run.deployment %>
-                              <div class="mb-1">
-                                <div class="mr-1 inline">
-                                  <%= render partial: "shared/deployment", locals: { deployment: deployment } %>
-                                </div>
-
-                                <%= deployment_run_status_badge(deployment_run) %>
-
-                                <% if deployment_run.released? && deployment_run.rollout_percentage %>
-                                  <div class="text-xs ml-6 mt-1">
-                                    <span>Released to <%= number_to_percentage deployment_run.rollout_percentage %> of the users</span>
-                                    <div class="border-slate-200 w-1/2">
-                                      <div class="relative w-full h-2 bg-slate-300">
-                                        <div class="absolute inset-0 bg-emerald-500" aria-hidden="true" style="width: <%= deployment_run.rollout_percentage %>%"></div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                <% end %>
-
-                                <%= render partial: "shared/live_release/external_release", locals: { deployment_run: } %>
-                              </div>
-                            <% end %>
-                          </div>
-                        </div>
-                      <% end %>
-                    </div>
-                  </div>
-                <% end %>
-              </div>
-            <% end %>
-
-            <% if release.ios_run.present? %>
-              <div>
-                <% commit.step_runs.where(release_platform_run: release.ios_run).includes(:step).order(:created_at).each_with_index do |step_run| %>
+                <% commit.step_runs.where(release_platform_run: run).includes(:step).order(:created_at).each_with_index do |step_run| %>
                   <div class="border-dashed border-t border-slate-700 last:border-t-0 mb-2"></div>
 
                   <div class="pt-2 <%= "opacity-50" if is_stale_commit %>">

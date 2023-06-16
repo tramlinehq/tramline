@@ -4,7 +4,7 @@ class AddTrainGroupsAndTrainGroupRuns < ActiveRecord::Migration[7.0]
       t.belongs_to :app, null: false, foreign_key: true, type: :uuid
 
       t.string :name, null: false
-      t.string :description, null: false
+      t.string :description
       t.string :status, null: false
       t.string :branching_strategy, null: false
       t.string :release_branch

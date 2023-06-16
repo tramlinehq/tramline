@@ -11,7 +11,7 @@ describe Commit do
 
     it "does it for the first step run if first commit" do
       step = create(:step, :with_deployment, release_platform:)
-      train.update(status: ReleasePlatform.statuses[:active])
+      train.update(status: Train.statuses[:active])
       release = create(:release, train:)
       release_platform_run = create(:release_platform_run, release_platform:, release:)
 

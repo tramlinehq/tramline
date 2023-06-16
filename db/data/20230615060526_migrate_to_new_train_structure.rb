@@ -44,7 +44,7 @@ class MigrateToNewTrainStructure < ActiveRecord::Migration[7.0]
           listener.update!(train:)
         end
 
-        platform.runs.each do |run|
+        platform.release_platform_runs.each do |run|
           # using attributes because some direct AR methods might have changed or delegated back up in code
           attributes = OpenStruct.new run.attributes
           branch_name = attributes.branch_name

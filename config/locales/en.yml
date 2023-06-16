@@ -46,6 +46,14 @@ en:
           slack: "Slack"
           external: "External (outside Tramline)"
           firebase: "Firebase App Distribution"
+      release_platform_run:
+        platform:
+          ios: "iOS"
+          android: "Android"
+      release_platform:
+        platform:
+          ios: "iOS"
+          android: "Android"
     attributes:
       integration:
         categories:

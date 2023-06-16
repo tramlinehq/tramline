@@ -127,9 +127,9 @@ class StepRun < ApplicationRecord
   attr_accessor :current_user
   attr_accessor :artifacts_url
 
-  delegate :notify!, to: :step
   delegate :release_platform, :release_branch, :release, to: :release_platform_run
-  delegate :app, :store_provider, :ci_cd_provider, :unzip_artifact?, to: :release_platform
+  delegate :train, to: :release_platform
+  delegate :app, :store_provider, :ci_cd_provider, :unzip_artifact?, to: :train
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
   alias_method :platform_release, :release_platform_run
@@ -156,7 +156,7 @@ class StepRun < ApplicationRecord
   end
 
   def startable_deployment?(deployment)
-    return false if release_platform.inactive?
+    return false if train.inactive?
     return false if release_platform.active_run.nil?
     return true if deployment.first? && deployment_runs.empty?
     next_deployment == deployment
@@ -301,7 +301,7 @@ class StepRun < ApplicationRecord
   end
 
   def notify_on_failure!(message)
-    notify!(message, :step_failed, notification_params.merge(step_fail_reason: message))
+    train.notify!(message, :step_failed, {reason: message, step_run: self})
   end
 
   def after_trigger_ci
