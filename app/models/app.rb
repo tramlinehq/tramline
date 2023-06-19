@@ -31,7 +31,7 @@ class App < ApplicationRecord
   has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :integrations, inverse_of: :app, dependent: :destroy
 
-  has_many :trains, -> { sequential }, dependent: :destroy
+  has_many :trains, -> { sequential }, dependent: :destroy, inverse_of: :app
   has_many :releases, through: :trains
 
   has_many :release_platforms, dependent: :destroy
