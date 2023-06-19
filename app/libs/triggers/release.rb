@@ -28,11 +28,10 @@ class Triggers::Release
 
   attr_reader :train, :starting_time
   delegate :branching_strategy, to: :train
-  delegate :transaction, to: ApplicationRecord
 
   memoize def kickoff
     GitHub::Result.new do
-      transaction do
+      train.with_lock do
         train.activate! unless train.active?
         create_release
         train.create_webhook!
