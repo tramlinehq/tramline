@@ -1,6 +1,4 @@
 class ReleasePlatformsController < SignedInApplicationController
-  using RefinedString
-
   before_action :require_write_access!, only: %i[edit]
   before_action :set_app, only: %i[show edit]
   before_action :set_train, only: %i[show edit]
