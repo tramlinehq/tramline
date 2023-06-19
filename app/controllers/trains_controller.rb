@@ -57,7 +57,7 @@ class TrainsController < SignedInApplicationController
   private
 
   def new_train_redirect
-    if @train.in_creation?
+    if @train.in_creation? && @app.trains.size == 1
       redirect_to app_path(@app), notice: "Train was successfully created."
     else
       redirect_to train_path, notice: "Train was successfully created."

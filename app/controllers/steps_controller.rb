@@ -60,7 +60,7 @@ class StepsController < SignedInApplicationController
     head :forbidden and return if @train.active_run
 
     if @step.update(parsed_step_params)
-      redirect_to edit_app_train_platform_path(@app, @train, @release_platform), notice: "Step was successfully updated."
+      redirect_to edit_app_train_path(@app, @train), notice: "Step was successfully updated."
     else
       @ci_actions = @train.ci_cd_provider.workflows
       render :edit, status: :unprocessable_entity

@@ -1,4 +1,0 @@
-<%= render PageComponent.new(breadcrumb: breadcrumb(:edit_release_platform, @release_platform.name,  @release_platform), title: "Settings: #{@release_platform.name}") do %>
-  <%= render partial: 'shared/errors', locals: { resource: @release_platform } %>
-  <%= render 'form', app: @app, train: @train, release_platform: @release_platform %>
-<% end %>

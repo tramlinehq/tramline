@@ -6,7 +6,7 @@
   <% end %>
 
   <!-- add review button -->
-  <li><%= render partial: "release_platforms/new_step_button", locals: { train:, release_platform:, kind: "review" } %></li>
+  <li><%= render partial: "trains/new_step_button", locals: { train:, release_platform:, kind: "review" } %></li>
 
   <!-- release step-->
   <% release_step = release_platform.steps.release.first %>
@@ -18,6 +18,6 @@
   <!-- add release button -->
   <% unless release_platform.has_release_step? %>
     <%= render partial: "shared/step_tree_connector", locals: { color: "emerald" } %>
-    <li><%= render partial: "release_platforms/new_step_button", locals: { train:, release_platform:, kind: "release" } %></li>
+    <li><%= render partial: "trains/new_step_button", locals: { train:, release_platform:, kind: "release" } %></li>
   <% end %>
 </ol>
