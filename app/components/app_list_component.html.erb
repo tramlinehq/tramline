@@ -8,7 +8,7 @@
     <% list.each do |app| %>
       <div class="grid grid-cols-3 gap-x-1 my-3 gap-y-2">
         <%= link_to app_path(app) do %>
-          <div class="flex flex-col bg-indigo-50 rounded-sm pl-4 pt-4 shadow-sm hover:bg-indigo-100 h-5}0">
+          <div class="flex flex-col bg-indigo-50 rounded-sm pl-4 pt-4 shadow-sm hover:bg-indigo-100 h-52">
             <div class="flex-grow mb-2">
               <%= app_icon(platform) %>
             </div>
@@ -26,54 +26,58 @@
 
           <% unless releases.blank? %>
             <% if releases[:in_review].nil? %>
-              <div class="flex flex-col bg-indigo-300 rounded-sm pl-4 pt-4 h-50">
+              <div class="flex flex-col bg-indigo-300 rounded-sm pl-4 pt-4 h-52">
                 <div class="flex-grow mb-2">
                   <p class="uppercase tracking-wider text-white text-sm">Nothing in Review</p>
                 </div>
               </div>
             <% else %>
-              <div class="flex flex-col bg-indigo-300 rounded-sm pl-4 pt-4 h-50">
-                <div class="flex-grow mb-2">
-                  <p class="uppercase tracking-wider text-white text-sm">Reviewing</p>
-                  <p class="text-2xl font-bold"><%= releases[:in_review]&.release_version %></p>
-                </div>
+              <%= link_to release_path(releases[:in_review].id) do %>
+                <div class="flex flex-col bg-indigo-300 rounded-sm pl-4 pt-4 h-52">
+                  <div class="flex-grow mb-2">
+                    <p class="uppercase tracking-wider text-white text-sm">Reviewing</p>
+                    <p class="text-2xl font-bold"><%= releases[:in_review].release_version %></p>
+                  </div>
 
-                <div class="mt-3 mb-3 text-stone">
-                  <p class="text-sm">
-                    <span class="font-bold">Branch</span>:
-                    <code><%= releases[:in_review]&.release_branch %></code>
-                  </p>
+                  <div class="mt-3 mb-3 text-stone">
+                    <p class="text-sm">
+                      <span class="font-bold">Branch</span>:
+                      <code><%= releases[:in_review].release_branch %></code>
+                    </p>
 
-                  <p class="text-sm">
-                    <span class="font-bold">Started</span>
-                    <span><%= ago_in_words releases[:in_review]&.created_at %></span></p>
+                    <p class="text-sm">
+                      <span class="font-bold">Started</span>
+                      <span><%= ago_in_words releases[:in_review].created_at %></span></p>
+                  </div>
                 </div>
-              </div>
+              <% end %>
             <% end %>
 
             <% if releases[:last_released].nil? %>
-              <div class="flex flex-col bg-indigo-500 rounded-sm pl-4 pt-4 h-50">
+              <div class="flex flex-col bg-indigo-500 rounded-sm pl-4 pt-4 h-52">
                 <div class="flex-grow mb-2">
                   <p class="uppercase tracking-wider text-white text-sm">No releases yet</p>
                 </div>
               </div>
             <% else %>
-              <div class="flex flex-col bg-indigo-500 rounded-sm pl-4 pt-4 h-50">
-                <div class="flex-grow mb-2">
-                  <p class="uppercase tracking-wider text-white text-sm">Released</p>
-                  <p class="text-2xl font-bold"><%= releases[:last_released]&.release_version %></p>
-                </div>
+              <%= link_to release_path(releases[:last_released].id) do %>
+                <div class="flex flex-col bg-indigo-500 rounded-sm pl-4 pt-4 h-52">
+                  <div class="flex-grow mb-2">
+                    <p class="uppercase tracking-wider text-white text-sm">Released</p>
+                    <p class="text-2xl font-bold"><%= releases[:last_released].release_version %></p>
+                  </div>
 
-                <div class="mt-3 mb-3 text-stone-200">
-                  <p class="text-sm">
-                    <span class="font-bold">Branch</span>:
-                    <code><%= releases[:last_released]&.release_branch %></code>
-                  </p>
-                  <p class="text-sm">
-                    <span class="font-bold">Released</span>
-                    <span><%= ago_in_words releases[:last_released]&.completed_at %></span></p>
+                  <div class="mt-3 mb-3 text-stone-200">
+                    <p class="text-sm">
+                      <span class="font-bold">Branch</span>:
+                      <code><%= releases[:last_released].release_branch %></code>
+                    </p>
+                    <p class="text-sm">
+                      <span class="font-bold">Released</span>
+                      <span><%= ago_in_words releases[:last_released].completed_at %></span></p>
+                  </div>
                 </div>
-              </div>
+              <% end %>
             <% end %>
           <% end %>
         <% end %>
