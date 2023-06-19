@@ -30,13 +30,14 @@ class Train < ApplicationRecord
   }.freeze
 
   belongs_to :app
-  has_many :releases, inverse_of: :train, dependent: :destroy
+  has_many :releases, -> { sequential }, inverse_of: :train, dependent: :destroy
   has_one :active_run, -> { pending_release }, class_name: "Release", inverse_of: :train, dependent: :destroy
   has_many :release_platforms, dependent: :destroy
   has_many :integrations, through: :app
   has_many :steps, through: :release_platforms
   has_many :deployments, through: :steps
 
+  scope :sequential, -> { order("trains.created_at ASC") }
   scope :running, -> { includes(:releases).where(releases: {status: Release.statuses[:on_track]}) }
   scope :only_with_runs, -> { joins(:releases).where.not(releases: {status: "stopped"}).distinct }
 

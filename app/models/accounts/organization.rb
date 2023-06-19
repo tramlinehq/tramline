@@ -16,7 +16,7 @@ class Accounts::Organization < ApplicationRecord
 
   has_many :memberships, dependent: :delete_all, inverse_of: :organization
   has_many :users, through: :memberships, dependent: :delete_all
-  has_many :apps, dependent: :destroy
+  has_many :apps, -> { sequential }, dependent: :destroy
   has_many :invites, dependent: :destroy
 
   enum status: {active: "active", dormant: "dormant", guest: "guest"}

@@ -31,7 +31,7 @@ class App < ApplicationRecord
   has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :integrations, inverse_of: :app, dependent: :destroy
 
-  has_many :trains, dependent: :destroy
+  has_many :trains, -> { sequential }, dependent: :destroy
   has_many :releases, through: :trains
 
   has_many :release_platforms, dependent: :destroy
@@ -63,6 +63,7 @@ class App < ApplicationRecord
     :slack_notifications?, to: :integrations, allow_nil: true
 
   scope :with_trains, -> { joins(:trains).distinct }
+  scope :sequential, -> { order("apps.created_at ASC") }
 
   def self.allowed_platforms(current_organization)
     if Flipper.enabled?(:cross_platform_apps, current_organization)
