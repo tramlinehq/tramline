@@ -14,7 +14,7 @@ class StagedRolloutComponent < ViewComponent::Base
     @staged_rollout = staged_rollout
     @deployment_run = @staged_rollout.deployment_run
     @step_run = @deployment_run.step_run
-    @release = @step_run.train_run
+    @release = @step_run.release
   end
 
   delegate :started?,

@@ -1,4 +1,4 @@
-class MergeThisMigrationLater < ActiveRecord::Migration[7.0]
+class ChangeUniqueIndexOnReleaseTables < ActiveRecord::Migration[7.0]
   def change
     safety_assured do
       remove_index :releases_commits, column: [:commit_hash, :train_run_id]

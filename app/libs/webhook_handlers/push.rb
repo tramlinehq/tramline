@@ -24,7 +24,6 @@ class WebhookHandlers::Push
 
     WebhookProcessors::PushJob.perform_later(release.id, commit_attributes)
 
-
     Response.new(:accepted)
   end
 

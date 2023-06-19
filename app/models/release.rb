@@ -47,6 +47,9 @@ class Release < ApplicationRecord
     finished
   ]
 
+  # TODO: deprecate this
+  STAMPABLE_REASONS.concat(["status_changed"])
+
   STATES = {
     created: "created",
     on_track: "on_track",

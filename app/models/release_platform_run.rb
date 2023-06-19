@@ -21,7 +21,7 @@ class ReleasePlatformRun < ApplicationRecord
   include Displayable
   using RefinedString
 
-  self.ignored_columns += %w[branch_name commit_sha original_release_version release_version]
+  # self.ignored_columns += %w[branch_name commit_sha original_release_version release_version]
   self.implicit_order_column = :scheduled_at
 
   belongs_to :release_platform

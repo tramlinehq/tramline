@@ -52,6 +52,9 @@ class StepRun < ApplicationRecord
     finished
   ]
 
+  # TODO: deprecate this
+  STAMPABLE_REASONS.concat(["status_changed"])
+
   STATES = {
     on_track: "on_track",
     ci_workflow_triggered: "ci_workflow_triggered",

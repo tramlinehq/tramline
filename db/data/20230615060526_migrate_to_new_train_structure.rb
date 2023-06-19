@@ -19,6 +19,8 @@ class MigrateToNewTrainStructure < ActiveRecord::Migration[7.0]
         version_seeded_with = attributes.version_seeded_with
         version_current = attributes.version_current
         app_id = attributes.app_id
+        updated_at = attributes.updated_at
+        created_at = attributes.created_at
 
         train = Train.new(
           app_id:,
@@ -32,17 +34,14 @@ class MigrateToNewTrainStructure < ActiveRecord::Migration[7.0]
           vcs_webhook_id: nil,
           slug:,
           version_seeded_with:,
-          version_current:
+          version_current:,
+          created_at:,
+          updated_at:
         )
         train.in_data_migration_mode = true
         train.save!
-        train.create_webhook!
 
         platform.update!(train:, platform: platform.app.platform)
-
-        CommitListener.where(release_platform_id: platform.id).each do |listener|
-          listener.update!(train:)
-        end
 
         platform.release_platform_runs.each do |run|
           # using attributes because some direct AR methods might have changed or delegated back up in code
@@ -54,6 +53,8 @@ class MigrateToNewTrainStructure < ActiveRecord::Migration[7.0]
           scheduled_at = attributes.scheduled_at
           completed_at = attributes.completed_at
           stopped_at = attributes.stopped_at
+          updated_at = attributes.updated_at
+          created_at = attributes.created_at
 
           release = Release.new(
             train:,
@@ -63,7 +64,9 @@ class MigrateToNewTrainStructure < ActiveRecord::Migration[7.0]
             release_version:,
             scheduled_at:,
             completed_at:,
-            stopped_at:
+            stopped_at:,
+            created_at:,
+            updated_at:
           )
           release.in_data_migration_mode = true
           release.save!
@@ -78,7 +81,7 @@ class MigrateToNewTrainStructure < ActiveRecord::Migration[7.0]
             pr.update!(release:)
           end
 
-          ReleaseMetadata.find_by(release_platform_run_id: run.id).update!(release:)
+          ReleaseMetadata.find_by(release_platform_run_id: run.id)&.update!(release:)
         end
       end
 
@@ -87,12 +90,27 @@ class MigrateToNewTrainStructure < ActiveRecord::Migration[7.0]
         ReleasePlatformRun.all.size == Release.all.size,
         Commit.where(release_id: nil).size == 0,
         PullRequest.where(release_id: nil).size == 0,
-        CommitListener.where(train_id: nil).size == 0,
         ReleaseMetadata.where(release_id: nil).size == 0
       ]
 
       raise MigrationIntegrityFailed, "index: #{assertions.index(false)}" unless assertions.all?
     end
+
+    # create webhooks
+    Train.running.each do |train|
+      train.create_webhook!
+    rescue => e
+      Rails.logger.debug { "Could not create webhook for train #{train.id}" }
+      Rails.logger.error e
+    end
+
+    # remove stale/unreliable versions
+    PaperTrail::Version.where(item_type: "Releases::CommitListener").delete_all
+    PaperTrail::Version.where(item_type: "Releases::PullRequest").delete_all
+    PaperTrail::Version.where(item_type: "Releases::Train").delete_all
+    PaperTrail::Version.where(item_type: "Releases::Train::Run").delete_all
+    PaperTrail::Version.where(item_type: "Releases::Step").delete_all
+    PaperTrail::Version.where(item_type: "Releases::Step::Run").delete_all
   end
 
   def down

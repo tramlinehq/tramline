@@ -18,7 +18,7 @@ class ReleasePlatform < ApplicationRecord
   extend FriendlyId
   include Displayable
 
-  self.ignored_columns += %w[branching_strategy description release_backmerge_branch release_branch version_current version_seeded_with working_branch vcs_webhook_id status]
+  # self.ignored_columns += %w[branching_strategy description release_backmerge_branch release_branch version_current version_seeded_with working_branch vcs_webhook_id status]
 
   belongs_to :app
   belongs_to :train
@@ -34,7 +34,6 @@ class ReleasePlatform < ApplicationRecord
 
   validate :ready?, on: :create
 
-  delegate :app, to: :train
   delegate :ready?, to: :app
 
   def has_release_step?
