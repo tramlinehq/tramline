@@ -62,16 +62,14 @@ en:
           notification: "Notifications"
           build_channel: "Distributions"
       bitrise_integration:
-        access_token: "bitrise personal access token"
+        access_token: "Bitrise Personal Access Token"
       google_play_store_integration:
-        json_key: "google play store json key"
-      releases/train:
-        version_seeded_with: "version seeded with"
-      releases/step:
-        ci_cd_channel: "ci workflow"
-        release_suffix: "release suffix"
-      releases/step/deployments:
-        build_artifact_channel: "distribution channel"
+        json_key: "Google Play Store JSON Key"
+      train:
+        version_seeded_with: "Version Seeded With"
+      step:
+        ci_cd_channel: "CI workflow"
+        release_suffix: "Release suffix"
     errors:
       models:
         releases/step:
