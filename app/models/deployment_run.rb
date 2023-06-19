@@ -9,8 +9,8 @@
 #  status                     :string
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
-#  deployment_id              :uuid             not null, indexed => [train_step_run_id]
-#  train_step_run_id          :uuid             not null, indexed => [deployment_id], indexed
+#  deployment_id              :uuid             not null, indexed => [step_run_id]
+#  step_run_id                :uuid             not null, indexed => [deployment_id], indexed
 #
 class DeploymentRun < ApplicationRecord
   has_paper_trail
@@ -20,21 +20,23 @@ class DeploymentRun < ApplicationRecord
   include Displayable
   using RefinedArray
 
-  belongs_to :step_run, class_name: "Releases::Step::Run", foreign_key: :train_step_run_id, inverse_of: :deployment_runs
+  belongs_to :step_run, inverse_of: :deployment_runs
   belongs_to :deployment, inverse_of: :deployment_runs
   has_one :staged_rollout, dependent: :destroy
   has_one :external_release, dependent: :destroy
 
-  validates :deployment_id, uniqueness: {scope: :train_step_run_id}
+  validates :deployment_id, uniqueness: {scope: :step_run_id}
 
   delegate :step,
     :release,
+    :platform_release,
     :commit,
     :build_number,
     :build_artifact,
     :build_version,
     to: :step_run
   delegate :deployment_number,
+    :notify!,
     :integration,
     :deployment_channel,
     :deployment_channel_name,
@@ -172,7 +174,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def start_release!
-    release.with_lock do
+    platform_release.with_lock do
       return unless release_startable?
 
       if google_play_store_integration?
@@ -190,7 +192,7 @@ class DeploymentRun < ApplicationRecord
   def on_fully_release!
     return unless store?
 
-    release.with_lock do
+    platform_release.with_lock do
       return unless rolloutable?
 
       if google_play_store_integration?
@@ -208,7 +210,7 @@ class DeploymentRun < ApplicationRecord
   def on_release(rollout_value:)
     return unless store? && google_play_store_integration?
 
-    release.with_lock do
+    platform_release.with_lock do
       return unless controllable_rollout?
 
       yield Deployments::GooglePlayStore::Release.release_with(self, rollout_value:)
@@ -218,7 +220,7 @@ class DeploymentRun < ApplicationRecord
   def on_halt_release!
     return unless store?
 
-    release.with_lock do
+    platform_release.with_lock do
       return unless rolloutable?
 
       if google_play_store_integration?
@@ -236,7 +238,7 @@ class DeploymentRun < ApplicationRecord
   def on_pause_release!
     return unless store? && app_store_integration?
 
-    release.with_lock do
+    platform_release.with_lock do
       return unless automatic_rollout?
 
       yield Deployments::AppStoreConnect::Release.pause_phased_release!(self)
@@ -246,7 +248,7 @@ class DeploymentRun < ApplicationRecord
   def on_resume_release!
     return unless store? && app_store_integration?
 
-    release.with_lock do
+    platform_release.with_lock do
       return unless automatic_rollout?
 
       yield Deployments::AppStoreConnect::Release.resume_phased_release!(self)
@@ -254,7 +256,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def promotable?
-    release.on_track? && store? && (uploaded? || rollout_started?)
+    platform_release.on_track? && store? && (uploaded? || rollout_started?)
   end
 
   def release_startable?
@@ -277,11 +279,11 @@ class DeploymentRun < ApplicationRecord
   end
 
   def app_store_release?
-    step.release? && release.on_track? && deployment.app_store?
+    step.release? && platform_release.on_track? && deployment.app_store?
   end
 
   def test_flight_release?
-    release.on_track? && deployment.test_flight?
+    platform_release.on_track? && deployment.test_flight?
   end
 
   def reviewable?
@@ -309,7 +311,7 @@ class DeploymentRun < ApplicationRecord
 
     with_lock do
       return if released?
-      provider.deploy!(deployment_channel, {step_run: step_run})
+      provider.deploy!(deployment_channel, notification_params)
       complete!
     end
   end
@@ -325,6 +327,10 @@ class DeploymentRun < ApplicationRecord
     else
       dispatch_fail!
     end
+  end
+
+  def notification_params
+    deployment.notification_params.merge(step_run.notification_params)
   end
 
   private
@@ -349,6 +355,7 @@ class DeploymentRun < ApplicationRecord
     end
 
     event_stamp!(reason: :released, kind: :success, data: stamp_data)
+    notify!("Deployment was successful!", :deployment_finished, notification_params)
   end
 
   def stamp_data

@@ -1,6 +1,6 @@
 class EnhanceJsonSchemas < ActiveRecord::Migration[7.0]
   def up
-    return unless Rails.env.production?
+    return
 
     ActiveRecord::Base.transaction do
       app_configs

@@ -1,10 +1,10 @@
 require "rails_helper"
 
 describe "Accounts::Releases::Releases::StepRuns" do
-  let(:release) { create(:releases_train_run) }
+  let(:release) { create(:release_platform_run) }
   let(:organization) { create(:organization) }
   let(:user) { create(:user, :as_developer, confirmed_at: Time.zone.now, member_organization: organization) }
-  let(:step) { create(:releases_step, :with_deployment, train: release.train) }
+  let(:step) { create(:step, :with_deployment, release_platform: release.release_platform) }
 
   describe "POST /start" do
     it "start the step" do

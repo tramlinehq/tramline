@@ -29,7 +29,7 @@ Rails/SkipsModelValidations:
   Exclude:
     - db/**/*
     - app/refinements/refined_string.rb
-    - app/models/releases/pull_request.rb # intentional use of upsert
+    - app/models/pull_request.rb # intentional use of upsert
 
 Rails/TransactionExitStatement:
   Enabled: false # intentional use of return inside transactions
@@ -60,3 +60,7 @@ RSpec/MessageChain:
 
 Performance:
   Enabled: true
+
+Lint/UnreachableCode:
+  Exclude:
+    - db/data/*

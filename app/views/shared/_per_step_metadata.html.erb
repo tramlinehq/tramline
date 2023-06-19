@@ -8,11 +8,11 @@
       </div>
 
       <% if editable %>
-        <%= render partial: "trains/edit_step_button", locals: { editable: editable, step: step } %>
+        <%= render partial: "release_platforms/edit_step_button", locals: { editable: editable, step: step } %>
       <% end %>
 
       <% if release.present? %>
-        <%= render partial: "releases/live_release/step_run_status", locals: { step_run: step_run, step: step } %>
+        <%= render partial: "shared/live_release/step_run_status", locals: { step_run: step_run, step: step } %>
       <% end %>
     </div>
 
@@ -33,7 +33,7 @@
         <%= inline_svg("workflow.svg", classname: "w-4 inline-flex mr-1") %>
         <%= render partial: "shared/display_channels",
                    locals: { name: show_ci_cd(step),
-                             provider_name: step.train.ci_cd_provider.to_s } %>
+                             provider_name: step.ci_cd_provider.to_s } %>
       </div>
 
       <div class="flex flex-row items-center w-full">

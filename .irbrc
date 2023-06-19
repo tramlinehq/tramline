@@ -21,5 +21,6 @@ def bm
   result
 end
 
-def Srun(id) = Releases::Step::Run.find(id)
-def Trun(id) = Releases::Train::Run.find(id)
+def Srun(id) = StepRun.find(id)
+def Prun(id) = ReleasePlatformRun(id)
+def Rel(id) = Release.find(id)

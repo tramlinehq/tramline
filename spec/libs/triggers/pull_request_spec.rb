@@ -1,7 +1,7 @@
 require "rails_helper"
 
 describe Triggers::PullRequest do
-  let(:release) { create(:releases_train_run) }
+  let(:release) { create(:release) }
   let(:working_branch) { Faker::Lorem.word }
   let(:release_branch) { Faker::Lorem.word }
   let(:pr_title) { Faker::Lorem.word }

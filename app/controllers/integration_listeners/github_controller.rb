@@ -23,6 +23,7 @@ class IntegrationListeners::GithubController < IntegrationListenerController
 
   def handle_push
     response = WebhookHandlers::Push.process(train, params)
+
     Rails.logger.debug response.body
     head response.status
   end
@@ -34,6 +35,6 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def train
-    @train ||= Releases::Train.find(params[:train_id])
+    @train ||= Train.find(params[:train_id])
   end
 end

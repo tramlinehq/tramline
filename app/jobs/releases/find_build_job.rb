@@ -17,15 +17,15 @@ class Releases::FindBuildJob
 
   sidekiq_retries_exhausted do |msg, ex|
     if ex.is_a?(Installations::Error) && ex.reason == :build_not_found
-      run = Releases::Step::Run.find(msg["args"].first)
+      run = StepRun.find(msg["args"].first)
       run.build_not_found!
       run.event_stamp!(reason: :build_not_found_in_store, kind: :error, data: {version: run.build_version})
     end
   end
 
   def perform(step_run_id)
-    run = Releases::Step::Run.find(step_run_id)
-    return unless run.release.on_track?
+    run = StepRun.find(step_run_id)
+    return unless run.platform_release.on_track?
     run.find_build.value!
     run.build_found!
     run.event_stamp!(reason: :build_found_in_store, kind: :notice, data: {version: run.build_version})

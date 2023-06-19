@@ -28,8 +28,8 @@ crumb :train do |train|
 end
 
 crumb :step do |step|
-  link step.name, app_train_steps_path(step.train.app, step.train)
-  parent :train, step.train
+  link step.name, app_train_platform_steps_path(step.release_platform.app, step.release_platform)
+  parent :train, step.release_platform
 end
 
 crumb :new_step do |train|
@@ -70,4 +70,9 @@ end
 crumb :edit_train do |train|
   link "Edit"
   parent :train, train
+end
+
+crumb :edit_release_platform do |name, release_platform|
+  link "Edit #{name}"
+  parent :train, release_platform.train
 end

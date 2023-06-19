@@ -1,7 +1,7 @@
 require "rails_helper"
 
 describe Triggers::PostRelease::ParallelBranches do
-  let(:release) { create(:releases_train_run, branch_name: "production") }
+  let(:release) { create(:release_platform_run, branch_name: "production") }
 
   it ".call" do
     skip "not implemented yet"

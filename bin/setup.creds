@@ -39,24 +39,6 @@ newline() {
   printf "\n"
 }
 
-ask_env() {
-  while getopts ":e:" flag; do
-    case "${flag}" in
-    e)
-      environment=${OPTARG}
-      ;;
-    *)
-      usage
-      ;;
-    esac
-  done
-
-  if [[ -z "$environment" ]]; then
-    echo "Please specify an environment with the -e flag."
-    usage
-  fi
-}
-
 for_prod() {
   read -p "Setup fresh production credentials? [y/n] ➡ " -n 1 -r
   newline

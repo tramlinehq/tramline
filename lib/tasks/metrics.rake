@@ -6,8 +6,8 @@ namespace :metrics do
     started_at = Time.current
     ago = args[:hours].to_i
     new_organizations = Accounts::Organization.where(created_at: ago.hours.ago..Time.current).includes(:users)
-    new_apps = App.where(created_at: ago.hours.ago..Time.current).includes(:integrations, trains: [:runs])
-    new_releases = Releases::Train::Run.where(created_at: ago.hours.ago..Time.current).includes(train: [steps: [:deployments]])
+    new_apps = App.where(created_at: ago.hours.ago..Time.current).includes(:integrations, trains: [:releases])
+    new_releases = Release.where(created_at: ago.hours.ago..Time.current).includes(train: [release_platforms: [steps: [:deployments]]])
 
     # format data
     data[:accounts] =
@@ -22,7 +22,7 @@ namespace :metrics do
       new_apps.map do |app|
         integrations = app.integrations
         trains = app.trains
-        releases = trains.flat_map(&:runs)
+        releases = trains.flat_map(&:releases)
         <<~DEETS
           App – #{app.bundle_identifier}
           Organization – #{app.organization.name}

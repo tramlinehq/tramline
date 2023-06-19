@@ -1,23 +1,113 @@
 {
   "blocks": [
     {
+      "type": "context",
+      "elements": [
+        {
+          "type": "image",
+          "image_url": "<%= @platform_public_img %>",
+          "alt_text": "app"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*<%= @app_name %> (<%= @app_platform %>)* <%= @train_current_version %>"
+        }
+      ]
+    },
+    {
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": ":white_check_mark: *Release is complete!* :white_check_mark:"
+        "text": "*Release <%= @train_current_version %>* is complete! :confetti_ball:"
       }
     },
     {
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "<%= Regexp.escape @main_text %>"
-      },
-      "accessory": {
-        "type": "image",
-        "image_url": "https://avatars.githubusercontent.com/u/92373487?s=400&u=b9b89bb428dc401abf44c2bddc64d4215f1dbde6.jpg",
-        "alt_text": "Tramline"
+        "text": "The *total run time* was *<%= @total_run_time %>*"
       }
+    },
+    <% if @final_artifact_url %>
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Download* the <<%= @final_artifact_url %>|final artifact>"
+      }
+    },
+    <% end %>
+    {
+      "type": "divider"
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "image",
+          "image_url": "https://storage.googleapis.com/tramline-public-assets/tramline-small.png",
+          "alt_text": "tramline"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @release_url %>|Release page>"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "image",
+          "image_url": "<%= @vcs_public_icon_img %>",
+          "alt_text": "vcs"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @release_tag_url %>|Release tag – <%= @release_tag %>>"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "image",
+          "image_url": "<%= @vcs_public_icon_img %>",
+          "alt_text": "vcs"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @release_branch_url %>|Release branch – <%= @release_branch %>>"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "image",
+          "image_url": "<%= @platform_store_img %>",
+          "alt_text": "store"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @store_url %>|Store link>"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "Release train: <%= @train_name %>",
+          "emoji": true
+        }
+      ]
+    },
+    {
+      "type": "divider"
     }
   ]
 }

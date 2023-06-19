@@ -19,6 +19,7 @@ class GithubIntegration < ApplicationRecord
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://github.com/apps/{app_name}/installations/new{?params*}")
+  PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/github-small.png".freeze
 
   API = Installations::Github::Api
 
@@ -116,6 +117,8 @@ class GithubIntegration < ApplicationRecord
   def installation
     API.new(installation_id)
   end
+
+  def project_link = nil
 
   def to_s
     "github"
@@ -218,6 +221,10 @@ class GithubIntegration < ApplicationRecord
 
   def commit_log(from_branch, to_branch)
     installation.commits_between(app_config.code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS)
+  end
+
+  def public_icon_img
+    PUBLIC_ICON
   end
 
   private

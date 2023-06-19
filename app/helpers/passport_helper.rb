@@ -7,9 +7,10 @@ module PassportHelper
 
   STAMPABLE_ICONS = {
     DeploymentRun => "truck_delivery",
-    Releases::Commit => "git_commit",
-    Releases::Step::Run => "box",
-    Releases::Train::Run => "bolt"
+    Commit => "git_commit",
+    StepRun => "box",
+    ReleasePlatformRun => "bolt",
+    Release => "bolt"
   }
 
   def passport_badge(passport)

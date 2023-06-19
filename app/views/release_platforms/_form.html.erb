@@ -1,0 +1,11 @@
+<% if release_platform.steps.size > 0 && release_platform.persisted? %>
+  <div class="text-2xl font-bold mt-8 mb-4 pt-4 border-t border-dashed">Steps</div>
+  <div class="w-1/2">
+    <%= render partial: "shared/step_tree_viz", locals: { train:, release_platform:, editable: true } %>
+  </div>
+<% elsif release_platform.persisted? %>
+  <div class="text-2xl font-bold mt-8 mb-4 pt-4 border-t border-dashed">Steps</div>
+  <div class="w-1/2">
+    <%= render partial: "release_platforms/step_creation", locals: { app:, train:, release_platform: } %>
+  </div>
+<% end %>

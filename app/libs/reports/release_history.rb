@@ -14,7 +14,7 @@ module Reports
 
     def call
       app
-        .runs
+        .releases
         .finished
         .group_by_period(period, :completed_at, last: last, current: true, format: FORMAT)
         .count

@@ -2,8 +2,8 @@ require "rails_helper"
 
 describe Deployments::GooglePlayStore::Release do
   describe ".kickoff!" do
-    let(:step) { create(:releases_step, :with_deployment) }
-    let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
+    let(:step) { create(:step, :with_deployment) }
+    let(:step_run) { create(:step_run, :deployment_started, step: step) }
 
     it "marks as uploaded if there is another similar deployment which has uploaded" do
       integration = create(:integration, :with_google_play_store)
@@ -111,8 +111,8 @@ describe Deployments::GooglePlayStore::Release do
   end
 
   describe ".halt_release!" do
-    let(:step) { create(:releases_step, :release, :with_deployment) }
-    let(:step_run) { create(:releases_step_run, :deployment_started, step: step) }
+    let(:step) { create(:step, :release, :with_deployment) }
+    let(:step_run) { create(:step_run, :deployment_started, step: step) }
     let(:deployment) { create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step) }
     let(:run) { create(:deployment_run, :rollout_started, :with_staged_rollout, deployment:, step_run:) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }

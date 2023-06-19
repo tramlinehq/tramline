@@ -2,13 +2,13 @@ class Queries::Builds
   DEFAULT_SORT_COLUMN = "version_code"
 
   BASE_ATTR_MAPPING = {
-    version_code: Releases::Step::Run.arel_table[:build_number],
-    version_name: Releases::Step::Run.arel_table[:build_version],
-    ci_link: Releases::Step::Run.arel_table[:ci_link],
-    step_status: Releases::Step::Run.arel_table[:status],
-    step_name: Releases::Step.arel_table[:name],
-    train_name: Releases::Train.arel_table[:name],
-    release_status: Releases::Train::Run.arel_table[:status]
+    version_code: StepRun.arel_table[:build_number],
+    version_name: StepRun.arel_table[:build_version],
+    ci_link: StepRun.arel_table[:ci_link],
+    step_status: StepRun.arel_table[:status],
+    step_name: Step.arel_table[:name],
+    train_name: ReleasePlatform.arel_table[:name],
+    release_status: ReleasePlatformRun.arel_table[:status]
   }
   ANDROID_ATTR_MAPPING =
     BASE_ATTR_MAPPING.merge(built_at: BuildArtifact.arel_table[:generated_at])
@@ -35,12 +35,14 @@ class Queries::Builds
 
   def all
     return android_all if android?
-    ios_all if ios?
+    return ios_all if ios?
+    [] # FIXME: handle cross platform app
   end
 
   def count
     return android_records.size if android?
-    ios_records.size if ios?
+    return ios_records.size if ios?
+    0 # FIXME: handle cross platform app
   end
 
   def android_all
@@ -52,7 +54,7 @@ class Queries::Builds
           .with_indifferent_access
           .merge(download_url: record.download_url)
           .merge(deployments: deployments)
-          .except(:id, :train_step_runs_id)
+          .except(:id, :step_run_id)
 
       Queries::Build.new(attributes)
     end
@@ -73,7 +75,7 @@ class Queries::Builds
         .with_attached_file
         .joins(join_step_run_tree)
         .includes(step_run: {step: [deployments: :integration]})
-        .select(:id, :train_step_runs_id)
+        .select(:id, :step_run_id)
         .where(apps: {id: app.id})
         .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.search_by(search_params)))
         .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.filter_by(ANDROID_ATTR_MAPPING)))
@@ -147,11 +149,11 @@ class Queries::Builds
   private
 
   def join_step_run_tree
-    {step_run: [{train_run: [{train: :app}]}, :step]}
+    {step_run: [{release_platform_run: [{release_platform: :app}]}, :step]}
   end
 
   def search_params
-    {Releases::Step::Run.arel_table => %w[build_version build_number]}
+    {StepRun.arel_table => %w[build_version build_number]}
   end
 
   def select_attrs(attrs_mapping)

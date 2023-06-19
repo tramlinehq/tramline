@@ -1,7 +1,7 @@
 <%= render PageComponent.new(breadcrumb: breadcrumb(:new_step, @train), title: "Create a new #{@step.kind} step 🪜") do %>
   <%= render partial: 'shared/errors', locals: { resource: @step } %>
 
-  <%= form_with(model: @step, url: app_train_steps_path(@app, @train), builder: ButtonHelper::AuthzForms) do |form| %>
+  <%= form_with(model: @step, url: app_train_platform_steps_path(@app, @train, @release_platform), builder: ButtonHelper::AuthzForms) do |form| %>
     <%= render "form", form: form %>
     <%= render "new_deployments", app: @app, form: form %>
 
