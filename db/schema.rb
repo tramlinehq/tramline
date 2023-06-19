@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_15_155635) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_19_164001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -314,6 +314,15 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_15_155635) do
     t.index ["state"], name: "index_pull_requests_on_state"
   end
 
+  create_table "release_changelogs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_id", null: false
+    t.string "from_ref", null: false
+    t.jsonb "commits"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["release_id"], name: "index_release_changelogs_on_release_id"
+  end
+
   create_table "release_metadata", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_run_id"
     t.string "locale", null: false
@@ -512,6 +521,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_15_155635) do
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "pull_requests", "release_platform_runs"
+  add_foreign_key "release_changelogs", "releases"
   add_foreign_key "release_metadata", "release_platform_runs"
   add_foreign_key "release_platform_runs", "release_platforms"
   add_foreign_key "release_platforms", "apps"
