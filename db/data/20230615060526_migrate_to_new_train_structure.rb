@@ -81,7 +81,11 @@ class MigrateToNewTrainStructure < ActiveRecord::Migration[7.0]
             pr.update!(release:)
           end
 
-          ReleaseMetadata.find_by(release_platform_run_id: run.id)&.update!(release:)
+          release_metadata = ReleaseMetadata.find_by(release_platform_run_id: run.id)
+          if release_metadata
+            release_metadata.in_data_migration_mode = true
+            release_metadata.update!(release:)
+          end
         end
       end
 
