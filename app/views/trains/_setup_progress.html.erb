@@ -17,8 +17,7 @@
         <p class="pb-2">They offer various automations to your release cycle like creating branches, and creating
           releases on your VCS.</p>
         <p><%= link_to_external "Learn more about all the automations", "https://docs.tramline.app/branching-strategies", class: "underline" %>
-          .
-        </p>
+          .</p>
       <% end %>
     </div>
   </div>
@@ -47,57 +46,119 @@
       </div>
     </li>
 
-    <% is_review_step_visible = setup_instructions[:review_step][:visible] %>
-    <% is_review_step_completed = setup_instructions[:review_step][:completed] %>
-    <li class="relative w-full mb-6 sm:mb-0 <%= "opacity-30" unless is_review_step_visible %>">
-      <div class="flex items-center">
-        <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_review_step_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
-          <% if is_review_step_completed %>
-            <%= inline_svg("progress_check.svg", classname: "w-8 fill-current text-white") %>
-          <% end %>
+    <% if setup_instructions[:ios_review_step].present? %>
+      <% is_ios_review_step_visible = setup_instructions[:ios_review_step][:visible] %>
+      <% is_ios_review_step_completed = setup_instructions[:ios_review_step][:completed] %>
+      <li class="relative w-full mb-6 sm:mb-0 <%= "opacity-30" unless is_ios_review_step_visible %>">
+        <div class="flex items-center">
+          <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_ios_review_step_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
+            <% if is_ios_review_step_completed %>
+              <%= inline_svg("progress_check.svg", classname: "w-8 fill-current text-white") %>
+            <% end %>
+          </div>
         </div>
-      </div>
-      <div class="mt-3 sm:pr-10">
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">Create Review Steps</h3>
-        <% if is_review_step_completed %>
-          <p class="text-base font-normal text-gray-500">This is complete!</p>
-        <% else %>
-          <p class="text-base font-normal text-gray-500">Configure your review / debug workflows</p>
-          <% if train_in_creation %>
-            <%= authz_link_to :blue, new_app_train_step_path(app, train_in_creation, kind: Releases::Step.kinds[:review]), class: "mt-4" do %>
-              <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
-              <span class="hidden xs:block ml-2">Add a review step</span>
+        <div class="mt-3 sm:pr-10">
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Create iOS Review Steps</h3>
+          <% if is_ios_review_step_completed %>
+            <p class="text-base font-normal text-gray-500">This is complete!</p>
+          <% else %>
+            <p class="text-base font-normal text-gray-500">Configure your iOS review / debug workflows</p>
+            <% if train_in_creation %>
+              <%= authz_link_to :blue, new_app_train_platform_step_path(app, train_in_creation, train_in_creation.ios_train, kind: Step.kinds[:review]), class: "mt-4" do %>
+                <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
+                <span class="hidden xs:block ml-2">Add a review step</span>
+              <% end %>
             <% end %>
           <% end %>
-        <% end %>
-      </div>
-    </li>
-
-    <% is_release_step_visible = setup_instructions[:release_step][:visible] %>
-    <% is_release_step_completed = setup_instructions[:release_step][:completed] %>
-    <li class="relative w-full mb-6 sm:mb-0 <%= "opacity-30" unless is_release_step_visible %>">
-      <div class="flex items-center">
-        <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_release_step_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
-          <% if is_release_step_completed %>
-            <%= inline_svg("progress_check.svg", classname: "w-8 fill-current text-white") %>
-          <% end %>
         </div>
-      </div>
+      </li>
+    <% end %>
 
-      <div class="mt-3 sm:pr-10">
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">Setup Release Step</h3>
-        <% if is_release_step_completed %>
-          <p class="text-base font-normal text-gray-500">This is complete!</p>
-        <% else %>
-          <p class="text-base font-normal text-gray-500">Configure your release candidate workflow</p>
-          <% if train_in_creation %>
-            <%= authz_link_to :blue, new_app_train_step_path(app, train_in_creation, kind: Releases::Step.kinds[:release]), class: "mt-4" do %>
-              <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
-              <span class="hidden xs:block ml-2">Add a release step</span>
+    <% if setup_instructions[:ios_release_step].present? %>
+      <% is_ios_release_step_visible = setup_instructions[:ios_release_step][:visible] %>
+      <% is_ios_release_step_completed = setup_instructions[:ios_release_step][:completed] %>
+      <li class="relative w-full mb-6 sm:mb-0 <%= "opacity-30" unless is_ios_release_step_visible %>">
+        <div class="flex items-center">
+          <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_ios_release_step_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
+            <% if is_ios_release_step_completed %>
+              <%= inline_svg("progress_check.svg", classname: "w-8 fill-current text-white") %>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="mt-3 sm:pr-10">
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Setup iOS Release Step</h3>
+          <% if is_ios_release_step_completed %>
+            <p class="text-base font-normal text-gray-500">This is complete!</p>
+          <% else %>
+            <p class="text-base font-normal text-gray-500">Configure your iOS release candidate workflow</p>
+            <% if train_in_creation %>
+              <%= authz_link_to :blue, new_app_train_platform_step_path(app, train_in_creation, train_in_creation.ios_train, kind: Step.kinds[:release]), class: "mt-4" do %>
+                <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
+                <span class="hidden xs:block ml-2">Add a release step</span>
+              <% end %>
             <% end %>
           <% end %>
-        <% end %>
-      </div>
-    </li>
+        </div>
+      </li>
+    <% end %>
+
+    <% if setup_instructions[:android_review_step].present? %>
+      <% is_android_review_step_visible = setup_instructions[:android_review_step][:visible] %>
+      <% is_android_review_step_completed = setup_instructions[:android_review_step][:completed] %>
+      <li class="relative w-full mb-6 sm:mb-0 <%= "opacity-30" unless is_android_review_step_visible %>">
+        <div class="flex items-center">
+          <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_android_review_step_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
+            <% if is_android_review_step_completed %>
+              <%= inline_svg("progress_check.svg", classname: "w-8 fill-current text-white") %>
+            <% end %>
+          </div>
+        </div>
+        <div class="mt-3 sm:pr-10">
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Create Android Review Steps</h3>
+          <% if is_android_review_step_completed %>
+            <p class="text-base font-normal text-gray-500">This is complete!</p>
+          <% else %>
+            <p class="text-base font-normal text-gray-500">Configure your Android review / debug workflows</p>
+            <% if train_in_creation %>
+              <%= authz_link_to :blue, new_app_train_platform_step_path(app, train_in_creation, train_in_creation.android_train, kind: Step.kinds[:review]), class: "mt-4" do %>
+                <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
+                <span class="hidden xs:block ml-2">Add a review step</span>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      </li>
+    <% end %>
+
+    <% if setup_instructions[:android_release_step].present? %>
+      <% is_android_release_step_visible = setup_instructions[:android_release_step][:visible] %>
+      <% is_android_release_step_completed = setup_instructions[:android_release_step][:completed] %>
+      <li class="relative w-full mb-6 sm:mb-0 <%= "opacity-30" unless is_android_release_step_visible %>">
+        <div class="flex items-center">
+          <div class="flex z-10 justify-center items-center w-10 h-10 <%= setup_instruction_color(is_android_release_step_completed) %> rounded-full ring-0 ring-white sm:ring-8 shrink-0">
+            <% if is_android_release_step_completed %>
+              <%= inline_svg("progress_check.svg", classname: "w-8 fill-current text-white") %>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="mt-3 sm:pr-10">
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Setup Android Release Step</h3>
+          <% if is_android_release_step_completed %>
+            <p class="text-base font-normal text-gray-500">This is complete!</p>
+          <% else %>
+            <p class="text-base font-normal text-gray-500">Configure your Android release candidate workflow</p>
+            <% if train_in_creation %>
+              <%= authz_link_to :blue, new_app_train_platform_step_path(app, train_in_creation, train_in_creation.android_train, kind: Step.kinds[:release]), class: "mt-4" do %>
+                <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
+                <span class="hidden xs:block ml-2">Add a release step</span>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      </li>
+    <% end %>
+
   </ol>
 <% end %>

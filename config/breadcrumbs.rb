@@ -28,7 +28,7 @@ crumb :train do |train|
 end
 
 crumb :step do |step|
-  link step.name, app_train_steps_path(step.train.app, step.train)
+  link step.name
   parent :train, step.train
 end
 

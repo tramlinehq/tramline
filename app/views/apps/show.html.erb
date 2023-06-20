@@ -7,7 +7,7 @@
 
 <%= render PageComponent.new(breadcrumb: breadcrumb(@app), title: "#{@app.name} 📱") do |page| %>
   <% if @app.ready? %>
-    <% if @app.runs.exists? %>
+    <% if @app.releases.exists? %>
       <% page.with_action do %>
         <%= authz_link_to :neutral, all_builds_app_path(@app) do %>
           <%= inline_svg("all_builds_icon.svg", classname: "w-4") %>
@@ -39,7 +39,7 @@
     <% end %>
   <% end %>
 
-  <% if @app.runs.blank? %>
+  <% if @app.releases.blank? %>
     <% page.with_action do %>
       <%= authz_link_to :red, app_path(@app), method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } do %>
         <span>Delete</span>
@@ -56,29 +56,33 @@
       <%= render partial: "apps/setup_progress", locals: { setup_instructions: @app_setup_instructions } %>
     <% end %>
 
-    <div class="grid md:grid-cols-2 gap-x-20 pb-5 mt-8">
-      <section>
-        <article class="w-full">
+    <section class="grid md:grid-cols-2 gap-x-20 pb-5 mt-8">
+      <% if @app.cross_platform? %>
+        <article>
+          <%= render(ExternalAppComponent.new(app: @app,
+                                              external_app: @app.latest_external_apps[:android],
+                                              heading: "Current Play Store Status")) %>
+        </article>
+        <article>
+          <%= render(ExternalAppComponent.new(app: @app,
+                                              external_app: @app.latest_external_apps[:ios],
+                                              heading: "Current App Store Status")) %>
+        </article>
+      <% else %>
+        <article>
           <%= render(ExternalAppComponent.new(app: @app, external_app: @app.latest_external_app)) %>
         </article>
-      </section>
-
-      <section>
         <article class="w-full">
           <%= render "shared/demo/release_pilot" %>
         </article>
-      </section>
-    </div>
+      <% end %>
+    </section>
 
     <% if @app.trains.any? %>
-      <% active_runs = @app.active_runs %>
-      <% if active_runs.present? %>
-        <%= render partial: "ongoing_releases", locals: { app: @app } %>
-      <% end %>
       <%= render TableComponent.new(columns: ["Name", "Description", "Current Release"]) do |table| %>
         <% table.with_heading do %>
           <div class="flex justify-between items-end mb-2">
-            <h2 class="text-2xl text-slate-800 font-bold">Release Trains</h2>
+            <h2 class="text-2xl text-slate-800 font-bold">Release Train</h2>
             <% if @app.trains.any? %>
               <%= authz_link_to :green, new_app_train_path(@app) do %>
                 <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
@@ -101,7 +105,7 @@
             <% end %>
             <% row.with_cell do %>
               <div class="text-left">
-                <%= "#{train.runs.any? ? train.version_current : train.version_seeded_with} • #{@app.build_number}" %>
+                <%= "#{train.releases.any? ? train.version_current : train.version_seeded_with} • #{@app.build_number}" %>
               </div>
             <% end %>
           <% end %>

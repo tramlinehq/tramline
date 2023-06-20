@@ -22,9 +22,7 @@ class WebhookHandlers::Push
     return Response.new(:accepted, "Skipping the commit") unless relevant_commit?
     return Response.new(:accepted, "Invalid repo/branch") unless valid_repo_and_branch?
 
-    if train.commit_listeners.exists?(branch_name:)
-      WebhookProcessors::PushJob.perform_later(release.id, commit_attributes)
-    end
+    WebhookProcessors::PushJob.perform_later(release.id, commit_attributes)
 
     Response.new(:accepted)
   end

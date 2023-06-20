@@ -3,7 +3,7 @@ class Releases::UploadArtifact < ApplicationJob
   queue_as :high
 
   def perform(step_run_id, artifacts_url)
-    run = Releases::Step::Run.find(step_run_id)
+    run = StepRun.find(step_run_id)
 
     begin
       run.artifacts_url = artifacts_url

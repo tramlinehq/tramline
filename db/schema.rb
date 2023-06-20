@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_19_164001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -85,12 +85,38 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
   end
 
   create_table "build_artifacts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "train_step_runs_id", null: false
+    t.uuid "step_run_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "generated_at", precision: nil
     t.datetime "uploaded_at", precision: nil
-    t.index ["train_step_runs_id"], name: "index_build_artifacts_on_train_step_runs_id"
+    t.index ["step_run_id"], name: "index_build_artifacts_on_step_run_id"
+  end
+
+  create_table "commit_listeners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_platform_id"
+    t.string "branch_name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "train_id"
+    t.index ["release_platform_id"], name: "index_commit_listeners_on_release_platform_id"
+  end
+
+  create_table "commits", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "commit_hash", null: false
+    t.uuid "release_platform_id"
+    t.string "message"
+    t.datetime "timestamp", null: false
+    t.string "author_name", null: false
+    t.string "author_email", null: false
+    t.string "url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "release_platform_run_id"
+    t.uuid "release_id"
+    t.index ["commit_hash", "release_id"], name: "index_commits_on_commit_hash_and_release_id", unique: true
+    t.index ["release_platform_id"], name: "index_commits_on_release_platform_id"
+    t.index ["release_platform_run_id"], name: "index_commits_on_release_platform_run_id"
   end
 
   create_table "data_migrations", primary_key: "version", id: :string, force: :cascade do |t|
@@ -98,30 +124,30 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
 
   create_table "deployment_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "deployment_id", null: false
-    t.uuid "train_step_run_id", null: false
+    t.uuid "step_run_id", null: false
     t.datetime "scheduled_at", precision: nil, null: false
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.decimal "initial_rollout_percentage", precision: 8, scale: 5
     t.string "failure_reason"
-    t.index ["deployment_id", "train_step_run_id"], name: "index_deployment_runs_on_deployment_id_and_train_step_run_id", unique: true
-    t.index ["train_step_run_id"], name: "index_deployment_runs_on_train_step_run_id"
+    t.index ["deployment_id", "step_run_id"], name: "index_deployment_runs_on_deployment_id_and_step_run_id", unique: true
+    t.index ["step_run_id"], name: "index_deployment_runs_on_step_run_id"
   end
 
   create_table "deployments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "integration_id"
-    t.uuid "train_step_id", null: false
+    t.uuid "step_id", null: false
     t.jsonb "build_artifact_channel"
     t.integer "deployment_number", limit: 2, default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.decimal "staged_rollout_config", default: [], array: true
     t.boolean "is_staged_rollout", default: false
-    t.index ["build_artifact_channel", "integration_id", "train_step_id"], name: "idx_deployments_on_build_artifact_chan_and_integration_and_step", unique: true
-    t.index ["deployment_number", "train_step_id"], name: "index_deployments_on_deployment_number_and_train_step_id", unique: true
+    t.index ["build_artifact_channel", "integration_id", "step_id"], name: "idx_deployments_on_build_artifact_chan_and_integration_and_step", unique: true
+    t.index ["deployment_number", "step_id"], name: "index_deployments_on_deployment_number_and_step_id", unique: true
     t.index ["integration_id"], name: "index_deployments_on_integration_id"
-    t.index ["train_step_id"], name: "index_deployments_on_train_step_id"
+    t.index ["step_id"], name: "index_deployments_on_step_id"
   end
 
   create_table "external_apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -130,6 +156,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
     t.jsonb "channel_data"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "platform"
     t.index ["app_id"], name: "index_external_apps_on_app_id"
     t.index ["fetched_at"], name: "index_external_apps_on_fetched_at"
   end
@@ -262,43 +289,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
     t.index ["stampable_type", "stampable_id"], name: "index_passports_on_stampable"
   end
 
-  create_table "release_metadata", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "train_run_id", null: false
-    t.string "locale", null: false
-    t.text "release_notes"
-    t.text "promo_text"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["train_run_id", "locale"], name: "index_release_metadata_on_train_run_id_and_locale", unique: true
-    t.index ["train_run_id"], name: "index_release_metadata_on_train_run_id"
-  end
-
-  create_table "releases_commit_listeners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "train_id", null: false
-    t.string "branch_name", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["train_id"], name: "index_releases_commit_listeners_on_train_id"
-  end
-
-  create_table "releases_commits", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "commit_hash", null: false
-    t.uuid "train_id", null: false
-    t.string "message"
-    t.datetime "timestamp", null: false
-    t.string "author_name", null: false
-    t.string "author_email", null: false
-    t.string "url"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.uuid "train_run_id", null: false
-    t.index ["commit_hash", "train_run_id"], name: "index_releases_commits_on_commit_hash_and_train_run_id", unique: true
-    t.index ["train_id"], name: "index_releases_commits_on_train_id"
-    t.index ["train_run_id"], name: "index_releases_commits_on_train_run_id"
-  end
-
-  create_table "releases_pull_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "train_run_id", null: false
+  create_table "pull_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_platform_run_id"
     t.bigint "number", null: false
     t.string "source_id", null: false
     t.string "url"
@@ -313,43 +305,85 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
     t.datetime "closed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["number"], name: "index_releases_pull_requests_on_number"
-    t.index ["phase"], name: "index_releases_pull_requests_on_phase"
-    t.index ["source"], name: "index_releases_pull_requests_on_source"
-    t.index ["source_id"], name: "index_releases_pull_requests_on_source_id"
-    t.index ["state"], name: "index_releases_pull_requests_on_state"
-    t.index ["train_run_id", "head_ref", "base_ref"], name: "idx_prs_on_train_run_id_and_head_ref_and_base_ref", unique: true
+    t.uuid "release_id"
+    t.index ["number"], name: "index_pull_requests_on_number"
+    t.index ["phase"], name: "index_pull_requests_on_phase"
+    t.index ["release_id", "head_ref", "base_ref"], name: "idx_prs_on_train_group_run_id_and_head_ref_and_base_ref", unique: true
+    t.index ["source"], name: "index_pull_requests_on_source"
+    t.index ["source_id"], name: "index_pull_requests_on_source_id"
+    t.index ["state"], name: "index_pull_requests_on_state"
   end
 
-  create_table "sign_off_group_memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "sign_off_group_id", null: false
-    t.uuid "user_id", null: false
+  create_table "release_changelogs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_id", null: false
+    t.string "from_ref", null: false
+    t.jsonb "commits"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["sign_off_group_id"], name: "index_sign_off_group_memberships_on_sign_off_group_id"
-    t.index ["user_id"], name: "index_sign_off_group_memberships_on_user_id"
+    t.index ["release_id"], name: "index_release_changelogs_on_release_id"
   end
 
-  create_table "sign_off_groups", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "name"
+  create_table "release_metadata", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_platform_run_id"
+    t.string "locale", null: false
+    t.text "release_notes"
+    t.text "promo_text"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "release_id"
+    t.index ["release_platform_run_id", "locale"], name: "index_release_metadata_on_release_platform_run_id_and_locale", unique: true
+    t.index ["release_platform_run_id"], name: "index_release_metadata_on_release_platform_run_id"
+  end
+
+  create_table "release_platform_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_platform_id", null: false
+    t.string "code_name", null: false
+    t.datetime "scheduled_at", precision: nil, null: false
+    t.string "commit_sha"
+    t.string "status", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "branch_name"
+    t.string "release_version"
+    t.datetime "completed_at"
+    t.datetime "stopped_at"
+    t.string "original_release_version"
+    t.uuid "release_id"
+    t.index ["release_platform_id"], name: "index_release_platform_runs_on_release_platform_id"
+  end
+
+  create_table "release_platforms", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "app_id", null: false
+    t.string "name", null: false
+    t.string "description"
+    t.string "status"
+    t.string "version_seeded_with"
+    t.string "version_current"
+    t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["app_id"], name: "index_sign_off_groups_on_app_id"
+    t.string "working_branch"
+    t.string "branching_strategy"
+    t.string "release_branch"
+    t.string "release_backmerge_branch"
+    t.string "vcs_webhook_id"
+    t.uuid "train_id"
+    t.string "platform"
+    t.index ["app_id"], name: "index_release_platforms_on_app_id"
   end
 
-  create_table "sign_offs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "sign_off_group_id", null: false
-    t.uuid "train_step_id", null: false
-    t.uuid "user_id", null: false
-    t.boolean "signed", default: false, null: false
+  create_table "releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_id", null: false
+    t.string "branch_name", null: false
+    t.string "status", null: false
+    t.string "original_release_version"
+    t.string "release_version"
+    t.datetime "scheduled_at", precision: nil
+    t.datetime "completed_at", precision: nil
+    t.datetime "stopped_at", precision: nil
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "releases_commit_id", null: false
-    t.index ["releases_commit_id", "train_step_id", "sign_off_group_id"], name: "idx_sign_offs_on_commit_step_and_group_id", unique: true
-    t.index ["sign_off_group_id"], name: "index_sign_offs_on_sign_off_group_id"
-    t.index ["train_step_id"], name: "index_sign_offs_on_train_step_id"
-    t.index ["user_id"], name: "index_sign_offs_on_user_id"
+    t.index ["train_id"], name: "index_releases_on_train_id"
   end
 
   create_table "slack_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -369,52 +403,28 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
     t.index ["deployment_run_id"], name: "index_staged_rollouts_on_deployment_run_id"
   end
 
-  create_table "train_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "train_id", null: false
-    t.string "code_name", null: false
-    t.datetime "scheduled_at", precision: nil, null: false
-    t.string "commit_sha"
-    t.string "status", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "branch_name", null: false
-    t.string "release_version", null: false
-    t.datetime "completed_at"
-    t.datetime "stopped_at"
-    t.string "original_release_version"
-    t.index ["train_id"], name: "index_train_runs_on_train_id"
-  end
-
-  create_table "train_sign_off_groups", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "train_id", null: false
-    t.uuid "sign_off_group_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["sign_off_group_id"], name: "index_train_sign_off_groups_on_sign_off_group_id"
-    t.index ["train_id"], name: "index_train_sign_off_groups_on_train_id"
-  end
-
-  create_table "train_step_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "train_step_id", null: false
-    t.uuid "train_run_id", null: false
+  create_table "step_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "step_id", null: false
+    t.uuid "release_platform_run_id", null: false
     t.datetime "scheduled_at", precision: nil, null: false
     t.string "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "releases_commit_id", null: false
+    t.uuid "commit_id", null: false
     t.string "build_version", null: false
     t.string "ci_ref"
     t.string "ci_link"
     t.string "build_number"
     t.boolean "sign_required", default: true
     t.string "approval_status", default: "pending", null: false
-    t.index ["releases_commit_id"], name: "index_train_step_runs_on_releases_commit_id"
-    t.index ["train_run_id"], name: "index_train_step_runs_on_train_run_id"
-    t.index ["train_step_id"], name: "index_train_step_runs_on_train_step_id"
+    t.index ["commit_id"], name: "index_step_runs_on_commit_id"
+    t.index ["release_platform_run_id"], name: "index_step_runs_on_release_platform_run_id"
+    t.index ["step_id", "commit_id"], name: "index_step_runs_on_step_id_and_commit_id", unique: true
+    t.index ["step_id"], name: "index_step_runs_on_step_id"
   end
 
-  create_table "train_steps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "train_id", null: false
+  create_table "steps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_platform_id", null: false
     t.string "name", null: false
     t.string "description", null: false
     t.string "status", null: false
@@ -425,26 +435,26 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
     t.datetime "updated_at", null: false
     t.string "release_suffix"
     t.string "kind"
-    t.index ["ci_cd_channel", "train_id"], name: "index_train_steps_on_ci_cd_channel_and_train_id", unique: true
-    t.index ["step_number", "train_id"], name: "index_train_steps_on_step_number_and_train_id", unique: true
-    t.index ["train_id"], name: "index_train_steps_on_train_id"
+    t.index ["ci_cd_channel", "release_platform_id"], name: "index_steps_on_ci_cd_channel_and_release_platform_id", unique: true
+    t.index ["release_platform_id"], name: "index_steps_on_release_platform_id"
+    t.index ["step_number", "release_platform_id"], name: "index_steps_on_step_number_and_release_platform_id", unique: true
   end
 
   create_table "trains", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "app_id", null: false
     t.string "name", null: false
-    t.string "description", null: false
+    t.string "description"
     t.string "status", null: false
-    t.string "version_seeded_with", null: false
-    t.string "version_current"
-    t.string "slug"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "working_branch"
-    t.string "branching_strategy"
+    t.string "branching_strategy", null: false
     t.string "release_branch"
     t.string "release_backmerge_branch"
+    t.string "working_branch"
     t.string "vcs_webhook_id"
+    t.string "slug"
+    t.string "version_seeded_with"
+    t.string "version_current"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
@@ -495,10 +505,13 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "app_configs", "apps"
   add_foreign_key "apps", "organizations"
-  add_foreign_key "build_artifacts", "train_step_runs", column: "train_step_runs_id"
+  add_foreign_key "build_artifacts", "step_runs"
+  add_foreign_key "commit_listeners", "release_platforms"
+  add_foreign_key "commits", "release_platform_runs"
+  add_foreign_key "commits", "release_platforms"
   add_foreign_key "deployment_runs", "deployments"
-  add_foreign_key "deployment_runs", "train_step_runs"
-  add_foreign_key "deployments", "train_steps"
+  add_foreign_key "deployment_runs", "step_runs"
+  add_foreign_key "deployments", "steps"
   add_foreign_key "external_apps", "apps"
   add_foreign_key "external_releases", "deployment_runs"
   add_foreign_key "integrations", "apps"
@@ -507,25 +520,16 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_110225) do
   add_foreign_key "invites", "users", column: "sender_id"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
-  add_foreign_key "release_metadata", "train_runs"
-  add_foreign_key "releases_commit_listeners", "trains"
-  add_foreign_key "releases_commits", "train_runs"
-  add_foreign_key "releases_commits", "trains"
-  add_foreign_key "releases_pull_requests", "train_runs"
-  add_foreign_key "sign_off_group_memberships", "sign_off_groups"
-  add_foreign_key "sign_off_group_memberships", "users"
-  add_foreign_key "sign_off_groups", "apps"
-  add_foreign_key "sign_offs", "releases_commits"
-  add_foreign_key "sign_offs", "sign_off_groups"
-  add_foreign_key "sign_offs", "train_steps"
-  add_foreign_key "sign_offs", "users"
+  add_foreign_key "pull_requests", "release_platform_runs"
+  add_foreign_key "release_changelogs", "releases"
+  add_foreign_key "release_metadata", "release_platform_runs"
+  add_foreign_key "release_platform_runs", "release_platforms"
+  add_foreign_key "release_platforms", "apps"
+  add_foreign_key "releases", "trains"
   add_foreign_key "staged_rollouts", "deployment_runs"
-  add_foreign_key "train_runs", "trains"
-  add_foreign_key "train_sign_off_groups", "sign_off_groups"
-  add_foreign_key "train_sign_off_groups", "trains"
-  add_foreign_key "train_step_runs", "releases_commits"
-  add_foreign_key "train_step_runs", "train_runs"
-  add_foreign_key "train_step_runs", "train_steps"
-  add_foreign_key "train_steps", "trains"
+  add_foreign_key "step_runs", "commits"
+  add_foreign_key "step_runs", "release_platform_runs"
+  add_foreign_key "step_runs", "steps"
+  add_foreign_key "steps", "release_platforms"
   add_foreign_key "trains", "apps"
 end

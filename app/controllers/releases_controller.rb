@@ -6,16 +6,11 @@ class ReleasesController < SignedInApplicationController
 
   def show
     @train = @release.train
-    @steps = @train.steps.order(:step_number).includes(:runs, :train, deployments: [:integration])
     @app = @train.app
-    set_pull_requests
-    set_demo_mode_things
 
-    if demo_train?
-      render :show_demo
-    else
-      render :show
-    end
+    set_pull_requests
+
+    render :show
   end
 
   def create
@@ -32,26 +27,16 @@ class ReleasesController < SignedInApplicationController
     end
   end
 
-  def timeline
-    @train = @release.train
-    @app = @train.app
-    @events = @release.events
-  end
-
   def live_release
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
-    @steps = @train.steps.order(:step_number).includes(:runs, :train, deployments: [:integration])
     @release = @train.active_run
-    redirect_to train_path, notice: "No release in progress." and return unless @release
-    set_pull_requests
-    set_demo_mode_things
 
-    if demo_train?
-      render :show_demo
-    else
-      render :show
-    end
+    redirect_to train_path, notice: "No release in progress." and return unless @release
+
+    set_pull_requests
+
+    render :show
   end
 
   def destroy
@@ -62,9 +47,9 @@ class ReleasesController < SignedInApplicationController
   # TODO: This action can be deprecated once there are no more releases with pending manual finalize
   # Since finalize as of https://github.com/tramlinehq/tramline/pull/440 is automatic
   def post_release
-    @release = Releases::Train::Run.find(params[:id])
+    @release = Release.find(params[:id])
 
-    if @release.finalizable?
+    if @release.ready_to_be_finalized?
       @release.start_post_release_phase!
       redirect_back fallback_location: root_path, notice: "Performing post-release steps."
     else
@@ -72,11 +57,17 @@ class ReleasesController < SignedInApplicationController
     end
   end
 
+  def timeline
+    @train = @release.train
+    @app = @train.app
+    @events = @release.events
+  end
+
   private
 
   def set_release
     @release =
-      Releases::Train::Run
+      Release
         .joins(train: :app)
         .where(apps: {organization: current_organization})
         .find(params[:id])
@@ -89,10 +80,6 @@ class ReleasesController < SignedInApplicationController
 
   def live_release_path
     live_release_app_train_releases_path(@app, @train)
-  end
-
-  def set_demo_mode_things
-    @events = @release.events(10)
   end
 
   def train_path

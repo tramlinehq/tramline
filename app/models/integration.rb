@@ -38,6 +38,12 @@ class Integration < ApplicationRecord
       "ci_cd" => %w[GithubIntegration BitriseIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration]
+    },
+    cross_platform: {
+      "version_control" => %w[GithubIntegration GitlabIntegration],
+      "ci_cd" => %w[BitriseIntegration GithubIntegration],
+      "notification" => %w[SlackIntegration],
+      "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration]
     }
   }.with_indifferent_access
 
@@ -94,9 +100,6 @@ class Integration < ApplicationRecord
         next if MULTI_INTEGRATION_CATEGORIES.exclude?(category) && combination[category].present?
 
         (providers - existing_integration.pluck(:providable_type)).each do |provider|
-          next if provider.eql?("GitlabIntegration") && !Flipper.enabled?(:gitlab_integration)
-          next if provider.eql?("BitriseIntegration") && !Flipper.enabled?(:bitrise_integration)
-
           integration =
             app
               .integrations
@@ -133,6 +136,14 @@ class Integration < ApplicationRecord
     # NOTE: Assumes there can be only one store build channel
     def store_provider
       build_channel.find(&:store?)&.providable
+    end
+
+    def android_store_provider
+      build_channel.find(&:google_play_store_integration?)&.providable
+    end
+
+    def ios_store_provider
+      build_channel.find(&:app_store_integration?)&.providable
     end
 
     def slack_build_channel_provider

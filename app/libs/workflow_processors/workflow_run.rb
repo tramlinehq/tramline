@@ -25,7 +25,7 @@ class WorkflowProcessors::WorkflowRun
   end
 
   attr_reader :step_run
-  delegate :train, :release, to: :step_run
+  delegate :release, to: :step_run
   delegate :in_progress?, :successful?, :failed?, :halted?, :artifacts_url, to: :runner
 
   def update_status!

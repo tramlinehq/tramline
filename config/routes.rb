@@ -54,17 +54,12 @@ Rails.application.routes.draw do
     end
 
     resources :trains, only: %i[new create edit update show destroy] do
-      member do
-        patch :activate
-        patch :deactivate
+      resources :release_platforms, only: [], path: :platforms, as: :platforms do
+        resources :steps, only: %i[new create edit update]
       end
 
-      resources :steps, only: %i[new create edit update]
-
       resources :releases, only: %i[show create destroy], shallow: true do
-        resource :release_metadatum, only: %i[edit update], path: :metadata
-
-        resources :step_runs, only: [], shallow: false, module: "releases" do
+        resources :step_runs, only: [], shallow: false do
           member do
             post :start
           end
@@ -94,13 +89,15 @@ Rails.application.routes.draw do
           end
         end
 
-        member do
-          get :timeline
-          post :post_release
-        end
+        resource :release_metadatum, only: %i[edit update], path: :metadata
 
         collection do
           get :live_release
+        end
+
+        member do
+          get :timeline
+          post :post_release
         end
       end
     end

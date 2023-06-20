@@ -6,7 +6,7 @@ describe Releases::UploadArtifact do
     let(:artifact_fixture) { "spec/fixtures/storage/test_artifact.aab.zip" }
     let(:artifact_file) { Rack::Test::UploadedFile.new(artifact_fixture, "application/zip") }
     let(:artifact_stream) { Artifacts::Stream.new(artifact_file, is_archive: true) }
-    let(:step_run) { create(:releases_step_run, :build_ready) }
+    let(:step_run) { create(:step_run, :build_ready) }
 
     it "uploads artifacts and marks run as build available" do
       allow_any_instance_of(GithubIntegration).to receive(:get_artifact).and_return(artifact_stream)

@@ -2,10 +2,10 @@ class TrainsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
-  before_action :require_write_access!, only: %i[new create deactivate edit update destroy]
-  before_action :set_app, only: %i[new create show edit update destroy deactivate]
+  before_action :require_write_access!, only: %i[new create edit update destroy]
+  before_action :set_app, only: %i[new create show edit update destroy]
   around_action :set_time_zone
-  before_action :set_train, only: %i[show edit update destroy deactivate]
+  before_action :set_train, only: %i[show edit update destroy]
   before_action :validate_integration_status, only: %i[new create]
 
   def show
@@ -27,22 +27,6 @@ class TrainsController < SignedInApplicationController
         format.json { render :show, status: :created, location: @train }
       else
         format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @train.errors, status: :unprocessable_entity }
-      end
-    end
-  end
-
-  def deactivate
-    params = {
-      status: Releases::Train.statuses[:inactive]
-    }
-
-    respond_to do |format|
-      if @train.update(params)
-        format.html { redirect_to train_path, notice: "Train was successfully deactivated!" }
-        format.json { render :show, status: :created, location: @train }
-      else
-        format.html { render :show, status: :unprocessable_entity }
         format.json { render json: @train.errors, status: :unprocessable_entity }
       end
     end
@@ -73,7 +57,7 @@ class TrainsController < SignedInApplicationController
   private
 
   def new_train_redirect
-    if @train.in_creation?
+    if @train.in_creation? && @app.trains.size == 1
       redirect_to app_path(@app), notice: "Train was successfully created."
     else
       redirect_to train_path, notice: "Train was successfully created."
@@ -89,7 +73,7 @@ class TrainsController < SignedInApplicationController
   end
 
   def train_params
-    params.require(:releases_train).permit(
+    params.require(:train).permit(
       :name,
       :description,
       :working_branch,
@@ -105,7 +89,7 @@ class TrainsController < SignedInApplicationController
   end
 
   def train_update_params
-    params.require(:releases_train).permit(
+    params.require(:train).permit(
       :name,
       :description
     )

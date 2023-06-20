@@ -1,6 +1,6 @@
 class CleanupToAvoidCarefullyMigrating < ActiveRecord::Migration[7.0]
   def up
-    return unless Rails.env.production?
+    return
 
     # there are no active users at this point so this is safe
     ActiveRecord::Base.transaction do

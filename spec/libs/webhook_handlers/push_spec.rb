@@ -1,7 +1,7 @@
 require "rails_helper"
 
 describe WebhookHandlers::Push do
-  let(:train) { create(:releases_train) }
+  let(:train) { create(:train) }
   let(:payload) { JSON.parse(File.read("spec/fixtures/github/push.json")) }
   let(:handler) { described_class.new(train, payload) }
 

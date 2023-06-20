@@ -34,6 +34,6 @@ class IntegrationListeners::GitlabController < IntegrationListenerController
   end
 
   def train
-    @train ||= Releases::Train.find(params[:train_id])
+    @train ||= Train.find(params[:train_id])
   end
 end

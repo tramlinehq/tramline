@@ -35,8 +35,7 @@ class WebhookProcessors::Push
 
   def create_commit!
     params = {
-      train:,
-      train_run: release,
+      release: release,
       commit_hash: commit_attributes[:commit_sha],
       message: commit_attributes[:message],
       timestamp: commit_attributes[:timestamp],
@@ -45,7 +44,7 @@ class WebhookProcessors::Push
       url: commit_attributes[:url]
     }
 
-    Releases::Commit.find_or_create_by!(params)
+    Commit.find_or_create_by!(params)
   end
 
   def stamp_version_changed

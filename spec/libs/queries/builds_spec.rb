@@ -10,9 +10,9 @@ describe Queries::Builds, type: :model do
 
     it "returns an Queries::Build object" do
       app = create(:app, :android)
-      train = create(:releases_train, app:)
-      step = create(:releases_step, :with_deployment, train:)
-      step_run = create(:releases_step_run, step:)
+      release_platform = create(:release_platform, app:)
+      step = create(:step, :with_deployment, release_platform:)
+      step_run = create(:step_run, step:)
       create(:build_artifact, step_run:)
 
       actual = described_class.all(app:, params:).first
@@ -21,10 +21,10 @@ describe Queries::Builds, type: :model do
 
     it "return the correct number of builds" do
       app = create(:app, :android)
-      train = create(:releases_train, app:)
-      step = create(:releases_step, :with_deployment, train:)
-      step_run1 = create(:releases_step_run, step:)
-      step_run2 = create(:releases_step_run, step:)
+      release_platform = create(:release_platform, app:)
+      step = create(:step, :with_deployment, release_platform:)
+      step_run1 = create(:step_run, step:)
+      step_run2 = create(:step_run, step:)
       create(:build_artifact, step_run: step_run1)
       create(:build_artifact, step_run: step_run2)
 
@@ -34,9 +34,9 @@ describe Queries::Builds, type: :model do
 
     it "returns all the fields" do
       app = create(:app, :android)
-      train = create(:releases_train, app:)
-      step = create(:releases_step, :with_deployment, train:)
-      step_run = create(:releases_step_run, step:)
+      release_platform = create(:release_platform, app:)
+      step = create(:step, :with_deployment, release_platform:)
+      step_run = create(:step_run, step:)
       create(:build_artifact, step_run:)
 
       expected_keys = [

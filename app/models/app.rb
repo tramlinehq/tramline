@@ -18,7 +18,6 @@
 class App < ApplicationRecord
   has_paper_trail
   extend FriendlyId
-  include Flipper::Identifier
 
   GOOGLE_PLAY_STORE_URL_TEMPLATE =
     Addressable::Template.new("https://play.google.com/store/apps/details{?query*}")
@@ -31,16 +30,20 @@ class App < ApplicationRecord
   has_one :config, class_name: "AppConfig", dependent: :destroy
   has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :integrations, inverse_of: :app, dependent: :destroy
-  has_many :trains, class_name: "Releases::Train", dependent: :destroy
-  has_many :train_runs, through: :trains
-  has_many :steps, through: :trains
+
+  has_many :trains, -> { sequential }, dependent: :destroy, inverse_of: :app
+  has_many :releases, through: :trains
+
+  has_many :release_platforms, dependent: :destroy
+  has_many :release_platform_runs, through: :releases
+  has_many :steps, through: :release_platforms
 
   validate :no_trains_are_running, on: :update
   validates :bundle_identifier, uniqueness: {scope: [:platform, :organization_id]}
   validates :build_number, numericality: {greater_than_or_equal_to: :build_number_was}, on: :update
   validates :build_number, numericality: {less_than: 2100000000}, if: -> { android? }
 
-  enum platform: {android: "android", ios: "ios"}
+  enum platform: {android: "android", ios: "ios", cross_platform: "cross_platform"}
 
   after_initialize :initialize_config, if: :new_record?
   before_destroy :ensure_deletable, prepend: true do
@@ -54,30 +57,31 @@ class App < ApplicationRecord
     :ci_cd_provider,
     :notification_provider,
     :store_provider,
+    :ios_store_provider,
+    :android_store_provider,
     :slack_build_channel_provider,
     :slack_notifications?, to: :integrations, allow_nil: true
 
   scope :with_trains, -> { joins(:trains).distinct }
+  scope :sequential, -> { order("apps.created_at ASC") }
 
-  def runs
-    Releases::Train::Run.joins(train: :app).where(train: {app: self})
-  end
-
-  def self.allowed_platforms(current_user)
-    if Flipper.enabled?(:ios_apps_allowed, current_user)
+  def self.allowed_platforms(current_organization)
+    if Flipper.enabled?(:cross_platform_apps, current_organization)
       {
         android: "Android",
-        ios: "iOS"
+        ios: "iOS",
+        cross_platform: "Cross Platform"
       }.invert
     else
       {
-        android: "Android"
+        android: "Android",
+        ios: "iOS"
       }.invert
     end
   end
 
   def active_runs
-    runs.on_track
+    releases.on_track
   end
 
   def ready?
@@ -95,8 +99,10 @@ class App < ApplicationRecord
   def store_link
     if android?
       GOOGLE_PLAY_STORE_URL_TEMPLATE.expand(query: {id: bundle_identifier}).to_s
-    else
+    elsif ios?
       APP_STORE_URL_TEMPLATE.expand(id: external_id).to_s
+    else
+      "google.com" # FIXME
     end
   end
 
@@ -144,27 +150,43 @@ class App < ApplicationRecord
       }
     }
 
-    steps_setup =
+    ios_steps_setup =
       {
-        review_step: {
-          visible: trains.any?, completed: steps.review.any?
+        ios_review_step: {
+          visible: trains.any?, completed: trains.first&.release_platforms&.ios&.first&.steps&.review&.any?
         },
-        release_step: {
-          visible: trains.any?, completed: steps.release.any?
+        ios_release_step: {
+          visible: trains.any?, completed: trains.first&.release_platforms&.ios&.first&.steps&.release&.any?
         }
       }
 
-    [train_setup, steps_setup]
-      .flatten
-      .reduce(:merge)
+    android_steps_setup =
+      {
+        android_review_step: {
+          visible: trains.any?, completed: trains.first&.release_platforms&.android&.first&.steps&.review&.any?
+        },
+        android_release_step: {
+          visible: trains.any?, completed: trains.first&.release_platforms&.android&.first&.steps&.release&.any?
+        }
+      }
+
+    instructions = if cross_platform?
+      [train_setup, ios_steps_setup, android_steps_setup]
+    elsif android?
+      [train_setup, android_steps_setup]
+    else
+      [train_setup, ios_steps_setup]
+    end
+
+    instructions.flatten.reduce(:merge)
   end
 
   # FIXME: this is probably quite inefficient for a lot of apps/trains
   def high_level_overview
     trains.only_with_runs.index_with do |train|
       {
-        in_review: train.runs.on_track.first,
-        last_released: train.runs.released.order("completed_at DESC").first
+        in_review: train.releases.on_track.first,
+        last_released: train.releases.released.order("completed_at DESC").first
       }
     end
   end
@@ -179,15 +201,32 @@ class App < ApplicationRecord
 
   def create_external!
     return unless has_store_integration?
-    external_app_data = store_provider.channel_data
+
+    if cross_platform?
+      update_external_app(:android, android_store_provider)
+      update_external_app(:ios, ios_store_provider)
+    elsif android?
+      update_external_app(:android, android_store_provider)
+    else
+      update_external_app(:ios, ios_store_provider)
+    end
+  end
+
+  def update_external_app(platform, provider)
+    external_app_data = provider.channel_data
 
     if latest_external_app&.channel_data != external_app_data
-      external_apps.create!(channel_data: external_app_data, fetched_at: Time.current)
+      external_apps.create!(channel_data: external_app_data, fetched_at: Time.current, platform:)
     end
   end
 
   def latest_external_app
     external_apps.order(fetched_at: :desc).first
+  end
+
+  def latest_external_apps
+    {android: external_apps.where(platform: "android").order(fetched_at: :desc).first,
+     ios: external_apps.where(platform: "ios").order(fetched_at: :desc).first}
   end
 
   def refresh_external_app
@@ -225,6 +264,6 @@ class App < ApplicationRecord
   end
 
   def ensure_deletable
-    errors.add(:trains, "cannot delete an app if there are any releases made from it!") if runs.present?
+    errors.add(:trains, "cannot delete an app if there are any releases made from it!") if releases.present?
   end
 end

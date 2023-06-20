@@ -2,6 +2,8 @@
 
 class FillExternalReleaseExternalLink < ActiveRecord::Migration[7.0]
   def up
+    return
+
     app_store_external_link_template = Addressable::Template.new("https://appstoreconnect.apple.com/apps/{app_id}/testflight/ios/{external_id}")
 
     ExternalRelease.all.map do |external_release|

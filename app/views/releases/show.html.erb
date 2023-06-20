@@ -26,28 +26,70 @@
 </div>
 
 <div class="grid grid-cols-2 gap-6 mt-8">
-  <%= render partial: "releases/live_release/stability", locals: { release: @release, steps: @steps, release_train: @train } %>
   <div>
-    <% if @release.on_track? %>
-      <%= render partial: "releases/live_release/commit_log", locals: { release: @release } %>
-      <%= render partial: "releases/live_release/separator" %>
-      <%= render partial: "releases/live_release/separator", locals: { margin_only: true } %>
-    <% end %>
+    <%= render partial: "shared/live_release/kick_off", locals: { release: @release, release_train: @train } %>
 
     <% if @release.pre_release_prs? %>
-      <%= render partial: "releases/live_release/pre_release_prs", locals: { pre_release_prs: @pre_release_prs } %>
-      <%= render partial: "releases/live_release/separator" %>
+      <%= render partial: "shared/live_release/separator", locals: { margin_only: true } %>
+      <%= render partial: "shared/live_release/pre_release_prs", locals: { pre_release_prs: @pre_release_prs } %>
     <% end %>
 
-    <%= render partial: "releases/live_release/kick_off", locals: { release: @release, release_train: @train } %>
+    <%= render partial: "shared/live_release/separator", locals: { margin_only: true } %>
+
     <% if @release.release_metadata.present? %>
-      <%= render partial: "releases/live_release/release_metadata",
-                 locals: { release: @release, is_android: @release.app.android? } %>
+      <%= render partial: "shared/live_release/release_metadata",
+                 locals: { release: @release, is_android: @app.android? } %>
     <% end %>
-    <%= render partial: "releases/live_release/separator", locals: { margin_only: true } %>
-    <%= render partial: "releases/live_release/builds", locals: { release: @release } %>
+  </div>
+
+  <div>
+    <%= render partial: "shared/live_release/commit_log", locals: { release: @release } %>
   </div>
 </div>
 
-<%= render partial: "releases/live_release/separator" %>
-<%= render partial: "releases/live_release/finalize", locals: { release: @release, post_release_prs: @post_release_prs } %>
+<%= render partial: "shared/live_release/separator" %>
+
+<% if @release.hotfix? %>
+  <div class="flex flex-col bg-slate-800 text-white rounded-sm py-5 mb-5 text-center pr-8">
+    <div class="uppercase tracking-wide text-2xl drop-shadow-md">
+      <%= inline_svg("band_aid.svg", classname: "w-10 opacity-80 inline-flex align-bottom") %>
+      <span class="align-baseline pl-2">release is now in <span class="underline">hotfix</span> mode</span>
+    </div>
+  </div>
+<% end %>
+
+<div class="mt-8">
+  <span class="font-bold text-2xl">Build stability</span>
+  <span class="text-xl text-slate-400 ml-4"><%= time_ago_in_words(@release.updated_at) %> ago</span>
+</div>
+
+<div class="grid grid-cols-2 gap-6 mt-8">
+  <% @release.release_platform_runs.each do |run| %>
+    <%= render partial: "shared/live_release/stability", locals: { platform: "#{run.display_attr(:platform)} release", release: run, steps: run.release_platform.steps } %>
+  <% end %>
+</div>
+
+<%= render partial: "shared/live_release/separator" %>
+
+<div class="grid grid-cols-1 gap-6 mt-8">
+  <%= render partial: "shared/live_release/builds", locals: { release: @release } %>
+</div>
+
+<% if @app.cross_platform? %>
+  <%= render partial: "shared/live_release/separator" %>
+  <div class="grid grid-cols-2 gap-6 mt-8">
+    <% @release.release_platform_runs.each do |run| %>
+      <div>
+        <span class="font-bold text-2xl"><%= run.display_attr(:platform) %> Release Events</span>
+        <%= render partial: "shared/event_timeline", locals: { events: run.events, short_width: true } %>
+        <span class="text-sm text-slate-400">Showing the last 10 events, <%= link_to "view all", timeline_release_path(@release), class: "underline" %></span>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<%= render partial: "shared/live_release/separator" %>
+
+<div class="mt-8">
+  <%= render partial: "shared/live_release/finalize", locals: { release: @release, post_release_prs: @post_release_prs } %>
+</div>

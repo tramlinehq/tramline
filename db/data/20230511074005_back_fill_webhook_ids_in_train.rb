@@ -1,5 +1,7 @@
 class BackFillWebhookIdsInTrain < ActiveRecord::Migration[7.0]
   def up
+    return
+
     App.all.filter { |app| app.vcs_provider&.integration&.github_integration? }.each do |app|
       repo = app.config.code_repository_name
       webhooks = begin

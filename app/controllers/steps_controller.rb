@@ -5,6 +5,7 @@ class StepsController < SignedInApplicationController
   before_action :require_write_access!, only: %i[new create edit update]
   before_action :set_app, only: %i[new create edit update]
   before_action :set_train, only: %i[new create edit update]
+  before_action :set_release_platform, only: %i[new create edit update]
   before_action :set_ci_actions, only: %i[new create]
   before_action :integrations_are_ready?, only: %i[new create]
   around_action :set_time_zone
@@ -15,9 +16,9 @@ class StepsController < SignedInApplicationController
     head :forbidden and return if @train.active_run
     head :forbidden and return if kind.blank?
 
-    @step = @train.steps.new(kind:)
+    @step = @release_platform.steps.new(kind:)
 
-    if @step.release? && @train.has_release_step?
+    if @step.release? && @release_platform.has_release_step?
       redirect_back fallback_location: app_train_path(@app, @train), flash: {error: "You can only have one release step in a train!"}
     end
 
@@ -26,19 +27,18 @@ class StepsController < SignedInApplicationController
 
   def edit
     @step =
-      Releases::Step
-        .joins(train: :app)
-        .where(trains: {apps: {organization: current_organization}})
+      Step
+        .joins(release_platform: :app)
+        .where(release_platforms: {apps: {organization: current_organization}})
         .friendly
         .find(params[:id])
-    @train = @step.train
     head :forbidden and return if @train.active_run
     @ci_actions = @train.ci_cd_provider.workflows
   end
 
   def create
     head :forbidden and return if @train.active_run
-    @step = @train.steps.new(parsed_step_params)
+    @step = @release_platform.steps.new(parsed_step_params)
 
     respond_to do |format|
       if @step.save
@@ -52,15 +52,12 @@ class StepsController < SignedInApplicationController
 
   def update
     @step =
-      Releases::Step
-        .joins(train: :app)
-        .where(trains: {apps: {organization: current_organization}})
+      Step
+        .joins(release_platform: :app)
+        .where(release_platforms: {apps: {organization: current_organization}})
         .friendly
         .find(params[:id])
-    @train = @step.train
     head :forbidden and return if @train.active_run
-
-    @app = @train.app
 
     if @step.update(parsed_step_params)
       redirect_to edit_app_train_path(@app, @train), notice: "Step was successfully updated."
@@ -73,7 +70,7 @@ class StepsController < SignedInApplicationController
   private
 
   def new_step_redirect
-    if @step.train.in_creation?
+    if @train.in_creation?
       redirect_to app_path(@app), notice: "Step was successfully created."
     else
       redirect_to app_train_path(@app, @train), notice: "Step was successfully created."
@@ -88,12 +85,16 @@ class StepsController < SignedInApplicationController
     @train = @app.trains.friendly.find(params[:train_id])
   end
 
+  def set_release_platform
+    @release_platform = @train.release_platforms.friendly.find(params[:platform_id])
+  end
+
   def set_app
     @app = current_organization.apps.friendly.find(params[:app_id])
   end
 
   def step_params
-    params.require(:releases_step).permit(
+    params.require(:step).permit(
       :name,
       :description,
       :ci_cd_channel,
@@ -127,7 +128,7 @@ class StepsController < SignedInApplicationController
 
   def deployments_params
     params
-      .require(:releases_step)
+      .require(:step)
       .permit(deployments_attributes: [
         :integration_id,
         :build_artifact_channel,

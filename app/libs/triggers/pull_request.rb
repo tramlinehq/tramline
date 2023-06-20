@@ -5,7 +5,7 @@ class Triggers::PullRequest
 
   class MergeError < StandardError; end
 
-  delegate :transaction, to: ::Releases::PullRequest
+  delegate :transaction, to: ::PullRequest
 
   def self.create_and_merge!(**args)
     new(**args).create_and_merge!

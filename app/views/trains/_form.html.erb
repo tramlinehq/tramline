@@ -122,7 +122,7 @@
     <div data-controller="branching-selector">
       <%= form.label "Strategy", class: "block text-sm font-medium mb-1" %>
       <%= form.select :branching_strategy,
-                      options_for_select(Releases::Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
+                      options_for_select(Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
                       { required: true, },
                       { class: text_field_classes(is_disabled: train.persisted?), data: { action: 'branching-selector#change' }, disabled: train.persisted? } %>
     </div>
@@ -163,14 +163,21 @@
   </div>
 <% end %>
 
-<% if train.steps.size > 0 && train.persisted? %>
-  <div class="text-2xl font-bold mt-8 mb-4 pt-4 border-t border-dashed">Steps</div>
-  <div class="w-1/2">
-    <%= render partial: "shared/step_tree_viz", locals: { train: @train, editable: true } %>
-  </div>
-<% elsif train.persisted? %>
-  <div class="text-2xl font-bold mt-8 mb-4 pt-4 border-t border-dashed">Steps</div>
-  <div class="w-1/2">
-    <%= render partial: "trains/step_creation", locals: { app: app, train: train } %>
-  </div>
-<% end %>
+<div class="grid md:grid-cols-2 gap-x-11 pb-5 mt-8">
+  <% @train.release_platforms.each do |release_platform| %>
+    <section>
+      <div class="text-2xl font-bold mt-8 mb-4 pt-4 border-t border-dashed">
+        <%= release_platform.display_attr(:platform) %> Steps
+      </div>
+      <% if release_platform.steps.size > 0 && release_platform.persisted? %>
+        <div>
+          <%= render partial: "shared/step_tree_viz", locals: { train: @train, release_platform:, editable: true } %>
+        </div>
+      <% elsif release_platform.persisted? %>
+        <div>
+          <%= render partial: "trains/step_creation", locals: { app: app, train: train, release_platform: } %>
+        </div>
+      <% end %>
+    </section>
+  <% end %>
+</div>
