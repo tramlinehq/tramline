@@ -55,7 +55,7 @@ namespace :db do
 
   def nuke_train(train)
     train.releases.each do |run|
-      run.release_platform_runs do |prun|
+      run.release_platform_runs.each do |prun|
         prun.step_runs.each do |srun|
           srun.deployment_runs.each do |drun|
             drun.staged_rollout&.delete
@@ -68,6 +68,7 @@ namespace :db do
       end
       run.release_platform_runs&.delete_all
       run.release_metadata&.delete
+      run.release_changelog&.delete
       run.pull_requests&.delete_all
       run.commits&.delete_all
     end
