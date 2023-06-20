@@ -64,22 +64,22 @@ class Queries::Builds
   end
 
   memoize def selected_android_records
-      android_records
-        .select(select_attrs(ANDROID_ATTR_MAPPING))
-        .order(params.sort)
-        .limit(params.limit)
-        .offset(params.offset)
+    android_records
+      .select(select_attrs(ANDROID_ATTR_MAPPING))
+      .order(params.sort)
+      .limit(params.limit)
+      .offset(params.offset)
   end
 
   memoize def android_records
-      BuildArtifact
-        .with_attached_file
-        .joins(join_step_run_tree)
-        .includes(step_run: {step: [deployments: :integration]})
-        .select(:id, :step_run_id)
-        .where(apps: {id: app.id})
-        .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.search_by(search_params)))
-        .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.filter_by(ANDROID_ATTR_MAPPING)))
+    BuildArtifact
+      .with_attached_file
+      .joins(join_step_run_tree)
+      .includes(step_run: {step: [deployments: :integration]})
+      .select(:id, :step_run_id)
+      .where(apps: {id: app.id})
+      .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.search_by(search_params)))
+      .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.filter_by(ANDROID_ATTR_MAPPING)))
   end
 
   def ios_all
@@ -96,21 +96,21 @@ class Queries::Builds
   end
 
   memoize def selected_ios_records
-      ios_records
-        .select(select_attrs(IOS_ATTR_MAPPING.except(:version_code)))
-        .order(params.sort)
-        .limit(params.limit)
-        .offset(params.offset)
+    ios_records
+      .select(select_attrs(IOS_ATTR_MAPPING.except(:version_code)))
+      .order(params.sort)
+      .limit(params.limit)
+      .offset(params.offset)
   end
 
   memoize def ios_records
-      ExternalRelease
-        .joins(deployment_run: [join_step_run_tree])
-        .select("DISTINCT (external_releases.build_number) AS version_code")
-        .select(distinct_deployment_runs)
-        .where(apps: {id: app.id})
-        .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.search_by(search_params)))
-        .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.filter_by(IOS_ATTR_MAPPING)))
+    ExternalRelease
+      .joins(deployment_run: [join_step_run_tree])
+      .select("DISTINCT (external_releases.build_number) AS version_code")
+      .select(distinct_deployment_runs)
+      .where(apps: {id: app.id})
+      .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.search_by(search_params)))
+      .where(ActiveRecord::Base.sanitize_sql_for_conditions(params.filter_by(IOS_ATTR_MAPPING)))
   end
 
   def ios_deployments(record)
