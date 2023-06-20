@@ -34,7 +34,7 @@ class Release < ApplicationRecord
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
-  scope :sequential, -> { order("releases.scheduled_at ASC") }
+  scope :sequential, -> { order("releases.scheduled_at DESC") }
 
   STAMPABLE_REASONS = %w[
     created
