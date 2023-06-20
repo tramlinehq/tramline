@@ -2,14 +2,23 @@
 #
 # Table name: release_platforms
 #
-#  id         :uuid             not null, primary key
-#  name       :string           not null
-#  platform   :string
-#  slug       :string
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
-#  app_id     :uuid             not null, indexed
-#  train_id   :uuid
+#  id                       :uuid             not null, primary key
+#  branching_strategy       :string
+#  description              :string
+#  name                     :string           not null
+#  platform                 :string
+#  release_backmerge_branch :string
+#  release_branch           :string
+#  slug                     :string
+#  status                   :string
+#  version_current          :string
+#  version_seeded_with      :string
+#  working_branch           :string
+#  created_at               :datetime         not null
+#  updated_at               :datetime         not null
+#  app_id                   :uuid             not null, indexed
+#  train_id                 :uuid
+#  vcs_webhook_id           :string
 #
 
 class ReleasePlatform < ApplicationRecord

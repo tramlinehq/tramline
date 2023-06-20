@@ -4,7 +4,7 @@
 #
 #  id                       :uuid             not null, primary key
 #  branching_strategy       :string           not null
-#  description              :string           not null
+#  description              :string
 #  name                     :string           not null
 #  release_backmerge_branch :string
 #  release_branch           :string
