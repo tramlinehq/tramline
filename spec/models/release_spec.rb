@@ -30,4 +30,28 @@ describe Release do
       expect(run.release_platform_runs.size).to eq(2)
     end
   end
+
+  describe "#ready_to_be_finalized?" do
+    it "is true when all release platform runs are finished" do
+      app = create(:app, :cross_platform)
+      train = create(:train, app:)
+      run = create(:release, train:)
+
+      run.release_platform_runs.each do |run|
+        run.update!(status: ReleasePlatformRun::STATES[:finished])
+      end
+
+      expect(run.ready_to_be_finalized?).to be(true)
+    end
+
+    it "is false when a release platform run is not finished" do
+      app = create(:app, :cross_platform)
+      train = create(:train, app:)
+      run = create(:release, train:)
+
+      run.release_platform_runs.first.update!(status: ReleasePlatformRun::STATES[:finished])
+
+      expect(run.ready_to_be_finalized?).to be(false)
+    end
+  end
 end
