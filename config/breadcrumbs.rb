@@ -29,7 +29,7 @@ end
 
 crumb :step do |step|
   link step.name, app_train_platform_steps_path(step.release_platform.app, step.release_platform)
-  parent :train, step.release_platform
+  parent :train, step.train
 end
 
 crumb :new_step do |train|
