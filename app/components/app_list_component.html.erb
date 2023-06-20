@@ -33,7 +33,7 @@
               </div>
             <% else %>
               <%= link_to release_path(releases[:in_review].id) do %>
-                <div class="flex flex-col bg-indigo-300 rounded-sm pl-4 pt-4 h-52">
+                <div class="flex flex-col bg-indigo-300 rounded-sm pl-4 pt-4 h-52 shadow-sm hover:bg-indigo-400">
                   <div class="flex-grow mb-2">
                     <p class="uppercase tracking-wider text-white text-sm">Reviewing</p>
                     <p class="text-2xl font-bold"><%= releases[:in_review].release_version %></p>
@@ -61,7 +61,7 @@
               </div>
             <% else %>
               <%= link_to release_path(releases[:last_released].id) do %>
-                <div class="flex flex-col bg-indigo-500 rounded-sm pl-4 pt-4 h-52">
+                <div class="flex flex-col bg-indigo-500 rounded-sm pl-4 pt-4 h-52 shadow-sm hover:bg-indigo-600">
                   <div class="flex-grow mb-2">
                     <p class="uppercase tracking-wider text-white text-sm">Released</p>
                     <p class="text-2xl font-bold"><%= releases[:last_released].release_version %></p>
