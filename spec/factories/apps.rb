@@ -24,6 +24,16 @@ FactoryBot.define do
       end
     end
 
+    trait :cross_platform do
+      platform { "cross_platform" }
+      after(:create) do |app, _|
+        create(:integration, category: "version_control", providable: create(:github_integration), app:)
+        create(:integration, category: "ci_cd", providable: create(:github_integration), app:)
+        create(:integration, :with_google_play_store, app:)
+        create(:integration, :with_app_store, app:)
+      end
+    end
+
     after(:build) do |app, _|
       app.config = build(:app_config, app: app)
     end
