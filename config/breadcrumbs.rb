@@ -71,8 +71,3 @@ crumb :edit_train do |train|
   link "Edit"
   parent :train, train
 end
-
-crumb :edit_release_platform do |name, release_platform|
-  link "Edit #{name}"
-  parent :train, release_platform.train
-end

@@ -70,7 +70,7 @@ class StepsController < SignedInApplicationController
   private
 
   def new_step_redirect
-    if @step.release_platform.train.in_creation?
+    if @train.in_creation?
       redirect_to app_path(@app), notice: "Step was successfully created."
     else
       redirect_to app_train_path(@app, @train), notice: "Step was successfully created."

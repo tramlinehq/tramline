@@ -105,7 +105,6 @@ class Release < ApplicationRecord
   attr_accessor :has_major_bump
 
   delegate :app, :pre_release_prs?, :vcs_provider, :release_platforms, :notify!, to: :train
-  delegate :cache, to: Rails
 
   def self.pending_release?
     pending_release.exists?
@@ -115,36 +114,6 @@ class Release < ApplicationRecord
     created? || on_track?
   end
 
-  def create_train_runs
-    release_platforms.each do |release_platform|
-      release_platform_runs.create!(
-        code_name: "dummy",
-        scheduled_at:,
-        release_platform: release_platform
-      )
-    end
-  end
-
-  def start_release_platform_runs!
-    release_platform_runs.each do |run|
-      run&.start! unless run&.finished?
-    end
-  end
-
-  def stop_runs
-    release_platform_runs.each(&:stop!)
-  end
-
-  def set_version
-    new_version = train.bump_release!(has_major_bump)
-    self.release_version = new_version
-    self.original_release_version = new_version
-  end
-
-  def set_default_release_metadata
-    create_release_metadata!(locale: ReleaseMetadata::DEFAULT_LOCALE, release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES)
-  end
-
   def fetch_commit_log
     if previous_release.present?
       create_release_changelog(
@@ -152,10 +121,6 @@ class Release < ApplicationRecord
         from_ref: previous_release.tag_name
       )
     end
-  end
-
-  def previous_release
-    train.releases.where(status: "finished").order(completed_at: :desc).first
   end
 
   def tag_name
@@ -255,6 +220,42 @@ class Release < ApplicationRecord
 
   def last_commit
     commits.order(:created_at).last
+  end
+
+  private
+
+  def create_train_runs
+    release_platforms.each do |release_platform|
+      release_platform_runs.create!(
+        code_name: "dummy",
+        scheduled_at:,
+        release_platform: release_platform
+      )
+    end
+  end
+
+  def start_release_platform_runs!
+    release_platform_runs.each do |run|
+      run&.start! unless run&.finished?
+    end
+  end
+
+  def stop_runs
+    release_platform_runs.each(&:stop!)
+  end
+
+  def set_version
+    new_version = train.bump_release!(has_major_bump)
+    self.release_version = new_version
+    self.original_release_version = new_version
+  end
+
+  def set_default_release_metadata
+    create_release_metadata!(locale: ReleaseMetadata::DEFAULT_LOCALE, release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES)
+  end
+
+  def previous_release
+    train.releases.where(status: "finished").order(completed_at: :desc).first
   end
 
   def on_start!
