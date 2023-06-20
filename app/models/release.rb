@@ -26,6 +26,7 @@ class Release < ApplicationRecord
 
   belongs_to :train
   has_one :release_metadata, dependent: :destroy, inverse_of: :release
+  has_one :release_changelog, dependent: :destroy, inverse_of: :release
   has_many :release_platform_runs, dependent: :destroy, inverse_of: :release
   has_many :commits, dependent: :destroy, inverse_of: :release
   has_many :pull_requests, dependent: :destroy, inverse_of: :release
@@ -146,9 +147,10 @@ class Release < ApplicationRecord
 
   def fetch_commit_log
     if previous_release.present?
-      cache.fetch("app/#{app.id}/train/#{train.id}/releases/#{id}/commit_log", expires_in: 30.days) do
-        vcs_provider.commit_log(previous_release.tag_name, train.working_branch)
-      end
+      create_release_changelog(
+        commits: vcs_provider.commit_log(previous_release.tag_name, train.working_branch),
+        from_ref: previous_release.tag_name
+      )
     end
   end
 

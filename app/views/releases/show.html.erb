@@ -42,11 +42,9 @@
     <% end %>
   </div>
 
-  <% if @release.on_track? %>
-    <div>
-      <%= render partial: "shared/live_release/commit_log", locals: { release: @release } %>
-    </div>
-  <% end %>
+  <div>
+    <%= render partial: "shared/live_release/commit_log", locals: { release: @release } %>
+  </div>
 </div>
 
 <%= render partial: "shared/live_release/separator" %>
