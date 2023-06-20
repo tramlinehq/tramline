@@ -1,4 +1,6 @@
 class Queries::Builds
+  include Memery
+
   DEFAULT_SORT_COLUMN = "version_code"
 
   BASE_ATTR_MAPPING = {
@@ -7,7 +9,8 @@ class Queries::Builds
     ci_link: StepRun.arel_table[:ci_link],
     step_status: StepRun.arel_table[:status],
     step_name: Step.arel_table[:name],
-    train_name: ReleasePlatform.arel_table[:name],
+    train_name: Train.arel_table[:name],
+    platform: ReleasePlatform.arel_table[:platform],
     release_status: ReleasePlatformRun.arel_table[:status]
   }
   ANDROID_ATTR_MAPPING =
@@ -31,18 +34,18 @@ class Queries::Builds
   end
 
   attr_reader :app, :sort_column, :sort_direction, :params
-  delegate :android?, :ios?, to: :app
+  delegate :android?, :ios?, :cross_platform?, to: :app
 
   def all
     return android_all if android?
     return ios_all if ios?
-    [] # FIXME: handle cross platform app
+    android_all + ios_all if cross_platform?
   end
 
   def count
     return android_records.size if android?
     return ios_records.size if ios?
-    0 # FIXME: handle cross platform app
+    android_records.size + ios_records.size if cross_platform?
   end
 
   def android_all
@@ -60,8 +63,7 @@ class Queries::Builds
     end
   end
 
-  def selected_android_records
-    @selected_records ||=
+  memoize def selected_android_records
       android_records
         .select(select_attrs(ANDROID_ATTR_MAPPING))
         .order(params.sort)
@@ -69,8 +71,7 @@ class Queries::Builds
         .offset(params.offset)
   end
 
-  def android_records
-    @records ||=
+  memoize def android_records
       BuildArtifact
         .with_attached_file
         .joins(join_step_run_tree)
@@ -94,8 +95,7 @@ class Queries::Builds
     end
   end
 
-  def selected_ios_records
-    @selected_records ||=
+  memoize def selected_ios_records
       ios_records
         .select(select_attrs(IOS_ATTR_MAPPING.except(:version_code)))
         .order(params.sort)
@@ -103,8 +103,7 @@ class Queries::Builds
         .offset(params.offset)
   end
 
-  def ios_records
-    @records ||=
+  memoize def ios_records
       ExternalRelease
         .joins(deployment_run: [join_step_run_tree])
         .select("DISTINCT (external_releases.build_number) AS version_code")
@@ -118,8 +117,8 @@ class Queries::Builds
     ios_deployment_runs.filter { |dr| dr.id.in?(record.deployment_run_ids) }.map(&:deployment)
   end
 
-  def ios_deployment_runs
-    @ios_deployment_runs ||= DeploymentRun.for_ids(selected_ios_records.flat_map(&:deployment_run_ids))
+  memoize def ios_deployment_runs
+    DeploymentRun.for_ids(selected_ios_records.flat_map(&:deployment_run_ids))
   end
 
   class Queries::Build
@@ -130,6 +129,7 @@ class Queries::Builds
     attribute :version_code, :string
     attribute :built_at, :datetime
     attribute :train_name, :string
+    attribute :platform, :string
     attribute :release_status, :string
     attribute :step_name, :string
     attribute :step_status, :string
@@ -149,7 +149,7 @@ class Queries::Builds
   private
 
   def join_step_run_tree
-    {step_run: [{release_platform_run: [{release_platform: :app}]}, :step]}
+    {step_run: [{release_platform_run: [{release_platform: [train: :app]}]}, :step]}
   end
 
   def search_params
