@@ -202,7 +202,7 @@ class Release < ApplicationRecord
         release_branch: branch_name,
         release_branch_url: branch_url,
         release_url: live_release_link,
-        release_notes: release_metadata.release_notes
+        release_notes: release_metadata&.release_notes
       }
     )
   end
