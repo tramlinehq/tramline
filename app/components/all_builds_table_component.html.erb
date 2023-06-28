@@ -4,7 +4,7 @@
     <tr>
       <th class="px-3 px-2 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
-          <%= sort_link(column: "version_code", label: "Version Code") %>
+          <%= sort_link(column: "version_code", label: "Number") %>
         </div>
       </th>
 
@@ -39,6 +39,12 @@
       <th class="px-2 py-3 whitespace-nowrap">
         <div class="font-semibold text-left">
           <%= sort_link(column: "train_name", label: "Train") %>
+        </div>
+      </th>
+
+      <th class="px-2 py-3 whitespace-nowrap">
+        <div class="font-semibold text-left">
+          Platform
         </div>
       </th>
 
@@ -107,6 +113,12 @@
 
         <td class="px-2 py-3 whitespace-nowrap">
           <div class="text-left">
+            <%= release_platform(build) %>
+          </div>
+        </td>
+
+        <td class="px-2 py-3 whitespace-nowrap">
+          <div class="text-left">
             <%= build.step_name %>
           </div>
         </td>
@@ -122,13 +134,13 @@
             <span>
               <% if build.ci_link.present? %>
                 <%= link_to_external build.ci_link, title: "link to CI" do %>
-                  <%= inline_svg('workflow.svg', classname: "inline-flex w-8") %>
+                  <%= inline_svg('workflow.svg', classname: "inline-flex w-5 mr-2") %>
                 <% end %>
               <% end %>
 
               <% if build.download_url.present? %>
                 <%= link_to_external build.download_url, title: "download build" do %>
-                  <%= inline_svg('download.svg', classname: "inline-flex w-8") %>
+                  <%= inline_svg('download.svg', classname: "inline-flex w-5") %>
                 <% end %>
               <% end %>
             </span>
