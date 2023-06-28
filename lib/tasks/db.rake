@@ -66,11 +66,11 @@ namespace :db do
         end
         prun.step_runs&.delete_all
       end
-      run.release_platform_runs&.delete_all
+      run.commits&.delete_all
       run.release_metadata&.delete
       run.release_changelog&.delete
-      run.pull_requests&.delete_all
-      run.commits&.delete_all
+      run.release_changelog&.delete
+      run.release_platform_runs&.delete_all
     end
     train.releases&.delete_all
     train.release_platforms.each do |release_platform|
@@ -78,6 +78,8 @@ namespace :db do
         step.deployments.delete_all
       end
       release_platform.steps&.delete_all
+      sql = "delete from commit_listeners where release_platform_id = '#{release_platform.id}'"
+      ActiveRecord::Base.connection.execute(sql)
     end
     train.release_platforms&.delete_all
     train.delete
