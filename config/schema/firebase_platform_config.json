@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "required": [
+    "android",
+    "ios"
+  ],
+  "properties": {
+    "ios": {
+      "type": "object",
+      "required": [
+        "project_number"
+      ],
+      "properties": {
+        "project_number": {
+          "type": "string"
+        }
+      }
+    },
+    "android": {
+      "type": "object",
+      "required": [
+        "project_number"
+      ],
+      "properties": {
+        "project_number": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
