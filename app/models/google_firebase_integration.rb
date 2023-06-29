@@ -50,10 +50,6 @@ class GoogleFirebaseIntegration < ApplicationRecord
     false
   end
 
-  def requires_configuration?
-    true
-  end
-
   def to_s
     "firebase"
   end
@@ -74,7 +70,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
     platform: :platform
   }
 
-  EMPTY_CHANNEL = { id: :no_testers, name: "No testers (upload only)" }
+  EMPTY_CHANNEL = {id: :no_testers, name: "No testers (upload only)"}
 
   def channels
     installation.list_groups(GROUPS_TRANSFORMATIONS)
