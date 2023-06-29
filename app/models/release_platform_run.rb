@@ -71,8 +71,7 @@ class ReleasePlatformRun < ApplicationRecord
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
   delegate :app, :platform, to: :release_platform
-  delegate :last_commit,
-    :commits,
+  delegate :commits,
     :original_release_version,
     :release_version,
     to: :release
@@ -134,8 +133,12 @@ class ReleasePlatformRun < ApplicationRecord
     running_steps.order(:step_number).last.step_number
   end
 
+  def last_commit
+    step_runs.flat_map(&:commit).max_by(&:created_at)
+  end
+
   def finished_steps?
-    commits.last&.step_runs&.where(release_platform_run: self)&.success&.size == steps.size
+    last_commit&.step_runs&.where(release_platform_run: self)&.success&.size == steps.size
   end
 
   def last_good_step_run

@@ -1,10 +1,14 @@
 <section>
-  <% if release.finished? %>
-    <span>This release was completed and is now locked.</span>
-  <% end %>
   <div>
     <span class="font-bold text-xl"><%= platform %></span>
   </div>
+
+  <% if release.finished? %>
+    <div class="m-4">
+      <%= render "shared/note_box",
+                 message: "This release was completed and is now locked." %>
+    </div>
+  <% end %>
 
   <div class="flex flex-col mt-2">
     <ol class="mt-2">
