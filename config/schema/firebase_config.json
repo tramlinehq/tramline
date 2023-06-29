@@ -1,27 +1,14 @@
 {
   "type": "object",
+  "required": [
+    "app_id"
+  ],
   "properties": {
-    "ios": {
-      "type": "object",
-      "required": [
-        "project_number"
-      ],
-      "properties": {
-        "project_number": {
-          "type": "string"
-        }
-      }
+    "app_id": {
+      "type": "string"
     },
-    "android": {
-      "type": "object",
-      "required": [
-        "project_number"
-      ],
-      "properties": {
-        "project_number": {
-          "type": "string"
-        }
-      }
+    "display_name": {
+      "type": ["string", "null"]
     }
   }
 }

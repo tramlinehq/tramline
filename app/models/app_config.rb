@@ -2,15 +2,15 @@
 #
 # Table name: app_configs
 #
-#  id                       :uuid             not null, primary key
-#  bitrise_platform_config  :jsonb
-#  code_repository          :json
-#  firebase_platform_config :jsonb
-#  notification_channel     :json
-#  created_at               :datetime         not null
-#  updated_at               :datetime         not null
-#  app_id                   :uuid             not null, indexed
-#  project_id               :jsonb
+#  id                      :uuid             not null, primary key
+#  code_repository         :json
+#  firebase_android_config :jsonb
+#  firebase_ios_config     :jsonb
+#  notification_channel    :json
+#  created_at              :datetime         not null
+#  updated_at              :datetime         not null
+#  app_id                  :uuid             not null, indexed
+#  project_id              :jsonb
 #
 class AppConfig < ApplicationRecord
   has_paper_trail
@@ -19,20 +19,12 @@ class AppConfig < ApplicationRecord
 
   belongs_to :app
 
-  validates :bitrise_platform_config,
+  validates :firebase_ios_config,
     allow_blank: true,
-    json: {message: ->(errors) { errors },
-           schema: -> {
-                     Rails.root.join("config/schema/",
-                       app.cross_platform? ? "bitrise_platform_config.json" : "bitrise_config.json")
-                   }}
-  validates :firebase_platform_config,
+    json: {message: ->(errors) { errors }, schema: -> { Rails.root.join("config/schema/firebase_config.json") }}
+  validates :firebase_android_config,
     allow_blank: true,
-    json: {message: ->(errors) { errors },
-           schema: -> {
-                     Rails.root.join("config/schema/",
-                       app.cross_platform? ? "firebase_platform_config.json" : "firebase_config.json")
-                   }}
+    json: {message: ->(errors) { errors }, schema: -> { Rails.root.join("config/schema/firebase_config.json") }}
 
   def ready?
     MINIMUM_REQUIRED_CONFIG.all? { |config| public_send(config).present? }

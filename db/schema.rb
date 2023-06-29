@@ -51,8 +51,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_28_115739) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "project_id"
-    t.jsonb "bitrise_platform_config"
-    t.jsonb "firebase_platform_config"
+    t.jsonb "firebase_ios_config"
+    t.jsonb "firebase_android_config"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
