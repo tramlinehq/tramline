@@ -45,10 +45,6 @@ class Commit < ApplicationRecord
     commit_hash[0, 7]
   end
 
-  def release_in_production
-    release.production_release_started?
-  end
-
   def step_runs_for(platform_run)
     step_runs.where(release_platform_run: platform_run).includes(:step).order(:created_at)
   end
