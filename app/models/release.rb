@@ -27,7 +27,7 @@ class Release < ApplicationRecord
   belongs_to :train
   has_one :release_metadata, dependent: :destroy, inverse_of: :release
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
-  has_many :release_platform_runs, dependent: :destroy, inverse_of: :release
+  has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release
   has_many :commits, dependent: :destroy, inverse_of: :release
   has_many :pull_requests, dependent: :destroy, inverse_of: :release
   has_many :step_runs, through: :release_platform_runs
@@ -170,6 +170,11 @@ class Release < ApplicationRecord
   def hotfix?
     return false unless on_track?
     release_platform_runs.any?(&:hotfix?)
+  end
+
+  def production_release_started?
+    return false unless on_track?
+    release_platform_runs.any?(&:production_release_started?)
   end
 
   def ready_to_be_finalized?

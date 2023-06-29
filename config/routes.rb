@@ -59,6 +59,12 @@ Rails.application.routes.draw do
       end
 
       resources :releases, only: %i[show create destroy], shallow: true do
+        resources :commits, only: [], shallow: false do
+          member do
+            post :apply
+          end
+        end
+
         resources :step_runs, only: [], shallow: false do
           member do
             post :start

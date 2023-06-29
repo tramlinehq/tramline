@@ -35,6 +35,8 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :running_steps, through: :step_runs, source: :step
   has_many :passports, as: :stampable, dependent: :destroy
 
+  scope :sequential, -> { order("release_platform_runs.created_at ASC") }
+
   STAMPABLE_REASONS = %w[finished]
 
   STATES = {
@@ -178,6 +180,10 @@ class ReleasePlatformRun < ApplicationRecord
     (release_version.to_semverish > original_release_version.to_semverish) && production_release_started?
   end
 
+  def production_release_started?
+    latest_deployed_store_release&.status&.in? [DeploymentRun::STATES[:rollout_started], DeploymentRun::STATES[:released]]
+  end
+
   private
 
   def started_store_release?
@@ -203,9 +209,5 @@ class ReleasePlatformRun < ApplicationRecord
       .where(step: step)
       .not_failed
       .last
-  end
-
-  def production_release_started?
-    latest_deployed_store_release&.status&.in? [DeploymentRun::STATES[:rollout_started], DeploymentRun::STATES[:released]]
   end
 end
