@@ -63,6 +63,7 @@ class ReleasePlatformRun < ApplicationRecord
 
     event :finish, after_commit: :on_finish! do
       before { self.completed_at = Time.current }
+      after { finish_release }
       transitions from: :on_track, to: :finished
     end
   end
@@ -70,16 +71,16 @@ class ReleasePlatformRun < ApplicationRecord
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
   delegate :app, :platform, to: :release_platform
-  delegate :release_branch,
-    :branch_name,
-    :last_commit,
+  delegate :last_commit,
     :commits,
-    :tag_name,
-    :tag_url,
     :original_release_version,
     :release_version,
     to: :release
   delegate :steps, :train, to: :release_platform
+
+  def finish_release
+    release.start_post_release_phase! if release.ready_to_be_finalized?
+  end
 
   def metadata_editable?
     on_track? && !started_store_release?
@@ -161,10 +162,14 @@ class ReleasePlatformRun < ApplicationRecord
       .then { |ids| Passport.where(stampable_id: ids).order(event_timestamp: :desc).limit(limit) }
   end
 
+  def tag_name
+    "v#{release_version}-#{platform}"
+  end
+
   def on_finish!
+    train.vcs_provider.create_tag!(tag_name, last_commit.commit_hash)
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     app.refresh_external_app
-    release.start_post_release_phase! if release.ready_to_be_finalized?
   end
 
   # Play store does not have constraints around version name
@@ -208,6 +213,7 @@ class ReleasePlatformRun < ApplicationRecord
     step_runs
       .where(step: step)
       .not_failed
-      .last
+      .order(created_at: :desc)
+      .first
   end
 end

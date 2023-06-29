@@ -158,6 +158,9 @@ describe StepRun do
     end
 
     it "automatically finishes the release if the release step has completed" do
+      repo_integration = instance_double(Installations::Github::Api)
+      allow(Installations::Github::Api).to receive(:new).and_return(repo_integration)
+      allow(repo_integration).to receive(:create_tag!)
       train = create(:train)
       release = create(:release, train:)
       release_platform = create(:release_platform, train:)

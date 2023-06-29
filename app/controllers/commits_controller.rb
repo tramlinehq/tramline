@@ -6,7 +6,8 @@ class CommitsController < SignedInApplicationController
     commit = Commit.find(params[:id])
     commit.trigger_step_runs_for(release_platform_run)
 
-    redirect_to live_release_app_train_releases_path(@app, @train), notice: "Steps have been triggered for the commit."
+    redirect_to live_release_app_train_releases_path(release.app, release.train),
+      notice: "Steps have been triggered for the commit."
   end
 
   private

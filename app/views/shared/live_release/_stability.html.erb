@@ -1,4 +1,7 @@
 <section>
+  <% if release.finished? %>
+    <span>This release was completed and is now locked.</span>
+  <% end %>
   <div>
     <span class="font-bold text-xl"><%= platform %></span>
   </div>

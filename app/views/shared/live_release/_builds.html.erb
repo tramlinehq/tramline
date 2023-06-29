@@ -64,7 +64,7 @@
           <% end %>
           <div class="grid grid-cols-2 gap-y-1 ml-4 gap-x-4">
             <% release.release_platform_runs.each do |run| %>
-              <% if commit.step_runs_for(run).blank? %>
+              <% if commit.step_runs_for(run).blank? && !is_stale_commit %>
                 <%= form_with(model: commit, url: apply_release_commit_path(@release, commit.id), method: :post, builder: ButtonHelper::AuthzForms) do |form| %>
                   <%= form.hidden_field :platform, value: run.platform %>
                   <%= form.authz_submit :blue, "Apply commit to #{run.platform}" %>

@@ -116,10 +116,9 @@ module Installations
       end
     end
 
-    def create_tag!(repo, name, branch_name)
+    def create_tag!(repo, name, sha)
       execute do
-        object_sha = head(repo, branch_name)
-        @client.create_ref(repo, "refs/tags/#{name}", object_sha)
+        @client.create_ref(repo, "refs/tags/#{name}", sha)
       end
     end
 

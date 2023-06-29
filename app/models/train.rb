@@ -166,9 +166,9 @@ class Train < ApplicationRecord
     "v#{version_current}"
   end
 
-  def create_tag!(branch_name)
+  def create_release!(branch_name)
     return false unless activated?
-    vcs_provider.create_tag!(tag_name, branch_name)
+    vcs_provider.create_release!(tag_name, branch_name)
   end
 
   def create_branch!(from, to)

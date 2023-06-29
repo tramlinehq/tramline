@@ -63,7 +63,7 @@ class Commit < ApplicationRecord
   private
 
   def trigger_step_runs
-    release_platform_runs.reject(&:production_release_started?).each do |run|
+    release_platform_runs.on_track.reject(&:production_release_started?).each do |run|
       trigger_step_runs_for(run)
     end
   end
