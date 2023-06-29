@@ -32,7 +32,7 @@ class Release < ApplicationRecord
   has_many :pull_requests, dependent: :destroy, inverse_of: :release
   has_many :step_runs, through: :release_platform_runs
 
-  scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
+  scope :pending_release, -> { where.not(status: [:finished, :stopped, :stopped_after_partial_finish]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   scope :sequential, -> { order("releases.scheduled_at DESC") }
 
@@ -59,7 +59,9 @@ class Release < ApplicationRecord
     post_release_started: "post_release_started",
     post_release_failed: "post_release_failed",
     stopped: "stopped",
-    finished: "finished"
+    finished: "finished",
+    partially_finished: "partially_finished",
+    stopped_after_partial_finish: "stopped_after_partial_finish"
   }
 
   enum status: STATES
@@ -74,17 +76,22 @@ class Release < ApplicationRecord
     end
 
     event :start_post_release_phase, after_commit: -> { Releases::PostReleaseJob.perform_later(id) } do
-      transitions from: [:on_track, :post_release_failed], to: :post_release_started, guard: :ready_to_be_finalized?
+      transitions from: [:on_track, :post_release_failed, :partially_finished], to: :post_release_started, guard: :ready_to_be_finalized?
     end
 
     event :fail_post_release_phase do
       transitions from: :post_release_started, to: :post_release_failed
     end
 
+    event :partially_finish do
+      transitions from: :on_track, to: :partially_finished
+    end
+
     event :stop, after_commit: :on_stop! do
       before { self.stopped_at = Time.current }
       after { stop_runs }
-      transitions to: :stopped
+      transitions from: :partially_finished, to: :stopped_after_partial_finish
+      transitions from: [:created, :on_track, :post_release_started, :post_release_failed], to: :stopped
     end
 
     event :finish, after_commit: :on_finish! do
@@ -111,7 +118,7 @@ class Release < ApplicationRecord
   end
 
   def committable?
-    created? || on_track?
+    created? || on_track? || partially_finished?
   end
 
   def fetch_commit_log
@@ -128,7 +135,7 @@ class Release < ApplicationRecord
   end
 
   def stoppable?
-    created? || on_track?
+    may_stop?
   end
 
   def release_branch
@@ -168,12 +175,12 @@ class Release < ApplicationRecord
   end
 
   def hotfix?
-    return false unless on_track?
+    return false unless committable?
     release_platform_runs.any?(&:hotfix?)
   end
 
   def production_release_started?
-    return false unless on_track?
+    return false unless committable?
     release_platform_runs.any?(&:production_release_started?)
   end
 
@@ -241,12 +248,14 @@ class Release < ApplicationRecord
 
   def start_release_platform_runs!
     release_platform_runs.each do |run|
-      run&.start! unless run&.finished?
+      run.start! unless run.finished?
     end
   end
 
   def stop_runs
-    release_platform_runs.each(&:stop!)
+    release_platform_runs.each do |run|
+      run.stop! if run.may_stop?
+    end
   end
 
   def set_version

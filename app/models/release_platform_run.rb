@@ -58,7 +58,7 @@ class ReleasePlatformRun < ApplicationRecord
 
     event :stop do
       before { self.stopped_at = Time.current }
-      transitions to: :stopped
+      transitions from: [:created, :on_track], to: :stopped
     end
 
     event :finish, after_commit: :on_finish! do
@@ -78,7 +78,11 @@ class ReleasePlatformRun < ApplicationRecord
   delegate :steps, :train, to: :release_platform
 
   def finish_release
-    release.start_post_release_phase! if release.ready_to_be_finalized?
+    if release.ready_to_be_finalized?
+      release.start_post_release_phase!
+    else
+      release.partially_finish!
+    end
   end
 
   def metadata_editable?

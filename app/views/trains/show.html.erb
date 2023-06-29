@@ -104,17 +104,19 @@
                   <% end %>
                 </span>
 
-                <% if @train.active_run == run %>
-                  <% if run.hotfix? %>
-                    <span class="ml-2 py-0.5"><%= status_badge("Hotfix", :ongoing) %></span>
-                  <% else %>
-                    <span class="ml-2 py-0.5"><%= status_badge("Ongoing", :success) %></span>
-                  <% end %>
-                <% end %>
+                <span class="ml-2 py-0.5"><%= release_status_badge(run.status) %></span>
 
-                <% if run.stopped? %>
-                  <span class="ml-2 py-0.5"><%= status_badge("Stopped", :failure) %></span>
-                <% end %>
+                <%# if @train.active_run == run %>
+                  <%# if run.hotfix? %>
+<!--                    <span class="ml-2 py-0.5"><%#= status_badge("Hotfix", :ongoing) %></span>-->
+                  <%# else %>
+<!--                    <span class="ml-2 py-0.5"><%#= status_badge("Ongoing", :success) %></span>-->
+                  <%# end %>
+                <%# end %>
+
+                <%# if run.stopped? %>
+<!--                  <span class="ml-2 py-0.5"><%#= status_badge("Stopped", :failure) %></span>-->
+                <%# end %>
               <% end %>
             <% end %>
 

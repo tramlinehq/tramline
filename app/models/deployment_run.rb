@@ -260,7 +260,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def release_startable?
-    release.on_track? && may_engage_release?
+    platform_release.on_track? && may_engage_release?
   end
 
   def rolloutable?
