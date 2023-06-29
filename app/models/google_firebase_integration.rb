@@ -70,7 +70,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
     platform: :platform
   }
 
-  EMPTY_CHANNEL = {id: :no_testers, name: "No testers (upload only)"}
+  EMPTY_CHANNEL = { id: :no_testers, name: "No testers (upload only)" }
 
   def channels
     installation.list_groups(GROUPS_TRANSFORMATIONS)
@@ -168,7 +168,14 @@ class GoogleFirebaseIntegration < ApplicationRecord
   end
 
   def fetch_app_id(platform)
-    app.config.firebase_platform_config.dig(platform, :app_id)
+    case platform
+    when "android"
+      app.config.firebase_android_config["app_id"]
+    when "ios"
+      app.config.firebase_ios_config["app_id"]
+    else
+      raise ArgumentError, "platform must be valid"
+    end
   end
 
   def group_name(group)

@@ -10,7 +10,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  app_id                  :uuid             not null, indexed
-#  project_id              :jsonb
+#  bitrise_project_id      :jsonb
 #
 class AppConfig < ApplicationRecord
   has_paper_trail
@@ -30,9 +30,19 @@ class AppConfig < ApplicationRecord
     MINIMUM_REQUIRED_CONFIG.all? { |config| public_send(config).present? }
   end
 
-  def code_repository_name
-    return if code_repository.blank?
-    code_repository["full_name"]
+  def setup_firebase_config
+    return {} if app.integrations.google_firebase_integrations.none?
+
+    ios_apps = app.integrations.firebase_build_channel_provider.list_apps(platform: "ios")
+    android_apps = app.integrations.firebase_build_channel_provider.list_apps(platform: "android")
+
+    if app.android?
+      {android: android_apps}
+    elsif app.ios?
+      {ios: ios_apps}
+    elsif app.cross_platform?
+      {ios: ios_apps, android: android_apps}
+    end
   end
 
   def notification_channel_id
@@ -40,15 +50,20 @@ class AppConfig < ApplicationRecord
     notification_channel["id"]
   end
 
-  def code_repo_namespace
-    code_repository["namespace"]
+  def code_repository_name
+    return if code_repository.blank?
+    code_repository["full_name"]
   end
 
   def code_repo_url
     code_repository["repo_url"]
   end
 
-  def project
-    project_id.fetch("id", nil)
+  def code_repo_namespace
+    code_repository["namespace"]
+  end
+
+  def bitrise_project
+    bitrise_project_id.fetch("id", nil)
   end
 end

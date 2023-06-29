@@ -150,6 +150,10 @@ class Integration < ApplicationRecord
       build_channel.find(&:google_play_store_integration?)&.providable
     end
 
+    def firebase_build_channel_provider
+      build_channel.find(&:google_firebase_integration?)&.providable
+    end
+
     def slack_build_channel_provider
       build_channel.find(&:slack_integration?)&.providable
     end

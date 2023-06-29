@@ -38,7 +38,7 @@ class AppConfigsController < SignedInApplicationController
       .permit(
         :code_repository,
         :notification_channel,
-        :project_id,
+        :bitrise_project_id,
         :firebase_android_config,
         :firebase_ios_config
       )
@@ -48,7 +48,7 @@ class AppConfigsController < SignedInApplicationController
     app_config_params
       .merge(code_repository: app_config_params[:code_repository]&.safe_json_parse)
       .merge(notification_channel: app_config_params[:notification_channel]&.safe_json_parse)
-      .merge(project_id: app_config_params[:project_id]&.safe_json_parse)
+      .merge(bitrise_project_id: app_config_params[:bitrise_project_id]&.safe_json_parse)
       .merge(firebase_ios_config: app_config_params[:firebase_ios_config]&.safe_json_parse)
       .merge(firebase_android_config: app_config_params[:firebase_android_config]&.safe_json_parse)
       .compact
@@ -61,18 +61,8 @@ class AppConfigsController < SignedInApplicationController
   end
 
   def set_firebase_apps
-    if @app.integrations.google_firebase_integrations.any?
-      if @app.cross_platform?
-        @firebase_android_apps = @app.integrations.google_firebase_integrations.first.providable.list_apps(platform: "android")
-        @firebase_ios_apps = @app.integrations.google_firebase_integrations.first.providable.list_apps(platform: "ios")
-      elsif @app.android?
-        @firebase_android_apps = @app.integrations.google_firebase_integrations.first.providable.list_apps(platform: "android")
-        @firebase_ios_apps = nil
-      elsif @app.ios?
-        @firebase_android_apps = nil
-        @firebase_ios_apps = @app.integrations.google_firebase_integrations.first.providable.list_apps(platform: "ios")
-      end
-    end
+    firebase_config = @config.setup_firebase_config
+    @firebase_android_apps, @firebase_ios_apps = firebase_config[:android], firebase_config[:ios]
   end
 
   def set_code_repositories

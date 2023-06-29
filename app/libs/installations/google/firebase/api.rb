@@ -47,14 +47,6 @@ module Installations
       end
     end
 
-    def list_releases
-      execute do
-        fad_client.list_project_app_releases(app_name(""), page_size: 2)
-          &.releases
-          &.map { |r| r.to_h }
-      end
-    end
-
     def list_apps(transforms)
       execute do
         apps = []
