@@ -179,11 +179,6 @@ class Release < ApplicationRecord
     release_platform_runs.any?(&:hotfix?)
   end
 
-  def production_release_started?
-    return false unless committable?
-    release_platform_runs.any?(&:production_release_started?)
-  end
-
   def ready_to_be_finalized?
     release_platform_runs.all?(&:finished?)
   end
