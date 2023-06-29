@@ -38,6 +38,10 @@ class AllBuildsTableComponent < ViewComponent::Base
     release_status_badge(build.release_status)
   end
 
+  def release_platform(build)
+    I18n.t("activerecord.values.release_platform.platform.#{build.platform}")
+  end
+
   def external_release_status?
     builds.first.external_release_status.present?
   end

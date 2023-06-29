@@ -10,7 +10,8 @@ describe Queries::Builds, type: :model do
 
     it "returns an Queries::Build object" do
       app = create(:app, :android)
-      release_platform = create(:release_platform, app:)
+      train = create(:train, app:)
+      release_platform = create(:release_platform, app:, train:)
       step = create(:step, :with_deployment, release_platform:)
       step_run = create(:step_run, step:)
       create(:build_artifact, step_run:)
@@ -21,7 +22,8 @@ describe Queries::Builds, type: :model do
 
     it "return the correct number of builds" do
       app = create(:app, :android)
-      release_platform = create(:release_platform, app:)
+      train = create(:train, app:)
+      release_platform = create(:release_platform, app:, train:)
       step = create(:step, :with_deployment, release_platform:)
       step_run1 = create(:step_run, step:)
       step_run2 = create(:step_run, step:)
@@ -34,7 +36,8 @@ describe Queries::Builds, type: :model do
 
     it "returns all the fields" do
       app = create(:app, :android)
-      release_platform = create(:release_platform, app:)
+      train = create(:train, app:)
+      release_platform = create(:release_platform, app:, train:)
       step = create(:step, :with_deployment, release_platform:)
       step_run = create(:step_run, step:)
       create(:build_artifact, step_run:)
@@ -46,6 +49,7 @@ describe Queries::Builds, type: :model do
         "release_status",
         "step_status",
         "train_name",
+        "platform",
         "step_name",
         "ci_link",
         "deployments",
