@@ -41,7 +41,7 @@ class Integration < ApplicationRecord
     },
     cross_platform: {
       "version_control" => %w[GithubIntegration GitlabIntegration],
-      "ci_cd" => %w[BitriseIntegration GithubIntegration],
+      "ci_cd" => %w[GithubIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration]
     }
