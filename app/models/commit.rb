@@ -32,7 +32,6 @@ class Commit < ApplicationRecord
   delegate :release_platform_runs, to: :release
 
   scope :only_with_step_runs, -> { joins(:step_runs).distinct }
-  scope :with_no_step_runs, -> { where.not(id: StepRun.select(:commit_id).distinct) }
 
   def run_for(step, release_platform_run)
     step_runs.where(step:, release_platform_run:).last
