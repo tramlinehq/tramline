@@ -58,30 +58,33 @@
       <%= render partial: "apps/setup_progress", locals: { setup_instructions: @app_setup_instructions } %>
     <% end %>
 
-    <section class="grid md:grid-cols-2 gap-x-20 pb-5 mt-8">
-      <% if @app.cross_platform? %>
-        <article>
-          <span class="pr-1"><%= image_tag("integrations/logo_google_play_store.png", width: 36) %></span>
-          <%= render(ExternalAppComponent.new(app: @app,
-                                              external_app: @app.latest_external_apps[:android],
-                                              heading: "Current Play Store Status")) %>
-        </article>
-        <article>
-          <span class="pr-1"><%= image_tag("integrations/logo_app_store.png", width: 36) %></span>
-          <%= render(ExternalAppComponent.new(app: @app,
-                                              external_app: @app.latest_external_apps[:ios],
-                                              heading: "Current App Store Status")) %>
-        </article>
-      <% else %>
-        <article>
-          <span class="pr-1"><%= image_tag(store_logo(@app), width: 36) %></span>
-          <%= render(ExternalAppComponent.new(app: @app, external_app: @app.latest_external_app)) %>
-        </article>
-        <article class="w-full">
-          <%= render "shared/demo/release_pilot" %>
-        </article>
-      <% end %>
-    </section>
+
+    <% unless @train_in_creation.in_creation? %>
+      <section class="grid md:grid-cols-2 gap-x-20 pb-5 mt-8">
+        <% if @app.cross_platform? %>
+          <article>
+            <span class="pr-1"><%= image_tag("integrations/logo_google_play_store.png", width: 36) %></span>
+            <%= render(ExternalAppComponent.new(app: @app,
+                                                external_app: @app.latest_external_apps[:android],
+                                                heading: "Current Play Store Status")) %>
+          </article>
+          <article>
+            <span class="pr-1"><%= image_tag("integrations/logo_app_store.png", width: 36) %></span>
+            <%= render(ExternalAppComponent.new(app: @app,
+                                                external_app: @app.latest_external_apps[:ios],
+                                                heading: "Current App Store Status")) %>
+          </article>
+        <% else %>
+          <article>
+            <span class="pr-1"><%= image_tag(store_logo(@app), width: 36) %></span>
+            <%= render(ExternalAppComponent.new(app: @app, external_app: @app.latest_external_app)) %>
+          </article>
+          <article class="w-full">
+            <%= render "shared/demo/release_pilot" %>
+          </article>
+        <% end %>
+      </section>
+    <% end %>
 
     <% if @app.trains.any? %>
       <%= render TableComponent.new(columns: ["Name", "Description", "Current Release"]) do |table| %>
