@@ -43,7 +43,8 @@ class BitriseIntegration < ApplicationRecord
     id: :slug
   }
 
-  delegate :project, to: :app_config
+  delegate :bitrise_project, to: :app_config
+  alias_method :project, :bitrise_project
 
   validate :correct_key, on: :create
   validates :access_token, presence: true

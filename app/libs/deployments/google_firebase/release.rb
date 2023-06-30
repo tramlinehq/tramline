@@ -33,7 +33,9 @@ module Deployments
         :release_version,
         :release_metadata,
         :google_firebase_integration?,
+        :release_platform,
         to: :run
+      delegate :platform, to: :release_platform
 
       def kickoff!
         if (similar_run = run.step_run.similar_deployment_runs_for(run).find(&:has_uploaded?))
@@ -50,7 +52,7 @@ module Deployments
           return if run.uploaded?
 
           run.build_artifact.with_open do |file|
-            result = provider.upload(file)
+            result = provider.upload(file, platform:)
             if result.ok?
               run.start_upload!(op_name: result.value!)
             else

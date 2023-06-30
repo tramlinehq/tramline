@@ -50,6 +50,7 @@ class DeploymentRun < ApplicationRecord
     :staged_rollout?,
     :staged_rollout_config,
     :google_firebase_integration?,
+    :release_platform,
     to: :deployment
   delegate :release_version, :release_metadata, to: :release
   delegate :app, to: :release

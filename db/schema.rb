@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_19_164001) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_29_214929) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -50,7 +50,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_19_164001) do
     t.json "notification_channel"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.jsonb "project_id"
+    t.jsonb "bitrise_project_id"
+    t.jsonb "firebase_ios_config"
+    t.jsonb "firebase_android_config"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 

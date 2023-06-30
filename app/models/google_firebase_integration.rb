@@ -13,6 +13,8 @@ class GoogleFirebaseIntegration < ApplicationRecord
   has_paper_trail
   encrypts :json_key, deterministic: true
 
+  self.ignored_columns += %w[app_id]
+
   include Providable
   include Displayable
   include Loggable
@@ -31,7 +33,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   end
 
   def installation
-    Installations::Google::Firebase::Api.new(project_number, app_id, access_key)
+    Installations::Google::Firebase::Api.new(project_number, access_key)
   end
 
   def creatable?
@@ -64,14 +66,28 @@ class GoogleFirebaseIntegration < ApplicationRecord
     member_count: :tester_count
   }
 
+  APPS_TRANSFORMATIONS = {
+    app_id: :app_id,
+    display_name: :display_name,
+    platform: :platform
+  }
+
   EMPTY_CHANNEL = {id: :no_testers, name: "No testers (upload only)"}
 
   def channels
     installation.list_groups(GROUPS_TRANSFORMATIONS)
   end
 
-  def build_channels_cache_key
-    "app/#{app.id}/google_firebase_integration/#{id}/build_channels"
+  def list_apps(platform:)
+    raise ArgumentError, "platform must be valid" unless valid_platforms.include?(platform)
+
+    apps = cache.fetch(list_apps_cache_key, expires_in: 1.month) do
+      installation.list_apps(APPS_TRANSFORMATIONS)
+    end
+
+    apps
+      .select { |app| app[:platform] == platform }
+      .map { |app| app.slice(:app_id, :display_name) }
   end
 
   def build_channels(with_production:)
@@ -82,9 +98,11 @@ class GoogleFirebaseIntegration < ApplicationRecord
     (sliced || []).push(EMPTY_CHANNEL)
   end
 
-  def upload(file)
+  def upload(file, platform:)
+    raise ArgumentError, "platform must be valid" unless valid_platforms.include?(platform)
+
     GitHub::Result.new do
-      installation.upload(file)
+      installation.upload(file, fetch_app_id(platform))
     end
   end
 
@@ -147,19 +165,38 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   private
 
+  def valid_platforms
+    App.platforms.slice(:android, :ios).keys
+  end
+
+  def fetch_app_id(platform)
+    case platform
+    when "android"
+      app.config.firebase_android_config["app_id"]
+    when "ios"
+      app.config.firebase_ios_config["app_id"]
+    else
+      raise ArgumentError, "platform must be valid"
+    end
+  end
+
   def group_name(group)
     group.split("/").last
   end
 
-  def releases_present?
-    installation.list_releases
-  end
-
   def correct_key
-    releases_present?
+    installation.list_apps(APPS_TRANSFORMATIONS).present?
   rescue RuntimeError
     errors.add(:json_key, :key_format)
   rescue Installations::Google::Firebase::Error => ex
     errors.add(:json_key, ex.reason)
+  end
+
+  def list_apps_cache_key
+    "app/#{app.id}/google_firebase_integration/#{id}/list_apps"
+  end
+
+  def build_channels_cache_key
+    "app/#{app.id}/google_firebase_integration/#{id}/build_channels"
   end
 end

@@ -15,6 +15,11 @@ en:
       google_firebase_integration: "Firebase App Distribution"
       deployment: "Distribution"
     values:
+      app:
+        platform:
+          ios: "iOS"
+          android: "Android"
+          cross_platform: "Cross Platform"
       deployment_run:
         failure_reason:
           unknown_failure: "an unknown error, contact support!"

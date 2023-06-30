@@ -4,18 +4,17 @@ class AppConfigsController < SignedInApplicationController
   before_action :require_write_access!, only: %i[edit update]
   before_action :set_app, only: %i[edit update]
   before_action :require_integration_setup, only: %i[edit update]
+  before_action :set_app_config, only: %i[edit update]
+  before_action :set_code_repositories, only: %i[edit update]
+  before_action :set_notification_channels, only: %i[edit update]
   before_action :set_ci_cd_projects, only: %i[edit]
+  before_action :set_firebase_apps, only: %i[edit update]
 
   def edit
-    @config = AppConfig.find_or_initialize_by(app: @app)
-    @code_repositories = @app.vcs_provider.repos
-    @notification_channels = @app.notification_provider.channels if @app.notifications_set_up?
     @ci_cd_provider_name = @app.ci_cd_provider.display
   end
 
   def update
-    @config = AppConfig.find_or_initialize_by(app: @app)
-
     if @config.update(parsed_app_config_params)
       redirect_to app_path(@app), notice: "App Config was successfully updated."
     else
@@ -29,13 +28,19 @@ class AppConfigsController < SignedInApplicationController
     @app = current_organization.apps.friendly.find(params[:app_id])
   end
 
+  def set_app_config
+    @config = AppConfig.find_or_initialize_by(app: @app)
+  end
+
   def app_config_params
     params
       .require(:app_config)
       .permit(
         :code_repository,
         :notification_channel,
-        :project_id
+        :bitrise_project_id,
+        :firebase_android_config,
+        :firebase_ios_config
       )
   end
 
@@ -43,7 +48,9 @@ class AppConfigsController < SignedInApplicationController
     app_config_params
       .merge(code_repository: app_config_params[:code_repository]&.safe_json_parse)
       .merge(notification_channel: app_config_params[:notification_channel]&.safe_json_parse)
-      .merge(project_id: app_config_params[:project_id]&.safe_json_parse)
+      .merge(bitrise_project_id: app_config_params[:bitrise_project_id]&.safe_json_parse)
+      .merge(firebase_ios_config: app_config_params[:firebase_ios_config]&.safe_json_parse)
+      .merge(firebase_android_config: app_config_params[:firebase_android_config]&.safe_json_parse)
       .compact
   end
 
@@ -51,6 +58,19 @@ class AppConfigsController < SignedInApplicationController
     if @app.ci_cd_provider.belongs_to_project?
       @ci_cd_projects = @app.ci_cd_provider.list_apps
     end
+  end
+
+  def set_firebase_apps
+    firebase_config = @config.setup_firebase_config
+    @firebase_android_apps, @firebase_ios_apps = firebase_config[:android], firebase_config[:ios]
+  end
+
+  def set_code_repositories
+    @code_repositories = @app.vcs_provider.repos
+  end
+
+  def set_notification_channels
+    @notification_channels = @app.notification_provider.channels if @app.notifications_set_up?
   end
 
   def require_integration_setup
