@@ -47,26 +47,32 @@ module Installations
       end
     end
 
+    # fetch apps for both android and ios
+    # but add a platform key so that they can be filtered upstream
     def list_apps(transforms)
       execute do
-        apps = []
-        apps_mutex = Mutex.new
+        android_apps = []
+        ios_apps = []
 
-        thread_1 = Thread.new do
-          android_apps = firebase_client.list_project_android_apps(project_name, page_size: 2)&.apps
-          apps_mutex.synchronize { apps << android_apps&.map { |app| app.to_h.merge(platform: "android") } }
+        t1 = Thread.new do
+          android_apps
+            .concat(firebase_client
+                      .list_project_android_apps(project_name, page_size: 2)
+                      &.apps
+                      &.map { |app| app.to_h.merge(platform: "android") })
         end
 
-        thread_2 = Thread.new do
-          ios_apps = firebase_client.list_project_ios_apps(project_name, page_size: 2)&.apps
-          apps_mutex.synchronize { apps << ios_apps&.map { |app| app.to_h.merge(platform: "ios") } }
+        t2 = Thread.new do
+          ios_apps
+            .concat(firebase_client
+                      .list_project_ios_apps(project_name, page_size: 2)
+                      &.apps
+                      &.map { |app| app.to_h.merge(platform: "ios") })
         end
 
-        [thread_1, thread_2].each(&:join)
-
-        apps
-          .flatten
-          .then { |groups| Installations::Response::Keys.transform(groups, transforms) }
+        [t1, t2].each(&:join)
+        apps = android_apps + ios_apps
+        Installations::Response::Keys.transform(apps, transforms)
       end
     end
 
