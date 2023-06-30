@@ -768,6 +768,9 @@ describe Deployments::AppStoreConnect::Release do
 
       before do
         run.step_run.update(build_number: build_number)
+        repo_integration = instance_double(Installations::Github::Api)
+        allow(Installations::Github::Api).to receive(:new).and_return(repo_integration)
+        allow(repo_integration).to receive(:create_tag!)
       end
 
       it "completes the run" do

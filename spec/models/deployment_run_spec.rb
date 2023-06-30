@@ -167,6 +167,9 @@ describe DeploymentRun do
     end
 
     it "marks the step run as success if all deployments for the step are complete" do
+      repo_integration = instance_double(Installations::Github::Api)
+      allow(Installations::Github::Api).to receive(:new).and_return(repo_integration)
+      allow(repo_integration).to receive(:create_tag!)
       _deployment_run1 = create(:deployment_run, :released, deployment: step.deployments[0], step_run: step_run)
       deployment_run2 = create(:deployment_run, :uploaded, deployment: step.deployments[1], step_run: step_run)
       _deployment_run3 = create(:deployment_run, :released, deployment: step.deployments[2], step_run: step_run)
@@ -268,7 +271,7 @@ describe DeploymentRun do
         allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
         deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
         run = create(:deployment_run, :uploaded, deployment:)
-        run.release.update(status: "stopped")
+        run.platform_release.update(status: "stopped")
 
         run.start_release!
 
@@ -277,6 +280,12 @@ describe DeploymentRun do
     end
 
     context "with no rollout" do
+      before do
+        repo_integration = instance_double(Installations::Github::Api)
+        allow(Installations::Github::Api).to receive(:new).and_return(repo_integration)
+        allow(repo_integration).to receive(:create_tag!)
+      end
+
       it "fully promotes to the store" do
         full_release_value = 100
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)

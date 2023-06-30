@@ -135,6 +135,9 @@ describe StepRun do
 
   describe "#finish_deployment!" do
     it "marks the step as finished if all deployments are finished" do
+      repo_integration = instance_double(Installations::Github::Api)
+      allow(Installations::Github::Api).to receive(:new).and_return(repo_integration)
+      allow(repo_integration).to receive(:create_tag!)
       step = create(:step, :review, :with_deployment)
       step_run = create(:step_run, :deployment_started, step: step)
       first_deployment = step_run.step.deployments.first
