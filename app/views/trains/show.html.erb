@@ -135,7 +135,7 @@
   <!-- Steps -->
   <% @train.release_platforms.each do |release_platform| %>
     <section class="w-full mt-10">
-      <h2 class="text-2xl font-bold mb-4"><%= release_platform.display_attr(:platform) %> Steps</h2>
+      <h2 class="text-2xl font-bold mb-4"><%= steps_heading(release_platform) %></h2>
 
       <% if release_platform.steps.size > 0 %>
         <div class="flex flex-col">
