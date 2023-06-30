@@ -5,7 +5,9 @@
   <% end %>
 <% end %>
 
-<%= render PageComponent.new(breadcrumb: breadcrumb(@app), title: "#{@app.name} 📱") do |page| %>
+<%= render PageComponent.new(breadcrumb: breadcrumb(@app),
+                             title: "#{@app.name} 📱",
+                             subtitle: "#{@app.display_attr(:platform)} app (#{@app.bundle_identifier})") do |page| %>
   <% if @app.ready? %>
     <% if @app.releases.exists? %>
       <% page.with_action do %>

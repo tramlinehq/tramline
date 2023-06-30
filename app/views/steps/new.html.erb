@@ -1,4 +1,6 @@
-<%= render PageComponent.new(breadcrumb: breadcrumb(:new_step, @train), title: "Create a new #{@step.kind} step 🪜") do %>
+<%= render PageComponent.new(breadcrumb: breadcrumb(:new_step, @train),
+                             title: "Create a new #{@step.kind} step 🪜",
+                             subtitle: "For #{@step.release_platform.display_attr(:platform)}") do %>
   <%= render partial: 'shared/errors', locals: { resource: @step } %>
 
   <%= form_with(model: @step, url: app_train_platform_steps_path(@app, @train, @release_platform), builder: ButtonHelper::AuthzForms) do |form| %>
