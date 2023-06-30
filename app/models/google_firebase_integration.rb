@@ -14,7 +14,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   encrypts :json_key, deterministic: true
 
   self.ignored_columns += %w[app_id]
-  
+
   include Providable
   include Displayable
   include Loggable
