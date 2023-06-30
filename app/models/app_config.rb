@@ -71,6 +71,7 @@ class AppConfig < ApplicationRecord
   private
 
   def firebase_ready?
+    return true if app.integrations.google_firebase_integrations.none?
     return firebase_ios_config.present? if app.ios?
     return firebase_android_config.present? if app.android?
     firebase_ios_config.present? && firebase_android_config.present? if app.cross_platform?

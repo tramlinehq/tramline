@@ -13,6 +13,8 @@ class GoogleFirebaseIntegration < ApplicationRecord
   has_paper_trail
   encrypts :json_key, deterministic: true
 
+  self.ignored_columns += %w[app_id]
+
   include Providable
   include Displayable
   include Loggable
