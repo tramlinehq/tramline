@@ -17,6 +17,7 @@
 #
 class App < ApplicationRecord
   has_paper_trail
+  include Displayable
   extend FriendlyId
 
   GOOGLE_PLAY_STORE_URL_TEMPLATE =
