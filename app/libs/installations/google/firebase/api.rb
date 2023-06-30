@@ -8,7 +8,7 @@ module Installations
     SCOPE = FIREBASE_PUBLISHER::AUTH_CLOUD_PLATFORM
     CONTENT_TYPE = "application/octet-stream".freeze
 
-    attr_reader :key_file, :project_number, :app_id
+    attr_reader :key_file, :project_number
     attr_reader :fad_client, :firebase_client
 
     def initialize(project_number, key_file)
