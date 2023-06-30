@@ -79,6 +79,22 @@ class Train < ApplicationRecord
     running.any?
   end
 
+  def self.ios_review_steps?
+    first&.release_platforms&.ios&.first&.steps&.review&.any?
+  end
+
+  def self.ios_release_steps?
+    first&.release_platforms&.ios&.first&.steps&.release&.any?
+  end
+
+  def self.android_review_steps?
+    first&.release_platforms&.android&.first&.steps&.review&.any?
+  end
+
+  def self.android_release_steps?
+    first&.release_platforms&.android&.first&.steps&.release&.any?
+  end
+
   def create_webhook!
     return false if Rails.env.test?
     result = vcs_provider.find_or_create_webhook!(id: vcs_webhook_id, train_id: id)
