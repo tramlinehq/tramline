@@ -19,7 +19,13 @@ class AppListComponent < ViewComponent::Base
   end
 
   def platform_name(platform)
-    return "Android" if platform.eql?("android")
-    "iOS" if platform.eql?("ios")
+    case platform
+    when "android"
+      "Android"
+    when "ios"
+      "iOS"
+    else
+      "Cross Platform"
+    end
   end
 end
