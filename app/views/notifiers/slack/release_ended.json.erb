@@ -82,6 +82,7 @@
         }
       ]
     },
+    <% unless @app_platform.eql?("cross_platform") %>
     {
       "type": "context",
       "elements": [
@@ -96,6 +97,7 @@
         }
       ]
     },
+    <% end %>
     {
       "type": "context",
       "elements": [

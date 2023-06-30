@@ -49,14 +49,14 @@
           <div class="font-semibold text-slate-800 mb-1">Release Summary</div>
 
           <ul class="mt-3">
-            <li class="flex items-center justify-between py-3 border-b border-indigo-200">
+            <li class="flex items-center justify-between py-3">
               <div>Total Run Time</div>
               <div class="text-slate-800 ml-2">
                 <%= finalize_metadata.dig(:total_run_time) %>
               </div>
             </li>
 
-            <li class="flex items-center justify-between py-3 border-b border-indigo-200">
+            <li class="flex items-center justify-between py-3 border-t border-indigo-200">
               <div>Release Tag</div>
               <div class="flex items-center whitespace-nowrap">
                 <%= image_tag("git_tag.svg", width: 20, class: "inline-flex mr-2") %>
@@ -70,7 +70,7 @@
             <% release.release_platform_runs.each do |run| %>
               <% last_deployment_run = run.last_good_step_run&.deployment_runs.last %>
               <% if last_deployment_run&.deployment.controllable_rollout? %>
-                <li class="flex items-center justify-between py-3 border-b border-indigo-200">
+                <li class="flex items-center justify-between py-3 border-t border-indigo-200">
                   <div>Release % to users</div>
                   <div class="flex items-center whitespace-nowrap">
                     <%= number_to_percentage(last_deployment_run.rollout_percentage) %>
@@ -82,7 +82,7 @@
             <% end %>
 
             <% unless finalize_metadata.dig(:final_artifact_url).nil? %>
-              <li class="flex items-center justify-between py-3 border-b border-indigo-200">
+              <li class="flex items-center justify-between py-3 border-t border-indigo-200">
                 <div>Final Release Build</div>
                 <div class="flex items-center whitespace-nowrap">
                   <%= image_tag("link.svg", width: 20, class: "inline-flex mr-2") %>
@@ -93,13 +93,15 @@
               </li>
             <% end %>
 
-            <li class="flex items-center justify-between py-3">
-              <div>Store Link</div>
-              <div class="flex items-center whitespace-nowrap">
-                <%= link_to_external image_tag("link_external.svg", width: 20, class: "inline-flex mr-2"),
-                                     finalize_metadata.dig(:store_url) %>
-              </div>
-            </li>
+            <% unless finalize_metadata.dig(:store_url).nil? %>
+              <li class="flex items-center justify-between py-3 border-t border-indigo-200">
+                <div>Store Link</div>
+                <div class="flex items-center whitespace-nowrap">
+                  <%= link_to_external image_tag("link_external.svg", width: 20, class: "inline-flex mr-2"),
+                                       finalize_metadata.dig(:store_url) %>
+                </div>
+              </li>
+            <% end %>
           </ul>
 
           <% if post_release_prs&.exists? %>
