@@ -1,4 +1,6 @@
-<%= render PageComponent.new(breadcrumb: breadcrumb(:step, @step), title: "Edit step 🪜") do %>
+<%= render PageComponent.new(breadcrumb: breadcrumb(:step, @step),
+                             title: "Edit #{@step.kind} step 🪜",
+                             subtitle: platform_subtitle(@app, @step)) do %>
   <%= render partial: 'shared/errors', locals: { resource: @step } %>
 
   <%= form_with(model: @step,
