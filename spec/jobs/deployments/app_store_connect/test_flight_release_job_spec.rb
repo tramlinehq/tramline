@@ -16,7 +16,7 @@ describe Deployments::AppStoreConnect::TestFlightReleaseJob do
       let(:app_store_deployment_run) { create_deployment_run_for_ios(:started) }
 
       it "does nothing if the train run is no longer on track" do
-        app_store_deployment_run.platform_release.update(status: "finished")
+        app_store_deployment_run.release_platform_run.update(status: "finished")
 
         described_class.new.perform(app_store_deployment_run.id)
 

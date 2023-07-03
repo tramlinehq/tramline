@@ -271,7 +271,7 @@ describe DeploymentRun do
         allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
         deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
         run = create(:deployment_run, :uploaded, deployment:)
-        run.platform_release.update(status: "stopped")
+        run.release_platform_run.update(status: "stopped")
 
         run.start_release!
 

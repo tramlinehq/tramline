@@ -177,7 +177,7 @@ describe StepRun do
       step_run.finish_deployment!(first_deployment)
 
       expect(step_run.reload.success?).to be(true)
-      expect(step_run.platform_release.finished?).to be(true)
+      expect(step_run.release_platform_run.finished?).to be(true)
     end
   end
 
