@@ -71,6 +71,7 @@ gem "activerecord_json_validator", "~> 2.1"
 gem "sidekiq-cron", "~> 1.9"
 gem "intercom-rails", "~> 0.4.2"
 gem "google-apis-firebaseappdistribution_v1", "~> 0.1"
+gem "google-apis-firebase_v1beta1", "~> 0.35.0"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

@@ -3,7 +3,7 @@ class Integrations::GoogleFirebaseController < IntegrationsController
     params.require(:integration)
       .permit(
         :category,
-        providable: [:json_key_file, :type, :project_number, :app_id]
+        providable: [:json_key_file, :type, :project_number]
       ).merge(current_user:)
   end
 
@@ -20,7 +20,7 @@ class Integrations::GoogleFirebaseController < IntegrationsController
   def providable_params
     super
       .merge(json_key: json_key_file.read)
-      .merge(integration_params[:providable].slice(:project_number, :app_id))
+      .merge(integration_params[:providable].slice(:project_number))
   end
 
   def providable_params_errors

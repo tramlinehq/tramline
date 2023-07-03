@@ -41,7 +41,7 @@ class Integration < ApplicationRecord
     },
     cross_platform: {
       "version_control" => %w[GithubIntegration GitlabIntegration],
-      "ci_cd" => %w[BitriseIntegration GithubIntegration],
+      "ci_cd" => %w[GithubIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration]
     }
@@ -121,6 +121,10 @@ class Integration < ApplicationRecord
       ready.pluck(:category).uniq.size == MINIMUM_REQUIRED_SET.size
     end
 
+    def slack_notifications?
+      notification.first&.slack_integration?
+    end
+
     def vcs_provider
       version_control.first&.providable
     end
@@ -138,20 +142,20 @@ class Integration < ApplicationRecord
       build_channel.find(&:store?)&.providable
     end
 
-    def android_store_provider
-      build_channel.find(&:google_play_store_integration?)&.providable
-    end
-
     def ios_store_provider
       build_channel.find(&:app_store_integration?)&.providable
     end
 
-    def slack_build_channel_provider
-      build_channel.find(&:slack_integration?)&.providable
+    def android_store_provider
+      build_channel.find(&:google_play_store_integration?)&.providable
     end
 
-    def slack_notifications?
-      notification.first&.slack_integration?
+    def firebase_build_channel_provider
+      build_channel.find(&:google_firebase_integration?)&.providable
+    end
+
+    def slack_build_channel_provider
+      build_channel.find(&:slack_integration?)&.providable
     end
 
     private

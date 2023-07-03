@@ -1,63 +1,120 @@
 <%= render PageComponent.new(breadcrumb: breadcrumb(:app_config, @config), title: "Configure ⚙️") do %>
+  <%= render partial: 'shared/errors', locals: { resource: @config } %>
+
   <%= form_with(model: [@app, @config],
-                url: app_app_config_path(@app, @config),
+                url: app_app_config_path(@app),
                 builder: ButtonHelper::AuthzForms,
                 method: :patch) do |form| %>
-    <div class="grid gap-5 md:grid-cols-2">
-      <div>
-        <%= form.label :code_repository, "Code Repository", class: "block text-sm font-medium mb-1" %>
-        <%= form.select :code_repository,
-                        options_for_select(
-                          display_channels(@code_repositories) { |chan| chan[:full_name] },
-                          @config.code_repository.to_json
-                        ),
-                        {},
-                        { class: "form-select w-full" } %>
+    <section>
+      <div class="mb-8">
+        <h2 class="font-bold text-xl">
+          General
+        </h2>
       </div>
 
-      <% if @app.notifications_set_up? %>
+      <div class="grid gap-5 md:grid-cols-2 border-b border-dashed pb-8">
         <div>
-          <%= form.label :notification_channel, "Notification Channel", class: "block text-sm font-medium mb-1" %>
-          <%= form.select :notification_channel,
+          <%= form.label :code_repository, "Code Repository", class: "block text-sm font-medium mb-1" %>
+          <%= form.select :code_repository,
                           options_for_select(
-                            display_channels(@notification_channels, with_none: true) { |chan| "#" + chan[:name] },
-                            @config.notification_channel.to_json
-                          ),
-                          { class: "form-select w-full" },
-                          { data: { controller: "input-select" } } %>
-
-          <div class="text-sm mt-1">
-            To receive notifications in <strong>private</strong> channels, <code>/invite @Tramline</code> into your
-            private channel and then select it from this list.
-          </div>
-
-          <div class="py-2">
-            <%= authz_link_to :blue,
-                              "Refresh channels",
-                              refresh_channels_app_integration_slack_integration_path(@app,
-                                                                                      @app.notification_provider.integration,
-                                                                                      @app.notification_provider),
-                              method: :post, data: { turbo_method: :post } %>
-          </div>
-        </div>
-      <% end %>
-
-      <% if @ci_cd_projects.present? %>
-        <div>
-          <%= form.label :project_id, "#{@ci_cd_provider_name} Project", class: "block text-sm font-medium mb-1" %>
-          <%= form.select :project_id,
-                          options_for_select(
-                            display_channels(@ci_cd_projects) { |app| "#{app[:name]} (#{app[:id]})" },
-                            @config.project_id.to_json
+                            display_channels(@code_repositories) { |chan| chan[:full_name] },
+                            @config.code_repository.to_json
                           ),
                           {},
-                          { class: "form-input w-full", data: { controller: "input-select" } } %>
+                          { class: "form-select w-full" } %>
         </div>
-      <% end %>
-    </div>
+
+        <% if @app.notifications_set_up? %>
+          <div>
+            <%= form.label :notification_channel, "Notification Channel", class: "block text-sm font-medium mb-1" %>
+            <%= form.select :notification_channel,
+                            options_for_select(
+                              display_channels(@notification_channels, with_none: true) { |chan| "#" + chan[:name] },
+                              @config.notification_channel.to_json
+                            ),
+                            { class: "form-select w-full" },
+                            { data: { controller: "input-select" } } %>
+
+            <div class="text-sm mt-1">
+              To receive notifications in <strong>private</strong> channels, <code>/invite @Tramline</code> into your
+              private channel and then select it from this list.
+            </div>
+
+            <div class="py-2">
+              <%= authz_link_to :blue,
+                                "Refresh channels",
+                                refresh_channels_app_integration_slack_integration_path(@app,
+                                                                                        @app.notification_provider.integration,
+                                                                                        @app.notification_provider),
+                                method: :post, data: { turbo_method: :post } %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </section>
+
+    <% if @ci_cd_projects.present? %>
+      <section>
+        <div class="my-8">
+          <h2 class="font-bold text-xl">
+            <%= image_tag "integrations/logo_bitrise.png", title: "Bitrise", width: 35, class: "pb-2" %>
+            Bitrise
+          </h2>
+        </div>
+
+        <div class="grid gap-5 md:grid-cols-2 border-b border-dashed pb-8">
+          <div>
+            <%= form.label :bitrise_project_id, "Project", class: "block text-sm font-medium mb-1" %>
+            <%= form.select :bitrise_project_id,
+                            options_for_select(
+                              display_channels(@ci_cd_projects) { |app| "#{app[:name]} (#{app[:id]})" },
+                              @config.bitrise_project_id.to_json
+                            ),
+                            { class: "form-select" },
+                            data: { controller: "input-select" } %>
+          </div>
+        </div>
+      </section>
+    <% end %>
+
+    <section>
+      <div class="my-8">
+        <h2 class="font-bold text-xl">
+          <%= image_tag "integrations/logo_firebase.png", title: "Firebase", width: 40, class: "pb-2" %>
+          Firebase App Distribution
+        </h2>
+      </div>
+
+      <div class="grid gap-5 md:grid-cols-2 pb-5">
+        <% if @firebase_android_apps.present? %>
+          <div class="mb-4">
+            <%= form.label :firebase_android_config, "Android App", class: "block text-sm font-medium mb-1" %>
+            <%= form.select :firebase_android_config,
+                            options_for_select(
+                              display_channels(@firebase_android_apps) { |app| "#{app[:display_name]} #{app[:app_id]}"},
+                              @config.firebase_android_config.to_json
+                            ),
+                            { class: "form-select" },
+                            data: { controller: "input-select" } %>
+          </div>
+        <% end %>
+
+        <% if @firebase_ios_apps.present? %>
+          <div>
+            <%= form.label :firebase_ios_config, "iOS App", class: "block text-sm font-medium mb-1" %>
+            <%= form.select :firebase_ios_config,
+                            options_for_select(
+                              display_channels(@firebase_ios_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
+                              @config.firebase_ios_config.to_json
+                            ),
+                            { class: "form-select" },
+                            data: { controller: "input-select" } %>
+          </div>
+        <% end %>
+      </div>
+    </section>
 
     <div class="mt-5">
-      <!-- Start -->
       <%= form.authz_submit :blue, "Update" %>
     </div>
   <% end %>

@@ -18,8 +18,7 @@ class AppListComponent < ViewComponent::Base
     @apps.group_by(&:platform)
   end
 
-  def platform_name(platform)
-    return "Android" if platform.eql?("android")
-    "iOS" if platform.eql?("ios")
+  def platform_name(app)
+    app.display_attr :platform
   end
 end

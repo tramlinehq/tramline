@@ -143,11 +143,11 @@ class Release < ApplicationRecord
   end
 
   def branch_url
-    train.vcs_provider&.branch_url(train.app.config&.code_repository_name, branch_name)
+    train.vcs_provider&.branch_url(app.config&.code_repository_name, branch_name)
   end
 
   def tag_url
-    train.vcs_provider&.tag_url(train.app.config&.code_repository_name, tag_name)
+    train.vcs_provider&.tag_url(app.config&.code_repository_name, tag_name)
   end
 
   def metadata_editable?
@@ -188,8 +188,8 @@ class Release < ApplicationRecord
       total_run_time: distance_of_time_in_words(created_at, completed_at),
       release_tag: tag_name,
       release_tag_url: tag_url,
-      store_url: app.store_link,
-      final_artifact_url: release_platform_runs.first&.final_build_artifact&.download_url
+      store_url: (app.store_link unless app.cross_platform?),
+      final_artifact_url: (release_platform_runs.first&.final_build_artifact&.download_url unless app.cross_platform?)
     }
   end
 

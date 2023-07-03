@@ -167,7 +167,7 @@
   <% @train.release_platforms.each do |release_platform| %>
     <section>
       <div class="text-2xl font-bold mt-8 mb-4 pt-4 border-t border-dashed">
-        <%= release_platform.display_attr(:platform) %> Steps
+        <%= steps_heading(release_platform) %>
       </div>
       <% if release_platform.steps.size > 0 && release_platform.persisted? %>
         <div>

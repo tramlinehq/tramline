@@ -11,8 +11,6 @@
 
         <%= subform.label :project_number, "Project Number", class: "block text-sm font-medium mb-1 w-full" %>
         <%= subform.text_field :project_number, placeholder: "Paste here...", class: "mb-3" %>
-        <%= subform.label :app_id, "App ID", class: "block text-sm font-medium mb-1 w-full" %>
-        <%= subform.text_field :app_id, placeholder: "Paste here...", class: "mb-3" %>
         <%= subform.label :json_key_file, "Upload Service Account JSON Key", class: "block text-sm font-medium mb-1 w-full" %>
         <%= subform.file_field :json_key_file, accept: 'application/json' %>
       <% end %>

@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "required": [
+    "app_id"
+  ],
+  "properties": {
+    "app_id": {
+      "type": "string"
+    },
+    "display_name": {
+      "type": ["string", "null"]
+    }
+  }
+}

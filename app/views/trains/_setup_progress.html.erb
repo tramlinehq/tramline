@@ -16,8 +16,7 @@
           apps.</p>
         <p class="pb-2">They offer various automations to your release cycle like creating branches, and creating
           releases on your VCS.</p>
-        <p><%= link_to_external "Learn more about all the automations", "https://docs.tramline.app/branching-strategies", class: "underline" %>
-          .</p>
+        <p><%= link_to_external "Learn more about all the automations.", "https://docs.tramline.app/branching-strategies", class: "underline" %></p>
       <% end %>
     </div>
   </div>
@@ -62,7 +61,7 @@
           <% if is_ios_review_step_completed %>
             <p class="text-base font-normal text-gray-500">This is complete!</p>
           <% else %>
-            <p class="text-base font-normal text-gray-500">Configure your iOS review / debug workflows</p>
+            <p class="text-base font-normal text-gray-500">Configure your iOS review or debug workflows</p>
             <% if train_in_creation %>
               <%= authz_link_to :blue, new_app_train_platform_step_path(app, train_in_creation, train_in_creation.ios_train, kind: Step.kinds[:review]), class: "mt-4" do %>
                 <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
@@ -119,7 +118,7 @@
           <% if is_android_review_step_completed %>
             <p class="text-base font-normal text-gray-500">This is complete!</p>
           <% else %>
-            <p class="text-base font-normal text-gray-500">Configure your Android review / debug workflows</p>
+            <p class="text-base font-normal text-gray-500">Configure your Android review or debug workflows</p>
             <% if train_in_creation %>
               <%= authz_link_to :blue, new_app_train_platform_step_path(app, train_in_creation, train_in_creation.android_train, kind: Step.kinds[:review]), class: "mt-4" do %>
                 <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
@@ -159,6 +158,5 @@
         </div>
       </li>
     <% end %>
-
   </ol>
 <% end %>
