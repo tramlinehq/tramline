@@ -4,6 +4,8 @@ class ChangePassportToNewStampableTypes < ActiveRecord::Migration[7.0]
   class MigrationIntegrityFailed < StandardError; end
 
   def up
+    return
+
     ActiveRecord::Base.transaction do
       Passport.where(stampable_type: "Releases::Step::Run").each do |passport|
         next if StepRun.find_by(id: passport.stampable_id).blank?

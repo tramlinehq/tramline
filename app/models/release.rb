@@ -6,7 +6,6 @@
 #  branch_name              :string           not null
 #  completed_at             :datetime
 #  original_release_version :string
-#  release_version          :string
 #  scheduled_at             :datetime
 #  status                   :string           not null
 #  stopped_at               :datetime
