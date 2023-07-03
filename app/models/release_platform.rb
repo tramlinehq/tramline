@@ -70,4 +70,14 @@ class ReleasePlatform < ApplicationRecord
   def valid_steps?
     steps.release.size == 1
   end
+
+  def store_provider
+    if platform == "ios"
+      app.ios_store_provider
+    elsif platform == "android"
+      app.android_store_provider
+    else
+      raise ArgumentError, "invalid platform value"
+    end
+  end
 end

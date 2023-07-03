@@ -137,11 +137,6 @@ class Integration < ApplicationRecord
       notification.first&.providable
     end
 
-    # NOTE: Assumes there can be only one store build channel
-    def store_provider
-      build_channel.find(&:store?)&.providable
-    end
-
     def ios_store_provider
       build_channel.find(&:app_store_integration?)&.providable
     end

@@ -57,7 +57,6 @@ class App < ApplicationRecord
   delegate :vcs_provider,
     :ci_cd_provider,
     :notification_provider,
-    :store_provider,
     :ios_store_provider,
     :android_store_provider,
     :slack_build_channel_provider,

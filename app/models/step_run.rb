@@ -133,14 +133,14 @@ class StepRun < ApplicationRecord
   delegate :release_platform, :release, to: :release_platform_run
   delegate :release_branch, to: :release
   delegate :train, to: :release_platform
-  delegate :app, :store_provider, :ci_cd_provider, :unzip_artifact?, :notify!, to: :train
+  delegate :app, :ci_cd_provider, :unzip_artifact?, :notify!, to: :train
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
   alias_method :platform_release, :release_platform_run
   scope :not_failed, -> { where.not(status: [:ci_workflow_failed, :ci_workflow_halted, :build_not_found_in_store, :build_unavailable, :deployment_failed]) }
 
   def find_build
-    store_provider.find_build(build_number)
+    release_platform.store_provider.find_build(build_number)
   end
 
   def get_workflow_run
