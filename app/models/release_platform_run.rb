@@ -36,6 +36,7 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :passports, as: :stampable, dependent: :destroy
 
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
+  scope :have_not_reached_production, -> { on_track.reject(&:production_release_happened?) }
 
   STAMPABLE_REASONS = %w[finished]
 
@@ -79,6 +80,10 @@ class ReleasePlatformRun < ApplicationRecord
     else
       release.partially_finish!
     end
+  end
+
+  def update_version
+    update(release_version: train.version_current) if version_bump_required?
   end
 
   def metadata_editable?

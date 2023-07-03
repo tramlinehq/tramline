@@ -49,14 +49,15 @@ class Commit < ApplicationRecord
   end
 
   def trigger_step_runs_for(platform_run)
-    platform_run.update(release_version: release.train.version_current) if platform_run.version_bump_required?
+    platform_run.update_version
+
     platform_run.release_platform.ordered_steps_until(platform_run.current_step_number).each do |step|
       Triggers::StepRun.call(step, self, platform_run)
     end
   end
 
   def trigger_step_runs
-    release_platform_runs.on_track.reject(&:production_release_happened?).each do |run|
+    release_platform_runs.have_not_reached_production.each do |run|
       trigger_step_runs_for(run)
     end
   end
