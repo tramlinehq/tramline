@@ -5,6 +5,7 @@ module ReleasesHelper
   SHOW_RELEASE_STATUS = {
     finished: ["Completed", :success],
     stopped: ["Stopped", :inert],
+    created: ["Running", :ongoing],
     on_track: ["Running", :ongoing],
     post_release: ["Finalizing", :neutral],
     post_release_started: ["Finalizing", :neutral],
