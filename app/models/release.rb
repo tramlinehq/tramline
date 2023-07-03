@@ -22,7 +22,7 @@ class Release < ApplicationRecord
   using RefinedString
 
   self.implicit_order_column = :scheduled_at
-  self.ignored_columns += ["release_version"]
+  # self.ignored_columns += ["release_version"]
 
   belongs_to :train
   has_one :release_metadata, dependent: :destroy, inverse_of: :release
