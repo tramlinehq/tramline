@@ -9,10 +9,6 @@ FactoryBot.define do
     release_backmerge_branch { "main" }
     status { "draft" }
 
-    after(:build) do |train|
-      def train.create_release_platforms = true
-    end
-
     trait :draft do
       status { "draft" }
     end

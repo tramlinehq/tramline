@@ -91,10 +91,8 @@ describe WebhookProcessors::Push do
     end
 
     it "triggers step runs" do
-      release_platform = create(:release_platform, train: train)
-      release_platform_run = create(:release_platform_run, release_platform:, release:)
-      step = create(:step, :with_deployment, release_platform:)
-      _step_run = create(:step_run, release_platform_run:, step:)
+      release_platform = train.release_platforms.first
+      create(:step, :with_deployment, release_platform:)
       allow(Triggers::StepRun).to receive(:call)
 
       described_class.process(release, commit_attributes)

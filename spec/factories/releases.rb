@@ -18,9 +18,5 @@ FactoryBot.define do
     trait :post_release_started do
       status { "post_release_started" }
     end
-
-    after(:build) do |release|
-      def release.create_train_runs = true
-    end
   end
 end

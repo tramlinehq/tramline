@@ -44,9 +44,9 @@
           <div data-controller="reveal" class="inline-flex gap-x-4">
             <div class="flex items-center">
               <%= form.check_box :is_staged_rollout, class: "form-checkbox", data: { action: "reveal#toggle" } %>
-              <%= form.label :is_staged_rollout, t("staged_rollout.#{step.app.platform}.checkbox"), class: "text-sm ml-2" %>
+              <%= form.label :is_staged_rollout, t("staged_rollout.#{step.release_platform.platform}.checkbox"), class: "text-sm ml-2" %>
 
-              <% if step.app.ios? %>
+              <% if step.release_platform.ios? %>
                 <span class="ml-2 text-xs text-slate-400">Phased release in App Store goes from 1%, 2%, 5%, 10%, 20%, 50% to 100% over 7 days</span>
               <% else %>
                 <%= form.text_field :staged_rollout_config,

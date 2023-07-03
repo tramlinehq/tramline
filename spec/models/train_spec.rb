@@ -66,4 +66,30 @@ describe Train do
       expect(train.version_current).to eq("1.3.0")
     end
   end
+
+  describe "#create_release_platforms" do
+    it "creates a release platform with android for android app" do
+      app = create(:app, :android)
+      train = create(:train, app:)
+
+      expect(train.reload.release_platforms.size).to eq(1)
+      expect(train.reload.release_platforms.first.platform).to eq(app.platform)
+    end
+
+    it "creates a release platform with ios for ios app" do
+      app = create(:app, :ios)
+      train = create(:train, app:)
+
+      expect(train.reload.release_platforms.size).to eq(1)
+      expect(train.reload.release_platforms.first.platform).to eq(app.platform)
+    end
+
+    it "creates a release platform per platform for cross-platform app" do
+      app = create(:app, :cross_platform)
+      train = create(:train, app:)
+
+      expect(train.reload.release_platforms.size).to eq(2)
+      expect(train.reload.release_platforms.pluck(:platform)).to contain_exactly(*ReleasePlatform.platforms.keys)
+    end
+  end
 end
