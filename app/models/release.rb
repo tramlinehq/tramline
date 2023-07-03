@@ -73,6 +73,7 @@ class Release < ApplicationRecord
     event :start, after_commit: :on_start! do
       after { start_release_platform_runs! }
       transitions from: [:created, :on_track], to: :on_track
+      transitions from: [:partially_finished], to: :partially_finished
     end
 
     event :start_post_release_phase, after_commit: -> { Releases::PostReleaseJob.perform_later(id) } do
