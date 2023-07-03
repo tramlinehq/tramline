@@ -50,10 +50,11 @@ class DeploymentRun < ApplicationRecord
     :staged_rollout?,
     :staged_rollout_config,
     :google_firebase_integration?,
+    :production_channel?,
     :release_platform,
     to: :deployment
-  delegate :release_version, :release_metadata, to: :release
-  delegate :app, to: :release
+  delegate :release_metadata, to: :release
+  delegate :release_version, to: :platform_release
 
   STAMPABLE_REASONS = %w[
     created
@@ -332,6 +333,10 @@ class DeploymentRun < ApplicationRecord
 
   def notification_params
     deployment.notification_params.merge(step_run.notification_params)
+  end
+
+  def production_release_happened?
+    production_channel? && (ready_to_release? || rollout_started? || released?)
   end
 
   private

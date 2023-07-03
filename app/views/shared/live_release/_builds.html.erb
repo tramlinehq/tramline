@@ -58,16 +58,15 @@
       <!-- indented commit body -->
       <tr data-reveal <%= "hidden" if is_stale_commit %>>
         <td colspan="2" class="pb-4 whitespace-nowrap">
-
           <% if is_stale_commit %>
-            <span class="font-medium mb-2">This commit has been replaced by a newer commit.</span>
+            <div class="my-2"><span class="font-medium">This commit has been replaced by a newer commit.</span></div>
           <% end %>
           <div class="grid grid-cols-2 gap-y-1 ml-4 gap-x-4">
             <% release.release_platform_runs.each do |run| %>
               <% if commit.step_runs_for(run).blank? && !is_stale_commit %>
                 <% if run.on_track? %>
                   <%= form_with(model: commit, url: apply_release_commit_path(@release, commit.id), method: :post, builder: ButtonHelper::AuthzForms) do |form| %>
-                    <%= form.hidden_field :platform, value: run.platform %>
+                    <%= form.hidden_field :release_platform_run_id, value: run.id %>
                     <%= form.authz_submit :blue, "Apply commit to #{run.platform}" %>
                   <% end %>
                 <% else %>

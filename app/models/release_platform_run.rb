@@ -25,7 +25,7 @@ class ReleasePlatformRun < ApplicationRecord
   include Displayable
   using RefinedString
 
-  # self.ignored_columns += %w[branch_name commit_sha original_release_version release_version]
+  # self.ignored_columns += %w[branch_name commit_sha original_release_version]
   self.implicit_order_column = :scheduled_at
 
   belongs_to :release_platform
@@ -70,12 +70,8 @@ class ReleasePlatformRun < ApplicationRecord
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
-  delegate :app, :platform, to: :release_platform
-  delegate :commits,
-    :original_release_version,
-    :release_version,
-    to: :release
-  delegate :steps, :train, to: :release_platform
+  delegate :commits, :original_release_version, to: :release
+  delegate :steps, :train, :app, :platform, to: :release_platform
 
   def finish_release
     if release.ready_to_be_finalized?
@@ -189,11 +185,19 @@ class ReleasePlatformRun < ApplicationRecord
 
   def hotfix?
     return false unless on_track?
-    (release_version.to_semverish > original_release_version.to_semverish) && production_release_started?
+    (release_version.to_semverish > original_release_version.to_semverish) && production_release_happened?
   end
 
-  def production_release_started?
-    latest_deployed_store_release&.status&.in? [DeploymentRun::STATES[:rollout_started], DeploymentRun::STATES[:released]]
+  def production_release_happened?
+    step_runs
+      .includes(:deployment_runs)
+      .where(step: release_platform.release_step)
+      .not_failed
+      .any?(&:production_release_happened?)
+  end
+
+  def commit_applied?(commit)
+    step_runs.exists?(commit: commit)
   end
 
   private

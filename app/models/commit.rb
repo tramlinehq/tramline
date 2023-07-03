@@ -27,7 +27,6 @@ class Commit < ApplicationRecord
   validates :commit_hash, uniqueness: {scope: :release_id}
 
   after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
-  after_commit :trigger_step_runs, on: :create
 
   delegate :release_platform_runs, to: :release
 
@@ -50,15 +49,14 @@ class Commit < ApplicationRecord
   end
 
   def trigger_step_runs_for(platform_run)
+    platform_run.update(release_version: release.train.version_current) if platform_run.version_bump_required?
     platform_run.release_platform.ordered_steps_until(platform_run.current_step_number).each do |step|
       Triggers::StepRun.call(step, self, platform_run)
     end
   end
 
-  private
-
   def trigger_step_runs
-    release_platform_runs.on_track.reject(&:production_release_started?).each do |run|
+    release_platform_runs.on_track.reject(&:production_release_happened?).each do |run|
       trigger_step_runs_for(run)
     end
   end

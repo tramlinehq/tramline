@@ -23,6 +23,7 @@ class Release < ApplicationRecord
   using RefinedString
 
   self.implicit_order_column = :scheduled_at
+  self.ignored_columns += ["release_version"]
 
   belongs_to :train
   has_one :release_metadata, dependent: :destroy, inverse_of: :release
@@ -106,7 +107,7 @@ class Release < ApplicationRecord
 
   before_create :set_version, unless: :in_data_migration_mode
   after_create :set_default_release_metadata, unless: :in_data_migration_mode
-  after_create :create_train_runs, unless: :in_data_migration_mode
+  after_create :create_platform_runs, unless: :in_data_migration_mode
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create, unless: :in_data_migration_mode
   after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create, unless: :in_data_migration_mode
 
@@ -129,6 +130,10 @@ class Release < ApplicationRecord
         from_ref: previous_release.tag_name
       )
     end
+  end
+
+  def release_version
+    release_platform_runs.pluck(:release_version).map(&:to_semverish).max.to_s
   end
 
   def tag_name
@@ -232,11 +237,12 @@ class Release < ApplicationRecord
 
   private
 
-  def create_train_runs
+  def create_platform_runs
     release_platforms.each do |release_platform|
       release_platform_runs.create!(
-        code_name: "dummy",
+        code_name: Haikunator.haikunate(100),
         scheduled_at:,
+        release_version: train.version_current,
         release_platform: release_platform
       )
     end
@@ -256,7 +262,6 @@ class Release < ApplicationRecord
 
   def set_version
     new_version = train.bump_release!(has_major_bump)
-    self.release_version = new_version
     self.original_release_version = new_version
   end
 

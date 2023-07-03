@@ -253,6 +253,12 @@ class StepRun < ApplicationRecord
       )
   end
 
+  def production_release_happened?
+    deployment_runs
+      .not_failed
+      .any?(&:production_release_happened?)
+  end
+
   private
 
   def find_and_update_workflow_run

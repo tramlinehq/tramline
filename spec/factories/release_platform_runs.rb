@@ -5,6 +5,7 @@ FactoryBot.define do
     code_name { Faker::FunnyName.name }
     scheduled_at { Time.current }
     status { "on_track" }
+    release_version { "1.2.3" }
 
     trait :created do
       status { "created" }

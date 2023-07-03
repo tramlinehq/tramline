@@ -18,6 +18,7 @@ describe Commit do
       allow(Triggers::StepRun).to receive(:call)
 
       commit = create(:commit, release:)
+      commit.trigger_step_runs
 
       expect(Triggers::StepRun).to have_received(:call).with(step, commit, release_platform_run).once
     end
@@ -32,6 +33,7 @@ describe Commit do
       allow(Triggers::StepRun).to receive(:call)
 
       commit = create(:commit, release:)
+      commit.trigger_step_runs
 
       expect(Triggers::StepRun).to have_received(:call).with(steps.first, commit, release_platform_run).once
       expect(Triggers::StepRun).to have_received(:call).with(steps.second, commit, release_platform_run).once

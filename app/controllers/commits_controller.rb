@@ -1,33 +1,57 @@
 class CommitsController < SignedInApplicationController
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[apply]
+  before_action :set_release, only: %i[apply]
+  before_action :set_commit, only: %i[apply]
+  before_action :set_release_platform_run, only: %i[apply]
+  before_action :ensure_release_platform_run, only: %i[apply]
 
   def apply
-    commit = Commit.find(params[:id])
+    @release_platform_run.with_lock do
+      return locked_release_error unless @release_platform_run.on_track?
+      return already_triggered_error if @release_platform_run.commit_applied?(@commit)
 
-    if release_platform_run.on_track?
-      commit.trigger_step_runs_for(release_platform_run)
-      redirect_to live_release_app_train_releases_path(release.app, release.train),
-        notice: "Steps have been triggered for the commit."
-    else
-      redirect_to live_release_app_train_releases_path(release.app, release.train),
-        error: "Cannot apply a commit to a locked release."
+      @commit.trigger_step_runs_for(@release_platform_run)
     end
+
+    redirect_to live_release_path, notice: "Steps have been triggered for the commit."
   end
 
   private
 
-  def release_platform_run
-    release.release_platform_runs.find { |run| run.platform == commit_params[:platform] }
+  def already_triggered_error
+    redirect_to live_release_path, flash: {error: "Cannot re-apply a commit to a release!"}
   end
 
-  def release
-    Release.find(params[:release_id])
+  def locked_release_error
+    redirect_to live_release_path, flash: {error: "Cannot apply a commit to a locked release."}
+  end
+
+  def ensure_release_platform_run
+    if @release_platform_run.blank?
+      redirect_to live_release_path, flash: {error: "Could not find the release!"}
+    end
+  end
+
+  def set_release_platform_run
+    @release_platform_run = @release.release_platform_runs.find_by(id: commit_params[:release_platform_run_id])
+  end
+
+  def set_commit
+    @commit = Commit.find(params[:commit_id])
+  end
+
+  def set_release
+    @release = Release.find(params[:release_id])
   end
 
   def commit_params
     params.require(:commit).permit(
-      :platform
+      :release_platform_run_id
     )
+  end
+
+  def live_release_path
+    live_release_app_train_releases_path(@release.app, @release.train)
   end
 end
