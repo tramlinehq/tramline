@@ -81,7 +81,7 @@ class App < ApplicationRecord
   end
 
   def active_runs
-    releases.on_track
+    releases.pending_release
   end
 
   def ready?
@@ -185,7 +185,7 @@ class App < ApplicationRecord
   def high_level_overview
     trains.only_with_runs.index_with do |train|
       {
-        in_review: train.releases.on_track.first,
+        in_review: train.releases.pending_release.first,
         last_released: train.releases.released.order("completed_at DESC").first
       }
     end
