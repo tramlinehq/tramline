@@ -39,8 +39,8 @@
 <%= render partial: "shared/demo/release_schedule" %>
 
 <div class="grid md:grid-cols-2 gap-x-11 pb-5 mt-8">
+  <!-- Train Info -->
   <section class="w-full">
-    <!-- Train Info -->
     <article>
       <%= render MetaTableComponent.new do |mt| %>
         <% mt.with_description("Branching Strategy") do %>
@@ -78,15 +78,31 @@
         <% end %>
       <% end %>
     </article>
+
+    <!-- Steps -->
+    <% @train.release_platforms.each do |release_platform| %>
+      <article class="w-full mt-10">
+        <h2 class="text-2xl font-bold mb-4"><%= steps_heading(release_platform) %></h2>
+
+        <% if release_platform.steps.size > 0 %>
+          <div class="flex flex-col">
+            <%= render partial: "shared/step_tree_viz", locals: { train: @train, release_platform: release_platform, editable: false } %>
+          </div>
+        <% else %>
+          <%= render partial: "trains/step_creation", locals: { app: @app, train: @train, release_platform: release_platform } %>
+        <% end %>
+      </article>
+    <% end %>
   </section>
 
+  <!-- Releases -->
   <section>
-    <!-- Releases -->
     <% if @train.releases.size > 0 %>
       <%= render TableComponent.new(columns: ["•", "version", "release branch"]) do |table| %>
         <% table.with_heading do %>
           <h2 class="text-2xl font-bold">Releases</h2>
         <% end %>
+
         <% @train.releases.order(scheduled_at: :desc).take(10).each_with_index do |run, index| %>
           <% table.with_row do |row| %>
             <% row.with_cell do %>
@@ -131,19 +147,4 @@
       </span>
     <% end %>
   </section>
-
-  <!-- Steps -->
-  <% @train.release_platforms.each do |release_platform| %>
-    <section class="w-full mt-10">
-      <h2 class="text-2xl font-bold mb-4"><%= release_platform.display_attr(:platform) %> Steps</h2>
-
-      <% if release_platform.steps.size > 0 %>
-        <div class="flex flex-col">
-          <%= render partial: "shared/step_tree_viz", locals: { train: @train, release_platform: release_platform, editable: false } %>
-        </div>
-      <% else %>
-        <%= render partial: "trains/step_creation", locals: { app: @app, train: @train, release_platform: release_platform } %>
-      <% end %>
-    </section>
-  <% end %>
 </div>

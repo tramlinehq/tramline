@@ -5,7 +5,9 @@
   <% end %>
 <% end %>
 
-<%= render PageComponent.new(breadcrumb: breadcrumb(@app), title: "#{@app.name} 📱") do |page| %>
+<%= render PageComponent.new(breadcrumb: breadcrumb(@app),
+                             title: "#{@app.name} 📱",
+                             subtitle: "#{@app.display_attr(:platform)} app (#{@app.bundle_identifier})") do |page| %>
   <% if @app.ready? %>
     <% if @app.releases.exists? %>
       <% page.with_action do %>
@@ -56,27 +58,33 @@
       <%= render partial: "apps/setup_progress", locals: { setup_instructions: @app_setup_instructions } %>
     <% end %>
 
-    <section class="grid md:grid-cols-2 gap-x-20 pb-5 mt-8">
-      <% if @app.cross_platform? %>
-        <article>
-          <%= render(ExternalAppComponent.new(app: @app,
-                                              external_app: @app.latest_external_apps[:android],
-                                              heading: "Current Play Store Status")) %>
-        </article>
-        <article>
-          <%= render(ExternalAppComponent.new(app: @app,
-                                              external_app: @app.latest_external_apps[:ios],
-                                              heading: "Current App Store Status")) %>
-        </article>
-      <% else %>
-        <article>
-          <%= render(ExternalAppComponent.new(app: @app, external_app: @app.latest_external_app)) %>
-        </article>
-        <article class="w-full">
-          <%= render "shared/demo/release_pilot" %>
-        </article>
-      <% end %>
-    </section>
+
+    <% unless @train_in_creation.in_creation? %>
+      <section class="grid md:grid-cols-2 gap-x-20 pb-5 mt-8">
+        <% if @app.cross_platform? %>
+          <article>
+            <span class="pr-1"><%= image_tag("integrations/logo_google_play_store.png", width: 36) %></span>
+            <%= render(ExternalAppComponent.new(app: @app,
+                                                external_app: @app.latest_external_apps[:android],
+                                                heading: "Current Play Store Status")) %>
+          </article>
+          <article>
+            <span class="pr-1"><%= image_tag("integrations/logo_app_store.png", width: 36) %></span>
+            <%= render(ExternalAppComponent.new(app: @app,
+                                                external_app: @app.latest_external_apps[:ios],
+                                                heading: "Current App Store Status")) %>
+          </article>
+        <% else %>
+          <article>
+            <span class="pr-1"><%= image_tag(store_logo(@app), width: 36) %></span>
+            <%= render(ExternalAppComponent.new(app: @app, external_app: @app.latest_external_app)) %>
+          </article>
+          <article class="w-full">
+            <%= render "shared/demo/release_pilot" %>
+          </article>
+        <% end %>
+      </section>
+    <% end %>
 
     <% if @app.trains.any? %>
       <%= render TableComponent.new(columns: ["Name", "Description", "Current Release"]) do |table| %>
@@ -91,6 +99,7 @@
             <% end %>
           </div>
         <% end %>
+
         <% @app.trains.each do |train| %>
           <% table.with_row do |row| %>
             <% row.with_cell do %>

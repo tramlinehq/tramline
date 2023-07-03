@@ -154,20 +154,20 @@ class App < ApplicationRecord
     ios_steps_setup =
       {
         ios_review_step: {
-          visible: trains.any?, completed: trains.first&.release_platforms&.ios&.first&.steps&.review&.any?
+          visible: trains.any?, completed: trains.ios_review_steps?
         },
         ios_release_step: {
-          visible: trains.any?, completed: trains.first&.release_platforms&.ios&.first&.steps&.release&.any?
+          visible: trains.any?, completed: trains.ios_release_steps?
         }
       }
 
     android_steps_setup =
       {
         android_review_step: {
-          visible: trains.any?, completed: trains.first&.release_platforms&.android&.first&.steps&.review&.any?
+          visible: trains.any?, completed: trains.android_review_steps?
         },
         android_release_step: {
-          visible: trains.any?, completed: trains.first&.release_platforms&.android&.first&.steps&.release&.any?
+          visible: trains.any?, completed: trains.android_release_steps?
         }
       }
 
