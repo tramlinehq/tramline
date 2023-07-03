@@ -49,14 +49,14 @@
 
 <%= render partial: "shared/live_release/separator" %>
 
-<% if @release.hotfix? %>
-  <div class="flex flex-col bg-slate-800 text-white rounded-sm py-5 mb-5 text-center pr-8">
-    <div class="uppercase tracking-wide text-2xl drop-shadow-md">
-      <%= inline_svg("band_aid.svg", classname: "w-10 opacity-80 inline-flex align-bottom") %>
-      <span class="align-baseline pl-2">release is now in <span class="underline">hotfix</span> mode</span>
-    </div>
-  </div>
-<% end %>
+<%# if @release.hotfix? %>
+<!--  <div class="flex flex-col bg-slate-800 text-white rounded-sm py-5 mb-5 text-center pr-8">-->
+<!--    <div class="uppercase tracking-wide text-2xl drop-shadow-md">-->
+      <%#= inline_svg("band_aid.svg", classname: "w-10 opacity-80 inline-flex align-bottom") %>
+<!--      <span class="align-baseline pl-2">release is now in <span class="underline">hotfix</span> mode</span>-->
+<!--    </div>-->
+<!--  </div>-->
+<%# end %>
 
 <div class="mt-8">
   <span class="font-bold text-2xl">Build stability</span>
