@@ -8,8 +8,8 @@ class CommitsController < SignedInApplicationController
 
   def apply
     @release_platform_run.with_lock do
-      return locked_release_error unless @release_platform_run.on_track?
-      return already_triggered_error if @release_platform_run.commit_applied?(@commit)
+      locked_release_error and return unless @release_platform_run.on_track?
+      already_triggered_error and return if @release_platform_run.commit_applied?(@commit)
 
       @commit.trigger_step_runs_for(@release_platform_run)
     end
