@@ -1,6 +1,7 @@
 <div>
   <code><%= step_run.build_version %></code>
   • Build <code><%= step_run.build_number %></code>
+  • Commit <code><%= step_run.commit.short_sha %></code>
 </div>
 
 <% if step_run.build_artifact.present? && with_artifact %>
