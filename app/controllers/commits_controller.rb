@@ -38,7 +38,7 @@ class CommitsController < SignedInApplicationController
   end
 
   def set_commit
-    @commit = Commit.find(params[:commit_id])
+    @commit = Commit.find(params[:id])
   end
 
   def set_release
