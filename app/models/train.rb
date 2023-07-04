@@ -148,10 +148,6 @@ class Train < ApplicationRecord
     BRANCHING_STRATEGIES[branching_strategy.to_sym]
   end
 
-  def build_channel_integrations
-    integrations.build_channel
-  end
-
   def bump_release!(has_major_bump = false)
     bump_term = has_major_bump ? :major : :minor
 
@@ -205,6 +201,10 @@ class Train < ApplicationRecord
         train_current_version: version_current
       }
     )
+  end
+
+  def build_channel_integrations
+    integrations.build_channel
   end
 
   private
