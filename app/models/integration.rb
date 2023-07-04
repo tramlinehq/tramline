@@ -120,7 +120,7 @@ class Integration < ApplicationRecord
     def category_ready?(category)
       app = ready.first&.app
 
-      unless category == :build_channel && app&.cross_platform?
+      if category != :build_channel || !app&.cross_platform?
         return ready.any? { |i| i.category.eql?(category.to_s) }
       end
 
