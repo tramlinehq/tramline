@@ -152,11 +152,14 @@ class Train < ApplicationRecord
     integrations.build_channel
   end
 
-  def bump_release!(has_major_bump = false)
+  def next_version(has_major_bump = false)
     bump_term = has_major_bump ? :major : :minor
+    version_current.ver_bump(bump_term)
+  end
 
+  def bump_release!(has_major_bump = false)
     if releases.any?
-      self.version_current = version_current.ver_bump(bump_term)
+      self.version_current = next_version(has_major_bump)
       save!
     end
 
