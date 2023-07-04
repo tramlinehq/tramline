@@ -20,7 +20,16 @@
     <%= decorated_link_to :neutral, "Event Timeline", timeline_release_path(@release) %>
 
     <% if @release.stoppable? %>
-      <%= authz_button_to :red, "Stop release", release_path(@release.id), method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } %>
+      <% message = ""
+         if @release.partially_finished?
+           message += "You have finished release to one of the platforms. "
+         end
+         if @release.commits.size > 1
+           message += "You have unmerged commits in this release branch. "
+         end
+         message += "Are you sure you want to stop the release?"
+      %>
+      <%= authz_button_to :red, "Stop release", release_path(@release.id), method: :delete, data: { turbo_method: :delete, turbo_confirm: message } %>
     <% end %>
   </div>
 </div>
