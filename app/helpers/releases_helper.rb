@@ -98,4 +98,16 @@ module ReleasesHelper
 
     status_badge(pull_request.state, style)
   end
+
+  def stop_release_warning(release)
+    message = ""
+    if release.partially_finished?
+      message += "You have finished release to one of the platforms. "
+    end
+    if release.commits.size > 1
+      message += "You have unmerged commits in this release branch. "
+    end
+    message += "Are you sure you want to stop the release?"
+    message
+  end
 end
