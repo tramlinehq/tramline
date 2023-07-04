@@ -124,7 +124,7 @@ class App < ApplicationRecord
 
     integration_setup =
       Integration::MINIMUM_REQUIRED_SET.map do |integration_category|
-        is_completed = integrations.any? { |i| i.category.eql?(integration_category.to_s) }
+        is_completed = integrations.category_ready?(integration_category)
         {
           integration_category => {
             visible: true, completed: is_completed

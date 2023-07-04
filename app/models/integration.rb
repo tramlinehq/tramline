@@ -117,8 +117,23 @@ class Integration < ApplicationRecord
       find_by(id: id).providable.build_channels(with_production:)
     end
 
+    def category_ready?(category)
+      app = ready.first&.app
+
+      unless category == :build_channel && app&.cross_platform?
+        return ready.any? { |i| i.category.eql?(category.to_s) }
+      end
+
+      [:ios, :android].all? do |platform|
+        ready
+          .build_channel
+          .pluck(:providable_type)
+          .any? { |type| type.in? ALLOWED_INTEGRATIONS_FOR_APP[platform][:build_channel] }
+      end
+    end
+
     def ready?
-      ready.pluck(:category).uniq.size == MINIMUM_REQUIRED_SET.size
+      MINIMUM_REQUIRED_SET.all? { |category| category_ready?(category) }
     end
 
     def slack_notifications?
