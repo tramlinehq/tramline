@@ -6,7 +6,6 @@
 #  branch_name              :string           not null
 #  completed_at             :datetime
 #  original_release_version :string
-#  release_version          :string
 #  scheduled_at             :datetime
 #  status                   :string           not null
 #  stopped_at               :datetime
@@ -23,16 +22,17 @@ class Release < ApplicationRecord
   using RefinedString
 
   self.implicit_order_column = :scheduled_at
+  # self.ignored_columns += ["release_version"]
 
   belongs_to :train
   has_one :release_metadata, dependent: :destroy, inverse_of: :release
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
-  has_many :release_platform_runs, dependent: :destroy, inverse_of: :release
+  has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release
   has_many :commits, dependent: :destroy, inverse_of: :release
   has_many :pull_requests, dependent: :destroy, inverse_of: :release
   has_many :step_runs, through: :release_platform_runs
 
-  scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
+  scope :pending_release, -> { where.not(status: [:finished, :stopped, :stopped_after_partial_finish]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   scope :sequential, -> { order("releases.scheduled_at DESC") }
 
@@ -59,7 +59,9 @@ class Release < ApplicationRecord
     post_release_started: "post_release_started",
     post_release_failed: "post_release_failed",
     stopped: "stopped",
-    finished: "finished"
+    finished: "finished",
+    partially_finished: "partially_finished",
+    stopped_after_partial_finish: "stopped_after_partial_finish"
   }
 
   enum status: STATES
@@ -71,20 +73,26 @@ class Release < ApplicationRecord
     event :start, after_commit: :on_start! do
       after { start_release_platform_runs! }
       transitions from: [:created, :on_track], to: :on_track
+      transitions from: [:partially_finished], to: :partially_finished
     end
 
     event :start_post_release_phase, after_commit: -> { Releases::PostReleaseJob.perform_later(id) } do
-      transitions from: [:on_track, :post_release_failed], to: :post_release_started, guard: :ready_to_be_finalized?
+      transitions from: [:on_track, :post_release_failed, :partially_finished], to: :post_release_started, guard: :ready_to_be_finalized?
     end
 
     event :fail_post_release_phase do
       transitions from: :post_release_started, to: :post_release_failed
     end
 
+    event :partially_finish do
+      transitions from: :on_track, to: :partially_finished
+    end
+
     event :stop, after_commit: :on_stop! do
       before { self.stopped_at = Time.current }
       after { stop_runs }
-      transitions to: :stopped
+      transitions from: :partially_finished, to: :stopped_after_partial_finish
+      transitions from: [:created, :on_track, :post_release_started, :post_release_failed], to: :stopped
     end
 
     event :finish, after_commit: :on_finish! do
@@ -98,7 +106,7 @@ class Release < ApplicationRecord
 
   before_create :set_version, unless: :in_data_migration_mode
   after_create :set_default_release_metadata, unless: :in_data_migration_mode
-  after_create :create_train_runs, unless: :in_data_migration_mode
+  after_create :create_platform_runs, unless: :in_data_migration_mode
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create, unless: :in_data_migration_mode
   after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create, unless: :in_data_migration_mode
 
@@ -111,7 +119,7 @@ class Release < ApplicationRecord
   end
 
   def committable?
-    created? || on_track?
+    created? || on_track? || partially_finished?
   end
 
   def fetch_commit_log
@@ -123,12 +131,16 @@ class Release < ApplicationRecord
     end
   end
 
+  def release_version
+    release_platform_runs.pluck(:release_version).map(&:to_semverish).max.to_s
+  end
+
   def tag_name
     "v#{release_version}"
   end
 
   def stoppable?
-    created? || on_track?
+    may_stop?
   end
 
   def release_branch
@@ -168,7 +180,7 @@ class Release < ApplicationRecord
   end
 
   def hotfix?
-    return false unless on_track?
+    return false unless committable?
     release_platform_runs.any?(&:hotfix?)
   end
 
@@ -224,11 +236,12 @@ class Release < ApplicationRecord
 
   private
 
-  def create_train_runs
+  def create_platform_runs
     release_platforms.each do |release_platform|
       release_platform_runs.create!(
-        code_name: "dummy",
+        code_name: Haikunator.haikunate(100),
         scheduled_at:,
+        release_version: train.version_current,
         release_platform: release_platform
       )
     end
@@ -236,17 +249,18 @@ class Release < ApplicationRecord
 
   def start_release_platform_runs!
     release_platform_runs.each do |run|
-      run&.start! unless run&.finished?
+      run.start! unless run.finished?
     end
   end
 
   def stop_runs
-    release_platform_runs.each(&:stop!)
+    release_platform_runs.each do |run|
+      run.stop! if run.may_stop?
+    end
   end
 
   def set_version
     new_version = train.bump_release!(has_major_bump)
-    self.release_version = new_version
     self.original_release_version = new_version
   end
 

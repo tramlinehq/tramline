@@ -34,7 +34,7 @@ describe Releases::FindBuildJob do
     end
 
     it "does nothing if release is not on track" do
-      step_run.platform_release.update(status: "finished")
+      step_run.release_platform_run.update(status: "finished")
 
       described_class.new.perform(step_run.id)
 

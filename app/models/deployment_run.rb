@@ -29,7 +29,7 @@ class DeploymentRun < ApplicationRecord
 
   delegate :step,
     :release,
-    :platform_release,
+    :release_platform_run,
     :commit,
     :build_number,
     :build_artifact,
@@ -50,10 +50,11 @@ class DeploymentRun < ApplicationRecord
     :staged_rollout?,
     :staged_rollout_config,
     :google_firebase_integration?,
+    :production_channel?,
     :release_platform,
     to: :deployment
-  delegate :release_version, :release_metadata, to: :release
-  delegate :app, to: :release
+  delegate :release_metadata, to: :release
+  delegate :release_version, to: :release_platform_run
 
   STAMPABLE_REASONS = %w[
     created
@@ -175,7 +176,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def start_release!
-    platform_release.with_lock do
+    release_platform_run.with_lock do
       return unless release_startable?
 
       if google_play_store_integration?
@@ -193,7 +194,7 @@ class DeploymentRun < ApplicationRecord
   def on_fully_release!
     return unless store?
 
-    platform_release.with_lock do
+    release_platform_run.with_lock do
       return unless rolloutable?
 
       if google_play_store_integration?
@@ -211,7 +212,7 @@ class DeploymentRun < ApplicationRecord
   def on_release(rollout_value:)
     return unless store? && google_play_store_integration?
 
-    platform_release.with_lock do
+    release_platform_run.with_lock do
       return unless controllable_rollout?
 
       yield Deployments::GooglePlayStore::Release.release_with(self, rollout_value:)
@@ -221,7 +222,7 @@ class DeploymentRun < ApplicationRecord
   def on_halt_release!
     return unless store?
 
-    platform_release.with_lock do
+    release_platform_run.with_lock do
       return unless rolloutable?
 
       if google_play_store_integration?
@@ -239,7 +240,7 @@ class DeploymentRun < ApplicationRecord
   def on_pause_release!
     return unless store? && app_store_integration?
 
-    platform_release.with_lock do
+    release_platform_run.with_lock do
       return unless automatic_rollout?
 
       yield Deployments::AppStoreConnect::Release.pause_phased_release!(self)
@@ -249,7 +250,7 @@ class DeploymentRun < ApplicationRecord
   def on_resume_release!
     return unless store? && app_store_integration?
 
-    platform_release.with_lock do
+    release_platform_run.with_lock do
       return unless automatic_rollout?
 
       yield Deployments::AppStoreConnect::Release.resume_phased_release!(self)
@@ -257,11 +258,11 @@ class DeploymentRun < ApplicationRecord
   end
 
   def promotable?
-    platform_release.on_track? && store? && (uploaded? || rollout_started?)
+    release_platform_run.on_track? && store? && (uploaded? || rollout_started?)
   end
 
   def release_startable?
-    release.on_track? && may_engage_release?
+    release_platform_run.on_track? && may_engage_release?
   end
 
   def rolloutable?
@@ -280,11 +281,11 @@ class DeploymentRun < ApplicationRecord
   end
 
   def app_store_release?
-    step.release? && platform_release.on_track? && deployment.app_store?
+    step.release? && release_platform_run.on_track? && deployment.app_store?
   end
 
   def test_flight_release?
-    platform_release.on_track? && deployment.test_flight?
+    release_platform_run.on_track? && deployment.test_flight?
   end
 
   def reviewable?
@@ -332,6 +333,10 @@ class DeploymentRun < ApplicationRecord
 
   def notification_params
     deployment.notification_params.merge(step_run.notification_params)
+  end
+
+  def production_release_happened?
+    production_channel? && (ready_to_release? || rollout_started? || released?)
   end
 
   private

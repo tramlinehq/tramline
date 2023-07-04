@@ -15,7 +15,6 @@ class WebhookProcessors::Push
       release.close_pre_release_prs
       bump_version!
       release.start!
-      release.update(release_version: train.version_current)
       create_commit!
     end
   end
@@ -44,7 +43,7 @@ class WebhookProcessors::Push
       url: commit_attributes[:url]
     }
 
-    Commit.find_or_create_by!(params)
+    Commit.find_or_create_by!(params).trigger_step_runs
   end
 
   def stamp_version_changed

@@ -59,7 +59,7 @@
     <% end %>
 
 
-    <% unless @train_in_creation.in_creation? %>
+    <% unless @train_in_creation&.in_creation? %>
       <section class="grid md:grid-cols-2 gap-x-20 pb-5 mt-8">
         <% if @app.cross_platform? %>
           <article>

@@ -27,7 +27,6 @@ class Commit < ApplicationRecord
   validates :commit_hash, uniqueness: {scope: :release_id}
 
   after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
-  after_commit :trigger_step_runs, on: :create
 
   delegate :release_platform_runs, to: :release
 
@@ -43,13 +42,21 @@ class Commit < ApplicationRecord
     commit_hash[0, 7]
   end
 
-  private
+  def step_runs_for(platform_run)
+    step_runs.where(release_platform_run: platform_run).includes(:step).order(:created_at)
+  end
+
+  def trigger_step_runs_for(platform_run)
+    platform_run.update_version
+
+    platform_run.release_platform.ordered_steps_until(platform_run.current_step_number).each do |step|
+      Triggers::StepRun.call(step, self, platform_run)
+    end
+  end
 
   def trigger_step_runs
-    release_platform_runs.pending_release.each do |run|
-      run.release_platform.ordered_steps_until(run.current_step_number).each do |step|
-        Triggers::StepRun.call(step, self, run)
-      end
+    release_platform_runs.have_not_reached_production.each do |run|
+      trigger_step_runs_for(run)
     end
   end
 end

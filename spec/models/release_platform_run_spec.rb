@@ -156,7 +156,7 @@ describe ReleasePlatformRun do
       release_step_run = create(:step_run, step: release_step, release_platform_run:)
       create(:deployment_run, deployment: production_deployment, step_run: release_step_run)
       train.bump_fix!
-      release.update!(release_version: train.version_current)
+      release_platform_run.update!(release_version: train.version_current)
       expect(release_platform_run).not_to be_hotfix
     end
 
@@ -164,7 +164,7 @@ describe ReleasePlatformRun do
       release_step_run = create(:step_run, step: release_step, release_platform_run:)
       create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
       train.bump_fix!
-      release.update!(release_version: train.version_current)
+      release_platform_run.update!(release_version: train.version_current)
       expect(release_platform_run).to be_hotfix
     end
 

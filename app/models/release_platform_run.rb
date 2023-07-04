@@ -25,7 +25,7 @@ class ReleasePlatformRun < ApplicationRecord
   include Displayable
   using RefinedString
 
-  # self.ignored_columns += %w[branch_name commit_sha original_release_version release_version]
+  # self.ignored_columns += %w[branch_name commit_sha original_release_version]
   self.implicit_order_column = :scheduled_at
 
   belongs_to :release_platform
@@ -34,6 +34,9 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
   has_many :passports, as: :stampable, dependent: :destroy
+
+  scope :sequential, -> { order("release_platform_runs.created_at ASC") }
+  scope :have_not_reached_production, -> { on_track.reject(&:production_release_happened?) }
 
   STAMPABLE_REASONS = %w[finished]
 
@@ -56,28 +59,32 @@ class ReleasePlatformRun < ApplicationRecord
 
     event :stop do
       before { self.stopped_at = Time.current }
-      transitions to: :stopped
+      transitions from: [:created, :on_track], to: :stopped
     end
 
     event :finish, after_commit: :on_finish! do
       before { self.completed_at = Time.current }
+      after { finish_release }
       transitions from: :on_track, to: :finished
     end
   end
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
-  delegate :app, :platform, to: :release_platform
-  delegate :release_branch,
-    :branch_name,
-    :last_commit,
-    :commits,
-    :tag_name,
-    :tag_url,
-    :original_release_version,
-    :release_version,
-    to: :release
-  delegate :steps, :train, to: :release_platform
+  delegate :commits, :original_release_version, to: :release
+  delegate :steps, :train, :app, :platform, to: :release_platform
+
+  def finish_release
+    if release.ready_to_be_finalized?
+      release.start_post_release_phase!
+    else
+      release.partially_finish!
+    end
+  end
+
+  def update_version
+    update(release_version: train.version_current) if version_bump_required?
+  end
 
   def metadata_editable?
     on_track? && !started_store_release?
@@ -131,8 +138,12 @@ class ReleasePlatformRun < ApplicationRecord
     running_steps.order(:step_number).last.step_number
   end
 
+  def last_commit
+    step_runs.flat_map(&:commit).max_by(&:created_at)
+  end
+
   def finished_steps?
-    commits.last&.step_runs&.where(release_platform_run: self)&.success&.size == steps.size
+    last_commit&.step_runs&.where(release_platform_run: self)&.success&.size == steps.size
   end
 
   def last_good_step_run
@@ -159,10 +170,14 @@ class ReleasePlatformRun < ApplicationRecord
       .then { |ids| Passport.where(stampable_id: ids).order(event_timestamp: :desc).limit(limit) }
   end
 
+  def tag_name
+    "v#{release_version}-#{platform}"
+  end
+
   def on_finish!
+    train.vcs_provider.create_tag!(tag_name, last_commit.commit_hash)
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     app.refresh_external_app
-    release.start_post_release_phase! if release.ready_to_be_finalized?
   end
 
   # Play store does not have constraints around version name
@@ -175,7 +190,19 @@ class ReleasePlatformRun < ApplicationRecord
 
   def hotfix?
     return false unless on_track?
-    (release_version.to_semverish > original_release_version.to_semverish) && production_release_started?
+    (release_version.to_semverish > original_release_version.to_semverish) && production_release_happened?
+  end
+
+  def production_release_happened?
+    step_runs
+      .includes(:deployment_runs)
+      .where(step: release_platform.release_step)
+      .not_failed
+      .any?(&:production_release_happened?)
+  end
+
+  def commit_applied?(commit)
+    step_runs.exists?(commit: commit)
   end
 
   private
@@ -202,10 +229,7 @@ class ReleasePlatformRun < ApplicationRecord
     step_runs
       .where(step: step)
       .not_failed
-      .last
-  end
-
-  def production_release_started?
-    latest_deployed_store_release&.status&.in? [DeploymentRun::STATES[:rollout_started], DeploymentRun::STATES[:released]]
+      .order(created_at: :desc)
+      .first
   end
 end

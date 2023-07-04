@@ -10,11 +10,11 @@ describe Triggers::PostRelease::ParallelBranches do
     allow_any_instance_of(described_class).to receive(:repo_integration).and_return(repo_integration)
     allow(repo_integration).to receive(:create_pr!).and_return({number: 1})
     allow(repo_integration).to receive(:merge_pr!)
-    allow(release.train).to receive(:create_tag!)
+    allow(release.train).to receive(:create_release!)
 
     described_class.call(release)
     expect(release.status).to be_eql("finished")
-    expect(release.train).to have_received(:create_tag!).with(branch: "production")
+    expect(release.train).to have_received(:create_release!).with(branch: "production")
     expect(repo_integration).to have_received(:create_pr!).with(nil,
       "dev",
       nil,

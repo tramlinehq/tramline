@@ -135,6 +135,9 @@ describe StepRun do
 
   describe "#finish_deployment!" do
     it "marks the step as finished if all deployments are finished" do
+      repo_integration = instance_double(Installations::Github::Api)
+      allow(Installations::Github::Api).to receive(:new).and_return(repo_integration)
+      allow(repo_integration).to receive(:create_tag!)
       step = create(:step, :review, :with_deployment)
       step_run = create(:step_run, :deployment_started, step: step)
       first_deployment = step_run.step.deployments.first
@@ -158,6 +161,9 @@ describe StepRun do
     end
 
     it "automatically finishes the release if the release step has completed" do
+      repo_integration = instance_double(Installations::Github::Api)
+      allow(Installations::Github::Api).to receive(:new).and_return(repo_integration)
+      allow(repo_integration).to receive(:create_tag!)
       train = create(:train)
       release = create(:release, train:)
       release_platform = create(:release_platform, train:)
@@ -171,7 +177,7 @@ describe StepRun do
       step_run.finish_deployment!(first_deployment)
 
       expect(step_run.reload.success?).to be(true)
-      expect(step_run.platform_release.finished?).to be(true)
+      expect(step_run.release_platform_run.finished?).to be(true)
     end
   end
 

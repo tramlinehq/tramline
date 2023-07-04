@@ -4,6 +4,8 @@ class MigrateToNewTrainStructure < ActiveRecord::Migration[7.0]
   class MigrationIntegrityFailed < StandardError; end
 
   def up
+    return
+
     ActiveRecord::Base.transaction do
       ReleasePlatform.all.each do |platform|
         # using attributes because some direct AR methods might have changed or delegated back up in code

@@ -27,7 +27,7 @@ describe Deployments::AppStoreConnect::UpdateExternalReleaseJob do
       let(:failure_build_info) { base_build_info.merge(status: "BETA_REJECTED") }
 
       it "does nothing if the train run is no longer on track" do
-        app_store_deployment_run.release.update(status: "finished")
+        app_store_deployment_run.release_platform_run.update(status: "finished")
 
         described_class.new.perform(app_store_deployment_run.id)
 

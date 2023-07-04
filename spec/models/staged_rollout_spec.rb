@@ -10,7 +10,7 @@ describe StagedRollout do
     let(:staged_rollout) { create(:staged_rollout, :created, deployment_run:) }
 
     it "does not start if deployment run is not rolloutable" do
-      deployment_run.platform_release.update(status: "stopped")
+      deployment_run.release_platform_run.update(status: "stopped")
 
       expect { staged_rollout.start! }.to raise_error(AASM::InvalidTransition)
     end
@@ -21,7 +21,7 @@ describe StagedRollout do
     let(:staged_rollout) { create(:staged_rollout, :failed, deployment_run:) }
 
     it "does not retry if deployment run is not rolloutable" do
-      deployment_run.platform_release.update(status: "stopped")
+      deployment_run.release_platform_run.update(status: "stopped")
 
       expect { staged_rollout.retry! }.to raise_error(AASM::InvalidTransition)
     end
@@ -32,7 +32,7 @@ describe StagedRollout do
     let(:staged_rollout) { create(:staged_rollout, :failed, deployment_run:) }
 
     it "does not halt if deployment run is not rolloutable" do
-      deployment_run.platform_release.update(status: "stopped")
+      deployment_run.release_platform_run.update(status: "stopped")
 
       expect { staged_rollout.halt! }.to raise_error(AASM::InvalidTransition)
     end

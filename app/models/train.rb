@@ -42,7 +42,7 @@ class Train < ApplicationRecord
   scope :only_with_runs, -> { joins(:releases).where.not(releases: {status: "stopped"}).distinct }
 
   delegate :ready?, :config, to: :app
-  delegate :vcs_provider, :ci_cd_provider, :notification_provider, :store_provider, to: :integrations
+  delegate :vcs_provider, :ci_cd_provider, :notification_provider, to: :integrations
 
   enum status: {
     draft: "draft",
@@ -182,9 +182,9 @@ class Train < ApplicationRecord
     "v#{version_current}"
   end
 
-  def create_tag!(branch_name)
+  def create_release!(branch_name)
     return false unless activated?
-    vcs_provider.create_tag!(tag_name, branch_name)
+    vcs_provider.create_release!(tag_name, branch_name)
   end
 
   def create_branch!(from, to)

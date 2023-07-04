@@ -108,8 +108,12 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.create_project_webhook!(code_repository_name, events_url(url_params), WEBHOOK_TRANSFORMATIONS) }
   end
 
-  def create_tag!(tag_name, branch)
+  def create_release!(tag_name, branch)
     with_api_retries { installation.create_tag!(code_repository_name, tag_name, branch) }
+  end
+
+  def create_tag!(tag_name, sha)
+    # FIXME
   end
 
   def create_branch!(from, to)

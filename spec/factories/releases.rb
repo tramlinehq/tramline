@@ -4,7 +4,6 @@ FactoryBot.define do
     scheduled_at { Time.current }
     status { "on_track" }
     branch_name { "branch" }
-    release_version { "1.2.3" }
     original_release_version { "1.2.3" }
 
     trait :created do
@@ -17,6 +16,12 @@ FactoryBot.define do
 
     trait :post_release_started do
       status { "post_release_started" }
+    end
+
+    trait :with_no_platform_runs do
+      after(:build) do |release|
+        def release.create_platform_runs = true
+      end
     end
   end
 end

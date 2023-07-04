@@ -130,16 +130,16 @@ class StepRun < ApplicationRecord
   attr_accessor :current_user
   attr_accessor :artifacts_url
 
-  delegate :release_platform, :release_branch, :release, to: :release_platform_run
+  delegate :release_platform, :release, to: :release_platform_run
+  delegate :release_branch, to: :release
   delegate :train, to: :release_platform
-  delegate :app, :store_provider, :ci_cd_provider, :unzip_artifact?, :notify!, to: :train
+  delegate :app, :ci_cd_provider, :unzip_artifact?, :notify!, to: :train
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
-  alias_method :platform_release, :release_platform_run
   scope :not_failed, -> { where.not(status: [:ci_workflow_failed, :ci_workflow_halted, :build_not_found_in_store, :build_unavailable, :deployment_failed]) }
 
   def find_build
-    store_provider.find_build(build_number)
+    release_platform.store_provider.find_build(build_number)
   end
 
   def get_workflow_run
@@ -166,7 +166,7 @@ class StepRun < ApplicationRecord
   end
 
   def manually_startable_deployment?(deployment)
-    return false unless platform_release.on_track?
+    return false unless release_platform_run.on_track?
     return false if deployment.first?
     return false if step.review?
     startable_deployment?(deployment) && last_deployment_run&.released?
@@ -252,6 +252,12 @@ class StepRun < ApplicationRecord
       )
   end
 
+  def production_release_happened?
+    deployment_runs
+      .not_failed
+      .any?(&:production_release_happened?)
+  end
+
   private
 
   def find_and_update_workflow_run
@@ -328,6 +334,6 @@ class StepRun < ApplicationRecord
   end
 
   def finalize_release
-    platform_release.finish! if platform_release.finalizable?
+    release_platform_run.finish! if release_platform_run.finalizable?
   end
 end
