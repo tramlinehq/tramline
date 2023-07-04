@@ -30,14 +30,12 @@ class Commit < ApplicationRecord
 
   delegate :release_platform_runs, to: :release
 
-  scope :only_with_step_runs, -> { joins(:step_runs).distinct }
-
   def run_for(step, release_platform_run)
     step_runs.where(step:, release_platform_run:).last
   end
 
   def stale?
-    release.commits.only_with_step_runs.last != self
+    release.commits.last != self
   end
 
   def short_sha
