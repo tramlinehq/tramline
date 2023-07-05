@@ -44,6 +44,7 @@ class ReleasePlatform < ApplicationRecord
   validate :ready?, on: :create
 
   delegate :ready?, to: :app
+  delegate :integrations, to: :train
 
   def has_release_step?
     steps.release.any?
@@ -79,5 +80,11 @@ class ReleasePlatform < ApplicationRecord
     else
       raise ArgumentError, "invalid platform value"
     end
+  end
+
+  def build_channel_integrations
+    integrations
+      .build_channel
+      .where(providable_type: Integration::ALLOWED_INTEGRATIONS_FOR_APP[platform][:build_channel])
   end
 end
