@@ -116,6 +116,7 @@ en:
               key_format: "the supplied key format is incorrect, please check your key!"
               app_not_found: "the bundle identifier configured against the supplied key is incorrect, check your app settings!"
               dev_api_not_enabled: "your Google Play Developer account does not have the Play Developer API enabled!"
+              permission_denied: "you don't have enough permissions to the access the Google Play Developer account, please check your key!"
         google_firebase_integration:
           attributes:
             json_key:
