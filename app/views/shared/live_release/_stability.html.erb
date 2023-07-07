@@ -13,10 +13,12 @@
   <% end %>
 
   <% if release.finished? %>
-    <div class="m-4">
-      <%= render "shared/note_box",
-                 message: "This release was completed and is now locked." %>
-    </div>
+    <section class="my-4">
+      <div class="flex flex-wrap justify-between items-center px-5 py-3 bg-indigo-50 border border-indigo-100 rounded-sm text-left">
+        <div class="text-slate-800 font-semibold">This release was completed and is now locked.</div>
+        <%= link_to_external release.tag_name, release.tag_url, class: "underline text-slate-500" %>
+      </div>
+    </section>
   <% end %>
 
   <div class="flex flex-col mt-2">

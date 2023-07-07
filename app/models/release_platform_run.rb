@@ -174,6 +174,10 @@ class ReleasePlatformRun < ApplicationRecord
     "v#{release_version}-#{platform}"
   end
 
+  def tag_url
+    train.vcs_provider&.tag_url(app.config&.code_repository_name, tag_name)
+  end
+
   def on_finish!
     train.vcs_provider.create_tag!(tag_name, last_commit.commit_hash)
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
