@@ -93,9 +93,14 @@ class App < ApplicationRecord
   def bump_build_number!
     with_lock do
       ios_latest_build_number = ios_store_provider&.latest_build_number
+      android_latest_build_number = android_store_provider&.latest_build_number
 
-      if ios_latest_build_number && build_number < ios_latest_build_number
+      if ios_latest_build_number.present? && build_number < ios_latest_build_number
         self.build_number = ios_latest_build_number
+      end
+
+      if android_latest_build_number.present? && build_number < android_latest_build_number
+        self.build_number = android_latest_build_number
       end
 
       self.build_number = build_number.succ
