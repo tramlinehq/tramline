@@ -28,6 +28,12 @@ module RefinedString
       0.0
     end
 
+    def safe_integer
+      Integer(self)
+    rescue ArgumentError, TypeError
+      0
+    end
+
     def safe_json_parse
       JSON.parse(self)
     rescue JSON::ParserError
