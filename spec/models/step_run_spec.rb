@@ -160,6 +160,18 @@ describe StepRun do
       expect(Triggers::Deployment).to have_received(:call).with(step_run: step_run, deployment: second_deployment).once
     end
 
+    it "does not trigger the next deployment if it is a production channel" do
+      allow(Triggers::Deployment).to receive(:call)
+      step = create(:step, :release, :with_deployment)
+      regular_deployment = step.deployments.first
+      prod_deployment = create(:deployment, :with_production_channel, :with_google_play_store, step: step)
+      step_run = create(:step_run, :build_available, step: step)
+
+      step_run.finish_deployment!(regular_deployment)
+
+      expect(Triggers::Deployment).not_to have_received(:call).with(step_run: step_run, deployment: prod_deployment)
+    end
+
     it "automatically finishes the release if the release step has completed" do
       repo_integration = instance_double(Installations::Github::Api)
       allow(Installations::Github::Api).to receive(:new).and_return(repo_integration)
