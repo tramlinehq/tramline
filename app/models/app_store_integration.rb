@@ -10,6 +10,7 @@
 #  key_id     :string
 #
 class AppStoreIntegration < ApplicationRecord
+  using RefinedString
   has_paper_trail
 
   InvalidTransformations = Class.new(StandardError)
@@ -133,6 +134,17 @@ class AppStoreIntegration < ApplicationRecord
 
   def find_build(build_number)
     GitHub::Result.new { build_info(installation.find_build(build_number, BUILD_TRANSFORMATIONS)) }
+  end
+
+  def find_latest_build
+    GitHub::Result.new { build_info(installation.find_latest_build(BUILD_TRANSFORMATIONS)) }
+  end
+
+  def latest_build_number
+    result = find_latest_build
+    if result.ok?
+      result.value!.build_info.dig(:build_number)&.safe_integer
+    end
   end
 
   def find_release(build_number)

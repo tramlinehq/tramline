@@ -199,22 +199,22 @@ describe StepRun do
   describe "#trigger_ci!" do
     let(:ci_ref) { Faker::Lorem.word }
     let(:ci_link) { Faker::Internet.url }
+    let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
+    let(:step_run) { create(:step_run) }
 
     before do
       allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!).and_return(ci_ref:, ci_link:)
+      allow_any_instance_of(GooglePlayStoreIntegration).to receive(:installation).and_return(api_double)
+      allow(api_double).to receive(:find_latest_build_number).and_return(123)
     end
 
     it "transitions state" do
-      step_run = create(:step_run)
-
       step_run.trigger_ci!
 
       expect(step_run.ci_workflow_triggered?).to be(true)
     end
 
     it "updates ci metadata" do
-      step_run = create(:step_run)
-
       step_run.trigger_ci!
       step_run.reload
 
@@ -223,7 +223,6 @@ describe StepRun do
     end
 
     it "stamps an event" do
-      step_run = create(:step_run)
       id = step_run.id
       name = step_run.class.name
       allow(PassportJob).to receive(:perform_later)

@@ -151,6 +151,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
     PUBLIC_ICON
   end
 
+  def latest_build_number
+    installation.find_latest_build_number
+  end
+
   private
 
   def project_id

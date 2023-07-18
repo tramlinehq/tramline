@@ -88,9 +88,16 @@ class App < ApplicationRecord
     integrations.ready? and config&.ready?
   end
 
+  # NOTE: fetches and uses latest build numbers from the stores, if added,
+  # to reduce build upload rejection probability
   def bump_build_number!
     with_lock do
-      self.build_number = build_number.succ
+      self.build_number = [
+        ios_store_provider&.latest_build_number,
+        android_store_provider&.latest_build_number,
+        build_number
+      ].compact.max.succ
+
       save!
       build_number.to_s
     end
