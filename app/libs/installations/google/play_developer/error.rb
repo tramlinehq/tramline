@@ -50,6 +50,12 @@ module Installations
         code: 403,
         message_matcher: /We have failed to run 'bundletool build-apks' on this Android App Bundle. Please ensure your bundle is valid by running 'bundletool build-apks' locally and try again. Error message output: File 'BundleConfig.pb' was not found/,
         decorated_reason: :apks_not_allowed
+      },
+      {
+        status: "INVALID_ARGUMENT",
+        code: 400,
+        message_matcher: /Changes cannot be sent for review automatically. Please set the query parameter changesNotSentForReview to true. Once committed, the changes in this edit can be sent for review from the Google Play Console UI/,
+        decorated_reason: :app_review_rejected
       }
     ]
 
