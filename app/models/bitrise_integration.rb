@@ -101,6 +101,10 @@ class BitriseIntegration < ApplicationRecord
     installation.run_workflow!(project, ci_cd_channel, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
   end
 
+  def cancel_workflow_run!(ci_ref)
+    installation.cancel_workflow!(project, ci_ref)
+  end
+
   def find_workflow_run(_workflow_id, _branch, _commit_sha)
     raise Integrations::UnsupportedAction
   end
