@@ -84,6 +84,12 @@ module Installations
       end
     end
 
+    def cancel_workflow!(repo, run_id)
+      execute do
+        @client.cancel_workflow_run(repo, run_id)
+      end
+    end
+
     def create_repo_webhook!(repo, url, transforms)
       execute do
         @client.create_hook(
