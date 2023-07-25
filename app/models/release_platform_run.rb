@@ -209,6 +209,10 @@ class ReleasePlatformRun < ApplicationRecord
     step_runs.exists?(commit: commit)
   end
 
+  def commits_for(step_run)
+    step_runs.runs_between(step_runs.build_dispatched.where.not(step_run).last, step_run).includes(:commits).map(&:commit)
+  end
+
   private
 
   def started_store_release?

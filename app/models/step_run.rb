@@ -137,6 +137,14 @@ class StepRun < ApplicationRecord
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
   scope :not_failed, -> { where.not(status: [:ci_workflow_failed, :ci_workflow_halted, :build_not_found_in_store, :build_unavailable, :deployment_failed]) }
+  scope :build_dispatched, -> { where(status: [:build_available, :deployment_started, :success]) }
+
+  def self.runs_between(start_step_run, end_step_run)
+    where(step_id: start_step_run.step_id)
+      .where("scheduled_at >= ? AND scheduled_at <= ?",
+        [start_step_run.scheduled_at, end_step_run.scheduled_at].min,
+        [start_step_run.scheduled_at, end_step_run.scheduled_at].max)
+  end
 
   def find_build
     release_platform.store_provider.find_build(build_number)
