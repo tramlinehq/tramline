@@ -209,8 +209,11 @@ class ReleasePlatformRun < ApplicationRecord
     step_runs.exists?(commit: commit)
   end
 
-  def commits_for(step_run)
-    step_runs.runs_between(step_runs.build_dispatched.where.not(step_run).last, step_run).includes(:commits).map(&:commit)
+  def commit_messages_before(step_run)
+    step_runs
+      .runs_between(previous_successful_run_before(step_run), step_run)
+      .includes(:commit)
+      .pluck("commits.message")
   end
 
   private
@@ -239,5 +242,13 @@ class ReleasePlatformRun < ApplicationRecord
       .not_failed
       .order(created_at: :desc)
       .first
+  end
+
+  def previous_successful_run_before(step_run)
+    step_runs
+      .where(step: step_run.step)
+      .where.not(id: step_run.id)
+      .success
+      .last
   end
 end

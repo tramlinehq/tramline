@@ -254,4 +254,32 @@ describe StepRun do
       expect(Releases::FindWorkflowRun).to have_received(:perform_async).with(id).once
     end
   end
+
+  describe "#relevant_commit_messages" do
+    let(:release_platform) { create(:release_platform) }
+    let(:step) { create(:step, :with_deployment, release_platform: release_platform) }
+    let(:release_platform_run) { create(:release_platform_run, release_platform:) }
+
+    it "only shows the messages since the previous success" do
+      create(:step_run, :success, step:, release_platform_run:)
+      create(:step_run, :build_available, step:, release_platform_run:)
+      create(:step_run, :build_not_found_in_store, step:, release_platform_run:)
+      latest = create(:step_run, :on_track, step:, release_platform_run:)
+
+      expect(latest.relevant_commit_messages.size).to eq(3)
+    end
+
+    it "only show the current message if the previous success was the last one" do
+      create(:step_run, :success, step:, release_platform_run:)
+      latest = create(:step_run, :on_track, step:, release_platform_run:)
+
+      expect(latest.relevant_commit_messages.size).to eq(1)
+    end
+
+    it "only show the current message if it is the only run" do
+      latest = create(:step_run, :on_track, step:, release_platform_run:)
+
+      expect(latest.relevant_commit_messages.size).to eq(1)
+    end
+  end
 end
