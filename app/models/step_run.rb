@@ -69,7 +69,8 @@ class StepRun < ApplicationRecord
     build_unavailable: "build_unavailable",
     deployment_started: "deployment_started",
     deployment_failed: "deployment_failed",
-    success: "success"
+    success: "success",
+    cancelled: "cancelled"
   }
 
   enum status: STATES
@@ -122,6 +123,13 @@ class StepRun < ApplicationRecord
       after { event_stamp!(reason: :finished, kind: :success, data: stamp_data) }
       after { finalize_release }
       transitions from: :deployment_started, to: :success, guard: :finished_deployments?
+    end
+
+    event :cancel do
+      before { Releases::CancelWorkflowRun.perform_later(id) if ci_workflow_started? }
+      transitions from: [:on_track, :ci_workflow_triggered, :ci_workflow_started,
+        :build_ready, :build_found_in_store, :build_available, :deployment_started],
+        to: :cancelled
     end
   end
 
@@ -260,7 +268,6 @@ class StepRun < ApplicationRecord
 
   def cancel_ci_workflow!
     ci_cd_provider.cancel_workflow_run!(ci_ref)
-    cancel_ci!
   end
 
   private
@@ -332,7 +339,7 @@ class StepRun < ApplicationRecord
     event_stamp!(reason: :ci_triggered, kind: :notice, data: {version: build_version})
     notify!("Step has been triggered!", :step_started, notification_params)
 
-    Releases::CancelWorkflowRun.perform_later(previous_step_run.id) if previous_step_run&.ci_workflow_started?
+    Releases::CancelStepRun.perform_later(previous_step_run.id) if previous_step_run&.may_cancel?
   end
 
   def has_uploadables?
