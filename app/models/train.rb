@@ -157,6 +157,11 @@ class Train < ApplicationRecord
     version_current.ver_bump(bump_term)
   end
 
+  def next_release_version(has_major_bump = false)
+    return next_version(has_major_bump) if has_major_bump || releases.any?
+    version_current
+  end
+
   def bump_release!(has_major_bump = false)
     if releases.any?
       self.version_current = next_version(has_major_bump)
