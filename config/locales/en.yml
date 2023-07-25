@@ -43,7 +43,7 @@ en:
           duplicate_build_upload: "build already being present in the store"
           invalid_api_package: "the build artifact being invalid for the store"
           apks_not_allowed: "the build artifact being an apk, which is not accepted by the store"
-          app_review_rejected: "the build needs to be uploaded manually as a previous build was rejected by the store"
+          app_review_rejected: "the build needs to be uploaded manually on Google Play Console UI as a previous build was rejected by the store"
       deployment:
         integration_type:
           app_store: "App Store (production)"
