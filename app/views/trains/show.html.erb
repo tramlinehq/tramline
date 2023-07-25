@@ -11,8 +11,8 @@
     <% if @train.active_run %>
       <%= decorated_link_to :green, "Ongoing Release", live_release_app_train_releases_path(@app, @train) %>
     <% elsif @train.startable? %>
-      <%= authz_button_to :blue, "Start release #{@train.next_version}", app_train_releases_path(@app, @train) %>
-      <%= authz_button_to :amber, "Start major release #{@train.next_version(true)}", app_train_releases_path(@app, @train, has_major_bump: true) %>
+      <%= authz_button_to :blue, "Start release #{@train.next_release_version}", app_train_releases_path(@app, @train) %>
+      <%= authz_button_to :amber, "Start major release #{@train.next_release_version(true)}", app_train_releases_path(@app, @train, has_major_bump: true) %>
     <% end %>
 
     <% if @train.releases.size > 0 %>
