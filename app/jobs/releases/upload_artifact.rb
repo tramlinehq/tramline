@@ -4,6 +4,7 @@ class Releases::UploadArtifact < ApplicationJob
 
   def perform(step_run_id, artifacts_url)
     run = StepRun.find(step_run_id)
+    return unless run.active?
 
     begin
       run.artifacts_url = artifacts_url

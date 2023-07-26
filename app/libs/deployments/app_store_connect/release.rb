@@ -127,7 +127,7 @@ module Deployments
       end
 
       def update_external_release
-        return unless run.release_platform_run.on_track? && app_store_integration?
+        return unless run.step_run.active? && app_store_integration?
 
         result = find_release
 

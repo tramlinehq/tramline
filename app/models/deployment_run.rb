@@ -258,11 +258,11 @@ class DeploymentRun < ApplicationRecord
   end
 
   def promotable?
-    release_platform_run.on_track? && store? && (uploaded? || rollout_started?)
+    step_run.active? && store? && (uploaded? || rollout_started?)
   end
 
   def release_startable?
-    release_platform_run.on_track? && may_engage_release?
+    step_run.active? && may_engage_release?
   end
 
   def rolloutable?
@@ -281,11 +281,11 @@ class DeploymentRun < ApplicationRecord
   end
 
   def app_store_release?
-    step.release? && release_platform_run.on_track? && deployment.app_store?
+    step.release? && step_run.active? && deployment.app_store?
   end
 
   def test_flight_release?
-    release_platform_run.on_track? && deployment.test_flight?
+    step_run.active? && deployment.test_flight?
   end
 
   def reviewable?

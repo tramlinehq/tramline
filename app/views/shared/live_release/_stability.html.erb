@@ -28,7 +28,7 @@
 
         <li>
           <div class="flex items-center">
-            <% if release.on_track? && release.startable_step?(step) %>
+            <% if release.startable_step?(step) %>
               <%= authz_button_to :blue,
                                   "Move to this step",
                                   start_release_step_run_path(release, step),

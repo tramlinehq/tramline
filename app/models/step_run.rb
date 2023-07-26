@@ -146,6 +146,10 @@ class StepRun < ApplicationRecord
   delegate :download_url, to: :build_artifact
   scope :not_failed, -> { where.not(status: [:ci_workflow_failed, :ci_workflow_halted, :build_not_found_in_store, :build_unavailable, :deployment_failed]) }
 
+  def active?
+    release_platform_run.on_track? && !cancelled?
+  end
+
   def find_build
     release_platform.store_provider.find_build(build_number)
   end
@@ -167,14 +171,12 @@ class StepRun < ApplicationRecord
   end
 
   def startable_deployment?(deployment)
-    return false if train.inactive?
-    return false if release_platform.active_run.nil?
+    return false unless active?
     return true if deployment.first? && deployment_runs.empty?
     next_deployment == deployment
   end
 
   def manually_startable_deployment?(deployment)
-    return false unless release_platform_run.on_track?
     return false if deployment.first?
     return false if step.review?
     startable_deployment?(deployment) && last_deployment_run&.released?
