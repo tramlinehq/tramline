@@ -8,6 +8,14 @@ FactoryBot.define do
     scheduled_at { Time.current }
     status { "on_track" }
 
+    trait :ci_workflow_triggered do
+      status { "ci_workflow_triggered" }
+    end
+
+    trait :ci_workflow_started do
+      status { "ci_workflow_started" }
+    end
+
     trait :ci_workflow_failed do
       status { "ci_workflow_failed" }
     end
@@ -28,8 +36,8 @@ FactoryBot.define do
       status { "ci_workflow_unavailable" }
     end
 
-    trait :ci_workflow_failed do
-      status { "ci_workflow_failed" }
+    trait :ci_workflow_halted do
+      status { "ci_workflow_halted" }
     end
 
     trait :deployment_failed do
@@ -40,8 +48,20 @@ FactoryBot.define do
       status { "build_available" }
     end
 
+    trait :build_unavailable do
+      status { "build_unavailable" }
+    end
+
     trait :build_found_in_store do
       status { "build_found_in_store" }
+    end
+
+    trait :build_not_found_in_store do
+      status { "build_not_found_in_store" }
+    end
+
+    trait :cancelled do
+      status { "cancelled" }
     end
 
     trait :with_build_artifact do

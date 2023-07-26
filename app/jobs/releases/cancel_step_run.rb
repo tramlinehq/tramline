@@ -1,10 +1,12 @@
-class Releases::CancelWorkflowRun < ApplicationJob
+class Releases::CancelStepRun < ApplicationJob
   include Loggable
 
   queue_as :high
 
   def perform(step_run_id)
     step_run = StepRun.find(step_run_id)
-    step_run.cancel_ci_workflow!
+    return unless step_run.active?
+
+    step_run.cancel!
   end
 end

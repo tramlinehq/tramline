@@ -25,7 +25,8 @@ class Releases::FindBuildJob
 
   def perform(step_run_id)
     run = StepRun.find(step_run_id)
-    return unless run.release_platform_run.on_track?
+    return unless run.active?
+
     run.find_build.value!
     run.build_found!
     run.event_stamp!(reason: :build_found_in_store, kind: :notice, data: {version: run.build_version})
