@@ -269,8 +269,22 @@ class StepRun < ApplicationRecord
   def relevant_changes
     release_platform_run.commit_messages_before(self)
   end
+  
+  def cancel_ci_workflow!
+    ci_cd_provider.cancel_workflow_run!(ci_ref)
+    cancel_ci!
+  end
 
   private
+
+  def previous_step_run
+    release_platform_run
+      .step_runs_for(step)
+      .where
+      .not(id: id)
+      .order(:created_at)
+      .last
+  end
 
   def find_and_update_workflow_run
     return if workflow_found?
@@ -329,6 +343,8 @@ class StepRun < ApplicationRecord
     Releases::FindWorkflowRun.perform_async(id)
     event_stamp!(reason: :ci_triggered, kind: :notice, data: {version: build_version})
     notify!("Step has been triggered!", :step_started, notification_params)
+
+    Releases::CancelWorkflowRun.perform_later(previous_step_run.id) if previous_step_run&.ci_workflow_started?
   end
 
   def has_uploadables?

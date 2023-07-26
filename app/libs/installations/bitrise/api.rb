@@ -11,6 +11,7 @@ module Installations
     LIST_APPS_URL = "https://api.bitrise.io/v0.1/apps"
     LIST_WORKFLOWS_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/build-workflows")
     TRIGGER_WORKFLOW_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/builds")
+    CANCEL_WORKFLOW_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/builds/{build_slug}/abort")
     WORKFLOW_RUN_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/builds/{build_slug}")
     WORKFLOW_RUN_ARTIFACTS_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/builds/{build_slug}/artifacts")
     WORKFLOW_RUN_ARTIFACT_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/builds/{build_slug}/artifacts/{artifact_slug}")
@@ -77,6 +78,17 @@ module Installations
         .tap { |response| raise Installations::Errors::WorkflowTriggerFailed if response.blank? }
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
+    end
+
+    def cancel_workflow!(app_slug, build_slug)
+      params = {
+        json: {
+          abort_reason: "build for a newer commit has started",
+          abort_with_success: true,
+          skip_notifications: true
+        }
+      }
+      execute(:post, CANCEL_WORKFLOW_URL.expand(app_slug:, build_slug:).to_s, params)
     end
 
     def get_workflow_run(app_slug, build_slug)

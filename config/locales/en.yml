@@ -29,7 +29,7 @@ en:
           missing_export_compliance: "the release missing export compliance"
           beta_group_not_found: "the beta group not existing in store"
           release_not_found: "the release not being present in store"
-          build_not_submittable: "the build not being submittable "
+          build_not_submittable: "the build not being submittable"
           build_mismatch: "the build not matching the release that exists in store"
           review_in_progress: "a review already being in progress"
           review_submission_exists: "a release already being added for review in the store"
@@ -43,6 +43,7 @@ en:
           duplicate_build_upload: "build already being present in the store"
           invalid_api_package: "the build artifact being invalid for the store"
           apks_not_allowed: "the build artifact being an apk, which is not accepted by the store"
+          app_review_rejected: "the build needs to be uploaded manually on Google Play Console UI as a previous build was rejected by the store"
       deployment:
         integration_type:
           app_store: "App Store (production)"
