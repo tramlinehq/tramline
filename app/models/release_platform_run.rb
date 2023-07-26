@@ -240,8 +240,8 @@ class ReleasePlatformRun < ApplicationRecord
     step_runs
       .where(step: step)
       .not_failed
-      .order(created_at: :desc)
-      .first
+      .order(scheduled_at: :asc)
+      .last
   end
 
   def previous_successful_run_before(step_run)
@@ -249,6 +249,7 @@ class ReleasePlatformRun < ApplicationRecord
       .where(step: step_run.step)
       .where.not(id: step_run.id)
       .success
+      .order(scheduled_at: :asc)
       .last
   end
 end

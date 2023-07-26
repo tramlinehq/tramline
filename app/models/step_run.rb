@@ -143,8 +143,7 @@ class StepRun < ApplicationRecord
     return where(id: end_step_run.id) if start_step_run.nil?
 
     where(step_id: (start_step_run || end_step_run).step_id)
-      .where("scheduled_at BETWEEN ? AND ?", start_step_run.scheduled_at, end_step_run&.scheduled_at)
-      .where.not(id: start_step_run.id)
+      .where("scheduled_at > ? AND scheduled_at <= ?", start_step_run.scheduled_at, end_step_run&.scheduled_at)
   end
 
   def find_build
