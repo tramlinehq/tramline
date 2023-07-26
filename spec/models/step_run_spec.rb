@@ -278,7 +278,7 @@ describe StepRun do
     end
   end
 
-  describe "#relevant_commit_messages" do
+  describe "#relevant_changes" do
     let(:release_platform) { create(:release_platform) }
     let(:step) { create(:step, :with_deployment, release_platform: release_platform) }
     let(:release_platform_run) { create(:release_platform_run, release_platform:) }
@@ -296,20 +296,20 @@ describe StepRun do
         "feat: 4"
       ]
 
-      expect(latest.relevant_commit_messages).to contain_exactly(*expected)
+      expect(latest.relevant_changes).to contain_exactly(*expected)
     end
 
     it "only shows the current message if the previous success was the last one" do
       create(:step_run, :success, step:, release_platform_run:, commit: create(:commit, message: "feat: 1", release:))
       latest = create(:step_run, :on_track, step:, release_platform_run:, commit: create(:commit, message: "feat: 2", release:))
 
-      expect(latest.relevant_commit_messages).to contain_exactly("feat: 2")
+      expect(latest.relevant_changes).to contain_exactly("feat: 2")
     end
 
     it "only shows the current message if it is the only run" do
       latest = create(:step_run, :on_track, step:, release_platform_run:, commit: create(:commit, message: "feat: 1", release:))
 
-      expect(latest.relevant_commit_messages).to contain_exactly("feat: 1")
+      expect(latest.relevant_changes).to contain_exactly("feat: 1")
     end
   end
 end

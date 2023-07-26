@@ -267,7 +267,7 @@ class StepRun < ApplicationRecord
       .any?(&:production_release_happened?)
   end
 
-  def relevant_commit_messages
+  def relevant_changes
     release_platform_run.commit_messages_before(self)
   end
 
