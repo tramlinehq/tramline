@@ -162,10 +162,16 @@ class StepRun < ApplicationRecord
 
   def self.runs_between(start_step_run, end_step_run)
     return none if start_step_run.nil? && end_step_run.nil?
-    return where(id: end_step_run.id) if start_step_run.nil?
 
-    where(step_id: (start_step_run || end_step_run).step_id)
-      .where("scheduled_at > ? AND scheduled_at <= ?", start_step_run.scheduled_at, end_step_run&.scheduled_at)
+    base_condition = where(step_id: (start_step_run || end_step_run).step_id)
+
+    if start_step_run
+      base_condition
+        .where("scheduled_at > ? AND scheduled_at <= ?", start_step_run.scheduled_at, end_step_run&.scheduled_at)
+    else
+      base_condition
+        .where("scheduled_at <= ?", end_step_run&.scheduled_at)
+    end
   end
 
   def find_build

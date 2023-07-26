@@ -10,9 +10,17 @@ describe StepRun do
       expect(described_class.runs_between(nil, nil)).to be_none
     end
 
-    it "returns just the destination step run if starting step run is nil" do
-      run = create(:step_run, :success)
-      expect(described_class.runs_between(nil, run)).to contain_exactly(run)
+    it "returns all steps till the current step if starting step run is nil" do
+      release_platform = create(:release_platform)
+      step = create(:step, :with_deployment, release_platform: release_platform)
+      release_platform_run = create(:release_platform_run, release_platform:)
+      run1 = create(:step_run, :build_available, step:, release_platform_run:)
+      run2 = create(:step_run, :build_available, step:, release_platform_run:)
+      run3 = create(:step_run, :build_not_found_in_store, step:, release_platform_run:)
+      end_run = create(:step_run, :success, step:, release_platform_run:)
+      _run4 = create(:step_run, :success, step:, release_platform_run:)
+
+      expect(described_class.runs_between(nil, end_run)).to contain_exactly(run1, run2, run3, end_run)
     end
 
     it "returns all steps runs between two step runs" do
