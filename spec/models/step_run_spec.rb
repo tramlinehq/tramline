@@ -100,6 +100,14 @@ describe StepRun do
       expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
+    it "is false when there the step run is cancelled" do
+      step = create(:step, :with_deployment, release_platform: release_platform)
+      step_run = create(:step_run, :cancelled, step: step)
+      deployment = create(:deployment, step: step)
+
+      expect(step_run.manually_startable_deployment?(deployment)).to be false
+    end
+
     it "is false when it is the first deployment" do
       step = create(:step, :with_deployment, release_platform: release_platform)
       step_run = create(:step_run, step: step)
@@ -276,6 +284,32 @@ describe StepRun do
 
       expect(Releases::FindWorkflowRun).to have_received(:perform_async).with(id).once
     end
+
+    (StepRun::STATES.keys - StepRun::END_STATES).each do |trait|
+      it "cancels previous running step run" do
+        allow(Releases::CancelStepRun).to receive(:perform_later)
+        previous_step_run = create(:step_run, trait, step: step_run.step,
+          release_platform_run: step_run.release_platform_run,
+          scheduled_at: 10.minutes.before(step_run.scheduled_at))
+
+        step_run.trigger_ci!
+
+        expect(Releases::CancelStepRun).to have_received(:perform_later).with(previous_step_run.id).once
+      end
+    end
+
+    StepRun::END_STATES.each do |trait|
+      it "does not cancel previous step run when #{trait}" do
+        allow(Releases::CancelStepRun).to receive(:perform_later)
+        previous_step_run = create(:step_run, trait, step: step_run.step,
+          release_platform_run: step_run.release_platform_run,
+          scheduled_at: 10.minutes.before(step_run.scheduled_at))
+
+        step_run.trigger_ci!
+
+        expect(Releases::CancelStepRun).not_to have_received(:perform_later).with(previous_step_run.id)
+      end
+    end
   end
 
   describe "#relevant_changes" do
@@ -310,6 +344,28 @@ describe StepRun do
       latest = create(:step_run, :on_track, step:, release_platform_run:, commit: create(:commit, message: "feat: 1", release:))
 
       expect(latest.relevant_changes).to contain_exactly("feat: 1")
+    end
+  end
+
+  describe "#cancel!" do
+    let(:release_platform) { create(:release_platform) }
+    let(:step) { create(:step, :with_deployment, release_platform: release_platform) }
+    let(:release_platform_run) { create(:release_platform_run, release_platform:) }
+    let(:release) { release_platform_run.release }
+
+    it "cancels the step run" do
+      step_run = create(:step_run, step: step)
+      step_run.cancel!
+
+      expect(step_run.reload.cancelled?).to be(true)
+    end
+
+    it "cancels the CI workflow if step run is in ci workflow started state" do
+      allow(Releases::CancelWorkflowRun).to receive(:perform_later)
+      step_run = create(:step_run, :ci_workflow_started, step: step)
+      step_run.cancel!
+
+      expect(Releases::CancelWorkflowRun).to have_received(:perform_later).with(step_run.id).once
     end
   end
 end

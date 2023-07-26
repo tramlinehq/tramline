@@ -73,6 +73,17 @@ class StepRun < ApplicationRecord
     cancelled: "cancelled"
   }
 
+  END_STATES = [
+    :ci_workflow_unavailable,
+    :ci_workflow_failed,
+    :ci_workflow_halted,
+    :build_unavailable,
+    :build_not_found_in_store,
+    :deployment_failed,
+    :success,
+    :cancelled
+  ]
+
   enum status: STATES
 
   aasm safe_state_machine_params do
@@ -127,9 +138,7 @@ class StepRun < ApplicationRecord
 
     event :cancel do
       before { Releases::CancelWorkflowRun.perform_later(id) if ci_workflow_started? }
-      transitions from: [:on_track, :ci_workflow_triggered, :ci_workflow_started,
-        :build_ready, :build_found_in_store, :build_available, :deployment_started],
-        to: :cancelled
+      transitions from: (STATES.keys - END_STATES), to: :cancelled
     end
   end
 
