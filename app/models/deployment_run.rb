@@ -332,7 +332,14 @@ class DeploymentRun < ApplicationRecord
   end
 
   def notification_params
-    deployment.notification_params.merge(step_run.notification_params)
+    deployment
+      .notification_params
+      .merge(step_run.notification_params)
+      .merge(
+        {
+          project_link: external_release&.external_link.presence || deployment.project_link
+        }
+      )
   end
 
   def production_release_happened?

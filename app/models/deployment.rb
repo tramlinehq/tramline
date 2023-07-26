@@ -121,7 +121,6 @@ class Deployment < ApplicationRecord
           is_app_store_production: app_store?,
           deployment_channel_type: integration_type&.to_s&.titleize,
           deployment_channel_name: deployment_channel_name,
-          project_link: project_link,
           deployment_channel_asset_link: integration&.public_icon_img
         }
       )
