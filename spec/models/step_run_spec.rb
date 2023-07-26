@@ -259,27 +259,34 @@ describe StepRun do
     let(:release_platform) { create(:release_platform) }
     let(:step) { create(:step, :with_deployment, release_platform: release_platform) }
     let(:release_platform_run) { create(:release_platform_run, release_platform:) }
+    let(:release) { release_platform_run.release }
 
     it "only shows the messages since the previous success" do
-      create(:step_run, :success, step:, release_platform_run:)
-      create(:step_run, :build_available, step:, release_platform_run:)
-      create(:step_run, :build_not_found_in_store, step:, release_platform_run:)
-      latest = create(:step_run, :on_track, step:, release_platform_run:)
+      create(:step_run, :success, step:, release_platform_run:, commit: create(:commit, message: "feat: 1", release:))
+      create(:step_run, :build_available, step:, release_platform_run:, commit: create(:commit, message: "feat: 2", release:))
+      create(:step_run, :build_not_found_in_store, step:, release_platform_run:, commit: create(:commit, message: "feat: 3", release:))
+      latest = create(:step_run, :on_track, step:, release_platform_run:, commit: create(:commit, message: "feat: 4", release:))
 
-      expect(latest.relevant_commit_messages.size).to eq(3)
+      expected = [
+        "feat: 2",
+        "feat: 3",
+        "feat: 4"
+      ]
+
+      expect(latest.relevant_commit_messages).to contain_exactly(*expected)
     end
 
-    it "only show the current message if the previous success was the last one" do
-      create(:step_run, :success, step:, release_platform_run:)
-      latest = create(:step_run, :on_track, step:, release_platform_run:)
+    it "only shows the current message if the previous success was the last one" do
+      create(:step_run, :success, step:, release_platform_run:, commit: create(:commit, message: "feat: 1", release:))
+      latest = create(:step_run, :on_track, step:, release_platform_run:, commit: create(:commit, message: "feat: 2", release:))
 
-      expect(latest.relevant_commit_messages.size).to eq(1)
+      expect(latest.relevant_commit_messages).to contain_exactly("feat: 2")
     end
 
-    it "only show the current message if it is the only run" do
-      latest = create(:step_run, :on_track, step:, release_platform_run:)
+    it "only shows the current message if it is the only run" do
+      latest = create(:step_run, :on_track, step:, release_platform_run:, commit: create(:commit, message: "feat: 1", release:))
 
-      expect(latest.relevant_commit_messages.size).to eq(1)
+      expect(latest.relevant_commit_messages).to contain_exactly("feat: 1")
     end
   end
 end
