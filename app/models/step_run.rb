@@ -269,7 +269,7 @@ class StepRun < ApplicationRecord
   def relevant_changes
     release_platform_run.commit_messages_before(self)
   end
-  
+
   def cancel_ci_workflow!
     ci_cd_provider.cancel_workflow_run!(ci_ref)
     cancel_ci!
