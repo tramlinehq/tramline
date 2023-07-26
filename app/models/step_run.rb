@@ -4,6 +4,7 @@
 #
 #  id                      :uuid             not null, primary key
 #  approval_status         :string           default("pending"), not null
+#  build_notes_raw         :text             default([]), is an Array
 #  build_number            :string
 #  build_version           :string           not null
 #  ci_link                 :string
@@ -255,7 +256,8 @@ class StepRun < ApplicationRecord
           commit_sha: commit.short_sha,
           commit_message: commit.message,
           commit_url: commit.url,
-          artifact_download_link: build_artifact&.download_url&.presence || release.live_release_link
+          artifact_download_link: build_artifact&.download_url&.presence || release.live_release_link,
+          build_notes: build_notes
         }
       )
   end
@@ -268,6 +270,16 @@ class StepRun < ApplicationRecord
 
   def relevant_changes
     release_platform_run.commit_messages_before(self)
+  end
+
+  def build_notes
+    build_notes_raw
+      .map { |str| str&.strip }
+      .reject { |line| line =~ /^Merge/ }
+      .compact
+      .uniq
+      .map { |str| "• #{str}" }
+      .join("\n").presence || "Nothing new"
   end
 
   def cancel_ci_workflow!
@@ -343,8 +355,8 @@ class StepRun < ApplicationRecord
     Releases::FindWorkflowRun.perform_async(id)
     event_stamp!(reason: :ci_triggered, kind: :notice, data: {version: build_version})
     notify!("Step has been triggered!", :step_started, notification_params)
-
     Releases::CancelWorkflowRun.perform_later(previous_step_run.id) if previous_step_run&.ci_workflow_started?
+    update(build_notes_raw: relevant_changes)
   end
 
   def has_uploadables?
