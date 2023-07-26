@@ -5,6 +5,29 @@ describe StepRun do
     expect(create(:step_run)).to be_valid
   end
 
+  describe ".runs_between" do
+    it "returns empty association if both step runs are nil" do
+      expect(described_class.runs_between(nil, nil)).to be_none
+    end
+
+    it "returns just the destination step run if starting step run is nil" do
+      run = create(:step_run, :success)
+      expect(described_class.runs_between(nil, run)).to contain_exactly(run)
+    end
+
+    it "returns all steps runs between two step runs" do
+      release_platform = create(:release_platform)
+      step = create(:step, :with_deployment, release_platform: release_platform)
+      release_platform_run = create(:release_platform_run, release_platform:)
+      start_run = create(:step_run, :success, step:, release_platform_run:)
+      run2 = create(:step_run, :build_available, step:, release_platform_run:)
+      run3 = create(:step_run, :build_not_found_in_store, step:, release_platform_run:)
+      end_run = create(:step_run, :success, step:, release_platform_run:)
+
+      expect(described_class.runs_between(start_run, end_run)).to contain_exactly(run2, run3, end_run)
+    end
+  end
+
   describe "#similar_deployment_runs_for" do
     let(:steps) { create_list(:step, 2, :with_deployment) }
     let(:step_run) { create(:step_run, step: steps.first) }
