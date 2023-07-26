@@ -100,7 +100,7 @@ describe StepRun do
       expect(step_run.manually_startable_deployment?(deployment)).to be false
     end
 
-    it "is false when there the step run is cancelled" do
+    it "is false when the step run is cancelled" do
       step = create(:step, :with_deployment, release_platform: release_platform)
       step_run = create(:step_run, :cancelled, step: step)
       deployment = create(:deployment, step: step)
@@ -286,7 +286,7 @@ describe StepRun do
     end
 
     (StepRun::STATES.keys - StepRun::END_STATES).each do |trait|
-      it "cancels previous running step run" do
+      it "cancels previous running step run when #{trait}" do
         allow(Releases::CancelStepRun).to receive(:perform_later)
         previous_step_run = create(:step_run, trait, step: step_run.step,
           release_platform_run: step_run.release_platform_run,
@@ -348,10 +348,7 @@ describe StepRun do
   end
 
   describe "#cancel!" do
-    let(:release_platform) { create(:release_platform) }
-    let(:step) { create(:step, :with_deployment, release_platform: release_platform) }
-    let(:release_platform_run) { create(:release_platform_run, release_platform:) }
-    let(:release) { release_platform_run.release }
+    let(:step) { create(:step, :with_deployment) }
 
     it "cancels the step run" do
       step_run = create(:step_run, step: step)

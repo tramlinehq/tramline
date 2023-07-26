@@ -73,7 +73,7 @@ class StepRun < ApplicationRecord
     cancelled: "cancelled"
   }
 
-  END_STATES = [
+  END_STATES = STATES.slice(
     :ci_workflow_unavailable,
     :ci_workflow_failed,
     :ci_workflow_halted,
@@ -82,7 +82,7 @@ class StepRun < ApplicationRecord
     :deployment_failed,
     :success,
     :cancelled
-  ]
+  ).keys
 
   enum status: STATES
 
