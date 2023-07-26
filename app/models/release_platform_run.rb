@@ -209,6 +209,13 @@ class ReleasePlatformRun < ApplicationRecord
     step_runs.exists?(commit: commit)
   end
 
+  def commit_messages_before(step_run)
+    step_runs
+      .runs_between(previous_successful_run_before(step_run), step_run)
+      .includes(:commit)
+      .pluck("commits.message")
+  end
+
   private
 
   def started_store_release?
@@ -233,7 +240,16 @@ class ReleasePlatformRun < ApplicationRecord
     step_runs
       .where(step: step)
       .not_failed
-      .order(created_at: :desc)
-      .first
+      .order(scheduled_at: :asc)
+      .last
+  end
+
+  def previous_successful_run_before(step_run)
+    step_runs
+      .where(step: step_run.step)
+      .where.not(id: step_run.id)
+      .success
+      .order(scheduled_at: :asc)
+      .last
   end
 end

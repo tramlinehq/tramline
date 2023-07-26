@@ -138,6 +138,14 @@ class StepRun < ApplicationRecord
   delegate :download_url, to: :build_artifact
   scope :not_failed, -> { where.not(status: [:ci_workflow_failed, :ci_workflow_halted, :build_not_found_in_store, :build_unavailable, :deployment_failed]) }
 
+  def self.runs_between(start_step_run, end_step_run)
+    return none if start_step_run.nil? && end_step_run.nil?
+    return where(id: end_step_run.id) if start_step_run.nil?
+
+    where(step_id: (start_step_run || end_step_run).step_id)
+      .where("scheduled_at > ? AND scheduled_at <= ?", start_step_run.scheduled_at, end_step_run&.scheduled_at)
+  end
+
   def find_build
     release_platform.store_provider.find_build(build_number)
   end
@@ -256,6 +264,10 @@ class StepRun < ApplicationRecord
     deployment_runs
       .not_failed
       .any?(&:production_release_happened?)
+  end
+
+  def relevant_changes
+    release_platform_run.commit_messages_before(self)
   end
 
   def cancel_ci_workflow!
