@@ -40,5 +40,13 @@ describe Releases::FindBuildJob do
 
       expect(step_run.reload.build_ready?).to be(true)
     end
+
+    it "does nothing if the step run is cancelled" do
+      step_run.update(status: "cancelled")
+
+      described_class.new.perform(step_run.id)
+
+      expect(step_run.reload.cancelled?).to be(true)
+    end
   end
 end

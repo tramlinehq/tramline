@@ -26,5 +26,21 @@ describe Releases::UploadArtifact do
       expect(step_run.reload.build_unavailable?).to be(true)
       expect(step_run.build_artifact).not_to be_present
     end
+
+    it "does nothing if the run is not active" do
+      step_run.release_platform_run.update(status: "finished")
+
+      described_class.new.perform(step_run.id, artifacts_url)
+
+      expect(step_run.reload.build_ready?).to be(true)
+    end
+
+    it "does nothing if the step run is cancelled" do
+      step_run.update(status: "cancelled")
+
+      described_class.new.perform(step_run.id, artifacts_url)
+
+      expect(step_run.reload.cancelled?).to be(true)
+    end
   end
 end

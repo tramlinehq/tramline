@@ -69,8 +69,20 @@ class StepRun < ApplicationRecord
     build_unavailable: "build_unavailable",
     deployment_started: "deployment_started",
     deployment_failed: "deployment_failed",
-    success: "success"
+    success: "success",
+    cancelled: "cancelled"
   }
+
+  END_STATES = STATES.slice(
+    :ci_workflow_unavailable,
+    :ci_workflow_failed,
+    :ci_workflow_halted,
+    :build_unavailable,
+    :build_not_found_in_store,
+    :deployment_failed,
+    :success,
+    :cancelled
+  ).keys
 
   enum status: STATES
 
@@ -123,6 +135,11 @@ class StepRun < ApplicationRecord
       after { finalize_release }
       transitions from: :deployment_started, to: :success, guard: :finished_deployments?
     end
+
+    event :cancel do
+      before { Releases::CancelWorkflowRun.perform_later(id) if ci_workflow_started? }
+      transitions from: (STATES.keys - END_STATES), to: :cancelled
+    end
   end
 
   enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
@@ -137,6 +154,10 @@ class StepRun < ApplicationRecord
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
   scope :not_failed, -> { where.not(status: [:ci_workflow_failed, :ci_workflow_halted, :build_not_found_in_store, :build_unavailable, :deployment_failed]) }
+
+  def active?
+    release_platform_run.on_track? && !cancelled?
+  end
 
   def self.runs_between(start_step_run, end_step_run)
     return none if start_step_run.nil? && end_step_run.nil?
@@ -167,14 +188,12 @@ class StepRun < ApplicationRecord
   end
 
   def startable_deployment?(deployment)
-    return false if train.inactive?
-    return false if release_platform.active_run.nil?
+    return false unless active?
     return true if deployment.first? && deployment_runs.empty?
     next_deployment == deployment
   end
 
   def manually_startable_deployment?(deployment)
-    return false unless release_platform_run.on_track?
     return false if deployment.first?
     return false if step.review?
     startable_deployment?(deployment) && last_deployment_run&.released?
@@ -272,7 +291,6 @@ class StepRun < ApplicationRecord
 
   def cancel_ci_workflow!
     ci_cd_provider.cancel_workflow_run!(ci_ref)
-    cancel_ci!
   end
 
   private
@@ -344,7 +362,7 @@ class StepRun < ApplicationRecord
     event_stamp!(reason: :ci_triggered, kind: :notice, data: {version: build_version})
     notify!("Step has been triggered!", :step_started, notification_params)
 
-    Releases::CancelWorkflowRun.perform_later(previous_step_run.id) if previous_step_run&.ci_workflow_started?
+    Releases::CancelStepRun.perform_later(previous_step_run.id) if previous_step_run&.may_cancel?
   end
 
   def has_uploadables?
