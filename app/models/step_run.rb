@@ -146,7 +146,6 @@ class StepRun < ApplicationRecord
   delegate :download_url, to: :build_artifact
   scope :not_failed, -> { where.not(status: [:ci_workflow_failed, :ci_workflow_halted, :build_not_found_in_store, :build_unavailable, :deployment_failed]) }
 
-
   def active?
     release_platform_run.on_track? && !cancelled?
   end
