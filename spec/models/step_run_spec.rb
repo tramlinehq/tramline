@@ -5,37 +5,6 @@ describe StepRun do
     expect(create(:step_run)).to be_valid
   end
 
-  describe ".runs_between" do
-    it "returns empty association if both step runs are nil" do
-      expect(described_class.runs_between(nil, nil)).to be_none
-    end
-
-    it "returns all steps till the current step if starting step run is nil" do
-      release_platform = create(:release_platform)
-      step = create(:step, :with_deployment, release_platform: release_platform)
-      release_platform_run = create(:release_platform_run, release_platform:)
-      run1 = create(:step_run, :build_available, step:, release_platform_run:)
-      run2 = create(:step_run, :build_available, step:, release_platform_run:)
-      run3 = create(:step_run, :build_not_found_in_store, step:, release_platform_run:)
-      end_run = create(:step_run, :success, step:, release_platform_run:)
-      _run4 = create(:step_run, :success, step:, release_platform_run:)
-
-      expect(described_class.runs_between(nil, end_run)).to contain_exactly(run1, run2, run3, end_run)
-    end
-
-    it "returns all steps runs between two step runs" do
-      release_platform = create(:release_platform)
-      step = create(:step, :with_deployment, release_platform: release_platform)
-      release_platform_run = create(:release_platform_run, release_platform:)
-      start_run = create(:step_run, :success, step:, release_platform_run:)
-      run2 = create(:step_run, :build_available, step:, release_platform_run:)
-      run3 = create(:step_run, :build_not_found_in_store, step:, release_platform_run:)
-      end_run = create(:step_run, :success, step:, release_platform_run:)
-
-      expect(described_class.runs_between(start_run, end_run)).to contain_exactly(run2, run3, end_run)
-    end
-  end
-
   describe "#similar_deployment_runs_for" do
     let(:steps) { create_list(:step, 2, :with_deployment) }
     let(:step_run) { create(:step_run, step: steps.first) }
@@ -322,15 +291,16 @@ describe StepRun do
 
   describe "#relevant_changes" do
     let(:release_platform) { create(:release_platform) }
-    let(:step) { create(:step, :with_deployment, release_platform: release_platform) }
+    let(:first_step) { create(:step, :with_deployment, release_platform: release_platform) }
+    let(:second_step) { create(:step, :with_deployment, release_platform: release_platform) }
     let(:release_platform_run) { create(:release_platform_run, release_platform:) }
     let(:release) { release_platform_run.release }
 
     it "only shows the messages since the previous success" do
-      create(:step_run, :success, step:, release_platform_run:, commit: create(:commit, message: "feat: 1", release:))
-      create(:step_run, :build_available, step:, release_platform_run:, commit: create(:commit, message: "feat: 2", release:))
-      create(:step_run, :build_not_found_in_store, step:, release_platform_run:, commit: create(:commit, message: "feat: 3", release:))
-      latest = create(:step_run, :on_track, step:, release_platform_run:, commit: create(:commit, message: "feat: 4", release:))
+      create(:step_run, :success, step: first_step, release_platform_run:, commit: create(:commit, message: "feat: 1", release:))
+      create(:step_run, :build_available, step: first_step, release_platform_run:, commit: create(:commit, message: "feat: 2", release:))
+      create(:step_run, :build_not_found_in_store, step: first_step, release_platform_run:, commit: create(:commit, message: "feat: 3", release:))
+      latest = create(:step_run, :on_track, step: first_step, release_platform_run:, commit: create(:commit, message: "feat: 4", release:))
 
       expected = [
         "feat: 2",
@@ -342,16 +312,32 @@ describe StepRun do
     end
 
     it "only shows the current message if the previous success was the last one" do
-      create(:step_run, :success, step:, release_platform_run:, commit: create(:commit, message: "feat: 1", release:))
-      latest = create(:step_run, :on_track, step:, release_platform_run:, commit: create(:commit, message: "feat: 2", release:))
+      create(:step_run, :success, step: first_step, release_platform_run:, commit: create(:commit, message: "feat: 1", release:))
+      latest = create(:step_run, :on_track, step: first_step, release_platform_run:, commit: create(:commit, message: "feat: 2", release:))
 
       expect(latest.relevant_changes).to contain_exactly("feat: 2")
     end
 
     it "only shows the current message if it is the only run" do
-      latest = create(:step_run, :on_track, step:, release_platform_run:, commit: create(:commit, message: "feat: 1", release:))
+      latest = create(:step_run, :on_track, step: first_step, release_platform_run:, commit: create(:commit, message: "feat: 1", release:))
 
       expect(latest.relevant_changes).to contain_exactly("feat: 1")
+    end
+
+    it "shows all the messages of the release if a step is run for the first time after several commits" do
+      create(:step_run, :success, step: first_step, release_platform_run:, commit: create(:commit, message: "feat: 1", release:))
+      create(:step_run, :build_available, step: first_step, release_platform_run:, commit: create(:commit, message: "feat: 2", release:))
+      create(:step_run, :build_not_found_in_store, step: first_step, release_platform_run:, commit: create(:commit, message: "feat: 3", release:))
+      second_step_run = create(:step_run, :on_track, step: second_step, release_platform_run:, commit: create(:commit, message: "feat: 4", release:))
+
+      expected = [
+        "feat: 1",
+        "feat: 2",
+        "feat: 3",
+        "feat: 4"
+      ]
+
+      expect(second_step_run.relevant_changes).to contain_exactly(*expected)
     end
   end
 

@@ -39,4 +39,41 @@ describe Commit do
       expect(Triggers::StepRun).to have_received(:call).with(steps.second, commit, release_platform_run).once
     end
   end
+
+  describe ".between" do
+    it "returns empty association if both step runs are nil" do
+      expect(described_class.between(nil, nil)).to be_none
+    end
+
+    it "returns empty association if head step run is nil" do
+      expect(described_class.between(create(:step_run), nil)).to be_none
+    end
+
+    it "returns all commits till the current step if starting step run is nil" do
+      release_platform = create(:release_platform)
+      step = create(:step, :with_deployment, release_platform: release_platform)
+      release_platform_run = create(:release_platform_run, release_platform:)
+      release = release_platform_run.release
+      run1 = create(:step_run, :build_available, step:, release_platform_run:, commit: create(:commit, release:))
+      run2 = create(:step_run, :build_available, step:, release_platform_run:, commit: create(:commit, release:))
+      run3 = create(:step_run, :build_not_found_in_store, step:, release_platform_run:, commit: create(:commit, release:))
+      end_run = create(:step_run, :success, step:, release_platform_run:, commit: create(:commit, release:))
+      _run4 = create(:step_run, :success, step:, release_platform_run:, commit: create(:commit, release:))
+
+      expect(described_class.between(nil, end_run)).to contain_exactly(run1.commit, run2.commit, run3.commit, end_run.commit)
+    end
+
+    it "returns all commits between two step runs" do
+      release_platform = create(:release_platform)
+      step = create(:step, :with_deployment, release_platform: release_platform)
+      release_platform_run = create(:release_platform_run, release_platform:)
+      release = release_platform_run.release
+      start_run = create(:step_run, :success, step:, release_platform_run:, commit: create(:commit, release:))
+      run2 = create(:step_run, :build_available, step:, release_platform_run:, commit: create(:commit, release:))
+      run3 = create(:step_run, :build_not_found_in_store, step:, release_platform_run:, commit: create(:commit, release:))
+      end_run = create(:step_run, :success, step:, release_platform_run:, commit: create(:commit, release:))
+
+      expect(described_class.between(start_run, end_run)).to contain_exactly(run2.commit, run3.commit, end_run.commit)
+    end
+  end
 end

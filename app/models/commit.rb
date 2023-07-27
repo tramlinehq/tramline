@@ -30,6 +30,21 @@ class Commit < ApplicationRecord
 
   delegate :release_platform_runs, to: :release
 
+  def self.between(base_step_run, head_step_run)
+    return none if head_step_run.nil?
+    return none if base_step_run.nil? && head_step_run.nil?
+
+    base_condition = where(release_id: (base_step_run || head_step_run).release.id)
+
+    if base_step_run
+      base_condition
+        .where("created_at > ? AND created_at <= ?", base_step_run.commit.created_at, head_step_run.commit.created_at)
+    else
+      base_condition
+        .where("created_at <= ?", head_step_run.commit.created_at)
+    end
+  end
+
   def run_for(step, release_platform_run)
     step_runs.where(step:, release_platform_run:).last
   end
