@@ -32,6 +32,14 @@ module Installations
       end
     end
 
+    def update_release_notes(release, notes)
+      execute do
+        release = FAD_PUBLISHER::GoogleFirebaseAppdistroV1Release.from_json(release.to_json)
+        release.release_notes = FAD_PUBLISHER::GoogleFirebaseAppdistroV1ReleaseNotes.new(text: notes)
+        fad_client.patch_project_app_release(release.name, release)
+      end
+    end
+
     def get_upload_status(op_name)
       execute do
         fad_client.get_project_app_release_operation(op_name)&.to_h
