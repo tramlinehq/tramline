@@ -111,6 +111,10 @@ class GoogleFirebaseIntegration < ApplicationRecord
     end
   end
 
+  def update_release_notes(release, notes)
+    installation.update_release_notes(release, notes)
+  end
+
   def release(release_name, group)
     GitHub::Result.new do
       installation.send_to_group(release_name, group_name(group))

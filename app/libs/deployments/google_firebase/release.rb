@@ -80,6 +80,7 @@ module Deployments
           added_at: release_info.added_at,
           status: release_info.status,
           external_link: release_info.console_link)
+        provider.update_release_notes(release_info.release, run.step_run.build_notes)
         run.upload!
       end
 
