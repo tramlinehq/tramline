@@ -160,20 +160,6 @@ class StepRun < ApplicationRecord
     release_platform_run.on_track? && !cancelled?
   end
 
-  def self.runs_between(start_step_run, end_step_run)
-    return none if start_step_run.nil? && end_step_run.nil?
-
-    base_condition = where(step_id: (start_step_run || end_step_run).step_id)
-
-    if start_step_run
-      base_condition
-        .where("scheduled_at > ? AND scheduled_at <= ?", start_step_run.scheduled_at, end_step_run&.scheduled_at)
-    else
-      base_condition
-        .where("scheduled_at <= ?", end_step_run&.scheduled_at)
-    end
-  end
-
   def find_build
     release_platform.store_provider.find_build(build_number)
   end
@@ -300,8 +286,9 @@ class StepRun < ApplicationRecord
   def build_notes
     build_notes_raw
       .map { |str| str&.strip }
-      .reject { |line| line =~ /^Merge/ }
-      .compact
+      .flat_map { |line| line.split("\n") }
+      .reject { |line| line =~ /\AMerge|\ACo-authored-by|\A---------/ }
+      .compact_blank
       .uniq
       .map { |str| "• #{str}" }
       .join("\n").presence || "Nothing new"

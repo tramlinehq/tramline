@@ -210,10 +210,9 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def commit_messages_before(step_run)
-    step_runs
-      .runs_between(previous_successful_run_before(step_run), step_run)
-      .includes(:commit)
-      .pluck("commits.message")
+    commits
+      .between(previous_successful_run_before(step_run), step_run)
+      .pluck(:message)
   end
 
   private
