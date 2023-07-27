@@ -17,6 +17,10 @@ module Deployments
         new(deployment_run).update_upload_status!(op_name)
       end
 
+      def self.update_build_notes!(deployment_run, release)
+        new(deployment_run).update_build_notes!(release)
+      end
+
       def self.start_release!(deployment_run)
         new(deployment_run).start_release!
       end
@@ -80,8 +84,12 @@ module Deployments
           added_at: release_info.added_at,
           status: release_info.status,
           external_link: release_info.console_link)
-        provider.update_release_notes(release_info.release, run.step_run.build_notes)
         run.upload!
+        Deployments::GoogleFirebase::UpdateBuildNotesJob.perform_later(run.id, release_info.release)
+      end
+
+      def update_build_notes!(release)
+        provider.update_release_notes(release, run.step_run.build_notes)
       end
 
       def start_release!

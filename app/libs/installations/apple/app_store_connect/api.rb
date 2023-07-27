@@ -13,7 +13,7 @@ module Installations
 
     GROUPS_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/groups"
     FIND_APP_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}"
-    FIND_BUILD_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/builds/{build_number}"
+    BUILD_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/builds/{build_number}"
     FIND_LATEST_BUILD_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/builds/latest"
     ADD_BUILD_TO_GROUP_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/groups/{group_id}/add_build"
     APP_CURRENT_STATUS = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/current_status"
@@ -39,9 +39,18 @@ module Installations
     end
 
     def find_build(build_number, transforms)
-      execute(:get, FIND_BUILD_URL.expand(bundle_id:, build_number:).to_s, {})
+      execute(:get, BUILD_URL.expand(bundle_id:, build_number:).to_s, {})
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
+    end
+
+    def update_build_beta_notes(build_number, notes)
+      params = {
+        json: {
+          notes: notes
+        }
+      }
+      execute(:patch, BUILD_URL.expand(bundle_id:, build_number:).to_s, params)
     end
 
     def find_latest_build(transforms)

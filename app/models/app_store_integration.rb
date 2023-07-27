@@ -140,6 +140,10 @@ class AppStoreIntegration < ApplicationRecord
     GitHub::Result.new { build_info(installation.find_latest_build(BUILD_TRANSFORMATIONS)) }
   end
 
+  def update_release_notes(build_number, notes)
+    installation.update_build_beta_notes(build_number, notes)
+  end
+
   def latest_build_number
     result = find_latest_build
     if result.ok?
