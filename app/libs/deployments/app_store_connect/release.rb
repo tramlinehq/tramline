@@ -10,6 +10,10 @@ module Deployments
         new(deployment_run).kickoff!
       end
 
+      def self.update_build_notes!(deployment_run)
+        new(deployment_run).update_build_notes!
+      end
+
       def self.update_external_release(deployment_run)
         new(deployment_run).update_external_release
       end
@@ -77,6 +81,8 @@ module Deployments
       def to_test_flight!
         return unless test_flight_release?
 
+        Deployments::AppStoreConnect::UpdateBuildNotesJob.perform_later(run.id)
+
         result = provider.release_to_testflight(deployment_channel, build_number)
 
         unless result.ok?
@@ -85,6 +91,10 @@ module Deployments
         end
 
         run.submit_for_review!
+      end
+
+      def update_build_notes!
+        provider.update_release_notes(build_number, run.step_run.build_notes)
       end
 
       def prepare_for_release!(force: false)
