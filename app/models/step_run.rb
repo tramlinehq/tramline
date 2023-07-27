@@ -286,8 +286,9 @@ class StepRun < ApplicationRecord
   def build_notes
     build_notes_raw
       .map { |str| str&.strip }
-      .reject { |line| line =~ /^Merge/ }
-      .compact
+      .flat_map { |line| line.split("\n") }
+      .reject { |line| line =~ /\AMerge|\ACo-authored-by|\A---------/ }
+      .compact_blank
       .uniq
       .map { |str| "• #{str}" }
       .join("\n").presence || "Nothing new"
