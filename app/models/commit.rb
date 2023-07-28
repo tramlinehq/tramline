@@ -35,6 +35,7 @@ class Commit < ApplicationRecord
     return none if base_step_run.nil? && head_step_run.nil?
 
     base_condition = where(release_id: (base_step_run || head_step_run).release.id)
+      .order(created_at: :desc)
 
     if base_step_run
       base_condition
