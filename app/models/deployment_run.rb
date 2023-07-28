@@ -52,6 +52,7 @@ class DeploymentRun < ApplicationRecord
     :google_firebase_integration?,
     :production_channel?,
     :release_platform,
+    :internal_channel?,
     to: :deployment
   delegate :release_metadata, to: :release
   delegate :release_version, to: :release_platform_run

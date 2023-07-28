@@ -71,6 +71,7 @@ module Deployments
         :app_store?,
         :staged_rollout_config,
         :release_metadata,
+        :internal_channel?,
         to: :run
 
       def kickoff!
@@ -82,6 +83,8 @@ module Deployments
         return unless test_flight_release?
 
         Deployments::AppStoreConnect::UpdateBuildNotesJob.perform_later(run.id)
+
+        return run.complete! if internal_channel?
 
         result = provider.release_to_testflight(deployment_channel, build_number)
 

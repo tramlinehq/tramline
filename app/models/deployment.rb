@@ -82,11 +82,19 @@ class Deployment < ApplicationRecord
   end
 
   def deployment_channel_name
-    build_artifact_channel["name"]
+    if internal_channel?
+      build_artifact_channel["name"] + " (Internal)"
+    else
+      build_artifact_channel["name"]
+    end
   end
 
   def production_channel?
     store? && build_artifact_channel["is_production"]
+  end
+
+  def internal_channel?
+    build_artifact_channel["is_internal"]
   end
 
   def integration_type
