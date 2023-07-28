@@ -41,7 +41,7 @@
     <% end %>
   <% end %>
 
-  <% if @app.releases.blank? %>
+  <% if @app.releases.none? %>
     <% page.with_action do %>
       <%= authz_link_to :red, app_path(@app), method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } do %>
         <span>Delete</span>
@@ -53,11 +53,15 @@
 
   <div class="space-y-8">
     <% if @app.ready? %>
-      <%= render partial: "trains/setup_progress", locals: { setup_instructions: @train_setup_instructions, app: @app, train_in_creation: @train_in_creation } %>
+      <%= render partial: "trains/setup_progress",
+                 locals: {
+                   setup_instructions: @train_setup_instructions,
+                   app: @app,
+                   train_in_creation: @train_in_creation
+                 } %>
     <% else %>
       <%= render partial: "apps/setup_progress", locals: { setup_instructions: @app_setup_instructions } %>
     <% end %>
-
 
     <% unless @train_in_creation&.in_creation? %>
       <section class="grid md:grid-cols-2 gap-x-20 pb-5 mt-8">
@@ -86,16 +90,14 @@
       </section>
     <% end %>
 
-    <% if @app.trains.any? %>
+    <% unless @app.no_trains? %>
       <%= render TableComponent.new(columns: ["Name", "Description", "Current Release"]) do |table| %>
         <% table.with_heading do %>
           <div class="flex justify-between items-end mb-2">
             <h2 class="text-2xl text-slate-800 font-bold">Release Train</h2>
-            <% if @app.trains.any? %>
-              <%= authz_link_to :green, new_app_train_path(@app) do %>
-                <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
-                <span class="hidden xs:block ml-2">Create another release train</span>
-              <% end %>
+            <%= authz_link_to :green, new_app_train_path(@app) do %>
+              <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
+              <span class="hidden xs:block ml-2">Create another release train</span>
             <% end %>
           </div>
         <% end %>

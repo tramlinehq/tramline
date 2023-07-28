@@ -88,6 +88,18 @@ class App < ApplicationRecord
     integrations.ready? and config&.ready?
   end
 
+  def no_trains?
+    trains.none?
+  end
+
+  def guided_train_setup?
+    no_trains? || trains.first&.in_creation?
+  end
+
+  def train_in_creation
+    trains.first if trains.size == 1
+  end
+
   # NOTE: fetches and uses latest build numbers from the stores, if added,
   # to reduce build upload rejection probability
   def bump_build_number!
