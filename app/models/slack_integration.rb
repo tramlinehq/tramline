@@ -147,6 +147,10 @@ class SlackIntegration < ApplicationRecord
     nil
   end
 
+  def deep_link(_, _)
+    nil
+  end
+
   private
 
   def get_all_channels(cursor = nil, channels = [])

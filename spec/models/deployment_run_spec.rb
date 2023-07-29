@@ -132,6 +132,7 @@ describe DeploymentRun do
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:deploy!)
+      allow(providable_dbl).to receive(:deep_link)
     end
 
     it "does nothing if deployment is not slack" do
@@ -284,6 +285,7 @@ describe DeploymentRun do
         repo_integration = instance_double(Installations::Github::Api)
         allow(Installations::Github::Api).to receive(:new).and_return(repo_integration)
         allow(repo_integration).to receive(:create_tag!)
+        allow(providable_dbl).to receive(:deep_link)
       end
 
       it "fully promotes to the store" do

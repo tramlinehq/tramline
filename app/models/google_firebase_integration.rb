@@ -132,7 +132,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
     PUBLIC_ICON
   end
 
-  def deep_link(release, platform:)
+  def deep_link(release, platform)
     "https://appdistribution.firebase.google.com/testerapps/#{fetch_app_id(platform)}/releases/#{release_name(release)}"
   end
 

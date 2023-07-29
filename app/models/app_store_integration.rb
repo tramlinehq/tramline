@@ -226,7 +226,7 @@ class AppStoreIntegration < ApplicationRecord
     "app_store"
   end
 
-  def deep_link(_release, _platform:)
+  def deep_link(_, _)
     "itms-beta://beta.itunes.apple.com/v1/app/#{app.external_id}"
   end
 
