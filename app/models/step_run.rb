@@ -38,6 +38,7 @@ class StepRun < ApplicationRecord
   validates :step_id, uniqueness: {scope: :commit_id}
 
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
+  after_commit -> { Releases::TriggerWorkflowRunJob.perform_later(id) }, on: :create
 
   STAMPABLE_REASONS = %w[
     created
