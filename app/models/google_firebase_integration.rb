@@ -132,6 +132,10 @@ class GoogleFirebaseIntegration < ApplicationRecord
     PUBLIC_ICON
   end
 
+  def deep_link(release, platform:)
+    "https://appdistribution.firebase.google.com/testerapps/#{fetch_app_id(platform)}/releases/#{release_name(release)}"
+  end
+
   class ReleaseInfo
     def initialize(release_info)
       raise ArgumentError, "release_info must be a Hash" unless release_info.is_a?(Hash)
@@ -183,6 +187,10 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   def group_name(group)
     group.split("/").last
+  end
+
+  def release_name(release)
+    release.split("/").last
   end
 
   def correct_key
