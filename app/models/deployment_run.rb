@@ -338,7 +338,7 @@ class DeploymentRun < ApplicationRecord
       .merge(
         {
           project_link: external_release&.external_link.presence || deployment.project_link,
-          deep_link: provider.deep_link(external_release.external_id, platform: release_platform.platform)
+          deep_link: provider.deep_link(external_release&.external_id, platform: release_platform.platform)
         }
       )
   end
