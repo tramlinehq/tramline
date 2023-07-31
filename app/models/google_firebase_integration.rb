@@ -25,6 +25,8 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   attr_accessor :json_key_file
 
+  after_create_commit :fetch_channels
+
   PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/firebase_small.png".freeze
 
   def access_key
@@ -73,6 +75,10 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   EMPTY_CHANNEL = {id: :no_testers, name: "No testers (upload only)"}
 
+  def fetch_channels
+    RefreshFADChannelsJob.perform_later(id)
+  end
+
   def channels
     installation.list_groups(GROUPS_TRANSFORMATIONS)
   end
@@ -89,11 +95,12 @@ class GoogleFirebaseIntegration < ApplicationRecord
       .map { |app| app.slice(:app_id, :display_name) }
   end
 
-  def build_channels(with_production:)
-    sliced = cache.fetch(build_channels_cache_key, expires_in: 30.minutes) do
-      channels&.map { |channel| channel.slice(:id, :name) }
-    end
+  def populate_channels!
+    cache.write(build_channels_cache_key, get_all_channels, expires_in: CACHE_EXPIRY)
+  end
 
+  def build_channels(with_production:)
+    sliced = cache.fetch(build_channels_cache_key, expires_in: 30.minutes) { get_all_channels }
     (sliced || []).push(EMPTY_CHANNEL)
   end
 
@@ -183,6 +190,10 @@ class GoogleFirebaseIntegration < ApplicationRecord
     else
       raise ArgumentError, "platform must be valid"
     end
+  end
+
+  def get_all_channels
+    channels&.map { |channel| channel.slice(:id, :name) }
   end
 
   def group_name(group)
