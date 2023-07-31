@@ -16,19 +16,33 @@
     </div>
   </div>
 
-  <% if app.slack_build_channel_provider.present? %>
-    <div class="border-t py-4">
-      <p class="pb-2">
-        Refresh the Slack channels from here, if you can't find your channel in the list.
-      </p>
-      <%= authz_link_to :neutral,
-                        "Refresh Slack Channels",
-                        refresh_channels_app_integration_slack_integration_path(app,
-                                                                                app.slack_build_channel_provider.integration,
-                                                                                app.slack_build_channel_provider),
-                        class: "btn-xs", method: :post, data: { turbo_method: :post } %>
-    </div>
-  <% end %>
+
+  <div class="border-t py-4">
+    <p>Refresh your distribution channels from here, if you can't find them in the list.</p>
+    <% if app.slack_build_channel_provider.present? %>
+      <div class="py-1">
+        <%= authz_link_to :neutral,
+                          "Refresh Slack Channels",
+                          refresh_channels_app_integration_slack_integration_path(app,
+                                                                                  app.slack_build_channel_provider.integration,
+                                                                                  app.slack_build_channel_provider),
+                          class: "btn-xs", method: :post, data: { turbo_method: :post } %>
+      </div>
+    <% end %>
+
+    <% if app.firebase_build_channel_provider.present? %>
+      <div class="py-1">
+        <%= authz_link_to :neutral,
+                          "Refresh Firebase Channels",
+                          refresh_channels_app_integration_google_firebase_integration_path(
+                            app,
+                            app.firebase_build_channel_provider.integration,
+                            app.firebase_build_channel_provider
+                          ),
+                          class: "btn-xs", method: :post, data: { turbo_method: :post } %>
+      </div>
+    <% end %>
+  </div>
 
   <ul data-controller="sortable-list-ext list-position"
       data-sortable-list-ext-handle-value=".handle"

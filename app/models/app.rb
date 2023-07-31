@@ -60,6 +60,7 @@ class App < ApplicationRecord
     :ios_store_provider,
     :android_store_provider,
     :slack_build_channel_provider,
+    :firebase_build_channel_provider,
     :slack_notifications?, to: :integrations, allow_nil: true
 
   scope :with_trains, -> { joins(:trains).distinct }

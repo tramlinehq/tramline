@@ -28,6 +28,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   after_create_commit :fetch_channels
 
   PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/firebase_small.png".freeze
+  CACHE_EXPIRY = 1.month
 
   def access_key
     StringIO.new(json_key)
@@ -86,7 +87,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   def list_apps(platform:)
     raise ArgumentError, "platform must be valid" unless valid_platforms.include?(platform)
 
-    apps = cache.fetch(list_apps_cache_key, expires_in: 1.month) do
+    apps = cache.fetch(list_apps_cache_key, expires_in: CACHE_EXPIRY) do
       installation.list_apps(APPS_TRANSFORMATIONS)
     end
 
@@ -100,7 +101,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   end
 
   def build_channels(with_production:)
-    sliced = cache.fetch(build_channels_cache_key, expires_in: 30.minutes) { get_all_channels }
+    sliced = cache.fetch(build_channels_cache_key, expires_in: CACHE_EXPIRY) { get_all_channels }
     (sliced || []).push(EMPTY_CHANNEL)
   end
 
