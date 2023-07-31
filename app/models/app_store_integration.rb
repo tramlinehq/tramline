@@ -80,7 +80,7 @@ class AppStoreIntegration < ApplicationRecord
     phased_release_status: [:phased_release, :phased_release_state]
   }
 
-  PROD_CHANNEL = {id: :app_store, name: "App Store (production)", is_production: true}
+  PROD_CHANNEL = {id: :app_store, name: "App Store (production)", is_production: true}.with_indifferent_access
 
   APP_STORE_CONNECT_URL_TEMPLATE =
     Addressable::Template.new("https://appstoreconnect.apple.com/apps/{app_id}/testflight/ios/{external_id}")
@@ -211,9 +211,10 @@ class AppStoreIntegration < ApplicationRecord
       cache.fetch(build_channels_cache_key, expires_in: 1.hour) do
         installation
           .beta_groups(CHANNELS_TRANSFORMATIONS)
-          .push(PROD_CHANNEL)
-          .map { |channel| channel.slice(:id, :name, :is_internal, :is_production) }
       end
+    sliced
+      .push(PROD_CHANNEL)
+      .map { |channel| channel.slice(:id, :name, :is_internal, :is_production) }
 
     return sliced if with_production
     sliced.reject { |channel| channel[:is_production] }
