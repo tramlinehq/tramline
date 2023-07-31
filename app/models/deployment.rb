@@ -89,6 +89,10 @@ class Deployment < ApplicationRecord
     store? && build_artifact_channel["is_production"]
   end
 
+  def internal_channel?
+    build_artifact_channel["is_internal"]
+  end
+
   def integration_type
     return :app_store if app_store?
     return :testflight if test_flight?
@@ -120,7 +124,7 @@ class Deployment < ApplicationRecord
           is_play_store_production: production_channel? && google_play_store_integration?,
           is_app_store_production: app_store?,
           deployment_channel_type: integration_type&.to_s&.titleize,
-          deployment_channel_name: deployment_channel_name,
+          deployment_channel: build_artifact_channel,
           deployment_channel_asset_link: integration&.public_icon_img
         }
       )

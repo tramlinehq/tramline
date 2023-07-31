@@ -39,7 +39,8 @@ class AppStoreIntegration < ApplicationRecord
 
   CHANNELS_TRANSFORMATIONS = {
     id: :id,
-    name: :name
+    name: :name,
+    is_internal: :internal
   }
 
   BUILD_TRANSFORMATIONS = {
@@ -209,9 +210,9 @@ class AppStoreIntegration < ApplicationRecord
     sliced =
       cache.fetch(build_channels_cache_key, expires_in: 1.hour) do
         installation
-          .external_groups(CHANNELS_TRANSFORMATIONS)
+          .beta_groups(CHANNELS_TRANSFORMATIONS)
           .push(PROD_CHANNEL)
-          .map { |channel| channel.slice(:id, :name, :is_production) }
+          .map { |channel| channel.slice(:id, :name, :is_internal, :is_production) }
       end
 
     return sliced if with_production

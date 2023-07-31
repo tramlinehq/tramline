@@ -21,7 +21,7 @@
 
       <div class="flex-grow w-1/2">
         <%= form.select :build_artifact_channel,
-                        options_for_select(display_channels(@selected_build_channels) { |chan| chan[:name] }),
+                        options_for_select(display_channels(@selected_build_channels) { |chan| deployment_channel_name(chan) }),
                         { class: "block form-select" },
                         { data: { dropdown_stream_target: "dynamicSelect",
                                   action: "dropdown-stream#showElementOnDynamicSelectChange domain--staged-rollout-help#clear",

@@ -27,7 +27,7 @@ module Installations
     HALT_LIVE_ROLLOUT_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live/rollout/halt"
     COMPLETE_LIVE_ROLLOUT_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live/rollout/complete"
 
-    def external_groups(transforms)
+    def beta_groups(transforms)
       execute(:get, GROUPS_URL.expand(bundle_id:).to_s, {params: {internal: false}})
         .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
     end
