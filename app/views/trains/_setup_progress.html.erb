@@ -1,4 +1,4 @@
-<% if !app.trains.any? || train_in_creation&.in_creation? %>
+<% if app.guided_train_setup? %>
   <h3 class="text-xl font-semibold">Create your first release train...</h3>
 
   <div>
