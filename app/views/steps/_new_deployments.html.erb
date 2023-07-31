@@ -23,9 +23,11 @@
       <div class="py-1">
         <%= authz_link_to :neutral,
                           "Refresh Slack Channels",
-                          refresh_channels_app_integration_slack_integration_path(app,
-                                                                                  app.slack_build_channel_provider.integration,
-                                                                                  app.slack_build_channel_provider),
+                          refresh_channels_app_integration_slack_integration_path(
+                            app,
+                            app.slack_build_channel_provider.integration,
+                            app.slack_build_channel_provider
+                          ),
                           class: "btn-xs", method: :post, data: { turbo_method: :post } %>
       </div>
     <% end %>
