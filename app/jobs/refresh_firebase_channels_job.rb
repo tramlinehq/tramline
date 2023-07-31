@@ -1,4 +1,4 @@
-class RefreshFadChannelsJob < ApplicationJob
+class RefreshFirebaseChannelsJob < ApplicationJob
   include Loggable
   queue_as :high
 
