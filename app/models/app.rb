@@ -93,7 +93,7 @@ class App < ApplicationRecord
   end
 
   def guided_train_setup?
-    no_trains? || trains.first&.in_creation?
+    no_trains? || train_in_creation&.in_creation?
   end
 
   def train_in_creation
