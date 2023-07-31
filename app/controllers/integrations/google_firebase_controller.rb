@@ -3,7 +3,7 @@ class Integrations::GoogleFirebaseController < IntegrationsController
   before_action :set_app, only: %i[refresh_channels]
 
   def refresh_channels
-    RefreshFadChannelsJob.perform_later(fad_integration.id)
+    fad_integration.fetch_channels
     redirect_to app_app_config_path(@app),
       notice: "We are refreshing your Firebase App Distribution channels. They will update shortly."
   end
