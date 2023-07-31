@@ -1,4 +1,4 @@
-class RefreshFADChannelsJob < ApplicationJob
+class RefreshFadChannelsJob < ApplicationJob
   include Loggable
   queue_as :high
 

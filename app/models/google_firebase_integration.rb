@@ -76,7 +76,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   EMPTY_CHANNEL = {id: :no_testers, name: "No testers (upload only)"}
 
   def fetch_channels
-    RefreshFADChannelsJob.perform_later(id)
+    RefreshFadChannelsJob.perform_later(id)
   end
 
   def channels
