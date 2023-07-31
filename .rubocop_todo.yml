@@ -30,3 +30,4 @@ Rails/I18nLocaleTexts:
     - 'app/controllers/deployment_runs_controller.rb'
     - 'app/controllers/release_metadata_controller.rb'
     - 'app/controllers/integrations/slack_controller.rb'
+    - 'app/controllers/integrations/google_firebase_controller.rb'

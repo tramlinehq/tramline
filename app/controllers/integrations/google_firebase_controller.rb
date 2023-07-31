@@ -1,4 +1,13 @@
 class Integrations::GoogleFirebaseController < IntegrationsController
+  before_action :require_write_access!, only: %i[refresh_channels]
+  before_action :set_app, only: %i[refresh_channels]
+
+  def refresh_channels
+    fad_integration.fetch_channels
+    redirect_to app_app_config_path(@app),
+      notice: "We are refreshing your Firebase App Distribution channels. They will update shortly."
+  end
+
   def integration_params
     params.require(:integration)
       .permit(
@@ -29,5 +38,9 @@ class Integrations::GoogleFirebaseController < IntegrationsController
 
   def json_key_file
     @json_key_file ||= integration_params[:providable][:json_key_file]
+  end
+
+  def fad_integration
+    @fad_integration ||= GoogleFirebaseIntegration.find(params[:id])
   end
 end

@@ -136,6 +136,14 @@ Rails.application.routes.draw do
           post :refresh_channels
         end
       end
+
+      resources :google_firebase, only: [],
+        controller: "integrations/google_firebase",
+        as: :google_firebase_integration do
+        member do
+          post :refresh_channels
+        end
+      end
     end
 
     get "/integrations/build_artifact_channels", to: "integrations#build_artifact_channels"
