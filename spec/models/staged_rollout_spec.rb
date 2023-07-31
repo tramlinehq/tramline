@@ -80,6 +80,7 @@ describe StagedRollout do
 
       before do
         allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
+        allow(providable_dbl).to receive(:deep_link)
       end
 
       it "transitions state" do
@@ -116,6 +117,7 @@ describe StagedRollout do
 
       before do
         allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
+        allow(providable_dbl).to receive(:deep_link)
       end
 
       it "halts the release in store" do
@@ -170,6 +172,7 @@ describe StagedRollout do
 
     before do
       allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:deep_link)
     end
 
     it "completes the rollout if no more stages left" do
@@ -272,6 +275,7 @@ describe StagedRollout do
 
       before do
         allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
+        allow(providable_dbl).to receive(:deep_link)
       end
 
       it "transitions state" do
@@ -324,6 +328,7 @@ describe StagedRollout do
 
       before do
         allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
+        allow(providable_dbl).to receive(:deep_link)
       end
 
       it "transitions state" do
@@ -374,6 +379,7 @@ describe StagedRollout do
 
     before do
       allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:deep_link)
     end
 
     [:created, :completed, :stopped, :failed, :fully_released, :paused].each do |trait|
@@ -442,6 +448,7 @@ describe StagedRollout do
 
     before do
       allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:deep_link)
     end
 
     [:created, :started, :completed, :stopped, :failed, :fully_released].each do |trait|

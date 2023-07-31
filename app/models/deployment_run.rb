@@ -319,7 +319,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def provider
-    integration.providable
+    integration&.providable
   end
 
   def fail_with_error(error)
@@ -337,7 +337,8 @@ class DeploymentRun < ApplicationRecord
       .merge(step_run.notification_params)
       .merge(
         {
-          project_link: external_release&.external_link.presence || deployment.project_link
+          project_link: external_release&.external_link.presence || deployment.project_link,
+          deep_link: provider&.deep_link(external_release&.external_id, release_platform.platform)
         }
       )
   end

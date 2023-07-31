@@ -155,6 +155,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
     installation.find_latest_build_number
   end
 
+  def deep_link(_, _)
+    nil
+  end
+
   private
 
   def project_id

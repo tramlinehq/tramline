@@ -47,6 +47,22 @@
       ]
     },
     <% end %>
+    <% if @deployment_channel_asset_link && @deep_link %>
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "image",
+          "image_url": "<%= @deployment_channel_asset_link %>",
+          "alt_text": "console"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @deep_link %>|Install on phone>"
+        }
+      ]
+    },
+    <% end %>
     <% if @artifact_download_link %>
     {
       "type": "context",

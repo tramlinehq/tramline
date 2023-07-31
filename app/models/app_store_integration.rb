@@ -226,6 +226,10 @@ class AppStoreIntegration < ApplicationRecord
     "app_store"
   end
 
+  def deep_link(_, _)
+    "itms-beta://beta.itunes.apple.com/v1/app/#{app.external_id}"
+  end
+
   def build_info(build_info)
     TestFlightInfo.new(build_info.merge(external_link: APP_STORE_CONNECT_URL_TEMPLATE.expand(app_id: app.external_id, external_id: build_info[:external_id]).to_s))
   end
