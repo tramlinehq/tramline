@@ -30,7 +30,7 @@ class Notifiers::Slack::Renderers::Base
     File.read(File.join(ROOT_PATH, self.class::TEMPLATE_FILE))
   end
 
-  def deployment_channel
+  def deployment_channel_display_name
     return unless @deployment_channel
     deployment_channel_name(@deployment_channel)
   end

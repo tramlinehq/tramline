@@ -18,7 +18,7 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "New *<%= @deployment_channel_type %>* build *<%= @build_number %>* is now available to *<%= deployment_channel %>* :sparkles:"
+        "text": "New *<%= @deployment_channel_type %>* build *<%= @build_number %>* is now available to *<%= deployment_channel_display_name %>* :sparkles:"
       }
     },
     {
@@ -132,7 +132,7 @@
         },
         {
           "type": "plain_text",
-          "text": "Deployment: <%= @deployment_channel_type %> + <%= deployment_channel %>",
+          "text": "Deployment: <%= @deployment_channel_type %> + <%= deployment_channel_display_name %>",
           "emoji": true
         }
       ]

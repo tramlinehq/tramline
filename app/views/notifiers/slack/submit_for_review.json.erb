@@ -18,7 +18,7 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*<%= @app_name %> (<%= @app_platform %>)* <%= @train_current_version %> has been submitted for review to <%= @deployment_channel_type %> (<%= deployment_channel %>)! :tada:"
+        "text": "*<%= @app_name %> (<%= @app_platform %>)* <%= @train_current_version %> has been submitted for review to <%= @deployment_channel_type %> (<%= deployment_channel_display_name %>)! :tada:"
       }
     },
     {
@@ -106,7 +106,7 @@
         },
         {
           "type": "plain_text",
-          "text": "Deployment: <%= @deployment_channel_type %> + <%= deployment_channel %>",
+          "text": "Deployment: <%= @deployment_channel_type %> + <%= deployment_channel_display_name %>",
           "emoji": true
         }
       ]
