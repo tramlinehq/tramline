@@ -111,10 +111,6 @@ module ApplicationHelper
       .tap { |list| with_none ? list.unshift(["None", nil]) : nil }
   end
 
-  def deployment_channel_name(chan)
-    chan[:is_internal] ? chan[:name] + " (Internal)" : chan[:name]
-  end
-
   def time_format(timestamp, with_year: false)
     return unless timestamp
     timestamp.strftime("%b #{timestamp.day.ordinalize}#{", %Y" if with_year} at %-l:%M %P")

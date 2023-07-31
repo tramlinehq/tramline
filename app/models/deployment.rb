@@ -82,11 +82,7 @@ class Deployment < ApplicationRecord
   end
 
   def deployment_channel_name
-    if internal_channel?
-      build_artifact_channel["name"] + " (Internal)"
-    else
-      build_artifact_channel["name"]
-    end
+    build_artifact_channel["name"]
   end
 
   def production_channel?
@@ -128,7 +124,7 @@ class Deployment < ApplicationRecord
           is_play_store_production: production_channel? && google_play_store_integration?,
           is_app_store_production: app_store?,
           deployment_channel_type: integration_type&.to_s&.titleize,
-          deployment_channel_name: deployment_channel_name,
+          deployment_channel: build_artifact_channel,
           deployment_channel_asset_link: integration&.public_icon_img
         }
       )
