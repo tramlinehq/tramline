@@ -14,7 +14,6 @@ class Triggers::StepRun
     release_platform_run
       .step_runs
       .create!(step:, scheduled_at: Time.current, commit:, build_version:, sign_required: false)
-      .trigger_ci!
   end
 
   private
