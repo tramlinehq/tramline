@@ -75,7 +75,7 @@ class AppStoreIntegration < ApplicationRecord
     status: :app_store_state,
     build_number: :build_number,
     name: :version_name,
-    added_at: :created_date,
+    added_at: :added_at,
     phased_release_day: [:phased_release, :current_day_number],
     phased_release_status: [:phased_release, :phased_release_state]
   }
