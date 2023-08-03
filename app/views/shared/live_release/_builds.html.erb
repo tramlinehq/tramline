@@ -67,7 +67,7 @@
                 <% if run.on_track? %>
                   <%= form_with(model: commit, url: apply_release_commit_path(@release, commit.id), method: :post, builder: ButtonHelper::AuthzForms) do |form| %>
                     <%= form.hidden_field :release_platform_run_id, value: run.id %>
-                    <%= form.authz_submit :blue, "Apply commit to #{run.platform}" %>
+                    <%= form.authz_submit :blue, "Apply commit to #{run.display_attr(:platform)}" %>
                   <% end %>
                 <% else %>
                   <div class="mt-4">
