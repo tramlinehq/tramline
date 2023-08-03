@@ -102,14 +102,11 @@ class Release < ApplicationRecord
     end
   end
 
-  # TODO: Remove this accessor, once the migration is complete
-  attr_accessor :in_data_migration_mode
-
-  before_create :set_version, unless: :in_data_migration_mode
-  after_create :set_default_release_metadata, unless: :in_data_migration_mode
-  after_create :create_platform_runs, unless: :in_data_migration_mode
-  after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create, unless: :in_data_migration_mode
-  after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create, unless: :in_data_migration_mode
+  before_create :set_version
+  after_create :set_default_release_metadata
+  after_create :create_platform_runs
+  after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
+  after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
 
   attr_accessor :has_major_bump
 

@@ -62,14 +62,11 @@ class Train < ApplicationRecord
   validate :valid_train_configuration, on: :activate_context
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
 
-  # TODO: Remove this accessor, once the migration is complete
-  attr_accessor :in_data_migration_mode
-
-  after_initialize :set_constituent_seed_versions, if: :persisted?, unless: :in_data_migration_mode
-  before_validation :set_version_seeded_with, if: :new_record?, unless: :in_data_migration_mode
-  before_create :set_current_version, unless: :in_data_migration_mode
-  before_create :set_default_status, unless: :in_data_migration_mode
-  after_create :create_release_platforms, unless: :in_data_migration_mode
+  after_initialize :set_constituent_seed_versions, if: :persisted?
+  before_validation :set_version_seeded_with, if: :new_record?
+  before_create :set_current_version
+  before_create :set_default_status
+  after_create :create_release_platforms
 
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
@@ -194,6 +191,8 @@ class Train < ApplicationRecord
     return false unless activated?
     vcs_provider.create_release!(tag_name, branch_name)
   end
+
+  delegate :create_tag!, to: :vcs_provider
 
   def create_branch!(from, to)
     return false unless activated?

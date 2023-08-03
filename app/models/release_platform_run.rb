@@ -12,6 +12,7 @@
 #  scheduled_at             :datetime         not null
 #  status                   :string           not null
 #  stopped_at               :datetime
+#  tag_name                 :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
 #  release_id               :uuid
@@ -170,18 +171,18 @@ class ReleasePlatformRun < ApplicationRecord
       .then { |ids| Passport.where(stampable_id: ids).order(event_timestamp: :desc).limit(limit) }
   end
 
-  def tag_name
-    "v#{release_version}-#{platform}"
-  end
-
   def tag_url
     train.vcs_provider&.tag_url(app.config&.code_repository_name, tag_name)
   end
 
   def on_finish!
-    train.vcs_provider.create_tag!(tag_name, last_commit.commit_hash)
+    ReleasePlatformRuns::CreateTagJob.perform_later(id, base_tag_name)
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     app.refresh_external_app
+  end
+
+  def create_tag!(name)
+    train.create_tag!(name, last_commit.commit_hash)
   end
 
   # Play store does not have constraints around version name
@@ -215,7 +216,16 @@ class ReleasePlatformRun < ApplicationRecord
       .pluck(:message)
   end
 
+  def unique_tag_name
+    return if tag_name.blank?
+    [tag_name, "-", SecureRandom.hex(3)].join
+  end
+
   private
+
+  def base_tag_name
+    "v#{release_version}-#{platform}"
+  end
 
   def started_store_release?
     latest_store_release.present?
