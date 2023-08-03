@@ -5,9 +5,11 @@
 #  id                       :uuid             not null, primary key
 #  branching_strategy       :string           not null
 #  description              :string
+#  kickoff_at               :datetime
 #  name                     :string           not null
 #  release_backmerge_branch :string
 #  release_branch           :string
+#  repeat_duration          :interval
 #  slug                     :string
 #  status                   :string           not null
 #  version_current          :string
@@ -70,6 +72,7 @@ class Train < ApplicationRecord
   before_create :set_current_version, unless: :in_data_migration_mode
   before_create :set_default_status, unless: :in_data_migration_mode
   after_create :create_release_platforms, unless: :in_data_migration_mode
+  after_update_commit :schedule_release, if: :automatic?, on: :activate_context
 
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
@@ -93,6 +96,22 @@ class Train < ApplicationRecord
 
   def self.android_release_steps?
     first&.release_platforms&.android&.first&.steps&.release&.any?
+  end
+
+  def schedule_release
+    if kickoff_at > Time.current
+      TrainKickoffJob.set(wait_until: kickoff_at).perform_later(id)
+    else
+      TrainKickoffJob.set(wait_until: next_run_at).perform_later(id)
+    end
+  end
+
+  def automatic?
+    kickoff_at.present? && repeat_duration.present?
+  end
+
+  def next_run_at
+    kickoff_at + (repeat_duration * (releases.automatic.size || 1))
   end
 
   def create_webhook!
@@ -131,9 +150,8 @@ class Train < ApplicationRecord
   end
 
   def activate!
-    release_platforms.all?(&:valid_steps?)
     self.status = Train.statuses[:active]
-    save!(context: :activate_context)
+    save(context: :activate_context)
   end
 
   def in_creation?
@@ -249,7 +267,7 @@ class Train < ApplicationRecord
 
   def valid_train_configuration
     unless release_platforms.all?(&:valid_steps?)
-      errors.add(:release_platforms, "there should be one release step")
+      errors.add(:train, "there should be one release step for all platforms")
     end
   end
 

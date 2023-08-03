@@ -5,6 +5,7 @@
 #  id                       :uuid             not null, primary key
 #  branch_name              :string           not null
 #  completed_at             :datetime
+#  is_automatic             :boolean          default(FALSE)
 #  original_release_version :string
 #  release_version          :string
 #  scheduled_at             :datetime
@@ -36,6 +37,7 @@ class Release < ApplicationRecord
   scope :pending_release, -> { where.not(status: [:finished, :stopped, :stopped_after_partial_finish]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   scope :sequential, -> { order("releases.scheduled_at DESC") }
+  scope :automatic, -> { where(is_automatic: true) }
 
   STAMPABLE_REASONS = %w[
     created

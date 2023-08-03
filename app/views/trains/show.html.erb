@@ -8,6 +8,10 @@
   </div>
 
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+    <% unless @train.active? %>
+      <%= authz_button_to :green, "Activate train", activate_app_train_path(@app, @train), method: :put %>
+    <% end %>
+
     <% if @train.active_run %>
       <%= decorated_link_to :green, "Ongoing Release", live_release_app_train_releases_path(@app, @train) %>
     <% elsif @train.startable? %>

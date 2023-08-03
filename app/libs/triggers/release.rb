@@ -2,14 +2,15 @@ class Triggers::Release
   include Memery
   include SiteHttp
 
-  def self.call(train, has_major_bump: false)
-    new(train, has_major_bump:).call
+  def self.call(train, has_major_bump: false, automatic: false)
+    new(train, has_major_bump:, automatic:).call
   end
 
-  def initialize(train, has_major_bump: false)
+  def initialize(train, has_major_bump: false, automatic: false)
     @train = train
     @starting_time = Time.current
     @has_major_bump = has_major_bump
+    @automatic = automatic
   end
 
   def call
@@ -26,7 +27,7 @@ class Triggers::Release
 
   private
 
-  attr_reader :train, :starting_time
+  attr_reader :train, :starting_time, :automatic
   delegate :branching_strategy, to: :train
 
   memoize def kickoff
@@ -44,7 +45,8 @@ class Triggers::Release
       scheduled_at: starting_time,
       branch_name: release_branch,
       release_version: train.version_current,
-      has_major_bump: major_release?
+      has_major_bump: major_release?,
+      is_automatic: automatic
     )
   end
 

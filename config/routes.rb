@@ -54,6 +54,10 @@ Rails.application.routes.draw do
     end
 
     resources :trains, only: %i[new create edit update show destroy] do
+      member do
+        put :activate
+      end
+
       resources :release_platforms, only: [], path: :platforms, as: :platforms do
         resources :steps, only: %i[new create edit update]
       end
