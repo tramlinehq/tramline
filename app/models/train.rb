@@ -114,6 +114,13 @@ class Train < ApplicationRecord
     kickoff_at + (repeat_duration * (releases.automatic.size || 1))
   end
 
+  GRACE_PERIOD_FOR_RUNNING = 30.seconds
+
+  def runnable?
+    now = Time.current
+    next_run_at.between?(now - GRACE_PERIOD_FOR_RUNNING, now + 12.hours + GRACE_PERIOD_FOR_RUNNING)
+  end
+
   def create_webhook!
     return false if Rails.env.test?
     result = vcs_provider.find_or_create_webhook!(id: vcs_webhook_id, train_id: id)
