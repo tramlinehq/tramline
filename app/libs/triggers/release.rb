@@ -2,6 +2,9 @@ class Triggers::Release
   include Memery
   include SiteHttp
 
+  ReleaseAlreadyInProgress = Class.new(StandardError)
+  NothingToRelease = Class.new(StandardError)
+
   def self.call(train, has_major_bump: false, automatic: false)
     new(train, has_major_bump:, automatic:).call
   end
@@ -33,6 +36,8 @@ class Triggers::Release
   memoize def kickoff
     GitHub::Result.new do
       train.with_lock do
+        raise ReleaseAlreadyInProgress.new("A release is already in progress!") if train.active_run.present?
+        raise NothingToRelease.new("No diff since last release") unless train.diff_since_last_release?
         train.activate! unless train.active?
         create_release
         train.create_webhook!

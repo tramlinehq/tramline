@@ -4,7 +4,7 @@ class ScheduleTrainReleasesJob < ApplicationJob
 
   def perform
     Train.active.filter(&:automatic?).each do |train|
-      train.schedule_release if train.runnable?
+      train.schedule_release! if train.runnable?
     end
   end
 end

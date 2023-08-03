@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_08_03_081723) do
+ActiveRecord::Schema[7.0].define(version: 2023_08_03_115802) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -389,6 +389,16 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_03_081723) do
     t.index ["train_id"], name: "index_releases_on_train_id"
   end
 
+  create_table "scheduled_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_id", null: false
+    t.boolean "is_success", default: false
+    t.string "failure_reason"
+    t.datetime "scheduled_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["train_id"], name: "index_scheduled_releases_on_train_id"
+  end
+
   create_table "slack_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "oauth_access_token"
     t.string "original_oauth_access_token"
@@ -532,6 +542,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_03_081723) do
   add_foreign_key "release_platform_runs", "release_platforms"
   add_foreign_key "release_platforms", "apps"
   add_foreign_key "releases", "trains"
+  add_foreign_key "scheduled_releases", "trains"
   add_foreign_key "staged_rollouts", "deployment_runs"
   add_foreign_key "step_runs", "commits"
   add_foreign_key "step_runs", "release_platform_runs"

@@ -38,6 +38,7 @@ class Train < ApplicationRecord
   has_many :integrations, through: :app
   has_many :steps, through: :release_platforms
   has_many :deployments, through: :steps
+  has_many :scheduled_releases, dependent: :destroy
 
   scope :sequential, -> { order("trains.created_at ASC") }
   scope :running, -> { includes(:releases).where(releases: {status: Release.statuses[:on_track]}) }
@@ -72,7 +73,6 @@ class Train < ApplicationRecord
   before_create :set_current_version, unless: :in_data_migration_mode
   before_create :set_default_status, unless: :in_data_migration_mode
   after_create :create_release_platforms, unless: :in_data_migration_mode
-  after_update_commit :schedule_release, if: :automatic?, on: :activate_context
 
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
@@ -98,12 +98,12 @@ class Train < ApplicationRecord
     first&.release_platforms&.android&.first&.steps&.release&.any?
   end
 
-  def schedule_release
-    if kickoff_at > Time.current
-      TrainKickoffJob.set(wait_until: kickoff_at).perform_later(id)
-    else
-      TrainKickoffJob.set(wait_until: next_run_at).perform_later(id)
-    end
+  def schedule_release!
+    schedule_at = (kickoff_at > Time.current) ? kickoff_at : next_run_at
+    scheduled_release = scheduled_releases.create!(scheduled_at: schedule_at)
+    TrainKickoffJob.set(wait_until: schedule_at).perform_later(scheduled_release.id)
+    Rails.logger.info "Release scheduled for #{name} at #{schedule_at}"
+    # TODO: notify the user
   end
 
   def automatic?
@@ -111,14 +111,19 @@ class Train < ApplicationRecord
   end
 
   def next_run_at
-    kickoff_at + (repeat_duration * (releases.automatic.size || 1))
+    kickoff_at + (repeat_duration * (scheduled_releases.blank? ? 1 : scheduled_releases.count))
   end
 
   GRACE_PERIOD_FOR_RUNNING = 30.seconds
 
   def runnable?
     now = Time.current
-    next_run_at.between?(now - GRACE_PERIOD_FOR_RUNNING, now + 12.hours + GRACE_PERIOD_FOR_RUNNING)
+    next_run_at.between?(now - GRACE_PERIOD_FOR_RUNNING, now + 2.minutes + GRACE_PERIOD_FOR_RUNNING)
+  end
+
+  def diff_since_last_release?
+    return true if last_finished_release.blank?
+    vcs_provider.commit_log(last_finished_release.tag_name, working_branch).any?
   end
 
   def create_webhook!
@@ -159,6 +164,7 @@ class Train < ApplicationRecord
   def activate!
     self.status = Train.statuses[:active]
     save(context: :activate_context)
+    schedule_release! if automatic?
   end
 
   def in_creation?
@@ -241,6 +247,10 @@ class Train < ApplicationRecord
   end
 
   private
+
+  def last_finished_release
+    releases.where(status: "finished").order(completed_at: :desc).first
+  end
 
   def set_constituent_seed_versions
     semverish = version_seeded_with.to_semverish

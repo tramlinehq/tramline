@@ -3,16 +3,16 @@ class TrainKickoffJob < ApplicationJob
 
   queue_as :high
 
-  def perform(train_id)
-    train = Train.find(train_id)
-    return unless train.active?
+  def perform(scheduled_release_id)
+    scheduled_release = ScheduledRelease.find(scheduled_release_id)
+    return unless scheduled_release.train.active?
 
-    response = Triggers::Release.call(train, automatic: true)
+    response = Triggers::Release.call(scheduled_release.train, automatic: true)
 
     if response.success?
-      Rails.logger.info "A new release has started successfully for train – ", train
+      scheduled_release.update!(is_success: true)
     else
-      Rails.logger.info "A new release failed to start for train #{train.name} due to #{response.body}"
+      scheduled_release.update!(failure_reason: response.body)
     end
   end
 end
