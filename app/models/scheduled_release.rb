@@ -14,4 +14,17 @@ class ScheduledRelease < ApplicationRecord
   has_paper_trail
 
   belongs_to :train
+
+  after_create_commit :kickoff
+
+  def status
+    return :pending if scheduled_at > Time.current
+    is_success? ? :ran : :skipped
+  end
+
+  def kickoff
+    TrainKickoffJob.set(wait_until: scheduled_at).perform_later(id)
+    Rails.logger.info "Release scheduled for #{train.name} at #{scheduled_at}"
+    # TODO: notify the user
+  end
 end

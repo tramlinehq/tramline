@@ -101,20 +101,21 @@
 
   <!-- Releases -->
   <section>
-    <% if @train.releases.size > 0 %>
-      <%= render TableComponent.new(columns: ["•", "version", "release branch"]) do |table| %>
-        <% table.with_heading do %>
-          <h2 class="text-2xl font-bold">Releases</h2>
-        <% end %>
+    <article class="w-full mt-10">
+      <% if @train.releases.size > 0 %>
+        <%= render TableComponent.new(columns: ["•", "version", "release branch"]) do |table| %>
+          <% table.with_heading do %>
+            <h2 class="text-2xl font-bold">Releases</h2>
+          <% end %>
 
-        <% @train.releases.order(scheduled_at: :desc).take(10).each_with_index do |run, index| %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              <%= @train.releases.size - index %>
-            <% end %>
+          <% @train.releases.order(scheduled_at: :desc).take(10).each_with_index do |run, index| %>
+            <% table.with_row do |row| %>
+              <% row.with_cell do %>
+                <%= @train.releases.size - index %>
+              <% end %>
 
-            <% row.with_cell do %>
-              <%= link_to release_path(run.id) do %>
+              <% row.with_cell do %>
+                <%= link_to release_path(run.id) do %>
                 <span class="underline">
                   <% if run.completed_at %>
                     <code><%= run.release_version %></code>
@@ -124,21 +125,47 @@
                   <% end %>
                 </span>
 
-                <span class="ml-2 py-0.5"><%= release_status_badge(run.status) %></span>
+                  <span class="ml-2 py-0.5"><%= release_status_badge(run.status) %></span>
+                <% end %>
+              <% end %>
+
+              <% row.with_cell do %>
+                <%= run.branch_name %>
               <% end %>
             <% end %>
+          <% end %>
+        <% end %>
+      <% else %>
+        <h2 class="text-2xl font-bold mb-4">Releases</h2>
+        <span class="text-sm text-slate-400">
+        Start a new release to see it here.
+      </span>
+      <% end %>
+    </article>
+    <article class="w-full mt-10">
+      <% if @train.scheduled_releases.size > 0 %>
+        <%= render TableComponent.new(columns: ["at", "status", "reason"]) do |table| %>
+          <% table.with_heading do %>
+            <h2 class="text-2xl font-bold">Automated Releases</h2>
+          <% end %>
 
-            <% row.with_cell do %>
-              <%= run.branch_name %>
+          <% @train.scheduled_releases.order(scheduled_at: :desc).take(10).each_with_index do |run, index| %>
+            <% table.with_row do |row| %>
+              <% row.with_cell do %>
+                <%= run.scheduled_at.to_formatted_s(:short)  %>
+              <% end %>
+
+              <% row.with_cell do %>
+                <span class="ml-2 py-0.5"><%=  status_badge(run.status, :neutral)  %></span>
+              <% end %>
+
+              <% row.with_cell do %>
+                <%= run.failure_reason %>
+              <% end %>
             <% end %>
           <% end %>
         <% end %>
       <% end %>
-    <% else %>
-      <h2 class="text-2xl font-bold mb-4">Releases</h2>
-      <span class="text-sm text-slate-400">
-        Start a new release to see it here.
-      </span>
-    <% end %>
+    </article>
   </section>
 </div>

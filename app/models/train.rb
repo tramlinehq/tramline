@@ -100,10 +100,7 @@ class Train < ApplicationRecord
 
   def schedule_release!
     schedule_at = (kickoff_at > Time.current) ? kickoff_at : next_run_at
-    scheduled_release = scheduled_releases.create!(scheduled_at: schedule_at)
-    TrainKickoffJob.set(wait_until: schedule_at).perform_later(scheduled_release.id)
-    Rails.logger.info "Release scheduled for #{name} at #{schedule_at}"
-    # TODO: notify the user
+    scheduled_releases.create!(scheduled_at: schedule_at)
   end
 
   def automatic?
