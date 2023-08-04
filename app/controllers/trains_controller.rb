@@ -105,13 +105,22 @@ class TrainsController < SignedInApplicationController
 
   def parsed_train_params
     train_params
-      .merge(repeat_duration: repeat_duration_in_iso8601(train_params))
+      .merge(repeat_duration: repeat_duration(train_params))
+      .merge(kickoff_at: in_utc(train_params[:kickoff_at]))
       .except(:repeat_duration_value, :repeat_duration_unit)
   end
 
-  def repeat_duration_in_iso8601(train_params)
+  def repeat_duration(train_params)
     return if train_params[:repeat_duration_value].blank?
-    Duration.new(train_params[:repeat_duration_unit] => train_params[:repeat_duration_value]).iso8601
+    ActiveSupport::Duration.parse(
+      Duration.new(train_params[:repeat_duration_unit].to_sym =>
+                     train_params[:repeat_duration_value].to_i).iso8601
+    )
+  end
+
+  def in_utc(time_param)
+    return unless time_param
+    Time.parse(time_param).in_time_zone.utc
   end
 
   def train_update_params
