@@ -183,11 +183,7 @@ class Train < ApplicationRecord
     branching_strategy == "parallel_working"
   end
 
-  def tag_name
-    "v#{version_current}"
-  end
-
-  def create_release!(branch_name)
+  def create_release!(branch_name, tag_name)
     return false unless activated?
     vcs_provider.create_release!(tag_name, branch_name)
   end

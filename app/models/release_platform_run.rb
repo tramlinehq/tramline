@@ -176,13 +176,16 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def on_finish!
-    ReleasePlatformRuns::CreateTagJob.perform_later(id, base_tag_name)
+    ReleasePlatformRuns::CreateTagJob.perform_later(id)
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     app.refresh_external_app
   end
 
-  def create_tag!(name)
+  def create_tag!(tag_name = base_tag_name)
     train.create_tag!(name, last_commit.commit_hash)
+    update!(tag_name:)
+  rescue Installations::Errors::TagReferenceAlreadyExists
+    create_tag!(unique_tag_name(tag_name))
   end
 
   # Play store does not have constraints around version name
@@ -216,9 +219,22 @@ class ReleasePlatformRun < ApplicationRecord
       .pluck(:message)
   end
 
-  def unique_tag_name
-    return if tag_name.blank?
-    [tag_name, "-", SecureRandom.hex(3)].join
+  # returns a sticky but unique tag name
+  # tries to optimize for the most readable tag name
+  # until we start adding time
+  #
+  #
+  # v1.0.0-android-0cf2849
+  # v1.0.0-android-0cf2849-1691092406
+  # v1.0.0-android-0cf2849-1691092492
+  # ...and so on
+  #
+  # note: avoids appending increasing numbers to avoid keeping state
+  def unique_tag_name(currently)
+    tag_parts = currently.split("-")
+    sha = last_commit.short_sha
+    return [base_tag_name, "-", sha, "-", Time.now.to_i].join if tag_parts.size.between?(3, 4)
+    [base_tag_name, "-", sha].join
   end
 
   private

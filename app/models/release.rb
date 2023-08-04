@@ -120,6 +120,10 @@ class Release < ApplicationRecord
     created? || on_track? || partially_finished?
   end
 
+  def stoppable?
+    may_stop?
+  end
+
   def fetch_commit_log
     if previous_release.present?
       create_release_changelog(
@@ -133,20 +137,19 @@ class Release < ApplicationRecord
     release_platform_runs.pluck(:release_version).map(&:to_semverish).max.to_s
   end
 
-  def tag_name
-    "v#{release_version}"
-  end
-
-  def stoppable?
-    may_stop?
-  end
-
   def release_branch
     branch_name
   end
 
+  def create_release!(tag_name = base_tag_name)
+    train.create_release!(release_branch, tag_name)
+    update!(tag_name:)
+  rescue Installations::Errors::TagReferenceAlreadyExists, Installations::Errors::TaggedReleaseAlreadyExists
+    create_release!(unique_tag_name(tag_name))
+  end
+
   def branch_url
-    train.vcs_provider&.branch_url(app.config&.code_repository_name, branch_name)
+    train.vcs_provider&.branch_url(app.config&.code_repository_name, release_branch)
   end
 
   def tag_url
@@ -209,7 +212,7 @@ class Release < ApplicationRecord
   def notification_params
     train.notification_params.merge(
       {
-        release_branch: branch_name,
+        release_branch: release_branch,
         release_branch_url: branch_url,
         release_url: live_release_link,
         release_notes: release_metadata&.release_notes
@@ -232,7 +235,18 @@ class Release < ApplicationRecord
     commits.order(:created_at).last
   end
 
+  def unique_tag_name(currently)
+    tag_parts = currently.split("-")
+    sha = last_commit.short_sha
+    return [base_tag_name, "-", sha, "-", Time.now.to_i].join if tag_parts.size.between?(2, 3)
+    [base_tag_name, "-", sha].join
+  end
+
   private
+
+  def base_tag_name
+    "v#{release_version}"
+  end
 
   def create_platform_runs
     release_platforms.each do |release_platform|
