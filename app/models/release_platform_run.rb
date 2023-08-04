@@ -22,6 +22,7 @@ class ReleasePlatformRun < ApplicationRecord
   has_paper_trail
   include AASM
   include Passportable
+  include Taggable
   include ActionView::Helpers::DateHelper
   include Displayable
   using RefinedString
@@ -176,13 +177,13 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def on_finish!
-    ReleasePlatformRuns::CreateTagJob.perform_later(id)
+    ReleasePlatformRuns::CreateTagJob.perform_later(id) if app.cross_platform?
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     app.refresh_external_app
   end
 
   def create_tag!(tag_name = base_tag_name)
-    train.create_tag!(name, last_commit.commit_hash)
+    train.create_tag!(tag_name, last_commit.commit_hash)
     update!(tag_name:)
   rescue Installations::Errors::TagReferenceAlreadyExists
     create_tag!(unique_tag_name(tag_name))
@@ -217,24 +218,6 @@ class ReleasePlatformRun < ApplicationRecord
     commits
       .between(previous_successful_run_before(step_run), step_run)
       .pluck(:message)
-  end
-
-  # returns a sticky but unique tag name
-  # tries to optimize for the most readable tag name
-  # until we start adding time
-  #
-  #
-  # v1.0.0-android-0cf2849
-  # v1.0.0-android-0cf2849-1691092406
-  # v1.0.0-android-0cf2849-1691092492
-  # ...and so on
-  #
-  # note: avoids appending increasing numbers to avoid keeping state
-  def unique_tag_name(currently)
-    tag_parts = currently.split("-")
-    sha = last_commit.short_sha
-    return [base_tag_name, "-", sha, "-", Time.now.to_i].join if tag_parts.size.between?(3, 4)
-    [base_tag_name, "-", sha].join
   end
 
   private

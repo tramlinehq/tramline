@@ -10,6 +10,7 @@
 #  scheduled_at             :datetime
 #  status                   :string           not null
 #  stopped_at               :datetime
+#  tag_name                 :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
 #  train_id                 :uuid             not null, indexed
@@ -18,6 +19,7 @@ class Release < ApplicationRecord
   has_paper_trail
   include AASM
   include Passportable
+  include Taggable
   include ActionView::Helpers::DateHelper
   include Rails.application.routes.url_helpers
   using RefinedString
@@ -233,13 +235,6 @@ class Release < ApplicationRecord
 
   def last_commit
     commits.order(:created_at).last
-  end
-
-  def unique_tag_name(currently)
-    tag_parts = currently.split("-")
-    sha = last_commit.short_sha
-    return [base_tag_name, "-", sha, "-", Time.now.to_i].join if tag_parts.size.between?(2, 3)
-    [base_tag_name, "-", sha].join
   end
 
   private

@@ -386,6 +386,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_03_132100) do
     t.datetime "stopped_at", precision: nil
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "tag_name"
     t.index ["train_id"], name: "index_releases_on_train_id"
   end
 
