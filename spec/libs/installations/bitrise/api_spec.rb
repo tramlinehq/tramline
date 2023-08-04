@@ -70,7 +70,8 @@ describe Installations::Bitrise::Api, type: :integration do
       branch = Faker::Lorem.characters(number: 8)
       inputs = {
         version_code: Faker::Number.number(digits: 4),
-        build_version: Faker::Lorem.characters(number: 8)
+        build_version: Faker::Lorem.characters(number: 8),
+        build_notes: Faker::Lorem.characters(number: 10)
       }
       commit_hash = Faker::Crypto.sha1
       params = {
@@ -81,7 +82,8 @@ describe Installations::Bitrise::Api, type: :integration do
             workflow_id: workflow_id,
             environments: [
               {mapped_to: "versionName", value: inputs[:build_version]},
-              {mapped_to: "versionCode", value: inputs[:version_code]}
+              {mapped_to: "versionCode", value: inputs[:version_code]},
+              {mapped_to: "buildNotes", value: inputs[:build_notes]}
             ]
           },
 
