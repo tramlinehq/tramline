@@ -62,6 +62,7 @@ class Train < ApplicationRecord
 
   validate :semver_compatibility, on: :create
   validate :ready?, on: :create
+  validate :valid_schedule, on: :create
   validate :valid_train_configuration, on: :activate_context
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
 
@@ -282,6 +283,14 @@ class Train < ApplicationRecord
   def valid_train_configuration
     unless release_platforms.all?(&:valid_steps?)
       errors.add(:train, "there should be one release step for all platforms")
+    end
+  end
+
+  def valid_schedule
+    if kickoff_at.present? || repeat_duration.present?
+      errors.add(:kickoff_at, "the schedule kickoff should be in the future") if kickoff_at && kickoff_at <= Time.current
+      errors.add(:repeat_duration, "invalid schedule, provide both kickoff and period for repeat") unless kickoff_at.present? && repeat_duration.present?
+      errors.add(:kickoff_at, "scheduled trains allowed only for Almost Trunk branching strategy") if branching_strategy != "almost_trunk"
     end
   end
 

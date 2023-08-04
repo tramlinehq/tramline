@@ -19,7 +19,7 @@ class TrainsController < SignedInApplicationController
   end
 
   def create
-    @train = @app.trains.new(train_params)
+    @train = @app.trains.new(parsed_train_params)
 
     respond_to do |format|
       if @train.save
@@ -96,8 +96,22 @@ class TrainsController < SignedInApplicationController
       :patch_version_seed,
       :branching_strategy,
       :release_backmerge_branch,
-      :release_branch
+      :release_branch,
+      :kickoff_at,
+      :repeat_duration_value,
+      :repeat_duration_unit
     )
+  end
+
+  def parsed_train_params
+    train_params
+      .merge(repeat_duration: repeat_duration_in_iso8601(train_params))
+      .except(:repeat_duration_value, :repeat_duration_unit)
+  end
+
+  def repeat_duration_in_iso8601(train_params)
+    return if train_params[:repeat_duration_value].blank?
+    Duration.new(train_params[:repeat_duration_unit] => train_params[:repeat_duration_value]).iso8601
   end
 
   def train_update_params

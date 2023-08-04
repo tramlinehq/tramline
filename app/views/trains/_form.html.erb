@@ -96,7 +96,8 @@
 
         <div class="text-sm mt-2">
           <p>
-            Tramline increments the version name for every release build created, which guarantees that every build can be
+            Tramline increments the version name for every release build created, which guarantees that every build can
+            be
             uniquely identified. We allow a
             <%= link_to_external "SemVer", "https://semver.org", class: "underline" %>-like scheme, for eg.
             <code>MAJOR.MINOR.PATCH</code> and <code>MAJOR.MINOR</code>.
@@ -157,6 +158,24 @@
       to learn more about our supported branching strategies.
     </div>
   <% end %>
+
+  <div class="text-xl text-slate-600 font-medium mt-8">Kickoff Schedule</div>
+  <div class="text-sm mt-4 mb-4">Set a schedule for automatic kickoff of your release train. Leave blank for only manual control.</div>
+
+  <div class="grid gap-x-5 md:grid-cols-2">
+    <div>
+      <%= form.label :kickoff_at, class: "block text-sm font-medium mb-1" %>
+      <%= form.datetime_field :kickoff_at, class: "form-input"%>
+    </div>
+
+    <div>
+      <%= form.label "Every", class: "block text-sm font-medium mb-1" %>
+      <div>
+        <%= form.number_field :repeat_duration_value, class: "form-input", step: 1, min: 1, default: nil %>
+        <%= form.select :repeat_duration_unit, options_for_select([%w[Day(s) "days"], %w[Week(s) weeks]], "days"), {}, { class: "form-input" } %>
+      </div>
+    </div>
+  </div>
 
   <div class="mt-10">
     <%= form.authz_submit :blue, train.persisted? ? "Update Train" : "Create Train" %>
