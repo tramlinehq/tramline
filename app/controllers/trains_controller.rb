@@ -2,10 +2,10 @@ class TrainsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
-  before_action :require_write_access!, only: %i[new create edit update destroy activate]
-  before_action :set_app, only: %i[new create show edit update destroy activate]
+  before_action :require_write_access!, only: %i[new create edit update destroy activate deactivate]
+  before_action :set_app, only: %i[new create show edit update destroy activate deactivate]
   around_action :set_time_zone
-  before_action :set_train, only: %i[show edit update destroy activate]
+  before_action :set_train, only: %i[show edit update destroy activate deactivate]
   before_action :validate_integration_status, only: %i[new create]
 
   def show
@@ -58,6 +58,20 @@ class TrainsController < SignedInApplicationController
     respond_to do |format|
       if @train.activate!
         format.html { redirect_to train_path, notice: "Train was activated!" }
+        format.json { render :show, status: :ok, location: @train }
+      else
+        format.html { render :show, status: :unprocessable_entity }
+        format.json { render json: @train.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def deactivate
+    redirect_to train_path, notice: "Can not deactivate with an ongoing release" and return if @train.active_run.present?
+
+    respond_to do |format|
+      if @train.deactivate!
+        format.html { redirect_to train_path, notice: "Train was deactivated!" }
         format.json { render :show, status: :ok, location: @train }
       else
         format.html { render :show, status: :unprocessable_entity }

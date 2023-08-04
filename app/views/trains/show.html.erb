@@ -8,15 +8,22 @@
   </div>
 
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-    <% unless @train.active? %>
-      <%= authz_button_to :green, "Activate train", activate_app_train_path(@app, @train), method: :put %>
+    <% if @train.automatic? %>
+      <% if @train.startable? && !@train.active? %>
+        <%= authz_button_to :green, "Activate train", activate_app_train_path(@app, @train), method: :patch,
+                            data: { turbo_method: :patch, turbo_confirm: "This will start scheduling release kickoff(s). Are you sure?" } %>
+      <% end %>
+      <% if @train.active? && @train.active_run.blank? %>
+        <%= authz_button_to :red, "Deactivate train", deactivate_app_train_path(@app, @train), method: :patch,
+                            data: { turbo_method: :patch, turbo_confirm: "This will cancel all the scheduled release kickoff(s). Are you sure?" } %>
+      <% end %>
     <% end %>
 
     <% if @train.active_run %>
       <%= decorated_link_to :green, "Ongoing Release", live_release_app_train_releases_path(@app, @train) %>
     <% elsif @train.startable? %>
-      <%= authz_button_to :blue, "Start release #{@train.next_release_version}", app_train_releases_path(@app, @train) %>
-      <%= authz_button_to :amber, "Start major release #{@train.next_release_version(true)}", app_train_releases_path(@app, @train, has_major_bump: true) %>
+      <%= authz_button_to :blue, start_release_text(@train), app_train_releases_path(@app, @train) %>
+      <%= authz_button_to :amber, start_release_text(@train, major: true), app_train_releases_path(@app, @train, has_major_bump: true) %>
     <% end %>
 
     <% if @train.releases.size > 0 %>
@@ -80,6 +87,10 @@
             <%= link_to_external("#{@train.config.code_repository_name} ↗", @train.config.code_repo_url) %>
           </span>
         <% end %>
+
+        <% mt.with_description("Release schedule") do %>
+          <%= release_schedule(@train) %>
+        <% end %>
       <% end %>
     </article>
 
@@ -101,7 +112,7 @@
 
   <!-- Releases -->
   <section>
-    <article class="w-full mt-10">
+    <article class="w-full">
       <% if @train.releases.size > 0 %>
         <%= render TableComponent.new(columns: ["•", "version", "release branch"]) do |table| %>
           <% table.with_heading do %>
@@ -116,16 +127,18 @@
 
               <% row.with_cell do %>
                 <%= link_to release_path(run.id) do %>
-                <span class="underline">
-                  <% if run.completed_at %>
-                    <code><%= run.release_version %></code>
-                    <%= "released on #{run.completed_at.to_s(:short)}" %>
-                  <% else %>
-                    <code><%= version_in_progress(run.release_version) %></code>
-                  <% end %>
-                </span>
-
+                  <span class="underline">
+                    <% if run.completed_at %>
+                      <code><%= run.release_version %></code>
+                      <%= "released on #{run.completed_at.to_s(:short)}" %>
+                    <% else %>
+                      <code><%= version_in_progress(run.release_version) %></code>
+                    <% end %>
+                  </span>
                   <span class="ml-2 py-0.5"><%= release_status_badge(run.status) %></span>
+                  <% if run.is_automatic? %>
+                    <span class="ml-2 py-0.5"><%= status_badge("automatic", :neutral) %></span>
+                  <% end %>
                 <% end %>
               <% end %>
 
@@ -144,19 +157,19 @@
     </article>
     <article class="w-full mt-10">
       <% if @train.scheduled_releases.size > 0 %>
-        <%= render TableComponent.new(columns: ["at", "status", "reason"]) do |table| %>
+        <%= render TableComponent.new(columns: ["at", "status", "note"]) do |table| %>
           <% table.with_heading do %>
-            <h2 class="text-2xl font-bold">Automated Releases</h2>
+            <h2 class="text-2xl font-bold">Recent Scheduled Kickoffs</h2>
           <% end %>
 
-          <% @train.scheduled_releases.order(scheduled_at: :desc).take(10).each_with_index do |run, index| %>
+          <% @train.scheduled_releases.order(scheduled_at: :desc).take(5).each do |run| %>
             <% table.with_row do |row| %>
               <% row.with_cell do %>
-                <%= run.scheduled_at.to_formatted_s(:short)  %>
+                <%= run.scheduled_at.to_formatted_s(:short) %>
               <% end %>
 
               <% row.with_cell do %>
-                <span class="ml-2 py-0.5"><%=  status_badge(run.status, :neutral)  %></span>
+                <span class="py-0.5"><%= status_badge(run.status, :neutral) %></span>
               <% end %>
 
               <% row.with_cell do %>

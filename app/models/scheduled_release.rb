@@ -13,7 +13,11 @@
 class ScheduledRelease < ApplicationRecord
   has_paper_trail
 
+  self.implicit_order_column = :scheduled_at
+
   belongs_to :train
+
+  scope :pending, -> { where("scheduled_at > ?", Time.current) }
 
   after_create_commit :kickoff
 

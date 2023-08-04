@@ -160,9 +160,19 @@ class Train < ApplicationRecord
   end
 
   def activate!
-    self.status = Train.statuses[:active]
-    save(context: :activate_context)
-    schedule_release! if automatic?
+    if valid?(context: :activate_context)
+      update(status: Train.statuses[:active])
+      schedule_release! if automatic?
+      true
+    end
+  end
+
+  def deactivate!
+    update(status: Train.statuses[:inactive]) && cancel_scheduled_releases!
+  end
+
+  def cancel_scheduled_releases!
+    scheduled_releases.pending&.delete_all
   end
 
   def in_creation?

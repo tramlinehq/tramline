@@ -55,7 +55,8 @@ Rails.application.routes.draw do
 
     resources :trains, only: %i[new create edit update show destroy] do
       member do
-        put :activate
+        patch :activate
+        patch :deactivate
       end
 
       resources :release_platforms, only: [], path: :platforms, as: :platforms do
