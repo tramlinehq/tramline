@@ -38,6 +38,7 @@ class StepRun < ApplicationRecord
   validates :step_id, uniqueness: {scope: :commit_id}
 
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
+  after_commit -> { update(build_notes_raw: relevant_changes) }, on: :create
   after_commit -> { Releases::TriggerWorkflowRunJob.perform_later(id) }, on: :create
 
   STAMPABLE_REASONS = %w[
@@ -328,7 +329,8 @@ class StepRun < ApplicationRecord
     version_code = release_platform.app.bump_build_number!
     inputs = {
       version_code: version_code,
-      build_version: build_version
+      build_version: build_version,
+      build_notes: build_notes
     }
     update!(build_number: version_code)
 
@@ -368,7 +370,6 @@ class StepRun < ApplicationRecord
     event_stamp!(reason: :ci_triggered, kind: :notice, data: {version: build_version})
     notify!("Step has been triggered!", :step_started, notification_params)
     Releases::CancelStepRun.perform_later(previous_step_run.id) if previous_step_run&.may_cancel?
-    update(build_notes_raw: relevant_changes)
   end
 
   def has_uploadables?
