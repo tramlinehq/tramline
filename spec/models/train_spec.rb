@@ -120,41 +120,34 @@ describe Train do
 
   describe "#next_run_at" do
     it "returns kickoff time if no releases have been scheduled yet and kickoff is in the future" do
-      kickoff_at = 2.hours.from_now
-      train = create(:train, :with_almost_trunk, :active, kickoff_at:, repeat_duration: 1.day)
+      train = create(:train, :with_schedule, :active)
 
-      expect(train.next_run_at).to eq(kickoff_at)
+      expect(train.next_run_at).to eq(train.kickoff_at)
     end
 
     it "returns kickoff + repeat duration time if no releases have been scheduled yet and kickoff is in the past" do
-      kickoff_at = 2.hours.from_now
-      repeat_duration = 1.day
-      train = create(:train, :with_almost_trunk, :active, kickoff_at:, repeat_duration:)
+      train = create(:train, :with_schedule, :active)
 
-      travel_to 3.hours.from_now do
-        expect(train.next_run_at).to eq(kickoff_at + repeat_duration)
+      travel_to train.kickoff_at + 1.hour do
+        expect(train.next_run_at).to eq(train.kickoff_at + train.repeat_duration)
       end
     end
 
     it "returns next available schedule time if there are scheduled releases" do
-      kickoff_at = 2.hours.from_now
-      repeat_duration = 1.day
-      train = create(:train, :with_almost_trunk, :active, kickoff_at:, repeat_duration:)
-      train.scheduled_releases.create!(scheduled_at: kickoff_at)
+      train = create(:train, :with_schedule, :active)
+      train.scheduled_releases.create!(scheduled_at: train.kickoff_at)
 
-      travel_to 3.hours.from_now do
-        expect(train.next_run_at).to eq(kickoff_at + repeat_duration)
+      travel_to train.kickoff_at + 1.hour do
+        expect(train.next_run_at).to eq(train.kickoff_at + train.repeat_duration)
       end
     end
 
     it "returns next available schedule time if there are scheduled releases and more than repeat duration has passed since last scheduled release" do
-      kickoff_at = 2.hours.from_now
-      repeat_duration = 1.day
-      train = create(:train, :with_almost_trunk, :active, kickoff_at:, repeat_duration:)
-      train.scheduled_releases.create!(scheduled_at: kickoff_at)
+      train = create(:train, :with_schedule, :active)
+      train.scheduled_releases.create!(scheduled_at: train.kickoff_at)
 
-      travel_to 2.days.from_now do
-        expect(train.next_run_at).to eq(kickoff_at + repeat_duration * 2)
+      travel_to train.kickoff_at + 2.days + 1.hour do
+        expect(train.next_run_at).to eq(train.kickoff_at + train.repeat_duration * 3)
       end
     end
   end
