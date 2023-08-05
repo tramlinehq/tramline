@@ -100,8 +100,7 @@ class Train < ApplicationRecord
   end
 
   def schedule_release!
-    schedule_at = (kickoff_at > Time.current) ? kickoff_at : next_run_at
-    scheduled_releases.create!(scheduled_at: schedule_at)
+    scheduled_releases.create!(scheduled_at: next_run_at)
   end
 
   def automatic?
@@ -109,7 +108,14 @@ class Train < ApplicationRecord
   end
 
   def next_run_at
-    kickoff_at + (repeat_duration * (scheduled_releases.blank? ? 1 : scheduled_releases.count))
+    base_time = scheduled_releases.last&.scheduled_at || kickoff_at
+    now = Time.current
+
+    return base_time if now < base_time
+
+    time_difference = now - base_time
+    passed_durations = (time_difference / repeat_duration.to_i).ceil
+    base_time + (repeat_duration.to_i * passed_durations)
   end
 
   GRACE_PERIOD_FOR_RUNNING = 30.seconds

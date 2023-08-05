@@ -92,4 +92,70 @@ describe Train do
       expect(train.reload.release_platforms.pluck(:platform)).to contain_exactly(*ReleasePlatform.platforms.keys)
     end
   end
+
+  describe "#activate!" do
+    it "marks the train as active" do
+      train = create(:train, :draft)
+      train.activate!
+
+      expect(train.reload.active?).to be(true)
+    end
+
+    it "marks an inactive train as active" do
+      train = create(:train, :inactive)
+      train.activate!
+
+      expect(train.reload.active?).to be(true)
+    end
+
+    it "schedules the release for an automatic train" do
+      kickoff_at = 2.hours.from_now
+      train = create(:train, :with_almost_trunk, :draft, kickoff_at:, repeat_duration: 1.day)
+      train.activate!
+
+      expect(train.reload.scheduled_releases.count).to be(1)
+      expect(train.reload.scheduled_releases.first.scheduled_at).to eq(kickoff_at)
+    end
+  end
+
+  describe "#next_run_at" do
+    it "returns kickoff time if no releases have been scheduled yet and kickoff is in the future" do
+      kickoff_at = 2.hours.from_now
+      train = create(:train, :with_almost_trunk, :active, kickoff_at:, repeat_duration: 1.day)
+
+      expect(train.next_run_at).to eq(kickoff_at)
+    end
+
+    it "returns kickoff + repeat duration time if no releases have been scheduled yet and kickoff is in the past" do
+      kickoff_at = 2.hours.from_now
+      repeat_duration = 1.day
+      train = create(:train, :with_almost_trunk, :active, kickoff_at:, repeat_duration:)
+
+      travel_to 3.hours.from_now do
+        expect(train.next_run_at).to eq(kickoff_at + repeat_duration)
+      end
+    end
+
+    it "returns next available schedule time if there are scheduled releases" do
+      kickoff_at = 2.hours.from_now
+      repeat_duration = 1.day
+      train = create(:train, :with_almost_trunk, :active, kickoff_at:, repeat_duration:)
+      train.scheduled_releases.create!(scheduled_at: kickoff_at)
+
+      travel_to 3.hours.from_now do
+        expect(train.next_run_at).to eq(kickoff_at + repeat_duration)
+      end
+    end
+
+    it "returns next available schedule time if there are scheduled releases and more than repeat duration has passed since last scheduled release" do
+      kickoff_at = 2.hours.from_now
+      repeat_duration = 1.day
+      train = create(:train, :with_almost_trunk, :active, kickoff_at:, repeat_duration:)
+      train.scheduled_releases.create!(scheduled_at: kickoff_at)
+
+      travel_to 2.days.from_now do
+        expect(train.next_run_at).to eq(kickoff_at + repeat_duration * 2)
+      end
+    end
+  end
 end
