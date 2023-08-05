@@ -122,7 +122,7 @@ class Train < ApplicationRecord
 
   def runnable?
     now = Time.current
-    next_run_at.between?(now - GRACE_PERIOD_FOR_RUNNING, now + 2.minutes + GRACE_PERIOD_FOR_RUNNING)
+    next_run_at.between?(now - GRACE_PERIOD_FOR_RUNNING, now + 1.day + GRACE_PERIOD_FOR_RUNNING)
   end
 
   def diff_since_last_release?
