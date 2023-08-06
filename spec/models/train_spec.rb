@@ -109,12 +109,11 @@ describe Train do
     end
 
     it "schedules the release for an automatic train" do
-      kickoff_at = 2.hours.from_now
-      train = create(:train, :with_almost_trunk, :draft, kickoff_at:, repeat_duration: 1.day)
+      train = create(:train, :with_schedule, :draft)
       train.activate!
 
       expect(train.reload.scheduled_releases.count).to be(1)
-      expect(train.reload.scheduled_releases.first.scheduled_at).to eq(kickoff_at)
+      expect(train.reload.scheduled_releases.first.scheduled_at).to eq(train.kickoff_at)
     end
   end
 
