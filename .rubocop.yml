@@ -40,6 +40,9 @@ Rails/ReversibleMigration:
 Rails/UniqBeforePluck:
   Enabled: false # https://github.com/rubocop/rubocop/issues/3148
 
+Rails/DurationArithmetic:
+  Exclude: spec/jobs/schedule_train_releases_job_spec.rb
+
 RSpec:
   Enabled: true
 

@@ -22,7 +22,7 @@ describe ScheduleTrainReleasesJob do
   end
 
   it "does not schedule release for active trains with nothing to schedule" do
-    train = create(:train, :with_almost_trunk, :active, kickoff_at: 2.hours.from_now, repeat_duration: 5.days)
+    train = create(:train, :with_almost_trunk, :active, kickoff_at: Time.current + 2.hours, repeat_duration: 5.days)
     train.scheduled_releases.create!(scheduled_at: train.kickoff_at)
 
     expect(train.scheduled_releases.count).to eq(1)
