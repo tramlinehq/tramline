@@ -47,7 +47,9 @@
   </div>
 </div>
 
-<%= render partial: "shared/demo/release_schedule" %>
+<% if @train.automatic? && @train.active? %>
+  <%= render partial: "release_schedule", locals: { train: @train } %>
+<% end %>
 
 <div class="grid md:grid-cols-2 gap-x-11 pb-5 mt-8">
   <!-- Train Info -->
@@ -153,31 +155,6 @@
         <span class="text-sm text-slate-400">
         Start a new release to see it here.
       </span>
-      <% end %>
-    </article>
-    <article class="w-full mt-10">
-      <% if @train.scheduled_releases.size > 0 %>
-        <%= render TableComponent.new(columns: ["at", "status", "note"]) do |table| %>
-          <% table.with_heading do %>
-            <h2 class="text-2xl font-bold">Recent Scheduled Kickoffs</h2>
-          <% end %>
-
-          <% @train.scheduled_releases.order(scheduled_at: :desc).take(5).each do |run| %>
-            <% table.with_row do |row| %>
-              <% row.with_cell do %>
-                <%= run.scheduled_at.to_formatted_s(:short) %>
-              <% end %>
-
-              <% row.with_cell do %>
-                <span class="py-0.5"><%= status_badge(run.status, :neutral) %></span>
-              <% end %>
-
-              <% row.with_cell do %>
-                <%= run.failure_reason %>
-              <% end %>
-            <% end %>
-          <% end %>
-        <% end %>
       <% end %>
     </article>
   </section>

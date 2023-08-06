@@ -1,0 +1,45 @@
+<section class="w-1/2 mt-8 pr-6 border-b pb-4">
+  <h2 class="text-2xl text-slate-800 font-bold">Release Schedule</h2>
+  <span class="text-sm text-slate-400"><%= release_schedule(train) %></span>
+  <div class="grid grid-cols-3 gap-x-1 my-3 gap-y-2">
+    <div class="flex flex-col bg-green-100 rounded-sm pl-4 pt-4 h-50">
+      <div class="flex-grow mb-2">
+        <p class="uppercase tracking-wider text-2xl drop-shadow-md">
+          <% if train.active_run %>
+            <%= train.active_run.scheduled_at.strftime("#{train.active_run.scheduled_at.day.ordinalize} %B") %>
+          <% else %>
+            None
+          <% end %>
+        </p>
+      </div>
+      <div class="mt-3 mb-3 text-stone text-sm drop-shadow-sm">
+        This release is in progress
+      </div>
+    </div>
+
+    <div class="flex flex-col bg-indigo-100 rounded-sm pl-4 pt-4 h-50">
+      <div class="flex-grow mb-2">
+        <p class="uppercase tracking-wider text-2xl drop-shadow-md">
+          <% next_date = train.next_run_at %>
+          <%= next_date.strftime("#{next_date.day.ordinalize} %B") %>
+        </p>
+      </div>
+      <div class="mt-3 mb-3 text-stone text-sm drop-shadow-sm">
+        Next upcoming release
+      </div>
+    </div>
+
+    <div class="flex flex-col bg-indigo-300 rounded-sm pl-4 pt-4 h-50">
+      <div class="flex-grow mb-2">
+        <p class="uppercase tracking-wider text-white text-2xl drop-shadow-md">
+          <% next_date = train.next_run_at + train.repeat_duration %>
+          <%= next_date.strftime("#{next_date.day.ordinalize} %B") %>
+        </p>
+      </div>
+
+      <div class="mt-3 mb-3 text-stone text-sm drop-shadow-sm">
+        Future release
+      </div>
+    </div>
+  </div>
+</section>
