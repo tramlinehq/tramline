@@ -108,7 +108,7 @@ class Train < ApplicationRecord
   end
 
   def next_run_at
-    base_time = scheduled_releases.last&.scheduled_at || kickoff_at
+    base_time = last_run_at
     now = Time.current
 
     return base_time if now < base_time
@@ -118,11 +118,12 @@ class Train < ApplicationRecord
     base_time + (repeat_duration.to_i * passed_durations)
   end
 
-  GRACE_PERIOD_FOR_RUNNING = 30.seconds
-
   def runnable?
-    now = Time.current
-    next_run_at.between?(now - GRACE_PERIOD_FOR_RUNNING, now + 1.day + GRACE_PERIOD_FOR_RUNNING)
+    next_run_at > last_run_at
+  end
+
+  def last_run_at
+    scheduled_releases.last&.scheduled_at || kickoff_at
   end
 
   def diff_since_last_release?

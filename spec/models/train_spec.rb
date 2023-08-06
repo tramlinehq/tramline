@@ -133,12 +133,22 @@ describe Train do
       end
     end
 
-    it "returns next available schedule time if there are scheduled releases" do
+    it "returns next available schedule time if there is a scheduled release" do
       train = create(:train, :with_schedule, :active)
       train.scheduled_releases.create!(scheduled_at: train.kickoff_at)
 
       travel_to train.kickoff_at + 1.hour do
         expect(train.next_run_at).to eq(train.kickoff_at + train.repeat_duration)
+      end
+    end
+
+    it "returns next available schedule time if there are many scheduled releases" do
+      train = create(:train, :with_schedule, :active)
+      train.scheduled_releases.create!(scheduled_at: train.kickoff_at)
+      train.scheduled_releases.create!(scheduled_at: train.kickoff_at + train.repeat_duration)
+
+      travel_to train.kickoff_at + 1.day + 1.hour do
+        expect(train.next_run_at).to eq(train.kickoff_at + train.repeat_duration * 2)
       end
     end
 
