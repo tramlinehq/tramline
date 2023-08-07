@@ -8,7 +8,7 @@ class BackfillTagNames < ActiveRecord::Migration[7.0]
       end
 
       ReleasePlatformRun.where(tag_name: nil).each do |platform_run|
-        platform_run.update!(tag_name: platform_run.send(:base_tag_name))
+        platform_run.update!(tag_name: platform_run.send(:base_tag_name)) if platform_run.app.cross_platform?
       end
     end
   end
