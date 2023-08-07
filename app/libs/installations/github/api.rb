@@ -74,7 +74,8 @@ module Installations
     def run_workflow!(repo, id, ref, inputs)
       inputs = {
         versionCode: inputs[:version_code],
-        versionName: inputs[:build_version]
+        versionName: inputs[:build_version],
+        buildNotes: inputs[:build_notes]
       }
 
       execute do
