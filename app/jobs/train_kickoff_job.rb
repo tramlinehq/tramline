@@ -4,7 +4,8 @@ class TrainKickoffJob < ApplicationJob
   queue_as :high
 
   def perform(scheduled_release_id)
-    scheduled_release = ScheduledRelease.find(scheduled_release_id)
+    scheduled_release = ScheduledRelease.find_by(id: scheduled_release_id)
+    return if scheduled_release.blank?
     return unless scheduled_release.train.active?
 
     response = Triggers::Release.call(scheduled_release.train, automatic: true)
