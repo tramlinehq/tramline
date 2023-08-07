@@ -117,7 +117,7 @@ class TrainsController < SignedInApplicationController
 
   def kickoff_at_in_utc
     return if train_params[:kickoff_at].blank?
-    Time.parse(train_params[:kickoff_at]).in_time_zone.utc
+    Time.zone.parse(train_params[:kickoff_at]).utc
   end
 
   def train_update_params

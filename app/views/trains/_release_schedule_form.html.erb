@@ -13,7 +13,7 @@
       <%= form.label :kickoff_at, class: "block text-sm font-medium mb-1" %>
       <%= form.datetime_field :kickoff_at,
                               class: "form-input",
-                              min: Date.today,
+                              min: Date.current,
                               data: { action: 'domain--release-schedule-help#change',
                                       domain__release_schedule_help_target: "kickoffDate" } %>
     </div>
