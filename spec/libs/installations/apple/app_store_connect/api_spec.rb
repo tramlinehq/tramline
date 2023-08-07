@@ -36,7 +36,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
         status: "READY_FOR_SALE",
         build_number: "33417",
         name: "1.8.0",
-        added_at: "2023-02-25T03:02:46-08:00",
+        added_at: "2023-02-26T03:02:46-08:00",
         phased_release_day: 1,
         phased_release_status: "ACTIVE"
       }.with_indifferent_access
@@ -68,7 +68,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
         status: "READY_FOR_SALE",
         build_number: "33417",
         name: "1.8.0",
-        added_at: "2023-02-25T03:02:46-08:00",
+        added_at: "2023-02-26T03:02:46-08:00",
         phased_release_day: 1,
         phased_release_status: "ACTIVE"
       }.with_indifferent_access
@@ -114,7 +114,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
         status: "READY_FOR_SALE",
         build_number: "33417",
         name: "1.8.0",
-        added_at: "2023-02-25T03:02:46-08:00",
+        added_at: "2023-02-26T03:02:46-08:00",
         phased_release_day: 1,
         phased_release_status: "ACTIVE"
       }.with_indifferent_access
@@ -212,7 +212,7 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
         status: "READY_FOR_SALE",
         build_number: "33417",
         name: "1.8.0",
-        added_at: "2023-02-25T03:02:46-08:00",
+        added_at: "2023-02-26T03:02:46-08:00",
         phased_release_day: 4,
         phased_release_status: "COMPLETE"
       }.with_indifferent_access

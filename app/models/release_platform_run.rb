@@ -12,6 +12,7 @@
 #  scheduled_at             :datetime         not null
 #  status                   :string           not null
 #  stopped_at               :datetime
+#  tag_name                 :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
 #  release_id               :uuid
@@ -21,6 +22,7 @@ class ReleasePlatformRun < ApplicationRecord
   has_paper_trail
   include AASM
   include Passportable
+  include Taggable
   include ActionView::Helpers::DateHelper
   include Displayable
   using RefinedString
@@ -170,21 +172,26 @@ class ReleasePlatformRun < ApplicationRecord
       .then { |ids| Passport.where(stampable_id: ids).order(event_timestamp: :desc).limit(limit) }
   end
 
-  def tag_name
-    "v#{release_version}-#{platform}"
-  end
-
   def tag_url
     train.vcs_provider&.tag_url(app.config&.code_repository_name, tag_name)
   end
 
   def on_finish!
-    train.vcs_provider.create_tag!(tag_name, last_commit.commit_hash)
+    ReleasePlatformRuns::CreateTagJob.perform_later(id) if app.cross_platform?
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     app.refresh_external_app
   end
 
-  # Play store does not have constraints around version name
+  # recursively attempt to create a release tag until a unique one gets created
+  # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
+  def create_tag!(tag_name = base_tag_name)
+    train.create_tag!(tag_name, last_commit.commit_hash)
+    update!(tag_name:)
+  rescue Installations::Errors::TagReferenceAlreadyExists
+    create_tag!(unique_tag_name(tag_name))
+  end
+
+  # Play Store does not have constraints around version name
   # App Store requires a higher version name than that of the previously approved version name
   # and so a version bump is required for iOS once the build has been approved as well
   def version_bump_required?
@@ -216,6 +223,10 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   private
+
+  def base_tag_name
+    "v#{release_version}-#{platform}"
+  end
 
   def started_store_release?
     latest_store_release.present?
