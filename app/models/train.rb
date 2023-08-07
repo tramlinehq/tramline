@@ -184,19 +184,19 @@ class Train < ApplicationRecord
   end
 
   def create_release!(branch_name, tag_name)
-    return false unless activated?
+    return false unless active?
     vcs_provider.create_release!(tag_name, branch_name)
   end
 
   delegate :create_tag!, to: :vcs_provider
 
   def create_branch!(from, to)
-    return false unless activated?
+    return false unless active?
     vcs_provider.create_branch!(from, to)
   end
 
   def notify!(message, type, params)
-    return unless activated?
+    return unless active?
     return unless app.send_notifications?
     notification_provider.notify!(config.notification_channel_id, message, type, params)
   end
@@ -246,9 +246,5 @@ class Train < ApplicationRecord
     unless release_platforms.all?(&:valid_steps?)
       errors.add(:release_platforms, "there should be one release step")
     end
-  end
-
-  def activated?
-    !Rails.env.test? && active?
   end
 end

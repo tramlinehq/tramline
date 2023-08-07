@@ -143,6 +143,8 @@ class Release < ApplicationRecord
     branch_name
   end
 
+  # recursively attempt to create a release until a unique one gets created
+  # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
   def create_release!(tag_name = base_tag_name)
     train.create_release!(release_branch, tag_name)
     update!(tag_name:)

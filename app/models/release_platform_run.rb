@@ -182,6 +182,8 @@ class ReleasePlatformRun < ApplicationRecord
     app.refresh_external_app
   end
 
+  # recursively attempt to create a release tag until a unique one gets created
+  # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
   def create_tag!(tag_name = base_tag_name)
     train.create_tag!(tag_name, last_commit.commit_hash)
     update!(tag_name:)
@@ -189,7 +191,7 @@ class ReleasePlatformRun < ApplicationRecord
     create_tag!(unique_tag_name(tag_name))
   end
 
-  # Play store does not have constraints around version name
+  # Play Store does not have constraints around version name
   # App Store requires a higher version name than that of the previously approved version name
   # and so a version bump is required for iOS once the build has been approved as well
   def version_bump_required?

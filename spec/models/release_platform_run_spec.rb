@@ -260,4 +260,70 @@ describe ReleasePlatformRun do
       end
     end
   end
+
+  describe "#on_finish!" do
+    it "schedules a platform-specific tag job if cross-platform app" do
+      app = create(:app, :cross_platform)
+      train = create(:train, app:)
+      release = create(:release, train:)
+      release_platform = create(:release_platform, train:)
+      release_platform_run = create(:release_platform_run, :on_track, release:, release_platform:)
+      allow(ReleasePlatformRuns::CreateTagJob).to receive(:perform_later)
+
+      release_platform_run.finish!
+
+      expect(ReleasePlatformRuns::CreateTagJob).to have_received(:perform_later).with(release_platform_run.id).once
+    end
+
+    it "does not schedule a platform-specific tag job for single-platform apps" do
+      app = create(:app, :android)
+      train = create(:train, app:)
+      release = create(:release, train:)
+      release_platform = create(:release_platform, train:)
+      release_platform_run = create(:release_platform_run, :on_track, release:, release_platform:)
+      allow(ReleasePlatformRuns::CreateTagJob).to receive(:perform_later)
+
+      release_platform_run.finish!
+
+      expect(ReleasePlatformRuns::CreateTagJob).not_to have_received(:perform_later).with(release_platform_run.id)
+    end
+  end
+
+  describe "#create_tag!" do
+    let(:release_platform) { create(:release_platform) }
+    let(:step) { create(:step, release_platform:) }
+    let(:release) { create(:release) }
+    let(:release_platform_run) { create(:release_platform_run, :on_track, release:, release_platform:) }
+
+    it "saves a new tag with the base name" do
+      allow_any_instance_of(GithubIntegration).to receive(:create_tag!)
+      commit = create(:commit, :without_trigger, release:)
+      create(:step_run, release_platform_run:, commit:)
+
+      release_platform_run.create_tag!
+      expect(release_platform_run.tag_name).to eq("v1.2.3-android")
+    end
+
+    it "saves base name + last commit sha" do
+      raise_times(GithubIntegration, Installations::Errors::TagReferenceAlreadyExists, :create_tag!, 1)
+      commit = create(:commit, :without_trigger, release:)
+      create(:step_run, release_platform_run:, commit:)
+
+      release_platform_run.create_tag!
+      expect(release_platform_run.tag_name).to eq("v1.2.3-android-#{commit.short_sha}")
+    end
+
+    it "saves base name + last commit sha + time" do
+      raise_times(GithubIntegration, Installations::Errors::TagReferenceAlreadyExists, :create_tag!, 2)
+
+      freeze_time do
+        now = Time.now.to_i
+        commit = create(:commit, :without_trigger, release:)
+        create(:step_run, release_platform_run:, commit:)
+
+        release_platform_run.create_tag!
+        expect(release_platform_run.tag_name).to eq("v1.2.3-android-#{commit.short_sha}-#{now}")
+      end
+    end
+  end
 end
