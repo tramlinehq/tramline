@@ -1,4 +1,4 @@
-class TrainKickoffJob < ApplicationJob
+class ReleaseKickoffJob < ApplicationJob
   include Loggable
 
   queue_as :high

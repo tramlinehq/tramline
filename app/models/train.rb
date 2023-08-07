@@ -24,6 +24,7 @@ class Train < ApplicationRecord
   has_paper_trail
   using RefinedString
   extend FriendlyId
+  include Rails.application.routes.url_helpers
 
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
@@ -269,12 +270,23 @@ class Train < ApplicationRecord
     app.notification_params.merge(
       {
         train_name: name,
-        train_current_version: version_current
+        train_current_version: version_current,
+        train_url: train_link
       }
     )
   end
 
   private
+
+  def train_link
+    return if Rails.env.test?
+
+    if Rails.env.development?
+      app_train_url(app, self, host: ENV["HOST_NAME"], protocol: "https", port: ENV["PORT_NUM"])
+    else
+      app_train_url(app, self, host: ENV["HOST_NAME"], protocol: "https")
+    end
+  end
 
   def last_finished_release
     releases.where(status: "finished").order(completed_at: :desc).first

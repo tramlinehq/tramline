@@ -16,14 +16,24 @@ class ScheduledRelease < ApplicationRecord
   self.implicit_order_column = :scheduled_at
 
   belongs_to :train
+  delegate :app, to: :train
 
   scope :pending, -> { where("scheduled_at > ?", Time.current) }
 
   after_create_commit :schedule_kickoff!
 
+  NOTIFICATION_WINDOW = 3.hours
+
   def schedule_kickoff!
-    TrainKickoffJob.set(wait_until: scheduled_at).perform_later(id)
-    Rails.logger.info "Release scheduled for #{train.name} at #{scheduled_at}"
-    # TODO: notify the user
+    ReleaseKickoffJob.set(wait_until: scheduled_at).perform_later(id)
+    ScheduledReleaseNotificationJob.set(wait_until: scheduled_at - NOTIFICATION_WINDOW).perform_later(id)
+  end
+
+  def notification_params
+    train.notification_params.merge(
+      {
+        release_scheduled_at: scheduled_at.in_time_zone(app.timezone).strftime("%I:%M%p (%Z)")
+      }
+    )
   end
 end
