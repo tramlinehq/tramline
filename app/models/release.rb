@@ -5,6 +5,7 @@
 #  id                       :uuid             not null, primary key
 #  branch_name              :string           not null
 #  completed_at             :datetime
+#  is_automatic             :boolean          default(FALSE)
 #  original_release_version :string
 #  release_version          :string
 #  scheduled_at             :datetime

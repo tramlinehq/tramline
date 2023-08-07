@@ -1,0 +1,44 @@
+<article data-controller="domain--release-schedule-help"
+         data-branching-selector-target="schedule"
+         hidden id="release-schedule">
+  <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
+  <div class="text-xl text-slate-600 font-medium mt-2">Release Schedule (optional)</div>
+
+  <div class="text-sm mt-1 mb-6">Set a schedule for automatic kickoff of your release train. Leave blank for only
+    manual control.
+  </div>
+
+  <div class="w-1/2 grid gap-x-28 md:grid-cols-3">
+    <div class="col-span-1">
+      <%= form.label :kickoff_at, class: "block text-sm font-medium mb-1" %>
+      <%= form.datetime_field :kickoff_at,
+                              class: "form-input",
+                              min: Date.current,
+                              data: { action: 'domain--release-schedule-help#change',
+                                      domain__release_schedule_help_target: "kickoffDate" } %>
+    </div>
+    <div class="col-span-2">
+      <%= form.label "Every", class: "block text-sm font-medium mb-1" %>
+      <%= form.number_field :repeat_duration_value,
+                            class: "form-input w-1/4",
+                            step: 1,
+                            min: 1,
+                            default: nil,
+                            value: 1,
+                            data: { action: 'domain--release-schedule-help#change',
+                                    domain__release_schedule_help_target: "nextDateNumber" } %>
+      <%= form.select :repeat_duration_unit,
+                      options_for_select([%w[Day(s) days], %w[Week(s) weeks]], "days"),
+                      { required: false },
+                      { class: "form-input w-1/4",
+                        data: { action: 'domain--release-schedule-help#change',
+                                domain__release_schedule_help_target: "nextDateUnit" } } %>
+    </div>
+    <div class="col-span-3 mt-2">
+      <span class="text-sm italic mt-2 text-rose-700" data-domain--release-schedule-help-target="errOutput"></span>
+    </div>
+    <div class="col-span-3">
+      <span class="block text-sm font-medium mt-2 mb-1" data-domain--release-schedule-help-target="output"></span>
+    </div>
+  </div>
+</article>

@@ -38,5 +38,11 @@ FactoryBot.define do
       release_branch { "main" }
       release_backmerge_branch { nil }
     end
+
+    trait :with_schedule do
+      branching_strategy { "almost_trunk" }
+      kickoff_at { 2.hours.from_now }
+      repeat_duration { 1.day }
+    end
   end
 end

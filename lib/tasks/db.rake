@@ -73,6 +73,7 @@ namespace :db do
       run.release_platform_runs&.delete_all
     end
     train.releases&.delete_all
+    train.scheduled_releases&.delete_all
     train.release_platforms.each do |release_platform|
       train.steps.each do |step|
         step.deployments.delete_all

@@ -11,7 +11,8 @@ module Notifiers
         step_started: Renderers::StepStarted,
         step_failed: Renderers::StepFailed,
         submit_for_review: Renderers::SubmitForReview,
-        staged_rollout_updated: Renderers::StagedRolloutUpdated
+        staged_rollout_updated: Renderers::StagedRolloutUpdated,
+        release_scheduled: Renderers::ReleaseScheduled
       }
 
       class RendererNotFound < ArgumentError; end

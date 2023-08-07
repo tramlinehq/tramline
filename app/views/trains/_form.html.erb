@@ -65,7 +65,7 @@
       </div>
 
       <% unless train.persisted? %>
-        <div class="text-sm italic mt-2">
+        <div class="text-sm italic mt-2 text-rose-700">
           <span hidden data-domain--version-name-help-target="helpTextVal"></span>
         </div>
 
@@ -96,7 +96,8 @@
 
         <div class="text-sm mt-2">
           <p>
-            Tramline increments the version name for every release build created, which guarantees that every build can be
+            Tramline increments the version name for every release build created, which guarantees that every build can
+            be
             uniquely identified. We allow a
             <%= link_to_external "SemVer", "https://semver.org", class: "underline" %>-like scheme, for eg.
             <code>MAJOR.MINOR.PATCH</code> and <code>MAJOR.MINOR</code>.
@@ -112,51 +113,64 @@
     </div>
   </div>
 
-  <%= render partial: "shared/demo/release_schedule_form", locals: { form: } %>
-
   <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
 
   <div class="text-xl text-slate-600 font-medium mt-2 mb-4">Branching strategy</div>
 
-  <div class="grid gap-x-5 md:grid-cols-2">
-    <div data-controller="branching-selector">
-      <%= form.label "Strategy", class: "block text-sm font-medium mb-1" %>
-      <%= form.select :branching_strategy,
-                      options_for_select(Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
-                      { required: true, },
-                      { class: text_field_classes(is_disabled: train.persisted?), data: { action: 'branching-selector#change' }, disabled: train.persisted? } %>
-    </div>
-
-    <div>
-      <%= form.label :working_branch, class: "block text-sm font-medium mb-1" %>
-      <%= form.text_field :working_branch, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., master, main", disabled: train.persisted? %>
-    </div>
-
-    <div class="almost_trunk hidden"></div>
-
-    <div><!-- this is required to maintain intended grid structure --></div>
-
-    <div class="release_backmerge hidden">
+  <div data-controller="branching-selector"
+       data-branching-selector-domain--release-schedule-help-outlet="#release-schedule">
+    <div class="grid gap-x-5 md:grid-cols-2">
       <div>
-        <%= form.label :release_backmerge_branch, class: "block text-sm font-medium my-1" %>
-        <%= form.text_field :release_backmerge_branch, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., dev", disabled: train.persisted? %>
+        <%= form.label "Strategy", class: "block text-sm font-medium mb-1" %>
+        <%= form.select :branching_strategy,
+                        options_for_select(Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
+                        { required: true, },
+                        { class: text_field_classes(is_disabled: train.persisted?),
+                          data: { action: 'branching-selector#change',
+                                  branching_selector_target: "branchingStrategy" },
+                          disabled: train.persisted? } %>
+      </div>
+
+      <div>
+        <%= form.label :working_branch, class: "block text-sm font-medium mb-1" %>
+        <%= form.text_field :working_branch, required: true, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., master, main", disabled: train.persisted? %>
+      </div>
+
+      <div hidden data-branching-selector-target="almostTrunk"></div>
+
+      <div><!-- this is required to maintain intended grid structure --></div>
+
+      <div hidden data-branching-selector-target="releaseBackMerge">
+        <div>
+          <%= form.label :release_backmerge_branch, class: "block text-sm font-medium my-1" %>
+          <%= form.text_field :release_backmerge_branch, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., dev", disabled: train.persisted? %>
+        </div>
+      </div>
+
+      <div hidden data-branching-selector-target="parallelBranches">
+        <div>
+          <%= form.label :release_branch, class: "block text-sm font-medium my-1" %>
+          <%= form.text_field :release_branch, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., production", disabled: train.persisted? %>
+        </div>
       </div>
     </div>
-
-    <div class="parallel_working hidden">
-      <div>
-        <%= form.label :release_branch, class: "block text-sm font-medium my-1" %>
-        <%= form.text_field :release_branch, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., production", disabled: train.persisted? %>
+    <% unless train.persisted? %>
+      <div class="text-sm mt-4">
+        Refer to
+        the <%= link_to_external "docs", "https://docs.tramline.app/branching-strategies", class: "underline" %>
+        to learn more about our supported branching strategies.
       </div>
-    </div>
+    <% end %>
+
+    <% if train.persisted? %>
+      <div class="text-xl text-slate-600 font-medium mt-8">Release Schedule</div>
+      <div class="block text-sm font-medium mt-8 mb-1">
+        <%= release_schedule(train) %>
+      </div>
+    <% else %>
+      <%= render partial: "release_schedule_form", locals: { form: } %>
+    <% end %>
   </div>
-
-  <% unless train.persisted? %>
-    <div class="text-sm mt-4">
-      Refer to the <%= link_to_external "docs", "https://docs.tramline.app/branching-strategies", class: "underline" %>
-      to learn more about our supported branching strategies.
-    </div>
-  <% end %>
 
   <div class="mt-10">
     <%= form.authz_submit :blue, train.persisted? ? "Update Train" : "Create Train" %>
