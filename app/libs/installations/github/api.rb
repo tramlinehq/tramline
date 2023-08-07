@@ -144,8 +144,15 @@ module Installations
     # creates a lightweight tag and a GitHub release simultaneously
     def create_release!(repo, tag_name, branch_name)
       execute do
+        raise Installations::Errors::TagReferenceAlreadyExists if tag_exists?(repo, tag_name)
         @client.create_release(repo, tag_name, target_commitish: branch_name, generate_release_notes: false)
       end
+    end
+
+    def tag_exists?(repo, tag_name)
+      @client.ref(repo, "tags/#{tag_name}").present?
+    rescue Octokit::NotFound
+      false
     end
 
     def create_pr!(repo, to, from, title, body)

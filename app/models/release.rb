@@ -10,6 +10,7 @@
 #  scheduled_at             :datetime
 #  status                   :string           not null
 #  stopped_at               :datetime
+#  tag_name                 :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
 #  train_id                 :uuid             not null, indexed
@@ -18,6 +19,7 @@ class Release < ApplicationRecord
   has_paper_trail
   include AASM
   include Passportable
+  include Taggable
   include ActionView::Helpers::DateHelper
   include Rails.application.routes.url_helpers
   using RefinedString
@@ -102,14 +104,11 @@ class Release < ApplicationRecord
     end
   end
 
-  # TODO: Remove this accessor, once the migration is complete
-  attr_accessor :in_data_migration_mode
-
-  before_create :set_version, unless: :in_data_migration_mode
-  after_create :set_default_release_metadata, unless: :in_data_migration_mode
-  after_create :create_platform_runs, unless: :in_data_migration_mode
-  after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create, unless: :in_data_migration_mode
-  after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create, unless: :in_data_migration_mode
+  before_create :set_version
+  after_create :set_default_release_metadata
+  after_create :create_platform_runs
+  after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
+  after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
 
   attr_accessor :has_major_bump
 
@@ -121,6 +120,10 @@ class Release < ApplicationRecord
 
   def committable?
     created? || on_track? || partially_finished?
+  end
+
+  def stoppable?
+    may_stop?
   end
 
   def fetch_commit_log
@@ -136,20 +139,21 @@ class Release < ApplicationRecord
     release_platform_runs.pluck(:release_version).map(&:to_semverish).max.to_s
   end
 
-  def tag_name
-    "v#{release_version}"
-  end
-
-  def stoppable?
-    may_stop?
-  end
-
   def release_branch
     branch_name
   end
 
+  # recursively attempt to create a release until a unique one gets created
+  # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
+  def create_release!(tag_name = base_tag_name)
+    train.create_release!(release_branch, tag_name)
+    update!(tag_name:)
+  rescue Installations::Errors::TagReferenceAlreadyExists, Installations::Errors::TaggedReleaseAlreadyExists
+    create_release!(unique_tag_name(tag_name))
+  end
+
   def branch_url
-    train.vcs_provider&.branch_url(app.config&.code_repository_name, branch_name)
+    train.vcs_provider&.branch_url(app.config&.code_repository_name, release_branch)
   end
 
   def tag_url
@@ -212,7 +216,7 @@ class Release < ApplicationRecord
   def notification_params
     train.notification_params.merge(
       {
-        release_branch: branch_name,
+        release_branch: release_branch,
         release_branch_url: branch_url,
         release_url: live_release_link,
         release_notes: release_metadata&.release_notes
@@ -236,6 +240,10 @@ class Release < ApplicationRecord
   end
 
   private
+
+  def base_tag_name
+    "v#{release_version}"
+  end
 
   def create_platform_runs
     release_platforms.each do |release_platform|
