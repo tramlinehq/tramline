@@ -3,19 +3,10 @@ import {Controller} from "@hotwired/stimulus";
 const NEXT_RELEASE = "Your next release after the initial kickoff will be on: "
 
 export default class extends Controller {
-  static targets = ["outer", "kickoffDate", "nextDateNumber", "nextDateUnit", "output"];
+  static targets = ["kickoffDate", "nextDateNumber", "nextDateUnit", "output"];
 
   initialize() {
     this.change();
-  }
-
-  show() {
-    this.outerTarget.hidden = false;
-  }
-
-  hide() {
-    this.outerTarget.hidden = true;
-    this.__resetSchedule();
   }
 
   change() {
