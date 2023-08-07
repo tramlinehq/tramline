@@ -29,9 +29,12 @@
       <%= form.select :repeat_duration_unit,
                       options_for_select([%w[Day(s) days], %w[Week(s) weeks]], "days"),
                       { required: false },
-                      { class: "form-input",
+                      { class: "form-input w-1/4",
                         data: { action: 'domain--release-schedule-help#change',
                                 domain__release_schedule_help_target: "nextDateUnit" } } %>
+    </div>
+    <div class="col-span-3 mt-2">
+      <span class="text-sm italic mt-2 text-rose-700" data-domain--release-schedule-help-target="errOutput"></span>
     </div>
     <div class="col-span-3">
       <span class="block text-sm font-medium mt-2 mb-1" data-domain--release-schedule-help-target="output"></span>
