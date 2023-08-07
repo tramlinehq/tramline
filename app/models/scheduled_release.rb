@@ -19,14 +19,9 @@ class ScheduledRelease < ApplicationRecord
 
   scope :pending, -> { where("scheduled_at > ?", Time.current) }
 
-  after_create_commit :kickoff
+  after_create_commit :schedule_kickoff!
 
-  def status
-    return :pending if scheduled_at > Time.current
-    is_success? ? :ran : :skipped
-  end
-
-  def kickoff
+  def schedule_kickoff!
     TrainKickoffJob.set(wait_until: scheduled_at).perform_later(id)
     Rails.logger.info "Release scheduled for #{train.name} at #{scheduled_at}"
     # TODO: notify the user

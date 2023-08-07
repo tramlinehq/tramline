@@ -21,62 +21,44 @@ class TrainsController < SignedInApplicationController
   def create
     @train = @app.trains.new(parsed_train_params)
 
-    respond_to do |format|
-      if @train.save
-        format.html { new_train_redirect }
-        format.json { render :show, status: :created, location: @train }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @train.errors, status: :unprocessable_entity }
-      end
+    if @train.save
+      new_train_redirect
+    else
+      render :new, status: :unprocessable_entity
     end
   end
 
   def update
-    respond_to do |format|
-      if @train.update(train_update_params)
-        format.html { redirect_to train_path, notice: "Train was updated" }
-        format.json { render :show, status: :ok, location: @train }
-      else
-        format.html { render :show, status: :unprocessable_entity }
-        format.json { render json: @train.errors, status: :unprocessable_entity }
-      end
+    if @train.update(train_update_params)
+      redirect_to train_path, notice: "Train was updated"
+    else
+      render :show, status: :unprocessable_entity
     end
   end
 
   def destroy
-    respond_to do |format|
-      if @train.destroy
-        format.html { redirect_to app_path(@app), status: :see_other, notice: "Train was deleted!" }
-      else
-        format.html { render :show, status: :unprocessable_entity }
-      end
+    if @train.destroy
+      redirect_to app_path(@app), status: :see_other, notice: "Train was deleted!"
+    else
+      render :show, status: :unprocessable_entity
     end
   end
 
   def activate
-    respond_to do |format|
-      if @train.activate!
-        format.html { redirect_to train_path, notice: "Train was activated!" }
-        format.json { render :show, status: :ok, location: @train }
-      else
-        format.html { render :show, status: :unprocessable_entity }
-        format.json { render json: @train.errors, status: :unprocessable_entity }
-      end
+    if @train.activate!
+      redirect_to train_path, notice: "Train was activated!"
+    else
+      render :show, status: :unprocessable_entity
     end
   end
 
   def deactivate
     redirect_to train_path, notice: "Can not deactivate with an ongoing release" and return if @train.active_run.present?
 
-    respond_to do |format|
-      if @train.deactivate!
-        format.html { redirect_to train_path, notice: "Train was deactivated!" }
-        format.json { render :show, status: :ok, location: @train }
-      else
-        format.html { render :show, status: :unprocessable_entity }
-        format.json { render json: @train.errors, status: :unprocessable_entity }
-      end
+    if @train.deactivate!
+      redirect_to train_path, notice: "Train was deactivated!"
+    else
+      render :show, status: :unprocessable_entity
     end
   end
 
@@ -119,17 +101,16 @@ class TrainsController < SignedInApplicationController
 
   def parsed_train_params
     train_params
-      .merge(repeat_duration: repeat_duration(train_params))
+      .merge(repeat_duration: repeat_duration)
       .merge(kickoff_at: in_utc(train_params[:kickoff_at]))
       .except(:repeat_duration_value, :repeat_duration_unit)
   end
 
-  def repeat_duration(train_params)
+  def repeat_duration
     return if train_params[:repeat_duration_value].blank?
-    ActiveSupport::Duration.parse(
-      Duration.new(train_params[:repeat_duration_unit].to_sym =>
-                     train_params[:repeat_duration_value].to_i).iso8601
-    )
+    train_params[:repeat_duration_value]
+      .to_i
+      .as_duration_with(unit: train_params[:repeat_duration_unit])
   end
 
   def in_utc(time_param)
