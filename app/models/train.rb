@@ -191,6 +191,18 @@ class Train < ApplicationRecord
     release_platforms.all?(&:startable?)
   end
 
+  def activatable?
+    automatic? && startable? && !active?
+  end
+
+  def deactivatable?
+    automatic? && active? && active_run.blank?
+  end
+
+  def manually_startable?
+    startable? && active?
+  end
+
   def branching_strategy_name
     BRANCHING_STRATEGIES[branching_strategy.to_sym]
   end

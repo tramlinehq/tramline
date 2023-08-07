@@ -8,20 +8,19 @@
   </div>
 
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-    <% if @train.automatic? %>
-      <% if @train.startable? && !@train.active? %>
-        <%= authz_button_to :green, "Activate train", activate_app_train_path(@app, @train), method: :patch,
-                            data: { turbo_method: :patch, turbo_confirm: "This will start scheduling release kickoff(s). Are you sure?" } %>
-      <% end %>
-      <% if @train.active? && @train.active_run.blank? %>
-        <%= authz_button_to :red, "Deactivate train", deactivate_app_train_path(@app, @train), method: :patch,
-                            data: { turbo_method: :patch, turbo_confirm: "This will cancel all the scheduled release kickoff(s). Are you sure?" } %>
-      <% end %>
+    <% if @train.activatable? %>
+      <%= authz_button_to :green, "Activate train", activate_app_train_path(@app, @train), method: :patch,
+                          data: { turbo_method: :patch, turbo_confirm: "This will start scheduling release kickoff(s). Are you sure?" } %>
+    <% end %>
+
+    <% if @train.deactivatable? %>
+      <%= authz_button_to :red, "Deactivate train", deactivate_app_train_path(@app, @train), method: :patch,
+                          data: { turbo_method: :patch, turbo_confirm: "This will cancel all the scheduled release kickoff(s). Are you sure?" } %>
     <% end %>
 
     <% if @train.active_run %>
       <%= decorated_link_to :green, "Ongoing Release", live_release_app_train_releases_path(@app, @train) %>
-    <% elsif @train.startable? %>
+    <% elsif @train.manually_startable? %>
       <%= authz_button_to :blue, start_release_text(@train), app_train_releases_path(@app, @train) %>
       <%= authz_button_to :amber, start_release_text(@train, major: true), app_train_releases_path(@app, @train, has_major_bump: true) %>
     <% end %>
