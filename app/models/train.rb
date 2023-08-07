@@ -116,8 +116,8 @@ class Train < ApplicationRecord
     return base_time if now < base_time
 
     time_difference = now - base_time
-    passed_durations = (time_difference / repeat_duration.to_i).ceil
-    base_time + (repeat_duration.to_i * passed_durations)
+    elapsed_durations = (time_difference / repeat_duration.to_i).ceil
+    base_time + (repeat_duration.to_i * elapsed_durations)
   end
 
   def runnable?

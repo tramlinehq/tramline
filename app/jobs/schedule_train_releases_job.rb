@@ -3,8 +3,10 @@ class ScheduleTrainReleasesJob < ApplicationJob
   queue_as :high
 
   def perform
-    Train.active.filter(&:automatic?).each do |train|
-      train.schedule_release! if train.runnable?
-    end
+    Train
+      .active
+      .filter(&:automatic?)
+      .filter(&:runnable?)
+      .each(&:schedule_release!)
   end
 end
