@@ -59,7 +59,8 @@ class Train < ApplicationRecord
 
   validates :branching_strategy, :working_branch, presence: true
   validates :branching_strategy, inclusion: {in: BRANCHING_STRATEGIES.keys.map(&:to_s)}
-
+  validates :release_backmerge_branch, presence: true, if: -> { branching_strategy == "release_backmerge" }
+  validates :release_branch, presence: true, if: -> { branching_strategy == "parallel_working" }
   validate :semver_compatibility, on: :create
   validate :ready?, on: :create
   validate :valid_schedule, on: :create
