@@ -46,14 +46,11 @@
   </div>
 </div>
 
-<% if @train.automatic? && @train.active? %>
-  <%= render partial: "release_schedule", locals: { train: @train } %>
-<% end %>
-
 <div class="grid md:grid-cols-2 gap-x-11 pb-5 mt-8">
-  <!-- Train Info -->
   <section class="w-full">
-    <article>
+    <!-- Train Summary -->
+    <article class="mb-8">
+      <h2 class="text-2xl font-bold mb-4">Summary</h2>
       <%= render MetaTableComponent.new do |mt| %>
         <% mt.with_description("Branching Strategy") do %>
           <%= @train.branching_strategy_name %>
@@ -95,9 +92,9 @@
       <% end %>
     </article>
 
-    <!-- Steps -->
+    <!-- Steps Viz -->
     <% @train.release_platforms.each do |release_platform| %>
-      <article class="w-full mt-10">
+      <article class="mt-10">
         <h2 class="text-2xl font-bold mb-4"><%= steps_heading(release_platform) %></h2>
 
         <% if release_platform.steps.size > 0 %>
@@ -111,9 +108,14 @@
     <% end %>
   </section>
 
-  <!-- Releases -->
   <section>
-    <article class="w-full">
+    <!-- Schedule -->
+    <% if @train.automatic? && @train.active? %>
+      <%= render partial: "release_schedule", locals: { train: @train } %>
+    <% end %>
+
+    <!-- Steps -->
+    <article>
       <% if @train.releases.size > 0 %>
         <%= render TableComponent.new(columns: ["•", "version", "release branch"]) do |table| %>
           <% table.with_heading do %>

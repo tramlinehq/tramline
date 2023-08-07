@@ -1,4 +1,4 @@
-<section class="w-1/2 mt-8 pr-6 border-b pb-4">
+<article class="mb-8 border-b pb-4">
   <h2 class="text-2xl text-slate-800 font-bold">Release Schedule</h2>
   <span class="text-sm text-slate-400"><%= release_schedule(train) %></span>
   <div class="grid grid-cols-3 gap-x-1 my-3 gap-y-2">
@@ -13,7 +13,11 @@
         </p>
       </div>
       <div class="mt-3 mb-3 text-stone text-sm drop-shadow-sm">
-        This release is in progress
+        <% if train.active_run %>
+          This release is in progress
+        <% else %>
+          Nothing in progress
+        <% end %>
       </div>
     </div>
 
@@ -42,4 +46,4 @@
       </div>
     </div>
   </div>
-</section>
+</article>
