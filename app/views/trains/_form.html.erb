@@ -133,7 +133,7 @@
 
       <div>
         <%= form.label :working_branch, class: "block text-sm font-medium mb-1" %>
-        <%= form.text_field :working_branch, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., master, main", disabled: train.persisted? %>
+        <%= form.text_field :working_branch, required: true, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., master, main", disabled: train.persisted? %>
       </div>
 
       <div hidden data-branching-selector-target="almostTrunk"></div>

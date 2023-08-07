@@ -20,10 +20,11 @@
     <div class="col-span-2">
       <%= form.label "Every", class: "block text-sm font-medium mb-1" %>
       <%= form.number_field :repeat_duration_value,
-                            class: "form-input",
+                            class: "form-input w-1/4",
                             step: 1,
                             min: 1,
                             default: nil,
+                            value: 1,
                             data: { action: 'domain--release-schedule-help#change',
                                     domain__release_schedule_help_target: "nextDateNumber" } %>
       <%= form.select :repeat_duration_unit,
