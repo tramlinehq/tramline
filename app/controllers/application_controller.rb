@@ -2,6 +2,7 @@ class ApplicationController < ActionController::Base
   using RefinedString
   include ExceptionHandler if Rails.env.production? || ENV.fetch("GRACEFUL_ERROR_PAGES", "false").to_boolean
   layout -> { ensure_supported_layout("application") }
+  before_action :store_user_location!, if: :storable_location?
 
   class NotAuthorizedError < StandardError; end
 
@@ -36,5 +37,23 @@ class ApplicationController < ActionController::Base
     ensure
       Prosopite.finish
     end
+  end
+
+  # Its important that the location is NOT stored if:
+  # - The request method is not GET (non idempotent)
+  # - The request is handled by a Devise controller such as Devise::SessionsController as that could cause an
+  #    infinite redirect loop.
+  # - The request is an Ajax request as this can lead to very unexpected behaviour.
+  # - The request is not a Turbo Frame request ([turbo-rails](https://github.com/hotwired/turbo-rails/blob/main/app/controllers/turbo/frames/frame_request.rb))
+  def storable_location?
+    request.get? &&
+      is_navigational_format? &&
+      !devise_controller? &&
+      !request.xhr? &&
+      !turbo_frame_request?
+  end
+
+  def store_user_location!
+    store_location_for(:user, request.fullpath)
   end
 end
