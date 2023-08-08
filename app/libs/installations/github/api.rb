@@ -76,7 +76,7 @@ module Installations
         versionCode: inputs[:version_code],
         versionName: inputs[:build_version],
         buildNotes: inputs[:build_notes]
-      }
+      }.compact
 
       execute do
         @client

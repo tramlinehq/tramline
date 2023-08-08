@@ -154,6 +154,7 @@ class StepRun < ApplicationRecord
   delegate :release_branch, to: :release
   delegate :train, to: :release_platform
   delegate :app, :ci_cd_provider, :unzip_artifact?, :notify!, to: :train
+  delegate :organization, to: :app
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
   scope :not_failed, -> { where.not(status: [:ci_workflow_failed, :ci_workflow_halted, :build_not_found_in_store, :build_unavailable, :deployment_failed]) }
@@ -327,11 +328,8 @@ class StepRun < ApplicationRecord
 
   def trigger_workflow_run
     version_code = release_platform.app.bump_build_number!
-    inputs = {
-      version_code: version_code,
-      build_version: build_version,
-      build_notes: build_notes
-    }
+    inputs = { version_code: version_code, build_version: build_version }
+    inputs[:build_notes] = build_notes if organization.build_notes_in_workflow?
     update!(build_number: version_code)
 
     ci_cd_provider
