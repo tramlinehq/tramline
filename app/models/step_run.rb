@@ -328,7 +328,7 @@ class StepRun < ApplicationRecord
 
   def trigger_workflow_run
     version_code = release_platform.app.bump_build_number!
-    inputs = { version_code: version_code, build_version: build_version }
+    inputs = {version_code: version_code, build_version: build_version}
     inputs[:build_notes] = build_notes if organization.build_notes_in_workflow?
     update!(build_number: version_code)
 
