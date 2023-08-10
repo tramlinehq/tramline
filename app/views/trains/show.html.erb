@@ -86,8 +86,19 @@
           </span>
         <% end %>
 
-        <% mt.with_description("Release schedule") do %>
+        <% mt.with_description("Release Schedule") do %>
           <%= release_schedule(@train) %>
+        <% end %>
+
+        <% mt.with_description("Notification Channel") do %>
+          <% if @train.send_notifications? %>
+            <div class="inline-flex align-text-top">
+              <span class="pr-2"><%= image_tag("integrations/logo_#{@app.notification_provider}.png", width: 18) %></span>
+              <%= @train.notification_channel_name %>
+            </div>
+          <% else %>
+            None (notifications will not be sent)
+          <% end %>
         <% end %>
       <% end %>
     </article>

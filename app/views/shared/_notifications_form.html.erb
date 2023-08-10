@@ -1,0 +1,24 @@
+<div>
+  <%= form.label :notification_channel, "Notification Channel", class: "block text-sm font-medium mb-1" %>
+  <%= form.select :notification_channel,
+                  options_for_select(
+                    display_channels(channels, with_none: true) { |chan| "#" + chan[:name] },
+                    current.to_json
+                  ),
+                  { class: "form-select w-full" },
+                  { data: { controller: "input-select" } } %>
+
+  <div class="text-sm mt-4">
+    To receive notifications in <strong>private</strong> channels, <code>/invite @Tramline</code> into your
+    private channel and then select it from this list.
+  </div>
+
+  <div class="mt-4">
+    <%= authz_link_to :neutral,
+                      "Refresh channels",
+                      refresh_channels_app_integration_slack_integration_path(app,
+                                                                              app.notification_provider.integration,
+                                                                              app.notification_provider),
+                      class: "btn-xs", method: :post, data: { turbo_method: :post } %>
+  </div>
+</div>

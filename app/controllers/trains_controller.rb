@@ -7,6 +7,7 @@ class TrainsController < SignedInApplicationController
   around_action :set_time_zone
   before_action :set_train, only: %i[show edit update destroy activate deactivate]
   before_action :validate_integration_status, only: %i[new create]
+  before_action :set_notification_channels, only: %i[new create edit update]
 
   def show
   end
@@ -29,7 +30,7 @@ class TrainsController < SignedInApplicationController
   end
 
   def update
-    if @train.update(train_update_params)
+    if @train.update(parsed_train_update_params)
       redirect_to train_path, notice: "Train was updated"
     else
       render :show, status: :unprocessable_entity
@@ -95,7 +96,8 @@ class TrainsController < SignedInApplicationController
       :release_branch,
       :kickoff_at,
       :repeat_duration_value,
-      :repeat_duration_unit
+      :repeat_duration_unit,
+      :notification_channel
     )
   end
 
@@ -104,6 +106,7 @@ class TrainsController < SignedInApplicationController
       .merge(repeat_duration: repeat_duration)
       .merge(kickoff_at: kickoff_at_in_utc)
       .except(:repeat_duration_value, :repeat_duration_unit)
+      .merge(notification_channel: train_params[:notification_channel]&.safe_json_parse)
   end
 
   def repeat_duration
@@ -123,8 +126,14 @@ class TrainsController < SignedInApplicationController
   def train_update_params
     params.require(:train).permit(
       :name,
-      :description
+      :description,
+      :notification_channel
     )
+  end
+
+  def parsed_train_update_params
+    train_update_params
+      .merge(notification_channel: train_params[:notification_channel]&.safe_json_parse)
   end
 
   def validate_integration_status
@@ -133,5 +142,10 @@ class TrainsController < SignedInApplicationController
 
   def train_path
     app_train_path(@app, @train)
+  end
+
+  def set_notification_channels
+    @notification_channels = @app.notification_provider.channels if @app.notifications_set_up?
+    @current_notification_channel = @train.present? ? @train.notification_channel : @app.config.notification_channel
   end
 end
