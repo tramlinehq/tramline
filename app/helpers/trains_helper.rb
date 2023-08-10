@@ -11,7 +11,7 @@ module TrainsHelper
 
   def release_schedule(train)
     if train.automatic?
-      "Triggers a new release at #{train.kickoff_at.strftime("%I:%M%p (%Z)")} every #{train.repeat_duration.in_days.to_i} day(s)"
+      "Every #{train.repeat_duration.in_days.to_i} day(s) at #{train.kickoff_at.strftime("%I:%M%p (%Z)")}"
     else
       "No release schedule"
     end
