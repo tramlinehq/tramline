@@ -366,7 +366,6 @@ class StepRun < ApplicationRecord
   def after_trigger_ci
     Releases::FindWorkflowRun.perform_async(id)
     event_stamp!(reason: :ci_triggered, kind: :notice, data: {version: build_version})
-    notify!("Step has been triggered!", :step_started, notification_params)
     Releases::CancelStepRun.perform_later(previous_step_run.id) if previous_step_run&.may_cancel?
   end
 
