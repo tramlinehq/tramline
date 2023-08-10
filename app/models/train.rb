@@ -198,7 +198,7 @@ class Train < ApplicationRecord
   end
 
   def manually_startable?
-    startable? && active?
+    startable? && !inactive?
   end
 
   def branching_strategy_name
