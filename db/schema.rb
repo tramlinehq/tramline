@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_08_03_132100) do
+ActiveRecord::Schema[7.0].define(version: 2023_08_10_055850) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -386,8 +386,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_03_132100) do
     t.datetime "stopped_at", precision: nil
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "is_automatic", default: false
     t.string "tag_name"
+    t.boolean "is_automatic", default: false
     t.index ["train_id"], name: "index_releases_on_train_id"
   end
 
@@ -473,6 +473,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_03_132100) do
     t.datetime "updated_at", null: false
     t.datetime "kickoff_at"
     t.interval "repeat_duration"
+    t.jsonb "notification_channel"
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 

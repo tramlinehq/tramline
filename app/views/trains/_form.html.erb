@@ -94,7 +94,7 @@
           </div>
         </div>
 
-        <div class="text-sm mt-2">
+        <div class="text-sm mt-4">
           <p>
             Tramline increments the version name for every release build created, which guarantees that every build can
             be
@@ -112,6 +112,15 @@
       <% end %>
     </div>
   </div>
+
+  <% if app.notifications_set_up? %>
+    <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
+    <div class="text-xl text-slate-600 font-medium mt-2 mb-4">Notifications</div>
+    <div class="grid gap-x-5 md:grid-cols-2">
+      <%= render partial: "shared/notifications_form",
+                 locals: { form:, app: @app, channels: @notification_channels, current: @current_notification_channel } %>
+    </div>
+  <% end %>
 
   <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
 
@@ -163,16 +172,19 @@
     <% end %>
 
     <% if train.persisted? %>
-      <div class="text-xl text-slate-600 font-medium mt-8">Release Schedule</div>
-      <div class="block text-sm font-medium mt-8 mb-1">
-        <%= release_schedule(train) %>
-      </div>
+      <% if train.automatic? %>
+        <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
+        <div class="text-xl text-slate-600 mt-2 font-medium">Release Schedule</div>
+        <div class="block text-sm mt-4">
+          <%= release_schedule(train) %>
+        </div>
+      <% end %>
     <% else %>
       <%= render partial: "release_schedule_form", locals: { form: } %>
     <% end %>
   </div>
 
-  <div class="mt-10">
+  <div class="mt-12">
     <%= form.authz_submit :blue, train.persisted? ? "Update Train" : "Create Train" %>
   </div>
 <% end %>
@@ -180,9 +192,8 @@
 <div class="grid md:grid-cols-2 gap-x-11 pb-5 mt-8">
   <% @train.release_platforms.each do |release_platform| %>
     <section>
-      <div class="text-2xl font-bold mt-8 mb-4 pt-4 border-t border-dashed">
-        <%= steps_heading(release_platform) %>
-      </div>
+      <div class="border-t border-solid border-slate-200 pt-8 mt-8"></div>
+      <div class="text-2xl font-bold mb-4 mt-2"><%= steps_heading(release_platform) %></div>
       <% if release_platform.steps.size > 0 && release_platform.persisted? %>
         <div>
           <%= render partial: "shared/step_tree_viz", locals: { train: @train, release_platform:, editable: true } %>

@@ -14,6 +14,7 @@
 #
 class AppConfig < ApplicationRecord
   has_paper_trail
+  include Notifiable
 
   MINIMUM_REQUIRED_CONFIG = %i[code_repository]
   FIREBASE_CONFIG_SCHEMA = Rails.root.join("config/schema/firebase_config.json")
@@ -29,11 +30,6 @@ class AppConfig < ApplicationRecord
 
   def ready?
     MINIMUM_REQUIRED_CONFIG.all? { |config| public_send(config).present? } && firebase_ready?
-  end
-
-  def notification_channel_id
-    return if notification_channel.blank?
-    notification_channel["id"]
   end
 
   def code_repository_name

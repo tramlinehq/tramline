@@ -25,30 +25,8 @@
         </div>
 
         <% if @app.notifications_set_up? %>
-          <div>
-            <%= form.label :notification_channel, "Notification Channel", class: "block text-sm font-medium mb-1" %>
-            <%= form.select :notification_channel,
-                            options_for_select(
-                              display_channels(@notification_channels, with_none: true) { |chan| "#" + chan[:name] },
-                              @config.notification_channel.to_json
-                            ),
-                            { class: "form-select w-full" },
-                            { data: { controller: "input-select" } } %>
-
-            <div class="text-sm mt-1">
-              To receive notifications in <strong>private</strong> channels, <code>/invite @Tramline</code> into your
-              private channel and then select it from this list.
-            </div>
-
-            <div class="py-2">
-              <%= authz_link_to :blue,
-                                "Refresh channels",
-                                refresh_channels_app_integration_slack_integration_path(@app,
-                                                                                        @app.notification_provider.integration,
-                                                                                        @app.notification_provider),
-                                method: :post, data: { turbo_method: :post } %>
-            </div>
-          </div>
+          <%= render partial: "shared/notifications_form",
+                     locals: { form:, app: @app, channels: @notification_channels, current: @config.notification_channel } %>
         <% end %>
       </div>
     </section>
@@ -91,7 +69,7 @@
             <%= form.label :firebase_android_config, "Android App", class: "block text-sm font-medium mb-1" %>
             <%= form.select :firebase_android_config,
                             options_for_select(
-                              display_channels(@firebase_android_apps) { |app| "#{app[:display_name]} #{app[:app_id]}"},
+                              display_channels(@firebase_android_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
                               @config.firebase_android_config.to_json
                             ),
                             { class: "form-select" },

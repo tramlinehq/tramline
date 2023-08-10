@@ -7,6 +7,7 @@
 #  description              :string
 #  kickoff_at               :datetime
 #  name                     :string           not null
+#  notification_channel     :jsonb
 #  release_backmerge_branch :string
 #  release_branch           :string
 #  repeat_duration          :interval
@@ -25,6 +26,7 @@ class Train < ApplicationRecord
   using RefinedString
   extend FriendlyId
   include Rails.application.routes.url_helpers
+  include Notifiable
 
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
@@ -257,8 +259,8 @@ class Train < ApplicationRecord
 
   def notify!(message, type, params)
     return unless active?
-    return unless app.send_notifications?
-    notification_provider.notify!(config.notification_channel_id, message, type, params)
+    return unless send_notifications?
+    notification_provider.notify!(notification_channel_id, message, type, params)
   end
 
   def notification_params
@@ -269,6 +271,10 @@ class Train < ApplicationRecord
         train_url: train_link
       }
     )
+  end
+
+  def send_notifications?
+    app.notifications_set_up? && notification_channel.present?
   end
 
   private

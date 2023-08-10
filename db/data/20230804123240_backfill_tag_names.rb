@@ -2,6 +2,8 @@
 
 class BackfillTagNames < ActiveRecord::Migration[7.0]
   def up
+    return
+
     ActiveRecord::Base.transaction do
       Release.where(tag_name: nil).each do |release|
         release.update!(tag_name: release.send(:base_tag_name))
