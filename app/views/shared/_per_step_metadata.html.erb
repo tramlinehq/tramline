@@ -22,8 +22,17 @@
       </div>
 
       <% if step_run&.build_version %>
-        <div class="flex flex-col w-full">
+        <div class="flex w-full sm:justify-between">
           <%= render partial: "shared/build_details", locals: { step_run:, with_artifact: false } %>
+          <% if step_run.may_retry_ci? && release.on_track? %>
+            <div>
+              <%= authz_button_to :blue,
+                                  "Retry CI Workflow",
+                                  retry_ci_workflow_release_step_run_path(release, step_run),
+                                  method: :patch,
+                                  data: { turbo_method: :patch, turbo_confirm: "This will re-run the CI workflow. Are you sure?", class: "btn-xs mb-2" } %>
+            </div>
+          <% end %>
         </div>
       <% end %>
     </div>

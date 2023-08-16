@@ -91,6 +91,17 @@ module Installations
       end
     end
 
+    def retry_workflow!(repo, run_id)
+      execute do
+        response = HTTP.auth("Bearer #{client.access_token}")
+          .headers(:accept => "application/vnd.github+json", "X-GitHub-Api-Version" => "2022-11-28")
+          .post("https://api.github.com/repos/#{repo}/actions/runs/#{run_id}/rerun-failed-jobs", {})
+        if (error = Octokit::Error.from_response(response))
+          raise error
+        end
+      end
+    end
+
     def create_repo_webhook!(repo, url, transforms)
       execute do
         @client.create_hook(

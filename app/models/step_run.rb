@@ -115,6 +115,11 @@ class StepRun < ApplicationRecord
       transitions from: :ci_workflow_started, to: :ci_workflow_halted
     end
 
+    event(:retry_ci, after_commit: -> { WorkflowProcessors::WorkflowRunJob.perform_later(id) }) do
+      before :trigger_workflow_run
+      transitions from: [:ci_workflow_failed, :ci_workflow_halted], to: :ci_workflow_started
+    end
+
     event(:finish_ci, after_commit: :after_finish_ci) { transitions from: :ci_workflow_started, to: :build_ready }
     event(:build_found, after_commit: :trigger_deployment) { transitions from: :build_ready, to: :build_found_in_store }
 
@@ -297,10 +302,6 @@ class StepRun < ApplicationRecord
       .join("\n").presence || "Nothing new"
   end
 
-  def cancel_ci_workflow!
-    ci_cd_provider.cancel_workflow_run!(ci_ref)
-  end
-
   private
 
   def previous_step_run
@@ -335,6 +336,14 @@ class StepRun < ApplicationRecord
     ci_cd_provider
       .trigger_workflow_run!(workflow_id, release_branch, inputs, commit_hash)
       .then { |wr| update_ci_metadata!(wr) }
+  end
+
+  def retry_workflow_run
+    ci_cd_provider.retry_workflow_run!(ci_ref)
+  end
+
+  def cancel_ci_workflow!
+    ci_cd_provider.cancel_workflow_run!(ci_ref)
   end
 
   def workflow_found?

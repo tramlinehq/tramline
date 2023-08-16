@@ -73,6 +73,7 @@ Rails.application.routes.draw do
         resources :step_runs, only: [], shallow: false do
           member do
             post :start
+            patch :retry_ci_workflow
           end
 
           resources :deployments, only: [] do

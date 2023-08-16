@@ -10,6 +10,13 @@ class StepRunsController < SignedInApplicationController
     redirect_back fallback_location: root_path, notice: "Step successfully started"
   end
 
+  def retry_ci_workflow
+    step_run = @release.step_runs.find(params[:id])
+    step_run.retry_ci!
+
+    redirect_back fallback_location: root_path, notice: "CI workflow retried!"
+  end
+
   private
 
   def set_release
