@@ -6,6 +6,7 @@ FactoryBot.define do
     sequence(:ci_cd_channel) { |n| Faker::Lorem.word + n.to_s }
     release_suffix { "qa-staging" }
     kind { "review" }
+    auto_deploy { true }
 
     trait :release do
       kind { "release" }
