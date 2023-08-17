@@ -135,6 +135,10 @@ class BitriseIntegration < ApplicationRecord
     PUBLIC_ICON
   end
 
+  def workflow_retriable?
+    false
+  end
+
   private
 
   def app_config

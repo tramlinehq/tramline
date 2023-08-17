@@ -239,6 +239,10 @@ class GithubIntegration < ApplicationRecord
     PUBLIC_ICON
   end
 
+  def workflow_retriable?
+    true
+  end
+
   private
 
   def create_webhook!(url_params)

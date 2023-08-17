@@ -327,19 +327,26 @@ class StepRun < ApplicationRecord
     update!(ci_ref: workflow_run[:ci_ref], ci_link: workflow_run[:ci_link])
   end
 
-  def trigger_workflow_run
-    version_code = release_platform.app.bump_build_number!
-    inputs = {version_code: version_code, build_version: build_version}
-    inputs[:build_notes] = build_notes if organization.build_notes_in_workflow?
-    update!(build_number: version_code)
-
+  def trigger_workflow_run(retrigger: false)
+    update_build_number! unless retrigger
     ci_cd_provider
-      .trigger_workflow_run!(workflow_id, release_branch, inputs, commit_hash)
+      .trigger_workflow_run!(workflow_id, release_branch, workflow_data, commit_hash)
       .then { |wr| update_ci_metadata!(wr) }
   end
 
   def retry_workflow_run
-    ci_cd_provider.retry_workflow_run!(ci_ref)
+    return ci_cd_provider.retry_workflow_run!(ci_ref) if ci_cd_provider.workflow_retriable?
+    trigger_workflow_run(retrigger: true)
+  end
+
+  def update_build_number!
+    update!(build_number: release_platform.app.bump_build_number!)
+  end
+
+  def workflow_data
+    data = {version_code: build_number, build_version: build_version}
+    data[:build_notes] = build_notes if organization.build_notes_in_workflow?
+    data
   end
 
   def cancel_ci_workflow!
