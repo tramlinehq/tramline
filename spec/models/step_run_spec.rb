@@ -268,15 +268,15 @@ describe StepRun do
 
       expect(step_run.build_number).to be_nil
       step_run.trigger_ci!
-      expect(step_run.build_number).to_not be_empty
+      expect(step_run.build_number).not_to be_empty
     end
 
     (StepRun::STATES.keys - StepRun::END_STATES).each do |trait|
       it "cancels previous running step run when #{trait}" do
         allow(Releases::CancelStepRun).to receive(:perform_later)
         previous_step_run = create(:step_run, trait, step: step_run.step,
-                                   release_platform_run: step_run.release_platform_run,
-                                   scheduled_at: 10.minutes.before(step_run.scheduled_at))
+          release_platform_run: step_run.release_platform_run,
+          scheduled_at: 10.minutes.before(step_run.scheduled_at))
 
         step_run.trigger_ci!
 
@@ -288,8 +288,8 @@ describe StepRun do
       it "does not cancel previous step run when #{trait}" do
         allow(Releases::CancelStepRun).to receive(:perform_later)
         previous_step_run = create(:step_run, trait, step: step_run.step,
-                                   release_platform_run: step_run.release_platform_run,
-                                   scheduled_at: 10.minutes.before(step_run.scheduled_at))
+          release_platform_run: step_run.release_platform_run,
+          scheduled_at: 10.minutes.before(step_run.scheduled_at))
 
         step_run.trigger_ci!
 
@@ -306,7 +306,7 @@ describe StepRun do
       allow(step_run).to receive(:ci_cd_provider).and_return(providable)
     end
 
-    context "retriable" do
+    context "when retriable" do
       it "retries the same workflow run" do
         allow(WorkflowProcessors::WorkflowRunJob).to receive(:perform_later)
         allow(providable).to receive(:workflow_retriable?).and_return(true)
@@ -328,7 +328,7 @@ describe StepRun do
       end
     end
 
-    context "non-retriable" do
+    context "when non-retriable" do
       it "triggers a new workflow run" do
         allow(WorkflowProcessors::WorkflowRunJob).to receive(:perform_later)
         allow(providable).to receive(:workflow_retriable?).and_return(false)
