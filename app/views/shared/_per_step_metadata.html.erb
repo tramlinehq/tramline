@@ -5,6 +5,7 @@
         <h3 class="text-lg font-bold text-slate-800"><%= step.name %></h3>
         <%= status_badge "##{step.step_number}", %w[text-xs ml-2], :neutral %>
         <%= status_badge step.kind&.humanize, %w[text-xs ml-2], :neutral %>
+        <%= status_badge auto_deploy_status_badge(step), %w[text-xs ml-2], :neutral %>
       </div>
 
       <% if editable %>

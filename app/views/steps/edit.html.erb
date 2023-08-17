@@ -10,14 +10,22 @@
 
     <%= render 'form', form: form %>
 
-    <div class="mb-8 w-1/2 2xl:w-1/3">
-      <div class="sm:flex sm:justify-between sm:items-center mt-8 mb-2 pb-5">
+    <div class="mb-8">
+      <div class="sm:flex sm:justify-between sm:items-center mt-8">
         <p class="font-bold text-xl">
           <%= Deployment.display.pluralize %>
         </p>
       </div>
 
-      <%= render partial: "shared/deployments", locals: { step: @step, show_deployment_status: false } %>
+      <% if @step.deployments.size > 1 %>
+        <div class="text-sm mt-1">
+          Automatic distribution to all non-production distribution channels without any manual approval is <mark><%= auto_deploy_status(@step) %></mark>
+        </div>
+      <% end %>
+
+      <div class="sm:w-1/2 2xl:w-1/3 mt-4">
+        <%= render partial: "shared/deployments", locals: { step: @step, show_deployment_status: false } %>
+      </div>
     </div>
 
     <div class="mt-5">

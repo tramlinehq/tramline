@@ -69,5 +69,14 @@
     </template>
 
     <div data-nested-form-ext-target="target"></div>
+
+    <% if @step.release? %>
+      <div hidden class="mt-4" data-list-position-target="showCheckbox">
+        <div class="flex gap-x-2">
+          <%= form.check_box :auto_deploy %>
+          <%= form.label :auto_deploy, "Automate distribution to all non-production distribution channels without any manual approval", class: "block text-sm font-medium mb-1" %>
+        </div>
+      </div>
+    <% end %>
   </ul>
 </div>

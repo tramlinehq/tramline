@@ -251,6 +251,7 @@ class StepRun < ApplicationRecord
     return finish! if finished_deployments?
     return unless deployment.next
     return if deployment.next.production_channel?
+    return unless step.auto_deploy?
 
     # trigger the next deployment if available
     trigger_deployment(deployment.next)
