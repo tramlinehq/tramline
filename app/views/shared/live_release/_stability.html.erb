@@ -36,6 +36,16 @@
                                   start_release_step_run_path(release, step),
                                   { class: "btn-xs mb-2" } %>
             <% end %>
+
+            <% if step_run&.may_retry_ci? && release.on_track? %>
+              <%= authz_button_to :blue,
+                                  "Retry CI Workflow",
+                                  retry_ci_workflow_release_step_run_path(release, step_run),
+                                  method: :patch,
+                                  data: { turbo_method: :patch,
+                                          turbo_confirm: "This will re-run the CI workflow. Are you sure?" },
+                                  class: "btn-xs mb-2" %>
+            <% end %>
           </div>
 
           <div>

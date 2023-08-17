@@ -115,6 +115,11 @@ class StepRun < ApplicationRecord
       transitions from: :ci_workflow_started, to: :ci_workflow_halted
     end
 
+    event(:retry_ci, after_commit: -> { WorkflowProcessors::WorkflowRunJob.perform_later(id) }) do
+      before :retry_workflow_run
+      transitions from: [:ci_workflow_failed, :ci_workflow_halted], to: :ci_workflow_started
+    end
+
     event(:finish_ci, after_commit: :after_finish_ci) { transitions from: :ci_workflow_started, to: :build_ready }
     event(:build_found, after_commit: :trigger_deployment) { transitions from: :build_ready, to: :build_found_in_store }
 
@@ -327,15 +332,26 @@ class StepRun < ApplicationRecord
     update!(ci_ref: workflow_run[:ci_ref], ci_link: workflow_run[:ci_link])
   end
 
-  def trigger_workflow_run
-    version_code = release_platform.app.bump_build_number!
-    inputs = {version_code: version_code, build_version: build_version}
-    inputs[:build_notes] = build_notes if organization.build_notes_in_workflow?
-    update!(build_number: version_code)
-
+  def trigger_workflow_run(retrigger: false)
+    update_build_number! unless retrigger
     ci_cd_provider
-      .trigger_workflow_run!(workflow_id, release_branch, inputs, commit_hash)
+      .trigger_workflow_run!(workflow_id, release_branch, workflow_inputs, commit_hash)
       .then { |wr| update_ci_metadata!(wr) }
+  end
+
+  def retry_workflow_run
+    return ci_cd_provider.retry_workflow_run!(ci_ref) if ci_cd_provider.workflow_retriable?
+    trigger_workflow_run(retrigger: true)
+  end
+
+  def update_build_number!
+    update!(build_number: release_platform.app.bump_build_number!)
+  end
+
+  def workflow_inputs
+    data = {version_code: build_number, build_version: build_version}
+    data[:build_notes] = build_notes if organization.build_notes_in_workflow?
+    data
   end
 
   def workflow_found?

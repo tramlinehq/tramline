@@ -69,7 +69,7 @@ namespace :db do
       run.commits&.delete_all
       run.release_metadata&.delete
       run.release_changelog&.delete
-      run.release_changelog&.delete
+      run.pull_requests&.delete_all
       run.release_platform_runs&.delete_all
     end
     train.releases&.delete_all

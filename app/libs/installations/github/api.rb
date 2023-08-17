@@ -8,6 +8,7 @@ module Installations
     WEBHOOK_NAME = "web"
     WEBHOOK_EVENTS = %w[push]
     LIST_WORKFLOWS_LIMIT = 99
+    RERUN_FAILED_JOBS_URL = Addressable::Template.new "https://api.github.com/repos/{repo}/actions/runs/{run_id}/rerun-failed-jobs"
 
     def initialize(installation_id)
       @app_name = creds.integrations.github.app_name
@@ -88,6 +89,18 @@ module Installations
     def cancel_workflow!(repo, run_id)
       execute do
         @client.cancel_workflow_run(repo, run_id)
+      end
+    end
+
+    def retry_workflow!(repo, run_id)
+      execute_custom do |custom_client|
+        custom_client.post(
+          RERUN_FAILED_JOBS_URL
+            .expand(repo:, run_id:)
+            .to_s
+            .then { |url| URI.decode_www_form_component(url) },
+          {}
+        )
       end
     end
 
@@ -224,6 +237,28 @@ module Installations
       retry
     rescue Octokit::NotFound, Octokit::UnprocessableEntity, Octokit::MethodNotAllowed => e
       raise Installations::Github::Error.handle(e)
+    end
+
+    API_VERSION = "2022-11-28"
+    ACCEPT_HEADER = "application/vnd.github+json"
+
+    def execute_custom
+      execute do
+        token = @client.access_token
+        new_client = HTTP.auth("Bearer #{token}").headers(:accept => ACCEPT_HEADER, "X-GitHub-Api-Version" => API_VERSION)
+
+        response = yield(new_client)
+
+        response_params = {
+          status: response.status,
+          body: response.body,
+          response_headers: response.headers.to_h.with_indifferent_access
+        }
+
+        if (error = Octokit::Error.from_response(response_params))
+          raise error
+        end
+      end
     end
 
     def set_client
