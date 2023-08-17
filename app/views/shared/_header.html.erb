@@ -10,6 +10,7 @@
 
       <!-- Header: Right side -->
       <div class="flex items-center space-x-3">
+        <% if subscribed_org? %><%= status_badge("Subscriber", :routine) %><% end %>
         <hr class="w-px h-6 bg-slate-200"/>
         <div class="relative inline-flex" data-controller="reveal" data-reveal-away-value="true">
           <button
@@ -52,6 +53,14 @@
                             "data-turbo": false,
                             class: "font-medium text-sm text-indigo-500 hover:text-indigo-600 flex items-center py-1 px-3" %>
               </li>
+
+              <% if billing? %>
+                <li class="pb-0.5 pt-2 mt-1 border-t border-slate-200">
+                  <%= link_to_external "Go to billing ↗",
+                                       billing_link,
+                                       class: "font-medium text-sm text-indigo-500 hover:text-indigo-600 flex items-center py-1 px-3" %>
+                </li>
+              <% end %>
             </ul>
           </div>
         </div>
