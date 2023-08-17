@@ -330,7 +330,7 @@ class StepRun < ApplicationRecord
   def trigger_workflow_run(retrigger: false)
     update_build_number! unless retrigger
     ci_cd_provider
-      .trigger_workflow_run!(workflow_id, release_branch, workflow_data, commit_hash)
+      .trigger_workflow_run!(workflow_id, release_branch, workflow_inputs, commit_hash)
       .then { |wr| update_ci_metadata!(wr) }
   end
 
@@ -343,7 +343,7 @@ class StepRun < ApplicationRecord
     update!(build_number: release_platform.app.bump_build_number!)
   end
 
-  def workflow_data
+  def workflow_inputs
     data = {version_code: build_number, build_version: build_version}
     data[:build_notes] = build_notes if organization.build_notes_in_workflow?
     data
