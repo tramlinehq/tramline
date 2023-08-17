@@ -185,6 +185,7 @@ class ReleasePlatformRun < ApplicationRecord
   # recursively attempt to create a release tag until a unique one gets created
   # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
   def create_tag!(tag_name = base_tag_name)
+    return if self.tag_name.present?
     train.create_tag!(tag_name, last_commit.commit_hash)
     update!(tag_name:)
   rescue Installations::Errors::TagReferenceAlreadyExists
