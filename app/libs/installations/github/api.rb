@@ -93,8 +93,8 @@ module Installations
     end
 
     def retry_workflow!(repo, run_id)
-      execute_custom do |client|
-        client.post(RERUN_FAILED_JOBS_URL.expand(repo:, run_id:).to_s, {})
+      execute_custom do |custom_client|
+        custom_client.post(RERUN_FAILED_JOBS_URL.expand(repo:, run_id:).to_s, {})
       end
     end
 

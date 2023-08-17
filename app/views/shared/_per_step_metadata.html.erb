@@ -22,7 +22,7 @@
       </div>
 
       <% if step_run&.build_version %>
-        <div class="flex w-full sm:justify-between">
+        <div class="flex flex-col w-full">
           <%= render partial: "shared/build_details", locals: { step_run:, with_artifact: false } %>
         </div>
       <% end %>
