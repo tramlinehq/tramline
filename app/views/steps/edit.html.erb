@@ -19,7 +19,7 @@
 
       <% if @step.deployments.size > 1 %>
         <div class="text-sm mt-1">
-          Automatic distribution to all non-production distribution channels without any manual approval is <mark><%= @step.auto_deploy? ? "ON" : "OFF" %></mark>
+          Automatic distribution to all non-production distribution channels without any manual approval is <mark><%= auto_deploy_status(@step) %></mark>
         </div>
       <% end %>
 
