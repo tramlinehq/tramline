@@ -2,6 +2,7 @@ class StepRunsController < SignedInApplicationController
   before_action :require_write_access!, only: %i[start]
   before_action :set_release
 
+  # FIXME: This action incorrectly consumes a step_id and not a step_run_id as the route suggests
   def start
     step = @release.release_platform.steps.friendly.find(params[:id])
     commit = @release.last_commit
