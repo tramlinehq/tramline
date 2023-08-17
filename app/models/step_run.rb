@@ -116,7 +116,7 @@ class StepRun < ApplicationRecord
     end
 
     event(:retry_ci, after_commit: -> { WorkflowProcessors::WorkflowRunJob.perform_later(id) }) do
-      before :trigger_workflow_run
+      before :retry_workflow_run
       transitions from: [:ci_workflow_failed, :ci_workflow_halted], to: :ci_workflow_started
     end
 
