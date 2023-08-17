@@ -302,6 +302,10 @@ class StepRun < ApplicationRecord
       .join("\n").presence || "Nothing new"
   end
 
+  def cancel_ci_workflow!
+    ci_cd_provider.cancel_workflow_run!(ci_ref)
+  end
+
   private
 
   def previous_step_run
@@ -347,10 +351,6 @@ class StepRun < ApplicationRecord
     data = {version_code: build_number, build_version: build_version}
     data[:build_notes] = build_notes if organization.build_notes_in_workflow?
     data
-  end
-
-  def cancel_ci_workflow!
-    ci_cd_provider.cancel_workflow_run!(ci_ref)
   end
 
   def workflow_found?
