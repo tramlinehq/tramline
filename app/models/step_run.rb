@@ -312,9 +312,9 @@ class StepRun < ApplicationRecord
   def previous_step_run
     release_platform_run
       .step_runs_for(step)
-      .where
-      .not(id: id)
-      .order(:created_at)
+      .where("scheduled_at < ?", scheduled_at)
+      .where.not(id: id)
+      .order(:scheduled_at)
       .last
   end
 

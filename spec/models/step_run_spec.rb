@@ -294,6 +294,17 @@ describe StepRun do
 
         expect(Releases::CancelStepRun).to have_received(:perform_later).with(previous_step_run.id).once
       end
+
+      it "does not cancel later running step run when #{trait}" do
+        allow(Releases::CancelStepRun).to receive(:perform_later)
+        previous_step_run = create(:step_run, trait, step: step_run.step,
+          release_platform_run: step_run.release_platform_run,
+          scheduled_at: 10.minutes.after(step_run.scheduled_at))
+
+        step_run.trigger_ci!
+
+        expect(Releases::CancelStepRun).not_to have_received(:perform_later).with(previous_step_run.id)
+      end
     end
 
     StepRun::END_STATES.each do |trait|
