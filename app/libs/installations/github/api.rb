@@ -206,8 +206,7 @@ module Installations
 
     def head(repo, working_branch_name)
       execute do
-        # FIXME: this method is unsupported and could get deprecated, find a way around it
-        @client.commits(repo, sha: working_branch_name).first[:sha]
+        @client.ref(repo, "heads/#{working_branch_name}")[:object][:sha]
       end
     end
 

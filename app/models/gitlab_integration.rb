@@ -208,6 +208,10 @@ class GitlabIntegration < ApplicationRecord
     "https://storage.googleapis.com/tramline-public-assets/gitlab_small.png".freeze
   end
 
+  def branch_head_sha(branch)
+    with_api_retries { installation.head(app_config.code_repository_name, branch) }
+  end
+
   private
 
   # retry once (2 attempts in total)

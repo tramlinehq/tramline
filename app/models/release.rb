@@ -241,6 +241,10 @@ class Release < ApplicationRecord
     commits.order(:created_at).last
   end
 
+  def latest_commit_hash
+    vcs_provider.branch_head_sha(release_branch)
+  end
+
   private
 
   def base_tag_name

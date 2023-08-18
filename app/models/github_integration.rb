@@ -243,6 +243,10 @@ class GithubIntegration < ApplicationRecord
     true
   end
 
+  def branch_head_sha(branch)
+    installation.head(app_config.code_repository_name, branch)
+  end
+
   private
 
   def create_webhook!(url_params)

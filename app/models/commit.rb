@@ -46,6 +46,12 @@ class Commit < ApplicationRecord
     end
   end
 
+  def applicable?
+    commit_hash == release.latest_commit_hash
+  rescue
+    true
+  end
+
   def run_for(step, release_platform_run)
     step_runs.where(step:, release_platform_run:).last
   end
