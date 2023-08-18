@@ -299,6 +299,7 @@ class StepRun < ApplicationRecord
     build_notes_raw
       .map { |str| str&.strip }
       .flat_map { |line| line.split("\n") }
+      .map { |line| line.gsub(/\p{Emoji_Presentation}/, "") }
       .reject { |line| line =~ /\AMerge|\ACo-authored-by|\A---------/ }
       .compact_blank
       .uniq
