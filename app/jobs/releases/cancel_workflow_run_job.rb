@@ -1,5 +1,4 @@
 class Releases::CancelWorkflowRunJob < ApplicationJob
-  extend Loggable
   extend Backoffable
   WorkflowRunNotFound = Class.new(StandardError)
 
