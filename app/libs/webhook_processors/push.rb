@@ -43,7 +43,8 @@ class WebhookProcessors::Push
       url: commit_attributes[:url]
     }
 
-    Commit.find_or_create_by!(params).trigger_step_runs
+    commit = Commit.find_or_create_by!(params)
+    commit.trigger_step_runs if commit.applicable?
   end
 
   def stamp_version_changed
