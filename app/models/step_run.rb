@@ -73,6 +73,7 @@ class StepRun < ApplicationRecord
     deployment_started: "deployment_started",
     deployment_failed: "deployment_failed",
     success: "success",
+    cancelling: "cancelling",
     cancelled: "cancelled"
   }
 
@@ -87,6 +88,9 @@ class StepRun < ApplicationRecord
     :cancelled
   ).keys
 
+  WORKFLOW_IN_PROGRESS = [:ci_workflow_triggered, :ci_workflow_started]
+  WORKFLOW_IMMUTABLE = STATES.keys - END_STATES - WORKFLOW_IN_PROGRESS
+
   enum status: STATES
 
   aasm safe_state_machine_params do
@@ -99,7 +103,6 @@ class StepRun < ApplicationRecord
     end
 
     event :ci_start, after_commit: -> { WorkflowProcessors::WorkflowRunJob.perform_later(id) } do
-      before :find_and_update_workflow_run
       transitions from: [:ci_workflow_triggered], to: :ci_workflow_started
     end
 
@@ -144,9 +147,9 @@ class StepRun < ApplicationRecord
       transitions from: :deployment_started, to: :success, guard: :finished_deployments?
     end
 
-    event :cancel do
-      before { Releases::CancelWorkflowRun.perform_later(id) if ci_workflow_started? }
-      transitions from: (STATES.keys - END_STATES), to: :cancelled
+    event(:cancel, after_commit: -> { Releases::CancelWorkflowRunJob.perform_later(id) }) do
+      transitions from: WORKFLOW_IMMUTABLE, to: :cancelled
+      transitions from: WORKFLOW_IN_PROGRESS, to: :cancelling
     end
   end
 
@@ -307,6 +310,15 @@ class StepRun < ApplicationRecord
     ci_cd_provider.cancel_workflow_run!(ci_ref)
   end
 
+  def workflow_found?
+    ci_ref.present?
+  end
+
+  def find_and_update_workflow_run
+    return if workflow_found?
+    find_workflow_run.then { |wr| update_ci_metadata!(wr) }
+  end
+
   private
 
   def previous_step_run
@@ -316,11 +328,6 @@ class StepRun < ApplicationRecord
       .where.not(id: id)
       .order(:scheduled_at)
       .last
-  end
-
-  def find_and_update_workflow_run
-    return if workflow_found?
-    find_workflow_run.then { |wr| update_ci_metadata!(wr) }
   end
 
   def find_workflow_run
@@ -352,10 +359,6 @@ class StepRun < ApplicationRecord
     data = {version_code: build_number, build_version: build_version}
     data[:build_notes] = build_notes if organization.build_notes_in_workflow?
     data
-  end
-
-  def workflow_found?
-    ci_ref.present?
   end
 
   def add_build_artifact(url)
