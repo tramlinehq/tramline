@@ -206,7 +206,8 @@ module Installations
 
     def head(repo, working_branch_name)
       execute do
-        @client.ref(repo, "heads/#{working_branch_name}")[:object][:sha]
+        obj = @client.ref(repo, "heads/#{working_branch_name}")[:object]
+        obj[:sha] if obj[:type].eql? "commit"
       end
     end
 
