@@ -429,19 +429,31 @@ describe StepRun do
   describe "#cancel!" do
     let(:step) { create(:step, :with_deployment) }
 
-    it "cancels the step run" do
-      step_run = create(:step_run, step: step)
-      step_run.cancel!
+    StepRun::WORKFLOW_IMMUTABLE.each do |trait|
+      it "cancels the step run in #{trait} state" do
+        step_run = create(:step_run, trait, step: step)
+        step_run.cancel!
 
-      expect(step_run.reload.cancelled?).to be(true)
+        expect(step_run.reload.cancelled?).to be(true)
+      end
     end
 
     it "cancels the CI workflow if step run is in ci workflow started state" do
-      allow(Releases::CancelWorkflowRun).to receive(:perform_later)
+      allow(Releases::CancelWorkflowRunJob).to receive(:perform_later)
       step_run = create(:step_run, :ci_workflow_started, step: step)
       step_run.cancel!
 
-      expect(Releases::CancelWorkflowRun).to have_received(:perform_later).with(step_run.id).once
+      expect(Releases::CancelWorkflowRunJob).to have_received(:perform_later).with(step_run.id).once
+      expect(step_run.reload.cancelling?).to be(true)
+    end
+
+    it "attempts to cancels the CI workflow if step run is in ci workflow triggered state" do
+      allow(Releases::CancelWorkflowRunJob).to receive(:perform_later)
+      step_run = create(:step_run, :ci_workflow_triggered, step: step)
+      step_run.cancel!
+
+      expect(Releases::CancelWorkflowRunJob).to have_received(:perform_later).with(step_run.id).once
+      expect(step_run.reload.cancelling?).to be(true)
     end
   end
 end

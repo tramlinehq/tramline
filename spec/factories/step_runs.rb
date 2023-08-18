@@ -60,6 +60,10 @@ FactoryBot.define do
       status { "build_not_found_in_store" }
     end
 
+    trait :cancelling do
+      status { "cancelling" }
+    end
+
     trait :cancelled do
       status { "cancelled" }
     end
