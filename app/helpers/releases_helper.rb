@@ -46,8 +46,10 @@ module ReleasesHelper
         ["Build unavailable", :failure]
       when :deployment_failed
         ["Deployment failed", :failure]
+      when :cancelling
+        ["Cancelling", :inert]
       when :cancelled
-        ["Cancelled", :neutral]
+        ["Cancelled", :inert]
       else
         ["Unknown", :neutral]
       end
