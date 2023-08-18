@@ -180,6 +180,18 @@ describe StepRun do
       expect(Triggers::Deployment).not_to have_received(:call).with(step_run: step_run, deployment: prod_deployment)
     end
 
+    it "does not trigger the next deployment if step is not auto deploy" do
+      allow(Triggers::Deployment).to receive(:call)
+      step = create(:step, :release, :with_deployment, auto_deploy: false)
+      regular_deployment = step.deployments.first
+      another_regular_deployment = create(:deployment, step: step)
+      step_run = create(:step_run, :build_available, step: step)
+
+      step_run.finish_deployment!(regular_deployment)
+
+      expect(Triggers::Deployment).not_to have_received(:call).with(step_run: step_run, deployment: another_regular_deployment)
+    end
+
     it "automatically finishes the release if the release step has completed" do
       repo_integration = instance_double(Installations::Github::Api)
       allow(Installations::Github::Api).to receive(:new).and_return(repo_integration)
@@ -262,6 +274,15 @@ describe StepRun do
       expect(Releases::FindWorkflowRun).to have_received(:perform_async).with(id).once
     end
 
+    it "updates build number" do
+      step_run = create(:step_run, build_number: nil)
+      allow(Releases::FindWorkflowRun).to receive(:perform_async)
+
+      expect(step_run.build_number).to be_nil
+      step_run.trigger_ci!
+      expect(step_run.build_number).not_to be_empty
+    end
+
     (StepRun::STATES.keys - StepRun::END_STATES).each do |trait|
       it "cancels previous running step run when #{trait}" do
         allow(Releases::CancelStepRun).to receive(:perform_later)
@@ -272,6 +293,17 @@ describe StepRun do
         step_run.trigger_ci!
 
         expect(Releases::CancelStepRun).to have_received(:perform_later).with(previous_step_run.id).once
+      end
+
+      it "does not cancel later running step run when #{trait}" do
+        allow(Releases::CancelStepRun).to receive(:perform_later)
+        previous_step_run = create(:step_run, trait, step: step_run.step,
+          release_platform_run: step_run.release_platform_run,
+          scheduled_at: 10.minutes.after(step_run.scheduled_at))
+
+        step_run.trigger_ci!
+
+        expect(Releases::CancelStepRun).not_to have_received(:perform_later).with(previous_step_run.id)
       end
     end
 
@@ -285,6 +317,59 @@ describe StepRun do
         step_run.trigger_ci!
 
         expect(Releases::CancelStepRun).not_to have_received(:perform_later).with(previous_step_run.id)
+      end
+    end
+  end
+
+  describe "#retry_ci!" do
+    let(:step_run) { create(:step_run, :ci_workflow_failed, build_number: "1") }
+    let(:providable) { instance_double(GithubIntegration) }
+
+    before do
+      allow(step_run).to receive(:ci_cd_provider).and_return(providable)
+    end
+
+    context "when retriable" do
+      it "retries the same workflow run" do
+        allow(WorkflowProcessors::WorkflowRunJob).to receive(:perform_later)
+        allow(providable).to receive(:workflow_retriable?).and_return(true)
+        allow(providable).to receive(:retry_workflow_run!)
+
+        step_run.retry_ci!
+
+        expect(providable).to have_received(:retry_workflow_run!)
+      end
+
+      it "does not update the build number" do
+        allow(WorkflowProcessors::WorkflowRunJob).to receive(:perform_later)
+        allow(providable).to receive(:workflow_retriable?).and_return(true)
+        allow(providable).to receive(:retry_workflow_run!)
+
+        expect(step_run.build_number).to eq("1")
+        step_run.retry_ci!
+        expect(step_run.build_number).to eq("1")
+      end
+    end
+
+    context "when non-retriable" do
+      it "triggers a new workflow run" do
+        allow(WorkflowProcessors::WorkflowRunJob).to receive(:perform_later)
+        allow(providable).to receive(:workflow_retriable?).and_return(false)
+        allow(providable).to receive(:trigger_workflow_run!)
+
+        step_run.retry_ci!
+
+        expect(providable).to have_received(:trigger_workflow_run!)
+      end
+
+      it "does not update the build number" do
+        allow(WorkflowProcessors::WorkflowRunJob).to receive(:perform_later)
+        allow(providable).to receive(:workflow_retriable?).and_return(false)
+        allow(providable).to receive(:trigger_workflow_run!)
+
+        expect(step_run.build_number).to eq("1")
+        step_run.retry_ci!
+        expect(step_run.build_number).to eq("1")
       end
     end
   end

@@ -3,6 +3,7 @@
 # Table name: steps
 #
 #  id                  :uuid             not null, primary key
+#  auto_deploy         :boolean          default(TRUE)
 #  ci_cd_channel       :jsonb            not null, indexed => [release_platform_id]
 #  description         :string           not null
 #  kind                :string
@@ -31,6 +32,7 @@ class Step < ApplicationRecord
   validates :deployments, presence: true, on: :create
   validate :unique_deployments, on: :create
   validate :unique_store_deployments_per_train, on: :create
+  validate :auto_deployment_allowed, on: :create
 
   after_initialize :set_default_status, if: :new_record?
   before_validation :set_step_number, if: :new_record?
@@ -110,5 +112,9 @@ class Step < ApplicationRecord
         .any? { |deployment| release_platform.deployments.exists?(build_artifact_channel: deployment.build_artifact_channel, integration: deployment.integration) }
 
     errors.add(:deployments, "cannot have repeated store configurations across steps in the same train") if duplicates
+  end
+
+  def auto_deployment_allowed
+    errors.add(:auto_deploy, "cannot turn off auto deployment for review step") if review? && !auto_deploy?
   end
 end
