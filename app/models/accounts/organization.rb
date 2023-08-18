@@ -7,6 +7,7 @@
 #  name       :string           not null
 #  slug       :string           indexed
 #  status     :string           not null, indexed
+#  subscribed :boolean          default(FALSE)
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #
@@ -33,5 +34,9 @@ class Accounts::Organization < ApplicationRecord
 
   def build_notes_in_workflow?
     Flipper.enabled?(:build_notes_in_workflow, self)
+  end
+
+  def owner
+    users.includes(:memberships).where(memberships: {role: "owner"}).sole
   end
 end

@@ -12,10 +12,32 @@ class SignedInApplicationController < ApplicationController
 
   protected
 
-  helper_method :demo_org?, :demo_train?
+  helper_method :demo_org?, :demo_train?, :subscribed_org?, :billing?, :billing_link
 
   def demo_org?
-    @current_organization&.demo?
+    current_organization&.demo?
+  end
+
+  def subscribed_org?
+    current_organization&.subscribed?
+  end
+
+  def owner?
+    current_user&.owner_for?(current_organization)
+  end
+
+  def billing?
+    subscribed_org? && owner?
+  end
+
+  def billing_link
+    return unless billing?
+    return if ENV["BILLING_URL"].blank?
+
+    Addressable::Template
+      .new(ENV["BILLING_URL"] + "{?prefilled_email}")
+      .expand(prefilled_email: current_user.email)
+      .to_s
   end
 
   def require_login

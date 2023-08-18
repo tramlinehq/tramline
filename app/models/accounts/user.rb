@@ -89,6 +89,10 @@ class Accounts::User < ApplicationRecord
     memberships.find_by(organization: organization).writer?
   end
 
+  def owner_for?(organization)
+    memberships.find_by(organization: organization).owner?
+  end
+
   protected
 
   # keeping the devise confirmable module around and disabling like this,
