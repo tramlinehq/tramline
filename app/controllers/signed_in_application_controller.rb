@@ -19,11 +19,11 @@ class SignedInApplicationController < ApplicationController
   end
 
   def subscribed_org?
-    current_organization.subscribed?
+    current_organization&.subscribed?
   end
 
   def owner?
-    current_user.owner_for?(current_organization)
+    current_user&.owner_for?(current_organization)
   end
 
   def billing?
@@ -36,7 +36,7 @@ class SignedInApplicationController < ApplicationController
 
     Addressable::Template
       .new(ENV["BILLING_URL"] + "{?prefilled_email}")
-      .expand(prefilled_email: current_organization.owner.email)
+      .expand(prefilled_email: current_user.email)
       .to_s
   end
 
