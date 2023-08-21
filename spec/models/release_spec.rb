@@ -18,7 +18,6 @@ describe Release do
       end
 
       it "major bump: sets the original_release_version to next version of the train" do
-        puts ver
         train = create(:train, version_seeded_with: ver)
         run = build(:release, original_release_version: nil, train:)
         run.has_major_bump = true

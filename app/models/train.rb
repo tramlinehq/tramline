@@ -216,37 +216,6 @@ class Train < ApplicationRecord
     version_current.ver_bump(bump_term)
   end
 
-  # TODO: remove
-  def next_release_version(has_major_bump = false)
-    if has_major_bump || releases.any?
-      return next_version(has_major_bump)
-    end
-
-    version_current
-  end
-
-  # TODO: remove
-  def bump_release!(has_major_bump = false)
-    if has_major_bump || releases.any?
-      self.version_current = next_version(has_major_bump)
-      save!
-    end
-
-    version_current
-  end
-
-  # TODO: remove
-  def bump_fix!
-    if releases.any?
-      semverish = version_current.to_semverish
-      self.version_current = semverish.bump!(:patch).to_s if semverish.proper?
-      self.version_current = semverish.bump!(:minor).to_s if semverish.partial?
-      save!
-    end
-
-    version_current
-  end
-
   def pre_release_prs?
     branching_strategy == "parallel_working"
   end
