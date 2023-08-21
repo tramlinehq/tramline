@@ -84,10 +84,10 @@ describe ReleasePlatformRun do
       _step_run_3 = create(:step_run, commit:, step: steps.third, status: "on_track", release_platform_run:)
 
       expectation = {
-        steps.first => { in_progress: false, done: true, failed: false },
-        steps.second => { in_progress: false, done: false, failed: true },
-        steps.third => { in_progress: true, done: false, failed: false },
-        steps.fourth => { not_started: true }
+        steps.first => {in_progress: false, done: true, failed: false},
+        steps.second => {in_progress: false, done: false, failed: true},
+        steps.third => {in_progress: true, done: false, failed: false},
+        steps.fourth => {not_started: true}
       }
 
       expect(release_platform_run.overall_movement_status).to eq(expectation)
@@ -104,8 +104,8 @@ describe ReleasePlatformRun do
       _step_run_2 = create(:step_run, commit: commit_2, step: steps.second, status: "success", release_platform_run:)
 
       expectation = {
-        steps.first => { in_progress: false, done: false, failed: true },
-        steps.second => { in_progress: false, done: true, failed: false }
+        steps.first => {in_progress: false, done: false, failed: true},
+        steps.second => {in_progress: false, done: true, failed: false}
       }
 
       expect(release_platform_run.overall_movement_status).to eq(expectation)
@@ -155,8 +155,7 @@ describe ReleasePlatformRun do
     it "is false when it has step run and production deployment run has not started rollout" do
       release_step_run = create(:step_run, step: release_step, release_platform_run:)
       create(:deployment_run, deployment: production_deployment, step_run: release_step_run)
-      train.bump_fix!
-      release_platform_run.update!(release_version: train.version_current)
+      release_platform_run.bump_version
       expect(release_platform_run).not_to be_hotfix
     end
 
@@ -271,7 +270,6 @@ describe ReleasePlatformRun do
       [:with_google_play_store, :with_staged_rollout],
       [:with_app_store, :with_production_channel],
       [:with_app_store, :with_phased_release]].each do |test_case|
-
       test_case_help = test_case.join(", ").humanize.downcase
 
       it "updates the minor version if the current version is a partial semver with #{test_case_help}" do

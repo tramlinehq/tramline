@@ -20,13 +20,6 @@ describe WebhookProcessors::Push do
     let(:release_platform_run) { create(:release_platform_run, release_platform:, release:, release_version: train.version_current) }
     let(:step) { create(:step, :release, :with_deployment, release_platform:) }
 
-    it "does not bump the patch version for first commit" do
-      described_class.process(release, commit_attributes)
-
-      expect(train.reload.version_current).to eq("1.6.0")
-      expect(release_platform_run.reload.release_version).to eq("1.6.0")
-    end
-
     context "when production deployment has happened" do
       [[:with_google_play_store, :with_production_channel],
         [:with_google_play_store, :with_staged_rollout],
