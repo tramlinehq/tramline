@@ -216,11 +216,16 @@ class Train < ApplicationRecord
     version_current.ver_bump(bump_term)
   end
 
+  # TODO: remove
   def next_release_version(has_major_bump = false)
-    return next_version(has_major_bump) if has_major_bump || releases.any?
+    if has_major_bump || releases.any?
+      return next_version(has_major_bump)
+    end
+
     version_current
   end
 
+  # TODO: remove
   def bump_release!(has_major_bump = false)
     if has_major_bump || releases.any?
       self.version_current = next_version(has_major_bump)
@@ -230,6 +235,7 @@ class Train < ApplicationRecord
     version_current
   end
 
+  # TODO: remove
   def bump_fix!
     if releases.any?
       semverish = version_current.to_semverish
@@ -312,7 +318,7 @@ class Train < ApplicationRecord
   end
 
   def set_current_version
-    self.version_current = version_seeded_with.ver_bump(:minor)
+    self.version_current = version_seeded_with
   end
 
   def set_default_status

@@ -33,6 +33,7 @@ describe WebhookProcessors::Push do
         [:with_app_store, :with_production_channel],
         [:with_app_store, :with_phased_release]].each do |test_case|
         test_case_help = test_case.join(", ").humanize.downcase
+
         it "bumps the patch version for train version #{test_case_help} in rollout mode" do
           deployment = create(:deployment, *test_case, step: step)
           step_run = create(:step_run, release_platform_run:, step:)
