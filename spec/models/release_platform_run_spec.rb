@@ -84,10 +84,10 @@ describe ReleasePlatformRun do
       _step_run_3 = create(:step_run, commit:, step: steps.third, status: "on_track", release_platform_run:)
 
       expectation = {
-        steps.first => {in_progress: false, done: true, failed: false},
-        steps.second => {in_progress: false, done: false, failed: true},
-        steps.third => {in_progress: true, done: false, failed: false},
-        steps.fourth => {not_started: true}
+        steps.first => { in_progress: false, done: true, failed: false },
+        steps.second => { in_progress: false, done: false, failed: true },
+        steps.third => { in_progress: true, done: false, failed: false },
+        steps.fourth => { not_started: true }
       }
 
       expect(release_platform_run.overall_movement_status).to eq(expectation)
@@ -104,8 +104,8 @@ describe ReleasePlatformRun do
       _step_run_2 = create(:step_run, commit: commit_2, step: steps.second, status: "success", release_platform_run:)
 
       expectation = {
-        steps.first => {in_progress: false, done: false, failed: true},
-        steps.second => {in_progress: false, done: true, failed: false}
+        steps.first => { in_progress: false, done: false, failed: true },
+        steps.second => { in_progress: false, done: true, failed: false }
       }
 
       expect(release_platform_run.overall_movement_status).to eq(expectation)
@@ -265,34 +265,43 @@ describe ReleasePlatformRun do
     let(:train) { create(:train, app:) }
     let(:release_platform) { create(:release_platform, train:) }
     let(:release_step) { create(:step, :release, :with_deployment, release_platform:) }
-    let(:production_deployment) { create(:deployment, :with_google_play_store, :with_staged_rollout, step: release_step) }
     let(:release) { create(:release, train:) }
 
-    it "updates the minor version if the current version is a partial semver" do
-      release_version = "1.2"
-      release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version:)
-      step_run = create(:step_run, step: release_step, release_platform_run:)
-      create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: step_run)
+    [[:with_google_play_store, :with_production_channel],
+      [:with_google_play_store, :with_staged_rollout],
+      [:with_app_store, :with_production_channel],
+      [:with_app_store, :with_phased_release]].each do |test_case|
 
-      release_platform_run.bump_version
-      release_platform_run.reload
+      test_case_help = test_case.join(", ").humanize.downcase
 
-      expect(release_platform_run.release_version).to eq("1.3")
+      it "updates the minor version if the current version is a partial semver with #{test_case_help}" do
+        release_version = "1.2"
+        deployment = create(:deployment, *test_case, step: release_step)
+        release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version:)
+        step_run = create(:step_run, release_platform_run:, step: release_step)
+        create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
+
+        release_platform_run.bump_version
+        release_platform_run.reload
+
+        expect(release_platform_run.release_version).to eq("1.3")
+      end
+
+      it "updates the patch version if the current version is a proper semver with #{test_case_help}" do
+        release_version = "1.2.3"
+        deployment = create(:deployment, *test_case, step: release_step)
+        release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version:)
+        step_run = create(:step_run, release_platform_run:, step: release_step)
+        create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
+
+        release_platform_run.bump_version
+        release_platform_run.reload
+
+        expect(release_platform_run.release_version).to eq("1.2.4")
+      end
     end
 
-    it "updates the patch version if the current version is a proper semver" do
-      release_version = "1.2.3"
-      release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version:)
-      step_run = create(:step_run, step: release_step, release_platform_run:)
-      create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: step_run)
-
-      release_platform_run.bump_version
-      release_platform_run.reload
-
-      expect(release_platform_run.release_version).to eq("1.2.4")
-    end
-
-    it "does not do anything if no production deployments in rollout" do
+    it "does not do anything if no production deployments" do
       release_version = "1.2.3"
       release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version:)
       step_run = create(:step_run, step: release_step, release_platform_run:)
