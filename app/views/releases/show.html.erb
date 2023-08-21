@@ -61,6 +61,14 @@
   <% end %>
 </div>
 
+<% if @release.active_build_queue.present? %>
+  <%= render partial: "shared/live_release/separator" %>
+
+  <div class="grid grid-cols-1 gap-6 mt-8">
+    <%= render partial: "shared/live_release/build_queue", locals: { release: @release, build_queue: @release.active_build_queue } %>
+  </div>
+<% end %>
+
 <%= render partial: "shared/live_release/separator" %>
 
 <div class="grid grid-cols-1 gap-6 mt-8">

@@ -11,6 +11,7 @@
 #  url                     :string
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
+#  build_queue_id          :uuid             indexed
 #  release_id              :uuid             indexed => [commit_hash]
 #  release_platform_id     :uuid             indexed
 #  release_platform_run_id :uuid             indexed
@@ -21,6 +22,9 @@ class Commit < ApplicationRecord
   has_many :step_runs, dependent: :nullify, inverse_of: :commit
   has_many :passports, as: :stampable, dependent: :destroy
   belongs_to :release, inverse_of: :commits
+  belongs_to :build_queue, inverse_of: :commits, optional: true
+
+  self.implicit_order_column = :timestamp
 
   STAMPABLE_REASONS = ["created"]
 
@@ -77,8 +81,15 @@ class Commit < ApplicationRecord
   end
 
   def trigger_step_runs
+    return unless applicable?
+
     release_platform_runs.have_not_reached_production.each do |run|
       trigger_step_runs_for(run)
     end
+  end
+
+  def apply!
+    return release.active_build_queue.add_commit!(self) if release.active_build_queue.present? && release.commits.size > 1
+    trigger_step_runs
   end
 end

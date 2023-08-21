@@ -97,15 +97,20 @@ class TrainsController < SignedInApplicationController
       :kickoff_at,
       :repeat_duration_value,
       :repeat_duration_unit,
-      :notification_channel
+      :notification_channel,
+      :build_queue_enabled,
+      :build_queue_size,
+      :build_queue_wait_time_unit,
+      :build_queue_wait_time_value
     )
   end
 
   def parsed_train_params
     train_params
       .merge(repeat_duration: repeat_duration)
+      .merge(build_queue_wait_time: build_queue_wait_time)
       .merge(kickoff_at: kickoff_at_in_utc)
-      .except(:repeat_duration_value, :repeat_duration_unit)
+      .except(:repeat_duration_value, :repeat_duration_unit, :build_queue_wait_time_value, :build_queue_wait_time_unit)
       .merge(notification_channel: train_params[:notification_channel]&.safe_json_parse)
   end
 
@@ -116,6 +121,15 @@ class TrainsController < SignedInApplicationController
     train_params[:repeat_duration_value]
       .to_i
       .as_duration_with(unit: train_params[:repeat_duration_unit])
+  end
+
+  def build_queue_wait_time
+    return if train_params[:build_queue_wait_time_unit].blank?
+    return if train_params[:build_queue_wait_time_value].blank?
+
+    train_params[:build_queue_wait_time_value]
+      .to_i
+      .as_duration_with(unit: train_params[:build_queue_wait_time_unit])
   end
 
   def kickoff_at_in_utc

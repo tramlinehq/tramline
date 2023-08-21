@@ -4,6 +4,9 @@
 #
 #  id                       :uuid             not null, primary key
 #  branching_strategy       :string           not null
+#  build_queue_enabled      :boolean          default(FALSE)
+#  build_queue_size         :integer
+#  build_queue_wait_time    :interval
 #  description              :string
 #  kickoff_at               :datetime
 #  name                     :string           not null

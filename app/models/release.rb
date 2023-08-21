@@ -35,6 +35,8 @@ class Release < ApplicationRecord
   has_many :commits, dependent: :destroy, inverse_of: :release
   has_many :pull_requests, dependent: :destroy, inverse_of: :release
   has_many :step_runs, through: :release_platform_runs
+  has_many :build_queues, dependent: :destroy
+  has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped, :stopped_after_partial_finish]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
@@ -108,6 +110,7 @@ class Release < ApplicationRecord
   before_create :set_version
   after_create :set_default_release_metadata
   after_create :create_platform_runs
+  after_create :create_active_build_queue, if: -> { train.build_queue_enabled? }
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
   after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
 
@@ -117,6 +120,15 @@ class Release < ApplicationRecord
 
   def self.pending_release?
     pending_release.exists?
+  end
+
+  def create_active_build_queue
+    build_queues.create(scheduled_at: 3.hours.from_now, is_active: true)
+  end
+
+  def unqueued_commits
+    return commits if active_build_queue.blank?
+    commits.where.not(build_queue_id: active_build_queue.id).or(commits.where(build_queue_id: nil))
   end
 
   def committable?

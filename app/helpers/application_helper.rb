@@ -64,6 +64,10 @@ module ApplicationHelper
     (time.presence && time_ago_in_words(time, include_seconds: true) + " ago") || "N/A"
   end
 
+  def time_in_words(time)
+    (time.presence && time_ago_in_words(time, include_seconds: true)) || "N/A"
+  end
+
   def current_deploy
     {
       ref: Site.git_ref,
