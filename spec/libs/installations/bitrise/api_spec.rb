@@ -13,15 +13,15 @@ describe Installations::Bitrise::Api, type: :integration do
 
       expected_apps = [
         {
-          id: "d3853d44004b2080",
-          name: "ueno",
+          app_id: "d3853d44004b2080",
+          display_name: "ueno",
           provider: "gitlab",
           repo_url: "git@gitlab.com:tramline/ueno.git",
           avatar_url: nil
         },
         {
-          id: "e92eb64365bcdd8f",
-          name: "ueno",
+          app_id: "e92eb64365bcdd8f",
+          display_name: "ueno",
           provider: "github",
           repo_url: "https://github.com/tramlinehq/ueno.git",
           avatar_url: nil

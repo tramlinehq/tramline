@@ -35,13 +35,13 @@ class Integration < ApplicationRecord
     },
     android: {
       "version_control" => %w[GithubIntegration GitlabIntegration],
-      "ci_cd" => %w[GithubIntegration BitriseIntegration],
+      "ci_cd" => %w[BitriseIntegration GithubIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration]
     },
     cross_platform: {
       "version_control" => %w[GithubIntegration GitlabIntegration],
-      "ci_cd" => %w[GithubIntegration],
+      "ci_cd" => %w[BitriseIntegration GithubIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration]
     }
@@ -67,7 +67,7 @@ class Integration < ApplicationRecord
   # FIXME: Can we make a better External Deployment abstraction?
   EXTERNAL_BUILD_INTEGRATION = {
     build_integration: ["None (outside Tramline)", nil],
-    build_channels: [{ id: :external, name: "External" }]
+    build_channels: [{id: :external, name: "External"}]
   }
 
   validates :category, presence: true

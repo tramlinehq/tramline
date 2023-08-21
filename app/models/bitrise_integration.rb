@@ -48,7 +48,7 @@ class BitriseIntegration < ApplicationRecord
 
   encrypts :access_token, deterministic: true
 
-  attr_accessor :platform
+  attr_writer :platform
 
   def installation
     API.new(access_token)
@@ -144,7 +144,7 @@ class BitriseIntegration < ApplicationRecord
   private
 
   def project
-    case platform
+    case @platform
     when "android"
       app.config.bitrise_android_config["app_id"]
     when "ios"

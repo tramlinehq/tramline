@@ -45,7 +45,7 @@
             <%= form.label :bitrise_ios_config, "iOS App", class: "block text-sm font-medium mb-1" %>
             <%= form.select :bitrise_ios_config,
                             options_for_select(
-                              display_channels(@ci_cd_ios_projects) { |app| "#{app[:name]} (#{app[:id]})" },
+                              display_channels(@ci_cd_ios_projects) { |app| "#{app[:display_name]} (#{app[:app_id]})" },
                               @config.bitrise_ios_config.to_json
                             ),
                             { class: "form-select" },
@@ -58,7 +58,7 @@
             <%= form.label :bitrise_android_config, "Android App", class: "block text-sm font-medium mb-1" %>
             <%= form.select :bitrise_android_config,
                             options_for_select(
-                              display_channels(@ci_cd_android_projects) { |app| "#{app[:name]} (#{app[:id]})" },
+                              display_channels(@ci_cd_android_projects) { |app| "#{app[:display_name]} (#{app[:app_id]})" },
                               @config.bitrise_android_config.to_json
                             ),
                             { class: "form-select" },
