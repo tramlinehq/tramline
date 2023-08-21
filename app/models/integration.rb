@@ -67,7 +67,7 @@ class Integration < ApplicationRecord
   # FIXME: Can we make a better External Deployment abstraction?
   EXTERNAL_BUILD_INTEGRATION = {
     build_integration: ["None (outside Tramline)", nil],
-    build_channels: [{id: :external, name: "External"}]
+    build_channels: [{ id: :external, name: "External" }]
   }
 
   validates :category, presence: true
@@ -144,28 +144,34 @@ class Integration < ApplicationRecord
       version_control.first&.providable
     end
 
-    def ci_cd_provider
-      ci_cd.first&.providable
+    def ci_cd_provider(platform = nil)
+      ci_cd_integration = ci_cd.first
+
+      if ci_cd_integration&.providable.present?
+        ci_cd_providable = ci_cd_integration.providable
+        ci_cd_providable.platform = platform if platform.present?
+        ci_cd_providable
+      end
     end
 
     def notification_provider
       notification.first&.providable
     end
 
-    def ios_store_provider
-      build_channel.find(&:app_store_integration?)&.providable
-    end
-
     def android_store_provider
       build_channel.find(&:google_play_store_integration?)&.providable
     end
 
-    def firebase_build_channel_provider
-      build_channel.find(&:google_firebase_integration?)&.providable
+    def ios_store_provider
+      build_channel.find(&:app_store_integration?)&.providable
     end
 
     def slack_build_channel_provider
       build_channel.find(&:slack_integration?)&.providable
+    end
+
+    def firebase_build_channel_provider
+      build_channel.find(&:google_firebase_integration?)&.providable
     end
 
     private

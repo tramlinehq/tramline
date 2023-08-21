@@ -117,6 +117,10 @@ class AppStoreIntegration < ApplicationRecord
     false
   end
 
+  def further_build_channel_setup?
+    false
+  end
+
   def metadata
     {}
   end

@@ -84,6 +84,14 @@ class GoogleFirebaseIntegration < ApplicationRecord
     installation.list_groups(GROUPS_TRANSFORMATIONS)
   end
 
+  def further_build_channel_setup?
+    true
+  end
+
+  def setup
+    app_config.platform_aware_config(list_apps(platform: "ios"), list_apps(platform: "android"))
+  end
+
   def list_apps(platform:)
     raise ArgumentError, "platform must be valid" unless valid_platforms.include?(platform)
 
@@ -219,5 +227,9 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   def build_channels_cache_key
     "app/#{app.id}/google_firebase_integration/#{id}/build_channels"
+  end
+
+  def app_config
+    integration.app.config
   end
 end

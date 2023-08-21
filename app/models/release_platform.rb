@@ -52,6 +52,10 @@ class ReleasePlatform < ApplicationRecord
 
   alias_method :startable?, :has_release_step?
 
+  def ci_cd_provider
+    train.ci_cd_provider(platform)
+  end
+
   def release_step
     steps.release.first
   end

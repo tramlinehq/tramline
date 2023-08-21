@@ -38,9 +38,10 @@ class AppConfigsController < SignedInApplicationController
       .permit(
         :code_repository,
         :notification_channel,
-        :bitrise_project_id,
         :firebase_android_config,
-        :firebase_ios_config
+        :firebase_ios_config,
+        :bitrise_android_config,
+        :bitrise_ios_config
       )
   end
 
@@ -48,21 +49,25 @@ class AppConfigsController < SignedInApplicationController
     app_config_params
       .merge(code_repository: app_config_params[:code_repository]&.safe_json_parse)
       .merge(notification_channel: app_config_params[:notification_channel]&.safe_json_parse)
-      .merge(bitrise_project_id: app_config_params[:bitrise_project_id]&.safe_json_parse)
       .merge(firebase_ios_config: app_config_params[:firebase_ios_config]&.safe_json_parse)
       .merge(firebase_android_config: app_config_params[:firebase_android_config]&.safe_json_parse)
+      .merge(bitrise_ios_config: app_config_params[:bitrise_ios_config]&.safe_json_parse)
+      .merge(bitrise_android_config: app_config_params[:bitrise_android_config]&.safe_json_parse)
       .compact
   end
 
   def set_ci_cd_projects
-    if @app.ci_cd_provider.belongs_to_project?
-      @ci_cd_projects = @app.ci_cd_provider.list_apps
+    if @app.ci_cd_provider.further_setup?
+      config = @app.ci_cd_provider.setup
+      @ci_cd_android_projects, @ci_cd_ios_projects = config[:android], config[:ios]
     end
   end
 
   def set_firebase_apps
-    firebase_config = @config.setup_firebase_config
-    @firebase_android_apps, @firebase_ios_apps = firebase_config[:android], firebase_config[:ios]
+    if @config.further_build_channel_setup?
+      config = @app.integrations.firebase_build_channel_provider.setup
+      @firebase_android_apps, @firebase_ios_apps = config[:android], config[:ios]
+    end
   end
 
   def set_code_repositories
@@ -75,7 +80,7 @@ class AppConfigsController < SignedInApplicationController
 
   def require_integration_setup
     unless @app.app_setup_instructions[:app_config][:visible]
-      redirect_to app_path(@app), flash: {notice: "Finish the integration setup before configuring the app."}
+      redirect_to app_path(@app), flash: { notice: "Finish the integration setup before configuring the app." }
     end
   end
 end

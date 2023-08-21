@@ -9,6 +9,15 @@
     },
     "display_name": {
       "type": ["string", "null"]
+    },
+    "provider": {
+      "type": ["string", "null"]
+    },
+    "repo_url": {
+      "type": ["string", "null"]
+    },
+    "avatar_url": {
+      "type": ["string", "null"]
     }
   }
 }

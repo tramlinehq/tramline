@@ -25,8 +25,8 @@ class BitriseIntegration < ApplicationRecord
   }
 
   APPS_TRANSFORMATIONS = {
-    id: :slug,
-    name: :title,
+    app_id: :slug,
+    display_name: :title,
     provider: :provider,
     repo_url: :repo_url,
     avatar_url: :avatar_url
@@ -43,13 +43,12 @@ class BitriseIntegration < ApplicationRecord
     id: :slug
   }
 
-  delegate :bitrise_project, to: :app_config
-  alias_method :project, :bitrise_project
-
   validate :correct_key, on: :create
   validates :access_token, presence: true
 
   encrypts :access_token, deterministic: true
+
+  attr_accessor :platform
 
   def installation
     API.new(access_token)
@@ -71,9 +70,13 @@ class BitriseIntegration < ApplicationRecord
     false
   end
 
-  # FIXME: what is this really?
-  def belongs_to_project?
+  def further_setup?
     true
+  end
+
+  def setup
+    apps = list_apps
+    app_config.platform_aware_config(apps, apps)
   end
 
   def connection_data
@@ -81,7 +84,6 @@ class BitriseIntegration < ApplicationRecord
     "Teams: " + integration.metadata.map { |m| "#{m["name"]} (#{m["id"]})" }.join(", ")
   end
 
-  # Special function if acts as project
   def list_apps
     installation.list_apps(APPS_TRANSFORMATIONS)
   end
@@ -140,6 +142,17 @@ class BitriseIntegration < ApplicationRecord
   end
 
   private
+
+  def project
+    case platform
+    when "android"
+      app.config.bitrise_android_config["app_id"]
+    when "ios"
+      app.config.bitrise_ios_config["app_id"]
+    else
+      raise ArgumentError, "platform must be valid"
+    end
+  end
 
   def app_config
     integration.app.config

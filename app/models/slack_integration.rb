@@ -139,6 +139,10 @@ class SlackIntegration < ApplicationRecord
     false
   end
 
+  def further_build_channel_setup?
+    false
+  end
+
   def public_icon_img
     nil
   end

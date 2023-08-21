@@ -3,6 +3,8 @@
 # Table name: app_configs
 #
 #  id                      :uuid             not null, primary key
+#  bitrise_android_config  :jsonb
+#  bitrise_ios_config      :jsonb
 #  code_repository         :json
 #  firebase_android_config :jsonb
 #  firebase_ios_config     :jsonb
@@ -17,19 +19,26 @@ class AppConfig < ApplicationRecord
   include Notifiable
 
   MINIMUM_REQUIRED_CONFIG = %i[code_repository]
-  FIREBASE_CONFIG_SCHEMA = Rails.root.join("config/schema/firebase_config.json")
+
+  PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
 
   belongs_to :app
 
   validates :firebase_ios_config,
     allow_blank: true,
-    json: {message: ->(errors) { errors }, schema: FIREBASE_CONFIG_SCHEMA}
+    json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
   validates :firebase_android_config,
     allow_blank: true,
-    json: {message: ->(errors) { errors }, schema: FIREBASE_CONFIG_SCHEMA}
+    json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
+  validates :bitrise_ios_config,
+    allow_blank: true,
+    json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
+  validates :bitrise_android_config,
+    allow_blank: true,
+    json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
 
   def ready?
-    MINIMUM_REQUIRED_CONFIG.all? { |config| public_send(config).present? } && firebase_ready?
+    MINIMUM_REQUIRED_CONFIG.all? { |config| public_send(config).present? } && firebase_ready? && bitrise_ready?
   end
 
   def code_repository_name
@@ -49,18 +58,17 @@ class AppConfig < ApplicationRecord
     bitrise_project_id.fetch("id", nil)
   end
 
-  def setup_firebase_config
-    return {} if app.integrations.google_firebase_integrations.none?
+  def further_build_channel_setup?
+    app.integrations.build_channel.map(&:providable).any?(&:further_build_channel_setup?)
+  end
 
-    ios_apps = app.integrations.firebase_build_channel_provider.list_apps(platform: "ios")
-    android_apps = app.integrations.firebase_build_channel_provider.list_apps(platform: "android")
-
+  def platform_aware_config(ios, android)
     if app.android?
-      {android: android_apps}
+      {android: android}
     elsif app.ios?
-      {ios: ios_apps}
+      {ios: ios}
     elsif app.cross_platform?
-      {ios: ios_apps, android: android_apps}
+      {ios: ios, android: android}
     end
   end
 
@@ -68,8 +76,17 @@ class AppConfig < ApplicationRecord
 
   def firebase_ready?
     return true if app.integrations.google_firebase_integrations.none?
-    return firebase_ios_config.present? if app.ios?
-    return firebase_android_config.present? if app.android?
-    firebase_ios_config.present? && firebase_android_config.present? if app.cross_platform?
+    configs_ready?(firebase_ios_config, firebase_android_config)
+  end
+
+  def bitrise_ready?
+    return true if app.integrations.bitrise_integrations.none?
+    configs_ready?(bitrise_ios_config, bitrise_android_config)
+  end
+
+  def configs_ready?(ios, android)
+    return ios.present? if app.ios?
+    return android.present? if app.android?
+    ios.present? && android.present? if app.cross_platform?
   end
 end

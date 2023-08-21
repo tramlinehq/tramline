@@ -31,29 +31,42 @@
       </div>
     </section>
 
-    <% if @ci_cd_projects.present? %>
-      <section>
-        <div class="my-8">
-          <h2 class="font-bold text-xl">
-            <%= image_tag "integrations/logo_bitrise.png", title: "Bitrise", width: 35, class: "pb-2" %>
-            Bitrise
-          </h2>
-        </div>
+    <section>
+      <div class="my-8">
+        <h2 class="font-bold text-xl">
+          <%= image_tag "integrations/logo_bitrise.png", title: "Bitrise", width: 35, class: "pb-2" %>
+          Bitrise
+        </h2>
+      </div>
 
-        <div class="grid gap-5 md:grid-cols-2 border-b border-dashed pb-8">
-          <div>
-            <%= form.label :bitrise_project_id, "Project", class: "block text-sm font-medium mb-1" %>
-            <%= form.select :bitrise_project_id,
+      <div class="grid gap-5 md:grid-cols-2 border-b border-dashed pb-8">
+        <% if @ci_cd_ios_projects.present? %>
+          <div class="mb-4">
+            <%= form.label :bitrise_ios_config, "iOS App", class: "block text-sm font-medium mb-1" %>
+            <%= form.select :bitrise_ios_config,
                             options_for_select(
-                              display_channels(@ci_cd_projects) { |app| "#{app[:name]} (#{app[:id]})" },
-                              @config.bitrise_project_id.to_json
+                              display_channels(@ci_cd_ios_projects) { |app| "#{app[:name]} (#{app[:id]})" },
+                              @config.bitrise_ios_config.to_json
                             ),
                             { class: "form-select" },
                             data: { controller: "input-select" } %>
           </div>
-        </div>
-      </section>
-    <% end %>
+        <% end %>
+
+        <% if @ci_cd_android_projects.present? %>
+          <div>
+            <%= form.label :bitrise_android_config, "Android App", class: "block text-sm font-medium mb-1" %>
+            <%= form.select :bitrise_android_config,
+                            options_for_select(
+                              display_channels(@ci_cd_android_projects) { |app| "#{app[:name]} (#{app[:id]})" },
+                              @config.bitrise_android_config.to_json
+                            ),
+                            { class: "form-select" },
+                            data: { controller: "input-select" } %>
+          </div>
+        <% end %>
+      </div>
+    </section>
 
     <section>
       <div class="my-8">
