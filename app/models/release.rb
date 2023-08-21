@@ -126,7 +126,7 @@ class Release < ApplicationRecord
     build_queues.create(scheduled_at: 3.hours.from_now, is_active: true)
   end
 
-  def unqueued_commits
+  def active_commits
     return commits if active_build_queue.blank?
     commits.where.not(build_queue_id: active_build_queue.id).or(commits.where(build_queue_id: nil))
   end

@@ -20,7 +20,7 @@ class BuildQueue < ApplicationRecord
   after_create_commit :schedule_kickoff!
 
   def apply!
-    head_commit = commits.order(timestamp: :desc).last
+    head_commit = commits.order(timestamp: :desc).first
     head_commit.trigger_step_runs if head_commit.present?
     self.applied_at = Time.current
     self.is_active = false

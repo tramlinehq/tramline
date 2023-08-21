@@ -61,7 +61,7 @@ class Commit < ApplicationRecord
   end
 
   def stale?
-    release.commits.last != self
+    release.active_commits.last != self
   end
 
   def short_sha
