@@ -37,9 +37,11 @@ class StepRun < ApplicationRecord
 
   validates :step_id, uniqueness: {scope: :commit_id}
 
+  PAUSE_BEFORE_CI = 60.seconds
+
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
   after_commit -> { update(build_notes_raw: relevant_changes) }, on: :create
-  after_commit -> { Releases::TriggerWorkflowRunJob.perform_later(id) }, on: :create
+  after_commit -> { Releases::TriggerWorkflowRunJob.set(wait: PAUSE_BEFORE_CI).perform_later(id) }, on: :create
 
   STAMPABLE_REASONS = %w[
     created
@@ -342,6 +344,7 @@ class StepRun < ApplicationRecord
 
   def trigger_workflow_run(retrigger: false)
     update_build_number! unless retrigger
+
     ci_cd_provider
       .trigger_workflow_run!(workflow_id, release_branch, workflow_inputs, commit_hash)
       .then { |wr| update_ci_metadata!(wr) }
