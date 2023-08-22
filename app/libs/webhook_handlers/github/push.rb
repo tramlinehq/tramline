@@ -1,24 +1,39 @@
 class WebhookHandlers::Github::Push
+  include Memery
+
   attr_reader :payload
 
   def initialize(payload)
     @payload = payload
   end
 
-  def commit_attributes
+  def head_commit_attributes
+    commit_attributes(head_commit)
+  end
+
+  def rest_commit_attributes
+    commits.map { commit_attributes(_1) }
+  end
+
+  def commit_attributes(commit)
     {
-      commit_sha: head_commit["id"],
-      message: head_commit["message"],
-      timestamp: head_commit["timestamp"],
-      author_name: head_commit["author"]["name"],
-      author_email: head_commit["author"]["email"],
-      url: head_commit["url"],
+      commit_sha: commit["id"],
+      message: commit["message"],
+      timestamp: commit["timestamp"],
+      author_name: commit["author"]["name"],
+      author_email: commit["author"]["email"],
+      url: commit["url"],
       branch_name: branch_name
     }
   end
 
-  def head_commit
-    @head_commit ||= payload["head_commit"]
+  memoize def head_commit
+    payload["head_commit"]
+  end
+
+  memoize def commits
+    payload["commits"]
+      &.reject { |commit| commit["id"] == head_commit["id"] }
   end
 
   def valid_branch?

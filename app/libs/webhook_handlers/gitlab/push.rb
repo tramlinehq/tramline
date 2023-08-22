@@ -6,7 +6,7 @@ class WebhookHandlers::Gitlab::Push
     @train = train
   end
 
-  def commit_attributes
+  def head_commit_attributes
     sha = payload["checkout_sha"]
     commit = train.vcs_provider.get_commit(sha)
     {
@@ -18,6 +18,10 @@ class WebhookHandlers::Gitlab::Push
       url: commit[:url],
       branch_name: branch_name
     }
+  end
+
+  def rest_commit_attributes
+    []
   end
 
   # we do not listen to gitlab tag events, they are not included in the push events as with github

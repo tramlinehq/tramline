@@ -7,7 +7,6 @@
 #  completed_at             :datetime
 #  is_automatic             :boolean          default(FALSE)
 #  original_release_version :string
-#  release_version          :string
 #  scheduled_at             :datetime
 #  status                   :string           not null
 #  stopped_at               :datetime

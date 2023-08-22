@@ -1,6 +1,7 @@
 class WebhookHandlers::Push
   include SiteHttp
   include Memery
+
   GITHUB = WebhookHandlers::Github::Push
   GITLAB = WebhookHandlers::Gitlab::Push
 
@@ -22,7 +23,7 @@ class WebhookHandlers::Push
     return Response.new(:accepted, "Skipping the commit") unless relevant_commit?
     return Response.new(:accepted, "Invalid repo/branch") unless valid_repo_and_branch?
 
-    WebhookProcessors::PushJob.perform_later(release.id, commit_attributes)
+    WebhookProcessors::PushJob.perform_later(release.id, head_commit_attributes, rest_commit_attributes)
 
     Response.new(:accepted)
   end
@@ -30,7 +31,13 @@ class WebhookHandlers::Push
   private
 
   delegate :vcs_provider, to: :train
-  delegate :head_commit, :branch_name, :repository_name, :valid_branch?, :valid_tag?, :commit_attributes, to: :runner
+  delegate :head_commit,
+    :branch_name,
+    :repository_name,
+    :valid_branch?,
+    :valid_tag?,
+    :head_commit_attributes,
+    :rest_commit_attributes, to: :runner
 
   memoize def runner
     return GITHUB.new(payload) if vcs_provider.integration.github_integration?
