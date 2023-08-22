@@ -155,16 +155,14 @@ describe ReleasePlatformRun do
     it "is false when it has step run and production deployment run has not started rollout" do
       release_step_run = create(:step_run, step: release_step, release_platform_run:)
       create(:deployment_run, deployment: production_deployment, step_run: release_step_run)
-      train.bump_fix!
-      release_platform_run.update!(release_version: train.version_current)
+      release_platform_run.bump_version
       expect(release_platform_run).not_to be_hotfix
     end
 
     it "is true when it has step run and production deployment run has started rollout" do
       release_step_run = create(:step_run, step: release_step, release_platform_run:)
       create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
-      train.bump_fix!
-      release_platform_run.update!(release_version: train.version_current)
+      release_platform_run.bump_version
       expect(release_platform_run).to be_hotfix
     end
 
@@ -258,6 +256,58 @@ describe ReleasePlatformRun do
         create(:deployment_run, :ready_to_release, deployment: production_deployment, step_run: release_step_run)
         expect(release_platform_run).to be_version_bump_required
       end
+    end
+  end
+
+  describe "#bump_version" do
+    let(:app) { create(:app, :android) }
+    let(:train) { create(:train, app:) }
+    let(:release_platform) { create(:release_platform, train:) }
+    let(:release_step) { create(:step, :release, :with_deployment, release_platform:) }
+    let(:release) { create(:release, train:) }
+
+    [[:with_google_play_store, :with_production_channel],
+      [:with_google_play_store, :with_staged_rollout],
+      [:with_app_store, :with_production_channel],
+      [:with_app_store, :with_phased_release]].each do |test_case|
+      test_case_help = test_case.join(", ").humanize.downcase
+
+      it "updates the minor version if the current version is a partial semver with #{test_case_help}" do
+        release_version = "1.2"
+        deployment = create(:deployment, *test_case, step: release_step)
+        release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version:)
+        step_run = create(:step_run, release_platform_run:, step: release_step)
+        create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
+
+        release_platform_run.bump_version
+        release_platform_run.reload
+
+        expect(release_platform_run.release_version).to eq("1.3")
+      end
+
+      it "updates the patch version if the current version is a proper semver with #{test_case_help}" do
+        release_version = "1.2.3"
+        deployment = create(:deployment, *test_case, step: release_step)
+        release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version:)
+        step_run = create(:step_run, release_platform_run:, step: release_step)
+        create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
+
+        release_platform_run.bump_version
+        release_platform_run.reload
+
+        expect(release_platform_run.release_version).to eq("1.2.4")
+      end
+    end
+
+    it "does not do anything if no production deployments" do
+      release_version = "1.2.3"
+      release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version:)
+      step_run = create(:step_run, step: release_step, release_platform_run:)
+      create(:deployment_run, step_run: step_run)
+
+      expect {
+        release_platform_run.bump_version
+      }.not_to change { release_platform_run.release_version }
     end
   end
 
