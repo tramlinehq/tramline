@@ -5,8 +5,10 @@ module TrainsHelper
   end
 
   def start_release_text(train, major: false)
-    manual = train.automatic? ? "manual " : ""
-    "Start #{manual}release #{train.next_release_version(major)}"
+    text = train.automatic? ? "Manually start " : "Start "
+    text += major ? "major " : "minor "
+    text += "release "
+    text + train.next_version(major)
   end
 
   def release_schedule(train)
