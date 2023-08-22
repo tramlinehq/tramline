@@ -50,6 +50,8 @@ module ReleasesHelper
         ["Cancelling", :inert]
       when :cancelled
         ["Cancelled", :inert]
+      when :cancelled_before_start
+        ["Overwritten", :neutral]
       else
         ["Unknown", :neutral]
       end

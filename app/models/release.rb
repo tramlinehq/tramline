@@ -123,7 +123,7 @@ class Release < ApplicationRecord
   end
 
   def create_active_build_queue
-    build_queues.create(scheduled_at: train.build_queue_wait_time, is_active: true)
+    build_queues.create(scheduled_at: (Time.current + train.build_queue_wait_time), is_active: true)
   end
 
   def active_commits
