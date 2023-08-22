@@ -144,14 +144,8 @@ class Integration < ApplicationRecord
       version_control.first&.providable
     end
 
-    def ci_cd_provider(platform = nil)
-      ci_cd_integration = ci_cd.first
-
-      if ci_cd_integration&.providable.present?
-        ci_cd_providable = ci_cd_integration.providable
-        ci_cd_providable.platform = platform if platform.present?
-        ci_cd_providable
-      end
+    def ci_cd_provider
+      ci_cd.first&.providable
     end
 
     def notification_provider

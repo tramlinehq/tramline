@@ -25,8 +25,8 @@ class BitriseIntegration < ApplicationRecord
   }
 
   APPS_TRANSFORMATIONS = {
-    app_id: :slug,
-    display_name: :title,
+    id: :slug,
+    name: :title,
     provider: :provider,
     repo_url: :repo_url,
     avatar_url: :avatar_url
@@ -48,7 +48,9 @@ class BitriseIntegration < ApplicationRecord
 
   encrypts :access_token, deterministic: true
 
-  attr_writer :platform
+
+  delegate :bitrise_project, to: :app_config
+  alias_method :project, :bitrise_project
 
   def installation
     API.new(access_token)
@@ -75,8 +77,7 @@ class BitriseIntegration < ApplicationRecord
   end
 
   def setup
-    apps = list_apps
-    app_config.platform_aware_config(apps, apps)
+    list_apps
   end
 
   def connection_data
@@ -142,17 +143,6 @@ class BitriseIntegration < ApplicationRecord
   end
 
   private
-
-  def project
-    case @platform
-    when "android"
-      app.config.bitrise_android_config["app_id"]
-    when "ios"
-      app.config.bitrise_ios_config["app_id"]
-    else
-      raise ArgumentError, "platform must be valid"
-    end
-  end
 
   def app_config
     integration.app.config

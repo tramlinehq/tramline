@@ -3,8 +3,6 @@
 # Table name: app_configs
 #
 #  id                      :uuid             not null, primary key
-#  bitrise_android_config  :jsonb
-#  bitrise_ios_config      :jsonb
 #  code_repository         :json
 #  firebase_android_config :jsonb
 #  firebase_ios_config     :jsonb
@@ -19,7 +17,6 @@ class AppConfig < ApplicationRecord
   include Notifiable
 
   MINIMUM_REQUIRED_CONFIG = %i[code_repository]
-
   PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
 
   belongs_to :app
@@ -28,12 +25,6 @@ class AppConfig < ApplicationRecord
     allow_blank: true,
     json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
   validates :firebase_android_config,
-    allow_blank: true,
-    json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
-  validates :bitrise_ios_config,
-    allow_blank: true,
-    json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
-  validates :bitrise_android_config,
     allow_blank: true,
     json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
 
@@ -62,6 +53,14 @@ class AppConfig < ApplicationRecord
     app.integrations.build_channel.map(&:providable).any?(&:further_build_channel_setup?)
   end
 
+  def bitrise_connected?
+    app.integrations.bitrise_integrations.any?
+  end
+
+  def firebase_connected?
+    app.integrations.google_firebase_integrations.any?
+  end
+
   def platform_aware_config(ios, android)
     if app.android?
       {android: android}
@@ -75,13 +74,13 @@ class AppConfig < ApplicationRecord
   private
 
   def firebase_ready?
-    return true if app.integrations.google_firebase_integrations.none?
+    return true unless firebase_connected?
     configs_ready?(firebase_ios_config, firebase_android_config)
   end
 
   def bitrise_ready?
-    return true if app.integrations.bitrise_integrations.none?
-    configs_ready?(bitrise_ios_config, bitrise_android_config)
+    return true unless bitrise_connected?
+    bitrise_project.present?
   end
 
   def configs_ready?(ios, android)

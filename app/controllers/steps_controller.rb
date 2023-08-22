@@ -6,7 +6,7 @@ class StepsController < SignedInApplicationController
   before_action :set_app, only: %i[new create edit update]
   before_action :set_train, only: %i[new create edit update]
   before_action :set_release_platform, only: %i[new create edit update]
-  before_action :set_ci_actions, only: %i[new create]
+  before_action :set_ci_actions, only: %i[new create edit]
   before_action :integrations_are_ready?, only: %i[new create]
   around_action :set_time_zone
 
@@ -33,7 +33,6 @@ class StepsController < SignedInApplicationController
         .friendly
         .find(params[:id])
     head :forbidden and return if @train.active_run
-    @ci_actions = @train.ci_cd_provider.workflows
   end
 
   def create
