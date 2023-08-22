@@ -39,7 +39,7 @@ class WebhookHandlers::Gitlab::Push
 
   def commit_attributes(commit)
     {
-      commit_sha: commit_sha(commit),
+      commit_hash: commit_sha(commit),
       message: commit[:message],
       timestamp: timestamp(commit),
       author_name: author_name(commit),

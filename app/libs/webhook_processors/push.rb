@@ -34,14 +34,8 @@ class WebhookProcessors::Push
   end
 
   def commit_params(attributes)
-    {
-      release: release,
-      commit_hash: attributes[:commit_sha],
-      message: attributes[:message],
-      timestamp: attributes[:timestamp],
-      author_name: attributes[:author_name],
-      author_email: attributes[:author_email],
-      url: attributes[:url]
-    }
+    attributes
+      .slice(:commit_sha, :message, :timestamp, :author_name, :author_email, :url)
+      .merge(release:)
   end
 end

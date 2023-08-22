@@ -36,7 +36,7 @@ class WebhookHandlers::Github::Push
 
   def commit_attributes(commit)
     {
-      commit_sha: commit["id"],
+      commit_hash: commit["id"],
       message: commit["message"],
       timestamp: commit["timestamp"],
       author_name: commit["author"]["name"],
