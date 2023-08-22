@@ -46,11 +46,11 @@ class WebhookHandlers::Github::Push
     }
   end
 
-  memoize def head_commit_payload
+  def head_commit_payload
     payload["head_commit"]
   end
 
-  memoize def rest_commits_payload
+  def rest_commits_payload
     payload["commits"]&.reject { |commit| commit["id"] == head_commit["id"] }.presence || []
   end
 end
