@@ -11,9 +11,17 @@ module TrainsHelper
 
   def release_schedule(train)
     if train.automatic?
-      "Every #{train.repeat_duration.in_days.to_i} day(s) at #{train.kickoff_at.strftime("%I:%M%p (%Z)")}"
+      "Every #{train.repeat_duration.inspect} at #{train.kickoff_at.strftime("%I:%M%p (%Z)")}"
     else
       "No release schedule"
+    end
+  end
+
+  def build_queue_config(train)
+    if train.build_queue_enabled?
+      "Applied every #{train.build_queue_wait_time.inspect} OR #{train.build_queue_size} commits"
+    else
+      "Applied with every new commit"
     end
   end
 end

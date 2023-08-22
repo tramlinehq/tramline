@@ -17,6 +17,11 @@ class TrainsController < SignedInApplicationController
   end
 
   def edit
+    if @train.build_queue_wait_time.present?
+      parts = @train.build_queue_wait_time.parts
+      @train.build_queue_wait_time_unit = parts.keys.first.to_s
+      @train.build_queue_wait_time_value = parts.values.first
+    end
   end
 
   def create
@@ -33,7 +38,7 @@ class TrainsController < SignedInApplicationController
     if @train.update(parsed_train_update_params)
       redirect_to train_path, notice: "Train was updated"
     else
-      render :show, status: :unprocessable_entity
+      render :edit, status: :unprocessable_entity
     end
   end
 
@@ -108,8 +113,8 @@ class TrainsController < SignedInApplicationController
   def parsed_train_params
     train_params
       .merge(repeat_duration: repeat_duration)
-      .merge(build_queue_wait_time: build_queue_wait_time)
       .merge(kickoff_at: kickoff_at_in_utc)
+      .merge(build_queue_config(train_params.slice(*build_queue_config_params)))
       .except(:repeat_duration_value, :repeat_duration_unit, :build_queue_wait_time_value, :build_queue_wait_time_unit)
       .merge(notification_channel: train_params[:notification_channel]&.safe_json_parse)
   end
@@ -123,15 +128,6 @@ class TrainsController < SignedInApplicationController
       .as_duration_with(unit: train_params[:repeat_duration_unit])
   end
 
-  def build_queue_wait_time
-    return if train_params[:build_queue_wait_time_unit].blank?
-    return if train_params[:build_queue_wait_time_value].blank?
-
-    train_params[:build_queue_wait_time_value]
-      .to_i
-      .as_duration_with(unit: train_params[:build_queue_wait_time_unit])
-  end
-
   def kickoff_at_in_utc
     return if train_params[:kickoff_at].blank?
     Time.zone.parse(train_params[:kickoff_at]).utc
@@ -141,13 +137,19 @@ class TrainsController < SignedInApplicationController
     params.require(:train).permit(
       :name,
       :description,
-      :notification_channel
+      :notification_channel,
+      :build_queue_enabled,
+      :build_queue_size,
+      :build_queue_wait_time_unit,
+      :build_queue_wait_time_value
     )
   end
 
   def parsed_train_update_params
     train_update_params
-      .merge(notification_channel: train_params[:notification_channel]&.safe_json_parse)
+      .merge(build_queue_config(train_update_params.slice(*build_queue_config_params)))
+      .except(:build_queue_wait_time_value, :build_queue_wait_time_unit)
+      .merge(notification_channel: train_update_params[:notification_channel]&.safe_json_parse)
   end
 
   def validate_integration_status
@@ -161,5 +163,22 @@ class TrainsController < SignedInApplicationController
   def set_notification_channels
     @notification_channels = @app.notification_provider.channels if @app.notifications_set_up?
     @current_notification_channel = @train.present? ? @train.notification_channel : @app.config.notification_channel
+  end
+
+  def build_queue_config_params
+    [:build_queue_size, :build_queue_enabled, :build_queue_wait_time_value, :build_queue_wait_time_unit]
+  end
+
+  def build_queue_config(build_queue_params)
+    return {build_queue_size: nil, build_queue_wait_time: nil} unless build_queue_params[:build_queue_enabled] == "true"
+
+    return if build_queue_params[:build_queue_wait_time_unit].blank?
+    return if build_queue_params[:build_queue_wait_time_value].blank?
+    return if build_queue_params[:build_queue_size].blank?
+
+    {build_queue_wait_time: build_queue_params[:build_queue_wait_time_value]
+      .to_i
+      .as_duration_with(unit: build_queue_params[:build_queue_wait_time_unit]),
+     build_queue_size: build_queue_params[:build_queue_size]}
   end
 end

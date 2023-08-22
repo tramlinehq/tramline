@@ -61,7 +61,7 @@ class Train < ApplicationRecord
 
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
-  attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed
+  attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed, :build_queue_wait_time_unit, :build_queue_wait_time_value
 
   validates :branching_strategy, :working_branch, presence: true
   validates :branching_strategy, inclusion: {in: BRANCHING_STRATEGIES.keys.map(&:to_s)}
@@ -70,6 +70,7 @@ class Train < ApplicationRecord
   validate :semver_compatibility, on: :create
   validate :ready?, on: :create
   validate :valid_schedule, on: :create
+  validate :build_queue_config
   validate :valid_train_configuration, on: :activate_context
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
 
@@ -338,6 +339,17 @@ class Train < ApplicationRecord
       errors.add(:kickoff_at, "the schedule kickoff should be in the future") if kickoff_at && kickoff_at <= Time.current
       errors.add(:repeat_duration, "the repeat duration should be more than 1 day") if repeat_duration && repeat_duration < 1.day
       errors.add(:kickoff_at, "scheduled trains allowed only for Almost Trunk branching strategy") if branching_strategy != "almost_trunk"
+    end
+  end
+
+  def build_queue_config
+    if build_queue_enabled?
+      errors.add(:build_queue_size, :config_required) unless build_queue_size.present? && build_queue_wait_time.present?
+      errors.add(:build_queue_size, :invalid_size) if build_queue_size && build_queue_size < 1
+      errors.add(:build_queue_wait_time, :invalid_duration) if build_queue_wait_time && build_queue_wait_time > 360.hours
+    else
+      errors.add(:build_queue_size, :config_not_allowed) if build_queue_size.present?
+      errors.add(:build_queue_wait_time, :config_not_allowed) if build_queue_wait_time.present?
     end
   end
 end

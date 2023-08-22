@@ -5,44 +5,54 @@
   <div class="text-sm mt-1 mb-6"> Apply every commit to the train or manage triggers to create builds via a build queue.
   </div>
 
-  <div>
+  <div data-controller="domain--build-queue-help">
     <div class="grid grid-cols-1 w-1/2 mb-4">
       <div>
-        <%= form.radio_button :build_queue_enabled, false, checked: true %>
-        <%= form.label :build_queue_enabled, "Apply every commit (Default)", value: "false", class: "text-sm font-medium mb-1" %>
+        <%= form.radio_button :build_queue_enabled, false, checked: true, data: { action: 'domain--build-queue-help#change',
+                                                                                  domain__build_queue_help_target: "disabled" } %>
+        <%= form.label :build_queue_enabled, "Apply every commit (default)",
+                       value: "false",
+                       class: "text-sm font-medium mb-1" %>
       </div>
       <div>
-        <%= form.radio_button :build_queue_enabled, true %>
-        <%= form.label :build_queue_enabled, "Add a Build Queue", value: "true", class: "text-sm font-medium mb-1" %>
+        <%= form.radio_button :build_queue_enabled, true, data: { action: 'domain--build-queue-help#change',
+                                                                  domain__build_queue_help_target: "enabled" } %>
+        <%= form.label :build_queue_enabled, "Add a Build Queue",
+                       value: "true",
+                       class: "text-sm font-medium mb-1" %>
       </div>
     </div>
-    <div class="flex flex-row gap-x-2 items-center">
-      <%= form.label "Number of commits to batch", class: "text-sm font-medium mb-1" %>
-      <%= form.number_field :build_queue_size,
-                            class: "form-input w-1/8",
-                            step: 1,
-                            min: 1,
-                            default: 1 %>
-      <%= form.label "or after", class: "text-sm font-medium mb-1" %>
-      <%= form.number_field :build_queue_wait_time_value,
-                            class: "form-input w-1/8",
-                            step: 1,
-                            min: 1,
-                            default: 3,
-                            data: { action: 'domain--release-schedule-help#change',
-                                    domain__release_schedule_help_target: "nextDateNumber" } %>
-      <%= form.select :build_queue_wait_time_unit,
-                      options_for_select([%w[Minute(s) minutes], %w[Hour(s) hours]], "hours"),
-                      { required: false },
-                      { class: "form-input w-1/12",
-                        data: { action: 'domain--release-schedule-help#change',
-                                domain__release_schedule_help_target: "nextDateUnit" } } %>
-    </div>
-    <div class="col-span-3 mt-2">
-      <span class="text-sm italic mt-2 text-rose-700" data-domain--release-schedule-help-target="errOutput"></span>
-    </div>
-    <div class="col-span-3">
-      <span class="block text-sm font-medium mt-2 mb-1" data-domain--release-schedule-help-target="output"></span>
+    <div data-domain--build-queue-help-target="config">
+      <div class="flex flex-row gap-x-2 items-center">
+        <%= form.label "Number of commits to batch", class: "text-sm font-medium mb-1" %>
+        <%= form.number_field :build_queue_size,
+                              class: "form-input w-1/8",
+                              step: 1,
+                              min: 1,
+                              default: 1,
+                              data: { action: 'domain--build-queue-help#change',
+                                      domain__build_queue_help_target: "size" } %>
+        <%= form.label "or after", class: "text-sm font-medium mb-1" %>
+        <%= form.number_field :build_queue_wait_time_value,
+                              class: "form-input w-1/8",
+                              step: 1,
+                              min: 1,
+                              default: 3,
+                              data: { action: 'domain--build-queue-help#change',
+                                      domain__build_queue_help_target: "waitTimeValue" } %>
+        <%= form.select :build_queue_wait_time_unit,
+                        options_for_select([%w[Minute(s) minutes], %w[Hour(s) hours]], @train.build_queue_wait_time_unit || "hours"),
+                        { required: false },
+                        { class: "form-input w-1/12",
+                          data: { action: 'domain--build-queue-help#change',
+                                  domain__build_queue_help_target: "waitTimeUnit" } } %>
+      </div>
+      <div class="col-span-3 mt-2">
+        <span class="text-sm italic mt-2 text-rose-700" data-domain--build-queue-help-target="errOutput"></span>
+      </div>
+      <div>
+        <span class="block text-sm font-medium mt-2 mb-1" data-domain--build-queue-help-target="output"></span>
+      </div>
     </div>
   </div>
 </article>
