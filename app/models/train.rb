@@ -68,6 +68,7 @@ class Train < ApplicationRecord
   validate :ready?, on: :create
   validate :valid_schedule, on: :create
   validate :valid_train_configuration, on: :activate_context
+  validate :working_branch_presence
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
 
   after_initialize :set_constituent_seed_versions, if: :persisted?
@@ -310,6 +311,12 @@ class Train < ApplicationRecord
       errors.add(:kickoff_at, "the schedule kickoff should be in the future") if kickoff_at && kickoff_at <= Time.current
       errors.add(:repeat_duration, "the repeat duration should be more than 1 day") if repeat_duration && repeat_duration < 1.day
       errors.add(:kickoff_at, "scheduled trains allowed only for Almost Trunk branching strategy") if branching_strategy != "almost_trunk"
+    end
+  end
+
+  def working_branch_presence
+    unless vcs_provider.branch_exists?(working_branch)
+      errors.add(:working_branch, :working_branch_not_available)
     end
   end
 end

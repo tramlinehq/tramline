@@ -78,6 +78,8 @@ en:
         release_suffix: "Release suffix"
     errors:
       models:
+        train:
+          working_branch_not_available: "could not find this working branch in your git repo"
         releases/step:
           attributes:
             train:
