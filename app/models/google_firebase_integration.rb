@@ -17,6 +17,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   include Providable
   include Displayable
   include Loggable
+  include PlatformAwareness
 
   delegate :cache, to: Rails
   delegate :app, to: :integration
@@ -89,7 +90,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   end
 
   def setup
-    app_config.platform_aware_config(list_apps(platform: "ios"), list_apps(platform: "android"))
+    platform_aware_config(list_apps(platform: "ios"), list_apps(platform: "android"))
   end
 
   def list_apps(platform:)

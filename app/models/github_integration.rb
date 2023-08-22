@@ -246,10 +246,6 @@ class GithubIntegration < ApplicationRecord
     installation.head(app_config.code_repository_name, branch)
   end
 
-  def platform=(_)
-    nil
-  end
-
   private
 
   def create_webhook!(url_params)

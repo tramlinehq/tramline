@@ -61,16 +61,6 @@ class AppConfig < ApplicationRecord
     app.integrations.google_firebase_integrations.any?
   end
 
-  def platform_aware_config(ios, android)
-    if app.android?
-      {android: android}
-    elsif app.ios?
-      {ios: ios}
-    elsif app.cross_platform?
-      {ios: ios, android: android}
-    end
-  end
-
   private
 
   def firebase_ready?

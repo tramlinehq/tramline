@@ -48,7 +48,6 @@ class BitriseIntegration < ApplicationRecord
 
   encrypts :access_token, deterministic: true
 
-
   delegate :bitrise_project, to: :app_config
   alias_method :project, :bitrise_project
 
