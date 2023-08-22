@@ -65,7 +65,7 @@ class ReleasePlatform < ApplicationRecord
   end
 
   def in_creation?
-    train.draft? && (steps.release.none? || steps.review.none?)
+    train.draft? && steps.release.none?
   end
 
   def valid_steps?
