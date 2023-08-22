@@ -23,7 +23,7 @@ class WebhookHandlers::Push
     return Response.new(:accepted, "Skipping the commit") unless relevant_commit?
     return Response.new(:accepted, "Invalid repo/branch") unless valid_repo_and_branch?
 
-    WebhookProcessors::PushJob.perform_later(release.id, head_commit_attributes, rest_commit_attributes)
+    WebhookProcessors::PushJob.perform_later(release.id, head_commit, rest_commits)
 
     Response.new(:accepted)
   end
@@ -31,13 +31,7 @@ class WebhookHandlers::Push
   private
 
   delegate :vcs_provider, to: :train
-  delegate :head_commit,
-    :branch_name,
-    :repository_name,
-    :valid_branch?,
-    :valid_tag?,
-    :head_commit_attributes,
-    :rest_commit_attributes, to: :runner
+  delegate :branch_name, :repository_name, :valid_tag?, :head_commit, :rest_commits, to: :runner
 
   memoize def runner
     return GITHUB.new(payload) if vcs_provider.integration.github_integration?

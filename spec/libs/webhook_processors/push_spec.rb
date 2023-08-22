@@ -51,6 +51,10 @@ describe WebhookProcessors::Push do
       }.to change(Commit, :count)
     end
 
+    it "creates multiple commits if present" do
+
+    end
+
     it "triggers step runs" do
       release_platform = train.release_platforms.first
       _release_platform_run = create(:release_platform_run, release_platform:, release:, release_version: train.version_current)

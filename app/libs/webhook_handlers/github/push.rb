@@ -7,33 +7,12 @@ class WebhookHandlers::Github::Push
     @payload = payload
   end
 
-  def head_commit_attributes
-    commit_attributes(head_commit)
+  def head_commit
+    commit_attributes(head_commit_payload)
   end
 
-  def rest_commit_attributes
-    commits.map { commit_attributes(_1) }
-  end
-
-  def commit_attributes(commit)
-    {
-      commit_sha: commit["id"],
-      message: commit["message"],
-      timestamp: commit["timestamp"],
-      author_name: commit["author"]["name"],
-      author_email: commit["author"]["email"],
-      url: commit["url"],
-      branch_name: branch_name
-    }
-  end
-
-  memoize def head_commit
-    payload["head_commit"]
-  end
-
-  memoize def commits
-    payload["commits"]
-      &.reject { |commit| commit["id"] == head_commit["id"] }
+  def rest_commits
+    rest_commits_payload.map { commit_attributes(_1) }
   end
 
   def valid_branch?
@@ -51,5 +30,27 @@ class WebhookHandlers::Github::Push
 
   def repository_name
     payload["repository"]["full_name"]
+  end
+
+  private
+
+  def commit_attributes(commit)
+    {
+      commit_sha: commit["id"],
+      message: commit["message"],
+      timestamp: commit["timestamp"],
+      author_name: commit["author"]["name"],
+      author_email: commit["author"]["email"],
+      url: commit["url"],
+      branch_name: branch_name
+    }
+  end
+
+  memoize def head_commit_payload
+    payload["head_commit"]
+  end
+
+  memoize def rest_commits_payload
+    payload["commits"]&.reject { |commit| commit["id"] == head_commit["id"] }.presence || []
   end
 end

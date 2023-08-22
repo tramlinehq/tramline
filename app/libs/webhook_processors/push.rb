@@ -1,38 +1,36 @@
 class WebhookProcessors::Push
-  def self.process(release, commit_attributes)
-    new(release, commit_attributes).process
+  def self.process(release, head_commit, rest_commits)
+    new(release, head_commit, rest_commits).process
   end
 
-  def initialize(release, head_commit_attributes, rest_commit_attributes = [])
+  def initialize(release, head_commit, rest_commits = [])
     @release = release
-    @head_commit_attributes = head_commit_attributes
-    @rest_commit_attributes = rest_commit_attributes
+    @head_commit = head_commit
+    @rest_commits = rest_commits
   end
 
   def process
     release.with_lock do
       return unless release.committable?
-
       release.close_pre_release_prs
       release.start!
       create_head_commit!
-      create_other_commits!
     end
+
+    create_other_commits!
   end
 
   private
 
-  attr_reader :release, :head_commit_attributes, :rest_commit_attributes
+  attr_reader :release, :head_commit, :rest_commits
   delegate :train, to: :release
 
   def create_head_commit!
-    Commit.find_or_create_by!(commit_params(head_commit_attributes)).trigger_step_runs
+    Commit.find_or_create_by!(commit_params(head_commit)).trigger_step_runs
   end
 
   def create_other_commits!
-    rest_commit_attributes.each do |commit_attributes|
-      Commit.find_or_create_by!(commit_params(commit_attributes))
-    end
+    rest_commits.each { Commit.find_or_create_by!(commit_params(_1)) }
   end
 
   def commit_params(attributes)
