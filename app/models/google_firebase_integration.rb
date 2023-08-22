@@ -229,8 +229,4 @@ class GoogleFirebaseIntegration < ApplicationRecord
   def build_channels_cache_key
     "app/#{app.id}/google_firebase_integration/#{id}/build_channels"
   end
-
-  def app_config
-    integration.app.config
-  end
 end

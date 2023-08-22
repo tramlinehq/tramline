@@ -46,7 +46,7 @@ class AppConfig < ApplicationRecord
   end
 
   def bitrise_project
-    bitrise_project_id.fetch("id", nil)
+    bitrise_project_id&.fetch("id", nil)
   end
 
   def further_build_channel_setup?
