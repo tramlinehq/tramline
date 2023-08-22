@@ -2,9 +2,9 @@ require "rails_helper"
 
 describe WebhookProcessors::Push do
   let(:train) { create(:train, version_seeded_with: "1.5.0") }
-  let(:commit_attributes) do
+  let(:head_commit_attributes) do
     {
-      commit_sha: "1",
+      commit_hash: "3",
       message: Faker::Lorem.sentence,
       timestamp: Time.current,
       author_name: Faker::Name.name,
@@ -12,6 +12,28 @@ describe WebhookProcessors::Push do
       url: Faker::Internet.url,
       branch_name: Faker::Lorem.word
     }
+  end
+  let(:rest_commit_attributes) do
+    [
+      {
+        commit_hash: "2",
+        message: Faker::Lorem.sentence,
+        timestamp: Time.current,
+        author_name: Faker::Name.name,
+        author_email: Faker::Internet.email,
+        url: Faker::Internet.url,
+        branch_name: Faker::Lorem.word
+      },
+      {
+        commit_hash: "1",
+        message: Faker::Lorem.sentence,
+        timestamp: Time.current,
+        author_name: Faker::Name.name,
+        author_email: Faker::Internet.email,
+        url: Faker::Internet.url,
+        branch_name: Faker::Lorem.word
+      }
+    ]
   end
 
   describe "#process" do
@@ -32,7 +54,7 @@ describe WebhookProcessors::Push do
           step_run = create(:step_run, release_platform_run:, step:)
           _deployment_run = create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
           allow(Triggers::StepRun).to receive(:call)
-          described_class.process(release.reload, commit_attributes)
+          described_class.process(release.reload, head_commit_attributes, rest_commit_attributes)
 
           expect(Triggers::StepRun).not_to have_received(:call)
         end
@@ -40,19 +62,28 @@ describe WebhookProcessors::Push do
     end
 
     it "starts the release" do
-      described_class.process(release, commit_attributes)
+      described_class.process(release, head_commit_attributes, rest_commit_attributes)
 
       expect(release.reload.on_track?).to be(true)
     end
 
     it "creates a new commit" do
       expect {
-        described_class.process(release, commit_attributes)
+        described_class.process(release, head_commit_attributes, rest_commit_attributes)
       }.to change(Commit, :count)
     end
 
-    #     xit "creates multiple commits if present" do
-    #     end
+    it "creates multiple commits if present" do
+      described_class.process(release, head_commit_attributes, rest_commit_attributes)
+
+      expect(Commit.count).to eq(3)
+    end
+
+    it "creates only the head commit if none other" do
+      described_class.process(release, head_commit_attributes, [])
+
+      expect(Commit.count).to eq(1)
+    end
 
     it "triggers step runs" do
       release_platform = train.release_platforms.first
@@ -60,7 +91,7 @@ describe WebhookProcessors::Push do
       create(:step, :with_deployment, release_platform:)
       allow(Triggers::StepRun).to receive(:call)
 
-      described_class.process(release, commit_attributes)
+      described_class.process(release, head_commit_attributes, rest_commit_attributes)
 
       expect(Triggers::StepRun).to have_received(:call).once
     end
