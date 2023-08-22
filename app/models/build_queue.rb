@@ -20,23 +20,23 @@ class BuildQueue < ApplicationRecord
   after_create_commit :schedule_kickoff!
 
   def apply!
-    head_commit = commits.order(timestamp: :desc).first
-    head_commit.trigger_step_runs if head_commit.present?
-    self.applied_at = Time.current
-    self.is_active = false
-    save!
+    head_commit&.trigger_step_runs
+    update!(applied_at: Time.current, is_active: false)
     release.create_active_build_queue
   end
 
   def add_commit!(commit)
     commits << commit
-
-    if commits.size >= train.build_queue_size
-      apply!
-    end
+    apply! if commits.size >= train.build_queue_size
   end
 
   def schedule_kickoff!
     BuildQueueApplicationJob.set(wait_until: scheduled_at).perform_later(id)
+  end
+
+  private
+
+  def head_commit
+    commits.order(timestamp: :desc).first
   end
 end
