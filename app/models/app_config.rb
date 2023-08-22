@@ -53,23 +53,19 @@ class AppConfig < ApplicationRecord
     app.integrations.build_channel.map(&:providable).any?(&:further_build_channel_setup?)
   end
 
-  def bitrise_connected?
-    app.integrations.bitrise_integrations.any?
-  end
-
-  def firebase_connected?
-    app.integrations.google_firebase_integrations.any?
+  def further_ci_cd_setup?
+    app.integrations.ci_cd_provider.further_setup?
   end
 
   private
 
   def firebase_ready?
-    return true unless firebase_connected?
+    return true unless app.firebase_connected?
     configs_ready?(firebase_ios_config, firebase_android_config)
   end
 
   def bitrise_ready?
-    return true unless bitrise_connected?
+    return true unless app.bitrise_connected?
     bitrise_project.present?
   end
 

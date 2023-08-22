@@ -31,7 +31,7 @@
       </div>
     </section>
 
-    <% if @config.bitrise_connected? %>
+    <% if @app.bitrise_connected? %>
       <section class="border-t border-dashed pb-8">
         <div class="my-8">
           <h2 class="font-bold text-xl">
@@ -57,7 +57,7 @@
       </section>
     <% end %>
 
-    <% if @config.firebase_connected? %>
+    <% if @app.firebase_connected? %>
       <section class="border-t border-dashed pb-8">
         <div class="my-8">
           <h2 class="font-bold text-xl">

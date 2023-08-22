@@ -7,7 +7,7 @@ class AppConfigsController < SignedInApplicationController
   before_action :set_app_config, only: %i[edit update]
   before_action :set_code_repositories, only: %i[edit update]
   before_action :set_notification_channels, only: %i[edit update]
-  before_action :set_ci_cd_projects, only: %i[edit update], if: -> { @app.ci_cd_provider.further_setup? }
+  before_action :set_ci_cd_projects, only: %i[edit update], if: -> { @config.further_ci_cd_setup? }
   before_action :set_firebase_apps, only: %i[edit update], if: -> { @config.further_build_channel_setup? }
 
   def edit
