@@ -5,6 +5,30 @@ describe Release do
     expect(create(:release)).to be_valid
   end
 
+  describe "#set_version" do
+    {"1.2.3" => {major: "2.0.0", minor: "1.3.0"},
+     "1.2" => {major: "2.0", minor: "1.3"}}.each do |ver, expect|
+      it "minor bump: sets the original_release_version to next version of the train" do
+        train = create(:train, version_seeded_with: ver)
+        run = build(:release, original_release_version: nil, train:)
+
+        expect(run.original_release_version).to be_nil
+        run.save!
+        expect(run.original_release_version).to eq(expect[:minor])
+      end
+
+      it "major bump: sets the original_release_version to next version of the train" do
+        train = create(:train, version_seeded_with: ver)
+        run = build(:release, original_release_version: nil, train:)
+        run.has_major_bump = true
+
+        expect(run.original_release_version).to be_nil
+        run.save!
+        expect(run.original_release_version).to eq(expect[:major])
+      end
+    end
+  end
+
   describe ".create" do
     it "creates the release metadata with default locale" do
       run = create(:release)
@@ -91,6 +115,40 @@ describe Release do
         release.create_release!
         expect(release.tag_name).to eq("v1.2.3-#{commit.short_sha}-#{now}")
       end
+    end
+  end
+
+  describe "#stop!" do
+    it "updates the train version if partially finished" do
+      train = create(:train, version_seeded_with: "9.59.3")
+      run = create(:release, :partially_finished, train:)
+
+      run.stop!
+      train.reload
+
+      expect(train.version_current).to eq("9.60.0")
+    end
+
+    it "does not update the train version if properly stopped" do
+      train = create(:train, version_seeded_with: "9.59.3")
+      run = create(:release, :post_release_started, train:)
+
+      run.stop!
+      train.reload
+
+      expect(train.version_current).to eq("9.59.3")
+    end
+  end
+
+  describe "#finish!" do
+    it "updates the train version" do
+      train = create(:train, version_seeded_with: "9.59.3")
+      run = create(:release, :post_release_started, train:)
+
+      run.finish!
+      train.reload
+
+      expect(train.version_current).to eq("9.60.0")
     end
   end
 end
