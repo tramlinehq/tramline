@@ -37,12 +37,12 @@ describe ReleasePlatform do
       expect(release_platform).to be_in_creation
     end
 
-    it "returns true when there is no review step" do
+    it "returns false when there is no review step but has release step" do
       train = create(:train, :draft)
       release_platform = create(:release_platform, train:)
       _release_step = create(:step, :release, :with_deployment, release_platform:)
 
-      expect(release_platform).to be_in_creation
+      expect(release_platform).not_to be_in_creation
     end
   end
 
