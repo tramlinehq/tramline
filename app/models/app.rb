@@ -89,12 +89,8 @@ class App < ApplicationRecord
     integrations.ready? and config&.ready?
   end
 
-  def no_trains?
-    trains.none?
-  end
-
   def guided_train_setup?
-    no_trains? || train_in_creation&.in_creation?
+    trains.none? || train_in_creation&.in_creation?
   end
 
   def train_in_creation
@@ -132,6 +128,14 @@ class App < ApplicationRecord
 
   def notifications_set_up?
     notification_provider.present?
+  end
+
+  def bitrise_connected?
+    integrations.bitrise_integrations.any?
+  end
+
+  def firebase_connected?
+    integrations.google_firebase_integrations.any?
   end
 
   # this helps power initial setup instructions after an app is created
@@ -172,9 +176,6 @@ class App < ApplicationRecord
 
     ios_steps_setup =
       {
-        ios_review_step: {
-          visible: trains.any?, completed: trains.ios_review_steps?
-        },
         ios_release_step: {
           visible: trains.any?, completed: trains.ios_release_steps?
         }
@@ -182,9 +183,6 @@ class App < ApplicationRecord
 
     android_steps_setup =
       {
-        android_review_step: {
-          visible: trains.any?, completed: trains.android_review_steps?
-        },
         android_release_step: {
           visible: trains.any?, completed: trains.android_release_steps?
         }
@@ -245,8 +243,10 @@ class App < ApplicationRecord
   end
 
   def latest_external_apps
-    {android: external_apps.where(platform: "android").order(fetched_at: :desc).first,
-     ios: external_apps.where(platform: "ios").order(fetched_at: :desc).first}
+    {
+      android: external_apps.where(platform: "android").order(fetched_at: :desc).first,
+      ios: external_apps.where(platform: "ios").order(fetched_at: :desc).first
+    }
   end
 
   def refresh_external_app

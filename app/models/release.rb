@@ -7,7 +7,6 @@
 #  completed_at             :datetime
 #  is_automatic             :boolean          default(FALSE)
 #  original_release_version :string
-#  release_version          :string
 #  scheduled_at             :datetime
 #  status                   :string           not null
 #  stopped_at               :datetime
@@ -221,7 +220,8 @@ class Release < ApplicationRecord
         release_branch: release_branch,
         release_branch_url: branch_url,
         release_url: live_release_link,
-        release_notes: release_metadata&.release_notes
+        release_notes: release_metadata&.release_notes,
+        release_version: release_version
       }
     )
   end

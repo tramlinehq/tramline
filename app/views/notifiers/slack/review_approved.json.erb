@@ -18,14 +18,7 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*<%= @app_name %> (<%= @app_platform %>)* <%= @release_version %> (<%= @build_number %>) has been submitted for review to <%= @deployment_channel_type %> (<%= deployment_channel_display_name %>)! :tada:"
-      }
-    },
-    {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": "<%= sanitized_release_notes %>"
+        "text": "*<%= @app_name %> (<%= @app_platform %>)* <%= @release_version %> (<%= @build_number %>) has been approved by the store to distribute to <%= @deployment_channel_type %> (<%= deployment_channel_display_name %>)! :tada:"
       }
     },
     <% if @is_play_store_production %>

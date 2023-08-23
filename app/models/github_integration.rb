@@ -144,8 +144,7 @@ class GithubIntegration < ApplicationRecord
     [code_repo_namespace, ":", branch_name].join
   end
 
-  # FIXME: what is this really?
-  def belongs_to_project?
+  def further_setup?
     false
   end
 

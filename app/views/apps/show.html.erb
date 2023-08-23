@@ -63,7 +63,7 @@
       <%= render partial: "apps/setup_progress", locals: { setup_instructions: @app_setup_instructions } %>
     <% end %>
 
-    <% unless @train_in_creation&.in_creation? %>
+    <% unless @app.guided_train_setup? %>
       <section class="grid md:grid-cols-2 gap-x-20 pb-5 mt-8">
         <% if @app.cross_platform? %>
           <article>
@@ -88,40 +88,40 @@
           </article>
         <% end %>
       </section>
-    <% end %>
 
-    <% unless @app.no_trains? %>
-      <%= render TableComponent.new(columns: ["Name", "Description", "Current Release"]) do |table| %>
-        <% table.with_heading do %>
-          <div class="flex justify-between items-end mb-2">
-            <h2 class="text-2xl text-slate-800 font-bold">Release Train</h2>
-            <%= authz_link_to :green, new_app_train_path(@app) do %>
-              <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
-              <span class="hidden xs:block ml-2">Create another release train</span>
-            <% end %>
-          </div>
-        <% end %>
+      <section>
+        <%= render TableComponent.new(columns: ["Name", "Description", "Current Release"]) do |table| %>
+          <% table.with_heading do %>
+            <div class="flex justify-between items-end mb-2">
+              <h2 class="text-2xl text-slate-800 font-bold">Release Train</h2>
+              <%= authz_link_to :green, new_app_train_path(@app) do %>
+                <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
+                <span class="hidden xs:block ml-2">Create another release train</span>
+              <% end %>
+            </div>
+          <% end %>
 
-        <% @app.trains.each do |train| %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              <div class="flex items-center">
-                <div class="font-medium text-slate-800">
-                  <%= link_to train.name, app_train_path(@app, train) %>
+          <% @app.trains.each do |train| %>
+            <% table.with_row do |row| %>
+              <% row.with_cell do %>
+                <div class="flex items-center">
+                  <div class="font-medium text-slate-800">
+                    <%= link_to train.name, app_train_path(@app, train) %>
+                  </div>
                 </div>
-              </div>
-            <% end %>
-            <% row.with_cell do %>
-              <div class="text-left"><%= simple_format train.description %></div>
-            <% end %>
-            <% row.with_cell do %>
-              <div class="text-left">
-                <%= "#{train.releases.any? ? train.version_current : train.version_seeded_with} • #{@app.build_number}" %>
-              </div>
+              <% end %>
+              <% row.with_cell do %>
+                <div class="text-left"><%= simple_format train.description %></div>
+              <% end %>
+              <% row.with_cell do %>
+                <div class="text-left">
+                  <%= "#{train.releases.any? ? train.version_current : train.version_seeded_with} • #{@app.build_number}" %>
+                </div>
+              <% end %>
             <% end %>
           <% end %>
         <% end %>
-      <% end %>
+      </section>
     <% end %>
   </div>
 <% end %>
