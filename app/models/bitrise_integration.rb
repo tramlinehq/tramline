@@ -43,13 +43,13 @@ class BitriseIntegration < ApplicationRecord
     id: :slug
   }
 
-  delegate :bitrise_project, to: :app_config
-  alias_method :project, :bitrise_project
-
   validate :correct_key, on: :create
   validates :access_token, presence: true
 
   encrypts :access_token, deterministic: true
+
+  delegate :bitrise_project, to: :app_config
+  alias_method :project, :bitrise_project
 
   def installation
     API.new(access_token)
@@ -71,9 +71,12 @@ class BitriseIntegration < ApplicationRecord
     false
   end
 
-  # FIXME: what is this really?
-  def belongs_to_project?
+  def further_setup?
     true
+  end
+
+  def setup
+    list_apps
   end
 
   def connection_data
@@ -81,7 +84,6 @@ class BitriseIntegration < ApplicationRecord
     "Teams: " + integration.metadata.map { |m| "#{m["name"]} (#{m["id"]})" }.join(", ")
   end
 
-  # Special function if acts as project
   def list_apps
     installation.list_apps(APPS_TRANSFORMATIONS)
   end

@@ -115,7 +115,7 @@ class DeploymentRun < ApplicationRecord
       end
     end
 
-    event :submit_for_review, after_commit: :find_submission do
+    event :submit_for_review, after_commit: :after_submission do
       transitions from: [:started, :prepared_release], to: :submitted_for_review
     end
 
@@ -159,7 +159,8 @@ class DeploymentRun < ApplicationRecord
     step_run.deployment_runs.first == self
   end
 
-  def find_submission
+  def after_submission
+    notify!("Submitted for review!", :submit_for_review, notification_params)
     event_stamp!(reason: :submitted_for_review, kind: :notice, data: stamp_data)
     Deployments::AppStoreConnect::UpdateExternalReleaseJob.perform_async(id)
   end
@@ -353,6 +354,7 @@ class DeploymentRun < ApplicationRecord
   def mark_reviewed
     external_release.update(reviewed_at: Time.current)
     event_stamp!(reason: :review_approved, kind: :success, data: stamp_data)
+    notify!("Review approved!", :review_approved, notification_params)
   end
 
   def set_reason(args = nil)

@@ -72,7 +72,7 @@
 <%= render partial: "shared/live_release/separator" %>
 
 <div class="grid grid-cols-1 gap-6 mt-8">
-  <%= render partial: "shared/live_release/builds", locals: { release: @release } %>
+  <%= render partial: "shared/live_release/builds", locals: { release: @release, commits: @commits } %>
 </div>
 
 <% if @app.cross_platform? %>

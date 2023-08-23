@@ -17,6 +17,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   include Providable
   include Displayable
   include Loggable
+  include PlatformAwareness
 
   delegate :cache, to: Rails
   delegate :app, to: :integration
@@ -82,6 +83,14 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   def channels
     installation.list_groups(GROUPS_TRANSFORMATIONS)
+  end
+
+  def further_build_channel_setup?
+    true
+  end
+
+  def setup
+    platform_aware_config(list_apps(platform: "ios"), list_apps(platform: "android"))
   end
 
   def list_apps(platform:)

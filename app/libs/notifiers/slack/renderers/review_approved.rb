@@ -1,11 +1,7 @@
 module Notifiers
   module Slack
-    class Renderers::SubmitForReview < Renderers::Base
-      TEMPLATE_FILE = "submit_for_review.json.erb".freeze
-
-      def sanitized_release_notes
-        safe_string(":spiral_note_pad: What's New\n\n```#{@release_notes}```")
-      end
+    class Renderers::ReviewApproved < Renderers::Base
+      TEMPLATE_FILE = "review_approved.json.erb".freeze
 
       def google_managed_publishing_text
         "- If managed publishing is disabled, this update will auto-start the rollout upon approval by Google."
@@ -16,7 +12,7 @@ module Notifiers
       end
 
       def apple_publishing_text
-        "- Releases from Tramline are always manually released, you can start the release to users once it is approved from the Live Release page."
+        "- Releases from Tramline are always manually released, you can start the release to users from the Live Release page."
       end
     end
   end

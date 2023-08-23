@@ -135,7 +135,6 @@ module Deployments
           return
         end
 
-        run.notify!("Submitted for review!", :submit_for_review, run.notification_params)
         run.submit_for_review!
       end
 

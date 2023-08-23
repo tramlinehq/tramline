@@ -7,8 +7,8 @@ class AppConfigsController < SignedInApplicationController
   before_action :set_app_config, only: %i[edit update]
   before_action :set_code_repositories, only: %i[edit update]
   before_action :set_notification_channels, only: %i[edit update]
-  before_action :set_ci_cd_projects, only: %i[edit]
-  before_action :set_firebase_apps, only: %i[edit update]
+  before_action :set_ci_cd_projects, only: %i[edit update], if: -> { @config.further_ci_cd_setup? }
+  before_action :set_firebase_apps, only: %i[edit update], if: -> { @config.further_build_channel_setup? }
 
   def edit
     @ci_cd_provider_name = @app.ci_cd_provider.display
@@ -55,14 +55,12 @@ class AppConfigsController < SignedInApplicationController
   end
 
   def set_ci_cd_projects
-    if @app.ci_cd_provider.belongs_to_project?
-      @ci_cd_projects = @app.ci_cd_provider.list_apps
-    end
+    @ci_cd_apps = @app.ci_cd_provider.setup
   end
 
   def set_firebase_apps
-    firebase_config = @config.setup_firebase_config
-    @firebase_android_apps, @firebase_ios_apps = firebase_config[:android], firebase_config[:ios]
+    config = @app.integrations.firebase_build_channel_provider.setup
+    @firebase_android_apps, @firebase_ios_apps = config[:android], config[:ios]
   end
 
   def set_code_repositories

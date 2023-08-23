@@ -16,7 +16,7 @@
     </tr>
     </thead>
 
-    <% release.active_commits.order(timestamp: :desc).includes(step_runs: :step).each_with_index do |commit, index| %>
+    <% commits.each_with_index do |commit, index| %>
       <% is_stale_commit = commit.stale? %>
       <tbody class="text-sm border-b last:border-b-0" data-controller="reveal" data-reveal-toggle-keys-value="b">
 

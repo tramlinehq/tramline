@@ -14,7 +14,7 @@
         <%= subform.label :issuer_id, "Issuer ID", class: "block text-sm font-medium mb-1 w-full" %>
         <%= subform.text_field :issuer_id, placeholder: "Paste here...", class: "mb-3" %>
         <%= subform.label :p8_key_file, "Upload p8 key file", class: "block text-sm font-medium mb-1 w-full" %>
-        <%= subform.file_field :p8_key_file %>
+        <%= subform.file_field :p8_key_file, accept: ".p8" %>
       <% end %>
 
       <div class="flex items-center mt-5 mb-5" data-controller="reveal">

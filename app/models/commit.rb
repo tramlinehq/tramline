@@ -19,6 +19,8 @@
 class Commit < ApplicationRecord
   include Passportable
 
+  self.implicit_order_column = :timestamp
+
   has_many :step_runs, dependent: :nullify, inverse_of: :commit
   has_many :passports, as: :stampable, dependent: :destroy
   belongs_to :release, inverse_of: :commits
