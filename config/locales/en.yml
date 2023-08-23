@@ -44,6 +44,7 @@ en:
           invalid_api_package: "the build artifact being invalid for the store"
           apks_not_allowed: "the build artifact being an apk, which is not accepted by the store"
           app_review_rejected: "the build needs to be uploaded manually on Google Play Console UI as a previous build was rejected by the store"
+          release_on_draft_app: "the app is in draft mode, please make a manual release to a public channel (alpha, beta, production) before releasing from Tramline"
       deployment:
         integration_type:
           app_store: "App Store (production)"

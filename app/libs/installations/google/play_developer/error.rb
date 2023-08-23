@@ -56,6 +56,12 @@ module Installations
         code: 400,
         message_matcher: /Changes cannot be sent for review automatically. Please set the query parameter changesNotSentForReview to true. Once committed, the changes in this edit can be sent for review from the Google Play Console UI/,
         decorated_reason: :app_review_rejected
+      },
+      {
+        status: "INVALID_ARGUMENT",
+        code: 400,
+        message_matcher: /Only releases with status draft may be created on draft app/i,
+        decorated_reason: :release_on_draft_app
       }
     ]
 
