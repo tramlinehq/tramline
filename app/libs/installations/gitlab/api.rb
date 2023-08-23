@@ -217,7 +217,6 @@ module Installations
     def execute(verb, url, params)
       response = HTTP.auth("Bearer #{oauth_access_token}").public_send(verb, url, params)
       body = JSON.parse(response.body.to_s)
-      Rails.logger.debug body
       return body unless error?(response.status)
       raise Installations::Gitlab::Error.handle(body)
     end

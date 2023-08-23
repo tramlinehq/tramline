@@ -29,7 +29,7 @@ module Installations
         resource: "Release",
         code: "already_exists",
         decorated_exception: Installations::Errors::TaggedReleaseAlreadyExists
-      },
+      }
     ]
 
     MESSAGES = [
