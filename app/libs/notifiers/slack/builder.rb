@@ -11,6 +11,7 @@ module Notifiers
         step_started: Renderers::StepStarted,
         step_failed: Renderers::StepFailed,
         submit_for_review: Renderers::SubmitForReview,
+        review_approved: Renderers::ReviewApproved,
         staged_rollout_updated: Renderers::StagedRolloutUpdated,
         release_scheduled: Renderers::ReleaseScheduled
       }

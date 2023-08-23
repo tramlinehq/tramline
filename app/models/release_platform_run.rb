@@ -235,6 +235,15 @@ class ReleasePlatformRun < ApplicationRecord
       .pluck(:message)
   end
 
+  def notification_params
+    release.notification_params.merge(
+      {
+        release_version: release_version,
+        app_platform: release_platform.platform
+      }
+    )
+  end
+
   private
 
   def base_tag_name

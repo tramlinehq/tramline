@@ -273,7 +273,7 @@ class StepRun < ApplicationRecord
 
   def notification_params
     step.notification_params
-      .merge(release.notification_params)
+      .merge(release_platform_run.notification_params)
       .merge(
         {
           ci_link: ci_link,
