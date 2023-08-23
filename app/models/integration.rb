@@ -35,13 +35,13 @@ class Integration < ApplicationRecord
     },
     android: {
       "version_control" => %w[GithubIntegration GitlabIntegration],
-      "ci_cd" => %w[GithubIntegration BitriseIntegration],
+      "ci_cd" => %w[BitriseIntegration GithubIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration]
     },
     cross_platform: {
       "version_control" => %w[GithubIntegration GitlabIntegration],
-      "ci_cd" => %w[GithubIntegration],
+      "ci_cd" => %w[BitriseIntegration GithubIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration]
     }
@@ -152,20 +152,20 @@ class Integration < ApplicationRecord
       notification.first&.providable
     end
 
-    def ios_store_provider
-      build_channel.find(&:app_store_integration?)&.providable
-    end
-
     def android_store_provider
       build_channel.find(&:google_play_store_integration?)&.providable
     end
 
-    def firebase_build_channel_provider
-      build_channel.find(&:google_firebase_integration?)&.providable
+    def ios_store_provider
+      build_channel.find(&:app_store_integration?)&.providable
     end
 
     def slack_build_channel_provider
       build_channel.find(&:slack_integration?)&.providable
+    end
+
+    def firebase_build_channel_provider
+      build_channel.find(&:google_firebase_integration?)&.providable
     end
 
     private

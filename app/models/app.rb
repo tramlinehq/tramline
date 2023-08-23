@@ -130,6 +130,14 @@ class App < ApplicationRecord
     notification_provider.present?
   end
 
+  def bitrise_connected?
+    integrations.bitrise_integrations.any?
+  end
+
+  def firebase_connected?
+    integrations.google_firebase_integrations.any?
+  end
+
   # this helps power initial setup instructions after an app is created
   def app_setup_instructions
     app_setup = {

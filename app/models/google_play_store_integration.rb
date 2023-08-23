@@ -97,6 +97,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
     true
   end
 
+  def further_build_channel_setup?
+    false
+  end
+
   def to_s
     "google_play_store"
   end
