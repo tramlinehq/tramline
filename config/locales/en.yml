@@ -79,7 +79,7 @@ en:
     errors:
       models:
         train:
-          working_branch_not_available: "could not find this working branch in your git repo"
+          working_branch_not_available: "could not find the working branch in the configured git repo"
         releases/step:
           attributes:
             train:
