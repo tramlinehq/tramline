@@ -17,7 +17,7 @@ module Installations
     MR_MERGE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests/{merge_request_iid}/merge"
     COMPARE_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/compare"
     GET_COMMIT_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/commits/{sha}"
-    GET_BRANCH_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/branches{branch_name}"
+    GET_BRANCH_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/branches/{branch_name}"
 
     WEBHOOK_PERMISSIONS = {
       push_events: true
@@ -200,9 +200,16 @@ module Installations
         .then { |commits| Installations::Response::Keys.transform(commits, transforms) }
     end
 
+    def branch_exists?(project_id, branch_name)
+      get_branch(project_id, branch_name).present?
+    end
+
     def head(project_id, branch_name)
+      get_branch(project_id, branch_name).dig("commit", "id")
+    end
+
+    def get_branch(project_id, branch_name)
       execute(:get, GET_BRANCH_URL.expand(project_id:, branch_name:).to_s, {})
-        .dig("commit", "id")
     end
 
     private
@@ -210,6 +217,7 @@ module Installations
     def execute(verb, url, params)
       response = HTTP.auth("Bearer #{oauth_access_token}").public_send(verb, url, params)
       body = JSON.parse(response.body.to_s)
+      Rails.logger.debug body
       return body unless error?(response.status)
       raise Installations::Gitlab::Error.handle(body)
     end

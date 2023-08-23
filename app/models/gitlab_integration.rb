@@ -212,6 +212,12 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.head(app_config.code_repository_name, branch) }
   end
 
+  def branch_exists?(branch)
+    with_api_retries { installation.branch_exists?(app_config.code_repository_name, branch) }
+  rescue Installations::Errors::ResourceNotFound
+    false
+  end
+
   private
 
   # retry once (2 attempts in total)
