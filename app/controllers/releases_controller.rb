@@ -32,9 +32,10 @@ class ReleasesController < SignedInApplicationController
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
     @release = @train.active_run
-    @commits = @release.active_commits.order(timestamp: :desc).includes(step_runs: :step)
 
     redirect_to train_path, notice: "No release in progress." and return unless @release
+
+    @commits = @release.active_commits.order(timestamp: :desc).includes(step_runs: :step)
 
     set_pull_requests
 
