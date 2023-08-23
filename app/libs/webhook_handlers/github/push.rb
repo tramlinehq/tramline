@@ -1,6 +1,4 @@
 class WebhookHandlers::Github::Push
-  include Memery
-
   attr_reader :payload
 
   def initialize(payload)
