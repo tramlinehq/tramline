@@ -25,7 +25,7 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": ":spiral_note_pad: What's New\n\n`<%= @release_notes %>`"
+        "text": "<%= sanitized_release_notes %>"
       }
     },
     <% if @is_production_channel %>

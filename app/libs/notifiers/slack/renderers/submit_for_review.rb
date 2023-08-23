@@ -10,6 +10,10 @@ module Notifiers
         @store_text = store_text
       end
 
+      def sanitized_release_notes
+        safe_string(":spiral_note_pad: What's New\n\n```#{@release_notes}```")
+      end
+
       def publishing_text
         if @is_play_store_production
           "managed publishing"
