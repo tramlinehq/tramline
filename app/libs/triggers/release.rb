@@ -49,6 +49,7 @@ class Triggers::Release
     train.releases.create!(
       scheduled_at: starting_time,
       branch_name: release_branch,
+      release_version: train.version_current,
       has_major_bump: major_release?,
       is_automatic: automatic
     )

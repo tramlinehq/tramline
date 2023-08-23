@@ -40,7 +40,7 @@ class ReleasePlatformRun < ApplicationRecord
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
   scope :have_not_reached_production, -> { on_track.reject(&:production_release_happened?) }
 
-  STAMPABLE_REASONS = %w[version_changed finished]
+  STAMPABLE_REASONS = %w[finished]
 
   STATES = {
     created: "created",
@@ -84,20 +84,8 @@ class ReleasePlatformRun < ApplicationRecord
     end
   end
 
-  def bump_version
-    return unless version_bump_required?
-
-    semverish = release_version.to_semverish
-    self.release_version = semverish.bump!(:patch).to_s if semverish.proper?
-    self.release_version = semverish.bump!(:minor).to_s if semverish.partial?
-
-    save!
-
-    event_stamp!(
-      reason: :version_changed,
-      kind: :notice,
-      data: {version: release_version}
-    )
+  def update_version
+    update(release_version: train.version_current) if version_bump_required?
   end
 
   def metadata_editable?

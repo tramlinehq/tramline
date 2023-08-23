@@ -26,7 +26,7 @@ class Release < ApplicationRecord
   using RefinedString
 
   self.implicit_order_column = :scheduled_at
-  self.ignored_columns += ["release_version"]
+  # self.ignored_columns += ["release_version"]
 
   belongs_to :train
   has_one :release_metadata, dependent: :destroy, inverse_of: :release
@@ -256,7 +256,7 @@ class Release < ApplicationRecord
       release_platform_runs.create!(
         code_name: Haikunator.haikunate(100),
         scheduled_at:,
-        release_version: original_release_version,
+        release_version: train.version_current,
         release_platform: release_platform
       )
     end
@@ -275,7 +275,8 @@ class Release < ApplicationRecord
   end
 
   def set_version
-    self.original_release_version = train.next_version(has_major_bump)
+    new_version = train.bump_release!(has_major_bump)
+    self.original_release_version = new_version
   end
 
   def set_default_release_metadata
@@ -291,17 +292,11 @@ class Release < ApplicationRecord
   end
 
   def on_stop!
-    update_train_version if stopped_after_partial_finish?
     notify!("Release has stopped!", :release_stopped, notification_params)
   end
 
   def on_finish!
-    update_train_version
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     notify!("Release has finished!", :release_ended, notification_params.merge(finalize_phase_metadata))
-  end
-
-  def update_train_version
-    train.update!(version_current: release_version)
   end
 end

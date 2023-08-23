@@ -13,6 +13,7 @@ class WebhookProcessors::Push
       return unless release.committable?
 
       release.close_pre_release_prs
+      bump_version!
       release.start!
       create_commit!
     end
@@ -22,6 +23,14 @@ class WebhookProcessors::Push
 
   attr_reader :release, :commit_attributes
   delegate :train, to: :release
+
+  def bump_version!
+    return unless release.version_bump_required?
+    return if release.step_runs.none?
+
+    train.bump_fix!
+    stamp_version_changed
+  end
 
   def create_commit!
     params = {
@@ -34,6 +43,15 @@ class WebhookProcessors::Push
       url: commit_attributes[:url]
     }
 
-    Commit.find_or_create_by!(params).trigger_step_runs
+    commit = Commit.find_or_create_by!(params)
+    commit.trigger_step_runs if commit.applicable?
+  end
+
+  def stamp_version_changed
+    release.event_stamp_now!(
+      reason: :version_changed,
+      kind: :notice,
+      data: {version: train.version_current}
+    )
   end
 end
