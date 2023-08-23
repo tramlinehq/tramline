@@ -354,6 +354,7 @@ class DeploymentRun < ApplicationRecord
   def mark_reviewed
     external_release.update(reviewed_at: Time.current)
     event_stamp!(reason: :review_approved, kind: :success, data: stamp_data)
+    notify!("Review approved!", :review_approved, notification_params)
   end
 
   def set_reason(args = nil)
