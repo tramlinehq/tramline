@@ -319,9 +319,7 @@ class Train < ApplicationRecord
   end
 
   def working_branch_presence
-    unless vcs_provider.branch_exists?(working_branch)
-      errors.add(:working_branch, :not_available)
-    end
+    errors.add(:working_branch, :not_available) unless vcs_provider.branch_exists?(working_branch)
   end
 
   def build_queue_config
