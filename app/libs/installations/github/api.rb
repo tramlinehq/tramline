@@ -168,6 +168,12 @@ module Installations
       false
     end
 
+    def branch_exists?(repo, branch_name)
+      execute do
+        @client.branch(repo, branch_name).present?
+      end
+    end
+
     def create_pr!(repo, to, from, title, body)
       execute do
         @client.create_pull_request(repo, to, from, title, body)

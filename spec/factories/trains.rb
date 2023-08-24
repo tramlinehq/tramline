@@ -51,5 +51,9 @@ FactoryBot.define do
       build_queue_size { 2 }
       build_queue_wait_time { 1.hour }
     end
+
+    after(:build) do |train|
+      def train.working_branch_presence = true
+    end
   end
 end

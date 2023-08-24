@@ -198,6 +198,12 @@ class GithubIntegration < ApplicationRecord
       .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true) }
   end
 
+  def branch_exists?(branch_name)
+    installation.branch_exists?(code_repository_name, branch_name)
+  rescue Installations::Errors::ResourceNotFound
+    false
+  end
+
   def unzip_artifact?
     true
   end

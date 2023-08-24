@@ -72,6 +72,7 @@ class Train < ApplicationRecord
   validate :valid_schedule, on: :create
   validate :build_queue_config
   validate :valid_train_configuration, on: :activate_context
+  validate :working_branch_presence, on: :create
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
 
   after_initialize :set_constituent_seed_versions, if: :persisted?
@@ -315,6 +316,10 @@ class Train < ApplicationRecord
       errors.add(:repeat_duration, "the repeat duration should be more than 1 day") if repeat_duration && repeat_duration < 1.day
       errors.add(:kickoff_at, "scheduled trains allowed only for Almost Trunk branching strategy") if branching_strategy != "almost_trunk"
     end
+  end
+
+  def working_branch_presence
+    errors.add(:working_branch, :not_available) unless vcs_provider.branch_exists?(working_branch)
   end
 
   def build_queue_config

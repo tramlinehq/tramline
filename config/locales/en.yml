@@ -87,6 +87,8 @@ en:
             build_queue_wait_time:
               invalid_duration: "the wait time should be more than 1 minute and less than 360 hours"
               config_not_allowed: "build queue wait time cannot be configured when queue is disabled"
+            working_branch:
+              not_available: "could not find the working branch in the configured git repo"
         releases/step:
           attributes:
             train:

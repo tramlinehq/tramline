@@ -1,5 +1,7 @@
 module Installations
   class Gitlab::Error
+    UnhandledError = Class.new(StandardError)
+
     ERRORS = [
       {
         error: "invalid_token",
@@ -54,7 +56,7 @@ module Installations
     end
 
     def handle
-      return if match.nil?
+      return UnhandledError.new(body) if match.nil?
       match[:decorated_exception].new
     end
 
