@@ -90,9 +90,9 @@ class Commit < ApplicationRecord
     end
   end
 
-  def add_to_build_queue!(skip_apply: false)
+  def add_to_build_queue!(is_head_commit: true)
     return unless release.queue_commit?
-    release.active_build_queue.add_commit!(self, skip_apply:)
+    release.active_build_queue.add_commit!(self, can_apply: is_head_commit)
   end
 
   def trigger!

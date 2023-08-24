@@ -29,7 +29,7 @@ class WebhookProcessors::Push
   end
 
   def create_other_commits!
-    rest_commits.each { Commit.find_or_create_by!(commit_params(_1)).add_to_build_queue!(skip_apply: true) }
+    rest_commits.each { Commit.find_or_create_by!(commit_params(_1)).add_to_build_queue!(is_head_commit: false) }
   end
 
   def commit_params(attributes)

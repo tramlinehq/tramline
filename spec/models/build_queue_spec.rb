@@ -36,7 +36,7 @@ describe BuildQueue do
       expect(Triggers::StepRun).to have_received(:call).with(step, commits.last, release_platform_run).once
     end
 
-    it "does not apply the build queue when build queue has more commits than its size but skip apply is true" do
+    it "does not apply the build queue when build queue has more commits than its size but can apply is false" do
       allow(Triggers::StepRun).to receive(:call)
 
       queue_size = 2
@@ -49,7 +49,7 @@ describe BuildQueue do
       build_queue = release.active_build_queue
 
       commits.each do |commit|
-        build_queue.add_commit!(commit, skip_apply: true)
+        build_queue.add_commit!(commit, can_apply: false)
       end
 
       expect(Triggers::StepRun).not_to have_received(:call)
