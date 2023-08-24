@@ -88,7 +88,8 @@ class StepRun < ApplicationRecord
     :build_not_found_in_store,
     :deployment_failed,
     :success,
-    :cancelled
+    :cancelled,
+    :cancelled_before_start
   ).keys
 
   WORKFLOW_NOT_STARTED = [:on_track]
