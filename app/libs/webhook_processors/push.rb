@@ -14,10 +14,9 @@ class WebhookProcessors::Push
       return unless release.committable?
       release.close_pre_release_prs
       release.start!
+      create_other_commits!
       create_head_commit!
     end
-
-    create_other_commits!
   end
 
   private
@@ -26,11 +25,11 @@ class WebhookProcessors::Push
   delegate :train, to: :release
 
   def create_head_commit!
-    Commit.find_or_create_by!(commit_params(head_commit)).apply!
+    Commit.find_or_create_by!(commit_params(head_commit)).trigger!
   end
 
   def create_other_commits!
-    rest_commits.each { Commit.find_or_create_by!(commit_params(_1)) }
+    rest_commits.each { Commit.find_or_create_by!(commit_params(_1)).add_to_build_queue!(skip_apply: true) }
   end
 
   def commit_params(attributes)

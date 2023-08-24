@@ -90,8 +90,13 @@ class Commit < ApplicationRecord
     end
   end
 
-  def apply!
-    return release.active_build_queue.add_commit!(self) if release.queue_commit?
+  def add_to_build_queue!(skip_apply: false)
+    return unless release.queue_commit?
+    release.active_build_queue.add_commit!(self, skip_apply:)
+  end
+
+  def trigger!
+    return add_to_build_queue! if release.queue_commit?
     trigger_step_runs
   end
 end

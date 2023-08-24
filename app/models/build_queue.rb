@@ -26,9 +26,9 @@ class BuildQueue < ApplicationRecord
     release.create_active_build_queue
   end
 
-  def add_commit!(commit)
+  def add_commit!(commit, skip_apply: false)
     commits << commit
-    apply! if commits.size >= build_queue_size
+    apply! if commits.size >= build_queue_size && !skip_apply
   end
 
   def schedule_kickoff!
