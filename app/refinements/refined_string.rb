@@ -53,5 +53,17 @@ module RefinedString
     def ver_bump(term)
       to_semverish.bump!(term).to_s
     end
+
+    def better_titleize
+      words = split(" ")
+      words.map! do |word|
+        if word == word.upcase
+          word
+        else
+          word.capitalize
+        end
+      end
+      words.join(" ")
+    end
   end
 end

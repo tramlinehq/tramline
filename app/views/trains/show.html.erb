@@ -100,6 +100,10 @@
             None (notifications will not be sent)
           <% end %>
         <% end %>
+
+        <% mt.with_description("Build Queue Config") do %>
+          <%= build_queue_config(@train) %>
+        <% end %>
       <% end %>
     </article>
 

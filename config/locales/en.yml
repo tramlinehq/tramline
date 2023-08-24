@@ -79,7 +79,16 @@ en:
     errors:
       models:
         train:
-          working_branch_not_available: "could not find the working branch in the configured git repo"
+          attributes:
+            build_queue_size:
+              config_required: "invalid config, provide both size and wait time for the queue"
+              config_not_allowed: "build queue size cannot be configured when queue is disabled"
+              invalid_size: "build queue size should be more than 1 and less than 100"
+            build_queue_wait_time:
+              invalid_duration: "the wait time should be more than 1 minute and less than 360 hours"
+              config_not_allowed: "build queue wait time cannot be configured when queue is disabled"
+            working_branch:
+              not_available: "could not find the working branch in the configured git repo"
         releases/step:
           attributes:
             train:

@@ -50,6 +50,8 @@ module ReleasesHelper
         ["Cancelling", :inert]
       when :cancelled
         ["Cancelled", :inert]
+      when :cancelled_before_start
+        ["Overwritten", :neutral]
       else
         ["Unknown", :neutral]
       end
@@ -105,13 +107,8 @@ module ReleasesHelper
 
   def stop_release_warning(release)
     message = ""
-    if release.partially_finished?
-      message += "You have finished release to one of the platforms. "
-    end
-    if release.commits.size > 1
-      message += "You have unmerged commits in this release branch. "
-    end
-    message += "Are you sure you want to stop the release?"
-    message
+    message += "You have finished release to one of the platforms. " if release.partially_finished?
+    message += "You have unmerged commits in this release branch. " if release.all_commits.size > 1
+    message + "Are you sure you want to stop the release?"
   end
 end

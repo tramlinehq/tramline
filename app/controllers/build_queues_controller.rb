@@ -1,0 +1,45 @@
+class BuildQueuesController < SignedInApplicationController
+  around_action :set_time_zone
+  before_action :require_write_access!, only: %i[apply]
+  before_action :set_release, only: %i[apply]
+  before_action :set_build_queue, only: %i[apply]
+
+  def apply
+    @release.with_lock do
+      locked_release_error and return unless @release.committable?
+      already_triggered_error and return unless @build_queue.is_active?
+
+      @build_queue.apply!
+    end
+
+    redirect_to live_release_path, notice: "Build queue has been applied and emptied."
+  end
+
+  private
+
+  def already_triggered_error
+    redirect_to live_release_path, flash: {error: "Cannot re-apply a build queue to a release!"}
+  end
+
+  def locked_release_error
+    redirect_to live_release_path, flash: {error: "Cannot apply a build queue to a locked release."}
+  end
+
+  def ensure_release_platform_run
+    if @release_platform_run.blank?
+      redirect_to live_release_path, flash: {error: "Could not find the release!"}
+    end
+  end
+
+  def set_build_queue
+    @build_queue = BuildQueue.find(params[:id])
+  end
+
+  def set_release
+    @release = Release.find(params[:release_id])
+  end
+
+  def live_release_path
+    live_release_app_train_releases_path(@release.app, @release.train)
+  end
+end

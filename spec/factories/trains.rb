@@ -8,6 +8,7 @@ FactoryBot.define do
     working_branch { "dev" }
     release_backmerge_branch { "main" }
     status { "draft" }
+    build_queue_enabled { false }
 
     trait :draft do
       status { "draft" }
@@ -44,7 +45,13 @@ FactoryBot.define do
       kickoff_at { 2.hours.from_now }
       repeat_duration { 1.day }
     end
-
+      
+    trait :with_build_queue do
+      build_queue_enabled { true }
+      build_queue_size { 2 }
+      build_queue_wait_time { 1.hour }
+    end
+    
     after(:build) do |train|
       def train.working_branch_presence = true
     end
