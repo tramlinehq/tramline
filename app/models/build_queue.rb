@@ -16,6 +16,7 @@ class BuildQueue < ApplicationRecord
 
   scope :active, -> { where(is_active: true) }
   delegate :train, to: :release
+  delegate :build_queue_size, to: :train
 
   after_create_commit :schedule_kickoff!
 
@@ -27,7 +28,7 @@ class BuildQueue < ApplicationRecord
 
   def add_commit!(commit)
     commits << commit
-    apply! if commits.size >= train.build_queue_size
+    apply! if commits.size >= build_queue_size
   end
 
   def schedule_kickoff!

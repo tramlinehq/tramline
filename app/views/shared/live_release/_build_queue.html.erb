@@ -5,13 +5,13 @@
     <div class="flex justify-between w-full items-center">
       <div>
         <h2 class="text-2xl text-slate-800 font-bold">Build Queue</h2>
-        <span class="text-sm text-slate-400"><%= commits_count %>&nbsp;commit(s) in the queue. Commits will be applied in <%= time_in_words(build_queue.scheduled_at) %>.</span>
+        <span class="text-sm text-slate-400"><%= commits_count %>&nbsp;commit(s) in the queue. Commits will be applied in <%= time_in_words(build_queue.scheduled_at) %> or after <%= build_queue.build_queue_size %> commits.</span>
       </div>
       <div class="text-left">
         <% if release.committable? %>
-          <%= authz_button_to :blue, "Apply commits now!", apply_release_build_queue_path(release, build_queue), class: "btn-sm", data: { turbo_confirm: "This will trigger steps for the HEAD of the queue, are you sure?" } %>
+          <%= authz_button_to :blue, "Apply commits now", apply_release_build_queue_path(release, build_queue), class: "btn-sm", data: { turbo_confirm: "This will trigger steps for the HEAD of the queue, are you sure?" } %>
         <% else %>
-          <%= authz_button_to :disabled, "Apply commits now!", apply_release_build_queue_path(release, build_queue), class: "btn-sm" %>
+          <%= authz_button_to :disabled, "Apply commits now", apply_release_build_queue_path(release, build_queue), class: "btn-sm" %>
         <% end %>
       </div>
     </div>
