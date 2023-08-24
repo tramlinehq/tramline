@@ -17,12 +17,13 @@ class GooglePlayStoreIntegration < ApplicationRecord
   include Loggable
 
   delegate :app, to: :integration
-  delegate :refresh_external_app, to: :app
+  delegate :refresh_external_app, :set_draft_status!, to: :app
 
   validate :correct_key, on: :create
 
   attr_accessor :json_key_file
 
+  after_create :set_draft_status!
   after_create_commit :refresh_external_app
 
   CHANNELS = [
@@ -99,6 +100,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def further_build_channel_setup?
     false
+  end
+
+  def draft_check?
+    channel_data.find { |c| c[:name].in?(%w[alpha beta production]) && c[:releases].present? }.blank?
   end
 
   def to_s

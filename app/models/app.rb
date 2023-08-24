@@ -63,6 +63,7 @@ class App < ApplicationRecord
     :slack_build_channel_provider,
     :firebase_build_channel_provider,
     :slack_notifications?, to: :integrations, allow_nil: true
+  delegate :draft_check?, to: :android_store_provider, allow_nil: true
 
   scope :with_trains, -> { joins(:trains).distinct }
   scope :sequential, -> { order("apps.created_at ASC") }
@@ -237,21 +238,16 @@ class App < ApplicationRecord
     if latest_external_app&.channel_data != external_app_data
       external_apps.create!(channel_data: external_app_data, fetched_at: Time.current, platform:)
     end
-  end
 
-  def draft_check?
-    return false if android_store_provider.blank?
-    android_store_provider.channel_data.find { |c| c[:name].in?(%w[alpha beta production]) && c[:releases].present? }.blank?
   end
 
   def in_draft_mode?
-    return is_draft? if is_draft.present?
-
-    update_draft_status!
+    return false unless is_draft?
+    set_draft_status!
     is_draft?
   end
 
-  def update_draft_status!
+  def set_draft_status!
     update!(is_draft: draft_check?)
   end
 
