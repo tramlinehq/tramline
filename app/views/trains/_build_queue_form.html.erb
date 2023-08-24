@@ -2,42 +2,48 @@
   <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
   <div class="text-xl text-slate-600 font-medium mt-2">Build Queue (optional)</div>
 
-  <div class="text-sm mt-1 mb-6"> Apply every commit to the train or manage triggers to create builds via a build queue.
+  <div class="text-sm mt-1 mb-6">
+    All commits on the release branch are auto-applied by default.
+    You can override this behaviour through build queue triggers.
   </div>
 
-  <div data-controller="domain--build-queue-help">
-    <div class="grid grid-cols-1 w-1/2 mb-4">
-      <div>
-        <%= form.radio_button :build_queue_enabled, false, checked: true, data: { action: 'domain--build-queue-help#change',
-                                                                                  domain__build_queue_help_target: "disabled" } %>
-        <%= form.label :build_queue_enabled, "Apply every commit (default)",
-                       value: "false",
-                       class: "text-sm font-medium mb-1" %>
+  <div data-controller="domain--build-queue-help toggle-switch"
+       data-toggle-switch-on-label-value="<%= TrainsHelper::BUILD_QUEUE_ENABLED_LABEL %>"
+       data-toggle-switch-off-label-value="<%= TrainsHelper::BUILD_QUEUE_DISABLED_LABEL %>">
+    <div class="flex items-center">
+      <div class="form-switch">
+        <%= form.check_box :build_queue_enabled,
+                           { id: "switch-1", class: "sr-only",
+                             data: { action: "toggle-switch#change domain--build-queue-help#change",
+                                     domain__build_queue_help_target: "checkbox",
+                                     toggle_switch_target: "checkbox" } },
+                           true,
+                           false %>
+        <label class="bg-slate-400" for="switch-1">
+          <span class="bg-white shadow-sm" aria-hidden="true"></span>
+          <span class="sr-only">Switch label</span>
+        </label>
       </div>
-      <div>
-        <%= form.radio_button :build_queue_enabled, true, data: { action: 'domain--build-queue-help#change',
-                                                                  domain__build_queue_help_target: "enabled" } %>
-        <%= form.label :build_queue_enabled, "Add a Build Queue",
-                       value: "true",
-                       class: "text-sm font-medium mb-1" %>
-      </div>
+
+      <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"><%= build_queue_label(@train) %></div>
     </div>
-    <div data-domain--build-queue-help-target="config">
+
+    <div data-domain--build-queue-help-target="config" class="mt-4">
       <div class="flex flex-row gap-x-2 items-center">
-        <%= form.label "Number of commits to batch", class: "text-sm font-medium mb-1" %>
+        <%= form.label "Apply after ", class: "text-sm mb-1" %>
         <%= form.number_field :build_queue_size,
                               class: "form-input w-1/8",
                               step: 1,
                               min: 1,
-                              default: 1,
+                              placeholder: 5,
                               data: { action: 'domain--build-queue-help#change',
                                       domain__build_queue_help_target: "size" } %>
-        <%= form.label "or after", class: "text-sm font-medium mb-1" %>
+        <%= form.label :build_queue_wait_time_value, "commits or after", class: "text-sm mb-1" %>
         <%= form.number_field :build_queue_wait_time_value,
                               class: "form-input w-1/8",
                               step: 1,
                               min: 1,
-                              default: 3,
+                              placeholder: 3,
                               data: { action: 'domain--build-queue-help#change',
                                       domain__build_queue_help_target: "waitTimeValue" } %>
         <%= form.select :build_queue_wait_time_unit,
@@ -47,11 +53,10 @@
                           data: { action: 'domain--build-queue-help#change',
                                   domain__build_queue_help_target: "waitTimeUnit" } } %>
       </div>
-      <div class="col-span-3 mt-2">
-        <span class="text-sm italic mt-2 text-rose-700" data-domain--build-queue-help-target="errOutput"></span>
-      </div>
-      <div>
-        <span class="block text-sm font-medium mt-2 mb-1" data-domain--build-queue-help-target="output"></span>
+
+      <div class="mt-4">
+        <span class="text-sm italic text-rose-700" data-domain--build-queue-help-target="errOutput"></span>
+        <span class="block text-sm mb-1" data-domain--build-queue-help-target="output"></span>
       </div>
     </div>
   </div>

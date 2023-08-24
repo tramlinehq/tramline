@@ -26,4 +26,15 @@ module TrainsHelper
       "Applied with every new commit"
     end
   end
+
+  BUILD_QUEUE_ENABLED_LABEL = "Build Queue enabled"
+  BUILD_QUEUE_DISABLED_LABEL = "Build Queue disabled"
+
+  def build_queue_label(train)
+    if train.build_queue_enabled?
+      BUILD_QUEUE_ENABLED_LABEL
+    else
+      BUILD_QUEUE_DISABLED_LABEL
+    end
+  end
 end
