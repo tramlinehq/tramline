@@ -60,7 +60,7 @@ class StagedRollout < ApplicationRecord
       transitions from: :paused, to: :started
     end
 
-    event :fail, after_commit: -> { event_stamp!(reason: :failed, kind: :error, data: stamp_data) } do
+    event :fail, after_commit: -> { fail_stamp } do
       transitions from: [:started, :failed, :created], to: :failed
     end
 
@@ -87,7 +87,7 @@ class StagedRollout < ApplicationRecord
   def update_stage(stage)
     return if stage == current_stage
 
-    update(current_stage: stage)
+    update!(current_stage: stage)
 
     if created?
       start!
@@ -188,11 +188,17 @@ class StagedRollout < ApplicationRecord
 
   private
 
+  def fail_stamp
+    if last_rollout_percentage
+      event_stamp!(reason: :failed, kind: :error, data: stamp_data)
+    else
+      event_stamp!(reason: :failed_before_any_rollout, kind: :error, data: stamp_data)
+    end
+  end
+
   def stamp_data
-    {
-      current_stage: (current_stage || 0).succ,
-      rollout_percentage: "%.2f" % last_rollout_percentage,
-      is_fully_released: fully_released?
-    }
+    data = {current_stage: (current_stage || 0).succ, is_fully_released: fully_released?}
+    data.merge(rollout_percentage: "%.2f" % last_rollout_percentage) if last_rollout_percentage
+    data
   end
 end
