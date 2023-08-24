@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_08_17_135023) do
+ActiveRecord::Schema[7.0].define(version: 2023_08_21_120034) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -95,6 +95,17 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_17_135023) do
     t.index ["step_run_id"], name: "index_build_artifacts_on_step_run_id"
   end
 
+  create_table "build_queues", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_id", null: false
+    t.datetime "scheduled_at", null: false
+    t.datetime "applied_at"
+    t.boolean "is_active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["is_active"], name: "index_build_queues_on_is_active"
+    t.index ["release_id"], name: "index_build_queues_on_release_id"
+  end
+
   create_table "commit_listeners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_id"
     t.string "branch_name", null: false
@@ -116,6 +127,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_17_135023) do
     t.datetime "updated_at", null: false
     t.uuid "release_platform_run_id"
     t.uuid "release_id"
+    t.uuid "build_queue_id"
+    t.index ["build_queue_id"], name: "index_commits_on_build_queue_id"
     t.index ["commit_hash", "release_id"], name: "index_commits_on_commit_hash_and_release_id", unique: true
     t.index ["release_platform_id"], name: "index_commits_on_release_platform_id"
     t.index ["release_platform_run_id"], name: "index_commits_on_release_platform_run_id"
@@ -476,6 +489,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_17_135023) do
     t.datetime "kickoff_at"
     t.interval "repeat_duration"
     t.jsonb "notification_channel"
+    t.boolean "build_queue_enabled", default: false
+    t.interval "build_queue_wait_time"
+    t.integer "build_queue_size", limit: 2
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
@@ -527,7 +543,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_17_135023) do
   add_foreign_key "app_configs", "apps"
   add_foreign_key "apps", "organizations"
   add_foreign_key "build_artifacts", "step_runs"
+  add_foreign_key "build_queues", "releases"
   add_foreign_key "commit_listeners", "release_platforms"
+  add_foreign_key "commits", "build_queues"
   add_foreign_key "commits", "release_platform_runs"
   add_foreign_key "commits", "release_platforms"
   add_foreign_key "deployment_runs", "deployments"

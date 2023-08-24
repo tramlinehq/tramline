@@ -78,6 +78,15 @@ en:
         release_suffix: "Release suffix"
     errors:
       models:
+        train:
+          attributes:
+            build_queue_size:
+              config_required: "invalid config, provide both size and wait time for the queue"
+              config_not_allowed: "build queue size cannot be configured when queue is disabled"
+              invalid_size: "build queue size should be more than 1 and less than 100"
+            build_queue_wait_time:
+              invalid_duration: "the wait time should be more than 1 minute and less than 360 hours"
+              config_not_allowed: "build queue wait time cannot be configured when queue is disabled"
         releases/step:
           attributes:
             train:

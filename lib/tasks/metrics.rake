@@ -43,7 +43,7 @@ namespace :metrics do
           Steps – #{train.steps.size}
           Deployments – #{train.deployments.size}
           Status – #{release.status}
-          Commits – #{release.commits.size}
+          Commits – #{release.all_commits.size}
         DEETS
       end
 

@@ -70,6 +70,12 @@ Rails.application.routes.draw do
           end
         end
 
+        resources :build_queues, only: [], shallow: false do
+          member do
+            post :apply
+          end
+        end
+
         resources :step_runs, only: [], shallow: false do
           member do
             post :start

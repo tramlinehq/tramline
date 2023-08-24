@@ -76,7 +76,8 @@ class StepRun < ApplicationRecord
     deployment_failed: "deployment_failed",
     success: "success",
     cancelling: "cancelling",
-    cancelled: "cancelled"
+    cancelled: "cancelled",
+    cancelled_before_start: "cancelled_before_start"
   }
 
   END_STATES = STATES.slice(
@@ -90,8 +91,9 @@ class StepRun < ApplicationRecord
     :cancelled
   ).keys
 
+  WORKFLOW_NOT_STARTED = [:on_track]
   WORKFLOW_IN_PROGRESS = [:ci_workflow_triggered, :ci_workflow_started]
-  WORKFLOW_IMMUTABLE = STATES.keys - END_STATES - WORKFLOW_IN_PROGRESS
+  WORKFLOW_IMMUTABLE = STATES.keys - END_STATES - WORKFLOW_IN_PROGRESS - WORKFLOW_NOT_STARTED
 
   enum status: STATES
 
@@ -152,6 +154,7 @@ class StepRun < ApplicationRecord
     event(:cancel, after_commit: -> { Releases::CancelWorkflowRunJob.perform_later(id) }) do
       transitions from: WORKFLOW_IMMUTABLE, to: :cancelled
       transitions from: WORKFLOW_IN_PROGRESS, to: :cancelling
+      transitions from: WORKFLOW_NOT_STARTED, to: :cancelled_before_start
     end
   end
 

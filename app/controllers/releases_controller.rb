@@ -7,8 +7,7 @@ class ReleasesController < SignedInApplicationController
   def show
     @train = @release.train
     @app = @train.app
-    @commits = @release.commits.order(timestamp: :desc).includes(step_runs: :step)
-
+    set_commits
     set_pull_requests
 
     render :show
@@ -32,10 +31,10 @@ class ReleasesController < SignedInApplicationController
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
     @release = @train.active_run
-    @commits = @release.commits.order(timestamp: :desc).includes(step_runs: :step)
 
     redirect_to train_path, notice: "No release in progress." and return unless @release
 
+    set_commits
     set_pull_requests
 
     render :show
@@ -78,6 +77,10 @@ class ReleasesController < SignedInApplicationController
   def set_pull_requests
     @pre_release_prs = @release.pull_requests.pre_release
     @post_release_prs = @release.pull_requests.post_release
+  end
+
+  def set_commits
+    @commits = @release.applied_commits.sequential.includes(step_runs: :step)
   end
 
   def live_release_path
