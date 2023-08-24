@@ -1,4 +1,5 @@
 module ButtonHelper
+  using RefinedString
   BASE_OPTS = "btn group"
 
   BUTTON_OPTIONS = {
@@ -55,12 +56,14 @@ module ButtonHelper
   # link that looks like a styled button
   def decorated_link_to(style, name = nil, options = nil, html_options = nil, &block)
     options, html_options = apply_button_styles(style, options, html_options, block)
+    name = name&.better_titleize
     link_to(name, options, html_options, &block)
   end
 
   # styled button with path
   def decorated_button_to(style, name = nil, options = nil, html_options = nil, &block)
     options, html_options = apply_button_styles(style, options, html_options, block)
+    name = name&.better_titleize
 
     # if there is no block, the button loader is auto-applied on clicks
     # when block is supplied, the user is expected to attach the button loader inside the block

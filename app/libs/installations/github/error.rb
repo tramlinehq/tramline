@@ -34,7 +34,7 @@ module Installations
 
     MESSAGES = [
       {
-        message_matcher: /Not Found/,
+        message_matcher: /Not Found/i,
         decorated_exception: Installations::Errors::ResourceNotFound
       },
       {

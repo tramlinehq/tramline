@@ -66,7 +66,7 @@ namespace :db do
         end
         prun.step_runs&.delete_all
       end
-      run.commits&.delete_all
+      run.all_commits&.delete_all
       run.release_metadata&.delete
       run.release_changelog&.delete
       run.pull_requests&.delete_all

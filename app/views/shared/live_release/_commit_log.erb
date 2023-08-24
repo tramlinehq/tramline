@@ -34,7 +34,7 @@
                 </div>
                 <div class="flex flex-col">
                   <div>
-                    <%= link_to_external commit["message"].truncate(62), commit["url"], class: "underline font-medium text-black" %>
+                    <%= link_to_external commit["message"].truncate(70), commit["url"], class: "underline font-medium text-black" %>
                   </div>
                   <div class="mt-1">
                     <code><%= short_sha(commit["sha"]) %></code>
