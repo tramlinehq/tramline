@@ -102,6 +102,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_21_120034) do
     t.boolean "is_active", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["is_active"], name: "index_build_queues_on_is_active"
     t.index ["release_id"], name: "index_build_queues_on_release_id"
   end
 

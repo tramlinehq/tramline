@@ -31,7 +31,7 @@ class Release < ApplicationRecord
   has_one :release_metadata, dependent: :destroy, inverse_of: :release
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
   has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release
-  has_many :commits, dependent: :destroy, inverse_of: :release
+  has_many :all_commits, dependent: :destroy, inverse_of: :release, class_name: "Commit"
   has_many :pull_requests, dependent: :destroy, inverse_of: :release
   has_many :step_runs, through: :release_platform_runs
   has_many :build_queues, dependent: :destroy
@@ -125,13 +125,17 @@ class Release < ApplicationRecord
     build_queues.create(scheduled_at: (Time.current + train.build_queue_wait_time), is_active: true)
   end
 
-  def active_commits
-    return commits if active_build_queue.blank?
-    commits.where.not(build_queue_id: active_build_queue.id).or(commits.where(build_queue_id: nil))
+  def applied_commits
+    return all_commits if active_build_queue.blank?
+    all_commits.where.not(build_queue_id: active_build_queue.id).or(all_commits.where(build_queue_id: nil))
   end
 
   def committable?
     created? || on_track? || partially_finished?
+  end
+
+  def queue_commit?
+    active_build_queue.present? && all_commits.size > 1
   end
 
   def stoppable?
@@ -250,7 +254,7 @@ class Release < ApplicationRecord
   end
 
   def last_commit
-    commits.order(:created_at).last
+    all_commits.last
   end
 
   def latest_commit_hash
@@ -299,7 +303,7 @@ class Release < ApplicationRecord
   end
 
   def on_start!
-    notify!("New release has commenced!", :release_started, notification_params) if commits.size.eql?(1)
+    notify!("New release has commenced!", :release_started, notification_params) if all_commits.size.eql?(1)
   end
 
   def on_stop!

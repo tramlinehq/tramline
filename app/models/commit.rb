@@ -23,10 +23,10 @@ class Commit < ApplicationRecord
 
   has_many :step_runs, dependent: :nullify, inverse_of: :commit
   has_many :passports, as: :stampable, dependent: :destroy
-  belongs_to :release, inverse_of: :commits
+  belongs_to :release, inverse_of: :all_commits
   belongs_to :build_queue, inverse_of: :commits, optional: true
 
-  self.implicit_order_column = :timestamp
+  scope :sequential, -> { order(timestamp: :desc) }
 
   STAMPABLE_REASONS = ["created"]
 
@@ -63,7 +63,7 @@ class Commit < ApplicationRecord
   end
 
   def stale?
-    release.active_commits.last != self
+    release.applied_commits.last != self
   end
 
   def short_sha
@@ -91,7 +91,7 @@ class Commit < ApplicationRecord
   end
 
   def apply!
-    return release.active_build_queue.add_commit!(self) if release.active_build_queue.present? && release.commits.size > 1
+    return release.active_build_queue.add_commit!(self) if release.queue_commit?
     trigger_step_runs
   end
 end

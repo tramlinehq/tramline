@@ -4,7 +4,7 @@ FactoryBot.define do
     release { association :release }
     build_queue { association :build_queue }
     message { "feat: introduce commit listener" }
-    timestamp { "2022-06-21 20:20:21" }
+    timestamp { Time.current }
     author_name { "Jon Doe" }
     author_email { "jon@doe.com" }
     url { "https://sample.com" }

@@ -4,7 +4,7 @@
 #
 #  id           :uuid             not null, primary key
 #  applied_at   :datetime
-#  is_active    :boolean          default(TRUE)
+#  is_active    :boolean          default(TRUE), indexed
 #  scheduled_at :datetime         not null
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
@@ -36,7 +36,5 @@ class BuildQueue < ApplicationRecord
 
   private
 
-  def head_commit
-    commits.order(timestamp: :desc).first
-  end
+  def head_commit = commits.last
 end

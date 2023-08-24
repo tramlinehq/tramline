@@ -33,7 +33,7 @@ describe BuildQueue do
         build_queue.add_commit!(commit)
       end
 
-      expect(Triggers::StepRun).to have_received(:call).with(step, commits.first, release_platform_run).once
+      expect(Triggers::StepRun).to have_received(:call).with(step, commits.last, release_platform_run).once
     end
 
     it "does not apply the build queue when build queue has less commits than its size" do
