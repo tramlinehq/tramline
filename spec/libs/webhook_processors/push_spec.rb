@@ -95,5 +95,72 @@ describe WebhookProcessors::Push do
 
       expect(Triggers::StepRun).to have_received(:call).once
     end
+
+    context "when build queue" do
+      let(:queue_size) { 3 }
+      let(:train) { create(:train, :with_build_queue, version_seeded_with: "1.5.0", build_queue_size: queue_size) }
+      let(:release) { create(:release, :with_no_platform_runs, :on_track, train: train) }
+      let(:release_platform) { create(:release_platform, train: train) }
+
+      it "triggers step run for the first commit" do
+        create(:step, :with_deployment, release_platform:)
+        create(:release_platform_run, release_platform:, release:, release_version: train.version_current)
+        allow(Triggers::StepRun).to receive(:call)
+
+        described_class.process(release, head_commit_attributes, [])
+
+        expect(Triggers::StepRun).to have_received(:call).once
+      end
+
+      it "adds the subsequent commits to the queue" do
+        _old_commit = create(:commit, release:)
+        create(:step, :with_deployment, release_platform:)
+        create(:release_platform_run, release_platform:, release:, release_version: train.version_current)
+        allow(Triggers::StepRun).to receive(:call)
+
+        described_class.process(release, head_commit_attributes, [])
+
+        expect(Triggers::StepRun).not_to have_received(:call)
+        expect(release.applied_commits.reload.size).to be(1)
+        expect(release.all_commits.reload.last.build_queue).to eql(release.active_build_queue)
+      end
+
+      it "adds all commits to the queue when multiple commits" do
+        old_commit = create(:commit, release:)
+        create(:step, :with_deployment, release_platform:)
+        create(:release_platform_run, release_platform:, release:, release_version: train.version_current)
+        allow(Triggers::StepRun).to receive(:call)
+
+        described_class.process(release, head_commit_attributes, rest_commit_attributes.take(1))
+
+        expect(release.applied_commits.reload.size).to be(1)
+        expect(release.all_commits.reload.size).to be(3)
+        release.all_commits.where.not(id: old_commit.id).each do |c|
+          expect(c.build_queue).to eq(release.active_build_queue)
+        end
+      end
+
+      it "applies the build queue if head commit crosses the queue size" do
+        _old_commit = create(:commit, release:)
+        create(:step, :with_deployment, release_platform:)
+        create(:release_platform_run, release_platform:, release:, release_version: train.version_current)
+        allow(Triggers::StepRun).to receive(:call)
+
+        described_class.process(release, head_commit_attributes, rest_commit_attributes)
+
+        expect(Triggers::StepRun).to have_received(:call).once
+      end
+
+      it "does not apply the build queue if head commit does not cross the queue size" do
+        _old_commit = create(:commit, release:)
+        create(:step, :with_deployment, release_platform:)
+        create(:release_platform_run, release_platform:, release:, release_version: train.version_current)
+        allow(Triggers::StepRun).to receive(:call)
+
+        described_class.process(release, head_commit_attributes, rest_commit_attributes.take(1))
+
+        expect(Triggers::StepRun).not_to have_received(:call)
+      end
+    end
   end
 end

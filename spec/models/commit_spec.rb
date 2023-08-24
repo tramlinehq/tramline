@@ -98,7 +98,7 @@ describe Commit do
     end
   end
 
-  describe "#apply" do
+  describe "#trigger!" do
     context "when no build queue" do
       let(:train) { create(:train) }
       let(:release_platform) { create(:release_platform, train:) }
@@ -112,7 +112,7 @@ describe Commit do
         allow(Triggers::StepRun).to receive(:call)
 
         commit = create(:commit, release:)
-        commit.apply!
+        commit.trigger!
 
         expect(Triggers::StepRun).to have_received(:call).with(step, commit, release_platform_run).once
       end
@@ -131,7 +131,7 @@ describe Commit do
         allow(Triggers::StepRun).to receive(:call)
 
         commit = create(:commit, release:)
-        commit.apply!
+        commit.trigger!
 
         expect(Triggers::StepRun).to have_received(:call).with(step, commit, release_platform_run).once
       end
@@ -146,7 +146,7 @@ describe Commit do
         allow(Triggers::StepRun).to receive(:call)
 
         commit = create(:commit, release:)
-        commit.apply!
+        commit.trigger!
 
         expect(Triggers::StepRun).not_to have_received(:call)
       end
@@ -159,7 +159,56 @@ describe Commit do
         _older_commit = create(:commit, release:)
 
         commit = create(:commit, release:)
-        commit.apply!
+        commit.trigger!
+
+        expect(commit.reload.build_queue).to eql(release.active_build_queue)
+      end
+    end
+  end
+
+  describe "#add_to_build_queue!" do
+    context "when no build queue" do
+      let(:train) { create(:train) }
+      let(:release_platform) { create(:release_platform, train:) }
+
+      it "does nothing when no build queue" do
+        create(:step, :with_deployment, release_platform:)
+        train.update(status: Train.statuses[:active])
+        release = create(:release, train:)
+        create(:release_platform_run, release_platform:, release:)
+
+        commit = create(:commit, release:)
+        commit.add_to_build_queue!
+
+        expect(commit.reload.build_queue).to be_nil
+      end
+    end
+
+    context "when build queue" do
+      let(:train) { create(:train, :with_build_queue) }
+      let(:release_platform) { create(:release_platform, train:) }
+
+      it "does nothing when commit is the first commit" do
+        create(:step, :with_deployment, release_platform:)
+        train.update(status: Train.statuses[:active])
+        release = create(:release, train:)
+        create(:release_platform_run, release_platform:, release:)
+
+        commit = create(:commit, release:)
+        commit.add_to_build_queue!
+
+        expect(commit.reload.build_queue).to be_nil
+      end
+
+      it "adds to the build queue when commit is not the first commit" do
+        create(:step, :with_deployment, release_platform:)
+        train.update(status: Train.statuses[:active])
+        release = create(:release, train:)
+        create(:release_platform_run, release_platform:, release:)
+        _older_commit = create(:commit, release:)
+
+        commit = create(:commit, release:)
+        commit.add_to_build_queue!
 
         expect(commit.reload.build_queue).to eql(release.active_build_queue)
       end

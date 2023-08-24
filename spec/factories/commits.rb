@@ -2,7 +2,6 @@ FactoryBot.define do
   factory :commit do
     commit_hash { SecureRandom.uuid.split("-").join }
     release { association :release }
-    build_queue { association :build_queue }
     message { "feat: introduce commit listener" }
     timestamp { Time.current }
     author_name { "Jon Doe" }
