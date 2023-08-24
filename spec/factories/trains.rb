@@ -44,5 +44,9 @@ FactoryBot.define do
       kickoff_at { 2.hours.from_now }
       repeat_duration { 1.day }
     end
+
+    after(:build) do |train|
+      def train.working_branch_presence = true
+    end
   end
 end
