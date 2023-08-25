@@ -171,18 +171,7 @@
       </div>
     <% end %>
 
-    <% if train.persisted? %>
-      <% if train.automatic? %>
-        <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
-        <div class="text-xl text-slate-600 mt-2 font-medium">Release Schedule</div>
-        <div class="block text-sm mt-4">
-          <%= release_schedule(train) %>
-        </div>
-      <% end %>
-    <% else %>
-      <%= render partial: "release_schedule_form", locals: { form: } %>
-    <% end %>
-
+    <%= render partial: "release_schedule_form", locals: { form: } %>
     <%= render partial: "build_queue_form", locals: { form: } %>
   </div>
 

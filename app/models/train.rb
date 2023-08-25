@@ -61,7 +61,8 @@ class Train < ApplicationRecord
 
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
-  attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed, :build_queue_wait_time_unit, :build_queue_wait_time_value
+  attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed, :build_queue_wait_time_unit,
+    :build_queue_wait_time_value, :repeat_duration_unit, :repeat_duration_value
 
   validates :branching_strategy, :working_branch, presence: true
   validates :branching_strategy, inclusion: {in: BRANCHING_STRATEGIES.keys.map(&:to_s)}
