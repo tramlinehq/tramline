@@ -36,6 +36,25 @@ describe BuildQueue do
       expect(Triggers::StepRun).to have_received(:call).with(step, commits.last, release_platform_run).once
     end
 
+    it "does not apply the build queue when build queue has more commits than its size but can apply is false" do
+      allow(Triggers::StepRun).to receive(:call)
+
+      queue_size = 2
+      train = create(:train, :with_build_queue, build_queue_size: queue_size)
+      release_platform = create(:release_platform, train:)
+      _step = create(:step, :with_deployment, release_platform:)
+      release = create(:release, train:)
+      _release_platform_run = create(:release_platform_run, release_platform:, release:)
+      commits = create_list(:commit, queue_size, release:)
+      build_queue = release.active_build_queue
+
+      commits.each do |commit|
+        build_queue.add_commit!(commit, can_apply: false)
+      end
+
+      expect(Triggers::StepRun).not_to have_received(:call)
+    end
+
     it "does not apply the build queue when build queue has less commits than its size" do
       allow(Triggers::StepRun).to receive(:call)
 

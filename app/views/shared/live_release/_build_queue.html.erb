@@ -1,12 +1,13 @@
 <section>
   <% commits = build_queue.commits %>
   <% commits_count = commits.size %>
-  <% if commits.present? %>
-    <div class="flex justify-between w-full items-center">
-      <div>
-        <h2 class="text-2xl text-slate-800 font-bold">Build Queue</h2>
-        <span class="text-sm text-slate-400"><%= commits_count %>&nbsp;commit(s) in the queue. Commits will be applied in <%= time_in_words(build_queue.scheduled_at) %> or after <%= build_queue.build_queue_size %> commits.</span>
-      </div>
+  <div class="flex justify-between w-full items-center">
+    <div>
+      <h2 class="text-2xl text-slate-800 font-bold">Build Queue</h2>
+      <span class="text-sm text-slate-400"><%= commits_count %>&nbsp;commit(s) in the queue. Commits will be applied in <%= time_in_words(build_queue.scheduled_at) %>
+        or after <%= build_queue.build_queue_size %> commits.</span>
+    </div>
+    <% if commits.present? %>
       <div class="text-left">
         <% if release.committable? %>
           <%= authz_button_to :blue, "Apply commits now", apply_release_build_queue_path(release, build_queue), class: "btn-sm", data: { turbo_confirm: "This will trigger steps for the HEAD of the queue, are you sure?" } %>
@@ -14,7 +15,9 @@
           <%= authz_button_to :disabled, "Apply commits now", apply_release_build_queue_path(release, build_queue), class: "btn-sm" %>
         <% end %>
       </div>
-    </div>
+    <% end %>
+  </div>
+  <% if commits.present? %>
     <table class="table-auto w-full mt-6">
       <thead class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
       <tr>
@@ -40,10 +43,5 @@
       <% end %>
       </tbody>
     </table>
-  <% else %>
-    <div>
-      <h2 class="text-2xl text-slate-800 font-bold">Build Queue</h2>
-      <span class="text-sm text-slate-400">No commits in the queue.</span>
-    </div>
   <% end %>
 </section>

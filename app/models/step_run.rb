@@ -37,7 +37,7 @@ class StepRun < ApplicationRecord
 
   validates :step_id, uniqueness: {scope: :commit_id}
 
-  PAUSE_BEFORE_CI = 60.seconds
+  PAUSE_BEFORE_CI = 30.seconds
 
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
   after_commit -> { update(build_notes_raw: relevant_changes) }, on: :create
@@ -88,7 +88,8 @@ class StepRun < ApplicationRecord
     :build_not_found_in_store,
     :deployment_failed,
     :success,
-    :cancelled
+    :cancelled,
+    :cancelled_before_start
   ).keys
 
   WORKFLOW_NOT_STARTED = [:on_track]

@@ -3,7 +3,7 @@ class Releases::FindWorkflowRun
   include Loggable
 
   queue_as :high
-  sidekiq_options retry: 500
+  sidekiq_options retry: 25
 
   sidekiq_retry_in do |count, exception|
     if exception.is_a?(Installations::Errors::WorkflowRunNotFound)
