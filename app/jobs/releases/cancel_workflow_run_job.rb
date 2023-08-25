@@ -10,7 +10,7 @@ class Releases::CancelWorkflowRunJob < ApplicationJob
     return unless step_run.cancelling?
     raise WorkflowRunNotFound unless step_run.workflow_found?
 
-    Rails.logger.debug "Cancelling workflow for step run - #{step_run_id}"
+    Rails.logger.debug { "Cancelling workflow for step run - #{step_run_id}" }
     step_run.cancel_ci_workflow!
     step_run.cancel!
   end
