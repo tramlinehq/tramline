@@ -4,11 +4,11 @@ class Deployments::AppStoreConnect::FindLiveReleaseJob
   extend Backoffable
 
   queue_as :high
-  sidekiq_options retry: 21
+  sidekiq_options retry: 30
 
   sidekiq_retry_in do |count, ex|
     if ex.is_a?(Deployments::AppStoreConnect::Release::ReleaseNotFullyLive)
-      backoff_in(attempt: count, period: :minutes, type: :linear, factor: 60).to_i
+      backoff_in(attempt: count, period: :minutes, type: :linear, factor: 30).to_i
     else
       elog(ex)
       :kill
