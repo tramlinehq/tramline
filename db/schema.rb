@@ -76,7 +76,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_23_144922) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "external_id"
-    t.boolean "is_draft"
+    t.boolean "draft"
     t.index ["organization_id"], name: "index_apps_on_organization_id"
     t.index ["platform", "bundle_identifier", "organization_id"], name: "index_apps_on_platform_and_bundle_id_and_org_id", unique: true
   end

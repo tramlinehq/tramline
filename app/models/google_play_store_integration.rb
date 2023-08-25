@@ -16,14 +16,14 @@ class GooglePlayStoreIntegration < ApplicationRecord
   include Displayable
   include Loggable
 
-  delegate :app, to: :integration
-  delegate :refresh_external_app, :set_draft_status!, to: :app
+  delegate :app, to: :integration, allow_nil: true
+  delegate :refresh_external_app, to: :app
 
   validate :correct_key, on: :create
 
   attr_accessor :json_key_file
 
-  after_create :set_draft_status!
+  after_create :draft_check
   after_create_commit :refresh_external_app
 
   CHANNELS = [
@@ -100,6 +100,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def further_build_channel_setup?
     false
+  end
+
+  def draft_check
+    app&.set_draft_status!
   end
 
   def draft_check?

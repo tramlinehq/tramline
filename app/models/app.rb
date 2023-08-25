@@ -6,7 +6,7 @@
 #  build_number      :bigint           not null
 #  bundle_identifier :string           not null, indexed => [platform, organization_id]
 #  description       :string
-#  is_draft          :boolean
+#  draft             :boolean
 #  name              :string           not null
 #  platform          :string           not null, indexed => [bundle_identifier, organization_id]
 #  slug              :string
@@ -238,17 +238,17 @@ class App < ApplicationRecord
     if latest_external_app&.channel_data != external_app_data
       external_apps.create!(channel_data: external_app_data, fetched_at: Time.current, platform:)
     end
-
   end
 
   def in_draft_mode?
-    return false unless is_draft?
+    return draft? if android_store_provider.nil?
+    return draft? if draft == false
     set_draft_status!
-    is_draft?
+    draft?
   end
 
   def set_draft_status!
-    update!(is_draft: draft_check?)
+    update!(draft: draft_check?)
   end
 
   def latest_external_app
