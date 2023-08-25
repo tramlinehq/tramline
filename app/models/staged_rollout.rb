@@ -198,7 +198,7 @@ class StagedRollout < ApplicationRecord
 
   def stamp_data
     data = {current_stage: (current_stage || 0).succ, is_fully_released: fully_released?}
-    data.merge(rollout_percentage: "%.2f" % last_rollout_percentage) if last_rollout_percentage
+    data[:rollout_percentage] = "%.2f" % last_rollout_percentage if last_rollout_percentage.present?
     data
   end
 end
