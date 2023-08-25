@@ -70,7 +70,7 @@ class Train < ApplicationRecord
   validates :release_branch, presence: true, if: -> { branching_strategy == "parallel_working" }
   validate :semver_compatibility, on: :create
   validate :ready?, on: :create
-  validate :valid_schedule, on: :create
+  validate :valid_schedule
   validate :build_queue_config
   validate :valid_train_configuration, on: :activate_context
   validate :working_branch_presence, on: :create

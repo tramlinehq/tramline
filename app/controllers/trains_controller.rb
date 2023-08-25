@@ -182,18 +182,17 @@ class TrainsController < SignedInApplicationController
   end
 
   def release_schedule_config(schedule_params)
-    return {kickoff_at: nil, repeat_duration: nil} if schedule_params[:repeat_duration_unit].blank?
-    return {kickoff_at: nil, repeat_duration: nil} if schedule_params[:repeat_duration_value].blank?
-    return {kickoff_at: nil, repeat_duration: nil} if schedule_params[:kickoff_at].blank?
-
-    {repeat_duration: schedule_params[:repeat_duration_value]
-      .to_i
-      .as_duration_with(unit: schedule_params[:repeat_duration_unit]),
+    {repeat_duration: parsed_duration(schedule_params[:repeat_duration_value], schedule_params[:repeat_duration_unit]),
      kickoff_at: time_in_utc(schedule_params[:kickoff_at])}
   end
 
   def time_in_utc(time)
     return if time.blank?
     Time.zone.parse(time).utc
+  end
+
+  def parsed_duration(value, unit)
+    return if unit.blank? || value.blank?
+    value.to_i.as_duration_with(unit: unit)
   end
 end
