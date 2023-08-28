@@ -6,6 +6,7 @@
 #  build_number      :bigint           not null
 #  bundle_identifier :string           not null, indexed => [platform, organization_id]
 #  description       :string
+#  draft             :boolean
 #  name              :string           not null
 #  platform          :string           not null, indexed => [bundle_identifier, organization_id]
 #  slug              :string
@@ -62,6 +63,7 @@ class App < ApplicationRecord
     :slack_build_channel_provider,
     :firebase_build_channel_provider,
     :slack_notifications?, to: :integrations, allow_nil: true
+  delegate :draft_check?, to: :android_store_provider, allow_nil: true
 
   scope :with_trains, -> { joins(:trains).distinct }
   scope :sequential, -> { order("apps.created_at ASC") }
@@ -236,6 +238,17 @@ class App < ApplicationRecord
     if latest_external_app&.channel_data != external_app_data
       external_apps.create!(channel_data: external_app_data, fetched_at: Time.current, platform:)
     end
+  end
+
+  def in_draft_mode?
+    return draft? if android_store_provider.nil?
+    return draft? if draft == false
+    set_draft_status!
+    draft?
+  end
+
+  def set_draft_status!
+    update!(draft: draft_check?)
   end
 
   def latest_external_app

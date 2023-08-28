@@ -8,6 +8,7 @@
 <%= render PageComponent.new(breadcrumb: breadcrumb(@app),
                              title: "#{@app.name} 📱",
                              subtitle: "#{@app.display_attr(:platform)} app (#{@app.bundle_identifier})") do |page| %>
+
   <% if @app.ready? %>
     <% if @app.releases.exists? %>
       <% page.with_action do %>
@@ -53,6 +54,7 @@
 
   <div class="space-y-8">
     <% if @app.ready? %>
+      <%= render partial: "shared/draft_mode_notice", locals: { app: @app } %>
       <%= render partial: "trains/setup_progress",
                  locals: {
                    setup_instructions: @train_setup_instructions,

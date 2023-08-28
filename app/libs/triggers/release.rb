@@ -4,6 +4,7 @@ class Triggers::Release
 
   ReleaseAlreadyInProgress = Class.new(StandardError)
   NothingToRelease = Class.new(StandardError)
+  AppInDraftMode = Class.new(StandardError)
 
   def self.call(train, has_major_bump: false, automatic: false)
     new(train, has_major_bump:, automatic:).call
@@ -20,6 +21,7 @@ class Triggers::Release
     return Response.new(:unprocessable_entity, "Cannot start a train that is not active!") if train.inactive?
     return Response.new(:unprocessable_entity, "Cannot start a train that has no release step. Please add at least one release step to the train.") unless train.release_platforms.all?(&:has_release_step?)
     return Response.new(:unprocessable_entity, "A release is already in progress!") if train.active_run.present?
+    return Response.new(:unprocessable_entity, "App is in draft mode, cannot start a release!") if train.app.in_draft_mode?
 
     if kickoff.ok?
       Response.new(:ok)
@@ -36,6 +38,7 @@ class Triggers::Release
   memoize def kickoff
     GitHub::Result.new do
       train.with_lock do
+        raise AppInDraftMode.new("App is in draft mode, cannot start a release!") if train.app.in_draft_mode?
         raise ReleaseAlreadyInProgress.new("A release is already in progress!") if train.active_run.present?
         raise NothingToRelease.new("No diff since last release") unless train.diff_since_last_release?
         train.activate! unless train.active?

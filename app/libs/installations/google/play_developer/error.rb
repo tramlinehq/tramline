@@ -56,6 +56,30 @@ module Installations
         code: 400,
         message_matcher: /Changes cannot be sent for review automatically. Please set the query parameter changesNotSentForReview to true. Once committed, the changes in this edit can be sent for review from the Google Play Console UI/,
         decorated_reason: :app_review_rejected
+      },
+      {
+        status: "INVALID_ARGUMENT",
+        code: 400,
+        message_matcher: /Only releases with status draft may be created on draft app/i,
+        decorated_reason: :release_on_draft_app
+      },
+      {
+        status: "PERMISSION_DENIED",
+        code: 403,
+        message_matcher: /APK has the wrong package name/,
+        decorated_reason: :wrong_package_name
+      },
+      {
+        status: "PERMISSION_DENIED",
+        code: 403,
+        message_matcher: /Release in track targeting no countries/,
+        decorated_reason: :release_does_not_have_country_set
+      },
+      {
+        status: "INVALID_ARGUMENT",
+        code: 400,
+        message_matcher: /The first release on a track cannot be staged/,
+        decorated_reason: :first_release_cannot_be_made_from_tramline
       }
     ]
 

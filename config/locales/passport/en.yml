@@ -40,6 +40,7 @@ en:
       started_html: 'Staged release started with <span class="emphasize">%{rollout_percentage}%</span>'
       paused_html: 'Staged release paused at <span class="emphasize">%{rollout_percentage}%</span>'
       failed_html: 'Staged release failed at stage <span class="emphasize">%{current_stage}</span> with <span class="emphasize">%{rollout_percentage}%</span>'
+      failed_before_any_rollout_html: 'Staged release failed at stage <span class="emphasize">%{current_stage}</span> before the rollout could start'
       resumed_html: 'Staged release resumed at <span class="emphasize">%{rollout_percentage}%</span>'
       increased_html: 'Staged release increased to <span class="emphasize">%{rollout_percentage}%</span>'
       completed_html: 'Staged release completed with <span class="emphasize">%{rollout_percentage}%</span>'

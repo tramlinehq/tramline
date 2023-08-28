@@ -58,7 +58,7 @@ class Deployment < ApplicationRecord
   end
 
   def findable?
-    release_platform.ios? && (app_store_integration? || external?)
+    release_platform.ios? && app_store_integration?
   end
 
   def first?
