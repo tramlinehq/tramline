@@ -13,13 +13,13 @@
     <div class="flex items-center">
       <div class="form-switch">
         <%= form.check_box :build_queue_enabled,
-                           { id: "switch-1", class: "sr-only",
+                           { id: "build-queue-switch", class: "sr-only",
                              data: { action: "toggle-switch#change domain--build-queue-help#change",
                                      domain__build_queue_help_target: "checkbox",
                                      toggle_switch_target: "checkbox" } },
-                           true,
-                           false %>
-        <label class="bg-slate-400" for="switch-1">
+                           "true",
+                           "false" %>
+        <label class="bg-slate-400" for="build-queue-switch">
           <span class="bg-white shadow-sm" aria-hidden="true"></span>
           <span class="sr-only">Switch label</span>
         </label>

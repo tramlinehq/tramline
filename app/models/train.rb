@@ -61,8 +61,9 @@ class Train < ApplicationRecord
 
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
-  attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed, :build_queue_wait_time_unit,
-    :build_queue_wait_time_value, :repeat_duration_unit, :repeat_duration_value
+  attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed
+  attr_accessor :build_queue_wait_time_unit, :build_queue_wait_time_value
+  attr_accessor :repeat_duration_unit, :repeat_duration_value, :release_schedule_enabled
 
   validates :branching_strategy, :working_branch, presence: true
   validates :branching_strategy, inclusion: {in: BRANCHING_STRATEGIES.keys.map(&:to_s)}
@@ -77,6 +78,8 @@ class Train < ApplicationRecord
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
 
   after_initialize :set_constituent_seed_versions, if: :persisted?
+  after_initialize :set_release_schedule, if: :persisted?
+  after_initialize :set_build_queue_config, if: :persisted?
   before_validation :set_version_seeded_with, if: :new_record?
   before_create :set_current_version
   before_create :set_default_status
@@ -260,7 +263,7 @@ class Train < ApplicationRecord
   end
 
   def schedule_editable?
-    !active? || !automatic? || !persisted?
+    draft? || !automatic? || !persisted?
   end
 
   private
@@ -282,6 +285,21 @@ class Train < ApplicationRecord
   def set_constituent_seed_versions
     semverish = version_seeded_with.to_semverish
     self.major_version_seed, self.minor_version_seed, self.patch_version_seed = semverish.major, semverish.minor, semverish.patch
+  end
+
+  def set_release_schedule
+    self.release_schedule_enabled = automatic?
+    return if repeat_duration.blank?
+    parts = repeat_duration.parts
+    self.repeat_duration_unit = parts.keys.first.to_s
+    self.repeat_duration_value = parts.values.first
+  end
+
+  def set_build_queue_config
+    return if build_queue_wait_time.blank?
+    parts = build_queue_wait_time.parts
+    self.build_queue_wait_time_unit = parts.keys.first.to_s
+    self.build_queue_wait_time_value = parts.values.first
   end
 
   def semver_compatibility

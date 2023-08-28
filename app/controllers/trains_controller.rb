@@ -17,17 +17,6 @@ class TrainsController < SignedInApplicationController
   end
 
   def edit
-    if @train.build_queue_wait_time.present?
-      parts = @train.build_queue_wait_time.parts
-      @train.build_queue_wait_time_unit = parts.keys.first.to_s
-      @train.build_queue_wait_time_value = parts.values.first
-    end
-
-    if @train.repeat_duration.present?
-      parts = @train.repeat_duration.parts
-      @train.repeat_duration_unit = parts.keys.first.to_s
-      @train.repeat_duration_value = parts.values.first
-    end
   end
 
   def create
@@ -112,16 +101,20 @@ class TrainsController < SignedInApplicationController
       :build_queue_enabled,
       :build_queue_size,
       :build_queue_wait_time_unit,
-      :build_queue_wait_time_value
+      :build_queue_wait_time_value,
+      :release_schedule_enabled
     )
   end
 
   def parsed_train_params
-    train_params
-      .merge(release_schedule_config(train_params.slice(*release_schedule_config_params)))
+    release_schedule_params = release_schedule_config(train_params.slice(*release_schedule_config_params))
+    create_params = train_params
       .merge(build_queue_config(train_params.slice(*build_queue_config_params)))
-      .except(:repeat_duration_value, :repeat_duration_unit, :build_queue_wait_time_value, :build_queue_wait_time_unit)
       .merge(notification_channel: train_params[:notification_channel]&.safe_json_parse)
+      .except(:build_queue_wait_time_value, :build_queue_wait_time_unit)
+      .except(*release_schedule_config_params)
+    create_params.merge!(release_schedule_params) if release_schedule_params
+    create_params
   end
 
   def train_update_params
@@ -135,16 +128,20 @@ class TrainsController < SignedInApplicationController
       :build_queue_wait_time_value,
       :kickoff_at,
       :repeat_duration_value,
-      :repeat_duration_unit
+      :repeat_duration_unit,
+      :release_schedule_enabled
     )
   end
 
   def parsed_train_update_params
-    train_update_params
-      .merge(release_schedule_config(train_update_params.slice(*release_schedule_config_params)))
+    release_schedule_params = release_schedule_config(train_update_params.slice(*release_schedule_config_params))
+    update_params = train_update_params
       .merge(build_queue_config(train_update_params.slice(*build_queue_config_params)))
-      .except(:repeat_duration_value, :repeat_duration_unit, :build_queue_wait_time_value, :build_queue_wait_time_unit)
       .merge(notification_channel: train_update_params[:notification_channel]&.safe_json_parse)
+      .except(:build_queue_wait_time_value, :build_queue_wait_time_unit)
+      .except(*release_schedule_config_params)
+    update_params.merge!(release_schedule_params) if release_schedule_params
+    update_params
   end
 
   def validate_integration_status
@@ -165,7 +162,12 @@ class TrainsController < SignedInApplicationController
   end
 
   def build_queue_config(config_params)
-    return {build_queue_size: nil, build_queue_wait_time: nil} unless config_params[:build_queue_enabled] == "true"
+    unless config_params[:build_queue_enabled] == "true"
+      return {
+        build_queue_size: nil,
+        build_queue_wait_time: nil
+      }
+    end
 
     return if config_params[:build_queue_wait_time_unit].blank?
     return if config_params[:build_queue_wait_time_value].blank?
@@ -178,13 +180,15 @@ class TrainsController < SignedInApplicationController
   end
 
   def release_schedule_config_params
-    [:kickoff_at, :repeat_duration_value, :repeat_duration_unit]
+    [:release_schedule_enabled, :kickoff_at, :repeat_duration_value, :repeat_duration_unit]
   end
 
   def release_schedule_config(config_params)
+    return if config_params[:release_schedule_enabled].blank?
+
     {
       repeat_duration: parsed_duration(config_params[:repeat_duration_value], config_params[:repeat_duration_unit]),
-      kickoff_at: config_params[:kickoff_at].time_in_utc
+      kickoff_at: config_params[:kickoff_at]&.time_in_utc
     }
   end
 

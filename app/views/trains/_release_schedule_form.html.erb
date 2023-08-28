@@ -6,24 +6,22 @@
     <div class="text-sm mt-1 mb-6">
       Set a schedule for automatic kickoff of your release train. Leave blank for only manual control.
     </div>
-    <section data-controller="domain--release-schedule-help toggle-switch"
+    <section hidden
+             data-controller="domain--release-schedule-help toggle-switch"
              data-branching-selector-target="schedule"
-             hidden id="release-schedule"
              data-toggle-switch-on-label-value="Release Schedule enabled"
              data-toggle-switch-off-label-value="Release Schedule disabled">
 
       <div class="flex items-center">
         <div class="form-switch">
-          <%= form.check_box "Enable release schedule",
-                             { checked: @train.automatic?,
-                               id: "switch-1",
+          <%= form.check_box :release_schedule_enabled,
+                             { id: "release-schedule-switch",
                                class: "sr-only",
                                data: { action: "toggle-switch#change domain--release-schedule-help#change",
                                        domain__release_schedule_help_target: "checkbox",
                                        toggle_switch_target: "checkbox" } },
-                             true,
-                             false %>
-          <label class="bg-slate-400" for="switch-1">
+                             "true", "false" %>
+          <label class="bg-slate-400" for="release-schedule-switch">
             <span class="bg-white shadow-sm" aria-hidden="true"></span>
             <span class="sr-only">Switch label</span>
           </label>
@@ -69,9 +67,9 @@
     </section>
   <% else %>
     <div class="text-sm mt-1 mb-6">
-      Release Schedule cannot be edited when the train is active.
+      Release Schedule cannot be edited once the train is activated.
     </div>
 
-    <div class="text-sm font-medium mt-4"><%= release_schedule(train) %></div>
+    <div class="text-sm font-medium mt-4"><%= release_schedule(@train) %></div>
   <% end %>
 </article>

@@ -70,11 +70,6 @@ export default class extends Controller {
     }
   }
 
-  resetSchedule() {
-    this.kickoffDateTarget.value = null
-    this.nextDateNumberTarget.value = null
-  }
-
   __resetContents() {
     this.configTarget.hidden = true
     this.outputTarget.textContent = ""
