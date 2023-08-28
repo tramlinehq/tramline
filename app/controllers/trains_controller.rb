@@ -164,31 +164,28 @@ class TrainsController < SignedInApplicationController
     [:build_queue_size, :build_queue_enabled, :build_queue_wait_time_value, :build_queue_wait_time_unit]
   end
 
-  def build_queue_config(build_queue_params)
-    return {build_queue_size: nil, build_queue_wait_time: nil} unless build_queue_params[:build_queue_enabled] == "true"
+  def build_queue_config(config_params)
+    return {build_queue_size: nil, build_queue_wait_time: nil} unless config_params[:build_queue_enabled] == "true"
 
-    return if build_queue_params[:build_queue_wait_time_unit].blank?
-    return if build_queue_params[:build_queue_wait_time_value].blank?
-    return if build_queue_params[:build_queue_size].blank?
+    return if config_params[:build_queue_wait_time_unit].blank?
+    return if config_params[:build_queue_wait_time_value].blank?
+    return if config_params[:build_queue_size].blank?
 
-    {build_queue_wait_time: build_queue_params[:build_queue_wait_time_value]
-      .to_i
-      .as_duration_with(unit: build_queue_params[:build_queue_wait_time_unit]),
-     build_queue_size: build_queue_params[:build_queue_size]}
+    {
+      build_queue_wait_time: parsed_duration(config_params[:build_queue_wait_time_value], config_params[:build_queue_wait_time_unit]),
+      build_queue_size: config_params[:build_queue_size]
+    }
   end
 
   def release_schedule_config_params
     [:kickoff_at, :repeat_duration_value, :repeat_duration_unit]
   end
 
-  def release_schedule_config(schedule_params)
-    {repeat_duration: parsed_duration(schedule_params[:repeat_duration_value], schedule_params[:repeat_duration_unit]),
-     kickoff_at: time_in_utc(schedule_params[:kickoff_at])}
-  end
-
-  def time_in_utc(time)
-    return if time.blank?
-    Time.zone.parse(time).utc
+  def release_schedule_config(config_params)
+    {
+      repeat_duration: parsed_duration(config_params[:repeat_duration_value], config_params[:repeat_duration_unit]),
+      kickoff_at: config_params[:kickoff_at].time_in_utc
+    }
   end
 
   def parsed_duration(value, unit)

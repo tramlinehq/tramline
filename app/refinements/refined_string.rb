@@ -22,6 +22,11 @@ module RefinedString
       Time.zone.parse(self)
     end
 
+    def time_in_utc
+      return if blank?
+      Time.zone.parse(self).utc
+    end
+
     def safe_float
       Float(self)
     rescue ArgumentError, TypeError
