@@ -115,9 +115,9 @@ module ApplicationHelper
       .tap { |list| with_none ? list.unshift(["None", nil]) : nil }
   end
 
-  def time_format(timestamp, with_year: false)
+  def time_format(timestamp, with_year: false, with_time: true)
     return unless timestamp
-    timestamp.strftime("%b #{timestamp.day.ordinalize}#{", %Y" if with_year} at %-l:%M %P")
+    timestamp.strftime("%b #{timestamp.day.ordinalize}#{", %Y" if with_year}#{" at %-l:%M %P" if with_time}")
   end
 
   def subtitle(text)

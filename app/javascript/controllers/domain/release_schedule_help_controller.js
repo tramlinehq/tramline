@@ -1,9 +1,10 @@
 import {Controller} from "@hotwired/stimulus";
 
 const NEXT_RELEASE = "Your next release after the initial kickoff will be on – "
+const ERR_HELP_TEXT = "You must set a valid release schedule config when it is enabled"
 
 export default class extends Controller {
-  static targets = ["kickoffDate", "nextDateNumber", "nextDateUnit", "output", "errOutput"];
+  static targets = ["checkbox", "config", "kickoffDate", "nextDateNumber", "nextDateUnit", "output", "errOutput"];
 
   initialize() {
     this.change();
@@ -12,8 +13,25 @@ export default class extends Controller {
   change() {
     this.__resetContents()
 
-    if (this.__isEmptyInput()) {
-      return;
+    const enabled = (this.checkboxTarget.checked === true)
+    const disabled = ((this.checkboxTarget.checked === false))
+
+    if (enabled) {
+      this.configTarget.hidden = false
+    }
+
+    if (disabled) {
+      this.configTarget.hidden = true
+      this.__resetInput()
+    }
+
+    if (this.__isEmptyInput() && disabled) {
+      return
+    }
+
+    if (this.__isEmptyInput() && enabled) {
+      this.errOutputTarget.textContent = ERR_HELP_TEXT
+      return
     }
 
     const nextDateNumber = parseInt(this.nextDateNumberTarget.value);
@@ -58,6 +76,7 @@ export default class extends Controller {
   }
 
   __resetContents() {
+    this.configTarget.hidden = true
     this.outputTarget.textContent = ""
     this.errOutputTarget.textContent = ""
   }
@@ -65,6 +84,12 @@ export default class extends Controller {
   __isEmptyInput() {
     return this.kickoffDateTarget.value === "" ||
       this.nextDateUnitTarget.value === "" || this.nextDateNumberTarget.value === ""
+  }
+
+  __resetInput() {
+    this.kickoffDateTarget.value = ""
+    this.nextDateUnitTarget.value = "days"
+    this.nextDateNumberTarget.value = ""
   }
 
   __isValidDate(d) {

@@ -61,7 +61,8 @@ class Train < ApplicationRecord
 
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
-  attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed, :build_queue_wait_time_unit, :build_queue_wait_time_value
+  attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed, :build_queue_wait_time_unit,
+    :build_queue_wait_time_value, :repeat_duration_unit, :repeat_duration_value
 
   validates :branching_strategy, :working_branch, presence: true
   validates :branching_strategy, inclusion: {in: BRANCHING_STRATEGIES.keys.map(&:to_s)}
@@ -69,7 +70,7 @@ class Train < ApplicationRecord
   validates :release_branch, presence: true, if: -> { branching_strategy == "parallel_working" }
   validate :semver_compatibility, on: :create
   validate :ready?, on: :create
-  validate :valid_schedule, on: :create
+  validate :valid_schedule
   validate :build_queue_config
   validate :valid_train_configuration, on: :activate_context
   validate :working_branch_presence, on: :create
@@ -80,6 +81,7 @@ class Train < ApplicationRecord
   before_create :set_current_version
   before_create :set_default_status
   after_create :create_release_platforms
+  after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
 
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
@@ -106,7 +108,7 @@ class Train < ApplicationRecord
   end
 
   def schedule_release!
-    scheduled_releases.create!(scheduled_at: next_run_at)
+    scheduled_releases.create!(scheduled_at: next_run_at) if automatic?
   end
 
   def automatic?
@@ -175,7 +177,7 @@ class Train < ApplicationRecord
   def activate!
     if valid?(context: :activate_context)
       update(status: Train.statuses[:active])
-      schedule_release! if automatic?
+      schedule_release!
       true
     end
   end
@@ -255,6 +257,10 @@ class Train < ApplicationRecord
 
   def send_notifications?
     app.notifications_set_up? && notification_channel.present?
+  end
+
+  def schedule_editable?
+    !active? || !automatic? || !persisted?
   end
 
   private

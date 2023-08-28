@@ -109,4 +109,36 @@ describe Train do
       end
     end
   end
+
+  describe "#deactivate" do
+    it "deletes the pending scheduled releases for an automatic train" do
+      train = create(:train, :with_schedule, :draft)
+      train.activate!
+      expect(train.scheduled_releases.count).to be(1)
+
+      train.deactivate!
+
+      expect(train.reload.scheduled_releases.count).to be(0)
+    end
+
+    it "marks the train as inactive" do
+      train = create(:train, :active)
+
+      train.deactivate!
+
+      expect(train.reload.inactive?).to be(true)
+    end
+  end
+
+  describe "#update" do
+    it "schedules the release for an automatic train" do
+      train = create(:train, :with_almost_trunk, :active)
+      expect(train.scheduled_releases.count).to be(0)
+
+      train.update!(kickoff_at: 2.days.from_now, repeat_duration: 2.days)
+
+      expect(train.reload.scheduled_releases.count).to be(1)
+      expect(train.reload.scheduled_releases.first.scheduled_at).to eq(train.kickoff_at)
+    end
+  end
 end

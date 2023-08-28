@@ -22,6 +22,12 @@ class TrainsController < SignedInApplicationController
       @train.build_queue_wait_time_unit = parts.keys.first.to_s
       @train.build_queue_wait_time_value = parts.values.first
     end
+
+    if @train.repeat_duration.present?
+      parts = @train.repeat_duration.parts
+      @train.repeat_duration_unit = parts.keys.first.to_s
+      @train.repeat_duration_value = parts.values.first
+    end
   end
 
   def create
@@ -112,25 +118,10 @@ class TrainsController < SignedInApplicationController
 
   def parsed_train_params
     train_params
-      .merge(repeat_duration: repeat_duration)
-      .merge(kickoff_at: kickoff_at_in_utc)
+      .merge(release_schedule_config(train_params.slice(*release_schedule_config_params)))
       .merge(build_queue_config(train_params.slice(*build_queue_config_params)))
       .except(:repeat_duration_value, :repeat_duration_unit, :build_queue_wait_time_value, :build_queue_wait_time_unit)
       .merge(notification_channel: train_params[:notification_channel]&.safe_json_parse)
-  end
-
-  def repeat_duration
-    return if train_params[:repeat_duration_unit].blank?
-    return if train_params[:repeat_duration_value].blank?
-
-    train_params[:repeat_duration_value]
-      .to_i
-      .as_duration_with(unit: train_params[:repeat_duration_unit])
-  end
-
-  def kickoff_at_in_utc
-    return if train_params[:kickoff_at].blank?
-    Time.zone.parse(train_params[:kickoff_at]).utc
   end
 
   def train_update_params
@@ -141,14 +132,18 @@ class TrainsController < SignedInApplicationController
       :build_queue_enabled,
       :build_queue_size,
       :build_queue_wait_time_unit,
-      :build_queue_wait_time_value
+      :build_queue_wait_time_value,
+      :kickoff_at,
+      :repeat_duration_value,
+      :repeat_duration_unit
     )
   end
 
   def parsed_train_update_params
     train_update_params
+      .merge(release_schedule_config(train_update_params.slice(*release_schedule_config_params)))
       .merge(build_queue_config(train_update_params.slice(*build_queue_config_params)))
-      .except(:build_queue_wait_time_value, :build_queue_wait_time_unit)
+      .except(:repeat_duration_value, :repeat_duration_unit, :build_queue_wait_time_value, :build_queue_wait_time_unit)
       .merge(notification_channel: train_update_params[:notification_channel]&.safe_json_parse)
   end
 
@@ -169,16 +164,32 @@ class TrainsController < SignedInApplicationController
     [:build_queue_size, :build_queue_enabled, :build_queue_wait_time_value, :build_queue_wait_time_unit]
   end
 
-  def build_queue_config(build_queue_params)
-    return {build_queue_size: nil, build_queue_wait_time: nil} unless build_queue_params[:build_queue_enabled] == "true"
+  def build_queue_config(config_params)
+    return {build_queue_size: nil, build_queue_wait_time: nil} unless config_params[:build_queue_enabled] == "true"
 
-    return if build_queue_params[:build_queue_wait_time_unit].blank?
-    return if build_queue_params[:build_queue_wait_time_value].blank?
-    return if build_queue_params[:build_queue_size].blank?
+    return if config_params[:build_queue_wait_time_unit].blank?
+    return if config_params[:build_queue_wait_time_value].blank?
+    return if config_params[:build_queue_size].blank?
 
-    {build_queue_wait_time: build_queue_params[:build_queue_wait_time_value]
-      .to_i
-      .as_duration_with(unit: build_queue_params[:build_queue_wait_time_unit]),
-     build_queue_size: build_queue_params[:build_queue_size]}
+    {
+      build_queue_wait_time: parsed_duration(config_params[:build_queue_wait_time_value], config_params[:build_queue_wait_time_unit]),
+      build_queue_size: config_params[:build_queue_size]
+    }
+  end
+
+  def release_schedule_config_params
+    [:kickoff_at, :repeat_duration_value, :repeat_duration_unit]
+  end
+
+  def release_schedule_config(config_params)
+    {
+      repeat_duration: parsed_duration(config_params[:repeat_duration_value], config_params[:repeat_duration_unit]),
+      kickoff_at: config_params[:kickoff_at].time_in_utc
+    }
+  end
+
+  def parsed_duration(value, unit)
+    return if unit.blank? || value.blank?
+    value.to_i.as_duration_with(unit: unit)
   end
 end
