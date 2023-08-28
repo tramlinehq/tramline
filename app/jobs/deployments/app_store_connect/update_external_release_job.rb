@@ -4,11 +4,11 @@ class Deployments::AppStoreConnect::UpdateExternalReleaseJob
   extend Backoffable
 
   queue_as :high
-  sidekiq_options retry: 400
+  sidekiq_options retry: 100
 
   sidekiq_retry_in do |count, ex|
     if ex.is_a?(Deployments::AppStoreConnect::Release::ExternalReleaseNotInTerminalState)
-      backoff_in(attempt: count, period: :minutes, type: :linear, factor: 10).to_i
+      backoff_in(attempt: count, period: :minutes, type: :linear, factor: 5).to_i
     else
       elog(ex)
       :kill
