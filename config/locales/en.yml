@@ -148,15 +148,13 @@ en:
         email: "The email specified does not match the one in the invitation"
     invite_mailer:
       existing_user:
-        subject: "Invitation instructions"
-        hello: "Hello %{email}"
-        someone_invited_you: "%{invitable} (%{sender}) has invited you to %{org} at %{url}."
+        subject: "%{sender} invited you to join the %{org} team on Tramline"
+        someone_invited_you: "You have been invited to join the <b>%{org}</b> team owned by <b>%{sender_email}</b> on Tramline. To get started, accept the invite below:"
         accept: "Accept invitation"
-        ignore: "If you don't want to accept this invite or feel it is in error, please contact %{sender}."
+        ignore: "If you don't want to accept this invite or feel it is in error, please contact %{sender_email}."
       new_user:
-        subject: "Invitation instructions"
-        hello: "Hello %{email}"
-        someone_invited_you: "%{invitable} (%{sender}) has invited you to %{org} at %{url}. You can accept the invitation with the url below."
+        subject: "%{sender} invited you to join the %{org} team on Tramline"
+        someone_invited_you: "You have been invited to join the <b>%{org}</b> team owned by <b>%{sender_email}</b> on Tramline. To get started, accept the invite below:"
         accept: "Accept invitation"
         ignore: "If you don't want to accept the invitation, please ignore this email. Your account won't be created until you access the link above and set your password."
   errors:

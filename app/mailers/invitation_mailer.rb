@@ -5,7 +5,7 @@ class InvitationMailer < ApplicationMailer
 
     mail(
       to: @invite.email,
-      subject: I18n.t("invitation.invite_mailer.existing_user.subject")
+      subject: I18n.t("invitation.invite_mailer.existing_user.subject", sender: @invite.sender.full_name, org: @invite.organization.name)
     )
   end
 
@@ -15,7 +15,7 @@ class InvitationMailer < ApplicationMailer
 
     mail(
       to: @invite.email,
-      subject: I18n.t("invitation.invite_mailer.new_user.subject")
+      subject: I18n.t("invitation.invite_mailer.new_user.subject", sender: @invite.sender.full_name, org: @invite.organization.name)
     )
   end
 end

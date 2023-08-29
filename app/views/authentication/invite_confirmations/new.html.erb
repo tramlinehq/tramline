@@ -1,5 +1,5 @@
-<div class="max-w-sm mx-auto px-4 py-8">
-  <h1 class="text-3xl text-slate-800 font-bold mb-6">Accept your invitation ✨</h1>
+<div class="max-w-md mx-auto px-4 py-8">
+  <%= render partial: "authentication/shared/header", locals: { heading: "Accept your invitation! ✨", resource: nil, subtitle_text: "Team - #{@organization.name}"} %>
   <!-- Form -->
   <%= form_with(url: authentication_invite_confirmations_path, method: :post, html: { 'data-turbo' => "false" }) do |f| %>
 
