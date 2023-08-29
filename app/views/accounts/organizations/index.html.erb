@@ -1,4 +1,4 @@
-<%= render PageComponent.new(title: "Memberships 🏢") do %>
+<%= render PageComponent.new(breadcrumb: breadcrumb(:memberships), title: "Memberships 🏢") do %>
   <%= render TableComponent.new(columns: ["Name", "Actions"]) do |table| %>
     <% @organizations.each do |org| %>
       <% table.with_row do |row| %>
