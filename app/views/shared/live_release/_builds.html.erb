@@ -39,7 +39,7 @@
           </span>
 
           <div class="text-slate-500">
-            <code><%= commit.short_sha %></code> • <%= ago_in_words commit.timestamp %>
+            <%= formatted_commit_info(commit) %>
           </div>
         </td>
         <td class="align-text-top pt-4 whitespace-nowrap w-px">

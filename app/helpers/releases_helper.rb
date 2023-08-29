@@ -111,4 +111,12 @@ module ReleasesHelper
     message += "You have unmerged commits in this release branch. " if release.all_commits.size > 1
     message + "Are you sure you want to stop the release?"
   end
+
+  def formatted_commit_info(commit)
+    name = commit.author_name || commit.author_login
+    link = commit.url || "mailto:#{commit.author_email}"
+    builder = content_tag(:code, commit.short_sha)
+    builder += " • "
+    builder + link_to_external(name, link, class: "underline") + " committed " + ago_in_words(commit.timestamp)
+  end
 end

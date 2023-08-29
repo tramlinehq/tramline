@@ -3,7 +3,7 @@
     <span class="font-bold text-2xl">Commits since last release</span>
   </div>
 
-  <% commits = release.release_changelog&.commits %>
+  <% commits = release.release_changelog&.normalized_commits %>
 
   <div class="mb-2 text-slate-500 text-sm">
     <% if release.release_changelog.present? %>
@@ -34,12 +34,10 @@
                 </div>
                 <div class="flex flex-col">
                   <div>
-                    <%= link_to_external commit["message"].truncate(70), commit["url"], class: "underline font-medium text-black" %>
+                    <%= link_to_external commit.truncated_message, commit.url, class: "underline font-medium text-black" %>
                   </div>
                   <div class="mt-1">
-                    <code><%= short_sha(commit["sha"]) %></code>
-                    • <%= link_to_external (commit["author_login"] || commit["author_name"]), (commit["author_url"] || "mailto:#{commit["author_email"]}"), class: "underline" %>
-                    committed <%= ago_in_words commit["author_timestamp"] %>
+                    <%= formatted_commit_info(commit) %>
                   </div>
                 </div>
               </div>
