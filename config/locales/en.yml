@@ -160,7 +160,7 @@ en:
 
   mailer:
     generic:
-      team_name: "&mdash; The Tramline team"
+      team_name: "The Tramline team"
   errors:
     format: "%{attribute} →\n%{message}"
     messages:
