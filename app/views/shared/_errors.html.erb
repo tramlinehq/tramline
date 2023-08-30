@@ -3,7 +3,7 @@
     <% resource.errors.each do |error| %>
       <div class="inline-flex min-w-80 px-4 py-2 mb-6 rounded-sm text-sm bg-rose-100 border border-rose-200 text-rose-600" data-alert-target="alert">
         <div class="flex w-full justify-between items-start">
-          <div class="flex"><%= simple_format(error.full_message) %></div>
+          <div class="flex"><%= simple_format(error.full_message).html_safe %></div>
           <button class="opacity-70 hover:opacity-80 ml-3 mt-[3px]" data-action="alert#close">
             <div class="sr-only">Close</div>
             <%= inline_svg("close_icon.svg", classname: "w-4 h-4 fill-current") %>

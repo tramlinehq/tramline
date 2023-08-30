@@ -34,13 +34,13 @@ class Accounts::User < ApplicationRecord
   devise :database_authenticatable, :registerable, :trackable, :lockable,
     :recoverable, :confirmable, :timeoutable, :rememberable, :validatable
 
-  validates :password, password_strength: {use_dictionary: true}, allow_nil: true
+  # this is in addition to devise's validatable
+  validates :password, password_strength: true, allow_nil: true
+
   validates :email, presence: true,
     uniqueness: {case_sensitive: false},
     length: {maximum: 105},
     format: {with: URI::MailTo::EMAIL_REGEXP}
-
-  after_validation :strip_unnecessary_errors
 
   has_many :memberships, dependent: :delete_all, inverse_of: :user
   has_many :organizations, -> { where(status: :active) }, through: :memberships
@@ -97,16 +97,5 @@ class Accounts::User < ApplicationRecord
 
   def confirmation_required?
     true
-  end
-
-  private
-
-  # We only want to display one error message to the user, so if we get multiple
-  # exceptions clear out all exceptions and present our nice message to the user.
-  def strip_unnecessary_errors
-    if errors[:password].any? && errors[:password].size > 1
-      errors.delete(:password)
-      errors.add(:password, I18n.t("errors.messages.password.password_strength"))
-    end
   end
 end
