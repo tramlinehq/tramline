@@ -1,7 +1,7 @@
 <div class="max-w-md mx-auto px-4 py-8">
   <%= render partial: "authentication/shared/header", locals: { heading: "Create a new account ✨", subtitle_text: nil} %>
 
-  <%= form_for(resource, as: resource_name, html: { 'data-turbo' => "false" },
+  <%= form_for(resource, as: resource_name, html: { 'data-turbo' => "false" }, builder: EnhancedFormHelper::BetterForm,
                url: registration_path(resource_name)) do |f| %>
     <% if @token.present? %>
       <%= hidden_field_tag :invite_token, @token %>
@@ -9,19 +9,19 @@
 
     <div class="space-y-6">
       <div>
-        <%= f.label :full_name, class: "block text-sm font-medium mb-1" %>
+        <%= f.mandatory_label :full_name, class: "block text-sm font-medium mb-1" %>
         <%= f.text_field :full_name, required: true, autofocus: true, autocomplete: "full-name",
                          class: "form-input w-full" %>
       </div>
 
       <div>
-        <%= f.label :preferred_name, class: "block text-sm font-medium mb-1" %>
+        <%= f.label :preferred_name, "Your preferred name", class: "block text-sm font-medium mb-1" %>
         <%= f.text_field :preferred_name, autofocus: true, autocomplete: "preferred-name",
                          placeholder: "What should we call you?", class: "form-input w-full" %>
       </div>
 
       <div>
-        <%= f.label :email, class: "block text-sm font-medium mb-1" %>
+        <%= f.mandatory_label :email, class: "block text-sm font-medium mb-1" %>
         <%= f.email_field :email, required: true, autocomplete: "email",
                           class: "form-input w-full", readonly: @invite.present? %>
       </div>
@@ -29,24 +29,38 @@
       <% if @token.blank? %>
         <div>
           <%= f.fields_for :organizations, @organization do |m| %>
-            <%= m.label :name, "Organization name", class: "block text-sm font-medium mb-1" %>
+            <%= m.mandatory_label :name, "Company name", class: "block text-sm font-medium mb-1" %>
             <%= m.text_field :name, required: true, autofocus: true, autocomplete: "organization-name",
                              placeholder: "Use your own name for a personal account", class: "form-input w-full" %>
           <% end %>
         </div>
       <% end %>
 
-      <div class="field">
-        <%= f.label :password, class: "block text-sm font-medium mb-1" %>
-        <%= f.password_field :password, required: true, autocomplete: "new-password",
-                             placeholder: "Minimum #{@minimum_password_length} characters",
-                             class: "form-input w-full" %>
+      <div data-controller="password-visibility">
+        <div class="field relative">
+          <%= f.mandatory_label :password, class: "block text-sm font-medium mb-1" %>
+          <%= f.password_field :password,
+                               required: true,
+                               autocomplete: "new-password",
+                               spellcheck: false,
+                               data: { password_visibility_target: "input"},
+                               placeholder: "Minimum #{@minimum_password_length} characters",
+                               class: "form-input w-full" %>
+          <%= password_visibility_toggle_button %>
+        </div>
       </div>
 
-      <div class="field">
-        <%= f.label :password_confirmation, class: "block text-sm font-medium mb-1" %>
-        <%= f.password_field :password_confirmation, required: true,
-                             autocomplete: "new-password", class: "form-input w-full" %>
+      <div data-controller="password-visibility">
+        <div class="field relative">
+          <%= f.mandatory_label :password_confirmation, class: "block text-sm font-medium mb-1" %>
+          <%= f.password_field :password_confirmation,
+                               required: true,
+                               spellcheck: false,
+                               data: { password_visibility_target: "input"},
+                               autocomplete: "new-password",
+                               class: "form-input w-full" %>
+          <%= password_visibility_toggle_button %>
+        </div>
       </div>
 
       <div>

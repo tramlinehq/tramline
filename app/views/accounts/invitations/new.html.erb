@@ -1,4 +1,4 @@
-<%= render PageComponent.new(title: "Add a member to your team 📱") do %>
+<%= render PageComponent.new(breadcrumb: breadcrumb(:new_member), title: "Add a member to your team 📱") do %>
   <%= form_with(model: @invite,
                 url: accounts_organization_invitations_path(@invite.organization, @invite),
                 builder: ButtonHelper::AuthzForms,

@@ -1,4 +1,4 @@
-<%= render PageComponent.new(title: "Team ‍👫") do |page| %>
+<%= render PageComponent.new(breadcrumb: breadcrumb(:team), title: "Team ‍👫") do |page| %>
   <% page.with_action do %>
     <%= authz_link_to :green, new_accounts_organization_invitation_path(current_organization) do %>
       <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>

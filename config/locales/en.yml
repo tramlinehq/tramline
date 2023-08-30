@@ -194,6 +194,6 @@ en:
         '503':
           title: "The page could not be served due to a temporary server failure."
       password:
-        password_strength: "Please choose a stronger password with at least 8 characters. Try a mix of letters, numbers, and symbols."
+        password_strength: "Choose a stronger password. Try a mix of letters, numbers, and symbols. <a class='underline' href='https://www.useapassphrase.com'>Use a passphrase</a> can be quite helpful."
       not_authorized_policy: "Not Authorized %{model} on %{query} action"
       not_logged_in: "You must be logged in to access this page"

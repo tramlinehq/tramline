@@ -3,7 +3,9 @@
 en:
   devise:
     confirmations:
-      confirmed: "Your email address has been successfully confirmed."
+      confirmed: "Your email address has been successfully confirmed. Please sign in to continue."
+      already_confirmed: "Your email address has already been confirmed. Please sign in to continue."
+      could_not_confirm: "Your email address could not be confirmed. Please try again or contact support if the error persists."
       send_instructions: "You will receive an email with instructions for how to confirm your email address in a few minutes."
       send_paranoid_instructions: "If your email address exists in our database, you will receive an email with instructions for how to confirm your email address in a few minutes."
     failure:
@@ -18,7 +20,10 @@ en:
       unconfirmed: "You have to confirm your email address before continuing."
     mailer:
       confirmation_instructions:
-        subject: "Confirmation instructions"
+        subject: "Verify email address for Tramline account"
+        cta_body: "Please confirm your email address by clicking the link below. You will not be able to login until you confirm."
+        cta: "Confirm Email Address"
+        ignore: "If you did not sign up for Tramline or feel it is in error, please ignore this email."
       reset_password_instructions:
         subject: "Reset your Tramline password"
         hello: "Hello,"
@@ -45,7 +50,7 @@ en:
       signed_up: "Welcome! You have signed up successfully."
       signed_up_but_inactive: "You have signed up successfully. However, we could not sign you in because your account is not yet activated."
       signed_up_but_locked: "You have signed up successfully. However, we could not sign you in because your account is locked."
-      signed_up_but_unconfirmed: "A message with a confirmation link has been sent to your email address. Please follow the link to activate your account."
+      signed_up_but_unconfirmed: "An email with a confirmation link has been sent to your email address. Please follow the link to activate your account."
       update_needs_confirmation: "You updated your account successfully, but we need to verify your new email address. Please check your email and follow the confirmation link to confirm your new email address."
       updated: "Your account has been updated successfully."
       updated_but_not_signed_in: "Your account has been updated successfully, but since your password was changed, you need to sign in again."

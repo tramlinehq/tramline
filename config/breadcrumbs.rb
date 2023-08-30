@@ -2,6 +2,19 @@ crumb :root do
   link "Home", root_path
 end
 
+crumb :team do
+  link "Team", accounts_organization_team_path(current_organization.slug)
+end
+
+crumb :new_member do
+  link "Add Member"
+  parent :team
+end
+
+crumb :memberships do
+  link "Memberships", root_path
+end
+
 # Issue list
 crumb :apps do
   link "All apps", apps_path
