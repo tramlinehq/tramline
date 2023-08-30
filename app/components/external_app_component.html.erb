@@ -23,7 +23,7 @@
         <% end %>
 
         <% row.with_cell do %>
-          <% releases(channel).each do |release| %>
+          <% releases(channel)&.each do |release| %>
             <div class="mx-2">
               <div class="flex justify-between text-sm mb-2">
                 <div>
