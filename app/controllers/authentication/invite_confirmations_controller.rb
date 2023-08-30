@@ -14,21 +14,22 @@ class Authentication::InviteConfirmationsController < ApplicationController
 
     if current_user.present? && @invite.recipient != current_user
       @acceptable = false
-      flash[:error] = "You are signed in as #{current_user.email} in Tramline. Log out to accept the invite for #{@invite.recipient.email}."
+      flash[:error] = t("invitation.flash.already_signed_in.existing_user", current_email: current_user.email, new_email: @invite.recipient.email)
     end
   end
 
   def create
     @invite.recipient.add!(@invite) if @token.present?
+    flash[:notice] = t("invitation.flash.accepted")
     redirect_to new_user_session_path
   rescue ActiveRecord::RecordInvalid
-    redirect_to new_user_session_path, notice: "Failed to accept your invitation. Please contact support!"
+    redirect_to new_user_session_path, notice: t("invitation.flash.failed")
   end
 
   private
 
   def check_accepted_invitation
-    redirect_to root_path, notice: "Invitation was accepted!" if @invite.accepted_at.present?
+    redirect_to root_path, notice: t("invitation.flash.already_accepted") if @invite.accepted_at.present?
   end
 
   def set_invite_token

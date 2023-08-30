@@ -143,9 +143,16 @@ en:
   invitation:
     flash:
       invite_issued: "Invitation issued"
+      signup_before: "Please create an account to accept the invite to join %{org}"
+      already_signed_in:
+        new_user: "You are signed in as %{email} in Tramline. Log out to accept the invite for a new user."
+        existing_user: "You are signed in as %{email} in Tramline. Log out to accept the invite for %{new_email}."
       invite_error:
         mailer: "Unable to issue invitation to %{email}"
         email: "The email specified does not match the one in the invitation"
+      accepted: "Invitation was accepted. Please sign in to continue."
+      already_accepted: "Invitation was already accepted!"
+      failed: "Failed to accept your invitation. Please contact support!"
     invite_mailer:
       existing_user:
         subject: "%{sender} invited you to join the %{org} team on Tramline"

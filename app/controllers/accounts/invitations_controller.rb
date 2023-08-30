@@ -1,3 +1,12 @@
+# Invitation scenarios:
+#
+# |------------+-----------------------------------+-----------------------------------+--------------------------------------------|
+# | scenario   | new user                          | existing user                     | existing but different user                |
+# |------------+-----------------------------------+-----------------------------------+--------------------------------------------|
+# | logged in  | ask to logout from home page      | accept and move on                | ask to log out from invite acceptance page |
+# | logged out | sign up (with notice) and move on | accept and sign in (with  notice) | -                                          |
+# |------------+-----------------------------------+-----------------------------------+--------------------------------------------|
+
 class Accounts::InvitationsController < SignedInApplicationController
   before_action :require_write_access!, only: %i[new create]
 

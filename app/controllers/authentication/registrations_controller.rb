@@ -6,6 +6,10 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
   helper_method :user
 
   def new
+    if @token.present?
+      flash[:notice] = t("invitation.flash.signup_before", org: @invite.organization.name)
+    end
+
     super do |usr|
       @organization = usr.organizations.build
       @user.email = @invite&.email
@@ -32,6 +36,14 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
   end
 
   protected
+
+  def after_sign_in_path_for(resource)
+    if request.path == new_user_registration_path && params["invite_token"].present?
+      flash[:alert] = t("invitation.flash.already_signed_in.new_user", email: current_user.email)
+    end
+
+    super
+  end
 
   def finish_sign_up
     if user.persisted?
