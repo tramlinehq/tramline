@@ -1,4 +1,4 @@
 class ApplicationMailer < ActionMailer::Base
-  default from: "help@tramline.app"
+  default from: "no-reply@tramline.app"
   layout "mailer"
 end

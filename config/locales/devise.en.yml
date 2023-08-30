@@ -25,7 +25,11 @@ en:
         cta: "Confirm Email Address"
         ignore: "If you did not sign up for Tramline or feel it is in error, please ignore this email."
       reset_password_instructions:
-        subject: "Reset password instructions"
+        subject: "Reset your Tramline password"
+        hello: "Hello,"
+        message: "We received a request to reset the password for the Tramline account associated with %{email}."
+        action: "Reset your password"
+        ignore: "If you didn’t make this request, please ignore this email. No changes have been made to your account."
       unlock_instructions:
         subject: "Unlock instructions"
       email_changed:

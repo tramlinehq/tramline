@@ -12,7 +12,12 @@ class Authentication::SessionsController < Devise::SessionsController
   end
 
   def after_sign_in_path_for(resource)
-    stored_location_for(resource) || root_path
+    stored_location = stored_location_for(resource)
+    if stored_location&.include? new_authentication_invite_confirmation_path
+      return root_path
+    end
+
+    stored_location || root_path
   end
 
   protected

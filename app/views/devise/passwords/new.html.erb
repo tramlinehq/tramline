@@ -1,5 +1,5 @@
 <div class="max-w-md mx-auto px-4 py-8">
-  <%= render partial: "authentication/shared/header", locals: { heading: "Forgot your password? 🧐"} %>
+  <%= render partial: "authentication/shared/header", locals: { heading: "Forgot your password? 🧐", subtitle_text: nil} %>
 
   <%= form_for(resource, as: resource_name, url: password_path(resource_name),
                html: { method: :post, 'data-turbo' => "false" }) do |f| %>
