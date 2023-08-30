@@ -5,7 +5,7 @@
     <div class="space-y-6">
       <div>
         <%= f.label :email, class: "block text-sm font-medium mb-1" %>
-        <%= f.email_field :email, autofocus: false, autocomplete: "email", class: "form-input w-full" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-input w-full", value: @confirmed_email %>
       </div>
 
       <div>

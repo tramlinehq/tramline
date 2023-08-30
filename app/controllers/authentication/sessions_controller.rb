@@ -1,4 +1,5 @@
 class Authentication::SessionsController < Devise::SessionsController
+  before_action :set_confirmed_email, only: [:new]
   after_action :prepare_intercom_shutdown, only: [:destroy]
   after_action :intercom_shutdown, only: [:new]
 
@@ -22,5 +23,9 @@ class Authentication::SessionsController < Devise::SessionsController
 
   def intercom_shutdown
     IntercomRails::ShutdownHelper.intercom_shutdown(session, cookies, request.domain)
+  end
+
+  def set_confirmed_email
+    @confirmed_email = params[:confirmed_email].presence || nil
   end
 end

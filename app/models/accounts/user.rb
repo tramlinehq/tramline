@@ -95,10 +95,8 @@ class Accounts::User < ApplicationRecord
 
   protected
 
-  # keeping the devise confirmable module around and disabling like this,
-  # in case we need to bring it back in some way
   def confirmation_required?
-    false
+    true
   end
 
   private
