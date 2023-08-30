@@ -15,7 +15,7 @@ class ReleaseChangelog < ApplicationRecord
   belongs_to :release
 
   def normalized_commits
-    commits.map { NormalizedCommit.new(_1) }.sort_by(&:timestamp)
+    commits.map { NormalizedCommit.new(_1) }.sort_by(&:timestamp).reverse
   end
 
   private
