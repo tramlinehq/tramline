@@ -145,8 +145,8 @@ en:
       invite_issued: "Invitation issued"
       signup_before: "Please create an account to accept the invite to join %{org}"
       already_signed_in:
-        new_user: "You are signed in as %{email} in Tramline. Log out to accept the invite for a new user."
-        existing_user: "You are signed in as %{email} in Tramline. Log out to accept the invite for %{new_email}."
+        new_user: "You are signed in as %{email} in Tramline. Sign out to accept the invite for a new user."
+        existing_user: "You are signed in as %{email} in Tramline. Sign out to accept the invite for %{new_email}."
       invite_error:
         mailer: "Unable to issue invitation to %{email}"
         email: "The email specified does not match the one in the invitation"
