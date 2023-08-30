@@ -1,14 +1,18 @@
-<div class="max-w-sm mx-auto px-4 py-8">
-  <h1 class="text-3xl text-slate-800 font-bold mb-6">Accept your invitation ✨</h1>
+<div class="max-w-md mx-auto px-4 py-8">
+  <%= render partial: "authentication/shared/header", locals: { heading: "Accept your invitation! ✨", resource: nil, subtitle_text: "Team - #{@organization.name}" } %>
   <!-- Form -->
-  <%= form_with(url: authentication_invite_confirmations_path, method: :post, html: { 'data-turbo' => "false" }) do |f| %>
+  <% if @acceptable %>
+    <%= form_with(url: authentication_invite_confirmations_path, method: :post, html: { 'data-turbo' => "false" }) do |f| %>
 
-    <% if @token.present? %>
-      <%= hidden_field_tag :invite_token, @token %>
+      <% if @token.present? %>
+        <%= hidden_field_tag :invite_token, @token %>
+      <% end %>
+
+      <div class="flex items-center justify-between mt-6">
+        <%= f.submit "Yes, please", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
+      </div>
     <% end %>
-
-    <div class="flex items-center justify-between mt-6">
-      <%= f.submit "Yes, please", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
-    </div>
+  <% else %>
+    <%= link_to "Log out", destroy_user_session_path, "data-turbo": false, class: "btn bg-indigo-500 hover:bg-indigo-600 text-white" %>
   <% end %>
 </div>

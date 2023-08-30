@@ -4,7 +4,14 @@
   </a>
 </div>
 
-<h1 class="text-3xl text-slate-800 font-bold mb-6"><%= heading %></h1>
+<div class="mb-6">
+  <h1 class="text-3xl text-slate-800 font-bold mb-1"><%= heading %></h1>
+  <% if subtitle_text.present? %>
+    <span class="text-md text-slate-500"><%= subtitle_text %></span>
+  <% end %>
+</div>
 
-<%= render partial: 'shared/errors' %>
+<% if resource.present? %>
+  <%= render partial: 'shared/errors' %>
+<% end %>
 <%= render partial: "shared/flash" %>
