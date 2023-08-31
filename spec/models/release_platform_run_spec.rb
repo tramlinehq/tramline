@@ -50,23 +50,23 @@ describe ReleasePlatformRun do
     end
   end
 
-  describe "#startable_step?" do
+  describe "#manually_startable_step?" do
     let(:release_platform) { create(:release_platform) }
     let(:steps) { create_list(:step, 2, :with_deployment, release_platform:) }
 
     it "first step can be started if there are no step runs" do
       release_platform_run = create(:release_platform_run, release_platform:)
 
-      expect(release_platform_run.startable_step?(steps.first)).to be(true)
-      expect(release_platform_run.startable_step?(steps.second)).to be(false)
+      expect(release_platform_run.manually_startable_step?(steps.first)).to be(true)
+      expect(release_platform_run.manually_startable_step?(steps.second)).to be(false)
     end
 
     it "next step can be started after finishing previous step" do
       release_platform_run = create(:release_platform_run, release_platform: release_platform)
       create(:step_run, step: steps.first, status: "success", release_platform_run: release_platform_run)
 
-      expect(release_platform_run.startable_step?(steps.first)).to be(false)
-      expect(release_platform_run.startable_step?(steps.second)).to be(true)
+      expect(release_platform_run.manually_startable_step?(steps.first)).to be(false)
+      expect(release_platform_run.manually_startable_step?(steps.second)).to be(true)
     end
   end
 
