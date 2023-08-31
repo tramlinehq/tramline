@@ -99,7 +99,7 @@ class ReleasePlatformRun < ApplicationRecord
     )
   end
 
-  # ensure the version is greater than current ongoing release version and the current train version
+  # Ensure the version is up-to-date with the current ongoing release or the finished ongoing release
   def corrected_release_version
     return train.next_version if train.version_ahead?(release)
     train.ongoing_release.next_version if train.ongoing_release&.version_ahead?(release)
@@ -122,7 +122,7 @@ class ReleasePlatformRun < ApplicationRecord
     )
   end
 
-  # ensure the hotfix version is greater than current upcoming release version
+  # Ensure the hotfix version is greater than the current upcoming release version
   def newest_release_version
     return release_version if release_version.to_semverish.proper?
 
