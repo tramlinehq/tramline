@@ -259,8 +259,20 @@ class Release < ApplicationRecord
     all_commits.last
   end
 
+  def first_commit
+    all_commits.first
+  end
+
   def latest_commit_hash
     vcs_provider.branch_head_sha(release_branch)
+  end
+
+  def upcoming?
+    train.upcoming_release == self
+  end
+
+  def ongoing?
+    train.ongoing_release == self
   end
 
   private

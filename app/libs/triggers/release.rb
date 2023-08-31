@@ -24,7 +24,7 @@ class Triggers::Release
     return Response.new(:unprocessable_entity, "App is in draft mode, cannot start a release!") if train.app.in_draft_mode?
 
     if kickoff.ok?
-      Response.new(:ok)
+      Response.new(:ok, release)
     else
       Response.new(:unprocessable_entity, "Could not kickoff a release • #{kickoff.error.message}")
     end
@@ -32,7 +32,7 @@ class Triggers::Release
 
   private
 
-  attr_reader :train, :starting_time, :automatic
+  attr_reader :train, :starting_time, :automatic, :release
   delegate :branching_strategy, to: :train
 
   memoize def kickoff
@@ -49,7 +49,7 @@ class Triggers::Release
   end
 
   def create_release
-    train.releases.create!(
+    @release ||= train.releases.create!(
       scheduled_at: starting_time,
       branch_name: release_branch,
       has_major_bump: major_release?,

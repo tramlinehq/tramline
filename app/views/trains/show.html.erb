@@ -19,12 +19,12 @@
     <% end %>
 
     <% if @train.ongoing_release %>
-      <%= decorated_link_to :green, "Ongoing Release", live_release_app_train_releases_path(@app, @train) %>
-      <% unless @train.upcoming_release %>
+      <%= decorated_link_to :green, "Ongoing Release", ongoing_release_app_train_releases_path(@app, @train) %>
+      <% if @train.upcoming_release %>
+        <%= decorated_link_to :blue, "Upcoming Release", upcoming_release_app_train_releases_path(@app, @train) %>
+      <% else %>
         <%= authz_button_to :blue, "Prepare next release #{@train.next_version}", app_train_releases_path(@app, @train) %>
         <%= authz_button_to :amber, "Prepare next major release #{@train.next_version(true)}", app_train_releases_path(@app, @train, has_major_bump: true) %>
-      <% else %>
-        <%= decorated_link_to :green, "Upcoming Release", release_path(@train.upcoming_release) %>
       <% end %>
     <% elsif @train.manually_startable? %>
       <%= authz_button_to :blue, start_release_text(@train), app_train_releases_path(@app, @train) %>
@@ -163,6 +163,12 @@
                   <span class="ml-2 py-0.5"><%= release_status_badge(run.status) %></span>
                   <% if run.is_automatic? %>
                     <span class="ml-2 py-0.5"><%= status_badge("automatic", :neutral) %></span>
+                  <% end %>
+                  <% if run.upcoming? %>
+                    <span class="ml-2 py-0.5"><%= status_badge("upcoming", :neutral) %></span>
+                  <% end %>
+                  <% if run.ongoing? %>
+                    <span class="ml-2 py-0.5"><%= status_badge("ongoing", :routine) %></span>
                   <% end %>
                 <% end %>
               <% end %>
