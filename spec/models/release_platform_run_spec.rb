@@ -155,14 +155,14 @@ describe ReleasePlatformRun do
     it "is false when it has step run and production deployment run has not started rollout" do
       release_step_run = create(:step_run, step: release_step, release_platform_run:)
       create(:deployment_run, deployment: production_deployment, step_run: release_step_run)
-      release_platform_run.bump_version
+      release_platform_run.bump_version!
       expect(release_platform_run).not_to be_hotfix
     end
 
     it "is true when it has step run and production deployment run has started rollout" do
       release_step_run = create(:step_run, step: release_step, release_platform_run:)
       create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
-      release_platform_run.bump_version
+      release_platform_run.bump_version!
       expect(release_platform_run).to be_hotfix
     end
 
@@ -259,7 +259,7 @@ describe ReleasePlatformRun do
     end
   end
 
-  describe "#bump_version" do
+  describe "#bump_version!" do
     let(:app) { create(:app, :android) }
     let(:train) { create(:train, app:) }
     let(:release_platform) { create(:release_platform, train:) }
@@ -279,7 +279,7 @@ describe ReleasePlatformRun do
         step_run = create(:step_run, release_platform_run:, step: release_step)
         create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
 
-        release_platform_run.bump_version
+        release_platform_run.bump_version!
         release_platform_run.reload
 
         expect(release_platform_run.release_version).to eq("1.3")
@@ -292,7 +292,7 @@ describe ReleasePlatformRun do
         step_run = create(:step_run, release_platform_run:, step: release_step)
         create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
 
-        release_platform_run.bump_version
+        release_platform_run.bump_version!
         release_platform_run.reload
 
         expect(release_platform_run.release_version).to eq("1.2.4")
@@ -306,7 +306,7 @@ describe ReleasePlatformRun do
       create(:deployment_run, step_run: step_run)
 
       expect {
-        release_platform_run.bump_version
+        release_platform_run.bump_version!
       }.not_to change { release_platform_run.release_version }
     end
   end
