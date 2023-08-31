@@ -20,6 +20,7 @@ class Release < ApplicationRecord
   include AASM
   include Passportable
   include Taggable
+  include Versionable
   include ActionView::Helpers::DateHelper
   include Rails.application.routes.url_helpers
   using RefinedString
@@ -121,6 +122,13 @@ class Release < ApplicationRecord
     pending_release.exists?
   end
 
+  def self.for_branch(branch_name) = find_by(branch_name:)
+
+  def version_ahead?(other)
+    return false if self == other
+    release_version.to_semverish >= other.release_version.to_semverish
+  end
+
   def create_active_build_queue
     build_queues.create(scheduled_at: (Time.current + train.build_queue_wait_time), is_active: true)
   end
@@ -143,17 +151,26 @@ class Release < ApplicationRecord
   end
 
   def fetch_commit_log
-    if previous_release.present?
-      create_release_changelog(
-        commits: vcs_provider.commit_log(previous_release.tag_name, train.working_branch),
-        from_ref: previous_release.tag_name
-      )
+    if upcoming?
+      ongoing_head = train.ongoing_release.first_commit
+      source_commitish, from_ref = ongoing_head.commit_hash, ongoing_head.short_sha
+    else
+      source_commitish = from_ref = previous_release&.tag_name
     end
+
+    return if source_commitish.blank?
+
+    create_release_changelog(
+      commits: vcs_provider.commit_log(source_commitish, train.working_branch),
+      from_ref:
+    )
   end
 
   def release_version
     release_platform_runs.pluck(:release_version).map(&:to_semverish).max.to_s
   end
+
+  alias_method :version_current, :release_version
 
   def release_branch
     branch_name
@@ -257,8 +274,20 @@ class Release < ApplicationRecord
     all_commits.last
   end
 
+  def first_commit
+    all_commits.first
+  end
+
   def latest_commit_hash
     vcs_provider.branch_head_sha(release_branch)
+  end
+
+  def upcoming?
+    train.upcoming_release == self
+  end
+
+  def ongoing?
+    train.ongoing_release == self
   end
 
   private
@@ -291,7 +320,7 @@ class Release < ApplicationRecord
   end
 
   def set_version
-    self.original_release_version = train.next_version(has_major_bump)
+    self.original_release_version = (train.ongoing_release.presence || train).next_version(has_major_bump)
   end
 
   def set_default_release_metadata

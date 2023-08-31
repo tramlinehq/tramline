@@ -30,11 +30,24 @@
 
         <li>
           <div class="flex items-center">
-            <% if release.startable_step?(step) %>
+            <% if release.manually_startable_step?(step) %>
               <%= authz_button_to :blue,
                                   "Move to this step",
                                   start_release_step_run_path(release, step),
                                   { class: "btn-xs mb-2" } %>
+            <% end %>
+
+            <% if release.upcoming_startable_step?(step) %>
+              <div class="flex flex-col mb-1">
+                <%= authz_button_to :disabled,
+                                    "Move to this step",
+                                    start_release_step_run_path(release, step),
+                                    { class: "btn-xs mb-1" } %>
+                <div class="text-sm font-normal text-gray-500 bg-gray-50 p-2 rounded-sm border border-gray-200">
+                  You cannot start this release step until the
+                  <%= link_to "current ongoing release", ongoing_release_app_train_releases_path(@app, @train), class: "underline" %>
+                  is finished.</div>
+              </div>
             <% end %>
 
             <% if step_run&.may_retry_ci? && release.on_track? %>

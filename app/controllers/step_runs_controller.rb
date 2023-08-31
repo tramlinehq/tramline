@@ -1,12 +1,12 @@
 class StepRunsController < SignedInApplicationController
   before_action :require_write_access!, only: %i[start retry_ci_workflow]
   before_action :set_release
+  before_action :set_step, only: %i[start]
+  before_action :ensure_startable, only: %i[start]
 
   # FIXME: This action incorrectly consumes a step_id and not a step_run_id as the route suggests
   def start
-    step = @release.release_platform.steps.friendly.find(params[:id])
-    commit = @release.last_commit
-    Triggers::StepRun.call(step, commit, @release)
+    Triggers::StepRun.call(@step, @release.last_commit, @release)
 
     redirect_back fallback_location: root_path, notice: "Step successfully started"
   end
@@ -22,12 +22,23 @@ class StepRunsController < SignedInApplicationController
 
   private
 
+  def ensure_startable
+    unless @release.manually_startable_step?(@step)
+      redirect_back fallback_location: root_path,
+        flash: {error: "Cannot perform this operation. This step cannot be started."}
+    end
+  end
+
   def set_release
     @release =
       ReleasePlatformRun
         .joins(release_platform: :app)
         .where(apps: {organization: current_organization})
         .find(params[:release_id])
+  end
+
+  def set_step
+    @step = @release.release_platform.steps.friendly.find(params[:id])
   end
 
   def deployment_attributes

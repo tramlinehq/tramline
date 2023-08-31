@@ -12,22 +12,22 @@ class BuildQueuesController < SignedInApplicationController
       @build_queue.apply!
     end
 
-    redirect_to live_release_path, notice: "Build queue has been applied and emptied."
+    redirect_to current_release_path, notice: "Build queue has been applied and emptied."
   end
 
   private
 
   def already_triggered_error
-    redirect_to live_release_path, flash: {error: "Cannot re-apply a build queue to a release!"}
+    redirect_to current_release_path, flash: {error: "Cannot re-apply a build queue to a release!"}
   end
 
   def locked_release_error
-    redirect_to live_release_path, flash: {error: "Cannot apply a build queue to a locked release."}
+    redirect_to current_release_path, flash: {error: "Cannot apply a build queue to a locked release."}
   end
 
   def ensure_release_platform_run
     if @release_platform_run.blank?
-      redirect_to live_release_path, flash: {error: "Could not find the release!"}
+      redirect_to current_release_path, flash: {error: "Could not find the release!"}
     end
   end
 
@@ -39,7 +39,7 @@ class BuildQueuesController < SignedInApplicationController
     @release = Release.find(params[:release_id])
   end
 
-  def live_release_path
-    live_release_app_train_releases_path(@release.app, @release.train)
+  def current_release_path
+    release_path(@release)
   end
 end

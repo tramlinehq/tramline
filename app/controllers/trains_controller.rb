@@ -54,7 +54,7 @@ class TrainsController < SignedInApplicationController
   end
 
   def deactivate
-    redirect_to train_path, notice: "Can not deactivate with an ongoing release" and return if @train.active_run.present?
+    redirect_to train_path, notice: "Can not deactivate with an ongoing release" and return if @train.active_runs.exists?
 
     if @train.deactivate!
       redirect_to train_path, notice: "Train was deactivated!"

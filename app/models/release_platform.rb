@@ -33,7 +33,6 @@ class ReleasePlatform < ApplicationRecord
   belongs_to :train
 
   has_many :release_platform_runs, inverse_of: :release_platform, dependent: :destroy
-  has_one :active_run, -> { pending_release }, class_name: "ReleasePlatformRun", inverse_of: :release_platform, dependent: :destroy
   has_many :steps, -> { order(:step_number) }, inverse_of: :release_platform, dependent: :destroy
   has_many :deployments, through: :steps
 
@@ -51,6 +50,14 @@ class ReleasePlatform < ApplicationRecord
   end
 
   alias_method :startable?, :has_release_step?
+
+  def has_production_deployment?
+    release_step&.has_production_deployment?
+  end
+
+  def has_review_steps?
+    steps.review.exists?
+  end
 
   def release_step
     steps.release.first

@@ -30,6 +30,7 @@ class Train < ApplicationRecord
   extend FriendlyId
   include Rails.application.routes.url_helpers
   include Notifiable
+  include Versionable
 
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
@@ -39,7 +40,7 @@ class Train < ApplicationRecord
 
   belongs_to :app
   has_many :releases, -> { sequential }, inverse_of: :train, dependent: :destroy
-  has_one :active_run, -> { pending_release }, class_name: "Release", inverse_of: :train, dependent: :destroy
+  has_many :active_runs, -> { pending_release }, class_name: "Release", inverse_of: :train, dependent: :destroy
   has_many :release_platforms, dependent: :destroy
   has_many :integrations, through: :app
   has_many :steps, through: :release_platforms
@@ -110,6 +111,18 @@ class Train < ApplicationRecord
     first&.release_platforms&.android&.first&.steps&.release&.any?
   end
 
+  def version_ahead?(release)
+    version_current.to_semverish > release.release_version.to_semverish
+  end
+
+  def ongoing_release
+    active_runs.order(:scheduled_at).first
+  end
+
+  def upcoming_release
+    active_runs.order(:scheduled_at).second
+  end
+
   def schedule_release!
     scheduled_releases.create!(scheduled_at: next_run_at) if automatic?
   end
@@ -138,6 +151,7 @@ class Train < ApplicationRecord
   end
 
   def diff_since_last_release?
+    return vcs_provider.commit_log(ongoing_release.first_commit.commit_hash, working_branch).any? if ongoing_release
     return true if last_finished_release.blank?
     vcs_provider.commit_log(last_finished_release.tag_name, working_branch).any?
   end
@@ -206,11 +220,18 @@ class Train < ApplicationRecord
   end
 
   def deactivatable?
-    automatic? && active? && active_run.blank?
+    automatic? && active? && active_runs.none?
   end
 
   def manually_startable?
     startable? && !inactive?
+  end
+
+  def upcoming_release_startable?
+    manually_startable? &&
+      ongoing_release.present? &&
+      release_platforms.any?(&:has_production_deployment?) &&
+      release_platforms.all?(&:has_review_steps?)
   end
 
   def branching_strategy_name
@@ -219,11 +240,6 @@ class Train < ApplicationRecord
 
   def build_channel_integrations
     integrations.build_channel
-  end
-
-  def next_version(has_major_bump = false)
-    bump_term = has_major_bump ? :major : :minor
-    version_current.ver_bump(bump_term)
   end
 
   def pre_release_prs?
