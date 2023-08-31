@@ -111,6 +111,10 @@ class Train < ApplicationRecord
     first&.release_platforms&.android&.first&.steps&.release&.any?
   end
 
+  def version_ahead?(release)
+    version_current.to_semverish > release.release_version.to_semverish
+  end
+
   def ongoing_release
     active_runs.order(:scheduled_at).first
   end

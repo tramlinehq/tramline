@@ -56,7 +56,7 @@ class ReleasePlatform < ApplicationRecord
   end
 
   def has_review_steps?
-    steps.review.present?
+    steps.review.exists?
   end
 
   def release_step

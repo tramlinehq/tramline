@@ -368,6 +368,45 @@ describe ReleasePlatformRun do
     end
   end
 
+  describe "#correct_version!" do
+    let(:app) { create(:app, :android) }
+    let(:train) { create(:train, app:, version_seeded_with: "1.1") }
+    let(:release_platform) { create(:release_platform, train:) }
+    let(:release_step) { create(:step, :release, :with_deployment, release_platform:) }
+
+    context "when ongoing release has moved on" do
+      let(:ongoing_release_version) { "1.2" }
+      let(:upcoming_release_version) { "1.3" }
+      let(:ongoing_release) { create(:release, :with_no_platform_runs, train:, original_release_version: ongoing_release_version) }
+      let(:upcoming_release) { create(:release, :with_no_platform_runs, train:, original_release_version: upcoming_release_version) }
+
+      it "updates version to surpass ongoing release version" do
+        _ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: ongoing_release, release_version: "1.4")
+        upcoming_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: upcoming_release, release_version: upcoming_release_version)
+
+        upcoming_release_platform_run.correct_version!
+        upcoming_release_platform_run.reload
+
+        expect(upcoming_release_platform_run.release_version).to eq("1.5")
+      end
+    end
+
+    context "when train version current has moved on" do
+      let(:ongoing_release_version) { "1.2" }
+      let(:ongoing_release) { create(:release, :with_no_platform_runs, train:, original_release_version: ongoing_release_version) }
+
+      it "updates version to surpass ongoing release version" do
+        ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: ongoing_release, release_version: ongoing_release_version)
+        train.update!(version_current: "1.3")
+
+        ongoing_release_platform_run.correct_version!
+        ongoing_release_platform_run.reload
+
+        expect(ongoing_release_platform_run.release_version).to eq("1.4")
+      end
+    end
+  end
+
   describe "#on_finish!" do
     it "schedules a platform-specific tag job if cross-platform app" do
       app = create(:app, :cross_platform)

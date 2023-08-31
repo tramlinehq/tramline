@@ -84,19 +84,25 @@ class ReleasePlatformRun < ApplicationRecord
     end
   end
 
-  # For an upcoming release, ensure the version is greater than current ongoing release version
   def correct_version!
-    return if release.ongoing?
+    return if release_version.to_semverish.proper?
 
-    ongoing = train.ongoing_release
-    return unless ongoing.version_ahead?(release)
-    update!(release_version: ongoing.next_version)
+    version = corrected_release_version
+    return unless version
+
+    update!(release_version: version)
 
     event_stamp!(
       reason: :version_corrected,
       kind: :notice,
-      data: {version: release_version, ongoing_version: ongoing.release_version}
+      data: {version: release_version, ongoing_version: version}
     )
+  end
+
+  # ensure the version is greater than current ongoing release version and the current train version
+  def corrected_release_version
+    return train.next_version if train.version_ahead?(release)
+    train.ongoing_release.next_version if train.ongoing_release&.version_ahead?(release)
   end
 
   def bump_version!
@@ -116,13 +122,12 @@ class ReleasePlatformRun < ApplicationRecord
     )
   end
 
-  # For an ongoing release, ensure the hotfix version is greater than current upcoming release version
+  # ensure the hotfix version is greater than current upcoming release version
   def newest_release_version
     return release_version if release_version.to_semverish.proper?
 
     upcoming = train.upcoming_release
-    return release_version if upcoming.nil? || release == upcoming
-    return release_version unless upcoming.version_ahead?(release)
+    return release_version unless upcoming&.version_ahead?(release)
 
     upcoming.release_version
   end

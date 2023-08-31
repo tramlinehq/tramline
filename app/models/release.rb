@@ -124,6 +124,11 @@ class Release < ApplicationRecord
 
   def self.for_branch(branch_name) = find_by(branch_name:)
 
+  def version_ahead?(other)
+    return false if self == other
+    release_version.to_semverish >= other.release_version.to_semverish
+  end
+
   def create_active_build_queue
     build_queues.create(scheduled_at: (Time.current + train.build_queue_wait_time), is_active: true)
   end
@@ -283,10 +288,6 @@ class Release < ApplicationRecord
 
   def ongoing?
     train.ongoing_release == self
-  end
-
-  def version_ahead?(other)
-    release_version.to_semverish >= other.release_version.to_semverish
   end
 
   private
