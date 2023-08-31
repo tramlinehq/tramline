@@ -11,7 +11,7 @@
         "type": "string"
       },
       "releases": {
-        "type": "array",
+        "type": ["array", "null"],
         "items": {
           "type": "object",
           "required": [
