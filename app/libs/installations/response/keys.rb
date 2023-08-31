@@ -29,7 +29,7 @@ class Installations::Response::Keys
     def transform_path(in_m, path, path_key)
       if path.is_a?(Hash)
         raise ArgumentError, "Invalid transformation" if path.size > 1
-        [path_key, in_m.get_in(*path.keys.first).map { |m| transform_paths(m, path.values.first) }]
+        [path_key, in_m.get_in(*path.keys.first)&.map { |m| transform_paths(m, path.values.first) }]
       else
         [path_key, in_m.get_in(*path)]
       end
