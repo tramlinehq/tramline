@@ -43,7 +43,7 @@ class WebhookHandlers::Push
   end
 
   def release
-    @release ||= train.active_run
+    @release ||= train.active_runs.for_branch(branch_name)
   end
 
   def valid_repo_and_branch?

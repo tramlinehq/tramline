@@ -30,7 +30,7 @@ class ReleasesController < SignedInApplicationController
   def live_release
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
-    @release = @train.active_run
+    @release = @train.ongoing_release
 
     redirect_to train_path, notice: "No release in progress." and return unless @release
 

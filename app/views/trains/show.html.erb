@@ -18,8 +18,14 @@
                           data: { turbo_method: :patch, turbo_confirm: "This will cancel all the scheduled release kickoff(s). Are you sure?" } %>
     <% end %>
 
-    <% if @train.active_run %>
+    <% if @train.ongoing_release %>
       <%= decorated_link_to :green, "Ongoing Release", live_release_app_train_releases_path(@app, @train) %>
+      <% unless @train.upcoming_release %>
+        <%= authz_button_to :blue, "Prepare next release #{@train.next_version}", app_train_releases_path(@app, @train) %>
+        <%= authz_button_to :amber, "Prepare next major release #{@train.next_version(true)}", app_train_releases_path(@app, @train, has_major_bump: true) %>
+      <% else %>
+        <%= decorated_link_to :green, "Upcoming Release", release_path(@train.upcoming_release) %>
+      <% end %>
     <% elsif @train.manually_startable? %>
       <%= authz_button_to :blue, start_release_text(@train), app_train_releases_path(@app, @train) %>
       <%= authz_button_to :amber, start_release_text(@train, major: true), app_train_releases_path(@app, @train, has_major_bump: true) %>
@@ -32,7 +38,7 @@
       <% end %>
     <% end %>
 
-    <%= authz_link_to (@train.active_run.present? ? :disabled : :neutral), edit_app_train_path(@app, @train) do %>
+    <%= authz_link_to (@train.active_runs.exists? ? :disabled : :neutral), edit_app_train_path(@app, @train) do %>
       <%= inline_svg("edit.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
       <span class="ml-2">Settings</span>
     <% end %>

@@ -20,7 +20,7 @@ class Triggers::Release
   def call
     return Response.new(:unprocessable_entity, "Cannot start a train that is not active!") if train.inactive?
     return Response.new(:unprocessable_entity, "Cannot start a train that has no release step. Please add at least one release step to the train.") unless train.release_platforms.all?(&:has_release_step?)
-    return Response.new(:unprocessable_entity, "A release is already in progress!") if train.active_run.present?
+    return Response.new(:unprocessable_entity, "No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present?
     return Response.new(:unprocessable_entity, "App is in draft mode, cannot start a release!") if train.app.in_draft_mode?
 
     if kickoff.ok?
@@ -39,7 +39,7 @@ class Triggers::Release
     GitHub::Result.new do
       train.with_lock do
         raise AppInDraftMode.new("App is in draft mode, cannot start a release!") if train.app.in_draft_mode?
-        raise ReleaseAlreadyInProgress.new("A release is already in progress!") if train.active_run.present?
+        raise ReleaseAlreadyInProgress.new("No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present?
         raise NothingToRelease.new("No diff since last release") unless train.diff_since_last_release?
         train.activate! unless train.active?
         create_release

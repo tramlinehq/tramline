@@ -121,6 +121,8 @@ class Release < ApplicationRecord
     pending_release.exists?
   end
 
+  def self.for_branch(branch_name) = find_by(branch_name:)
+
   def create_active_build_queue
     build_queues.create(scheduled_at: (Time.current + train.build_queue_wait_time), is_active: true)
   end
