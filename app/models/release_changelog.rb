@@ -31,7 +31,9 @@ class ReleaseChangelog < ApplicationRecord
 
     def author_email = commit["author_email"]
 
-    def url = commit["author_url"]
+    def url = commit["url"]
+
+    def author_url = commit["author_url"]
 
     def timestamp = commit["author_timestamp"]
 

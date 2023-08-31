@@ -36,6 +36,8 @@ class Commit < ApplicationRecord
 
   delegate :release_platform_runs, to: :release
 
+  alias_method :author_url, :url
+
   def self.between(base_step_run, head_step_run)
     return none if head_step_run.nil?
     return none if base_step_run.nil? && head_step_run.nil?
