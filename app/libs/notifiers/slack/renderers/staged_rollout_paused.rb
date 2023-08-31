@@ -8,7 +8,7 @@ module Notifiers
       end
 
       def secondary_text
-        "You can choose to *Resume* or *Halt* your release from the live release page."
+        "You can choose to *Resume* or *Halt* your release from the live release page"
       end
     end
   end

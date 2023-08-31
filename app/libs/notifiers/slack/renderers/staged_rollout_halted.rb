@@ -8,7 +8,7 @@ module Notifiers
       end
 
       def secondary_text
-        "You can not change this release from Tramline any more."
+        "You can not change this release from Tramline any more"
       end
     end
   end
