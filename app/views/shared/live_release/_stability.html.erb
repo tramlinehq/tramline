@@ -43,7 +43,8 @@
                                     "Move to this step",
                                     start_release_step_run_path(release, step),
                                     { class: "btn-xs mb-1" } %>
-                <div class="text-slate-800 text-sm">You cannot start the release step until the
+                <div class="text-sm font-normal text-gray-500 bg-gray-50 p-2 rounded-sm border border-gray-200">
+                  You cannot start this release step until the
                   <%= link_to "current ongoing release", ongoing_release_app_train_releases_path(@app, @train), class: "underline" %>
                   is finished.</div>
               </div>
