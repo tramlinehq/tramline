@@ -41,8 +41,6 @@ class Train < ApplicationRecord
   belongs_to :app
   has_many :releases, -> { sequential }, inverse_of: :train, dependent: :destroy
   has_many :active_runs, -> { pending_release }, class_name: "Release", inverse_of: :train, dependent: :destroy
-  has_one :ongoing_release, -> { pending_release.order(:scheduled_at).limit(1) }, class_name: "Release", inverse_of: :train, dependent: :destroy
-  has_one :upcoming_release, -> { pending_release.order(:scheduled_at).limit(1).offset(1) }, class_name: "Release", inverse_of: :train, dependent: :destroy
   has_many :release_platforms, dependent: :destroy
   has_many :integrations, through: :app
   has_many :steps, through: :release_platforms
@@ -111,6 +109,14 @@ class Train < ApplicationRecord
 
   def self.android_release_steps?
     first&.release_platforms&.android&.first&.steps&.release&.any?
+  end
+
+  def ongoing_release
+    active_runs.order(:scheduled_at).first
+  end
+
+  def upcoming_release
+    active_runs.order(:scheduled_at).second
   end
 
   def schedule_release!

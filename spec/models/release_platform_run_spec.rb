@@ -309,6 +309,63 @@ describe ReleasePlatformRun do
         release_platform_run.bump_version!
       }.not_to change { release_platform_run.release_version }
     end
+
+    context "when upcoming release and proper semver" do
+      let(:ongoing_release_version) { "1.2.3" }
+      let(:upcoming_release_version) { "1.3.0" }
+      let(:ongoing_release) { create(:release, :with_no_platform_runs, train:, original_release_version: ongoing_release_version) }
+      let(:upcoming_release) { create(:release, :with_no_platform_runs, train:, original_release_version: upcoming_release_version) }
+
+      it "bumps patch version" do
+        ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version: ongoing_release_version)
+        deployment = create(:deployment, :with_google_play_store, :with_production_channel, step: release_step)
+        _upcoming_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: upcoming_release, release_version: upcoming_release_version)
+        step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step: release_step)
+        create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
+
+        ongoing_release_platform_run.bump_version!
+        ongoing_release_platform_run.reload
+
+        expect(ongoing_release_platform_run.release_version).to eq("1.2.4")
+      end
+    end
+
+    context "when upcoming release and partial semver" do
+      let(:ongoing_release_version) { "1.2" }
+      let(:upcoming_release_version) { "1.3" }
+      let(:ongoing_release) { create(:release, :with_no_platform_runs, train:, original_release_version: ongoing_release_version) }
+      let(:upcoming_release) { create(:release, :with_no_platform_runs, train:, original_release_version: upcoming_release_version) }
+
+      it "bumps version to higher than current upcoming release version" do
+        ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: ongoing_release, release_version: ongoing_release_version)
+        deployment = create(:deployment, :with_google_play_store, :with_production_channel, step: release_step)
+        _upcoming_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: upcoming_release, release_version: upcoming_release_version)
+        step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step: release_step)
+        create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
+
+        ongoing_release_platform_run.bump_version!
+        ongoing_release_platform_run.reload
+
+        expect(ongoing_release_platform_run.release_version).to eq("1.4")
+      end
+    end
+
+    context "when no upcoming release and partial semver" do
+      let(:ongoing_release_version) { "1.2" }
+      let(:ongoing_release) { create(:release, :with_no_platform_runs, train:, original_release_version: ongoing_release_version) }
+
+      it "bumps version to next release version" do
+        ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: ongoing_release, release_version: ongoing_release_version)
+        deployment = create(:deployment, :with_google_play_store, :with_production_channel, step: release_step)
+        step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step: release_step)
+        create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
+
+        ongoing_release_platform_run.bump_version!
+        ongoing_release_platform_run.reload
+
+        expect(ongoing_release_platform_run.release_version).to eq("1.3")
+      end
+    end
   end
 
   describe "#on_finish!" do
