@@ -75,7 +75,8 @@ class Commit < ApplicationRecord
   end
 
   def trigger_step_runs_for(platform_run)
-    platform_run.bump_version
+    platform_run.correct_version!
+    platform_run.bump_version!
 
     platform_run.release_platform.ordered_steps_until(platform_run.current_step_number).each do |step|
       Triggers::StepRun.call(step, self, platform_run)

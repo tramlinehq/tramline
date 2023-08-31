@@ -11,6 +11,13 @@ module TrainsHelper
     text + train.next_version(major)
   end
 
+  def start_upcoming_release_text(ongoing_release, major: false)
+    text = "Prepare next "
+    text += major ? "major " : "minor "
+    text += "release "
+    text + ongoing_release.next_version(major)
+  end
+
   def release_schedule(train)
     if train.automatic?
       date = time_format(train.kickoff_at, with_year: true, with_time: false)

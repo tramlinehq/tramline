@@ -20,6 +20,7 @@ class Release < ApplicationRecord
   include AASM
   include Passportable
   include Taggable
+  include Versionable
   include ActionView::Helpers::DateHelper
   include Rails.application.routes.url_helpers
   using RefinedString
@@ -145,17 +146,26 @@ class Release < ApplicationRecord
   end
 
   def fetch_commit_log
-    if previous_release.present?
-      create_release_changelog(
-        commits: vcs_provider.commit_log(previous_release.tag_name, train.working_branch),
-        from_ref: previous_release.tag_name
-      )
+    if upcoming?
+      ongoing_head = train.ongoing_release.first_commit
+      source_commitish, from_ref = ongoing_head.commit_hash, ongoing_head.short_sha
+    else
+      source_commitish = from_ref = previous_release&.tag_name
     end
+
+    return if source_commitish.blank?
+
+    create_release_changelog(
+      commits: vcs_provider.commit_log(source_commitish, train.working_branch),
+      from_ref:
+    )
   end
 
   def release_version
     release_platform_runs.pluck(:release_version).map(&:to_semverish).max.to_s
   end
+
+  alias_method :version_current, :release_version
 
   def release_branch
     branch_name
@@ -275,6 +285,10 @@ class Release < ApplicationRecord
     train.ongoing_release == self
   end
 
+  def version_ahead?(other)
+    release_version.to_semverish >= other.release_version.to_semverish
+  end
+
   private
 
   def base_tag_name
@@ -305,7 +319,7 @@ class Release < ApplicationRecord
   end
 
   def set_version
-    self.original_release_version = train.next_version(has_major_bump)
+    self.original_release_version = (train.ongoing_release.presence || train).next_version(has_major_bump)
   end
 
   def set_default_release_metadata

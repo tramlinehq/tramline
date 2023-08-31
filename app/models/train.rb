@@ -30,6 +30,7 @@ class Train < ApplicationRecord
   extend FriendlyId
   include Rails.application.routes.url_helpers
   include Notifiable
+  include Versionable
 
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
@@ -222,11 +223,6 @@ class Train < ApplicationRecord
 
   def build_channel_integrations
     integrations.build_channel
-  end
-
-  def next_version(has_major_bump = false)
-    bump_term = has_major_bump ? :major : :minor
-    version_current.ver_bump(bump_term)
   end
 
   def pre_release_prs?

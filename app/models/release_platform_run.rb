@@ -40,7 +40,7 @@ class ReleasePlatformRun < ApplicationRecord
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
   scope :have_not_reached_production, -> { on_track.reject(&:production_release_happened?) }
 
-  STAMPABLE_REASONS = %w[version_changed finished]
+  STAMPABLE_REASONS = %w[version_changed version_corrected finished]
 
   STATES = {
     created: "created",
@@ -84,10 +84,26 @@ class ReleasePlatformRun < ApplicationRecord
     end
   end
 
-  def bump_version
+  # For an upcoming release, ensure the version is greater than current ongoing release version
+  def correct_version!
+    return if release.ongoing?
+
+    ongoing = train.ongoing_release
+    return unless ongoing.version_ahead?(release)
+    update!(release_version: ongoing.next_version)
+
+    event_stamp!(
+      reason: :version_corrected,
+      kind: :notice,
+      data: {version: release_version, ongoing_version: ongoing.release_version}
+    )
+  end
+
+  def bump_version!
     return unless version_bump_required?
 
-    semverish = release_version.to_semverish
+    semverish = newest_release_version.to_semverish
+
     self.release_version = semverish.bump!(:patch).to_s if semverish.proper?
     self.release_version = semverish.bump!(:minor).to_s if semverish.partial?
 
@@ -98,6 +114,17 @@ class ReleasePlatformRun < ApplicationRecord
       kind: :notice,
       data: {version: release_version}
     )
+  end
+
+  # For an ongoing release, ensure the hotfix version is greater than current upcoming release version
+  def newest_release_version
+    return release_version if release_version.to_semverish.proper?
+
+    upcoming = train.upcoming_release
+    return release_version if upcoming.nil? || release == upcoming
+    return release_version unless upcoming.version_ahead?(release)
+
+    upcoming.release_version
   end
 
   def metadata_editable?
