@@ -89,6 +89,10 @@ class Step < ApplicationRecord
     )
   end
 
+  def has_production_deployment?
+    deployments.any?(&:production_channel?)
+  end
+
   private
 
   def reject_deployments?(attributes)

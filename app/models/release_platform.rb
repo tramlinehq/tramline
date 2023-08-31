@@ -51,6 +51,14 @@ class ReleasePlatform < ApplicationRecord
 
   alias_method :startable?, :has_release_step?
 
+  def has_production_deployment?
+    release_step&.has_production_deployment?
+  end
+
+  def has_review_steps?
+    steps.review.present?
+  end
+
   def release_step
     steps.release.first
   end

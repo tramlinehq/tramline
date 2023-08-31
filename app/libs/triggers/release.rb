@@ -5,6 +5,7 @@ class Triggers::Release
   ReleaseAlreadyInProgress = Class.new(StandardError)
   NothingToRelease = Class.new(StandardError)
   AppInDraftMode = Class.new(StandardError)
+  UpcomingReleaseNotAllowed = Class.new(StandardError)
 
   def self.call(train, has_major_bump: false, automatic: false)
     new(train, has_major_bump:, automatic:).call
@@ -21,6 +22,7 @@ class Triggers::Release
     return Response.new(:unprocessable_entity, "Cannot start a train that is not active!") if train.inactive?
     return Response.new(:unprocessable_entity, "Cannot start a train that has no release step. Please add at least one release step to the train.") unless train.release_platforms.all?(&:has_release_step?)
     return Response.new(:unprocessable_entity, "No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present?
+    return Response.new(:unprocessable_entity, "Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable?
     return Response.new(:unprocessable_entity, "App is in draft mode, cannot start a release!") if train.app.in_draft_mode?
 
     if kickoff.ok?
@@ -40,6 +42,7 @@ class Triggers::Release
       train.with_lock do
         raise AppInDraftMode.new("App is in draft mode, cannot start a release!") if train.app.in_draft_mode?
         raise ReleaseAlreadyInProgress.new("No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present?
+        raise UpcomingReleaseNotAllowed.new("Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable?
         raise NothingToRelease.new("No diff since last release") unless train.diff_since_last_release?
         train.activate! unless train.active?
         create_release

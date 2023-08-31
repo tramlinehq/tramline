@@ -22,7 +22,7 @@
       <%= decorated_link_to :green, "Ongoing Release", ongoing_release_app_train_releases_path(@app, @train) %>
       <% if @train.upcoming_release %>
         <%= decorated_link_to :blue, "Upcoming Release", upcoming_release_app_train_releases_path(@app, @train) %>
-      <% else %>
+      <% elsif @train.upcoming_release_startable? %>
         <%= authz_button_to :blue, start_upcoming_release_text(@train.ongoing_release), app_train_releases_path(@app, @train) %>
         <%= authz_button_to :amber, start_upcoming_release_text(@train.ongoing_release, major: true), app_train_releases_path(@app, @train, has_major_bump: true) %>
       <% end %>

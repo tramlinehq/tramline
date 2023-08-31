@@ -217,6 +217,13 @@ class Train < ApplicationRecord
     startable? && !inactive?
   end
 
+  def upcoming_release_startable?
+    manually_startable? &&
+      ongoing_release.present? &&
+      release_platforms.any?(&:has_production_deployment?) &&
+      release_platforms.all?(&:has_review_steps?)
+  end
+
   def branching_strategy_name
     BRANCHING_STRATEGIES[branching_strategy.to_sym]
   end
