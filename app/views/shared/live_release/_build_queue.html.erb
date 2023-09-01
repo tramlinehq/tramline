@@ -1,5 +1,5 @@
 <section>
-  <% commits = build_queue.commits %>
+  <% commits = build_queue.commits.sequential %>
   <% commits_count = commits.size %>
   <div class="flex justify-between w-full items-center">
     <div>
