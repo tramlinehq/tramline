@@ -37,11 +37,9 @@ class StepRun < ApplicationRecord
 
   validates :step_id, uniqueness: {scope: :commit_id}
 
-  PAUSE_BEFORE_CI = 30.seconds
-
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
   after_commit -> { update(build_notes_raw: relevant_changes) }, on: :create
-  after_commit -> { Releases::TriggerWorkflowRunJob.set(wait: PAUSE_BEFORE_CI).perform_later(id) }, on: :create
+  after_commit -> { Releases::TriggerWorkflowRunJob.perform_later(id) }, on: :create
 
   STAMPABLE_REASONS = %w[
     created
@@ -103,7 +101,6 @@ class StepRun < ApplicationRecord
     state(*STATES.keys)
 
     event :trigger_ci, after_commit: :after_trigger_ci do
-      before :trigger_workflow_run
       transitions from: :on_track, to: :ci_workflow_triggered
     end
 
@@ -324,6 +321,11 @@ class StepRun < ApplicationRecord
   def find_and_update_workflow_run
     return if workflow_found?
     find_workflow_run.then { |wr| update_ci_metadata!(wr) }
+  end
+
+  def trigger_ci_worfklow_run!
+    trigger_workflow_run
+    trigger_ci!
   end
 
   private
