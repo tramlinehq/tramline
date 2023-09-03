@@ -51,6 +51,7 @@ class Release < ApplicationRecord
     pre_release_pr_not_creatable
     pull_request_not_mergeable
     post_release_pr_succeeded
+    mid_release_pr_succeeded
     finalize_failed
     finished
   ]

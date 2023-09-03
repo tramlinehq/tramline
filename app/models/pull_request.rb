@@ -3,20 +3,20 @@
 # Table name: pull_requests
 #
 #  id                      :uuid             not null, primary key
-#  base_ref                :string           not null, indexed => [release_id, head_ref]
+#  base_ref                :string           not null
 #  body                    :text
 #  closed_at               :datetime
-#  head_ref                :string           not null, indexed => [release_id, base_ref]
-#  number                  :bigint           not null, indexed
+#  head_ref                :string           not null
+#  number                  :bigint           not null, indexed => [release_id, phase], indexed
 #  opened_at               :datetime         not null
-#  phase                   :string           not null, indexed
+#  phase                   :string           not null, indexed => [release_id, number], indexed
 #  source                  :string           not null, indexed
 #  state                   :string           not null, indexed
 #  title                   :string           not null
 #  url                     :string
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
-#  release_id              :uuid             indexed => [head_ref, base_ref]
+#  release_id              :uuid             indexed => [phase, number]
 #  release_platform_run_id :uuid
 #  source_id               :string           not null, indexed
 #
@@ -53,7 +53,7 @@ class PullRequest < ApplicationRecord
       end
 
     PullRequest
-      .upsert(generic_attributes.merge(attributes), unique_by: [:release_id, :head_ref, :base_ref])
+      .upsert(generic_attributes.merge(attributes), unique_by: [:release_id, :phase, :number])
       .rows
       .first
       .first

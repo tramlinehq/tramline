@@ -33,6 +33,7 @@ class Commit < ApplicationRecord
   validates :commit_hash, uniqueness: {scope: :release_id}
 
   after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
+  after_create_commit -> { Releases::BackmergeCommitJob.perform_later(id) }
 
   delegate :release_platform_runs, to: :release
 

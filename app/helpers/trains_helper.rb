@@ -47,4 +47,9 @@ module TrainsHelper
       BUILD_QUEUE_DISABLED_LABEL
     end
   end
+
+  def backmerge_text(train)
+    # FIXME: change this based on train config
+    "Changes on the release branch will be merged continuously to the working branch."
+  end
 end
