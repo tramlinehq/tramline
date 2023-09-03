@@ -1,8 +1,10 @@
 <section>
-  <div class="flex justify-between w-full items-center">
-    <div>
-      <h2 class="text-2xl text-slate-800 font-bold">Release Backmerge</h2>
-      <span class="text-sm text-slate-400"><%== backmerge_text(release.train) %></span>
+  <div class="flex flex-col justify-between w-full">
+    <h2 class="text-2xl text-slate-800 font-bold">Release Backmerge</h2>
+    <div class="mt-6">
+      <%= render "shared/note_box",
+                 type: :error,
+                 message: "We couldn't merge the release PR, please fix any merge conflicts and/or protection rules applied for your branches and merge the PR manually." %>
     </div>
     <%= render partial: "shared/live_release/pull_requests", locals: { prs: release.pull_requests.ongoing.open } %>
   </div>
