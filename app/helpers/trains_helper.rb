@@ -49,7 +49,7 @@ module TrainsHelper
   end
 
   def backmerge_text(train)
-    if train.backmerge_strategy == Train.backmerge_strategies[:continuous]
+    if train.continuous_backmerge?
       "Changes on the release branch will be merged <b>continuously</b> to the working branch."
     else
       "Changes on the release branch will be merged to the working branch <b>at the end</b> of the release."

@@ -240,6 +240,10 @@ class Train < ApplicationRecord
       release_platforms.all?(&:has_review_steps?)
   end
 
+  def continuous_backmerge?
+    backmerge_strategy == Train.backmerge_strategies[:continuous]
+  end
+
   def branching_strategy_name
     BRANCHING_STRATEGIES[branching_strategy.to_sym]
   end
@@ -325,7 +329,7 @@ class Train < ApplicationRecord
   end
 
   def set_backmerge_config
-    self.continuous_backmerge_enabled = (backmerge_strategy == Train.backmerge_strategies[:continuous])
+    self.continuous_backmerge_enabled = continuous_backmerge?
   end
 
   def semver_compatibility
@@ -369,7 +373,7 @@ class Train < ApplicationRecord
   end
 
   def backmerge_config
-    errors.add(:backmerge_strategy, :continuous_not_allowed) if branching_strategy != "almost_trunk" && backmerge_strategy == Train.backmerge_strategies[:continuous]
+    errors.add(:backmerge_strategy, :continuous_not_allowed) if branching_strategy != "almost_trunk" && continuous_backmerge?
   end
 
   def working_branch_presence

@@ -15,6 +15,7 @@ class Triggers::OngoingRelease
 
   def call
     return unless train.branching_strategy.in?(POST_RELEASE_HANDLERS.keys)
+    return unless train.continuous_backmerge?
 
     release.with_lock do
       return unless release.committable?
