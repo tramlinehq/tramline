@@ -93,6 +93,8 @@ en:
               config_not_allowed: "build queue wait time cannot be configured when queue is disabled"
             working_branch:
               not_available: "could not find the working branch in the configured git repo"
+            backmerge_strategy:
+              continuous_not_allowed: "continuous backmerge only allowed for Almost Trunk branching strategy"
         releases/step:
           attributes:
             train:

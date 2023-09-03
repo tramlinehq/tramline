@@ -111,6 +111,10 @@
         <% mt.with_description("Build Queue Config") do %>
           <%= build_queue_config(@train) %>
         <% end %>
+
+        <% mt.with_description("Backmerge Config") do %>
+          <%== backmerge_text(@train) %>
+        <% end %>
       <% end %>
     </article>
 
