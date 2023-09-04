@@ -14,11 +14,12 @@ class Triggers::ReleaseBackmerge
     return unless train.almost_trunk?
     return unless train.continuous_backmerge?
 
-    release.with_lock do
-      return unless release.committable?
-      result = Triggers::PatchPullRequest.create!(release, commit)
-      Rails.logger.debug "Patch Pull Request: result", result.value!
+    res = release.with_lock do
+      return GitHub::Result.new { } unless release.committable?
+      Triggers::PatchPullRequest.create!(release, commit)
     end
+
+    commit.update!(backmerge_failure: true) unless res.ok?
   end
 
   private

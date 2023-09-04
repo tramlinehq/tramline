@@ -20,9 +20,9 @@ class Triggers::PatchPullRequest
       logger.debug("Patch Pull Request: Pull Request Already exists for #{commit.short_sha} to #{working_branch}")
       repo_integration.find_pr(working_branch, patch_branch)
     end.then do |value|
-      pr = commit.pull_requests.ongoing.build(release:).update_or_insert!(**value)
+      pr = commit.build_pull_request(release:, phase: :ongoing).update_or_insert!(**value)
       logger.debug "Patch Pull Request: Created a patch PR successfully", pr
-      stamp_pr_success
+      stamp_pr_success(pr)
       GitHub::Result.new { value }
     end
   end
@@ -40,9 +40,8 @@ class Triggers::PatchPullRequest
     "[PATCH] [#{release.release_version}]"
   end
 
-  def stamp_pr_success
-    # pr = release.reload.pull_requests.ongoing.first
-    # release.event_stamp!(reason: :mid_release_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number}) if pr
+  def stamp_pr_success(pr)
+    release.event_stamp!(reason: :mid_release_pr_created, kind: :success, data: {url: pr.url, number: pr.number}) if pr
   end
 
   def repo_integration

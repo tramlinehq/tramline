@@ -51,7 +51,8 @@ class Release < ApplicationRecord
     pre_release_pr_not_creatable
     pull_request_not_mergeable
     post_release_pr_succeeded
-    mid_release_pr_succeeded
+    mid_release_pr_created
+    pr_merged
     finalize_failed
     finished
   ]
@@ -148,7 +149,11 @@ class Release < ApplicationRecord
   end
 
   def queue_commit?
-    active_build_queue.present? && all_commits.size > 1
+    active_build_queue.present? && release_changes?
+  end
+
+  def release_changes?
+    all_commits.size > 1
   end
 
   def stoppable?

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_09_04_150351) do
+ActiveRecord::Schema[7.0].define(version: 2023_09_04_193532) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -129,6 +129,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_04_150351) do
     t.uuid "release_platform_run_id"
     t.uuid "release_id"
     t.uuid "build_queue_id"
+    t.boolean "backmerge_failure", default: false
     t.index ["build_queue_id"], name: "index_commits_on_build_queue_id"
     t.index ["commit_hash", "release_id"], name: "index_commits_on_commit_hash_and_release_id", unique: true
     t.index ["release_platform_id"], name: "index_commits_on_release_platform_id"

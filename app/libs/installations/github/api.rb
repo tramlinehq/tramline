@@ -273,13 +273,17 @@ module Installations
           - #{commit_to_pick_msg}
           - Authored by: @#{commit_to_pick_login}
         TEXT
-        patch_pr_title = "#{pr_title_prefix} #{commit_to_pick_msg}".gsub(/\s*\(#\d+\)/, "").squish
+        patch_pr_title = "#{pr_title_prefix} #{commit_to_pick_msg.split("\n").first}".gsub(/\s*\(#\d+\)/, "").squish
 
         @client
           .create_pull_request(repo, branch, patch_branch_name, patch_pr_title, patch_pr_description)
           .then { |response| Installations::Response::Keys.transform([response], transforms) }
           .first
       end
+
+    rescue Installations::Errors::MergeConflict => e
+      @client.delete_branch(repo, patch_branch_name)
+      raise e
     end
 
     def self.find_biggest(artifacts)

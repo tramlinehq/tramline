@@ -252,6 +252,14 @@ class Train < ApplicationRecord
     integrations.build_channel
   end
 
+  def open_active_prs_for?(branch_name)
+    open_active_prs_for(branch_name).exists?
+  end
+
+  def open_active_prs_for(branch_name)
+    PullRequest.open.where(release_id: active_runs.ids, head_ref: branch_name)
+  end
+
   def pre_release_prs?
     branching_strategy == "parallel_working"
   end

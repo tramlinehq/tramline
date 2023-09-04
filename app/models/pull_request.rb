@@ -63,6 +63,7 @@ class PullRequest < ApplicationRecord
   def normalize_attributes(attributes)
     generic_attributes = {
       release_id: release.id,
+      commit_id: commit&.id,
       phase: phase,
       state: normalize_state(attributes[:state])
     }
