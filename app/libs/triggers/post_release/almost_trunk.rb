@@ -43,7 +43,7 @@ class Triggers::PostRelease
 
     def stamp_pr_success
       pr = release.reload.pull_requests.post_release.first
-      release.event_stamp!(reason: :post_release_pr_succeeded, kind: :success, data: { url: pr.url, number: pr.number }) if pr
+      release.event_stamp!(reason: :post_release_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number}) if pr
     end
 
     def create_tag

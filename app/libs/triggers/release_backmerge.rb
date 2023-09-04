@@ -15,7 +15,7 @@ class Triggers::ReleaseBackmerge
     return unless train.continuous_backmerge?
 
     res = release.with_lock do
-      return GitHub::Result.new { } unless release.committable?
+      return GitHub::Result.new {} unless release.committable?
       Triggers::PatchPullRequest.create!(release, commit)
     end
 

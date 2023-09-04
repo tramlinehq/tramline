@@ -280,7 +280,6 @@ module Installations
           .then { |response| Installations::Response::Keys.transform([response], transforms) }
           .first
       end
-
     rescue Installations::Errors::MergeConflict => e
       @client.delete_branch(repo, patch_branch_name)
       raise e

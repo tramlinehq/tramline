@@ -22,7 +22,7 @@ class Triggers::PostRelease
       if release.pull_requests.open.exists?
         release.fail_post_release_phase!
       else
-        release.event_stamp!(reason: :finalizing, kind: :notice, data: { version: release.release_version })
+        release.event_stamp!(reason: :finalizing, kind: :notice, data: {version: release.release_version})
         result = POST_RELEASE_HANDLERS[train.branching_strategy].call(release)
         release.reload
 
@@ -30,7 +30,7 @@ class Triggers::PostRelease
           release.finish!
         else
           release.fail_post_release_phase!
-          release.event_stamp!(reason: :finalize_failed, kind: :error, data: { version: release.release_version })
+          release.event_stamp!(reason: :finalize_failed, kind: :error, data: {version: release.release_version})
           elog(result.error)
         end
       end

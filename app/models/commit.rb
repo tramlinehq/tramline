@@ -26,7 +26,7 @@ class Commit < ApplicationRecord
   has_many :passports, as: :stampable, dependent: :destroy
   belongs_to :release, inverse_of: :all_commits
   belongs_to :build_queue, inverse_of: :commits, optional: true
-  has_one :pull_request, inverse_of: :commit
+  has_one :pull_request, inverse_of: :commit, dependent: :nullify
 
   scope :sequential, -> { order(timestamp: :desc) }
 
