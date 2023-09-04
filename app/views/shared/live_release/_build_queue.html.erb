@@ -1,18 +1,18 @@
 <section>
   <% commits = build_queue.commits.sequential %>
   <% commits_count = commits.size %>
-  <div class="flex justify-between w-full items-center">
+  <div class="flex flex-col w-full">
     <div>
       <h2 class="text-2xl text-slate-800 font-bold">Build Queue</h2>
       <span class="text-sm text-slate-400"><%= commits_count %>&nbsp;commit(s) in the queue. Commits will be applied in <%= time_in_words(build_queue.scheduled_at) %>
         or after <%= build_queue.build_queue_size %> commits.</span>
     </div>
     <% if commits.present? %>
-      <div class="text-left">
+      <div class="text-left mt-2">
         <% if release.committable? %>
-          <%= authz_button_to :blue, "Apply commits now", apply_release_build_queue_path(release, build_queue), class: "btn-sm", data: { turbo_confirm: "This will trigger steps for the HEAD of the queue, are you sure?" } %>
+          <%= authz_button_to :blue, "Apply commits", apply_release_build_queue_path(release, build_queue), class: "btn-xs", data: { turbo_confirm: "This will trigger steps for the HEAD of the queue, are you sure?" } %>
         <% else %>
-          <%= authz_button_to :disabled, "Apply commits now", apply_release_build_queue_path(release, build_queue), class: "btn-sm" %>
+          <%= authz_button_to :disabled, "Apply commits", apply_release_build_queue_path(release, build_queue), class: "btn-xs" %>
         <% end %>
       </div>
     <% end %>
@@ -30,7 +30,7 @@
       <% commits.each_with_index do |commit, index| %>
         <tr>
           <td class="py-4 whitespace-nowrap">
-            <%= link_to_external commit.message.truncate(150), commit.url, class: "underline font-medium" %>
+            <%= link_to_external commit.message.truncate(70), commit.url, class: "underline font-medium" %>
             <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-slate-200 text-slate-600 rounded-full text-center px-2 py-0.5">
             #<%= commits_count - index %>
           </span>
