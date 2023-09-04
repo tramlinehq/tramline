@@ -227,6 +227,10 @@ class GithubIntegration < ApplicationRecord
     installation.create_pr!(code_repository_name, to_branch_ref, from, title, description, PR_TRANSFORMATIONS).merge_if_present(source: :github)
   end
 
+  def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title_prefix)
+    installation.cherry_pick_pr(code_repository_name, to_branch, commit_hash, patch_branch, pr_title_prefix, PR_TRANSFORMATIONS).merge_if_present(source: :github)
+  end
+
   def find_pr(to_branch_ref, from_branch_ref)
     from = namespaced_branch(from_branch_ref)
     installation.find_pr(code_repository_name, to_branch_ref, from, PR_TRANSFORMATIONS).merge_if_present(source: :github)

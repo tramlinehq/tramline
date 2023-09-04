@@ -205,6 +205,10 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS) }
   end
 
+  def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title_prefix)
+    {}.merge_if_present(source: :gitlab)
+  end
+
   def public_icon_img
     "https://storage.googleapis.com/tramline-public-assets/gitlab_small.png".freeze
   end

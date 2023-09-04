@@ -16,6 +16,7 @@
 #  url                     :string
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
+#  commit_id               :uuid             indexed
 #  release_id              :uuid             indexed => [phase, number]
 #  release_platform_run_id :uuid
 #  source_id               :string           not null, indexed
@@ -24,6 +25,7 @@ class PullRequest < ApplicationRecord
   class UnsupportedPullRequestSource < StandardError; end
 
   belongs_to :release
+  belongs_to :commit, optional: true
 
   enum phase: {
     pre_release: "pre_release",

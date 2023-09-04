@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_09_03_190854) do
+ActiveRecord::Schema[7.0].define(version: 2023_09_04_150351) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -323,6 +323,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_03_190854) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "release_id"
+    t.uuid "commit_id"
+    t.index ["commit_id"], name: "index_pull_requests_on_commit_id"
     t.index ["number"], name: "index_pull_requests_on_number"
     t.index ["phase"], name: "index_pull_requests_on_phase"
     t.index ["release_id", "phase", "number"], name: "idx_prs_on_release_id_and_phase_and_number", unique: true

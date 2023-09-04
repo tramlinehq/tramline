@@ -6,7 +6,6 @@ class Releases::BackmergeCommitJob < ApplicationJob
   def perform(commit_id)
     commit = Commit.find_by(id: commit_id)
     return unless commit.release.committable?
-
-    Triggers::OngoingRelease.call(commit.release)
+    Triggers::ReleaseBackmerge.call(commit)
   end
 end

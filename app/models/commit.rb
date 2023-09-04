@@ -23,6 +23,7 @@ class Commit < ApplicationRecord
 
   has_many :step_runs, dependent: :nullify, inverse_of: :commit
   has_many :passports, as: :stampable, dependent: :destroy
+  has_many :pull_requests, dependent: :nullify, inverse_of: :commit
   belongs_to :release, inverse_of: :all_commits
   belongs_to :build_queue, inverse_of: :commits, optional: true
 

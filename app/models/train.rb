@@ -256,6 +256,10 @@ class Train < ApplicationRecord
     branching_strategy == "parallel_working"
   end
 
+  def almost_trunk?
+    branching_strategy == "almost_trunk"
+  end
+
   def create_release!(branch_name, tag_name)
     return false unless active?
     vcs_provider.create_release!(tag_name, branch_name)
