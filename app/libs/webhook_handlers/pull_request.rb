@@ -1,18 +1,18 @@
 class WebhookHandlers::PullRequest < WebhookHandlers::Base
   def process
-    return Response.new(:accepted) unless valid_branch?
     return Response.new(:accepted, "No release") unless release
-    return Response.new(:accepted) unless release.committable?
+    return Response.new(:accepted) unless valid_branch?
+    return Response.new(:accepted) unless release.pull_request_acceptable?
     return Response.new(:accepted, "PR was not closed or merged") unless closed?
     return Response.new(:accepted, "Invalid repo/branch") unless valid_repo_and_branch?
 
-    WebhookProcessors::PullRequest.perform_later(release.id, pull_request)
+    WebhookProcessors::PullRequestJob.perform_later(release.id, pull_request)
     Response.new(:accepted)
   end
 
   private
 
-  delegate :pull_request, :closed?, :branch_name, to: :runner
+  delegate :pull_request, :closed?, :branch_name, :repository_name, to: :runner
 
   memoize def runner
     return GITHUB::PullRequest.new(payload) if vcs_provider.integration.github_integration?

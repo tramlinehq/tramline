@@ -1,4 +1,5 @@
 class WebhookHandlers::Github::PullRequest
+  using RefinedHash
   attr_reader :payload
 
   def initialize(payload)
@@ -6,16 +7,21 @@ class WebhookHandlers::Github::PullRequest
   end
 
   def branch_name
-    payload["pull_request"]["head"]["ref"]
+    payload[:head][:ref]
   end
 
   def closed?
     pull_request[:state] == "closed"
   end
 
+  def repository_name
+    payload[:head][:repo][:full_name]
+  end
+
   def pull_request
     Installations::Response::Keys
-      .transform([payload["pull_request"]], GitlabIntegration::PR_TRANSFORMATIONS)
-      .merge(source: :github)
+      .transform([payload], GithubIntegration::PR_TRANSFORMATIONS)
+      .first
+      .merge_if_present(source: :github)
   end
 end

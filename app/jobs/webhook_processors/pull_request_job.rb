@@ -1,4 +1,4 @@
-class WebhookProcessors::PullRequest < ApplicationJob
+class WebhookProcessors::PullRequestJob < ApplicationJob
   queue_as :high
 
   def perform(release_id, pr_attributes)

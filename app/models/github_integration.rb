@@ -70,7 +70,8 @@ class GithubIntegration < ApplicationRecord
     state: :state,
     head_ref: [:head, :ref],
     base_ref: [:base, :ref],
-    opened_at: :created_at
+    opened_at: :created_at,
+    closed_at: :closed_at
   }
 
   def install_path

@@ -70,7 +70,7 @@ class PullRequest < ApplicationRecord
 
   def normalize_state(state)
     case state
-    when "opened", "locked"
+    when "open", "opened", "locked"
       PullRequest.states[:open]
     when "merged", "closed"
       PullRequest.states[:closed]

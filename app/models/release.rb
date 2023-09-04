@@ -143,6 +143,10 @@ class Release < ApplicationRecord
     created? || on_track? || partially_finished?
   end
 
+  def pull_request_acceptable?
+    committable? || post_release_started? || post_release_failed?
+  end
+
   def queue_commit?
     active_build_queue.present? && all_commits.size > 1
   end

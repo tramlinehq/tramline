@@ -197,6 +197,7 @@ module Installations
         @client
           .create_pull_request(repo, to, from, title, body)
           .then { |response| Installations::Response::Keys.transform([response], transforms) }
+          .first
       end
     end
 

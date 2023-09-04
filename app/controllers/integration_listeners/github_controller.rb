@@ -32,7 +32,7 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def handle_pull_request
-    response = WebhookHandlers::PullRequest.process(train, params)
+    response = WebhookHandlers::PullRequest.process(train, pull_request_params)
     Rails.logger.debug response.body
     head response.status
   end
@@ -43,5 +43,20 @@ class IntegrationListeners::GithubController < IntegrationListenerController
 
   def train
     @train ||= Train.find(params[:train_id])
+  end
+
+  def pull_request_params
+    params.require(:pull_request).permit(
+      :number,
+      :title,
+      :body,
+      :url,
+      :state,
+      :created_at,
+      :closed_at,
+      :id,
+      base: [:ref],
+      head: [:ref, repo: [:full_name]]
+    )
   end
 end
