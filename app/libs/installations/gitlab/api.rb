@@ -20,7 +20,8 @@ module Installations
     GET_BRANCH_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/branches/{branch_name}"
 
     WEBHOOK_PERMISSIONS = {
-      push_events: true
+      push_events: true,
+      merge_requests_events: true
     }
 
     def initialize(oauth_access_token)
@@ -136,7 +137,7 @@ module Installations
       execute(:post, CREATE_TAG_URL.expand(project_id:).to_s, params)
     end
 
-    def create_pr!(project_id, target_branch, source_branch, title, description)
+    def create_pr!(project_id, target_branch, source_branch, title, description, transforms)
       # gitlab allows creating merge requests without any changes, but we avoid it
       raise Installations::Errors::PullRequestWithoutCommits unless diff?(project_id, target_branch, source_branch)
 
@@ -150,9 +151,10 @@ module Installations
       }
 
       execute(:post, MR_URL.expand(project_id:).to_s, params)
+        .then { |response| Installations::Response::Keys.transform(response, transforms) }
     end
 
-    def find_pr(project_id, target_branch, source_branch)
+    def find_pr(project_id, target_branch, source_branch, transforms)
       params = {
         form: {
           source_branch:,
@@ -161,7 +163,9 @@ module Installations
         }
       }
 
-      execute(:get, MR_URL.expand(project_id:).to_s, params).first
+      execute(:get, MR_URL.expand(project_id:).to_s, params)
+        .then { |response| Installations::Response::Keys.transform(response, transforms) }
+        .first
     end
 
     def get_pr(project_id, pr_number, transforms)

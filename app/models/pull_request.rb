@@ -41,19 +41,9 @@ class PullRequest < ApplicationRecord
     gitlab: "gitlab"
   }
 
-  def update_or_insert!(response)
-    attributes =
-      case repository_source_name
-      when "github"
-        attributes_for_github(response)
-      when "gitlab"
-        attributes_for_gitlab(response)
-      else
-        raise UnsupportedPullRequestSource
-      end
-
+  def update_or_insert!(attributes)
     PullRequest
-      .upsert(generic_attributes.merge(attributes), unique_by: [:release_id, :phase, :number])
+      .upsert(normalize_attributes(attributes), unique_by: [:release_id, :phase, :number])
       .rows
       .first
       .first
@@ -68,45 +58,18 @@ class PullRequest < ApplicationRecord
 
   private
 
-  def attributes_for_github(response)
-    {
-      source: PullRequest.sources[:github],
-      source_id: response[:id],
-      number: response[:number],
-      title: response[:title],
-      body: response[:body],
-      url: response[:html_url],
-      state: response[:state],
-      head_ref: response[:head][:ref],
-      base_ref: response[:base][:ref],
-      opened_at: response[:created_at]
-    }
-  end
-
-  def attributes_for_gitlab(response)
-    {
-      source: PullRequest.sources[:gitlab],
-      source_id: response["id"],
-      number: response["iid"],
-      title: response["title"],
-      body: response["description"],
-      url: response["web_url"],
-      state: gitlab_state(response["state"]),
-      head_ref: response["sha"],
-      base_ref: response["sha"], # TODO: this is a temporary fix, we should fetch the correct sha from GitLab and fill this
-      opened_at: response["created_at"]
-    }
-  end
-
-  def generic_attributes
-    {
+  def normalize_attributes(attributes)
+    generic_attributes = {
       release_id: release.id,
-      phase: phase
+      phase: phase,
+      state: normalize_state(attributes[:state])
     }
+
+    attributes.merge(generic_attributes)
   end
 
-  def gitlab_state(response_state)
-    case response_state
+  def normalize_state(state)
+    case state
     when "opened", "locked"
       PullRequest.states[:open]
     when "merged", "closed"
@@ -114,9 +77,5 @@ class PullRequest < ApplicationRecord
     else
       PullRequest.states[:closed]
     end
-  end
-
-  def repository_source_name
-    release.train.vcs_provider.to_s
   end
 end

@@ -6,7 +6,7 @@ module Installations
     attr_reader :app_name, :installation_id, :jwt, :client
 
     WEBHOOK_NAME = "web"
-    WEBHOOK_EVENTS = %w[push]
+    WEBHOOK_EVENTS = %w[push pull_request]
     LIST_WORKFLOWS_LIMIT = 99
     RERUN_FAILED_JOBS_URL = Addressable::Template.new "https://api.github.com/repos/{repo}/actions/runs/{run_id}/rerun-failed-jobs"
 
@@ -174,15 +174,20 @@ module Installations
       end
     end
 
-    def create_pr!(repo, to, from, title, body)
+    def create_pr!(repo, to, from, title, body, transforms)
       execute do
-        @client.create_pull_request(repo, to, from, title, body)
+        @client
+          .create_pull_request(repo, to, from, title, body)
+          .then { |response| Installations::Response::Keys.transform([response], transforms) }
       end
     end
 
-    def find_pr(repo, to, from)
+    def find_pr(repo, to, from, transforms)
       execute do
-        @client.pull_requests(repo, {head: from, base: to}).first
+        @client
+          .pull_requests(repo, {head: from, base: to})
+          .then { |response| Installations::Response::Keys.transform(response, transforms) }
+          .first
       end
     end
 

@@ -14,6 +14,7 @@ class GithubIntegration < ApplicationRecord
   include Providable
   include Displayable
   include Rails.application.routes.url_helpers
+  using RefinedHash
 
   delegate :code_repository_name, :code_repo_namespace, to: :app_config
 
@@ -58,6 +59,18 @@ class GithubIntegration < ApplicationRecord
     author_timestamp: [:commit, :author, :date],
     author_login: [:author, :login],
     author_url: [:author, :html_url]
+  }
+
+  PR_TRANSFORMATIONS = {
+    source_id: :id,
+    number: :number,
+    title: :title,
+    body: :body,
+    url: :html_url,
+    state: :state,
+    head_ref: [:head, :ref],
+    base_ref: [:base, :ref],
+    opened_at: :created_at
   }
 
   def install_path
@@ -208,36 +221,26 @@ class GithubIntegration < ApplicationRecord
     true
   end
 
-  PR_TRANSFORMATIONS = {
-    source_id: :id,
-    number: :number,
-    title: :title,
-    body: :body,
-    url: :html_url,
-    state: :state,
-    head_ref: [:head, :ref],
-    base_ref: [:base, :ref],
-    opened_at: :created_at
-  }
-
   def create_pr!(to_branch_ref, from_branch_ref, title, description)
-    installation.create_pr!(app_config.code_repository_name, to_branch_ref, namespaced_branch(from_branch_ref), title, description)
+    from = namespaced_branch(from_branch_ref)
+    installation.create_pr!(code_repository_name, to_branch_ref, from, title, description, PR_TRANSFORMATIONS).merge_if_present(source: :github)
   end
 
   def find_pr(to_branch_ref, from_branch_ref)
-    installation.find_pr(app_config.code_repository_name, to_branch_ref, namespaced_branch(from_branch_ref))
+    from = namespaced_branch(from_branch_ref)
+    installation.find_pr(code_repository_name, to_branch_ref, from, PR_TRANSFORMATIONS).merge_if_present(source: :github)
   end
 
   def get_pr(pr_number)
-    installation.get_pr(app_config.code_repository_name, pr_number, PR_TRANSFORMATIONS)
+    installation.get_pr(code_repository_name, pr_number, PR_TRANSFORMATIONS).merge_if_present(source: :github)
   end
 
   def merge_pr!(pr_number)
-    installation.merge_pr!(app_config.code_repository_name, pr_number)
+    installation.merge_pr!(code_repository_name, pr_number)
   end
 
   def commit_log(from_branch, to_branch)
-    installation.commits_between(app_config.code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS)
+    installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS)
   end
 
   def public_icon_img
@@ -249,7 +252,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def branch_head_sha(branch)
-    installation.head(app_config.code_repository_name, branch)
+    installation.head(code_repository_name, branch)
   end
 
   private
