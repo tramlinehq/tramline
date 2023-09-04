@@ -38,8 +38,20 @@
             #<%= commits_count - index %>
           </span>
 
-          <div class="text-slate-500">
-            <%= formatted_commit_info(commit) %>
+          <% if commit.backmerge_failure? %>
+            <%= status_badge("pending backmerge", :inert) %>
+          <% end %>
+
+          <div class="flex flex-row gap-x-2">
+            <div class="text-slate-500">
+              <%= formatted_commit_info(commit) %>
+            </div>
+            <% if commit.pull_request.present? %>
+              <div>
+                <%= image_tag("git_pull_request.svg", width: 20, class: "inline-flex") %>
+                <%= pull_request_badge(commit.pull_request) %>
+              </div>
+            <% end %>
           </div>
         </td>
         <td class="align-text-top pt-4 whitespace-nowrap w-px">

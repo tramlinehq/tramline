@@ -11,7 +11,11 @@ class Triggers::PostRelease
 
     # FIXME: Merge back to upcoming release branch also if it exists
     def call
-      create_tag.then { create_and_merge_pr }
+      if release.continuous_backmerge?
+        create_tag
+      else
+        create_tag.then { create_and_merge_pr }
+      end
     end
 
     private
@@ -39,7 +43,7 @@ class Triggers::PostRelease
 
     def stamp_pr_success
       pr = release.reload.pull_requests.post_release.first
-      release.event_stamp!(reason: :post_release_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number}) if pr
+      release.event_stamp!(reason: :post_release_pr_succeeded, kind: :success, data: { url: pr.url, number: pr.number }) if pr
     end
 
     def create_tag

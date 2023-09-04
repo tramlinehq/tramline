@@ -126,6 +126,10 @@ class Release < ApplicationRecord
 
   def self.for_branch(branch_name) = find_by(branch_name:)
 
+  def unmerged_commits
+    all_commits.where(backmerge_failure: true)
+  end
+
   def version_ahead?(other)
     return false if self == other
     release_version.to_semverish >= other.release_version.to_semverish
