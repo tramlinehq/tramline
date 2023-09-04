@@ -206,7 +206,7 @@ class App < ApplicationRecord
   def high_level_overview
     trains.only_with_runs.index_with do |train|
       {
-        in_review: train.releases.pending_release.first,
+        in_review: train.ongoing_release,
         last_released: train.releases.released.order("completed_at DESC").first
       }
     end
