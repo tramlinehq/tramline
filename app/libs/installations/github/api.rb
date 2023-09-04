@@ -121,6 +121,24 @@ module Installations
       end
     end
 
+    def update_repo_webhook!(repo, id, url, transforms)
+      execute do
+        @client.edit_hook(
+          repo,
+          id,
+          WEBHOOK_NAME,
+          {
+            url:,
+            content_type: "json"
+          },
+          {
+            events: WEBHOOK_EVENTS,
+            active: true
+          }
+        ).then { |response| Installations::Response::Keys.transform([response], transforms) }.first
+      end
+    end
+
     def find_webhook(repo, id, transforms)
       execute do
         @client

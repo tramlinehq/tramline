@@ -101,7 +101,7 @@ class GithubIntegration < ApplicationRecord
         if webhook[:url] == events_url(train_id:) && (installation.class::WEBHOOK_EVENTS - webhook[:events]).empty?
           webhook
         else
-          create_webhook!(train_id:)
+          update_webhook!(webhook[:id], train_id:)
         end
       else
         create_webhook!(train_id:)
@@ -259,6 +259,10 @@ class GithubIntegration < ApplicationRecord
 
   def create_webhook!(url_params)
     installation.create_repo_webhook!(code_repository_name, events_url(url_params), WEBHOOK_TRANSFORMATIONS)
+  end
+
+  def update_webhook!(id, url_params)
+    installation.update_repo_webhook!(code_repository_name, id, events_url(url_params), WEBHOOK_TRANSFORMATIONS)
   end
 
   def app_config
