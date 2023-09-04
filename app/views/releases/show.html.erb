@@ -61,7 +61,7 @@
   <% end %>
 </div>
 
-<% if @release.active_build_queue.present? || @release.pull_requests.ongoing.open.present? %>
+<% if @release.active_build_queue.present? || @release.continuous_backmerge? %>
   <%= render partial: "shared/live_release/separator" %>
 <% end %>
 
@@ -70,7 +70,7 @@
     <%= render partial: "shared/live_release/build_queue", locals: { release: @release, build_queue: @release.active_build_queue } %>
   <% end %>
 
-  <% if @release.pull_requests.ongoing.open.present? %>
+  <% if @release.continuous_backmerge? %>
     <%= render partial: "shared/live_release/backmerge", locals: { release: @release } %>
   <% end %>
 </div>

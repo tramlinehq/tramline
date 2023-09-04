@@ -117,7 +117,7 @@ class Release < ApplicationRecord
 
   attr_accessor :has_major_bump
 
-  delegate :app, :pre_release_prs?, :vcs_provider, :release_platforms, :notify!, to: :train
+  delegate :app, :pre_release_prs?, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
 
   def self.pending_release?
     pending_release.exists?

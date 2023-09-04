@@ -2,10 +2,14 @@
   <div class="flex flex-col justify-between w-full">
     <h2 class="text-2xl text-slate-800 font-bold">Release Backmerge</h2>
     <div class="mt-6">
-      <%= render "shared/note_box",
-                 type: :error,
-                 message: "We couldn't merge the release PR, please fix any merge conflicts and/or protection rules applied for your branches and merge the PR manually." %>
+      <% if release.pull_requests.ongoing.open.present? %>
+        <%= render "shared/note_box",
+                   type: :error,
+                   message: "We couldn't merge the release PR, please fix any merge conflicts and/or protection rules applied for your branches and merge the PR manually." %>
+        <%= render partial: "shared/live_release/pull_requests", locals: { prs: release.pull_requests.ongoing.open } %>
+      <% else %>
+        <span class="text-sm text-slate-500">No unmerged changes. <code><%= release.train.working_branch %></code> is up to date with all commits from <code><%= release.release_branch %></code></span>
+      <% end %>
     </div>
-    <%= render partial: "shared/live_release/pull_requests", locals: { prs: release.pull_requests.ongoing.open } %>
   </div>
 </section>
