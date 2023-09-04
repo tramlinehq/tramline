@@ -41,7 +41,7 @@ class Triggers::OngoingRelease
     end
 
     def pr_title
-      "[#{release.release_version}] Mid-release merge"
+      "[#{release.release_version}] Release changes"
     end
 
     def pr_description
