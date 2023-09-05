@@ -51,6 +51,9 @@ class Release < ApplicationRecord
     pre_release_pr_not_creatable
     pull_request_not_mergeable
     post_release_pr_succeeded
+    backmerge_pr_created
+    pr_merged
+    backmerge_failure
     finalize_failed
     finished
   ]
@@ -116,13 +119,17 @@ class Release < ApplicationRecord
 
   attr_accessor :has_major_bump
 
-  delegate :app, :pre_release_prs?, :vcs_provider, :release_platforms, :notify!, to: :train
+  delegate :app, :pre_release_prs?, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
 
   def self.pending_release?
     pending_release.exists?
   end
 
   def self.for_branch(branch_name) = find_by(branch_name:)
+
+  def unmerged_commits
+    all_commits.where(backmerge_failure: true)
+  end
 
   def version_ahead?(other)
     return false if self == other
@@ -142,8 +149,16 @@ class Release < ApplicationRecord
     created? || on_track? || partially_finished?
   end
 
+  def pull_request_acceptable?
+    committable? || post_release_started? || post_release_failed?
+  end
+
   def queue_commit?
-    active_build_queue.present? && all_commits.size > 1
+    active_build_queue.present? && release_changes?
+  end
+
+  def release_changes?
+    all_commits.size > 1
   end
 
   def stoppable?

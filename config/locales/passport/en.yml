@@ -2,6 +2,9 @@ en:
   passport:
     release:
       post_release_pr_succeeded_html: 'Post release PR created and merged <a class="emphasize-link" href="%{url}">#%{number}</a>'
+      backmerge_pr_created_html: 'Backmerge PR created <a class="emphasize-link" href="%{url}">#%{number}</a> for <a class="emphasize-link" href="%{commit_url}">%{commit_sha}</a>'
+      backmerge_failure_html: 'Backmerge failed for <a class="emphasize-link" href="%{commit_url}">%{commit_sha}</a>'
+      pr_merged_html: 'PR <a class="emphasize-link" href="%{url}">#%{number}</a> was merged to <span class="emphasize">%{base_branch}</span>'
       pre_release_pr_not_creatable_html: 'A pre-release pull request for <span class="emphasize">%{release_branch}</span> could not be created'
       pull_request_not_mergeable_html: 'The pull request <a class="emphasize-link" href="%{url}">#%{number}</a> cannot be merged. Please check for any merge conflicts and/or branch protection rules.'
       created_html: 'Started a new release <span class="emphasize">%{version}</span>'

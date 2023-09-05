@@ -9,8 +9,13 @@ class Triggers::PostRelease
       @train = release.train
     end
 
+    # FIXME: Merge back to upcoming release branch also if it exists
     def call
-      create_tag.then { create_and_merge_pr }
+      if release.continuous_backmerge?
+        create_tag
+      else
+        create_tag.then { create_and_merge_pr }
+      end
     end
 
     private

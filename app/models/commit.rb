@@ -5,6 +5,7 @@
 #  id                      :uuid             not null, primary key
 #  author_email            :string           not null
 #  author_name             :string           not null
+#  backmerge_failure       :boolean          default(FALSE)
 #  commit_hash             :string           not null, indexed => [release_id]
 #  message                 :string
 #  timestamp               :datetime         not null
@@ -25,6 +26,7 @@ class Commit < ApplicationRecord
   has_many :passports, as: :stampable, dependent: :destroy
   belongs_to :release, inverse_of: :all_commits
   belongs_to :build_queue, inverse_of: :commits, optional: true
+  has_one :pull_request, inverse_of: :commit, dependent: :nullify
 
   scope :sequential, -> { order(timestamp: :desc) }
 
@@ -33,6 +35,7 @@ class Commit < ApplicationRecord
   validates :commit_hash, uniqueness: {scope: :release_id}
 
   after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
+  after_create_commit -> { Releases::BackmergeCommitJob.perform_later(id) }, if: -> { release.release_changes? }
 
   delegate :release_platform_runs, to: :release
 

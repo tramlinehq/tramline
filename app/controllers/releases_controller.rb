@@ -91,6 +91,7 @@ class ReleasesController < SignedInApplicationController
   def set_pull_requests
     @pre_release_prs = @release.pull_requests.pre_release
     @post_release_prs = @release.pull_requests.post_release
+    @ongoing_open_release_prs = @release.pull_requests.ongoing.open
   end
 
   def set_commits

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_08_23_144922) do
+ActiveRecord::Schema[7.0].define(version: 2023_09_04_193532) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -129,6 +129,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_23_144922) do
     t.uuid "release_platform_run_id"
     t.uuid "release_id"
     t.uuid "build_queue_id"
+    t.boolean "backmerge_failure", default: false
     t.index ["build_queue_id"], name: "index_commits_on_build_queue_id"
     t.index ["commit_hash", "release_id"], name: "index_commits_on_commit_hash_and_release_id", unique: true
     t.index ["release_platform_id"], name: "index_commits_on_release_platform_id"
@@ -323,9 +324,11 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_23_144922) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "release_id"
+    t.uuid "commit_id"
+    t.index ["commit_id"], name: "index_pull_requests_on_commit_id"
     t.index ["number"], name: "index_pull_requests_on_number"
     t.index ["phase"], name: "index_pull_requests_on_phase"
-    t.index ["release_id", "head_ref", "base_ref"], name: "idx_prs_on_train_group_run_id_and_head_ref_and_base_ref", unique: true
+    t.index ["release_id", "phase", "number"], name: "idx_prs_on_release_id_and_phase_and_number", unique: true
     t.index ["source"], name: "index_pull_requests_on_source"
     t.index ["source_id"], name: "index_pull_requests_on_source_id"
     t.index ["state"], name: "index_pull_requests_on_state"
@@ -493,6 +496,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_23_144922) do
     t.boolean "build_queue_enabled", default: false
     t.interval "build_queue_wait_time"
     t.integer "build_queue_size", limit: 2
+    t.string "backmerge_strategy", default: "on_finalize", null: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
