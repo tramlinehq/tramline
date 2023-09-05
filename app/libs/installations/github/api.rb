@@ -270,8 +270,9 @@ module Installations
 
         patch_pr_description = <<~TEXT
           - Cherry-pick #{sha} commit
-          - #{commit_to_pick_msg}
           - Authored by: @#{commit_to_pick_login}
+
+          #{commit_to_pick_msg}
         TEXT
         patch_pr_title = "#{pr_title_prefix} #{commit_to_pick_msg.split("\n").first}".gsub(/\s*\(#\d+\)/, "").squish
 
