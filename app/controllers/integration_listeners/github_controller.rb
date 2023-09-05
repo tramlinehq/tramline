@@ -55,6 +55,7 @@ class IntegrationListeners::GithubController < IntegrationListenerController
       :created_at,
       :closed_at,
       :id,
+      :html_url,
       base: [:ref],
       head: [:ref, repo: [:full_name]]
     )

@@ -24,30 +24,23 @@
 
   <% if release.post_release_failed? %>
     <% if open_ongoing_prs.present? %>
-      <%
-        prs = open_ongoing_prs
-        msg = "We can't finalize this release, please merge/close the release change PRs and try finalizing again."
-        prs_partial = "shared/live_release/pull_requests_thin"
-      %>
-    <% elsif post_release_prs.present? %>
-      <%
-        prs = post_release_prs
-        msg = "We couldn't fully finalize this release, please fix any merge conflicts and/or protection rules applied for your branches and try finalizing again."
-        prs_partial = "shared/live_release/pull_requests"
-      %>
-    <% else %>
-      <% prs = [] %>
-    <% end %>
-
-    <% if prs.present? %>
-      <div class="mt-2"><%= render "shared/note_box", type: :error, message: msg %></div>
+      <div class="mt-2"><%= render "shared/note_box", type: :error, message: "We can't finalize this release, please merge/close the release change PRs and try finalizing again." %></div>
       <div class="mt-6"><%= authz_button_to :blue, "Retry finalize", post_release_release_path(release), class: "btn-sm" %></div>
       <div class="mt-6">
         <div class="text-sm font-semibold text-slate-800 mb-1">Pull Requests</div>
       </div>
-      <%= render partial: prs_partial, locals: { prs: prs } %>
+      <%= render partial: "shared/live_release/pull_requests_thin", locals: { prs: open_ongoing_prs } %>
+    <% elsif post_release_prs.open.present? %>
+      <div class="mt-2"><%= render "shared/note_box", type: :error, message: "We couldn't fully finalize this release, please fix any merge conflicts and/or protection rules applied for your branches and try finalizing again." %></div>
+      <div class="mt-6"><%= authz_button_to :blue, "Retry finalize", post_release_release_path(release), class: "btn-sm" %></div>
+      <div class="mt-6">
+        <div class="text-sm font-semibold text-slate-800 mb-1">Pull Requests</div>
+      </div>
+      <%= render partial: "shared/live_release/pull_requests", locals: { prs: post_release_prs.open } %>
     <% else %>
+      <span class="text-sm text-slate-500">All PRs for release changes have been merged.</span>
       <div class="mt-6"><%= authz_button_to :blue, "Complete finalize phase", post_release_release_path(release), class: "btn-sm" %></div>
+      <%= render partial: "shared/live_release/pull_requests", locals: { prs: post_release_prs } %>
     <% end %>
   <% end %>
 

@@ -21,8 +21,8 @@
       <tbody class="text-sm border-b last:border-b-0" data-controller="reveal" data-reveal-toggle-keys-value="b">
 
       <!-- commit details -->
-      <tr>
-        <td class="py-4 whitespace-nowrap">
+      <tr class="flex flex-row justify-between items-center">
+        <td class="py-5 whitespace-nowrap">
           <%
             if is_stale_commit
               link_text_class = "text-slate-400"
@@ -34,36 +34,42 @@
           %>
 
           <%= link_to_external commit.message.truncate(80), commit.url, class: "underline #{link_text_class}" %>
+
           <span class="text-xs uppercase tracking-wide inline-flex font-medium <%= number_text_class %> rounded-full text-center px-2 py-0.5">
             #<%= commits_count - index %>
           </span>
 
-          <% if commit.backmerge_failure? %>
-            <%= status_badge("pending backmerge", :inert) %>
-          <% end %>
+          <div class="text-slate-500">
+            <%= formatted_commit_info(commit) %>
+          </div>
+        </td>
 
-          <div class="flex flex-row gap-x-2">
-            <div class="text-slate-500">
-              <%= formatted_commit_info(commit) %>
-            </div>
+        <td class="align-text-top pt-4 whitespace-nowrap">
+          <div class="flex flex-row gap-x-4">
             <% if commit.pull_request.present? %>
-              <div>
+              <div class="flex flex-row items-center gap-x-2">
                 <%= image_tag("git_pull_request.svg", width: 20, class: "inline-flex") %>
+                <span class="font-normal text-xs">
+                  <%= link_to_external("##{commit.pull_request.number}", commit.pull_request.url, class: "underline") %>
+                </span>
                 <%= pull_request_badge(commit.pull_request) %>
               </div>
             <% end %>
-          </div>
-        </td>
-        <td class="align-text-top pt-4 whitespace-nowrap w-px">
-          <button
-            class="text-slate-400 hover:text-slate-500 transform"
-            data-action="reveal#toggle">
 
-            <div class="flex truncate">
-              <span class="truncate mx-2 font-medium text-slate-500 group-hover:text-slate-800 underline">Details</span>
-              <%= inline_svg("caret_down.svg", classname: "w-3 h-3 shrink-0 ml-1 mt-1 fill-current text-slate-500 group-hover:text-slate-800 rotate-0") %>
-            </div>
-          </button>
+            <% if commit.backmerge_failure? %>
+              <%= status_badge("automatic backmerge failed", :inert) %>
+            <% end %>
+
+            <button
+              class="text-slate-400 hover:text-slate-500 transform"
+              data-action="reveal#toggle">
+
+              <div class="flex truncate">
+                <span class="truncate font-medium text-slate-500 group-hover:text-slate-800 underline">Details</span>
+                <%= inline_svg("caret_down.svg", classname: "w-3 h-3 shrink-0 ml-1 mt-1 fill-current text-slate-500 group-hover:text-slate-800 rotate-0") %>
+              </div>
+            </button>
+          </div>
         </td>
       </tr>
 

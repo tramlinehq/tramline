@@ -19,7 +19,11 @@ class Triggers::ReleaseBackmerge
       Triggers::PatchPullRequest.create!(release, commit)
     end
 
-    commit.update!(backmerge_failure: true) unless res.ok?
+    unless res.ok?
+      elog(res.error)
+      commit.update!(backmerge_failure: true)
+      release.event_stamp!(reason: :backmerge_failure, kind: :error, data: { commit_url: commit.url, commit_sha: commit.short_sha })
+    end
   end
 
   private

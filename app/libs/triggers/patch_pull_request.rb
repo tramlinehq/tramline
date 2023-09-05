@@ -41,7 +41,7 @@ class Triggers::PatchPullRequest
   end
 
   def stamp_pr_success(pr)
-    release.event_stamp!(reason: :mid_release_pr_created, kind: :success, data: {url: pr.url, number: pr.number}) if pr
+    release.event_stamp!(reason: :backmerge_pr_created, kind: :success, data: {url: pr.url, number: pr.number, commit_url: commit.url, commit_sha: commit.short_sha}) if pr
   end
 
   def repo_integration

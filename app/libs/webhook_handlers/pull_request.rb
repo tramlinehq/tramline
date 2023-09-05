@@ -1,8 +1,8 @@
 class WebhookHandlers::PullRequest < WebhookHandlers::Base
   def process
-    return Response.new(:accepted, "No open active PRs") unless open_active_prs?
-    return Response.new(:accepted, "PR was not closed or merged") unless closed?
     return Response.new(:accepted, "Invalid repo/branch") unless valid_repo?
+    return Response.new(:accepted, "PR was not closed or merged") unless closed?
+    return Response.new(:accepted, "No open active PRs") unless open_active_prs?
 
     WebhookProcessors::PullRequestJob.perform_later(train.id, pull_request)
     Response.new(:accepted)

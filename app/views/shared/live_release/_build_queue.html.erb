@@ -29,15 +29,19 @@
       <tbody class="text-sm border-b last:border-b-0">
       <% commits.each_with_index do |commit, index| %>
         <tr>
-          <td class="py-4 whitespace-nowrap">
-            <%= link_to_external commit.message.truncate(70), commit.url, class: "underline font-medium" %>
-            <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-slate-200 text-slate-600 rounded-full text-center px-2 py-0.5">
-            #<%= commits_count - index %>
-          </span>
+          <td class="py-4 whitespace-nowrap flex flex-row justify-between items-center">
+            <div>
+              <%= link_to_external commit.message.truncate(70), commit.url, class: "underline font-medium" %>
+              <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-slate-200 text-slate-600 rounded-full text-center px-2 py-0.5">#<%= commits_count - index %></span>
 
-            <div class="text-slate-500">
-              <code><%= commit.short_sha %></code> • <%= ago_in_words commit.timestamp %>
+              <div class="text-slate-500">
+                <code><%= commit.short_sha %></code> • <%= ago_in_words commit.timestamp %>
+              </div>
             </div>
+
+            <% if commit.backmerge_failure? %>
+              <%= status_badge("automatic backmerge failed", :inert) %>
+            <% end %>
           </td>
         </tr>
       <% end %>

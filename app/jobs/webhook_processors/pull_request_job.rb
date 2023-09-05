@@ -8,7 +8,7 @@ class WebhookProcessors::PullRequestJob < ApplicationJob
 
     Train.find(train_id).open_active_prs_for(head_ref).where(number:).each do |pr|
       pr.update_or_insert!(pr_attributes)
-      release.event_stamp!(reason: :pr_merged_html, kind: :success, data: {url: pr.url, number: pr.number, base_ref: pr.base_ref})
+      pr.release.event_stamp!(reason: :pr_merged, kind: :success, data: {url: pr.url, number: pr.number, base_branch: pr.base_ref})
     end
   end
 end
