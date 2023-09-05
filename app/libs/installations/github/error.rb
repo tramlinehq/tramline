@@ -52,6 +52,10 @@ module Installations
       {
         message_matcher: /Merge conflict/i,
         decorated_exception: Installations::Errors::MergeConflict
+      },
+      {
+        message_matcher: /Cannot force-push to this branch/i,
+        decorated_exception: Installations::Errors::ForcePushDisallowed
       }
     ]
 

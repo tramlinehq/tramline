@@ -310,7 +310,7 @@ module Installations
     rescue Octokit::Unauthorized
       set_client
       retry
-    rescue Octokit::NotFound, Octokit::UnprocessableEntity, Octokit::MethodNotAllowed => e
+    rescue Octokit::NotFound, Octokit::UnprocessableEntity, Octokit::MethodNotAllowed, Octokit::Conflict => e
       raise Installations::Github::Error.handle(e)
     end
 

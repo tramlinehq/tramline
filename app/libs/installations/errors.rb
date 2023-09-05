@@ -10,6 +10,7 @@ module Installations
     WorkflowRunNotFound = Class.new(StandardError)
     WorkflowTriggerFailed = Class.new(StandardError)
     MergeConflict = Class.new(StandardError)
+    ForcePushDisallowed = Class.new(StandardError)
 
     class WebhookLimitReached < StandardError
       def initialize(msg = "We can't create any more webhooks in your VCS/CI environment!")
