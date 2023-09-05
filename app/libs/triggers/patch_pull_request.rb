@@ -1,6 +1,4 @@
 class Triggers::PatchPullRequest
-  class CreateError < StandardError; end
-
   def self.create!(release, commit)
     new(release, commit).create!
   end
