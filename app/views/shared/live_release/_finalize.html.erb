@@ -44,7 +44,7 @@
     <% end %>
   <% end %>
 
-  <% if release.unmerged_commits.exists? && !release.post_release_started? %>
+  <% if release.unmerged_commits.exists? && !release.committable? %>
     <div class="mt-6">
       <div class="text-sm font-semibold text-slate-800 mb-1">Umerged Commits</div>
     </div>
