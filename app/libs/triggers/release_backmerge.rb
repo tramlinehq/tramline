@@ -22,7 +22,7 @@ class Triggers::ReleaseBackmerge
     unless res.ok?
       elog(res.error)
       commit.update!(backmerge_failure: true)
-      release.event_stamp!(reason: :backmerge_failure, kind: :error, data: { commit_url: commit.url, commit_sha: commit.short_sha })
+      release.event_stamp!(reason: :backmerge_failure, kind: :error, data: {commit_url: commit.url, commit_sha: commit.short_sha})
     end
   end
 
