@@ -41,6 +41,7 @@ Rails.application.configure do
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :google
+  config.active_storage.urls_expire_in = (ENV["BUILD_EXPIRE_LINK_IN_MINUTES"]&.to_i&.minutes || 5.minutes)
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
