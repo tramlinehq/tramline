@@ -25,7 +25,7 @@
   <% if release.post_release_failed? %>
     <% if open_ongoing_prs.present? %>
       <div class="mt-2"><%= render "shared/note_box", type: :error, message: "We can't finalize this release, please merge/close the release change PRs and try finalizing again." %></div>
-      <div class="mt-6"><%= authz_button_to :blue, "Retry finalize", post_release_release_path(release), class: "btn-sm" %></div>
+      <div class="mt-6"><%= authz_button_to :blue, "Retry finalize", post_release_release_path(release), params: { release: { force: false } }, class: "btn-sm" %></div>
       <div class="mt-6">
         <div class="text-sm font-semibold text-slate-800 mb-1">Pull Requests</div>
       </div>
@@ -38,21 +38,19 @@
       </div>
       <%= render partial: "shared/live_release/pull_requests", locals: { prs: post_release_prs.open } %>
     <% else %>
-      <span class="text-sm text-slate-500">All PRs for release changes have been merged.</span>
-      <div class="mt-6"><%= authz_button_to :blue, "Complete finalize phase", post_release_release_path(release), class: "btn-sm" %></div>
+      <% if release.unmerged_commits.exists? %>
+        <div class="mt-6">
+          <div class="text-sm font-semibold text-slate-800 mb-1">Unmerged Commits</div>
+        </div>
+        <span class="text-sm text-slate-500">
+          You have <%= release.unmerged_commits.size %> commit(s) that were not automatically merged by Tramline.<br>
+          You can see the current diff between the branches <%= link_to_external "here", release.compare_url, class: "underline" %>.<br>
+          Please ensure that those changes have been manually merged back on <code><%= release.train.working_branch %></code> before completing the finalize phase.
+        </span>
+      <% end %>
+      <div class="mt-6"><%= authz_button_to :blue, "Complete finalize phase", post_release_release_path(release), params: { release: { force: true } }, class: "btn-sm" %></div>
       <%= render partial: "shared/live_release/pull_requests", locals: { prs: post_release_prs } %>
     <% end %>
-  <% end %>
-
-  <% if release.unmerged_commits.exists? && !release.committable? %>
-    <div class="mt-6">
-      <div class="text-sm font-semibold text-slate-800 mb-1">Umerged Commits</div>
-    </div>
-    <span class="text-sm text-slate-500">
-      You have <%= release.unmerged_commits.size %> commits that were not automatically merged by Tramline.
-      Please ensure that those changes have been manually merged back on <code><%= release.train.working_branch %>.</code>
-      You can see the current diff between the branches <%= link_to_external "here", release.compare_url, class: "underline" %>.
-    </span>
   <% end %>
 
   <% if release.finished? && release.completed_at.present? %>
