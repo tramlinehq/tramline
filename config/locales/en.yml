@@ -82,6 +82,21 @@ en:
         release_suffix: "Release suffix"
     errors:
       models:
+        accounts/user:
+          attributes:
+            email:
+              not_blank: "The email can't be blank"
+              already_taken: "This email has already been taken"
+              too_long: "The email is too long (maximum is 105 characters)"
+        accounts/invite:
+          attributes:
+            role:
+              cannot_invite_owner: "You cannot invite a new owner"
+            email:
+              not_blank: "The email can't be blank"
+              already_taken: "This email has already been taken"
+              too_long: "The email is too long (maximum is 105 characters)"
+              invalid_format: "Enter a valid email format"
         train:
           attributes:
             build_queue_size:

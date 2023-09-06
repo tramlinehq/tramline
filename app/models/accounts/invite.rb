@@ -24,13 +24,13 @@ class Accounts::Invite < ApplicationRecord
   validate :user_already_in_organization, on: :create
   validate :user_already_invited, on: :create
   validate :accept_only_once, on: :mark_accepted!
-  validates :role, inclusion: {in: roles.slice("developer", "viewer").keys, message: "You cannot invite a new owner."}
-  validates :email, presence: {message: "The email can't be blank"},
-    uniqueness: {case_sensitive: false, message: "This email has already been taken"},
-    length: {maximum: 105, message: "The email is too long (maximum is 105 characters)"},
+  validates :role, inclusion: {in: roles.slice("developer", "viewer").keys, message: :cannot_invite_owner}
+  validates :email, presence: {message: :not_blank},
+    uniqueness: {case_sensitive: false, message: :already_taken},
+    length: {maximum: 105, message: :too_long},
     format: {
       with: URI::MailTo::EMAIL_REGEXP,
-      message: "Enter a valid email format"
+      message: :invalid_format
     }
 
   before_save :add_recipient

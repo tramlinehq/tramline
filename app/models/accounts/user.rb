@@ -34,15 +34,11 @@ class Accounts::User < ApplicationRecord
   devise :database_authenticatable, :registerable, :trackable, :lockable,
     :recoverable, :confirmable, :timeoutable, :rememberable, :validatable
 
-  # this is in addition to devise's validatable
   validates :password, password_strength: true, allow_nil: true
-  validates :email, presence: {message: "The email can't be blank"},
-    uniqueness: {case_sensitive: false, message: "This email has already been taken"},
-    length: {maximum: 105, message: "The email is too long (maximum is 105 characters)"},
-    format: {
-      with: URI::MailTo::EMAIL_REGEXP,
-      message: "Enter a valid email format"
-    }
+  # this is in addition to devise's validatable
+  validates :email, presence: {message: :not_blank},
+    uniqueness: {case_sensitive: false, message: :already_taken},
+    length: {maximum: 105, message: :too_long}
 
   has_many :memberships, dependent: :delete_all, inverse_of: :user
   has_many :organizations, -> { where(status: :active) }, through: :memberships
