@@ -24,6 +24,7 @@ class Accounts::Invite < ApplicationRecord
   validate :user_already_in_organization, on: :create
   validate :user_already_invited, on: :create
   validate :accept_only_once, on: :mark_accepted!
+  validates :role, inclusion: {in: roles.slice("developer", "viewer").keys, message: "You cannot invite a new owner."}
   validates :email, presence: {message: "The email can't be blank"},
     uniqueness: {case_sensitive: false, message: "This email has already been taken"},
     length: {maximum: 105, message: "The email is too long (maximum is 105 characters)"},

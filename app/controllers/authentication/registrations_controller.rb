@@ -18,6 +18,10 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
     end
   end
 
+  def edit
+    raise ActionController::RoutingError.new("Page unavailable.")
+  end
+
   def create
     if @token.present?
       build_resource(sign_up_params_for_invites)
@@ -35,10 +39,6 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
     end
 
     finish_sign_up
-  end
-
-  def edit
-    raise ActionController::RoutingError.new("Page unavailable.")
   end
 
   protected
