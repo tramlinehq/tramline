@@ -131,6 +131,10 @@ class Release < ApplicationRecord
     all_commits.where(backmerge_failure: true)
   end
 
+  def compare_url
+    vcs_provider.compare_url(train.working_branch, release_branch)
+  end
+
   def version_ahead?(other)
     return false if self == other
     release_version.to_semverish >= other.release_version.to_semverish

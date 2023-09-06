@@ -51,6 +51,7 @@
     <span class="text-sm text-slate-500">
       You have <%= release.unmerged_commits.size %> commits that were not automatically merged by Tramline.
       Please ensure that those changes have been manually merged back on <code><%= release.train.working_branch %>.</code>
+      You can see the current diff between the branches <%= link_to_external "here", release.compare_url, class: "underline" %>.
     </span>
   <% end %>
 

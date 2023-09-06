@@ -291,7 +291,8 @@ class Train < ApplicationRecord
       {
         train_name: name,
         train_current_version: version_current,
-        train_url: train_link
+        train_url: train_link,
+        working_branch:
       }
     )
   end

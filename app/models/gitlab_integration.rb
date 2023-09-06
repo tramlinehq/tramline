@@ -145,6 +145,10 @@ class GitlabIntegration < ApplicationRecord
     "https://gitlab.com/#{repo}/-/tags/#{tag_name}"
   end
 
+  def compare_url(to_branch, from_branch)
+    "https://gitlab.com/tramline/ueno/-/compare/#{to_branch}...#{from_branch}?straight=true"
+  end
+
   def installation
     Installations::Gitlab::Api.new(oauth_access_token)
   end

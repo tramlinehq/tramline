@@ -37,7 +37,7 @@ class Commit < ApplicationRecord
   after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
   after_create_commit -> { Releases::BackmergeCommitJob.perform_later(id) }, if: -> { release.release_changes? }
 
-  delegate :release_platform_runs, to: :release
+  delegate :release_platform_runs, :notify!, to: :release
 
   def self.between(base_step_run, head_step_run)
     return none if head_step_run.nil?
@@ -105,5 +105,18 @@ class Commit < ApplicationRecord
   def trigger!
     return add_to_build_queue! if release.queue_commit?
     trigger_step_runs
+  end
+
+  def notification_params
+    release.notification_params.merge(
+      {
+        commit_sha: short_sha,
+        commit_url: url,
+        commit_author: author_name,
+        commit_author_email: author_email,
+        commit_message: message,
+        commit_timestamp: timestamp
+      }
+    )
   end
 end
