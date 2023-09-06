@@ -1,16 +1,22 @@
 <div class="grid grid-cols-1 gap-3 mt-3">
   <% prs.each do |pr| %>
-    <div class="mt-2 rounded-md bg-white rounded-sm border border-slate-200 p-4">
-      <div class="flex flex-row justify-between items-center">
-        <div class="flex flex-row gap-x-2">
-          <%= image_tag("integrations/logo_#{pr.source}.png", width: 22, class: "inline-flex") %>
-          <h2 class="font-medium text-sm text-slate-800">
-            <%= pr.title.truncate(40) %>
-            <span class="ml-1 underline">(#<%= link_to_external pr.number, pr.url %>)</span>
-          </h2>
+    <%= link_to(pr.url, target: "_blank", rel: "nofollow") do %>
+      <div class="mt-2 rounded-md bg-white rounded-sm border border-slate-200 p-3">
+        <div class="flex flex-row justify-between items-center">
+          <div class="flex flex-row gap-x-2">
+            <%= image_tag("integrations/logo_#{pr.source}.png", width: 22, class: "inline-flex") %>
+            <h2 class="font-medium text-sm text-slate-800">
+              <%= pr.title.truncate(title_size) %>
+            </h2>
+          </div>
+
+          <div class="flex flex-row gap-x-2 items-center">
+            <span class="font-normal text-xs">#<%= pr.number %></span>
+            <%= pull_request_badge(pr) %>
+          </div>
         </div>
 
-        <div class="flex flex-row gap-x-2 items-center">
+        <div class="text-xs mt-1 text-slate-500">
           <code class="text-xs">
             <% if pr.base_ref == pr.head_ref %>
               <%= short_sha(pr.head_ref) %>
@@ -18,10 +24,12 @@
               <%= pr.head_ref %>
             <% end %>
           </code>
-
-          <%= pull_request_badge(pr) %>
+          <% if pr.commit.present? %>
+            <%= " • " %>
+            <%= pr.commit.author_name || pr.commit.author_login %>
+          <% end %>
         </div>
       </div>
-    </div>
+    <% end %>
   <% end %>
 </div>

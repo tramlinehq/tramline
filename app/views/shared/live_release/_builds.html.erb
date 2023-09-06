@@ -46,19 +46,7 @@
 
         <td class="align-text-top pt-4 whitespace-nowrap">
           <div class="flex flex-row gap-x-4">
-            <% if commit.pull_request.present? %>
-              <div class="flex flex-row items-center gap-x-2">
-                <%= image_tag("git_pull_request.svg", width: 20, class: "inline-flex") %>
-                <span class="font-normal text-xs">
-                  <%= link_to_external("##{commit.pull_request.number}", commit.pull_request.url, class: "underline") %>
-                </span>
-                <%= pull_request_badge(commit.pull_request) %>
-              </div>
-            <% end %>
-
-            <% if commit.backmerge_failure? %>
-              <%= status_badge("automatic backmerge failed", :inert) %>
-            <% end %>
+            <%= render partial: "shared/live_release/commit_backmerge_status", locals: {commit: commit} %>
 
             <button
               class="text-slate-400 hover:text-slate-500 transform"
