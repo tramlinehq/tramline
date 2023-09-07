@@ -82,7 +82,7 @@ class ReleasesController < SignedInApplicationController
   private
 
   def post_release_params
-    params.require(:release).permit(:force)
+    params.require(:release).permit(:force_finalize)
   end
 
   def set_release
