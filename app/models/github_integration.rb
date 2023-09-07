@@ -132,6 +132,10 @@ class GithubIntegration < ApplicationRecord
     "https://github.com/#{repo}/releases/tag/#{tag_name}"
   end
 
+  def compare_url(to_branch, from_branch)
+    "https://github.com/#{code_repository_name}/compare/#{to_branch}..#{from_branch}"
+  end
+
   def installation
     API.new(installation_id)
   end

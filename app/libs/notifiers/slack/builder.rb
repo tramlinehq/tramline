@@ -13,11 +13,12 @@ module Notifiers
         submit_for_review: Renderers::SubmitForReview,
         review_approved: Renderers::ReviewApproved,
         staged_rollout_updated: Renderers::StagedRolloutUpdated,
+        release_scheduled: Renderers::ReleaseScheduled,
+        backmerge_failed: Renderers::BackmergeFailed,
         staged_rollout_paused: Renderers::StagedRolloutPaused,
         staged_rollout_resumed: Renderers::StagedRolloutResumed,
         staged_rollout_halted: Renderers::StagedRolloutHalted,
-        staged_rollout_fully_released: Renderers::StagedRolloutFullyReleased,
-        release_scheduled: Renderers::ReleaseScheduled
+        staged_rollout_fully_released: Renderers::StagedRolloutFullyReleased
       }
 
       class RendererNotFound < ArgumentError; end

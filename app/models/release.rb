@@ -85,7 +85,7 @@ class Release < ApplicationRecord
       transitions from: [:partially_finished], to: :partially_finished
     end
 
-    event :start_post_release_phase, after_commit: -> { Releases::PostReleaseJob.perform_later(id) } do
+    event :start_post_release_phase, after_commit: -> { Releases::PostReleaseJob.perform_later(id, force_finalize) } do
       transitions from: [:on_track, :post_release_failed, :partially_finished], to: :post_release_started, guard: :ready_to_be_finalized?
     end
 
@@ -117,7 +117,7 @@ class Release < ApplicationRecord
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
   after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
 
-  attr_accessor :has_major_bump
+  attr_accessor :has_major_bump, :force_finalize
 
   delegate :app, :pre_release_prs?, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
 
@@ -129,6 +129,10 @@ class Release < ApplicationRecord
 
   def unmerged_commits
     all_commits.where(backmerge_failure: true)
+  end
+
+  def compare_url
+    vcs_provider.compare_url(train.working_branch, release_branch)
   end
 
   def version_ahead?(other)
