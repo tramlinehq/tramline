@@ -18,8 +18,7 @@ module Notifiers
         staged_rollout_paused: Renderers::StagedRolloutPaused,
         staged_rollout_resumed: Renderers::StagedRolloutResumed,
         staged_rollout_halted: Renderers::StagedRolloutHalted,
-        staged_rollout_fully_released: Renderers::StagedRolloutFullyReleased,
-        release_scheduled: Renderers::ReleaseScheduled
+        staged_rollout_fully_released: Renderers::StagedRolloutFullyReleased
       }
 
       class RendererNotFound < ArgumentError; end
