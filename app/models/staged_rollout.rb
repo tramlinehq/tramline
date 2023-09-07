@@ -140,6 +140,7 @@ class StagedRollout < ApplicationRecord
     deployment_run.on_halt_release! do |result|
       if result.ok?
         halt!
+        notify!("Release was halted!", :staged_rollout_halted, notification_params)
       else
         elog(result.error)
       end
@@ -152,6 +153,7 @@ class StagedRollout < ApplicationRecord
     deployment_run.on_fully_release! do |result|
       if result.ok?
         full_rollout!
+        notify!("Staged rollout was accelerated to a full rollout!", :staged_rollout_fully_released, notification_params)
       else
         elog(result.error)
       end
@@ -164,6 +166,7 @@ class StagedRollout < ApplicationRecord
     deployment_run.on_pause_release! do |result|
       if result.ok?
         pause!
+        notify!("Staged rollout was paused!", :staged_rollout_paused, notification_params)
       else
         elog(result.error)
       end
@@ -175,7 +178,10 @@ class StagedRollout < ApplicationRecord
 
     deployment_run.on_resume_release! do |result|
       if result.ok?
-        resume! unless completed?
+        unless completed?
+          resume!
+          notify!("Staged rollout was resumed!", :staged_rollout_resumed, notification_params)
+        end
       else
         elog(result.error)
       end

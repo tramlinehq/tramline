@@ -18,16 +18,18 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "<%= @main_text %>"
+        "text": "<%= main_text %>"
       }
     },
+    <% if secondary_text.present? %>
     {
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "<%= @secondary_text %>"
+        "text": "<%= secondary_text %>"
       }
     },
+    <% end %>
     {
       "type": "divider"
     },

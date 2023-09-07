@@ -2,11 +2,6 @@ module Notifiers
   module Slack
     class Renderers::StagedRolloutUpdated < Renderers::Base
       TEMPLATE_FILE = "staged_rollout_updated.json.erb".freeze
-      def initialize(**params)
-        super(**params)
-        @main_text = main_text
-        @secondary_text = secondary_text
-      end
 
       def main_text
         if @is_fully_released
