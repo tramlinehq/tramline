@@ -65,7 +65,7 @@ class ReleasesController < SignedInApplicationController
     @release = Release.find(params[:id])
 
     if @release.ready_to_be_finalized?
-      @release.force_finalize = post_release_params[:force]
+      @release.force_finalize = post_release_params[:force_finalize]
       @release.start_post_release_phase!
       redirect_back fallback_location: root_path, notice: "Performing post-release steps."
     else
