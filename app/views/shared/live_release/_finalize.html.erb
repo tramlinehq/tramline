@@ -36,7 +36,7 @@
         <div class="text-sm font-semibold text-slate-800 mb-1">Pull Requests</div>
       </div>
       <%= render partial: "shared/live_release/pull_requests", locals: { prs: post_release_prs.open } %>
-      <div class="mt-6"><%= authz_button_to :blue, "Retry finalize", post_release_release_path(release), params: { release: { force: false } }, class: "btn-sm" %></div>
+      <div class="mt-6"><%= authz_button_to :blue, "Retry finalize", post_release_release_path(release), params: { release: { force_finalize: false } }, class: "btn-sm" %></div>
     <% else %>
       <% if release.unmerged_commits.exists? %>
         <div class="mt-6">
