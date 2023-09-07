@@ -26,6 +26,8 @@ class StepRun < ApplicationRecord
   self.ignored_columns += ["initial_rollout_percentage"]
   self.implicit_order_column = :scheduled_at
 
+  BASE_WAIT_TIME = 10.seconds
+
   belongs_to :step, inverse_of: :step_runs
   belongs_to :release_platform_run
   belongs_to :commit, inverse_of: :step_runs
@@ -39,7 +41,8 @@ class StepRun < ApplicationRecord
 
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
   after_commit -> { update(build_notes_raw: relevant_changes) }, on: :create
-  after_commit -> { Releases::TriggerWorkflowRunJob.perform_later(id) }, on: :create
+  # FIXME: solve this correctly, we rely on wait time to ensure steps are triggered in correct order
+  after_commit -> { Releases::TriggerWorkflowRunJob.set(wait: BASE_WAIT_TIME * step.step_number).perform_later(id) }, on: :create
 
   STAMPABLE_REASONS = %w[
     created
