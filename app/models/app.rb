@@ -108,7 +108,7 @@ class App < ApplicationRecord
     ].compact.max
 
     with_lock do
-      self.build_number = [latest_store_build_number, build_number].max.succ
+      self.build_number = [latest_store_build_number, build_number].compact.max.succ
       save!
       build_number.to_s
     end
