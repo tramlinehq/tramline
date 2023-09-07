@@ -41,6 +41,7 @@ Rails.application.configure do
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :google
+  config.active_storage.urls_expire_in = (ENV["BUILD_EXPIRE_LINK_IN_MINUTES"]&.to_i&.minutes || 5.minutes)
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
@@ -48,7 +49,8 @@ Rails.application.configure do
   # config.action_cable.allowed_request_origins = [ "http://example.com", /http:\/\/example.*/ ]
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
+  config.force_ssl = true
+  config.ssl_options = {hsts: {subdomains: true, preload: true}}
 
   # Include generic and useful information about system operation, but avoid logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII).
@@ -88,6 +90,10 @@ Rails.application.configure do
     logger.formatter = config.log_formatter
     config.logger = ActiveSupport::TaggedLogging.new(logger)
   end
+
+  # Avoid cache poisoning attack by users setting X-Forwarded-Host
+  config.hosts << ENV["HOST_NAME"]
+  config.hosts << ".#{ENV["HOST_NAME"]}"
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
