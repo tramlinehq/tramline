@@ -26,7 +26,6 @@ class Accounts::Invite < ApplicationRecord
   validate :accept_only_once, on: :mark_accepted!
   validates :role, inclusion: {in: roles.slice("developer", "viewer").keys, message: :cannot_invite_owner}
   validates :email, presence: {message: :not_blank},
-    uniqueness: {case_sensitive: false, message: :already_taken},
     length: {maximum: 105, message: :too_long},
     format: {
       with: URI::MailTo::EMAIL_REGEXP,
