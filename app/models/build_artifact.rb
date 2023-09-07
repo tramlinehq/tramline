@@ -44,9 +44,9 @@ class BuildArtifact < ApplicationRecord
     return if file.nil?
 
     if Rails.env.development?
-      rails_blob_url(file, signed: true, host: ENV["HOST_NAME"], port: ENV["PORT_NUM"], protocol: "https", disposition: "attachment")
+      rails_blob_url(file, host: ENV["HOST_NAME"], port: ENV["PORT_NUM"], protocol: "https", disposition: "attachment")
     else
-      rails_blob_url(file, signed: true, protocol: "https", disposition: "attachment")
+      rails_blob_url(file, protocol: "https", disposition: "attachment")
     end
   end
 
