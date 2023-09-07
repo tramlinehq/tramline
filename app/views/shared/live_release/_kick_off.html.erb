@@ -1,4 +1,4 @@
-<section class="max-h-96 h-44">
+<section>
   <div class="mb-6">
     <span class="font-bold text-2xl">Kick-off</span>
     <span class="text-xl text-slate-400 ml-4"><%= time_ago_in_words(release.created_at) %> ago</span>
@@ -11,6 +11,10 @@
 
     <% mt.with_description("Release Branch") do %>
       <span class="underline"><%= link_to_external "#{release.branch_name} ↗", release.branch_url %></span>
+    <% end %>
+
+    <% mt.with_description("Backmerge Config") do %>
+      <%== backmerge_text(release.train) %>
     <% end %>
   <% end %>
 </section>

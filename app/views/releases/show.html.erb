@@ -61,13 +61,20 @@
   <% end %>
 </div>
 
-<% if @release.active_build_queue.present? %>
+<% if @release.active_build_queue.present? || @release.continuous_backmerge? %>
   <%= render partial: "shared/live_release/separator" %>
-
-  <div class="grid grid-cols-1 gap-6 mt-8">
-    <%= render partial: "shared/live_release/build_queue", locals: { release: @release, build_queue: @release.active_build_queue } %>
-  </div>
 <% end %>
+
+<div class="grid grid-cols-2 gap-6 mt-8">
+  <% if @release.active_build_queue.present? %>
+    <%= render partial: "shared/live_release/build_queue", locals: { release: @release, build_queue: @release.active_build_queue } %>
+  <% end %>
+
+  <% if @release.continuous_backmerge? %>
+    <%= render partial: "shared/live_release/backmerge", locals: { release: @release } %>
+  <% end %>
+</div>
+
 
 <%= render partial: "shared/live_release/separator" %>
 
@@ -91,5 +98,5 @@
 <%= render partial: "shared/live_release/separator" %>
 
 <div class="mt-8">
-  <%= render partial: "shared/live_release/finalize", locals: { release: @release, post_release_prs: @post_release_prs } %>
+  <%= render partial: "shared/live_release/finalize", locals: { release: @release, post_release_prs: @post_release_prs, open_ongoing_prs: @ongoing_open_release_prs } %>
 </div>

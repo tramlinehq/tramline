@@ -54,7 +54,7 @@ class TrainsController < SignedInApplicationController
   end
 
   def deactivate
-    redirect_to train_path, notice: "Can not deactivate with an ongoing release" and return if @train.active_run.present?
+    redirect_to train_path, notice: "Can not deactivate with an ongoing release" and return if @train.active_runs.exists?
 
     if @train.deactivate!
       redirect_to train_path, notice: "Train was deactivated!"
@@ -102,7 +102,8 @@ class TrainsController < SignedInApplicationController
       :build_queue_size,
       :build_queue_wait_time_unit,
       :build_queue_wait_time_value,
-      :release_schedule_enabled
+      :release_schedule_enabled,
+      :continuous_backmerge_enabled
     )
   end
 
@@ -111,7 +112,8 @@ class TrainsController < SignedInApplicationController
     create_params = train_params
       .merge(build_queue_config(train_params.slice(*build_queue_config_params)))
       .merge(notification_channel: train_params[:notification_channel]&.safe_json_parse)
-      .except(:build_queue_wait_time_value, :build_queue_wait_time_unit)
+      .merge(backmerge_config(train_params[:continuous_backmerge_enabled]))
+      .except(:build_queue_wait_time_value, :build_queue_wait_time_unit, :continuous_backmerge_enabled)
       .except(*release_schedule_config_params)
     create_params.merge!(release_schedule_params) if release_schedule_params
     create_params
@@ -129,7 +131,8 @@ class TrainsController < SignedInApplicationController
       :kickoff_at,
       :repeat_duration_value,
       :repeat_duration_unit,
-      :release_schedule_enabled
+      :release_schedule_enabled,
+      :continuous_backmerge_enabled
     )
   end
 
@@ -138,7 +141,8 @@ class TrainsController < SignedInApplicationController
     update_params = train_update_params
       .merge(build_queue_config(train_update_params.slice(*build_queue_config_params)))
       .merge(notification_channel: train_update_params[:notification_channel]&.safe_json_parse)
-      .except(:build_queue_wait_time_value, :build_queue_wait_time_unit)
+      .merge(backmerge_config(train_params[:continuous_backmerge_enabled]))
+      .except(:build_queue_wait_time_value, :build_queue_wait_time_unit, :continuous_backmerge_enabled)
       .except(*release_schedule_config_params)
     update_params.merge!(release_schedule_params) if release_schedule_params
     update_params
@@ -195,5 +199,13 @@ class TrainsController < SignedInApplicationController
   def parsed_duration(value, unit)
     return if unit.blank? || value.blank?
     value.to_i.as_duration_with(unit: unit)
+  end
+
+  def backmerge_config(continuous_backmerge_enabled)
+    if continuous_backmerge_enabled.blank? || continuous_backmerge_enabled == "false"
+      {backmerge_strategy: Train.backmerge_strategies[:on_finalize]}
+    elsif continuous_backmerge_enabled == "true"
+      {backmerge_strategy: Train.backmerge_strategies[:continuous]}
+    end
   end
 end

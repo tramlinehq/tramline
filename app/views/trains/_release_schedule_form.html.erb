@@ -1,4 +1,4 @@
-<article>
+<article hidden data-branching-selector-target="schedule">
   <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
   <div class="text-xl text-slate-600 font-medium mt-2">Release Schedule (optional)</div>
 
@@ -6,9 +6,7 @@
     <div class="text-sm mt-1 mb-6">
       Set a schedule for automatic kickoff of your release train. Leave blank for only manual control.
     </div>
-    <section hidden
-             data-controller="domain--release-schedule-help toggle-switch"
-             data-branching-selector-target="schedule"
+    <section data-controller="domain--release-schedule-help toggle-switch"
              data-toggle-switch-on-label-value="Release Schedule enabled"
              data-toggle-switch-off-label-value="Release Schedule disabled">
 

@@ -1,6 +1,6 @@
 <% if editable %>
   <div class="p-1">
-    <% if step.release_platform.active_run.blank? %>
+    <% if step.train.active_runs.none? %>
       <%= authz_link_to :neutral, edit_app_train_platform_step_path(step.app, step.train, step.release_platform, step) do %>
         <%= inline_svg("edit.svg", classname: "w-4") %>
       <% end %>

@@ -114,9 +114,10 @@ module ReleasesHelper
 
   def formatted_commit_info(commit)
     name = commit.author_name || commit.author_login
-    link = commit.url || "mailto:#{commit.author_email}"
+    author_link = commit.author_url || "mailto:#{commit.author_email}"
+    author_url = link_to_external(name, author_link, class: "underline")
     builder = content_tag(:code, commit.short_sha)
     builder += " • "
-    builder + link_to_external(name, link, class: "underline") + " committed " + ago_in_words(commit.timestamp)
+    builder + author_url + " committed " + ago_in_words(commit.timestamp)
   end
 end

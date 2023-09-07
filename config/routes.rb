@@ -111,6 +111,8 @@ Rails.application.routes.draw do
 
         collection do
           get :live_release
+          get :ongoing_release
+          get :upcoming_release
         end
 
         member do

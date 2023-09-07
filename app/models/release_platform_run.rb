@@ -40,7 +40,7 @@ class ReleasePlatformRun < ApplicationRecord
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
   scope :have_not_reached_production, -> { on_track.reject(&:production_release_happened?) }
 
-  STAMPABLE_REASONS = %w[version_changed finished]
+  STAMPABLE_REASONS = %w[version_changed version_corrected finished]
 
   STATES = {
     created: "created",
@@ -84,10 +84,32 @@ class ReleasePlatformRun < ApplicationRecord
     end
   end
 
-  def bump_version
+  def correct_version!
+    return if release_version.to_semverish.proper?
+
+    version = corrected_release_version
+    return unless version
+
+    update!(release_version: version)
+
+    event_stamp!(
+      reason: :version_corrected,
+      kind: :notice,
+      data: {version: release_version, ongoing_version: version}
+    )
+  end
+
+  # Ensure the version is up-to-date with the current ongoing release or the finished ongoing release
+  def corrected_release_version
+    return train.next_version if train.version_ahead?(release)
+    train.ongoing_release.next_version if train.ongoing_release&.version_ahead?(release)
+  end
+
+  def bump_version!
     return unless version_bump_required?
 
-    semverish = release_version.to_semverish
+    semverish = newest_release_version.to_semverish
+
     self.release_version = semverish.bump!(:patch).to_s if semverish.proper?
     self.release_version = semverish.bump!(:minor).to_s if semverish.partial?
 
@@ -98,6 +120,16 @@ class ReleasePlatformRun < ApplicationRecord
       kind: :notice,
       data: {version: release_version}
     )
+  end
+
+  # Ensure the hotfix version is greater than the current upcoming release version
+  def newest_release_version
+    return release_version if release_version.to_semverish.proper?
+
+    upcoming = train.upcoming_release
+    return release_version unless upcoming&.version_ahead?(release)
+
+    upcoming.release_version
   end
 
   def metadata_editable?
@@ -112,13 +144,25 @@ class ReleasePlatformRun < ApplicationRecord
     end
   end
 
-  def startable_step?(step)
+  def manually_startable_step?(step)
     return false if train.inactive?
     return false unless on_track?
+    return false if upcoming_release_step?(step)
     return true if step.first? && step_runs_for(step).empty?
     return false if step.first?
 
     (next_step == step) && previous_step_run_for(step).success?
+  end
+
+  def upcoming_startable_step?(step)
+    return false if train.inactive?
+    return false unless on_track?
+
+    (next_step == step) && previous_step_run_for(step).success? && upcoming_release_step?(step)
+  end
+
+  def upcoming_release_step?(step)
+    step.release? && release.upcoming?
   end
 
   def step_runs_for(step)

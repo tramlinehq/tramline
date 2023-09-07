@@ -102,13 +102,14 @@ class App < ApplicationRecord
   # NOTE: fetches and uses latest build numbers from the stores, if added,
   # to reduce build upload rejection probability
   def bump_build_number!
-    with_lock do
-      self.build_number = [
-        ios_store_provider&.latest_build_number,
-        android_store_provider&.latest_build_number,
-        build_number
-      ].compact.max.succ
+    latest_build_number = [
+      ios_store_provider&.latest_build_number,
+      android_store_provider&.latest_build_number,
+      build_number
+    ].compact.max.succ
 
+    with_lock do
+      self.build_number = latest_build_number
       save!
       build_number.to_s
     end
@@ -205,7 +206,7 @@ class App < ApplicationRecord
   def high_level_overview
     trains.only_with_runs.index_with do |train|
       {
-        in_review: train.releases.pending_release.first,
+        in_review: train.ongoing_release,
         last_released: train.releases.released.order("completed_at DESC").first
       }
     end

@@ -19,6 +19,7 @@ class GitlabIntegration < ApplicationRecord
   include Providable
   include Displayable
   include Rails.application.routes.url_helpers
+  using RefinedHash
 
   attr_accessor :code
   before_create :complete_access
@@ -57,6 +58,18 @@ class GitlabIntegration < ApplicationRecord
     author_name: :author_name,
     author_timestamp: :created_at,
     author_email: :author_email
+  }
+
+  PR_TRANSFORMATIONS = {
+    source_id: :id,
+    number: :iid,
+    title: :title,
+    body: :description,
+    url: :web_url,
+    state: :state,
+    head_ref: :sha,
+    base_ref: :sha, # TODO: this is a temporary fix, we should fetch the correct sha from GitLab and fill ths
+    opened_at: :created_at
   }
 
   def install_path
@@ -172,36 +185,28 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.get_commit(app_config.code_repository["id"], sha, COMMIT_TRANSFORMATIONS) }
   end
 
-  PR_TRANSFORMATIONS = {
-    source_id: :id,
-    number: :iid,
-    title: :title,
-    body: :description,
-    url: :web_url,
-    state: :state,
-    head_ref: :sha,
-    base_ref: :sha,
-    opened_at: :created_at
-  }
-
   def create_pr!(to_branch_ref, from_branch_ref, title, description)
-    with_api_retries { installation.create_pr!(app_config.code_repository_name, to_branch_ref, from_branch_ref, title, description) }
+    with_api_retries { installation.create_pr!(code_repository_name, to_branch_ref, from_branch_ref, title, description, PR_TRANSFORMATIONS).merge_if_present(source: :gitlab) }
   end
 
   def find_pr(to_branch_ref, from_branch_ref)
-    with_api_retries { installation.find_pr(app_config.code_repository_name, to_branch_ref, from_branch_ref) }
+    with_api_retries { installation.find_pr(code_repository_name, to_branch_ref, from_branch_ref, PR_TRANSFORMATIONS).merge_if_present(source: :gitlab) }
   end
 
   def get_pr(pr_number)
-    with_api_retries { installation.get_pr(app_config.code_repository_name, pr_number, PR_TRANSFORMATIONS) }
+    with_api_retries { installation.get_pr(code_repository_name, pr_number, PR_TRANSFORMATIONS).merge_if_present(source: :gitlab) }
   end
 
   def merge_pr!(pr_number)
-    with_api_retries { installation.merge_pr!(app_config.code_repository_name, pr_number) }
+    with_api_retries { installation.merge_pr!(code_repository_name, pr_number) }
   end
 
   def commit_log(from_branch, to_branch)
-    with_api_retries { installation.commits_between(app_config.code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS) }
+    with_api_retries { installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS) }
+  end
+
+  def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title_prefix)
+    {}.merge_if_present(source: :gitlab)
   end
 
   def public_icon_img
@@ -209,11 +214,11 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def branch_head_sha(branch)
-    with_api_retries { installation.head(app_config.code_repository_name, branch) }
+    with_api_retries { installation.head(code_repository_name, branch) }
   end
 
   def branch_exists?(branch)
-    with_api_retries { installation.branch_exists?(app_config.code_repository_name, branch) }
+    with_api_retries { installation.branch_exists?(code_repository_name, branch) }
   rescue Installations::Errors::ResourceNotFound
     false
   end

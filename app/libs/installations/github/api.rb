@@ -6,7 +6,7 @@ module Installations
     attr_reader :app_name, :installation_id, :jwt, :client
 
     WEBHOOK_NAME = "web"
-    WEBHOOK_EVENTS = %w[push]
+    WEBHOOK_EVENTS = %w[push pull_request]
     LIST_WORKFLOWS_LIMIT = 99
     RERUN_FAILED_JOBS_URL = Addressable::Template.new "https://api.github.com/repos/{repo}/actions/runs/{run_id}/rerun-failed-jobs"
 
@@ -121,6 +121,24 @@ module Installations
       end
     end
 
+    def update_repo_webhook!(repo, id, url, transforms)
+      execute do
+        @client.edit_hook(
+          repo,
+          id,
+          WEBHOOK_NAME,
+          {
+            url:,
+            content_type: "json"
+          },
+          {
+            events: WEBHOOK_EVENTS,
+            active: true
+          }
+        ).then { |response| Installations::Response::Keys.transform([response], transforms) }.first
+      end
+    end
+
     def find_webhook(repo, id, transforms)
       execute do
         @client
@@ -174,15 +192,21 @@ module Installations
       end
     end
 
-    def create_pr!(repo, to, from, title, body)
+    def create_pr!(repo, to, from, title, body, transforms)
       execute do
-        @client.create_pull_request(repo, to, from, title, body)
+        @client
+          .create_pull_request(repo, to, from, title, body)
+          .then { |response| Installations::Response::Keys.transform([response], transforms) }
+          .first
       end
     end
 
-    def find_pr(repo, to, from)
+    def find_pr(repo, to, from, transforms)
       execute do
-        @client.pull_requests(repo, {head: from, base: to}).first
+        @client
+          .pull_requests(repo, {head: from, base: to})
+          .then { |response| Installations::Response::Keys.transform(response, transforms) }
+          .first
       end
     end
 
@@ -217,6 +241,51 @@ module Installations
       end
     end
 
+    def cherry_pick_pr(repo, branch, sha, patch_branch_name, pr_title_prefix, transforms)
+      # get_head_commit on working branch -- 1 api call
+      # get commit we need to cherry pick - 1 api call
+      # create a temp commit with correct tree and parent - 1 api call
+      # create a patch branch on that commit - 1 api call
+      # create cherry picked commit - 1 api call
+      # force update ref of patch branch - 1 api call
+      # create a PR - 1 api call
+
+      # TOTAL - 7 api calls
+      execute do
+        branch_head = @client.branch(repo, branch)[:commit]
+        branch_tree_sha = branch_head[:commit][:tree][:sha]
+        commit_to_pick = @client.commit(repo, sha)
+        commit_to_pick_sha = commit_to_pick[:parents]&.last&.dig(:sha)
+        commit_to_pick_msg = commit_to_pick.dig(:commit, :message)
+        commit_to_pick_login = commit_to_pick.dig(:author, :login)
+        cherry_commit_authors = commit_to_pick.dig(:commit).to_h.slice(:author, :committer)
+
+        temp_commit_message = "Temporary Commit by Tramline"
+        temp_commit_sha = @client.create_commit(repo, temp_commit_message, branch_tree_sha, commit_to_pick_sha)[:sha]
+        @client.create_ref(repo, "heads/#{patch_branch_name}", temp_commit_sha)
+
+        merge_tree = @client.merge(repo, patch_branch_name, sha).dig(:commit, :tree, :sha)
+        cherry_commit = @client.create_commit(repo, commit_to_pick_msg, merge_tree, branch_head[:sha], cherry_commit_authors)[:sha]
+        @client.update_ref(repo, "heads/#{patch_branch_name}", cherry_commit, true)
+
+        patch_pr_description = <<~TEXT
+          - Cherry-pick #{sha} commit
+          - Authored by: @#{commit_to_pick_login}
+
+          #{commit_to_pick_msg}
+        TEXT
+        patch_pr_title = "#{pr_title_prefix} #{commit_to_pick_msg.split("\n").first}".gsub(/\s*\(#\d+\)/, "").squish
+
+        @client
+          .create_pull_request(repo, branch, patch_branch_name, patch_pr_title, patch_pr_description)
+          .then { |response| Installations::Response::Keys.transform([response], transforms) }
+          .first
+      end
+    rescue Installations::Errors::MergeConflict => e
+      @client.delete_branch(repo, patch_branch_name)
+      raise e
+    end
+
     def self.find_biggest(artifacts)
       artifacts.max_by { |artifact| artifact["size_in_bytes"] }
     end
@@ -241,7 +310,7 @@ module Installations
     rescue Octokit::Unauthorized
       set_client
       retry
-    rescue Octokit::NotFound, Octokit::UnprocessableEntity, Octokit::MethodNotAllowed => e
+    rescue Octokit::NotFound, Octokit::UnprocessableEntity, Octokit::MethodNotAllowed, Octokit::Conflict => e
       raise Installations::Github::Error.handle(e)
     end
 

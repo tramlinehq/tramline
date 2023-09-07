@@ -13,7 +13,7 @@ class StepsController < SignedInApplicationController
   def new
     kind = params.extract!(:kind).require(:kind)
 
-    head :forbidden and return if @train.active_run
+    head :forbidden and return if @train.active_runs.exists?
     head :forbidden and return if kind.blank?
 
     @step = @release_platform.steps.new(kind:)
@@ -32,11 +32,11 @@ class StepsController < SignedInApplicationController
         .where(release_platforms: {apps: {organization: current_organization}})
         .friendly
         .find(params[:id])
-    head :forbidden and return if @train.active_run
+    head :forbidden and return if @train.active_runs.exists?
   end
 
   def create
-    head :forbidden and return if @train.active_run
+    head :forbidden and return if @train.active_runs.exists?
     @step = @release_platform.steps.new(parsed_step_params)
 
     respond_to do |format|
@@ -56,7 +56,7 @@ class StepsController < SignedInApplicationController
         .where(release_platforms: {apps: {organization: current_organization}})
         .friendly
         .find(params[:id])
-    head :forbidden and return if @train.active_run
+    head :forbidden and return if @train.active_runs.exists?
 
     if @step.update(parsed_step_params)
       redirect_to edit_app_train_path(@app, @train), notice: "Step was successfully updated."

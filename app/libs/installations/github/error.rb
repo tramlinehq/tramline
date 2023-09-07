@@ -48,6 +48,14 @@ module Installations
       {
         message_matcher: /At least 1 approving review is required by reviewers/i,
         decorated_exception: Installations::Errors::PullRequestNotMergeable
+      },
+      {
+        message_matcher: /Merge conflict/i,
+        decorated_exception: Installations::Errors::MergeConflict
+      },
+      {
+        message_matcher: /Cannot force-push to this branch/i,
+        decorated_exception: Installations::Errors::ForcePushDisallowed
       }
     ]
 

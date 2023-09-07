@@ -6,7 +6,12 @@ describe Triggers::PullRequest do
   let(:release_branch) { Faker::Lorem.word }
   let(:pr_title) { Faker::Lorem.word }
   let(:pr_description) { Faker::Lorem.word }
-  let(:create_payload) { JSON.parse(File.read("spec/fixtures/github/pull_request.json")).with_indifferent_access }
+  let(:create_payload) {
+    File.read("spec/fixtures/github/pull_request.json")
+      .then { |pr| JSON.parse(pr) }
+      .then { |parsed_pr| Installations::Response::Keys.transform([parsed_pr], GithubIntegration::PR_TRANSFORMATIONS) }
+      .first
+  }
   let(:merge_payload) { JSON.parse(File.read("spec/fixtures/github/merge_pull_request.json")).with_indifferent_access }
   let(:repo_integration) { instance_double(Installations::Github::Api) }
   let(:repo_name) { release.train.app.config.code_repository_name }
@@ -30,7 +35,7 @@ describe Triggers::PullRequest do
       )
       namespaced_release_branch = "#{release.train.app.config.code_repo_namespace}:#{release_branch}"
 
-      expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, namespaced_release_branch, pr_title, pr_description)
+      expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, namespaced_release_branch, pr_title, pr_description, GithubIntegration::PR_TRANSFORMATIONS)
       expect(repo_integration).to have_received(:merge_pr!)
       expect(result.ok?).to be(true)
       expect(release.reload.pull_requests.closed.size).to eq(1)
@@ -50,7 +55,7 @@ describe Triggers::PullRequest do
       )
       namespaced_release_branch = "#{release.train.app.config.code_repo_namespace}:#{release_branch}"
 
-      expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, namespaced_release_branch, pr_title, pr_description)
+      expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, namespaced_release_branch, pr_title, pr_description, GithubIntegration::PR_TRANSFORMATIONS)
       expect(repo_integration).not_to have_received(:merge_pr!)
       expect(result.ok?).to be(true)
       expect(release.reload.pull_requests.size).to eq(0)
@@ -71,7 +76,7 @@ describe Triggers::PullRequest do
       )
       namespaced_release_branch = "#{release.train.app.config.code_repo_namespace}:#{release_branch}"
 
-      expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, namespaced_release_branch, pr_title, pr_description)
+      expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, namespaced_release_branch, pr_title, pr_description, GithubIntegration::PR_TRANSFORMATIONS)
       expect(repo_integration).not_to have_received(:merge_pr!)
       expect(result.ok?).to be(false)
       expect(release.reload.pull_requests.size).to eq(0)
@@ -91,7 +96,7 @@ describe Triggers::PullRequest do
       )
       namespaced_release_branch = "#{release.train.app.config.code_repo_namespace}:#{release_branch}"
 
-      expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, namespaced_release_branch, pr_title, pr_description)
+      expect(repo_integration).to have_received(:create_pr!).with(repo_name, working_branch, namespaced_release_branch, pr_title, pr_description, GithubIntegration::PR_TRANSFORMATIONS)
       expect(repo_integration).to have_received(:merge_pr!)
       expect(result.ok?).to be(false)
       expect(release.reload.pull_requests.open.size).to eq(1)

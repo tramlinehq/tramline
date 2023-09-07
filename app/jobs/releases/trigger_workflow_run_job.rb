@@ -8,6 +8,6 @@ class Releases::TriggerWorkflowRunJob < ApplicationJob
     return unless step_run.active?
     return step_run.cancel! unless step_run.commit.applicable?
 
-    step_run.trigger_ci!
+    step_run.trigger_ci_worfklow_run!
   end
 end

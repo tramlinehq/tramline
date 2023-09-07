@@ -21,7 +21,7 @@ class ReleasesController < SignedInApplicationController
     response = Triggers::Release.call(@train, has_major_bump: @has_major_bump)
 
     if response.success?
-      redirect_to live_release_path, notice: "A new release has started successfully."
+      redirect_to current_release_path(response.body), notice: "A new release has started successfully."
     else
       redirect_back fallback_location: root_path, flash: {error: response.body}
     end
@@ -30,8 +30,22 @@ class ReleasesController < SignedInApplicationController
   def live_release
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
-    @release = @train.active_run
+    @release = @train.ongoing_release
 
+    show_current_release
+  end
+
+  alias_method :ongoing_release, :live_release
+
+  def upcoming_release
+    @app = current_organization.apps.friendly.find(params[:app_id])
+    @train = @app.trains.friendly.find(params[:train_id])
+    @release = @train.upcoming_release
+
+    show_current_release
+  end
+
+  def show_current_release
     redirect_to train_path, notice: "No release in progress." and return unless @release
 
     set_commits
@@ -77,14 +91,15 @@ class ReleasesController < SignedInApplicationController
   def set_pull_requests
     @pre_release_prs = @release.pull_requests.pre_release
     @post_release_prs = @release.pull_requests.post_release
+    @ongoing_open_release_prs = @release.pull_requests.ongoing.open
   end
 
   def set_commits
     @commits = @release.applied_commits.sequential.includes(step_runs: :step)
   end
 
-  def live_release_path
-    live_release_app_train_releases_path(@app, @train)
+  def current_release_path(current_release)
+    release_path(current_release)
   end
 
   def train_path

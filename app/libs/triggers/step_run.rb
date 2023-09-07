@@ -11,6 +11,7 @@ class Triggers::StepRun
 
   # FIXME: should we take a lock around this release? what is someone double triggers the run?
   def call
+    release_platform_run.correct_version!
     release_platform_run
       .step_runs
       .create!(step:, scheduled_at: Time.current, commit:, build_version:, sign_required: false)

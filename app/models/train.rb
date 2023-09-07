@@ -3,6 +3,7 @@
 # Table name: trains
 #
 #  id                       :uuid             not null, primary key
+#  backmerge_strategy       :string           default("on_finalize"), not null
 #  branching_strategy       :string           not null
 #  build_queue_enabled      :boolean          default(FALSE)
 #  build_queue_size         :integer
@@ -30,6 +31,7 @@ class Train < ApplicationRecord
   extend FriendlyId
   include Rails.application.routes.url_helpers
   include Notifiable
+  include Versionable
 
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
@@ -39,7 +41,7 @@ class Train < ApplicationRecord
 
   belongs_to :app
   has_many :releases, -> { sequential }, inverse_of: :train, dependent: :destroy
-  has_one :active_run, -> { pending_release }, class_name: "Release", inverse_of: :train, dependent: :destroy
+  has_many :active_runs, -> { pending_release }, class_name: "Release", inverse_of: :train, dependent: :destroy
   has_many :release_platforms, dependent: :destroy
   has_many :integrations, through: :app
   has_many :steps, through: :release_platforms
@@ -59,11 +61,14 @@ class Train < ApplicationRecord
     inactive: "inactive"
   }
 
+  enum backmerge_strategy: {continuous: "continuous", on_finalize: "on_finalize"}
+
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
   attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed
   attr_accessor :build_queue_wait_time_unit, :build_queue_wait_time_value
   attr_accessor :repeat_duration_unit, :repeat_duration_value, :release_schedule_enabled
+  attr_accessor :continuous_backmerge_enabled
 
   validates :branching_strategy, :working_branch, presence: true
   validates :branching_strategy, inclusion: {in: BRANCHING_STRATEGIES.keys.map(&:to_s)}
@@ -73,6 +78,7 @@ class Train < ApplicationRecord
   validate :ready?, on: :create
   validate :valid_schedule, if: -> { kickoff_at_changed? || repeat_duration_changed? }
   validate :build_queue_config
+  validate :backmerge_config
   validate :valid_train_configuration, on: :activate_context
   validate :working_branch_presence, on: :create
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
@@ -80,6 +86,7 @@ class Train < ApplicationRecord
   after_initialize :set_constituent_seed_versions, if: :persisted?
   after_initialize :set_release_schedule, if: :persisted?
   after_initialize :set_build_queue_config, if: :persisted?
+  after_initialize :set_backmerge_config, if: :persisted?
   before_validation :set_version_seeded_with, if: :new_record?
   before_create :set_current_version
   before_create :set_default_status
@@ -110,6 +117,18 @@ class Train < ApplicationRecord
     first&.release_platforms&.android&.first&.steps&.release&.any?
   end
 
+  def version_ahead?(release)
+    version_current.to_semverish > release.release_version.to_semverish
+  end
+
+  def ongoing_release
+    active_runs.order(:scheduled_at).first
+  end
+
+  def upcoming_release
+    active_runs.order(:scheduled_at).second
+  end
+
   def schedule_release!
     scheduled_releases.create!(scheduled_at: next_run_at) if automatic?
   end
@@ -138,6 +157,7 @@ class Train < ApplicationRecord
   end
 
   def diff_since_last_release?
+    return vcs_provider.commit_log(ongoing_release.first_commit.commit_hash, working_branch).any? if ongoing_release
     return true if last_finished_release.blank?
     vcs_provider.commit_log(last_finished_release.tag_name, working_branch).any?
   end
@@ -206,11 +226,22 @@ class Train < ApplicationRecord
   end
 
   def deactivatable?
-    automatic? && active? && active_run.blank?
+    automatic? && active? && active_runs.none?
   end
 
   def manually_startable?
     startable? && !inactive?
+  end
+
+  def upcoming_release_startable?
+    manually_startable? &&
+      ongoing_release.present? &&
+      release_platforms.any?(&:has_production_deployment?) &&
+      release_platforms.all?(&:has_review_steps?)
+  end
+
+  def continuous_backmerge?
+    backmerge_strategy == Train.backmerge_strategies[:continuous]
   end
 
   def branching_strategy_name
@@ -221,13 +252,20 @@ class Train < ApplicationRecord
     integrations.build_channel
   end
 
-  def next_version(has_major_bump = false)
-    bump_term = has_major_bump ? :major : :minor
-    version_current.ver_bump(bump_term)
+  def open_active_prs_for?(branch_name)
+    open_active_prs_for(branch_name).exists?
+  end
+
+  def open_active_prs_for(branch_name)
+    PullRequest.open.where(release_id: active_runs.ids, head_ref: branch_name)
   end
 
   def pre_release_prs?
     branching_strategy == "parallel_working"
+  end
+
+  def almost_trunk?
+    branching_strategy == "almost_trunk"
   end
 
   def create_release!(branch_name, tag_name)
@@ -302,6 +340,10 @@ class Train < ApplicationRecord
     self.build_queue_wait_time_value = parts.values.first
   end
 
+  def set_backmerge_config
+    self.continuous_backmerge_enabled = continuous_backmerge?
+  end
+
   def semver_compatibility
     VersioningStrategies::Semverish.new(version_seeded_with)
   rescue ArgumentError
@@ -340,6 +382,10 @@ class Train < ApplicationRecord
       errors.add(:repeat_duration, "the repeat duration should be more than 1 day") if repeat_duration && repeat_duration < 1.day
       errors.add(:kickoff_at, "scheduled trains allowed only for Almost Trunk branching strategy") if branching_strategy != "almost_trunk"
     end
+  end
+
+  def backmerge_config
+    errors.add(:backmerge_strategy, :continuous_not_allowed) if branching_strategy != "almost_trunk" && continuous_backmerge?
   end
 
   def working_branch_presence

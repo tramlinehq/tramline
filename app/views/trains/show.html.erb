@@ -18,8 +18,14 @@
                           data: { turbo_method: :patch, turbo_confirm: "This will cancel all the scheduled release kickoff(s). Are you sure?" } %>
     <% end %>
 
-    <% if @train.active_run %>
-      <%= decorated_link_to :green, "Ongoing Release", live_release_app_train_releases_path(@app, @train) %>
+    <% if @train.ongoing_release %>
+      <%= decorated_link_to :green, "Ongoing Release", ongoing_release_app_train_releases_path(@app, @train) %>
+      <% if @train.upcoming_release %>
+        <%= decorated_link_to :blue, "Upcoming Release", upcoming_release_app_train_releases_path(@app, @train) %>
+      <% elsif @train.upcoming_release_startable? %>
+        <%= authz_button_to :blue, start_upcoming_release_text(@train.ongoing_release), app_train_releases_path(@app, @train) %>
+        <%= authz_button_to :amber, start_upcoming_release_text(@train.ongoing_release, major: true), app_train_releases_path(@app, @train, has_major_bump: true) %>
+      <% end %>
     <% elsif @train.manually_startable? %>
       <%= authz_button_to :blue, start_release_text(@train), app_train_releases_path(@app, @train) %>
       <%= authz_button_to :amber, start_release_text(@train, major: true), app_train_releases_path(@app, @train, has_major_bump: true) %>
@@ -32,7 +38,7 @@
       <% end %>
     <% end %>
 
-    <%= authz_link_to (@train.active_run.present? ? :disabled : :neutral), edit_app_train_path(@app, @train) do %>
+    <%= authz_link_to (@train.active_runs.exists? ? :disabled : :neutral), edit_app_train_path(@app, @train) do %>
       <%= inline_svg("edit.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
       <span class="ml-2">Settings</span>
     <% end %>
@@ -105,6 +111,10 @@
         <% mt.with_description("Build Queue Config") do %>
           <%= build_queue_config(@train) %>
         <% end %>
+
+        <% mt.with_description("Backmerge Config") do %>
+          <%== backmerge_text(@train) %>
+        <% end %>
       <% end %>
     </article>
 
@@ -157,6 +167,12 @@
                   <span class="ml-2 py-0.5"><%= release_status_badge(run.status) %></span>
                   <% if run.is_automatic? %>
                     <span class="ml-2 py-0.5"><%= status_badge("automatic", :neutral) %></span>
+                  <% end %>
+                  <% if run.upcoming? %>
+                    <span class="ml-2 py-0.5"><%= status_badge("upcoming", :neutral) %></span>
+                  <% end %>
+                  <% if run.ongoing? %>
+                    <span class="ml-2 py-0.5"><%= status_badge("ongoing", :routine) %></span>
                   <% end %>
                 <% end %>
               <% end %>

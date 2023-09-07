@@ -12,10 +12,14 @@ class IntegrationListeners::GithubController < IntegrationListenerController
       handle_push
     when "ping"
       handle_ping
+    when "pull_request"
+      handle_pull_request
     else
       head :ok
     end
   end
+
+  private
 
   def handle_ping
     head :accepted
@@ -23,12 +27,15 @@ class IntegrationListeners::GithubController < IntegrationListenerController
 
   def handle_push
     response = WebhookHandlers::Push.process(train, params)
-
     Rails.logger.debug response.body
     head response.status
   end
 
-  private
+  def handle_pull_request
+    response = WebhookHandlers::PullRequest.process(train, pull_request_params)
+    Rails.logger.debug response.body
+    head response.status
+  end
 
   def event_type
     request.headers["HTTP_X_GITHUB_EVENT"]
@@ -36,5 +43,21 @@ class IntegrationListeners::GithubController < IntegrationListenerController
 
   def train
     @train ||= Train.find(params[:train_id])
+  end
+
+  def pull_request_params
+    params.require(:pull_request).permit(
+      :number,
+      :title,
+      :body,
+      :url,
+      :state,
+      :created_at,
+      :closed_at,
+      :id,
+      :html_url,
+      base: [:ref],
+      head: [:ref, repo: [:full_name]]
+    )
   end
 end

@@ -21,5 +21,9 @@ module RefinedHash
         raise UndefinedPathError, "Could not fetch path (#{path.join(" > ")}) at #{key} for #{e.class}", e.backtrace
       end
     end
+
+    def merge_if_present(params)
+      present? ? merge(params) : self
+    end
   end
 end

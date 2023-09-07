@@ -93,6 +93,8 @@ en:
               config_not_allowed: "build queue wait time cannot be configured when queue is disabled"
             working_branch:
               not_available: "could not find the working branch in the configured git repo"
+            backmerge_strategy:
+              continuous_not_allowed: "continuous backmerge only allowed for Almost Trunk branching strategy"
         releases/step:
           attributes:
             train:
@@ -146,7 +148,7 @@ en:
       signup_before: "Please create an account to accept the invite to join %{org}"
       already_signed_in:
         new_user: "You are signed in as %{email} in Tramline. Sign out to accept the invite for a new user."
-        existing_user: "You are signed in as %{email} in Tramline. Sign out to accept the invite for %{new_email}."
+        existing_user: "You are signed in as %{current_email} in Tramline. Sign out to accept the invite for %{new_email}."
       invite_error:
         mailer: "Unable to issue invitation to %{email}"
         email: "The email specified does not match the one in the invitation"

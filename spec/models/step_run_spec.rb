@@ -228,7 +228,7 @@ describe StepRun do
     end
   end
 
-  describe "#trigger_ci!" do
+  describe "#trigger_ci_worfklow_run!!" do
     let(:ci_ref) { Faker::Lorem.word }
     let(:ci_link) { Faker::Internet.url }
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
@@ -241,13 +241,13 @@ describe StepRun do
     end
 
     it "transitions state" do
-      step_run.trigger_ci!
+      step_run.trigger_ci_worfklow_run!
 
       expect(step_run.ci_workflow_triggered?).to be(true)
     end
 
     it "updates ci metadata" do
-      step_run.trigger_ci!
+      step_run.trigger_ci_worfklow_run!
       step_run.reload
 
       expect(step_run.ci_ref).to eq(ci_ref)
@@ -259,7 +259,7 @@ describe StepRun do
       name = step_run.class.name
       allow(PassportJob).to receive(:perform_later)
 
-      step_run.trigger_ci!
+      step_run.trigger_ci_worfklow_run!
 
       expect(PassportJob).to have_received(:perform_later).with(id, name, hash_including(reason: :ci_triggered)).once
     end
@@ -269,7 +269,7 @@ describe StepRun do
       id = step_run.id
       allow(Releases::FindWorkflowRun).to receive(:perform_async)
 
-      step_run.trigger_ci!
+      step_run.trigger_ci_worfklow_run!
 
       expect(Releases::FindWorkflowRun).to have_received(:perform_async).with(id).once
     end
@@ -279,7 +279,7 @@ describe StepRun do
       allow(Releases::FindWorkflowRun).to receive(:perform_async)
 
       expect(step_run.build_number).to be_nil
-      step_run.trigger_ci!
+      step_run.trigger_ci_worfklow_run!
       expect(step_run.build_number).not_to be_empty
     end
 
@@ -290,7 +290,7 @@ describe StepRun do
           release_platform_run: step_run.release_platform_run,
           scheduled_at: 10.minutes.before(step_run.scheduled_at))
 
-        step_run.trigger_ci!
+        step_run.trigger_ci_worfklow_run!
 
         expect(Releases::CancelStepRun).to have_received(:perform_later).with(previous_step_run.id).once
       end
@@ -301,7 +301,7 @@ describe StepRun do
           release_platform_run: step_run.release_platform_run,
           scheduled_at: 10.minutes.after(step_run.scheduled_at))
 
-        step_run.trigger_ci!
+        step_run.trigger_ci_worfklow_run!
 
         expect(Releases::CancelStepRun).not_to have_received(:perform_later).with(previous_step_run.id)
       end
@@ -314,7 +314,7 @@ describe StepRun do
           release_platform_run: step_run.release_platform_run,
           scheduled_at: 10.minutes.before(step_run.scheduled_at))
 
-        step_run.trigger_ci!
+        step_run.trigger_ci_worfklow_run!
 
         expect(Releases::CancelStepRun).not_to have_received(:perform_later).with(previous_step_run.id)
       end

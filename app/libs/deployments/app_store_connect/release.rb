@@ -97,7 +97,8 @@ module Deployments
       end
 
       def update_build_notes!
-        provider.update_release_notes(build_number, run.step_run.build_notes)
+        build_notes = run.step_run.build_notes.truncate(ReleaseMetadata::NOTES_MAX_LENGTH)
+        provider.update_release_notes(build_number, build_notes)
       end
 
       def prepare_for_release!(force: false)
