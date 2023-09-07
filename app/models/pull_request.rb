@@ -6,7 +6,7 @@
 #  base_ref                :string           not null
 #  body                    :text
 #  closed_at               :datetime
-#  head_ref                :string           not null
+#  head_ref                :string           not null, indexed => [release_id]
 #  number                  :bigint           not null, indexed => [release_id, phase], indexed
 #  opened_at               :datetime         not null
 #  phase                   :string           not null, indexed => [release_id, number], indexed
@@ -17,7 +17,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  commit_id               :uuid             indexed
-#  release_id              :uuid             indexed => [phase, number]
+#  release_id              :uuid             indexed => [phase, number], indexed => [head_ref]
 #  release_platform_run_id :uuid
 #  source_id               :string           not null, indexed
 #
