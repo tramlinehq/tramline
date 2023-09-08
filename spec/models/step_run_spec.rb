@@ -57,7 +57,8 @@ describe StepRun do
   end
 
   describe "#manually_startable_deployment?" do
-    let(:release_platform) { create(:release_platform) }
+    let(:train) { create(:train, version_seeded_with: "1.1.0") }
+    let(:release_platform) { create(:release_platform, train:) }
 
     it "is false when train is inactive" do
       step = create(:step, :with_deployment, release_platform: release_platform)
@@ -105,20 +106,44 @@ describe StepRun do
     end
 
     context "with release step" do
-      it "is true when it is the running step's next-in-line deployment" do
-        step = create(:step, :release, :with_deployment, release_platform: release_platform)
-        _inactive_train_run = create(:release_platform_run, release_platform: release_platform, status: "finished")
-        inactive_step_run = create(:step_run, step: step, status: "success")
-        _active_train_run = create(:release_platform_run, release_platform: release_platform, status: "on_track")
-        running_step_run = create(:step_run, step: step, status: "on_track")
-        deployment1 = create(:deployment, step: step)
-        _deployment_run1 = create(:deployment_run, step_run: running_step_run, deployment: deployment1, status: "released")
-        deployment2 = create(:deployment, step: step)
+      let(:train) { create(:train) }
+      let(:release_platform) { create(:release_platform, train:) }
+      let(:release_step) { create(:step, :release, :with_deployment, release_platform:) }
+      let(:regular_deployment) { create(:deployment, :with_google_play_store, step: release_step) }
+      let(:production_deployment) { create(:deployment, :with_google_play_store, :with_staged_rollout, step: release_step) }
+      let(:release) { create(:release, train:) }
+      let(:release_platform_run) { create(:release_platform_run, :on_track, release_platform:, release:) }
 
-        expect(running_step_run.manually_startable_deployment?(deployment1)).to be false
-        expect(running_step_run.manually_startable_deployment?(deployment2)).to be true
-        expect(inactive_step_run.manually_startable_deployment?(deployment1)).to be false
-        expect(inactive_step_run.manually_startable_deployment?(deployment2)).to be false
+      it "is true when it is the running step's next-in-line deployment" do
+        inactive_train_run = create(:release_platform_run, release_platform: release_platform, status: "finished")
+        inactive_step_run = create(:step_run, step: release_step, release_platform_run: inactive_train_run, status: "success")
+        running_step_run = create(:step_run, step: release_step, release_platform_run:, status: "on_track")
+        _deployment_run1 = create(:deployment_run, step_run: running_step_run, deployment: regular_deployment, status: "released")
+
+        expect(running_step_run.manually_startable_deployment?(regular_deployment)).to be false
+        expect(running_step_run.manually_startable_deployment?(production_deployment)).to be true
+        expect(inactive_step_run.manually_startable_deployment?(regular_deployment)).to be false
+        expect(inactive_step_run.manually_startable_deployment?(production_deployment)).to be false
+      end
+
+      it "is false when it is the running step's next-in-line deployment but previous deployment hasn't finished" do
+        running_step_run = create(:step_run, :deployment_started, step: release_step, release_platform_run:)
+        _deployment_run1 = create(:deployment_run, step_run: running_step_run, deployment: regular_deployment, status: "uploading")
+
+        expect(running_step_run.manually_startable_deployment?(regular_deployment)).to be false
+        expect(running_step_run.manually_startable_deployment?(production_deployment)).to be false
+      end
+
+      it "is true when it is the running step's next-in-line deployment, previous deployment hasn't finished and release is in hotfix mode" do
+        inactive_step_run = create(:step_run, :deployment_started, step: release_step, release_platform_run:)
+        _old_beta_deployment_run = create(:deployment_run, :released, step_run: inactive_step_run, deployment: regular_deployment)
+        _old_prod_deployment_run = create(:deployment_run, :rollout_started, step_run: inactive_step_run, deployment: production_deployment)
+        running_step_run = create(:step_run, :deployment_started, step: release_step, release_platform_run:)
+        release_platform_run.bump_version!
+        _new_beta_deployment_run = create(:deployment_run, :uploaded, step_run: running_step_run, deployment: regular_deployment)
+
+        expect(running_step_run.reload.manually_startable_deployment?(regular_deployment)).to be false
+        expect(running_step_run.reload.manually_startable_deployment?(production_deployment)).to be true
       end
     end
 
