@@ -72,12 +72,14 @@ module Installations
       end
     end
 
-    def run_workflow!(repo, id, ref, inputs)
-      inputs = {
-        versionCode: inputs[:version_code],
-        versionName: inputs[:build_version],
-        buildNotes: inputs[:build_notes]
-      }.compact
+    def run_workflow!(repo, id, ref, inputs, commit_hash)
+      inputs =
+        inputs
+          .slice(:version_code, :build_notes)
+          .merge(version_name: inputs[:build_version], commit_ref: commit_hash)
+          .compact
+          .to_json
+          .then { {"tramline-input" => _1} }
 
       execute do
         @client

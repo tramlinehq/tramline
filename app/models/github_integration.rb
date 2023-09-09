@@ -182,8 +182,8 @@ class GithubIntegration < ApplicationRecord
     installation.list_workflows(code_repository_name, WORKFLOWS_TRANSFORMATIONS)
   end
 
-  def trigger_workflow_run!(ci_cd_channel, ref, inputs, _commit_hash = nil)
-    raise WorkflowRun unless installation.run_workflow!(code_repository_name, ci_cd_channel, ref, inputs)
+  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
+    raise WorkflowRun unless installation.run_workflow!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash)
   end
 
   def cancel_workflow_run!(ci_ref)
