@@ -8,12 +8,12 @@
 
   <%= render MetaTableComponent.new do |mt| %>
     <% mt.with_description("Release Notes") do %>
-      <%= safe_simple_format release_metadata.release_notes %>
+      <%= simple_format release_metadata.release_notes %>
     <% end %>
 
     <% unless is_android %>
       <% mt.with_description("Promotional Text") do %>
-        <%= safe_simple_format release_metadata.promo_text %>
+        <%= simple_format release_metadata.promo_text %>
       <% end %>
     <% end %>
   <% end %>
