@@ -4,7 +4,7 @@
     <% open_prs = release.pull_requests.ongoing.open %>
     <% if open_prs.present? %>
       <span class="text-sm text-slate-400">You have <%= open_prs.size %> unmerged backmerge PRs pending.</span>
-      <%= render partial: "shared/live_release/pull_requests_thin", locals: { prs: open_prs, title_size: 70 } %>
+      <%= render partial: "shared/live_release/pull_requests_thin", locals: { prs: open_prs, title_size: 60 } %>
     <% else %>
       <span class="text-sm text-slate-400">No unmerged changes. <code><%= release.train.working_branch %></code> is up to date with all commits from <code><%= release.release_branch %></code></span>
     <% end %>
