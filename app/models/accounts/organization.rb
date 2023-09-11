@@ -36,6 +36,10 @@ class Accounts::Organization < ApplicationRecord
     Flipper.enabled?(:build_notes_in_workflow, self)
   end
 
+  def deploy_action_enabled?
+    Flipper.enabled?(:deploy_action_enabled, self)
+  end
+
   def owner
     users.includes(:memberships).where(memberships: {role: "owner"}).sole
   end
