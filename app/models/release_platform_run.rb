@@ -179,7 +179,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   def next_step
     return steps.first if step_runs.empty?
-    step_runs.joins(:step).order(:step_number).last.step.next
+    last_commit&.step_runs&.joins(:step)&.order(:step_number)&.last&.step&.next
   end
 
   def running_step?
@@ -187,13 +187,13 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def last_run_for(step)
-    step_runs.where(step: step).last
+    last_commit&.step_runs&.where(step: step)&.last
   end
 
   def current_step_number
     return if steps.blank?
     return 1 if running_steps.blank?
-    running_steps.order(:step_number).last.step_number
+    running_steps.order(:step_number).last&.step_number
   end
 
   def last_commit
