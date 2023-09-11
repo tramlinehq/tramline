@@ -201,7 +201,8 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def finished_steps?
-    last_commit&.step_runs&.where(release_platform_run: self)&.success&.size == steps.size
+    return false if release_platform.release_step.blank?
+    last_commit&.step_runs&.where(release_platform_run: self, step: release_platform.release_step)&.first&.success?
   end
 
   def last_good_step_run

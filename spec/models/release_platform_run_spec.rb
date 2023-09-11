@@ -114,29 +114,30 @@ describe ReleasePlatformRun do
 
   describe "finalizable?" do
     let(:release_platform) { create(:release_platform) }
-    let(:steps) { create_list(:step, 2, :with_deployment, release_platform:) }
+    let(:review_step) { create(:step, :review, :with_deployment, release_platform:) }
+    let(:release_step) { create(:step, :release, :with_deployment, release_platform:) }
     let(:release_platform_run) { create(:release_platform_run, release_platform:) }
 
-    it "is finalizable when all the steps for the last commit have succeeded" do
+    it "is finalizable when release step for the last commit have succeeded" do
       commit_1 = create(:commit, :without_trigger, release: release_platform_run.release)
-      _commit_1_fail = create(:step_run, :ci_workflow_failed, commit: commit_1, step: steps.first, release_platform_run:)
-      _commit_1_pass = create(:step_run, :success, commit: commit_1, step: steps.second, release_platform_run:)
+      _commit_1_fail = create(:step_run, :ci_workflow_failed, commit: commit_1, step: review_step, release_platform_run:)
+      _commit_1_pass = create(:step_run, :success, commit: commit_1, step: release_step, release_platform_run:)
 
       commit_2 = create(:commit, :without_trigger, release: release_platform_run.release)
-      _commit_2_pass = create(:step_run, :success, commit: commit_2, step: steps.first, release_platform_run:)
-      _commit_2_pass = create(:step_run, :success, commit: commit_2, step: steps.second, release_platform_run:)
+      _commit_2_pass = create(:step_run, :deployment_failed, commit: commit_2, step: review_step, release_platform_run:)
+      _commit_2_pass = create(:step_run, :success, commit: commit_2, step: release_step, release_platform_run:)
 
       expect(release_platform_run.finalizable?).to be(true)
     end
 
-    it "is not finalizable when all the steps for the last commit have not succeeded" do
+    it "is not finalizable when release step for the last commit have not succeeded" do
       commit_1 = create(:commit, :without_trigger, release: release_platform_run.release)
-      _commit_1_pass = create(:step_run, :success, commit: commit_1, step: steps.first, release_platform_run:)
-      _commit_1_fail = create(:step_run, :ci_workflow_failed, commit: commit_1, step: steps.second, release_platform_run:)
+      _commit_1_pass = create(:step_run, :success, commit: commit_1, step: review_step, release_platform_run:)
+      _commit_1_fail = create(:step_run, :ci_workflow_failed, commit: commit_1, step: release_step, release_platform_run:)
 
       commit_2 = create(:commit, :without_trigger, release: release_platform_run.release)
-      _commit_2_fail = create(:step_run, :ci_workflow_failed, commit: commit_2, step: steps.first, release_platform_run:)
-      _commit_2_pass = create(:step_run, :success, commit: commit_2, step: steps.second, release_platform_run:)
+      _commit_2_fail = create(:step_run, :success, commit: commit_2, step: review_step, release_platform_run:)
+      _commit_2_pass = create(:step_run, :deployment_started, commit: commit_2, step: release_step, release_platform_run:)
 
       expect(release_platform_run.finalizable?).to be(false)
     end
