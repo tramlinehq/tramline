@@ -103,7 +103,8 @@ class TrainsController < SignedInApplicationController
       :build_queue_wait_time_unit,
       :build_queue_wait_time_value,
       :release_schedule_enabled,
-      :continuous_backmerge_enabled
+      :continuous_backmerge_enabled,
+      :manual_release
     )
   end
 
@@ -132,7 +133,8 @@ class TrainsController < SignedInApplicationController
       :repeat_duration_value,
       :repeat_duration_unit,
       :release_schedule_enabled,
-      :continuous_backmerge_enabled
+      :continuous_backmerge_enabled,
+      :manual_release
     )
   end
 

@@ -178,8 +178,8 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def next_step
-    return steps.first if step_runs.empty?
-    step_runs.joins(:step).order(:step_number).last.step.next
+    return steps.first if step_runs.empty? || last_commit.blank?
+    last_commit.step_runs.joins(:step).order(:step_number).last.step.next
   end
 
   def running_step?
@@ -187,7 +187,8 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def last_run_for(step)
-    step_runs.where(step: step).last
+    return if last_commit.blank?
+    last_commit.step_runs.where(step: step).last
   end
 
   def current_step_number
@@ -201,7 +202,10 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def finished_steps?
-    last_commit&.step_runs&.where(release_platform_run: self)&.success&.size == steps.size
+    return false if release_platform.release_step.blank?
+    return false if last_commit.blank?
+
+    last_commit.step_runs.where(release_platform_run: self, step: release_platform.release_step).first&.success?
   end
 
   def last_good_step_run

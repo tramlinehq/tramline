@@ -37,7 +37,7 @@ class Commit < ApplicationRecord
   after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
   after_create_commit -> { Releases::BackmergeCommitJob.perform_later(id) }, if: -> { release.release_changes? }
 
-  delegate :release_platform_runs, :notify!, to: :release
+  delegate :release_platform_runs, :notify!, :train, to: :release
 
   def self.between(base_step_run, head_step_run)
     return none if head_step_run.nil?
@@ -85,6 +85,7 @@ class Commit < ApplicationRecord
     platform_run.bump_version!
 
     platform_run.release_platform.ordered_steps_until(platform_run.current_step_number).each do |step|
+      next if step.release? && train.manual_release?
       Triggers::StepRun.call(step, self, platform_run)
     end
   end

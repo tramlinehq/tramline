@@ -10,6 +10,7 @@
 #  build_queue_wait_time    :interval
 #  description              :string
 #  kickoff_at               :datetime
+#  manual_release           :boolean          default(FALSE)
 #  name                     :string           not null
 #  notification_channel     :jsonb
 #  release_backmerge_branch :string

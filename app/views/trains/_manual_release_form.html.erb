@@ -1,22 +1,22 @@
-<article hidden data-branching-selector-target="backmerge">
+<article>
   <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
-  <div class="text-xl text-slate-600 font-medium mt-2">Release Backmerge Configuration (optional)</div>
+  <div class="text-xl text-slate-600 font-medium mt-2">Manual Release Trigger (optional)</div>
   <div class="text-sm mt-1 mb-6">
-    Enable continuous backmerging of release branch commits into the working branch as they arrive.<br/> By default, merge happens at the end of the release.
+    Always require a manual trigger for the release step of the train.<br/>By default, the release step will be auto-triggered if it has run before in the release.
   </div>
   <section data-controller="toggle-switch"
-           data-toggle-switch-on-label-value="Continuous Backmerge enabled"
-           data-toggle-switch-off-label-value="Continuous Backmerge disabled">
+           data-toggle-switch-on-label-value="Manual Release enabled"
+           data-toggle-switch-off-label-value="Manual Release disabled">
 
     <div class="flex items-center">
       <div class="form-switch">
-        <%= form.check_box :continuous_backmerge_enabled,
-                           { id: "release-backmerge-switch",
+        <%= form.check_box :manual_release,
+                           { id: "manual-release-switch",
                              class: "sr-only",
                              data: { action: "toggle-switch#change",
                                      toggle_switch_target: "checkbox" } },
                            "true", "false" %>
-        <label class="bg-slate-400" for="release-backmerge-switch">
+        <label class="bg-slate-400" for="manual-release-switch">
           <span class="bg-white shadow-sm" aria-hidden="true"></span>
           <span class="sr-only">Switch label</span>
         </label>

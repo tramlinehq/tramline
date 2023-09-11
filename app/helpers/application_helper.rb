@@ -127,8 +127,4 @@ module ApplicationHelper
   def short_sha(sha)
     sha[0, 7]
   end
-
-  def safe_simple_format(text)
-    simple_format(h(text))
-  end
 end

@@ -112,11 +112,9 @@
                   </div>
                 </div>
               <% end %>
-
               <% row.with_cell do %>
-                <div class="text-left"><%= safe_simple_format(train.description) %></div>
+                <div class="text-left"><%= simple_format train.description %></div>
               <% end %>
-
               <% row.with_cell do %>
                 <div class="text-left">
                   <%= "#{train.releases.any? ? train.version_current : train.version_seeded_with} • #{@app.build_number}" %>
