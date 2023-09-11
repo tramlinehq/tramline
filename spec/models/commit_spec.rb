@@ -41,6 +41,28 @@ describe Commit do
         expect(Triggers::StepRun).to have_received(:call).with(steps.first, commit, release_platform_run).once
         expect(Triggers::StepRun).to have_received(:call).with(steps.second, commit, release_platform_run).once
       end
+
+      it "does not trigger release step if manual release is configured" do
+        train = create(:train, manual_release: true)
+        release_platform = create(:release_platform, train:)
+        steps = create_list(:step, 2, :with_deployment, release_platform:)
+        release_step = create(:step, :release, :with_deployment, release_platform:)
+        release = create(:release, train:)
+        release_platform_run = create(:release_platform_run, release_platform:, release:)
+        create(:step_run, :success, step: steps.first, release_platform_run:)
+        create(:step_run, step: steps.second, release_platform_run:)
+        create(:step_run, step: release_step, release_platform_run:)
+        commit = create(:commit, release:)
+
+        allow(release).to receive(:latest_commit_hash).and_return(commit.commit_hash)
+        allow(Triggers::StepRun).to receive(:call)
+
+        commit.trigger_step_runs
+
+        expect(Triggers::StepRun).to have_received(:call).with(steps.first, commit, release_platform_run).once
+        expect(Triggers::StepRun).to have_received(:call).with(steps.second, commit, release_platform_run).once
+        expect(Triggers::StepRun).not_to have_received(:call).with(release_step, commit, release_platform_run)
+      end
     end
 
     context "when not latest commit" do

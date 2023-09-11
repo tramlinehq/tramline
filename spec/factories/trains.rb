@@ -9,6 +9,7 @@ FactoryBot.define do
     release_backmerge_branch { "main" }
     status { "draft" }
     build_queue_enabled { false }
+    manual_release { false }
 
     trait :draft do
       status { "draft" }
