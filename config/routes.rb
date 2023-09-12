@@ -167,6 +167,15 @@ Rails.application.routes.draw do
     resource :settings, only: [:index]
   end
 
+  namespace :api, defaults: { format: "json" } do
+    namespace :v1, path: "v1" do
+      get "ping", to: "pings#show"
+      scope :apps do
+        get :status, to: "apps#status"
+      end
+    end
+  end
+
   scope :github do
     get :callback, controller: "integration_listeners/github", as: :github_callback
     post "/events/:train_id", to: "integration_listeners/github#events", as: :github_events
