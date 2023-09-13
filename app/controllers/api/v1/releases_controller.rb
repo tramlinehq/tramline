@@ -14,7 +14,6 @@ class Api::V1::ReleasesController < ApiController
     release
       .all_completed_versions
       .map { |v| {version: v[:build_version], build: v[:build_number], created_at: v[:created_at]} }
-      .sort_by(&:created_at)
   end
 
   def release_param
