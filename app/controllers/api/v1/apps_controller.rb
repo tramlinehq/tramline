@@ -7,15 +7,13 @@ class Api::V1::AppsController < ApiController
   private
 
   def app
-    @app ||=
-      authorized_organization.apps.where(bundle_identifier: app_param)
-        .or(authorized_organization.apps.where(slug: app_param)).sole
+    @app ||= authorized_organization.apps.where(slug: app_param).sole
   end
 
   def latest_store_version
     app
       .latest_computed_store_version
-      .map { |v| {version: v.first, build: v.second, created_at: v.third} }
+      &.map { |v| {version: v.first, build: v.second, created_at: v.third, platform: v.fourth} }
   end
 
   def app_param

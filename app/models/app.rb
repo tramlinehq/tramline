@@ -107,7 +107,7 @@ class App < ApplicationRecord
       .sort_by(&:updated_at)
       .last
       &.step_run
-      &.pluck(:build_version, :build_number, :created_at)
+      &.then { [_1.build_version, _1.build_number, _1.created_at, _1.release_platform_run.platform] }
   end
 
   # NOTE: fetches and uses latest build numbers from the stores, if added,

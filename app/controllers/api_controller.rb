@@ -7,7 +7,7 @@ class ApiController < ActionController::Base
     head :bad_request
   end
 
-  rescue_from ActiveRecord::RecordNotFound do
+  rescue_from ActiveRecord::RecordNotFound, ActiveRecord::SoleRecordExceeded do
     head :not_found
   end
 
