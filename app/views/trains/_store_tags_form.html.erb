@@ -23,7 +23,7 @@
       <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"></div>
     </div>
 
-    <section class="mt-6" data-reveal hidden data-controller="toggle-switch"
+    <section class="mt-6" data-reveal <%= "hidden" unless @train.tag_platform_releases? %> data-controller="toggle-switch"
              data-toggle-switch-on-label-value="Tag All Store Releases enabled"
              data-toggle-switch-off-label-value="Tag All Store Releases disabled">
       <div class="border-t border-dashed border-slate-200 pb-8 mt-8"></div>
