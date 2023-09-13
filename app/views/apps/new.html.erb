@@ -8,7 +8,7 @@
       <div>
         <%= form.label :platform, class: "block text-sm font-medium mb-1" %>
         <%= form.select :platform,
-                        options_for_select(App.allowed_platforms(current_organization), "Android"),
+                        options_for_select(App.allowed_platforms, "Android"),
                         { required: true },
                         { class: "form-input w-full mb-1" } %>
       </div>
