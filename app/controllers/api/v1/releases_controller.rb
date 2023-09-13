@@ -13,7 +13,7 @@ class Api::V1::ReleasesController < ApiController
   def all_versions
     release
       .all_completed_versions
-      .map { |v| {version: v[:build_version], build: v[:build_number], created_at: v[:created_at]} }
+      .map { |v| {version: v.first, build: v.second, created_at: v.third} }
   end
 
   def release_param
