@@ -131,9 +131,10 @@ class Release < ApplicationRecord
   def all_completed_versions
     deployment_runs
       .ready
-      .includes(:step_run)
+      .includes(:step_run, :deployment)
       .select(&:production_channel?)
       .map(&:step_run)
+      .sort_by(&:updated_at)
       .pluck(:build_version, :build_number, :created_at)
   end
 

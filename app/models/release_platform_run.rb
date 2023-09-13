@@ -257,7 +257,7 @@ class ReleasePlatformRun < ApplicationRecord
   # and so a version bump is required for iOS once the build has been approved as well
   def version_bump_required?
     return latest_deployed_store_release&.rollout_started? if release_platform.android?
-    latest_deployed_store_release&.status&.in? [DeploymentRun::STATES[:rollout_started], DeploymentRun::STATES[:ready_to_release]]
+    latest_deployed_store_release&.status&.in? DeploymentRun::READY_STATES
   end
 
   def hotfix?

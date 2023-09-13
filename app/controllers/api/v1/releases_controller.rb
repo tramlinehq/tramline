@@ -1,13 +1,15 @@
 class Api::V1::ReleasesController < ApiController
   def show
     head :not_found and return if release.blank?
-    render json: {versions: all_versions}, status: :ok
+    render json: {releases: all_versions}, status: :ok
   end
 
   private
 
   def release
-    @release ||= Release.where(branch_name: release_param).or(Release.where(id: release_param)).sole
+    @release ||=
+      authorized_organization.releases.where(branch_name: release_param)
+        .or(authorized_organization.releases.where(id: release_param)).sole
   end
 
   def all_versions
