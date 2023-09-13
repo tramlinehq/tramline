@@ -17,6 +17,8 @@ class GithubIntegration < ApplicationRecord
   using RefinedHash
 
   delegate :code_repository_name, :code_repo_namespace, to: :app_config
+  delegate :app, to: :integration
+  delegate :organization, to: :app
 
   BASE_INSTALLATION_URL =
     Addressable::Template.new("https://github.com/apps/{app_name}/installations/new{?params*}")
@@ -182,8 +184,8 @@ class GithubIntegration < ApplicationRecord
     installation.list_workflows(code_repository_name, WORKFLOWS_TRANSFORMATIONS)
   end
 
-  def trigger_workflow_run!(ci_cd_channel, ref, inputs, _commit_hash = nil)
-    raise WorkflowRun unless installation.run_workflow!(code_repository_name, ci_cd_channel, ref, inputs)
+  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
+    raise WorkflowRun unless installation.run_workflow!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash, organization.deploy_action_enabled?)
   end
 
   def cancel_workflow_run!(ci_ref)
@@ -275,7 +277,7 @@ class GithubIntegration < ApplicationRecord
   end
 
   def app_config
-    integration.app.config
+    app.config
   end
 
   def events_url(params)
