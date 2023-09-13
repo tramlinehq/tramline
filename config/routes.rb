@@ -171,9 +171,7 @@ Rails.application.routes.draw do
     namespace :v1, path: "v1" do
       get "ping", to: "pings#show"
       get "releases/*release_id", to: "releases#show"
-      scope :apps do
-        get :status, to: "releases#show"
-      end
+      get "apps/*app_id", to: "apps#show"
     end
   end
 
