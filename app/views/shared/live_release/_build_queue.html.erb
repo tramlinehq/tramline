@@ -33,7 +33,7 @@
         <tr>
           <td class="py-4 whitespace-nowrap flex flex-row justify-between items-center">
             <div>
-              <%= link_to_external commit.message.truncate(65), commit.url, class: "underline font-medium" %>
+              <%= link_to_external commit.message.truncate(60), commit.url, class: "underline font-medium" %>
               <span class="text-xs uppercase tracking-wide inline-flex font-medium bg-slate-200 text-slate-600 rounded-full text-center px-2 py-0.5">#<%= commits_count - index %></span>
 
               <div class="text-slate-500 text-xs mt-1">
