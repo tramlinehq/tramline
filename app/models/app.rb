@@ -99,7 +99,7 @@ class App < ApplicationRecord
     trains.first if trains.size == 1
   end
 
-  def latest_computed_store_version
+  def latest_store_step_run
     deployment_runs
       .ready
       .includes(:step_run, :deployment)
@@ -107,7 +107,6 @@ class App < ApplicationRecord
       .sort_by(&:updated_at)
       .last
       &.step_run
-      &.then { [_1.build_version, _1.build_number, _1.created_at, _1.release_platform_run.platform] }
   end
 
   # NOTE: fetches and uses latest build numbers from the stores, if added,

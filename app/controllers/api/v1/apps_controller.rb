@@ -11,9 +11,8 @@ class Api::V1::AppsController < ApiController
   end
 
   def latest_store_version
-    app
-      .latest_computed_store_version
-      &.map { |v| {version: v.first, build: v.second, created_at: v.third, platform: v.fourth} }
+    app.latest_store_step_run
+      &.then { |sr| {version: sr.first, build: sr.second, created_at: sr.third, platform: sr.fourth} }
   end
 
   def app_param
