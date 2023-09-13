@@ -45,15 +45,15 @@ class GooglePlayStoreIntegration < ApplicationRecord
     Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier, access_key)
   end
 
-  def rollout_release(channel, build_number, version, rollout_percentage, release_metadata)
+  def rollout_release(channel, build_number, version, rollout_percentage, release_notes)
     GitHub::Result.new do
-      installation.create_release(channel, build_number, version, rollout_percentage, release_notes(release_metadata))
+      installation.create_release(channel, build_number, version, rollout_percentage, release_notes)
     end
   end
 
-  def create_draft_release(channel, build_number, version, release_metadata)
+  def create_draft_release(channel, build_number, version, release_notes)
     GitHub::Result.new do
-      installation.create_draft_release(channel, build_number, version, release_notes(release_metadata))
+      installation.create_draft_release(channel, build_number, version, release_notes)
     end
   end
 
@@ -176,16 +176,5 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def project_id
     JSON.parse(json_key)["project_id"]&.split("-")&.third
-  end
-
-  def release_notes(release_metadata)
-    return [] if release_metadata.blank?
-
-    release_metadata.map do |rd|
-      {
-        language: rd.locale,
-        text: rd.release_notes
-      }
-    end
   end
 end

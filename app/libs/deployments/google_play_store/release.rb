@@ -41,6 +41,7 @@ module Deployments
         :release_metadata,
         :google_play_store_integration?,
         :staged_rollout_config,
+        :production_channel?,
         to: :run
 
       def kickoff!
@@ -58,7 +59,6 @@ module Deployments
             result = provider.upload(file)
             if result.ok?
               run.upload!
-              run.notify!("Submitted for review!", :submit_for_review, run.notification_params)
             else
               run.fail_with_error(result.error)
             end
@@ -71,9 +71,10 @@ module Deployments
 
         if staged_rollout?
           run.engage_release!
-          rollout!
+          create_draft_release!
         else
-          fully_release!
+          notes = production_channel? ? release_notes : build_notes
+          fully_release!(notes)
         end
       end
 
@@ -97,7 +98,7 @@ module Deployments
           build_number,
           release_version,
           Deployment::FULL_ROLLOUT_VALUE,
-          [release_metadata]
+          release_notes
         )
 
         run.fail_with_error(result.error) unless result.ok?
@@ -112,7 +113,7 @@ module Deployments
           build_number,
           release_version,
           rollout_value,
-          [release_metadata]
+          release_notes
         )
 
         run.fail_with_error(result.error) unless result.ok?
@@ -121,13 +122,13 @@ module Deployments
 
       private
 
-      def fully_release!
+      def fully_release!(notes)
         result = provider.rollout_release(
           deployment_channel,
           build_number,
           release_version,
           Deployment::FULL_ROLLOUT_VALUE,
-          [release_metadata]
+          notes
         )
 
         if result.ok?
@@ -137,12 +138,12 @@ module Deployments
         end
       end
 
-      def rollout!
+      def create_draft_release!
         result = provider.create_draft_release(
           deployment_channel,
           build_number,
           release_version,
-          [release_metadata]
+          release_notes
         )
 
         if result.ok?
@@ -150,6 +151,24 @@ module Deployments
         else
           run.fail_with_error(result.error)
         end
+      end
+
+      def release_notes
+        return [] if release_metadata.blank?
+
+        [{
+          language: release_metadata.locale,
+          text: release_metadata.release_notes
+        }]
+      end
+
+      def build_notes
+        return [] if run.step_run.build_notes.blank?
+
+        [{
+          language: ReleaseMetadata::DEFAULT_LOCALE,
+          text: run.step_run.build_notes
+        }]
       end
     end
   end

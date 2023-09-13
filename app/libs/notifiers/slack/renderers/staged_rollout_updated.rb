@@ -13,9 +13,25 @@ module Notifiers
 
       def secondary_text
         if @is_fully_released
-          "View your release on the Play Console."
+          "View your release on the #{store}."
         else
-          "You can choose to *Pause* or *Release to 100%*."
+          action_text
+        end
+      end
+
+      def store
+        if @is_app_store_production
+          "App Store"
+        elsif @is_play_store_production
+          "Play Console"
+        end
+      end
+
+      def action_text
+        if @is_app_store_production
+          "You can choose to *Pause*, *Halt*, or *Release to 100%*."
+        elsif @is_play_store_production
+          "You can choose to *Increase*, *Halt*, or *Release to 100%*."
         end
       end
     end
