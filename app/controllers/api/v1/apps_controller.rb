@@ -12,7 +12,7 @@ class Api::V1::AppsController < ApiController
 
   def latest_store_version
     app.latest_store_step_run
-      &.then { |sr| {version: sr.first, build: sr.second, created_at: sr.third, platform: sr.fourth} }
+      &.then { |sr| {version: sr.build_version, build: sr.build_number, created_at: sr.created_at, platform: sr.platform} }
   end
 
   def app_param
