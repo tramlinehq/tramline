@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_09_11_074926) do
+ActiveRecord::Schema[7.0].define(version: 2023_09_13_082139) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -499,6 +499,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_11_074926) do
     t.integer "build_queue_size", limit: 2
     t.string "backmerge_strategy", default: "on_finalize", null: false
     t.boolean "manual_release", default: false
+    t.boolean "tag_platform_releases", default: false
+    t.boolean "tag_all_store_releases", default: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 

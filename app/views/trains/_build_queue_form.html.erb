@@ -1,5 +1,4 @@
 <article>
-  <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
   <div class="text-xl text-slate-600 font-medium mt-2">Build Queue (optional)</div>
 
   <div class="text-sm mt-1 mb-6">
@@ -31,7 +30,7 @@
       <div class="flex flex-row gap-x-2 items-center">
         <%= form.label "Apply after ", class: "text-sm mb-1" %>
         <%= form.number_field :build_queue_size,
-                              class: "form-input w-1/8",
+                              class: "form-input w-1/6",
                               step: 1,
                               min: 1,
                               placeholder: 5,
@@ -39,7 +38,7 @@
                                       domain__build_queue_help_target: "size" } %>
         <%= form.label :build_queue_wait_time_value, "commits or after", class: "text-sm mb-1" %>
         <%= form.number_field :build_queue_wait_time_value,
-                              class: "form-input w-1/8",
+                              class: "form-input w-1/6",
                               step: 1,
                               min: 1,
                               placeholder: 3,
@@ -48,7 +47,7 @@
         <%= form.select :build_queue_wait_time_unit,
                         options_for_select([%w[Minute(s) minutes], %w[Hour(s) hours]], @train.build_queue_wait_time_unit || "hours"),
                         { required: false },
-                        { class: "form-input w-1/12",
+                        { class: "form-input w-1/6",
                           data: { action: 'domain--build-queue-help#change',
                                   domain__build_queue_help_target: "waitTimeUnit" } } %>
       </div>
@@ -59,4 +58,5 @@
       </div>
     </div>
   </div>
+  <div class="border-t border-dashed border-slate-200 pb-8 mt-8"></div>
 </article>

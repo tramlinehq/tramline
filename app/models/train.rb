@@ -18,6 +18,8 @@
 #  repeat_duration          :interval
 #  slug                     :string
 #  status                   :string           not null
+#  tag_all_store_releases   :boolean          default(FALSE)
+#  tag_platform_releases    :boolean          default(FALSE)
 #  version_current          :string
 #  version_seeded_with      :string
 #  working_branch           :string
