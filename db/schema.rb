@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_09_11_074926) do
+ActiveRecord::Schema[7.0].define(version: 2023_09_12_130953) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -287,6 +287,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_11_074926) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "subscribed", default: false
+    t.string "api_key"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
     t.index ["status"], name: "index_organizations_on_status"
   end

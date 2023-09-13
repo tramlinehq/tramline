@@ -150,6 +150,7 @@ class DeploymentRun < ApplicationRecord
   scope :matching_runs_for, ->(integration) { includes(:deployment).where(deployments: {integration: integration}) }
   scope :has_begun, -> { where.not(status: :created) }
   scope :not_failed, -> { where.not(status: [:failed, :failed_prepare_release]) }
+  scope :ready, -> { where(status: [:rollout_started, :released]) }
 
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 

@@ -3,6 +3,7 @@
 # Table name: organizations
 #
 #  id         :uuid             not null, primary key
+#  api_key    :string
 #  created_by :string           not null
 #  name       :string           not null
 #  slug       :string           indexed
@@ -22,6 +23,10 @@ class Accounts::Organization < ApplicationRecord
 
   enum status: {active: "active", dormant: "dormant", guest: "guest"}
 
+  encrypts :api_key, deterministic: true
+
+  after_create :generate_api_key
+
   validates :name, presence: true
 
   friendly_id :name, use: :slugged
@@ -38,5 +43,13 @@ class Accounts::Organization < ApplicationRecord
 
   def owner
     users.includes(:memberships).where(memberships: {role: "owner"}).sole
+  end
+
+  def rotate_api_key
+    update(api_key: generate_api_key)
+  end
+
+  def generate_api_key
+    SecureRandom.hex
   end
 end
