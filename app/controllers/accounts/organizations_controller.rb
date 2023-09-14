@@ -1,4 +1,6 @@
 class Accounts::OrganizationsController < SignedInApplicationController
+  before_action :require_write_access!, only: %i[edit]
+
   def index
     @organizations = current_user.organizations
   end
