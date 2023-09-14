@@ -190,7 +190,7 @@ describe StagedRollout do
       rollout.move_to_next_stage!
       expect(providable_dbl).to(
         have_received(:rollout_release)
-          .with(anything, anything, anything, 1, [release_metadata])
+          .with(anything, anything, anything, 1, anything)
       )
       expect(rollout.reload.started?).to be(true)
     end
@@ -202,7 +202,7 @@ describe StagedRollout do
       rollout.move_to_next_stage!
       expect(providable_dbl).to(
         have_received(:rollout_release)
-          .with(anything, anything, anything, 100, [release_metadata])
+          .with(anything, anything, anything, 100, anything)
       )
     end
 

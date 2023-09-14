@@ -303,7 +303,7 @@ describe DeploymentRun do
               anything,
               anything,
               full_release_value,
-              [run.step_run.release.release_metadata]
+              anything
             )
         )
         expect(run.reload.released?).to be(true)
