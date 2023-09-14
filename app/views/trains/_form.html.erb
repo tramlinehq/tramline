@@ -4,7 +4,7 @@
               url: url,
               builder: ButtonHelper::AuthzForms) do |form| %>
 
-  <article class="grid gap-x-10 gap-y-2 grid-cols-2"
+  <article class="grid gap-x-12 gap-y-2 grid-cols-2"
            data-controller="branching-selector"
            data-branching-selector-domain--release-schedule-help-outlet="#release-schedule">
     <section>
@@ -169,6 +169,8 @@
     </section>
 
     <section>
+      <div class="text-2xl text-slate-600 font-medium mt-2 mb-4">Optional Settings</div>
+      <div class="border-t border-dashed border-slate-200 mb-4 mt-4"></div>
       <%= render partial: "release_schedule_form", locals: { form: } %>
       <%= render partial: "build_queue_form", locals: { form: } %>
       <%= render partial: "backmerge_config_form", locals: { form: } %>

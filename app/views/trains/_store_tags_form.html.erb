@@ -1,5 +1,5 @@
 <article data-controller="reveal">
-  <div class="text-xl text-slate-600 font-medium mt-2 mb-1">Platform Specific Tags (optional)</div>
+  <div class="text-xl text-slate-600 font-medium mt-2 mb-1">Platform Specific Tags</div>
   <div class="text-sm mt-1 mb-6">
     Tag each platform release separately.<br/>By default, only one tag is created at the end of the release.
   </div>
@@ -23,13 +23,16 @@
       <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"></div>
     </div>
 
-    <section class="mt-6" data-reveal <%= "hidden" unless @train.tag_platform_releases? %> data-controller="toggle-switch"
+    <section class="mt-6" data-reveal
+             <%= "hidden" unless @train.tag_platform_releases? %> data-controller="toggle-switch"
              data-toggle-switch-on-label-value="Tag All Store Releases enabled"
              data-toggle-switch-off-label-value="Tag All Store Releases disabled">
       <div class="border-t border-dashed border-slate-200 pb-8 mt-8"></div>
-      <div class="text-xl text-slate-600 font-medium mt-2 mb-1">Tag All Store Releases (optional)</div>
+      <div class="text-xl text-slate-600 font-medium mt-2 mb-1">Tag All Store Releases</div>
       <div class="text-sm mt-1 mb-6">
-        Always tag a build that reaches the store production channel. There can be multiple such builds when there are hotfixes during staged rollout.<br/>By default, only the final build of the release is tagged.
+        Always tag a build that reaches the store production channel.
+        <br/>There can be multiple such builds when there are hotfixes during staged rollout.
+        <br/>By default, only the final build of the release is tagged.
       </div>
       <div class="flex items-center">
         <div class="form-switch">
