@@ -84,6 +84,8 @@ en:
       models:
         train:
           attributes:
+            tag_all_store_releases:
+              not_allowed: "cannot enable tags for all store releases without enabling platform-specific tags"
             build_queue_size:
               config_required: "invalid config, provide both size and wait time for the queue"
               config_not_allowed: "build queue size cannot be configured when queue is disabled"
