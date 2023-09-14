@@ -237,19 +237,18 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def on_finish!
-    ReleasePlatformRuns::CreateTagJob.perform_later(id) if app.cross_platform?
+    ReleasePlatformRuns::CreateTagJob.perform_later(id) if train.tag_platform_at_release_end?
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     app.refresh_external_app
   end
 
   # recursively attempt to create a release tag until a unique one gets created
   # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
-  def create_tag!(tag_name = base_tag_name)
-    return if self.tag_name.present?
-    train.create_tag!(tag_name, last_commit.commit_hash)
-    update!(tag_name:)
+  def create_tag!(input_tag_name = base_tag_name)
+    train.create_tag!(input_tag_name, last_commit.commit_hash)
+    update!(tag_name: input_tag_name)
   rescue Installations::Errors::TagReferenceAlreadyExists
-    create_tag!(unique_tag_name(tag_name))
+    create_tag!(unique_tag_name(input_tag_name))
   end
 
   # Play Store does not have constraints around version name

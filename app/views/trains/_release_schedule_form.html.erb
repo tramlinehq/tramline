@@ -1,6 +1,5 @@
 <article hidden data-branching-selector-target="schedule">
-  <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
-  <div class="text-xl text-slate-600 font-medium mt-2">Release Schedule (optional)</div>
+  <div class="text-xl text-slate-600 font-medium mt-2">Release Schedule</div>
 
   <% if @train.schedule_editable? %>
     <div class="text-sm mt-1 mb-6">
@@ -29,7 +28,7 @@
       </div>
 
       <div data-domain--release-schedule-help-target="config" class="mt-4">
-        <div class="w-1/2 grid gap-x-28 md:grid-cols-3">
+        <div class="grid gap-x-28 md:grid-cols-3">
           <div class="col-span-1">
             <%= form.label :kickoff_at, class: "block text-sm font-medium mb-1" %>
             <%= form.datetime_field :kickoff_at,
@@ -70,4 +69,5 @@
 
     <div class="text-sm font-medium mt-4"><%= release_schedule(@train) %></div>
   <% end %>
+  <div class="border-t border-dashed border-slate-200 pb-8 mt-8"></div>
 </article>

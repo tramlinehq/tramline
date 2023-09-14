@@ -18,6 +18,8 @@
 #  repeat_duration          :interval
 #  slug                     :string
 #  status                   :string           not null
+#  tag_all_store_releases   :boolean          default(FALSE)
+#  tag_platform_releases    :boolean          default(FALSE)
 #  version_current          :string
 #  version_seeded_with      :string
 #  working_branch           :string
@@ -80,6 +82,7 @@ class Train < ApplicationRecord
   validate :valid_schedule, if: -> { kickoff_at_changed? || repeat_duration_changed? }
   validate :build_queue_config
   validate :backmerge_config
+  validate :tag_release_config
   validate :valid_train_configuration, on: :activate_context
   validate :working_branch_presence, on: :create
   validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
@@ -136,6 +139,11 @@ class Train < ApplicationRecord
 
   def automatic?
     kickoff_at.present? && repeat_duration.present?
+  end
+
+  def tag_platform_at_release_end?
+    return false unless app.cross_platform?
+    tag_platform_releases? && !tag_all_store_releases?
   end
 
   def next_run_at
@@ -388,6 +396,10 @@ class Train < ApplicationRecord
 
   def backmerge_config
     errors.add(:backmerge_strategy, :continuous_not_allowed) if branching_strategy != "almost_trunk" && continuous_backmerge?
+  end
+
+  def tag_release_config
+    errors.add(:tag_all_store_releases, :not_allowed) if tag_all_store_releases? && !tag_platform_releases?
   end
 
   def working_branch_presence
