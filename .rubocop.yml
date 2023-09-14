@@ -44,10 +44,6 @@ Rails/DurationArithmetic:
   Exclude:
     - spec/jobs/schedule_train_releases_job_spec.rb
 
-Rails/ApplicationController:
-  Exclude:
-    - app/controllers/api_controller.rb
-
 RSpec:
   Enabled: true
 
