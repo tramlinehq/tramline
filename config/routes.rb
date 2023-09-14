@@ -35,7 +35,7 @@ Rails.application.routes.draw do
   end
 
   namespace :accounts do
-    resources :organizations, only: [:edit, :update, :index] do
+    resources :organizations, only: [:edit, :index] do
       member do
         get :switch
       end
