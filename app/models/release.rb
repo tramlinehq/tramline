@@ -128,14 +128,13 @@ class Release < ApplicationRecord
 
   def self.for_branch(branch_name) = find_by(branch_name:)
 
-  def all_completed_versions
+  def all_completed_step_runs
     deployment_runs
       .ready
       .includes(:step_run, :deployment)
-      .select(&:production_channel?)
+      .filter(&:production_channel?)
       .map(&:step_run)
       .sort_by(&:updated_at)
-      .pluck(:build_version, :build_number, :created_at)
   end
 
   def unmerged_commits

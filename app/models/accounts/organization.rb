@@ -26,7 +26,7 @@ class Accounts::Organization < ApplicationRecord
 
   encrypts :api_key, deterministic: true
 
-  after_create :generate_api_key
+  after_create :rotate_api_key
 
   validates :name, presence: true
 
@@ -51,10 +51,6 @@ class Accounts::Organization < ApplicationRecord
   end
 
   def rotate_api_key
-    update(api_key: generate_api_key)
-  end
-
-  def generate_api_key
-    SecureRandom.hex
+    update(api_key: SecureRandom.hex)
   end
 end

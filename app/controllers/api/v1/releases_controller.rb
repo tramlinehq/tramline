@@ -1,6 +1,5 @@
 class Api::V1::ReleasesController < ApiController
   def show
-    head :not_found and return if release.blank?
     render json: {releases: all_versions}, status: :ok
   end
 
@@ -14,8 +13,8 @@ class Api::V1::ReleasesController < ApiController
 
   def all_versions
     release
-      .all_completed_versions
-      .map { |v| {version: v.first, build: v.second, created_at: v.third} }
+      .all_completed_step_runs
+      .map { |run| run.slice(:build_version, :build_number, :updated_at, :platform) }
   end
 
   def release_param
