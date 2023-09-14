@@ -55,7 +55,7 @@ class DeploymentRun < ApplicationRecord
     :internal_channel?,
     to: :deployment
   delegate :release_metadata, :train, to: :release
-  delegate :release_version, to: :release_platform_run
+  delegate :release_version, :platform, to: :release_platform_run
 
   STAMPABLE_REASONS = %w[
     created
@@ -81,6 +81,8 @@ class DeploymentRun < ApplicationRecord
     released: "released",
     failed: "failed"
   }
+
+  READY_STATES = [STATES[:rollout_started], STATES[:ready_to_release], STATES[:released]]
 
   enum status: STATES
   enum failure_reason: {
@@ -150,10 +152,15 @@ class DeploymentRun < ApplicationRecord
   scope :matching_runs_for, ->(integration) { includes(:deployment).where(deployments: {integration: integration}) }
   scope :has_begun, -> { where.not(status: :created) }
   scope :not_failed, -> { where.not(status: [:failed, :failed_prepare_release]) }
+  scope :ready, -> { where(status: READY_STATES) }
 
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 
   UnknownStoreError = Class.new(StandardError)
+
+  def self.reached_production
+    ready.includes(:step_run, :deployment).select(&:production_channel?)
+  end
 
   def first?
     step_run.deployment_runs.first == self
@@ -346,7 +353,7 @@ class DeploymentRun < ApplicationRecord
   end
 
   def production_release_happened?
-    production_channel? && (ready_to_release? || rollout_started? || released?)
+    production_channel? && status.in?(READY_STATES)
   end
 
   private

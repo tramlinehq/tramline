@@ -287,6 +287,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_13_082139) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "subscribed", default: false
+    t.string "api_key"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
     t.index ["status"], name: "index_organizations_on_status"
   end

@@ -35,7 +35,7 @@ class App < ApplicationRecord
 
   has_many :trains, -> { sequential }, dependent: :destroy, inverse_of: :app
   has_many :releases, through: :trains
-
+  has_many :deployment_runs, through: :releases
   has_many :release_platforms, dependent: :destroy
   has_many :release_platform_runs, through: :releases
   has_many :steps, through: :release_platforms
@@ -90,6 +90,14 @@ class App < ApplicationRecord
 
   def train_in_creation
     trains.first if trains.size == 1
+  end
+
+  def latest_store_step_runs
+    deployment_runs
+      .reached_production
+      .group_by(&:platform)
+      .to_h { |platform, runs| [platform, runs.max_by(&:updated_at)&.step_run] }
+      .values
   end
 
   # NOTE: fetches and uses latest build numbers from the stores, if added,

@@ -10,7 +10,8 @@
 
       <!-- Header: Right side -->
       <div class="flex items-center space-x-3">
-        <% if subscribed_org? %><%= status_badge("Subscriber", :routine) %><% end %>
+        <% if subscribed_org? %><%= status_badge("Subscriber", :routine) %>
+        <% end %>
         <hr class="w-px h-6 bg-slate-200"/>
         <div class="relative inline-flex" data-controller="reveal" data-reveal-away-value="true">
           <button
@@ -35,6 +36,14 @@
             </div>
 
             <ul>
+              <% if writer? %>
+                <li>
+                  <%= link_to "Settings",
+                              edit_accounts_organization_path(current_organization),
+                              "data-turbo": false,
+                              class: "font-medium text-sm text-indigo-500 hover:text-indigo-600 flex items-center py-1 px-3" %>
+                </li>
+              <% end %>
               <li>
                 <%= link_to "Team",
                             accounts_organization_team_path(current_organization),

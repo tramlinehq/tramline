@@ -164,7 +164,7 @@ class StepRun < ApplicationRecord
   attr_accessor :current_user
   attr_accessor :artifacts_url
 
-  delegate :release_platform, :release, to: :release_platform_run
+  delegate :release_platform, :release, :platform, to: :release_platform_run
   delegate :release_branch, to: :release
   delegate :train, to: :release_platform
   delegate :app, :ci_cd_provider, :unzip_artifact?, :notify!, to: :train
@@ -329,6 +329,10 @@ class StepRun < ApplicationRecord
   def trigger_ci_worfklow_run!
     trigger_workflow_run
     trigger_ci!
+  end
+
+  def release_info
+    slice(:build_version, :build_number, :updated_at, :platform)
   end
 
   private

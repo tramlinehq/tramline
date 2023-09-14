@@ -35,7 +35,7 @@ Rails.application.routes.draw do
   end
 
   namespace :accounts do
-    resources :organizations, only: [:index] do
+    resources :organizations, only: [:edit, :index] do
       member do
         get :switch
       end
@@ -165,6 +165,14 @@ Rails.application.routes.draw do
 
   namespace :admin do
     resource :settings, only: [:index]
+  end
+
+  namespace :api, defaults: {format: "json"} do
+    namespace :v1, path: "v1" do
+      get "ping", to: "pings#show"
+      get "releases/*release_id", to: "releases#show"
+      get "apps/*app_id", to: "apps#show"
+    end
   end
 
   scope :github do

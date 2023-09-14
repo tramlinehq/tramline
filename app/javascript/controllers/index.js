@@ -20,3 +20,6 @@ application.register("nested-form", NestedForm)
 
 import PasswordVisibility from "stimulus-password-visibility"
 application.register("password-visibility", PasswordVisibility)
+
+import Clipboard from "stimulus-clipboard"
+application.register("clipboard", Clipboard)

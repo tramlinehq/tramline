@@ -1,0 +1,36 @@
+<%= render PageComponent.new(breadcrumb: breadcrumb(:team), title: "Settings: #{@organization.name} 🧑‍🦰") do |page| %>
+  <div class="mb-8">
+    <h2 class="text-2xl text-slate-800 font-bold">API Settings</h2>
+    <span class="text-sm text-slate-400">Use these credentials to make API calls to Tramline. See all the available APIs <%= link_to_external "here", "https://docs.tramline.app/api", class: "underline" %>.</span>
+  </div>
+
+  <div class="flex flex-col gap-y-8">
+    <div data-controller="clipboard" data-clipboard-success-content-value="copied!">
+      <div class="relative w-1/3">
+        <label class="block text-sm font-medium mb-1" for="account_id">Account ID</label>
+        <input type="text"
+               id="account_id"
+               readonly
+               value="<%= @organization.id %>"
+               data-clipboard-target="source"
+               class="form-input w-full"/>
+        <%= copy_to_clipboard_button("button", styles: "mr-3") %>
+      </div>
+    </div>
+
+    <div data-controller="password-visibility clipboard" data-clipboard-success-content-value="copied!">
+      <div class="relative w-1/3">
+        <label class="block text-sm font-medium mb-1" for="api_key">API Key</label>
+        <input type="password"
+               id="api_key"
+               readonly
+               value="<%= @organization.api_key %>"
+               data-clipboard-target="source"
+               data-password-visibility-target="input"
+               class="form-input w-full"/>
+        <%= password_toggle_button(styles: "mr-3") %>
+        <%= copy_to_clipboard_button("button", styles: "mr-10") %>
+      </div>
+    </div>
+  </div>
+<% end %>

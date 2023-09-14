@@ -3,6 +3,7 @@
 # Table name: organizations
 #
 #  id         :uuid             not null, primary key
+#  api_key    :string
 #  created_by :string           not null
 #  name       :string           not null
 #  slug       :string           indexed
@@ -18,9 +19,14 @@ class Accounts::Organization < ApplicationRecord
   has_many :memberships, dependent: :delete_all, inverse_of: :organization
   has_many :users, through: :memberships, dependent: :delete_all
   has_many :apps, -> { sequential }, dependent: :destroy, inverse_of: :organization
+  has_many :releases, through: :apps
   has_many :invites, dependent: :destroy
 
   enum status: {active: "active", dormant: "dormant", guest: "guest"}
+
+  encrypts :api_key, deterministic: true
+
+  after_create :rotate_api_key
 
   validates :name, presence: true
 
@@ -42,5 +48,9 @@ class Accounts::Organization < ApplicationRecord
 
   def owner
     users.includes(:memberships).where(memberships: {role: "owner"}).sole
+  end
+
+  def rotate_api_key
+    update(api_key: SecureRandom.hex)
   end
 end

@@ -1,6 +1,7 @@
 module PasswordHelper
-  def password_visibility_toggle_button
-    button_styles = "text-gray-500 absolute bottom-0 top-8 right-0 pr-3 flex items-center cursor-pointer"
+  DEFAULT_BUTTON_STYLES = "text-gray-500 absolute bottom-0 top-8 right-0 flex items-center cursor-pointer "
+  def password_toggle_button(styles: "")
+    button_styles = DEFAULT_BUTTON_STYLES + styles
     visibility_target = {"password-visibility-target": "icon"}
 
     content_tag(:button, type: "button", data: {action: "password-visibility#toggle"}, tabindex: -1, class: button_styles) do

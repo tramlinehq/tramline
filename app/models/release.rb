@@ -35,6 +35,7 @@ class Release < ApplicationRecord
   has_many :all_commits, dependent: :destroy, inverse_of: :release, class_name: "Commit"
   has_many :pull_requests, dependent: :destroy, inverse_of: :release
   has_many :step_runs, through: :release_platform_runs
+  has_many :deployment_runs, through: :step_runs
   has_many :build_queues, dependent: :destroy
   has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
 
@@ -126,6 +127,13 @@ class Release < ApplicationRecord
   end
 
   def self.for_branch(branch_name) = find_by(branch_name:)
+
+  def all_store_step_runs
+    deployment_runs
+      .reached_production
+      .map(&:step_run)
+      .sort_by(&:updated_at)
+  end
 
   def unmerged_commits
     all_commits.where(backmerge_failure: true)
