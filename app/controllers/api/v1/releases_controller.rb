@@ -12,9 +12,7 @@ class Api::V1::ReleasesController < ApiController
   end
 
   def all_versions
-    release
-      .all_completed_step_runs
-      .map { |run| run.slice(:build_version, :build_number, :updated_at, :platform) }
+    release.all_store_step_runs.map(&:release_info)
   end
 
   def release_param

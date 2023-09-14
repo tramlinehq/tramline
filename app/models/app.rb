@@ -92,14 +92,12 @@ class App < ApplicationRecord
     trains.first if trains.size == 1
   end
 
-  def latest_store_step_run
+  def latest_store_step_runs
     deployment_runs
-      .ready
-      .includes(:step_run, :deployment)
-      .select(&:production_channel?)
-      .sort_by(&:updated_at)
-      .last
-      &.step_run
+      .reached_production
+      .group_by(&:platform)
+      .to_h { |platform, runs| [platform, runs.max_by(&:updated_at)&.step_run] }
+      .values
   end
 
   # NOTE: fetches and uses latest build numbers from the stores, if added,

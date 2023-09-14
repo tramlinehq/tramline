@@ -331,6 +331,10 @@ class StepRun < ApplicationRecord
     trigger_ci!
   end
 
+  def release_info
+    slice(:build_version, :build_number, :updated_at, :platform)
+  end
+
   private
 
   def previous_step_run

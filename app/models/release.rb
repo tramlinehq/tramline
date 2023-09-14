@@ -128,11 +128,9 @@ class Release < ApplicationRecord
 
   def self.for_branch(branch_name) = find_by(branch_name:)
 
-  def all_completed_step_runs
+  def all_store_step_runs
     deployment_runs
-      .ready
-      .includes(:step_run, :deployment)
-      .filter(&:production_channel?)
+      .reached_production
       .map(&:step_run)
       .sort_by(&:updated_at)
   end
