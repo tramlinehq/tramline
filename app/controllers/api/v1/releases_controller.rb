@@ -12,7 +12,10 @@ class Api::V1::ReleasesController < ApiController
   end
 
   def all_versions
-    release.all_store_step_runs.map(&:release_info)
+    release
+      .all_store_step_runs
+      .map(&:release_info)
+      .group_by(&:platform)
   end
 
   def release_param

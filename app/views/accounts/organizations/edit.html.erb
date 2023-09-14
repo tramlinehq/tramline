@@ -1,7 +1,7 @@
 <%= render PageComponent.new(breadcrumb: breadcrumb(:team), title: "Settings: #{@organization.name} 🧑‍🦰") do |page| %>
   <div class="mb-8">
     <h2 class="text-2xl text-slate-800 font-bold">API Settings</h2>
-    <span class="text-sm text-slate-400">Use these credentials to make API calls to Tramline. See all the available APIs here.</span>
+    <span class="text-sm text-slate-400">Use these credentials to make API calls to Tramline. See all the available APIs <%= link_to_external "here", "https://docs.tramline.app/api", class: "underline" %>.</span>
   </div>
 
   <div class="flex flex-col gap-y-8">
