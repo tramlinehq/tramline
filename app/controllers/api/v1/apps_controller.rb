@@ -10,7 +10,7 @@ class Api::V1::AppsController < ApiController
   end
 
   def latest_store_version
-    app.latest_store_step_runs.map(&:release_info).group_by(&:platform)
+    app.latest_store_step_runs.map(&:release_info).group_by { _1[:platform] }
   end
 
   def app_param

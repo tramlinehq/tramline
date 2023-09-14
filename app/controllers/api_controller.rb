@@ -1,4 +1,4 @@
-class ApiController < ActionController::Base
+class ApiController < ApplicationController
   before_action :authorized_organization?
   before_action :authenticate
   skip_before_action :verify_authenticity_token
