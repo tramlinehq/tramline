@@ -143,7 +143,6 @@ class Train < ApplicationRecord
 
   def tag_platform_at_release_end?
     return false unless app.cross_platform?
-    return false unless tag_platform_releases?
     tag_platform_releases? && !tag_all_store_releases?
   end
 
