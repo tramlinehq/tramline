@@ -54,7 +54,7 @@ class DeploymentRun < ApplicationRecord
     :release_platform,
     :internal_channel?,
     to: :deployment
-  delegate :release_metadata, to: :release
+  delegate :release_metadata, :train, to: :release
   delegate :release_version, to: :release_platform_run
 
   STAMPABLE_REASONS = %w[
@@ -133,7 +133,7 @@ class DeploymentRun < ApplicationRecord
       transitions from: :submitted_for_review, to: :ready_to_release
     end
 
-    event :engage_release, after_commit: -> { event_stamp!(reason: :release_started, kind: :notice, data: stamp_data) } do
+    event :engage_release, after_commit: :on_release_started do
       transitions from: [:uploaded, :ready_to_release], to: :rollout_started
     end
 
@@ -353,6 +353,11 @@ class DeploymentRun < ApplicationRecord
   end
 
   private
+
+  def on_release_started
+    event_stamp!(reason: :release_started, kind: :notice, data: stamp_data)
+    ReleasePlatformRuns::CreateTagJob.perform_later(release_platform_run.id) if production_channel? && train.tag_all_store_releases?
+  end
 
   def mark_reviewed
     external_release.update(reviewed_at: Time.current)

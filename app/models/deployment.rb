@@ -93,6 +93,10 @@ class Deployment < ApplicationRecord
     build_artifact_channel["is_internal"]
   end
 
+  def requires_review?
+    google_play_store_integration? && deployment_channel.in?(%w[production beta alpha])
+  end
+
   def integration_type
     return :app_store if app_store?
     return :testflight if test_flight?
@@ -125,7 +129,8 @@ class Deployment < ApplicationRecord
           is_app_store_production: app_store?,
           deployment_channel_type: integration_type&.to_s&.titleize,
           deployment_channel: build_artifact_channel,
-          deployment_channel_asset_link: integration&.public_icon_img
+          deployment_channel_asset_link: integration&.public_icon_img,
+          requires_review: requires_review?
         }
       )
   end

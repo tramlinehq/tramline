@@ -10,6 +10,8 @@ FactoryBot.define do
     status { "draft" }
     build_queue_enabled { false }
     manual_release { false }
+    tag_platform_releases { false }
+    tag_all_store_releases { false }
 
     trait :draft do
       status { "draft" }

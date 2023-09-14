@@ -21,28 +21,6 @@
         "text": "*<%= @app_name %> (<%= @app_platform %>)* <%= @release_version %> (<%= @build_number %>) has been approved by the store to distribute to <%= @deployment_channel_type %> (<%= deployment_channel_display_name %>)! :tada:"
       }
     },
-    <% if @is_play_store_production %>
-    {
-      "type": "context",
-      "elements": [
-        {
-          "type": "plain_text",
-          "text": "<%= google_managed_publishing_text %>",
-          "emoji": false
-        }
-      ]
-    },
-    {
-      "type": "context",
-      "elements": [
-        {
-          "type": "plain_text",
-          "text": "<%= google_unmanaged_publishing_text %>",
-          "emoji": false
-        }
-      ]
-    },
-    <% end %>
     <% if @is_app_store_production %>
     {
       "type": "context",

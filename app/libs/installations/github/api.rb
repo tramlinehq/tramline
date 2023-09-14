@@ -190,7 +190,9 @@ module Installations
     end
 
     def tag_exists?(repo, tag_name)
-      @client.ref(repo, "tags/#{tag_name}").present?
+      # NOTE: The API returns a list of matching tags if the exact match doesn't exist
+      # It returns a single element if there is an exact match
+      !@client.ref(repo, "tags/#{tag_name}").is_a?(Array)
     rescue Octokit::NotFound
       false
     end

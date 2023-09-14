@@ -4,178 +4,184 @@
               url: url,
               builder: ButtonHelper::AuthzForms) do |form| %>
 
-  <div class="grid gap-x-5 gap-y-2 md:grid-cols-2">
-    <div data-controller="domain--branch-name-help"
-         data-domain--branch-name-help-current-value="<%= train.display_name %>">
-      <div class="mb-2">
-        <%= form.label :name, class: "block text-sm font-medium mb-1" %>
-        <%= form.text_field :name,
-                            class: "form-input w-full",
-                            placeholder: "Enter train name...",
-                            required: true,
-                            data: { domain__branch_name_help_target: "input",
-                                    action: "domain--branch-name-help#set" } %>
+  <article class="grid gap-x-12 gap-y-2 grid-cols-2"
+           data-controller="branching-selector"
+           data-branching-selector-domain--release-schedule-help-outlet="#release-schedule">
+    <section>
+      <div data-controller="domain--branch-name-help"
+           data-domain--branch-name-help-current-value="<%= train.display_name %>">
+        <div class="mb-2">
+          <%= form.label :name, class: "block text-sm font-medium mb-1" %>
+          <%= form.text_field :name,
+                              class: "form-input w-full",
+                              placeholder: "Enter train name...",
+                              required: true,
+                              data: { domain__branch_name_help_target: "input",
+                                      action: "domain--branch-name-help#set" } %>
+        </div>
+        <div class="text-sm italic">
+          <span data-domain--branch-name-help-target="helpTextTitle"></span>
+          <span class="font-mono" data-domain--branch-name-help-target="helpTextVal"></span>
+        </div>
       </div>
-
-      <div class="text-sm italic">
-        <span data-domain--branch-name-help-target="helpTextTitle"></span>
-        <span class="font-mono" data-domain--branch-name-help-target="helpTextVal"></span>
-      </div>
-
       <div class="mt-6">
         <%= form.label :description, class: "block text-sm font-medium mb-1" %>
         <%= form.text_area :description, class: "form-input w-full h-24",
                            placeholder: "Describe the purpose of your train..." %>
       </div>
-    </div>
+      <div class="grid gap-x-5 md:grid-cols-1 mt-6"
+           data-controller="domain--version-name-help"
+           data-domain--version-name-help-disabled-value="<%= train.persisted? %>">
 
-    <div class="grid gap-x-5 md:grid-cols-1"
-         data-controller="domain--version-name-help"
-         data-domain--version-name-help-disabled-value="<%= train.persisted? %>">
+        <div>
+          <%= form.label :major_version_seed,
+                         "Seed with your current version name (build name)",
+                         class: "block text-sm font-medium mb-1" %>
+          <%= form.text_field :major_version_seed,
+                              class: text_field_classes(is_disabled: train.persisted?).concat(" w-1/4"),
+                              placeholder: "major",
+                              required: true,
+                              disabled: train.persisted?,
+                              data: { domain__version_name_help_target: "majorInput",
+                                      action: "domain--version-name-help#bump" } %>
 
-      <div>
-        <%= form.label :major_version_seed,
-                       "Seed with your current version name (build name)",
-                       class: "block text-sm font-medium mb-1" %>
-        <%= form.text_field :major_version_seed,
-                            class: text_field_classes(is_disabled: train.persisted?).concat(" w-1/4"),
-                            placeholder: "major",
-                            required: true,
-                            disabled: train.persisted?,
-                            data: { domain__version_name_help_target: "majorInput",
-                                    action: "domain--version-name-help#bump" } %>
+          <span class="mx-1">.</span>
+          <%= form.text_field :minor_version_seed,
+                              class: text_field_classes(is_disabled: train.persisted?).concat(" w-1/4"),
+                              placeholder: "minor",
+                              required: true,
+                              disabled: train.persisted?,
+                              data: { domain__version_name_help_target: "minorInput",
+                                      action: "domain--version-name-help#bump" } %>
 
-        <span class="mx-1">.</span>
-        <%= form.text_field :minor_version_seed,
-                            class: text_field_classes(is_disabled: train.persisted?).concat(" w-1/4"),
-                            placeholder: "minor",
-                            required: true,
-                            disabled: train.persisted?,
-                            data: { domain__version_name_help_target: "minorInput",
-                                    action: "domain--version-name-help#bump" } %>
-
-        <span class="mx-1">.</span>
-        <%= form.text_field :patch_version_seed,
-                            class: text_field_classes(is_disabled: train.persisted?).concat(" w-1/4"),
-                            placeholder: "patch (optional)",
-                            required: false,
-                            disabled: train.persisted?,
-                            data: { domain__version_name_help_target: "patchInput",
-                                    action: "domain--version-name-help#bump" } %>
-      </div>
-
-      <% unless train.persisted? %>
-        <div class="text-sm italic mt-2 text-rose-700">
-          <span hidden data-domain--version-name-help-target="helpTextVal"></span>
+          <span class="mx-1">.</span>
+          <%= form.text_field :patch_version_seed,
+                              class: text_field_classes(is_disabled: train.persisted?).concat(" w-1/4"),
+                              placeholder: "patch (optional)",
+                              required: false,
+                              disabled: train.persisted?,
+                              data: { domain__version_name_help_target: "patchInput",
+                                      action: "domain--version-name-help#bump" } %>
         </div>
 
-        <div class="text-sm mt-2">
-          <div class="grid gap-x-5 gap-y-2 md:grid-cols-2">
-            <div class="flex flex-col bg-slate-50 rounded-sm pl-4 pt-4 mt-2 items-center justify-center">
-              <div class="flex-grow mb-2">
-                <div class="uppercase tracking-wider text-2xl drop-shadow-sm font-mono">
-                  <span data-domain--version-name-help-target="currentVersion">x.x</span>
+        <% unless train.persisted? %>
+          <div class="text-sm italic mt-2 text-rose-700">
+            <span hidden data-domain--version-name-help-target="helpTextVal"></span>
+          </div>
+
+          <div class="text-sm mt-2">
+            <div class="grid gap-x-5 gap-y-2 md:grid-cols-2">
+              <div class="flex flex-col bg-slate-50 rounded-sm pl-4 pt-4 mt-2 items-center justify-center">
+                <div class="flex-grow mb-2">
+                  <div class="uppercase tracking-wider text-2xl drop-shadow-sm font-mono">
+                    <span data-domain--version-name-help-target="currentVersion">x.x</span>
+                  </div>
+                </div>
+                <div class="mt-3 mb-3 text-stone text-xs drop-shadow-sm">
+                  Your <strong>current</strong> release version
                 </div>
               </div>
-              <div class="mt-3 mb-3 text-stone text-xs drop-shadow-sm">
-                Your <strong>current</strong> release version
-              </div>
-            </div>
-            <div class="flex flex-col bg-slate-50 rounded-sm pl-4 pt-4 mt-2 items-center justify-center">
-              <div class="flex-grow mb-2">
-                <div class="uppercase tracking-wider text-2xl drop-shadow-sm font-mono">
-                  <span data-domain--version-name-help-target="nextVersion">x.x</span>
+              <div class="flex flex-col bg-slate-50 rounded-sm pl-4 pt-4 mt-2 items-center justify-center">
+                <div class="flex-grow mb-2">
+                  <div class="uppercase tracking-wider text-2xl drop-shadow-sm font-mono">
+                    <span data-domain--version-name-help-target="nextVersion">x.x</span>
+                  </div>
                 </div>
-              </div>
-              <div class="mt-3 mb-3 text-stone text-xs drop-shadow-sm">
-                Your <strong>next</strong> release will start with this version
+                <div class="mt-3 mb-3 text-stone text-xs drop-shadow-sm">
+                  Your <strong>next</strong> release will start with this version
+                </div>
               </div>
             </div>
           </div>
+
+          <div class="text-sm mt-4">
+            <p>
+              Tramline increments the version name for every release build created, which guarantees that every build
+              can
+              be
+              uniquely identified. We allow a
+              <%= link_to_external "SemVer", "https://semver.org", class: "underline" %>-like scheme, for eg.
+              <code>MAJOR.MINOR.PATCH</code> and <code>MAJOR.MINOR</code>.
+            </p>
+
+            <p class="pt-2">
+              Refer to
+              the <%= link_to_external "docs", "https://docs.tramline.app/automations#version-name", class: "underline" %>
+              to learn more about versioning.
+            </p>
+          </div>
+        <% end %>
+      </div>
+
+      <% if app.notifications_set_up? %>
+        <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
+        <%= render partial: "shared/notifications_form",
+                   locals: { form:, app: @app, channels: @notification_channels, current: @current_notification_channel } %>
+      <% end %>
+
+      <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
+
+      <div class="text-xl text-slate-600 font-medium mt-2 mb-4">Branching Strategy</div>
+
+      <div class="grid gap-x-5 md:grid-cols-2">
+        <div>
+          <%= form.label "Strategy", class: "block text-sm font-medium mb-1" %>
+          <%= form.select :branching_strategy,
+                          options_for_select(Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
+                          { required: true, },
+                          { class: text_field_classes(is_disabled: train.persisted?),
+                            data: { action: 'branching-selector#change',
+                                    branching_selector_target: "branchingStrategy" },
+                            disabled: train.persisted? } %>
         </div>
 
-        <div class="text-sm mt-4">
-          <p>
-            Tramline increments the version name for every release build created, which guarantees that every build can
-            be
-            uniquely identified. We allow a
-            <%= link_to_external "SemVer", "https://semver.org", class: "underline" %>-like scheme, for eg.
-            <code>MAJOR.MINOR.PATCH</code> and <code>MAJOR.MINOR</code>.
-          </p>
+        <div>
+          <%= form.label :working_branch, class: "block text-sm font-medium mb-1" %>
+          <%= form.text_field :working_branch, required: true, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., master, main", disabled: train.persisted? %>
+        </div>
 
-          <p class="pt-2">
-            Refer to
-            the <%= link_to_external "docs", "https://docs.tramline.app/automations#version-name", class: "underline" %>
-            to learn more about versioning.
-          </p>
+        <div hidden data-branching-selector-target="almostTrunk"></div>
+
+        <div><!-- this is required to maintain intended grid structure --></div>
+
+        <div hidden data-branching-selector-target="releaseBackMerge">
+          <div>
+            <%= form.label :release_backmerge_branch, class: "block text-sm font-medium my-1" %>
+            <%= form.text_field :release_backmerge_branch, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., dev", disabled: train.persisted? %>
+          </div>
+        </div>
+
+        <div hidden data-branching-selector-target="parallelBranches">
+          <div>
+            <%= form.label :release_branch, class: "block text-sm font-medium my-1" %>
+            <%= form.text_field :release_branch, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., production", disabled: train.persisted? %>
+          </div>
+        </div>
+      </div>
+
+      <% unless train.persisted? %>
+        <div class="text-sm mt-4">
+          Refer to
+          the <%= link_to_external "docs", "https://docs.tramline.app/branching-strategies", class: "underline" %>
+          to learn more about our supported branching strategies.
         </div>
       <% end %>
-    </div>
-  </div>
+    </section>
 
-  <% if app.notifications_set_up? %>
-    <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
-    <div class="text-xl text-slate-600 font-medium mt-2 mb-4">Notifications</div>
-    <div class="grid gap-x-5 md:grid-cols-2">
-      <%= render partial: "shared/notifications_form",
-                 locals: { form:, app: @app, channels: @notification_channels, current: @current_notification_channel } %>
-    </div>
-  <% end %>
+    <section>
+      <div class="text-2xl text-slate-600 font-medium mt-2 mb-4">Optional Settings</div>
+      <div class="border-t border-dashed border-slate-200 mb-4 mt-4"></div>
+      <%= render partial: "release_schedule_form", locals: { form: } %>
+      <%= render partial: "build_queue_form", locals: { form: } %>
+      <%= render partial: "backmerge_config_form", locals: { form: } %>
+      <%= render partial: "manual_release_form", locals: { form: } %>
+      <% if @app.cross_platform? %>
+        <%= render partial: "store_tags_form", locals: { form: } %>
+      <% end %>
+    </section>
 
-  <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
 
-  <div class="text-xl text-slate-600 font-medium mt-2 mb-4">Branching Strategy</div>
-
-  <div data-controller="branching-selector"
-       data-branching-selector-domain--release-schedule-help-outlet="#release-schedule">
-    <div class="grid gap-x-5 md:grid-cols-2">
-      <div>
-        <%= form.label "Strategy", class: "block text-sm font-medium mb-1" %>
-        <%= form.select :branching_strategy,
-                        options_for_select(Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
-                        { required: true, },
-                        { class: text_field_classes(is_disabled: train.persisted?),
-                          data: { action: 'branching-selector#change',
-                                  branching_selector_target: "branchingStrategy" },
-                          disabled: train.persisted? } %>
-      </div>
-
-      <div>
-        <%= form.label :working_branch, class: "block text-sm font-medium mb-1" %>
-        <%= form.text_field :working_branch, required: true, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., master, main", disabled: train.persisted? %>
-      </div>
-
-      <div hidden data-branching-selector-target="almostTrunk"></div>
-
-      <div><!-- this is required to maintain intended grid structure --></div>
-
-      <div hidden data-branching-selector-target="releaseBackMerge">
-        <div>
-          <%= form.label :release_backmerge_branch, class: "block text-sm font-medium my-1" %>
-          <%= form.text_field :release_backmerge_branch, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., dev", disabled: train.persisted? %>
-        </div>
-      </div>
-
-      <div hidden data-branching-selector-target="parallelBranches">
-        <div>
-          <%= form.label :release_branch, class: "block text-sm font-medium my-1" %>
-          <%= form.text_field :release_branch, class: text_field_classes(is_disabled: train.persisted?), placeholder: "eg., production", disabled: train.persisted? %>
-        </div>
-      </div>
-    </div>
-    <% unless train.persisted? %>
-      <div class="text-sm mt-4">
-        Refer to
-        the <%= link_to_external "docs", "https://docs.tramline.app/branching-strategies", class: "underline" %>
-        to learn more about our supported branching strategies.
-      </div>
-    <% end %>
-
-    <%= render partial: "release_schedule_form", locals: { form: } %>
-    <%= render partial: "build_queue_form", locals: { form: } %>
-    <%= render partial: "backmerge_config_form", locals: { form: } %>
-    <%= render partial: "manual_release_form", locals: { form: } %>
-  </div>
+  </article>
 
   <div class="mt-12">
     <%= form.authz_submit :blue, train.persisted? ? "Update Train" : "Create Train" %>
