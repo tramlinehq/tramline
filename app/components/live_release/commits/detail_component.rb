@@ -1,4 +1,5 @@
 class LiveRelease::Commits::DetailComponent < ViewComponent::Base
+  include ApplicationHelper
   include ButtonHelper
   include ReleasesHelper
   include AssetsHelper
@@ -70,5 +71,12 @@ class LiveRelease::Commits::DetailComponent < ViewComponent::Base
 
   def platform_runs
     release.release_platform_runs
+  end
+
+  def details_toggle
+    toggle_for(stale?) do
+      content_tag(:span, "Details",
+                  class: "text-slate-500 font-medium underline mr-2 group-hover:text-slate-800")
+    end
   end
 end

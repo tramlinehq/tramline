@@ -1,5 +1,7 @@
 class LiveRelease::CommitsComponent < ViewComponent::Base
+  include ApplicationHelper
   include AssetsHelper
+
   def initialize(commits)
     @commits = commits
   end

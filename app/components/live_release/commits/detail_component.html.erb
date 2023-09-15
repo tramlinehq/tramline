@@ -7,14 +7,7 @@
 
   <div class="flex flex-row gap-x-4 justify-self-end">
     <%= render partial: "shared/live_release/commit_backmerge_status", locals: { commit: commit } %>
-
-    <button class="text-slate-500 transform px-2" data-action="reveal#toggle">
-      <div class="flex items-baseline truncate">
-        <span class="truncate font-medium underline mr-2">Details</span>
-        <span data-reveal <%= "hidden" unless stale? %>><%= inline_svg("caret.svg", classname: "w-2.5 h-2.5 shrink-0 fill-current text-slate-500 rotate-0") %></span>
-        <span <%= "hidden" if stale? %> data-reveal><%= inline_svg("caret.svg", classname: "w-2.5 h-2.5 shrink-0 fill-current text-slate-500 rotate-180") %></span>
-      </div>
-    </button>
+    <div class="px-2"><%= details_toggle %></div>
   </div>
 
   <div data-reveal class="pb-4 whitespace-nowrap col-span-2" <%="hidden" if stale? %>>

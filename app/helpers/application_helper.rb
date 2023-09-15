@@ -36,6 +36,15 @@ module ApplicationHelper
     )
   end
 
+  def toggle_for(hide, &block)
+    render(
+      partial: "shared/toggle_button",
+      locals: {
+        hide: hide, block: block
+      }
+    )
+  end
+
   def dynamic_header_color
     if Rails.env.development?
       "bg-rose-100"
