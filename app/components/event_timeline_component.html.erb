@@ -1,0 +1,21 @@
+<% events_by_days.each do |day, events| %>
+  <div class="p-5 mb-4 border border-gray-100 rounded-lg bg-gray-50">
+    <time class="text-lg font-semibold text-gray-900"><%= day %></time>
+    <ol class="mt-3 divide-y divider-gray-200">
+      <% events.each do |passport| %>
+        <li>
+          <div class="items-center block p-3 sm:flex">
+            <span class="mr-3 uppercase tracking-wide inline-flex font-medium rounded-full text-center px-3.5 py-3 bg-indigo-100">TL</span>
+            <div>
+              <div class="text-sm leading-5 font-normal text-gray-700"><%= raw passport.message %></div>
+              <span class="inline-flex items-center text-xs font-normal text-gray-500">
+                <%= image_tag("#{passport_icon(passport)}.svg", width: 20, class: "inline-flex mr-1") %>
+                <%= time_format(passport.event_timestamp) %>
+              </span>
+            </div>
+          </div>
+        </li>
+      <% end %>
+    </ol>
+  </div>
+<% end %>
