@@ -1,6 +1,6 @@
 <section data-controller="reveal">
   <div class="mb-4">
-    <span class="font-bold text-2xl">Commits since last release</span>
+    <%= render partial: "shared/live_release/section_title", locals: {heading: "Commits since last release", subheading: nil} %>
   </div>
 
   <% commits = release.release_changelog&.normalized_commits %>

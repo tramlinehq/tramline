@@ -1,7 +1,6 @@
 <section>
   <div class="mb-6">
-    <span class="font-bold text-2xl">Kick-off</span>
-    <span class="text-xl text-slate-400 ml-4"><%= time_ago_in_words(release.created_at) %> ago</span>
+    <%= render partial: "shared/live_release/section_title", locals: {heading: "Kick-off", subheading: "#{time_ago_in_words(release.created_at)} ago"} %>
   </div>
 
   <%= render MetaTableComponent.new do |mt| %>

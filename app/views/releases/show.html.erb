@@ -26,6 +26,14 @@
   </div>
 </div>
 
+<% if @release.finished? %>
+  <div class="mt-8">
+    <%= render partial: "shared/live_release/final_summary", locals: { release: @release, post_release_prs: @post_release_prs } %>
+  </div>
+
+  <%= render partial: "shared/live_release/separator" %>
+<% end %>
+
 <div class="grid grid-cols-2 gap-6 mt-8">
   <div>
     <%= render partial: "shared/live_release/kick_off", locals: { release: @release, release_train: @train } %>
@@ -51,8 +59,7 @@
 <%= render partial: "shared/live_release/separator" %>
 
 <div class="mt-8">
-  <span class="font-bold text-2xl">Build stability</span>
-  <span class="text-xl text-slate-400 ml-4"><%= time_ago_in_words(@release.updated_at) %> ago</span>
+  <%= render partial: "shared/live_release/section_title", locals: {heading: "Build Stability", subheading: "#{time_ago_in_words(@release.updated_at)} ago"} %>
 </div>
 
 <div class="grid grid-cols-2 gap-6 mt-8">
@@ -82,8 +89,10 @@
   <%= render partial: "shared/live_release/builds", locals: { release: @release, commits: @commits } %>
 </div>
 
-<%= render partial: "shared/live_release/separator" %>
+<% unless @release.finished? %>
+  <%= render partial: "shared/live_release/separator" %>
 
-<div class="mt-8">
-  <%= render partial: "shared/live_release/finalize", locals: { release: @release, post_release_prs: @post_release_prs, open_ongoing_prs: @ongoing_open_release_prs } %>
-</div>
+  <div class="mt-8">
+    <%= render partial: "shared/live_release/finalize", locals: { release: @release, open_ongoing_prs: @ongoing_open_release_prs } %>
+  </div>
+<% end %>
