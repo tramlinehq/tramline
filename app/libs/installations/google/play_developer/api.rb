@@ -99,7 +99,10 @@ module Installations
     attr_writer :track_name, :version_code, :release_version, :rollout_percentage
 
     def truncated_release_notes(release_notes)
-      release_notes.map { |rn| rn[:text] = rn[:text].truncate(NOTES_MAX_LENGTH); rn}
+      release_notes.map do |rn|
+        rn[:text] = rn[:text].truncate(NOTES_MAX_LENGTH)
+        rn
+      end
     end
 
     def edit_track(edit, release)
