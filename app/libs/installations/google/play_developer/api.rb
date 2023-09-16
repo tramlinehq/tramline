@@ -57,7 +57,7 @@ module Installations
       @version_code = version_code
       @release_version = release_version
       @rollout_percentage = rollout_percentage
-      @release_notes = release_notes
+      @release_notes = truncated_release_notes(release_notes)
 
       execute do
         edit = client.insert_edit(package_name)
@@ -70,7 +70,7 @@ module Installations
       @track_name = track_name
       @version_code = version_code
       @release_version = release_version
-      @release_notes = release_notes
+      @release_notes = truncated_release_notes(release_notes)
 
       execute do
         edit = client.insert_edit(package_name)
@@ -94,7 +94,13 @@ module Installations
 
     private
 
+    NOTES_MAX_LENGTH = 495
+
     attr_writer :track_name, :version_code, :release_version, :rollout_percentage
+
+    def truncated_release_notes(release_notes)
+      release_notes.map { |rn| rn[:text] = rn[:text].truncate(NOTES_MAX_LENGTH); rn}
+    end
 
     def edit_track(edit, release)
       client.update_edit_track(package_name, edit.id, @track_name, track(release))
