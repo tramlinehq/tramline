@@ -3,6 +3,8 @@
 # Table name: passports
 #
 #  id              :uuid             not null, primary key
+#  author_metadata :jsonb
+#  automatic       :boolean          default(TRUE)
 #  event_timestamp :datetime         not null
 #  kind            :string           indexed
 #  message         :string
@@ -11,12 +13,12 @@
 #  stampable_type  :string           not null, indexed => [stampable_id]
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
+#  author_id       :uuid             indexed
 #  stampable_id    :uuid             not null, indexed => [stampable_type]
-#  user_id         :uuid
 #
 class Passport < ApplicationRecord
   belongs_to :stampable, polymorphic: true
-  belongs_to :user, optional: true
+  belongs_to :author, class_name: "Accounts::User", optional: true
 
   enum kind: {success: "success", error: "error", notice: "notice"}
 
