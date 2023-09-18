@@ -20,7 +20,7 @@ class StagedRollout < ApplicationRecord
 
   validates :current_stage, numericality: {greater_than_or_equal_to: 0, allow_nil: true}
 
-  delegate :notify!, to: :deployment_run
+  delegate :notify!, :platform, to: :deployment_run
 
   STAMPABLE_REASONS = %w[
     started
