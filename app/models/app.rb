@@ -230,9 +230,9 @@ class App < ApplicationRecord
   end
 
   def update_external_app(platform, provider)
-    external_app_data = provider.channel_data
+    external_app_data = provider&.channel_data
 
-    if latest_external_app&.channel_data != external_app_data
+    if external_app_data && latest_external_app&.channel_data != external_app_data
       external_apps.create!(channel_data: external_app_data, fetched_at: Time.current, platform:)
     end
   end
