@@ -55,7 +55,9 @@ class Release < ApplicationRecord
     backmerge_pr_created
     pr_merged
     backmerge_failure
+    vcs_release_created
     finalize_failed
+    stopped
     finished
   ]
 
@@ -205,12 +207,13 @@ class Release < ApplicationRecord
 
   # recursively attempt to create a release until a unique one gets created
   # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
-  def create_release!(tag_name = base_tag_name)
-    return if self.tag_name.present?
-    train.create_release!(release_branch, tag_name)
-    update!(tag_name:)
+  def create_release!(input_tag_name = base_tag_name)
+    return if tag_name.present?
+    train.create_release!(release_branch, input_tag_name)
+    update!(tag_name: input_tag_name)
+    event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: vcs_provider.display, tag: tag_name})
   rescue Installations::Errors::TagReferenceAlreadyExists, Installations::Errors::TaggedReleaseAlreadyExists
-    create_release!(unique_tag_name(tag_name))
+    create_release!(unique_tag_name(input_tag_name))
   end
 
   def branch_url
@@ -364,6 +367,7 @@ class Release < ApplicationRecord
 
   def on_stop!
     update_train_version if stopped_after_partial_finish?
+    event_stamp!(reason: :stopped, kind: :notice, data: {version: release_version})
     notify!("Release has stopped!", :release_stopped, notification_params)
   end
 

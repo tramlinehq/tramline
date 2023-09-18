@@ -47,6 +47,7 @@ class StepRun < ApplicationRecord
   STAMPABLE_REASONS = %w[
     created
     ci_triggered
+    ci_retriggered
     ci_workflow_unavailable
     ci_finished
     ci_workflow_failed
@@ -123,7 +124,7 @@ class StepRun < ApplicationRecord
       transitions from: :ci_workflow_started, to: :ci_workflow_halted
     end
 
-    event(:retry_ci, after_commit: -> { WorkflowProcessors::WorkflowRunJob.perform_later(id) }) do
+    event(:retry_ci, after_commit: :after_retrigger_ci) do
       before :retry_workflow_run
       transitions from: [:ci_workflow_failed, :ci_workflow_halted], to: :ci_workflow_started
     end
@@ -366,6 +367,7 @@ class StepRun < ApplicationRecord
   def retry_workflow_run
     return ci_cd_provider.retry_workflow_run!(ci_ref) if ci_cd_provider.workflow_retriable?
     trigger_workflow_run(retrigger: true)
+
   end
 
   def update_build_number!
@@ -404,6 +406,11 @@ class StepRun < ApplicationRecord
     Releases::FindWorkflowRun.perform_async(id)
     event_stamp!(reason: :ci_triggered, kind: :notice, data: {version: build_version})
     Releases::CancelStepRun.perform_later(previous_step_run.id) if previous_step_run&.may_cancel?
+  end
+
+  def after_retrigger_ci
+    WorkflowProcessors::WorkflowRunJob.perform_later(id)
+    event_stamp!(reason: :ci_retriggered, kind: :notice, data: {version: build_version})
   end
 
   def has_uploadables?
