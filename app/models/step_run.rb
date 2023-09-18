@@ -367,7 +367,6 @@ class StepRun < ApplicationRecord
   def retry_workflow_run
     return ci_cd_provider.retry_workflow_run!(ci_ref) if ci_cd_provider.workflow_retriable?
     trigger_workflow_run(retrigger: true)
-
   end
 
   def update_build_number!
