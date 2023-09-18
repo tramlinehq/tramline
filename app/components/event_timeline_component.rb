@@ -1,5 +1,6 @@
 class EventTimelineComponent < ViewComponent::Base
   include ApplicationHelper
+  include AssetsHelper
 
   STAMPABLE_ICONS = {
     DeploymentRun => "truck_delivery",

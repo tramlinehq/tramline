@@ -4,7 +4,10 @@
 </div>
 <% events_by_days.each do |day, events| %>
   <div class="relative">
-    <div class="flex flex-col w-full items-center mb-2"><time class="text-xl font-semibold text-gray-900"><%= day %></time></div>
+    <div class="flex flex-col w-full items-center mb-2">
+      <%= inline_svg('calendar_time.svg', classname: "inline-flex w-12") %>
+      <time class="text-xl font-semibold text-gray-900"><%= day %></time>
+    </div>
     <div class="hidden sm:block w-1 bg-gray-200 absolute h-full left-1/2 transform -translate-x-1/2 -z-50"></div>
     <div class="grid grid-cols-1">
       <% events.each do |passport| %>
