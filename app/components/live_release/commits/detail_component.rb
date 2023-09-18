@@ -13,10 +13,7 @@ class LiveRelease::Commits::DetailComponent < ViewComponent::Base
 
   attr_reader :commit, :release, :number
   delegate :writer?, to: :helpers
-
-  def stale?
-    commit.stale?
-  end
+  delegate :stale?, to: :commit
 
   def number_style
     if stale?
@@ -76,7 +73,7 @@ class LiveRelease::Commits::DetailComponent < ViewComponent::Base
   def details_toggle
     toggle_for(stale?) do
       content_tag(:span, "Details",
-                  class: "text-slate-500 font-medium underline mr-2 group-hover:text-slate-800")
+        class: "text-slate-500 font-medium underline mr-2 group-hover:text-slate-800")
     end
   end
 end
