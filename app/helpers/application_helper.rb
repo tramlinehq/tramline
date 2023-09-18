@@ -124,8 +124,9 @@ module ApplicationHelper
       .tap { |list| with_none ? list.unshift(["None", nil]) : nil }
   end
 
-  def time_format(timestamp, with_year: false, with_time: true)
+  def time_format(timestamp, with_year: false, with_time: true, only_time: false)
     return unless timestamp
+    return timestamp.strftime("%-l:%M %P") if only_time
     timestamp.strftime("%b #{timestamp.day.ordinalize}#{", %Y" if with_year}#{" at %-l:%M %P" if with_time}")
   end
 
