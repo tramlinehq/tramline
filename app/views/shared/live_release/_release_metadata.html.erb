@@ -2,7 +2,7 @@
 
 <section>
   <div class="flex justify-between items-center mb-4">
-    <span class="font-bold text-2xl">Release Metadata</span>
+    <%= render partial: "shared/live_release/section_title", locals: {heading: "Release Metadata", subheading: nil} %>
     <%= authz_link_to (release.metadata_editable? ? :neutral : :disabled), "Edit", edit_release_release_metadatum_path(release) %>
   </div>
 

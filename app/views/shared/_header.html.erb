@@ -14,16 +14,11 @@
         <% end %>
         <hr class="w-px h-6 bg-slate-200"/>
         <div class="relative inline-flex" data-controller="reveal" data-reveal-away-value="true">
-          <button
-            class="inline-flex justify-center items-center group"
-            aria-haspopup="true"
-            data-action="reveal#toggle">
-
-            <div class="flex truncate">
-              <span class="truncate mx-2 font-medium text-slate-500 group-hover:text-slate-800"><%= current_organization.name %></span>
-              <%= inline_svg("caret_down.svg", classname: "w-3 h-3 shrink-0 ml-1 mt-1 fill-current text-slate-500 group-hover:text-slate-800") %>
+          <%= toggle_for(true) do %>
+            <div class="truncate mx-2 font-medium text-slate-500 group-hover:text-slate-800">
+              <%= current_organization.name %>
             </div>
-          </button>
+          <% end %>
 
           <div hidden
                data-reveal

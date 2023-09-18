@@ -1,0 +1,21 @@
+<div class="grid grid-cols-2 w-full mt-6" data-controller="reveal" data-reveal-toggle-keys-value="e">
+  <div class="col-span-1">
+    <div class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200 px-2 py-3">
+      <div class="font-semibold text-left">commits (<%= commit_count %>)</div>
+    </div>
+  </div>
+
+  <div class="col-span-1 text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+    <div class="flex flex-col items-end h-full">
+      <div class="flex flex-row items-center flex-grow px-2">
+        <%= toggle_for(false) %>
+      </div>
+    </div>
+  </div>
+
+  <div data-reveal class="col-span-2">
+    <% commits.each_with_index do |commit, index| %>
+      <%= render LiveRelease::Commits::DetailComponent.new(commit, commit_number(index)) %>
+    <% end %>
+  </div>
+</div>
