@@ -24,7 +24,7 @@ module Passportable
       metadata: data,
       event_timestamp: Time.current,
       automatic: automatic?,
-      author_id: Current.user.id,
+      author_id: Current.user&.id,
       author_metadata: author_metadata
     )
   end
