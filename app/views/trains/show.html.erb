@@ -31,13 +31,6 @@
       <%= authz_button_to :amber, start_release_text(@train, major: true), app_train_releases_path(@app, @train, has_major_bump: true) %>
     <% end %>
 
-    <% if @train.releases.size > 0 %>
-      <%= button_to "#", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed shadow-none", disabled: true do %>
-        <%= inline_svg("band_aid.svg", classname: "w-5 h-5 opacity-80") %>
-        <span class="ml-2">Hotfix last release</span>
-      <% end %>
-    <% end %>
-
     <%= authz_link_to (@train.active_runs.exists? ? :disabled : :neutral), edit_app_train_path(@app, @train) do %>
       <%= inline_svg("edit.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
       <span class="ml-2">Settings</span>
