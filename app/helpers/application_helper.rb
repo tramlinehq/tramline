@@ -136,4 +136,8 @@ module ApplicationHelper
   def short_sha(sha)
     sha[0, 7]
   end
+
+  def user_avatar(name, **options)
+    Initials.svg(name, **options)
+  end
 end

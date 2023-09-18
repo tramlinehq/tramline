@@ -1,21 +1,29 @@
+<div class="grid grid-cols-2 text-xl text-gray-600">
+  <span class="justify-self-start bg-green-50 rounded-lg px-5 py-3">Android</span>
+  <span class="justify-self-end bg-blue-50 rounded-lg px-5 py-3">iOS</span>
+</div>
 <% events_by_days.each do |day, events| %>
-  <div class="p-5 mb-4 border border-gray-100 rounded-lg bg-gray-50">
-    <time class="text-lg font-semibold text-gray-900"><%= day %></time>
-    <ol class="mt-3 divide-y divider-gray-200">
+  <div class="relative">
+    <div class="flex flex-col w-full items-center mb-2"><time class="text-xl font-semibold text-gray-900"><%= day %></time></div>
+    <div class="hidden sm:block w-1 bg-gray-200 absolute h-full left-1/2 transform -translate-x-1/2 -z-50"></div>
+    <div class="grid grid-cols-1">
       <% events.each do |passport| %>
-        <li>
-          <div class="items-center block p-3 sm:flex">
-            <span class="mr-3 uppercase tracking-wide inline-flex font-medium rounded-full text-center px-3.5 py-3 bg-indigo-100">TL</span>
-            <div>
-              <div class="text-sm leading-5 font-normal text-gray-700"><%= raw passport.message %></div>
-              <span class="inline-flex items-center text-xs font-normal text-gray-500">
-                <%= image_tag("#{passport_icon(passport)}.svg", width: 20, class: "inline-flex mr-1") %>
-                <%= time_format(passport.event_timestamp) %>
-              </span>
+        <section class="grid w-1/2 <%= justify_grid(passport) %>">
+          <div class="flex flex-grow my-2 items-center <%= justify_content(passport) %>">
+            <%= connector(passport, :left) %>
+            <span class="mr-3"><%= author_avatar(passport.author_full_name) %></span>
+            <div class="border border-gray-200 rounded-lg px-3 pb-2 pt-3 bg-white">
+              <div class="text-medium leading-5 font-normal text-gray-700"><%= raw passport.message %></div>
+              <span class="inline-flex items-center text-xs font-normal text-gray-500 mt-1">
+                <%= image_tag("#{passport_icon(passport)}.svg", width: 18, class: "inline-flex mr-1") %>
+                <time class="font-bold antialiased"><%= time_format(passport.event_timestamp) %></time>
+                &nbsp;by&nbsp;<span class="underline"><%= passport.author_name %></span>
+                </span>
             </div>
+            <%= connector(passport, :right) %>
           </div>
-        </li>
+        </section>
       <% end %>
-    </ol>
+    </div>
   </div>
 <% end %>

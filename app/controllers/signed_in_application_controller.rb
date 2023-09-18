@@ -73,10 +73,10 @@ class SignedInApplicationController < ApplicationController
         begin
           Accounts::Organization.friendly.find(session[:active_organization])
         rescue ActiveRecord::RecordNotFound
-          current_user.organizations.first
+          current_user&.organizations&.first
         end
       else
-        current_user.organizations.first
+        current_user&.organizations&.first
       end
   end
 
