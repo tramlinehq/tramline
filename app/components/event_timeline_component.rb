@@ -21,7 +21,7 @@ class EventTimelineComponent < ViewComponent::Base
   end
 
   def events_by_days
-    @events.group_by { |e| e.event_timestamp.strftime("%A #{e.event_timestamp.day.ordinalize} %B, %Y") }
+    @events.group_by { |e| time_format(e.event_timestamp, only_date: true) }
   end
 
   def justify_content(passport)
