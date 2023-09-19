@@ -37,7 +37,7 @@ class Commit < ApplicationRecord
   after_commit -> { create_stamp!(data: {sha: short_sha}) }, on: :create
   after_create_commit -> { Releases::BackmergeCommitJob.perform_later(id) }, if: -> { release.release_changes? }
 
-  delegate :release_platform_runs, :notify!, :train, to: :release
+  delegate :release_platform_runs, :notify!, :train, :platform, to: :release
 
   def self.between(base_step_run, head_step_run)
     return none if head_step_run.nil?

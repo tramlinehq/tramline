@@ -39,14 +39,15 @@ class StepRun < ApplicationRecord
 
   validates :step_id, uniqueness: {scope: :commit_id}
 
-  after_commit -> { create_stamp!(data: stamp_data) }, on: :create
   after_commit -> { update(build_notes_raw: relevant_changes) }, on: :create
   # FIXME: solve this correctly, we rely on wait time to ensure steps are triggered in correct order
   after_commit -> { Releases::TriggerWorkflowRunJob.set(wait: BASE_WAIT_TIME * step.step_number).perform_later(id) }, on: :create
+  after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 
   STAMPABLE_REASONS = %w[
     created
     ci_triggered
+    ci_retriggered
     ci_workflow_unavailable
     ci_finished
     ci_workflow_failed
@@ -123,7 +124,7 @@ class StepRun < ApplicationRecord
       transitions from: :ci_workflow_started, to: :ci_workflow_halted
     end
 
-    event(:retry_ci, after_commit: -> { WorkflowProcessors::WorkflowRunJob.perform_later(id) }) do
+    event(:retry_ci, after_commit: :after_retrigger_ci) do
       before :retry_workflow_run
       transitions from: [:ci_workflow_failed, :ci_workflow_halted], to: :ci_workflow_started
     end
@@ -404,6 +405,11 @@ class StepRun < ApplicationRecord
     Releases::FindWorkflowRun.perform_async(id)
     event_stamp!(reason: :ci_triggered, kind: :notice, data: {version: build_version})
     Releases::CancelStepRun.perform_later(previous_step_run.id) if previous_step_run&.may_cancel?
+  end
+
+  def after_retrigger_ci
+    WorkflowProcessors::WorkflowRunJob.perform_later(id)
+    event_stamp!(reason: :ci_retriggered, kind: :notice, data: {version: build_version})
   end
 
   def has_uploadables?

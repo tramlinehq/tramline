@@ -40,7 +40,7 @@ class ReleasePlatformRun < ApplicationRecord
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
   scope :have_not_reached_production, -> { on_track.reject(&:production_release_happened?) }
 
-  STAMPABLE_REASONS = %w[version_changed version_corrected finished]
+  STAMPABLE_REASONS = %w[version_changed tag_created version_corrected finished]
 
   STATES = {
     created: "created",
@@ -247,6 +247,7 @@ class ReleasePlatformRun < ApplicationRecord
   def create_tag!(input_tag_name = base_tag_name)
     train.create_tag!(input_tag_name, last_commit.commit_hash)
     update!(tag_name: input_tag_name)
+    event_stamp!(reason: :tag_created, kind: :notice, data: {tag: tag_name})
   rescue Installations::Errors::TagReferenceAlreadyExists
     create_tag!(unique_tag_name(input_tag_name))
   end

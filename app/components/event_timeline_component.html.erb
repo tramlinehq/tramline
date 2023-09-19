@@ -1,0 +1,46 @@
+<% if cross_platform_app? %>
+  <div class="grid grid-cols-2 text-xl text-gray-600">
+    <span class="justify-self-start bg-green-50 rounded-lg px-5 py-3">Android</span>
+    <span class="justify-self-end bg-blue-50 rounded-lg px-5 py-3">iOS</span>
+  </div>
+<% end %>
+
+<% events_by_days.each_with_index do |(day, events), index| %>
+  <div class="relative" data-controller="reveal" data-reveal-toggle-keys-value="e">
+    <div class="w-1 bg-gray-200 absolute h-full left-1/2 -translate-x-1/2 -z-50"></div>
+    <div class="flex flex-col items-center mb-2 bg-white py-1">
+      <%= inline_svg('calendar_time.svg', classname: "inline-flex w-12") %>
+      <time class="text-xl font-semibold text-gray-900"><%= day %></time>
+      <%= toggle_for(hide_timeline?(index)) %>
+    </div>
+    <div data-reveal <%= hide_timeline(index) %>>
+      <div class="grid grid-cols-2 items-center">
+        <% events.each do |passport| %>
+          <%= activity_metadata(passport, :left) %>
+
+          <section class="grid <%= justify_content(passport) %> col-span-1">
+            <div class="flex flex-grow my-2 items-center <%= justify_content(passport) %> w-full">
+              <%= connector(passport, :left) %>
+
+              <span class="mr-3 flex flex-col items-center">
+              <%= author_avatar(passport.author_full_name) %>
+            </span>
+
+              <div class="border border-gray-200 rounded-lg px-3 py-3 bg-white flex flex-row items-center">
+                <div class="<%= passport_badge(passport) %> rounded-lg text-center p-0.5 mr-2 flex items-center">
+                  <%= inline_svg("#{passport_icon(passport)}.svg", classname: "inline-flex antialiased w-5") %>
+                </div>
+                <div class="text-sm leading-5 font-normal text-gray-700"><%= raw(passport.message) %></div>
+              </div>
+
+              <%= connector(passport, :right) %>
+            </div>
+          </section>
+
+          <%= activity_metadata(passport, :right) %>
+        <% end %>
+      </div>
+      <div class="w-4 py-1 bg-gray-200 absolute h-1 left-1/2 -translate-x-1/2 -z-50"></div>
+    </div>
+  </div>
+<% end %>

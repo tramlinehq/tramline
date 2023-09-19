@@ -124,8 +124,10 @@ module ApplicationHelper
       .tap { |list| with_none ? list.unshift(["None", nil]) : nil }
   end
 
-  def time_format(timestamp, with_year: false, with_time: true)
+  def time_format(timestamp, with_year: false, with_time: true, only_time: false, only_date: false)
     return unless timestamp
+    return timestamp.strftime("%-l:%M %P") if only_time
+    return timestamp.strftime("%A #{timestamp.day.ordinalize} %B, %Y") if only_date
     timestamp.strftime("%b #{timestamp.day.ordinalize}#{", %Y" if with_year}#{" at %-l:%M %P" if with_time}")
   end
 
@@ -135,5 +137,9 @@ module ApplicationHelper
 
   def short_sha(sha)
     sha[0, 7]
+  end
+
+  def user_avatar(name, **options)
+    Initials.svg(name, **options)
   end
 end

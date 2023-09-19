@@ -1,5 +1,6 @@
 class SignedInApplicationController < ApplicationController
   DEFAULT_TIMEZONE = "Asia/Kolkata"
+  before_action :set_currents
   before_action :set_paper_trail_whodunnit
   before_action :set_sentry_context, if: -> { Rails.env.production? }
   before_action :require_login, unless: :devise_controller?
@@ -72,14 +73,19 @@ class SignedInApplicationController < ApplicationController
         begin
           Accounts::Organization.friendly.find(session[:active_organization])
         rescue ActiveRecord::RecordNotFound
-          current_user.organizations.first
+          current_user&.organizations&.first
         end
       else
-        current_user.organizations.first
+        current_user&.organizations&.first
       end
   end
 
   def set_sentry_context
     Sentry.set_user(id: current_user.id, username: current_user.full_name, email: current_user.email) if current_user
+  end
+
+  def set_currents
+    Current.user = current_user
+    Current.organization = current_organization
   end
 end

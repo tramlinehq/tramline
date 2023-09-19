@@ -7,7 +7,10 @@ module Passportable
       kind:,
       message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
       metadata: data,
-      event_timestamp: ts
+      event_timestamp: ts,
+      automatic: automatic?,
+      author_id: Current.user&.id,
+      author_metadata: author_metadata
     )
   end
 
@@ -19,7 +22,10 @@ module Passportable
       kind:,
       message: I18n.t("passport.#{stamp_namespace}.#{reason}_html", **data),
       metadata: data,
-      event_timestamp: Time.current
+      event_timestamp: Time.current,
+      automatic: automatic?,
+      author_id: Current.user&.id,
+      author_metadata: author_metadata
     )
   end
 
@@ -29,5 +35,22 @@ module Passportable
 
   def stamp_namespace
     self.class.name.underscore
+  end
+
+  private
+
+  def author_metadata
+    unless automatic?
+      {
+        name: Current.user.preferred_name || Current.user.full_name,
+        full_name: Current.user.full_name,
+        role: Current.user.role_for(Current.organization),
+        email: Current.user.email
+      }
+    end
+  end
+
+  def automatic?
+    Current.user.blank?
   end
 end

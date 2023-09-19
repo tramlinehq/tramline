@@ -12,14 +12,18 @@ en:
       kickoff_pr_succeeded_html: 'Kickoff PR created and merged <a class="emphasize-link" href="%{url}">#%{number}</a>'
       finalizing_html: 'Finalizing the release with version <span class="emphasize">%{version}</span>'
       finalize_failed_html: 'Failed to finalize the release with version <span class="emphasize">%{version}</span>'
+      vcs_release_created_html: 'Created a %{provider} release with <span class="emphasize">%{tag}</span>'
+      stopped_html: 'Stopped the release <span class="emphasize">%{version}</span>'
       finished_html: 'Finished the release with version <span class="emphasize">%{version}</span>'
     release_platform_run:
       version_changed_html: 'Updated the release version to <span class="emphasize">%{version}</span>'
       version_corrected_html: 'Updated the release version to <span class="emphasize">%{version}</span> since the ongoing release has moved on to <span class="emphasize">%{ongoing_version}</span>'
       finished_html: 'Finished the platform release with version <span class="emphasize">%{version}</span>'
+      tag_created_html: 'Tag <span class="emphasize">%{tag}</span> was cut'
     step_run:
       created_html: 'Started the step <span class="emphasize">%{name}</span> for <span class="emphasize">%{sha}</span>'
       ci_triggered_html: 'CI workflow triggered for generating build <span class="emphasize">%{version}</span>'
+      ci_retriggered_html: 'CI workflow was retried for build <span class="emphasize">%{version}</span>'
       ci_workflow_unavailable_html: 'CI workflow could not be found'
       ci_workflow_failed_html: 'CI workflow <a class="emphasize-link" href="%{url}">#%{ref}</a> has failed'
       ci_workflow_halted_html: 'CI workflow <a class="emphasize-link" href="%{url}">#%{ref}</a> was stopped'

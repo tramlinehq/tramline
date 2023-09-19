@@ -56,7 +56,7 @@ crumb :release do |release|
 end
 
 crumb :timeline_release do |release|
-  link "Event Timeline", timeline_release_path(release)
+  link "Release Activity", timeline_release_path(release)
   parent :release, release
 end
 
