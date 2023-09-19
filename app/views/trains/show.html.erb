@@ -122,12 +122,12 @@
   <!-- Releases -->
   <article class="mb-8 border-b pb-4">
     <% if @train.releases.size > 0 %>
-      <%= render TableComponent.new(columns: ["version", "release branch"]) do |table| %>
+      <%= render TableComponent.new(columns: ["version", "", "release branch"]) do |table| %>
         <% table.with_heading do %>
           <h2 class="text-2xl font-bold">Releases</h2>
         <% end %>
 
-        <% @train.releases.order(scheduled_at: :desc).take(10).each_with_index do |run, index| %>
+        <% @train.releases.order(scheduled_at: :desc).take(10).each do |run| %>
           <% table.with_row do |row| %>
             <% row.with_cell do %>
               <%= link_to release_path(run.id) do %>
@@ -138,18 +138,22 @@
                       <code><%= version_in_progress(run.release_version) %></code>
                     <% end %>
                   </span>
-                <span class="ml-2 py-0.5"><%= release_status_badge(run.status) %></span>
-                <% if run.is_automatic? %>
-                  <span class="ml-2 py-0.5"><%= status_badge("automatic", :neutral) %></span>
-                <% end %>
-                <% if run.upcoming? %>
-                  <span class="ml-2 py-0.5"><%= status_badge("upcoming", :neutral) %></span>
-                <% end %>
-                <% if run.ongoing? %>
-                  <span class="ml-2 py-0.5"><%= status_badge("ongoing", :routine) %></span>
-                <% end %>
               <% end %>
             <% end %>
+
+            <% row.with_cell do %>
+              <span class="py-0.5"><%= release_status_badge(run.status) %></span>
+              <% if run.is_automatic? %>
+                <span class="ml-2 py-0.5"><%= status_badge("automatic", :neutral) %></span>
+              <% end %>
+              <% if run.upcoming? %>
+                <span class="ml-2 py-0.5"><%= status_badge("upcoming", :neutral) %></span>
+              <% end %>
+              <% if run.ongoing? %>
+                <span class="ml-2 py-0.5"><%= status_badge("ongoing", :routine) %></span>
+              <% end %>
+            <% end %>
+
 
             <% row.with_cell do %>
               <%= run.branch_name %>
@@ -169,17 +173,20 @@
   <% if @train.automatic? %>
     <article class="mb-8 border-b pb-4">
       <% if @train.scheduled_releases.size > 0 %>
-        <%= render TableComponent.new(columns: %w[time note]) do |table| %>
+        <%= render TableComponent.new(columns: ["time", "", "note"]) do |table| %>
           <% table.with_heading do %>
             <h2 class="text-2xl font-bold">Automated Releases</h2>
           <% end %>
 
           <% scheduled_releases = @train.scheduled_releases.order(scheduled_at: :desc).take(10) %>
-          <% scheduled_releases.each_with_index do |run, index| %>
+          <% scheduled_releases.each do |run| %>
             <% table.with_row do |row| %>
               <% row.with_cell do %>
                 <span><%= scheduled_release_text(run) %></span>
-                <span class="ml-2 py-0.5"><%= scheduled_release_badge(run) %></span>
+              <% end %>
+
+              <% row.with_cell do %>
+                <span class="py-0.5"><%= scheduled_release_badge(run) %></span>
               <% end %>
 
               <% row.with_cell do %>
