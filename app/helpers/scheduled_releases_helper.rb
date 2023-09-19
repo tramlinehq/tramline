@@ -10,10 +10,6 @@ module ScheduledReleasesHelper
   end
 
   def scheduled_release_text(scheduled_release)
-    if scheduled_release.pending?
-      "Scheduled for #{time_format(scheduled_release.scheduled_at)}"
-    else
-      "Ran on #{time_format(scheduled_release.scheduled_at)}"
-    end
+    time_format(scheduled_release.scheduled_at)
   end
 end

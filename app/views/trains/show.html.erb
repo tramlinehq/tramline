@@ -122,7 +122,7 @@
   <!-- Releases -->
   <article class="mb-8 border-b pb-4">
     <% if @train.releases.size > 0 %>
-      <%= render TableComponent.new(columns: ["#", "version", "release branch"]) do |table| %>
+      <%= render TableComponent.new(columns: ["version", "release branch"]) do |table| %>
         <% table.with_heading do %>
           <h2 class="text-2xl font-bold">Releases</h2>
         <% end %>
@@ -130,15 +130,10 @@
         <% @train.releases.order(scheduled_at: :desc).take(10).each_with_index do |run, index| %>
           <% table.with_row do |row| %>
             <% row.with_cell do %>
-              <%= @train.releases.size - index %>
-            <% end %>
-
-            <% row.with_cell do %>
               <%= link_to release_path(run.id) do %>
                   <span class="underline">
                     <% if run.completed_at %>
-                      <code><%= run.release_version %></code>
-                      <%= "released on #{run.completed_at.to_s(:short)}" %>
+                      <code><%= run.release_version %></code><%= " on #{time_format(run.completed_at)}" %>
                     <% else %>
                       <code><%= version_in_progress(run.release_version) %></code>
                     <% end %>
@@ -174,7 +169,7 @@
   <% if @train.automatic? %>
     <article class="mb-8 border-b pb-4">
       <% if @train.scheduled_releases.size > 0 %>
-        <%= render TableComponent.new(columns: %w[release note]) do |table| %>
+        <%= render TableComponent.new(columns: %w[time note]) do |table| %>
           <% table.with_heading do %>
             <h2 class="text-2xl font-bold">Automated Releases</h2>
           <% end %>
