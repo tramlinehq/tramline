@@ -29,7 +29,7 @@ class StepRun < ApplicationRecord
   BASE_WAIT_TIME = 10.seconds
 
   belongs_to :step, inverse_of: :step_runs
-  belongs_to :release_platform_run, inverse_of: :step_runs
+  belongs_to :release_platform_run
   belongs_to :commit, inverse_of: :step_runs
   has_one :build_artifact, inverse_of: :step_run, dependent: :destroy
   has_many :deployment_runs, -> { includes(:deployment).merge(Deployment.sequential) }, inverse_of: :step_run, dependent: :destroy
