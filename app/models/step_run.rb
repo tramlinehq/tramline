@@ -29,7 +29,7 @@ class StepRun < ApplicationRecord
   BASE_WAIT_TIME = 10.seconds
 
   belongs_to :step, inverse_of: :step_runs
-  belongs_to :release_platform_run
+  belongs_to :release_platform_run, inverse_of: :step_runs
   belongs_to :commit, inverse_of: :step_runs
   has_one :build_artifact, inverse_of: :step_run, dependent: :destroy
   has_many :deployment_runs, -> { includes(:deployment).merge(Deployment.sequential) }, inverse_of: :step_run, dependent: :destroy
@@ -39,10 +39,10 @@ class StepRun < ApplicationRecord
 
   validates :step_id, uniqueness: {scope: :commit_id}
 
-  after_commit -> { create_stamp!(data: stamp_data) }, on: :create
   after_commit -> { update(build_notes_raw: relevant_changes) }, on: :create
   # FIXME: solve this correctly, we rely on wait time to ensure steps are triggered in correct order
   after_commit -> { Releases::TriggerWorkflowRunJob.set(wait: BASE_WAIT_TIME * step.step_number).perform_later(id) }, on: :create
+  after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 
   STAMPABLE_REASONS = %w[
     created
