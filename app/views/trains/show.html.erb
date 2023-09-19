@@ -47,108 +47,94 @@
 
 <%= render partial: "shared/draft_mode_notice", locals: { app: @app } %>
 <div class="grid md:grid-cols-2 gap-x-11 pb-5 mt-8">
-  <section class="w-full">
-    <!-- Train Summary -->
-    <article class="mb-8">
-      <h2 class="text-2xl font-bold mb-4">Summary</h2>
-      <%= render MetaTableComponent.new do |mt| %>
-        <% mt.with_description("Branching Strategy") do %>
-          <%= @train.branching_strategy_name %>
-        <% end %>
+  <!-- Train Summary -->
+  <article class="mb-8">
+    <h2 class="text-2xl font-bold mb-4">Summary</h2>
+    <%= render MetaTableComponent.new do |mt| %>
+      <% mt.with_description("Branching Strategy") do %>
+        <%= @train.branching_strategy_name %>
+      <% end %>
 
-        <% if @train.description.present? %>
-          <% mt.with_description("Description") do %>
-            <%= @train.description %>
-          <% end %>
+      <% if @train.description.present? %>
+        <% mt.with_description("Description") do %>
+          <%= @train.description %>
         <% end %>
+      <% end %>
 
-        <% if @train.working_branch.present? %>
-          <% mt.with_description("Working Branch") do %>
-            <%= @train.working_branch %>
-          <% end %>
+      <% if @train.working_branch.present? %>
+        <% mt.with_description("Working Branch") do %>
+          <%= @train.working_branch %>
         <% end %>
+      <% end %>
 
-        <% if @train.release_branch.present? %>
-          <% mt.with_description("Release Branch") do %>
-            <%= @train.release_branch %>
-          <% end %>
+      <% if @train.release_branch.present? %>
+        <% mt.with_description("Release Branch") do %>
+          <%= @train.release_branch %>
         <% end %>
+      <% end %>
 
-        <% if @train.release_backmerge_branch.present? %>
-          <% mt.with_description("Release Backmerge Branch") do %>
-            <%= @train.release_backmerge_branch %>
-          <% end %>
+      <% if @train.release_backmerge_branch.present? %>
+        <% mt.with_description("Release Backmerge Branch") do %>
+          <%= @train.release_backmerge_branch %>
         <% end %>
+      <% end %>
 
-        <% mt.with_description("Code Repository") do %>
+      <% mt.with_description("Code Repository") do %>
           <span class="underline">
             <%= link_to_external("#{@train.config.code_repository_name} ↗", @train.config.code_repo_url) %>
           </span>
-        <% end %>
-
-        <% mt.with_description("Release Schedule") do %>
-          <%= release_schedule(@train) %>
-        <% end %>
-
-        <% mt.with_description("Notification Channel") do %>
-          <% if @train.send_notifications? %>
-            <div class="inline-flex align-text-top">
-              <span class="pr-2"><%= image_tag("integrations/logo_#{@app.notification_provider}.png", width: 18) %></span>
-              <%= @train.notification_channel_name %>
-            </div>
-          <% else %>
-            None (notifications will not be sent)
-          <% end %>
-        <% end %>
-
-        <% mt.with_description("Build Queue Config") do %>
-          <%= build_queue_config(@train) %>
-        <% end %>
-
-        <% mt.with_description("Backmerge Config") do %>
-          <%== backmerge_text(@train) %>
-        <% end %>
       <% end %>
-    </article>
 
-    <!-- Steps Viz -->
-    <% @train.release_platforms.each do |release_platform| %>
-      <article class="mt-10">
-        <h2 class="text-2xl font-bold mb-4"><%= steps_heading(release_platform) %></h2>
+      <% mt.with_description("Release Schedule") do %>
+        <%= release_schedule(@train) %>
+      <% end %>
 
-        <% if release_platform.steps.size > 0 %>
-          <div class="flex flex-col">
-            <%= render partial: "shared/step_tree_viz", locals: { train: @train, release_platform: release_platform, editable: false } %>
+      <% mt.with_description("Notification Channel") do %>
+        <% if @train.send_notifications? %>
+          <div class="inline-flex align-text-top">
+            <span class="pr-2"><%= image_tag("integrations/logo_#{@app.notification_provider}.png", width: 18) %></span>
+            <%= @train.notification_channel_name %>
           </div>
         <% else %>
-          <%= render partial: "trains/step_creation", locals: { app: @app, train: @train, release_platform: release_platform } %>
+          None (notifications will not be sent)
         <% end %>
-      </article>
-    <% end %>
-  </section>
+      <% end %>
 
-  <section>
-    <!-- Schedule -->
-    <% if @train.automatic? && @train.active? %>
+      <% mt.with_description("Build Queue Config") do %>
+        <%= build_queue_config(@train) %>
+      <% end %>
+
+      <% mt.with_description("Backmerge Config") do %>
+        <%== backmerge_text(@train) %>
+      <% end %>
+    <% end %>
+  </article>
+
+  <!-- Schedule -->
+  <% if @train.automatic? %>
+    <% if @train.active? %>
       <%= render partial: "release_schedule", locals: { train: @train } %>
+    <% else %>
+      <div></div>
     <% end %>
+  <% end %>
 
-    <!-- Releases -->
-    <article class="mb-8 border-b pb-4">
-      <% if @train.releases.size > 0 %>
-        <%= render TableComponent.new(columns: ["#", "version", "release branch"]) do |table| %>
-          <% table.with_heading do %>
-            <h2 class="text-2xl font-bold">Releases</h2>
-          <% end %>
+  <!-- Releases -->
+  <article class="mb-8 border-b pb-4">
+    <% if @train.releases.size > 0 %>
+      <%= render TableComponent.new(columns: ["#", "version", "release branch"]) do |table| %>
+        <% table.with_heading do %>
+          <h2 class="text-2xl font-bold">Releases</h2>
+        <% end %>
 
-          <% @train.releases.order(scheduled_at: :desc).take(10).each_with_index do |run, index| %>
-            <% table.with_row do |row| %>
-              <% row.with_cell do %>
-                <%= @train.releases.size - index %>
-              <% end %>
+        <% @train.releases.order(scheduled_at: :desc).take(10).each_with_index do |run, index| %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              <%= @train.releases.size - index %>
+            <% end %>
 
-              <% row.with_cell do %>
-                <%= link_to release_path(run.id) do %>
+            <% row.with_cell do %>
+              <%= link_to release_path(run.id) do %>
                   <span class="underline">
                     <% if run.completed_at %>
                       <code><%= run.release_version %></code>
@@ -157,65 +143,76 @@
                       <code><%= version_in_progress(run.release_version) %></code>
                     <% end %>
                   </span>
-                  <span class="ml-2 py-0.5"><%= release_status_badge(run.status) %></span>
-                  <% if run.is_automatic? %>
-                    <span class="ml-2 py-0.5"><%= status_badge("automatic", :neutral) %></span>
-                  <% end %>
-                  <% if run.upcoming? %>
-                    <span class="ml-2 py-0.5"><%= status_badge("upcoming", :neutral) %></span>
-                  <% end %>
-                  <% if run.ongoing? %>
-                    <span class="ml-2 py-0.5"><%= status_badge("ongoing", :routine) %></span>
-                  <% end %>
+                <span class="ml-2 py-0.5"><%= release_status_badge(run.status) %></span>
+                <% if run.is_automatic? %>
+                  <span class="ml-2 py-0.5"><%= status_badge("automatic", :neutral) %></span>
                 <% end %>
+                <% if run.upcoming? %>
+                  <span class="ml-2 py-0.5"><%= status_badge("upcoming", :neutral) %></span>
+                <% end %>
+                <% if run.ongoing? %>
+                  <span class="ml-2 py-0.5"><%= status_badge("ongoing", :routine) %></span>
+                <% end %>
+              <% end %>
+            <% end %>
+
+            <% row.with_cell do %>
+              <%= run.branch_name %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <h2 class="text-2xl font-bold mb-4">Releases</h2>
+      <span class="text-sm text-slate-400">
+        Start a new release to see it here.
+      </span>
+    <% end %>
+  </article>
+
+  <!-- Scheduled Releases -->
+  <% if @train.automatic? %>
+    <article class="mb-8 border-b pb-4">
+      <% if @train.scheduled_releases.size > 0 %>
+        <%= render TableComponent.new(columns: %w[release note]) do |table| %>
+          <% table.with_heading do %>
+            <h2 class="text-2xl font-bold">Automated Releases</h2>
+          <% end %>
+
+          <% scheduled_releases = @train.scheduled_releases.order(scheduled_at: :desc).take(10) %>
+          <% scheduled_releases.each_with_index do |run, index| %>
+            <% table.with_row do |row| %>
+              <% row.with_cell do %>
+                <span><%= scheduled_release_text(run) %></span>
+                <span class="ml-2 py-0.5"><%= scheduled_release_badge(run) %></span>
               <% end %>
 
               <% row.with_cell do %>
-                <%= run.branch_name %>
+                <%= run.failure_reason %>
               <% end %>
             <% end %>
           <% end %>
         <% end %>
       <% else %>
-        <h2 class="text-2xl font-bold mb-4">Releases</h2>
-        <span class="text-sm text-slate-400">
-        Start a new release to see it here.
-      </span>
+        <h2 class="text-2xl font-bold mb-4">Scheduled Releases</h2>
+        <span class="text-sm text-slate-400">Activate the train to see it here.</span>
       <% end %>
     </article>
+  <% end %>
 
-    <!-- Scheduled Releases -->
-    <% if @train.automatic? %>
-      <article class="mb-8 border-b pb-4">
-        <% if @train.scheduled_releases.size > 0 %>
-          <%= render TableComponent.new(columns: %w[# release note]) do |table| %>
-            <% table.with_heading do %>
-              <h2 class="text-2xl font-bold">Automated Releases</h2>
-            <% end %>
 
-            <% scheduled_releases = @train.scheduled_releases.order(scheduled_at: :desc).take(10) %>
-            <% scheduled_releases.each_with_index do |run, index| %>
-              <% table.with_row do |row| %>
-                <% row.with_cell do %>
-                  <%= scheduled_releases.size - index %>
-                <% end %>
+  <!-- Steps Viz -->
+  <% @train.release_platforms.each do |release_platform| %>
+    <article>
+      <h2 class="text-2xl font-bold mb-4"><%= steps_heading(release_platform) %></h2>
 
-                <% row.with_cell do %>
-                  <span><%= scheduled_release_text(run) %></span>
-                  <span class="ml-2 py-0.5"><%= scheduled_release_badge(run) %></span>
-                <% end %>
-
-                <% row.with_cell do %>
-                  <%= run.failure_reason %>
-                <% end %>
-              <% end %>
-            <% end %>
-          <% end %>
-        <% else %>
-          <h2 class="text-2xl font-bold mb-4">Scheduled Releases</h2>
-          <span class="text-sm text-slate-400">Activate the train to see it here.</span>
-        <% end %>
-      </article>
-    <% end %>
-  </section>
+      <% if release_platform.steps.size > 0 %>
+        <div class="flex flex-col">
+          <%= render partial: "shared/step_tree_viz", locals: { train: @train, release_platform: release_platform, editable: false } %>
+        </div>
+      <% else %>
+        <%= render partial: "trains/step_creation", locals: { app: @app, train: @train, release_platform: release_platform } %>
+      <% end %>
+    </article>
+  <% end %>
 </div>
