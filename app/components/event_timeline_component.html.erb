@@ -1,7 +1,10 @@
-<div class="grid grid-cols-2 text-xl text-gray-600">
-  <span class="justify-self-start bg-green-50 rounded-lg px-5 py-3">Android</span>
-  <span class="justify-self-end bg-blue-50 rounded-lg px-5 py-3">iOS</span>
-</div>
+<% if cross_platform_app? %>
+  <div class="grid grid-cols-2 text-xl text-gray-600">
+    <span class="justify-self-start bg-green-50 rounded-lg px-5 py-3">Android</span>
+    <span class="justify-self-end bg-blue-50 rounded-lg px-5 py-3">iOS</span>
+  </div>
+<% end %>
+
 <% events_by_days.each_with_index do |(day, events), index| %>
   <div class="relative" data-controller="reveal" data-reveal-toggle-keys-value="e">
     <div class="w-1 bg-gray-200 absolute h-full left-1/2 -translate-x-1/2 -z-50"></div>

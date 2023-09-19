@@ -16,7 +16,8 @@ class EventTimelineComponent < ViewComponent::Base
     notice: "bg-amber-100"
   }.with_indifferent_access
 
-  def initialize(events:)
+  def initialize(app:, events:)
+    @app = app
     @events = events
   end
 
@@ -84,4 +85,6 @@ class EventTimelineComponent < ViewComponent::Base
   def android?(passport) = passport.platform == "android"
 
   def cross_platform?(passport) = passport.platform == "cross_platform"
+
+  def cross_platform_app? = @app.cross_platform?
 end
