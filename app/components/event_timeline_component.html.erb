@@ -2,15 +2,15 @@
   <span class="justify-self-start bg-green-50 rounded-lg px-5 py-3">Android</span>
   <span class="justify-self-end bg-blue-50 rounded-lg px-5 py-3">iOS</span>
 </div>
-<% events_by_days.each do |day, events| %>
+<% events_by_days.each_with_index do |(day, events), index| %>
   <div class="relative" data-controller="reveal" data-reveal-toggle-keys-value="e">
     <div class="w-1 bg-gray-200 absolute h-full left-1/2 -translate-x-1/2 -z-50"></div>
     <div class="flex flex-col items-center mb-2 bg-white py-1">
       <%= inline_svg('calendar_time.svg', classname: "inline-flex w-12") %>
       <time class="text-xl font-semibold text-gray-900"><%= day %></time>
-      <%= toggle_for(false) %>
+      <%= toggle_for(hide_timeline?(index)) %>
     </div>
-    <div data-reveal>
+    <div data-reveal <%= hide_timeline(index) %>>
       <div class="grid grid-cols-2 items-center">
         <% events.each do |passport| %>
           <%= activity_metadata(passport, :left) %>
@@ -37,7 +37,7 @@
           <%= activity_metadata(passport, :right) %>
         <% end %>
       </div>
+      <div class="w-4 py-1 bg-gray-200 absolute h-1 left-1/2 -translate-x-1/2 -z-50"></div>
     </div>
-    <div class="w-4 py-1 bg-gray-200 absolute h-1 left-1/2 -translate-x-1/2 -z-50"></div>
   </div>
 <% end %>

@@ -59,6 +59,14 @@ class EventTimelineComponent < ViewComponent::Base
     end
   end
 
+  def hide_timeline?(index)
+    index > 0
+  end
+
+  def hide_timeline(index)
+    "hidden" if hide_timeline?(index)
+  end
+
   def passport_icon(passport)
     STAMPABLE_ICONS.fetch(passport.stampable_type.constantize, "aerial_lift")
   end
