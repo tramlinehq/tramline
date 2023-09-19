@@ -2,20 +2,6 @@ class EventTimelineComponent < ViewComponent::Base
   include ApplicationHelper
   include AssetsHelper
 
-  STAMPABLE_ICONS = {
-    DeploymentRun => "truck_delivery",
-    Commit => "git_commit",
-    StepRun => "box",
-    ReleasePlatformRun => "bolt",
-    Release => "bolt"
-  }
-
-  BADGE = {
-    success: "bg-emerald-100",
-    error: "bg-rose-100",
-    notice: "bg-amber-100"
-  }.with_indifferent_access
-
   def initialize(app:, events:)
     @app = app
     @events = events
@@ -27,10 +13,11 @@ class EventTimelineComponent < ViewComponent::Base
 
   def justify_content(passport)
     return "justify-self-center col-span-2 mb-2" if cross_platform?(passport)
-    "justify-self-end" if android?(passport)
+    return "justify-self-end" if android?(passport)
+    "justify-self-start" if ios?(passport)
   end
 
-  BASE_CONNECTOR_STYLES = "border-gray-200 w-10".freeze
+  BASE_CONNECTOR_STYLES = "border-slate-200 w-10".freeze
 
   def connector(passport, direction)
     if direction == :left && ios?(passport)
@@ -40,7 +27,7 @@ class EventTimelineComponent < ViewComponent::Base
     end
   end
 
-  BASE_ACTIVITY_METADATA_STYLES = "text-xs text-gray-400 bg-white p-1".freeze
+  BASE_ACTIVITY_METADATA_STYLES = "text-xs text-slate-400 bg-white p-1".freeze
 
   def activity_metadata(passport, direction)
     justification =
@@ -54,6 +41,10 @@ class EventTimelineComponent < ViewComponent::Base
         return
       end
 
+    activity_metadata_content(passport, justification)
+  end
+
+  def activity_metadata_content(passport, justification)
     content_tag(:div, class: BASE_ACTIVITY_METADATA_STYLES + justification) do
       concat content_tag(:time, time_format(passport.event_timestamp, only_time: true))
       concat content_tag(:span, " – #{passport.author_name}")
@@ -66,18 +57,6 @@ class EventTimelineComponent < ViewComponent::Base
 
   def hide_timeline(index)
     "hidden" if hide_timeline?(index)
-  end
-
-  def passport_icon(passport)
-    STAMPABLE_ICONS.fetch(passport.stampable_type.constantize, "aerial_lift")
-  end
-
-  def passport_badge(passport)
-    BADGE[passport.kind]
-  end
-
-  def author_avatar(name)
-    user_avatar(name, limit: 2, size: 36, colors: 90)
   end
 
   def ios?(passport) = passport.platform == "ios"
