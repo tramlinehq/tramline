@@ -7,8 +7,15 @@ class EventTimelineComponent < ViewComponent::Base
     @events = events
   end
 
+  EXCLUSIONS = {
+    "DeploymentRun" => ["created"],
+    "StepRun" => %w[build_available finished]
+  }
+
   def events_by_days
-    @events.group_by { |e| time_format(e.event_timestamp, only_date: true) }
+    @events
+      .reject { |e| EXCLUSIONS[e.stampable_type].present? && e.reason.in?(EXCLUSIONS[e.stampable_type]) }
+      .group_by { |e| time_format(e.event_timestamp, only_date: true) }
   end
 
   def justify_content(passport)
