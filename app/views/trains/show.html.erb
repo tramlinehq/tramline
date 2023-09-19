@@ -133,7 +133,7 @@
               <%= link_to release_path(run.id) do %>
                   <span class="underline">
                     <% if run.completed_at %>
-                      <code><%= run.release_version %></code><%= " on #{time_format(run.completed_at)}" %>
+                      <code><%= run.release_version %></code><%= " on #{time_format(run.completed_at, with_time: false)}" %>
                     <% else %>
                       <code><%= version_in_progress(run.release_version) %></code>
                     <% end %>
