@@ -20,7 +20,7 @@
           <% events.each do |passport| %>
             <%= activity_metadata(passport, :left) %>
 
-            <section class="grid <%= justify_content(passport) %> col-span-1 items-center grid-flow-col my-2">
+            <section class="grid <%= justify_content(passport) %> col-span-1 items-center grid-flow-col">
               <%= connector(passport, :left) %>
               <%= render EventTimeline::EventMessageComponent.new(passport: passport) %>
               <%= connector(passport, :right) %>
