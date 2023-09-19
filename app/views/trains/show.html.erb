@@ -133,10 +133,10 @@
       <%= render partial: "release_schedule", locals: { train: @train } %>
     <% end %>
 
-    <!-- Steps -->
-    <article>
+    <!-- Releases -->
+    <article class="mb-8 border-b pb-4">
       <% if @train.releases.size > 0 %>
-        <%= render TableComponent.new(columns: ["•", "version", "release branch"]) do |table| %>
+        <%= render TableComponent.new(columns: ["#", "version", "release branch"]) do |table| %>
           <% table.with_heading do %>
             <h2 class="text-2xl font-bold">Releases</h2>
           <% end %>
@@ -183,5 +183,39 @@
       </span>
       <% end %>
     </article>
+
+    <!-- Scheduled Releases -->
+    <% if @train.automatic? %>
+      <article class="mb-8 border-b pb-4">
+        <% if @train.scheduled_releases.size > 0 %>
+          <%= render TableComponent.new(columns: %w[# release note]) do |table| %>
+            <% table.with_heading do %>
+              <h2 class="text-2xl font-bold">Automated Releases</h2>
+            <% end %>
+
+            <% scheduled_releases = @train.scheduled_releases.order(scheduled_at: :desc).take(10) %>
+            <% scheduled_releases.each_with_index do |run, index| %>
+              <% table.with_row do |row| %>
+                <% row.with_cell do %>
+                  <%= scheduled_releases.size - index %>
+                <% end %>
+
+                <% row.with_cell do %>
+                  <span><%= scheduled_release_text(run) %></span>
+                  <span class="ml-2 py-0.5"><%= scheduled_release_badge(run) %></span>
+                <% end %>
+
+                <% row.with_cell do %>
+                  <%= run.failure_reason %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% else %>
+          <h2 class="text-2xl font-bold mb-4">Scheduled Releases</h2>
+          <span class="text-sm text-slate-400">Activate the train to see it here.</span>
+        <% end %>
+      </article>
+    <% end %>
   </section>
 </div>
