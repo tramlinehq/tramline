@@ -120,7 +120,7 @@
   <% end %>
 
   <!-- Releases -->
-  <article class="mb-8 border-b pb-4">
+  <article class="mb-8 pb-4">
     <% if @train.releases.size > 0 %>
       <%= render TableComponent.new(columns: ["version", "", "release branch"]) do |table| %>
         <% table.with_heading do %>
@@ -171,7 +171,7 @@
 
   <!-- Scheduled Releases -->
   <% if @train.automatic? %>
-    <article class="mb-8 border-b pb-4">
+    <article class="mb-8 pb-4">
       <% if @train.scheduled_releases.size > 0 %>
         <%= render TableComponent.new(columns: ["time", "", "note"]) do |table| %>
           <% table.with_heading do %>
