@@ -36,4 +36,8 @@ class ScheduledRelease < ApplicationRecord
       }
     )
   end
+
+  def pending?
+    scheduled_at > Time.current
+  end
 end

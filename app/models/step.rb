@@ -93,6 +93,14 @@ class Step < ApplicationRecord
     deployments.any?(&:production_channel?)
   end
 
+  def workflow_id
+    ci_cd_channel["id"]
+  end
+
+  def workflow_name
+    ci_cd_channel["name"]
+  end
+
   private
 
   def reject_deployments?(attributes)

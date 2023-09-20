@@ -41,7 +41,7 @@ class StepRun < ApplicationRecord
 
   after_commit -> { update(build_notes_raw: relevant_changes) }, on: :create
   # FIXME: solve this correctly, we rely on wait time to ensure steps are triggered in correct order
-  after_commit -> { Releases::TriggerWorkflowRunJob.set(wait: BASE_WAIT_TIME * step.step_number).perform_later(id) }, on: :create
+  after_commit -> { Releases::TriggerWorkflowRunJob.set(wait: BASE_WAIT_TIME * step_number).perform_later(id) }, on: :create
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 
   STAMPABLE_REASONS = %w[
@@ -172,6 +172,7 @@ class StepRun < ApplicationRecord
   delegate :organization, to: :app
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
+  delegate :workflow_id, :workflow_name, :step_number, to: :step
   scope :not_failed, -> { where.not(status: [:ci_workflow_failed, :ci_workflow_halted, :build_not_found_in_store, :build_unavailable, :deployment_failed]) }
 
   def active?
@@ -248,10 +249,6 @@ class StepRun < ApplicationRecord
       done: done?,
       failed: failed?
     }
-  end
-
-  def workflow_id
-    step.ci_cd_channel["id"]
   end
 
   def first_deployment
@@ -393,7 +390,9 @@ class StepRun < ApplicationRecord
   def stamp_data
     {
       name: step.name,
-      sha: commit.short_sha
+      sha: commit.short_sha,
+      workflow_name:,
+      version: build_version
     }
   end
 
@@ -403,13 +402,13 @@ class StepRun < ApplicationRecord
 
   def after_trigger_ci
     Releases::FindWorkflowRun.perform_async(id)
-    event_stamp!(reason: :ci_triggered, kind: :notice, data: {version: build_version})
+    event_stamp!(reason: :ci_triggered, kind: :notice, data: stamp_data)
     Releases::CancelStepRun.perform_later(previous_step_run.id) if previous_step_run&.may_cancel?
   end
 
   def after_retrigger_ci
     WorkflowProcessors::WorkflowRunJob.perform_later(id)
-    event_stamp!(reason: :ci_retriggered, kind: :notice, data: {version: build_version})
+    event_stamp!(reason: :ci_retriggered, kind: :notice, data: stamp_data)
   end
 
   def has_uploadables?
