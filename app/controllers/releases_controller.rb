@@ -1,5 +1,6 @@
 class ReleasesController < SignedInApplicationController
   using RefinedString
+  include Filterable
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
   before_action :set_release, only: [:show, :timeline, :destroy]
@@ -74,9 +75,13 @@ class ReleasesController < SignedInApplicationController
   end
 
   def timeline
+    @events_params = filterable_params.except(:id)
+    gen_query_filters(:android_platform, "android")
+    gen_query_filters(:ios_platform, "ios")
+    set_query_helpers
     @train = @release.train
     @app = @train.app
-    @events = @release.events
+    @events = Queries::Events.all(release: @release, params: @query_params)
   end
 
   private
