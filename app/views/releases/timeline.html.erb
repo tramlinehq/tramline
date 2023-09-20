@@ -2,22 +2,22 @@
   <turbo-frame id="events" data-turbo-action="replace">
     <% if @app.cross_platform? %>
       <div class="grid grid-cols-2 text-xl text-slate-600">
-        <span class="justify-self-start bg-green-50 rounded-lg px-5 py-3">
+        <span class="justify-self-start">
           <%= render FilterButtonComponent.new(
             name: "Android",
-            on: @filters.dig(:android, :is_on),
+            on: @filters.dig(:android_platform, :is_on),
             path: timeline_release_path(@release),
             method: :get,
-            filter_params: get_query_filter(:android),
+            filter_params: get_query_filter(:android_platform),
             query_params: @events_params) %>
         </span>
-        <span class="justify-self-end bg-blue-50 rounded-lg px-5 py-3">
+        <span class="justify-self-end">
           <%= render FilterButtonComponent.new(
           name: "iOS",
-          on: @filters.dig(:ios, :is_on),
+          on: @filters.dig(:ios_platform, :is_on),
           path: timeline_release_path(@release),
           method: :get,
-          filter_params: get_query_filter(:ios),
+          filter_params: get_query_filter(:ios_platform),
           query_params: @events_params) %>
         </span>
       </div>

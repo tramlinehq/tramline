@@ -291,17 +291,6 @@ class Release < ApplicationRecord
     )
   end
 
-  def events(limit = nil)
-    release_platform_runs
-      .left_joins(step_runs: [:commit, [deployment_runs: :staged_rollout]])
-      .pluck("commits.id, release_platform_runs.id, step_runs.id, deployment_runs.id, staged_rollouts.id")
-      .flatten
-      .uniq
-      .compact
-      .push(id)
-      .then { |ids| Passport.where(stampable_id: ids).order(event_timestamp: :desc).limit(limit) }
-  end
-
   def last_commit
     all_commits.last
   end

@@ -76,8 +76,8 @@ class ReleasesController < SignedInApplicationController
 
   def timeline
     @events_params = filterable_params.except(:id)
-    gen_query_filters(:android, "android")
-    gen_query_filters(:ios, "ios")
+    gen_query_filters(:android_platform, "android")
+    gen_query_filters(:ios_platform, "ios")
     set_query_helpers
     @train = @release.train
     @app = @train.app
