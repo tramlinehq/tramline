@@ -113,7 +113,7 @@ describe WebhookProcessors::Push do
       end
 
       it "adds the subsequent commits to the queue" do
-        _old_commit = create(:commit, release:)
+        _old_commit = create(:commit, release:, timestamp: 1.minute.ago)
         create(:step, :with_deployment, release_platform:)
         create(:release_platform_run, release_platform:, release:, release_version: train.version_current)
         allow(Triggers::StepRun).to receive(:call)
