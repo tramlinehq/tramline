@@ -1,3 +1,27 @@
 <%= render PageComponent.new(breadcrumb: breadcrumb(:timeline_release, @release), title: "Release Activity") do %>
-  <%= render EventTimelineComponent.new(app: @app, events: @events) %>
+  <turbo-frame id="events" data-turbo-action="replace">
+    <% if @app.cross_platform? %>
+      <div class="grid grid-cols-2 text-xl text-slate-600">
+        <span class="justify-self-start bg-green-50 rounded-lg px-5 py-3">
+          <%= render FilterButtonComponent.new(
+            name: "Android",
+            on: @filters.dig(:android, :is_on),
+            path: timeline_release_path(@release),
+            method: :get,
+            filter_params: get_query_filter(:android),
+            query_params: @events_params) %>
+        </span>
+        <span class="justify-self-end bg-blue-50 rounded-lg px-5 py-3">
+          <%= render FilterButtonComponent.new(
+          name: "iOS",
+          on: @filters.dig(:ios, :is_on),
+          path: timeline_release_path(@release),
+          method: :get,
+          filter_params: get_query_filter(:ios),
+          query_params: @events_params) %>
+        </span>
+      </div>
+    <% end %>
+    <%= render EventTimelineComponent.new(app: @app, events: @events) %>
+  </turbo-frame>
 <% end %>

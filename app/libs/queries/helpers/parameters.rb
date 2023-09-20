@@ -12,7 +12,7 @@ class Queries::Helpers::Parameters
   end
 
   attr_accessor :sort_column
-  attr_reader :limit, :offset
+  attr_reader :limit, :offset, :filters
 
   def add_sorting(col, dir)
     @sort_column = col
