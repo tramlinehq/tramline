@@ -1,0 +1,7 @@
+<span class="mr-3 flex flex-col items-center"><%= author_avatar(passport.author_full_name) %></span>
+<div class="border border-slate-200 rounded-lg px-3 py-3 bg-white flex flex-row items-center my-2">
+  <div class="<%= passport_badge(passport) %> rounded-lg text-center p-0.5 mr-2 flex items-center">
+    <%= inline_svg("#{passport_icon(passport)}.svg", classname: "inline-flex antialiased w-5") %>
+  </div>
+  <div class="text-sm leading-5 font-normal text-slate-700"><%= raw(passport.message) %></div>
+</div>
