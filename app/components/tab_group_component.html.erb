@@ -2,8 +2,7 @@
   <ul id="fullWidthTab" class="text-sm font-medium text-center text-gray-500 divide-x divide-gray-200 rounded-lg sm:flex">
     <% tab_headings.each do |tab| %>
       <li class="w-full">
-        <button id="<%= tab[:id] %>"
-                data-action="click->tabs#change"
+        <button data-action="click->tabs#change"
                 type="button"
                 data-tabs-target="tab"
                 aria-controls="overall-tab"

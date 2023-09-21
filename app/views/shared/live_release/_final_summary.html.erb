@@ -15,7 +15,7 @@
   </div>
 </div>
 <div class="text-gray-900">
-  <%= render ReleaseSummaryComponent.new(release:) do |component| %>
+  <%= render TabGroupComponent.new(release:, groups: ["Overall", "Store versions", "Step summary", "Pull requests"]) do |component| %>
     <% component.with_tab do %>
       <div class="p-4 bg-white rounded-lg" id="overall" data-tabs-target="panel">
         <div class="grid grid-rows-2 gap-y-5">
