@@ -14,457 +14,386 @@
        data-confetti-duration-value="1">🎉
   </div>
 </div>
+<div class="text-gray-900">
+  <%= render ReleaseSummaryComponent.new(release:) do |component| %>
+    <% component.with_tab do %>
+      <div class="p-4 bg-white rounded-lg" id="overall" data-tabs-target="panel">
+        <div class="grid grid-rows-2 gap-y-5">
+          <dl class="flex justify-evenly gap-x-8 px-2 py-4">
+            <div class="flex flex-col text-center items-center justify-center">
+              <dt class="mb-2 text-xl font-extrabold">1.8.0</dt>
+              <dd class="text-gray-500">Final version</dd>
+            </div>
 
-<div data-controller="tabs" class="w-full bg-white border border-gray-200 rounded-lg shadow">
-  <ul id="fullWidthTab" class="text-sm font-medium text-center text-gray-500 divide-x divide-gray-200 rounded-lg sm:flex">
-    <li class="w-full">
-      <button id="overall-tab" data-action="click->tabs#change" type="button" data-tabs-target="tab" aria-controls="overall-tab" aria-selected="true" class="inline-block w-full p-4 rounded-tl-lg bg-gray-50 hover:bg-gray-100 focus:outline-none">
-        Overall
-      </button>
-    </li>
-    <li class="w-full">
-      <button id="fixes-tab" data-action="click->tabs#change" type="button" data-tabs-target="tab" aria-controls="fixes-tab" aria-selected="false" class="inline-block w-full p-4 bg-gray-50 hover:bg-gray-100 focus:outline-none">
-        Versions sent to store
-      </button>
-    </li>
-    <li class="w-full">
-      <button id="review-tab" data-action="click->tabs#change" type="button" data-tabs-target="tab" aria-controls="review-tab" aria-selected="false" class="inline-block w-full p-4 rounded-tr-lg bg-gray-50 hover:bg-gray-100 focus:outline-none">
-        Step summary
-      </button>
-    </li>
-    <li class="w-full">
-      <button id="pr-tab" data-action="click->tabs#change" type="button" data-tabs-target="tab" aria-controls="pr-tab" aria-selected="false" class="inline-block w-full p-4 rounded-tr-lg bg-gray-50 hover:bg-gray-100 focus:outline-none">
-        Pull requests
-      </button>
-    </li>
-  </ul>
+            <div class="flex flex-col text-center items-center justify-center">
+              <dt class="mb-2 text-xl font-extrabold underline">v1.8.0</dt>
+              <dd class="text-gray-500">Release tag</dd>
+            </div>
 
-  <div class="border-t border-gray-200 w-full">
-    <div class="p-4 bg-white rounded-lg" id="overall" data-tabs-target="panel" aria-labelledby="overall-tab">
-      <div class="grid grid-rows-2 gap-y-5">
-        <dl class="flex justify-evenly gap-x-8 px-2 py-4 text-gray-900">
-          <div class="flex flex-col text-center items-center justify-center">
-            <dt class="mb-2 text-xl font-extrabold">1.8.0</dt>
-            <dd class="text-gray-500">Final version</dd>
-          </div>
+            <div class="flex flex-col text-center items-center justify-center">
+              <dt class="mb-2 text-xl font-extrabold">53</dt>
+              <dd class="text-gray-500">Commits in release</dd>
+            </div>
 
-          <div class="flex flex-col text-center items-center justify-center">
-            <dt class="mb-2 text-xl font-extrabold underline">v1.8.0</dt>
-            <dd class="text-gray-500">Release tag</dd>
-          </div>
+            <div class="flex flex-col text-center items-center justify-center">
+              <dt class="mb-2 text-xl font-extrabold">31</dt>
+              <dd class="text-gray-500">Backmerge PRs</dd>
+            </div>
 
-          <div class="flex flex-col text-center items-center justify-center">
-            <dt class="mb-2 text-xl font-extrabold">53</dt>
-            <dd class="text-gray-500">Commits in release</dd>
-          </div>
+            <div class="flex flex-col text-center items-center justify-center">
+              <dt class="mb-2 text-xl font-extrabold">5</dt>
+              <dd class="text-gray-500">Automatic Backmerge failures</dd>
+            </div>
+          </dl>
+          <dl class="flex justify-center gap-x-14 px-2 py-4">
+            <div class="flex flex-col text-center items-center justify-center">
+              <dt class="mb-2 text-xl font-extrabold">14 days, 8 hours</dt>
+              <dd class="text-gray-500">Release duration</dd>
+            </div>
 
-          <div class="flex flex-col text-center items-center justify-center">
-            <dt class="mb-2 text-xl font-extrabold">31</dt>
-            <dd class="text-gray-500">Backmerge PRs</dd>
-          </div>
+            <div class="flex flex-col text-center items-center justify-center">
+              <dt class="mb-2 text-xl font-extrabold">12th Oct, 2023</dt>
+              <dd class="text-gray-500">Kicked Off</dd>
+            </div>
 
-          <div class="flex flex-col text-center items-center justify-center">
-            <dt class="mb-2 text-xl font-extrabold">5</dt>
-            <dd class="text-gray-500">Automatic Backmerge failures</dd>
-          </div>
-        </dl>
-        <dl class="flex justify-center gap-x-14 px-2 py-4 text-gray-900">
-          <div class="flex flex-col text-center items-center justify-center">
-            <dt class="mb-2 text-xl font-extrabold">14 days, 8 hours</dt>
-            <dd class="text-gray-500">Release duration</dd>
-          </div>
-
-          <div class="flex flex-col text-center items-center justify-center">
-            <dt class="mb-2 text-xl font-extrabold">12th Oct, 2023</dt>
-            <dd class="text-gray-500">Kicked Off</dd>
-          </div>
-
-          <div class="flex flex-col text-center items-center justify-center">
-            <dt class="mb-2 text-xl font-extrabold">23rd Oct, 2023</dt>
-            <dd class="text-gray-500">Finished</dd>
-          </div>
-        </dl>
+            <div class="flex flex-col text-center items-center justify-center">
+              <dt class="mb-2 text-xl font-extrabold">23rd Oct, 2023</dt>
+              <dd class="text-gray-500">Finished</dd>
+            </div>
+          </dl>
+        </div>
       </div>
-    </div>
+    <% end %>
+    <% component.with_tab do %>
+      <div class="hidden p-4 bg-white rounded-lg" data-tabs-target="panel">
+        <div class="flex justify-center gap-12 p-2">
+          <div class="w-full max-w-md p-4 bg-white">
+            <h2 class="mb-5 text-2xl font-extrabold tracking-tight">Android</h2>
+            <div class="flow-root">
+              <ul role="list" class="divide-y divide-gray-200">
+                <li class="py-4">
+                  <div class="flex flex-row justify-between gap-y-2">
+                    <div>
+                      <div class="text-sm text-base font-semibold truncate">16.32</div>
+                      <div class="text-sm font-base truncate">1485234</div>
+                      <p class="text-sm text-gray-500 mt-2 truncate">Build created on 21st July</p>
+                      <p class="text-sm text-gray-500 truncate">Submitted on 23rd July</p>
+                      <p class="text-sm text-gray-500 truncate">Started release on 24th July</p>
+                    </div>
 
-    <div class="hidden p-4 bg-white rounded-lg" id="about" data-tabs-target="panel" aria-labelledby="fixes-tab">
-      <div class="flex justify-center gap-12 p-2 text-gray-900">
-        <div class="w-full max-w-md p-4 bg-white">
-          <h2 class="mb-5 text-2xl font-extrabold tracking-tight text-gray-900">Android</h2>
-          <div class="flow-root">
-            <ul role="list" class="divide-y divide-gray-200">
-              <li class="py-4">
-                <div class="flex flex-row justify-between gap-y-2">
-                  <div>
-                    <div class="text-sm text-base font-semibold text-gray-900 truncate">16.32</div>
-                    <div class="text-sm font-base text-gray-900 truncate">1485234</div>
-                    <p class="text-sm text-gray-500 mt-2 truncate">Build created on 21st July</p>
-                    <p class="text-sm text-gray-500 truncate">Submitted on 23rd July</p>
-                    <p class="text-sm text-gray-500 truncate">Started release on 24th July</p>
+                    <ol class="relative text-gray-500 border-l border-gray-200">
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">10%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">20%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">40%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">50%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">80%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <p class="text-xs font-semibold leading-tight">100%</p>
+                        <p class="text-xs">29th July</p>
+                      </li>
+                    </ol>
                   </div>
+                </li>
+                <li class="py-4">
+                  <div class="flex flex-row justify-between gap-y-2">
+                    <div>
+                      <div class="text-sm text-base font-semibold truncate">16.32</div>
+                      <div class="text-sm font-base truncate">1485234</div>
+                      <p class="text-sm text-gray-500 mt-2 truncate">Build created on 21st July</p>
+                      <p class="text-sm text-gray-500 truncate">Submitted on 23rd July</p>
+                      <p class="text-sm text-gray-500 truncate">Started release on 24th July</p>
+                    </div>
 
-                  <ol class="relative text-gray-500 border-l border-gray-200">
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">10%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">20%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">40%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
+                    <ol class="relative text-gray-500 border-l border-gray-200">
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">10%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">20%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">40%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
                         <p class="text-xs font-semibold leading-tight">50%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">80%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <p class="text-xs font-semibold leading-tight">100%</p>
-                      <p class="text-xs">29th July</p>
-                    </li>
-                  </ol>
-                </div>
-              </li>
-              <li class="py-4">
-                <div class="flex flex-row justify-between gap-y-2">
-                  <div>
-                    <div class="text-sm text-base font-semibold text-gray-900 truncate">16.32</div>
-                    <div class="text-sm font-base text-gray-900 truncate">1485234</div>
-                    <p class="text-sm text-gray-500 mt-2 truncate">Build created on 21st July</p>
-                    <p class="text-sm text-gray-500 truncate">Submitted on 23rd July</p>
-                    <p class="text-sm text-gray-500 truncate">Started release on 24th July</p>
+                        <p class="text-xs">29th July</p>
+                      </li>
+                    </ol>
                   </div>
+                </li>
+                <li class="pt-4">
+                  <div class="flex flex-row justify-between gap-y-2">
+                    <div>
+                      <div class="text-sm text-base font-semibold truncate">16.32</div>
+                      <div class="text-sm font-base truncate">1485234</div>
+                      <p class="text-sm text-gray-500 mt-2 truncate">Build created on 21st July</p>
+                      <p class="text-sm text-gray-500 truncate">Submitted on 23rd July</p>
+                      <p class="text-sm text-gray-500 truncate">Started release on 24th July</p>
+                    </div>
 
-                  <ol class="relative text-gray-500 border-l border-gray-200">
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">10%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">20%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">40%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <p class="text-xs font-semibold leading-tight">50%</p>
-                      <p class="text-xs">29th July</p>
-                    </li>
-                  </ol>
-                </div>
-              </li>
-              <li class="pt-4">
-                <div class="flex flex-row justify-between gap-y-2">
-                  <div>
-                    <div class="text-sm text-base font-semibold text-gray-900 truncate">16.32</div>
-                    <div class="text-sm font-base text-gray-900 truncate">1485234</div>
-                    <p class="text-sm text-gray-500 mt-2 truncate">Build created on 21st July</p>
-                    <p class="text-sm text-gray-500 truncate">Submitted on 23rd July</p>
-                    <p class="text-sm text-gray-500 truncate">Started release on 24th July</p>
+                    <ol class="relative text-gray-500 border-l border-gray-200">
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">10%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">20%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <p class="text-xs font-semibold leading-tight">30%</p>
+                        <p class="text-xs">29th July</p>
+                      </li>
+                    </ol>
                   </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="w-full max-w-md p-4 bg-white">
+            <h2 class="mb-5 text-2xl font-extrabold tracking-tight">iOS</h2>
+            <div class="flow-root">
+              <ul role="list" class="divide-y divide-gray-200">
+                <li class="py-4">
+                  <div class="flex flex-row justify-between gap-y-2">
+                    <div>
+                      <div class="text-sm text-base font-semibold truncate">16.32</div>
+                      <div class="text-sm font-base truncate">1485234</div>
+                      <p class="text-sm text-gray-500 mt-2 truncate">Build created on 21st July</p>
+                      <p class="text-sm text-gray-500 truncate">Submitted on 23rd July</p>
+                      <p class="text-sm text-gray-500 truncate">Started release on 24th July</p>
+                    </div>
 
-                  <ol class="relative text-gray-500 border-l border-gray-200">
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">10%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">20%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <p class="text-xs font-semibold leading-tight">30%</p>
-                      <p class="text-xs">29th July</p>
-                    </li>
-                  </ol>
-                </div>
+                    <ol class="relative text-gray-500 border-l border-gray-200">
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">10%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">20%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">40%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">50%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">80%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <p class="text-xs font-semibold leading-tight">100%</p>
+                        <p class="text-xs">29th July</p>
+                      </li>
+                    </ol>
+                  </div>
+                </li>
+                <li class="py-4">
+                  <div class="flex flex-row justify-between gap-y-2">
+                    <div>
+                      <div class="text-sm text-base font-semibold truncate">16.32</div>
+                      <div class="text-sm font-base truncate">1485234</div>
+                      <p class="text-sm text-gray-500 mt-2 truncate">Build created on 21st July</p>
+                      <p class="text-sm text-gray-500 truncate">Submitted on 23rd July</p>
+                      <p class="text-sm text-gray-500 truncate">Started release on 24th July</p>
+                    </div>
+
+                    <ol class="relative text-gray-500 border-l border-gray-200">
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">10%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">20%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <p class="text-xs font-semibold leading-tight">30%</p>
+                        <p class="text-xs">29th July</p>
+                      </li>
+                    </ol>
+                  </div>
+                </li>
+                <li class="pt-4">
+                  <div class="flex flex-row justify-between gap-y-2">
+                    <div>
+                      <div class="text-sm text-base font-semibold truncate">16.32</div>
+                      <div class="text-sm font-base truncate">1485234</div>
+                      <p class="text-sm text-gray-500 mt-2 truncate">Build created on 21st July</p>
+                      <p class="text-sm text-gray-500 truncate">Submitted on 23rd July</p>
+                      <p class="text-sm text-gray-500 truncate">Started release on 24th July</p>
+                    </div>
+
+                    <ol class="relative text-gray-500 border-l border-gray-200">
+                      <li class="mb-4 ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">10%</p>
+                          <p class="text-xs">26th July</p>
+                        </div>
+                      </li>
+                      <li class="ml-6">
+                        <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                        <div class="flex flex-col w-20">
+                          <p class="text-xs font-semibold leading-tight">20%</p>
+                          <p class="text-xs">29h July</p>
+                        </div>
+                      </li>
+                    </ol>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    <% component.with_tab do %>
+      <div class="hidden p-4 bg-white rounded-lg" data-tabs-target="panel">
+        <div class="flex justify-evenly gap-12 p-2">
+          <div>
+            <h2 class="mb-5 text-2xl font-extrabold tracking-tight">iOS</h2>
+            <ul role="list" class="space-y-4 text-gray-500">
+              <li class="flex space-x-2 items-center">
+                <span class="leading-tight">Review step X lasted 10 days</span>
+              </li>
+
+              <li class="flex space-x-2 items-center">
+                <span class="leading-tight">10 review builds generated</span>
+              </li>
+
+              <li class="flex space-x-2 items-center">
+                <span class="leading-tight">Release step Y lasted 7 days</span>
+              </li>
+
+              <li class="flex space-x-2 items-center">
+                <span class="leading-tight">3 release builds generated</span>
               </li>
             </ul>
           </div>
-        </div>
-        <div class="w-full max-w-md p-4 bg-white">
-          <h2 class="mb-5 text-2xl font-extrabold tracking-tight text-gray-900">iOS</h2>
-          <div class="flow-root">
-            <ul role="list" class="divide-y divide-gray-200">
-              <li class="py-4">
-                <div class="flex flex-row justify-between gap-y-2">
-                  <div>
-                    <div class="text-sm text-base font-semibold text-gray-900 truncate">16.32</div>
-                    <div class="text-sm font-base text-gray-900 truncate">1485234</div>
-                    <p class="text-sm text-gray-500 mt-2 truncate">Build created on 21st July</p>
-                    <p class="text-sm text-gray-500 truncate">Submitted on 23rd July</p>
-                    <p class="text-sm text-gray-500 truncate">Started release on 24th July</p>
-                  </div>
+          <div>
+            <h2 class="mb-5 text-2xl font-extrabold tracking-tight">Android</h2>
+            <ul role="list" class="space-y-4 text-gray-500">
+              <li class="flex space-x-2 items-center">
+                <svg class="flex-shrink-0 w-3.5 h-3.5 text-blue-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
+                </svg>
+                <span class="leading-tight">Dynamic reports and dashboards</span>
+              </li>
 
-                  <ol class="relative text-gray-500 border-l border-gray-200">
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">10%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">20%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">40%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">50%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">80%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <p class="text-xs font-semibold leading-tight">100%</p>
-                      <p class="text-xs">29th July</p>
-                    </li>
-                  </ol>
-                </div>
+              <li class="flex space-x-2 items-center">
+                <svg class="flex-shrink-0 w-3.5 h-3.5 text-blue-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
+                </svg>
+                <span class="leading-tight">Templates for everyone</span>
               </li>
-              <li class="py-4">
-                <div class="flex flex-row justify-between gap-y-2">
-                  <div>
-                    <div class="text-sm text-base font-semibold text-gray-900 truncate">16.32</div>
-                    <div class="text-sm font-base text-gray-900 truncate">1485234</div>
-                    <p class="text-sm text-gray-500 mt-2 truncate">Build created on 21st July</p>
-                    <p class="text-sm text-gray-500 truncate">Submitted on 23rd July</p>
-                    <p class="text-sm text-gray-500 truncate">Started release on 24th July</p>
-                  </div>
 
-                  <ol class="relative text-gray-500 border-l border-gray-200">
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">10%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">20%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <p class="text-xs font-semibold leading-tight">30%</p>
-                      <p class="text-xs">29th July</p>
-                    </li>
-                  </ol>
-                </div>
+              <li class="flex space-x-2 items-center">
+                <svg class="flex-shrink-0 w-3.5 h-3.5 text-blue-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
+                </svg>
+                <span class="leading-tight">Development workflow</span>
               </li>
-              <li class="pt-4">
-                <div class="flex flex-row justify-between gap-y-2">
-                  <div>
-                    <div class="text-sm text-base font-semibold text-gray-900 truncate">16.32</div>
-                    <div class="text-sm font-base text-gray-900 truncate">1485234</div>
-                    <p class="text-sm text-gray-500 mt-2 truncate">Build created on 21st July</p>
-                    <p class="text-sm text-gray-500 truncate">Submitted on 23rd July</p>
-                    <p class="text-sm text-gray-500 truncate">Started release on 24th July</p>
-                  </div>
 
-                  <ol class="relative text-gray-500 border-l border-gray-200">
-                    <li class="mb-4 ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">10%</p>
-                        <p class="text-xs">26th July</p>
-                      </div>
-                    </li>
-                    <li class="ml-6">
-                      <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                      <div class="flex flex-col w-20">
-                        <p class="text-xs font-semibold leading-tight">20%</p>
-                        <p class="text-xs">29h July</p>
-                      </div>
-                    </li>
-                  </ol>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div hidden class="w-full max-w-md p-4 bg-white">
-          <div class="flow-root">
-            <ul role="list" class="divide-y divide-gray-200">
-              <li class="py-2">
-                <div class="flex items-center space-x-4">
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-900 truncate">
-                      1485234
-                    </p>
-                    <p class="text-sm text-gray-400 truncate">Released on 23rd july</p>
-                    <p class="text-sm text-gray-400 truncate">Submitted on 23rd july</p>
-                    <p class="text-sm text-gray-400 truncate">Released to 10%</p>
-                  </div>
-                  <div class="inline-flex items-center text-base font-semibold text-gray-900">
-                    16.42
-                  </div>
-                </div>
-              </li>
-              <li class="py-2">
-                <div class="flex items-center space-x-4">
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-900 truncate">
-                      1485234
-                    </p>
-                    <p class="text-sm text-gray-400 truncate">Released on 23rd july</p>
-                    <p class="text-sm text-gray-400 truncate">Submitted on 23rd july</p>
-                    <p class="text-sm text-gray-400 truncate">Released to 10%</p>
-                  </div>
-                  <div class="inline-flex items-center text-base font-semibold text-gray-900">
-                    16.42
-                  </div>
-                </div>
-              </li>
-              <li class="pt-2">
-                <div class="flex items-center space-x-4">
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-900 truncate">
-                      1485234
-                    </p>
-                    <p class="text-sm text-gray-400 truncate">Released on 23rd july</p>
-                    <p class="text-sm text-gray-400 truncate">Submitted on 23rd july</p>
-                    <p class="text-sm text-gray-400 truncate">Released to 10%</p>
-                  </div>
-                  <div class="inline-flex items-center text-base font-semibold text-gray-900">
-                    16.42
-                  </div>
-                </div>
+              <li class="flex space-x-2 items-center">
+                <svg class="flex-shrink-0 w-3.5 h-3.5 text-blue-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
+                </svg>
+                <span class="leading-tight">Limitless business automation</span>
               </li>
             </ul>
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="hidden p-4 bg-white rounded-lg" id="faq" data-tabs-target="panel" aria-labelledby="review-tab">
-      <div class="flex justify-evenly gap-12 p-2 text-gray-900">
-        <div>
-          <h2 class="mb-5 text-2xl font-extrabold tracking-tight text-gray-900">iOS</h2>
-          <ul role="list" class="space-y-4 text-gray-500">
-            <li class="flex space-x-2 items-center">
-              <span class="leading-tight">Review step X lasted 10 days</span>
-            </li>
-
-            <li class="flex space-x-2 items-center">
-              <span class="leading-tight">10 review builds generated</span>
-            </li>
-
-            <li class="flex space-x-2 items-center">
-              <span class="leading-tight">Release step Y lasted 7 days</span>
-            </li>
-
-            <li class="flex space-x-2 items-center">
-              <span class="leading-tight">3 release builds generated</span>
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <h2 class="mb-5 text-2xl font-extrabold tracking-tight text-gray-900">Android</h2>
-          <ul role="list" class="space-y-4 text-gray-500">
-            <li class="flex space-x-2 items-center">
-              <svg class="flex-shrink-0 w-3.5 h-3.5 text-blue-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
-              </svg>
-              <span class="leading-tight">Dynamic reports and dashboards</span>
-            </li>
-
-            <li class="flex space-x-2 items-center">
-              <svg class="flex-shrink-0 w-3.5 h-3.5 text-blue-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
-              </svg>
-              <span class="leading-tight">Templates for everyone</span>
-            </li>
-
-            <li class="flex space-x-2 items-center">
-              <svg class="flex-shrink-0 w-3.5 h-3.5 text-blue-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
-              </svg>
-              <span class="leading-tight">Development workflow</span>
-            </li>
-
-            <li class="flex space-x-2 items-center">
-              <svg class="flex-shrink-0 w-3.5 h-3.5 text-blue-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
-              </svg>
-              <span class="leading-tight">Limitless business automation</span>
-            </li>
-          </ul>
+    <% end %>
+    <% component.with_tab do %>
+      <div class="hidden p-4 bg-white rounded-lg" data-tabs-target="panel">
+        <div id="accordion-flush" data-accordion="collapse" data-active-classes="bg-white" data-inactive-classes="text-gray-500">
+          <% if @release.pull_requests.present? %>
+            <%= render partial: "shared/live_release/pull_requests_thin", locals: { prs: @release.pull_requests, title_size: 80 } %>
+          <% else %>
+            <div class="justify-center flex"><span class="text-sm">No PRs were created for this release</span></div>
+          <% end %>
         </div>
       </div>
-    </div>
-
-    <div class="hidden p-4 bg-white rounded-lg" id="faq" data-tabs-target="panel" aria-labelledby="pr-tab">
-      <div id="accordion-flush" data-accordion="collapse" data-active-classes="bg-white text-gray-900"
-           data-inactive-classes="text-gray-500">
-        <%= render partial: "shared/live_release/pull_requests_thin", locals: { prs: PullRequest.last(3), title_size: 80 } %>
-      </div>
-    </div>
-  </div>
+    <% end %>
+  <% end %>
 </div>
-
-
-<% finalize_metadata = release.finalize_phase_metadata %>

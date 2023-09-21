@@ -1,0 +1,23 @@
+<div data-controller="tabs" class="w-full bg-white border border-gray-200 rounded-lg shadow">
+  <ul id="fullWidthTab" class="text-sm font-medium text-center text-gray-500 divide-x divide-gray-200 rounded-lg sm:flex">
+    <% tab_headings.each do |tab| %>
+      <li class="w-full">
+        <button id="<%= tab[:id] %>"
+                data-action="click->tabs#change"
+                type="button"
+                data-tabs-target="tab"
+                aria-controls="overall-tab"
+                aria-selected="<%= tab[:selected] %>"
+                class="inline-block w-full p-4 rounded-tl-lg bg-gray-50 hover:bg-gray-100 focus:outline-none focus:text-indigo-400">
+          <%= tab[:name] %>
+        </button>
+      </li>
+    <% end %>
+  </ul>
+
+  <div class="border-t border-gray-200 w-full">
+    <% tabs.each do |tab| %>
+      <%= tab %>
+    <% end %>
+  </div>
+</div>

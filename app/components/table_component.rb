@@ -1,5 +1,4 @@
 class TableComponent < ViewComponent::Base
-  renders_one :heading
   renders_many :rows, TableComponent::RowComponent
 
   def initialize(columns:)

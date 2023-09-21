@@ -35,21 +35,21 @@ class Queries::ReleaseSummary
 
       store_versions: {
         ios: [{
-                version: "",
-                build_number: "",
-                changelog: "",
-                submitted: "",
-                approved: "",
-                staged_rollout_summary: StagedRollout.passports
-              },
-              {
-                version: "",
-                build_number: "",
-                changelog: "",
-                submitted: "",
-                approved: "",
-                staged_rollout_summary: StagedRollout.passports
-              }],
+          version: "",
+          build_number: "",
+          changelog: "",
+          submitted: "",
+          approved: "",
+          staged_rollout_summary: StagedRollout.passports
+        },
+          {
+            version: "",
+            build_number: "",
+            changelog: "",
+            submitted: "",
+            approved: "",
+            staged_rollout_summary: StagedRollout.passports
+          }],
         android: [
           {
             version: "",
@@ -59,13 +59,13 @@ class Queries::ReleaseSummary
             approved: "",
             staged_rollout_summary: StagedRollout.passports
           }
-        ],
+        ]
       },
 
       summary: {
-        tag: { name: "", url: "" },
+        tag: {name: "", url: ""},
         duration: "",
-        release_kickoff_date:  "2023",
+        release_kickoff_date: "2023",
         release_end_date: "2023",
         total_backmerge_prs: 10,
         total_backmerge_failures: 5,
