@@ -30,6 +30,12 @@ module Installations
       {
         status: "PERMISSION_DENIED",
         code: 403,
+        message_matcher: /Unauthorized/,
+        decorated_reason: :unauthorized
+      },
+      {
+        status: "PERMISSION_DENIED",
+        code: 403,
         message_matcher: /Google Play Android Developer API has not been used in project/,
         decorated_reason: :api_disabled
       },
@@ -37,7 +43,13 @@ module Installations
         status: "FAILED_PRECONDITION",
         code: 400,
         message_matcher: /This Edit has been deleted/,
-        decorated_reason: :duplicate_build_upload
+        decorated_reason: :duplicate_call
+      },
+      {
+        status: "FAILED_PRECONDITION",
+        code: 400,
+        message_matcher: /This edit has expired/,
+        decorated_reason: :timeout
       },
       {
         status: "PERMISSION_DENIED",

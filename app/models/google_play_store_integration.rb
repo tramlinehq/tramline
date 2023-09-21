@@ -63,13 +63,17 @@ class GooglePlayStoreIntegration < ApplicationRecord
     end
   end
 
-  ALLOWED_ERRORS = [:build_exists_in_build_channel, :duplicate_build_upload]
+  ALLOWED_ERRORS = [:build_exists_in_build_channel]
+  RETRYABLE_ERRORS = [:timeout, :duplicate_call, :unauthorized]
 
   def upload(file)
+    attempt = 1
     GitHub::Result.new do
       installation.upload(file)
     rescue Installations::Google::PlayDeveloper::Error => ex
       raise ex unless ALLOWED_ERRORS.include?(ex.reason)
+      attempt += 1
+      retry if RETRYABLE_ERRORS.include?(ex.reason) && attempt <= 3
       elog(ex)
     end
   end
@@ -142,6 +146,8 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def channel_data
     @channel_data ||= installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS)
+  rescue Installations::Google::PlayDeveloper::Error => ex
+    elog(ex)
   end
 
   def build_present_in_tracks?
