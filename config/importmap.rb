@@ -26,6 +26,7 @@ pin "stimulus-password-visibility", to: "https://ga.jspm.io/npm:stimulus-passwor
 pin "stimulus-clipboard", to: "https://ga.jspm.io/npm:stimulus-clipboard@4.0.1/dist/stimulus-clipboard.mjs"
 pin "stimulus-confetti", to: "https://ga.jspm.io/npm:stimulus-confetti@1.0.1/dist/stimulus_confetti.modern.js"
 pin "canvas-confetti", to: "https://ga.jspm.io/npm:canvas-confetti@1.6.0/dist/confetti.module.mjs"
+pin "tailwindcss-stimulus-components", to: "https://ga.jspm.io/npm:tailwindcss-stimulus-components@4.0.4/dist/tailwindcss-stimulus-components.module.js"
 pin "@sentry/browser", to: "https://ga.jspm.io/npm:@sentry/browser@7.69.0/esm/index.js"
 pin "@sentry-internal/tracing", to: "https://ga.jspm.io/npm:@sentry-internal/tracing@7.69.0/esm/index.js"
 pin "@sentry/core", to: "https://ga.jspm.io/npm:@sentry/core@7.69.0/esm/index.js"
