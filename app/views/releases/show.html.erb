@@ -28,7 +28,11 @@
 
 <% if @release.finished? %>
   <div class="mt-8">
-    <%= render FinalSummaryComponent.new(release: @release) %>
+    <% if current_user.new_release_summary? %>
+      <%= render FinalSummaryComponent.new(release: @release) %>
+    <% else %>
+      <%= render partial: "shared/live_release/final_summary", locals: { release: @release, post_release_prs: @post_release_prs } %>
+    <% end %>
   </div>
 
   <%= render partial: "shared/live_release/separator" %>
@@ -59,7 +63,7 @@
 <%= render partial: "shared/live_release/separator" %>
 
 <div class="mt-8">
-  <%= render partial: "shared/live_release/section_title", locals: {heading: "Build Stability", subheading: "#{time_ago_in_words(@release.updated_at)} ago"} %>
+  <%= render partial: "shared/live_release/section_title", locals: { heading: "Build Stability", subheading: "#{time_ago_in_words(@release.updated_at)} ago" } %>
 </div>
 
 <div class="grid grid-cols-2 gap-6 mt-8">
