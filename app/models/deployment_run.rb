@@ -178,7 +178,7 @@ class DeploymentRun < ApplicationRecord
     return unless production_channel?
 
     if google_play_store_integration?
-      passports.where(reason: :release_started).last.event_timestamp
+      passports.where(reason: :release_started).last&.event_timestamp
     elsif app_store_integration?
       passports.where(reason: :submitted_for_review).last.event_timestamp
     end
@@ -188,7 +188,7 @@ class DeploymentRun < ApplicationRecord
     return unless released?
     return unless production_channel?
 
-    passports.where(reason: :release_started).last.event_timestamp
+    passports.where(reason: :release_started).last&.event_timestamp
   end
 
   def first?
