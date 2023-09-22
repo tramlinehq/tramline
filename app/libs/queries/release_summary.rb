@@ -75,7 +75,7 @@ class Queries::ReleaseSummary
         backmerge_pr_count: release.backmerge_prs.size,
         backmerge_failure_count: release.backmerge_failure_count,
         commits_count: release.all_commits.size,
-        duration: release.duration.seconds
+        duration: release.duration&.seconds
       }
 
       new(attributes)
@@ -98,15 +98,15 @@ class Queries::ReleaseSummary
       attributes = release.release_platform_runs.map do |pr|
         pr.steps.map do |step|
           step_runs = pr.step_runs_for(step)
-          started_at = step_runs.first.scheduled_at
-          ended_at = step_runs.last.updated_at
+          started_at = step_runs.first&.scheduled_at
+          ended_at = step_runs.last&.updated_at
           {
             name: step.name,
             platform: pr.display_attr(:platform),
             started_at: started_at,
             phase: step.kind,
             ended_at: ended_at,
-            duration: ActiveSupport::Duration.seconds(ended_at - started_at),
+            duration: (ActiveSupport::Duration.seconds(ended_at - started_at) if started_at && ended_at),
             builds_created_count: step_runs.success.size
           }
         end
