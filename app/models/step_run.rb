@@ -35,7 +35,6 @@ class StepRun < ApplicationRecord
   has_many :deployment_runs, -> { includes(:deployment).merge(Deployment.sequential) }, inverse_of: :step_run, dependent: :destroy
   has_many :deployments, through: :step
   has_many :running_deployments, through: :deployment_runs, source: :deployment
-  has_many :passports, as: :stampable, dependent: :destroy
 
   validates :step_id, uniqueness: {scope: :commit_id}
 

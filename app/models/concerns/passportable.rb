@@ -1,4 +1,10 @@
 module Passportable
+  extend ActiveSupport::Concern
+
+  included do
+    has_many :passports, as: :stampable, dependent: :destroy
+  end
+
   def event_stamp!(reason:, kind:, data: {}, ts: Time.current)
     PassportJob.perform_later(
       id,
