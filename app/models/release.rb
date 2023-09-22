@@ -380,7 +380,6 @@ class Release < ApplicationRecord
     update_train_version
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     notify!("Release has finished!", :release_ended, notification_params.merge(finalize_phase_metadata))
-    Queries::ReleaseSummary.warm(id)
   end
 
   def update_train_version
