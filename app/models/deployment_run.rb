@@ -165,10 +165,10 @@ class DeploymentRun < ApplicationRecord
   def staged_rollout_events
     return [] unless staged_rollout?
 
-    staged_rollout.passports.where(reason: :increased).map do |p|
+    staged_rollout.passports.where(reason: [:started, :increased, :fully_released]).order(:event_timestamp).map do |p|
       {
         timestamp: p.event_timestamp,
-        rollout_percentage: p.metadata["rollout_percentage"]
+        rollout_percentage: (p.reason == "fully_released") ? "100%" : p.metadata["rollout_percentage"]
       }
     end
   end
