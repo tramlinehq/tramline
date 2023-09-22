@@ -45,6 +45,10 @@ class Queries::ReleaseSummary
     }
   end
 
+  def thaw
+    cache.delete(cache_key)
+  end
+
   def cache_key
     "release/#{release_id}/summary"
   end
@@ -60,7 +64,7 @@ class Queries::ReleaseSummary
     attribute :backmerge_pr_count, :integer
     attribute :backmerge_failure_count, :integer
     attribute :commits_count, :integer
-    attribute :duration, :string
+    attribute :duration, :integer
 
     def self.from_release(release)
       attributes = {
@@ -71,10 +75,14 @@ class Queries::ReleaseSummary
         backmerge_pr_count: release.backmerge_prs.size,
         backmerge_failure_count: release.backmerge_failure_count,
         commits_count: release.all_commits.size,
-        duration: release.duration.inspect
+        duration: release.duration.seconds
       }
 
       new(attributes)
+    end
+
+    def duration_interval
+      ActiveSupport::Duration.build(duration)
     end
 
     def inspect
@@ -97,7 +105,7 @@ class Queries::ReleaseSummary
             started_at: started_at,
             phase: step.kind,
             ended_at: ended_at,
-            duration: ActiveSupport::Duration.build(ended_at - started_at).inspect,
+            duration: ActiveSupport::Duration.seconds(ended_at - started_at),
             builds_created_count: step_runs.success.size
           }
         end
@@ -118,16 +126,20 @@ class Queries::ReleaseSummary
 
       attribute :started_at, :datetime
       attribute :ended_at, :datetime
-      attribute :duration, :string
+      attribute :duration, :integer
       attribute :platform, :string
       attribute :phase, :string
       attribute :builds_created_count, :integer
+
+      def duration_interval
+        ActiveSupport::Duration.build(duration)
+      end
     end
   end
 
   class Queries::ReleaseSummary::StoreVersions
     def self.from_release(release)
-      attributes = release.deployment_runs.reached_production.released.map do |dr|
+      attributes = release.deployment_runs.released.reached_production.map do |dr|
         {
           version: dr.step_run.build_version,
           build_number: dr.step_run.build_number,
