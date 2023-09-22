@@ -101,7 +101,8 @@ class Queries::ReleaseSummary
           started_at = step_runs.first.scheduled_at
           ended_at = step_runs.last.updated_at
           {
-            platform: pr.platform,
+            name: step.name,
+            platform: pr.display_attr(:platform),
             started_at: started_at,
             phase: step.kind,
             ended_at: ended_at,
@@ -130,6 +131,7 @@ class Queries::ReleaseSummary
       attribute :platform, :string
       attribute :phase, :string
       attribute :builds_created_count, :integer
+      attribute :name, :string
 
       def duration_interval
         ActiveSupport::Duration.build(duration)
@@ -145,8 +147,9 @@ class Queries::ReleaseSummary
           build_number: dr.step_run.build_number,
           built_at: dr.scheduled_at,
           submitted_at: dr.submitted_at,
+          release_started_at: dr.release_started_at,
           staged_rollouts: dr.staged_rollout_events,
-          platform: dr.platform
+          platform: dr.release_platform_run.display_attr(:platform)
         }
       end
 

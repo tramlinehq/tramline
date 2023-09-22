@@ -164,10 +164,11 @@ class DeploymentRun < ApplicationRecord
 
   def staged_rollout_events
     return [] unless staged_rollout?
+
     staged_rollout.passports.where(reason: :increased).map do |p|
       {
-        rollout_percentage: p.metadata[:rollout_percentage],
-        timestamp: p.event_timestamp
+        timestamp: p.event_timestamp,
+        rollout_percentage: p.metadata["rollout_percentage"]
       }
     end
   end
@@ -177,9 +178,9 @@ class DeploymentRun < ApplicationRecord
     return unless production_channel?
 
     if google_play_store_integration?
-      passports.where(reason: :release_started).sole.event_timestamp
+      passports.where(reason: :release_started).last.event_timestamp
     elsif app_store_integration?
-      passports.where(reason: :submitted_for_review).sole.event_timestamp
+      passports.where(reason: :submitted_for_review).last.event_timestamp
     end
   end
 
@@ -187,7 +188,7 @@ class DeploymentRun < ApplicationRecord
     return unless released?
     return unless production_channel?
 
-    passports.where(reason: :release_started).sole.event_timestamp
+    passports.where(reason: :release_started).last.event_timestamp
   end
 
   def first?

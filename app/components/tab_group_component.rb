@@ -2,8 +2,7 @@ class TabGroupComponent < ViewComponent::Base
   renders_one :tab_heading
   renders_many :tabs
 
-  def initialize(release:, groups:)
-    @release = release
+  def initialize(groups:)
     @groups = groups
   end
 

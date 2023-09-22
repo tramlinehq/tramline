@@ -28,7 +28,7 @@
 
 <% if @release.finished? %>
   <div class="mt-8">
-    <%= render partial: "shared/live_release/final_summary", locals: { release: @release, post_release_prs: @post_release_prs } %>
+    <%= render FinalSummaryComponent.new(release: @release) %>
   </div>
 
   <%= render partial: "shared/live_release/separator" %>
