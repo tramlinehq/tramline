@@ -1,18 +1,22 @@
 <div class="mb-5 flex justify-between items-center">
   <div>
     <%= render partial: "shared/live_release/section_title", locals: { heading: "Summary", subheading: "#{time_ago_in_words(release.completed_at)} ago" } %>
-    <div class="text-slate-600 animate-bounce mt-2">
-      Great work team! This release is complete!
-    </div>
+    <% if loaded? %>
+      <div class="text-slate-600 animate-bounce mt-2">
+        Great work team! This release is complete!
+      </div>
+    <% end %>
   </div>
 
-  <div class="cursor-pointer text-2xl"
-       data-controller="confetti"
-       data-action="click->confetti#spray"
-       data-confetti-animation-value="school-pride"
-       data-confetti-follow-value=false
-       data-confetti-duration-value="1">🎉
-  </div>
+  <% if loaded? %>
+    <div class="cursor-pointer text-2xl"
+         data-controller="confetti"
+         data-action="click->confetti#spray"
+         data-confetti-animation-value="school-pride"
+         data-confetti-follow-value=false
+         data-confetti-duration-value="1">🎉
+    </div>
+  <% end %>
 </div>
 <div class="text-gray-900">
   <% if loaded? %>
@@ -84,13 +88,13 @@
                             <div class="text-sm text-base font-semibold truncate"><%= store_version.version %></div>
                             <div class="text-sm font-base truncate"><%= store_version.build_number %></div>
                             <p class="text-sm text-gray-500 mt-2 truncate">
-                              Build created on <%= time_format store_version.built_at %>
+                              <strong>Build created on</strong>&nbsp;<span><%= time_format store_version.built_at %></span>
                             </p>
                             <p class="text-sm text-gray-500 truncate">
-                              Submitted on <%= time_format store_version.submitted_at %>
+                              <strong>Submitted on</strong>&nbsp;<span class=""><%= time_format store_version.submitted_at %></span>
                             </p>
                             <p class="text-sm text-gray-500 truncate">
-                              Started release on <%= time_format store_version.release_started_at %>
+                              <strong>Started release on</strong>&nbsp;<span><%= time_format store_version.release_started_at %></span>
                             </p>
                           </div>
 
