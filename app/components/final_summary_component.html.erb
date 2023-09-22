@@ -14,9 +14,8 @@
        data-confetti-duration-value="1">🎉
   </div>
 </div>
-
-<% if loaded? %>
-  <div class="text-gray-900">
+<div class="text-gray-900">
+  <% if loaded? %>
     <%= render TabGroupComponent.new(groups: tab_groups) do |component| %>
       <% component.with_tab do %>
         <div class="p-4 bg-white rounded-lg" id="overall" data-tabs-target="panel">
@@ -84,25 +83,30 @@
                           <div>
                             <div class="text-sm text-base font-semibold truncate"><%= store_version.version %></div>
                             <div class="text-sm font-base truncate"><%= store_version.build_number %></div>
-                            <p class="text-sm text-gray-500 mt-2 truncate">Build created
-                              on <%= time_format store_version.built_at %></p>
-                            <p class="text-sm text-gray-500 truncate">Submitted
-                              on <%= time_format store_version.submitted_at %></p>
-                            <p class="text-sm text-gray-500 truncate">Started release
-                              on <%= time_format store_version.release_started_at %></p>
+                            <p class="text-sm text-gray-500 mt-2 truncate">
+                              Build created on <%= time_format store_version.built_at %>
+                            </p>
+                            <p class="text-sm text-gray-500 truncate">
+                              Submitted on <%= time_format store_version.submitted_at %>
+                            </p>
+                            <p class="text-sm text-gray-500 truncate">
+                              Started release on <%= time_format store_version.release_started_at %>
+                            </p>
                           </div>
 
-                          <ol class="relative text-gray-500 border-l border-gray-200">
-                            <% staged_rollouts(store_version) do |rollout, time| %>
-                              <li class="mb-4 ml-6">
-                                <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                                <div class="flex flex-col w-20">
-                                  <p class="text-xs font-semibold leading-tight"><%= rollout %>%</p>
-                                  <p class="text-xs"><%= time_format(time, with_time: false) %></p>
-                                </div>
-                              </li>
-                            <% end %>
-                          </ol>
+                          <% if staged_rollouts?(store_version) %>
+                            <ol class="relative text-gray-500 border-l border-gray-200">
+                              <% staged_rollouts(store_version) do |rollout, time| %>
+                                <li class="mb-4 ml-6">
+                                  <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                                  <div class="flex flex-col w-20">
+                                    <p class="text-xs font-semibold leading-tight"><%= rollout %>%</p>
+                                    <p class="text-xs"><%= time_format(time, with_time: false) %></p>
+                                  </div>
+                                </li>
+                              <% end %>
+                            </ol>
+                          <% end %>
                         </div>
                       </li>
                     <% end %>
@@ -144,7 +148,7 @@
       <% if pull_requests.present? %>
         <% component.with_tab do %>
           <div class="hidden p-4 bg-white rounded-lg" data-tabs-target="panel">
-            <h2 class="mb-2 text-xl font-extrabold tracking-tight">All pull requests created</h2>
+            <h2 class="mb-2 text-xl font-extrabold tracking-tight">Pull requests created during the release</h2>
             <div id="accordion-flush" data-accordion="collapse" data-active-classes="bg-white" data-inactive-classes="text-gray-500">
               <%= render partial: "shared/live_release/pull_requests_thin", locals: { prs: pull_requests, title_size: 80 } %>
             </div>
@@ -152,8 +156,11 @@
         <% end %>
       <% end %>
     <% end %>
-  </div>
-<% else %>
-  Loading...
-<% end %>
-
+  <% else %>
+    <div class="flex flex-wrap justify-between items-center px-5 py-3 bg-indigo-50 border border-indigo-100 rounded-sm text-left">
+      <div class="text-slate-800 font-semibold animate-pulse">
+        We're preparing a release summary for you, please wait...
+      </div>
+    </div>
+  <% end %>
+</div>

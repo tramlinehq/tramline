@@ -48,4 +48,8 @@ class FinalSummaryComponent < ViewComponent::Base
   def backmerges?
     release.continuous_backmerge?
   end
+
+  def staged_rollouts?(store_version)
+    store_version.staged_rollouts.present?
+  end
 end
