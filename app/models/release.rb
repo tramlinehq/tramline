@@ -132,6 +132,20 @@ class Release < ApplicationRecord
 
   def self.for_branch(branch_name) = find_by(branch_name:)
 
+  def backmerge_failure_count
+    return 0 unless continuous_backmerge?
+    all_commits.size - backmerge_prs.size - 1
+  end
+
+  def backmerge_prs
+    pull_requests.ongoing
+  end
+
+  def duration
+    return unless finished?
+    ActiveSupport::Duration.build(completed_at - scheduled_at)
+  end
+
   def all_store_step_runs
     deployment_runs
       .reached_production

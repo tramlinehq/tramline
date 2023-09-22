@@ -93,6 +93,10 @@ class Accounts::User < ApplicationRecord
     memberships.find_by(organization: organization).owner?
   end
 
+  def new_release_summary?
+    Flipper.enabled?(:new_release_summary, self)
+  end
+
   protected
 
   def confirmation_required?

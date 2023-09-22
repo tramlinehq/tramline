@@ -41,7 +41,6 @@
             </div>
           </li>
         <% end %>
-
         <% release.release_platform_runs.each do |run| %>
           <% last_deployment_run = run.last_good_step_run&.deployment_runs.last %>
           <% if last_deployment_run&.deployment.controllable_rollout? %>
@@ -55,7 +54,6 @@
             </li>
           <% end %>
         <% end %>
-
         <% unless finalize_metadata.dig(:final_artifact_url).nil? %>
           <li class="flex items-center justify-between py-3 border-t border-indigo-200">
             <div>Final Release Build</div>
@@ -67,7 +65,6 @@
             </div>
           </li>
         <% end %>
-
         <% unless finalize_metadata.dig(:store_url).nil? %>
           <li class="flex items-center justify-between py-3 border-t border-indigo-200">
             <div>Store Link</div>
@@ -89,4 +86,3 @@
     </div>
   </div>
 </div>
-

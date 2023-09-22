@@ -162,6 +162,35 @@ class DeploymentRun < ApplicationRecord
     ready.includes(:step_run, :deployment).select(&:production_channel?)
   end
 
+  def staged_rollout_events
+    return [] unless staged_rollout?
+
+    staged_rollout.passports.where(reason: [:started, :increased, :fully_released]).order(:event_timestamp).map do |p|
+      {
+        timestamp: p.event_timestamp,
+        rollout_percentage: (p.reason == "fully_released") ? "100%" : p.metadata["rollout_percentage"]
+      }
+    end
+  end
+
+  def submitted_at
+    return unless released?
+    return unless production_channel?
+
+    if google_play_store_integration?
+      passports.where(reason: :release_started).last.event_timestamp
+    elsif app_store_integration?
+      passports.where(reason: :submitted_for_review).last.event_timestamp
+    end
+  end
+
+  def release_started_at
+    return unless released?
+    return unless production_channel?
+
+    passports.where(reason: :release_started).last.event_timestamp
+  end
+
   def first?
     step_run.deployment_runs.first == self
   end

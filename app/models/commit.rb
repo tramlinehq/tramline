@@ -23,7 +23,6 @@ class Commit < ApplicationRecord
   self.implicit_order_column = :timestamp
 
   has_many :step_runs, dependent: :nullify, inverse_of: :commit
-  has_many :passports, as: :stampable, dependent: :destroy
   belongs_to :release, inverse_of: :all_commits
   belongs_to :build_queue, inverse_of: :commits, optional: true
   has_one :pull_request, inverse_of: :commit, dependent: :nullify

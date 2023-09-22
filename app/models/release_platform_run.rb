@@ -35,7 +35,6 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
-  has_many :passports, as: :stampable, dependent: :destroy
 
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
   scope :have_not_reached_production, -> { on_track.reject(&:production_release_happened?) }
