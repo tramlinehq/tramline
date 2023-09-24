@@ -80,14 +80,10 @@ class Queries::ReleaseSummary
         backmerge_pr_count: release.backmerge_prs.size,
         backmerge_failure_count: release.backmerge_failure_count,
         commits_count: release.all_commits.size,
-        duration: release.duration
+        duration: release.duration&.seconds
       }
 
       new(attributes)
-    end
-
-    def duration_interval
-      ActiveSupport::Duration.build(duration)
     end
 
     def inspect
@@ -111,7 +107,7 @@ class Queries::ReleaseSummary
             started_at: started_at,
             phase: step.kind,
             ended_at: ended_at,
-            duration: (ActiveSupport::Duration.build(ended_at - started_at) if started_at && ended_at),
+            duration: (ActiveSupport::Duration.seconds(ended_at - started_at) if started_at && ended_at),
             builds_created_count: step_runs.not_failed.size
           }
         end
@@ -137,10 +133,6 @@ class Queries::ReleaseSummary
       attribute :phase, :string
       attribute :builds_created_count, :integer
       attribute :name, :string
-
-      def duration_interval
-        ActiveSupport::Duration.build(duration)
-      end
     end
   end
 

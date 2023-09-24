@@ -11,14 +11,10 @@ class FinalSummaryComponent < ViewComponent::Base
     @summary ||= Queries::ReleaseSummary.all(release.id)
   end
 
-  def duration_in_words(duration)
-    return unless duration
+  def duration_in_words(interval_in_seconds)
+    return unless interval_in_seconds
 
-    if duration.in_days >= 1
-      duration.in_days.ceil.to_s + " days"
-    else
-      duration.inspect
-    end
+    distance_of_time_in_words(Time.current, Time.current + interval_in_seconds.seconds, include_seconds: true)
   end
 
   def overall
