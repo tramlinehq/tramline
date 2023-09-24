@@ -26,11 +26,11 @@ class FinalSummaryComponent < ViewComponent::Base
   end
 
   def store_versions_by_platform
-    summary[:store_versions].all.group_by(&:platform)
+    summary[:store_versions].all.sort_by(&:platform).group_by(&:platform)
   end
 
   def step_summary_by_platform
-    summary[:steps_summary].all.group_by(&:platform)
+    summary[:steps_summary].all.sort_by(&:platform).group_by(&:platform)
   end
 
   def staged_rollouts(store_version)
