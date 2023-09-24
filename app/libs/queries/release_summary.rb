@@ -138,7 +138,7 @@ class Queries::ReleaseSummary
 
   class Queries::ReleaseSummary::StoreVersions
     def self.from_release(release)
-      attributes = release.deployment_runs.reached_production.map do |dr|
+      attributes = release.deployment_runs.order(created_at: :desc).reached_production.map do |dr|
         {
           version: dr.step_run.build_version,
           build_number: dr.step_run.build_number,
