@@ -42,10 +42,18 @@ class FinalSummaryComponent < ViewComponent::Base
   def tab_groups
     [
       "Overall",
-      summary[:store_versions].present? ? "Store versions" : nil,
+      store_versions? ? "Store versions" : nil,
       "Step summary",
-      pull_requests.present? ? "Pull requests" : nil
+      pull_requests? ? "Pull requests" : nil
     ].compact
+  end
+
+  def store_versions?
+    summary[:store_versions].all.present?
+  end
+
+  def pull_requests?
+    pull_requests.present?
   end
 
   def loaded?
