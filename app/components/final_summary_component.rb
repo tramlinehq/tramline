@@ -1,5 +1,6 @@
 class FinalSummaryComponent < ViewComponent::Base
   include ApplicationHelper
+  include LinkHelper
   attr_reader :release
 
   def initialize(release:)
@@ -8,6 +9,16 @@ class FinalSummaryComponent < ViewComponent::Base
 
   def summary
     @summary ||= Queries::ReleaseSummary.all(release.id)
+  end
+
+  def duration_in_words(duration)
+    return unless duration
+
+    if duration.in_days >= 1
+      duration.in_days.ceil.to_s + " days"
+    else
+      duration.inspect
+    end
   end
 
   def overall

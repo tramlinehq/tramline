@@ -58,6 +58,7 @@ class Queries::ReleaseSummary
     include ActiveModel::Attributes
 
     attribute :tag, :string
+    attribute :tag_url, :string
     attribute :version, :string
     attribute :kickoff_at, :datetime
     attribute :finished_at, :datetime
@@ -69,13 +70,14 @@ class Queries::ReleaseSummary
     def self.from_release(release)
       attributes = {
         tag: release.tag_name,
+        tag_url: release.tag_url,
         version: release.release_version,
         kickoff_at: release.scheduled_at,
         finished_at: release.completed_at,
         backmerge_pr_count: release.backmerge_prs.size,
         backmerge_failure_count: release.backmerge_failure_count,
         commits_count: release.all_commits.size,
-        duration: release.duration&.seconds
+        duration: release.duration
       }
 
       new(attributes)
@@ -106,8 +108,8 @@ class Queries::ReleaseSummary
             started_at: started_at,
             phase: step.kind,
             ended_at: ended_at,
-            duration: (ActiveSupport::Duration.seconds(ended_at - started_at) if started_at && ended_at),
-            builds_created_count: step_runs.success.size
+            duration: (ActiveSupport::Duration.build(ended_at - started_at) if started_at && ended_at),
+            builds_created_count: step_runs.not_failed.size
           }
         end
       end

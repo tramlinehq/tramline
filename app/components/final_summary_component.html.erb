@@ -31,7 +31,7 @@
               </div>
 
               <div class="flex flex-col text-center items-center justify-center">
-                <dt class="mb-2 text-xl font-extrabold underline"><%= overall.tag %></dt>
+                <dt class="mb-2 text-xl font-extrabold underline"><%= link_to_external overall.tag, overall.tag_url, class: "underline" %></dt>
                 <dd class="text-gray-500">Release tag</dd>
               </div>
 
@@ -55,7 +55,7 @@
 
             <dl class="flex justify-center gap-x-14 px-2 py-4">
               <div class="flex flex-col text-center items-center justify-center">
-                <dt class="mb-2 text-xl font-extrabold"><%= overall.duration_interval.inspect %></dt>
+                <dt class="mb-2 text-xl font-extrabold"><%= duration_in_words overall.duration_interval %></dt>
                 <dd class="text-gray-500">Release duration</dd>
               </div>
 
@@ -133,7 +133,7 @@
                   <% steps_summary.each do |summary| %>
                     <li class="flex space-x-2 items-center">
                       <span class="leading-tight">
-                        <%= summary.platform %> step <%= summary.name %> lasted <%= summary.duration_interval.inspect %>
+                        <%= summary.platform %> step <%= summary.name %> lasted <%= duration_in_words summary.duration_interval %>
                       </span>
                     </li>
 
