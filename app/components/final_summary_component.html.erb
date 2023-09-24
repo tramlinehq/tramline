@@ -31,7 +31,7 @@
               </div>
 
               <div class="flex flex-col text-center items-center justify-center">
-                <dt class="mb-2 text-xl font-extrabold underline"><%= overall.tag %></dt>
+                <dt class="mb-2 text-xl font-extrabold underline"><%= link_to_external overall.tag, overall.tag_url, class: "underline" %></dt>
                 <dd class="text-gray-500">Release tag</dd>
               </div>
 
@@ -55,7 +55,7 @@
 
             <dl class="flex justify-center gap-x-14 px-2 py-4">
               <div class="flex flex-col text-center items-center justify-center">
-                <dt class="mb-2 text-xl font-extrabold"><%= overall.duration_interval.inspect %></dt>
+                <dt class="mb-2 text-xl font-extrabold"><%= duration_in_words overall.duration %></dt>
                 <dd class="text-gray-500">Release duration</dd>
               </div>
 
@@ -73,46 +73,79 @@
         </div>
       <% end %>
 
+      <% if store_versions? %>
+        <% component.with_tab do %>
+          <div class="hidden p-4 bg-white rounded-lg" data-tabs-target="panel">
+            <div class="flex justify-center gap-12 p-2">
+              <% store_versions_by_platform.each do |platform, store_versions| %>
+                <div class="w-full max-w-md p-4 bg-white">
+                  <h2 class="mb-5 text-2xl font-extrabold tracking-tight"><%= platform %></h2>
+                  <div class="flow-root">
+                    <ul role="list" class="divide-y divide-gray-200">
+                      <% store_versions.each do |store_version| %>
+                        <li class="py-4 flex flex-row justify-between items-start gap-y-2">
+                          <div>
+                            <div class="text-sm text-base font-semibold truncate"><%= store_version.version %></div>
+                            <div class="text-sm font-base truncate"><%= store_version.build_number %></div>
+                            <p class="text-sm text-gray-500 mt-2 truncate">
+                              <strong>Build created
+                                on</strong>&nbsp;<span><%= time_format store_version.built_at %></span>
+                            </p>
+                            <p class="text-sm text-gray-500 truncate">
+                              <strong>Submitted
+                                on</strong>&nbsp;<span class=""><%= time_format store_version.submitted_at %></span>
+                            </p>
+                            <p class="text-sm text-gray-500 truncate">
+                              <strong>Started release
+                                on</strong>&nbsp;<span><%= time_format store_version.release_started_at %></span>
+                            </p>
+                          </div>
+
+                          <% if staged_rollouts?(store_version) %>
+                            <ol class="relative text-gray-500 border-l border-gray-200">
+                              <% staged_rollouts(store_version) do |rollout, time| %>
+                                <li class="mb-4 ml-6 last:mb-0">
+                                  <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
+                                  <div class="flex flex-col w-20">
+                                    <p class="text-xs font-semibold leading-tight"><%= rollout %>%</p>
+                                    <p class="text-xs"><%= time_format(time, with_time: false) %></p>
+                                  </div>
+                                </li>
+                              <% end %>
+                            </ol>
+                          <% end %>
+                        </li>
+                      <% end %>
+                    </ul>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+
       <% component.with_tab do %>
         <div class="hidden p-4 bg-white rounded-lg" data-tabs-target="panel">
-          <div class="flex justify-center gap-12 p-2">
-            <% store_versions_by_platform.each do |platform, store_versions| %>
+          <div class="flex justify-evenly gap-12 p-2">
+            <% step_summary_by_platform.each do |platform, steps_summary| %>
               <div class="w-full max-w-md p-4 bg-white">
                 <h2 class="mb-5 text-2xl font-extrabold tracking-tight"><%= platform %></h2>
                 <div class="flow-root">
                   <ul role="list" class="divide-y divide-gray-200">
-                    <% store_versions.each do |store_version| %>
+                    <% steps_summary.each do |summary| %>
                       <li class="py-4 flex flex-row justify-between items-start gap-y-2">
                         <div>
-                          <div class="text-sm text-base font-semibold truncate"><%= store_version.version %></div>
-                          <div class="text-sm font-base truncate"><%= store_version.build_number %></div>
+                          <div class="text-sm text-base font-semibold truncate"><%= summary.name %></div>
+                          <div class="text-sm font-base truncate"><%= summary.phase.titleize %></div>
                           <p class="text-sm text-gray-500 mt-2 truncate">
-                            <strong>Build created
-                              on</strong>&nbsp;<span><%= time_format store_version.built_at %></span>
+                            <strong>Ran for </strong>&nbsp;<span><%= duration_in_words summary.duration %></span>
                           </p>
                           <p class="text-sm text-gray-500 truncate">
-                            <strong>Submitted
-                              on</strong>&nbsp;<span class=""><%= time_format store_version.submitted_at %></span>
-                          </p>
-                          <p class="text-sm text-gray-500 truncate">
-                            <strong>Started release
-                              on</strong>&nbsp;<span><%= time_format store_version.release_started_at %></span>
+                            <strong>Builds
+                              generated</strong>&nbsp;<span class=""><%= summary.builds_created_count %></span>
                           </p>
                         </div>
-
-                        <% if staged_rollouts?(store_version) %>
-                          <ol class="relative text-gray-500 border-l border-gray-200">
-                            <% staged_rollouts(store_version) do |rollout, time| %>
-                              <li class="mb-4 ml-6 last:mb-0">
-                                <span class="absolute flex items-center justify-center w-4 h-4 bg-green-100 rounded-full -left-2 ring-4 ring-white"></span>
-                                <div class="flex flex-col w-20">
-                                  <p class="text-xs font-semibold leading-tight"><%= rollout %>%</p>
-                                  <p class="text-xs"><%= time_format(time, with_time: false) %></p>
-                                </div>
-                              </li>
-                            <% end %>
-                          </ol>
-                        <% end %>
                       </li>
                     <% end %>
                   </ul>
@@ -123,34 +156,7 @@
         </div>
       <% end %>
 
-      <% component.with_tab do %>
-        <div class="hidden p-4 bg-white rounded-lg" data-tabs-target="panel">
-          <div class="flex justify-evenly gap-12 p-2">
-            <% step_summary_by_platform.each do |platform, steps_summary| %>
-              <div>
-                <h2 class="mb-5 text-2xl font-extrabold tracking-tight"><%= platform %></h2>
-                <ul role="list" class="space-y-4 text-gray-500">
-                  <% steps_summary.each do |summary| %>
-                    <li class="flex space-x-2 items-center">
-                      <span class="leading-tight">
-                        <%= summary.platform %> step <%= summary.name %> lasted <%= summary.duration_interval.inspect %>
-                      </span>
-                    </li>
-
-                    <li class="flex space-x-2 items-center">
-                      <span class="leading-tight">
-                        <%= summary.builds_created_count %> build generated in total
-                      </span>
-                    </li>
-                  <% end %>
-                </ul>
-              </div>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
-
-      <% if pull_requests.present? %>
+      <% if pull_requests? %>
         <% component.with_tab do %>
           <div class="hidden p-4 bg-white rounded-lg" data-tabs-target="panel">
             <h2 class="mb-2 text-xl font-extrabold tracking-tight">Pull requests created during the release</h2>

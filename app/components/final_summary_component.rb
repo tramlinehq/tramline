@@ -1,5 +1,6 @@
 class FinalSummaryComponent < ViewComponent::Base
   include ApplicationHelper
+  include LinkHelper
   attr_reader :release
 
   def initialize(release:)
@@ -8,6 +9,12 @@ class FinalSummaryComponent < ViewComponent::Base
 
   def summary
     @summary ||= Queries::ReleaseSummary.all(release.id)
+  end
+
+  def duration_in_words(interval_in_seconds)
+    return unless interval_in_seconds
+
+    distance_of_time_in_words(Time.current, Time.current + interval_in_seconds.seconds, include_seconds: true)
   end
 
   def overall
@@ -35,10 +42,18 @@ class FinalSummaryComponent < ViewComponent::Base
   def tab_groups
     [
       "Overall",
-      summary[:store_versions].present? ? "Store versions" : nil,
+      store_versions? ? "Store versions" : nil,
       "Step summary",
-      pull_requests.present? ? "Pull requests" : nil
+      pull_requests? ? "Pull requests" : nil
     ].compact
+  end
+
+  def store_versions?
+    summary[:store_versions].all.present?
+  end
+
+  def pull_requests?
+    pull_requests.present?
   end
 
   def loaded?

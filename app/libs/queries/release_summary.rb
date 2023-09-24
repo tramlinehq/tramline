@@ -1,5 +1,6 @@
 class Queries::ReleaseSummary
   include Memery
+  include Loggable
 
   def self.warm(release_id)
     new(release_id).warm
@@ -15,6 +16,8 @@ class Queries::ReleaseSummary
 
   def warm
     cache.write(cache_key, data)
+  rescue => e
+    elog(e)
   end
 
   def all
@@ -58,6 +61,7 @@ class Queries::ReleaseSummary
     include ActiveModel::Attributes
 
     attribute :tag, :string
+    attribute :tag_url, :string
     attribute :version, :string
     attribute :kickoff_at, :datetime
     attribute :finished_at, :datetime
@@ -69,6 +73,7 @@ class Queries::ReleaseSummary
     def self.from_release(release)
       attributes = {
         tag: release.tag_name,
+        tag_url: release.tag_url,
         version: release.release_version,
         kickoff_at: release.scheduled_at,
         finished_at: release.completed_at,
@@ -79,10 +84,6 @@ class Queries::ReleaseSummary
       }
 
       new(attributes)
-    end
-
-    def duration_interval
-      ActiveSupport::Duration.build(duration)
     end
 
     def inspect
@@ -107,7 +108,7 @@ class Queries::ReleaseSummary
             phase: step.kind,
             ended_at: ended_at,
             duration: (ActiveSupport::Duration.seconds(ended_at - started_at) if started_at && ended_at),
-            builds_created_count: step_runs.success.size
+            builds_created_count: step_runs.not_failed.size
           }
         end
       end
@@ -132,16 +133,12 @@ class Queries::ReleaseSummary
       attribute :phase, :string
       attribute :builds_created_count, :integer
       attribute :name, :string
-
-      def duration_interval
-        ActiveSupport::Duration.build(duration)
-      end
     end
   end
 
   class Queries::ReleaseSummary::StoreVersions
     def self.from_release(release)
-      attributes = release.deployment_runs.reached_production.map do |dr|
+      attributes = release.deployment_runs.order(created_at: :desc).reached_production.map do |dr|
         {
           version: dr.step_run.build_version,
           build_number: dr.step_run.build_number,
