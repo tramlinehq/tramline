@@ -1,5 +1,6 @@
 class Queries::ReleaseSummary
   include Memery
+  include Loggable
 
   def self.warm(release_id)
     new(release_id).warm
@@ -15,6 +16,8 @@ class Queries::ReleaseSummary
 
   def warm
     cache.write(cache_key, data)
+  rescue => e
+    elog(e)
   end
 
   def all
