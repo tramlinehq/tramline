@@ -27,3 +27,5 @@ application.register("clipboard", Clipboard)
 import { Confetti } from "stimulus-confetti"
 application.register("confetti", Confetti)
 
+import { Tabs } from "tailwindcss-stimulus-components"
+application.register("tabs", Tabs)
