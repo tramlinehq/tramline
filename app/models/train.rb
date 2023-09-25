@@ -295,6 +295,12 @@ class Train < ApplicationRecord
     notification_provider.notify!(notification_channel_id, message, type, params)
   end
 
+  def notify_with_snippet!(message, type, params, snippet_content, snippet_title, snippet_filename)
+    return unless active?
+    return unless send_notifications?
+    notification_provider.notify_with_snippet!(notification_channel_id, message, type, params, snippet_content, snippet_title, snippet_filename)
+  end
+
   def notification_params
     app.notification_params.merge(
       {
