@@ -304,8 +304,8 @@ class StepRun < ApplicationRecord
   def build_notes
     build_notes_raw
       .map { |str| str&.strip }
-      .flat_map { |line| line.split("\n") }
-      .map { |line| line.gsub(/\p{Emoji_Presentation}/, "") }
+      .flat_map { |line| line.split("\n").first }
+      .map { |line| line.gsub(/\p{Emoji_Presentation}\s+/, "") }
       .reject { |line| line =~ /\AMerge|\ACo-authored-by|\A---------/ }
       .compact_blank
       .uniq
