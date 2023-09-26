@@ -295,8 +295,8 @@ class StepRun < ApplicationRecord
   end
 
   def relevant_changes
-    if release.first_commit == commit
-      return release.release_changelog&.commit_messages
+    if release.first_commit == commit && release.release_changelog.present?
+      return release.release_changelog.commit_messages
     end
     release_platform_run.commit_messages_before(self)
   end
