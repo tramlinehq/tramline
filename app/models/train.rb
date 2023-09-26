@@ -8,6 +8,7 @@
 #  build_queue_enabled      :boolean          default(FALSE)
 #  build_queue_size         :integer
 #  build_queue_wait_time    :interval
+#  compact_build_notes      :boolean          default(FALSE)
 #  description              :string
 #  kickoff_at               :datetime
 #  manual_release           :boolean          default(FALSE)
