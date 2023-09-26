@@ -6,7 +6,6 @@ module Installations
     PUBLISH_CHAT_MESSAGE_URL = "https://slack.com/api/chat.postMessage"
     LIST_CHANNELS_URL = "https://slack.com/api/conversations.list"
     GET_TEAM_URL = "https://slack.com/api/team.info"
-    UPLOAD_FILE_URL = "https://slack.com/api/files.upload"
     LIST_CHANNELS_LIMIT = 200
 
     def initialize(oauth_access_token)
@@ -35,11 +34,13 @@ module Installations
       end
     end
 
-    def message(channel, text)
+    def message(channel, text, thread_id: nil)
       json_params = {
         json: {
           channel: channel,
-          text: text
+          text: text,
+          unfurl_links: false,
+          thread_ts: thread_id
         }
       }
 
@@ -50,25 +51,12 @@ module Installations
       json_params = {
         json: {
           channel: channel,
-          text: text
+          text: text,
+          unfurl_links: false
         }.merge(block)
       }
 
       execute(:post, PUBLISH_CHAT_MESSAGE_URL, json_params)
-    end
-
-    def upload_snippet(channel, content, title, filename, thread_id: nil)
-      form_params = {
-        form: {
-          content:,
-          filename:,
-          channels: channel,
-          title:,
-          thread_ts: thread_id
-        }
-      }
-
-      execute(:post, UPLOAD_FILE_URL, form_params)
     end
 
     def list_channels(transforms, cursor = nil)
