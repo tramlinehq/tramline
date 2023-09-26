@@ -12,6 +12,7 @@ class SlackIntegration < ApplicationRecord
   has_paper_trail
   encrypts :oauth_access_token, deterministic: true
 
+  using RefinedString
   include Vaultable
   include Providable
   include Displayable
@@ -49,6 +50,7 @@ class SlackIntegration < ApplicationRecord
 
   DEPLOY_MESSAGE = "A wild new release has appeared!"
   CACHE_EXPIRY = 1.month
+  CODE_SNIPPET_CHARACTER_LIMIT = 3500
 
   def controllable_rollout?
     false
@@ -111,6 +113,21 @@ class SlackIntegration < ApplicationRecord
 
   def notify!(channel, message, type, params)
     installation.rich_message(channel, message, notifier(type, params))
+  rescue => e
+    elog(e)
+  end
+
+  def notify_with_snippet!(channel, message, type, params, snippet_content, snippet_title)
+    message_response = notify!(channel, message, type, params)
+    return unless message_response
+
+    thread_id = message_response.dig("message", "ts")
+    messages = snippet_content.break_into_chunks(CODE_SNIPPET_CHARACTER_LIMIT)
+    messages.each_with_index.map do |msg, idx|
+      msg = "```#{msg}```"
+      msg.prepend("*#{snippet_title}*\n\n") if idx == 0
+      installation.message(channel, msg, thread_id:)
+    end
   rescue => e
     elog(e)
   end

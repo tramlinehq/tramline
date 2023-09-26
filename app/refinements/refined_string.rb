@@ -70,5 +70,22 @@ module RefinedString
       end
       words.join(" ")
     end
+
+    def break_into_chunks(max_length)
+      chunks = []
+      current_chunk = ""
+
+      each_line do |line|
+        if current_chunk.length + line.length <= max_length
+          current_chunk << line
+        else
+          chunks << current_chunk
+          current_chunk = line
+        end
+      end
+
+      chunks << current_chunk unless current_chunk.empty?
+      chunks
+    end
   end
 end

@@ -295,14 +295,17 @@ class StepRun < ApplicationRecord
   end
 
   def relevant_changes
+    if release.first_commit == commit
+      return release.release_changelog&.commit_messages
+    end
     release_platform_run.commit_messages_before(self)
   end
 
   def build_notes
     build_notes_raw
       .map { |str| str&.strip }
-      .flat_map { |line| line.split("\n") }
-      .map { |line| line.gsub(/\p{Emoji_Presentation}/, "") }
+      .flat_map { |line| train.compact_build_notes? ? line.split("\n").first : line.split("\n") }
+      .map { |line| line.gsub(/\p{Emoji_Presentation}\s+/, "") }
       .reject { |line| line =~ /\AMerge|\ACo-authored-by|\A---------/ }
       .compact_blank
       .uniq

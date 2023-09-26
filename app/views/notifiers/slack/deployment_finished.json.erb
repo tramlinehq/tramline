@@ -29,15 +29,17 @@
         "text": "<%= sanitized_release_notes %>"
       }
     },
-    <% else %>
-    {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": "<%= sanitized_build_notes %>"
-      }
-    },
     <% end %>
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "- Changes since the last release to the channel are sent in the message thread.",
+          "emoji": false
+        }
+      ]
+    },
     <% if @requires_review %>
     {
       "type": "context",

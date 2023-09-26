@@ -18,6 +18,10 @@ class ReleaseChangelog < ApplicationRecord
     commits.map { NormalizedCommit.new(_1) }.sort_by(&:timestamp).reverse
   end
 
+  def commit_messages
+    commits.pluck("message")
+  end
+
   private
 
   class NormalizedCommit

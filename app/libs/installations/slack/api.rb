@@ -34,11 +34,13 @@ module Installations
       end
     end
 
-    def message(channel, text)
+    def message(channel, text, thread_id: nil)
       json_params = {
         json: {
           channel: channel,
-          text: text
+          text: text,
+          unfurl_links: false,
+          thread_ts: thread_id
         }
       }
 
@@ -49,7 +51,8 @@ module Installations
       json_params = {
         json: {
           channel: channel,
-          text: text
+          text: text,
+          unfurl_links: false
         }.merge(block)
       }
 

@@ -105,6 +105,7 @@ class TrainsController < SignedInApplicationController
       :release_schedule_enabled,
       :continuous_backmerge_enabled,
       :manual_release,
+      :compact_build_notes,
       :tag_all_store_releases,
       :tag_platform_releases
     )
@@ -137,6 +138,7 @@ class TrainsController < SignedInApplicationController
       :release_schedule_enabled,
       :continuous_backmerge_enabled,
       :manual_release,
+      :compact_build_notes,
       :tag_all_store_releases,
       :tag_platform_releases
     )
