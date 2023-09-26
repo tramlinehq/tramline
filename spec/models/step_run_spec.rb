@@ -428,10 +428,19 @@ describe StepRun do
       expect(latest.relevant_changes).to contain_exactly("feat: 2")
     end
 
-    it "only shows the current message if it is the only run" do
+    it "shows the changes since last release if it is the only run" do
+      release.create_release_changelog(
+        commits: [{message: "message 1"}, {message: "message 2"}],
+        from_ref: "v1.10.0"
+      )
       latest = create(:step_run, :on_track, step: first_step, release_platform_run:, commit: create(:commit, message: "feat: 1", release:))
 
-      expect(latest.relevant_changes).to contain_exactly("feat: 1")
+      expected = [
+        "message 1",
+        "message 2"
+      ]
+
+      expect(latest.relevant_changes).to contain_exactly(*expected)
     end
 
     it "shows all the messages of the release if a step is run for the first time after several commits" do
