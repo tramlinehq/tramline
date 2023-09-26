@@ -140,7 +140,7 @@ module Installations
 
     def execute
       yield if block_given?
-    rescue ::Google::Apis::ServerError, ::Google::Apis::ClientError => e
+    rescue ::Google::Apis::ServerError, ::Google::Apis::ClientError, ::Google::Apis::AuthorizationError => e
       raise Installations::Google::PlayDeveloper::Error.new(e)
     end
 

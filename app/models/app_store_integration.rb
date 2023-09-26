@@ -208,6 +208,8 @@ class AppStoreIntegration < ApplicationRecord
 
   def channel_data
     installation.current_app_status(CHANNEL_DATA_TRANSFORMATIONS)
+  rescue Installations::Apple::AppStoreConnect::Error => e
+    elog(e)
   end
 
   def build_channels(with_production:)
