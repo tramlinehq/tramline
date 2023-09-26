@@ -97,6 +97,6 @@
   <%= render partial: "shared/live_release/separator" %>
 
   <div class="mt-8">
-    <%= render partial: "shared/live_release/finalize", locals: { release: @release, open_ongoing_prs: @ongoing_open_release_prs } %>
+    <%= render partial: "shared/live_release/finalize", locals: { release: @release, open_ongoing_prs: @ongoing_open_release_prs, post_release_prs: @post_release_prs } %>
   </div>
 <% end %>
