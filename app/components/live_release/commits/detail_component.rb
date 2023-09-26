@@ -45,8 +45,8 @@ class LiveRelease::Commits::DetailComponent < ViewComponent::Base
 
   def apply_commit_button(platform_run)
     form_with(model: commit, url: apply_release_commit_path(release, commit.id), method: :post, builder: ButtonHelper::AuthzForms) do |form|
-      form.hidden_field :release_platform_run_id, value: platform_run.id
-      form.authz_submit :blue, "Apply commit to #{platform_run.display_attr(:platform)}"
+      concat form.hidden_field :release_platform_run_id, value: platform_run.id
+      concat form.authz_submit :blue, "Apply commit to #{platform_run.display_attr(:platform)}"
     end
   end
 
