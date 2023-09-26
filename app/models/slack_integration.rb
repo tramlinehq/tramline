@@ -115,9 +115,12 @@ class SlackIntegration < ApplicationRecord
     elog(e)
   end
 
-  def notify_with_snippet!(channel, message, type, params, snippet_content, snippet_title, snippet_filename)
-    message_response = installation.rich_message(channel, message, notifier(type, params))
+  def notify_with_snippet!(channel, message, type, params, snippet_content, snippet_title)
+    message_response = notify!(channel, message, type, params)
+    return unless message_response
+
     thread_id = message_response.dig("message", "ts")
+    snippet_filename = "#{snippet_title.parameterize}.txt"
     installation.upload_snippet(channel, snippet_content, snippet_title, snippet_filename, thread_id:)
   rescue => e
     elog(e)

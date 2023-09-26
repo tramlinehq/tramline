@@ -295,10 +295,10 @@ class Train < ApplicationRecord
     notification_provider.notify!(notification_channel_id, message, type, params)
   end
 
-  def notify_with_snippet!(message, type, params, snippet_content, snippet_title, snippet_filename)
+  def notify_with_snippet!(message, type, params, snippet_content, snippet_title)
     return unless active?
     return unless send_notifications?
-    notification_provider.notify_with_snippet!(notification_channel_id, message, type, params, snippet_content, snippet_title, snippet_filename)
+    notification_provider.notify_with_snippet!(notification_channel_id, message, type, params, snippet_content, snippet_title)
   end
 
   def notification_params
