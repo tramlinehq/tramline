@@ -48,6 +48,9 @@ en:
           wrong_package_name: "the app having a different package name than the one configured in Tramline"
           release_does_not_have_country_set: "the channel not having a targeting country configured"
           first_release_cannot_be_made_from_tramline: "this being the very first release to this track, which cannot be a staged rollout"
+          duplicate_call: "there is another request running against the store"
+          timeout: "the request to the store timed out"
+          unauthorized: "the request to the store failed due to authorization error"
       deployment:
         integration_type:
           app_store: "App Store (production)"

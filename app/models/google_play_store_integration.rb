@@ -71,9 +71,9 @@ class GooglePlayStoreIntegration < ApplicationRecord
     GitHub::Result.new do
       installation.upload(file)
     rescue Installations::Google::PlayDeveloper::Error => ex
-      raise ex unless ALLOWED_ERRORS.include?(ex.reason)
       attempt += 1
       retry if RETRYABLE_ERRORS.include?(ex.reason) && attempt <= 3
+      raise ex unless ALLOWED_ERRORS.include?(ex.reason)
       elog(ex)
     end
   end
