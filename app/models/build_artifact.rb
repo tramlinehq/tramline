@@ -19,6 +19,15 @@ class BuildArtifact < ApplicationRecord
 
   delegate :create_and_upload!, to: ActiveStorage::Blob
   delegate :unzip_artifact?, to: :step_run
+  delegate :signed_id, to: :file
+
+  def self.find_by_signed_id(signed_id)
+    blob = ActiveStorage::Blob.find_signed(signed_id)
+    return nil if blob.blank?
+    attachment = ActiveStorage::Attachment.find_by(blob_id: blob.id)
+    return nil if attachment.blank?
+    find_by(id: attachment.record_id)
+  end
 
   def save_file!(artifact_stream)
     transaction do
@@ -44,13 +53,19 @@ class BuildArtifact < ApplicationRecord
     return if file.nil?
 
     if Rails.env.development?
-      rails_blob_url(file, host: ENV["HOST_NAME"], port: ENV["PORT_NUM"], protocol: "https", disposition: "attachment")
+      build_url(host: ENV["HOST_NAME"], port: ENV["PORT_NUM"], protocol: "https", disposition: "attachment")
     else
-      rails_blob_url(file, protocol: "https", disposition: "attachment")
+      build_url(protocol: "https", disposition: "attachment")
     end
   end
 
   def app
     step_run.release_platform.app
+  end
+
+  delegate :organization, to: :step_run
+
+  def build_url(params)
+    blob_redirect_url(file.signed_id, file.filename, params)
   end
 end

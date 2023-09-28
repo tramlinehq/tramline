@@ -189,6 +189,7 @@ Rails.application.routes.draw do
     get :callback, controller: "integration_listeners/slack", as: :slack_callback
   end
 
+  get "/rails/active_storage/blobs/redirect/:signed_id/*filename", to: "authorized_blob_redirect#show", as: "blob_redirect"
   match "/", via: %i[post put patch delete], to: "application#raise_not_found", format: false
   match "*unmatched_route", via: :all, to: "application#raise_not_found", format: false,
     constraints: lambda { |req| req.path.exclude? "rails/active_storage" }
