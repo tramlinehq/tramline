@@ -44,6 +44,10 @@ Rails/DurationArithmetic:
   Exclude:
     - spec/jobs/schedule_train_releases_job_spec.rb
 
+Rails/DynamicFindBy:
+  Exclude:
+    - app/models/accounts/user.rb
+
 RSpec:
   Enabled: true
 

@@ -34,13 +34,11 @@ class Accounts::User < ApplicationRecord
   devise :database_authenticatable, :registerable, :trackable, :lockable,
     :recoverable, :confirmable, :timeoutable, :rememberable, :validatable
 
-  # this is in addition to devise's validatable
   validates :password, password_strength: true, allow_nil: true
-
-  validates :email, presence: true,
-    uniqueness: {case_sensitive: false},
-    length: {maximum: 105},
-    format: {with: URI::MailTo::EMAIL_REGEXP}
+  # this is in addition to devise's validatable
+  validates :email, presence: {message: :not_blank},
+    uniqueness: {case_sensitive: false, message: :already_taken},
+    length: {maximum: 105, message: :too_long}
 
   has_many :memberships, dependent: :delete_all, inverse_of: :user
   has_many :organizations, -> { where(status: :active) }, through: :memberships
@@ -82,24 +80,38 @@ class Accounts::User < ApplicationRecord
   end
 
   def role_for(organization)
-    memberships.find_by(organization: organization).role
+    access_for(organization).role
   end
 
   def writer_for?(organization)
-    memberships.find_by(organization: organization).writer?
+    access_for(organization).writer?
   end
 
   def owner_for?(organization)
-    memberships.find_by(organization: organization).owner?
+    access_for(organization).owner?
   end
 
   def new_release_summary?
     Flipper.enabled?(:new_release_summary, self)
   end
 
+  # FIXME: This assumes that the blob is always a BuildArtifact
+  # Eventually, make the URLs domain-specific and not blob-based general ones.
+  def access_to_blob?(signed_blob_id)
+    build = BuildArtifact.find_by_signed_id(signed_blob_id)
+    return false if build.blank?
+    access_for(build.organization).present?
+  end
+
   protected
 
   def confirmation_required?
     true
+  end
+
+  private
+
+  def access_for(organization)
+    memberships.find_by(organization: organization)
   end
 end

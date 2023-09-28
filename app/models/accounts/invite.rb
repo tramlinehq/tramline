@@ -24,6 +24,13 @@ class Accounts::Invite < ApplicationRecord
   validate :user_already_in_organization, on: :create
   validate :user_already_invited, on: :create
   validate :accept_only_once, on: :mark_accepted!
+  validates :role, inclusion: {in: roles.slice("developer", "viewer").keys, message: :cannot_invite_owner}
+  validates :email, presence: {message: :not_blank},
+    length: {maximum: 105, message: :too_long},
+    format: {
+      with: URI::MailTo::EMAIL_REGEXP,
+      message: :invalid_format
+    }
 
   before_save :add_recipient
   before_create :generate_token

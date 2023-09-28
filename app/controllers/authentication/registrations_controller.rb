@@ -1,4 +1,6 @@
 class Authentication::RegistrationsController < Devise::RegistrationsController
+  include ExceptionHandler
+
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :set_invite_token, only: [:new, :create]
   before_action :set_invite, only: [:new, :create]
@@ -14,6 +16,10 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
       @organization = usr.organizations.build
       @user.email = @invite&.email
     end
+  end
+
+  def edit
+    raise ActionController::RoutingError.new("Page unavailable.")
   end
 
   def create

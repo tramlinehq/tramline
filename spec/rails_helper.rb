@@ -73,4 +73,5 @@ RSpec.configure do |config|
   Sidekiq::Testing.fake!
 
   config.include ActiveSupport::Testing::TimeHelpers
+  config.include Devise::Test::ControllerHelpers, type: :controller
 end
