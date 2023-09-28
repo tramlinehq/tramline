@@ -1,79 +1,11 @@
 {
   "blocks": [
     {
-      "type": "context",
-      "elements": [
-        {
-          "type": "image",
-          "image_url": "<%= @platform_public_img %>",
-          "alt_text": "app"
-        },
-        {
-          "type": "mrkdwn",
-          "text": "*<%= @app_name %> (<%= @app_platform %>)* <%= @release_version %> (<%= @build_number %>)"
-        }
-      ]
-    },
-    {
       "type": "section",
       "text": {
         "type": "mrkdwn",
         "text": "The *<%= @step_type %>* step *<%= @step_name %>* failed because – <%= @step_fail_reason %> :rotating_light:"
       }
-    },
-    {
-      "type": "divider"
-    },
-    {
-      "type": "context",
-      "elements": [
-        {
-          "type": "image",
-          "image_url": "https://storage.googleapis.com/tramline-public-assets/tramline-small.png",
-          "alt_text": "tramline"
-        },
-        {
-          "type": "mrkdwn",
-          "text": "<<%= @release_url %>|Live release>"
-        }
-      ]
-    },
-    {
-      "type": "context",
-      "elements": [
-        {
-          "type": "image",
-          "image_url": "<%= @vcs_public_icon_img %>",
-          "alt_text": "vcs"
-        },
-        {
-          "type": "mrkdwn",
-          "text": "<<%= @release_branch_url %>|Release branch – <%= @release_branch %>>"
-        }
-      ]
-    },
-    {
-      "type": "context",
-      "elements": [
-        {
-          "type": "plain_text",
-          "text": "Release train: <%= @train_name %>",
-          "emoji": true
-        },
-        {
-          "type": "plain_text",
-          "text": " • ",
-          "emoji": false
-        },
-        {
-          "type": "plain_text",
-          "text": "<%= @step_type %> step: <%= @step_name %>",
-          "emoji": true
-        }
-      ]
-    },
-    {
-      "type": "divider"
     }
   ]
 }
