@@ -73,6 +73,7 @@ gem "intercom-rails", "~> 0.4.2"
 gem "google-apis-firebaseappdistribution_v1", "~> 0.1"
 gem "google-apis-firebase_v1beta1", "~> 0.35.0"
 gem "initials", "~> 0.4.3"
+gem "rack-attack", "~> 6.7"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

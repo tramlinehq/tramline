@@ -19,7 +19,7 @@
 
     <div class="flex flex-col gap-y-5 mb-6">
       <div class="flex flex-row items-center w-full">
-        <div class="text-slate-500 text-sm"><%= simple_format(step.description) %></div>
+        <div class="text-slate-500 text-sm"><%= safe_simple_format(step.description) %></div>
       </div>
 
       <% if step_run&.build_version %>

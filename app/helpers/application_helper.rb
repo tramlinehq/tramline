@@ -142,4 +142,8 @@ module ApplicationHelper
   def user_avatar(name, **options)
     Initials.svg(name, **options)
   end
+
+  def safe_simple_format(text)
+    simple_format(h(text))
+  end
 end

@@ -362,6 +362,8 @@ GEM
     raabro (1.4.0)
     racc (1.7.1)
     rack (2.2.8)
+    rack-attack (6.7.0)
+      rack (>= 1.0, < 4)
     rack-cors (1.1.1)
       rack (>= 2.0.0)
     rack-mini-profiler (3.0.0)
@@ -652,6 +654,7 @@ DEPENDENCIES
   prosopite
   pry
   puma (~> 5.0)
+  rack-attack (~> 6.7)
   rack-cors (~> 1.1)
   rack-mini-profiler
   rails (~> 7.0.5)
