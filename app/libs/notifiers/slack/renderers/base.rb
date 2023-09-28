@@ -20,11 +20,27 @@ class Notifiers::Slack::Renderers::Base
   end
 
   def render_json
-    JSON.parse(render)
+    header_response = JSON.parse(render_header)
+    specific_data = JSON.parse(render_notification)
+    footer_response = JSON.parse(render_footer)
+
+    {blocks: header_response["blocks"]
+      .concat(specific_data["blocks"])
+      .concat(footer_response["blocks"])}
   end
 
-  def render
+  def render_header
+    file = File.read(File.join(ROOT_PATH, "header.json.erb"))
+    ERB.new(file).result(binding)
+  end
+
+  def render_notification
     ERB.new(@template_file).result(binding)
+  end
+
+  def render_footer
+    file = File.read(File.join(ROOT_PATH, "footer.json.erb"))
+    ERB.new(file).result(binding)
   end
 
   def template_file

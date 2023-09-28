@@ -1,0 +1,100 @@
+{
+  "blocks": [
+    {
+      "type": "divider"
+    },
+    {
+      "type": "context",
+      "elements": [
+        <% if @deployment_channel_asset_link && @project_link %>
+        {
+          "type": "image",
+          "image_url": "<%= @deployment_channel_asset_link %>",
+          "alt_text": "console"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @project_link %>|Console>"
+        },
+        <% end %>
+        <% if @deployment_channel_asset_link && @deep_link %>
+        {
+          "type": "image",
+          "image_url": "<%= @deployment_channel_asset_link %>",
+          "alt_text": "console"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @deep_link %>|Install>"
+        },
+        <% end %>
+        <% if @artifact_download_link %>
+        {
+          "type": "image",
+          "image_url": "https://storage.googleapis.com/tramline-public-assets/download_link_ico.png",
+          "alt_text": "build"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @artifact_download_link %>|Download>"
+        },
+        <% end %>
+        {
+          "type": "image",
+          "image_url": "https://storage.googleapis.com/tramline-public-assets/tramline-small.png",
+          "alt_text": "tramline"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @release_url %>|Release>"
+        },
+        {
+          "type": "image",
+          "image_url": "<%= @vcs_public_icon_img %>",
+          "alt_text": "vcs"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @release_branch_url %>|<%= @release_branch %>>"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "Train: <%= @train_name %>",
+          "emoji": true
+        }
+        <% if @step_name.present? %>
+        ,{
+          "type": "plain_text",
+          "text": " • ",
+          "emoji": false
+        },
+        {
+          "type": "plain_text",
+          "text": "Step: <%= @step_name %>",
+          "emoji": true
+        }
+        <% end %>
+        <% if @deployment_channel.present? %>
+        ,{
+          "type": "plain_text",
+          "text": " • ",
+          "emoji": false
+        },
+        {
+          "type": "plain_text",
+          "text": "Deployment: <%= @deployment_channel_type %> + <%= deployment_channel_display_name %>",
+          "emoji": true
+        }
+        <% end %>
+      ]
+    },
+    {
+      "type": "divider"
+    }
+  ]
+}

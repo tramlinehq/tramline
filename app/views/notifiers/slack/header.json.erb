@@ -1,0 +1,18 @@
+{
+  "blocks": [
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "image",
+          "image_url": "<%= @platform_public_img %>",
+          "alt_text": "app"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*<%= @app_name %> (<%= @app_platform %>)* <%= @release_version %> <% if @build_number.present? %>(<%= @build_number %>)<% end %>"
+        }
+      ]
+    }
+    ]
+}
