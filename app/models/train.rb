@@ -51,6 +51,7 @@ class Train < ApplicationRecord
   has_many :steps, through: :release_platforms
   has_many :deployments, through: :steps
   has_many :scheduled_releases, dependent: :destroy
+  has_many :notification_settings, inverse_of: :train, dependent: :destroy
 
   scope :sequential, -> { order("trains.created_at ASC") }
   scope :running, -> { includes(:releases).where(releases: {status: Release.statuses[:on_track]}) }
@@ -96,7 +97,9 @@ class Train < ApplicationRecord
   before_create :set_current_version
   before_create :set_default_status
   after_create :create_release_platforms
+  after_create :create_default_notification_settings
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
+  after_update :set_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
 
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
@@ -199,6 +202,18 @@ class Train < ApplicationRecord
     end
   end
 
+  def create_default_notification_settings
+    return if notification_channel.blank?
+    vals = NotificationSetting.kinds.map do |_, kind|
+      {
+        train_id: id,
+        kind:,
+        notification_channels: [notification_channel]
+      }
+    end
+    NotificationSetting.insert_all(vals, unique_by: [:train_id, :kind])
+  end
+
   def display_name
     name&.parameterize
   end
@@ -293,13 +308,13 @@ class Train < ApplicationRecord
   def notify!(message, type, params)
     return unless active?
     return unless send_notifications?
-    notification_provider.notify!(notification_channel_id, message, type, params)
+    notification_settings.active.where(kind: type).sole.notify!(message, params)
   end
 
   def notify_with_snippet!(message, type, params, snippet_content, snippet_title)
     return unless active?
     return unless send_notifications?
-    notification_provider.notify_with_snippet!(notification_channel_id, message, type, params, snippet_content, snippet_title)
+    notification_settings.active.where(kind: type).sole.notify_with_snippet!(message, params, snippet_content, snippet_title)
   end
 
   def notification_params
