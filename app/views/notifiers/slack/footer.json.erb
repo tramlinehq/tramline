@@ -3,6 +3,7 @@
     {
       "type": "divider"
     },
+    <% if @release_url.present? %>
     {
       "type": "context",
       "elements": [
@@ -59,6 +60,7 @@
         }
       ]
     },
+    <% end %>
     {
       "type": "context",
       "elements": [
