@@ -36,6 +36,11 @@
       <span class="ml-2">Settings</span>
     <% end %>
 
+    <%= authz_link_to (@train.active_runs.exists? ? :disabled : :neutral), app_train_notification_settings_path(@app, @train) do %>
+      <%= inline_svg("edit.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
+      <span class="ml-2">Notification Settings</span>
+    <% end %>
+
     <% if @train.releases.blank? %>
       <%= authz_link_to :red, app_train_path(@app, @train), method: :delete,
                         data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } do %>

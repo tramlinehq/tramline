@@ -20,6 +20,23 @@ en:
           ios: "iOS"
           android: "Android"
           cross_platform: "Cross Platform"
+      notification_setting:
+        kind:
+          deployment_finished: "Distribution successful"
+          release_ended: "Release finished"
+          release_stopped: "Release stopped before finish"
+          release_started: "New release started"
+          step_started: "Step for a commit started"
+          step_failed: "Step failed"
+          submit_for_review: "Build submitted for review to App Store"
+          review_approved: "Build review approved by App Store"
+          staged_rollout_updated: "Staged rollout changed"
+          release_scheduled: "Release scheduled"
+          backmerge_failed: "Auto backmerge PR creation failed"
+          staged_rollout_paused: "Staged rollout paused for App Store"
+          staged_rollout_resumed: "Staged rollout resumed for App Store"
+          staged_rollout_halted: "Staged rollout halted"
+          staged_rollout_fully_released: "Staged rollout bypassed to release to 100%"
       deployment_run:
         failure_reason:
           unknown_failure: "an unknown error, contact support!"

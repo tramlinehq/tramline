@@ -12,6 +12,9 @@
 #  train_id              :uuid             not null, indexed, indexed => [kind]
 #
 class NotificationSetting < ApplicationRecord
+  has_paper_trail
+  include Displayable
+
   belongs_to :train
 
   enum kind: {

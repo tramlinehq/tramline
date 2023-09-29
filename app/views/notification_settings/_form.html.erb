@@ -1,0 +1,79 @@
+<%= form_with(model: [app, train, notification_setting],
+              url: app_train_notification_setting_path(app, train, notification_setting),
+              builder: ButtonHelper::AuthzForms) do |form| %>
+  <!-- Modal header -->
+  <div class="flex flex-col items-start rounded-t p-4">
+    <div class="flex justify-between w-full items-center border-b py-4">
+      <h3 class="text-xl font-semibold text-gray-900">
+        <%= notification_setting.display_attr(:kind) %>
+      </h3>
+      <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center" data-action="modal#close">
+        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+        </svg>
+        <span class="sr-only">Close modal</span>
+      </button>
+    </div>
+    <div class="mt-4">
+      <%= subtitle("One of your release steps was marked as approved (for steps that need to be manually approved, currently applies to Screenshots and Metadata).") %>
+    </div>
+  </div>
+  <!-- Modal body -->
+  <div class="p-6 space-y-6" data-controller="reveal">
+    <section data-controller="toggle-switch"
+             data-toggle-switch-on-label-value="Enabled"
+             data-toggle-switch-off-label-value="Disabled"
+             class="flex items-center">
+
+      <div class="form-switch">
+        <%= form.check_box :active,
+                           { id: "active-switch",
+                             class: "sr-only",
+                             data: { action: "toggle-switch#change reveal#toggle",
+                                     toggle_switch_target: "checkbox" } },
+                           "true", "false" %>
+        <label class="bg-slate-400" for="active-switch">
+          <span class="bg-white shadow-sm" aria-hidden="true"></span>
+          <span class="sr-only">Switch label</span>
+        </label>
+      </div>
+
+      <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"></div>
+    </section>
+
+    <section data-reveal <%= "hidden" unless notification_setting.active? %>>
+      <div class="border-t border-dashed border-slate-200 pb-8 mt-8"></div>
+      <%= form.label :notification_channels, "Channels", class: "block text-sm font-medium mb-1" %>
+      <%= form.select :notification_channels,
+                      options_for_select(
+                        display_channels(notification_setting.notification_provider.channels) { |chan| "#" + chan[:name] },
+                        notification_setting.notification_channels&.map(&:to_json)
+                      ),
+                      { class: "form-select w-full" },
+                      { multiple: true, data: { controller: "input-select" } } %>
+      <div class="mt-4">
+        <%= subtitle("Select one or more channel names for this type of notification.") %>
+      </div>
+      <div class="mt-4">
+        <%= subtitle("To receive notifications in private channels, <code>/invite @Tramline</code> into your private channel and then select it from this list.") %>
+      </div>
+      <div class="mt-4">
+        <%= subtitle("Refresh your notifications channels from here, if you can't find them in the list.") %>
+      </div>
+
+      <div class="mt-4">
+        <%= authz_link_to :neutral,
+                          "Refresh channels",
+                          refresh_channels_app_integration_slack_integration_path(app,
+                                                                                  app.notification_provider.integration,
+                                                                                  app.notification_provider),
+                          class: "btn-xs", method: :post, data: { turbo_method: :post } %>
+      </div>
+    </section>
+
+  </div>
+  <!-- Modal footer -->
+  <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
+    <%= form.authz_submit :blue, "Update", class: "text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center" %>
+  </div>
+<% end %>

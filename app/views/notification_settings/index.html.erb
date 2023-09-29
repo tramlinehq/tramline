@@ -1,0 +1,51 @@
+<% content_for :sticky_page_message do %>
+  <%= render partial: "shared/sticky_topbar_message",
+             locals: { msg: "Contact us via the chat in the bottom right corner and we'll help you get setup with your release process." } %>
+<% end %>
+
+<%= render PageComponent.new(breadcrumb: breadcrumb(:apps), title: "Train Notification Settings 🔔") do |page| %>
+  <% if @notification_settings.present? %>
+    <%= render TableComponent.new(columns: ["kind", "channels", "status", "settings"]) do |table| %>
+      <% @notification_settings.each do |notification_setting| %>
+        <% table.with_row do |row| %>
+          <% row.with_cell do %>
+            <%= notification_setting.display_attr(:kind) %>
+          <% end %>
+
+          <% row.with_cell do %>
+            <% notification_setting.notification_channels&.each do |channel| %>
+              <div class="inline-flex align-text-top ml-2">
+                <span class="pr-2"><%= image_tag("integrations/logo_#{notification_setting.notification_provider}.png", width: 18) %></span>
+                <%= channel["name"] %>
+              </div>
+            <% end %>
+          <% end %>
+
+          <% row.with_cell do %>
+            <% if notification_setting.active? %>
+              <span class="ml-2 py-0.5"><%= status_badge("enabled", :success) %></span>
+            <% else %>
+              <span class="ml-2 py-0.5"><%= status_badge("disabled", :neutral) %></span>
+            <% end %>
+          <% end %>
+
+          <% row.with_cell do %>
+            <div data-controller="modal">
+              <%= authz_link_to :neutral, "#", {data: {action: "modal#open" }} do %>
+                <%= inline_svg("edit.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
+              <% end %>
+
+              <dialog data-modal-target="modal" class="p-0 backdrop:bg-gray-400 backdrop:bg-opacity-50 open:animate-fade-in">
+                <div class="relative bg-white rounded-lg shadow max-w-fit">
+                  <%= render partial: "form", locals: { train: @train, app: @app, notification_setting: notification_setting } %>
+                </div>
+              </dialog>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <p>Enable notification for the app and the train to configure notification settings.</p>
+  <% end %>
+<% end %>
