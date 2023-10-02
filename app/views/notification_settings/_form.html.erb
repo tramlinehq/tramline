@@ -27,12 +27,12 @@
 
       <div class="form-switch">
         <%= form.check_box :active,
-                           { id: "active-switch",
+                           { id: "active-switch-#{notification_setting.id}",
                              class: "sr-only",
                              data: { action: "toggle-switch#change reveal#toggle",
                                      toggle_switch_target: "checkbox" } },
                            "true", "false" %>
-        <label class="bg-slate-400" for="active-switch">
+        <label class="bg-slate-400" for="active-switch-<%= notification_setting.id %>">
           <span class="bg-white shadow-sm" aria-hidden="true"></span>
           <span class="sr-only">Switch label</span>
         </label>
@@ -55,7 +55,7 @@
         <%= subtitle("Select one or more channel names for this type of notification.") %>
       </div>
       <div class="mt-4">
-        <%= subtitle("To receive notifications in private channels, <code>/invite @Tramline</code> into your private channel and then select it from this list.") %>
+        <%= subtitle("To receive notifications in private channels, invite @Tramline into your private channel and then select it from this list.") %>
       </div>
       <div class="mt-4">
         <%= subtitle("Refresh your notifications channels from here, if you can't find them in the list.") %>

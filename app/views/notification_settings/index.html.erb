@@ -5,7 +5,7 @@
 
 <%= render PageComponent.new(breadcrumb: breadcrumb(:apps), title: "Train Notification Settings 🔔") do |page| %>
   <% if @notification_settings.present? %>
-    <%= render TableComponent.new(columns: ["kind", "channels", "status", "settings"]) do |table| %>
+    <%= render TableComponent.new(columns: %w[kind channels status settings]) do |table| %>
       <% @notification_settings.each do |notification_setting| %>
         <% table.with_row do |row| %>
           <% row.with_cell do %>
