@@ -3,7 +3,7 @@
              locals: { msg: "Contact us via the chat in the bottom right corner and we'll help you get setup with your release process." } %>
 <% end %>
 
-<%= render PageComponent.new(breadcrumb: breadcrumb(:apps), title: "Train Notification Settings 🔔") do |page| %>
+<%= render PageComponent.new(breadcrumb: breadcrumb(:edit_train_notification, @train), title: "Train Notification Settings 🔔") do |page| %>
   <% if @notification_settings.present? %>
     <%= render TableComponent.new(columns: %w[kind channels status settings]) do |table| %>
       <% @notification_settings.each do |notification_setting| %>
@@ -31,7 +31,7 @@
 
           <% row.with_cell do %>
             <div data-controller="modal">
-              <%= authz_link_to :neutral, "#", {data: {action: "modal#open" }} do %>
+              <%= authz_link_to (@train.active_runs.exists? ? :disabled : :neutral), "#", {data: {action: (@train.active_runs.exists? ? "" : "modal#open") }} do %>
                 <%= inline_svg("edit.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
               <% end %>
 
