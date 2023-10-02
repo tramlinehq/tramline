@@ -4,6 +4,7 @@ class SignedInApplicationController < ApplicationController
   before_action :set_paper_trail_whodunnit
   before_action :set_sentry_context, if: -> { Rails.env.production? }
   before_action :require_login, unless: :devise_controller?
+  before_action :track_behaviour
   helper_method :current_organization
   helper_method :current_user
   helper_method :writer?
@@ -87,5 +88,14 @@ class SignedInApplicationController < ApplicationController
   def set_currents
     Current.user = current_user
     Current.organization = current_organization
+  end
+
+  def track_behaviour
+    SiteAnalytics.group_and_track(
+      current_user,
+      current_organization,
+      device.name,
+      "#{controller_name} – #{action_name}"
+    )
   end
 end

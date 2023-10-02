@@ -25,7 +25,7 @@ class ApplicationController < ActionController::Base
   end
 
   def device_type
-    DeviceDetector.new(request.user_agent).device_type
+    device.device_type
   end
 
   unless Rails.env.production?
@@ -55,5 +55,9 @@ class ApplicationController < ActionController::Base
 
   def store_user_location!
     store_location_for(:user, request.fullpath)
+  end
+
+  def device
+    @decide ||= DeviceDetector.new(request.user_agent)
   end
 end
