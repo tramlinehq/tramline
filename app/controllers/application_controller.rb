@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   using RefinedString
+  include MetadataAwareness
   include ExceptionHandler if Rails.env.production? || ENV.fetch("GRACEFUL_ERROR_PAGES", "false").to_boolean
   layout -> { ensure_supported_layout("application") }
   before_action :store_user_location!, if: :storable_location?
@@ -55,9 +56,5 @@ class ApplicationController < ActionController::Base
 
   def store_user_location!
     store_location_for(:user, request.fullpath)
-  end
-
-  def device
-    @decide ||= DeviceDetector.new(request.user_agent)
   end
 end

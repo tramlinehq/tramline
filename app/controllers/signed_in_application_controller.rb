@@ -1,5 +1,7 @@
 class SignedInApplicationController < ApplicationController
   DEFAULT_TIMEZONE = "Asia/Kolkata"
+  include MetadataAwareness
+
   before_action :set_currents
   before_action :set_paper_trail_whodunnit
   before_action :set_sentry_context, if: -> { Rails.env.production? }
@@ -66,19 +68,6 @@ class SignedInApplicationController < ApplicationController
   def set_time_zone
     tz = @app.present? ? @app.timezone : DEFAULT_TIMEZONE
     Time.use_zone(tz) { yield }
-  end
-
-  def current_organization
-    @current_organization ||=
-      if session[:active_organization]
-        begin
-          Accounts::Organization.friendly.find(session[:active_organization])
-        rescue ActiveRecord::RecordNotFound
-          current_user&.organizations&.first
-        end
-      else
-        current_user&.organizations&.first
-      end
   end
 
   def set_sentry_context

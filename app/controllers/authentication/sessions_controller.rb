@@ -1,8 +1,10 @@
 class Authentication::SessionsController < Devise::SessionsController
+  include MetadataAwareness
+
   before_action :set_confirmed_email, only: [:new]
   after_action :prepare_intercom_shutdown, only: [:destroy]
   after_action :intercom_shutdown, only: [:new]
-  after_action :identify_user, only: [:create]
+  after_action :track_login, only: [:create]
 
   def new
     super
@@ -35,7 +37,7 @@ class Authentication::SessionsController < Devise::SessionsController
     @confirmed_email = params[:confirmed_email].presence || nil
   end
 
-  def identify_user
-    SiteAnalytics.identify(current_user)
+  def track_login
+    SiteAnalytics.track(current_user, current_organization, device, "Login")
   end
 end
