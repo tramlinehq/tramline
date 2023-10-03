@@ -48,7 +48,7 @@ module SiteAnalytics
       user_id: user.id,
       event: event.titleize,
       properties: {
-        browser: device.name
+        browser: device&.name
       },
       context: {
         groupId: organization.id
