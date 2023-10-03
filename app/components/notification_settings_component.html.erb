@@ -24,7 +24,7 @@
       <% end %>
 
       <% row.with_cell do %>
-        <span class="ml-2 py-0.5">
+        <span class="py-0.5">
           <% if notification_setting.active? %>
             <%= status_badge("enabled", :success) %>
           <% else %>
@@ -34,7 +34,7 @@
       <% end %>
 
       <% row.with_cell do %>
-        <div data-controller="modal">
+        <div data-controller="modal" class="px-2">
           <%= authz_link_to (editable? ? :neutral : :disabled), "#",
                             { data: { action: (editable? ? "modal#open" : "") } } do %>
             <%= inline_svg("edit.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
