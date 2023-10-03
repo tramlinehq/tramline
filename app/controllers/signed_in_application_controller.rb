@@ -80,7 +80,7 @@ class SignedInApplicationController < ApplicationController
   end
 
   def track_behaviour
-    SiteAnalytics.group_and_track(
+    SiteAnalytics.track(
       current_user,
       current_organization,
       device.name,

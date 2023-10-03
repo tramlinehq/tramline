@@ -9,21 +9,12 @@ module SiteAnalytics
     }
   )
 
-  def self.group_and_track(user, organization, device, event)
-    ANALYTICS.group(
-      user_id: user.id,
-      group_id: organization.id,
-      traits: {
-        name: organization.name
-      }
-    )
-
-    track(user, organization, device, event)
-  end
-
   def self.identify_and_group(user, organization)
     identify(user)
+    group(user, organization)
+  end
 
+  def self.group(user, organization)
     ANALYTICS.group(
       user_id: user.id,
       group_id: organization.id,
