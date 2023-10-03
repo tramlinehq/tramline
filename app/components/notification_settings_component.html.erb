@@ -2,7 +2,10 @@
   <% ordered_notification_settings.each do |notification_setting| %>
     <% table.with_row do |row| %>
       <% row.with_cell do %>
-        <%= notification_setting.display_attr(:kind) %>
+        <div class="inline-flex items-center">
+          <%= inline_svg(icon_for(notification_setting), classname: "w-5 h-5 fill-current mr-2") %>
+          <%= notification_setting.display_attr(:kind) %>
+        </div>
       <% end %>
 
       <% row.with_cell do %>
@@ -43,7 +46,8 @@
               <%= render partial: "form", locals: { app: train.app,
                                                     train: train,
                                                     notification_setting: notification_setting,
-                                                    description: description_for(notification_setting) } %>
+                                                    description: description_for(notification_setting),
+                                                    icon: icon_for(notification_setting)} %>
             </div>
           </dialog>
         </div>
