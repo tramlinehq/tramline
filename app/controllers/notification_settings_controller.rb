@@ -16,6 +16,7 @@ class NotificationSettingsController < SignedInApplicationController
     if @notification_setting.update(parsed_notif_setting_params)
       redirect_to app_train_notification_settings_path(@app, @train), notice: "Notification setting was updated"
     else
+      @notification_settings = @train.notification_settings
       render :index, status: :unprocessable_entity
     end
   end

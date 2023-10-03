@@ -131,6 +131,10 @@ en:
               not_available: "could not find the working branch in the configured git repo"
             backmerge_strategy:
               continuous_not_allowed: "continuous backmerge only allowed for Almost Trunk branching strategy"
+        notification_setting:
+          attributes:
+            notification_channels:
+              at_least_one: "there should be at least one channel selected for an enabled notification"
         releases/step:
           attributes:
             train:

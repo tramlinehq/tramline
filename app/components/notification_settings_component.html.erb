@@ -1,0 +1,53 @@
+<%= render TableComponent.new(columns: %w[kind channels status settings]) do |table| %>
+  <% ordered_notification_settings.each do |notification_setting| %>
+    <% table.with_row do |row| %>
+      <% row.with_cell do %>
+        <%= notification_setting.display_attr(:kind) %>
+      <% end %>
+
+      <% row.with_cell do %>
+        <% if notification_setting.active? %>
+          <div class="overflow-x-hidden hover:overflow-x-auto">
+            <% notification_setting.notification_channels&.each do |channel| %>
+              <div class="inline-flex items-center ml-2">
+                <span class="pr-2">
+                  <%= image_tag("integrations/logo_#{notification_setting.notification_provider}.png", width: 18) %>
+                </span>
+                <%= channel["name"] %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+
+      <% row.with_cell do %>
+        <span class="ml-2 py-0.5">
+          <% if notification_setting.active? %>
+            <%= status_badge("enabled", :success) %>
+          <% else %>
+            <%= status_badge("disabled", :neutral) %>
+          <% end %>
+        </span>
+      <% end %>
+
+      <% row.with_cell do %>
+        <div data-controller="modal">
+          <%= authz_link_to (editable? ? :neutral : :disabled), "#",
+                            { data: { action: (editable? ? "modal#open" : "") } } do %>
+            <%= inline_svg("edit.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
+          <% end %>
+
+          <dialog data-modal-target="modal"
+                  class="p-0 backdrop:bg-gray-400 backdrop:bg-opacity-50 open:animate-fade-in w-2/3">
+            <div class="relative bg-white rounded-lg shadow">
+              <%= render partial: "form", locals: { app: train.app,
+                                                    train: train,
+                                                    notification_setting: notification_setting,
+                                                    description: description_for(notification_setting) } %>
+            </div>
+          </dialog>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

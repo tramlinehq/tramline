@@ -38,6 +38,8 @@ class NotificationSetting < ApplicationRecord
   scope :active, -> { where(active: true) }
   delegate :app, to: :train
   delegate :notification_provider, to: :app
+  delegate :channels, to: :notification_provider
+  validate :notification_channels_settings
 
   def send_notifications?
     app.notifications_set_up? && active? && notification_channels.present?
@@ -55,5 +57,9 @@ class NotificationSetting < ApplicationRecord
     notification_channels.each do |channel|
       notification_provider.notify_with_snippet!(channel["id"], message, kind, params, snippet_content, snippet_title)
     end
+  end
+
+  def notification_channels_settings
+    errors.add(:notification_channels, :at_least_one) if active? && notification_channels.blank?
   end
 end

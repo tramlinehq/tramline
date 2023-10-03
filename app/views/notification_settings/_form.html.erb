@@ -7,16 +7,12 @@
       <h3 class="text-xl font-semibold text-gray-900">
         <%= notification_setting.display_attr(:kind) %>
       </h3>
-      <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center" data-action="modal#close">
-        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-        </svg>
+      <button type="button" class="text-slate-400 hover:cursor-pointer hover:text-slate-500" data-action="modal#close">
+        <%= inline_svg("close_icon.svg", classname: "w-4 h-4 fill-current") %>
         <span class="sr-only">Close modal</span>
       </button>
     </div>
-    <div class="mt-4">
-      <%= subtitle("One of your release steps was marked as approved (for steps that need to be manually approved, currently applies to Screenshots and Metadata).") %>
-    </div>
+    <div class="mt-4"><%= subtitle(description) %></div>
   </div>
   <!-- Modal body -->
   <div class="p-6 space-y-6" data-controller="reveal">
@@ -46,7 +42,7 @@
       <%= form.label :notification_channels, "Channels", class: "block text-sm font-medium mb-1" %>
       <%= form.select :notification_channels,
                       options_for_select(
-                        display_channels(notification_setting.notification_provider.channels) { |chan| "#" + chan[:name] },
+                        display_channels(notification_setting.channels) { |chan| "#" + chan[:name] },
                         notification_setting.notification_channels&.map(&:to_json)
                       ),
                       { class: "form-select w-full" },
@@ -74,6 +70,6 @@
   </div>
   <!-- Modal footer -->
   <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
-    <%= form.authz_submit :blue, "Update", class: "text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center" %>
+    <%= form.authz_submit :blue, "Update" %>
   </div>
 <% end %>
