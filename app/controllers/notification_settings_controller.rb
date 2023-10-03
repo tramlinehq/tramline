@@ -13,6 +13,8 @@ class NotificationSettingsController < SignedInApplicationController
   end
 
   def update
+    head :forbidden and return unless @train.send_notifications?
+
     if @notification_setting.update(parsed_notif_setting_params)
       redirect_to app_train_notification_settings_path(@app, @train), notice: "Notification setting was updated"
     else

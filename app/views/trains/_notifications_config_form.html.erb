@@ -1,0 +1,32 @@
+<article>
+  <div class="text-xl text-slate-600 font-medium mt-2">Notifications</div>
+  <div class="text-sm mt-1 mb-6">
+    Enable notifications to be sent during the release.<br/> Advanced notifications can be configured in the Notification Settings for the train.
+  </div>
+  <section data-controller="toggle-switch"
+           data-toggle-switch-on-label-value="Notifications enabled"
+           data-toggle-switch-off-label-value="Notifications disabled">
+
+    <div class="flex items-center">
+      <div class="form-switch">
+        <%= form.check_box :notifications_enabled,
+                           { id: "notifications-switch",
+                             class: "sr-only",
+                             data: { action: "toggle-switch#change",
+                                     toggle_switch_target: "checkbox" } },
+                           "true", "false" %>
+        <label class="bg-slate-400" for="notifications-switch">
+          <span class="bg-white shadow-sm" aria-hidden="true"></span>
+          <span class="sr-only">Switch label</span>
+        </label>
+      </div>
+
+      <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"></div>
+    </div>
+    <div data-toggle-switch-target="child" class="mt-4">
+      <%= render partial: "shared/notifications_form",
+                 locals: { form:, app: @app, channels: @notification_channels, current: @current_notification_channel } %>
+    </div>
+  </section>
+  <div class="border-t border-dashed border-slate-200 pb-8 mt-8"></div>
+</article>

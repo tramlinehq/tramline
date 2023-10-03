@@ -115,11 +115,8 @@
 
       <% if app.notifications_set_up? %>
         <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
-        <%= render partial: "shared/notifications_form",
-                   locals: { form:, app: @app, channels: @notification_channels, current: @current_notification_channel } %>
+        <%= render partial: "notifications_config_form", locals: { form: } %>
       <% end %>
-
-      <div class="border-t border-dashed border-slate-200 pt-8 mt-8"></div>
 
       <div class="text-xl text-slate-600 font-medium mt-2 mb-4">Branching Strategy</div>
 

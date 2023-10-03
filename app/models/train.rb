@@ -73,7 +73,7 @@ class Train < ApplicationRecord
   attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed
   attr_accessor :build_queue_wait_time_unit, :build_queue_wait_time_value
   attr_accessor :repeat_duration_unit, :repeat_duration_value, :release_schedule_enabled
-  attr_accessor :continuous_backmerge_enabled
+  attr_accessor :continuous_backmerge_enabled, :notifications_enabled
 
   validates :branching_strategy, :working_branch, presence: true
   validates :branching_strategy, inclusion: {in: BRANCHING_STRATEGIES.keys.map(&:to_s)}
@@ -93,13 +93,14 @@ class Train < ApplicationRecord
   after_initialize :set_release_schedule, if: :persisted?
   after_initialize :set_build_queue_config, if: :persisted?
   after_initialize :set_backmerge_config, if: :persisted?
+  after_initialize :set_notifications_config, if: :persisted?
   before_validation :set_version_seeded_with, if: :new_record?
   before_create :set_current_version
   before_create :set_default_status
   after_create :create_release_platforms
   after_create :create_default_notification_settings
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
-  after_update :set_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
+  after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
 
   before_destroy :ensure_deletable, prepend: true do
     throw(:abort) if errors.present?
@@ -208,10 +209,11 @@ class Train < ApplicationRecord
       {
         train_id: id,
         kind:,
+        active: true,
         notification_channels: [notification_channel]
       }
     end
-    NotificationSetting.insert_all(vals, unique_by: [:train_id, :kind])
+    NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
   end
 
   def display_name
@@ -374,6 +376,10 @@ class Train < ApplicationRecord
 
   def set_backmerge_config
     self.continuous_backmerge_enabled = continuous_backmerge?
+  end
+
+  def set_notifications_config
+    self.notifications_enabled = send_notifications?
   end
 
   def semver_compatibility
