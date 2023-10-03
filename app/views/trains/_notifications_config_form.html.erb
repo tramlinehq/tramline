@@ -1,7 +1,14 @@
 <article>
   <div class="text-xl text-slate-600 font-medium mt-2">Notifications</div>
   <div class="text-sm mt-1 mb-6">
-    Enable notifications to be sent during the release.<br/> Advanced notifications can be configured in the Notification Settings for the train.
+    Enable notifications to be sent during the release.
+    <br/> Advanced notifications can be configured in the
+    <% if @train.persisted? %>
+      <%= link_to "Notification Settings", app_train_notification_settings_path(@app, @train), class: "underline" %>.
+    <% else %>
+      Notification Settings
+    <% end %>
+    for the train.
   </div>
   <section data-controller="toggle-switch"
            data-toggle-switch-on-label-value="Notifications enabled"
