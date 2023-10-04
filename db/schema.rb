@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_09_26_064858) do
+ActiveRecord::Schema[7.0].define(version: 2023_09_28_115749) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -277,6 +277,18 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_26_064858) do
     t.index ["organization_id"], name: "index_memberships_on_organization_id"
     t.index ["role"], name: "index_memberships_on_role"
     t.index ["user_id", "organization_id", "role"], name: "index_memberships_on_user_id_and_organization_id_and_role", unique: true
+  end
+
+  create_table "notification_settings", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_id", null: false
+    t.string "kind", null: false
+    t.boolean "active", default: true, null: false
+    t.jsonb "notification_channels"
+    t.jsonb "user_groups"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["train_id", "kind"], name: "index_notification_settings_on_train_id_and_kind", unique: true
+    t.index ["train_id"], name: "index_notification_settings_on_train_id"
   end
 
   create_table "organizations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -573,6 +585,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_26_064858) do
   add_foreign_key "invites", "users", column: "sender_id"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
+  add_foreign_key "notification_settings", "trains"
   add_foreign_key "pull_requests", "release_platform_runs"
   add_foreign_key "release_changelogs", "releases"
   add_foreign_key "release_metadata", "release_platform_runs"

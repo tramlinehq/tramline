@@ -84,3 +84,8 @@ crumb :edit_train do |train|
   link "Edit"
   parent :train, train
 end
+
+crumb :edit_train_notification do |train|
+  link "Edit Notification Settings"
+  parent :train, train
+end

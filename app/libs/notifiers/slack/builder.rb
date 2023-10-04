@@ -19,7 +19,7 @@ module Notifiers
         staged_rollout_resumed: Renderers::StagedRolloutResumed,
         staged_rollout_halted: Renderers::StagedRolloutHalted,
         staged_rollout_fully_released: Renderers::StagedRolloutFullyReleased
-      }
+      }.with_indifferent_access
 
       class RendererNotFound < ArgumentError; end
 

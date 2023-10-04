@@ -1,0 +1,76 @@
+<%= form_with(model: [app, train, notification_setting],
+              url: app_train_notification_setting_path(app, train, notification_setting),
+              builder: ButtonHelper::AuthzForms) do |form| %>
+  <!-- Modal header -->
+  <div class="flex flex-col items-start rounded-t p-4">
+    <div class="flex justify-between w-full items-center border-b py-4">
+      <h3 class="text-xl font-semibold text-gray-900 inline-flex items-center">
+        <%= inline_svg(icon, classname: "w-6 h-6 fill-current mr-2") %>
+        <%= notification_setting.display_attr(:kind) %>
+      </h3>
+      <button type="button" class="text-slate-400 hover:cursor-pointer hover:text-slate-500" data-action="modal#close">
+        <%= inline_svg("close_icon.svg", classname: "w-4 h-4 fill-current") %>
+        <span class="sr-only">Close modal</span>
+      </button>
+    </div>
+    <div class="mt-4"><%= subtitle(description) %></div>
+  </div>
+  <!-- Modal body -->
+  <div class="p-6 space-y-6" data-controller="reveal">
+    <section data-controller="toggle-switch"
+             data-toggle-switch-on-label-value="Enabled"
+             data-toggle-switch-off-label-value="Disabled"
+             class="flex items-center">
+
+      <div class="form-switch">
+        <%= form.check_box :active,
+                           { id: "active-switch-#{notification_setting.id}",
+                             class: "sr-only",
+                             data: { action: "toggle-switch#change reveal#toggle",
+                                     toggle_switch_target: "checkbox" } },
+                           "true", "false" %>
+        <label class="bg-slate-400" for="active-switch-<%= notification_setting.id %>">
+          <span class="bg-white shadow-sm" aria-hidden="true"></span>
+          <span class="sr-only">Switch label</span>
+        </label>
+      </div>
+
+      <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"></div>
+    </section>
+
+    <section data-reveal <%= "hidden" unless notification_setting.active? %>>
+      <div class="border-t border-dashed border-slate-200 pb-8 mt-8"></div>
+      <%= form.label :notification_channels, "Channels", class: "block text-sm font-medium mb-1" %>
+      <%= form.select :notification_channels,
+                      options_for_select(
+                        display_channels(notification_setting.channels) { |chan| "#" + chan[:name] },
+                        notification_setting.notification_channels&.map(&:to_json)
+                      ),
+                      { class: "form-select w-full" },
+                      { multiple: true, data: { controller: "input-select" } } %>
+      <div class="mt-4">
+        <%= subtitle("Select one or more channel names for this type of notification.") %>
+      </div>
+      <div class="mt-4">
+        <%= subtitle("To receive notifications in private channels, invite @Tramline into your private channel and then select it from this list.") %>
+      </div>
+      <div class="mt-4">
+        <%= subtitle("Refresh your notifications channels from here, if you can't find them in the list.") %>
+      </div>
+
+      <div class="mt-4">
+        <%= authz_link_to :neutral,
+                          "Refresh channels",
+                          refresh_channels_app_integration_slack_integration_path(app,
+                                                                                  app.notification_provider.integration,
+                                                                                  app.notification_provider),
+                          class: "btn-xs", method: :post, data: { turbo_method: :post } %>
+      </div>
+    </section>
+
+  </div>
+  <!-- Modal footer -->
+  <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
+    <%= form.authz_submit :blue, "Update" %>
+  </div>
+<% end %>

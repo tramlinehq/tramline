@@ -107,7 +107,8 @@ class TrainsController < SignedInApplicationController
       :manual_release,
       :compact_build_notes,
       :tag_all_store_releases,
-      :tag_platform_releases
+      :tag_platform_releases,
+      :notifications_enabled
     )
   end
 
@@ -115,9 +116,9 @@ class TrainsController < SignedInApplicationController
     release_schedule_params = release_schedule_config(train_params.slice(*release_schedule_config_params))
     create_params = train_params
       .merge(build_queue_config(train_params.slice(*build_queue_config_params)))
-      .merge(notification_channel: train_params[:notification_channel]&.safe_json_parse)
       .merge(backmerge_config(train_params[:continuous_backmerge_enabled]))
-      .except(:build_queue_wait_time_value, :build_queue_wait_time_unit, :continuous_backmerge_enabled)
+      .merge(notifications_config(train_params[:notifications_enabled]))
+      .except(:build_queue_wait_time_value, :build_queue_wait_time_unit, :continuous_backmerge_enabled, :notifications_enabled)
       .except(*release_schedule_config_params)
     create_params.merge!(release_schedule_params) if release_schedule_params
     create_params
@@ -140,7 +141,8 @@ class TrainsController < SignedInApplicationController
       :manual_release,
       :compact_build_notes,
       :tag_all_store_releases,
-      :tag_platform_releases
+      :tag_platform_releases,
+      :notifications_enabled
     )
   end
 
@@ -148,8 +150,8 @@ class TrainsController < SignedInApplicationController
     release_schedule_params = release_schedule_config(train_update_params.slice(*release_schedule_config_params))
     update_params = train_update_params
       .merge(build_queue_config(train_update_params.slice(*build_queue_config_params)))
-      .merge(notification_channel: train_update_params[:notification_channel]&.safe_json_parse)
-      .merge(backmerge_config(train_params[:continuous_backmerge_enabled]))
+      .merge(backmerge_config(train_update_params[:continuous_backmerge_enabled]))
+      .merge(notifications_config(train_update_params[:notifications_enabled]))
       .except(:build_queue_wait_time_value, :build_queue_wait_time_unit, :continuous_backmerge_enabled)
       .except(*release_schedule_config_params)
     update_params.merge!(release_schedule_params) if release_schedule_params
@@ -166,7 +168,7 @@ class TrainsController < SignedInApplicationController
 
   def set_notification_channels
     @notification_channels = @app.notification_provider.channels if @app.notifications_set_up?
-    @current_notification_channel = @train.present? ? @train.notification_channel : @app.config.notification_channel
+    @current_notification_channel = @train&.notification_channel || @app.config.notification_channel
   end
 
   def build_queue_config_params
@@ -214,6 +216,14 @@ class TrainsController < SignedInApplicationController
       {backmerge_strategy: Train.backmerge_strategies[:on_finalize]}
     elsif continuous_backmerge_enabled == "true"
       {backmerge_strategy: Train.backmerge_strategies[:continuous]}
+    end
+  end
+
+  def notifications_config(notifications_enabled)
+    if notifications_enabled.blank? || notifications_enabled == "false"
+      {notification_channel: nil}
+    elsif notifications_enabled == "true"
+      {notification_channel: train_params[:notification_channel]&.safe_json_parse}
     end
   end
 end

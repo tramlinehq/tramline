@@ -282,7 +282,7 @@ class StepRun < ApplicationRecord
           commit_sha: commit.short_sha,
           commit_message: commit.message,
           commit_url: commit.url,
-          artifact_download_link: build_artifact&.download_url&.presence || release.live_release_link,
+          artifact_download_link: build_artifact&.download_url,
           build_notes: build_notes
         }
       )
@@ -405,6 +405,7 @@ class StepRun < ApplicationRecord
   def after_trigger_ci
     Releases::FindWorkflowRun.perform_async(id)
     event_stamp!(reason: :ci_triggered, kind: :notice, data: stamp_data)
+    notify!("Step has been triggered!", :step_started, notification_params)
     Releases::CancelStepRun.perform_later(previous_step_run.id) if previous_step_run&.may_cancel?
   end
 

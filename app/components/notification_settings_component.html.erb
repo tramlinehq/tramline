@@ -1,0 +1,63 @@
+<section class="my-4">
+  <div class="px-5 py-3 bg-indigo-50 border border-indigo-100 rounded-sm text-left">
+    <div class="text-slate-700 font-normal">To disable all notifications, go to
+      <%= link_to "Train Settings", edit_app_train_path(train.app, train), class: "underline" %>.</div>
+  </div>
+</section>
+<%= render TableComponent.new(columns: %w[kind channels status settings]) do |table| %>
+  <% settings.each do |setting| %>
+    <% table.with_row do |row| %>
+      <% row.with_cell do %>
+        <div class="inline-flex items-center">
+          <%= inline_svg(icon_for(setting), classname: "w-5 h-5 fill-current mr-2") %>
+          <%= setting.display_attr(:kind) %>
+        </div>
+      <% end %>
+
+      <% row.with_cell do %>
+        <% if setting.active? %>
+          <div class="overflow-x-hidden hover:overflow-x-auto">
+            <% setting.notification_channels&.each do |channel| %>
+              <div class="inline-flex items-center ml-2">
+                <span class="pr-2">
+                  <%= image_tag("integrations/logo_#{setting.notification_provider}.png", width: 18) %>
+                </span>
+                <%= channel["name"] %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+
+      <% row.with_cell do %>
+        <span class="py-0.5">
+          <% if setting.active? %>
+            <%= status_badge("enabled", :success) %>
+          <% else %>
+            <%= status_badge("disabled", :neutral) %>
+          <% end %>
+        </span>
+      <% end %>
+
+      <% row.with_cell do %>
+        <div data-controller="modal" class="px-2">
+          <%= authz_link_to (editable? ? :neutral : :disabled), "#",
+                            { data: { action: (editable? ? "modal#open" : "") } } do %>
+            <%= inline_svg("edit.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
+          <% end %>
+
+          <dialog data-modal-target="modal"
+                  class="p-0 backdrop:bg-gray-400 backdrop:bg-opacity-50 open:animate-fade-in w-2/3">
+            <div class="relative bg-white rounded-lg shadow">
+              <%= render partial: "form", locals: { app: train.app,
+                                                    train: train,
+                                                    notification_setting: setting,
+                                                    description: description_for(setting),
+                                                    icon: icon_for(setting)} %>
+            </div>
+          </dialog>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

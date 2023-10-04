@@ -3,7 +3,7 @@ class TableComponent::RowComponent < ViewComponent::Base
 
   class CellComponent < ViewComponent::Base
     def call
-      content_tag :td, content, {class: "p-2.5 whitespace-nowrap"}
+      content_tag :td, content, {class: "p-2 whitespace-nowrap"}
     end
   end
 end

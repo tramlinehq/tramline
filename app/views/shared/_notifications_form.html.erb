@@ -1,9 +1,8 @@
-<div class="text-xl text-slate-600 font-medium mt-2 mb-4">Notifications</div>
 <div>
   <%= form.label :notification_channel, "Notification Channel", class: "block text-sm font-medium mb-1" %>
   <%= form.select :notification_channel,
                   options_for_select(
-                    display_channels(channels, with_none: true) { |chan| "#" + chan[:name] },
+                    display_channels(channels) { |chan| "#" + chan[:name] },
                     current.to_json
                   ),
                   { class: "form-select w-full" },
