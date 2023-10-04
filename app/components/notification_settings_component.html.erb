@@ -41,8 +41,7 @@
 
       <% row.with_cell do %>
         <div data-controller="modal" class="px-2">
-          <%= authz_link_to (editable? ? :neutral : :disabled), "#",
-                            { data: { action: (editable? ? "modal#open" : "") } } do %>
+          <%= authz_link_to :neutral, "#", { data: { action: "modal#open" } } do %>
             <%= inline_svg("edit.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
           <% end %>
 

@@ -39,10 +39,6 @@ class NotificationSettingsComponent < ViewComponent::Base
     notification_settings.sort_by { |setting| NOTIFICATIONS[setting.kind][:number] }
   end
 
-  def editable?
-    train.active_runs.none?
-  end
-
   def description_for(setting)
     NOTIFICATIONS[setting.kind][:description]
   end
