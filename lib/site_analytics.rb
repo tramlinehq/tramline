@@ -35,14 +35,15 @@ module SiteAnalytics
   end
 
   def self.track(user, organization, device, event)
+    return if user.blank? || organization.blank?
     ANALYTICS.track(
-      user_id: user&.id,
+      user_id: user.id,
       event: event.titleize,
       properties: {
         browser: device&.name
       },
       context: {
-        groupId: organization&.id
+        groupId: organization.id
       }
     )
   end
