@@ -310,13 +310,13 @@ class Train < ApplicationRecord
   def notify!(message, type, params)
     return unless active?
     return unless send_notifications?
-    notification_settings.active.where(kind: type).sole.notify!(message, params)
+    notification_settings.where(kind: type).sole.notify!(message, params)
   end
 
   def notify_with_snippet!(message, type, params, snippet_content, snippet_title)
     return unless active?
     return unless send_notifications?
-    notification_settings.active.where(kind: type).sole.notify_with_snippet!(message, params, snippet_content, snippet_title)
+    notification_settings.where(kind: type).sole.notify_with_snippet!(message, params, snippet_content, snippet_title)
   end
 
   def notification_params
