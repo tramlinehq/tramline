@@ -1,9 +1,12 @@
 class SignedInApplicationController < ApplicationController
   DEFAULT_TIMEZONE = "Asia/Kolkata"
+  include MetadataAwareness
+
   before_action :set_currents
   before_action :set_paper_trail_whodunnit
   before_action :set_sentry_context, if: -> { Rails.env.production? }
   before_action :require_login, unless: :devise_controller?
+  before_action :track_behaviour
   helper_method :current_organization
   helper_method :current_user
   helper_method :writer?
@@ -67,19 +70,6 @@ class SignedInApplicationController < ApplicationController
     Time.use_zone(tz) { yield }
   end
 
-  def current_organization
-    @current_organization ||=
-      if session[:active_organization]
-        begin
-          Accounts::Organization.friendly.find(session[:active_organization])
-        rescue ActiveRecord::RecordNotFound
-          current_user&.organizations&.first
-        end
-      else
-        current_user&.organizations&.first
-      end
-  end
-
   def set_sentry_context
     Sentry.set_user(id: current_user.id, username: current_user.full_name, email: current_user.email) if current_user
   end
@@ -87,5 +77,14 @@ class SignedInApplicationController < ApplicationController
   def set_currents
     Current.user = current_user
     Current.organization = current_organization
+  end
+
+  def track_behaviour
+    SiteAnalytics.track(
+      current_user,
+      current_organization,
+      device.name,
+      "#{controller_name} – #{action_name}"
+    )
   end
 end
