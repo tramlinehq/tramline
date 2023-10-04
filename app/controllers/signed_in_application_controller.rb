@@ -83,7 +83,7 @@ class SignedInApplicationController < ApplicationController
     SiteAnalytics.track(
       current_user,
       current_organization,
-      device.name,
+      device,
       "#{controller_name} – #{action_name}"
     )
   end
