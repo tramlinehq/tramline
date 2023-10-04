@@ -74,4 +74,14 @@ namespace :metrics do
     cmd = "curl -X POST --data-urlencode 'payload=#{payload}' #{args[:webhook_url]}"
     system(cmd)
   end
+
+  desc "Backfill user and org data in analytics db"
+  task backfill_users: [:environment] do
+    Accounts::User.all.each do |user|
+      SiteAnalytics.identify(user)
+      user.organizations.each do |org|
+        SiteAnalytics.group(user, org)
+      end
+    end
+  end
 end
