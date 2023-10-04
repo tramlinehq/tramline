@@ -162,6 +162,7 @@ class Release < ApplicationRecord
   end
 
   def version_ahead?(platform_run)
+    return false if self == platform_run.release
     release_version.to_semverish > platform_run.release_version.to_semverish
   end
 
