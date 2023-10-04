@@ -48,10 +48,6 @@ Rails/DynamicFindBy:
   Exclude:
     - app/models/accounts/user.rb
 
-Rails/LexicallyScopedActionFilter:
-  Exclude:
-    - app/controllers/authentication/sessions_controller.rb
-
 RSpec:
   Enabled: true
 

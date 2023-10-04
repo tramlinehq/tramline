@@ -10,6 +10,10 @@ class Authentication::SessionsController < Devise::SessionsController
     super
   end
 
+  def create
+    super
+  end
+
   def destroy
     super
   end
