@@ -161,9 +161,8 @@ class Release < ApplicationRecord
     vcs_provider.compare_url(train.working_branch, release_branch)
   end
 
-  def version_ahead?(other)
-    return false if self == other
-    release_version.to_semverish >= other.release_version.to_semverish
+  def version_ahead?(platform_run)
+    release_version.to_semverish > platform_run.release_version.to_semverish
   end
 
   def create_active_build_queue
