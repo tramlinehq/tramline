@@ -35,7 +35,7 @@ class NotificationSettingsComponent < ViewComponent::Base
     @notification_settings = notification_settings
   end
 
-  def ordered_notification_settings
+  def settings
     notification_settings.sort_by { |setting| NOTIFICATIONS[setting.kind][:number] }
   end
 
