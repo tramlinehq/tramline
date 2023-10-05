@@ -4,7 +4,6 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :set_invite_token, only: [:new, :create]
   before_action :set_invite, only: [:new, :create]
-  after_action :identify_team, only: [:create]
   alias_method :user, :resource
   helper_method :user
 
@@ -97,9 +96,5 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
 
   def sign_up_email
     sign_up_params[:email]
-  end
-
-  def identify_team
-    SiteAnalytics.identify_and_group(user.reload, user.reload.organizations.first)
   end
 end
