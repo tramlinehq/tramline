@@ -100,6 +100,6 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
   end
 
   def identify_team
-    SiteAnalytics.identify_and_group(user, user.organizations.first)
+    SiteAnalytics.identify_and_group(user.reload, user.reload.organizations.first)
   end
 end

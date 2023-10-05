@@ -10,11 +10,15 @@ module SiteAnalytics
   )
 
   def self.identify_and_group(user, organization)
+    return if user.blank? || organization.blank?
     identify(user)
     group(user, organization)
+  rescue
+    nil
   end
 
   def self.group(user, organization)
+    return if user.blank? || organization.blank?
     ANALYTICS.group(
       user_id: user.id,
       group_id: organization.id,
@@ -22,9 +26,12 @@ module SiteAnalytics
         name: organization.name
       }
     )
+  rescue
+    nil
   end
 
   def self.identify(user)
+    return if user.blank?
     ANALYTICS.identify(
       user_id: user.id,
       traits: {
@@ -32,6 +39,8 @@ module SiteAnalytics
         name: user.full_name
       }
     )
+  rescue
+    nil
   end
 
   def self.track(user, organization, device, event)
@@ -46,5 +55,7 @@ module SiteAnalytics
         groupId: organization.id
       }
     )
+  rescue
+    nil
   end
 end
