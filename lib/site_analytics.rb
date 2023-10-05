@@ -14,7 +14,8 @@ module SiteAnalytics
     identify(user)
     group(user, organization)
   rescue
-    nil
+    Rails.logger.error(e)
+    Sentry.capture_exception(e)
   end
 
   def self.group(user, organization)
@@ -27,7 +28,8 @@ module SiteAnalytics
       }
     )
   rescue
-    nil
+    Rails.logger.error(e)
+    Sentry.capture_exception(e)
   end
 
   def self.identify(user)
@@ -40,7 +42,8 @@ module SiteAnalytics
       }
     )
   rescue
-    nil
+    Rails.logger.error(e)
+    Sentry.capture_exception(e)
   end
 
   def self.track(user, organization, device, event)
@@ -56,6 +59,7 @@ module SiteAnalytics
       }
     )
   rescue
-    nil
+    Rails.logger.error(e)
+    Sentry.capture_exception(e)
   end
 end
