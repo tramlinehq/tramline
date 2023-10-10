@@ -1,4 +1,5 @@
 module SiteAnalytics
+  extend Loggable
   require "june/analytics"
 
   ANALYTICS = June::Analytics.new(
@@ -14,8 +15,7 @@ module SiteAnalytics
     identify(user)
     group(user, organization)
   rescue
-    Rails.logger.error(e)
-    Sentry.capture_exception(e)
+    elog(e)
   end
 
   def self.group(user, organization)
@@ -28,8 +28,7 @@ module SiteAnalytics
       }
     )
   rescue
-    Rails.logger.error(e)
-    Sentry.capture_exception(e)
+    elog(e)
   end
 
   def self.identify(user)
@@ -42,8 +41,7 @@ module SiteAnalytics
       }
     )
   rescue
-    Rails.logger.error(e)
-    Sentry.capture_exception(e)
+    elog(e)
   end
 
   def self.track(user, organization, device, event)
@@ -59,7 +57,6 @@ module SiteAnalytics
       }
     )
   rescue
-    Rails.logger.error(e)
-    Sentry.capture_exception(e)
+    elog(e)
   end
 end
