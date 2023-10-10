@@ -32,6 +32,7 @@ class Accounts::Invite < ApplicationRecord
       message: :invalid_format
     }
 
+  before_save -> { self.email = email.downcase }
   before_save :add_recipient
   before_create :generate_token
 
