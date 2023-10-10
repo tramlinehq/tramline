@@ -101,6 +101,13 @@ class Step < ApplicationRecord
     ci_cd_channel["name"]
   end
 
+  def replicate(new_release_platform)
+    new_step = dup
+    new_step.release_platform = new_release_platform
+    deployments.each { |deployment| deployment.replicate(new_step) }
+    new_step.save!
+  end
+
   private
 
   def reject_deployments?(attributes)

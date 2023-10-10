@@ -92,7 +92,7 @@
       </section>
 
       <section>
-        <%= render TableComponent.new(columns: ["Name", "Description", "Current Release"]) do |table| %>
+        <%= render TableComponent.new(columns: ["Name", "Description", "Current Release", "Actions"]) do |table| %>
           <% table.with_heading do %>
             <div class="flex justify-between items-end mb-2">
               <h2 class="text-2xl text-slate-800 font-bold">Release Train</h2>
@@ -120,6 +120,24 @@
               <% row.with_cell do %>
                 <div class="text-left">
                   <%= "#{train.releases.any? ? train.version_current : train.version_seeded_with} • #{@app.build_number}" %>
+                </div>
+              <% end %>
+
+              <% row.with_cell do %>
+                <div class="text-left flex flex-row gap-x-2">
+                  <%= authz_button_to :neutral, clone_app_train_path(@app, train), method: :post,
+                                      title: "Clone the train",
+                                      data: { turbo_confirm: "This will create a clone of this train. Proceed?" } do %>
+                    <%= inline_svg("clone.svg", classname: "inline-flex w-5") %>
+                  <% end %>
+
+                  <% if train.releases.blank? %>
+                    <%= authz_link_to :red, app_train_path(@app, train), method: :delete,
+                                      title: "Delete the train",
+                                      data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete this train?" } do %>
+                      <%= inline_svg("trash_solid.svg", classname: "inline-flex w-4") %>
+                    <% end %>
+                  <% end %>
                 </div>
               <% end %>
             <% end %>

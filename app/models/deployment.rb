@@ -135,6 +135,11 @@ class Deployment < ApplicationRecord
       )
   end
 
+  def replicate(new_step)
+    new_deployment = dup
+    new_step.deployments << new_deployment
+  end
+
   private
 
   def set_default_staged_rollout

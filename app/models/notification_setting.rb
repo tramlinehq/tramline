@@ -13,6 +13,7 @@
 #
 class NotificationSetting < ApplicationRecord
   has_paper_trail
+  using RefinedHash
   include Displayable
 
   belongs_to :train
@@ -61,5 +62,10 @@ class NotificationSetting < ApplicationRecord
 
   def notification_channels_settings
     errors.add(:notification_channels, :at_least_one) if active? && notification_channels.blank?
+  end
+
+  def self.replicate(new_train)
+    vals = all.map { _1.attributes.with_indifferent_access.except(:id).update_key(:train_id) { new_train.id } }
+    NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
   end
 end

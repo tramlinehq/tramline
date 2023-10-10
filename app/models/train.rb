@@ -36,6 +36,7 @@ class Train < ApplicationRecord
   include Rails.application.routes.url_helpers
   include Notifiable
   include Versionable
+  include Loggable
 
   BRANCHING_STRATEGIES = {
     almost_trunk: "Almost Trunk",
@@ -152,6 +153,8 @@ class Train < ApplicationRecord
   end
 
   def next_run_at
+    return unless automatic?
+
     base_time = last_run_at
     now = Time.current
 
@@ -222,6 +225,31 @@ class Train < ApplicationRecord
 
   def release_branch_name_fmt
     "r/#{display_name}/%Y-%m-%d"
+  end
+
+  def replicate
+    ActiveRecord::Base.transaction do
+      new_train = dup
+      new_train.name = "#{name} - clone"
+      current_version = version_current.to_semverish
+      new_train.patch_version_seed = current_version.patch
+      new_train.minor_version_seed = current_version.minor
+      new_train.major_version_seed = current_version.major
+      new_train.kickoff_at = next_run_at
+      new_train.status = Train.statuses[:draft]
+      new_train.vcs_webhook_id = nil
+      new_train.save!
+      new_train.reload
+      new_train.release_platforms.each do |rp|
+        steps = release_platforms.where(platform: rp.platform).sole.steps
+        steps.each { |step| step.replicate(rp) }
+      end
+      notification_settings.presence&.replicate(new_train)
+      true
+    end
+  rescue ActiveRecord::RecordInvalid => e
+    elog(e)
+    false
   end
 
   def activate!
