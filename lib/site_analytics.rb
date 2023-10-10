@@ -1,5 +1,4 @@
 module SiteAnalytics
-  extend Loggable
   require "june/analytics"
 
   ANALYTICS = June::Analytics.new(
@@ -10,53 +9,62 @@ module SiteAnalytics
     }
   )
 
-  def self.identify_and_group(user, organization)
-    return if user.blank? || organization.blank?
-    identify(user)
-    group(user, organization)
-  rescue
-    elog(e)
-  end
+  class << self
+    def identify_and_group(user, organization)
+      return if user.blank? || organization.blank?
+      identify(user)
+      group(user, organization)
+    rescue => e
+      elog(e)
+    end
 
-  def self.group(user, organization)
-    return if user.blank? || organization.blank?
-    ANALYTICS.group(
-      user_id: user.id,
-      group_id: organization.id,
-      traits: {
-        name: organization.name
-      }
-    )
-  rescue
-    elog(e)
-  end
+    def group(user, organization)
+      return if user.blank? || organization.blank?
+      ANALYTICS.group(
+        user_id: user.id,
+        group_id: organization.id,
+        traits: {
+          name: organization.name
+        }
+      )
+    rescue => e
+      elog(e)
+    end
 
-  def self.identify(user)
-    return if user.blank?
-    ANALYTICS.identify(
-      user_id: user.id,
-      traits: {
-        email: user.email,
-        name: user.full_name
-      }
-    )
-  rescue
-    elog(e)
-  end
+    def identify(user)
+      return if user.blank?
+      ANALYTICS.identify(
+        user_id: user.id,
+        traits: {
+          email: user.email,
+          name: user.full_name
+        }
+      )
+    rescue => e
+      elog(e)
+    end
 
-  def self.track(user, organization, device, event)
-    return if user.blank? || organization.blank?
-    ANALYTICS.track(
-      user_id: user.id,
-      event: event.titleize,
-      properties: {
-        browser: device&.name
-      },
-      context: {
-        groupId: organization.id
-      }
-    )
-  rescue
-    elog(e)
+    def track(user, organization, device, event)
+      return if user.blank? || organization.blank?
+      ANALYTICS.track(
+        user_id: user.id,
+        event: event.titleize,
+        properties: {
+          browser: device&.name
+        },
+        context: {
+          groupId: organization.id
+        }
+      )
+    rescue => e
+      elog(e)
+    end
+
+    private
+
+    def elog(e)
+      Rails.logger.error(e)
+      Sentry.capture_exception(e)
+    end
   end
 end
