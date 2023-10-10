@@ -52,10 +52,26 @@ class Accounts::User < ApplicationRecord
 
   accepts_nested_attributes_for :organizations
 
+  def self.valid_email_domain?(user)
+    return false if user.email.blank?
+    begin
+      disallowed_domains = ENV["DISALLOWED_SIGN_UP_DOMAINS"].split(",")
+      parsed_email = Mail::Address.new(user.email)
+      disallowed_domains.include?(parsed_email.domain)
+    rescue
+      false
+    end
+  end
+
   def self.onboard(user)
     if find_by(email: user.email)
       user.errors.add(:account_exists, "you already have an account with tramline!")
       return user
+    end
+
+    if valid_email_domain?(user)
+      user.errors.add(:email, :invalid_domain)
+      return
     end
 
     new_organization = user.organizations.first
