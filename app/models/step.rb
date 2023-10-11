@@ -64,6 +64,10 @@ class Step < ApplicationRecord
     self.status = Step.statuses[:active]
   end
 
+  def manual_trigger_only?
+    release? && train.manual_release? && release_platform.has_review_steps?
+  end
+
   def first?
     release_platform.steps.minimum(:step_number).to_i == step_number
   end

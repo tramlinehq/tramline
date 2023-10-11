@@ -84,7 +84,7 @@ class Commit < ApplicationRecord
     platform_run.bump_version!
 
     platform_run.release_platform.ordered_steps_until(platform_run.current_step_number).each do |step|
-      next if step.release? && train.manual_release?
+      next if step.manual_trigger_only?
       Triggers::StepRun.call(step, self, platform_run)
     end
   end

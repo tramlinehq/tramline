@@ -63,6 +63,22 @@ describe Commit do
         expect(Triggers::StepRun).to have_received(:call).with(steps.second, commit, release_platform_run).once
         expect(Triggers::StepRun).not_to have_received(:call).with(release_step, commit, release_platform_run)
       end
+
+      it "triggers release step if manual release is configured but there are no review steps" do
+        train = create(:train, manual_release: true)
+        release_platform = create(:release_platform, train:)
+        release_step = create(:step, :release, :with_deployment, release_platform:)
+        release = create(:release, train:)
+        release_platform_run = create(:release_platform_run, release_platform:, release:)
+        commit = create(:commit, release:)
+
+        allow(release).to receive(:latest_commit_hash).and_return(commit.commit_hash)
+        allow(Triggers::StepRun).to receive(:call)
+
+        commit.trigger_step_runs
+
+        expect(Triggers::StepRun).to have_received(:call).with(release_step, commit, release_platform_run).once
+      end
     end
 
     context "when not latest commit" do
