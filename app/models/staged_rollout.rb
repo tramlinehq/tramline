@@ -69,7 +69,6 @@ class StagedRollout < ApplicationRecord
     end
 
     event :halt, guard: -> { deployment_run.rolloutable? }, after_commit: -> { event_stamp!(reason: :halted, kind: :notice, data: stamp_data) } do
-      after { deployment_run.complete! }
       transitions from: [:started, :paused, :failed], to: :stopped
     end
 
