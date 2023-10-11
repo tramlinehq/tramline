@@ -250,15 +250,23 @@ class ReleasePlatformRun < ApplicationRecord
 
   def hotfix?
     return false unless on_track?
-    (release_version.to_semverish > original_release_version.to_semverish) && production_release_happened?
+    (release_version.to_semverish > original_release_version.to_semverish) && production_resubmission_happened?
   end
 
-  def production_release_happened?
+  def production_step_runs
     step_runs
       .includes(:deployment_runs)
       .where(step: release_platform.release_step)
       .not_failed
-      .any?(&:production_release_happened?)
+      .filter(&:production_release_happened?)
+  end
+
+  def production_resubmission_happened?
+    production_step_runs.size > 1
+  end
+
+  def production_release_happened?
+    production_step_runs.size >= 1
   end
 
   def commit_applied?(commit)
