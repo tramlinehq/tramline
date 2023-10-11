@@ -7,6 +7,7 @@
 #  code_name                :string           not null
 #  commit_sha               :string
 #  completed_at             :datetime
+#  in_store_resubmission    :boolean          default(FALSE)
 #  original_release_version :string
 #  release_version          :string
 #  scheduled_at             :datetime         not null
@@ -106,6 +107,8 @@ class ReleasePlatformRun < ApplicationRecord
 
   def bump_version!
     return unless version_bump_required?
+
+    self.in_store_resubmission = true
 
     semverish = newest_release_version.to_semverish
 
@@ -249,8 +252,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def hotfix?
-    return false unless on_track?
-    (release_version.to_semverish > original_release_version.to_semverish) && production_release_happened?
+    on_track? && in_store_resubmission?
   end
 
   def production_release_happened?
