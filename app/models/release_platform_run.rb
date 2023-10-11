@@ -153,14 +153,14 @@ class ReleasePlatformRun < ApplicationRecord
     return true if step.first? && step_runs_for(step).empty?
     return false if step.first?
 
-    (next_step == step) && previous_step_run_for(step)&.success?
+    (next_step == step) && previous_step_run_for(step).success?
   end
 
   def upcoming_startable_step?(step)
     return false if train.inactive?
     return false unless on_track?
 
-    (next_step == step) && previous_step_run_for(step)&.success? && upcoming_release_step?(step)
+    (next_step == step) && previous_step_run_for(step).success? && upcoming_release_step?(step)
   end
 
   def upcoming_release_step?(step)
