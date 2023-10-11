@@ -90,11 +90,11 @@ describe StagedRollout do
         expect(rollout.reload.stopped?).to be(true)
       end
 
-      it "completes the deployment run if halt succeeds" do
+      it "does not complete the deployment run if halt succeeds" do
         allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
         rollout.halt_release!
 
-        expect(rollout.deployment_run.reload.released?).to be(true)
+        expect(rollout.deployment_run.reload.released?).to be(false)
       end
 
       it "does not complete the deployment run if halt fails" do
@@ -134,11 +134,11 @@ describe StagedRollout do
         expect(rollout.reload.stopped?).to be(true)
       end
 
-      it "marks deployment run is completed" do
+      it "does not mark deployment run is completed" do
         allow(providable_dbl).to receive(:halt_phased_release).and_return(GitHub::Result.new)
         rollout.halt_release!
 
-        expect(deployment_run.reload.released?).to be(true)
+        expect(deployment_run.reload.released?).to be(false)
       end
 
       it "does not complete the deployment run if rollout fails" do
