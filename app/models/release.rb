@@ -196,7 +196,7 @@ class Release < ApplicationRecord
   end
 
   def end_time
-    completed_at || stopped_at || Time.current
+    completed_at || stopped_at
   end
 
   def fetch_commit_log

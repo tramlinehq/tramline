@@ -129,6 +129,7 @@ describe Step do
 
   describe "#active_deployments_for" do
     let(:release_platform) { create(:release_platform) }
+    let(:train) { release_platform.train }
 
     it "returns all non-discarded deployments when no release is passed in" do
       step = create(:step, :with_deployment, release_platform: release_platform)
@@ -139,27 +140,50 @@ describe Step do
       expect(step.active_deployments_for(nil)).to contain_exactly(step.deployments.first, next_deployment)
     end
 
-    it "returns deployments active at the duration of the release" do
-      train = release_platform.train
+    it "returns deployments that were available in the past releases" do
       two_days_ago = 2.days.ago
       two_hours_ago = 2.hours.ago
       four_hours_ago = 2.hours.ago
+      step = travel_to(two_days_ago) { create(:step, :with_deployment, release_platform: release_platform) }
+      d1 = create(:deployment, step:, created_at: two_days_ago)
+      d2 = create(:deployment, step:, created_at: two_days_ago)
+      old_release = create(:release, train:, scheduled_at: four_hours_ago, completed_at: two_hours_ago)
+
+      d2.discard!
+
+      step.reload
+      expect(step.active_deployments_for(old_release)).to contain_exactly(step.deployments.first, d1, d2)
+    end
+
+    it "returns deployments active at the duration of the release" do
+      two_days_ago = 2.days.ago
+      step = travel_to(two_days_ago) { create(:step, :with_deployment, release_platform: release_platform) }
+      d1 = create(:deployment, step:, created_at: two_days_ago)
+      d2 = create(:deployment, step:, created_at: two_days_ago)
+
+      travel_to(1.minute.ago) { d2.discard! }
+      current_release = create(:release, train:, scheduled_at: Time.current)
+
+      step.reload
+      expect(step.active_deployments_for(current_release)).to contain_exactly(step.deployments.first, d1)
+    end
+
+    it "returns deployments that will be available for a new future release" do
+      two_days_ago = 2.days.ago
       two_hours_later = 2.hours.from_now
       four_hours_later = 4.hours.from_now
       step = travel_to(two_days_ago) { create(:step, :with_deployment, release_platform: release_platform) }
       d1 = create(:deployment, step:, created_at: two_days_ago)
       d2 = create(:deployment, step:, created_at: two_days_ago)
-
-      d2.discard!
-      old_release = create(:release, train:, scheduled_at: four_hours_ago, completed_at: two_hours_ago)
-      current_release = create(:release, train:, scheduled_at: Time.current)
-      travel_to(1.minute.from_now) { d1.discard! }
-      d3 = create(:deployment, step:)
       future_release = create(:release, train:, scheduled_at: two_hours_later, completed_at: four_hours_later)
 
-      step.reload
-      expect(step.active_deployments_for(old_release)).to contain_exactly(step.deployments.first, d1, d2)
-      expect(step.active_deployments_for(current_release)).to contain_exactly(step.deployments.first, d1)
+      travel_to(1.minute.ago) do
+        d1.discard!
+        d2.discard!
+      end
+
+      d3 = create(:deployment, step:)
+
       expect(step.active_deployments_for(future_release)).to contain_exactly(step.deployments.first, d3)
     end
   end

@@ -57,7 +57,11 @@ class Step < ApplicationRecord
 
   def active_deployments_for(release)
     return deployments unless release
-    all_deployments.where("created_at < ?", release.scheduled_at).where("discarded_at IS NULL OR discarded_at >= ?", release.end_time)
+    return deployments.where("created_at < ?", release.scheduled_at) if release.end_time.blank?
+
+    all_deployments
+      .where("created_at < ?", release.scheduled_at)
+      .where("discarded_at IS NULL OR discarded_at >= ?", release.end_time)
   end
 
   def set_step_number
