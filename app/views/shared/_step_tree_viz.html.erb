@@ -1,7 +1,7 @@
 <ol class="mt-2">
   <!-- review steps -->
   <% release_platform.steps.review.includes(deployments: [:integration]).order(:step_number).each do |step| %>
-    <li><%= render partial: "shared/per_step_metadata", locals: { editable: editable, step: step, step_run: nil, release: nil } %></li>
+    <li><%= render partial: "shared/per_step_metadata", locals: { editable: editable, step: step, step_run: nil, platform_run: nil } %></li>
     <%= render partial: "shared/step_tree_connector", locals: { color: step_color(step.kind) } %>
   <% end %>
 
@@ -12,7 +12,7 @@
   <% release_step = release_platform.steps.release.first %>
   <% if release_step %>
     <%= render partial: "shared/step_tree_connector", locals: { color: step_color("review") } %>
-    <li><%= render partial: "shared/per_step_metadata", locals: { editable: editable, step: release_step, step_run: nil, release: nil } %></li>
+    <li><%= render partial: "shared/per_step_metadata", locals: { editable: editable, step: release_step, step_run: nil, platform_run: nil } %></li>
   <% end %>
 
   <!-- add release button -->

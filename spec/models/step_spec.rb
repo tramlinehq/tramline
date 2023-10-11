@@ -126,4 +126,41 @@ describe Step do
       expect(step.errors).to be_empty
     end
   end
+
+  describe "#active_deployments_for" do
+    let(:release_platform) { create(:release_platform) }
+
+    it "returns all non-discarded deployments when no release is passed in" do
+      step = create(:step, :with_deployment, release_platform: release_platform)
+      next_deployment = create(:deployment, step:)
+      _discarded_deployment = create(:deployment, discarded_at: Time.current, step:)
+
+      step.reload
+      expect(step.active_deployments_for(nil)).to contain_exactly(step.deployments.first, next_deployment)
+    end
+
+    it "returns deployments active at the duration of the release" do
+      train = release_platform.train
+      two_days_ago = 2.days.ago
+      two_hours_ago = 2.hours.ago
+      four_hours_ago = 2.hours.ago
+      two_hours_later = 2.hours.from_now
+      four_hours_later = 4.hours.from_now
+      step = travel_to(two_days_ago) { create(:step, :with_deployment, release_platform: release_platform) }
+      d1 = create(:deployment, step:, created_at: two_days_ago)
+      d2 = create(:deployment, step:, created_at: two_days_ago)
+
+      d2.discard!
+      old_release = create(:release, train:, scheduled_at: four_hours_ago, completed_at: two_hours_ago)
+      current_release = create(:release, train:, scheduled_at: Time.current)
+      travel_to(1.minute.from_now) { d1.discard! }
+      d3 = create(:deployment, step:)
+      future_release = create(:release, train:, scheduled_at: two_hours_later, completed_at: four_hours_later)
+
+      step.reload
+      expect(step.active_deployments_for(old_release)).to contain_exactly(step.deployments.first, d1, d2)
+      expect(step.active_deployments_for(current_release)).to contain_exactly(step.deployments.first, d1)
+      expect(step.active_deployments_for(future_release)).to contain_exactly(step.deployments.first, d3)
+    end
+  end
 end

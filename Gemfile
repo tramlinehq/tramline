@@ -109,3 +109,5 @@ group :test do
   gem "simplecov"
   gem "webmock"
 end
+
+gem "discard", "~> 1.3"
