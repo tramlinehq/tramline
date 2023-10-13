@@ -99,7 +99,8 @@ class StepsController < SignedInApplicationController
       :ci_cd_channel,
       :release_suffix,
       :kind,
-      :auto_deploy
+      :auto_deploy,
+      :build_artifact_name_pattern
     )
   end
 
