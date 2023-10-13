@@ -18,7 +18,7 @@
         <%= form.text_area :description, class: "form-input w-full", placeholder: "Describe your step..." %>
       </div>
 
-      <% if @app.android? || @app.cross_platform? %>
+      <% if @release_platform.android? %>
         <div class="mt-4">
           <div data-controller="domain--release-suffix-help"
                data-domain--release-suffix-help-version-value="<%= @train.version_current %>"

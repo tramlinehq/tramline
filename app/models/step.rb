@@ -66,6 +66,10 @@ class Step < ApplicationRecord
       .where("discarded_at IS NULL OR discarded_at >= ?", release.end_time)
   end
 
+  def suffixable?
+    release_suffix.present? && release_platform.android?
+  end
+
   def set_step_number
     self.step_number = release_platform.steps.review.maximum(:step_number).to_i + 1
     release_platform.release_step&.update!(step_number: step_number.succ) if review?
