@@ -80,9 +80,9 @@ class ReleasePlatform < ApplicationRecord
   end
 
   def store_provider
-    if platform == "ios"
+    if ios?
       app.ios_store_provider
-    elsif platform == "android"
+    elsif android?
       app.android_store_provider
     else
       raise ArgumentError, "invalid platform value"

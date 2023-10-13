@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_11_072223) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_13_071746) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -490,6 +490,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_11_072223) do
     t.string "release_suffix"
     t.string "kind"
     t.boolean "auto_deploy", default: true
+    t.string "build_artifact_name_pattern"
     t.index ["ci_cd_channel", "release_platform_id"], name: "index_steps_on_ci_cd_channel_and_release_platform_id", unique: true
     t.index ["release_platform_id"], name: "index_steps_on_release_platform_id"
     t.index ["step_number", "release_platform_id"], name: "index_steps_on_step_number_and_release_platform_id", unique: true

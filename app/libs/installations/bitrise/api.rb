@@ -16,6 +16,8 @@ module Installations
     WORKFLOW_RUN_ARTIFACTS_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/builds/{build_slug}/artifacts")
     WORKFLOW_RUN_ARTIFACT_URL = Addressable::Template.new("https://api.bitrise.io/v0.1/apps/{app_slug}/builds/{build_slug}/artifacts/{artifact_slug}")
 
+    VALID_ARTIFACT_TYPES = %w[android-apk ios-ipa].freeze
+
     def initialize(access_token)
       @access_token = access_token
     end
@@ -26,12 +28,17 @@ module Installations
         WORKFLOW_RUN_ARTIFACT_URL.expand(app_slug:, build_slug:, artifact_slug: artifact["slug"]).to_s
       end
 
-      def filter_android(artifacts)
-        artifacts.select { |artifact| artifact["artifact_type"] == "android-apk" }
+      def filter_by_relevant_type(artifacts)
+        artifacts.select { |artifact| VALID_ARTIFACT_TYPES.include? artifact["artifact_type"] }
       end
 
       def find_biggest(artifacts)
         artifacts.max_by { |artifact| artifact.dig("artifact_meta", "file_size_bytes")&.safe_float }
+      end
+
+      def filter_by_name(artifacts, name_pattern)
+        return artifacts if name_pattern.blank?
+        artifacts.filter { |artifact| artifact.fetch("title")&.downcase&.include? name_pattern }.presence || artifacts
       end
     end
 

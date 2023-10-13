@@ -2,19 +2,20 @@
 #
 # Table name: steps
 #
-#  id                  :uuid             not null, primary key
-#  auto_deploy         :boolean          default(TRUE)
-#  ci_cd_channel       :jsonb            not null, indexed => [release_platform_id]
-#  description         :string           not null
-#  kind                :string
-#  name                :string           not null
-#  release_suffix      :string
-#  slug                :string
-#  status              :string           not null
-#  step_number         :integer          default(0), not null, indexed => [release_platform_id]
-#  created_at          :datetime         not null
-#  updated_at          :datetime         not null
-#  release_platform_id :uuid             not null, indexed => [ci_cd_channel], indexed, indexed => [step_number]
+#  id                          :uuid             not null, primary key
+#  auto_deploy                 :boolean          default(TRUE)
+#  build_artifact_name_pattern :string
+#  ci_cd_channel               :jsonb            not null, indexed => [release_platform_id]
+#  description                 :string           not null
+#  kind                        :string
+#  name                        :string           not null
+#  release_suffix              :string
+#  slug                        :string
+#  status                      :string           not null
+#  step_number                 :integer          default(0), not null, indexed => [release_platform_id]
+#  created_at                  :datetime         not null
+#  updated_at                  :datetime         not null
+#  release_platform_id         :uuid             not null, indexed => [ci_cd_channel], indexed, indexed => [step_number]
 #
 class Step < ApplicationRecord
   has_paper_trail
@@ -36,6 +37,7 @@ class Step < ApplicationRecord
 
   after_initialize :set_default_status, if: :new_record?
   before_validation :set_step_number, if: :new_record?
+  before_save -> { self.build_artifact_name_pattern = build_artifact_name_pattern.downcase }, if: -> { build_artifact_name_pattern.present? }
 
   enum status: {
     active: "active",
@@ -48,7 +50,7 @@ class Step < ApplicationRecord
   }
 
   friendly_id :name, use: :slugged
-  auto_strip_attributes :name, squish: true
+  auto_strip_attributes :name, :build_artifact_name_pattern, squish: true
   accepts_nested_attributes_for :deployments, allow_destroy: false, reject_if: :reject_deployments?
 
   delegate :app, :train, to: :release_platform
@@ -62,6 +64,10 @@ class Step < ApplicationRecord
     all_deployments
       .where("created_at < ?", release.scheduled_at)
       .where("discarded_at IS NULL OR discarded_at >= ?", release.end_time)
+  end
+
+  def suffixable?
+    release_suffix.present? && release_platform.android?
   end
 
   def set_step_number
