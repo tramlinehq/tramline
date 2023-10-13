@@ -38,7 +38,7 @@ module Installations
 
       def filter_by_name(artifacts, name_pattern)
         return artifacts if name_pattern.blank?
-        artifacts.filter { |artifact| artifact.fetch("title")&.include? name_pattern }.presence || artifacts
+        artifacts.filter { |artifact| artifact.fetch("title")&.downcase&.include? name_pattern }.presence || artifacts
       end
     end
 

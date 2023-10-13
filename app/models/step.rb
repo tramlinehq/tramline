@@ -37,6 +37,7 @@ class Step < ApplicationRecord
 
   after_initialize :set_default_status, if: :new_record?
   before_validation :set_step_number, if: :new_record?
+  before_save -> { self.build_artifact_name_pattern = build_artifact_name_pattern.downcase }, if: -> { build_artifact_name_pattern.present? }
 
   enum status: {
     active: "active",
@@ -49,7 +50,7 @@ class Step < ApplicationRecord
   }
 
   friendly_id :name, use: :slugged
-  auto_strip_attributes :name, squish: true
+  auto_strip_attributes :name, :build_artifact_name_pattern, squish: true
   accepts_nested_attributes_for :deployments, allow_destroy: false, reject_if: :reject_deployments?
 
   delegate :app, :train, to: :release_platform

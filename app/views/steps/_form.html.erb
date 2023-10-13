@@ -64,10 +64,11 @@
       <div class="mt-4">
         <%= form.label "Build Artifact Name (Optional)", class: "block text-sm font-medium mb-1" %>
         <%= form.text_field :build_artifact_name_pattern, class: "form-input w-full" %>
-        <div class="text-sm mt-1">
-          If your CI workflow generates multiple artifacts, provide a name to choose the correct build artifact
-          (aab/apk/ipa) among the files generated.<br>
-          When left blank, Tramline will choose the largest file generated as the build artifact.
+        <div class="text-sm">
+          <p class="mt-1">If your CI workflow generates multiple artifacts, provide a name to choose the correct build artifact
+            (aab/apk/ipa) among the files generated.</p>
+          <p class="mt-1">When left blank, Tramline will choose the largest file generated as the build artifact.</p>
+          <p class="mt-1">To understand the build artifact selection better, <%= link_to_external "read the docs", "https://docs.tramline.app/integrations/ci-cd/#build-artifact-selection", class: "underline" %>.</p>
         </div>
       </div>
     </div>
