@@ -87,6 +87,12 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_13_071746) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "bugsnag_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "access_token"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "build_artifacts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "step_run_id", null: false
     t.datetime "created_at", null: false
