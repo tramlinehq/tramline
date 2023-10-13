@@ -1,0 +1,120 @@
+<div class="grid grid-cols-2 gap-x-10 gap-y-5 w-full mt-10">
+  <div class="w-full bg-white rounded-lg shadow p-4 md:p-6">
+    <div class="flex justify-between">
+      <div>
+        <h5 class="leading-none text-3xl font-bold text-gray-900 pb-2">32.4k</h5>
+        <p class="text-base font-normal text-gray-500">Users this week</p>
+      </div>
+      <div
+        class="flex items-center px-2.5 py-0.5 text-base font-semibold text-green-500 dark:text-green-500 text-center">
+        12%
+        <svg class="w-3 h-3 ml-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 14">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13V1m0 0L1 5m4-4 4 4"/>
+        </svg>
+      </div>
+    </div>
+
+    <%
+      categories = (Date.parse('2023-02-01')..Date.parse('2023-02-07')).map { |date| date.strftime('%d %B') }.to_json
+      series = [[6456, 6356, 6526, 6332, 6418, 6500], [6500, 6418, 6456, 6526, 6356, 6456]].to_json
+      names = ["New Users", "New Sessions"].to_json
+    %>
+
+    <div data-controller="charts"
+         data-charts-type-value="area"
+         data-charts-area-names-value="<%= names %>"
+         data-charts-area-series-value="<%= series %>"
+         data-charts-area-categories-value="<%= categories %>">
+      <div data-charts-target="chart"></div>
+    </div>
+  </div>
+
+  <div class="w-full bg-white rounded-lg shadow p-4 md:p-6">
+    <div class="flex justify-between">
+      <div>
+        <h5 class="leading-none text-3xl font-bold text-gray-900 pb-2">32.4k</h5>
+        <p class="text-base font-normal text-gray-500">Users this week</p>
+      </div>
+      <div
+        class="flex items-center px-2.5 py-0.5 text-base font-semibold text-green-500 dark:text-green-500 text-center">
+        12%
+        <svg class="w-3 h-3 ml-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 14">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13V1m0 0L1 5m4-4 4 4"/>
+        </svg>
+      </div>
+    </div>
+
+    <%
+      categories = ['01 Feb', '02 Feb', '03 Feb', '04 Feb', '05 Feb', '06 Feb', '07 Feb', '08 Feb'].to_json
+      series = [[6456, 6356, 6526, 6332, 6418, 6500, 40000, 9000], [6500, 6418, 6456, 6526, 6356, 6456, 2000, 100]].to_json
+      names = ["Clicks Total", "CPC"].to_json
+    %>
+
+    <div data-controller="charts"
+         data-charts-type-value="line"
+         data-charts-line-names-value="<%= names %>"
+         data-charts-line-series-value="<%= series %>"
+         data-charts-line-categories-value="<%= categories %>">
+      <div data-charts-target="chart"></div>
+    </div>
+  </div>
+
+  <div class="w-full bg-white rounded-lg shadow p-4 md:p-6">
+    <div class="flex justify-between">
+      <div>
+        <h5 class="leading-none text-3xl font-bold text-gray-900 pb-2">32.4k</h5>
+        <p class="text-base font-normal text-gray-500">Users this week</p>
+      </div>
+      <div
+        class="flex items-center px-2.5 py-0.5 text-base font-semibold text-green-500 dark:text-green-500 text-center">
+        12%
+        <svg class="w-3 h-3 ml-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 14">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13V1m0 0L1 5m4-4 4 4"/>
+        </svg>
+      </div>
+    </div>
+
+    <%
+      series = [400, 500, 100, 900].to_json
+      names = ["User Sessions", "Clicks", "Crashes", "Organic"].to_json
+    %>
+
+    <div data-controller="charts"
+         data-charts-type-value="donut"
+         data-charts-donut-names-value="<%= names %>"
+         data-charts-donut-series-value="<%= series %>"
+         data-charts-donut-label-value="People">
+      <div data-charts-target="chart"></div>
+    </div>
+  </div>
+
+  <div class="w-full bg-white rounded-lg shadow p-4 md:p-6">
+    <div class="flex justify-between">
+      <div>
+        <h5 class="leading-none text-3xl font-bold text-gray-900 pb-2">32.4k</h5>
+        <p class="text-base font-normal text-gray-500">Users this week</p>
+      </div>
+      <div
+        class="flex items-center px-2.5 py-0.5 text-base font-semibold text-green-500 dark:text-green-500 text-center">
+        12%
+        <svg class="w-3 h-3 ml-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 14">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13V1m0 0L1 5m4-4 4 4"/>
+        </svg>
+      </div>
+    </div>
+
+    <%
+      categories = %w[Mon Tue Wed Thu Fri Sat Sun].to_json
+      series = [[6456, 6356, 6526, 6332, 6418, 6500, 399], [6500 - 2000, 6418 - 1000, 6456 - 5000, 6526 - 300, 6356, 6456, 100], [1000, 2000, 3000, 400, 5000, 600, 7000]].to_json
+      names = ["Organic", "Social Media", "Hiring Channel"].to_json
+    %>
+
+    <div data-controller="charts"
+         data-charts-type-value="stacked-bar"
+         data-charts-stacked-bar-names-value="<%= names %>"
+         data-charts-stacked-bar-series-value="<%= series %>"
+         data-charts-stacked-bar-categories-value="<%= categories %>">
+      <div data-charts-target="chart"></div>
+    </div>
+  </div>
+</div>
