@@ -50,7 +50,7 @@ class Queries::Builds
 
   def android_all
     selected_android_records.to_a.map do |record|
-      deployments = record.step_run.step.deployments
+      deployments = record.step_run.deployment_runs.map(&:deployment)
       attributes =
         record
           .attributes

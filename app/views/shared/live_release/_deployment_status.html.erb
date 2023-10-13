@@ -2,7 +2,7 @@
   <% if step_run.manually_startable_deployment?(deployment) %>
     <%= authz_button_to :blue,
                         "Start this deployment",
-                        start_release_step_run_deployment_path(release, step_run, deployment),
+                        start_release_step_run_deployment_path(platform_run, step_run, deployment),
                         { class: 'mt-2 btn-xs' } %>
   <% end %>
 

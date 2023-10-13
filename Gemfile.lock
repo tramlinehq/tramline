@@ -133,6 +133,8 @@ GEM
     diff-lcs (1.5.0)
     digest-crc (0.6.4)
       rake (>= 12.0.0, < 14.0.0)
+    discard (1.3.0)
+      activerecord (>= 4.2, < 8)
     docile (1.4.0)
     dogstatsd-ruby (5.5.0)
     domain_name (0.5.20190701)
@@ -621,6 +623,7 @@ DEPENDENCIES
   debug
   device_detector (~> 1.0)
   devise (~> 4.8)
+  discard (~> 1.3)
   dogstatsd-ruby (~> 5.5)
   dotenv-rails (~> 2.7)
   down (~> 5.3)

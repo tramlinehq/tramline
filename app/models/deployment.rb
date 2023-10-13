@@ -5,6 +5,7 @@
 #  id                     :uuid             not null, primary key
 #  build_artifact_channel :jsonb            indexed => [integration_id, step_id]
 #  deployment_number      :integer          default(0), not null, indexed => [step_id]
+#  discarded_at           :datetime         indexed
 #  is_staged_rollout      :boolean          default(FALSE)
 #  staged_rollout_config  :decimal(, )      default([]), is an Array
 #  created_at             :datetime         not null
@@ -15,6 +16,7 @@
 class Deployment < ApplicationRecord
   has_paper_trail
   include Displayable
+  include Discard::Model
 
   self.implicit_order_column = :deployment_number
 
@@ -46,7 +48,7 @@ class Deployment < ApplicationRecord
   def staged_rollout? = is_staged_rollout
 
   def set_deployment_number
-    self.deployment_number = step.deployments.maximum(:deployment_number).to_i + 1
+    self.deployment_number = step.all_deployments.maximum(:deployment_number).to_i + 1
   end
 
   def external?
