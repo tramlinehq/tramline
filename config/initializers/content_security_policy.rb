@@ -5,7 +5,7 @@
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy
 
 def connect_src_uris
-  ENV["CSP_CONNECT_SRC_URIS"].split(",") || []
+  ENV["CSP_CONNECT_SRC_URIS"]&.split(",") || []
 end
 
 def csp_reporting_uri
