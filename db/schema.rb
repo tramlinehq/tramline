@@ -161,8 +161,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_13_071746) do
     t.datetime "updated_at", null: false
     t.decimal "staged_rollout_config", default: [], array: true
     t.boolean "is_staged_rollout", default: false
+    t.datetime "discarded_at"
     t.index ["build_artifact_channel", "integration_id", "step_id"], name: "idx_deployments_on_build_artifact_chan_and_integration_and_step", unique: true
     t.index ["deployment_number", "step_id"], name: "index_deployments_on_deployment_number_and_step_id", unique: true
+    t.index ["discarded_at"], name: "index_deployments_on_discarded_at"
     t.index ["integration_id"], name: "index_deployments_on_integration_id"
     t.index ["step_id"], name: "index_deployments_on_step_id"
   end

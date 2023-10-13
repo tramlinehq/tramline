@@ -12,6 +12,7 @@ gem "turbo-rails", "~> 1.0"
 gem "stimulus-rails", "~> 1.0"
 gem "jbuilder", "~> 2.11"
 gem "redis", "~> 4.0"
+gem "redis-actionpack", "~> 5.3"
 gem "bcrypt", "~> 3.1.7"
 gem "tzinfo-data", "~> 1.2021", platforms: %i[mingw mswin x64_mingw jruby]
 gem "bootsnap", "~> 1.10"
@@ -75,6 +76,7 @@ gem "google-apis-firebase_v1beta1", "~> 0.35.0"
 gem "initials", "~> 0.4.3"
 gem "rack-attack", "~> 6.7"
 gem "june-analytics-ruby", "~> 2.4"
+gem "discard", "~> 1.3"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

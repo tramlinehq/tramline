@@ -12,7 +12,7 @@
         <%= render partial: "trains/edit_step_button", locals: { editable: editable, step: step } %>
       <% end %>
 
-      <% if release.present? %>
+      <% if platform_run.present? %>
         <%= render partial: "shared/live_release/step_run_status", locals: { step_run: step_run, step: step } %>
       <% end %>
     </div>
@@ -40,7 +40,7 @@
       <div class="flex flex-row items-center w-full">
         <div class="inline-flex mr-1"></div>
         <%= render partial: "shared/deployments",
-                   locals: { step: step, step_run: step_run, release: release, show_deployment_status: release.present? } %>
+                   locals: { step: step, step_run: step_run, platform_run:, show_deployment_status: platform_run.present? } %>
       </div>
     </div>
   </div>

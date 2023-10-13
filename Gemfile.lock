@@ -133,6 +133,8 @@ GEM
     diff-lcs (1.5.0)
     digest-crc (0.6.4)
       rake (>= 12.0.0, < 14.0.0)
+    discard (1.3.0)
+      activerecord (>= 4.2, < 8)
     docile (1.4.0)
     dogstatsd-ruby (5.5.0)
     domain_name (0.5.20190701)
@@ -404,8 +406,17 @@ GEM
     rainbow (3.1.1)
     rake (13.0.6)
     redis (4.8.0)
+    redis-actionpack (5.3.0)
+      actionpack (>= 5, < 8)
+      redis-rack (>= 2.1.0, < 3)
+      redis-store (>= 1.1.0, < 2)
     redis-client (0.17.0)
       connection_pool
+    redis-rack (2.1.4)
+      rack (>= 2.0.8, < 3)
+      redis-store (>= 1.2, < 2)
+    redis-store (1.10.0)
+      redis (>= 4, < 6)
     regexp_parser (2.6.2)
     reline (0.3.2)
       io-console (~> 0.5)
@@ -612,6 +623,7 @@ DEPENDENCIES
   debug
   device_detector (~> 1.0)
   devise (~> 4.8)
+  discard (~> 1.3)
   dogstatsd-ruby (~> 5.5)
   dotenv-rails (~> 2.7)
   down (~> 5.3)
@@ -661,6 +673,7 @@ DEPENDENCIES
   rack-mini-profiler
   rails (~> 7.0.5)
   redis (~> 4.0)
+  redis-actionpack (~> 5.3)
   requestjs-rails (~> 0.0.9)
   retryable (~> 3.0)
   rspec-rails

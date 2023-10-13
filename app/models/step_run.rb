@@ -251,7 +251,7 @@ class StepRun < ApplicationRecord
   end
 
   def first_deployment
-    step.deployments.find_by(deployment_number: 1)
+    step.deployments.order(deployment_number: :asc).first
   end
 
   def finished_deployments?
