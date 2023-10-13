@@ -62,7 +62,7 @@ export default class extends Controller {
       chartOptions = this.stackedBarOptions(names, series, categories)
     }
 
-    if (this.__validateData(names, series)) {
+    if (this.__validateData(names, series, categories)) {
       return;
     }
 
@@ -365,7 +365,7 @@ export default class extends Controller {
     return names.map((name, index) => ({
       name,
       color: this.__pickColor(index),
-      data: categories.map((day, i) => ({x: day, y: series[index][i]})),
+      data: categories.map((xLabel, i) => ({x: xLabel, y: series[index][i]})),
     }));
   }
 
@@ -375,9 +375,14 @@ export default class extends Controller {
     return chartColors[colorIndex];
   }
 
-  __validateData(names, series) {
+  __validateData(names, series, categories) {
     if (names.length !== series.length) {
       console.error('Names and Series must have the same number of top-level items.');
+      return false;
+    }
+
+    if (categories.length > 0 && series.some(dataset => dataset.length !== categories.length)) {
+      console.error('Categories and each dataset in the Series must be equal in size');
       return false;
     }
   }
