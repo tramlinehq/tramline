@@ -120,7 +120,7 @@ class BitriseIntegration < ApplicationRecord
     installation
       .artifacts(project, workflow_run_id)
       .then { |artifacts| API.filter_by_relevant_type(artifacts) }
-      .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern).presence || artifacts }
+      .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern) }
       .then { |artifacts| API.find_biggest(artifacts) }
       .then { |chosen_package| API.artifact_url(project, workflow_run_id, chosen_package) }
   end

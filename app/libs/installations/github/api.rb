@@ -303,7 +303,7 @@ module Installations
 
     def self.filter_by_name(artifacts, name_pattern)
       return artifacts if name_pattern.blank?
-      artifacts.filter { |artifact| artifact["name"].include? name_pattern }
+      artifacts.filter { |artifact| artifact["name"].include? name_pattern }.presence || artifacts
     end
 
     def artifact_io_stream(artifact)
