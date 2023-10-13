@@ -2,7 +2,7 @@ require_relative "boot"
 
 require "rails/all"
 require_relative "../lib/logging_extensions"
-require_relative '../lib/core_extensions/intercom_rails/auto_include'
+require_relative "../lib/core_extensions/intercom_rails/auto_include"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.

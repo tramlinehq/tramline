@@ -44,7 +44,7 @@ end
 Rails.application.config.content_security_policy_nonce_generator = ->(request) { Base64.strict_encode64(request.session.id.to_s) }
 Rails.application.config.content_security_policy_nonce_directives = %w[script-src]
 Rails.application.config.content_security_policy_report_only = -> {
-  return true if ENV["CSP_REPORT_ONLY"].downcase == "true"
-  return false if ENV["CSP_REPORT_ONLY"].downcase == "false"
+  return true if ENV["CSP_REPORT_ONLY"]&.downcase == "true"
+  return false if ENV["CSP_REPORT_ONLY"]&.downcase == "false"
   true
 }.call
