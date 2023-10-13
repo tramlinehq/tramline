@@ -46,7 +46,7 @@ class WorkflowProcessors::WorkflowRun
 
   memoize def runner
     return GITHUB.new(workflow_run) if github_integration?
-    BITRISE.new(step_run.ci_cd_provider, workflow_run) if bitrise_integration?
+    BITRISE.new(step_run.ci_cd_provider, workflow_run, step_run) if bitrise_integration?
   end
 
   delegate :github_integration?, :bitrise_integration?, to: :integration

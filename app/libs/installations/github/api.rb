@@ -301,6 +301,11 @@ module Installations
       artifacts.max_by { |artifact| artifact["size_in_bytes"] }
     end
 
+    def self.filter_by_name(artifacts, name_pattern)
+      return artifacts if name_pattern.blank?
+      artifacts.filter { |artifact| artifact["name"].include? name_pattern }
+    end
+
     def artifact_io_stream(artifact)
       # FIXME: return an IO stream instead of a TempFile
       # See issue: https://github.com/janko/down/issues/70

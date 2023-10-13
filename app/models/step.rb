@@ -2,19 +2,20 @@
 #
 # Table name: steps
 #
-#  id                  :uuid             not null, primary key
-#  auto_deploy         :boolean          default(TRUE)
-#  ci_cd_channel       :jsonb            not null, indexed => [release_platform_id]
-#  description         :string           not null
-#  kind                :string
-#  name                :string           not null
-#  release_suffix      :string
-#  slug                :string
-#  status              :string           not null
-#  step_number         :integer          default(0), not null, indexed => [release_platform_id]
-#  created_at          :datetime         not null
-#  updated_at          :datetime         not null
-#  release_platform_id :uuid             not null, indexed => [ci_cd_channel], indexed, indexed => [step_number]
+#  id                          :uuid             not null, primary key
+#  auto_deploy                 :boolean          default(TRUE)
+#  build_artifact_name_pattern :string
+#  ci_cd_channel               :jsonb            not null, indexed => [release_platform_id]
+#  description                 :string           not null
+#  kind                        :string
+#  name                        :string           not null
+#  release_suffix              :string
+#  slug                        :string
+#  status                      :string           not null
+#  step_number                 :integer          default(0), not null, indexed => [release_platform_id]
+#  created_at                  :datetime         not null
+#  updated_at                  :datetime         not null
+#  release_platform_id         :uuid             not null, indexed => [ci_cd_channel], indexed, indexed => [step_number]
 #
 class Step < ApplicationRecord
   has_paper_trail

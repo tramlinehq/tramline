@@ -116,15 +116,16 @@ class BitriseIntegration < ApplicationRecord
   end
 
   # NOTE: this is bitrise specific right now
-  def artifact_url(workflow_run_id)
+  def artifact_url(workflow_run_id, artifact_name_pattern)
     installation
       .artifacts(project, workflow_run_id)
-      .then { |artifacts| API.filter_android(artifacts) }
+      .then { |artifacts| API.filter_by_relevant_type(artifacts) }
+      .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern).presence || artifacts }
       .then { |artifacts| API.find_biggest(artifacts) }
       .then { |chosen_package| API.artifact_url(project, workflow_run_id, chosen_package) }
   end
 
-  def get_artifact(artifact_url)
+  def get_artifact(artifact_url, _)
     raise Integration::NoBuildArtifactAvailable if artifact_url.blank?
     Artifacts::Stream.new(installation.artifact_io_stream(artifact_url))
   end
