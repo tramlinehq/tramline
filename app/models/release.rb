@@ -195,6 +195,10 @@ class Release < ApplicationRecord
     may_stop?
   end
 
+  def end_time
+    completed_at || stopped_at
+  end
+
   def fetch_commit_log
     if upcoming?
       ongoing_head = train.ongoing_release.first_commit

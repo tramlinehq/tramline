@@ -24,9 +24,9 @@ class Step < ApplicationRecord
 
   belongs_to :release_platform, inverse_of: :steps
   has_many :step_runs, inverse_of: :step, dependent: :destroy
-  has_many :deployments, -> { sequential }, inverse_of: :step, dependent: :destroy
+  has_many :deployments, -> { kept.sequential }, inverse_of: :step, dependent: :destroy
+  has_many :all_deployments, -> { sequential }, class_name: "Deployment", inverse_of: :step, dependent: :destroy
   has_many :deployment_runs, through: :deployments
-
   validates :ci_cd_channel, presence: true, uniqueness: {scope: :release_platform_id, message: "you have already used this in another step of this train!"}
   validates :release_suffix, format: {with: /\A[a-zA-Z\-_]+\z/, message: "only allows letters and underscore"}, if: -> { release_suffix.present? }
   validates :deployments, presence: true, on: :create
@@ -54,6 +54,15 @@ class Step < ApplicationRecord
   delegate :app, :train, to: :release_platform
   delegate :android?, to: :app
   delegate :ci_cd_provider, :notify!, to: :train
+
+  def active_deployments_for(release)
+    return deployments unless release
+    return deployments.where("created_at < ?", release.scheduled_at) if release.end_time.blank?
+
+    all_deployments
+      .where("created_at < ?", release.scheduled_at)
+      .where("discarded_at IS NULL OR discarded_at >= ?", release.end_time)
+  end
 
   def set_step_number
     self.step_number = release_platform.steps.review.maximum(:step_number).to_i + 1
