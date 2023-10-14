@@ -352,6 +352,7 @@ class Train < ApplicationRecord
       {
         train_name: name,
         train_current_version: version_current,
+        train_next_version: next_version,
         train_url: train_link,
         working_branch:
       }
