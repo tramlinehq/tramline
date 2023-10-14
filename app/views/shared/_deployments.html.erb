@@ -1,5 +1,5 @@
 <ol>
-  <% step.active_deployments_for(platform_run&.release).each do |deployment| %>
+  <% step.active_deployments_for(platform_run&.release, step_run).each do |deployment| %>
     <li class="last:mb-0 mb-1">
       <div>
         <%= render partial: "shared/deployment", locals: { deployment: deployment } %>

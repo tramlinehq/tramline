@@ -57,8 +57,10 @@ class Step < ApplicationRecord
   delegate :android?, to: :app
   delegate :ci_cd_provider, :notify!, to: :train
 
-  def active_deployments_for(release)
+  def active_deployments_for(release, step_run = nil)
     return deployments unless release
+    # FIXME: this is to handle special case of discarding deployments when a release is ongoing; this should not be allowed
+    return step_run.deployment_runs.map(&:deployment) if release.end_time.blank? && step_run&.success?
     return deployments.where("created_at < ?", release.scheduled_at) if release.end_time.blank?
 
     all_deployments
