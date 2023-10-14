@@ -58,13 +58,16 @@ class Step < ApplicationRecord
   delegate :ci_cd_provider, :notify!, to: :train
 
   def active_deployments_for(release, step_run = nil)
+    # no release
     return deployments unless release
-    # FIXME: this is to handle special case of discarding deployments when a release is ongoing; this should not be allowed
-    return step_run.deployment_runs.map(&:deployment) if release.end_time.blank? && step_run&.success?
-    return deployments.where("created_at < ?", release.scheduled_at) if release.end_time.blank?
 
+    # ongoing release
+    return step_run.deployment_runs.map(&:deployment) if release.end_time.blank? && step_run&.success?
+    return deployments.where("created_at <= ?", release.scheduled_at) if release.end_time.blank?
+
+    # historical release only
     all_deployments
-      .where("created_at < ?", release.scheduled_at)
+      .where("created_at <= ?", release.end_time)
       .where("discarded_at IS NULL OR discarded_at >= ?", release.end_time)
   end
 
