@@ -63,7 +63,7 @@ class Step < ApplicationRecord
 
     # ongoing release
     return step_run.deployment_runs.map(&:deployment) if release.end_time.blank? && step_run&.success?
-    return deployments.where("created_at <= ?", release.scheduled_at) if release.end_time.blank?
+    return deployments if release.end_time.blank?
 
     # historical release only
     all_deployments
