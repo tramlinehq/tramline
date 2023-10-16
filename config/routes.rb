@@ -138,8 +138,8 @@ Rails.application.routes.draw do
           as: :bitrise_integration
 
         resource :bugsnag, only: [:create],
-                 controller: "integrations/bugsnag",
-                 as: :bugsnag_integration
+          controller: "integrations/bugsnag",
+          as: :bugsnag_integration
 
         resource :app_store, only: [:create],
           controller: "integrations/app_store",

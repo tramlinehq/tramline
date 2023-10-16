@@ -1,0 +1,10 @@
+<% if truncate_required? %>
+  <div class="inline-block" data-controller="popover" data-popover-translate-x="-100%" data-popover-translate-y="-150%" data-action="mouseover->popover#show mouseout->popover#hide">
+    <%= truncated_text %>
+    <div class="hidden absolute bg-white border border-slate-200 rounded-lg p-2" data-popover-target="content">
+      <%= original_text %>
+    </div>
+  </div>
+<% else %>
+  <%= original_text %>
+<% end %>
