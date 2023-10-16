@@ -171,7 +171,7 @@ class StepRun < ApplicationRecord
   delegate :organization, to: :app
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
-  delegate :workflow_id, :workflow_name, :step_number, :build_artifact_name_pattern, to: :step
+  delegate :workflow_id, :workflow_name, :step_number, :build_artifact_name_pattern, :has_uploadables?, :has_findables?, to: :step
   scope :not_failed, -> { where.not(status: [:ci_workflow_failed, :ci_workflow_halted, :build_not_found_in_store, :build_unavailable, :deployment_failed]) }
 
   def active?
@@ -412,14 +412,6 @@ class StepRun < ApplicationRecord
   def after_retrigger_ci
     WorkflowProcessors::WorkflowRunJob.perform_later(id)
     event_stamp!(reason: :ci_retriggered, kind: :notice, data: stamp_data)
-  end
-
-  def has_uploadables?
-    deployments.any?(&:uploadable?)
-  end
-
-  def has_findables?
-    deployments.any?(&:findable?)
   end
 
   def after_finish_ci

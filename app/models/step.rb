@@ -132,6 +132,14 @@ class Step < ApplicationRecord
     new_step.save!
   end
 
+  def has_uploadables?
+    deployments.any?(&:uploadable?)
+  end
+
+  def has_findables?
+    deployments.any?(&:findable?)
+  end
+
   private
 
   def reject_deployments?(attributes)

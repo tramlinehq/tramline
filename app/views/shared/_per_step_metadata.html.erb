@@ -29,7 +29,7 @@
       <% end %>
     </div>
 
-    <div class="flex flex-col gap-y-2">
+    <div class="flex flex-col">
       <div class="flex flex-row items-center gap-x-2 w-full">
         <%= inline_svg("workflow.svg", classname: "w-4 inline-flex mr-1") %>
         <%= render partial: "shared/display_channels",
@@ -37,7 +37,11 @@
                              provider_name: step.ci_cd_provider.to_s } %>
       </div>
 
-      <div class="flex flex-row items-center w-full">
+      <div class="text-xs text-gray-500 mt-1">
+        <%== build_artifact_pattern_text(step) %>
+      </div>
+
+      <div class="flex flex-row items-center w-full mt-2">
         <div class="inline-flex mr-1"></div>
         <%= render partial: "shared/deployments",
                    locals: { step: step, step_run: step_run, platform_run:, show_deployment_status: platform_run.present? } %>
