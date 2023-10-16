@@ -186,5 +186,22 @@ describe Step do
 
       expect(step.active_deployments_for(future_release)).to contain_exactly(step.deployments.first, d3)
     end
+
+    it "returns all point-in-time deployments for the step when a step run is passed in" do
+      two_days_ago = 2.days.ago
+      step = travel_to(two_days_ago) { create(:step, :with_deployment, release_platform: release_platform) }
+      d1 = create(:deployment, step:, created_at: two_days_ago)
+      d2 = create(:deployment, step:, created_at: two_days_ago)
+      current_release = create(:release, train:, scheduled_at: Time.current)
+      release_platform_run = current_release.release_platform_runs.first
+      step_run = create(:step_run, :success, step: step, release_platform_run:)
+      create(:deployment_run, deployment: step.deployments.first, step_run: step_run)
+      create(:deployment_run, deployment: d1, step_run: step_run)
+      create(:deployment_run, deployment: d2, step_run: step_run)
+      d2.discard!
+
+      step.reload
+      expect(step.active_deployments_for(current_release, step_run)).to contain_exactly(step.deployments.first, d1, d2)
+    end
   end
 end
