@@ -12,7 +12,7 @@
   <% if @app.ready? %>
     <% if @app.releases.exists? %>
       <% page.with_action do %>
-        <%= authz_link_to :neutral, all_builds_app_path(@app) do %>
+        <%= decorated_link_to :neutral, all_builds_app_path(@app) do %>
           <%= inline_svg("all_builds_icon.svg", classname: "w-4") %>
           <span class="ml-2">All Builds</span>
         <% end %>
