@@ -59,11 +59,13 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def user_stability
-    "#{(1 - (daily_users_with_errors / daily_users)) * 100}%"
+    return "0%" if daily_users.zero?
+    "#{((1 - (daily_users_with_errors.to_f / daily_users.to_f)) * 100).ceil(2)}%"
   end
 
   def session_stability
-    "#{(1 - (sessions_with_errors / sessions)) * 100}%"
+    return "0%" if sessions.zero?
+    "#{((1 - (sessions_with_errors.to_f / sessions.to_f)) * 100).ceil(2)}%"
   end
 
   def adoption_rate
