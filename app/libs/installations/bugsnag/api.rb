@@ -47,8 +47,8 @@ module Installations
         nil,
         direction: "desc",
         filters: {
-          "version.seen_in" => [{type: "eq", value: app_version}],
-          "version_code.seen_in" => [{type: "eq", value: app_version_code}],
+          "version.introduced_in" => [{type: "eq", value: app_version}],
+          "version_code.introduced_in" => [{type: "eq", value: app_version_code}],
           "app.type" => [{type: "eq", value: platform}],
           "app.release_stage" => [{type: "eq", value: "production"}]
         },

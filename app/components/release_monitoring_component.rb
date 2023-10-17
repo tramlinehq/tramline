@@ -72,11 +72,11 @@ class ReleaseMonitoringComponent < ViewComponent::Base
     sessions_count_in_last_24h / sessions
   end
 
-  def errors
-    platform_run.top_errors
+  def top_errors
+    @errors ||= platform_run.top_errors
   end
 
-  def new_errors
-    platform_run.top_new_errors
+  def top_new_errors
+    @new_errors ||= platform_run.top_new_errors
   end
 end

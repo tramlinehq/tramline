@@ -20,50 +20,54 @@
     </div>
 
     <div class="mt-4">
-      <%= render TableComponent.new(columns: %w[type message events users]) do |table| %>
-        <% table.with_heading do %>
-          <h2 class="text-lg text-slate-800 font-bold">Top New Errors in the release</h2>
-        <% end %>
-        <% new_errors.each do |error| %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              <%= render TruncatedTextComponent.new(original_text: error[:error_class], truncate_at: 20) %>
-            <% end %>
-            <% row.with_cell do %>
-              <%= render TruncatedTextComponent.new(original_text: error[:message], truncate_at: 45) %>
-            <% end %>
-            <% row.with_cell do %>
-              <%= error[:events] %>
-            <% end %>
-            <% row.with_cell do %>
-              <%= error[:users] %>
+      <h2 class="text-lg text-slate-800 font-bold">Top New Errors in the release</h2>
+      <% if top_new_errors.present? %>
+        <%= render TableComponent.new(columns: %w[type message events users]) do |table| %>
+          <% top_new_errors.each do |error| %>
+            <% table.with_row do |row| %>
+              <% row.with_cell do %>
+                <%= render TruncatedTextComponent.new(original_text: error[:error_class], truncate_at: 20) %>
+              <% end %>
+              <% row.with_cell do %>
+                <%= render TruncatedTextComponent.new(original_text: error[:message], truncate_at: 45) %>
+              <% end %>
+              <% row.with_cell do %>
+                <%= error[:events] %>
+              <% end %>
+              <% row.with_cell do %>
+                <%= error[:users] %>
+              <% end %>
             <% end %>
           <% end %>
         <% end %>
+      <% else %>
+        <div class="text-sm">No new errors in the release</div>
       <% end %>
     </div>
 
     <div class="mt-4">
-      <%= render TableComponent.new(columns: %w[type message events users]) do |table| %>
-        <% table.with_heading do %>
-          <h2 class="text-lg text-slate-800 font-bold">Top Errors in the release</h2>
-        <% end %>
-        <% errors.each do |error| %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              <%= render TruncatedTextComponent.new(original_text: error[:error_class], truncate_at: 20) %>
-            <% end %>
-            <% row.with_cell do %>
-              <%= render TruncatedTextComponent.new(original_text: error[:message], truncate_at: 45) %>
-            <% end %>
-            <% row.with_cell do %>
-              <%= error[:events] %>
-            <% end %>
-            <% row.with_cell do %>
-              <%= error[:users] %>
+      <h2 class="text-lg text-slate-800 font-bold">Top Errors in the release</h2>
+      <% if top_errors.present? %>
+        <%= render TableComponent.new(columns: %w[type message events users]) do |table| %>
+          <% errors.each do |error| %>
+            <% table.with_row do |row| %>
+              <% row.with_cell do %>
+                <%= render TruncatedTextComponent.new(original_text: error[:error_class], truncate_at: 20) %>
+              <% end %>
+              <% row.with_cell do %>
+                <%= render TruncatedTextComponent.new(original_text: error[:message], truncate_at: 45) %>
+              <% end %>
+              <% row.with_cell do %>
+                <%= error[:events] %>
+              <% end %>
+              <% row.with_cell do %>
+                <%= error[:users] %>
+              <% end %>
             <% end %>
           <% end %>
         <% end %>
+      <% else %>
+        <div class="text-sm">No errors in the release</div>
       <% end %>
     </div>
   </article>
