@@ -9,6 +9,7 @@ class AppConfigsController < SignedInApplicationController
   before_action :set_notification_channels, only: %i[edit update]
   before_action :set_ci_cd_projects, only: %i[edit update], if: -> { @config.further_ci_cd_setup? }
   before_action :set_firebase_apps, only: %i[edit update], if: -> { @config.further_build_channel_setup? }
+  before_action :set_monitoring_projects, only: %i[edit update], if: -> { @config.further_monitoring_setup? }
 
   def edit
     @ci_cd_provider_name = @app.ci_cd_provider.display
@@ -39,6 +40,7 @@ class AppConfigsController < SignedInApplicationController
         :code_repository,
         :notification_channel,
         :bitrise_project_id,
+        :bugsnag_project_id,
         :firebase_android_config,
         :firebase_ios_config
       )
@@ -49,6 +51,7 @@ class AppConfigsController < SignedInApplicationController
       .merge(code_repository: app_config_params[:code_repository]&.safe_json_parse)
       .merge(notification_channel: app_config_params[:notification_channel]&.safe_json_parse)
       .merge(bitrise_project_id: app_config_params[:bitrise_project_id]&.safe_json_parse)
+      .merge(bugsnag_project_id: app_config_params[:bugsnag_project_id]&.safe_json_parse)
       .merge(firebase_ios_config: app_config_params[:firebase_ios_config]&.safe_json_parse)
       .merge(firebase_android_config: app_config_params[:firebase_android_config]&.safe_json_parse)
       .compact
@@ -56,6 +59,10 @@ class AppConfigsController < SignedInApplicationController
 
   def set_ci_cd_projects
     @ci_cd_apps = @app.ci_cd_provider.setup
+  end
+
+  def set_monitoring_projects
+    @monitoring_projects = @app.monitoring_provider.setup
   end
 
   def set_firebase_apps

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_13_071746) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_16_173556) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -53,6 +53,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_13_071746) do
     t.jsonb "bitrise_project_id"
     t.jsonb "firebase_ios_config"
     t.jsonb "firebase_android_config"
+    t.jsonb "bugsnag_project_id"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 

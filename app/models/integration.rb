@@ -152,6 +152,10 @@ class Integration < ApplicationRecord
       ci_cd.first&.providable
     end
 
+    def monitoring_provider
+      monitoring.first&.providable
+    end
+
     def notification_provider
       notification.first&.providable
     end

@@ -172,6 +172,10 @@ en:
           attributes:
             access_token:
               no_apps: "could not find any apps listed for this token!"
+        bugsnag_integration:
+          attributes:
+            access_token:
+              no_orgs: "could not find any orgs listed for this token!"
         google_play_store_integration:
           attributes:
             json_key:

@@ -19,30 +19,24 @@ class BugsnagIntegration < ApplicationRecord
 
   API = Installations::Bugsnag::Api
 
-  APPS_TRANSFORMATIONS = {
-    id: :slug,
-    name: :title,
-    provider: :provider,
-    repo_url: :repo_url,
-    avatar_url: :avatar_url
+  ORGANIZATIONS_TRANSFORMATIONS = {
+    name: :name,
+    id: :id,
+    slug: :slug
   }
 
-  ORGANIZATIONS_TRANSFORMATIONS = {
-    icon_url: :avatar_icon_url,
+  PROJECTS_TRANSFORMATIONS = {
     name: :name,
-    id: :slug
+    id: :id,
+    slug: :slug
   }
 
   validate :correct_key, on: :create
   validates :access_token, presence: true
 
   encrypts :access_token, deterministic: true
-
-  ORGANIZATIONS_TRANSFORMATIONS = {
-    name: :name,
-    id: :id,
-    slug: :slug
-  }
+  delegate :bugsnag_project, to: :app_config
+  alias_method :project, :bugsnag_project
 
   def installation
     API.new(access_token)
@@ -69,16 +63,16 @@ class BugsnagIntegration < ApplicationRecord
   end
 
   def setup
-    list_apps
+    list_projects
   end
 
   def connection_data
     return unless integration.metadata
-    "Teams: " + integration.metadata.map { |m| "#{m["name"]} (#{m["id"]})" }.join(", ")
+    "Organization: " + integration.metadata.map { |m| "#{m["name"]} (#{m["id"]})" }.join(", ")
   end
 
-  def list_apps
-    installation.list_apps(APPS_TRANSFORMATIONS)
+  def list_projects
+    installation.list_projects(metadata.first[:id], PROJECTS_TRANSFORMATIONS)
   end
 
   def list_organizations
@@ -93,6 +87,10 @@ class BugsnagIntegration < ApplicationRecord
     PUBLIC_ICON
   end
 
+  def find_release(version, build_number)
+    installation.find_release(project, version, build_number)
+  end
+
   private
 
   def app_config
@@ -101,7 +99,7 @@ class BugsnagIntegration < ApplicationRecord
 
   def correct_key
     if access_token.present?
-      errors.add(:access_token, :no_apps) if list_organizations.size < 1
+      errors.add(:access_token, :no_orgs) if list_organizations.size < 1
     end
   end
 end
