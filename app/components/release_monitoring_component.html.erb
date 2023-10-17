@@ -1,33 +1,70 @@
-<article>
-  <div class="font-bold text-xl">Release Health</div>
-  <div class="grid grid-cols-2 gap-5 mt-4">
-    <%= render ProgressCardComponent.new(name: "Staged Rollout", current: 10, subtitle: "Stage 3 of 7", source: "app_store") %>
-    <%= render ProgressCardComponent.new(name: "Adoption Rate", current: 5, subtitle: "Last 24 hours", source: "bugsnag") %>
-    <%= render MetricCardComponent.new(name: "Crash-free Rate", values: { "sessions" => "99.5%", "users" => "98.7%" }, source: "bugsnag") %>
-    <%= render MetricCardComponent.new(name: "Errors", values: { "sessions" => "100", "users" => "200" }, source: "bugsnag") %>
-  </div>
+<% if release_data.present? %>
+  <article>
+    <div class="font-bold text-xl">Release Health</div>
 
-  <div class="mt-4">
-    <%= render TableComponent.new(columns: %w[type message events users]) do |table| %>
-      <% [{error_type: "FlutterError", message: "Unable to load asset: \"assets/misc/shinkansen/jre.png\"", events: 100, users: 70},
-          {error_type: "ANR", message: "Input dispatching timed out (Application does not have a focused window)", events: 20, users: 15},
-          {error_type: "PlayerInterruptedException", message: "Connection aborted", events: 10, users: 7},
-          {error_type: "PlayerException", message: "(0) Source error", events: 10, users: 5}].each do |error| %>
-        <% table.with_row do |row| %>
-          <% row.with_cell do %>
-            <%= render TruncatedTextComponent.new(original_text: error[:error_type], truncate_at: 20) %>
-          <% end %>
-          <% row.with_cell do %>
-            <%= render TruncatedTextComponent.new(original_text: error[:message], truncate_at: 45) %>
-          <% end %>
-          <% row.with_cell do %>
-            <%= error[:events] %>
-          <% end %>
-          <% row.with_cell do %>
-            <%= error[:users] %>
+    <div class="grid grid-cols-2 gap-5 mt-4">
+      <%= render ProgressCardComponent.new(name: "Staged Rollout",
+                                           current: staged_rollout_percentage,
+                                           subtitle: staged_rollout_text,
+                                           source: "app_store") %>
+      <%= render ProgressCardComponent.new(name: "Adoption Rate",
+                                           current: adoption_rate,
+                                           subtitle: "Last 24 hours",
+                                           source: "bugsnag") %>
+      <%= render MetricCardComponent.new(name: "Crash-free Rate",
+                                         values: { "sessions" => session_stability, "users" => user_stability },
+                                         source: "bugsnag") %>
+      <%= render MetricCardComponent.new(name: "Errors",
+                                         values: { "total" => errors_count, "new" => new_errors_count },
+                                         source: "bugsnag") %>
+    </div>
+
+    <div class="mt-4">
+      <%= render TableComponent.new(columns: %w[type message events users]) do |table| %>
+        <% table.with_heading do %>
+          <h2 class="text-lg text-slate-800 font-bold">Top New Errors in the release</h2>
+        <% end %>
+        <% new_errors.each do |error| %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              <%= render TruncatedTextComponent.new(original_text: error[:error_class], truncate_at: 20) %>
+            <% end %>
+            <% row.with_cell do %>
+              <%= render TruncatedTextComponent.new(original_text: error[:message], truncate_at: 45) %>
+            <% end %>
+            <% row.with_cell do %>
+              <%= error[:events] %>
+            <% end %>
+            <% row.with_cell do %>
+              <%= error[:users] %>
+            <% end %>
           <% end %>
         <% end %>
       <% end %>
-    <% end %>
-  </div>
-</article>
+    </div>
+
+    <div class="mt-4">
+      <%= render TableComponent.new(columns: %w[type message events users]) do |table| %>
+        <% table.with_heading do %>
+          <h2 class="text-lg text-slate-800 font-bold">Top Errors in the release</h2>
+        <% end %>
+        <% errors.each do |error| %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              <%= render TruncatedTextComponent.new(original_text: error[:error_class], truncate_at: 20) %>
+            <% end %>
+            <% row.with_cell do %>
+              <%= render TruncatedTextComponent.new(original_text: error[:message], truncate_at: 45) %>
+            <% end %>
+            <% row.with_cell do %>
+              <%= error[:events] %>
+            <% end %>
+            <% row.with_cell do %>
+              <%= error[:users] %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  </article>
+<% end %>

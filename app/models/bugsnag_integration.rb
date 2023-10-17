@@ -91,6 +91,14 @@ class BugsnagIntegration < ApplicationRecord
     installation.find_release(project, version, build_number)
   end
 
+  def top_errors(platform, version, build_number)
+    installation.errors(project, platform, version, build_number).sort_by(&:events).reverse.take(5)
+  end
+
+  def top_new_errors(platform, version, build_number)
+    installation.new_errors(project, platform, version, build_number).sort_by(&:events).reverse.take(5)
+  end
+
   private
 
   def app_config

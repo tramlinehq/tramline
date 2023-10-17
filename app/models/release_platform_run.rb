@@ -76,6 +76,33 @@ class ReleasePlatformRun < ApplicationRecord
   delegate :all_commits, :original_release_version, to: :release
   delegate :steps, :train, :app, :platform, to: :release_platform
 
+  def health_data
+    return if app.monitoring_provider.blank?
+    latest_release_step = last_successful_run_for(release_platform.release_step)
+
+    return if latest_release_step.blank?
+
+    app.monitoring_provider.find_release(release_version, latest_release_step.build_number)
+  end
+
+  def top_errors
+    return if app.monitoring_provider.blank?
+    latest_release_step = last_successful_run_for(release_platform.release_step)
+
+    return [] if latest_release_step.blank?
+
+    app.monitoring_provider.top_errors(platform, release_version, latest_release_step.build_number)
+  end
+
+  def top_new_errors
+    return if app.monitoring_provider.blank?
+    latest_release_step = last_successful_run_for(release_platform.release_step)
+
+    return [] if latest_release_step.blank?
+
+    app.monitoring_provider.top_new_errors(platform, release_version, latest_release_step.build_number)
+  end
+
   def finish_release
     if release.ready_to_be_finalized?
       release.start_post_release_phase!
@@ -282,6 +309,14 @@ class ReleasePlatformRun < ApplicationRecord
     )
   end
 
+  def last_successful_run_for(step)
+    step_runs
+      .where(step: step)
+      .not_failed
+      .order(scheduled_at: :asc)
+      .last
+  end
+
   private
 
   def base_tag_name
@@ -304,14 +339,6 @@ class ReleasePlatformRun < ApplicationRecord
       &.deployment_runs
       &.not_failed
       &.find { |dr| dr.deployment.production_channel? }
-  end
-
-  def last_successful_run_for(step)
-    step_runs
-      .where(step: step)
-      .not_failed
-      .order(scheduled_at: :asc)
-      .last
   end
 
   def previous_successful_run_before(step_run)

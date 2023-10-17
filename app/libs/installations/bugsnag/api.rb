@@ -29,16 +29,30 @@ module Installations
       end
     end
 
-    def events(project_id, platform, app_version, app_version_code)
-      client.events(
-        project_id,
+    def errors(project_id, platform, app_version, app_version_code)
+      client.errors(project_id,
+        nil,
         direction: "desc",
         filters: {
           "version.seen_in" => [{type: "eq", value: app_version}],
           "version_code.seen_in" => [{type: "eq", value: app_version_code}],
-          "app.type" => [{type: "eq", value: platform}]
-        }
-      )
+          "app.type" => [{type: "eq", value: platform}],
+          "app.release_stage" => [{type: "eq", value: "production"}]
+        },
+        per_page: 20)
+    end
+
+    def new_errors(project_id, platform, app_version, app_version_code)
+      client.errors(project_id,
+        nil,
+        direction: "desc",
+        filters: {
+          "version.seen_in" => [{type: "eq", value: app_version}],
+          "version_code.seen_in" => [{type: "eq", value: app_version_code}],
+          "app.type" => [{type: "eq", value: platform}],
+          "app.release_stage" => [{type: "eq", value: "production"}]
+        },
+        per_page: 20)
     end
 
     private
