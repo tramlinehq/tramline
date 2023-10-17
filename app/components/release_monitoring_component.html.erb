@@ -20,7 +20,7 @@
     </div>
 
     <div class="mt-4">
-      <h2 class="text-lg text-slate-800 font-bold">Top New Errors in the release</h2>
+      <div class="text-lg text-slate-800 font-bold mb-2">Top New Errors in the release</div>
       <% if top_new_errors.present? %>
         <%= render TableComponent.new(columns: %w[type message events users]) do |table| %>
           <% top_new_errors.each do |error| %>
@@ -41,12 +41,12 @@
           <% end %>
         <% end %>
       <% else %>
-        <div class="text-sm mt-2 text-gray-500">No new errors in the release</div>
+        <div class="text-sm text-gray-500">No new errors in the release</div>
       <% end %>
     </div>
 
     <div class="mt-4">
-      <h2 class="text-lg text-slate-800 font-bold">Top Errors in the release</h2>
+      <div class="text-lg text-slate-800 font-bold mb-2">Top Errors in the release</div>
       <% if top_errors.present? %>
         <%= render TableComponent.new(columns: %w[type message events users]) do |table| %>
           <% top_errors.each do |error| %>
@@ -67,7 +67,7 @@
           <% end %>
         <% end %>
       <% else %>
-        <div class="text-sm mt-2 text-gray-500">No errors in the release</div>
+        <div class="text-sm text-gray-500">No errors in the release</div>
       <% end %>
     </div>
   </article>

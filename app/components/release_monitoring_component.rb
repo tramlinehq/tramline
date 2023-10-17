@@ -69,7 +69,8 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def adoption_rate
-    sessions_count_in_last_24h / sessions
+    return 0 if sessions.zero?
+    (sessions_count_in_last_24h.to_f / sessions.to_f).ceil(2)
   end
 
   def top_errors
