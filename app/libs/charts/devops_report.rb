@@ -108,7 +108,7 @@ class Charts::DevopsReport
     # group by release (no platform split req.)
     train
       .external_releases
-      .includes(deployment_run: [:deployment, { step_run: { release_platform_run: [:release] } }])
+      .includes(deployment_run: [:deployment, {step_run: {release_platform_run: [:release]}}])
       .where.not(reviewed_at: nil)
       .filter { _1.deployment_run.production_release_happened? }
       .group_by(&:build_version)
@@ -127,7 +127,7 @@ class Charts::DevopsReport
       .flat_map(&:deployment_runs)
       .filter { _1.production_release_happened? }
       .group_by(&:release_platform_run)
-      .to_h { |platform_run, druns| [platform_run.release_version, { platform_run.platform => druns.size - 1 }] }
+      .to_h { |platform_run, druns| [platform_run.release_version, {platform_run.platform => druns.size - 1}] }
   end
 
   def recovery_time
