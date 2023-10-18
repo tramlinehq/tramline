@@ -3,7 +3,7 @@ import ApexCharts from "apexcharts"
 
 const chartTypes = ["area", "line", "stacked-bar", "donut"]
 const chartColors = [
-  "#1A56DB", "#9061F9","#E74694", "#31C48D" , "#FDBA8C", "#16BDCA",
+  "#1A56DB", "#9061F9", "#E74694", "#31C48D", "#FDBA8C", "#16BDCA",
   "#7E3BF2", "#1C64F2", "#F05252"
 ];
 
@@ -60,9 +60,13 @@ export default class extends Controller {
       series = this.stackedBarSeriesValue
       categories = this.stackedBarCategoriesValue
       chartOptions = this.stackedBarOptions(names, series, categories)
+
+      if (!this.__validateStackBarData(names, series, categories)) {
+        return
+      }
     }
 
-    if (this.__validateData(names, series, categories)) {
+    if (chartType !== "stacked-bar" && !this.__validateData(names, series, categories)) {
       return;
     }
 
@@ -170,7 +174,7 @@ export default class extends Controller {
         show: false
       },
       stroke: {
-        width: 6,
+        width: 4,
         curve: 'smooth'
       },
       xaxis: {
@@ -271,7 +275,7 @@ export default class extends Controller {
         type: "bar",
         stacked: true,
         stackType: "100%",
-        height: "320px",
+        height: "100%",
         fontFamily: "Inter, sans-serif",
         toolbar: {
           show: false,
@@ -321,6 +325,7 @@ export default class extends Controller {
         show: false,
       },
       xaxis: {
+        categories: categories,
         floating: false,
         labels: {
           show: true,
@@ -349,9 +354,10 @@ export default class extends Controller {
     let outputData = [];
 
     for (let i = 0; i < names.length; i++) {
+      const formattedData = data[i].map((item) => (item === null ? 0 : item));
       const entry = {
         name: names[i],
-        data: data[i],
+        data: formattedData,
         color: this.__pickColor(i)
       };
 
@@ -365,7 +371,7 @@ export default class extends Controller {
     return names.map((name, index) => ({
       name,
       color: this.__pickColor(index),
-      data: categories.map((xLabel, i) => ({x: xLabel, y: series[index][i]})),
+      data: categories.map((xLabel, i) => (series[i][index])),
     }));
   }
 
@@ -385,5 +391,21 @@ export default class extends Controller {
       console.error('Categories and each dataset in the Series must be equal in size');
       return false;
     }
+
+    return true;
+  }
+
+  __validateStackBarData(names, series, categories) {
+    if (categories.length !== series.length) {
+      console.error('Categories and Series must have the same number of top-level items.');
+      return false;
+    }
+
+    if (names.length > 0 && series.some(dataset => dataset.length !== names.length)) {
+      console.error('Names and each dataset in the Series must be equal in size');
+      return false;
+    }
+
+    return true;
   }
 }

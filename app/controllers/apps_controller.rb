@@ -15,6 +15,7 @@ class AppsController < SignedInApplicationController
     @app_setup_instructions = @app.app_setup_instructions
     @train_setup_instructions = @app.train_setup_instructions
     @train_in_creation = @app.train_in_creation
+    @devops_report = Charts::DevopsReport.all(@app.trains.find_by(slug: "prod-train"))
   end
 
   def new

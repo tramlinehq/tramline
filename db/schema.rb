@@ -103,7 +103,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_13_071746) do
     t.boolean "is_active", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["is_active"], name: "index_build_queues_on_is_active"
     t.index ["release_id"], name: "index_build_queues_on_release_id"
   end
 
@@ -270,6 +269,12 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_13_071746) do
     t.index ["sender_id"], name: "index_invites_on_sender_id"
   end
 
+  create_table "jira_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "oauth_access_token"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "memberships", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "user_id"
     t.uuid "organization_id"
@@ -424,8 +429,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_13_071746) do
     t.datetime "stopped_at", precision: nil
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "tag_name"
     t.boolean "is_automatic", default: false
+    t.string "tag_name"
     t.index ["train_id"], name: "index_releases_on_train_id"
   end
 

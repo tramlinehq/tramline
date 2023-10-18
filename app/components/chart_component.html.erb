@@ -1,0 +1,46 @@
+<div class="w-full bg-white rounded-sm border border-gray-200 p-3">
+  <div class="flex justify-between items-center mb-4">
+    <div>
+      <h5 class="flex leading-none text-lg font-normal text-gray-900 items-center gap-x-1">
+        <%= title %>
+        <%= inline_svg("question_mark.svg", classname: "w-4 inline-flex fill-current shrink-0 text-gray-400") %>
+      </h5>
+
+      <p class="text-sm font-normal text-gray-400"><%= chart_scope %></p>
+    </div>
+
+    <div class="flex items-center py-0.5 text-base font-semibold text-green-700 text-center">
+      <%= inline_svg("thermometer.svg", classname: "w-6 fill-current shrink-0") %>
+    </div>
+  </div>
+
+  <% if area? %>
+    <div data-controller="charts"
+         data-charts-type-value="area"
+         data-charts-area-names-value="<%= legends %>"
+         data-charts-area-series-value="<%= series %>"
+         data-charts-area-categories-value="<%= categories %>">
+      <div data-charts-target="chart"></div>
+    </div>
+  <% end %>
+
+  <% if line? %>
+    <div data-controller="charts"
+         data-charts-type-value="line"
+         data-charts-line-names-value="<%= legends %>"
+         data-charts-line-series-value="<%= series %>"
+         data-charts-line-categories-value="<%= categories %>">
+      <div data-charts-target="chart"></div>
+    </div>
+  <% end %>
+
+  <% if stacked_bar? %>
+    <div data-controller="charts"
+         data-charts-type-value="stacked-bar"
+         data-charts-stacked-bar-names-value="<%= legends %>"
+         data-charts-stacked-bar-series-value="<%= series %>"
+         data-charts-stacked-bar-categories-value="<%= categories %>">
+      <div data-charts-target="chart"></div>
+    </div>
+  <% end %>
+</div>

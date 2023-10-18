@@ -132,6 +132,11 @@ class Release < ApplicationRecord
 
   def self.for_branch(branch_name) = find_by(branch_name:)
 
+
+  def self.deployment_runs
+    includes(step_runs: :deployment_runs).flat_map(&:step_runs).flat_map(&:deployment_runs)
+  end
+
   def backmerge_failure_count
     return 0 unless continuous_backmerge?
     all_commits.size - backmerge_prs.size - 1

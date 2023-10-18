@@ -18,9 +18,13 @@
 #
 class ExternalRelease < ApplicationRecord
   belongs_to :deployment_run
-  delegate :app, :app_store_integration?, to: :deployment_run
+  delegate :app, :app_store_integration?, :build_version, to: :deployment_run
 
   def self.minimum_required
     column_names.map(&:to_sym).filter { |name| name.in? [:name, :status, :build_number, :external_id, :added_at] }
+  end
+
+  def review_time
+    ActiveSupport::Duration.build(reviewed_at - added_at)
   end
 end
