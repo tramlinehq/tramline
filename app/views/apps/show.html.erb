@@ -65,6 +65,26 @@
       <%= render partial: "apps/setup_progress", locals: { setup_instructions: @app_setup_instructions } %>
     <% end %>
 
+    <% if current_user.release_health? %>
+      <div class="w-full">
+        <h2 class="text-2xl text-slate-800 font-bold">Mobile DevOps</h2>
+        <div class="grid grid-cols-3 gap-x-2 my-3 gap-y-2">
+          <%= render ChartComponent.new(@devops_report[:mobile_devops][:frequency]) %>
+          <%= render ChartComponent.new(@devops_report[:mobile_devops][:duration]) %>
+          <%= render ChartComponent.new(@devops_report[:mobile_devops][:hotfixes]) %>
+          <%= render ChartComponent.new(@devops_report[:mobile_devops][:time_in_review]) %>
+          <%= render ChartComponent.new(@devops_report[:mobile_devops][:time_in_phases]) %>
+        </div>
+      </div>
+
+      <div class="w-full">
+        <h2 class="text-2xl text-slate-800 font-bold">Operational Efficiency</h2>
+        <div class="grid grid-cols-3 gap-x-4 my-3 gap-y-2">
+          <%= render ChartComponent.new(@devops_report[:operational_efficiency][:contributors]) %>
+        </div>
+      </div>
+    <% end %>
+
     <% unless @app.guided_train_setup? %>
       <section class="grid md:grid-cols-2 gap-x-20 pb-5 mt-8">
         <% if @app.cross_platform? %>

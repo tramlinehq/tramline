@@ -47,6 +47,8 @@ class Train < ApplicationRecord
   belongs_to :app
   has_many :releases, -> { sequential }, inverse_of: :train, dependent: :destroy
   has_many :active_runs, -> { pending_release }, class_name: "Release", inverse_of: :train, dependent: :destroy
+  has_many :deployment_runs, through: :releases
+  has_many :external_releases, through: :deployment_runs
   has_many :release_platforms, dependent: :destroy
   has_many :integrations, through: :app
   has_many :steps, through: :release_platforms

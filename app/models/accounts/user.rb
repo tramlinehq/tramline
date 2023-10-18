@@ -119,6 +119,10 @@ class Accounts::User < ApplicationRecord
     access_for(build.organization).present?
   end
 
+  def release_health?
+    Flipper.enabled?(:release_health, self)
+  end
+
   protected
 
   def confirmation_required?

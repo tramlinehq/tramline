@@ -2,10 +2,9 @@
 import '@hotwired/turbo-rails'
 import "controllers"
 import "@rails/request.js"
-import "chartkick"
-import "Chart.bundle"
 import "semver-increment"
 import "parameterize-string"
 import "strftime"
 import "@sentry/browser"
 import "apexcharts"
+import "humanize-duration"

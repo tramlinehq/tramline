@@ -1,9 +1,11 @@
 import {Controller} from "@hotwired/stimulus";
 import ApexCharts from "apexcharts"
+import humanizeDuration from "humanize-duration";
 
+const formatTypes = ["number", "time"]
 const chartTypes = ["area", "line", "stacked-bar", "donut"]
 const chartColors = [
-  "#1A56DB", "#9061F9","#E74694", "#31C48D" , "#FDBA8C", "#16BDCA",
+  "#1A56DB", "#9061F9", "#E74694", "#31C48D", "#FDBA8C", "#16BDCA",
   "#7E3BF2", "#1C64F2", "#F05252"
 ];
 
@@ -12,6 +14,7 @@ export default class extends Controller {
 
   static values = {
     type: String,
+    format: {type: String, default: "number"},
     areaNames: Array,
     areaSeries: Array,
     areaCategories: Array,
@@ -31,6 +34,11 @@ export default class extends Controller {
 
     if (!chartTypes.includes(chartType)) {
       console.error('Invalid chart type.')
+      return;
+    }
+
+    if (!formatTypes.includes(this.formatValue)) {
+      console.error('Invalid data format type.')
       return;
     }
 
@@ -60,9 +68,13 @@ export default class extends Controller {
       series = this.stackedBarSeriesValue
       categories = this.stackedBarCategoriesValue
       chartOptions = this.stackedBarOptions(names, series, categories)
+
+      if (!this.__validateStackBarData(names, series, categories)) {
+        return
+      }
     }
 
-    if (this.__validateData(names, series, categories)) {
+    if (chartType !== "stacked-bar" && !this.__validateData(names, series, categories)) {
       return;
     }
 
@@ -71,10 +83,13 @@ export default class extends Controller {
   }
 
   areaOptions(names, series, categories) {
+    let self = this;
+
     return {
       chart: {
         height: "100%",
         maxWidth: "100%",
+        width: "100%",
         type: "area",
         fontFamily: "Inter, sans-serif",
         dropShadow: {
@@ -88,6 +103,15 @@ export default class extends Controller {
         enabled: true,
         x: {
           show: false,
+        },
+        y: {
+          formatter(val) {
+            if (self.__isTimeFormat()) {
+              return self.__formatSeconds(val)
+            } else {
+              return val
+            }
+          },
         },
       },
       fill: {
@@ -117,8 +141,9 @@ export default class extends Controller {
       series: this.__genSeries(names, series),
       xaxis: {
         categories: categories,
+        tickPlacement: 'between',
         labels: {
-          show: false,
+          show: true,
         },
         axisBorder: {
           show: false,
@@ -134,6 +159,8 @@ export default class extends Controller {
   }
 
   lineOptions(names, series, categories) {
+    let self = this;
+
     return {
       chart: {
         height: "100%",
@@ -152,6 +179,15 @@ export default class extends Controller {
         x: {
           show: false,
         },
+        y: {
+          formatter(val) {
+            if (self.__isTimeFormat()) {
+              return self.__formatSeconds(val)
+            } else {
+              return val
+            }
+          },
+        },
       },
       dataLabels: {
         enabled: false,
@@ -162,7 +198,7 @@ export default class extends Controller {
         padding: {
           left: 2,
           right: 2,
-          top: -26
+          top: -20
         },
       },
       series: this.__genSeries(names, series),
@@ -170,23 +206,24 @@ export default class extends Controller {
         show: false
       },
       stroke: {
-        width: 6,
+        width: 3,
         curve: 'smooth'
       },
       xaxis: {
         categories: categories,
+        tickPlacement: 'between',
         labels: {
           show: true,
           style: {
             fontFamily: "Inter, sans-serif",
-            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+            cssClass: 'text-xs font-normal fill-gray-500'
           }
         },
         axisBorder: {
-          show: false,
+          show: true,
         },
         axisTicks: {
-          show: false,
+          show: true,
         },
       },
       yaxis: {
@@ -265,13 +302,15 @@ export default class extends Controller {
   }
 
   stackedBarOptions(names, series, categories) {
+    let self = this;
+
     return {
       series: this._genBarSeries(names, series, categories),
       chart: {
         type: "bar",
         stacked: true,
         stackType: "100%",
-        height: "320px",
+        height: "100%",
         fontFamily: "Inter, sans-serif",
         toolbar: {
           show: false,
@@ -290,6 +329,15 @@ export default class extends Controller {
         intersect: false,
         style: {
           fontFamily: "Inter, sans-serif",
+        },
+        y: {
+          formatter(val) {
+            if (self.__isTimeFormat()) {
+              return self.__formatSeconds(val)
+            } else {
+              return val
+            }
+          },
         },
       },
       states: {
@@ -321,12 +369,13 @@ export default class extends Controller {
         show: false,
       },
       xaxis: {
-        floating: false,
+        categories: categories,
+        floating: true,
         labels: {
           show: true,
           style: {
             fontFamily: "Inter, sans-serif",
-            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+            cssClass: 'text-xs font-normal fill-gray-500'
           }
         },
         axisBorder: {
@@ -349,9 +398,10 @@ export default class extends Controller {
     let outputData = [];
 
     for (let i = 0; i < names.length; i++) {
+      const formattedData = data[i].map((item) => (item === null ? 0 : item));
       const entry = {
         name: names[i],
-        data: data[i],
+        data: formattedData,
         color: this.__pickColor(i)
       };
 
@@ -365,7 +415,7 @@ export default class extends Controller {
     return names.map((name, index) => ({
       name,
       color: this.__pickColor(index),
-      data: categories.map((xLabel, i) => ({x: xLabel, y: series[index][i]})),
+      data: categories.map((xLabel, i) => (series[i][index])),
     }));
   }
 
@@ -385,5 +435,29 @@ export default class extends Controller {
       console.error('Categories and each dataset in the Series must be equal in size');
       return false;
     }
+
+    return true;
+  }
+
+  __validateStackBarData(names, series, categories) {
+    if (categories.length !== series.length) {
+      console.error('Categories and Series must have the same number of top-level items.');
+      return false;
+    }
+
+    if (names.length > 0 && series.some(dataset => dataset.length !== names.length)) {
+      console.error('Names and each dataset in the Series must be equal in size');
+      return false;
+    }
+
+    return true;
+  }
+
+  __formatSeconds(seconds) {
+    return humanizeDuration(seconds * 1000, { round: true, largest: 2, maxDecimalPoints: 1 })
+  }
+
+  __isTimeFormat() {
+    return this.formatValue === "time"
   }
 }
