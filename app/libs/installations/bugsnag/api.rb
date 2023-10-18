@@ -3,6 +3,7 @@ module Installations
   require "bugsnag/api"
 
   class Bugsnag::Api
+    include Loggable
     attr_reader :client
 
     def initialize(access_token)
@@ -29,38 +30,12 @@ module Installations
       end
     end
 
-    def errors(project_id, platform, app_version, app_version_code)
-      client.errors(project_id,
-        nil,
-        direction: "desc",
-        filters: {
-          "version.seen_in" => [{type: "eq", value: app_version}],
-          "version_code.seen_in" => [{type: "eq", value: app_version_code}],
-          "app.type" => [{type: "eq", value: platform}],
-          "app.release_stage" => [{type: "eq", value: "production"}]
-        },
-        per_page: 20)
-    end
-
-    def new_errors(project_id, platform, app_version, app_version_code)
-      client.errors(project_id,
-        nil,
-        direction: "desc",
-        filters: {
-          "version.introduced_in" => [{type: "eq", value: app_version}],
-          "version_code.introduced_in" => [{type: "eq", value: app_version_code}],
-          "app.type" => [{type: "eq", value: platform}],
-          "app.release_stage" => [{type: "eq", value: "production"}]
-        },
-        per_page: 20)
-    end
-
     private
 
     def execute
       yield
     rescue => e
-      Rails.logger.error(e)
+      elog(e)
     end
   end
 end

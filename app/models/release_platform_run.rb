@@ -76,6 +76,11 @@ class ReleasePlatformRun < ApplicationRecord
   delegate :all_commits, :original_release_version, to: :release
   delegate :steps, :train, :app, :platform, to: :release_platform
 
+  def store_provider
+    return app.ios_store_provider if platform == "ios"
+    app.android_store_provider if platform == "android"
+  end
+
   def health_data
     return if app.monitoring_provider.blank?
     latest_release_step = last_successful_run_for(release_platform.release_step)

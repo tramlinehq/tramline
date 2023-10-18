@@ -10,12 +10,9 @@
 class BugsnagIntegration < ApplicationRecord
   has_paper_trail
 
-  include Vaultable
   include Providable
   include Displayable
   include Rails.application.routes.url_helpers
-
-  PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/bugsnag_small.png".freeze
 
   API = Installations::Bugsnag::Api
 
@@ -68,11 +65,11 @@ class BugsnagIntegration < ApplicationRecord
 
   def connection_data
     return unless integration.metadata
-    "Organization: " + integration.metadata.map { |m| "#{m["name"]} (#{m["id"]})" }.join(", ")
+    "Organization(s): " + integration.metadata.map { |m| "#{m["name"]} (#{m["slug"]})" }.join(", ")
   end
 
   def list_projects
-    installation.list_projects(metadata.first[:id], PROJECTS_TRANSFORMATIONS)
+    list_organizations.flat_map { |org| installation.list_projects(org[:id], PROJECTS_TRANSFORMATIONS) }
   end
 
   def list_organizations
@@ -83,20 +80,8 @@ class BugsnagIntegration < ApplicationRecord
     list_organizations
   end
 
-  def public_icon_img
-    PUBLIC_ICON
-  end
-
   def find_release(version, build_number)
     installation.find_release(project, version, build_number)
-  end
-
-  def top_errors(platform, version, build_number)
-    installation.errors(project, platform, version, build_number).sort_by(&:events).reverse.take(5)
-  end
-
-  def top_new_errors(platform, version, build_number)
-    installation.new_errors(project, platform, version, build_number).sort_by(&:events).reverse.take(5)
   end
 
   private

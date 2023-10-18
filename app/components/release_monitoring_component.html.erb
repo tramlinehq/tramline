@@ -6,7 +6,7 @@
       <%= render ProgressCardComponent.new(name: "Staged Rollout",
                                            current: staged_rollout_percentage,
                                            subtitle: staged_rollout_text,
-                                           source: "app_store") %>
+                                           source: platform_run.store_provider.to_s) %>
       <%= render ProgressCardComponent.new(name: "Adoption Rate",
                                            current: adoption_rate,
                                            subtitle: "Last 24 hours",
@@ -17,58 +17,6 @@
       <%= render MetricCardComponent.new(name: "Errors",
                                          values: { "total" => errors_count, "new" => new_errors_count },
                                          source: "bugsnag") %>
-    </div>
-
-    <div class="mt-4">
-      <div class="text-lg text-slate-800 font-bold mb-2">Top New Errors in the release</div>
-      <% if top_new_errors.present? %>
-        <%= render TableComponent.new(columns: %w[type message events users]) do |table| %>
-          <% top_new_errors.each do |error| %>
-            <% table.with_row do |row| %>
-              <% row.with_cell do %>
-                <%= render TruncatedTextComponent.new(original_text: error[:error_class], truncate_at: 20) %>
-              <% end %>
-              <% row.with_cell do %>
-                <%= render TruncatedTextComponent.new(original_text: error[:message], truncate_at: 45) %>
-              <% end %>
-              <% row.with_cell do %>
-                <%= error[:events] %>
-              <% end %>
-              <% row.with_cell do %>
-                <%= error[:users] %>
-              <% end %>
-            <% end %>
-          <% end %>
-        <% end %>
-      <% else %>
-        <div class="text-sm text-gray-500">No new errors in the release</div>
-      <% end %>
-    </div>
-
-    <div class="mt-4">
-      <div class="text-lg text-slate-800 font-bold mb-2">Top Errors in the release</div>
-      <% if top_errors.present? %>
-        <%= render TableComponent.new(columns: %w[type message events users]) do |table| %>
-          <% top_errors.each do |error| %>
-            <% table.with_row do |row| %>
-              <% row.with_cell do %>
-                <%= render TruncatedTextComponent.new(original_text: error[:error_class], truncate_at: 20) %>
-              <% end %>
-              <% row.with_cell do %>
-                <%= render TruncatedTextComponent.new(original_text: error[:message], truncate_at: 45) %>
-              <% end %>
-              <% row.with_cell do %>
-                <%= error[:events] %>
-              <% end %>
-              <% row.with_cell do %>
-                <%= error[:users] %>
-              <% end %>
-            <% end %>
-          <% end %>
-        <% end %>
-      <% else %>
-        <div class="text-sm text-gray-500">No errors in the release</div>
-      <% end %>
     </div>
   </article>
 <% end %>
