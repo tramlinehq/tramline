@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_16_173556) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_18_152101) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -369,6 +369,22 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_16_173556) do
     t.index ["release_id"], name: "index_release_changelogs_on_release_id"
   end
 
+  create_table "release_health_metrics", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "deployment_run_id", null: false
+    t.bigint "sessions"
+    t.bigint "sessions_in_last_day"
+    t.bigint "sessions_with_errors"
+    t.bigint "daily_users"
+    t.bigint "daily_users_with_errors"
+    t.bigint "errors"
+    t.bigint "new_errors"
+    t.datetime "fetched_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["deployment_run_id"], name: "index_release_health_metrics_on_deployment_run_id"
+    t.index ["fetched_at"], name: "index_release_health_metrics_on_fetched_at"
+  end
+
   create_table "release_metadata", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_run_id"
     t.string "locale", null: false
@@ -599,6 +615,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_16_173556) do
   add_foreign_key "notification_settings", "trains"
   add_foreign_key "pull_requests", "release_platform_runs"
   add_foreign_key "release_changelogs", "releases"
+  add_foreign_key "release_health_metrics", "deployment_runs"
   add_foreign_key "release_metadata", "release_platform_runs"
   add_foreign_key "release_platform_runs", "release_platforms"
   add_foreign_key "release_platforms", "apps"

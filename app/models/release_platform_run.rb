@@ -81,33 +81,6 @@ class ReleasePlatformRun < ApplicationRecord
     app.android_store_provider if platform == "android"
   end
 
-  def health_data
-    return if app.monitoring_provider.blank?
-    latest_release_step = last_successful_run_for(release_platform.release_step)
-
-    return if latest_release_step.blank?
-
-    app.monitoring_provider.find_release(release_version, latest_release_step.build_number)
-  end
-
-  def top_errors
-    return if app.monitoring_provider.blank?
-    latest_release_step = last_successful_run_for(release_platform.release_step)
-
-    return [] if latest_release_step.blank?
-
-    app.monitoring_provider.top_errors(platform, release_version, latest_release_step.build_number)
-  end
-
-  def top_new_errors
-    return if app.monitoring_provider.blank?
-    latest_release_step = last_successful_run_for(release_platform.release_step)
-
-    return [] if latest_release_step.blank?
-
-    app.monitoring_provider.top_new_errors(platform, release_version, latest_release_step.build_number)
-  end
-
   def finish_release
     if release.ready_to_be_finalized?
       release.start_post_release_phase!

@@ -28,6 +28,16 @@ class BugsnagIntegration < ApplicationRecord
     slug: :slug
   }
 
+  RELEASE_TRANSFORMATIONS = {
+    new_errors: :errors_introduced_count,
+    errors: :errors_seen_count,
+    sessions_in_last_day: :sessions_count_in_last_24h,
+    sessions: :total_sessions_count,
+    sessions_with_errors: :unhandled_sessions_count,
+    daily_users_with_errors: :accumulative_daily_users_seen,
+    daily_users: :accumulative_daily_users_seen
+  }
+
   validate :correct_key, on: :create
   validates :access_token, presence: true
 
@@ -81,7 +91,7 @@ class BugsnagIntegration < ApplicationRecord
   end
 
   def find_release(version, build_number)
-    installation.find_release(project, version, build_number)
+    installation.find_release(project, version, build_number, RELEASE_TRANSFORMATIONS)
   end
 
   private
