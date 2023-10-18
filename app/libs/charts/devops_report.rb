@@ -127,7 +127,8 @@ class Charts::DevopsReport
       .flat_map(&:deployment_runs)
       .filter { _1.production_release_happened? }
       .group_by(&:release_platform_run)
-      .to_h { |platform_run, druns| [platform_run.release_version, {platform_run.platform => druns.size - 1}] }
+      .to_h { |platform_run, druns| [platform_run.release.release_version, {platform_run.platform => druns.size - 1}] }
+      .sort_by { |v, _| v.to_semverish }.to_h
   end
 
   def recovery_time
