@@ -17,6 +17,7 @@
   <% if area? %>
     <div data-controller="charts"
          data-charts-type-value="area"
+         data-charts-format-value="<%= value_format %>"
          data-charts-area-names-value="<%= legends %>"
          data-charts-area-series-value="<%= series %>"
          data-charts-area-categories-value="<%= categories %>">
@@ -27,6 +28,7 @@
   <% if line? %>
     <div data-controller="charts"
          data-charts-type-value="line"
+         data-charts-format-value="<%= value_format %>"
          data-charts-line-names-value="<%= legends %>"
          data-charts-line-series-value="<%= series %>"
          data-charts-line-categories-value="<%= categories %>">
@@ -37,6 +39,7 @@
   <% if stacked_bar? %>
     <div data-controller="charts"
          data-charts-type-value="stacked-bar"
+         data-charts-format-value="<%= value_format %>"
          data-charts-stacked-bar-names-value="<%= legends %>"
          data-charts-stacked-bar-series-value="<%= series %>"
          data-charts-stacked-bar-categories-value="<%= categories %>">

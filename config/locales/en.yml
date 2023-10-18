@@ -240,3 +240,25 @@ en:
         password_strength: "Choose a stronger password. Try a mix of letters, numbers, and symbols. <a class='underline' href='https://www.useapassphrase.com'>Use a passphrase</a> can be quite helpful."
       not_authorized_policy: "Not Authorized %{model} on %{query} action"
       not_logged_in: "You must be logged in to access this page"
+  charts:
+    devops:
+      duration:
+        title: "Release Duration"
+        scope: "Last 5 releases"
+      frequency:
+        title: "Releases Frequency"
+        scope: "Last 6 months"
+      time_in_review:
+        title: "Time in Review"
+        scope: "Last 5 releases"
+      hotfixes:
+        title: "Fixes during release"
+        scope: "Last 5 releases"
+      time_in_phases:
+        title: "Duration across Steps"
+        scope: "Last 5 releases"
+    operational_efficiency:
+      contributors:
+        title: "Contributors"
+        scope: "Last 5 releases"
+

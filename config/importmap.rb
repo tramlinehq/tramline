@@ -33,3 +33,4 @@ pin "@sentry/replay", to: "https://ga.jspm.io/npm:@sentry/replay@7.69.0/esm/inde
 pin "@sentry/utils", to: "https://ga.jspm.io/npm:@sentry/utils@7.69.0/esm/index.js"
 pin "@sentry/utils/esm/buildPolyfills", to: "https://ga.jspm.io/npm:@sentry/utils@7.69.0/esm/buildPolyfills/index.js"
 pin "apexcharts", to: "https://ga.jspm.io/npm:apexcharts@3.43.0/dist/apexcharts.common.js"
+pin "humanize-duration", to: "https://ga.jspm.io/npm:humanize-duration@3.30.0/humanize-duration.js"

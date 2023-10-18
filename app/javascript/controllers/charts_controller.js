@@ -1,6 +1,8 @@
 import {Controller} from "@hotwired/stimulus";
 import ApexCharts from "apexcharts"
+import humanizeDuration from "humanize-duration";
 
+const formatTypes = ["number", "time"]
 const chartTypes = ["area", "line", "stacked-bar", "donut"]
 const chartColors = [
   "#1A56DB", "#9061F9", "#E74694", "#31C48D", "#FDBA8C", "#16BDCA",
@@ -12,6 +14,7 @@ export default class extends Controller {
 
   static values = {
     type: String,
+    format: {type: String, default: "number"},
     areaNames: Array,
     areaSeries: Array,
     areaCategories: Array,
@@ -31,6 +34,11 @@ export default class extends Controller {
 
     if (!chartTypes.includes(chartType)) {
       console.error('Invalid chart type.')
+      return;
+    }
+
+    if (!formatTypes.includes(this.formatValue)) {
+      console.error('Invalid data format type.')
       return;
     }
 
@@ -75,10 +83,13 @@ export default class extends Controller {
   }
 
   areaOptions(names, series, categories) {
+    let self = this;
+
     return {
       chart: {
         height: "100%",
         maxWidth: "100%",
+        width: "100%",
         type: "area",
         fontFamily: "Inter, sans-serif",
         dropShadow: {
@@ -92,6 +103,15 @@ export default class extends Controller {
         enabled: true,
         x: {
           show: false,
+        },
+        y: {
+          formatter(val) {
+            if (self.__isTimeFormat()) {
+              return self.__formatSeconds(val)
+            } else {
+              return val
+            }
+          },
         },
       },
       fill: {
@@ -121,8 +141,9 @@ export default class extends Controller {
       series: this.__genSeries(names, series),
       xaxis: {
         categories: categories,
+        tickPlacement: 'between',
         labels: {
-          show: false,
+          show: true,
         },
         axisBorder: {
           show: false,
@@ -138,6 +159,8 @@ export default class extends Controller {
   }
 
   lineOptions(names, series, categories) {
+    let self = this;
+
     return {
       chart: {
         height: "100%",
@@ -156,6 +179,15 @@ export default class extends Controller {
         x: {
           show: false,
         },
+        y: {
+          formatter(val) {
+            if (self.__isTimeFormat()) {
+              return self.__formatSeconds(val)
+            } else {
+              return val
+            }
+          },
+        },
       },
       dataLabels: {
         enabled: false,
@@ -166,7 +198,7 @@ export default class extends Controller {
         padding: {
           left: 2,
           right: 2,
-          top: -26
+          top: -20
         },
       },
       series: this.__genSeries(names, series),
@@ -174,23 +206,24 @@ export default class extends Controller {
         show: false
       },
       stroke: {
-        width: 4,
+        width: 3,
         curve: 'smooth'
       },
       xaxis: {
         categories: categories,
+        tickPlacement: 'between',
         labels: {
           show: true,
           style: {
             fontFamily: "Inter, sans-serif",
-            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+            cssClass: 'text-xs font-normal fill-gray-500'
           }
         },
         axisBorder: {
-          show: false,
+          show: true,
         },
         axisTicks: {
-          show: false,
+          show: true,
         },
       },
       yaxis: {
@@ -269,6 +302,8 @@ export default class extends Controller {
   }
 
   stackedBarOptions(names, series, categories) {
+    let self = this;
+
     return {
       series: this._genBarSeries(names, series, categories),
       chart: {
@@ -294,6 +329,15 @@ export default class extends Controller {
         intersect: false,
         style: {
           fontFamily: "Inter, sans-serif",
+        },
+        y: {
+          formatter(val) {
+            if (self.__isTimeFormat()) {
+              return self.__formatSeconds(val)
+            } else {
+              return val
+            }
+          },
         },
       },
       states: {
@@ -326,12 +370,12 @@ export default class extends Controller {
       },
       xaxis: {
         categories: categories,
-        floating: false,
+        floating: true,
         labels: {
           show: true,
           style: {
             fontFamily: "Inter, sans-serif",
-            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+            cssClass: 'text-xs font-normal fill-gray-500'
           }
         },
         axisBorder: {
@@ -407,5 +451,13 @@ export default class extends Controller {
     }
 
     return true;
+  }
+
+  __formatSeconds(seconds) {
+    return humanizeDuration(seconds * 1000, { round: true, largest: 2, maxDecimalPoints: 1 })
+  }
+
+  __isTimeFormat() {
+    return this.formatValue === "time"
   }
 }

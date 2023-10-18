@@ -14,10 +14,6 @@ class ChartComponent < ViewComponent::Base
     type == "area"
   end
 
-  def chart_scope
-    chart[:scope]
-  end
-
   def line?
     type == "line"
   end
@@ -30,10 +26,6 @@ class ChartComponent < ViewComponent::Base
     @type ||= chart[:type]
   end
 
-  def title
-    chart[:title]
-  end
-
   def legends
     chart[:legends].to_json
   end
@@ -44,5 +36,17 @@ class ChartComponent < ViewComponent::Base
 
   def categories
     chart[:x_axis].to_json
+  end
+
+  def value_format
+    chart[:value_format]
+  end
+
+  def title
+    I18n.t("charts.#{chart[:name]}.title")
+  end
+
+  def chart_scope
+    I18n.t("charts.#{chart[:name]}.scope")
   end
 end
