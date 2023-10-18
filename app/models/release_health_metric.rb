@@ -16,6 +16,8 @@
 #  deployment_run_id       :uuid             not null, indexed
 #
 class ReleaseHealthMetric < ApplicationRecord
+  belongs_to :deployment_run
+
   def user_stability
     return if daily_users&.zero?
     ((1 - (daily_users_with_errors.to_f / daily_users.to_f)) * 100).ceil(2)
