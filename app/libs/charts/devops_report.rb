@@ -99,7 +99,9 @@ class Charts::DevopsReport
       .releases
       .includes(:release_platform_runs, :all_commits)
       .limit(last)
+      .finished
       .group_by(&:release_version)
+      .sort_by { |v, _| v.to_semverish }.to_h
       .transform_values { _1.flat_map(&:all_commits).flat_map(&:author_email) }
       .transform_values { _1.uniq.size }
   end
