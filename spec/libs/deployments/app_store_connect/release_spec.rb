@@ -468,22 +468,14 @@ describe Deployments::AppStoreConnect::Release do
         expect(run.reload.failure_reason).to eq("review_failed")
       end
 
-      it "marks the deployment run as failed when find build fails" do
+      it "raises error to re-poll when find build fails" do
         error = Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "build", "code" => "not_found"}})
         allow(providable_dbl).to receive(:find_build).and_return(GitHub::Result.new { raise(error) })
 
-        described_class.update_external_release(run)
+        expect { described_class.update_external_release(run) }
+          .to raise_error(Deployments::AppStoreConnect::Release::ExternalReleaseNotInTerminalState)
 
-        expect(run.reload.failed?).to be(true)
-      end
-
-      it "adds the reason of failure to deployment run" do
-        error = Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "build", "code" => "not_found"}})
-        allow(providable_dbl).to receive(:find_build).and_return(GitHub::Result.new { raise(error) })
-
-        described_class.update_external_release(run)
-
-        expect(run.reload.failure_reason).to eq("build_not_found")
+        expect(run.reload.failed?).to be(false)
       end
     end
 
@@ -562,22 +554,14 @@ describe Deployments::AppStoreConnect::Release do
         expect(run.reload.failure_reason).to eq("review_failed")
       end
 
-      it "marks the deployment run as failed when find build fails" do
+      it "raises error to re-poll when find build fails" do
         error = Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "build", "code" => "not_found"}})
         allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { raise(error) })
 
-        described_class.update_external_release(run)
+        expect { described_class.update_external_release(run) }
+          .to raise_error(Deployments::AppStoreConnect::Release::ExternalReleaseNotInTerminalState)
 
-        expect(run.reload.failed?).to be(true)
-      end
-
-      it "adds the reason of failure to deployment run" do
-        error = Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "build", "code" => "not_found"}})
-        allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { raise(error) })
-
-        described_class.update_external_release(run)
-
-        expect(run.reload.failure_reason).to eq("build_not_found")
+        expect(run.reload.failed?).to be(false)
       end
     end
   end
@@ -792,24 +776,14 @@ describe Deployments::AppStoreConnect::Release do
       end
     end
 
-    context "when failure" do
-      let(:error) { Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "build", "code" => "not_found"}}) }
+    it "raises error to re-poll when failure" do
+      error = Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "build", "code" => "not_found"}})
+      allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { raise error })
 
-      before do
-        allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { raise error })
-      end
+      expect { described_class.track_live_release_status(run) }
+        .to raise_error(Deployments::AppStoreConnect::Release::ReleaseNotFullyLive)
 
-      it "marks the deployment run as failed when failure" do
-        described_class.track_live_release_status(run)
-
-        expect(run.reload.failed?).to be(true)
-      end
-
-      it "adds the reason of failure to deployment run" do
-        described_class.track_live_release_status(run)
-
-        expect(run.reload.failure_reason).to eq("build_not_found")
-      end
+      expect(run.reload.failed?).to be(false)
     end
   end
 
