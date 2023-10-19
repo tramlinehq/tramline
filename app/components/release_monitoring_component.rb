@@ -1,7 +1,7 @@
 class ReleaseMonitoringComponent < ViewComponent::Base
   attr_reader :platform_run
 
-  delegate :adoption_rate, :errors, :new_errors, :session_stability, :user_stability, to: :release_data
+  delegate :adoption_rate, :errors_count, :new_errors_count, to: :release_data
 
   def initialize(platform_run:)
     @platform_run = platform_run
@@ -41,12 +41,12 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def user_stability
-    return "-" if user_stability.blank?
-    "#{user_stability}%"
+    return "-" if release_data.user_stability.blank?
+    "#{release_data.user_stability}%"
   end
 
   def session_stability
-    return "-" if session_stability.blank?
-    "#{session_stability}%"
+    return "-" if release_data.session_stability.blank?
+    "#{release_data.session_stability}%"
   end
 end

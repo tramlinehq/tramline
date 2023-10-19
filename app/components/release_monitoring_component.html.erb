@@ -15,7 +15,7 @@
                                          values: { "sessions" => session_stability, "users" => user_stability },
                                          provider: monitoring_provider) %>
       <%= render MetricCardComponent.new(name: "Errors",
-                                         values: { "total" => errors, "new" => new_errors },
+                                         values: { "total" => errors_count, "new" => new_errors_count },
                                          provider: monitoring_provider) %>
     </div>
   </article>
