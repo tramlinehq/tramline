@@ -15,7 +15,7 @@ class AppsController < SignedInApplicationController
     @app_setup_instructions = @app.app_setup_instructions
     @train_setup_instructions = @app.train_setup_instructions
     @train_in_creation = @app.train_in_creation
-    @devops_report = Charts::DevopsReport.all(@app.trains.find_by(slug: "production-v2")) if current_user.release_health?
+    @devops_report = Charts::DevopsReport.all(@app.trains.find_by(slug: "synced-release")) if current_user.release_health?
   end
 
   def new
