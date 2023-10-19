@@ -323,6 +323,9 @@ class StepRun < ApplicationRecord
       .map { |line| line.gsub(/\p{Emoji_Presentation}\s*/, "") }
       .reject { |line| line.start_with?("Merge") }
       .compact_blank
+      .uniq
+      .map { |str| "• #{str}" }
+      .join("\n").presence || "Nothing new"
   end
 
   def cancel_ci_workflow!
