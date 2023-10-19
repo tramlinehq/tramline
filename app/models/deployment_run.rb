@@ -412,6 +412,7 @@ class DeploymentRun < ApplicationRecord
   def on_release_started
     event_stamp!(reason: :release_started, kind: :notice, data: stamp_data)
     ReleasePlatformRuns::CreateTagJob.perform_later(release_platform_run.id) if production_channel? && train.tag_all_store_releases?
+    Releases::FetchHealthMetricsJob.perform_later(id) if app.monitoring_provider.present?
   end
 
   def mark_reviewed

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_10_18_152101) do
+ActiveRecord::Schema[7.0].define(version: 2023_10_19_083546) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -376,8 +376,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_18_152101) do
     t.bigint "sessions_with_errors"
     t.bigint "daily_users"
     t.bigint "daily_users_with_errors"
-    t.bigint "errors"
-    t.bigint "new_errors"
+    t.bigint "errors_count"
+    t.bigint "new_errors_count"
     t.datetime "fetched_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

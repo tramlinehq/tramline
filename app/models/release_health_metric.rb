@@ -5,9 +5,9 @@
 #  id                      :uuid             not null, primary key
 #  daily_users             :bigint
 #  daily_users_with_errors :bigint
-#  errors                  :bigint
+#  errors_count            :bigint
 #  fetched_at              :datetime         not null, indexed
-#  new_errors              :bigint
+#  new_errors_count        :bigint
 #  sessions                :bigint
 #  sessions_in_last_day    :bigint
 #  sessions_with_errors    :bigint
