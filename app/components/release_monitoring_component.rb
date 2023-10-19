@@ -12,7 +12,7 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def store_provider
-    production_deployment_run.integration.provider
+    production_deployment_run.integration.providable
   end
 
   def release_data
