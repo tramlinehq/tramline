@@ -170,7 +170,10 @@ module Installations
     end
 
     def execute(verb, url, params)
-      response = HTTP.auth(access_token.to_s).headers(appstore_connect_headers).public_send(verb, url, params)
+      response = HTTP
+        .timeout(120)
+        .auth(access_token.to_s)
+        .headers(appstore_connect_headers).public_send(verb, url, params)
       raise Installations::Apple::AppStoreConnect::Error.new if _5xx?(response.status)
 
       return true if no_content?(response.status)
