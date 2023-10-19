@@ -7,12 +7,12 @@ class ReleaseMonitoringComponent < ViewComponent::Base
     @platform_run = platform_run
   end
 
-  def monitoring_source
-    platform_run.app.monitoring_provider.to_s
+  def monitoring_provider
+    platform_run.app.monitoring_provider
   end
 
-  def store_source
-    production_deployment_run.integration.provider.to_s
+  def store_provider
+    production_deployment_run.integration.provider
   end
 
   def release_data

@@ -22,11 +22,13 @@ module Installations
       end
     end
 
-    def find_release(project_id, app_version, app_version_code)
+    def find_release(project_id, app_version, app_version_code, transforms)
       execute do
         client
           .releases(project_id)
-          .find { |release| release.app_version == app_version && release.app_version_code == app_version_code }
+          .filter { |release| release.app_version == app_version && release.app_version_code == app_version_code }
+          .then { |releases| Installations::Response::Keys.transform(releases, transforms) }
+          .first
       end
     end
 

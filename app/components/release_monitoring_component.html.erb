@@ -6,17 +6,17 @@
       <%= render ProgressCardComponent.new(name: "Staged Rollout",
                                            current: staged_rollout_percentage,
                                            subtitle: staged_rollout_text,
-                                           source: store_source) %>
+                                           provider: store_provider) %>
       <%= render ProgressCardComponent.new(name: "Adoption Rate",
                                            current: adoption_rate,
                                            subtitle: "Last 24 hours",
-                                           source: monitoring_source) %>
+                                           provider: monitoring_provider) %>
       <%= render MetricCardComponent.new(name: "Crash-free Rate",
                                          values: { "sessions" => session_stability, "users" => user_stability },
-                                         source: monitoring_source) %>
+                                         provider: monitoring_provider) %>
       <%= render MetricCardComponent.new(name: "Errors",
                                          values: { "total" => errors, "new" => new_errors },
-                                         source: monitoring_source) %>
+                                         provider: monitoring_provider) %>
     </div>
   </article>
 <% end %>

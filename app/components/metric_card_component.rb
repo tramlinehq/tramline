@@ -1,8 +1,8 @@
 class MetricCardComponent < ViewComponent::Base
-  attr_reader :name, :values, :source
-  def initialize(name:, values:, source:)
+  attr_reader :name, :values, :provider
+  def initialize(name:, values:, provider:)
     @name = name
     @values = values
-    @source = source
+    @provider = provider
   end
 end

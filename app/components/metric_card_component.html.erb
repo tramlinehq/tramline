@@ -1,7 +1,7 @@
 <div class="rounded-lg border-slate-200 border flex flex-col p-4">
   <div class="flex flex-row justify-between">
     <div><%= name %></div>
-    <div><%= image_tag("integrations/logo_#{source.to_s}.png", width: 20, height: 20) %></div>
+    <div><%= image_tag("integrations/logo_#{provider.to_s}.png", width: 20, height: 20) %></div>
   </div>
   <div class="grid grid-cols-2 divide-x mt-2 place-content-between">
     <% values.each do |key, val| %>
