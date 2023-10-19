@@ -29,8 +29,8 @@ class BugsnagIntegration < ApplicationRecord
   }
 
   RELEASE_TRANSFORMATIONS = {
-    new_errors: :errors_introduced_count,
-    errors: :errors_seen_count,
+    new_errors_count: :errors_introduced_count,
+    errors_count: :errors_seen_count,
     sessions_in_last_day: :sessions_count_in_last_24h,
     sessions: :total_sessions_count,
     sessions_with_errors: :unhandled_sessions_count,
