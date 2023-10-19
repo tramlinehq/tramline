@@ -76,11 +76,6 @@ class ReleasePlatformRun < ApplicationRecord
   delegate :all_commits, :original_release_version, to: :release
   delegate :steps, :train, :app, :platform, to: :release_platform
 
-  def store_provider
-    return app.ios_store_provider if platform == "ios"
-    app.android_store_provider if platform == "android"
-  end
-
   def finish_release
     if release.ready_to_be_finalized?
       release.start_post_release_phase!
@@ -287,14 +282,6 @@ class ReleasePlatformRun < ApplicationRecord
     )
   end
 
-  def last_successful_run_for(step)
-    step_runs
-      .where(step: step)
-      .not_failed
-      .order(scheduled_at: :asc)
-      .last
-  end
-
   private
 
   def base_tag_name
@@ -317,6 +304,14 @@ class ReleasePlatformRun < ApplicationRecord
       &.deployment_runs
       &.not_failed
       &.find { |dr| dr.deployment.production_channel? }
+  end
+
+  def last_successful_run_for(step)
+    step_runs
+      .where(step: step)
+      .not_failed
+      .order(scheduled_at: :asc)
+      .last
   end
 
   def previous_successful_run_before(step_run)
