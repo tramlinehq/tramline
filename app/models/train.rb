@@ -21,6 +21,8 @@
 #  status                   :string           not null
 #  tag_all_store_releases   :boolean          default(FALSE)
 #  tag_platform_releases    :boolean          default(FALSE)
+#  tag_releases             :boolean          default(TRUE)
+#  tag_suffix               :string
 #  version_current          :string
 #  version_seeded_with      :string
 #  working_branch           :string
