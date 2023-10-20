@@ -13,10 +13,12 @@
                                            provider: monitoring_provider) %>
       <%= render MetricCardComponent.new(name: "Crash-free Rate",
                                          values: { "sessions" => session_stability, "users" => user_stability },
-                                         provider: monitoring_provider) %>
+                                         provider: monitoring_provider,
+                                         external_url: monitoring_provider_url) %>
       <%= render MetricCardComponent.new(name: "Errors",
                                          values: { "total" => errors_count, "new" => new_errors_count },
-                                         provider: monitoring_provider) %>
+                                         provider: monitoring_provider,
+                                         external_url: monitoring_provider_url) %>
     </div>
   </article>
 <% end %>

@@ -25,7 +25,8 @@ class BugsnagIntegration < ApplicationRecord
   PROJECTS_TRANSFORMATIONS = {
     name: :name,
     id: :id,
-    slug: :slug
+    slug: :slug,
+    url: :html_url
   }
 
   RELEASE_TRANSFORMATIONS = {
@@ -71,6 +72,10 @@ class BugsnagIntegration < ApplicationRecord
 
   def setup
     list_projects
+  end
+
+  def project_url
+    app_config.bugsnag_project_id&.fetch("url", nil)
   end
 
   def connection_data

@@ -2,13 +2,15 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   attr_reader :platform_run
 
   delegate :adoption_rate, :errors_count, :new_errors_count, to: :release_data
+  delegate :app, to: :platform_run
+  delegate :monitoring_provider, to: :app
 
   def initialize(platform_run:)
     @platform_run = platform_run
   end
 
-  def monitoring_provider
-    platform_run.app.monitoring_provider
+  def monitoring_provider_url
+    monitoring_provider.project_url
   end
 
   def store_provider
