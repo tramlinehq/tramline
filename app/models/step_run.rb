@@ -302,11 +302,26 @@ class StepRun < ApplicationRecord
   end
 
   def build_notes
+    return merge_only_build_notes if organization.merge_only_build_notes?
+
     build_notes_raw
       .map { |str| str&.strip }
       .flat_map { |line| train.compact_build_notes? ? line.split("\n").first : line.split("\n") }
       .map { |line| line.gsub(/\p{Emoji_Presentation}\s*/, "") }
       .reject { |line| line =~ /\AMerge|\ACo-authored-by|\A---------/ }
+      .compact_blank
+      .uniq
+      .map { |str| "• #{str}" }
+      .join("\n").presence || "Nothing new"
+  end
+
+  def merge_only_build_notes
+    build_notes_raw
+      .map { |str| str&.strip }
+      .filter { |line| line.start_with?("Merge") }
+      .flat_map { |line| line.split("\n") }
+      .map { |line| line.gsub(/\p{Emoji_Presentation}\s*/, "") }
+      .reject { |line| line.start_with?("Merge") }
       .compact_blank
       .uniq
       .map { |str| "• #{str}" }
