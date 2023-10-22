@@ -3,7 +3,8 @@ import {Controller} from "@hotwired/stimulus";
 export default class extends Controller {
   static values = {
     version: String,
-    versionSuffixCurrent: String
+    versionSuffixCurrent: String,
+    prefix: String
   }
 
   static targets = [
@@ -21,9 +22,9 @@ export default class extends Controller {
 
   __set(suffix) {
     if (suffix !== "") {
-      this.helpTextTarget.innerHTML = this.versionValue + "-" + suffix;
+      this.helpTextTarget.innerHTML = this.prefixValue + this.versionValue + "-" + suffix;
     } else {
-      this.helpTextTarget.innerHTML = this.versionValue;
+      this.helpTextTarget.innerHTML = this.prefixValue + this.versionValue;
     }
   }
 }

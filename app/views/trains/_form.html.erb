@@ -173,6 +173,7 @@
       <%= render partial: "backmerge_config_form", locals: { form: } %>
       <%= render partial: "manual_release_form", locals: { form: } %>
       <%= render partial: "compact_build_notes_form", locals: { form: } %>
+      <%= render partial: "release_tag_form", locals: { form: } %>
       <% if @app.cross_platform? %>
         <%= render partial: "store_tags_form", locals: { form: } %>
       <% end %>
