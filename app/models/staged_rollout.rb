@@ -83,6 +83,10 @@ class StagedRollout < ApplicationRecord
     end
   end
 
+  def display_current_stage
+    (current_stage || 0).succ
+  end
+
   def update_stage(stage)
     return if stage == current_stage
 
@@ -202,7 +206,7 @@ class StagedRollout < ApplicationRecord
   end
 
   def stamp_data
-    data = {current_stage: (current_stage || 0).succ, is_fully_released: fully_released?}
+    data = {current_stage: display_current_stage, is_fully_released: fully_released?}
     data[:rollout_percentage] = "%.2f" % last_rollout_percentage if last_rollout_percentage.present?
     data
   end

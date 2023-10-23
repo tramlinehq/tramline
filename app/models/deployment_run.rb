@@ -24,6 +24,7 @@ class DeploymentRun < ApplicationRecord
   belongs_to :deployment, inverse_of: :deployment_runs
   has_one :staged_rollout, dependent: :destroy
   has_one :external_release, dependent: :destroy
+  has_many :release_health_metrics, dependent: :destroy, inverse_of: :deployment_run
 
   validates :deployment_id, uniqueness: {scope: :step_run_id}
 
@@ -54,7 +55,7 @@ class DeploymentRun < ApplicationRecord
     :release_platform,
     :internal_channel?,
     to: :deployment
-  delegate :release_metadata, :train, to: :release
+  delegate :release_metadata, :train, :app, to: :release
   delegate :release_version, :platform, to: :release_platform_run
 
   STAMPABLE_REASONS = %w[
@@ -160,6 +161,21 @@ class DeploymentRun < ApplicationRecord
 
   def self.reached_production
     ready.includes(:step_run, :deployment).select(&:production_channel?)
+  end
+
+  def fetch_health_data!
+    return if app.monitoring_provider.blank?
+    return unless production_channel?
+    return unless rollout_started?
+
+    release_data = app.monitoring_provider.find_release(build_version, build_number)
+    return if release_data.blank?
+
+    release_health_metrics.create(fetched_at: Time.current, **release_data)
+  end
+
+  def latest_health_data
+    release_health_metrics.order(fetched_at: :desc).first
   end
 
   def staged_rollout_events
@@ -396,6 +412,7 @@ class DeploymentRun < ApplicationRecord
   def on_release_started
     event_stamp!(reason: :release_started, kind: :notice, data: stamp_data)
     ReleasePlatformRuns::CreateTagJob.perform_later(release_platform_run.id) if production_channel? && train.tag_all_store_releases?
+    Releases::FetchHealthMetricsJob.perform_later(id) if app.monitoring_provider.present?
   end
 
   def mark_reviewed

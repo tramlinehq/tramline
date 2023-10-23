@@ -11,6 +11,7 @@
 #  updated_at              :datetime         not null
 #  app_id                  :uuid             not null, indexed
 #  bitrise_project_id      :jsonb
+#  bugsnag_project_id      :jsonb
 #
 class AppConfig < ApplicationRecord
   has_paper_trail
@@ -29,7 +30,7 @@ class AppConfig < ApplicationRecord
     json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
 
   def ready?
-    MINIMUM_REQUIRED_CONFIG.all? { |config| public_send(config).present? } && firebase_ready? && bitrise_ready?
+    MINIMUM_REQUIRED_CONFIG.all? { |config| public_send(config).present? } && firebase_ready? && bitrise_ready? && bugsnag_ready?
   end
 
   def code_repository_name
@@ -49,12 +50,20 @@ class AppConfig < ApplicationRecord
     bitrise_project_id&.fetch("id", nil)
   end
 
+  def bugsnag_project
+    bugsnag_project_id&.fetch("id", nil)
+  end
+
   def further_build_channel_setup?
     app.integrations.build_channel.map(&:providable).any?(&:further_build_channel_setup?)
   end
 
   def further_ci_cd_setup?
     app.integrations.ci_cd_provider.further_setup?
+  end
+
+  def further_monitoring_setup?
+    app.integrations.monitoring_provider.further_setup?
   end
 
   private
@@ -67,6 +76,11 @@ class AppConfig < ApplicationRecord
   def bitrise_ready?
     return true unless app.bitrise_connected?
     bitrise_project.present?
+  end
+
+  def bugsnag_ready?
+    return true unless app.bugsnag_connected?
+    bugsnag_project.present?
   end
 
   def configs_ready?(ios, android)

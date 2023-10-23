@@ -19,7 +19,7 @@ class Integration < ApplicationRecord
 
   belongs_to :app
 
-  ALL_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration]
+  ALL_TYPES = %w[GithubIntegration GitlabIntegration SlackIntegration AppStoreIntegration GooglePlayStoreIntegration BitriseIntegration GoogleFirebaseIntegration BugsnagIntegration]
   delegated_type :providable, types: ALL_TYPES, autosave: true, validate: false
 
   IntegrationNotImplemented = Class.new(StandardError)
@@ -31,19 +31,22 @@ class Integration < ApplicationRecord
       "version_control" => %w[GithubIntegration GitlabIntegration],
       "ci_cd" => %w[BitriseIntegration GithubIntegration],
       "notification" => %w[SlackIntegration],
-      "build_channel" => %w[AppStoreIntegration GoogleFirebaseIntegration]
+      "build_channel" => %w[AppStoreIntegration GoogleFirebaseIntegration],
+      "monitoring" => %w[BugsnagIntegration]
     },
     android: {
       "version_control" => %w[GithubIntegration GitlabIntegration],
       "ci_cd" => %w[BitriseIntegration GithubIntegration],
       "notification" => %w[SlackIntegration],
-      "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration]
+      "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration],
+      "monitoring" => %w[BugsnagIntegration]
     },
     cross_platform: {
       "version_control" => %w[GithubIntegration GitlabIntegration],
       "ci_cd" => %w[BitriseIntegration GithubIntegration],
       "notification" => %w[SlackIntegration],
-      "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration]
+      "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration],
+      "monitoring" => %w[BugsnagIntegration]
     }
   }.with_indifferent_access
 
@@ -57,7 +60,8 @@ class Integration < ApplicationRecord
     version_control: "Automatically create release branches and tags, and merge release PRs.",
     ci_cd: "Trigger workflows to create builds and stay up-to-date as they're made available.",
     notification: "Send release activity notifications at the right time, to the right people.",
-    build_channel: "Send builds to the right deployment service for the right stakeholders."
+    build_channel: "Send builds to the right deployment service for the right stakeholders.",
+    monitoring: "Monitor release metrics and stability to make the correct decisions about your release progress."
   }.freeze
   MULTI_INTEGRATION_CATEGORIES = ["build_channel"].freeze
   MINIMUM_REQUIRED_SET = [:version_control, :ci_cd, :build_channel].freeze
@@ -146,6 +150,10 @@ class Integration < ApplicationRecord
 
     def ci_cd_provider
       ci_cd.first&.providable
+    end
+
+    def monitoring_provider
+      monitoring.first&.providable
     end
 
     def notification_provider

@@ -53,6 +53,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_20_054546) do
     t.jsonb "bitrise_project_id"
     t.jsonb "firebase_ios_config"
     t.jsonb "firebase_android_config"
+    t.jsonb "bugsnag_project_id"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
@@ -82,6 +83,12 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_20_054546) do
   end
 
   create_table "bitrise_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "access_token"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "bugsnag_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "access_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -362,6 +369,22 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_20_054546) do
     t.index ["release_id"], name: "index_release_changelogs_on_release_id"
   end
 
+  create_table "release_health_metrics", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "deployment_run_id", null: false
+    t.bigint "sessions"
+    t.bigint "sessions_in_last_day"
+    t.bigint "sessions_with_errors"
+    t.bigint "daily_users"
+    t.bigint "daily_users_with_errors"
+    t.bigint "errors_count"
+    t.bigint "new_errors_count"
+    t.datetime "fetched_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["deployment_run_id"], name: "index_release_health_metrics_on_deployment_run_id"
+    t.index ["fetched_at"], name: "index_release_health_metrics_on_fetched_at"
+  end
+
   create_table "release_metadata", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_run_id"
     t.string "locale", null: false
@@ -594,6 +617,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_10_20_054546) do
   add_foreign_key "notification_settings", "trains"
   add_foreign_key "pull_requests", "release_platform_runs"
   add_foreign_key "release_changelogs", "releases"
+  add_foreign_key "release_health_metrics", "deployment_runs"
   add_foreign_key "release_metadata", "release_platform_runs"
   add_foreign_key "release_platform_runs", "release_platforms"
   add_foreign_key "release_platforms", "apps"

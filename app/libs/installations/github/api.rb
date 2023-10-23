@@ -22,7 +22,6 @@ module Installations
       execute do
         Octokit::Client.new(bearer_token: jwt.get)
           .installation(id)
-          .tap { |response| Rails.logger.info "Github response", response }
           .then { |responses| Installations::Response::Keys.transform([responses], transforms) }
           .first
       end

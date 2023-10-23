@@ -76,6 +76,7 @@ gem "initials", "~> 0.4.3"
 gem "rack-attack", "~> 6.7"
 gem "june-analytics-ruby", "~> 2.4"
 gem "discard", "~> 1.3"
+gem "bugsnag-api", "~> 3.0"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

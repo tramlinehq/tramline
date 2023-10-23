@@ -59,6 +59,14 @@
                                        category: category
                              } %>
                 <% end %>
+
+                <% if integration.providable.to_s == "bugsnag" %>
+                  <%= render partial: "integrations/providers/bugsnag",
+                             locals: { current_organization: current_organization,
+                                       integration: integration,
+                                       category: category
+                             } %>
+                <% end %>
               <% end %>
             </div>
           </div>
