@@ -21,11 +21,7 @@ class ChartComponent < ViewComponent::Base
   end
 
   def series
-    if subgroup?
-      ungroup_series.to_json
-    else
-      cartesian_series.to_json
-    end
+    ungroup_series.to_json
   end
 
   def series_raw
@@ -60,6 +56,7 @@ class ChartComponent < ViewComponent::Base
 
   def stacked_bar? = chart[:type] == "stacked-bar"
 
+  # {"8.0.2"=>{"android"=>1, "ios"=>0}}
   # Input:
   # {
   #   "8.0.1": {
@@ -95,13 +92,13 @@ class ChartComponent < ViewComponent::Base
         if inner_data.is_a?(Hash) && stacked?
           inner_data.each do |name, value|
             item = result.find { |r| r[:name] == name && r[:group] == group }
-            item ||= { name: name, group: group, data: {} }
+            item ||= {name: name, group: group, data: {}}
             item[:data][category] = value
             result.push(item) unless result.include?(item)
           end
         else
           item = result.find { |r| r[:name] == group }
-          item ||= { name: group, data: {} }
+          item ||= {name: group, data: {}}
           item[:data][category] = inner_data
           result.push(item) unless result.include?(item)
         end
@@ -113,7 +110,7 @@ class ChartComponent < ViewComponent::Base
     input.map do |series|
       series.update_key(:data) do |data|
         data.map do |x, y|
-          { x: x, y: y }
+          {x: x, y: y}
         end
       end
     end

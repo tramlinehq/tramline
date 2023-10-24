@@ -22,33 +22,31 @@ class Charts::DevopsReport
     {
       mobile_devops: {
         duration: {
-          data: [{ name: "duration", data: duration }],
+          data: duration,
           type: "area",
           value_format: "time",
           name: "devops.duration"
         },
         frequency: {
-          data: [{ name: "releases", data: frequency }],
+          data: frequency,
           type: "area",
           value_format: "number",
           name: "devops.frequency"
         },
         time_in_review: {
-          data: [{ name: "time", data: time_in_review }],
+          data: time_in_review,
           type: "area",
           value_format: "time",
           name: "devops.time_in_review"
         },
         hotfixes: {
           data: hotfixes,
-          subgroup: true,
           type: "area",
           value_format: "number",
           name: "devops.hotfixes"
         },
         time_in_phases: {
           data: time_in_phases,
-          subgroup: true,
           stacked: true,
           type: "stacked-bar",
           value_format: "time",
@@ -57,7 +55,7 @@ class Charts::DevopsReport
       },
       operational_efficiency: {
         contributors: {
-          data: [{ name: "contributors", data: contributors }],
+          data: contributors,
           type: "line",
           value_format: "number",
           name: "operational_efficiency.contributors"
@@ -73,14 +71,15 @@ class Charts::DevopsReport
     finished_releases(last)
       .group_by(&:release_version)
       .sort_by { |v, _| v.to_semverish }.to_h
-      .transform_values { _1.first.duration.seconds }
+      .transform_values { {duration: _1.first.duration.seconds} }
   end
 
   memoize def frequency(period = :month, format = "%b %y", last: LAST_TIME_PERIOD)
     finished_releases(last)
       .reorder("")
       .group_by_period(period, :completed_at, last: last, current: true, format:)
-      .size
+      .count
+      .transform_values { {releases: _1} }
   end
 
   memoize def contributors(last: LAST_RELEASES)
@@ -88,19 +87,19 @@ class Charts::DevopsReport
       .group_by(&:release_version)
       .sort_by { |v, _| v.to_semverish }.to_h
       .transform_values { _1.flat_map(&:all_commits).flat_map(&:author_email) }
-      .transform_values { _1.uniq.size }
+      .transform_values { {contributors: _1.uniq.size} }
   end
 
   memoize def time_in_review
     train
       .external_releases
-      .includes(deployment_run: [:deployment, { step_run: { release_platform_run: [:release] } }])
+      .includes(deployment_run: [:deployment, {step_run: {release_platform_run: [:release]}}])
       .where.not(reviewed_at: nil)
       .filter { _1.deployment_run.production_release_happened? }
       .group_by(&:build_version)
       .sort_by { |v, _| v.to_semverish }.to_h
       .transform_values { _1.flat_map(&:review_time) }
-      .transform_values { _1.sum(&:seconds) / _1.size.to_f }
+      .transform_values { {time: _1.sum(&:seconds) / _1.size.to_f} }
   end
 
   memoize def hotfixes(last: LAST_RELEASES)
