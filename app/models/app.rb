@@ -56,6 +56,7 @@ class App < ApplicationRecord
 
   delegate :vcs_provider,
     :ci_cd_provider,
+    :monitoring_provider,
     :notification_provider,
     :ios_store_provider,
     :android_store_provider,
@@ -130,6 +131,10 @@ class App < ApplicationRecord
 
   def bitrise_connected?
     integrations.bitrise_integrations.any?
+  end
+
+  def bugsnag_connected?
+    integrations.bugsnag_integrations.any?
   end
 
   def firebase_connected?

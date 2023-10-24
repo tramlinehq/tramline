@@ -8,6 +8,7 @@ en:
     models:
       slack_integration: "Slack"
       bitrise_integration: "Bitrise"
+      bugsnag_integration: "Bugsnag"
       google_play_store_integration: "Google Play Store"
       app_store_integration: "App Store Connect & TestFlight"
       gitlab_integration: "GitLab"
@@ -91,8 +92,11 @@ en:
           ci_cd: "Build Servers"
           notification: "Notifications"
           build_channel: "Distributions"
+          monitoring: "Monitoring and Analytics"
       bitrise_integration:
         access_token: "Bitrise Personal Access Token"
+      bugsnag_integration:
+          access_token: "Bugsnag Personal Access Token"
       google_play_store_integration:
         json_key: "Google Play Store JSON Key"
       train:
@@ -168,6 +172,10 @@ en:
           attributes:
             access_token:
               no_apps: "could not find any apps listed for this token!"
+        bugsnag_integration:
+          attributes:
+            access_token:
+              no_orgs: "could not find any orgs listed for this token!"
         google_play_store_integration:
           attributes:
             json_key:

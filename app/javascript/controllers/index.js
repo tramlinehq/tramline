@@ -29,3 +29,6 @@ application.register("confetti", Confetti)
 
 import { Tabs } from "tailwindcss-stimulus-components"
 application.register("tabs", Tabs)
+
+import { Popover } from "tailwindcss-stimulus-components"
+application.register("popover", Popover)

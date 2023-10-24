@@ -99,6 +99,32 @@
       </section>
     <% end %>
 
+    <% if @app.bugsnag_connected? %>
+      <section class="border-t border-dashed pb-8">
+        <div class="my-8">
+          <h2 class="font-bold text-xl">
+            <%= image_tag "integrations/logo_bugsnag.png", title: "Bugsnag", width: 35, class: "pb-2" %>
+            Bugsnag
+          </h2>
+        </div>
+
+        <div class="grid gap-5 md:grid-cols-2">
+          <% if @monitoring_projects.present? %>
+            <div class="mb-4">
+              <%= form.label :bugsnag_project_id, "Project Name", class: "block text-sm font-medium mb-1" %>
+              <%= form.select :bugsnag_project_id,
+                              options_for_select(
+                                display_channels(@monitoring_projects) { |project| "#{project[:name]} (#{project[:id]})" },
+                                @config.bugsnag_project_id.to_json
+                              ),
+                              { class: "form-select" },
+                              data: { controller: "input-select" } %>
+            </div>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+
     <div class="mt-5">
       <%= form.authz_submit :blue, "Update" %>
     </div>

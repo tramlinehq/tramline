@@ -116,7 +116,9 @@ class TrainsController < SignedInApplicationController
       :compact_build_notes,
       :tag_all_store_releases,
       :tag_platform_releases,
-      :notifications_enabled
+      :notifications_enabled,
+      :tag_releases,
+      :tag_suffix
     )
   end
 
@@ -150,7 +152,9 @@ class TrainsController < SignedInApplicationController
       :compact_build_notes,
       :tag_all_store_releases,
       :tag_platform_releases,
-      :notifications_enabled
+      :notifications_enabled,
+      :tag_releases,
+      :tag_suffix
     )
   end
 

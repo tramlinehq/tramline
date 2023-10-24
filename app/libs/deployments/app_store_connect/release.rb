@@ -145,8 +145,8 @@ module Deployments
         result = find_release
 
         unless result.ok?
-          run.fail_with_error(result.error)
-          return
+          elog(result.error)
+          raise ExternalReleaseNotInTerminalState, "Retrying in some time..."
         end
 
         release_info = result.value!
@@ -185,8 +185,8 @@ module Deployments
         result = provider.find_live_release
 
         unless result.ok?
-          run.fail_with_error(result.error)
-          return
+          elog(result.error)
+          raise ReleaseNotFullyLive, "Retrying in some time..."
         end
 
         release_info = result.value!

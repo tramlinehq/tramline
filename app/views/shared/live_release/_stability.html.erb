@@ -71,4 +71,12 @@
       <% end %>
     </ol>
   </div>
+
+  <% if current_user.release_monitoring? %>
+    <% if release.production_release_happened? %>
+      <div class="mt-8">
+        <%= render ReleaseMonitoringComponent.new(platform_run: release) %>
+      </div>
+    <% end %>
+  <% end %>
 </section>

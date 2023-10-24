@@ -107,8 +107,8 @@ class Accounts::User < ApplicationRecord
     access_for(organization).owner?
   end
 
-  def new_release_summary?
-    Flipper.enabled?(:new_release_summary, self)
+  def release_monitoring?
+    Flipper.enabled?(:release_monitoring, self)
   end
 
   # FIXME: This assumes that the blob is always a BuildArtifact

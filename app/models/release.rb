@@ -228,6 +228,7 @@ class Release < ApplicationRecord
   # recursively attempt to create a release until a unique one gets created
   # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
   def create_release!(input_tag_name = base_tag_name)
+    return unless train.tag_releases?
     return if tag_name.present?
     train.create_release!(release_branch, input_tag_name)
     update!(tag_name: input_tag_name)
@@ -332,7 +333,9 @@ class Release < ApplicationRecord
   private
 
   def base_tag_name
-    "v#{release_version}"
+    tag = "v#{release_version}"
+    tag += "-" + train.tag_suffix if train.tag_suffix.present?
+    tag
   end
 
   def create_platform_runs
