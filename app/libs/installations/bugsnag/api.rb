@@ -25,16 +25,13 @@ module Installations
     def find_release(project_id, release_stage, app_version, app_version_code, transforms)
       execute do
         releases = list_releases(project_id, release_stage).presence || []
+        return if releases.blank?
 
-        release =
-          releases
-            .filter { |r| r.app_version == app_version && (r.app_version_code == app_version_code || r.app_bundle_version == app_version_code) }
-            .then { Installations::Response::Keys.transform(_1, transforms) }
-            .first
-
-        return if release.blank?
-        release[:total_sessions_count_in_last_24h] = releases.pluck(:sessions_count_in_last_24h).sum
-        release
+        releases
+          .filter { |r| r.app_version == app_version && (r.app_version_code == app_version_code || r.app_bundle_version == app_version_code) }
+          .then { _1&.merge(total_sessions_count_in_last_24h: releases.pluck(:sessions_count_in_last_24h).sum) }
+          .then { Installations::Response::Keys.transform(_1, transforms) }
+          .first
       end
     end
 
