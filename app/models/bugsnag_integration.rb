@@ -36,7 +36,8 @@ class BugsnagIntegration < ApplicationRecord
     sessions: :total_sessions_count,
     sessions_with_errors: :unhandled_sessions_count,
     daily_users_with_errors: :accumulative_daily_users_with_unhandled,
-    daily_users: :accumulative_daily_users_seen
+    daily_users: :accumulative_daily_users_seen,
+    total_sessions_in_last_day: :total_sessions_count_in_last_24h
   }
 
   validate :correct_key, on: :create
