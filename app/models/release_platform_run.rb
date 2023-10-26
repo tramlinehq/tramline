@@ -288,6 +288,10 @@ class ReleasePlatformRun < ApplicationRecord
     "v#{release_version}-#{platform}"
   end
 
+  def store_releases
+    deployment_runs.reached_production.sort_by(&:scheduled_at).reverse
+  end
+
   def started_store_release?
     latest_store_release.present?
   end

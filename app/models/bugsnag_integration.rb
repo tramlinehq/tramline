@@ -95,11 +95,22 @@ class BugsnagIntegration < ApplicationRecord
     list_organizations
   end
 
-  def find_release(version, build_number)
-    installation.find_release(project, version, build_number, RELEASE_TRANSFORMATIONS)
+  def find_release(platform, version, build_number)
+    installation.find_release(project, release_stage_hack(platform), version, build_number, RELEASE_TRANSFORMATIONS)
   end
 
   private
+
+  def release_stage_hack(platform)
+    case platform
+    when "android"
+      "prod"
+    when "ios"
+      "iOS-prod"
+    else
+      "prod"
+    end
+  end
 
   def app_config
     integration.app.config

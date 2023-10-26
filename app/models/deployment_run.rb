@@ -168,7 +168,7 @@ class DeploymentRun < ApplicationRecord
     return unless production_channel?
     return unless rollout_started?
 
-    release_data = app.monitoring_provider.find_release(build_version, build_number)
+    release_data = app.monitoring_provider.find_release(platform, build_version, build_number)
     return if release_data.blank?
 
     release_health_metrics.create(fetched_at: Time.current, **release_data)
