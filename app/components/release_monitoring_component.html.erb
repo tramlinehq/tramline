@@ -1,6 +1,6 @@
 <% if release_data.present? %>
-  <article class="mb-4">
-    <div class="text-slate-500 text-sm">For <%= build_identifier %></div>
+  <article class="mt-4">
+    <div class="text-slate-500 text-md"><%= build_identifier %></div>
     <div class="grid grid-cols-2 gap-5 mt-4">
       <%= render ProgressCardComponent.new(name: "Staged Rollout",
                                            current: staged_rollout_percentage,
