@@ -36,6 +36,10 @@ class ChartComponent < ViewComponent::Base
     I18n.t("charts.#{chart[:name]}.scope")
   end
 
+  def help_text
+    I18n.t("charts.#{chart[:name]}.help_text")
+  end
+
   def corner_icon
     inline_svg(@icon, classname: "w-6 fill-current shrink-0")
   end

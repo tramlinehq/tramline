@@ -65,7 +65,7 @@
       <%= render partial: "apps/setup_progress", locals: { setup_instructions: @app_setup_instructions } %>
     <% end %>
 
-    <% if current_user.release_health? && @app.releases.size > 2 %>
+    <% if @app.devops_report?(current_user) %>
       <div class="w-full">
         <h2 class="text-2xl text-slate-800 font-bold">Mobile DevOps</h2>
         <div class="grid grid-cols-3 gap-x-2 my-3 gap-y-2">
@@ -81,6 +81,7 @@
         <h2 class="text-2xl text-slate-800 font-bold">Operational Efficiency</h2>
         <div class="grid grid-cols-3 gap-x-4 my-3 gap-y-2">
           <%= render ChartComponent.new(@devops_report[:operational_efficiency][:contributors], icon: "user.svg") %>
+          <%= render ChartComponent.new(@devops_report[:operational_efficiency][:stability_contributors], icon: "user.svg") %>
         </div>
       </div>
     <% end %>

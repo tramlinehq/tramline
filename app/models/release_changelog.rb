@@ -22,6 +22,10 @@ class ReleaseChangelog < ApplicationRecord
     commits.pluck("message")
   end
 
+  def unique_authors
+    commits.pluck("author_name").uniq
+  end
+
   private
 
   class NormalizedCommit

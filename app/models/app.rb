@@ -241,6 +241,10 @@ class App < ApplicationRecord
     end
   end
 
+  def devops_report?(user)
+    user.release_health? && releases.size > 1
+  end
+
   def in_draft_mode?
     return draft? if android_store_provider.nil?
     return draft? if draft == false

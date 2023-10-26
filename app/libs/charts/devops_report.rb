@@ -54,6 +54,12 @@ class Charts::DevopsReport
         }
       },
       operational_efficiency: {
+        stability_contributors: {
+          data: release_stability_contributors,
+          type: "line",
+          value_format: "number",
+          name: "operational_efficiency.stability_contributors"
+        },
         contributors: {
           data: contributors,
           type: "line",
@@ -82,12 +88,19 @@ class Charts::DevopsReport
       .transform_values { {releases: _1} }
   end
 
-  memoize def contributors(last: LAST_RELEASES)
+  memoize def release_stability_contributors(last: LAST_RELEASES)
     finished_releases(last)
       .group_by(&:release_version)
       .sort_by { |v, _| v.to_semverish }.to_h
       .transform_values { _1.flat_map(&:all_commits).flat_map(&:author_email) }
       .transform_values { {contributors: _1.uniq.size} }
+  end
+
+  memoize def contributors(last: LAST_RELEASES)
+    finished_releases(last)
+      .group_by(&:release_version)
+      .sort_by { |v, _| v.to_semverish }.to_h
+      .transform_values { {contributors: _1.flat_map(&:release_changelog).compact.flat_map(&:unique_authors).size } }
   end
 
   memoize def time_in_review
@@ -157,7 +170,7 @@ class Charts::DevopsReport
       .releases
       .limit(n)
       .finished
-      .includes(:release_platform_runs, :all_commits, step_runs: [:deployment_runs, :step])
+      .includes(:release_changelog, :release_platform_runs, :all_commits, step_runs: [:deployment_runs, :step])
   end
 
   def cache_key
