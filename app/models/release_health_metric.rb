@@ -20,17 +20,17 @@ class ReleaseHealthMetric < ApplicationRecord
   belongs_to :deployment_run
 
   def user_stability
-    return if daily_users&.zero?
+    return if daily_users.blank? || daily_users.zero?
     ((1 - (daily_users_with_errors.to_f / daily_users.to_f)) * 100).ceil(3)
   end
 
   def session_stability
-    return if sessions&.zero?
+    return if sessions.blank? || sessions.zero?
     ((1 - (sessions_with_errors.to_f / sessions.to_f)) * 100).ceil(3)
   end
 
   def adoption_rate
-    return 0 if total_sessions_in_last_day&.zero?
+    return 0 if total_sessions_in_last_day.blank? || total_sessions_in_last_day.zero?
     ((sessions_in_last_day.to_f / total_sessions_in_last_day.to_f) * 100).ceil(2)
   end
 end
