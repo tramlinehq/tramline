@@ -1,7 +1,6 @@
 <% if release_data.present? %>
-  <article>
-    <div class="font-bold text-xl">Release Health</div>
-
+  <article class="mt-4">
+    <div class="text-slate-500 text-md"><%= build_identifier %></div>
     <div class="grid grid-cols-2 gap-5 mt-4">
       <%= render ProgressCardComponent.new(name: "Staged Rollout",
                                            current: staged_rollout_percentage,
@@ -11,8 +10,8 @@
                                            current: adoption_rate,
                                            subtitle: "Last 24 hours",
                                            provider: monitoring_provider) %>
-      <%= render MetricCardComponent.new(name: "Crash-free Rate",
-                                         values: { "sessions" => session_stability, "users" => user_stability },
+      <%= render MetricCardComponent.new(name: "Stability",
+                                         values: { "users" => user_stability, "sessions" => session_stability },
                                          provider: monitoring_provider,
                                          external_url: monitoring_provider_url) %>
       <%= render MetricCardComponent.new(name: "Errors",

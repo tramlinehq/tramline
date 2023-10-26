@@ -282,6 +282,10 @@ class ReleasePlatformRun < ApplicationRecord
     )
   end
 
+  def store_releases
+    deployment_runs.reached_production.sort_by(&:scheduled_at).reverse
+  end
+
   private
 
   def base_tag_name

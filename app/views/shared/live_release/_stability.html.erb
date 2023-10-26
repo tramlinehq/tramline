@@ -74,9 +74,10 @@
 
   <% if current_user.release_monitoring? %>
     <% if release.production_release_happened? %>
-      <div class="mt-8">
-        <%= render ReleaseMonitoringComponent.new(platform_run: release) %>
-      </div>
+      <div class="font-bold text-xl mt-8">Release Health</div>
+      <% release.store_releases.each do |store_release| %>
+        <%= render ReleaseMonitoringComponent.new(deployment_run: store_release) %>
+      <% end %>
     <% end %>
   <% end %>
 </section>
