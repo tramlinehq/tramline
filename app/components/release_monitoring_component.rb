@@ -10,7 +10,7 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def build_identifier
-    "#{deployment_run.build_version} (#{build_number})"
+    "#{deployment_run.build_version} (#{deployment_run.build_number})"
   end
 
   def monitoring_provider_url
