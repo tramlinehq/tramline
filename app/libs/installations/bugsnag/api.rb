@@ -29,7 +29,7 @@ module Installations
 
         releases
           .filter { |r| r.app_version == app_version && (r.app_version_code == app_version_code || r.app_bundle_version == app_version_code) }
-          .map { _1.merge(total_sessions_count_in_last_24h: releases.pluck(:sessions_count_in_last_24h).sum) }
+          .map { _1.to_h.merge(total_sessions_count_in_last_24h: releases.pluck(:sessions_count_in_last_24h).sum) }
           .then { Installations::Response::Keys.transform(_1, transforms) }
           .first
       end
