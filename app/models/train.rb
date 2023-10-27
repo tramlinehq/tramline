@@ -371,6 +371,14 @@ class Train < ApplicationRecord
     draft? || !automatic? || !persisted?
   end
 
+  def devops_report?(user)
+    user.release_health? && releases.size > 1
+  end
+
+  def devops_report
+    Charts::DevopsReport.all(self)
+  end
+
   private
 
   def train_link

@@ -100,7 +100,7 @@ class Charts::DevopsReport
     finished_releases(last)
       .group_by(&:release_version)
       .sort_by { |v, _| v.to_semverish }.to_h
-      .transform_values { {contributors: _1.flat_map(&:release_changelog).compact.flat_map(&:unique_authors).size } }
+      .transform_values { {contributors: _1.flat_map(&:release_changelog).compact.flat_map(&:unique_authors).size} }
   end
 
   memoize def time_in_review

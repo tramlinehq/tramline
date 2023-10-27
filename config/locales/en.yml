@@ -276,7 +276,7 @@ en:
         scope: "Last 5 releases"
         help_text: ""
       stability_contributors:
-        title: "Release Stability Contributors"
+        title: "Stability Contributors"
         scope: "Last 5 releases"
         help_text: ""
 
