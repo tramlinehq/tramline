@@ -7,6 +7,6 @@ class RefreshReportsJob < ApplicationJob
     train = release.train
 
     Charts::DevopsReport.warm(train)
-    Queries::ReleaseSummary.warm(release)
+    Queries::ReleaseSummary.warm(release_id)
   end
 end

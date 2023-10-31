@@ -94,17 +94,18 @@ class ChartComponent < ViewComponent::Base
   def ungroup_series(input = series_raw)
     input.each_with_object([]) do |(category, grouped_maps), result|
       grouped_maps.each do |group, inner_data|
+        color = CHART_COLORS[result.size % CHART_COLORS.length]
         if inner_data.is_a?(Hash) && stacked?
           inner_data.each do |name, value|
             item = result.find { |r| r[:name] == name && r[:group] == group }
             grouped_name = "#{name} (#{group})"
-            item ||= {name: grouped_name, group: group, data: {}, color: CHART_COLORS[result.size]}
+            item ||= {name: grouped_name, group: group, data: {}, color:}
             item[:data][category] = value
             result.push(item) unless result.include?(item)
           end
         else
           item = result.find { |r| r[:name] == group }
-          item ||= {name: group, data: {}, color: CHART_COLORS[result.size]}
+          item ||= {name: group, data: {}, color:}
           item[:data][category] = inner_data
           result.push(item) unless result.include?(item)
         end
