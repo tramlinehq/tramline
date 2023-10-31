@@ -259,8 +259,8 @@ en:
         scope: "Last 6 months"
         help_text: ""
       time_in_review:
-        title: "Time in Review"
-        scope: "Last 5 releases"
+        title: "Time in Review (iOS)"
+        scope: "Last 5 versions"
         help_text: ""
       hotfixes:
         title: "Fixes during release"

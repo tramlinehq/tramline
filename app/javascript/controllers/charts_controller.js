@@ -4,10 +4,6 @@ import humanizeDuration from "humanize-duration";
 
 const formatTypes = ["number", "time"]
 const chartTypes = ["area", "line", "stacked-bar"]
-const chartColors = [
-  "#1A56DB", "#9061F9", "#E74694", "#31C48D", "#FDBA8C", "#16BDCA",
-  "#7E3BF2", "#1C64F2", "#F05252"
-];
 
 export default class extends Controller {
   static targets = ["chart"]
@@ -42,7 +38,6 @@ export default class extends Controller {
       chartOptions = this.stackedBarOptions(series)
     }
 
-    console.log(series);
     this.chart = new ApexCharts(this.chartTarget, chartOptions);
     this.chart.render();
   }
@@ -97,7 +92,8 @@ export default class extends Controller {
         enabled: false,
       },
       stroke: {
-        width: 6,
+        width: 3,
+        curve: 'smooth',
       },
       grid: {
         show: true,
@@ -214,7 +210,7 @@ export default class extends Controller {
         type: "bar",
         stacked: true,
         stackType: "100%",
-        height: "200",
+        height: "250",
         fontFamily: "Inter, sans-serif",
         toolbar: {
           show: false,
@@ -267,9 +263,11 @@ export default class extends Controller {
         style: {
           fontSize: '10px',
         },
-        formatter(val) {
+        formatter(val, { seriesIndex, w }) {
+          const yVal = w.config.series[seriesIndex].data[0].y
+
           if (self.__isTimeFormat()) {
-            return self.__formatSeconds(val, true)
+            return self.__formatSeconds(yVal, true)
           } else {
             return val
           }
@@ -302,40 +300,6 @@ export default class extends Controller {
       },
     }
   }
-
-  // __pickColor(i) {
-  //   const colorsLength = chartColors.length;
-  //   const colorIndex = ((i % colorsLength) + colorsLength) % colorsLength;
-  //   return chartColors[colorIndex];
-  // }
-  //
-  // __validateData(names, series, categories) {
-  //   if (names.length !== series.length) {
-  //     console.error('Names and Series must have the same number of top-level items.');
-  //     return false;
-  //   }
-  //
-  //   if (categories.length > 0 && series.some(dataset => dataset.length !== categories.length)) {
-  //     console.error('Categories and each dataset in the Series must be equal in size');
-  //     return false;
-  //   }
-  //
-  //   return true;
-  // }
-  //
-  // __validateStackBarData(names, series, categories) {
-  //   if (categories.length !== series.length) {
-  //     console.error('Categories and Series must have the same number of top-level items.');
-  //     return false;
-  //   }
-  //
-  //   if (names.length > 0 && series.some(dataset => dataset.length !== names.length)) {
-  //     console.error('Names and each dataset in the Series must be equal in size');
-  //     return false;
-  //   }
-  //
-  //   return true;
-  // }
 
   __formatSeconds(seconds, isShort) {
     const ms = seconds * 1000

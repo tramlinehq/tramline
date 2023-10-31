@@ -20,6 +20,7 @@ class Charts::DevopsReport
 
   def report
     {
+      refreshed_at: Time.current,
       mobile_devops: {
         duration: {
           data: duration,
@@ -80,7 +81,7 @@ class Charts::DevopsReport
       .transform_values { {duration: _1.first.duration.seconds} }
   end
 
-  memoize def frequency(period = :month, format = "%b %y", last: LAST_TIME_PERIOD)
+  memoize def frequency(period = :month, format = "%b", last: LAST_TIME_PERIOD)
     finished_releases(last)
       .reorder("")
       .group_by_period(period, :completed_at, last: last, current: true, format:)
@@ -103,9 +104,9 @@ class Charts::DevopsReport
       .transform_values { {contributors: _1.flat_map(&:release_changelog).compact.flat_map(&:unique_authors).size} }
   end
 
-  memoize def time_in_review
+  memoize def time_in_review(last: LAST_RELEASES)
     train
-      .external_releases
+      .external_releases.limit(last)
       .includes(deployment_run: [:deployment, {step_run: {release_platform_run: [:release]}}])
       .where.not(reviewed_at: nil)
       .filter { _1.deployment_run.production_release_happened? }
@@ -170,7 +171,7 @@ class Charts::DevopsReport
       .releases
       .limit(n)
       .finished
-      .includes(:release_changelog, :release_platform_runs, :all_commits, step_runs: [:deployment_runs, :step])
+      .includes(:release_changelog, {release_platform_runs: [:release_platform]}, :all_commits, step_runs: [:deployment_runs, :step])
   end
 
   def cache_key

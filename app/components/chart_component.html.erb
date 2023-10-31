@@ -1,39 +1,41 @@
-<div class="w-full bg-white rounded-sm border border-gray-200 p-3">
-  <div class="flex justify-between items-center mb-4">
-    <div>
-      <h5 class="flex leading-none text-lg font-normal text-gray-900 items-center gap-x-1">
-        <%= title %>
-        <%#= help_icon %>
-      </h5>
-      <p class="text-sm font-normal text-gray-400"><%= chart_scope %></p>
+<% unless series_raw.blank? %>
+  <div class="w-full bg-white rounded-sm border border-gray-200 p-3">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h5 class="flex leading-none text-lg font-normal text-gray-900 items-center gap-x-1">
+          <%= title %>
+          <%#= help_icon %>
+        </h5>
+        <p class="text-sm font-normal text-gray-400"><%= chart_scope %></p>
+      </div>
+      <div class="flex py-0.5 text-base font-semibold text-green-700"><%= corner_icon %></div>
     </div>
-    <div class="flex py-0.5 text-base font-semibold text-green-700"><%= corner_icon %></div>
+
+    <% if area? %>
+      <div data-controller="charts"
+           data-charts-type-value="area"
+           data-charts-format-value="<%= value_format %>"
+           data-charts-series-value="<%= series %>">
+        <div data-charts-target="chart"></div>
+      </div>
+    <% end %>
+
+    <% if line? %>
+      <div data-controller="charts"
+           data-charts-type-value="line"
+           data-charts-format-value="<%= value_format %>"
+           data-charts-series-value="<%= series %>">
+        <div data-charts-target="chart"></div>
+      </div>
+    <% end %>
+
+    <% if stacked_bar? %>
+      <div data-controller="charts"
+           data-charts-type-value="stacked-bar"
+           data-charts-format-value="<%= value_format %>"
+           data-charts-series-value="<%= series %>">
+        <div data-charts-target="chart"></div>
+      </div>
+    <% end %>
   </div>
-
-  <% if area? %>
-    <div data-controller="charts"
-         data-charts-type-value="area"
-         data-charts-format-value="<%= value_format %>"
-         data-charts-series-value="<%= series %>">
-      <div data-charts-target="chart"></div>
-    </div>
-  <% end %>
-
-  <% if line? %>
-    <div data-controller="charts"
-         data-charts-type-value="line"
-         data-charts-format-value="<%= value_format %>"
-         data-charts-series-value="<%= series %>">
-      <div data-charts-target="chart"></div>
-    </div>
-  <% end %>
-
-  <% if stacked_bar? %>
-    <div data-controller="charts"
-         data-charts-type-value="stacked-bar"
-         data-charts-format-value="<%= value_format %>"
-         data-charts-series-value="<%= series %>">
-      <div data-charts-target="chart"></div>
-    </div>
-  <% end %>
-</div>
+<% end %>

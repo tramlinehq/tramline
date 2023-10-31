@@ -3,6 +3,7 @@ class ChartComponent < ViewComponent::Base
   using RefinedHash
   CHART_TYPES = %w[area line donut stacked-bar]
   InvalidChartType = Class.new(StandardError)
+  CHART_COLORS = %w[#1A56DB #9061F9 #E74694 #31C48D #FDBA8C #16BDCA #7E3BF2 #1C64F2 #F05252]
 
   def initialize(chart, icon:)
     @chart = chart
@@ -96,13 +97,14 @@ class ChartComponent < ViewComponent::Base
         if inner_data.is_a?(Hash) && stacked?
           inner_data.each do |name, value|
             item = result.find { |r| r[:name] == name && r[:group] == group }
-            item ||= {name: name, group: group, data: {}}
+            grouped_name = "#{name} (#{group})"
+            item ||= {name: grouped_name, group: group, data: {}, color: CHART_COLORS[result.size]}
             item[:data][category] = value
             result.push(item) unless result.include?(item)
           end
         else
           item = result.find { |r| r[:name] == group }
-          item ||= {name: group, data: {}}
+          item ||= {name: group, data: {}, color: CHART_COLORS[result.size]}
           item[:data][category] = inner_data
           result.push(item) unless result.include?(item)
         end
