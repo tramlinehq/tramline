@@ -61,7 +61,6 @@ class ChartComponent < ViewComponent::Base
 
   def stacked_bar? = chart[:type] == "stacked-bar"
 
-  # {"8.0.2"=>{"android"=>1, "ios"=>0}}
   # Input:
   # {
   #   "8.0.1": {
@@ -94,16 +93,17 @@ class ChartComponent < ViewComponent::Base
   def ungroup_series(input = series_raw)
     input.each_with_object([]) do |(category, grouped_maps), result|
       grouped_maps.each do |group, inner_data|
-        color = CHART_COLORS[result.size % CHART_COLORS.length]
         if inner_data.is_a?(Hash) && stacked?
           inner_data.each do |name, value|
-            item = result.find { |r| r[:name] == name && r[:group] == group }
+            color = CHART_COLORS[result.size % CHART_COLORS.length]
             grouped_name = "#{name} (#{group})"
+            item = result.find { |r| r[:name] == grouped_name && r[:group] == group }
             item ||= {name: grouped_name, group: group, data: {}, color:}
             item[:data][category] = value
             result.push(item) unless result.include?(item)
           end
         else
+          color = CHART_COLORS[result.size % CHART_COLORS.length]
           item = result.find { |r| r[:name] == group }
           item ||= {name: group, data: {}, color:}
           item[:data][category] = inner_data

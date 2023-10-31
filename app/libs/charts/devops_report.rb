@@ -106,10 +106,11 @@ class Charts::DevopsReport
 
   memoize def time_in_review(last: LAST_RELEASES)
     train
-      .external_releases.limit(last)
+      .external_releases
       .includes(deployment_run: [:deployment, {step_run: {release_platform_run: [:release]}}])
       .where.not(reviewed_at: nil)
       .filter { _1.deployment_run.production_release_happened? }
+      .last(last)
       .group_by(&:build_version)
       .sort_by { |v, _| v.to_semverish }.to_h
       .transform_values { _1.flat_map(&:review_time) }

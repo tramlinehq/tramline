@@ -263,8 +263,8 @@ export default class extends Controller {
         style: {
           fontSize: '10px',
         },
-        formatter(val, { seriesIndex, w }) {
-          const yVal = w.config.series[seriesIndex].data[0].y
+        formatter(val, {w, seriesIndex, dataPointIndex}) {
+          const yVal = w.config.series[seriesIndex].data[dataPointIndex].y
 
           if (self.__isTimeFormat()) {
             return self.__formatSeconds(yVal, true)
@@ -305,12 +305,12 @@ export default class extends Controller {
     const ms = seconds * 1000
     if (isShort) {
       return humanizeDuration(ms, {
-        round: true,
+        round: false,
         largest: 1,
         maxDecimalPoints: 1,
-        units: ["h", "m", "s"],
+        units: ["w", "d", "h", "m"],
         language: "shortEn",
-        languages: {shortEn: {h: () => "h", m: () => "m", s: () => "s"}}
+        languages: {shortEn: {h: () => "h", m: () => "m", d: () => "d", w: () => "w"}}
       })
     } else {
       return humanizeDuration(ms, {round: true, largest: 2, maxDecimalPoints: 1})
