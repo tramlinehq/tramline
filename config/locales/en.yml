@@ -253,20 +253,30 @@ en:
       duration:
         title: "Release Duration"
         scope: "Last 5 releases"
+        help_text: "How long does the release take?"
       frequency:
         title: "Releases Frequency"
         scope: "Last 6 months"
+        help_text: ""
       time_in_review:
         title: "Time in Review"
         scope: "Last 5 releases"
+        help_text: ""
       hotfixes:
         title: "Fixes during release"
         scope: "Last 5 releases"
+        help_text: ""
       time_in_phases:
         title: "Duration across Steps"
         scope: "Last 5 releases"
+        help_text: ""
     operational_efficiency:
       contributors:
         title: "Contributors"
         scope: "Last 5 releases"
+        help_text: ""
+      stability_contributors:
+        title: "Stability Contributors"
+        scope: "Last 5 releases"
+        help_text: ""
 

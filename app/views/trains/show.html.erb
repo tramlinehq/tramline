@@ -53,6 +53,7 @@
 </div>
 
 <%= render partial: "shared/draft_mode_notice", locals: { app: @app } %>
+
 <div class="grid md:grid-cols-2 gap-x-11 pb-5 mt-8">
   <!-- Train Summary -->
   <article class="mb-8">
@@ -209,6 +210,26 @@
     </article>
   <% end %>
 
+  <% if @devops_report.present? %>
+    <article class="mb-8 pb-4">
+      <h2 class="text-2xl font-bold mb-4">Mobile DevOps</h2>
+      <div class="grid grid-cols-2 gap-x-1 my-3 gap-y-2">
+        <%= render ChartComponent.new(@devops_report[:mobile_devops][:frequency], icon: "cog.svg") %>
+        <%= render ChartComponent.new(@devops_report[:mobile_devops][:duration], icon: "cog.svg") %>
+        <%= render ChartComponent.new(@devops_report[:mobile_devops][:hotfixes], icon: "cog.svg") %>
+        <%= render ChartComponent.new(@devops_report[:mobile_devops][:time_in_review], icon: "cog.svg") %>
+        <%= render ChartComponent.new(@devops_report[:mobile_devops][:time_in_phases], icon: "cog.svg") %>
+      </div>
+    </article>
+
+    <article class="mb-8 pb-4">
+      <h2 class="text-2xl font-bold mb-4">Operational Efficiency</h2>
+      <div class="grid grid-cols-2 gap-x-1 my-3 gap-y-2">
+        <%= render ChartComponent.new(@devops_report[:operational_efficiency][:contributors], icon: "user.svg") %>
+        <%= render ChartComponent.new(@devops_report[:operational_efficiency][:stability_contributors], icon: "user.svg") %>
+      </div>
+    </article>
+  <% end %>
 
   <!-- Steps Viz -->
   <% @train.release_platforms.each do |release_platform| %>

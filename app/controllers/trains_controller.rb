@@ -10,6 +10,7 @@ class TrainsController < SignedInApplicationController
   before_action :set_notification_channels, only: %i[new create edit update]
 
   def show
+    @devops_report = @train.devops_report if @train.devops_report?(current_user)
   end
 
   def new
