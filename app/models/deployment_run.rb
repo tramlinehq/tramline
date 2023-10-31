@@ -166,7 +166,6 @@ class DeploymentRun < ApplicationRecord
   def fetch_health_data!
     return if app.monitoring_provider.blank?
     return unless production_channel?
-    return unless rollout_started?
 
     release_data = app.monitoring_provider.find_release(platform, build_version, build_number)
     return if release_data.blank?

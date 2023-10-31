@@ -75,10 +75,6 @@ class BugsnagIntegration < ApplicationRecord
     list_projects
   end
 
-  def project_url
-    app_config.bugsnag_project_id&.fetch("url", nil)
-  end
-
   def connection_data
     return unless integration.metadata
     "Organization(s): " + integration.metadata.map { |m| "#{m["name"]} (#{m["slug"]})" }.join(", ")
@@ -100,7 +96,16 @@ class BugsnagIntegration < ApplicationRecord
     installation.find_release(project, release_stage_hack(platform), version, build_number, RELEASE_TRANSFORMATIONS)
   end
 
+  def dashboard_url(platform)
+    return if project_url.blank?
+    "#{project_url}/overview?release_stage=#{release_stage_hack(platform)}"
+  end
+
   private
+
+  def project_url
+    app_config.bugsnag_project_id&.fetch("url", nil)
+  end
 
   def release_stage_hack(platform)
     case platform
