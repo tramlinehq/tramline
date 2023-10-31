@@ -14,7 +14,7 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def monitoring_provider_url
-    monitoring_provider.project_url
+    monitoring_provider.dashboard_url(deployment_run.platform)
   end
 
   def store_provider
