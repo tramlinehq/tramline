@@ -209,7 +209,6 @@ export default class extends Controller {
       chart: {
         type: "bar",
         stacked: true,
-        stackType: "100%",
         height: "250",
         fontFamily: "Inter, sans-serif",
         toolbar: {
@@ -321,4 +320,3 @@ export default class extends Controller {
     return this.formatValue === "time"
   }
 }
-
