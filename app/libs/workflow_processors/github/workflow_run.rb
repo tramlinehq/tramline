@@ -12,7 +12,7 @@ class WorkflowProcessors::Github::WorkflowRun
   end
 
   def failed?
-    conclusion == "failure"
+    conclusion == "failure" || conclusion == "startup_failure"
   end
 
   def halted?
