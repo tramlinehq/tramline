@@ -5,8 +5,10 @@
 #  id                       :uuid             not null, primary key
 #  branch_name              :string           not null
 #  completed_at             :datetime
+#  hotfixed_from            :uuid
 #  is_automatic             :boolean          default(FALSE)
 #  original_release_version :string
+#  release_type             :string           not null
 #  scheduled_at             :datetime
 #  status                   :string           not null
 #  stopped_at               :datetime
@@ -29,6 +31,7 @@ class Release < ApplicationRecord
   self.ignored_columns += ["release_version"]
 
   belongs_to :train
+  belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from"
   has_one :release_metadata, dependent: :destroy, inverse_of: :release
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
   has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release
@@ -77,6 +80,10 @@ class Release < ApplicationRecord
   }
 
   enum status: STATES
+  enum release_type: {
+    hotfix: "hotfix",
+    release: "release",
+  }, _prefix: :type
 
   aasm safe_state_machine_params do
     state :created, initial: true
@@ -114,12 +121,13 @@ class Release < ApplicationRecord
   end
 
   before_create :set_version
+  before_create :set_hotfixed_from
   after_create :set_default_release_metadata
   after_create :create_platform_runs
   after_create :create_active_build_queue, if: -> { train.build_queue_enabled? }
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
   after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
-  after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
+  after_commit -> { create_stamp!(data: { version: original_release_version }) }, on: :create
 
   attr_accessor :has_major_bump, :force_finalize
 
@@ -232,7 +240,7 @@ class Release < ApplicationRecord
     return if tag_name.present?
     train.create_release!(release_branch, input_tag_name)
     update!(tag_name: input_tag_name)
-    event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: vcs_provider.display, tag: tag_name})
+    event_stamp!(reason: :vcs_release_created, kind: :notice, data: { provider: vcs_provider.display, tag: tag_name })
   rescue Installations::Errors::TagReferenceAlreadyExists, Installations::Errors::TaggedReleaseAlreadyExists
     create_release!(unique_tag_name(input_tag_name))
   end
@@ -379,18 +387,24 @@ class Release < ApplicationRecord
 
   def on_stop!
     update_train_version if stopped_after_partial_finish?
-    event_stamp!(reason: :stopped, kind: :notice, data: {version: release_version})
+    event_stamp!(reason: :stopped, kind: :notice, data: { version: release_version })
     notify!("Release has stopped!", :release_stopped, notification_params)
   end
 
   def on_finish!
     update_train_version
-    event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
+    event_stamp!(reason: :finished, kind: :success, data: { version: release_version })
     notify!("Release has finished!", :release_ended, notification_params.merge(finalize_phase_metadata))
     RefreshReportsJob.perform_later(id)
   end
 
   def update_train_version
     train.update!(version_current: release_version)
+  end
+
+  def set_hotfixed_from
+    if type_hotfix?
+      self.hotfixed_from = train.releases.finished.first
+    end
   end
 end

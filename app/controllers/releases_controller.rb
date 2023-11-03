@@ -17,9 +17,10 @@ class ReleasesController < SignedInApplicationController
   def create
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
-    @has_major_bump = params[:has_major_bump]&.to_boolean
+    release_type = params[:release_type] || Release.release_types[:release]
+    has_major_bump = params[:has_major_bump]&.to_boolean
 
-    response = Triggers::Release.call(@train, has_major_bump: @has_major_bump)
+    response = Triggers::Release.call(@train, has_major_bump:, release_type:)
 
     if response.success?
       redirect_to current_release_path(response.body), notice: "A new release has started successfully."

@@ -5,6 +5,11 @@ FactoryBot.define do
     status { "on_track" }
     branch_name { "branch" }
     original_release_version { "1.2.3" }
+    release_type { "release" }
+
+    trait :hotfix do
+      release_type { "hotfix" }
+    end
 
     trait :created do
       status { "created" }

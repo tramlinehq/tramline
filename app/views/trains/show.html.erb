@@ -27,6 +27,10 @@
         <%= authz_button_to :amber, start_upcoming_release_text(@train.ongoing_release, major: true), app_train_releases_path(@app, @train, has_major_bump: true) %>
       <% end %>
     <% elsif @train.manually_startable? %>
+      <%= authz_button_to :neutral, app_train_releases_path(@app, @train, release_type: "hotfix") do %>
+        <%= inline_svg("band_aid.svg", classname: "w-5 h-5 opacity-80") %>
+        <span class="ml-2">Hotfix last release</span>
+      <% end %>
       <%= authz_button_to :blue, start_release_text(@train), app_train_releases_path(@app, @train) %>
       <%= authz_button_to :amber, start_release_text(@train, major: true), app_train_releases_path(@app, @train, has_major_bump: true) %>
     <% end %>

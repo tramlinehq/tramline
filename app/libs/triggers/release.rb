@@ -7,15 +7,16 @@ class Triggers::Release
   AppInDraftMode = Class.new(StandardError)
   UpcomingReleaseNotAllowed = Class.new(StandardError)
 
-  def self.call(train, has_major_bump: false, automatic: false)
-    new(train, has_major_bump:, automatic:).call
+  def self.call(train, has_major_bump: false, release_type: "release", automatic: false)
+    new(train, has_major_bump:, release_type:, automatic:).call
   end
 
-  def initialize(train, has_major_bump: false, automatic: false)
+  def initialize(train, has_major_bump: false, release_type: "release", automatic: false)
     @train = train
     @starting_time = Time.current
     @has_major_bump = has_major_bump
     @automatic = automatic
+    @release_type = release_type
   end
 
   def call
@@ -35,7 +36,7 @@ class Triggers::Release
 
   private
 
-  attr_reader :train, :starting_time, :automatic, :release
+  attr_reader :train, :starting_time, :automatic, :release, :release_type
   delegate :branching_strategy, to: :train
 
   memoize def kickoff
@@ -58,7 +59,8 @@ class Triggers::Release
       scheduled_at: starting_time,
       branch_name: release_branch,
       has_major_bump: major_release?,
-      is_automatic: automatic
+      is_automatic: automatic,
+      release_type: release_type
     )
   end
 
