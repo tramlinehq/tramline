@@ -249,6 +249,11 @@ en:
       not_authorized_policy: "Not Authorized %{model} on %{query} action"
       not_logged_in: "You must be logged in to access this page"
   charts:
+    release_health:
+      adoption_rate:
+        title: "Adoption Rate"
+        scope: "With rollout percentage"
+        help_text: ""
     devops:
       duration:
         title: "Release duration"
@@ -279,4 +284,3 @@ en:
         title: "Stability contributors"
         scope: "Last 5 releases"
         help_text: ""
-
