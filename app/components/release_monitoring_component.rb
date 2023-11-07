@@ -48,4 +48,23 @@ class ReleaseMonitoringComponent < ViewComponent::Base
     return "-" if release_data.session_stability.blank?
     "#{release_data.session_stability}%"
   end
+
+  def adoption_chart_data
+    @chart_data ||= deployment_run
+      .release_health_metrics
+      .group_by_day(:fetched_at, last: 10)
+      .maximum("round(CAST(sessions_in_last_day::float * 100 / total_sessions_in_last_day::float as numeric), 2)")
+      .compact
+      .map { |k, v| [k.strftime("%d %b"), {adoption_rate: v, rollout_percentage: deployment_run.rollout_percentage_at(k)}] }
+      .to_h
+
+    return unless @chart_data.keys.size >= 2
+
+    {
+      data: @chart_data,
+      type: "line",
+      value_format: "number",
+      name: "release_health.adoption_rate"
+    }
+  end
 end

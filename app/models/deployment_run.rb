@@ -19,6 +19,7 @@ class DeploymentRun < ApplicationRecord
   include Loggable
   include Displayable
   using RefinedArray
+  using RefinedString
 
   belongs_to :step_run, inverse_of: :deployment_runs
   belongs_to :deployment, inverse_of: :deployment_runs
@@ -186,6 +187,18 @@ class DeploymentRun < ApplicationRecord
         rollout_percentage: (p.reason == "fully_released") ? "100%" : p.metadata["rollout_percentage"]
       }
     end
+  end
+
+  def rollout_percentage_at(ts)
+    return 100.0 unless staged_rollout
+    last_event = staged_rollout
+      .passports
+      .where(reason: [:started, :increased, :fully_released])
+      .where("event_timestamp < ?", ts)
+      .order(:event_timestamp)
+      .last
+    return 100.0 if last_event.reason == "fully_released"
+    last_event.metadata["rollout_percentage"].safe_float
   end
 
   def submitted_at
