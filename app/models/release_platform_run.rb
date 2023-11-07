@@ -124,7 +124,7 @@ class ReleasePlatformRun < ApplicationRecord
     )
   end
 
-  # Ensure the hotfix version is greater than the current upcoming release version
+  # Ensure the release_fix version is greater than the current upcoming release version
   def newest_release_version
     return release_version if release_version.to_semverish.proper?
 
@@ -251,7 +251,7 @@ class ReleasePlatformRun < ApplicationRecord
     latest_deployed_store_release&.status&.in? DeploymentRun::READY_STATES
   end
 
-  def hotfix?
+  def release_fix?
     on_track? && in_store_resubmission?
   end
 

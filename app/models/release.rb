@@ -31,7 +31,7 @@ class Release < ApplicationRecord
   self.ignored_columns += ["release_version"]
 
   belongs_to :train
-  belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from"
+  belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :release
   has_one :release_metadata, dependent: :destroy, inverse_of: :release
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
   has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release
@@ -83,7 +83,7 @@ class Release < ApplicationRecord
   enum release_type: {
     hotfix: "hotfix",
     release: "release"
-  }, _prefix: :type
+  }
 
   aasm safe_state_machine_params do
     state :created, initial: true
@@ -277,9 +277,9 @@ class Release < ApplicationRecord
     release_platform_runs.any?(&:version_bump_required?)
   end
 
-  def hotfix?
+  def release_fix?
     return false unless committable?
-    release_platform_runs.any?(&:hotfix?)
+    release_platform_runs.any?(&:release_fix?)
   end
 
   def ready_to_be_finalized?
@@ -403,7 +403,7 @@ class Release < ApplicationRecord
   end
 
   def set_hotfixed_from
-    if type_hotfix?
+    if hotfix?
       self.hotfixed_from = train.releases.finished.first
     end
   end
