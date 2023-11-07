@@ -31,7 +31,7 @@ class Release < ApplicationRecord
   self.ignored_columns += ["release_version"]
 
   belongs_to :train
-  belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :release
+  belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from"
   has_one :release_metadata, dependent: :destroy, inverse_of: :release
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
   has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release
@@ -121,10 +121,10 @@ class Release < ApplicationRecord
   end
 
   before_create :set_version
-  before_create :set_hotfixed_from
   after_create :set_default_release_metadata
   after_create :create_platform_runs
   after_create :create_active_build_queue, if: -> { train.build_queue_enabled? }
+  after_commit -> { Releases::HotfixJob.perform_later(id) }, on: :create
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
   after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
@@ -326,8 +326,8 @@ class Release < ApplicationRecord
     all_commits.first
   end
 
-  def latest_commit_hash
-    vcs_provider.branch_head_sha(release_branch)
+  def latest_commit_hash(sha_only: true)
+    vcs_provider.branch_head_sha(release_branch, sha_only:)
   end
 
   def upcoming?
@@ -400,11 +400,5 @@ class Release < ApplicationRecord
 
   def update_train_version
     train.update!(version_current: release_version)
-  end
-
-  def set_hotfixed_from
-    if hotfix?
-      self.hotfixed_from = train.releases.finished.first
-    end
   end
 end

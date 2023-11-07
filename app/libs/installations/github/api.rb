@@ -244,10 +244,17 @@ module Installations
       end
     end
 
-    def head(repo, working_branch_name)
+    def head(repo, working_branch_name, sha_only: true, commit_transforms: nil)
+      raise ArgumentError, "transforms must be supplied when querying head object" if !sha_only && !commit_transforms
+
       execute do
         obj = @client.ref(repo, "heads/#{working_branch_name}")[:object]
-        obj[:sha] if obj[:type].eql? "commit"
+        if obj[:type].eql? "commit"
+          return obj[:sha] if sha_only
+          return @client.commit(repo, obj[:sha])
+              .then { |commit| Installations::Response::Keys.transform([commit], commit_transforms) }
+              .first
+        end
       end
     end
 

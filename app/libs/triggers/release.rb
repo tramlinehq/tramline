@@ -46,7 +46,7 @@ class Triggers::Release
         raise ReleaseAlreadyInProgress.new("No more releases can be started until the ongoing release is finished!") if train.ongoing_release.present? && automatic
         raise ReleaseAlreadyInProgress.new("No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present?
         raise UpcomingReleaseNotAllowed.new("Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable?
-        raise NothingToRelease.new("No diff since last release") unless train.diff_since_last_release?
+        raise NothingToRelease.new("No diff since last release") if regular_release? && !train.diff_since_last_release?
         train.activate! unless train.active?
         create_release
         train.create_webhook!
@@ -60,12 +60,14 @@ class Triggers::Release
       branch_name: release_branch,
       has_major_bump: major_release?,
       is_automatic: automatic,
-      release_type: release_type
+      release_type: release_type,
+      hotfixed_from: hotfixed_from
     )
   end
 
   memoize def release_branch
-    return new_branch_name if branching_strategy.in?(%w[almost_trunk release_backmerge])
+    return hotfixed_from.branch_name if hotfix? && new_branch?
+    return new_branch_name if new_branch?
     train.release_branch
   end
 
@@ -80,7 +82,23 @@ class Triggers::Release
     branch_name
   end
 
+  def hotfixed_from
+    train.releases.finished.first
+  end
+
   def major_release?
     @has_major_bump
+  end
+
+  def hotfix?
+    release_type == "hotfix"
+  end
+
+  def regular_release?
+    release_type == "release"
+  end
+
+  def new_branch?
+    branching_strategy.in?(%w[almost_trunk release_backmerge])
   end
 end

@@ -26,7 +26,7 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def handle_push
-    response = WebhookHandlers::Push.process(train, params)
+    response = WebhookHandlers::Push.process(train, push_params)
     Rails.logger.debug response.body
     head response.status
   end
@@ -58,6 +58,27 @@ class IntegrationListeners::GithubController < IntegrationListenerController
       :html_url,
       base: [:ref],
       head: [:ref, repo: [:full_name]]
+    )
+  end
+
+  def push_params
+    params.permit(
+      head_commit: [
+        :id,
+        :message,
+        :timestamp,
+        :url,
+        author: [:name, :email, :username],
+        committer: [:name, :email, :username]
+      ],
+      commits: [
+        :id,
+        :message,
+        :timestamp,
+        :url,
+        author: [:name, :email, :username],
+        committer: [:name, :email, :username]
+      ]
     )
   end
 end

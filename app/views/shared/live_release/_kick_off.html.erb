@@ -12,6 +12,10 @@
       <span class="underline"><%= link_to_external "#{release.branch_name} ↗", release.branch_url %></span>
     <% end %>
 
+    <% mt.with_description("Type") do %>
+      <%= release.release_type %>
+    <% end %>
+
     <% mt.with_description("Backmerge Config") do %>
       <%== backmerge_text(release.train) %>
     <% end %>

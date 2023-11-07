@@ -55,12 +55,22 @@ class GithubIntegration < ApplicationRecord
 
   COMMITS_TRANSFORMATIONS = {
     url: :html_url,
-    sha: :sha,
+    commit_hash: :sha,
     message: [:commit, :message],
     author_name: [:commit, :author, :name],
-    author_timestamp: [:commit, :author, :date],
+    author_email: [:commit, :author, :email],
     author_login: [:author, :login],
-    author_url: [:author, :html_url]
+    timestamp: [:commit, :author, :date]
+  }
+
+  COMMITS_HOOK_TRANSFORMATIONS = {
+    url: :url,
+    commit_hash: :id,
+    message: :message,
+    author_name: [:author, :name],
+    author_email: [:author, :email],
+    author_login: [:author, :username],
+    timestamp: :timestamp
   }
 
   PR_TRANSFORMATIONS = {
@@ -263,8 +273,8 @@ class GithubIntegration < ApplicationRecord
     true
   end
 
-  def branch_head_sha(branch)
-    installation.head(code_repository_name, branch)
+  def branch_head_sha(branch, sha_only: true)
+    installation.head(code_repository_name, branch, sha_only:, commit_transforms: COMMITS_TRANSFORMATIONS)
   end
 
   private
