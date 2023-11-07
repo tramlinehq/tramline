@@ -82,7 +82,7 @@ class Release < ApplicationRecord
   enum status: STATES
   enum release_type: {
     hotfix: "hotfix",
-    release: "release",
+    release: "release"
   }, _prefix: :type
 
   aasm safe_state_machine_params do
@@ -127,7 +127,7 @@ class Release < ApplicationRecord
   after_create :create_active_build_queue, if: -> { train.build_queue_enabled? }
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
   after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
-  after_commit -> { create_stamp!(data: { version: original_release_version }) }, on: :create
+  after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
 
   attr_accessor :has_major_bump, :force_finalize
 
@@ -240,7 +240,7 @@ class Release < ApplicationRecord
     return if tag_name.present?
     train.create_release!(release_branch, input_tag_name)
     update!(tag_name: input_tag_name)
-    event_stamp!(reason: :vcs_release_created, kind: :notice, data: { provider: vcs_provider.display, tag: tag_name })
+    event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: vcs_provider.display, tag: tag_name})
   rescue Installations::Errors::TagReferenceAlreadyExists, Installations::Errors::TaggedReleaseAlreadyExists
     create_release!(unique_tag_name(input_tag_name))
   end
@@ -387,13 +387,13 @@ class Release < ApplicationRecord
 
   def on_stop!
     update_train_version if stopped_after_partial_finish?
-    event_stamp!(reason: :stopped, kind: :notice, data: { version: release_version })
+    event_stamp!(reason: :stopped, kind: :notice, data: {version: release_version})
     notify!("Release has stopped!", :release_stopped, notification_params)
   end
 
   def on_finish!
     update_train_version
-    event_stamp!(reason: :finished, kind: :success, data: { version: release_version })
+    event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     notify!("Release has finished!", :release_ended, notification_params.merge(finalize_phase_metadata))
     RefreshReportsJob.perform_later(id)
   end
