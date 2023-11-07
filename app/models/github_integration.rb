@@ -60,7 +60,8 @@ class GithubIntegration < ApplicationRecord
     author_name: [:commit, :author, :name],
     author_timestamp: [:commit, :author, :date],
     author_login: [:author, :login],
-    author_url: [:author, :html_url]
+    author_url: [:author, :html_url],
+    parents: [:parents]
   }
 
   PR_TRANSFORMATIONS = {
