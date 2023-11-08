@@ -231,7 +231,8 @@ class Train < ApplicationRecord
     name&.parameterize
   end
 
-  def release_branch_name_fmt
+  def release_branch_name_fmt(hotfix: false)
+    return "hotfix/#{display_name}/%Y-%m-%d" if hotfix
     "r/#{display_name}/%Y-%m-%d"
   end
 
@@ -338,9 +339,9 @@ class Train < ApplicationRecord
 
   delegate :create_tag!, to: :vcs_provider
 
-  def create_branch!(from, to)
+  def create_branch!(from, to, source_type: :branch)
     return false unless active?
-    vcs_provider.create_branch!(from, to)
+    vcs_provider.create_branch!(from, to, source_type:)
   end
 
   def notify!(message, type, params)

@@ -132,8 +132,8 @@ class GithubIntegration < ApplicationRecord
     installation.create_tag!(code_repository_name, tag_name, sha)
   end
 
-  def create_branch!(from, to)
-    installation.create_branch!(code_repository_name, from, to)
+  def create_branch!(from, to, source_type: :branch)
+    installation.create_branch!(code_repository_name, from, to, source_type:)
   end
 
   def branch_url(repo, branch_name)

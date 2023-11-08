@@ -156,9 +156,21 @@ module Installations
       end
     end
 
-    def create_branch!(repo, working_branch_name, new_branch_name)
+    def create_branch!(repo, source_name, new_branch_name, source_type: :branch)
       execute do
-        @client.create_ref(repo, "heads/#{new_branch_name}", head(repo, working_branch_name))
+        sha =
+          case source_type
+          when :branch
+            head(repo, source_name)
+          when :commit
+            source_name
+          when :tag
+            @client.ref(repo, "tags/#{source_name}")[:object][:sha]
+          else
+            raise ArgumentError, "source can only be a branch, tag or commit"
+          end
+
+        @client.create_ref(repo, "heads/#{new_branch_name}", sha)
       end
     end
 

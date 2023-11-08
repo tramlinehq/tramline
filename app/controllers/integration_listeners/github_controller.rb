@@ -63,6 +63,8 @@ class IntegrationListeners::GithubController < IntegrationListenerController
 
   def push_params
     params.permit(
+      :ref,
+      repository: [:full_name, :name],
       head_commit: [
         :id,
         :message,
