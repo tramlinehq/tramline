@@ -82,7 +82,6 @@ group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
   gem "rspec-rails"
   gem "factory_bot_rails"
-  gem "faker"
   gem "pry"
   gem "brakeman", "~> 5.2", require: false
   gem "bundler-audit", "~> 0.9.1", require: false
@@ -93,6 +92,8 @@ group :development, :test do
   gem "rubocop-rspec", require: false
   gem "rubocop-performance", require: false
   gem "stateoscope"
+  gem "data-anonymization"
+  gem "faker"
 end
 
 group :development do

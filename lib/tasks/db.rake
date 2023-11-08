@@ -52,37 +52,48 @@ namespace :db do
     end
     app.delete
   end
+end
 
-  def nuke_train(train)
-    train.releases.each do |run|
-      run.release_platform_runs.each do |prun|
-        prun.step_runs.each do |srun|
-          srun.deployment_runs.each do |drun|
-            drun.staged_rollout&.delete
-            drun.external_release&.delete
-          end
-          srun.deployment_runs&.delete_all
-          srun.build_artifact&.delete
+def nuke_train(train)
+  train.releases.each do |run|
+    run.release_platform_runs.each do |prun|
+      prun.step_runs.each do |srun|
+        srun.deployment_runs.each do |drun|
+          drun.staged_rollout&.delete
+          drun.staged_rollout&.passports&.delete_all
+          drun.external_release&.delete
+          drun.release_health_metrics&.delete_all
+          drun.passports&.delete_all
         end
-        prun.step_runs&.delete_all
+        srun.deployment_runs&.delete_all
+        srun.build_artifact&.delete
+        srun.passports&.delete_all
       end
-      run.all_commits&.delete_all
-      run.release_metadata&.delete
-      run.release_changelog&.delete
-      run.pull_requests&.delete_all
-      run.release_platform_runs&.delete_all
+      prun.step_runs&.delete_all
+      prun.passports&.delete_all
     end
-    train.releases&.delete_all
-    train.scheduled_releases&.delete_all
-    train.release_platforms.each do |release_platform|
-      train.steps.each do |step|
-        step.deployments.delete_all
-      end
-      release_platform.steps&.delete_all
-      sql = "delete from commit_listeners where release_platform_id = '#{release_platform.id}'"
-      ActiveRecord::Base.connection.execute(sql)
+    run.all_commits.each do |commit|
+      commit.passports&.delete_all
     end
-    train.release_platforms&.delete_all
-    train.delete
+    run.all_commits&.delete_all
+    run.release_metadata&.delete
+    run.release_changelog&.delete
+    run.pull_requests&.delete_all
+    run.release_platform_runs&.delete_all
+    run.build_queues&.delete_all
+    run.passports&.delete_all
   end
+  train.releases&.delete_all
+  train.scheduled_releases&.delete_all
+  train.release_platforms.each do |release_platform|
+    train.steps.each do |step|
+      step.all_deployments.delete_all
+    end
+    release_platform.steps&.delete_all
+    sql = "delete from commit_listeners where release_platform_id = '#{release_platform.id}'"
+    ActiveRecord::Base.connection.execute(sql)
+  end
+  train.release_platforms&.delete_all
+  train.notification_settings&.delete_all
+  train.delete
 end
