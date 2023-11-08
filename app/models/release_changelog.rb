@@ -22,6 +22,12 @@ class ReleaseChangelog < ApplicationRecord
     commits.pluck("message")
   end
 
+  def merge_commit_messages
+    commits
+      .filter { |c| c["parents"].size > 1 }
+      .pluck("message")
+  end
+
   def unique_authors
     commits.pluck("author_name").uniq
   end
