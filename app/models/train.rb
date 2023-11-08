@@ -147,6 +147,10 @@ class Train < ApplicationRecord
     scheduled_releases.create!(scheduled_at: next_run_at) if automatic?
   end
 
+  def hotfix_from
+    releases.finished.first
+  end
+
   def automatic?
     kickoff_at.present? && repeat_duration.present?
   end

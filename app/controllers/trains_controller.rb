@@ -11,6 +11,7 @@ class TrainsController < SignedInApplicationController
 
   def show
     @devops_report = @train.devops_report if @train.devops_report?(current_user)
+    @hotfix_release = @train.hotfix_from
   end
 
   def new

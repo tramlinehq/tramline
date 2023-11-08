@@ -7,16 +7,17 @@ class Triggers::Release
   AppInDraftMode = Class.new(StandardError)
   UpcomingReleaseNotAllowed = Class.new(StandardError)
 
-  def self.call(train, has_major_bump: false, release_type: "release", automatic: false)
-    new(train, has_major_bump:, release_type:, automatic:).call
+  def self.call(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false)
+    new(train, has_major_bump:, release_type:, new_hotfix_branch:, automatic:).call
   end
 
-  def initialize(train, has_major_bump: false, release_type: "release", automatic: false)
+  def initialize(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false)
     @train = train
     @starting_time = Time.current
     @has_major_bump = has_major_bump
     @automatic = automatic
     @release_type = release_type
+    @new_hotfix_branch = new_hotfix_branch
   end
 
   def call
@@ -36,8 +37,8 @@ class Triggers::Release
 
   private
 
-  attr_reader :train, :starting_time, :automatic, :release, :release_type
-  delegate :branching_strategy, to: :train
+  attr_reader :train, :starting_time, :automatic, :release, :release_type, :new_hotfix_branch
+  delegate :branching_strategy, :hotfix_from, to: :train
 
   memoize def kickoff
     GitHub::Result.new do
@@ -61,18 +62,20 @@ class Triggers::Release
       has_major_bump: major_release?,
       is_automatic: automatic,
       release_type: release_type,
-      hotfixed_from: hotfixed_from
+      hotfixed_from: hotfix_from,
+      new_hotfix_branch: new_hotfix_branch
     )
   end
 
-  memoize def release_branch
-    return hotfixed_from.branch_name if hotfix? && new_branch?
-    return new_branch_name if new_branch?
+  def release_branch
+    return new_branch_name(hotfix: true) if hotfix? && new_hotfix_branch? && create_branches?
+    return existing_hotfix_branch_name if hotfix? && !new_hotfix_branch? && create_branches?
+    return new_branch_name if create_branches?
     train.release_branch
   end
 
-  memoize def new_branch_name
-    branch_name = starting_time.strftime(train.release_branch_name_fmt)
+  memoize def new_branch_name(hotfix: false)
+    branch_name = starting_time.strftime(train.release_branch_name_fmt(hotfix:))
 
     if train.releases.exists?(branch_name:)
       branch_name += "-1"
@@ -82,8 +85,10 @@ class Triggers::Release
     branch_name
   end
 
-  def hotfixed_from
-    train.releases.finished.first
+  def existing_hotfix_branch_name
+    existing_branch = hotfix_from.branch_name
+    return existing_branch if train.vcs_provider.branch_exists?(existing_branch)
+    new_branch_name(hotfix: true)
   end
 
   def major_release?
@@ -98,7 +103,11 @@ class Triggers::Release
     release_type == "release"
   end
 
-  def new_branch?
+  def create_branches?
     branching_strategy.in?(%w[almost_trunk release_backmerge])
+  end
+
+  def new_hotfix_branch?
+    new_hotfix_branch
   end
 end

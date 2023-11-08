@@ -8,14 +8,14 @@ module TrainsHelper
     text = train.automatic? ? "Manually start " : "Start "
     text += major ? "major " : "minor "
     text += "release "
-    text + train.next_version(major)
+    text + train.next_version(has_major_bump: major)
   end
 
   def start_upcoming_release_text(ongoing_release, major: false)
     text = "Prepare next "
     text += major ? "major " : "minor "
     text += "release "
-    text + ongoing_release.next_version(major)
+    text + ongoing_release.next_version(has_major_bump: major)
   end
 
   def release_schedule(train)

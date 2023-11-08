@@ -17,10 +17,12 @@ class ReleasesController < SignedInApplicationController
   def create
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
-    release_type = params[:release_type] || Release.release_types[:release]
+
+    release_type = release_params[:release_type] || Release.release_types[:release]
+    new_hotfix_branch = release_params[:new_hotfix_branch]&.to_boolean
     has_major_bump = params[:has_major_bump]&.to_boolean
 
-    response = Triggers::Release.call(@train, has_major_bump:, release_type:)
+    response = Triggers::Release.call(@train, has_major_bump:, release_type:, new_hotfix_branch:)
 
     if response.success?
       redirect_to current_release_path(response.body), notice: "A new release has started successfully."
@@ -115,5 +117,9 @@ class ReleasesController < SignedInApplicationController
 
   def train_path
     app_train_path(@app, @train)
+  end
+
+  def release_params
+    params.require(:release).permit(:new_hotfix_branch, :release_type, :has_major_bump)
   end
 end

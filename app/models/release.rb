@@ -7,6 +7,7 @@
 #  completed_at             :datetime
 #  hotfixed_from            :uuid
 #  is_automatic             :boolean          default(FALSE)
+#  new_hotfix_branch        :boolean          default(FALSE)
 #  original_release_version :string
 #  release_type             :string           not null
 #  scheduled_at             :datetime
@@ -124,7 +125,6 @@ class Release < ApplicationRecord
   after_create :set_default_release_metadata
   after_create :create_platform_runs
   after_create :create_active_build_queue, if: -> { train.build_queue_enabled? }
-  after_commit -> { Releases::HotfixJob.perform_later(id) }, on: :create
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
   after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
@@ -338,6 +338,10 @@ class Release < ApplicationRecord
     train.ongoing_release == self
   end
 
+  def retrigger_for_hotfix?
+    hotfix? && !new_hotfix_branch?
+  end
+
   private
 
   def base_tag_name
@@ -370,7 +374,8 @@ class Release < ApplicationRecord
   end
 
   def set_version
-    self.original_release_version = (train.ongoing_release.presence || train).next_version(has_major_bump)
+    self.original_release_version =
+      (train.ongoing_release.presence || train).next_version(has_major_bump:, patch_only: hotfix?)
   end
 
   def set_default_release_metadata

@@ -27,10 +27,20 @@
         <%= authz_button_to :amber, start_upcoming_release_text(@train.ongoing_release, major: true), app_train_releases_path(@app, @train, has_major_bump: true) %>
       <% end %>
     <% elsif @train.manually_startable? %>
-      <%= authz_button_to :neutral, app_train_releases_path(@app, @train, release_type: "hotfix") do %>
-        <%= inline_svg("band_aid.svg", classname: "w-5 h-5 opacity-80") %>
-        <span class="ml-2">Hotfix last release</span>
-      <% end %>
+      <div data-controller="modal">
+        <%= authz_link_to :neutral, "#", { data: { action: "modal#open" } } do %>
+          <%= inline_svg("band_aid.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
+          <span class="ml-2">Start a hotfix</span>
+        <% end %>
+
+        <dialog data-modal-target="modal"
+                class="p-0 backdrop:bg-gray-400 backdrop:bg-opacity-50 open:animate-fade-in w-1/2">
+          <div class="relative bg-white rounded-lg shadow">
+            <%= render partial: "trains/hotfix_form", locals: { app: @app, train: @train, hotfix_release: @hotfix_release } %>
+          </div>
+        </dialog>
+      </div>
+
       <%= authz_button_to :blue, start_release_text(@train), app_train_releases_path(@app, @train) %>
       <%= authz_button_to :amber, start_release_text(@train, major: true), app_train_releases_path(@app, @train, has_major_bump: true) %>
     <% end %>
@@ -139,7 +149,7 @@
           <h2 class="text-2xl font-bold">Releases</h2>
         <% end %>
 
-        <% @train.releases.order(scheduled_at: :desc).take(10).each do |run| %>
+        <% @train.releases.order(scheduled_at: :desc).take(20).each do |run| %>
           <% table.with_row do |row| %>
             <% row.with_cell do %>
               <%= link_to release_path(run.id) do %>
