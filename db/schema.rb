@@ -448,6 +448,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_03_090903) do
     t.boolean "is_automatic", default: false
     t.string "tag_name"
     t.string "release_type", null: false
+    t.boolean "new_hotfix_branch", default: false
     t.uuid "hotfixed_from"
     t.index ["train_id"], name: "index_releases_on_train_id"
   end
