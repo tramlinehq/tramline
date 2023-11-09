@@ -258,6 +258,10 @@ class Release < ApplicationRecord
     release_platform_runs.any?(&:metadata_editable?)
   end
 
+  def release_step_started?
+    release_platform_runs.any?(&:release_step_started?)
+  end
+
   class PreReleaseUnfinishedError < StandardError; end
 
   def close_pre_release_prs
@@ -375,8 +379,11 @@ class Release < ApplicationRecord
   end
 
   def set_version
-    self.original_release_version =
-      (train.ongoing_release.presence || train).next_version(has_major_bump:, patch_only: hotfix?)
+    self.original_release_version = if hotfix?
+      train.hotfix_from.next_version(patch_only: hotfix?)
+    else
+      (train.ongoing_release.presence || train).next_version(has_major_bump:)
+    end
   end
 
   def set_default_release_metadata

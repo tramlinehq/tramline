@@ -256,6 +256,10 @@ class ReleasePlatformRun < ApplicationRecord
     on_track? && in_store_resubmission?
   end
 
+  def release_step_started?
+    step_runs_for(release_platform.release_step).present?
+  end
+
   def production_release_happened?
     step_runs
       .includes(:deployment_runs)

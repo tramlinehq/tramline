@@ -136,11 +136,15 @@ class Train < ApplicationRecord
   end
 
   def ongoing_release
-    active_runs.order(:scheduled_at).first
+    active_runs.where(release_type: Release.release_types[:release]).order(:scheduled_at).first
   end
 
   def upcoming_release
-    active_runs.order(:scheduled_at).second
+    active_runs.where(release_type: Release.release_types[:release]).order(:scheduled_at).second
+  end
+
+  def hotfix_release
+    active_runs.where(release_type: Release.release_types[:hotfix]).first
   end
 
   def schedule_release!
@@ -377,6 +381,8 @@ class Train < ApplicationRecord
   end
 
   def hotfixable?
+    return false if hotfix_release.present?
+    return false if ongoing_release.present? && ongoing_release.release_step_started?
     hotfix_from.present? && release_platforms.any?(&:has_production_deployment?)
   end
 
