@@ -6,6 +6,7 @@ FactoryBot.define do
     scheduled_at { Time.current }
     status { "on_track" }
     release_version { "1.2.3" }
+    in_store_resubmission { false }
 
     trait :created do
       status { "created" }

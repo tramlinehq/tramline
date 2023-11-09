@@ -134,7 +134,7 @@ describe StepRun do
         expect(running_step_run.manually_startable_deployment?(production_deployment)).to be false
       end
 
-      it "is true when it is the running step's next-in-line deployment, previous deployment hasn't finished and release is in hotfix mode" do
+      it "is true when it is the running step's next-in-line deployment, previous deployment hasn't finished and release is in fix mode" do
         inactive_step_run = create(:step_run, :deployment_started, step: release_step, release_platform_run:)
         _old_beta_deployment_run = create(:deployment_run, :released, step_run: inactive_step_run, deployment: regular_deployment)
         _old_prod_deployment_run = create(:deployment_run, :rollout_started, step_run: inactive_step_run, deployment: production_deployment)
@@ -144,6 +144,16 @@ describe StepRun do
 
         expect(running_step_run.reload.manually_startable_deployment?(regular_deployment)).to be false
         expect(running_step_run.reload.manually_startable_deployment?(production_deployment)).to be true
+      end
+
+      it "is true when it is the running step's next-in-line deployment, previous deployment hasn't finished and release is a hotfix" do
+        release = create(:release, train:, release_type: Release.release_types[:hotfix])
+        release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:)
+        running_step_run = create(:step_run, :deployment_started, step: release_step, release_platform_run:)
+        _deployment_run1 = create(:deployment_run, step_run: running_step_run, deployment: regular_deployment, status: "uploading")
+
+        expect(running_step_run.manually_startable_deployment?(regular_deployment)).to be false
+        expect(running_step_run.manually_startable_deployment?(production_deployment)).to be true
       end
     end
 

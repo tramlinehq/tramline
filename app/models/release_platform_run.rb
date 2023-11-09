@@ -152,6 +152,7 @@ class ReleasePlatformRun < ApplicationRecord
     return false if upcoming_release_step?(step)
     return true if step.first? && step_runs_for(step).empty?
     return false if step.first?
+    return true if (release.hotfix? || release_fix?) && last_commit.run_for(step, self).blank?
 
     (next_step == step) && previous_step_run_for(step).success?
   end

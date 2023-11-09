@@ -201,13 +201,14 @@ class StepRun < ApplicationRecord
   def startable_deployment?(deployment)
     return false unless active?
     return true if deployment.first? && deployment_runs.empty?
+
     next_deployment == deployment
   end
 
   def manually_startable_deployment?(deployment)
     return false if deployment.first?
     return false if step.review?
-    startable_deployment?(deployment) && (last_deployment_run&.released? || release_platform_run.release_fix?)
+    startable_deployment?(deployment) && (last_deployment_run&.released? || release_platform_run.release_fix? || release.hotfix?)
   end
 
   def last_deployment_run

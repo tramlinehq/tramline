@@ -68,6 +68,23 @@ describe ReleasePlatformRun do
       expect(release_platform_run.manually_startable_step?(steps.first)).to be(false)
       expect(release_platform_run.manually_startable_step?(steps.second)).to be(true)
     end
+
+    it "next step can be started before finishing previous step when release is hotfix" do
+      release = create(:release, train: release_platform.train, release_type: Release.release_types[:hotfix])
+      release_platform_run = create(:release_platform_run, release_platform:, release:)
+      create(:step_run, step: steps.first, status: "ci_workflow_triggered", release_platform_run: release_platform_run)
+
+      expect(release_platform_run.manually_startable_step?(steps.first)).to be(false)
+      expect(release_platform_run.manually_startable_step?(steps.second)).to be(true)
+    end
+
+    it "next step can be started before finishing previous step when release platform run is in fix mode" do
+      release_platform_run = create(:release_platform_run, release_platform:, in_store_resubmission: true)
+      create(:step_run, step: steps.first, status: "ci_workflow_triggered", release_platform_run: release_platform_run)
+
+      expect(release_platform_run.manually_startable_step?(steps.first)).to be(false)
+      expect(release_platform_run.manually_startable_step?(steps.second)).to be(true)
+    end
   end
 
   describe "#overall_movement_status" do
