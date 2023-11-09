@@ -53,7 +53,7 @@ class GithubIntegration < ApplicationRecord
     avatar_url: [:account, :avatar_url]
   }
 
- COMMITS_TRANSFORMATIONS = {
+  COMMITS_TRANSFORMATIONS = {
     url: :html_url,
     commit_hash: :sha,
     message: [:commit, :message],

@@ -20,7 +20,7 @@ class ReleasesController < SignedInApplicationController
 
     release_type = release_params[:release_type] || Release.release_types[:release]
     new_hotfix_branch = release_params[:new_hotfix_branch]&.to_boolean
-    has_major_bump = params[:has_major_bump]&.to_boolean
+    has_major_bump = release_params[:has_major_bump]&.to_boolean
 
     response = Triggers::Release.call(@train, has_major_bump:, release_type:, new_hotfix_branch:)
 
@@ -120,6 +120,6 @@ class ReleasesController < SignedInApplicationController
   end
 
   def release_params
-    params.permit(release: [:new_hotfix_branch, :release_type, :has_major_bump])
+    params.permit(release: [:new_hotfix_branch, :release_type, :has_major_bump])[:release]
   end
 end

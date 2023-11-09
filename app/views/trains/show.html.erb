@@ -45,7 +45,7 @@
       <% end %>
 
       <%= authz_button_to :blue, start_release_text(@train), app_train_releases_path(@app, @train) %>
-      <%= authz_button_to :amber, start_release_text(@train, major: true), app_train_releases_path(@app, @train, has_major_bump: true) %>
+      <%= authz_button_to :amber, start_release_text(@train, major: true), app_train_releases_path(@app, @train), { params: { release: { has_major_bump: true } } }  %>
     <% end %>
 
     <%= authz_link_to (@train.active_runs.exists? ? :disabled : :neutral), edit_app_train_path(@app, @train) do %>
