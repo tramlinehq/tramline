@@ -376,6 +376,10 @@ class Train < ApplicationRecord
     draft? || !automatic? || !persisted?
   end
 
+  def hotfixable?
+    hotfix_from.present?
+  end
+
   def devops_report?(user)
     user.release_health? && releases.size > 1
   end

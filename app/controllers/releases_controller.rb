@@ -120,6 +120,6 @@ class ReleasesController < SignedInApplicationController
   end
 
   def release_params
-    params.require(:release).permit(:new_hotfix_branch, :release_type, :has_major_bump)
+    params.permit(release: [:new_hotfix_branch, :release_type, :has_major_bump])
   end
 end
