@@ -18,9 +18,9 @@ class ReleasesController < SignedInApplicationController
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
 
+    has_major_bump = release_params[:has_major_bump]&.to_boolean
     release_type = release_params[:release_type] || Release.release_types[:release]
     new_hotfix_branch = release_params[:new_hotfix_branch]&.to_boolean
-    has_major_bump = release_params[:has_major_bump]&.to_boolean
 
     if release_type == Release.release_types[:hotfix] && !@train.hotfixable?
       redirect_back fallback_location: root_path, flash: {error: "Cannot start hotfix for this train!"} and return
