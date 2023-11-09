@@ -377,7 +377,7 @@ class Train < ApplicationRecord
   end
 
   def hotfixable?
-    hotfix_from.present?
+    hotfix_from.present? && release_platforms.any?(&:has_production_deployment?)
   end
 
   def devops_report?(user)

@@ -32,7 +32,7 @@ class Release < ApplicationRecord
   self.ignored_columns += ["release_version"]
 
   belongs_to :train
-  belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from"
+  belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :hotfixed_releases
   has_one :release_metadata, dependent: :destroy, inverse_of: :release
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
   has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release
@@ -42,6 +42,7 @@ class Release < ApplicationRecord
   has_many :deployment_runs, through: :step_runs
   has_many :build_queues, dependent: :destroy
   has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
+  has_many :hotfixed_releases, class_name: "Release", inverse_of: :hotfixed_from, dependent: :destroy
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped, :stopped_after_partial_finish]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }

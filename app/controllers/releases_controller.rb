@@ -22,6 +22,10 @@ class ReleasesController < SignedInApplicationController
     new_hotfix_branch = release_params[:new_hotfix_branch]&.to_boolean
     has_major_bump = release_params[:has_major_bump]&.to_boolean
 
+    if release_type == Release.release_types[:hotfix] && !@train.hotfixable?
+      redirect_back fallback_location: root_path, flash: {error: "Cannot start hotfix for this train!"} and return
+    end
+
     response = Triggers::Release.call(@train, has_major_bump:, release_type:, new_hotfix_branch:)
 
     if response.success?
