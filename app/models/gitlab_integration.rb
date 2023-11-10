@@ -227,6 +227,10 @@ class GitlabIntegration < ApplicationRecord
     false
   end
 
+  def tag_exists?(tag_name)
+    with_api_retries { installation.tag_exists?(code_repository_name, tag_name) }
+  end
+
   private
 
   # retry once (2 attempts in total)

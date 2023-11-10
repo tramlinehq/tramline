@@ -21,6 +21,8 @@ class Triggers::Release
   end
 
   def call
+    return Response.new(:unprocessable_entity, "Could not kickoff a hotfix because the source tag does not exist") if hotfix_from_new_branch? && !hotfix_tag_exists?
+    return Response.new(:unprocessable_entity, "Could not kickoff a hotfix because the source release branch does not exist") if hotfix_from_previous_branch? && !hotfix_branch_exists?
     return Response.new(:unprocessable_entity, "Cannot start a train that is not active!") if train.inactive?
     return Response.new(:unprocessable_entity, "Cannot start a train that has no release step. Please add at least one release step to the train.") unless train.release_platforms.all?(&:has_release_step?)
     return Response.new(:unprocessable_entity, "No more releases can be started until the ongoing release is finished!") if train.ongoing_release.present? && automatic
@@ -68,8 +70,8 @@ class Triggers::Release
   end
 
   def release_branch
-    return new_branch_name(hotfix: true) if hotfix? && new_hotfix_branch? && create_branches?
-    return existing_hotfix_branch_name if hotfix? && !new_hotfix_branch? && create_branches?
+    return new_branch_name(hotfix: true) if hotfix_from_new_branch? && create_branches?
+    return existing_hotfix_branch if hotfix_from_previous_branch?
     return new_branch_name if create_branches?
     train.release_branch
   end
@@ -83,12 +85,6 @@ class Triggers::Release
     end
 
     branch_name
-  end
-
-  def existing_hotfix_branch_name
-    existing_branch = hotfix_from.branch_name
-    return existing_branch if train.vcs_provider.branch_exists?(existing_branch)
-    new_branch_name(hotfix: true)
   end
 
   def major_release?
@@ -109,5 +105,29 @@ class Triggers::Release
 
   def new_hotfix_branch?
     new_hotfix_branch
+  end
+
+  memoize def hotfix_branch_exists?
+    train.vcs_provider.branch_exists?(existing_hotfix_branch)
+  end
+
+  memoize def hotfix_tag_exists?
+    existing_hotfix_tag.present? && train.vcs_provider.tag_exists?(existing_hotfix_tag)
+  end
+
+  def hotfix_from_new_branch?
+    hotfix? && new_hotfix_branch?
+  end
+
+  def hotfix_from_previous_branch?
+    hotfix? && !new_hotfix_branch?
+  end
+
+  def existing_hotfix_tag
+    hotfix_from.tag_name
+  end
+
+  def existing_hotfix_branch
+    hotfix_from.branch_name
   end
 end

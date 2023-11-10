@@ -236,6 +236,10 @@ class GithubIntegration < ApplicationRecord
     false
   end
 
+  def tag_exists?(tag_name)
+    installation.tag_exists?(code_repository_name, tag_name)
+  end
+
   def unzip_artifact?
     true
   end

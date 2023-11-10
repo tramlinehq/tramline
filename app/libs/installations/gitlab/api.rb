@@ -208,6 +208,10 @@ module Installations
       get_branch(project_id, branch_name).present?
     end
 
+    def tag_exists?(project_id, tag_name)
+      true
+    end
+
     def head(project_id, branch_name, sha_only: true)
       return get_branch(project_id, branch_name).dig("commit", "id") if sha_only
       get_branch(project_id, branch_name).dig("commit")

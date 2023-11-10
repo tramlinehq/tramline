@@ -201,10 +201,12 @@ module Installations
     end
 
     def tag_exists?(repo, tag_name)
-      # NOTE: The API returns a list of matching tags if the exact match doesn't exist
-      # It returns a single element if there is an exact match
-      !@client.ref(repo, "tags/#{tag_name}").is_a?(Array)
-    rescue Octokit::NotFound
+      execute do
+        # NOTE: The API returns a list of matching tags if the exact match doesn't exist
+        # It returns a single element if there is an exact match
+        !@client.ref(repo, "tags/#{tag_name}").is_a?(Array)
+      end
+    rescue Installations::Errors::ResourceNotFound
       false
     end
 
