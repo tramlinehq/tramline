@@ -208,7 +208,7 @@ class DeploymentRun < ApplicationRecord
     if google_play_store_integration?
       release_started_at
     elsif app_store_integration?
-      passports.where(reason: :submitted_for_review).last.event_timestamp
+      passports.where(reason: :submitted_for_review).last&.event_timestamp
     end
   end
 

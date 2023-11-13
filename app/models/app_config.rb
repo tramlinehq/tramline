@@ -63,7 +63,7 @@ class AppConfig < ApplicationRecord
   end
 
   def further_monitoring_setup?
-    app.integrations&.monitoring_provider&.further_setup?
+    app.integrations.monitoring_provider&.further_setup?
   end
 
   private

@@ -77,12 +77,13 @@ gem "rack-attack", "~> 6.7"
 gem "june-analytics-ruby", "~> 2.4"
 gem "discard", "~> 1.3"
 gem "bugsnag-api", "~> 3.0"
+gem "data-anonymization"
+gem "faker"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
   gem "rspec-rails"
   gem "factory_bot_rails"
-  gem "faker"
   gem "pry"
   gem "brakeman", "~> 5.2", require: false
   gem "bundler-audit", "~> 0.9.1", require: false
