@@ -85,6 +85,10 @@ en:
         platform:
           ios: "iOS"
           android: "Android"
+      release:
+        release_type:
+          hotfix: "Hotfix"
+          release: "Release"
     attributes:
       integration:
         categories:

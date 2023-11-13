@@ -24,6 +24,7 @@ class Release < ApplicationRecord
   include Passportable
   include Taggable
   include Versionable
+  include Displayable
   include ActionView::Helpers::DateHelper
   include Rails.application.routes.url_helpers
   using RefinedString

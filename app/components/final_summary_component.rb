@@ -64,6 +64,10 @@ class FinalSummaryComponent < ViewComponent::Base
     release.continuous_backmerge?
   end
 
+  def hotfix?
+    overall.is_hotfix
+  end
+
   def staged_rollouts?(store_version)
     store_version.staged_rollouts.present?
   end
