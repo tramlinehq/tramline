@@ -120,4 +120,14 @@ module ReleasesHelper
     builder += " • "
     builder + author_url + " committed " + ago_in_words(commit.timestamp)
   end
+
+  def blocked_step_release_link(train)
+    release_url = if train.hotfix_release.present?
+      hotfix_release_app_train_releases_path(train.app, train)
+    else
+      ongoing_release_app_train_releases_path(train.app, train)
+    end
+    link_text = train.hotfix_release.present? ? "current hotfix release" : "current ongoing release"
+    link_to link_text, release_url, class: "underline"
+  end
 end

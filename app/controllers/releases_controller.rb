@@ -53,6 +53,14 @@ class ReleasesController < SignedInApplicationController
     show_current_release
   end
 
+  def hotfix_release
+    @app = current_organization.apps.friendly.find(params[:app_id])
+    @train = @app.trains.friendly.find(params[:train_id])
+    @release = @train.hotfix_release
+
+    show_current_release
+  end
+
   def show_current_release
     redirect_to train_path, notice: "No release in progress." and return unless @release
 

@@ -150,22 +150,28 @@ class ReleasePlatformRun < ApplicationRecord
     return false if train.inactive?
     return false unless on_track?
     return false if upcoming_release_step?(step)
+    return false if ongoing_release_step?(step) && train.hotfix_release.present?
     return true if step.first? && step_runs_for(step).empty?
     return false if step.first?
-    return true if (release.hotfix? || release_fix?) && last_commit.run_for(step, self).blank?
+    return true if (release.hotfix? || release_fix?) && last_commit&.run_for(step, self).blank?
 
     (next_step == step) && previous_step_run_for(step).success?
   end
 
-  def upcoming_startable_step?(step)
+  def step_start_blocked?(step)
     return false if train.inactive?
     return false unless on_track?
+    return true if train.hotfix_release.present? && train.hotfix_release != release && step.release?
 
-    (next_step == step) && previous_step_run_for(step).success? && upcoming_release_step?(step)
+    (next_step == step) && previous_step_run_for(step)&.success? && upcoming_release_step?(step)
   end
 
   def upcoming_release_step?(step)
     step.release? && release.upcoming?
+  end
+
+  def ongoing_release_step?(step)
+    step.release? && release.ongoing?
   end
 
   def step_runs_for(step)
