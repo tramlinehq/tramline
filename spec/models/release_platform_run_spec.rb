@@ -70,6 +70,7 @@ describe ReleasePlatformRun do
     end
 
     it "next step can be started before finishing previous step when release is hotfix" do
+      _older_release = create(:release, :finished, train: release_platform.train, release_type: Release.release_types[:release])
       release = create(:release, train: release_platform.train, release_type: Release.release_types[:hotfix])
       release_platform_run = create(:release_platform_run, release_platform:, release:)
       create(:step_run, step: steps.first, status: "ci_workflow_triggered", release_platform_run: release_platform_run)

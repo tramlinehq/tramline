@@ -147,6 +147,7 @@ describe StepRun do
       end
 
       it "is true when it is the running step's next-in-line deployment, previous deployment hasn't finished and release is a hotfix" do
+        _older_release = create(:release, :finished, train:, release_type: Release.release_types[:release])
         release = create(:release, train:, release_type: Release.release_types[:hotfix])
         release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:)
         running_step_run = create(:step_run, :deployment_started, step: release_step, release_platform_run:)
