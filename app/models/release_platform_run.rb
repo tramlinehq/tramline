@@ -73,7 +73,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
-  delegate :all_commits, :original_release_version, to: :release
+  delegate :all_commits, :original_release_version, :hotfix?, to: :release
   delegate :steps, :train, :app, :platform, to: :release_platform
 
   def finish_release
@@ -153,7 +153,7 @@ class ReleasePlatformRun < ApplicationRecord
     return false if ongoing_release_step?(step) && train.hotfix_release.present?
     return true if step.first? && step_runs_for(step).empty?
     return false if step.first?
-    return true if (release.hotfix? || release_fix?) && last_commit&.run_for(step, self).blank?
+    return true if (hotfix? || release_fix?) && last_commit&.run_for(step, self).blank?
 
     (next_step == step) && previous_step_run_for(step).success?
   end
@@ -300,6 +300,7 @@ class ReleasePlatformRun < ApplicationRecord
   private
 
   def base_tag_name
+    return "v#{release_version}-hotfix-#{platform}" if hotfix?
     "v#{release_version}-#{platform}"
   end
 
