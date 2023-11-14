@@ -22,19 +22,19 @@ describe Triggers::Release do
 
     it "creates a new release" do
       expect {
-        Triggers::Release.call(train.reload, release_type: "release")
+        described_class.call(train.reload, release_type: "release")
       }.to change { train.reload.releases.count }.by(1)
     end
 
     it "sets the release type" do
-      Triggers::Release.call(train.reload, release_type: "release")
+      described_class.call(train.reload, release_type: "release")
       expect(train.reload.releases.last.release_type).to eq("release")
     end
 
     context "when hotfixes" do
       it "sets the hotfixed_from" do
         allow(github_api_double).to receive(:branch_exists?).and_return(true)
-        Triggers::Release.call(train.reload, release_type: "hotfix")
+        described_class.call(train.reload, release_type: "hotfix")
         new_hotfix_release = train.reload.releases.created.first
 
         expect(new_hotfix_release.hotfixed_from).to eq(release)
@@ -45,7 +45,7 @@ describe Triggers::Release do
 
         freeze_time do
           date = Time.current.strftime("%Y-%m-%d")
-          Triggers::Release.call(train.reload, release_type: "hotfix", new_hotfix_branch: true)
+          described_class.call(train.reload, release_type: "hotfix", new_hotfix_branch: true)
           new_hotfix_release = train.reload.releases.created.first
           expect(new_hotfix_release.branch_name).to eq("hotfix/train/#{date}")
         end
@@ -54,14 +54,14 @@ describe Triggers::Release do
       it "fails hotfix release trigger if source tag does not exist" do
         allow(github_api_double).to receive(:tag_exists?).and_return(false)
 
-        response = Triggers::Release.call(train.reload, release_type: "hotfix", new_hotfix_branch: true)
+        response = described_class.call(train.reload, release_type: "hotfix", new_hotfix_branch: true)
         expect(response.body).to eq("Could not kickoff a hotfix because the source tag does not exist")
       end
 
       it "fails hotfix release trigger if source branch does not exist" do
         allow(github_api_double).to receive(:branch_exists?).and_return(false)
 
-        response = Triggers::Release.call(train.reload, release_type: "hotfix")
+        response = described_class.call(train.reload, release_type: "hotfix")
         expect(response.body).to eq("Could not kickoff a hotfix because the source release branch does not exist")
       end
     end
