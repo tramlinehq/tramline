@@ -269,6 +269,12 @@ class StepRun < ApplicationRecord
     trigger_deployment(deployment.next)
   end
 
+  def fail_deployment!(deployment)
+    return if deployment.next
+
+    fail_deploy!
+  end
+
   def trigger_deployment(deployment = first_deployment)
     Triggers::Deployment.call(step_run: self, deployment: deployment)
   end
