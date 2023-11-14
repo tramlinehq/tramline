@@ -1,12 +1,12 @@
 module Versionable
   using RefinedString
 
-  def next_version(has_major_bump: false, patch_only: false)
-    raise ArgumentError, "both major and patch cannot be true" if has_major_bump && patch_only
+  def next_version(major_only: false, patch_only: false)
+    raise ArgumentError, "both major and patch cannot be true" if major_only && patch_only
     version = version_current.to_semverish
 
     bump_term =
-      if patch_only && version.proper?
+      if major_only && version.proper?
         :patch
       else
         has_major_bump ? :major : :minor
