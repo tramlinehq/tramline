@@ -8,14 +8,16 @@ describe Triggers::Release do
     let(:tag_name) { Faker::Hacker.noun }
     let(:github_api_double) { instance_double(Installations::Github::Api) }
     let(:github_jwt_double) { instance_double(Installations::Github::Jwt) }
+    let(:release) { create(:release, :finished, :with_no_platform_runs, train:, branch_name:, tag_name:) }
 
     before do
-      @release = create(:release, :finished, :with_no_platform_runs, train:, branch_name:, tag_name:)
       create(:step, :release, :with_deployment, release_platform:)
-      create(:release_platform_run, release: @release, release_platform:)
+      create(:release_platform_run, release:, release_platform:)
+      allow_any_instance_of(GooglePlayStoreIntegration).to receive(:draft_check?).and_return(false)
       allow_any_instance_of(GooglePlayStoreIntegration).to receive(:draft_check?).and_return(false)
       allow(Installations::Github::Jwt).to receive(:new).and_return(github_jwt_double)
       allow(Installations::Github::Api).to receive(:new).and_return(github_api_double)
+      allow(github_api_double).to receive(:commits_between).and_return([1])
     end
 
     it "creates a new release" do
@@ -35,7 +37,7 @@ describe Triggers::Release do
         Triggers::Release.call(train.reload, release_type: "hotfix")
         new_hotfix_release = train.reload.releases.created.first
 
-        expect(new_hotfix_release.hotfixed_from).to eq(@release)
+        expect(new_hotfix_release.hotfixed_from).to eq(release)
       end
 
       it "sets the new_hotfix_branch" do
