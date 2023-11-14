@@ -141,4 +141,64 @@ describe Train do
       expect(train.reload.scheduled_releases.first.scheduled_at).to eq(train.kickoff_at)
     end
   end
+
+  describe "#hotfix_from" do
+    let(:train) { create(:train, :with_almost_trunk, :active) }
+    let(:release) { create(:release, :with_no_platform_runs, train:) }
+    let(:release_platform) { create(:release_platform, train:) }
+    let(:release_platform_run) { create(:release_platform_run, release:, release_platform:) }
+
+    it "returns the last finished release" do
+      create(:release, :finished, :with_no_platform_runs, train:)
+      latest_release = create(:release, :finished, :with_no_platform_runs, train:)
+
+      expect(train.hotfix_from).to eq(latest_release)
+    end
+
+    it "returns nothing if no finished releases" do
+      expect(train.hotfix_from).to be_nil
+    end
+  end
+
+  describe "#release_branch_name_fmt" do
+    it "adds hotfix to branch name if hotfix" do
+      train = create(:train, :with_almost_trunk, :active)
+
+      expect(train.release_branch_name_fmt(hotfix: true)).to eq("hotfix/train/%Y-%m-%d")
+    end
+  end
+
+  describe "#hotfixable?" do
+    let(:train) { create(:train, :with_almost_trunk, :with_no_platforms, :active) }
+    let(:release) { create(:release, :finished, :with_no_platform_runs, train:) }
+    let(:release_platform) { create(:release_platform, train:) }
+
+    before do
+      _finished_release_run = create(:release_platform_run, release:, release_platform:)
+    end
+
+    it "is false if there is already another hotfix in progress" do
+      hotfix_release = create(:release, :hotfix, :with_no_platform_runs, train:, hotfixed_from: release)
+      create(:release_platform_run, release: hotfix_release, release_platform: create(:release_platform, train:))
+
+      expect(train.reload.hotfixable?).to be(false)
+    end
+
+    it "is false if there is an ongoing release in progress" do
+      ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:, hotfixed_from: release)
+      release_platform = create(:release_platform, train:)
+      release_platform_run = create(:release_platform_run, release: ongoing_release, release_platform:)
+      step = create(:step, :release, :with_deployment, release_platform:)
+      _step_run = create(:step_run, :deployment_started, step: step, release_platform_run:)
+
+      expect(train.reload.hotfixable?).to be(false)
+    end
+
+    it "is true when a production train with a release to hotfix is available" do
+      step = create(:step, :release, :with_deployment, release_platform: create(:release_platform, train:))
+      _deployment = create(:deployment, :with_google_play_store, build_artifact_channel: {is_production: true}, step: step)
+
+      expect(train.reload.hotfixable?).to be(true)
+    end
+  end
 end

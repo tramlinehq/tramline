@@ -382,7 +382,7 @@ class Release < ApplicationRecord
 
   def set_version
     self.original_release_version = if hotfix?
-      train.hotfix_from.next_version(patch_only: hotfix?)
+      train.hotfix_from&.next_version(patch_only: hotfix?)
     else
       (train.ongoing_release.presence || train).next_version(has_major_bump:)
     end
