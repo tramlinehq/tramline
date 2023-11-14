@@ -102,7 +102,8 @@ class ReleasePlatformRun < ApplicationRecord
   # Ensure the version is up-to-date with the current ongoing release or the finished ongoing release
   def corrected_release_version
     return train.next_version if train.version_ahead?(self)
-    train.ongoing_release.next_version if train.ongoing_release&.version_ahead?(self)
+    return train.ongoing_release.next_version if train.ongoing_release&.version_ahead?(self) && !release.hotfix?
+    train.hotfix_release.next_version if train.hotfix_release&.version_ahead?(self)
   end
 
   def bump_version!

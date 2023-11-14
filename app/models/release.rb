@@ -173,7 +173,7 @@ class Release < ApplicationRecord
 
   def version_ahead?(platform_run)
     return false if self == platform_run.release
-    release_version.to_semverish > platform_run.release_version.to_semverish
+    release_version.to_semverish >= platform_run.release_version.to_semverish
   end
 
   def create_active_build_queue
