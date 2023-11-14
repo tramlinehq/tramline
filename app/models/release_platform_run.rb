@@ -124,7 +124,7 @@ class ReleasePlatformRun < ApplicationRecord
     )
   end
 
-  # Ensure the release_fix version is greater than the current upcoming release version
+  # Ensure the patch fix version is greater than the current upcoming release version
   def newest_release_version
     return release_version if release_version.to_semverish.proper?
 
@@ -153,7 +153,7 @@ class ReleasePlatformRun < ApplicationRecord
     return false if ongoing_release_step?(step) && train.hotfix_release.present?
     return true if step.first? && step_runs_for(step).empty?
     return false if step.first?
-    return true if (hotfix? || release_fix?) && last_commit&.run_for(step, self).blank?
+    return true if (hotfix? || patch_fix?) && last_commit&.run_for(step, self).blank?
 
     (next_step == step) && previous_step_run_for(step).success?
   end
@@ -258,7 +258,7 @@ class ReleasePlatformRun < ApplicationRecord
     latest_deployed_store_release&.status&.in? DeploymentRun::READY_STATES
   end
 
-  def release_fix?
+  def patch_fix?
     on_track? && in_store_resubmission?
   end
 

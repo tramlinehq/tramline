@@ -283,9 +283,9 @@ class Release < ApplicationRecord
     release_platform_runs.any?(&:version_bump_required?)
   end
 
-  def release_fix?
+  def patch_fix?
     return false unless committable?
-    release_platform_runs.any?(&:release_fix?)
+    release_platform_runs.any?(&:patch_fix?)
   end
 
   def ready_to_be_finalized?

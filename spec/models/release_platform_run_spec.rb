@@ -161,7 +161,7 @@ describe ReleasePlatformRun do
     end
   end
 
-  describe "#release_fix?" do
+  describe "#patch_fix?" do
     let(:train) { create(:train) }
     let(:release_platform) { create(:release_platform, train:) }
     let(:review_step) { create(:step, :review, :with_deployment, release_platform:) }
@@ -175,19 +175,19 @@ describe ReleasePlatformRun do
       release_step_run = create(:step_run, step: release_step, release_platform_run:)
       create(:deployment_run, deployment: production_deployment, step_run: release_step_run)
       release_platform_run.bump_version!
-      expect(release_platform_run).not_to be_release_fix
+      expect(release_platform_run).not_to be_patch_fix
     end
 
     it "is true when it has step run and production deployment run has started rollout" do
       release_step_run = create(:step_run, step: release_step, release_platform_run:)
       create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
       release_platform_run.bump_version!
-      expect(release_platform_run).to be_release_fix
+      expect(release_platform_run).to be_patch_fix
     end
 
     it "is false release train is finished" do
       release_platform_run.update(status: "finished")
-      expect(release_platform_run).not_to be_release_fix
+      expect(release_platform_run).not_to be_patch_fix
     end
   end
 
