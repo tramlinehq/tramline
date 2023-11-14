@@ -92,6 +92,12 @@ module Installations
         code: 400,
         message_matcher: /The first release on a track cannot be staged/,
         decorated_reason: :first_release_cannot_be_made_from_tramline
+      },
+      {
+        status: "PERMISSION_DENIED",
+        code: 403,
+        message_matcher: /has already been used/i,
+        decorated_reason: :build_exists
       }
     ]
 
