@@ -9,7 +9,7 @@ module Versionable
       if major_only && version.proper?
         :patch
       else
-        has_major_bump ? :major : :minor
+        major_only ? :major : :minor
       end
 
     version_current.ver_bump(bump_term)
