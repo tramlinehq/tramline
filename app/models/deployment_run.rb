@@ -197,6 +197,7 @@ class DeploymentRun < ApplicationRecord
       .where("event_timestamp < ?", ts)
       .order(:event_timestamp)
       .last
+    return 0.0 unless last_event
     return 100.0 if last_event.reason == "fully_released"
     last_event.metadata["rollout_percentage"].safe_float
   end
