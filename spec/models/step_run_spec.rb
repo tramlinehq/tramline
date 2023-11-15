@@ -192,6 +192,22 @@ describe StepRun do
       expect(step_run.reload.success?).to be(true)
     end
 
+    it "marks the step as finished if the last deployment is a success" do
+      repo_integration = instance_double(Installations::Github::Api)
+      allow(Installations::Github::Api).to receive(:new).and_return(repo_integration)
+      allow(repo_integration).to receive(:create_tag!)
+      step = create(:step, :review, :with_deployment)
+      step_run = create(:step_run, :deployment_started, step: step)
+      first_deployment = step_run.step.deployments.first
+      second_deployment = create(:deployment, step:)
+      create(:deployment_run, :failed, deployment: first_deployment, step_run: step_run)
+      create(:deployment_run, :released, deployment: second_deployment, step_run: step_run)
+
+      step_run.finish_deployment!(second_deployment)
+
+      expect(step_run.reload.success?).to be(true)
+    end
+
     it "triggers the next deployment if there are any" do
       allow(Triggers::Deployment).to receive(:call)
       step = create(:step, :review, :with_deployment)

@@ -149,7 +149,7 @@ class StepRun < ApplicationRecord
     event(:finish) do
       after { event_stamp!(reason: :finished, kind: :success, data: stamp_data) }
       after { finalize_release }
-      transitions from: :deployment_started, to: :success, guard: :finished_deployments?
+      transitions from: :deployment_started, to: :success
     end
 
     event(:cancel, after_commit: -> { Releases::CancelWorkflowRunJob.perform_later(id) }) do
@@ -260,8 +260,7 @@ class StepRun < ApplicationRecord
   end
 
   def finish_deployment!(deployment)
-    return finish! if finished_deployments?
-    return unless deployment.next
+    return finish! if finished_deployments? || deployment.next.blank?
     return if deployment.next.production_channel?
     return unless step.auto_deploy?
 
