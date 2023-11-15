@@ -6,7 +6,7 @@ module Versionable
     version = version_current.to_semverish
 
     bump_term =
-      if major_only && version.proper?
+      if patch_only && version.proper?
         :patch
       else
         major_only ? :major : :minor
