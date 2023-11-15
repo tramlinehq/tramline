@@ -2,7 +2,7 @@ require "rails_helper"
 
 describe Triggers::StepRun do
   describe ".call" do
-    let(:train) { create(:train, version_seeded_with: "1.1") }
+    let(:train) { create(:train, version_seeded_with: "1.0") }
     let(:release_platform) { train.release_platforms.first }
     let(:step) { create(:step, :with_deployment, release_platform:) }
     let(:release) { create(:release, :with_no_platform_runs, :on_track, train:) }
@@ -10,8 +10,8 @@ describe Triggers::StepRun do
     let(:commit) { create(:commit, release:) }
 
     it "corrects the release platform run version if train has moved ahead" do
-      train.update!(version_current: "1.2")
-      expect { described_class.call(step, commit, release_platform_run) }.to change(release_platform_run, :release_version).from("1.1").to("1.3")
+      train.update!(version_current: "1.1")
+      expect { described_class.call(step, commit, release_platform_run) }.to change(release_platform_run, :release_version).from("1.1").to("1.2")
     end
 
     it "does nothing if train has not moved ahead" do

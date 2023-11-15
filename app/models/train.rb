@@ -132,7 +132,7 @@ class Train < ApplicationRecord
   end
 
   def version_ahead?(release)
-    version_current.to_semverish > release.release_version.to_semverish
+    version_current.to_semverish >= release.release_version.to_semverish
   end
 
   def ongoing_release
