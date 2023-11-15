@@ -156,9 +156,21 @@ module Installations
       end
     end
 
-    def create_branch!(repo, working_branch_name, new_branch_name)
+    def create_branch!(repo, source_name, new_branch_name, source_type: :branch)
       execute do
-        @client.create_ref(repo, "heads/#{new_branch_name}", head(repo, working_branch_name))
+        sha =
+          case source_type
+          when :branch
+            head(repo, source_name)
+          when :commit
+            source_name
+          when :tag
+            @client.ref(repo, "tags/#{source_name}")[:object][:sha]
+          else
+            raise ArgumentError, "source can only be a branch, tag or commit"
+          end
+
+        @client.create_ref(repo, "heads/#{new_branch_name}", sha)
       end
     end
 
@@ -189,10 +201,12 @@ module Installations
     end
 
     def tag_exists?(repo, tag_name)
-      # NOTE: The API returns a list of matching tags if the exact match doesn't exist
-      # It returns a single element if there is an exact match
-      !@client.ref(repo, "tags/#{tag_name}").is_a?(Array)
-    rescue Octokit::NotFound
+      execute do
+        # NOTE: The API returns a list of matching tags if the exact match doesn't exist
+        # It returns a single element if there is an exact match
+        !@client.ref(repo, "tags/#{tag_name}").is_a?(Array)
+      end
+    rescue Installations::Errors::ResourceNotFound
       false
     end
 
@@ -244,10 +258,17 @@ module Installations
       end
     end
 
-    def head(repo, working_branch_name)
+    def head(repo, working_branch_name, sha_only: true, commit_transforms: nil)
+      raise ArgumentError, "transforms must be supplied when querying head object" if !sha_only && !commit_transforms
+
       execute do
         obj = @client.ref(repo, "heads/#{working_branch_name}")[:object]
-        obj[:sha] if obj[:type].eql? "commit"
+        if obj[:type].eql? "commit"
+          return obj[:sha] if sha_only
+          return @client.commit(repo, obj[:sha])
+              .then { |commit| Installations::Response::Keys.transform([commit], commit_transforms) }
+              .first
+        end
       end
     end
 

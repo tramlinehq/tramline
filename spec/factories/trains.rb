@@ -60,5 +60,11 @@ FactoryBot.define do
     after(:build) do |train|
       def train.working_branch_presence = true
     end
+
+    trait :with_no_platforms do
+      after(:build) do |train|
+        def train.create_release_platforms = true
+      end
+    end
   end
 end

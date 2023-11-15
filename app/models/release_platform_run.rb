@@ -73,7 +73,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
-  delegate :all_commits, :original_release_version, to: :release
+  delegate :all_commits, :original_release_version, :hotfix?, to: :release
   delegate :steps, :train, :app, :platform, to: :release_platform
 
   def finish_release
@@ -102,7 +102,8 @@ class ReleasePlatformRun < ApplicationRecord
   # Ensure the version is up-to-date with the current ongoing release or the finished ongoing release
   def corrected_release_version
     return train.next_version if train.version_ahead?(self)
-    train.ongoing_release.next_version if train.ongoing_release&.version_ahead?(self)
+    return train.ongoing_release.next_version if train.ongoing_release&.version_ahead?(self) && !release.hotfix?
+    train.hotfix_release.next_version if train.hotfix_release&.version_ahead?(self)
   end
 
   def bump_version!
@@ -124,7 +125,7 @@ class ReleasePlatformRun < ApplicationRecord
     )
   end
 
-  # Ensure the hotfix version is greater than the current upcoming release version
+  # Ensure the patch fix version is greater than the current upcoming release version
   def newest_release_version
     return release_version if release_version.to_semverish.proper?
 
@@ -150,21 +151,28 @@ class ReleasePlatformRun < ApplicationRecord
     return false if train.inactive?
     return false unless on_track?
     return false if upcoming_release_step?(step)
+    return false if ongoing_release_step?(step) && train.hotfix_release.present?
     return true if step.first? && step_runs_for(step).empty?
     return false if step.first?
+    return true if (hotfix? || patch_fix?) && last_commit&.run_for(step, self).blank?
 
     (next_step == step) && previous_step_run_for(step).success?
   end
 
-  def upcoming_startable_step?(step)
+  def step_start_blocked?(step)
     return false if train.inactive?
     return false unless on_track?
+    return true if train.hotfix_release.present? && train.hotfix_release != release && step.release?
 
-    (next_step == step) && previous_step_run_for(step).success? && upcoming_release_step?(step)
+    (next_step == step) && previous_step_run_for(step)&.success? && upcoming_release_step?(step)
   end
 
   def upcoming_release_step?(step)
     step.release? && release.upcoming?
+  end
+
+  def ongoing_release_step?(step)
+    step.release? && release.ongoing?
   end
 
   def step_runs_for(step)
@@ -251,8 +259,12 @@ class ReleasePlatformRun < ApplicationRecord
     latest_deployed_store_release&.status&.in? DeploymentRun::READY_STATES
   end
 
-  def hotfix?
+  def patch_fix?
     on_track? && in_store_resubmission?
+  end
+
+  def release_step_started?
+    step_runs_for(release_platform.release_step).present?
   end
 
   def production_release_happened?
@@ -289,6 +301,7 @@ class ReleasePlatformRun < ApplicationRecord
   private
 
   def base_tag_name
+    return "v#{release_version}-hotfix-#{platform}" if hotfix?
     "v#{release_version}-#{platform}"
   end
 

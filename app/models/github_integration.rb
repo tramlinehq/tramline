@@ -55,13 +55,23 @@ class GithubIntegration < ApplicationRecord
 
   COMMITS_TRANSFORMATIONS = {
     url: :html_url,
-    sha: :sha,
+    commit_hash: :sha,
     message: [:commit, :message],
     author_name: [:commit, :author, :name],
-    author_timestamp: [:commit, :author, :date],
+    author_email: [:commit, :author, :email],
     author_login: [:author, :login],
-    author_url: [:author, :html_url],
+    timestamp: [:commit, :author, :date],
     parents: [:parents]
+  }
+
+  COMMITS_HOOK_TRANSFORMATIONS = {
+    url: :url,
+    commit_hash: :id,
+    message: :message,
+    author_name: [:author, :name],
+    author_email: [:author, :email],
+    author_login: [:author, :username],
+    timestamp: :timestamp
   }
 
   PR_TRANSFORMATIONS = {
@@ -123,8 +133,8 @@ class GithubIntegration < ApplicationRecord
     installation.create_tag!(code_repository_name, tag_name, sha)
   end
 
-  def create_branch!(from, to)
-    installation.create_branch!(code_repository_name, from, to)
+  def create_branch!(from, to, source_type: :branch)
+    installation.create_branch!(code_repository_name, from, to, source_type:)
   end
 
   def branch_url(repo, branch_name)
@@ -226,6 +236,10 @@ class GithubIntegration < ApplicationRecord
     false
   end
 
+  def tag_exists?(tag_name)
+    installation.tag_exists?(code_repository_name, tag_name)
+  end
+
   def unzip_artifact?
     true
   end
@@ -264,8 +278,8 @@ class GithubIntegration < ApplicationRecord
     true
   end
 
-  def branch_head_sha(branch)
-    installation.head(code_repository_name, branch)
+  def branch_head_sha(branch, sha_only: true)
+    installation.head(code_repository_name, branch, sha_only:, commit_transforms: COMMITS_TRANSFORMATIONS)
   end
 
   private

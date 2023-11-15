@@ -134,7 +134,7 @@ describe StepRun do
         expect(running_step_run.manually_startable_deployment?(production_deployment)).to be false
       end
 
-      it "is true when it is the running step's next-in-line deployment, previous deployment hasn't finished and release is in hotfix mode" do
+      it "is true when it is the running step's next-in-line deployment, previous deployment hasn't finished and release is in fix mode" do
         inactive_step_run = create(:step_run, :deployment_started, step: release_step, release_platform_run:)
         _old_beta_deployment_run = create(:deployment_run, :released, step_run: inactive_step_run, deployment: regular_deployment)
         _old_prod_deployment_run = create(:deployment_run, :rollout_started, step_run: inactive_step_run, deployment: production_deployment)
@@ -144,6 +144,17 @@ describe StepRun do
 
         expect(running_step_run.reload.manually_startable_deployment?(regular_deployment)).to be false
         expect(running_step_run.reload.manually_startable_deployment?(production_deployment)).to be true
+      end
+
+      it "is true when it is the running step's next-in-line deployment, previous deployment hasn't finished and release is a hotfix" do
+        _older_release = create(:release, :finished, train:, release_type: Release.release_types[:release])
+        release = create(:release, train:, release_type: Release.release_types[:hotfix])
+        release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:)
+        running_step_run = create(:step_run, :deployment_started, step: release_step, release_platform_run:)
+        _deployment_run1 = create(:deployment_run, step_run: running_step_run, deployment: regular_deployment, status: "uploading")
+
+        expect(running_step_run.manually_startable_deployment?(regular_deployment)).to be false
+        expect(running_step_run.manually_startable_deployment?(production_deployment)).to be true
       end
     end
 
@@ -177,6 +188,22 @@ describe StepRun do
       create(:deployment_run, :released, deployment: first_deployment, step_run: step_run)
 
       step_run.finish_deployment!(first_deployment)
+
+      expect(step_run.reload.success?).to be(true)
+    end
+
+    it "marks the step as finished if the last deployment is a success" do
+      repo_integration = instance_double(Installations::Github::Api)
+      allow(Installations::Github::Api).to receive(:new).and_return(repo_integration)
+      allow(repo_integration).to receive(:create_tag!)
+      step = create(:step, :review, :with_deployment)
+      step_run = create(:step_run, :deployment_started, step: step)
+      first_deployment = step_run.step.deployments.first
+      second_deployment = create(:deployment, step:)
+      create(:deployment_run, :failed, deployment: first_deployment, step_run: step_run)
+      create(:deployment_run, :released, deployment: second_deployment, step_run: step_run)
+
+      step_run.finish_deployment!(second_deployment)
 
       expect(step_run.reload.success?).to be(true)
     end

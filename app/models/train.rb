@@ -136,15 +136,23 @@ class Train < ApplicationRecord
   end
 
   def ongoing_release
-    active_runs.order(:scheduled_at).first
+    active_runs.where(release_type: Release.release_types[:release]).order(:scheduled_at).first
   end
 
   def upcoming_release
-    active_runs.order(:scheduled_at).second
+    active_runs.where(release_type: Release.release_types[:release]).order(:scheduled_at).second
+  end
+
+  def hotfix_release
+    active_runs.where(release_type: Release.release_types[:hotfix]).first
   end
 
   def schedule_release!
     scheduled_releases.create!(scheduled_at: next_run_at) if automatic?
+  end
+
+  def hotfix_from
+    releases.finished.first
   end
 
   def automatic?
@@ -227,7 +235,8 @@ class Train < ApplicationRecord
     name&.parameterize
   end
 
-  def release_branch_name_fmt
+  def release_branch_name_fmt(hotfix: false)
+    return "hotfix/#{display_name}/%Y-%m-%d" if hotfix
     "r/#{display_name}/%Y-%m-%d"
   end
 
@@ -334,9 +343,9 @@ class Train < ApplicationRecord
 
   delegate :create_tag!, to: :vcs_provider
 
-  def create_branch!(from, to)
+  def create_branch!(from, to, source_type: :branch)
     return false unless active?
-    vcs_provider.create_branch!(from, to)
+    vcs_provider.create_branch!(from, to, source_type:)
   end
 
   def notify!(message, type, params)
@@ -369,6 +378,12 @@ class Train < ApplicationRecord
 
   def schedule_editable?
     draft? || !automatic? || !persisted?
+  end
+
+  def hotfixable?
+    return false if hotfix_release.present?
+    return false if ongoing_release.present? && ongoing_release.release_step_started?
+    hotfix_from.present? && release_platforms.any?(&:has_production_deployment?)
   end
 
   def devops_report?(user)

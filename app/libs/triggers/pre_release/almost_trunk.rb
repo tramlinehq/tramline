@@ -12,24 +12,44 @@ class Triggers::PreRelease
     end
 
     def call
-      create_branches
+      create_branch
     end
 
     private
 
     attr_reader :release, :release_branch
-    delegate :train, to: :release
+    delegate :train, :hotfix?, :new_hotfix_branch?, to: :release
     delegate :working_branch, to: :train
     delegate :logger, to: Rails
 
-    def create_branches
+    def create_branch
       GitHub::Result.new do
-        train.create_branch!(working_branch, release_branch).then do |value|
-          release.event_stamp_now!(reason: :release_branch_created, kind: :success, data: {working_branch:, release_branch:})
+        source = source_ref
+        train.create_branch!(source[:ref], release_branch, source_type: source[:type]).then do |value|
+          stamp_data = {working_branch: source[:ref], release_branch:}
+          release.event_stamp_now!(reason: :release_branch_created, kind: :success, data: stamp_data)
           GitHub::Result.new { value }
         end
       rescue Installations::Errors::TagReferenceAlreadyExists
         logger.debug("Release creation: did not create branch, since #{release_branch} already existed")
+      end
+    end
+
+    def hotfix_branch?
+      hotfix? && new_hotfix_branch?
+    end
+
+    def source_ref
+      if hotfix_branch?
+        {
+          ref: release.hotfixed_from.tag_name,
+          type: :tag
+        }
+      else
+        {
+          ref: working_branch,
+          type: :branch
+        }
       end
     end
   end

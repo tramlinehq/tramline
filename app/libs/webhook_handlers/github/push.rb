@@ -6,11 +6,12 @@ class WebhookHandlers::Github::Push
   end
 
   def head_commit
-    commit_attributes(head_commit_payload)
+    head_commit_payload.merge(branch_name:)
   end
 
   def rest_commits
-    rest_commits_payload.map { commit_attributes(_1) }
+    rest_commits_payload
+      &.reject { |commit| commit[:commit_hash] == head_commit[:commit_hash] }.presence || []
   end
 
   def valid_branch?
@@ -32,23 +33,13 @@ class WebhookHandlers::Github::Push
 
   private
 
-  def commit_attributes(commit)
-    {
-      commit_hash: commit["id"],
-      message: commit["message"],
-      timestamp: commit["timestamp"],
-      author_name: commit["author"]["name"],
-      author_email: commit["author"]["email"],
-      url: commit["url"],
-      branch_name: branch_name
-    }
-  end
-
   def head_commit_payload
-    payload["head_commit"]
+    Installations::Response::Keys
+      .transform([payload["head_commit"]], GithubIntegration::COMMITS_HOOK_TRANSFORMATIONS)
+      .first
   end
 
   def rest_commits_payload
-    payload["commits"]&.reject { |commit| commit["id"] == head_commit["id"] }.presence || []
+    Installations::Response::Keys.transform(payload["commits"], GithubIntegration::COMMITS_HOOK_TRANSFORMATIONS)
   end
 end

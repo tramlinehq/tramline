@@ -30,15 +30,24 @@
                 <dd class="text-gray-500">Final version</dd>
               </div>
 
-              <div class="flex flex-col text-center items-center justify-center">
-                <dt class="mb-2 text-xl font-extrabold underline"><%= link_to_external overall.tag, overall.tag_url, class: "underline" %></dt>
-                <dd class="text-gray-500">Release tag</dd>
-              </div>
+              <% if overall.tag.present? %>
+                <div class="flex flex-col text-center items-center justify-center">
+                  <dt class="mb-2 text-xl font-extrabold underline"><%= link_to_external overall.tag, overall.tag_url, class: "underline" %></dt>
+                  <dd class="text-gray-500">Release tag</dd>
+                </div>
+              <% end %>
 
               <div class="flex flex-col text-center items-center justify-center">
                 <dt class="mb-2 text-xl font-extrabold"><%= overall.commits_count %></dt>
                 <dd class="text-gray-500">Commits in release</dd>
               </div>
+
+              <% if hotfix? %>
+                <div class="flex flex-col text-center items-center justify-center">
+                  <dt class="mb-2 text-xl font-extrabold"><%= overall.hotfixed_from %></dt>
+                  <dd class="text-gray-500">Hotfix released from</dd>
+                </div>
+              <% end %>
 
               <% if backmerges? %>
                 <div class="flex flex-col text-center items-center justify-center">

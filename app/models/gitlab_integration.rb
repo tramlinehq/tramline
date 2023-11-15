@@ -129,7 +129,8 @@ class GitlabIntegration < ApplicationRecord
     # FIXME
   end
 
-  def create_branch!(from, to)
+  def create_branch!(from, to, source_type: :branch)
+    # FIXME use the source_type
     with_api_retries { installation.create_branch!(code_repository_name, from, to) }
   end
 
@@ -210,6 +211,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title_prefix)
+    # FIXME
     {}.merge_if_present(source: :gitlab)
   end
 
@@ -217,14 +219,18 @@ class GitlabIntegration < ApplicationRecord
     "https://storage.googleapis.com/tramline-public-assets/gitlab_small.png".freeze
   end
 
-  def branch_head_sha(branch)
-    with_api_retries { installation.head(code_repository_name, branch) }
+  def branch_head_sha(branch, sha_only: true)
+    with_api_retries { installation.head(code_repository_name, branch, sha_only:) }
   end
 
   def branch_exists?(branch)
     with_api_retries { installation.branch_exists?(code_repository_name, branch) }
   rescue Installations::Errors::ResourceNotFound
     false
+  end
+
+  def tag_exists?(tag_name)
+    with_api_retries { installation.tag_exists?(code_repository_name, tag_name) }
   end
 
   private

@@ -149,7 +149,7 @@ class StepRun < ApplicationRecord
     event(:finish) do
       after { event_stamp!(reason: :finished, kind: :success, data: stamp_data) }
       after { finalize_release }
-      transitions from: :deployment_started, to: :success, guard: :finished_deployments?
+      transitions from: :deployment_started, to: :success
     end
 
     event(:cancel, after_commit: -> { Releases::CancelWorkflowRunJob.perform_later(id) }) do
@@ -201,13 +201,14 @@ class StepRun < ApplicationRecord
   def startable_deployment?(deployment)
     return false unless active?
     return true if deployment.first? && deployment_runs.empty?
+
     next_deployment == deployment
   end
 
   def manually_startable_deployment?(deployment)
     return false if deployment.first?
     return false if step.review?
-    startable_deployment?(deployment) && (last_deployment_run&.released? || release_platform_run.hotfix?)
+    startable_deployment?(deployment) && (last_deployment_run&.released? || release_platform_run.patch_fix? || release.hotfix?)
   end
 
   def last_deployment_run
@@ -259,13 +260,18 @@ class StepRun < ApplicationRecord
   end
 
   def finish_deployment!(deployment)
-    return finish! if finished_deployments?
-    return unless deployment.next
+    return finish! if finished_deployments? || deployment.next.blank?
     return if deployment.next.production_channel?
     return unless step.auto_deploy?
 
     # trigger the next deployment if available
     trigger_deployment(deployment.next)
+  end
+
+  def fail_deployment!(deployment)
+    return if deployment.next
+
+    fail_deploy!
   end
 
   def trigger_deployment(deployment = first_deployment)

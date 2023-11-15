@@ -120,4 +120,24 @@ module ReleasesHelper
     builder += " • "
     builder + author_url + " committed " + ago_in_words(commit.timestamp)
   end
+
+  def blocked_step_release_link(release)
+    release_url = if release.ongoing?
+      hotfix_release_app_train_releases_path(release.train.app, release.train)
+    else
+      ongoing_release_app_train_releases_path(release.train.app, release.train)
+    end
+    link_text = release.ongoing? ? "current hotfix release" : "current ongoing release"
+    link_to link_text, release_url, class: "underline"
+  end
+
+  def release_title(release)
+    if release.hotfix?
+      concat content_tag :span, release.release_version.to_s, class: "pr-2"
+      concat inline_svg("band_aid.svg", classname: "w-6 align-middle inline-flex")
+      content_tag :span, "hotfix release", class: "ml-2 text-sm bg-amber-50 px-2 py-1"
+    else
+      release.release_version
+    end
+  end
 end

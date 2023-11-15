@@ -1,0 +1,55 @@
+<div class="flex flex-col items-start rounded-t p-4">
+  <div class="flex justify-between w-full items-center border-b py-4">
+    <h3 class="text-xl font-semibold text-gray-900 inline-flex items-center">
+      <%= inline_svg("band_aid.svg", classname: "w-6 h-6 fill-current mr-2") %>
+      Start a hotfix release
+    </h3>
+
+    <button type="button" class="text-slate-400 hover:cursor-pointer hover:text-slate-500" data-action="modal#close">
+      <%= inline_svg("close_icon.svg", classname: "w-4 h-4 fill-current") %>
+      <span class="sr-only">Close modal</span>
+    </button>
+  </div>
+
+  <div class="mt-4">Hotfix releases are special releases that allow you to trigger any stage of your release pipeline,
+    bypassing the defined order.
+  </div>
+  <div class="mt-4">This hotfix will be against your last successful release:
+    <strong><%= hotfix_from.release_version %></strong>.
+  </div>
+  <div class="mt-4">
+    By default we will repurpose the release branch <strong><%= hotfix_from.release_branch %></strong> from the last successful release.
+    You can override this setting below.
+  </div>
+</div>
+
+<div class="p-4 space-y-6">
+  <%= form_with(model: [app, train, Release.new],
+                method: :post,
+                url: app_train_releases_path(app, train),
+                builder: ButtonHelper::AuthzForms) do |form| %>
+
+    <section data-controller="toggle-switch"
+             data-toggle-switch-on-label-value="Hotfix branch will be created from <%= hotfix_from.tag_name %>"
+             data-toggle-switch-off-label-value="Create a new hotfix branch"
+             class="mb-8 flex items-center">
+      <div class="form-switch">
+        <%= form.check_box :new_hotfix_branch,
+                           { id: "active-switch-#{train.id}",
+                             class: "sr-only",
+                             data: { action: "toggle-switch#change reveal#toggle",
+                                     toggle_switch_target: "checkbox" } },
+                           "true", "false" %>
+        <label class="bg-slate-400" for="active-switch-<%= train.id %>">
+          <span class="bg-white shadow-sm" aria-hidden="true"></span>
+          <span class="sr-only">Create a new hotfix branch</span>
+        </label>
+      </div>
+
+      <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"></div>
+    </section>
+
+    <%= form.hidden_field :release_type, value: "hotfix" %>
+    <%= form.authz_submit :blue, "Start hotfix" %>
+  <% end %>
+</div>

@@ -5,8 +5,11 @@
 #  id                       :uuid             not null, primary key
 #  branch_name              :string           not null
 #  completed_at             :datetime
+#  hotfixed_from            :uuid
 #  is_automatic             :boolean          default(FALSE)
+#  new_hotfix_branch        :boolean          default(FALSE)
 #  original_release_version :string
+#  release_type             :string           not null
 #  scheduled_at             :datetime
 #  status                   :string           not null
 #  stopped_at               :datetime
@@ -21,6 +24,7 @@ class Release < ApplicationRecord
   include Passportable
   include Taggable
   include Versionable
+  include Displayable
   include ActionView::Helpers::DateHelper
   include Rails.application.routes.url_helpers
   using RefinedString
@@ -29,6 +33,7 @@ class Release < ApplicationRecord
   self.ignored_columns += ["release_version"]
 
   belongs_to :train
+  belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :hotfixed_releases
   has_one :release_metadata, dependent: :destroy, inverse_of: :release
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
   has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release
@@ -38,6 +43,7 @@ class Release < ApplicationRecord
   has_many :deployment_runs, through: :step_runs
   has_many :build_queues, dependent: :destroy
   has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
+  has_many :hotfixed_releases, class_name: "Release", inverse_of: :hotfixed_from, dependent: :destroy
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped, :stopped_after_partial_finish]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
@@ -77,6 +83,10 @@ class Release < ApplicationRecord
   }
 
   enum status: STATES
+  enum release_type: {
+    hotfix: "hotfix",
+    release: "release"
+  }
 
   aasm safe_state_machine_params do
     state :created, initial: true
@@ -163,7 +173,7 @@ class Release < ApplicationRecord
 
   def version_ahead?(platform_run)
     return false if self == platform_run.release
-    release_version.to_semverish > platform_run.release_version.to_semverish
+    release_version.to_semverish >= platform_run.release_version.to_semverish
   end
 
   def create_active_build_queue
@@ -249,6 +259,10 @@ class Release < ApplicationRecord
     release_platform_runs.any?(&:metadata_editable?)
   end
 
+  def release_step_started?
+    release_platform_runs.any?(&:release_step_started?)
+  end
+
   class PreReleaseUnfinishedError < StandardError; end
 
   def close_pre_release_prs
@@ -269,9 +283,9 @@ class Release < ApplicationRecord
     release_platform_runs.any?(&:version_bump_required?)
   end
 
-  def hotfix?
+  def patch_fix?
     return false unless committable?
-    release_platform_runs.any?(&:hotfix?)
+    release_platform_runs.any?(&:patch_fix?)
   end
 
   def ready_to_be_finalized?
@@ -318,8 +332,8 @@ class Release < ApplicationRecord
     all_commits.first
   end
 
-  def latest_commit_hash
-    vcs_provider.branch_head_sha(release_branch)
+  def latest_commit_hash(sha_only: true)
+    vcs_provider.branch_head_sha(release_branch, sha_only:)
   end
 
   def upcoming?
@@ -330,10 +344,15 @@ class Release < ApplicationRecord
     train.ongoing_release == self
   end
 
+  def retrigger_for_hotfix?
+    hotfix? && !new_hotfix_branch?
+  end
+
   private
 
   def base_tag_name
     tag = "v#{release_version}"
+    tag += "-hotfix" if hotfix?
     tag += "-" + train.tag_suffix if train.tag_suffix.present?
     tag
   end
@@ -362,7 +381,11 @@ class Release < ApplicationRecord
   end
 
   def set_version
-    self.original_release_version = (train.ongoing_release.presence || train).next_version(has_major_bump)
+    self.original_release_version = if hotfix?
+      train.hotfix_from&.next_version(patch_only: hotfix?)
+    else
+      (train.ongoing_release.presence || train).next_version(major_only: has_major_bump)
+    end
   end
 
   def set_default_release_metadata

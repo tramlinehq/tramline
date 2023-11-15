@@ -6,8 +6,10 @@ describe Release do
   end
 
   describe "#set_version" do
-    {"1.2.3" => {major: "2.0.0", minor: "1.3.0"},
-     "1.2" => {major: "2.0", minor: "1.3"}}.each do |ver, expect|
+    {
+      "1.2.3" => {major: "2.0.0", minor: "1.3.0"},
+      "1.2" => {major: "2.0", minor: "1.3"}
+    }.each do |ver, expect|
       it "minor bump: sets the original_release_version to next version of the train" do
         train = create(:train, version_seeded_with: ver)
         run = build(:release, original_release_version: nil, train:)
@@ -28,9 +30,39 @@ describe Release do
       end
     end
 
+    context "when hotfix release" do
+      it "patch bump: sets the original_release_version to the next version of a the previous good run" do
+        train = create(:train, :with_almost_trunk, :with_no_platforms, :active, version_seeded_with: "1.2.3")
+        release = create(:release, :finished, :with_no_platform_runs, train:)
+        release_platform = create(:release_platform, train:)
+        _finished_release_run = create(:release_platform_run, release:, release_platform:, release_version: "1.2.3")
+
+        hotfix_run = build(:release, :hotfix, :with_no_platform_runs, original_release_version: nil, train:)
+
+        expect(hotfix_run.original_release_version).to be_nil
+        hotfix_run.save!
+        expect(hotfix_run.original_release_version).to eq("1.2.4")
+      end
+
+      it "minor bump: sets the original_release_version to the next version of a the previous good run" do
+        train = create(:train, :with_almost_trunk, :with_no_platforms, :active, version_seeded_with: "1.2")
+        release = create(:release, :finished, :with_no_platform_runs, train:)
+        release_platform = create(:release_platform, train:)
+        _finished_release_run = create(:release_platform_run, release:, release_platform:, release_version: "1.2")
+
+        hotfix_run = build(:release, :hotfix, :with_no_platform_runs, original_release_version: nil, train:)
+
+        expect(hotfix_run.original_release_version).to be_nil
+        hotfix_run.save!
+        expect(hotfix_run.original_release_version).to eq("1.3")
+      end
+    end
+
     context "when ongoing release" do
-      {"1.2.3" => {major: "2.0.0", minor: "1.4.0"},
-       "1.2" => {major: "2.0", minor: "1.4"}}.each do |ver, expect|
+      {
+        "1.2.3" => {major: "2.0.0", minor: "1.4.0"},
+        "1.2" => {major: "2.0", minor: "1.4"}
+      }.each do |ver, expect|
         it "minor bump: sets the original_release_version to next version of the ongoing release" do
           train = create(:train, version_seeded_with: ver)
           _ongoing_release = create(:release, :on_track, train:)
@@ -225,6 +257,26 @@ describe Release do
       train.reload
 
       expect(train.version_current).to eq("9.60.0")
+    end
+  end
+
+  describe "#retrigger_for_hotfix?" do
+    it "is true when hotfix release and existing hotfix branch" do
+      run = create(:release, :hotfix, :created, new_hotfix_branch: false)
+
+      expect(run.retrigger_for_hotfix?).to be(true)
+    end
+
+    it "is false when hotfix release and new hotfix branch" do
+      run = create(:release, :hotfix, :created, new_hotfix_branch: true)
+
+      expect(run.retrigger_for_hotfix?).to be(false)
+    end
+
+    it "is false when not hotfix release" do
+      run = create(:release, :created)
+
+      expect(run.retrigger_for_hotfix?).to be(false)
     end
   end
 end

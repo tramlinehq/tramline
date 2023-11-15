@@ -55,6 +55,7 @@ en:
           release_already_exists: "a release already being present in the store"
           version_already_exists: "the version already being released in the store"
           build_exists_in_build_channel: "the build already being present in the deployment channel"
+          build_exists: "the build with version code already being present in the store"
           build_not_upgradable: "the build number being lower than the current build in the deployment channel"
           permission_denied: "permission denied by the store"
           api_disabled: "api disabled in the store"
@@ -85,6 +86,10 @@ en:
         platform:
           ios: "iOS"
           android: "Android"
+      release:
+        release_type:
+          hotfix: "Hotfix"
+          release: "Release"
     attributes:
       integration:
         categories:

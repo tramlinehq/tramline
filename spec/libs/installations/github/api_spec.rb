@@ -70,4 +70,35 @@ describe Installations::Github::Api, type: :integration do
       expect(result).to match(expected)
     end
   end
+
+  describe "#create_branch!" do
+    let(:payload) { JSON.parse(File.read("spec/fixtures/github/create_branch.json")).to_h.with_indifferent_access }
+    let(:repo) { Faker::Lorem.characters(number: 8) }
+
+    it "only accepts source ref as commit, branch or tag" do
+      source_name = "nothing"
+      new_branch_name = "new-branch"
+      allow_any_instance_of(Octokit::Client).to receive(:create_ref).and_return(payload)
+
+      expect {
+        described_class
+          .new(installation_id)
+          .create_branch!(repo, source_name, new_branch_name, source_type: :nothing)
+      }.to raise_error(ArgumentError)
+    end
+
+    it "returns the created branch from commit" do
+      source_name = "aa218f56b14c9653891f9e74264a383fa43fefbd"
+      new_branch_name = "featureA"
+      allow_any_instance_of(Octokit::Client).to receive(:create_ref).and_return(payload)
+
+      result =
+        described_class
+          .new(installation_id)
+          .create_branch!(repo, source_name, new_branch_name, source_type: :commit)
+
+      expected_branch = "refs/heads/#{new_branch_name}"
+      expect(result[:ref]).to match(expected_branch)
+    end
+  end
 end

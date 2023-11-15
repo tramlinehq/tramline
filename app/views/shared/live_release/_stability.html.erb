@@ -3,11 +3,11 @@
     <span class="font-bold text-xl"><%= platform %> – <%= release.release_version %></span>
   </div>
 
-  <% if release.hotfix? %>
+  <% if release.patch_fix? %>
     <div class="flex flex-col bg-slate-800 text-white rounded-sm py-5 my-5 text-center pr-8">
       <div class="uppercase tracking-wide text-2xl drop-shadow-md">
         <%= inline_svg("band_aid.svg", classname: "w-10 opacity-80 inline-flex align-bottom") %>
-        <span class="align-baseline pl-2">release is now in <span class="underline">hotfix</span> mode</span>
+        <span class="align-baseline pl-2">release is now in <span class="underline">patch</span> mode</span>
       </div>
     </div>
   <% end %>
@@ -37,16 +37,15 @@
                                   { class: "btn-xs mb-2" } %>
             <% end %>
 
-            <% if release.upcoming_startable_step?(step) %>
+            <% if release.step_start_blocked?(step) %>
               <div class="flex flex-col mb-1">
                 <%= authz_button_to :disabled,
                                     "Move to this step",
                                     start_release_step_run_path(release, step),
                                     { class: "btn-xs mb-1" } %>
                 <div class="text-sm font-normal text-gray-500 bg-gray-50 p-2 rounded-sm border border-gray-200">
-                  You cannot start this release step until the
-                  <%= link_to "current ongoing release", ongoing_release_app_train_releases_path(@app, @train), class: "underline" %>
-                  is finished.</div>
+                  You cannot start this release step until the <%= blocked_step_release_link(release.release) %> is finished.
+                </div>
               </div>
             <% end %>
 

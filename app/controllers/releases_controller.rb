@@ -17,9 +17,16 @@ class ReleasesController < SignedInApplicationController
   def create
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
-    @has_major_bump = params[:has_major_bump]&.to_boolean
 
-    response = Triggers::Release.call(@train, has_major_bump: @has_major_bump)
+    has_major_bump = release_params[:has_major_bump]&.to_boolean
+    release_type = release_params[:release_type] || Release.release_types[:release]
+    new_hotfix_branch = release_params[:new_hotfix_branch]&.to_boolean
+
+    if release_type == Release.release_types[:hotfix] && !@train.hotfixable?
+      redirect_back fallback_location: root_path, flash: {error: "Cannot start hotfix for this train!"} and return
+    end
+
+    response = Triggers::Release.call(@train, has_major_bump:, release_type:, new_hotfix_branch:)
 
     if response.success?
       redirect_to current_release_path(response.body), notice: "A new release has started successfully."
@@ -42,6 +49,14 @@ class ReleasesController < SignedInApplicationController
     @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
     @release = @train.upcoming_release
+
+    show_current_release
+  end
+
+  def hotfix_release
+    @app = current_organization.apps.friendly.find(params[:app_id])
+    @train = @app.trains.friendly.find(params[:train_id])
+    @release = @train.hotfix_release
 
     show_current_release
   end
@@ -114,5 +129,9 @@ class ReleasesController < SignedInApplicationController
 
   def train_path
     app_train_path(@app, @train)
+  end
+
+  def release_params
+    params.permit(release: [:new_hotfix_branch, :release_type, :has_major_bump])[:release] || {}
   end
 end

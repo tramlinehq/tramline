@@ -28,7 +28,22 @@
       <% end %>
     <% elsif @train.manually_startable? %>
       <%= authz_button_to :blue, start_release_text(@train), app_train_releases_path(@app, @train) %>
-      <%= authz_button_to :amber, start_release_text(@train, major: true), app_train_releases_path(@app, @train, has_major_bump: true) %>
+      <%= authz_button_to :amber, start_release_text(@train, major: true), app_train_releases_path(@app, @train), { params: { release: { has_major_bump: true } } }  %>
+    <% end %>
+    <% if @train.hotfixable? %>
+      <div data-controller="modal">
+        <%= authz_link_to :neutral, "#", { data: { action: "modal#open" } } do %>
+          <%= inline_svg("band_aid.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
+          <span class="ml-2">Start a hotfix</span>
+        <% end %>
+
+        <dialog data-modal-target="modal"
+                class="p-0 backdrop:bg-gray-400 backdrop:bg-opacity-50 open:animate-fade-in w-1/2">
+          <div class="relative bg-white rounded-lg shadow">
+            <%= render partial: "trains/hotfix_form", locals: { app: @app, train: @train, hotfix_from: @hotfix_from } %>
+          </div>
+        </dialog>
+      </div>
     <% end %>
 
     <%= authz_link_to (@train.active_runs.exists? ? :disabled : :neutral), edit_app_train_path(@app, @train) do %>
@@ -160,8 +175,10 @@
               <% if run.ongoing? %>
                 <span class="ml-2 py-0.5"><%= status_badge("ongoing", :routine) %></span>
               <% end %>
+              <% if run.hotfix? %>
+                <span class="ml-2 py-0.5"><%= status_badge("hotfix", :routine) %></span>
+              <% end %>
             <% end %>
-
 
             <% row.with_cell do %>
               <%= run.branch_name %>

@@ -68,6 +68,64 @@ describe ReleasePlatformRun do
       expect(release_platform_run.manually_startable_step?(steps.first)).to be(false)
       expect(release_platform_run.manually_startable_step?(steps.second)).to be(true)
     end
+
+    it "next step can be started before finishing previous step when release is hotfix" do
+      _older_release = create(:release, :finished, train: release_platform.train, release_type: Release.release_types[:release])
+      release = create(:release, train: release_platform.train, release_type: Release.release_types[:hotfix])
+      release_platform_run = create(:release_platform_run, release_platform:, release:)
+      create(:step_run, step: steps.first, status: "ci_workflow_triggered", release_platform_run: release_platform_run)
+
+      expect(release_platform_run.manually_startable_step?(steps.first)).to be(false)
+      expect(release_platform_run.manually_startable_step?(steps.second)).to be(true)
+    end
+
+    it "next step can be started before finishing previous step when release platform run is in fix mode" do
+      release_platform_run = create(:release_platform_run, release_platform:, in_store_resubmission: true)
+      create(:step_run, step: steps.first, status: "ci_workflow_triggered", release_platform_run: release_platform_run)
+
+      expect(release_platform_run.manually_startable_step?(steps.first)).to be(false)
+      expect(release_platform_run.manually_startable_step?(steps.second)).to be(true)
+    end
+  end
+
+  describe "#step_start_blocked?" do
+    let(:train) { create(:train) }
+    let(:release_platform) { create(:release_platform, train:) }
+    let(:review_step) { create(:step, :with_deployment, :review, release_platform:) }
+    let(:release_step) { create(:step, :with_deployment, :release, release_platform:) }
+
+    it "returns true for the release step of upcoming release when it is next" do
+      _existing_release = create(:release, train:)
+      release = create(:release, :with_no_platform_runs, train:)
+      release_platform_run = create(:release_platform_run, release_platform:, release:)
+      commit = create(:commit, release:)
+      _review_step_run = create(:step_run, :success, step: review_step, commit:, release_platform_run:)
+      expect(release_platform_run).to be_step_start_blocked(release_step)
+    end
+
+    it "returns true for the release step of ongoing release when there is a hotfix release" do
+      release = create(:release, :finished, train: release_platform.train, release_type: Release.release_types[:release])
+      _hotfix_release = create(:release, train: release_platform.train, release_type: Release.release_types[:hotfix])
+      release_platform_run = create(:release_platform_run, release_platform:, release:)
+      commit = create(:commit, release:)
+      _review_step_run = create(:step_run, :success, step: review_step, commit:, release_platform_run:)
+      expect(release_platform_run).to be_step_start_blocked(release_step)
+    end
+
+    it "returns false for the review step when it is next" do
+      _existing_release = create(:release, train:)
+      release = create(:release, :with_no_platform_runs, train:)
+      release_platform_run = create(:release_platform_run, release_platform:, release:)
+      expect(release_platform_run).not_to be_step_start_blocked(review_step)
+    end
+
+    it "returns false for the release step of ongoing release when there is no hotfix release and review steps are done" do
+      release = create(:release, :with_no_platform_runs, train:)
+      release_platform_run = create(:release_platform_run, release_platform:, release:)
+      commit = create(:commit, release:)
+      _review_step_run = create(:step_run, :success, step: review_step, commit:, release_platform_run:)
+      expect(release_platform_run).not_to be_step_start_blocked(release_step)
+    end
   end
 
   describe "#overall_movement_status" do
@@ -143,7 +201,7 @@ describe ReleasePlatformRun do
     end
   end
 
-  describe "#hotfix?" do
+  describe "#patch_fix?" do
     let(:train) { create(:train) }
     let(:release_platform) { create(:release_platform, train:) }
     let(:review_step) { create(:step, :review, :with_deployment, release_platform:) }
@@ -157,19 +215,19 @@ describe ReleasePlatformRun do
       release_step_run = create(:step_run, step: release_step, release_platform_run:)
       create(:deployment_run, deployment: production_deployment, step_run: release_step_run)
       release_platform_run.bump_version!
-      expect(release_platform_run).not_to be_hotfix
+      expect(release_platform_run).not_to be_patch_fix
     end
 
     it "is true when it has step run and production deployment run has started rollout" do
       release_step_run = create(:step_run, step: release_step, release_platform_run:)
       create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
       release_platform_run.bump_version!
-      expect(release_platform_run).to be_hotfix
+      expect(release_platform_run).to be_patch_fix
     end
 
     it "is false release train is finished" do
       release_platform_run.update(status: "finished")
-      expect(release_platform_run).not_to be_hotfix
+      expect(release_platform_run).not_to be_patch_fix
     end
   end
 
@@ -399,6 +457,23 @@ describe ReleasePlatformRun do
       it "updates version to surpass ongoing release version" do
         ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: ongoing_release, release_version: ongoing_release_version)
         train.update!(version_current: "1.3")
+
+        ongoing_release_platform_run.correct_version!
+        ongoing_release_platform_run.reload
+
+        expect(ongoing_release_platform_run.release_version).to eq("1.4")
+      end
+    end
+
+    context "when hotfix release has started" do
+      let(:ongoing_release_version) { "1.2" }
+      let(:hotfix_release_version) { "1.2" }
+      let(:ongoing_release) { create(:release, :with_no_platform_runs, train:, original_release_version: ongoing_release_version) }
+      let(:hotfix_release) { create(:release, :with_no_platform_runs, :hotfix, train:, original_release_version: hotfix_release_version) }
+
+      it "updates version to surpass hotfix release version" do
+        _hotfix_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: hotfix_release, release_version: "1.3")
+        ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: ongoing_release, release_version: ongoing_release_version)
 
         ongoing_release_platform_run.correct_version!
         ongoing_release_platform_run.reload
