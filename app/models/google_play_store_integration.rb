@@ -151,7 +151,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def build_present_in_tracks?
-    channel_data.pluck(:releases).any?(&:present?)
+    channel_data&.pluck(:releases)&.any?(&:present?)
   end
 
   def correct_key

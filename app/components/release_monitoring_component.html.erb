@@ -18,7 +18,7 @@
                                          values: { "total" => errors_count, "new" => new_errors_count },
                                          provider: monitoring_provider,
                                          external_url: monitoring_provider_url) %>
-      <% if adoption_chart_data.present? && helpers.current_user.release_monitoring? %>
+      <% if helpers.current_user.release_monitoring? && adoption_chart_data.present? %>
         <div class="col-span-2"><%= render ChartComponent.new(adoption_chart_data, icon: "sparkles.svg") %></div>
       <% end %>
     </div>
