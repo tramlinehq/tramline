@@ -108,6 +108,24 @@ describe DeploymentRun do
 
       expect(run.reload.failure_reason).to be_nil
     end
+
+    it "fails the step run if there are no more deployments to be run" do
+      step_run = create(:step_run, :deployment_started)
+      run = create(:deployment_run, :uploaded, step_run:)
+      run.dispatch_fail!
+
+      expect(step_run.reload.failed?).to be(true)
+    end
+
+    it "does not fail the step run if there are more deployments to be run" do
+      step = create(:step, :with_deployment)
+      _another_deployment = create(:deployment, step:)
+      step_run = create(:step_run, :deployment_started)
+      run = create(:deployment_run, :uploaded, step_run:, deployment: step.deployments.first)
+      run.dispatch_fail!
+
+      expect(step_run.reload.failed?).to be(false)
+    end
   end
 
   describe "#upload!" do
