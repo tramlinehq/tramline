@@ -15,7 +15,6 @@ class ReleasesController < SignedInApplicationController
   end
 
   def create
-    @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
 
     has_major_bump = release_params[:has_major_bump]&.to_boolean
@@ -36,7 +35,6 @@ class ReleasesController < SignedInApplicationController
   end
 
   def live_release
-    @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
     @release = @train.ongoing_release
 
@@ -46,7 +44,6 @@ class ReleasesController < SignedInApplicationController
   alias_method :ongoing_release, :live_release
 
   def upcoming_release
-    @app = current_organization.apps.friendly.find(params[:app_id])
     @train = @app.trains.friendly.find(params[:train_id])
     @release = @train.upcoming_release
 

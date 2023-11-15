@@ -2,7 +2,6 @@ class AppConfigsController < SignedInApplicationController
   using RefinedString
 
   before_action :require_write_access!, only: %i[edit update]
-  before_action :set_app, only: %i[edit update]
   before_action :require_integration_setup, only: %i[edit update]
   before_action :set_app_config, only: %i[edit update]
   before_action :set_code_repositories, only: %i[edit update]
@@ -24,10 +23,6 @@ class AppConfigsController < SignedInApplicationController
   end
 
   private
-
-  def set_app
-    @app = current_organization.apps.friendly.find(params[:app_id])
-  end
 
   def set_app_config
     @config = AppConfig.find_or_initialize_by(app: @app)

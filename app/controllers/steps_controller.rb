@@ -3,7 +3,6 @@ class StepsController < SignedInApplicationController
   using RefinedInteger
 
   before_action :require_write_access!, only: %i[new create edit update]
-  before_action :set_app, only: %i[new create edit update]
   before_action :set_train, only: %i[new create edit update]
   before_action :set_release_platform, only: %i[new create edit update]
   before_action :set_ci_actions, only: %i[new create edit]
@@ -86,10 +85,6 @@ class StepsController < SignedInApplicationController
 
   def set_release_platform
     @release_platform = @train.release_platforms.friendly.find(params[:platform_id])
-  end
-
-  def set_app
-    @app = current_organization.apps.friendly.find(params[:app_id])
   end
 
   def step_params

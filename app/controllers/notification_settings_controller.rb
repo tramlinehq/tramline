@@ -3,7 +3,6 @@ class NotificationSettingsController < SignedInApplicationController
   using RefinedInteger
 
   before_action :require_write_access!, only: %i[update]
-  before_action :set_app, only: %i[index update]
   before_action :set_train, only: %i[index update]
   before_action :set_notification_setting, only: %i[update]
   around_action :set_time_zone
@@ -31,10 +30,6 @@ class NotificationSettingsController < SignedInApplicationController
 
   def set_train
     @train = @app.trains.friendly.find(params[:train_id])
-  end
-
-  def set_app
-    @app = current_organization.apps.friendly.find(params[:app_id])
   end
 
   def notif_setting_params

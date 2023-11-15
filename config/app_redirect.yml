@@ -1,0 +1,5 @@
+development:
+  ueno: ueno-flutter
+  ueno-dash: ueno-dash-new
+production:
+  ueno: ueno-flutter

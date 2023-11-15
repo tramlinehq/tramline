@@ -3,7 +3,6 @@ class AppsController < SignedInApplicationController
   include Filterable
 
   before_action :require_write_access!, only: %i[new create edit update destroy]
-  before_action :set_app, only: %i[show edit update destroy all_builds refresh_external]
   before_action :set_integrations, only: %i[show destroy]
   around_action :set_time_zone
 
@@ -81,10 +80,6 @@ class AppsController < SignedInApplicationController
     @integrations = @app.integrations
   end
 
-  def set_app
-    @app = current_organization.apps.friendly.includes(:trains).find(params[:id])
-  end
-
   def app_params
     params.require(:app).permit(
       :name,
@@ -104,5 +99,9 @@ class AppsController < SignedInApplicationController
 
   def default_timezones
     ActiveSupport::TimeZone.all.select { |tz| tz.match?(DEFAULT_TIMEZONE_LIST_REGEX) }
+  end
+
+  def app_id_key
+    :id
   end
 end

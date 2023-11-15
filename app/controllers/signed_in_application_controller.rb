@@ -7,6 +7,7 @@ class SignedInApplicationController < ApplicationController
   before_action :set_sentry_context, if: -> { Rails.env.production? }
   before_action :require_login, unless: :devise_controller?
   before_action :track_behaviour
+  before_action :set_app
   helper_method :current_organization
   helper_method :current_user
   helper_method :writer?
@@ -86,5 +87,24 @@ class SignedInApplicationController < ApplicationController
       device,
       "#{controller_name} – #{action_name}"
     )
+  end
+
+  def set_app
+    return if app_id.blank?
+
+    redirect_config = Rails.application.config.x.app_redirect
+    new_app_id = redirect_config[app_id]
+    path_params_under_apps = [:id, :app_id, :integration_id, :train_id, :platform_id]
+    redirect_to url_for(params.permit(*path_params_under_apps).merge(app_id_key => new_app_id)) and return if new_app_id.present?
+
+    @app = current_organization.apps.friendly.find(app_id)
+  end
+
+  def app_id
+    params[app_id_key]
+  end
+
+  def app_id_key
+    :app_id
   end
 end
