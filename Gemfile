@@ -77,7 +77,7 @@ gem "rack-attack", "~> 6.7"
 gem "june-analytics-ruby", "~> 2.4"
 gem "discard", "~> 1.3"
 gem "bugsnag-api", "~> 3.0"
-gem "data-anonymization"
+gem "data-anonymization", require: false
 gem "faker"
 
 group :development, :test do
