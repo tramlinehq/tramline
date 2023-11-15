@@ -7,8 +7,8 @@ describe Release do
 
   describe "#set_version" do
     {
-      "1.2.3" => { major: "2.0.0", minor: "1.3.0" },
-      "1.2" => { major: "2.0", minor: "1.3" }
+      "1.2.3" => {major: "2.0.0", minor: "1.3.0"},
+      "1.2" => {major: "2.0", minor: "1.3"}
     }.each do |ver, expect|
       it "minor bump: sets the original_release_version to next version of the train" do
         train = create(:train, version_seeded_with: ver)
@@ -36,6 +36,7 @@ describe Release do
         release = create(:release, :finished, :with_no_platform_runs, train:)
         release_platform = create(:release_platform, train:)
         _finished_release_run = create(:release_platform_run, release:, release_platform:, release_version: "1.2.3")
+
         hotfix_run = build(:release, :hotfix, :with_no_platform_runs, original_release_version: nil, train:)
 
         expect(hotfix_run.original_release_version).to be_nil
@@ -59,8 +60,8 @@ describe Release do
 
     context "when ongoing release" do
       {
-        "1.2.3" => { major: "2.0.0", minor: "1.4.0" },
-        "1.2" => { major: "2.0", minor: "1.4" }
+        "1.2.3" => {major: "2.0.0", minor: "1.4.0"},
+        "1.2" => {major: "2.0", minor: "1.4"}
       }.each do |ver, expect|
         it "minor bump: sets the original_release_version to next version of the ongoing release" do
           train = create(:train, version_seeded_with: ver)
