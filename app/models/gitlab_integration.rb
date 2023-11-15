@@ -129,7 +129,8 @@ class GitlabIntegration < ApplicationRecord
     # FIXME
   end
 
-  def create_branch!(from, to)
+  def create_branch!(from, to, source_type: :branch)
+    # FIXME use the source_type
     with_api_retries { installation.create_branch!(code_repository_name, from, to) }
   end
 
@@ -210,6 +211,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title_prefix)
+    # FIXME
     {}.merge_if_present(source: :gitlab)
   end
 
