@@ -15,10 +15,10 @@
     bypassing the defined order.
   </div>
   <div class="mt-4">This hotfix will be against your last successful release:
-    <strong><%= hotfix_release.release_version %></strong>.
+    <strong><%= hotfix_from.release_version %></strong>.
   </div>
   <div class="mt-4">
-    By default we will repurpose the release branch <strong><%= hotfix_release.release_branch %></strong> from the last successful release.
+    By default we will repurpose the release branch <strong><%= hotfix_from.release_branch %></strong> from the last successful release.
     You can override this setting below.
   </div>
 </div>
@@ -30,7 +30,7 @@
                 builder: ButtonHelper::AuthzForms) do |form| %>
 
     <section data-controller="toggle-switch"
-             data-toggle-switch-on-label-value="Hotfix branch will be created from <%= hotfix_release.tag_name %>"
+             data-toggle-switch-on-label-value="Hotfix branch will be created from <%= hotfix_from.tag_name %>"
              data-toggle-switch-off-label-value="Create a new hotfix branch"
              class="mb-8 flex items-center">
       <div class="form-switch">
