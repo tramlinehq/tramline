@@ -60,6 +60,7 @@ class GithubIntegration < ApplicationRecord
     author_name: [:commit, :author, :name],
     author_email: [:commit, :author, :email],
     author_login: [:author, :login],
+    author_url: [:author, :html_url],
     timestamp: [:commit, :author, :date],
     parents: [:parents]
   }
