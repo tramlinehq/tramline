@@ -18,6 +18,7 @@ class SignedInApplicationController < ApplicationController
   protected
 
   helper_method :demo_org?, :demo_train?, :subscribed_org?, :billing?, :billing_link
+  PATH_PARAMS_UNDER_APP = [:id, :app_id, :integration_id, :train_id, :platform_id]
 
   def demo_org?
     current_organization&.demo?
@@ -97,8 +98,7 @@ class SignedInApplicationController < ApplicationController
 
     redirect_config = Rails.application.config.x.app_redirect
     new_app_id = redirect_config[app_id]
-    path_params_under_apps = [:id, :app_id, :integration_id, :train_id, :platform_id]
-    redirect_to url_for(params.permit(*path_params_under_apps).merge(app_id_key => new_app_id)) and return if new_app_id.present?
+    redirect_to url_for(params.permit(*PATH_PARAMS_UNDER_APP).merge(app_id_key => new_app_id)) and return if new_app_id.present?
 
     @app = current_organization.apps.friendly.find(app_id)
   end
