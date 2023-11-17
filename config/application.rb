@@ -41,7 +41,8 @@ module Site
       Rails.application.config.credentials.content_path =
         Rails.root.join("config/credentials/#{ENV["RAILS_PIPELINE_ENV"]}.yml.enc")
     end
-    config.x.app_redirect = config_for(:app_redirect)
+    app_redirect_mapping = ENV["APP_REDIRECT_MAPPING_JSON"]
+    config.x.app_redirect = app_redirect_mapping ? JSON.parse(app_redirect_mapping) : {}
   end
 
   require "site_extensions"

@@ -1,5 +1,0 @@
-development:
-  ueno: ueno-flutter
-  ueno-old: ueno-new
-test:
-  old-app-slug: new-app-slug
