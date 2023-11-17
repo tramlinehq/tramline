@@ -81,12 +81,13 @@ class Commit < ApplicationRecord
     step_runs.where(release_platform_run: platform_run).includes(:step).order(:created_at)
   end
 
-  def trigger_step_runs_for(platform_run)
+  def trigger_step_runs_for(platform_run, force: false)
+    return if release.hotfix? && !force
     platform_run.bump_version!
     platform_run.update!(last_commit: self)
 
     platform_run.release_platform.ordered_steps_until(platform_run.current_step_number).each do |step|
-      next if step.manual_trigger_only?
+      next if release.hotfix? || step.manual_trigger_only?
       Triggers::StepRun.call(step, self, platform_run)
     end
   end

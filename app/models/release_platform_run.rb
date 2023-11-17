@@ -152,6 +152,7 @@ class ReleasePlatformRun < ApplicationRecord
   def manually_startable_step?(step)
     return false if train.inactive?
     return false unless on_track?
+    return false if last_commit.blank?
     return false if upcoming_release_step?(step)
     return false if ongoing_release_step?(step) && train.hotfix_release.present?
     return true if step.first? && step_runs_for(step).empty?
@@ -164,6 +165,7 @@ class ReleasePlatformRun < ApplicationRecord
   def step_start_blocked?(step)
     return false if train.inactive?
     return false unless on_track?
+    return false if last_commit.blank?
     return true if train.hotfix_release.present? && train.hotfix_release != release && step.release?
 
     (next_step == step) && previous_step_run_for(step)&.success? && upcoming_release_step?(step)
@@ -191,6 +193,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   def next_step
     return steps.first if step_runs.empty? || last_commit.blank?
+    return steps.first if last_commit.step_runs_for(self).empty?
     last_commit.step_runs_for(self).joins(:step).order(:step_number).last.step.next
   end
 

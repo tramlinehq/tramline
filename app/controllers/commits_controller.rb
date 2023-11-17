@@ -11,7 +11,7 @@ class CommitsController < SignedInApplicationController
       locked_release_error and return unless @release_platform_run.on_track?
       already_triggered_error and return if @release_platform_run.commit_applied?(@commit)
 
-      @commit.trigger_step_runs_for(@release_platform_run)
+      @commit.trigger_step_runs_for(@release_platform_run, force: true)
     end
 
     redirect_to current_release_path, notice: "Steps have been triggered for the commit."

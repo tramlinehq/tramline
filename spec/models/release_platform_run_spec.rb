@@ -61,6 +61,8 @@ describe ReleasePlatformRun do
 
     it "first step can be started if there are no step runs" do
       release_platform_run = create(:release_platform_run, release_platform:)
+      commit = create(:commit, release: release_platform_run.release)
+      release_platform_run.update!(last_commit: commit)
 
       expect(release_platform_run.manually_startable_step?(steps.first)).to be(true)
       expect(release_platform_run.manually_startable_step?(steps.second)).to be(false)
@@ -89,6 +91,8 @@ describe ReleasePlatformRun do
 
     it "next step can be started before finishing previous step when release platform run is in fix mode" do
       release_platform_run = create(:release_platform_run, release_platform:, in_store_resubmission: true)
+      commit = create(:commit, release: release_platform_run.release)
+      release_platform_run.update!(last_commit: commit)
       create(:step_run, step: steps.first, status: "ci_workflow_triggered", release_platform_run: release_platform_run)
 
       expect(release_platform_run.manually_startable_step?(steps.first)).to be(false)
@@ -117,6 +121,7 @@ describe ReleasePlatformRun do
       _hotfix_release = create(:release, train: release_platform.train, release_type: Release.release_types[:hotfix])
       release_platform_run = create(:release_platform_run, release_platform:, release:)
       commit = create(:commit, release:)
+      release_platform_run.update!(last_commit: commit)
       _review_step_run = create(:step_run, :success, step: review_step, commit:, release_platform_run:)
       expect(release_platform_run).to be_step_start_blocked(release_step)
     end
