@@ -16,6 +16,7 @@
 #  tag_name                 :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
+#  last_commit_id           :uuid             indexed
 #  release_id               :uuid
 #  release_platform_id      :uuid             not null, indexed
 #
@@ -36,6 +37,7 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
+  belongs_to :last_commit, class_name: "Commit", inverse_of: :release_platform_runs, optional: true
 
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
   scope :have_not_reached_production, -> { on_track.reject(&:production_release_happened?) }
@@ -205,10 +207,6 @@ class ReleasePlatformRun < ApplicationRecord
     return if steps.blank?
     return 1 if running_steps.blank?
     running_steps.order(:step_number).last.step_number
-  end
-
-  def last_commit
-    step_runs.flat_map(&:commit).max_by(&:timestamp)
   end
 
   def finished_steps?

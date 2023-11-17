@@ -23,6 +23,7 @@ class Commit < ApplicationRecord
   self.implicit_order_column = :timestamp
 
   has_many :step_runs, dependent: :nullify, inverse_of: :commit
+  has_many :release_platform_runs, dependent: :nullify, inverse_of: :last_commit
   belongs_to :release, inverse_of: :all_commits
   belongs_to :build_queue, inverse_of: :commits, optional: true
   has_one :pull_request, inverse_of: :commit, dependent: :nullify
@@ -82,6 +83,7 @@ class Commit < ApplicationRecord
 
   def trigger_step_runs_for(platform_run)
     platform_run.bump_version!
+    platform_run.update!(last_commit: self)
 
     platform_run.release_platform.ordered_steps_until(platform_run.current_step_number).each do |step|
       next if step.manual_trigger_only?

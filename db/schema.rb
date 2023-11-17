@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_11_03_090903) do
+ActiveRecord::Schema[7.0].define(version: 2023_11_17_110440) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -414,6 +414,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_03_090903) do
     t.uuid "release_id"
     t.string "tag_name"
     t.boolean "in_store_resubmission", default: false
+    t.uuid "last_commit_id"
+    t.index ["last_commit_id"], name: "index_release_platform_runs_on_last_commit_id"
     t.index ["release_platform_id"], name: "index_release_platform_runs_on_release_platform_id"
   end
 
@@ -623,6 +625,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_03_090903) do
   add_foreign_key "release_changelogs", "releases"
   add_foreign_key "release_health_metrics", "deployment_runs"
   add_foreign_key "release_metadata", "release_platform_runs"
+  add_foreign_key "release_platform_runs", "commits", column: "last_commit_id"
   add_foreign_key "release_platform_runs", "release_platforms"
   add_foreign_key "release_platforms", "apps"
   add_foreign_key "releases", "trains"

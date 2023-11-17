@@ -253,6 +253,7 @@ describe StepRun do
       release_platform = create(:release_platform, train:)
       platform_release = create(:release_platform_run, release_platform:, release:)
       commit_1 = create(:commit, release:)
+      platform_release.update!(last_commit: commit_1)
       step = create(:step, :release, :with_deployment, release_platform:)
       step_run = create(:step_run, :deployment_started, step:, release_platform_run: platform_release, commit: commit_1)
       first_deployment = step_run.step.deployments.first
