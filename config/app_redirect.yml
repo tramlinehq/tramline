@@ -1,5 +1,5 @@
 development:
   ueno: ueno-flutter
-  ueno-dash: ueno-dash-new
-production:
-  ueno: ueno-flutter
+  ueno-old: ueno-new
+test:
+  old-app-slug: new-app-slug

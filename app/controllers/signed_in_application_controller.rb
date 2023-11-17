@@ -92,6 +92,9 @@ class SignedInApplicationController < ApplicationController
   def set_app
     return if app_id.blank?
 
+    @app = current_organization.apps.friendly.find_by(slug: app_id)
+    return if @app.present?
+
     redirect_config = Rails.application.config.x.app_redirect
     new_app_id = redirect_config[app_id]
     path_params_under_apps = [:id, :app_id, :integration_id, :train_id, :platform_id]
