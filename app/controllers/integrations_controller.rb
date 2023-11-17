@@ -2,7 +2,6 @@ class IntegrationsController < SignedInApplicationController
   using RefinedString
 
   before_action :require_write_access!, only: %i[connect create]
-  before_action :set_app, only: %i[connect index create]
   before_action :set_integration, only: %i[connect create]
   before_action :set_providable, only: %i[connect create]
 
@@ -35,10 +34,6 @@ class IntegrationsController < SignedInApplicationController
 
   def set_integrations_by_categories
     @integrations_by_categories = Integration.by_categories_for(@app)
-  end
-
-  def set_app
-    @app = current_organization.apps.friendly.find(params[:app_id])
   end
 
   def set_integration

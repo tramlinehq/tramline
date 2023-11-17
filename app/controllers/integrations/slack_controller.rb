@@ -1,6 +1,5 @@
 class Integrations::SlackController < IntegrationsController
   before_action :require_write_access!, only: %i[refresh_channels]
-  before_action :set_app, only: %i[refresh_channels]
 
   def refresh_channels
     slack_integration.fetch_channels

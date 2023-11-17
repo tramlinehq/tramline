@@ -262,7 +262,7 @@ en:
     devops:
       duration:
         title: "Release duration"
-        scope: "Last 5 releases"
+        scope: "Last 6 releases"
         help_text: "How long does the release take?"
       frequency:
         title: "Release frequency"
@@ -270,22 +270,22 @@ en:
         help_text: ""
       time_in_review:
         title: "Time in review (iOS)"
-        scope: "Last 5 versions"
+        scope: "Last 6 versions"
         help_text: ""
       hotfixes:
         title: "Fixes during release"
-        scope: "Last 5 releases"
+        scope: "Last 6 releases"
         help_text: ""
       time_in_phases:
         title: "Duration across steps"
-        scope: "Last 5 releases"
+        scope: "Last 6 releases"
         help_text: ""
     operational_efficiency:
       contributors:
         title: "Contributors"
-        scope: "Last 5 releases"
+        scope: "Last 6 releases"
         help_text: ""
       stability_contributors:
         title: "Stability contributors"
-        scope: "Last 5 releases"
+        scope: "Last 6 releases"
         help_text: ""

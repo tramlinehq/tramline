@@ -3,7 +3,6 @@ class TrainsController < SignedInApplicationController
   using RefinedInteger
 
   before_action :require_write_access!, only: %i[new create edit update destroy activate deactivate replicate]
-  before_action :set_app, only: %i[new create show edit update destroy activate deactivate replicate]
   around_action :set_time_zone
   before_action :set_train, only: %i[show edit update destroy activate deactivate replicate]
   before_action :validate_integration_status, only: %i[new create]
@@ -85,10 +84,6 @@ class TrainsController < SignedInApplicationController
 
   def set_train
     @train = @app.trains.friendly.find(params[:id])
-  end
-
-  def set_app
-    @app = current_organization.apps.friendly.find(params[:app_id])
   end
 
   def train_params

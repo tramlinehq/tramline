@@ -2,7 +2,6 @@ class Integrations::GoogleFirebaseController < IntegrationsController
   before_action :require_write_access!, only: %i[refresh_channels]
 
   def refresh_channels
-    set_app
     fad_integration.fetch_channels
     redirect_to app_app_config_path(@app),
       notice: "We are refreshing your Firebase App Distribution channels. They will update shortly."

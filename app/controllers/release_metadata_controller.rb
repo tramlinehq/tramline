@@ -2,7 +2,7 @@ class ReleaseMetadataController < SignedInApplicationController
   before_action :require_write_access!, only: %i[edit update]
   before_action :set_release, only: %i[edit update]
   before_action :set_train, only: %i[edit update]
-  before_action :set_app, only: %i[edit update]
+  before_action :set_app_from_train, only: %i[edit update]
   before_action :ensure_editable, only: %i[edit update]
 
   def edit
@@ -32,7 +32,7 @@ class ReleaseMetadataController < SignedInApplicationController
     @train = @release.train
   end
 
-  def set_app
+  def set_app_from_train
     @app = @train.app
   end
 
