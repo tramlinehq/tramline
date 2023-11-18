@@ -354,6 +354,10 @@ class Release < ApplicationRecord
     hotfix? && !new_hotfix_branch?
   end
 
+  def hotfixes
+    app.releases.hotfix.where(hotfixed_from: self)
+  end
+
   private
 
   def base_tag_name

@@ -71,6 +71,7 @@ class Queries::ReleaseSummary
     attribute :duration, :integer
     attribute :is_hotfix, :boolean
     attribute :hotfixed_from, :string
+    attribute :hotfixes, :string
 
     def self.from_release(release)
       attributes = {
@@ -83,7 +84,8 @@ class Queries::ReleaseSummary
         backmerge_failure_count: release.backmerge_failure_count,
         commits_count: release.all_commits.size,
         duration: release.duration&.seconds,
-        is_hotfix: release.hotfix?
+        is_hotfix: release.hotfix?,
+        hotfixes: release.hotfixes.map(&:release_version).join(",")
       }
 
       if release.hotfix?
