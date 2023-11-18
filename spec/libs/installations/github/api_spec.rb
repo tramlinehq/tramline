@@ -101,4 +101,63 @@ describe Installations::Github::Api, type: :integration do
       expect(result[:ref]).to match(expected_branch)
     end
   end
+
+  describe "#head" do
+    let(:payload) { JSON.parse(File.read("spec/fixtures/github/get_ref.json")).to_h.with_indifferent_access }
+    let(:commit_payload) { JSON.parse(File.read("spec/fixtures/github/get_commit.json")).to_h.with_indifferent_access }
+    let(:repo) { Faker::Lorem.characters(number: 8) }
+
+    it "returns the head sha of a branch" do
+      branch_name = "refs/heads/featureA"
+      allow_any_instance_of(Octokit::Client).to receive(:ref).and_return(payload)
+
+      result =
+        described_class
+          .new(installation_id)
+          .head(repo, branch_name)
+
+      expected_sha = "aa218f56b14c9653891f9e74264a383fa43fefbd"
+      expect(result).to match(expected_sha)
+    end
+
+    it "expects commit transformations when query for full commit object" do
+      branch_name = "refs/heads/featureA"
+      allow_any_instance_of(Octokit::Client).to receive(:ref).and_return(payload)
+
+      expect {
+        described_class
+          .new(installation_id)
+          .head(repo, branch_name, sha_only: false)
+      }.to raise_error(ArgumentError)
+    end
+
+    it "returns a full commit object" do
+      branch_name = "refs/heads/featureA"
+      allow_any_instance_of(Octokit::Client).to receive(:ref).and_return(payload)
+      allow_any_instance_of(Octokit::Client).to receive(:commit).and_return(commit_payload)
+
+      result =
+        described_class
+          .new(installation_id)
+          .head(repo, branch_name, sha_only: false, commit_transforms: GithubIntegration::COMMITS_TRANSFORMATIONS)
+
+      expected = {
+        url: "https://github.com/octocat/Hello-World/commit/6dcb09b5b57875f334f61aebed695e2e4193db5e",
+        commit_hash: "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+        message: "Fix all the bugs",
+        author_name: "Monalisa Octocat",
+        author_email: "mona@github.com",
+        author_login: "octocat",
+        author_url: "https://github.com/octocat",
+        timestamp: "2011-04-14T16:00:49Z",
+        parents: [
+          {
+            url: "https://api.github.com/repos/octocat/Hello-World/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e",
+            sha: "6dcb09b5b57875f334f61aebed695e2e4193db5e"
+          }
+        ]
+      }
+      expect(result).to match(expected)
+    end
+  end
 end
