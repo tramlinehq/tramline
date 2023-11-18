@@ -86,6 +86,17 @@ class ReleasesController < SignedInApplicationController
     end
   end
 
+  def finish_release
+    @release = Release.find(params[:id])
+
+    if @release.partially_finished?
+      @release.finish_after_partial_finish!
+      redirect_back fallback_location: root_path, notice: "Performing post-release steps."
+    else
+      redirect_back fallback_location: root_path, notice: "Release is not partially finished. You cannot mark it as finished."
+    end
+  end
+
   def timeline
     @events_params = filterable_params.except(:id)
     gen_query_filters(:android_platform, "android")

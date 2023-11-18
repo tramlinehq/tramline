@@ -122,6 +122,7 @@ Rails.application.routes.draw do
         member do
           get :timeline
           post :post_release
+          post :finish_release
         end
       end
     end

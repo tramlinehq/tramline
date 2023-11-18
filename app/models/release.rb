@@ -142,6 +142,12 @@ class Release < ApplicationRecord
 
   def self.for_branch(branch_name) = find_by(branch_name:)
 
+  def finish_after_partial_finish!
+    return unless partially_finished?
+    release_platform_runs.pending_release.map(&:stop!)
+    start_post_release_phase!
+  end
+
   def backmerge_failure_count
     return 0 unless continuous_backmerge?
     all_commits.size - backmerge_prs.size - 1
@@ -289,7 +295,7 @@ class Release < ApplicationRecord
   end
 
   def ready_to_be_finalized?
-    release_platform_runs.all?(&:finished?)
+    release_platform_runs.all? { |prun| prun.finished? || prun.stopped? }
   end
 
   def finalize_phase_metadata
