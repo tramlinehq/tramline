@@ -141,13 +141,13 @@ class ReleasesController < SignedInApplicationController
   end
 
   def release_params
-    params.permit(release: [:new_hotfix_branch, :release_type, :has_major_bump, :hotfix_platform, :platform_specific_hotfix])[:release]
+    params.permit(release: [:new_hotfix_branch, :release_type, :has_major_bump, :hotfix_platform, :platform_specific_hotfix])[:release] || {}
   end
 
   def parsed_release_params
     release_params
       .merge(hotfix_config(release_params.slice(:hotfix_platform, :platform_specific_hotfix)))
-      .except(:platform_specific_hotfix) || {}
+      .except(:platform_specific_hotfix)
   end
 
   def hotfix_config(config_params)
