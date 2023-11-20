@@ -17,15 +17,16 @@ class ReleasesController < SignedInApplicationController
   def create
     @train = @app.trains.friendly.find(params[:train_id])
 
-    has_major_bump = release_params[:has_major_bump]&.to_boolean
-    release_type = release_params[:release_type] || Release.release_types[:release]
-    new_hotfix_branch = release_params[:new_hotfix_branch]&.to_boolean
+    has_major_bump = parsed_release_params[:has_major_bump]&.to_boolean
+    release_type = parsed_release_params[:release_type] || Release.release_types[:release]
+    new_hotfix_branch = parsed_release_params[:new_hotfix_branch]&.to_boolean
+    hotfix_platform = parsed_release_params[:hotfix_platform]
 
     if release_type == Release.release_types[:hotfix] && !@train.hotfixable?
       redirect_back fallback_location: root_path, flash: {error: "Cannot start hotfix for this train!"} and return
     end
 
-    response = Triggers::Release.call(@train, has_major_bump:, release_type:, new_hotfix_branch:)
+    response = Triggers::Release.call(@train, has_major_bump:, release_type:, new_hotfix_branch:, hotfix_platform:)
 
     if response.success?
       redirect_to current_release_path(response.body), notice: "A new release has started successfully."
@@ -140,6 +141,20 @@ class ReleasesController < SignedInApplicationController
   end
 
   def release_params
-    params.permit(release: [:new_hotfix_branch, :release_type, :has_major_bump])[:release] || {}
+    params.permit(release: [:new_hotfix_branch, :release_type, :has_major_bump, :hotfix_platform, :platform_specific_hotfix])[:release]
+  end
+
+  def parsed_release_params
+    release_params
+      .merge(hotfix_config(release_params.slice(:hotfix_platform, :platform_specific_hotfix)))
+      .except(:platform_specific_hotfix) || {}
+  end
+
+  def hotfix_config(config_params)
+    if config_params[:platform_specific_hotfix].blank? || config_params[:platform_specific_hotfix] == "false"
+      {hotfix_platform: nil}
+    elsif config_params[:platform_specific_hotfix] == "true"
+      {hotfix_platform: config_params[:hotfix_platform]}
+    end
   end
 end

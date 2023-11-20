@@ -131,7 +131,7 @@ class Release < ApplicationRecord
   after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
 
-  attr_accessor :has_major_bump, :force_finalize
+  attr_accessor :has_major_bump, :force_finalize, :hotfix_platform
 
   delegate :app, :pre_release_prs?, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
   delegate :platform, to: :app
@@ -369,6 +369,7 @@ class Release < ApplicationRecord
 
   def create_platform_runs
     release_platforms.each do |release_platform|
+      next if hotfix? && hotfix_platform.present? && hotfix_platform != release_platform.platform
       release_platform_runs.create!(
         code_name: Haikunator.haikunate(100),
         scheduled_at:,

@@ -45,6 +45,13 @@ class ReleasePlatform < ApplicationRecord
   delegate :ready?, to: :app
   delegate :integrations, to: :train
 
+  def self.allowed_platforms
+    {
+      android: "Android",
+      ios: "iOS"
+    }.invert
+  end
+
   def has_release_step?
     steps.release.any?
   end
