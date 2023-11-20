@@ -10,6 +10,7 @@ module Installations
     PROJECT_HOOKS_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/hooks"
     PROJECT_HOOK_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/hooks/{hook_id}"
     CREATE_TAG_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/tags"
+    GET_TAG_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/tags/{tag_name}"
     BRANCH_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/branches/{branch_name}"
     CREATE_BRANCH_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/repository/branches"
     MR_URL = Addressable::Template.new "https://gitlab.com/api/v4/projects/{project_id}/merge_requests"
@@ -115,11 +116,19 @@ module Installations
         .first
     end
 
-    def create_branch!(project_id, from_branch_name, new_branch_name)
+    def create_branch!(project_id, source_name, new_branch_name, source_type: :branch)
+      ref =
+        case source_type
+        when :branch, :commit
+          source_name
+        when :tag
+          "refs/tags/#{source_name}"
+        end
+
       params = {
         form: {
           branch: new_branch_name,
-          ref: from_branch_name
+          ref: ref
         }
       }
 
@@ -209,12 +218,17 @@ module Installations
     end
 
     def tag_exists?(project_id, tag_name)
-      true
+      execute(:get, GET_TAG_URL.expand(project_id:, tag_name:).to_s, {}).present?
+    rescue Installations::Errors::ResourceNotFound
+      false
     end
 
-    def head(project_id, branch_name, sha_only: true)
-      return get_branch(project_id, branch_name).dig("commit", "id") if sha_only
-      get_branch(project_id, branch_name).dig("commit")
+    def head(project_id, branch_name, sha_only: true, commit_transforms: nil)
+      raise ArgumentError, "transforms must be supplied when querying head object" if !sha_only && !commit_transforms
+
+      sha = get_branch(project_id, branch_name).dig("commit", "id")
+      return sha if sha_only
+      get_commit(project_id, sha, commit_transforms)
     end
 
     def get_branch(project_id, branch_name)

@@ -56,8 +56,17 @@ class GitlabIntegration < ApplicationRecord
     sha: :id,
     message: :title,
     author_name: :author_name,
-    author_timestamp: :created_at,
-    author_email: :author_email
+    author_email: :author_email,
+    author_timestamp: :created_at
+  }
+
+  COMMIT_TRANSFORMATIONS = {
+    url: :web_url,
+    commit_sha: :id,
+    message: :message,
+    author_name: :author_name,
+    author_email: :author_email,
+    timestamp: :authored_date
   }
 
   PR_TRANSFORMATIONS = {
@@ -130,8 +139,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def create_branch!(from, to, source_type: :branch)
-    # FIXME use the source_type
-    with_api_retries { installation.create_branch!(code_repository_name, from, to) }
+    with_api_retries { installation.create_branch!(code_repository_name, from, to, source_type:) }
   end
 
   def metadata
@@ -177,15 +185,6 @@ class GitlabIntegration < ApplicationRecord
     "Organization: #{integration.metadata["name"]} (#{integration.metadata["username"]})"
   end
 
-  COMMIT_TRANSFORMATIONS = {
-    commit_sha: :id,
-    author_email: :author_email,
-    author_name: :author_name,
-    message: :message,
-    url: :web_url,
-    timestamp: :authored_date
-  }
-
   def get_commit(sha)
     with_api_retries { installation.get_commit(app_config.code_repository["id"], sha, COMMIT_TRANSFORMATIONS) }
   end
@@ -220,7 +219,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def branch_head_sha(branch, sha_only: true)
-    with_api_retries { installation.head(code_repository_name, branch, sha_only:) }
+    with_api_retries { installation.head(code_repository_name, branch, sha_only:, commit_transforms: COMMIT_TRANSFORMATIONS) }
   end
 
   def branch_exists?(branch)
@@ -236,9 +235,10 @@ class GitlabIntegration < ApplicationRecord
   private
 
   # retry once (2 attempts in total)
+  ATTEMPTS = 2
   def with_api_retries
     retryables = [Installations::Gitlab::Api::TokenExpired]
-    Retryable.retryable(on: retryables, tries: 2, sleep: 0, exception_cb: proc { reset_tokens! }) { yield }
+    Retryable.retryable(on: retryables, tries: ATTEMPTS, sleep: 0, exception_cb: proc { reset_tokens! }) { yield }
   end
 
   def reset_tokens!
