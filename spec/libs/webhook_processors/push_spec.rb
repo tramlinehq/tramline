@@ -61,6 +61,29 @@ describe WebhookProcessors::Push do
       end
     end
 
+    context "when hotfix release" do
+      it "does not trigger step runs for the platform run for the first commit" do
+        _older_release = create(:release, :finished, train:)
+        release = create(:release, :hotfix, train:)
+        allow(Triggers::StepRun).to receive(:call)
+        described_class.process(release.reload, head_commit_attributes, rest_commit_attributes)
+
+        expect(Triggers::StepRun).not_to have_received(:call)
+      end
+
+      it "does not trigger step runs for the platform run for subsequent commit" do
+        _older_release = create(:release, :finished, train:)
+        release = create(:release, :hotfix, train:)
+        deployment = create(:deployment, :with_google_play_store, step: step)
+        step_run = create(:step_run, release_platform_run:, step:)
+        _deployment_run = create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
+        allow(Triggers::StepRun).to receive(:call)
+        described_class.process(release.reload, head_commit_attributes, rest_commit_attributes)
+
+        expect(Triggers::StepRun).not_to have_received(:call)
+      end
+    end
+
     it "starts the release" do
       described_class.process(release, head_commit_attributes, rest_commit_attributes)
 

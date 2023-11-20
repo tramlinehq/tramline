@@ -27,6 +27,10 @@ FactoryBot.define do
       status { "finished" }
     end
 
+    trait :partially_finished do
+      status { "partially_finished" }
+    end
+
     trait :with_no_platform_runs do
       after(:build) do |release|
         def release.create_platform_runs = true
