@@ -27,7 +27,7 @@ namespace :membership do
 
     existing_emails = org.invites.where(email: emails).pluck(:email)
 
-    new_emails = emails - existing_emails
+    new_emails = Set.new(emails) - Set.new(existing_emails)
 
     new_emails.each do |email|
       ActiveRecord::Base.transaction do
