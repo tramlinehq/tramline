@@ -696,6 +696,12 @@ describe Deployments::AppStoreConnect::Release do
           phased_release_status: "ACTIVE"))
       }
 
+      let(:last_phase_phased_release_info) {
+        AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "READY_FOR_SALE",
+          phased_release_day: 7,
+          phased_release_status: "ACTIVE"))
+      }
+
       let(:fully_live_phased_release_info) {
         AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "READY_FOR_SALE",
           phased_release_day: 8,
@@ -717,6 +723,16 @@ describe Deployments::AppStoreConnect::Release do
       end
 
       it "updates staged rollout and raises release not fully live yet" do
+        allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { last_phase_phased_release_info })
+
+        expect { described_class.track_live_release_status(run_with_staged_rollout) }
+          .to raise_error(Deployments::AppStoreConnect::Release::ReleaseNotFullyLive)
+
+        expect(run_with_staged_rollout.staged_rollout.reload.started?).to be(true)
+        expect(run_with_staged_rollout.staged_rollout.reload.last_rollout_percentage).to eq(100.0)
+      end
+
+      it "updates staged rollout to 100% and raises release not fully live yet" do
         allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { live_phased_release_info })
 
         expect { described_class.track_live_release_status(run_with_staged_rollout) }
@@ -726,12 +742,34 @@ describe Deployments::AppStoreConnect::Release do
         expect(run_with_staged_rollout.staged_rollout.reload.last_rollout_percentage).to eq(1.0)
       end
 
+      it "does not update staged rollout if stage hasn't changed" do
+        allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { live_phased_release_info })
+        run_with_staged_rollout.staged_rollout.update!(current_stage: 0, status: "started")
+        old_updated_at = run_with_staged_rollout.staged_rollout.updated_at
+
+        expect { described_class.track_live_release_status(run_with_staged_rollout) }
+          .to raise_error(Deployments::AppStoreConnect::Release::ReleaseNotFullyLive)
+
+        expect(run_with_staged_rollout.staged_rollout.reload.updated_at).to eq(old_updated_at)
+        expect(run_with_staged_rollout.staged_rollout.reload.last_rollout_percentage).to eq(1.0)
+      end
+
+      it "marks finished but does not update staged rollout if stage hasn't changed but phased rollout is complete" do
+        allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { fully_live_phased_release_info })
+        run_with_staged_rollout.staged_rollout.update!(current_stage: 6, status: "started")
+
+        described_class.track_live_release_status(run_with_staged_rollout)
+
+        expect(run_with_staged_rollout.staged_rollout.reload.completed?).to be(true)
+        expect(run_with_staged_rollout.staged_rollout.reload.last_rollout_percentage).to eq(100.0)
+      end
+
       it "completes the run if staged rollout has finished" do
         allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { fully_live_phased_release_info })
 
         described_class.track_live_release_status(run_with_staged_rollout)
 
-        expect(run_with_staged_rollout.staged_rollout.reload.finished?).to be(true)
+        expect(run_with_staged_rollout.staged_rollout.reload.completed?).to be(true)
         expect(run_with_staged_rollout.staged_rollout.reload.last_rollout_percentage).to eq(100.0)
         expect(run_with_staged_rollout.reload.released?).to be(true)
       end

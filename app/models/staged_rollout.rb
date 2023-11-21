@@ -87,8 +87,8 @@ class StagedRollout < ApplicationRecord
     (current_stage || 0).succ
   end
 
-  def update_stage(stage)
-    return if stage == current_stage
+  def update_stage(stage, finish_rollout: false)
+    return if stage == current_stage && !finish_rollout
 
     update!(current_stage: stage)
 
@@ -99,7 +99,7 @@ class StagedRollout < ApplicationRecord
     end
 
     retry! if failed?
-    complete! if finished?
+    complete! if finish_rollout && finished?
     notify!("Staged rollout was updated!", :staged_rollout_updated, notification_params)
   end
 
@@ -128,7 +128,7 @@ class StagedRollout < ApplicationRecord
 
     deployment_run.on_release(rollout_value: next_rollout_percentage) do |result|
       if result.ok?
-        update_stage(next_stage)
+        update_stage(next_stage, finish_rollout: true)
       else
         fail!
         elog(result.error)
