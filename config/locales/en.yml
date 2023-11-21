@@ -70,6 +70,7 @@ en:
           duplicate_call: "there is another request running against the store"
           timeout: "the request to the store timed out"
           unauthorized: "the request to the store failed due to authorization error"
+          firebase_processing_error: "the build was uploaded to Firebase, but Firebase threw an error while processing it. This could be due to degradation or an invalid package"
       deployment:
         integration_type:
           app_store: "App Store (production)"

@@ -7,6 +7,10 @@ module Installations
         code: 3,
         message_matcher: /Ensure you are uploading a valid IPA or APK and try again/,
         decorated_reason: :invalid_api_package
+      },
+      {
+        message_matcher: /There was a error processing your app. Try distributing again and contact Firebase support if this problem continues/i,
+        decorated_reason: :firebase_processing_error
       }
     ]
 
@@ -36,10 +40,10 @@ module Installations
 
     def matched_error
       ERRORS.find do |known_error|
-        known_error[:code].eql?(code) &&
-          known_error[:message_matcher] =~ error_message
+        known_error[:code].eql?(code) || known_error[:message_matcher] =~ error_message
       end
     end
+
 
     def error_message
       op_error[:message]
