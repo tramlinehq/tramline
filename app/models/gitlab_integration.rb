@@ -51,7 +51,7 @@ class GitlabIntegration < ApplicationRecord
     avatar_url: :avatar_url
   }
 
-  COMMIT_TRANSFORMATIONS = {
+  COMMITS_TRANSFORMATIONS = {
     url: :web_url,
     commit_hash: :id,
     message: :message,
@@ -196,7 +196,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def get_commit(sha)
-    with_api_retries { installation.get_commit(app_config.code_repository["id"], sha, COMMIT_TRANSFORMATIONS) }
+    with_api_retries { installation.get_commit(app_config.code_repository["id"], sha, COMMITS_TRANSFORMATIONS) }
   end
 
   def create_pr!(to_branch_ref, from_branch_ref, title, description)
@@ -229,7 +229,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def branch_head_sha(branch, sha_only: true)
-    with_api_retries { installation.head(code_repository_name, branch, sha_only:, commit_transforms: COMMIT_TRANSFORMATIONS) }
+    with_api_retries { installation.head(code_repository_name, branch, sha_only:, commit_transforms: COMMITS_TRANSFORMATIONS) }
   end
 
   def branch_exists?(branch)
