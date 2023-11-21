@@ -25,8 +25,9 @@ class Release < ApplicationRecord
   include Taggable
   include Versionable
   include Displayable
+  include Linkable
   include ActionView::Helpers::DateHelper
-  include Rails.application.routes.url_helpers
+
   using RefinedString
 
   self.implicit_order_column = :scheduled_at
@@ -310,15 +311,12 @@ class Release < ApplicationRecord
     }
   end
 
-  def live_release_link
+  def self.live_release_link(id: nil)
     return if Rails.env.test?
-
-    if Rails.env.development?
-      release_url(self, host: ENV["HOST_NAME"], protocol: "https", port: ENV["PORT_NUM"])
-    else
-      release_url(self, host: ENV["HOST_NAME"], protocol: "https")
-    end
+    release_url(id, link_params)
   end
+
+  def live_release_link = Release.live_release_link(id: id)
 
   def notification_params
     train.notification_params.merge(
