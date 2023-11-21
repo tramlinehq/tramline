@@ -40,7 +40,8 @@ module Installations
 
     def matched_error
       ERRORS.find do |known_error|
-        known_error[:code].eql?(code) || known_error[:message_matcher] =~ error_message
+        known_error[:code].eql?(code) &&
+          known_error[:message_matcher] =~ error_message
       end
     end
 
