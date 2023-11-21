@@ -19,6 +19,12 @@
   <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
     <%= decorated_link_to :neutral, "Release Activity", timeline_release_path(@release) %>
 
+    <% if @release.partially_finished? %>
+      <%= authz_button_to :green, "Mark release as finished", finish_release_release_path(@release.id), method: :post,
+                          data: { turbo_method: :post,
+                                  turbo_confirm: "You have finished release to only one of the platforms. Are you sure you want to finish the release?" } %>
+    <% end %>
+
     <% if @release.stoppable? %>
       <%= authz_button_to :red, "Stop release", release_path(@release.id), method: :delete,
                           data: { turbo_method: :delete, turbo_confirm: stop_release_warning(@release) } %>

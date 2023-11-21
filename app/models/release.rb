@@ -25,8 +25,9 @@ class Release < ApplicationRecord
   include Taggable
   include Versionable
   include Displayable
+  include Linkable
   include ActionView::Helpers::DateHelper
-  include Rails.application.routes.url_helpers
+
   using RefinedString
 
   self.implicit_order_column = :scheduled_at
@@ -131,7 +132,7 @@ class Release < ApplicationRecord
   after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
 
-  attr_accessor :has_major_bump, :force_finalize
+  attr_accessor :has_major_bump, :force_finalize, :hotfix_platform
 
   delegate :app, :pre_release_prs?, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
   delegate :platform, to: :app
@@ -141,6 +142,14 @@ class Release < ApplicationRecord
   end
 
   def self.for_branch(branch_name) = find_by(branch_name:)
+
+  def finish_after_partial_finish!
+    with_lock do
+      return unless partially_finished?
+      release_platform_runs.pending_release.map(&:stop!)
+      start_post_release_phase!
+    end
+  end
 
   def backmerge_failure_count
     return 0 unless continuous_backmerge?
@@ -289,7 +298,7 @@ class Release < ApplicationRecord
   end
 
   def ready_to_be_finalized?
-    release_platform_runs.all?(&:finished?)
+    release_platform_runs.all? { |prun| prun.finished? || prun.stopped? }
   end
 
   def finalize_phase_metadata
@@ -302,15 +311,12 @@ class Release < ApplicationRecord
     }
   end
 
-  def live_release_link
+  def self.live_release_link(id: nil)
     return if Rails.env.test?
-
-    if Rails.env.development?
-      release_url(self, host: ENV["HOST_NAME"], protocol: "https", port: ENV["PORT_NUM"])
-    else
-      release_url(self, host: ENV["HOST_NAME"], protocol: "https")
-    end
+    release_url(id, link_params)
   end
+
+  def live_release_link = Release.live_release_link(id: id)
 
   def notification_params
     train.notification_params.merge(
@@ -348,6 +354,10 @@ class Release < ApplicationRecord
     hotfix? && !new_hotfix_branch?
   end
 
+  def hotfixes
+    app.releases.hotfix.where(hotfixed_from: self)
+  end
+
   private
 
   def base_tag_name
@@ -359,6 +369,7 @@ class Release < ApplicationRecord
 
   def create_platform_runs
     release_platforms.each do |release_platform|
+      next if hotfix? && hotfix_platform.present? && hotfix_platform != release_platform.platform
       release_platform_runs.create!(
         code_name: Haikunator.haikunate(100),
         scheduled_at:,

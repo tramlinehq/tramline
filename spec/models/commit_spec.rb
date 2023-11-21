@@ -97,6 +97,23 @@ describe Commit do
         expect(Triggers::StepRun).not_to have_received(:call)
       end
     end
+
+    context "when hotfix release" do
+      it "does not trigger steps" do
+        _steps = create_list(:step, 2, :with_deployment, release_platform:)
+        train.update(status: Train.statuses[:active])
+        _older_release = create(:release, :finished, train:)
+        release = create(:release, :hotfix, train:)
+        commit = create(:commit, release:)
+
+        allow(release).to receive(:latest_commit_hash).and_return(commit.commit_hash)
+        allow(Triggers::StepRun).to receive(:call)
+
+        commit.trigger_step_runs
+
+        expect(Triggers::StepRun).not_to have_received(:call)
+      end
+    end
   end
 
   describe ".between" do
@@ -249,6 +266,142 @@ describe Commit do
         commit.add_to_build_queue!
 
         expect(commit.reload.build_queue).to eql(release.active_build_queue)
+      end
+    end
+  end
+
+  describe "#trigger_step_runs_for" do
+    let(:train) { create(:train) }
+    let(:release_platform) { create(:release_platform, train:) }
+
+    it "updates the last commit of the release platform run" do
+      release = create(:release, train:)
+      release_platform_run = create(:release_platform_run, release_platform:, release:)
+      commit = create(:commit, release:)
+
+      allow(Triggers::StepRun).to receive(:call)
+      commit.trigger_step_runs_for(release_platform_run)
+
+      expect(release_platform_run.reload.last_commit).to eq(commit)
+    end
+
+    it "does it for the first step run if first commit" do
+      steps = create_list(:step, 2, :with_deployment, release_platform:)
+      release = create(:release, train:)
+      release_platform_run = create(:release_platform_run, release_platform:, release:)
+      commit = create(:commit, release:)
+
+      allow(Triggers::StepRun).to receive(:call)
+
+      commit.trigger_step_runs_for(release_platform_run)
+
+      expect(Triggers::StepRun).to have_received(:call).with(steps.first, commit, release_platform_run).once
+    end
+
+    it "does it for all steps until the currently running one" do
+      steps = create_list(:step, 2, :with_deployment, release_platform:)
+      release = create(:release, train:)
+      release_platform_run = create(:release_platform_run, release_platform:, release:)
+      create(:step_run, :success, step: steps.first, release_platform_run:)
+      create(:step_run, step: steps.second, release_platform_run:)
+      commit = create(:commit, release:)
+
+      allow(Triggers::StepRun).to receive(:call)
+
+      commit.trigger_step_runs
+
+      expect(Triggers::StepRun).to have_received(:call).with(steps.first, commit, release_platform_run).once
+      expect(Triggers::StepRun).to have_received(:call).with(steps.second, commit, release_platform_run).once
+    end
+
+    it "does not trigger release step if manual release is configured" do
+      train = create(:train, manual_release: true)
+      release_platform = create(:release_platform, train:)
+      steps = create_list(:step, 2, :with_deployment, release_platform:)
+      release_step = create(:step, :release, :with_deployment, release_platform:)
+      release = create(:release, train:)
+      release_platform_run = create(:release_platform_run, release_platform:, release:)
+      create(:step_run, :success, step: steps.first, release_platform_run:)
+      create(:step_run, step: steps.second, release_platform_run:)
+      create(:step_run, step: release_step, release_platform_run:)
+      commit = create(:commit, release:)
+
+      allow(Triggers::StepRun).to receive(:call)
+
+      commit.trigger_step_runs_for(release_platform_run)
+
+      expect(Triggers::StepRun).to have_received(:call).with(steps.first, commit, release_platform_run).once
+      expect(Triggers::StepRun).to have_received(:call).with(steps.second, commit, release_platform_run).once
+      expect(Triggers::StepRun).not_to have_received(:call).with(release_step, commit, release_platform_run)
+    end
+
+    it "triggers release step if manual release is configured but there are no review steps" do
+      train = create(:train, manual_release: true)
+      release_platform = create(:release_platform, train:)
+      release_step = create(:step, :release, :with_deployment, release_platform:)
+      release = create(:release, train:)
+      release_platform_run = create(:release_platform_run, release_platform:, release:)
+      commit = create(:commit, release:)
+
+      allow(Triggers::StepRun).to receive(:call)
+
+      commit.trigger_step_runs_for(release_platform_run)
+
+      expect(Triggers::StepRun).to have_received(:call).with(release_step, commit, release_platform_run).once
+    end
+
+    context "when hotfix release" do
+      it "does not trigger steps" do
+        _steps = create_list(:step, 2, :with_deployment, release_platform:)
+        _older_release = create(:release, :finished, train:)
+        release = create(:release, :hotfix, train:)
+        release_platform_run = create(:release_platform_run, release_platform:, release:)
+        commit = create(:commit, release:)
+
+        allow(Triggers::StepRun).to receive(:call)
+
+        commit.trigger_step_runs_for(release_platform_run)
+
+        expect(Triggers::StepRun).not_to have_received(:call)
+      end
+
+      it "does not update the last commit of the release platform run" do
+        _older_release = create(:release, :finished, train:)
+        release = create(:release, :hotfix, train:)
+        release_platform_run = create(:release_platform_run, release_platform:, release:)
+        commit = create(:commit, release:)
+
+        commit.trigger_step_runs_for(release_platform_run)
+
+        expect(release_platform_run.reload.last_commit).to be_nil
+      end
+    end
+
+    context "when hotfix release and force true" do
+      it "does not trigger steps" do
+        _steps = create_list(:step, 2, :with_deployment, release_platform:)
+        train.update(status: Train.statuses[:active])
+        _older_release = create(:release, :finished, train:)
+        release = create(:release, :hotfix, train:)
+        release_platform_run = create(:release_platform_run, release_platform:, release:)
+        commit = create(:commit, release:)
+
+        allow(Triggers::StepRun).to receive(:call)
+
+        commit.trigger_step_runs_for(release_platform_run, force: true)
+
+        expect(Triggers::StepRun).not_to have_received(:call)
+      end
+
+      it "updates the last commit of the release platform run" do
+        _older_release = create(:release, :finished, train:)
+        release = create(:release, :hotfix, train:)
+        release_platform_run = create(:release_platform_run, release_platform:, release:)
+        commit = create(:commit, release:)
+
+        commit.trigger_step_runs_for(release_platform_run, force: true)
+
+        expect(release_platform_run.reload.last_commit).to eq(commit)
       end
     end
   end

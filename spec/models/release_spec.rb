@@ -111,6 +111,24 @@ describe Release do
 
       expect(run.release_platform_runs.size).to eq(2)
     end
+
+    it "creates the release platform run hotfix platform when hotfix and hotfix platform is set" do
+      app = create(:app, :cross_platform)
+      train = create(:train, app:)
+      _older_release = create(:release, :finished, train:)
+      run = create(:release, :hotfix, train:, hotfix_platform: "android")
+
+      expect(run.release_platform_runs.size).to eq(1)
+    end
+
+    it "creates the release platform run for each release platform when hotfix and hotfix platform is not set" do
+      app = create(:app, :cross_platform)
+      train = create(:train, app:)
+      _older_release = create(:release, :finished, train:)
+      run = create(:release, :hotfix, train:)
+
+      expect(run.release_platform_runs.size).to eq(2)
+    end
   end
 
   describe "#ready_to_be_finalized?" do
@@ -122,6 +140,16 @@ describe Release do
       run.release_platform_runs.each do |run|
         run.update!(status: ReleasePlatformRun::STATES[:finished])
       end
+
+      expect(run.ready_to_be_finalized?).to be(true)
+    end
+
+    it "is true when all release platform runs are finished ot stopped" do
+      app = create(:app, :cross_platform)
+      train = create(:train, app:)
+      run = create(:release, train:)
+      run.release_platform_runs.first.update!(status: ReleasePlatformRun::STATES[:finished])
+      run.release_platform_runs.last.update!(status: ReleasePlatformRun::STATES[:stopped])
 
       expect(run.ready_to_be_finalized?).to be(true)
     end
@@ -257,6 +285,36 @@ describe Release do
       train.reload
 
       expect(train.version_current).to eq("9.60.0")
+    end
+  end
+
+  describe "#finish_after_partial_finish!" do
+    let(:app) { create(:app, :cross_platform) }
+
+    let(:train) { create(:train, app:) }
+    let(:release) { create(:release, :partially_finished, train:) }
+
+    it "does nothing unless release is partially finished" do
+      release = create(:release, :on_track, train:)
+      release.finish_after_partial_finish!
+
+      expect(release.reload.on_track?).to be(true)
+    end
+
+    it "stops the pending release platform run" do
+      first_prun = release.release_platform_runs.first
+      second_prun = release.release_platform_runs.last
+      first_prun.update!(status: ReleasePlatformRun::STATES[:finished])
+
+      release.finish_after_partial_finish!
+      expect(first_prun.reload.finished?).to be(true)
+      expect(second_prun.reload.stopped?).to be(true)
+    end
+
+    it "starts the post release phase for the release" do
+      release.finish_after_partial_finish!
+
+      expect(release.reload.post_release_started?).to be(true)
     end
   end
 

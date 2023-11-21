@@ -55,7 +55,7 @@ class LiveRelease::Commits::DetailComponent < ViewComponent::Base
   end
 
   def not_triggered?(platform_run)
-    commit.step_runs_for(platform_run).blank? && !stale?
+    commit != platform_run.last_commit && !stale?
   end
 
   def actionable_commit(run)

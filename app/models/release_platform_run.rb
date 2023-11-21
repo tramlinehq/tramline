@@ -16,6 +16,7 @@
 #  tag_name                 :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
+#  last_commit_id           :uuid             indexed
 #  release_id               :uuid
 #  release_platform_id      :uuid             not null, indexed
 #
@@ -36,6 +37,7 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
+  belongs_to :last_commit, class_name: "Commit", inverse_of: :release_platform_runs, optional: true
 
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
   scope :have_not_reached_production, -> { on_track.reject(&:production_release_happened?) }
@@ -150,11 +152,12 @@ class ReleasePlatformRun < ApplicationRecord
   def manually_startable_step?(step)
     return false if train.inactive?
     return false unless on_track?
+    return false if last_commit.blank?
+    return true if (hotfix? || patch_fix?) && last_commit.run_for(step, self).blank?
     return false if upcoming_release_step?(step)
     return false if ongoing_release_step?(step) && train.hotfix_release.present?
     return true if step.first? && step_runs_for(step).empty?
     return false if step.first?
-    return true if (hotfix? || patch_fix?) && last_commit&.run_for(step, self).blank?
 
     (next_step == step) && previous_step_run_for(step).success?
   end
@@ -162,6 +165,7 @@ class ReleasePlatformRun < ApplicationRecord
   def step_start_blocked?(step)
     return false if train.inactive?
     return false unless on_track?
+    return false if last_commit.blank?
     return true if train.hotfix_release.present? && train.hotfix_release != release && step.release?
 
     (next_step == step) && previous_step_run_for(step)&.success? && upcoming_release_step?(step)
@@ -189,6 +193,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   def next_step
     return steps.first if step_runs.empty? || last_commit.blank?
+    return steps.first if last_commit.step_runs_for(self).empty?
     last_commit.step_runs_for(self).joins(:step).order(:step_number).last.step.next
   end
 
@@ -205,10 +210,6 @@ class ReleasePlatformRun < ApplicationRecord
     return if steps.blank?
     return 1 if running_steps.blank?
     running_steps.order(:step_number).last.step_number
-  end
-
-  def last_commit
-    step_runs.flat_map(&:commit).max_by(&:timestamp)
   end
 
   def finished_steps?

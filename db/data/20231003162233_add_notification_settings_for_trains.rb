@@ -2,6 +2,7 @@
 
 class AddNotificationSettingsForTrains < ActiveRecord::Migration[7.0]
   def up
+    return
     ActiveRecord::Base.transaction do
       Train.where.not(notification_channel: nil).each do |train|
         train.create_default_notification_settings

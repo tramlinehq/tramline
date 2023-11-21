@@ -7,17 +7,18 @@ class Triggers::Release
   AppInDraftMode = Class.new(StandardError)
   UpcomingReleaseNotAllowed = Class.new(StandardError)
 
-  def self.call(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false)
-    new(train, has_major_bump:, release_type:, new_hotfix_branch:, automatic:).call
+  def self.call(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false, hotfix_platform: nil)
+    new(train, has_major_bump:, release_type:, new_hotfix_branch:, automatic:, hotfix_platform:).call
   end
 
-  def initialize(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false)
+  def initialize(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false, hotfix_platform: nil)
     @train = train
     @starting_time = Time.current
     @has_major_bump = has_major_bump
     @automatic = automatic
     @release_type = release_type
     @new_hotfix_branch = new_hotfix_branch
+    @hotfix_platform = hotfix_platform
   end
 
   def call
@@ -29,6 +30,7 @@ class Triggers::Release
     return Response.new(:unprocessable_entity, "No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present?
     return Response.new(:unprocessable_entity, "Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable?
     return Response.new(:unprocessable_entity, "App is in draft mode, cannot start a release!") if train.app.in_draft_mode?
+    return Response.new(:unprocessable_entity, "Hotfix platform - #{hotfix_platform} is not valid!") if invalid_hotfix_platform?
 
     if kickoff.ok?
       Response.new(:ok, release)
@@ -39,7 +41,7 @@ class Triggers::Release
 
   private
 
-  attr_reader :train, :starting_time, :automatic, :release, :release_type, :new_hotfix_branch
+  attr_reader :train, :starting_time, :automatic, :release, :release_type, :new_hotfix_branch, :hotfix_platform
   delegate :branching_strategy, :hotfix_from, to: :train
 
   memoize def kickoff
@@ -65,7 +67,8 @@ class Triggers::Release
       is_automatic: automatic,
       release_type: release_type,
       hotfixed_from: hotfix_from,
-      new_hotfix_branch: new_hotfix_branch
+      new_hotfix_branch: new_hotfix_branch,
+      hotfix_platform: (hotfix_platform if hotfix?)
     )
   end
 
@@ -129,5 +132,9 @@ class Triggers::Release
 
   def existing_hotfix_branch
     hotfix_from.branch_name
+  end
+
+  def invalid_hotfix_platform?
+    hotfix? && hotfix_platform.present? && !hotfix_platform.in?(ReleasePlatform.platforms.values)
   end
 end

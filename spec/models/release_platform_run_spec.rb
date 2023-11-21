@@ -12,24 +12,29 @@ describe ReleasePlatformRun do
     let(:regular_deployment) { create(:deployment, :with_google_play_store, step: release_step) }
     let(:production_deployment) { create(:deployment, :with_google_play_store, :with_staged_rollout, step: release_step) }
     let(:release_platform_run) { create(:release_platform_run, :on_track, release_platform:) }
+    let(:commit) { create(:commit, release: release_platform_run.release) }
+
+    before do
+      release_platform_run.update!(last_commit: commit)
+    end
 
     it "is true when release is on track and does not have deployment runs" do
       expect(release_platform_run.metadata_editable?).to be(true)
     end
 
     it "is true when release is on track and does not have a release step run" do
-      _review_step_run = create(:step_run, step: review_step, release_platform_run:)
+      _review_step_run = create(:step_run, step: review_step, release_platform_run:, commit:)
       expect(release_platform_run.metadata_editable?).to be(true)
     end
 
     it "is true when release is on track, has a release step run but no production deployment run" do
-      release_step_run = create(:step_run, step: release_step, release_platform_run:)
+      release_step_run = create(:step_run, step: release_step, release_platform_run:, commit:)
       create(:deployment_run, deployment: regular_deployment, step_run: release_step_run)
       expect(release_platform_run.metadata_editable?).to be(true)
     end
 
     it "is false when release is on track, has a release step run and production deployment run" do
-      release_step_run = create(:step_run, step: release_step, release_platform_run:)
+      release_step_run = create(:step_run, step: release_step, release_platform_run:, commit:)
       create(:deployment_run, deployment: production_deployment, step_run: release_step_run)
       expect(release_platform_run.metadata_editable?).to be(false)
     end
@@ -56,6 +61,8 @@ describe ReleasePlatformRun do
 
     it "first step can be started if there are no step runs" do
       release_platform_run = create(:release_platform_run, release_platform:)
+      commit = create(:commit, release: release_platform_run.release)
+      release_platform_run.update!(last_commit: commit)
 
       expect(release_platform_run.manually_startable_step?(steps.first)).to be(true)
       expect(release_platform_run.manually_startable_step?(steps.second)).to be(false)
@@ -63,7 +70,9 @@ describe ReleasePlatformRun do
 
     it "next step can be started after finishing previous step" do
       release_platform_run = create(:release_platform_run, release_platform: release_platform)
-      create(:step_run, step: steps.first, status: "success", release_platform_run: release_platform_run)
+      commit = create(:commit, release: release_platform_run.release)
+      release_platform_run.update!(last_commit: commit)
+      create(:step_run, step: steps.first, status: "success", release_platform_run: release_platform_run, commit:)
 
       expect(release_platform_run.manually_startable_step?(steps.first)).to be(false)
       expect(release_platform_run.manually_startable_step?(steps.second)).to be(true)
@@ -72,8 +81,9 @@ describe ReleasePlatformRun do
     it "next step can be started before finishing previous step when release is hotfix" do
       _older_release = create(:release, :finished, train: release_platform.train, release_type: Release.release_types[:release])
       release = create(:release, train: release_platform.train, release_type: Release.release_types[:hotfix])
-      release_platform_run = create(:release_platform_run, release_platform:, release:)
-      create(:step_run, step: steps.first, status: "ci_workflow_triggered", release_platform_run: release_platform_run)
+      commit = create(:commit, release:)
+      release_platform_run = create(:release_platform_run, release_platform:, release:, last_commit: commit)
+      create(:step_run, step: steps.first, status: "ci_workflow_triggered", release_platform_run: release_platform_run, commit:)
 
       expect(release_platform_run.manually_startable_step?(steps.first)).to be(false)
       expect(release_platform_run.manually_startable_step?(steps.second)).to be(true)
@@ -81,7 +91,9 @@ describe ReleasePlatformRun do
 
     it "next step can be started before finishing previous step when release platform run is in fix mode" do
       release_platform_run = create(:release_platform_run, release_platform:, in_store_resubmission: true)
-      create(:step_run, step: steps.first, status: "ci_workflow_triggered", release_platform_run: release_platform_run)
+      commit = create(:commit, release: release_platform_run.release)
+      release_platform_run.update!(last_commit: commit)
+      create(:step_run, step: steps.first, status: "ci_workflow_triggered", release_platform_run:, commit:)
 
       expect(release_platform_run.manually_startable_step?(steps.first)).to be(false)
       expect(release_platform_run.manually_startable_step?(steps.second)).to be(true)
@@ -99,6 +111,7 @@ describe ReleasePlatformRun do
       release = create(:release, :with_no_platform_runs, train:)
       release_platform_run = create(:release_platform_run, release_platform:, release:)
       commit = create(:commit, release:)
+      release_platform_run.update!(last_commit: commit)
       _review_step_run = create(:step_run, :success, step: review_step, commit:, release_platform_run:)
       expect(release_platform_run).to be_step_start_blocked(release_step)
     end
@@ -108,6 +121,7 @@ describe ReleasePlatformRun do
       _hotfix_release = create(:release, train: release_platform.train, release_type: Release.release_types[:hotfix])
       release_platform_run = create(:release_platform_run, release_platform:, release:)
       commit = create(:commit, release:)
+      release_platform_run.update!(last_commit: commit)
       _review_step_run = create(:step_run, :success, step: review_step, commit:, release_platform_run:)
       expect(release_platform_run).to be_step_start_blocked(release_step)
     end
@@ -136,6 +150,7 @@ describe ReleasePlatformRun do
     it "returns the status of every step of the train" do
       release_platform_run = create(:release_platform_run, release_platform:, release:)
       commit = create(:commit, release:)
+      release_platform_run.update!(last_commit: commit)
       steps = create_list(:step, 4, :with_deployment, release_platform:)
       _step_run_1 = create(:step_run, commit:, step: steps.first, status: "success", release_platform_run:)
       _step_run_2 = create(:step_run, commit:, step: steps.second, status: "ci_workflow_failed", release_platform_run:)
@@ -155,6 +170,7 @@ describe ReleasePlatformRun do
       release_platform_run = create(:release_platform_run, release_platform:, release:)
       commit_1 = create(:commit, release:)
       commit_2 = create(:commit, release:)
+      release_platform_run.update!(last_commit: commit_2)
       steps = create_list(:step, 2, :with_deployment, release_platform:)
       _step_run_1 = create(:step_run, commit: commit_1, step: steps.first, status: "success", release_platform_run:)
       _step_run_1 = create(:step_run, commit: commit_2, step: steps.first, status: "ci_workflow_unavailable", release_platform_run:)
@@ -182,6 +198,7 @@ describe ReleasePlatformRun do
       _commit_1_pass = create(:step_run, :success, commit: commit_1, step: release_step, release_platform_run:)
 
       commit_2 = create(:commit, :without_trigger, release: release_platform_run.release)
+      release_platform_run.update!(last_commit: commit_2)
       _commit_2_pass = create(:step_run, :deployment_failed, commit: commit_2, step: review_step, release_platform_run:)
       _commit_2_pass = create(:step_run, :success, commit: commit_2, step: release_step, release_platform_run:)
 
@@ -194,6 +211,7 @@ describe ReleasePlatformRun do
       _commit_1_fail = create(:step_run, :ci_workflow_failed, commit: commit_1, step: release_step, release_platform_run:)
 
       commit_2 = create(:commit, :without_trigger, release: release_platform_run.release)
+      release_platform_run.update!(last_commit: commit_2)
       _commit_2_fail = create(:step_run, :success, commit: commit_2, step: review_step, release_platform_run:)
       _commit_2_pass = create(:step_run, :deployment_started, commit: commit_2, step: release_step, release_platform_run:)
 
@@ -307,12 +325,14 @@ describe ReleasePlatformRun do
       it "is true when it has step run and production deployment run has started rollout" do
         release_step_run = create(:step_run, step: release_step, release_platform_run:)
         create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
+        release_platform_run.update!(last_commit: release_step_run.commit)
         expect(release_platform_run).to be_version_bump_required
       end
 
       it "is true when it has step run and production deployment run has been review approved" do
         release_step_run = create(:step_run, step: release_step, release_platform_run:)
         create(:deployment_run, :ready_to_release, deployment: production_deployment, step_run: release_step_run)
+        release_platform_run.update!(last_commit: release_step_run.commit)
         expect(release_platform_run).to be_version_bump_required
       end
     end
@@ -533,6 +553,7 @@ describe ReleasePlatformRun do
     it "saves a new tag with the base name" do
       allow_any_instance_of(GithubIntegration).to receive(:create_tag!)
       commit = create(:commit, :without_trigger, release:)
+      release_platform_run.update!(last_commit: commit)
       create(:step_run, release_platform_run:, commit:)
 
       release_platform_run.create_tag!
@@ -542,6 +563,7 @@ describe ReleasePlatformRun do
     it "saves base name + last commit sha" do
       raise_times(GithubIntegration, Installations::Errors::TagReferenceAlreadyExists, :create_tag!, 1)
       commit = create(:commit, :without_trigger, release:)
+      release_platform_run.update!(last_commit: commit)
       create(:step_run, release_platform_run:, commit:)
 
       release_platform_run.create_tag!
@@ -554,6 +576,7 @@ describe ReleasePlatformRun do
       freeze_time do
         now = Time.now.to_i
         commit = create(:commit, :without_trigger, release:)
+        release_platform_run.update!(last_commit: commit)
         create(:step_run, release_platform_run:, commit:)
 
         release_platform_run.create_tag!
