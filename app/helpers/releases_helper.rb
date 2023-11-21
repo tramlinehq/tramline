@@ -118,10 +118,8 @@ module ReleasesHelper
     author_url = link_to_external(name, author_link, class: "underline")
     builder = content_tag(:code, commit.short_sha)
     builder += " • "
-    builder = builder + author_url + " committed " + ago_in_words(commit.timestamp)
-    if commit.applied_at.present?
-      builder += " • applied " + ago_in_words(commit.applied_at)
-    end
+    builder += author_url + " committed " + ago_in_words(commit.timestamp)
+    builder += " • applied " + ago_in_words(commit.applied_at) if commit.applied_at.present?
     builder
   end
 

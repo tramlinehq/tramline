@@ -143,9 +143,11 @@ class Release < ApplicationRecord
   def self.for_branch(branch_name) = find_by(branch_name:)
 
   def finish_after_partial_finish!
-    return unless partially_finished?
-    release_platform_runs.pending_release.map(&:stop!)
-    start_post_release_phase!
+    with_lock do
+      return unless partially_finished?
+      release_platform_runs.pending_release.map(&:stop!)
+      start_post_release_phase!
+    end
   end
 
   def backmerge_failure_count

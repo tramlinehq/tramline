@@ -30,7 +30,7 @@ class Triggers::Release
     return Response.new(:unprocessable_entity, "No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present?
     return Response.new(:unprocessable_entity, "Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable?
     return Response.new(:unprocessable_entity, "App is in draft mode, cannot start a release!") if train.app.in_draft_mode?
-    return Response.new(:unprocessable_entity, "Hotfix platform - #{hotfix_platform} is not valid!") if hotfix? && hotfix_platform.present? && !hotfix_platform.in?(ReleasePlatform.platforms.values)
+    return Response.new(:unprocessable_entity, "Hotfix platform - #{hotfix_platform} is not valid!") if invalid_hotfix_platform?
 
     if kickoff.ok?
       Response.new(:ok, release)
@@ -132,5 +132,9 @@ class Triggers::Release
 
   def existing_hotfix_branch
     hotfix_from.branch_name
+  end
+
+  def invalid_hotfix_platform?
+    hotfix? && hotfix_platform.present? && !hotfix_platform.in?(ReleasePlatform.platforms.values)
   end
 end
