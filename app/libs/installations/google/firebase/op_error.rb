@@ -7,6 +7,10 @@ module Installations
         code: 3,
         message_matcher: /Ensure you are uploading a valid IPA or APK and try again/,
         decorated_reason: :invalid_api_package
+      },
+      {
+        message_matcher: /There was a error processing your app. Try distributing again and contact Firebase support if this problem continues/i,
+        decorated_reason: :firebase_processing_error
       }
     ]
 

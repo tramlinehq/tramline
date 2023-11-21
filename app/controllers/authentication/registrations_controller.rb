@@ -102,5 +102,6 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
   def identify_team
     return unless user.persisted?
     SiteAnalytics.identify_and_group(user, user.organizations.first)
+    SiteAnalytics.track(user, user.organizations.first, DeviceDetector.new(request.user_agent), "Signup")
   end
 end

@@ -722,7 +722,7 @@ describe Deployments::AppStoreConnect::Release do
         run_with_staged_rollout.create_staged_rollout!(config: run_with_staged_rollout.staged_rollout_config)
       end
 
-      it "updates staged rollout and raises release not fully live yet" do
+      it "updates staged rollout to 100% and raises release not fully live yet" do
         allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { last_phase_phased_release_info })
 
         expect { described_class.track_live_release_status(run_with_staged_rollout) }
@@ -732,7 +732,7 @@ describe Deployments::AppStoreConnect::Release do
         expect(run_with_staged_rollout.staged_rollout.reload.last_rollout_percentage).to eq(100.0)
       end
 
-      it "updates staged rollout to 100% and raises release not fully live yet" do
+      it "updates staged rollout and raises release not fully live yet" do
         allow(providable_dbl).to receive(:find_live_release).and_return(GitHub::Result.new { live_phased_release_info })
 
         expect { described_class.track_live_release_status(run_with_staged_rollout) }
