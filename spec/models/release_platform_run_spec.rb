@@ -93,7 +93,7 @@ describe ReleasePlatformRun do
       release_platform_run = create(:release_platform_run, release_platform:, in_store_resubmission: true)
       commit = create(:commit, release: release_platform_run.release)
       release_platform_run.update!(last_commit: commit)
-      create(:step_run, step: steps.first, status: "ci_workflow_triggered", release_platform_run: release_platform_run)
+      create(:step_run, step: steps.first, status: "ci_workflow_triggered", release_platform_run:, commit:)
 
       expect(release_platform_run.manually_startable_step?(steps.first)).to be(false)
       expect(release_platform_run.manually_startable_step?(steps.second)).to be(true)
