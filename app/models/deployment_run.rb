@@ -189,12 +189,12 @@ class DeploymentRun < ApplicationRecord
     end
   end
 
-  def rollout_percentage_at(ts)
+  def rollout_percentage_at(day)
     return 100.0 unless staged_rollout
     last_event = staged_rollout
       .passports
       .where(reason: [:started, :increased, :fully_released])
-      .where("event_timestamp < ?", ts)
+      .where("DATE_TRUNC('day', event_timestamp) <= ?", day)
       .order(:event_timestamp)
       .last
     return 0.0 unless last_event
