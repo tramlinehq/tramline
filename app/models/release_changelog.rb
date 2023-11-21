@@ -57,6 +57,8 @@ class ReleaseChangelog < ApplicationRecord
 
     def truncated_message = commit["message"]&.truncate(70)
 
+    def applied_at = nil
+
     private
 
     attr_reader :commit

@@ -81,6 +81,10 @@ class Commit < ApplicationRecord
     step_runs.where(release_platform_run: platform_run).includes(:step).order(:created_at)
   end
 
+  def applied_at
+    step_runs.map(&:created_at).min
+  end
+
   def trigger_step_runs_for(platform_run, force: false)
     return if release.hotfix? && !force
     platform_run.bump_version!

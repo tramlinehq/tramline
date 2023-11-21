@@ -118,7 +118,11 @@ module ReleasesHelper
     author_url = link_to_external(name, author_link, class: "underline")
     builder = content_tag(:code, commit.short_sha)
     builder += " • "
-    builder + author_url + " committed " + ago_in_words(commit.timestamp)
+    builder = builder + author_url + " committed " + ago_in_words(commit.timestamp)
+    if commit.applied_at.present?
+      builder += " • applied " + ago_in_words(commit.applied_at)
+    end
+    builder
   end
 
   def blocked_step_release_link(release)
