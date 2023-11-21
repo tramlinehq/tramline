@@ -484,7 +484,7 @@ describe StagedRollout do
           added_at: 1.day.ago,
           status: "READY_FOR_SALE",
           phased_release_day: 8,
-          phased_release_status: "COMPLETED"
+          phased_release_status: "COMPLETE"
         }
       )
       allow(providable_dbl).to receive(:resume_phased_release).and_return(GitHub::Result.new { completed_release_info })

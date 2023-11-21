@@ -194,7 +194,10 @@ module Deployments
 
         if release_info.live?(build_number)
           return run.complete! unless staged_rollout?
-          run.staged_rollout.update_stage(release_info.phased_release_stage)
+          run.staged_rollout.update_stage(
+            release_info.phased_release_stage,
+            finish_rollout: release_info.phased_release_complete?
+          )
           return if release_info.phased_release_complete?
         end
 
@@ -223,7 +226,10 @@ module Deployments
         if result.ok?
           release_info = result.value!
           create_or_update_external_release(release_info)
-          run.staged_rollout.update_stage(release_info.phased_release_stage)
+          run.staged_rollout.update_stage(
+            release_info.phased_release_stage,
+            finish_rollout: release_info.phased_release_complete?
+          )
         end
 
         result
@@ -237,7 +243,10 @@ module Deployments
         if result.ok?
           release_info = result.value!
           create_or_update_external_release(release_info)
-          run.staged_rollout.update_stage(release_info.phased_release_stage)
+          run.staged_rollout.update_stage(
+            release_info.phased_release_stage,
+            finish_rollout: release_info.phased_release_complete?
+          )
         end
 
         result

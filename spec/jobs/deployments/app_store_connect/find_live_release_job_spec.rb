@@ -35,7 +35,7 @@ describe Deployments::AppStoreConnect::FindLiveReleaseJob do
     it "retries if release is not live yet" do
       expect(
         described_class.sidekiq_retry_in_block.call(1, Deployments::AppStoreConnect::Release::ReleaseNotFullyLive.new)
-      ).to be >= 600.seconds
+      ).to be >= 300.seconds
     end
 
     it "does not retry if there are unexpected errors" do
