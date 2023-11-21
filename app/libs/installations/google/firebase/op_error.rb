@@ -44,7 +44,6 @@ module Installations
       end
     end
 
-
     def error_message
       op_error[:message]
     end
