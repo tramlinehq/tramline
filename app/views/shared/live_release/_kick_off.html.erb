@@ -15,7 +15,7 @@
     <% if release.hotfix? %>
       <% mt.with_description("Release Type") do %>
         <%= release.display_attr(:release_type) %>
-        <%= link_to_external "(hotfixed from #{release.hotfixed_from.release_version} ↗)", release.hotfixed_from.live_release_link, class: "underline" %>
+        <%= hotfixed_from(release) %>
       <% end %>
     <% end %>
 
