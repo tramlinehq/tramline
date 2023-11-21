@@ -22,7 +22,7 @@ class IntegrationListeners::GitlabController < IntegrationListenerController
   end
 
   def handle_push
-    response = WebhookHandlers::Push.process(train, params)
+    response = WebhookHandlers::Push.process(train, push_params)
     Rails.logger.debug response.body
     head response.status
   end
@@ -35,5 +35,15 @@ class IntegrationListeners::GitlabController < IntegrationListenerController
 
   def train
     @train ||= Train.find(params[:train_id])
+  end
+
+  def push_params
+    params.permit(
+      :ref,
+      :checkout_sha,
+      project: [:path_with_namespace],
+      commits: [:id, :message, :title, :timestamp, :url, author: [:name, :email]],
+      repository: [:name]
+    )
   end
 end

@@ -123,6 +123,8 @@ module Installations
           source_name
         when :tag
           "refs/tags/#{source_name}"
+        else
+          raise ArgumentError, "source can only be a branch, tag or commit"
         end
 
       params = {

@@ -10,7 +10,6 @@ class CommitsController < SignedInApplicationController
     @release_platform_run.with_lock do
       locked_release_error and return unless @release_platform_run.on_track?
       already_triggered_error and return if @release_platform_run.commit_applied?(@commit)
-
       @commit.trigger_step_runs_for(@release_platform_run, force: true)
     end
 

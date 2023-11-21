@@ -51,22 +51,32 @@ class GitlabIntegration < ApplicationRecord
     avatar_url: :avatar_url
   }
 
-  COMMITS_TRANSFORMATIONS = {
-    url: :web_url,
-    sha: :id,
-    message: :title,
-    author_name: :author_name,
-    author_email: :author_email,
-    author_timestamp: :created_at
-  }
-
   COMMIT_TRANSFORMATIONS = {
     url: :web_url,
-    commit_sha: :id,
+    commit_hash: :id,
     message: :message,
     author_name: :author_name,
     author_email: :author_email,
     timestamp: :authored_date
+  }
+
+  COMMITS_HOOK_TRANSFORMATIONS = {
+    url: :url,
+    commit_hash: :id,
+    message: :message,
+    author_name: [:author, :name],
+    author_email: [:author, :email],
+    author_login: [:author, :username],
+    timestamp: :timestamp
+  }
+
+  COMMITS_BETWEEN_TRANSFORMATIONS = {
+    url: :web_url,
+    commit_hash: :id,
+    message: :title,
+    author_name: :author_name,
+    author_email: :author_email,
+    timestamp: :created_at
   }
 
   PR_TRANSFORMATIONS = {
@@ -206,7 +216,7 @@ class GitlabIntegration < ApplicationRecord
   end
 
   def commit_log(from_branch, to_branch)
-    with_api_retries { installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS) }
+    with_api_retries { installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_BETWEEN_TRANSFORMATIONS) }
   end
 
   def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title_prefix)
