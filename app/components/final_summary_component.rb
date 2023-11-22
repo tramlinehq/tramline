@@ -68,6 +68,14 @@ class FinalSummaryComponent < ViewComponent::Base
     overall.is_hotfix
   end
 
+  def hotfixes
+    content_tag(:div, class: "inline-flex") do
+      overall.hotfixes.each_with_index do |(release_version, release_link), i|
+        concat link_to_external release_version, release_link, class: "underline ml-2"
+      end
+    end
+  end
+
   def staged_rollouts?(store_version)
     store_version.staged_rollouts.present?
   end

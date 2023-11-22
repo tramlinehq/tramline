@@ -153,8 +153,9 @@
         <% @train.releases.order(scheduled_at: :desc).take(10).each do |run| %>
           <% table.with_row do |row| %>
             <% row.with_cell do %>
-              <%= link_to release_path(run.id) do %>
-                  <span class="underline">
+              <div class="flex flex-col">
+                <%= link_to release_path(run.id) do %>
+                  <span class="underline flex flex-row items-center">
                     <% if run.hotfix? %>
                       <%= inline_svg("band_aid.svg", classname: "w-5 pr-1 opacity-80 inline-flex") %>
                     <% end %>
@@ -165,10 +166,11 @@
                       <code><%= version_in_progress(run.release_version) %></code>
                     <% end %>
                   </span>
-              <% end %>
-              <% if run.hotfix? %>
-                <span class="ml-1"><%= hotfixed_from(run) %></span>
-              <% end %>
+                <% end %>
+                <% if run.hotfix? %>
+                  <span class="mt-1"><%= hotfixed_from(run) %></span>
+                <% end %>
+              </div>
             <% end %>
 
             <% row.with_cell do %>

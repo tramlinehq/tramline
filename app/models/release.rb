@@ -311,12 +311,10 @@ class Release < ApplicationRecord
     }
   end
 
-  def self.live_release_link(id: nil)
+  def live_release_link
     return if Rails.env.test?
     release_url(id, link_params)
   end
-
-  def live_release_link = Release.live_release_link(id: id)
 
   def notification_params
     train.notification_params.merge(

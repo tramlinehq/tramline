@@ -147,7 +147,7 @@ module ReleasesHelper
     hotfixed_from = release.hotfixed_from
     content_tag(:div, class: "inline-flex") do
       concat content_tag(:span, "(hotfixed from&nbsp;".html_safe)
-      concat link_to_external "#{hotfixed_from.release_version} ↗", hotfixed_from.live_release_link, class: "underline"
+      concat link_to content_tag(:code, hotfixed_from.release_version.to_s), hotfixed_from.live_release_link, class: "underline"
       concat content_tag(:span, ")")
     end
   end
