@@ -17,10 +17,11 @@
 <body>
 <div class="flex h-screen overflow-hidden">
   <div class="relative flex flex-col flex-1 overflow-y-scroll overflow-x-hidden h-full">
-    <%= render partial: 'shared/header' %>
+    <%#= render partial: 'shared/header' %>
+    <%= render V2::HeaderComponent.new %>
 
     <main class="mb-64">
-      <div class="py-8 w-full max-w-7xl mx-auto">
+      <div class="py-8 w-full max-w-8xl mx-auto">
         <%= render partial: 'shared/flash' %>
         <%= breadcrumbs fragment_class: 'text-slate-500', separator: ' » ', class: 'text-sm text-slate-500 mb-4' %>
         <%= yield %>

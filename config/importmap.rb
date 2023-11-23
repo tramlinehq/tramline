@@ -33,3 +33,4 @@ pin "@sentry/utils", to: "https://ga.jspm.io/npm:@sentry/utils@7.69.0/esm/index.
 pin "@sentry/utils/esm/buildPolyfills", to: "https://ga.jspm.io/npm:@sentry/utils@7.69.0/esm/buildPolyfills/index.js"
 pin "apexcharts", to: "https://ga.jspm.io/npm:apexcharts@3.43.0/dist/apexcharts.common.js"
 pin "humanize-duration", to: "https://ga.jspm.io/npm:humanize-duration@3.30.0/humanize-duration.js"
+pin "@popperjs/core", to: "https://ga.jspm.io/npm:@popperjs/core@2.11.8/lib/index.js"
