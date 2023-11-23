@@ -1,7 +1,7 @@
 <% if @release.finished? || @release.stopped? || @release.stopped_after_partial_finish? %>
   <% content_for :sticky_page_message do %>
     <%= render partial: "shared/sticky_topbar_message",
-               locals: { msg: "This release was completed and is now locked." } %>
+               locals: { msg: "This release was #{@release.display_attr(:status)} and is now locked." } %>
   <% end %>
 <% end %>
 
