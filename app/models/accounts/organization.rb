@@ -57,4 +57,8 @@ class Accounts::Organization < ApplicationRecord
   def rotate_api_key
     update(api_key: SecureRandom.hex)
   end
+
+  def default_app
+    apps.first
+  end
 end

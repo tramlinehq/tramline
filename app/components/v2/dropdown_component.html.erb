@@ -1,0 +1,29 @@
+<div data-controller="popup" data-popup-away-value="true" id="current-">
+  <button data-popup-target="element"
+          data-action="click->popup#toggle"
+          class="<%= cta_style %>">
+    <span class="sr-only">Open menu</span>
+    <% if visual_icon_only? %>
+      <%= visual_icon %>
+    <% else %>
+      <div class="flex items-center mr-2">
+        <%= visual_icon %>
+        <div class="text-left ml-2">
+          <div class="text-sm font-semibold leading-none text-gray-900 dark:text-white">
+            <%= title_text %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    <%= arrow %>
+  </button>
+
+  <div data-reveal
+       hidden
+       class="z-30 w-60 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
+    <%= subtext %>
+    <% item_groups.each do |group| %>
+      <%= group %>
+    <% end %>
+  </div>
+</div>

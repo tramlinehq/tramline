@@ -1,5 +1,5 @@
 // this controller can be used for dropdowns, tooltips, and popovers
-// it wraps stimulus-reveal + popper.js
+// it wraps stimulus-reveal (for showing and hiding) + popper.js (for positioning)
 import {createPopper} from "@popperjs/core"
 import RevealController from "stimulus-reveal"
 

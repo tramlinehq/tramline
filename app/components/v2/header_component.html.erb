@@ -1,151 +1,127 @@
 <header class="antialiased">
-  <nav class="bg-white border-gray-200 px-4 lg:px-4 pt-2 dark:bg-gray-900">
+  <nav class="bg-white border-gray-200 px-5 lg:px-5 dark:bg-gray-900">
     <div class="flex justify-between items-center">
       <div class="flex justify-start items-center">
         <a href="/" class="flex mr-6">
           <%= inline_svg("tramline.svg", classname: "inline-flex w-12") %>
         </a>
       </div>
+
       <div class="flex flex-wrap justify-between items-center py-3 px-4 pb-5 sm:pb-3 lg:px-6">
         <div class="flex items-center mb-2 sm:mb-0">
-          <div data-controller="popup" data-popup-away-value="true" id="current-organization">
-            <button data-popup-target="element"
-                    data-action="click->popup#toggle"
-                    class="flex justify-between items-center p-2 rounded-lg dark:bg-gray-800 dark:hover:bg-gray-700 hover:bg-gray-100 dark:hover-bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700">
-              <span class="sr-only">Open org menu</span>
-              <div class="flex items-center mr-2">
-                <%= inline_svg("building.svg", classname: "w-4 h-4 rounded-full mr-2") %>
-                <div class="text-left">
-                  <div class="text-sm font-semibold leading-none text-gray-900 dark:text-white">Tramline</div>
-                </div>
-              </div>
-              <%= inline_svg("double_headed_arrow.svg", classname: "w-3 h-3") %>
-            </button>
+          <%= render V2::DropdownComponent.new(type: :switcher, arrow: :double) do |dropdown| %>
+            <% dropdown.with_visual_icon(internal_svg: "building") %>
 
-            <div data-reveal
-                 hidden
-                 class="z-10 w-48 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
-              <a href="#" class="flex items-center py-3 px-4 rounded hover:bg-gray-50 dark:hover:bg-gray-600">
-                <div class="text-left">
-                  <div class="font-medium leading-none text-gray-900 dark:text-white mb-0.5 text-sm">Company</div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">Created August, 2014</div>
-                </div>
-              </a>
-            </div>
-          </div>
+            <% dropdown.with_title_text do %>
+              <%= current_organization.name %>
+            <% end %>
+
+            <% dropdown.with_item_group do |group| %>
+              <% current_user.organizations.each do |organization| %>
+                <% group.with_item do %>
+                  <%= link_to "/",
+                              class: "flex items-center py-3 px-4 rounded hover:bg-gray-50 dark:hover:bg-gray-600" do %>
+                    <div class="text-left">
+                      <div class="font-medium leading-none text-gray-900 dark:text-white mb-0.5 text-sm">
+                        <%= current_organization.name %>
+                      </div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">
+                        Created <%= time_format current_organization.created_at, with_year: true, with_time: false %>
+                      </div>
+                    </div>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
 
           <%= inline_svg("layer_separator.svg", classname: "w-3 h-3 text-gray-500 dark:text-gray-400 mx-2") %>
 
-          <div data-controller="popup" data-popup-away-value="true" id="current-app">
-            <button data-popup-target="element"
-                    data-action="click->popup#toggle"
-                    class="text-sm font-medium items-center p-2 pr-3 pl-4 text-gray-500 rounded-lg md:inline-flex hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600">
-              <span class="sr-only">Open app menu</span>
-              <div class="flex items-center mr-2">
-                <img src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png" class="mr-2 w-7 h-7 rounded-full" alt="Bonnie avatar"/>
-                <div class="text-left">
-                  <div class="text-sm font-semibold leading-none text-gray-900 dark:text-white">
-                    Ueno
-                    <span class="text-gray-500 dark:text-gray-400">(com.tramline.ueno)</span>
-                  </div>
-                </div>
-              </div>
-              <%= inline_svg("double_headed_arrow.svg", classname: "w-3 h-3") %>
-            </button>
+          <%= render V2::DropdownComponent.new(type: :switcher, arrow: :double) do |dropdown| %>
+            <%= dropdown.with_visual_icon(external_img: "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png") %>
 
-            <div data-reveal
-                 hidden
-                 class="z-30 w-60 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
-              <ul class="p-3 space-y-1 text-sm text-gray-700 dark:text-gray-200">
-                <li>
-                  <div class="flex p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
-                    <div class="flex items-center h-5">
-                      <input id="helper-radio-4" name="helper-radio" type="radio" value="" class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+            <% dropdown.with_title_text do %>
+              <%= default_app.name %>
+              <span class="text-gray-500 dark:text-gray-400"><%= default_app.bundle_identifier %></span>
+            <% end %>
+
+            <% dropdown.with_item_group do |group| %>
+              <% current_organization.apps.each do |app| %>
+                <% group.with_item do %>
+                  <%= link_to app_path(app),
+                              class: "flex items-center py-3 px-4 rounded hover:bg-gray-50 dark:hover:bg-gray-600" do %>
+                    <div class="text-left">
+                      <div class="font-medium leading-none text-gray-900 dark:text-white mb-0.5 text-sm">
+                        <%= app.name %>
+                      </div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">
+                        <%= app.bundle_identifier %>
+                      </div>
                     </div>
-                    <div class="ml-2 text-sm">
-                      <label for="helper-radio-4" class="font-medium text-gray-900 dark:text-gray-300">
-                        <div>themesberg.com</div>
-                        <p id="helper-radio-text-4" class="text-xs font-normal text-gray-500 dark:text-gray-300">Free
-                          templates and themes</p>
-                      </label>
-                    </div>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
         </div>
       </div>
+
       <div class="flex justify-end items-center lg:order-2">
         <%= link_to_external "https://docs.tramline.app",
-                             class: "p-2 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700" do %>
+                             class: "text-gray-500 rounded-lg hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700" do %>
           <span class="sr-only">View Docs</span>
           <%= inline_svg("book.svg", classname: "w-4 h-4") %>
         <% end %>
 
-        <span class="hidden mx-2 w-px h-5 bg-gray-200 dark:bg-gray-600 md:inline"></span>
+        <span class="mx-4 w-px h-5 bg-gray-200 dark:bg-gray-600"></span>
 
-        <div data-controller="popup" data-popup-away-value="true" id="current-app">
-          <button data-popup-target="element"
-                  data-action="click->popup#toggle"
-                  class="flex mx-3 text-sm bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" id="userMenuDropdownButton" aria-expanded="false" data-dropdown-toggle="userMenuDropdown">
-            <span class="sr-only">Open user menu</span>
-            <img class="w-8 h-8 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="user photo">
-          </button>
+        <%= render V2::DropdownComponent.new(type: :icon_only) do |dropdown| %>
+          <% dropdown.with_visual_icon(external_img: "https://flowbite.com/docs/images/people/profile-picture-5.jpg") %>
 
-          <div data-reveal
-               hidden
-               class="z-50 my-4 w-56 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600" id="userMenuDropdown">
+          <% dropdown.with_subtext do %>
             <div class="py-3 px-4">
-              <span class="block text-sm font-semibold text-gray-900 dark:text-white">Neil Sims</span>
-              <span class="block text-sm text-gray-500 truncate dark:text-gray-400">name@flowbite.com</span>
+              <span class="block text-sm font-semibold text-gray-900 dark:text-white">
+                <%= user_name %>
+              </span>
+              <span class="block text-sm text-gray-500 truncate dark:text-gray-400">
+                <%= user_email %>
+              </span>
             </div>
-            <ul class="py-1 text-gray-500 dark:text-gray-400">
-              <li>
-                <a href="#" class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">My
-                  profile</a>
-              </li>
-              <li>
-                <a href="#" class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Account
-                  settings</a>
-              </li>
-            </ul>
-            <ul class="py-1 text-gray-500 dark:text-gray-400">
-              <li>
-                <a href="#" class="flex items-center py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
-                  <svg class="mr-2 w-4 h-4 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
-                    <path d="M17.947 2.053a5.209 5.209 0 0 0-3.793-1.53A6.414 6.414 0 0 0 10 2.311 6.482 6.482 0 0 0 5.824.5a5.2 5.2 0 0 0-3.8 1.521c-1.915 1.916-2.315 5.392.625 8.333l7 7a.5.5 0 0 0 .708 0l7-7a6.6 6.6 0 0 0 2.123-4.508 5.179 5.179 0 0 0-1.533-3.793Z"/>
-                  </svg>
-                  My likes
-                </a>
-              </li>
-              <li>
-                <a href="#" class="flex items-center py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
-                  <svg class="mr-2 w-4 h-4 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="m1.56 6.245 8 3.924a1 1 0 0 0 .88 0l8-3.924a1 1 0 0 0 0-1.8l-8-3.925a1 1 0 0 0-.88 0l-8 3.925a1 1 0 0 0 0 1.8Z"/>
-                    <path d="M18 8.376a1 1 0 0 0-1 1v.163l-7 3.434-7-3.434v-.163a1 1 0 0 0-2 0v.786a1 1 0 0 0 .56.9l8 3.925a1 1 0 0 0 .88 0l8-3.925a1 1 0 0 0 .56-.9v-.786a1 1 0 0 0-1-1Z"/>
-                    <path d="M17.993 13.191a1 1 0 0 0-1 1v.163l-7 3.435-7-3.435v-.163a1 1 0 1 0-2 0v.787a1 1 0 0 0 .56.9l8 3.925a1 1 0 0 0 .88 0l8-3.925a1 1 0 0 0 .56-.9v-.787a1 1 0 0 0-1-1Z"/>
-                  </svg>
-                  Collections
-                </a>
-              </li>
-            </ul>
-            <ul class="py-1 text-gray-500 dark:text-gray-400">
-              <li>
-                <a href="#" class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
-                  out</a>
-              </li>
-            </ul>
-          </div>
-        </div>
+          <% end %>
 
+          <% dropdown.with_item_group do |group| %>
+            <% group.with_item do %>
+              <%= link_to "Settings",
+                          edit_accounts_organization_path(current_organization),
+                          "data-turbo": false,
+                          class: USER_PROFILE_LINK_CLASSES %>
+            <% end %>
 
-        <button class="items-center p-2 text-gray-500 rounded-lg md:ml-2 lg:hidden hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600">
-          <span class="sr-only">Open User Menu</span>
-          <svg class="w-[18px] h-[18px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
-          </svg>
-        </button>
+            <% if billing? %>
+              <% group.with_item do %>
+                <%= link_to_external "Go to billing ↗",
+                                     billing_link,
+                                     class: USER_PROFILE_LINK_CLASSES %>
+              <% end %>
+            <% end %>
+
+            <% group.with_item do %>
+              <%= link_to_external "Book a demo ↗",
+                                   "https://calendar.app.google/bs6wimzo316W3yKz9",
+                                   class: USER_PROFILE_LINK_CLASSES %>
+            <% end %>
+          <% end %>
+
+          <% dropdown.with_item_group do |group| %>
+            <% group.with_item do %>
+              <%= link_to "Sign out",
+                          destroy_user_session_path,
+                          "data-turbo": false,
+                          class: USER_PROFILE_LINK_CLASSES %>
+
+            <% end %>
+          <% end %>
+        <% end %>
       </div>
     </div>
   </nav>

@@ -10,6 +10,7 @@ class SignedInApplicationController < ApplicationController
   before_action :set_app
   helper_method :current_organization
   helper_method :current_user
+  helper_method :default_app
   helper_method :writer?
   layout -> { ensure_supported_layout("signed_in_application") }
 
@@ -101,6 +102,14 @@ class SignedInApplicationController < ApplicationController
     redirect_to url_for(params.permit(*PATH_PARAMS_UNDER_APP).merge(app_id_key => new_app_id)) and return if new_app_id.present?
 
     @app = current_organization.apps.friendly.find(app_id)
+  end
+
+  def default_app
+    if @app.blank?
+      current_organization.default_app
+    else
+      @app
+    end
   end
 
   def app_id
