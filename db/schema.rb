@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_11_17_110440) do
+ActiveRecord::Schema[7.0].define(version: 2023_11_24_134628) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -369,6 +369,23 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_17_110440) do
     t.index ["release_id"], name: "index_release_changelogs_on_release_id"
   end
 
+  create_table "release_health_events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "deployment_run_id", null: false
+    t.uuid "release_health_rule_id", null: false
+    t.uuid "release_health_metric_id", null: false
+    t.string "status", null: false
+    t.datetime "event_timestamp", null: false
+    t.boolean "notification_triggered", default: false
+    t.boolean "action_triggered", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["deployment_run_id", "release_health_rule_id", "release_health_metric_id"], name: "idx_events_on_deployment_and_rule_and_metric", unique: true
+    t.index ["deployment_run_id"], name: "index_release_health_events_on_deployment_run_id"
+    t.index ["event_timestamp"], name: "index_release_health_events_on_event_timestamp"
+    t.index ["release_health_metric_id"], name: "index_release_health_events_on_release_health_metric_id"
+    t.index ["release_health_rule_id"], name: "index_release_health_events_on_release_health_rule_id"
+  end
+
   create_table "release_health_metrics", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "deployment_run_id", null: false
     t.bigint "sessions"
@@ -384,6 +401,19 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_17_110440) do
     t.bigint "total_sessions_in_last_day"
     t.index ["deployment_run_id"], name: "index_release_health_metrics_on_deployment_run_id"
     t.index ["fetched_at"], name: "index_release_health_metrics_on_fetched_at"
+  end
+
+  create_table "release_health_rules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_id", null: false
+    t.string "metric", null: false
+    t.string "comparator", null: false
+    t.float "threshold_value", null: false
+    t.boolean "is_halting", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["metric"], name: "index_release_health_rules_on_metric"
+    t.index ["train_id", "metric"], name: "index_release_health_rules_on_train_id_and_metric", unique: true
+    t.index ["train_id"], name: "index_release_health_rules_on_train_id"
   end
 
   create_table "release_metadata", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -623,7 +653,11 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_17_110440) do
   add_foreign_key "notification_settings", "trains"
   add_foreign_key "pull_requests", "release_platform_runs"
   add_foreign_key "release_changelogs", "releases"
+  add_foreign_key "release_health_events", "deployment_runs"
+  add_foreign_key "release_health_events", "release_health_metrics"
+  add_foreign_key "release_health_events", "release_health_rules"
   add_foreign_key "release_health_metrics", "deployment_runs"
+  add_foreign_key "release_health_rules", "trains"
   add_foreign_key "release_metadata", "release_platform_runs"
   add_foreign_key "release_platform_runs", "commits", column: "last_commit_id"
   add_foreign_key "release_platform_runs", "release_platforms"
