@@ -45,7 +45,7 @@ class ReleaseHealthRule < ApplicationRecord
     comparator_proc = COMPARATORS[comparator.to_sym]
     raise ArgumentError, "Invalid comparator" unless comparator_proc
 
-    return health_statuses[:healthy] if comparator_proc.call(value, threshold_value)
-    health_statuses[:unhealthy]
+    return ReleaseHealthRule.health_statuses[:healthy] if comparator_proc.call(value, threshold_value)
+    ReleaseHealthRule.health_statuses[:unhealthy]
   end
 end
