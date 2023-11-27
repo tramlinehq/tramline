@@ -67,6 +67,33 @@ describe ReleaseHealthMetric do
         expect(deployment_run.release_health_events.size).to eq(1)
         expect(deployment_run.release_health_events.first.release_health_rule).to eq(user_stability_rule)
       end
+
+      it "creates health event when health goes from unhealthy to healthy" do
+        _user_stability_rule = create(:release_health_rule, :user_stability, train:)
+        _existing_metric = deployment_run.release_health_metrics.create!(**unhealthy_metrics)
+        healthy_metric.check_release_health
+
+        expect(deployment_run.release_health_events.reload.size).to eq(2)
+        expect(deployment_run.release_health_events.reload.last.healthy?).to be(true)
+      end
+
+      it "creates health event when health goes from healthy to unhealthy" do
+        _user_stability_rule = create(:release_health_rule, :user_stability, train:)
+        _existing_metric = deployment_run.release_health_metrics.create!(**healthy_metrics)
+        unhealthy_metric.check_release_health
+
+        expect(deployment_run.release_health_events.reload.size).to eq(1)
+        expect(deployment_run.release_health_events.reload.last.unhealthy?).to be(true)
+      end
+
+      it "does nothing when health does not change" do
+        _user_stability_rule = create(:release_health_rule, :user_stability, train:)
+        _existing_metric = deployment_run.release_health_metrics.create!(**unhealthy_metrics)
+        unhealthy_metric.check_release_health
+
+        expect(deployment_run.release_health_events.reload.size).to eq(1)
+        expect(deployment_run.release_health_events.reload.last.unhealthy?).to be(true)
+      end
     end
   end
 end
