@@ -26,6 +26,7 @@ class DeploymentRun < ApplicationRecord
   has_one :staged_rollout, dependent: :destroy
   has_one :external_release, dependent: :destroy
   has_many :release_health_metrics, dependent: :destroy, inverse_of: :deployment_run
+  has_many :release_health_events, dependent: :destroy, inverse_of: :deployment_run
 
   validates :deployment_id, uniqueness: {scope: :step_run_id}
 
