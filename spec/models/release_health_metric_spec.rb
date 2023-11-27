@@ -58,6 +58,15 @@ describe ReleaseHealthMetric do
 
         expect(deployment_run.release_health_events.size).to eq(0)
       end
+
+      it "creates health events for only the broken rules" do
+        user_stability_rule = create(:release_health_rule, :user_stability, train:)
+        _session_stability_rule = create(:release_health_rule, :session_stability, train:)
+        unhealthy_metric.check_release_health
+
+        expect(deployment_run.release_health_events.size).to eq(1)
+        expect(deployment_run.release_health_events.first.release_health_rule).to eq(user_stability_rule)
+      end
     end
   end
 end
