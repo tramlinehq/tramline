@@ -5,7 +5,7 @@ class AddReleaseHealthEvents < ActiveRecord::Migration[7.0]
       t.belongs_to :release_health_rule, null: false, foreign_key: true, type: :uuid
       t.belongs_to :release_health_metric, null: false, foreign_key: true, type: :uuid
 
-      t.string :status, null: false
+      t.string :health_status, null: false
       t.datetime :event_timestamp, null: false, index: true
       t.boolean :notification_triggered, default: false
       t.boolean :action_triggered, default: false

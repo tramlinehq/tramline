@@ -373,7 +373,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_24_134628) do
     t.uuid "deployment_run_id", null: false
     t.uuid "release_health_rule_id", null: false
     t.uuid "release_health_metric_id", null: false
-    t.string "status", null: false
+    t.string "health_status", null: false
     t.datetime "event_timestamp", null: false
     t.boolean "notification_triggered", default: false
     t.boolean "action_triggered", default: false

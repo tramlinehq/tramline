@@ -60,7 +60,7 @@ class ReleaseHealthMetric < ApplicationRecord
 
     current_status = rule.evaluate(value)
     return if last_event.blank? && current_status == ReleaseHealthRule.health_statuses[:healthy]
-    return if last_event.present? && last_event.status == current_status
-    create_release_health_event(deployment_run:, release_health_rule: rule, status: current_status, event_timestamp: fetched_at)
+    return if last_event.present? && last_event.health_status == current_status
+    create_release_health_event(deployment_run:, release_health_rule: rule, health_status: current_status, event_timestamp: fetched_at)
   end
 end

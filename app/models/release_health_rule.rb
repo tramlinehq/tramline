@@ -12,6 +12,7 @@
 #  train_id        :uuid             not null, indexed, indexed => [metric]
 #
 class ReleaseHealthRule < ApplicationRecord
+  include HealthAwareness
   belongs_to :train
 
   enum metric: {
@@ -28,8 +29,6 @@ class ReleaseHealthRule < ApplicationRecord
     gte: "gte",
     eq: "eq"
   }
-
-  enum health_status: {healthy: "healthy", unhealthy: "unhealthy"}
 
   COMPARATORS = {
     lt: ->(value, threshold) { value < threshold },
