@@ -18,7 +18,7 @@
 
             <% dropdown.with_item_group do |group| %>
               <% current_user.organizations.each do |organization| %>
-                <% group.with_item(link: switch_accounts_organization_path(organization), selected: organization.id == current_organization.id) do %>
+                <% group.with_item(link: { path: switch_accounts_organization_path(organization) }, selected: organization.id == current_organization.id) do %>
                   <div class="text-left">
                     <div class="font-medium leading-none text-gray-900 dark:text-white mb-0.5 text-sm">
                       <%= organization.name %>
@@ -45,7 +45,7 @@
 
             <% dropdown.with_item_group do |group| %>
               <% current_organization.apps.each do |app| %>
-                <% group.with_item(link: app_path(app), selected: app.id == default_app.id) do %>
+                <% group.with_item(link: { path: app_path(app) }, selected: app.id == default_app.id) do %>
                   <div class="text-left">
                     <div class="font-medium leading-none text-gray-900 dark:text-white mb-0.5 text-sm">
                       <%= app.name %>
@@ -85,35 +85,24 @@
           <% end %>
 
           <% dropdown.with_item_group do |group| %>
-            <% group.with_item do %>
-              <%= link_to "Settings",
-                          edit_accounts_organization_path(current_organization),
-                          "data-turbo": false,
-                          class: USER_PROFILE_LINK_CLASSES %>
+            <% group.with_item(link: { path: edit_accounts_organization_path(current_organization), "data-turbo": false, class: USER_PROFILE_LINK_CLASSES }) do %>
+              Settings
             <% end %>
 
             <% if billing? %>
-              <% group.with_item do %>
-                <%= link_to_external "Go to billing ↗",
-                                     billing_link,
-                                     class: USER_PROFILE_LINK_CLASSES %>
+              <% group.with_item(link: { path: billing_link, external: true, class: USER_PROFILE_LINK_CLASSES }) do %>
+                Go to billing ↗
               <% end %>
             <% end %>
 
-            <% group.with_item do %>
-              <%= link_to_external "Book a demo ↗",
-                                   "https://calendar.app.google/bs6wimzo316W3yKz9",
-                                   class: USER_PROFILE_LINK_CLASSES %>
+            <% group.with_item(link: { path: "https://calendar.app.google/bs6wimzo316W3yKz9", external: true, class: USER_PROFILE_LINK_CLASSES }) do %>
+              Book a demo ↗
             <% end %>
           <% end %>
 
           <% dropdown.with_item_group do |group| %>
-            <% group.with_item do %>
-              <%= link_to "Sign out",
-                          destroy_user_session_path,
-                          "data-turbo": false,
-                          class: USER_PROFILE_LINK_CLASSES %>
-
+            <% group.with_item(link: { path: destroy_user_session_path, "data-turbo": false, class: USER_PROFILE_LINK_CLASSES }) do %>
+              Sign out
             <% end %>
           <% end %>
         <% end %>

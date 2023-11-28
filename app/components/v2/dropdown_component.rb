@@ -25,61 +25,6 @@ class V2::DropdownComponent < V2::BaseComponent
   renders_one :visual_icon, ->(**args) { VisualIconComponent.new(**args) }
   renders_many :item_groups, -> { ItemGroupComponent.new(list_style: list_style) }
 
-  class ItemGroupComponent < V2::BaseComponent
-    renders_many :items, ->(**args) { ItemComponent.new(**args) }
-
-    class ItemComponent < V2::BaseComponent
-      def initialize(link: nil, selected: false)
-        @link = link
-        @selected = selected
-      end
-
-      ITEM_STYLE = "flex items-center justify-between py-3 px-4 rounded hover:bg-gray-50 dark:hover:bg-gray-600"
-
-      def call
-        if @link.present?
-          link_to(@link, class: ITEM_STYLE) do
-            concat content
-            concat inline_svg("selected_check.svg", classname: "w-3 h-3 text-green-500") if @selected
-          end
-        else
-          content_tag(:div, class: ITEM_STYLE) do
-            content
-          end
-        end
-      end
-    end
-
-    def initialize(list_style: DROPDOWN_STYLE[:icon_only][:list])
-      @list_style = list_style
-    end
-
-    def call
-      content_tag(:ul, class: @list_style) do
-        items.collect do |item|
-          concat content_tag(:li, item)
-        end
-      end
-    end
-  end
-
-  class VisualIconComponent < V2::BaseComponent
-    def initialize(external_img: nil, internal_svg: nil)
-      raise ArgumentError, "can only be external or internal" if external_img.present? && internal_svg.present?
-
-      @external_img = external_img
-      @internal_svg = internal_svg
-    end
-
-    def call
-      if @external_img.present?
-        image_tag(@external_img, class: "w-8 h-8 rounded-full")
-      elsif @internal_svg.present?
-        inline_svg(@internal_svg + ".svg", classname: "w-4 h-4 rounded-full")
-      end
-    end
-  end
-
   def initialize(type: :button, arrow: :none)
     raise ArgumentError, "Invalid dropdown type" unless DROPDOWN_STYLE.include?(type)
     raise ArgumentError, "Invalid arrow type" unless ARROW_STYLES.keys.include?(arrow)
@@ -103,5 +48,76 @@ class V2::DropdownComponent < V2::BaseComponent
 
   def visual_icon_only?
     visual_icon? && !title_text?
+  end
+
+  class ItemGroupComponent < V2::BaseComponent
+    renders_many :items, ->(**args) { ItemComponent.new(**args) }
+
+    def initialize(list_style: DROPDOWN_STYLE[:icon_only][:list])
+      @list_style = list_style
+    end
+
+    def call
+      content_tag(:ul, class: @list_style) do
+        items.collect do |item|
+          concat content_tag(:li, item)
+        end
+      end
+    end
+
+    class ItemComponent < V2::BaseComponent
+      def initialize(link: nil, selected: false)
+        @link = link || {}
+        @selected = selected
+      end
+
+      ITEM_STYLE = "flex items-center justify-between py-3 px-4 rounded hover:bg-gray-50 dark:hover:bg-gray-600"
+
+      def call
+        if @link.present?
+          _link_to(link_path, **link_params) do
+            concat content
+            concat inline_svg("selected_check.svg", classname: "w-3 h-3 text-green-500") if @selected
+          end
+        else
+          content_tag(:div, class: ITEM_STYLE) do
+            content
+          end
+        end
+      end
+
+      def _link_to(path, **args, &blk)
+        return link_to_external(path, **args, &blk) if @link[:external]
+        link_to(path, **args, &blk)
+      end
+
+      def link_path
+        @link[:path]
+      end
+
+      def link_class
+        { class: @link[:class].presence || ITEM_STYLE }
+      end
+
+      def link_params
+        link_class.merge(@link.except(:class))
+      end
+    end
+  end
+
+  class VisualIconComponent < V2::BaseComponent
+    def initialize(external_img: nil, internal_svg: nil)
+      raise ArgumentError, "can only be external or internal" if external_img.present? && internal_svg.present?
+      @external_img = external_img
+      @internal_svg = internal_svg
+    end
+
+    def call
+      if @external_img.present?
+        image_tag(@external_img, class: "w-8 h-8 rounded-full")
+      elsif @internal_svg.present?
+        inline_svg(@internal_svg + ".svg", classname: "w-4 h-4 rounded-full")
+      end
+    end
   end
 end
