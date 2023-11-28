@@ -19,6 +19,7 @@ en:
       version_changed_html: 'Updated the release version to <span class="emphasize">%{version}</span>'
       version_corrected_html: 'Updated the release version to <span class="emphasize">%{version}</span> since the ongoing release has moved on to <span class="emphasize">%{ongoing_version}</span>'
       finished_html: 'Finished the platform release with version <span class="emphasize">%{version}</span>'
+      stopped_html: 'Stopped the platform release with version <span class="emphasize">%{version}</span>'
       tag_created_html: 'Tag <span class="emphasize">%{tag}</span> was cut'
     step_run:
       created_html: 'Started the step <span class="emphasize">%{name}</span> for <span class="emphasize">%{sha}</span>'

@@ -83,6 +83,11 @@ en:
         platform:
           ios: "iOS"
           android: "Android"
+        status:
+          finished: "completed"
+          stopped: "stopped"
+          on_track: "active"
+          created: "started"
       release_platform:
         platform:
           ios: "iOS"
@@ -91,6 +96,16 @@ en:
         release_type:
           hotfix: "Hotfix"
           release: "Release"
+        status:
+          created: "created"
+          on_track: "active"
+          post_release: "post release phase"
+          post_release_started: "post release started"
+          post_release_failed: "post release failed"
+          stopped: "stopped"
+          finished: "finished"
+          partially_finished: "partially finished"
+          stopped_after_partial_finish: "stopped after partial finish"
     attributes:
       integration:
         categories:

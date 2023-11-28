@@ -42,7 +42,7 @@ class ReleasePlatformRun < ApplicationRecord
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
   scope :have_not_reached_production, -> { on_track.reject(&:production_release_happened?) }
 
-  STAMPABLE_REASONS = %w[version_changed tag_created version_corrected finished]
+  STAMPABLE_REASONS = %w[version_changed tag_created version_corrected finished stopped]
 
   STATES = {
     created: "created",
@@ -61,7 +61,7 @@ class ReleasePlatformRun < ApplicationRecord
       transitions from: [:created, :on_track], to: :on_track
     end
 
-    event :stop do
+    event :stop, after_commit: -> { event_stamp!(reason: :stopped, kind: :notice, data: {version: release_version}) } do
       before { self.stopped_at = Time.current }
       transitions from: [:created, :on_track], to: :stopped
     end
