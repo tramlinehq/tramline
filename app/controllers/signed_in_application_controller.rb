@@ -105,11 +105,14 @@ class SignedInApplicationController < ApplicationController
   end
 
   def default_app
-    if @app.blank?
-      current_organization.default_app
-    else
-      @app
-    end
+    return if @app.blank? || !@app.persisted?
+    @app
+
+    # if @app.blank?
+    #   current_organization.default_app
+    # else
+    #   @app if @app.persisted?
+    # end
   end
 
   def app_id

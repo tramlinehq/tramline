@@ -33,30 +33,60 @@
             <% end %>
           <% end %>
 
-          <%= inline_svg("layer_separator.svg", classname: "w-3 h-3 text-gray-500 dark:text-gray-400 mx-2") %>
+          <% if default_app %>
+            <%= inline_svg("layer_separator.svg", classname: "w-3 h-3 text-gray-500 dark:text-gray-400 mx-2") %>
 
-          <%= render V2::DropdownComponent.new(type: :switcher, arrow: :double) do |dropdown| %>
-            <%= dropdown.with_visual_icon(external_img: "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png") %>
+            <%= render V2::DropdownComponent.new(type: :switcher, arrow: :double) do |dropdown| %>
+              <%= dropdown.with_visual_icon(external_img: "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png") %>
 
-            <% dropdown.with_title_text do %>
-              <%= default_app.name %>
-              <span class="text-gray-500 dark:text-gray-400"><%= default_app.bundle_identifier %></span>
-            <% end %>
+              <% dropdown.with_title_text do %>
+                <%= default_app.name %>
+                <span class="text-gray-500 dark:text-gray-400"><%= default_app.bundle_identifier %></span>
+              <% end %>
 
-            <% dropdown.with_item_group do |group| %>
-              <% current_organization.apps.each do |app| %>
-                <% group.with_item(link: { path: app_path(app) }, selected: app.id == default_app.id) do %>
-                  <div class="text-left">
-                    <div class="font-medium leading-none text-gray-900 dark:text-white mb-0.5 text-sm">
-                      <%= app.name %>
+              <% dropdown.with_item_group do |group| %>
+                <% current_organization.apps.each do |app| %>
+                  <% group.with_item(link: { path: app_path(app) }, selected: app.id == default_app.id) do %>
+                    <div class="text-left">
+                      <div class="font-medium leading-none text-gray-900 dark:text-white mb-0.5 text-sm">
+                        <%= app.name %>
+                      </div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">
+                        <%= app.bundle_identifier %>
+                      </div>
                     </div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">
-                      <%= app.bundle_identifier %>
-                    </div>
-                  </div>
+                  <% end %>
                 <% end %>
               <% end %>
             <% end %>
+
+            <%= render V2::ButtonComponent.new(
+              scheme: :light,
+              visual_icon: "v2/cog.svg",
+              options: edit_app_path(default_app),
+              type: :link,
+              size: :xxs,
+              html_options: { class: "p-1.5 ml-2" }
+            ) %>
+
+            <%= render V2::ButtonComponent.new(
+              scheme: :light,
+              visual_icon: "plus.svg",
+              options: new_app_path,
+              type: :link,
+              size: :xxs,
+              html_options: { class: "p-1.5 ml-2" }
+            ) %>
+
+            <%= render V2::ButtonComponent.new(
+              scheme: :default,
+              visual_icon: "plus.svg",
+              options: new_app_path,
+              type: :button,
+
+              label: "Add new app",
+              html_options: { class: "p-1.5 ml-2" }
+            ) %>
           <% end %>
         </div>
       </div>
