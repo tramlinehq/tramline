@@ -18,18 +18,16 @@
 
             <% dropdown.with_item_group do |group| %>
               <% current_user.organizations.each do |organization| %>
-                <% group.with_item do %>
-                  <%= link_to "/",
-                              class: "flex items-center py-3 px-4 rounded hover:bg-gray-50 dark:hover:bg-gray-600" do %>
-                    <div class="text-left">
-                      <div class="font-medium leading-none text-gray-900 dark:text-white mb-0.5 text-sm">
-                        <%= current_organization.name %>
-                      </div>
-                      <div class="text-xs text-gray-500 dark:text-gray-400">
-                        Created <%= time_format current_organization.created_at, with_year: true, with_time: false %>
-                      </div>
+                <% group.with_item(link: switch_accounts_organization_path(organization), selected: organization.id == current_organization.id) do %>
+                  <div class="text-left">
+                    <div class="font-medium leading-none text-gray-900 dark:text-white mb-0.5 text-sm">
+                      <%= organization.name %>
                     </div>
-                  <% end %>
+
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                      Created <%= time_format organization.created_at, with_year: true, with_time: false %>
+                    </div>
+                  </div>
                 <% end %>
               <% end %>
             <% end %>
@@ -47,18 +45,15 @@
 
             <% dropdown.with_item_group do |group| %>
               <% current_organization.apps.each do |app| %>
-                <% group.with_item do %>
-                  <%= link_to app_path(app),
-                              class: "flex items-center py-3 px-4 rounded hover:bg-gray-50 dark:hover:bg-gray-600" do %>
-                    <div class="text-left">
-                      <div class="font-medium leading-none text-gray-900 dark:text-white mb-0.5 text-sm">
-                        <%= app.name %>
-                      </div>
-                      <div class="text-xs text-gray-500 dark:text-gray-400">
-                        <%= app.bundle_identifier %>
-                      </div>
+                <% group.with_item(link: app_path(app), selected: app.id == default_app.id) do %>
+                  <div class="text-left">
+                    <div class="font-medium leading-none text-gray-900 dark:text-white mb-0.5 text-sm">
+                      <%= app.name %>
                     </div>
-                  <% end %>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                      <%= app.bundle_identifier %>
+                    </div>
+                  </div>
                 <% end %>
               <% end %>
             <% end %>

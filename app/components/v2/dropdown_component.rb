@@ -26,7 +26,29 @@ class V2::DropdownComponent < V2::BaseComponent
   renders_many :item_groups, -> { ItemGroupComponent.new(list_style: list_style) }
 
   class ItemGroupComponent < V2::BaseComponent
-    renders_many :items
+    renders_many :items, ->(**args) { ItemComponent.new(**args) }
+
+    class ItemComponent < V2::BaseComponent
+      def initialize(link: nil, selected: false)
+        @link = link
+        @selected = selected
+      end
+
+      ITEM_STYLE = "flex items-center justify-between py-3 px-4 rounded hover:bg-gray-50 dark:hover:bg-gray-600"
+
+      def call
+        if @link.present?
+          link_to(@link, class: ITEM_STYLE) do
+            concat content
+            concat inline_svg("selected_check.svg", classname: "w-3 h-3 text-green-500") if @selected
+          end
+        else
+          content_tag(:div, class: ITEM_STYLE) do
+            content
+          end
+        end
+      end
+    end
 
     def initialize(list_style: DROPDOWN_STYLE[:icon_only][:list])
       @list_style = list_style
