@@ -38,7 +38,7 @@ class V2::ButtonComponent < V2::BaseComponent
     xl: "px-6 py-3.5 text-base"
   }
 
-  def initialize(label: nil, scheme: :default, type: :button, visual_icon: nil, size: :base, options: nil, html_options: nil)
+  def initialize(label: nil, scheme: :default, type: :button, visual_icon: nil, tooltip: nil, size: :base, options: nil, html_options: nil)
     raise ArgumentError, "Invalid scheme" unless SCHEMES.include?(scheme)
     raise ArgumentError, "Invalid button type" unless TYPES.include?(type)
     raise ArgumentError, "Invalid size" unless SIZES.keys.include?(size)
@@ -48,12 +48,21 @@ class V2::ButtonComponent < V2::BaseComponent
     @type = type
     @size = size
     @visual_icon = visual_icon
+    @tooltip = tooltip
     @options = options
     @html_options = html_options
   end
 
   def before_render
     @html_options = apply_html_options(@html_options)
+  end
+
+  def render_component
+    if link?
+      link_to_component
+    elsif button?
+      button_to_component
+    end
   end
 
   def link_to_component
@@ -89,6 +98,10 @@ class V2::ButtonComponent < V2::BaseComponent
     end
   end
 
+  def tooltip_component
+    V2::TooltipComponent.new(text: @tooltip) if @tooltip
+  end
+
   private
 
   def apply_button_loader(value)
@@ -103,11 +116,19 @@ class V2::ButtonComponent < V2::BaseComponent
     options[:class] << " #{new_options[:class]}"
     options[:class] << " #{SIZES[@size]}"
     options[:class].squish
+
+    if @tooltip
+      options[:data] ||= {}
+      options[:data][:popup_target] = "element"
+      options[:data][:action] = "mouseover->popup#show mouseout->popup#hide"
+    end
+
     options.merge(new_options.except(:class))
   end
 
   def link?
     @type == :link
+
   end
 
   def button?
