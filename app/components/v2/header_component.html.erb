@@ -66,7 +66,7 @@
               options: edit_app_path(default_app),
               type: :link,
               size: :xxs,
-              html_options: { class: "p-1.5 ml-2" }
+              html_options: { class: "ml-2" }
             ) %>
 
             <%= render V2::ButtonComponent.new(
@@ -75,17 +75,7 @@
               options: new_app_path,
               type: :link,
               size: :xxs,
-              html_options: { class: "p-1.5 ml-2" }
-            ) %>
-
-            <%= render V2::ButtonComponent.new(
-              scheme: :default,
-              visual_icon: "plus.svg",
-              options: new_app_path,
-              type: :button,
-
-              label: "Add new app",
-              html_options: { class: "p-1.5 ml-2" }
+              html_options: { class: "ml-2" }
             ) %>
           <% end %>
         </div>
