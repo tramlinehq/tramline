@@ -1,4 +1,6 @@
 class ReleaseMonitoringComponent < ViewComponent::Base
+  include AssetsHelper
+  include ApplicationHelper
   attr_reader :deployment_run
 
   delegate :adoption_rate, :errors_count, :new_errors_count, to: :release_data
@@ -27,6 +29,19 @@ class ReleaseMonitoringComponent < ViewComponent::Base
 
   def staged_rollout
     @staged_rollout ||= deployment_run.staged_rollout
+  end
+
+  def events
+    @deployment_run.release_health_events.map do |event|
+      type = event.healthy? ? :success : :error
+      title = event.healthy? ? "Release is unhealthy" : "Release is healthy"
+      {
+        timestamp: time_format(event.event_timestamp, with_year: false),
+        title:,
+        description: event.description,
+        type:
+      }
+    end
   end
 
   def staged_rollout_percentage

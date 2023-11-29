@@ -12,6 +12,7 @@
 #  release_health_rule_id :uuid             not null, indexed, indexed => [metric]
 #
 class RuleExpression < ApplicationRecord
+  include Displayable
   belongs_to :release_health_rule
 
   enum comparator: {
@@ -37,5 +38,17 @@ class RuleExpression < ApplicationRecord
     raise ArgumentError, "Invalid comparator" unless comparator_proc
 
     comparator_proc.call(value, threshold_value)
+  end
+
+  COMPARATOR_DESCRIPTION = {
+    lt: {healthy: "is above", unhealthy: "is below"},
+    lte: {healthy: "is above", unhealthy: "is below"},
+    gt: {healthy: "is below", unhealthy: "is above"},
+    gte: {healthy: "is below", unhealthy: "is above"},
+    eq: {healthy: "is not equal to", unhealthy: "is equal to"}
+  }.with_indifferent_access
+
+  def describe_comparator(health_status)
+    COMPARATOR_DESCRIPTION[comparator][health_status]
   end
 end

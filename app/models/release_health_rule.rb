@@ -24,4 +24,8 @@ class ReleaseHealthRule < ApplicationRecord
 
     !results.any?
   end
+
+  def description
+    name + " rule with condition(s): " + trigger_rule_expressions.map(&:description).join(", ")
+  end
 end

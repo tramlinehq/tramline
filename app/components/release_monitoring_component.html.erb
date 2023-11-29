@@ -11,16 +11,24 @@
                                            subtitle: "Last 24 hours",
                                            provider: monitoring_provider) %>
       <%= render MetricCardComponent.new(name: "Stability",
-                                         values: { "users" => user_stability, "sessions" => session_stability },
+                                         values: { "users" => { value: user_stability, is_healthy: false },
+                                                   "sessions" => { value: session_stability, is_healthy: true } },
                                          provider: monitoring_provider,
                                          external_url: monitoring_provider_url) %>
       <%= render MetricCardComponent.new(name: "Errors",
-                                         values: { "total" => errors_count, "new" => new_errors_count },
+                                         values: { "total" => { value: errors_count },
+                                                   "new" => { value: new_errors_count } },
                                          provider: monitoring_provider,
                                          external_url: monitoring_provider_url) %>
       <% if helpers.current_user.release_monitoring? && adoption_chart_data.present? %>
         <div class="col-span-2"><%= render ChartComponent.new(adoption_chart_data, icon: "sparkles.svg") %></div>
       <% end %>
     </div>
+    <% if events.present? %>
+      <div class="text-slate-500 text-md mt-4">Health Trigger Events</div>
+      <div class="mt-4 ml-2">
+        <%= render TimelineComponent.new(events:) %>
+      </div>
+    <% end %>
   </article>
 <% end %>
