@@ -1,0 +1,29 @@
+<div class="mb-1 flex justify-between">
+  <div class="flex flex-row justify-between items-center">
+    <div>
+      <h1 class="text-2xl font-semibold text-neutral-800 dark:text-white tracking-wide">
+        <%= title %>
+      </h1>
+      <% if subtitle %>
+        <span class="mt-1 text-sm"><%= subtitle %></span>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="md:mt-0 flex flex-wrap gap-2 shrink-0">
+    <% actions.each do |action| %>
+      <%= action %>
+    <% end %>
+
+  </div>
+</div>
+
+<div class="-mx-2 dark:text-neutral-200 flex flex-row flex-wrap mt-10 sm:space-x-2 text-neutral-300">
+  <% sub_actions.each do |sub_action| %>
+    <%= sub_action %>
+  <% end %>
+</div>
+
+<section class="mt-8">
+  <%= body %>
+</section>

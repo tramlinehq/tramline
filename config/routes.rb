@@ -66,7 +66,7 @@ Rails.application.routes.draw do
         resources :steps, only: %i[new create edit update]
       end
 
-      resources :releases, only: %i[show create destroy], shallow: true do
+      resources :releases, only: %i[show create destroy index], shallow: true do
         resources :commits, only: [], shallow: false do
           member do
             post :apply

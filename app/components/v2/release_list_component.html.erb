@@ -1,0 +1,95 @@
+<%= render V2::ContainerComponent.new(title: "Releases") do |container| %>
+  <% container.with_action do %>
+    <%= render V2::ButtonComponent.new(
+      scheme: :default,
+      visual_icon: "play.svg",
+      options: new_app_path,
+      type: :link,
+      size: :xxs,
+      label: "Prepare new release",
+      tooltip: "App Settings",
+    ) %>
+  <% end %>
+
+  <% container.with_sub_action do %>
+    <%= render V2::ButtonComponent.new(
+      scheme: :supporting,
+      label: "App Settings",
+      visual_icon: "plus.svg",
+      options: new_app_path,
+      type: :link,
+      size: :xxs
+    ) %>
+  <% end %>
+
+  <% container.with_sub_action do %>
+    <%= render V2::ButtonComponent.new(
+      scheme: :supporting,
+      label: "Configure",
+      visual_icon: "v2/cog.svg",
+      options: new_app_path,
+      type: :link,
+      size: :xxs
+    ) %>
+  <% end %>
+
+  <% container.with_body do %>
+    <%= render V2::TableComponent.new(caption: "Previous Releases",
+                                      caption_text: "The last 20 releases you have made",
+                                      columns: ["release", "completed", "duration", ""]) do |table| %>
+      <% table.with_row do |row| %>
+        <% row.with_cell do %>
+          <div>Add V2::ReleaseList template here</div>
+        <% end %>
+
+        <% row.with_cell do %>
+          <div>Add V2::ReleaseList template here</div>
+        <% end %>
+
+        <% row.with_cell do %>
+          <div>Add V2::ReleaseList template here</div>
+        <% end %>
+
+        <% row.with_cell do %>
+          <%= inline_svg("v2/arrow_right.svg", classname: "w-4 h-4") %>
+        <% end %>
+      <% end %>
+
+      <% table.with_row do |row| %>
+        <% row.with_cell do %>
+          <div>Add V2::ReleaseList template here</div>
+        <% end %>
+
+        <% row.with_cell do %>
+          <div>Add V2::ReleaseList template here</div>
+        <% end %>
+
+        <% row.with_cell do %>
+          <div>Add V2::ReleaseList template here</div>
+        <% end %>
+
+        <% row.with_cell do %>
+          <%= inline_svg("v2/arrow_right.svg", classname: "w-4 h-4") %>
+        <% end %>
+
+      <% end %>
+      <% table.with_row do |row| %>
+        <% row.with_cell do %>
+          <div>Add V2::ReleaseList template here</div>
+        <% end %>
+
+        <% row.with_cell do %>
+          <div>Add V2::ReleaseList template here</div>
+        <% end %>
+
+        <% row.with_cell do %>
+          <div>Add V2::ReleaseList template here</div>
+        <% end %>
+
+        <% row.with_cell do %>
+          <%= inline_svg("v2/arrow_right.svg", classname: "w-4 h-4") %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
