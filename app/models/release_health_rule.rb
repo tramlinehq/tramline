@@ -2,49 +2,26 @@
 #
 # Table name: release_health_rules
 #
-#  id              :uuid             not null, primary key
-#  comparator      :string           not null
-#  is_halting      :boolean          default(FALSE), not null
-#  metric          :string           not null, indexed, indexed => [train_id]
-#  threshold_value :float            not null
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  train_id        :uuid             not null, indexed, indexed => [metric]
+#  id         :uuid             not null, primary key
+#  is_halting :boolean          default(FALSE), not null
+#  name       :string
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#  train_id   :uuid             not null, indexed
 #
 class ReleaseHealthRule < ApplicationRecord
-  include HealthAwareness
   belongs_to :train
+  has_many :trigger_rule_expressions, dependent: :destroy
+  has_many :filter_rule_expressions, dependent: :destroy
 
-  enum metric: {
-    session_stability: "session_stability",
-    user_stability: "user_stability",
-    errors: "errors",
-    new_errors: "new_errors"
-  }
+  def healthy?(metric)
+    return self.class.health_statuses[:healthy] if trigger_rule_expressions.blank?
 
-  enum comparator: {
-    lt: "lt",
-    lte: "lte",
-    gt: "gt",
-    gte: "gte",
-    eq: "eq"
-  }
+    results = trigger_rule_expressions.map do |expr|
+      value = metric.send(ReleaseHealthMetric::METRIC_VALUES[expr.metric])
+      expr.evaluate(value) if value
+    end.compact
 
-  COMPARATORS = {
-    lt: ->(value, threshold) { value < threshold },
-    lte: ->(value, threshold) { value <= threshold },
-    gt: ->(value, threshold) { value > threshold },
-    gte: ->(value, threshold) { value >= threshold },
-    eq: ->(value, threshold) { value == threshold }
-  }
-
-  validates :metric, uniqueness: {scope: :train_id}
-
-  def evaluate(value)
-    comparator_proc = COMPARATORS[comparator.to_sym]
-    raise ArgumentError, "Invalid comparator" unless comparator_proc
-
-    return ReleaseHealthRule.health_statuses[:healthy] if comparator_proc.call(value, threshold_value)
-    ReleaseHealthRule.health_statuses[:unhealthy]
+    !results.any?
   end
 end
