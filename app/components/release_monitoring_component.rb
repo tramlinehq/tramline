@@ -32,9 +32,9 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def events
-    @deployment_run.release_health_events.map do |event|
+    @deployment_run.release_health_events.last(3).map do |event|
       type = event.healthy? ? :success : :error
-      title = event.healthy? ? "Release is unhealthy" : "Release is healthy"
+      title = event.healthy? ? "Release is healthy" : "Release is unhealthy"
       {
         timestamp: time_format(event.event_timestamp, with_year: false),
         title:,

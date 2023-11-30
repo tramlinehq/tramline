@@ -12,6 +12,7 @@ class MetricCardComponent < ViewComponent::Base
   end
 
   def metric_color(is_healthy)
+    return "test-gray-800" unless helpers.current_user.release_monitoring?
     case is_healthy
     when true
       "text-green-800"
@@ -23,6 +24,7 @@ class MetricCardComponent < ViewComponent::Base
   end
 
   def metric_title(metric)
+    return unless helpers.current_user.release_monitoring?
     return "unhealthy" if metric[:is_healthy] == false
     "healthy" if metric[:is_healthy] == true
   end

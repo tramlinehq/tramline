@@ -18,4 +18,28 @@ class TimelineComponent < ViewComponent::Base
   def event_color(event)
     EVENT_TYPE.fetch(event[:type] || :neutral)
   end
+
+  def time_style(dark: false)
+    style = "text-gray-400"
+    style += " dark:text-gray-500" if dark
+    style
+  end
+
+  def title_style(dark: false)
+    style = "text-gray-900"
+    style += " dark:text-white" if dark
+    style
+  end
+
+  def description_style(dark: false)
+    style = "text-gray-500"
+    style += " dark:text-gray-400" if dark
+    style
+  end
+
+  def border_style(dark: false)
+    style = "border-gray-200"
+    style += " dark:border-gray-700" if dark
+    style
+  end
 end

@@ -20,11 +20,11 @@
                                                    "new" => { value: new_errors_count } },
                                          provider: monitoring_provider,
                                          external_url: monitoring_provider_url) %>
-      <% if helpers.current_user.release_monitoring? && adoption_chart_data.present? %>
+      <% if adoption_chart_data.present? %>
         <div class="col-span-2"><%= render ChartComponent.new(adoption_chart_data, icon: "sparkles.svg") %></div>
       <% end %>
     </div>
-    <% if events.present? %>
+    <% if helpers.current_user.release_monitoring? && events.present? %>
       <div class="text-slate-500 text-md mt-4">Health Trigger Events</div>
       <div class="mt-4 ml-2">
         <%= render TimelineComponent.new(events:) %>

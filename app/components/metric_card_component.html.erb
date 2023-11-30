@@ -11,7 +11,7 @@
         <div class="text-xs text-gray-400 uppercase"><%= key %></div>
         <div class="flex items-center gap-x-1 text-xl <%= metric_color(val[:is_healthy]) %>" title="<%= metric_title(val) %>">
           <%= val[:value] %>
-          <% if val[:is_healthy] == false %>
+          <% if helpers.current_user.release_monitoring? && val[:is_healthy] == false %>
             <%= inline_svg "exclamation.svg", classname: "w-5 h-5 text-red-800" %>
           <% end %>
         </div>
