@@ -15,14 +15,21 @@ class ReleaseHealthRule < ApplicationRecord
   has_many :filter_rule_expressions, dependent: :destroy
 
   def healthy?(metric)
-    return self.class.health_statuses[:healthy] if trigger_rule_expressions.blank?
+    return true if trigger_rule_expressions.blank?
 
-    results = trigger_rule_expressions.map do |expr|
+    filters = filter_rule_expressions.map do |expr|
+      value = metric.send(ReleaseHealthMetric::METRIC_VALUES[expr.metric])
+      expr.evaluate(value) if value
+    end
+
+    return true unless filters.all?
+
+    triggers = trigger_rule_expressions.map do |expr|
       value = metric.send(ReleaseHealthMetric::METRIC_VALUES[expr.metric])
       expr.evaluate(value) if value
     end.compact
 
-    !results.any?
+    !triggers.any?
   end
 
   def description

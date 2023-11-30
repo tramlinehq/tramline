@@ -28,7 +28,8 @@ class ReleaseHealthMetric < ApplicationRecord
     session_stability: :session_stability,
     user_stability: :user_stability,
     errors: :errors_count,
-    new_errors: :new_errors_count
+    new_errors: :new_errors_count,
+    adoption_rate: :adoption_rate
   }.with_indifferent_access
 
   def user_stability
