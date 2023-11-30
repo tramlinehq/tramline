@@ -7,8 +7,10 @@
       <%= visual_icon %>
     <% else %>
       <div class="flex items-center mr-2">
-        <%= visual_icon %>
-        <div class="text-left ml-2">
+        <% if visual_icon? %>
+          <span class="mr-2"><%= visual_icon %></span>
+        <% end %>
+        <div class="text-left">
           <div class="text-sm font-semibold leading-none text-gray-900 dark:text-white">
             <%= title_text %>
           </div>

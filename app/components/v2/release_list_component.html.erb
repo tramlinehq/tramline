@@ -14,8 +14,8 @@
   <% container.with_sub_action do %>
     <%= render V2::ButtonComponent.new(
       scheme: :supporting,
-      label: "App Settings",
-      visual_icon: "plus.svg",
+      label: "Configure",
+      visual_icon: "v2/cog.svg",
       options: new_app_path,
       type: :link,
       size: :xxs
@@ -25,8 +25,8 @@
   <% container.with_sub_action do %>
     <%= render V2::ButtonComponent.new(
       scheme: :supporting,
-      label: "Configure",
-      visual_icon: "v2/cog.svg",
+      label: "Deactivate",
+      visual_icon: "v2/pause.svg",
       options: new_app_path,
       type: :link,
       size: :xxs
@@ -34,6 +34,11 @@
   <% end %>
 
   <% container.with_body do %>
+    <%= render V2::ReleaseOverviewComponent.new %>
+    <%= render V2::ReleaseOverviewComponent.new %>
+    <%= render V2::ReleaseOverviewComponent.new %>
+    <%= render V2::ReleaseOverviewComponent.new %>
+
     <%= render V2::TableComponent.new(caption: "Previous Releases",
                                       caption_text: "The last 20 releases you have made",
                                       columns: ["release", "completed", "duration", ""]) do |table| %>
