@@ -114,11 +114,11 @@ class GoogleFirebaseIntegration < ApplicationRecord
     (sliced || []).push(EMPTY_CHANNEL)
   end
 
-  def upload(file, platform:)
+  def upload(file, filename, platform:)
     raise ArgumentError, "platform must be valid" unless valid_platforms.include?(platform)
 
     GitHub::Result.new do
-      installation.upload(file, fetch_app_id(platform))
+      installation.upload(file, filename, fetch_app_id(platform))
     end
   end
 
