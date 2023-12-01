@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_11_29_095717) do
+ActiveRecord::Schema[7.0].define(version: 2023_12_01_063400) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -404,12 +404,12 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_29_095717) do
   end
 
   create_table "release_health_rules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "train_id", null: false
     t.boolean "is_halting", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "name"
-    t.index ["train_id"], name: "index_release_health_rules_on_train_id"
+    t.uuid "release_platform_id", null: false
+    t.index ["release_platform_id"], name: "index_release_health_rules_on_release_platform_id"
   end
 
   create_table "release_metadata", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -666,7 +666,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_29_095717) do
   add_foreign_key "release_health_events", "release_health_metrics"
   add_foreign_key "release_health_events", "release_health_rules"
   add_foreign_key "release_health_metrics", "deployment_runs"
-  add_foreign_key "release_health_rules", "trains"
+  add_foreign_key "release_health_rules", "release_platforms"
   add_foreign_key "release_metadata", "release_platform_runs"
   add_foreign_key "release_platform_runs", "commits", column: "last_commit_id"
   add_foreign_key "release_platform_runs", "release_platforms"

@@ -2,15 +2,15 @@
 #
 # Table name: release_health_rules
 #
-#  id         :uuid             not null, primary key
-#  is_halting :boolean          default(FALSE), not null
-#  name       :string
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
-#  train_id   :uuid             not null, indexed
+#  id                  :uuid             not null, primary key
+#  is_halting          :boolean          default(FALSE), not null
+#  name                :string
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
+#  release_platform_id :uuid             not null, indexed
 #
 class ReleaseHealthRule < ApplicationRecord
-  belongs_to :train
+  belongs_to :release_platform
   has_many :trigger_rule_expressions, dependent: :destroy
   has_many :filter_rule_expressions, dependent: :destroy
 

@@ -20,7 +20,7 @@ class ReleaseHealthMetric < ApplicationRecord
   belongs_to :deployment_run
   has_one :release_health_event, dependent: :nullify
 
-  delegate :train, to: :deployment_run
+  delegate :release_health_rules, to: :deployment_run
 
   after_create_commit :check_release_health
 
@@ -48,8 +48,8 @@ class ReleaseHealthMetric < ApplicationRecord
   end
 
   def check_release_health
-    return if train.release_health_rules.blank?
-    train.release_health_rules.each do |rule|
+    return if release_health_rules.blank?
+    release_health_rules.each do |rule|
       create_health_event(rule)
     end
   end
