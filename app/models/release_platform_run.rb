@@ -75,6 +75,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
+  delegate :versioning_strategy, to: :release
   delegate :all_commits, :original_release_version, :hotfix?, to: :release
   delegate :steps, :train, :app, :platform, to: :release_platform
 
@@ -134,8 +135,8 @@ class ReleasePlatformRun < ApplicationRecord
 
     semverish = newest_release_version.to_semverish
 
-    self.release_version = semverish.bump!(:patch).to_s if semverish.proper?
-    self.release_version = semverish.bump!(:minor).to_s if semverish.partial?
+    self.release_version = semverish.bump!(:patch, strategy: versioning_strategy).to_s if semverish.proper?
+    self.release_version = semverish.bump!(:minor, strategy: versioning_strategy).to_s if semverish.partial?
 
     save!
 

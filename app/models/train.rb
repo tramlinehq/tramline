@@ -33,6 +33,7 @@
 #
 class Train < ApplicationRecord
   has_paper_trail
+  using RefinedArray
   using RefinedString
   extend FriendlyId
   include Rails.application.routes.url_helpers
@@ -67,13 +68,9 @@ class Train < ApplicationRecord
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :monitoring_provider, to: :integrations
   delegate :fixed_build_number?, to: :organization
 
-  enum status: {
-    draft: "draft",
-    active: "active",
-    inactive: "inactive"
-  }
-
+  enum status: {draft: "draft", active: "active", inactive: "inactive"}
   enum backmerge_strategy: {continuous: "continuous", on_finalize: "on_finalize"}
+  enum versioning_strategy: {semver: "Semver", year_and_next_week: "Year and Next Week"}
 
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
