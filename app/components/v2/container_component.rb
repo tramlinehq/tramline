@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class V2::ContainerComponent < ViewComponent::Base
+  renders_one :empty_state
   renders_one :body
   renders_many :actions
   renders_many :sub_actions

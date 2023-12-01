@@ -79,6 +79,16 @@
               tooltip: "Create a new app",
               html_options: { class: "ml-2" }
             ) %>
+
+            <%= render V2::ButtonComponent.new(
+              scheme: :light,
+              visual_icon: "box.svg",
+              options: new_app_path,
+              type: :link,
+              size: :xxs,
+              label: "Store Status",
+              html_options: { class: "ml-2" }
+            ) %>
           <% end %>
         </div>
       </div>

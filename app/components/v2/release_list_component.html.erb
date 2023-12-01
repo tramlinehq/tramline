@@ -33,11 +33,44 @@
     ) %>
   <% end %>
 
+  <% container.with_sub_action do %>
+    <%= render V2::ButtonComponent.new(
+      scheme: :supporting,
+      label: "Delete",
+      visual_icon: "trash.svg",
+      options: new_app_path,
+      type: :link,
+      size: :xxs
+    ) %>
+  <% end %>
+
   <% container.with_body do %>
     <%= render V2::ReleaseOverviewComponent.new %>
     <%= render V2::ReleaseOverviewComponent.new %>
     <%= render V2::ReleaseOverviewComponent.new %>
-    <%= render V2::ReleaseOverviewComponent.new %>
+
+    <% if devops_report.present? %>
+      <article class="mb-8 pb-4">
+        <h2 class="text-2xl font-bold mb-4">Mobile DevOps</h2>
+        <div class="grid grid-cols-4 gap-x-1 my-3 gap-y-1">
+          <%= render ChartComponent.new(devops_report[:mobile_devops][:frequency], icon: "cog.svg") %>
+          <%= render ChartComponent.new(devops_report[:mobile_devops][:duration], icon: "cog.svg") %>
+          <%= render ChartComponent.new(devops_report[:mobile_devops][:hotfixes], icon: "cog.svg") %>
+          <%= render ChartComponent.new(devops_report[:mobile_devops][:time_in_review], icon: "cog.svg") %>
+          <div class="col-span-2">
+            <%= render ChartComponent.new(devops_report[:mobile_devops][:time_in_phases], icon: "cog.svg") %>
+          </div>
+        </div>
+      </article>
+
+      <article class="mb-8 pb-4">
+        <h2 class="text-2xl font-bold mb-4">Operational Efficiency</h2>
+        <div class="grid grid-cols-4 gap-x-1 my-3 gap-y-1">
+          <%= render ChartComponent.new(devops_report[:operational_efficiency][:contributors], icon: "user.svg") %>
+          <%= render ChartComponent.new(devops_report[:operational_efficiency][:stability_contributors], icon: "user.svg") %>
+        </div>
+      </article>
+    <% end %>
 
     <%= render V2::TableComponent.new(caption: "Previous Releases",
                                       caption_text: "The last 20 releases you have made",
@@ -96,5 +129,17 @@
         <% end %>
       <% end %>
     <% end %>
+  <% end %>
+
+  <% container.with_empty_state do %>
+    <div class="flex justify-center mt-24">
+      <div class="flex flex-col justify-start">
+        <h1 class="text-xl font-semibold text-neutral-800 dark:text-white">Create your very first release</h1>
+        <div class="mt-6 max-w-[200px] font-medium text-xs dark:text-gray-300 text-gray-400">
+          There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable.
+        </div>
+      </div>
+      <%= image_tag("art/no_releases.png", width: 450, alt: "no releases yet", class: "rounded-sm") %>
+    </div>
   <% end %>
 <% end %>
