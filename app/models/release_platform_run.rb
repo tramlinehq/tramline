@@ -109,7 +109,7 @@ class ReleasePlatformRun < ApplicationRecord
     train.hotfix_release.next_version if train.hotfix_release&.version_ahead?(self)
   end
 
-  def bump_fixed_version!
+  def bump_version_for_fixed_build_number!
     return unless train.fixed_build_number?
     return if release.all_commits.size == 1
 
@@ -118,7 +118,7 @@ class ReleasePlatformRun < ApplicationRecord
       app.bump_build_number!
     end
 
-    self.release_version = release_version.to_semverish.bump!(:patch).to_s
+    self.release_version = release_version.to_semverish.bump!(:patch, strategy: versioning_strategy).to_s
     save!
 
     event_stamp!(
@@ -135,8 +135,8 @@ class ReleasePlatformRun < ApplicationRecord
 
     semverish = newest_release_version.to_semverish
 
-    self.release_version = semverish.bump!(:patch, strategy: versioning_strategy).to_s if semverish.proper?
-    self.release_version = semverish.bump!(:minor, strategy: versioning_strategy).to_s if semverish.partial?
+    self.release_version = semverish.bump!(:patch).to_s if semverish.proper?
+    self.release_version = semverish.bump!(:minor).to_s if semverish.partial?
 
     save!
 

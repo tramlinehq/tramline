@@ -376,12 +376,7 @@ class StepRun < ApplicationRecord
   end
 
   def update_build_number!
-    build_number =
-      if release.fixed_build_number.present?
-        app.build_number
-      else
-        app.bump_build_number!
-      end
+    build_number = release.fixed_build_number.present? ? app.build_number : app.bump_build_number!
     update!(build_number:)
   end
 
