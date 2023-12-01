@@ -132,7 +132,7 @@ class Release < ApplicationRecord
   after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
 
-  attr_accessor :has_major_bump, :force_finalize, :hotfix_platform
+  attr_accessor :has_major_bump, :force_finalize, :hotfix_platform, :custom_release_version
 
   delegate :versioning_strategy, to: :train
   delegate :app, :pre_release_prs?, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
@@ -396,6 +396,11 @@ class Release < ApplicationRecord
   end
 
   def set_version
+    if custom_release_version.present?
+      self.original_release_version = custom_release_version
+      return
+    end
+
     self.original_release_version = if hotfix?
       train.hotfix_from&.next_version(patch_only: hotfix?)
     else

@@ -7,11 +7,11 @@ class Triggers::Release
   AppInDraftMode = Class.new(StandardError)
   UpcomingReleaseNotAllowed = Class.new(StandardError)
 
-  def self.call(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false, hotfix_platform: nil)
-    new(train, has_major_bump:, release_type:, new_hotfix_branch:, automatic:, hotfix_platform:).call
+  def self.call(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false, hotfix_platform: nil, custom_release_version: nil)
+    new(train, has_major_bump:, release_type:, new_hotfix_branch:, automatic:, hotfix_platform:, custom_release_version:).call
   end
 
-  def initialize(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false, hotfix_platform: nil)
+  def initialize(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false, hotfix_platform: nil, custom_release_version: nil)
     @train = train
     @starting_time = Time.current
     @has_major_bump = has_major_bump
@@ -19,6 +19,7 @@ class Triggers::Release
     @release_type = release_type
     @new_hotfix_branch = new_hotfix_branch
     @hotfix_platform = hotfix_platform
+    @custom_release_version = custom_release_version
   end
 
   def call
@@ -41,7 +42,7 @@ class Triggers::Release
 
   private
 
-  attr_reader :train, :starting_time, :automatic, :release, :release_type, :new_hotfix_branch, :hotfix_platform
+  attr_reader :train, :starting_time, :automatic, :release, :release_type, :new_hotfix_branch, :hotfix_platform, :custom_release_version
   delegate :branching_strategy, :hotfix_from, to: :train
 
   memoize def kickoff
@@ -68,7 +69,8 @@ class Triggers::Release
       release_type: release_type,
       hotfixed_from: hotfix_from,
       new_hotfix_branch: new_hotfix_branch,
-      hotfix_platform: (hotfix_platform if hotfix?)
+      hotfix_platform: (hotfix_platform if hotfix?),
+      custom_release_version: custom_release_version
     )
   end
 

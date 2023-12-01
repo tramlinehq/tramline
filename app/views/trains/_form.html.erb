@@ -164,7 +164,7 @@
         </div>
       <% end %>
 
-      <%= if current_organization.fixed_build_number? %>
+      <% if current_organization.fixed_build_number? %>
         <%= render partial: "trains/versioning_strategy", locals: { form:, train: } %>
       <% end %>
     </section>
