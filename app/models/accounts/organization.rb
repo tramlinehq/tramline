@@ -50,6 +50,10 @@ class Accounts::Organization < ApplicationRecord
     Flipper.enabled?(:deploy_action_enabled, self)
   end
 
+  def fixed_build_number?
+    Flipper.enabled?(:fixed_build_number, self)
+  end
+
   def owner
     users.includes(:memberships).where(memberships: {role: "owner"}).sole
   end

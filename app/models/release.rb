@@ -238,6 +238,11 @@ class Release < ApplicationRecord
     release_platform_runs.pluck(:release_version).map(&:to_semverish).max.to_s
   end
 
+  def fixed_build_number
+    return unless train.fixed_build_number?
+    step_runs.first.build_number
+  end
+
   alias_method :version_current, :release_version
 
   def release_branch

@@ -87,7 +87,11 @@ class Commit < ApplicationRecord
 
   def trigger_step_runs_for(platform_run, force: false)
     return if release.hotfix? && !force
-    platform_run.bump_version!
+    if train.fixed_build_number?
+      platform_run.bump_fixed_version!
+    else
+      platform_run.bump_version!
+    end
     platform_run.update!(last_commit: self)
 
     platform_run.release_platform.ordered_steps_until(platform_run.current_step_number).each do |step|

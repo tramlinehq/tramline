@@ -63,8 +63,9 @@ class Train < ApplicationRecord
   scope :running, -> { includes(:releases).where(releases: {status: Release.statuses[:on_track]}) }
   scope :only_with_runs, -> { joins(:releases).where.not(releases: {status: "stopped"}).distinct }
 
-  delegate :ready?, :config, to: :app
+  delegate :ready?, :config, :organization, to: :app
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :monitoring_provider, to: :integrations
+  delegate :fixed_build_number?, to: :organization
 
   enum status: {
     draft: "draft",

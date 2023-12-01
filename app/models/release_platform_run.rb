@@ -108,6 +108,25 @@ class ReleasePlatformRun < ApplicationRecord
     train.hotfix_release.next_version if train.hotfix_release&.version_ahead?(self)
   end
 
+  def bump_fixed_version!
+    return unless train.fixed_build_number?
+    return if release.all_commits.size == 1
+
+    if version_bump_required?
+      self.in_store_resubmission = true
+      app.bump_build_number!
+    end
+
+    self.release_version = release_version.to_semverish.bump!(:patch).to_s
+    save!
+
+    event_stamp!(
+      reason: :version_changed,
+      kind: :notice,
+      data: {version: release_version}
+    )
+  end
+
   def bump_version!
     return unless version_bump_required?
 
