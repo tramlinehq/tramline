@@ -97,7 +97,6 @@ class TrainsController < SignedInApplicationController
       :minor_version_seed,
       :patch_version_seed,
       :branching_strategy,
-      :versioning_strategy,
       :release_backmerge_branch,
       :release_branch,
       :kickoff_at,

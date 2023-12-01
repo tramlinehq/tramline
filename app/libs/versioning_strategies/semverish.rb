@@ -3,34 +3,15 @@ class VersioningStrategies::Semverish
 
   TEMPLATES = {
     "Positive Number" => :pn,
-    "Calendar Year And Next Week" => :yy0w1
+    "Current Year" => :yyyy
   }
 
   INCREMENTS = {
     TEMPLATES["Positive Number"] => proc { |v| (!v.nil?) ? v.abs + 1 : nil },
-    TEMPLATES["Calendar Year And Next Week"] => proc { |_v|
-      now = Time.current
-      Integer("#{now.year.to_s[2..3]}#{now.strftime("%U").to_i + 1}")
-    }
+    TEMPLATES["Current Year"] => proc { |_v| Time.current.year }
   }
 
-  STRATEGIES = {
-    semver: {
-      major: TEMPLATES["Positive Number"],
-      minor: TEMPLATES["Positive Number"],
-      patch: TEMPLATES["Positive Number"],
-      update_minor_on_major_bump: false
-    },
-
-    year_and_next_week: {
-      major: TEMPLATES["Positive Number"],
-      minor: TEMPLATES["Calendar Year And Next Week"],
-      patch: TEMPLATES["Positive Number"],
-      update_minor_on_major_bump: true
-    }
-  }
-
-  DEFAULT_STRATEGY = :semver
+  DEFAULT_TEMPLATE = TEMPLATES["Positive Number"]
 
   # adapted from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
   # makes the patch version optional
@@ -55,16 +36,12 @@ class VersioningStrategies::Semverish
     @version = version_str
   end
 
-  def bump!(term, strategy: DEFAULT_STRATEGY)
+  def bump!(term, template_type: DEFAULT_TEMPLATE)
     term = term.to_sym
     new_version = clone
-    strategy_config = STRATEGIES[strategy.to_sym]
-    new_value = INCREMENTS[strategy_config[term]].call(public_send(term))
+    new_value = INCREMENTS[template_type].call(public_send(term))
     new_version.public_send("#{term}=", new_value)
-    if term == :major
-      new_version.minor = 0 unless strategy_config[:update_minor_on_major_bump]
-      new_version.minor = INCREMENTS[strategy_config[:minor]].call(public_send(:minor)) if strategy_config[:update_minor_on_major_bump]
-    end
+    new_version.minor = 0 if term == :major
     new_version.patch = 0 if proper? && (term == :major || term == :minor)
     new_version
   end
