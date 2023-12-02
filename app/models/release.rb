@@ -238,7 +238,7 @@ class Release < ApplicationRecord
   def release_version
     release_platform_runs.pluck(:release_version).map(&:to_semverish).max.to_s
   end
-  
+
   alias_method :version_current, :release_version
 
   def release_branch
