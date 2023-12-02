@@ -7,11 +7,11 @@ class Triggers::Release
   AppInDraftMode = Class.new(StandardError)
   UpcomingReleaseNotAllowed = Class.new(StandardError)
 
-  def self.call(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false, hotfix_platform: nil)
-    new(train, has_major_bump:, release_type:, new_hotfix_branch:, automatic:, hotfix_platform:).call
+  def self.call(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false, hotfix_platform: nil, custom_version: nil)
+    new(train, has_major_bump:, release_type:, new_hotfix_branch:, automatic:, hotfix_platform:, custom_version:).call
   end
 
-  def initialize(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false, hotfix_platform: nil)
+  def initialize(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false, hotfix_platform: nil, custom_version: nil)
     @train = train
     @starting_time = Time.current
     @has_major_bump = has_major_bump
@@ -19,9 +19,11 @@ class Triggers::Release
     @release_type = release_type
     @new_hotfix_branch = new_hotfix_branch
     @hotfix_platform = hotfix_platform
+    @custom_version = custom_version
   end
 
   def call
+    return Response.new(:unprocessable_entity, "Invalid custom release version! Please use a SemVer like x.y.z format.") if invalid_custom_version?
     return Response.new(:unprocessable_entity, "Could not kickoff a hotfix because the source tag does not exist") if hotfix_from_new_branch? && !hotfix_tag_exists?
     return Response.new(:unprocessable_entity, "Could not kickoff a hotfix because the source release branch does not exist") if hotfix_from_previous_branch? && !hotfix_branch_exists?
     return Response.new(:unprocessable_entity, "Cannot start a train that is not active!") if train.inactive?
@@ -41,7 +43,7 @@ class Triggers::Release
 
   private
 
-  attr_reader :train, :starting_time, :automatic, :release, :release_type, :new_hotfix_branch, :hotfix_platform
+  attr_reader :train, :starting_time, :automatic, :release, :release_type, :new_hotfix_branch, :hotfix_platform, :custom_version
   delegate :branching_strategy, :hotfix_from, to: :train
 
   memoize def kickoff
@@ -68,7 +70,8 @@ class Triggers::Release
       release_type: release_type,
       hotfixed_from: hotfix_from,
       new_hotfix_branch: new_hotfix_branch,
-      hotfix_platform: (hotfix_platform if hotfix?)
+      hotfix_platform: (hotfix_platform if hotfix?),
+      custom_version: custom_version
     )
   end
 
@@ -136,5 +139,13 @@ class Triggers::Release
 
   def invalid_hotfix_platform?
     hotfix? && hotfix_platform.present? && !hotfix_platform.in?(ReleasePlatform.platforms.values)
+  end
+
+  def invalid_custom_version?
+    return false if custom_version.blank?
+    VersioningStrategies::Semverish.new(custom_version)
+    false
+  rescue ArgumentError
+    true
   end
 end

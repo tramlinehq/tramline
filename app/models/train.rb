@@ -25,6 +25,7 @@
 #  tag_suffix               :string
 #  version_current          :string
 #  version_seeded_with      :string
+#  versioning_strategy      :string           default(NULL)
 #  working_branch           :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
@@ -63,16 +64,13 @@ class Train < ApplicationRecord
   scope :running, -> { includes(:releases).where(releases: {status: Release.statuses[:on_track]}) }
   scope :only_with_runs, -> { joins(:releases).where.not(releases: {status: "stopped"}).distinct }
 
-  delegate :ready?, :config, to: :app
+  delegate :ready?, :config, :organization, to: :app
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :monitoring_provider, to: :integrations
+  delegate :fixed_build_number?, to: :organization
 
-  enum status: {
-    draft: "draft",
-    active: "active",
-    inactive: "inactive"
-  }
-
+  enum status: {draft: "draft", active: "active", inactive: "inactive"}
   enum backmerge_strategy: {continuous: "continuous", on_finalize: "on_finalize"}
+  enum versioning_strategy: {semver: "Semver", year_and_next_week: "Year and Next Week"}
 
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true

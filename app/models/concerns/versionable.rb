@@ -12,6 +12,6 @@ module Versionable
         major_only ? :major : :minor
       end
 
-    version_current.ver_bump(bump_term)
+    version_current.ver_bump(bump_term, strategy: versioning_strategy)
   end
 end

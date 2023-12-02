@@ -118,7 +118,7 @@
         <%= render partial: "notifications_config_form", locals: { form: } %>
       <% end %>
 
-      <div class="text-xl text-slate-600 font-medium mt-2 mb-4">Branching Strategy</div>
+      <div class="text-xl text-slate-600 font-medium mt-6 mb-4">Branching Strategy</div>
 
       <div class="grid gap-x-5 md:grid-cols-2">
         <div>
@@ -163,6 +163,10 @@
           to learn more about our supported branching strategies.
         </div>
       <% end %>
+
+      <% if current_organization.fixed_build_number? %>
+        <%= render partial: "trains/versioning_strategy", locals: { form:, train: } %>
+      <% end %>
     </section>
 
     <section>
@@ -178,8 +182,6 @@
         <%= render partial: "store_tags_form", locals: { form: } %>
       <% end %>
     </section>
-
-
   </article>
 
   <div class="mt-12">

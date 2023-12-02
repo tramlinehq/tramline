@@ -376,7 +376,8 @@ class StepRun < ApplicationRecord
   end
 
   def update_build_number!
-    update!(build_number: release_platform.app.bump_build_number!)
+    build_number = train.fixed_build_number? ? app.build_number : app.bump_build_number!
+    update!(build_number:)
   end
 
   def workflow_inputs
