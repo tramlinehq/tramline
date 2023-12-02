@@ -14,6 +14,7 @@ FactoryBot.define do
     tag_all_store_releases { false }
     tag_releases { true }
     tag_suffix { nil }
+    versioning_strategy { "semver" }
 
     trait :draft do
       status { "draft" }
