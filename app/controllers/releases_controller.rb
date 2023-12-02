@@ -21,13 +21,13 @@ class ReleasesController < SignedInApplicationController
     release_type = parsed_release_params[:release_type] || Release.release_types[:release]
     new_hotfix_branch = parsed_release_params[:new_hotfix_branch]&.to_boolean
     hotfix_platform = parsed_release_params[:hotfix_platform]
-    custom_release_version = parsed_release_params[:custom_release_version]
+    custom_version = parsed_release_params[:custom_release_version]
 
     if release_type == Release.release_types[:hotfix] && !@train.hotfixable?
       redirect_back fallback_location: root_path, flash: {error: "Cannot start hotfix for this train!"} and return
     end
 
-    response = Triggers::Release.call(@train, has_major_bump:, release_type:, new_hotfix_branch:, hotfix_platform:, custom_release_version:)
+    response = Triggers::Release.call(@train, has_major_bump:, release_type:, new_hotfix_branch:, hotfix_platform:, custom_version:)
 
     if response.success?
       redirect_to current_release_path(response.body), notice: "A new release has started successfully."

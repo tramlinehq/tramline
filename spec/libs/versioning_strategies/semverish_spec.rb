@@ -117,54 +117,51 @@ describe VersioningStrategies::Semverish do
   end
 
   describe "#bump!" do
-    context "when semver" do
-      let(:partial_semverish) { described_class.new("1.2") }
+    context "when semverish based on positive numbers" do
       let(:semverish) { described_class.new("1.2.1") }
 
-      context "when semverish based on positive numbers" do
-        it "bumps up major" do
-          expect(semverish.bump!(:major, strategy: :semver).to_s).to eq("2.0.0")
-        end
-
-        it "bumps up minor" do
-          expect(semverish.bump!(:minor, strategy: :semver).to_s).to eq("1.3.0")
-        end
-
-        it "bumps up patch" do
-          expect(semverish.bump!(:patch, strategy: :semver).to_s).to eq("1.2.2")
-        end
+      it "bumps up major" do
+        expect(semverish.bump!(:major, strategy: :semver).to_s).to eq("2.0.0")
       end
 
-      context "with partial semverish based on positive numbers" do
-        it "bumps up major" do
-          expect(partial_semverish.bump!(:major, strategy: :semver).to_s).to eq("2.0")
-        end
+      it "bumps up minor" do
+        expect(semverish.bump!(:minor, strategy: :semver).to_s).to eq("1.3.0")
+      end
 
-        it "bumps up minor" do
-          expect(partial_semverish.bump!(:minor, strategy: :semver).to_s).to eq("1.3")
-        end
+      it "bumps up patch" do
+        expect(semverish.bump!(:patch, strategy: :semver).to_s).to eq("1.2.2")
+      end
+    end
 
-        it "does not do anything if patch" do
-          expect(partial_semverish.bump!(:patch, strategy: :semver).to_s).to eq("1.2")
-        end
+    context "with partial semverish based on positive numbers" do
+      let(:partial_semverish) { described_class.new("1.2") }
+
+      it "bumps up major" do
+        expect(partial_semverish.bump!(:major, strategy: :semver).to_s).to eq("2.0")
+      end
+
+      it "bumps up minor" do
+        expect(partial_semverish.bump!(:minor, strategy: :semver).to_s).to eq("1.3")
+      end
+
+      it "does not do anything if patch" do
+        expect(partial_semverish.bump!(:patch, strategy: :semver).to_s).to eq("1.2")
       end
     end
 
     context "when calendar (year_and_next_week) version" do
       let(:year_and_next_week) { described_class.new("0.2347.0") }
 
-      context "with current year and week semverish based on positive numbers" do
-        it "bumps up major and keeps minor intact" do
-          expect(year_and_next_week.bump!(:major, strategy: :year_and_next_week).to_s).to eq("1.2349.0")
-        end
+      it "bumps up major and keeps minor intact" do
+        expect(year_and_next_week.bump!(:major, strategy: :year_and_next_week).to_s).to eq("1.2349.0")
+      end
 
-        it "bumps up minor" do
-          expect(year_and_next_week.bump!(:minor, strategy: :year_and_next_week).to_s).to eq("0.2349.0")
-        end
+      it "bumps up minor" do
+        expect(year_and_next_week.bump!(:minor, strategy: :year_and_next_week).to_s).to eq("0.2349.0")
+      end
 
-        it "does not do anything if patch" do
-          expect(year_and_next_week.bump!(:patch, strategy: :year_and_next_week).to_s).to eq("0.2347.1")
-        end
+      it "does not do anything if patch" do
+        expect(year_and_next_week.bump!(:patch, strategy: :year_and_next_week).to_s).to eq("0.2347.1")
       end
     end
   end

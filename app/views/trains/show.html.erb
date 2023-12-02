@@ -31,7 +31,7 @@
     <% if @train.fixed_build_number? %>
       <div data-controller="modal">
         <%= authz_link_to :neutral, "#", { data: { action: "modal#open" } } do %>
-          <span class="ml-2">Start custom release</span>
+          <span>Start custom release</span>
         <% end %>
         <dialog data-modal-target="modal"
                 class="p-0 backdrop:bg-gray-400 backdrop:bg-opacity-50 open:animate-fade-in w-1/4">
