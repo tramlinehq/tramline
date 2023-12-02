@@ -25,6 +25,7 @@
 #  tag_suffix               :string
 #  version_current          :string
 #  version_seeded_with      :string
+#  versioning_strategy      :string           default(NULL)
 #  working_branch           :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null

@@ -111,21 +111,24 @@ class ReleasePlatformRun < ApplicationRecord
 
   def bump_version_for_fixed_build_number!
     return unless train.fixed_build_number?
-    return if release.all_commits.size == 1
 
-    if version_bump_required?
-      self.in_store_resubmission = true
+    # bump the build number if it is the first commit of the release or it is patch fix on the release
+    if release.all_commits.size == 1
       app.bump_build_number!
+    else
+      if version_bump_required?
+        app.bump_build_number!
+        self.in_store_resubmission = true
+      end
+      self.release_version = release_version.to_semverish.bump!(:patch, strategy: versioning_strategy).to_s
+      event_stamp!(
+        reason: :version_changed,
+        kind: :notice,
+        data: {version: release_version}
+      )
     end
 
-    self.release_version = release_version.to_semverish.bump!(:patch, strategy: versioning_strategy).to_s
     save!
-
-    event_stamp!(
-      reason: :version_changed,
-      kind: :notice,
-      data: {version: release_version}
-    )
   end
 
   def bump_version!
