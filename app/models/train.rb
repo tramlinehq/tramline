@@ -34,7 +34,6 @@
 #
 class Train < ApplicationRecord
   has_paper_trail
-  using RefinedArray
   using RefinedString
   extend FriendlyId
   include Rails.application.routes.url_helpers
