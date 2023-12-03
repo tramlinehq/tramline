@@ -34,8 +34,16 @@ FactoryBot.define do
       end
     end
 
-    after(:build) do |app, _|
-      app.config = build(:app_config, app: app)
+    trait :with_valid_config do
+      after(:build) do |app|
+        app.config = build(:app_config, app: app)
+      end
+    end
+
+    trait :without_config do
+      after(:build) do |app|
+        app.config = nil
+      end
     end
   end
 end

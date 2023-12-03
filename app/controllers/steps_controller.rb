@@ -95,7 +95,8 @@ class StepsController < SignedInApplicationController
       :release_suffix,
       :kind,
       :auto_deploy,
-      :build_artifact_name_pattern
+      :build_artifact_name_pattern,
+      :app_variant_id
     )
   end
 

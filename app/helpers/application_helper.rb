@@ -94,6 +94,8 @@ module ApplicationHelper
   end
 
   def status_badge(status, custom = [], fixed = nil, pulse: false)
+    return if status.blank?
+
     styles =
       case custom
       when Array

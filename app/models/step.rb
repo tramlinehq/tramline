@@ -15,6 +15,7 @@
 #  step_number                 :integer          default(0), not null, indexed => [release_platform_id]
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
+#  app_variant_id              :uuid
 #  release_platform_id         :uuid             not null, indexed => [ci_cd_channel], indexed, indexed => [step_number]
 #
 class Step < ApplicationRecord
@@ -24,6 +25,7 @@ class Step < ApplicationRecord
   self.implicit_order_column = :step_number
 
   belongs_to :release_platform, inverse_of: :steps
+  belongs_to :app_variant, inverse_of: :steps, optional: true
   has_many :step_runs, inverse_of: :step, dependent: :destroy
   has_many :deployments, -> { kept.sequential }, inverse_of: :step, dependent: :destroy
   has_many :all_deployments, -> { sequential }, class_name: "Deployment", inverse_of: :step, dependent: :destroy

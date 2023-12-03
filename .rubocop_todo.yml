@@ -34,3 +34,4 @@ Rails/I18nLocaleTexts:
     - 'app/controllers/integrations/slack_controller.rb'
     - 'app/controllers/integrations/google_firebase_controller.rb'
     - 'app/controllers/notification_settings_controller.rb'
+    - 'app/controllers/app_variants_controller.rb'

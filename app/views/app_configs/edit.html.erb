@@ -60,44 +60,8 @@
       </section>
     <% end %>
 
-    <% if @app.firebase_connected? %>
-      <section class="border-t border-dashed pb-8">
-        <div class="my-8">
-          <h2 class="font-bold text-xl">
-            <%= image_tag "integrations/logo_firebase.png", title: "Firebase", width: 40, class: "pb-2" %>
-            Firebase App Distribution
-          </h2>
-        </div>
+    <%= render partial: "firebase_form", locals: { form:, app: @app, config: @config, firebase_ios_apps: @firebase_ios_apps, firebase_android_apps: @firebase_android_apps } %>
 
-        <div class="grid gap-5 md:grid-cols-2">
-          <% if @firebase_android_apps.present? %>
-            <div class="mb-4">
-              <%= form.label :firebase_android_config, "Android App", class: "block text-sm font-medium mb-1" %>
-              <%= form.select :firebase_android_config,
-                              options_for_select(
-                                display_channels(@firebase_android_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
-                                @config.firebase_android_config.to_json
-                              ),
-                              { class: "form-select" },
-                              data: { controller: "input-select" } %>
-            </div>
-          <% end %>
-
-          <% if @firebase_ios_apps.present? %>
-            <div>
-              <%= form.label :firebase_ios_config, "iOS App", class: "block text-sm font-medium mb-1" %>
-              <%= form.select :firebase_ios_config,
-                              options_for_select(
-                                display_channels(@firebase_ios_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
-                                @config.firebase_ios_config.to_json
-                              ),
-                              { class: "form-select" },
-                              data: { controller: "input-select" } %>
-            </div>
-          <% end %>
-        </div>
-      </section>
-    <% end %>
 
     <% if @app.bugsnag_connected? %>
       <section class="border-t border-dashed pb-8">
@@ -129,4 +93,49 @@
       <%= form.authz_submit :blue, "Update" %>
     </div>
   <% end %>
+
+  <section class="border-t border-dashed my-8 pt-8">
+    <%= render TableComponent.new(columns: %w[name bundle_identifier]) do |table| %>
+      <% table.with_heading do %>
+        <div class="flex justify-between items-end mb-2">
+          <h2 class="text-2xl text-slate-800 font-bold flex flex-row items-center">
+            <%= inline_svg("dna.svg", classname: "w-7 h-7 fill-current mr-1") %>
+            App Variants
+          </h2>
+          <div data-controller="modal" class="px-2">
+            <%= authz_link_to :green, "#", { data: { action: "modal#open" } } do %>
+              <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
+              <span class="hidden xs:block ml-2">Create an app variant</span>
+            <% end %>
+
+            <dialog data-modal-target="modal"
+                    class="p-0 backdrop:bg-gray-400 backdrop:bg-opacity-50 open:animate-fade-in w-2/3">
+              <div class="relative bg-white rounded-lg shadow">
+                <%= render partial: "app_variant_form", locals: { app: @app, config: @config, app_variant: @config.variants.build,
+                                                                  firebase_ios_apps: @firebase_ios_apps, firebase_android_apps: @firebase_android_apps } %>
+              </div>
+            </dialog>
+          </div>
+        </div>
+      <% end %>
+
+      <% @config.variants.each do |variant| %>
+        <% table.with_row do |row| %>
+          <% row.with_cell do %>
+            <%= variant.name %>
+          <% end %>
+
+          <% row.with_cell do %>
+            <%= variant.bundle_identifier %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <% unless @config.variants.exists? %>
+      <div class="text-gray-500 text-sm">
+        No app variants have been configured yet.
+      </div>
+    <% end %>
+  </section>
 <% end %>
