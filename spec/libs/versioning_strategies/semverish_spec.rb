@@ -151,13 +151,18 @@ describe VersioningStrategies::Semverish do
 
     context "when calendar (year_and_next_week) version" do
       let(:year_and_next_week) { described_class.new("0.2347.0") }
+      let(:the_time) { Time.new(2023, 12, 1, 0, 0, 0, '+12:00') }
 
       it "bumps up major and keeps minor intact" do
-        expect(year_and_next_week.bump!(:major, strategy: :year_and_next_week).to_s).to eq("1.2349.0")
+        travel_to(the_time) do
+          expect(year_and_next_week.bump!(:major, strategy: :year_and_next_week).to_s).to eq("1.2349.0")
+        end
       end
 
       it "bumps up minor" do
-        expect(year_and_next_week.bump!(:minor, strategy: :year_and_next_week).to_s).to eq("0.2349.0")
+        travel_to(the_time) do
+          expect(year_and_next_week.bump!(:minor, strategy: :year_and_next_week).to_s).to eq("0.2349.0")
+        end
       end
 
       it "does not do anything if patch" do
