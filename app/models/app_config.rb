@@ -16,6 +16,7 @@
 class AppConfig < ApplicationRecord
   has_paper_trail
   include Notifiable
+  include PlatformAwareness
 
   MINIMUM_REQUIRED_CONFIG = %i[code_repository]
   PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
@@ -65,6 +66,11 @@ class AppConfig < ApplicationRecord
 
   def further_monitoring_setup?
     app.integrations.monitoring_provider&.further_setup?
+  end
+
+  def firebase_app(platform, variant: nil)
+    return variant.pick_firebase_app_id(platform) if variant&.in?(variants)
+    pick_firebase_app_id(platform)
   end
 
   private

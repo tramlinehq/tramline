@@ -171,7 +171,7 @@ class StepRun < ApplicationRecord
   delegate :organization, to: :app
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
-  delegate :workflow_id, :workflow_name, :step_number, :build_artifact_name_pattern, :has_uploadables?, :has_findables?, :name, to: :step
+  delegate :workflow_id, :workflow_name, :step_number, :build_artifact_name_pattern, :has_uploadables?, :has_findables?, :name, :app_variant, to: :step
   scope :not_failed, -> { where.not(status: [:ci_workflow_failed, :ci_workflow_halted, :build_not_found_in_store, :build_unavailable, :deployment_failed]) }
 
   def active?

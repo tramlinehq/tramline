@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_12_03_081907) do
+ActiveRecord::Schema[7.0].define(version: 2023_12_03_103432) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -67,12 +67,13 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_03_081907) do
 
   create_table "app_variants", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "app_config_id", null: false
+    t.string "name", null: false
     t.string "bundle_identifier", null: false
     t.jsonb "firebase_ios_config"
     t.jsonb "firebase_android_config"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["app_config_id"], name: "index_app_variants_on_app_config_id", unique: true
+    t.index ["app_config_id"], name: "index_app_variants_on_app_config_id"
     t.index ["bundle_identifier", "app_config_id"], name: "index_app_variants_on_bundle_identifier_and_app_config_id", unique: true
   end
 
@@ -561,6 +562,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_03_081907) do
     t.string "kind"
     t.boolean "auto_deploy", default: true
     t.string "build_artifact_name_pattern"
+    t.uuid "app_variant_id"
     t.index ["ci_cd_channel", "release_platform_id"], name: "index_steps_on_ci_cd_channel_and_release_platform_id", unique: true
     t.index ["release_platform_id"], name: "index_steps_on_release_platform_id"
     t.index ["step_number", "release_platform_id"], name: "index_steps_on_step_number_and_release_platform_id", unique: true

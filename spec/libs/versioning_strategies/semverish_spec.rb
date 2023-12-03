@@ -151,7 +151,7 @@ describe VersioningStrategies::Semverish do
 
     context "when calendar (year_and_next_week) version" do
       let(:year_and_next_week) { described_class.new("0.2347.0") }
-      let(:the_time) { Time.new(2023, 12, 1, 0, 0, 0, '+12:00') }
+      let(:the_time) { Time.new(2023, 12, 1, 0, 0, 0, "+12:00") }
 
       it "bumps up major and keeps minor intact" do
         travel_to(the_time) do
