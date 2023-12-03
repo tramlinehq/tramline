@@ -21,8 +21,8 @@
       App variants are akin to <strong>product flavors</strong> or <strong>build variants</strong>, but with an explicit
       requirement of having a different
       bundle identifier.
-      For example, a staging app variant <code><%= app.bundle_identifier + ".staging" %></code> that you want to deploy
-      to a different Firebase project.
+      For example, you can setup a staging variant <code><%= app.bundle_identifier + ".staging" %></code> that gets
+      deployed to a different Firebase app than the primary <code><%= app.bundle_identifier %></code> app.
     </div>
 
     <div class="grid grid-cols-2 gap-x-5">
@@ -42,7 +42,6 @@
 
     <%= render partial: "firebase_form", locals: { form:, config:, app:, firebase_ios_apps:, firebase_android_apps: } %>
   </div>
-
 
   <!-- Modal footer -->
   <div class="flex items-center p-4 space-x-2 border-t border-gray-200 rounded-b">

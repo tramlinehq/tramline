@@ -95,7 +95,7 @@
   <% end %>
 
   <section class="border-t border-dashed my-8 pt-8">
-    <%= render TableComponent.new(columns: %w[name bundle_identifier actions]) do |table| %>
+    <%= render TableComponent.new(columns: %w[name bundle_identifier]) do |table| %>
       <% table.with_heading do %>
         <div class="flex justify-between items-end mb-2">
           <h2 class="text-2xl text-slate-800 font-bold flex flex-row items-center">

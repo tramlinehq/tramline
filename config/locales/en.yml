@@ -130,7 +130,7 @@ en:
         app_variant:
           attributes:
             bundle_identifier:
-              same_as_parent: "cannot be the same as the parent app"
+              same_as_parent: "Cannot be the same as the parent app"
         accounts/user:
           attributes:
             email:
