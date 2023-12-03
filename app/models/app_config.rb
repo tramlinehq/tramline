@@ -21,6 +21,7 @@ class AppConfig < ApplicationRecord
   PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
 
   belongs_to :app
+  has_many :variants, class_name: "AppVariant", dependent: :destroy
 
   validates :firebase_ios_config,
     allow_blank: true,

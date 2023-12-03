@@ -30,6 +30,7 @@ class App < ApplicationRecord
 
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
   has_one :config, class_name: "AppConfig", dependent: :destroy
+  has_many :variants, class_name: "AppVariant", through: :config
   has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :integrations, inverse_of: :app, dependent: :destroy
   has_many :trains, -> { sequential }, dependent: :destroy, inverse_of: :app
