@@ -14,6 +14,8 @@ class ReleaseHealthRule < ApplicationRecord
   has_many :trigger_rule_expressions, dependent: :destroy
   has_many :filter_rule_expressions, dependent: :destroy
 
+  scope :for_metric, ->(metric) { includes(:trigger_rule_expressions).where(trigger_rule_expressions: {metric:}) }
+
   def healthy?(metric)
     return true if trigger_rule_expressions.blank?
 

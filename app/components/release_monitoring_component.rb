@@ -3,8 +3,8 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   include ApplicationHelper
   attr_reader :deployment_run
 
-  delegate :adoption_rate, :errors_count, :new_errors_count, to: :release_data
-  delegate :app, to: :deployment_run
+  delegate :adoption_rate, to: :release_data
+  delegate :app, :release_health_rules, to: :deployment_run
   delegate :monitoring_provider, to: :app
 
   def initialize(deployment_run:)
@@ -34,7 +34,7 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   def events
     @deployment_run.release_health_events.last(3).map do |event|
       type = event.healthy? ? :success : :error
-      title = event.healthy? ? "Release is healthy" : "Release is unhealthy"
+      title = event.healthy? ? "Rule is healthy" : "Rule is unhealthy"
       {
         timestamp: time_format(event.event_timestamp, with_year: false),
         title:,
@@ -42,6 +42,20 @@ class ReleaseMonitoringComponent < ViewComponent::Base
         type:
       }
     end
+  end
+
+  def release_healthy?
+    @is_healthy ||= @deployment_run.healthy?
+  end
+
+  def release_health
+    return "Healthy" if release_healthy?
+    "Unhealthy"
+  end
+
+  def release_health_class
+    return "text-green-800" if release_healthy?
+    "text-red-800"
   end
 
   def staged_rollout_percentage
@@ -55,13 +69,23 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def user_stability
-    return "-" if release_data.user_stability.blank?
-    "#{release_data.user_stability}%"
+    value = release_data.user_stability.blank? ? "-" : "#{release_data.user_stability}%"
+    {value:, is_healthy: release_data.metric_healthy?("user_stability")}
   end
 
   def session_stability
-    return "-" if release_data.session_stability.blank?
-    "#{release_data.session_stability}%"
+    value = release_data.session_stability.blank? ? "-" : "#{release_data.session_stability}%"
+    {value:, is_healthy: release_data.metric_healthy?("session_stability")}
+  end
+
+  def errors_count
+    value = release_data.errors_count
+    {value:, is_healthy: release_data.metric_healthy?("errors")}
+  end
+
+  def new_errors_count
+    value = release_data.new_errors_count
+    {value:, is_healthy: release_data.metric_healthy?("new_errors")}
   end
 
   def adoption_chart_data
