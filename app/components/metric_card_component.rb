@@ -15,9 +15,9 @@ class MetricCardComponent < ViewComponent::Base
     return "test-gray-800" unless helpers.current_user.release_monitoring?
     case is_healthy
     when true
-      "text-green-800"
+      "text-green-800 font-semibold"
     when false
-      "text-red-800"
+      "text-red-800 font-semibold"
     else
       "test-gray-800"
     end

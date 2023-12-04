@@ -3,7 +3,7 @@
     <div class="text-slate-500 text-md"><%= build_identifier %></div>
     <% if helpers.current_user.release_monitoring? && release_health_rules.present? %>
       <div class="text-slate-500 text-md mt-4">
-        Overall Release Health: <span class="<%= release_health_class %>"><%= release_health %></span>
+        Overall Release Health: <span class="<%= release_health_class %> font-semibold"><%= release_health %></span>
       </div>
     <% end %>
     <div class="grid grid-cols-2 gap-5 mt-4">
