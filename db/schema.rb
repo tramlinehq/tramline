@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_12_01_063400) do
+ActiveRecord::Schema[7.0].define(version: 2023_12_03_103432) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -63,6 +63,18 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_01_063400) do
     t.string "issuer_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "app_variants", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "app_config_id", null: false
+    t.string "name", null: false
+    t.string "bundle_identifier", null: false
+    t.jsonb "firebase_ios_config"
+    t.jsonb "firebase_android_config"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["app_config_id"], name: "index_app_variants_on_app_config_id"
+    t.index ["bundle_identifier", "app_config_id"], name: "index_app_variants_on_bundle_identifier_and_app_config_id", unique: true
   end
 
   create_table "apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -559,6 +571,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_01_063400) do
     t.string "kind"
     t.boolean "auto_deploy", default: true
     t.string "build_artifact_name_pattern"
+    t.uuid "app_variant_id"
     t.index ["ci_cd_channel", "release_platform_id"], name: "index_steps_on_ci_cd_channel_and_release_platform_id", unique: true
     t.index ["release_platform_id"], name: "index_steps_on_release_platform_id"
     t.index ["step_number", "release_platform_id"], name: "index_steps_on_step_number_and_release_platform_id", unique: true
@@ -592,6 +605,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_01_063400) do
     t.boolean "compact_build_notes", default: false
     t.boolean "tag_releases", default: true
     t.string "tag_suffix"
+    t.string "versioning_strategy", default: "semver"
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
@@ -641,6 +655,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_01_063400) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "app_configs", "apps"
+  add_foreign_key "app_variants", "app_configs"
   add_foreign_key "apps", "organizations"
   add_foreign_key "build_artifacts", "step_runs"
   add_foreign_key "build_queues", "releases"

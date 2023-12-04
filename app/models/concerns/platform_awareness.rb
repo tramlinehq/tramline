@@ -8,4 +8,15 @@ module PlatformAwareness
       {ios: ios, android: android}
     end
   end
+
+  def pick_firebase_app_id(platform)
+    case platform
+    when "android"
+      firebase_android_config["app_id"]
+    when "ios"
+      firebase_ios_config["app_id"]
+    else
+      raise ArgumentError, "platform must be valid"
+    end
+  end
 end

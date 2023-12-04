@@ -38,11 +38,12 @@ module Deployments
         :release_metadata,
         :google_firebase_integration?,
         :release_platform,
+        :step_run,
         to: :run
       delegate :platform, to: :release_platform
 
       def kickoff!
-        if (similar_run = run.step_run.similar_deployment_runs_for(run).find(&:has_uploaded?))
+        if (similar_run = step_run.similar_deployment_runs_for(run).find(&:has_uploaded?))
           run.create_external_release(similar_run.external_release.attributes.except("id", "created_at", "updated_at"))
           return run.upload!
         end
@@ -56,7 +57,7 @@ module Deployments
           return if run.uploaded?
 
           run.build_artifact.with_open do |file|
-            result = provider.upload(file, platform:)
+            result = provider.upload(file, run.build_artifact.file.filename.to_s, platform:, variant: step_run.app_variant)
             if result.ok?
               run.start_upload!(op_name: result.value!)
             else
@@ -89,7 +90,7 @@ module Deployments
       end
 
       def update_build_notes!(release)
-        provider.update_release_notes(release, run.step_run.build_notes)
+        provider.update_release_notes(release, step_run.build_notes)
       end
 
       def start_release!

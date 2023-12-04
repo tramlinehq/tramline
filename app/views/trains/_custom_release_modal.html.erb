@@ -1,0 +1,29 @@
+<div class="flex flex-col items-start rounded-t p-4">
+  <div class="flex justify-between w-full items-center border-b py-4">
+    <h3 class="text-xl font-semibold text-gray-900 inline-flex items-center">
+      <%= inline_svg("wrench.svg", classname: "w-6 h-6 fill-current mr-2") %>
+      Start a release with a custom version
+    </h3>
+
+    <button type="button" class="text-slate-400 hover:cursor-pointer hover:text-slate-500" data-action="modal#close">
+      <%= inline_svg("close_icon.svg", classname: "w-4 h-4 fill-current") %>
+      <span class="sr-only">Close modal</span>
+    </button>
+  </div>
+</div>
+
+<div class="p-4 pb-6">
+  <%= form_with(model: [app, train, Release.new],
+                method: :post,
+                url: app_train_releases_path(app, train),
+                builder: ButtonHelper::AuthzForms) do |form| %>
+    <section class="mb-6 flex flex-col">
+      <%= form.text_field :custom_release_version,
+                          class: "form-input w-1/2",
+                          placeholder: "Enter a version name...",
+                          required: true %>
+    </section>
+
+    <%= form.authz_submit :blue, "Start release" %>
+  <% end %>
+</div>

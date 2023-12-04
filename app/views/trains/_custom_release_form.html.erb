@@ -1,0 +1,12 @@
+<div data-controller="modal">
+  <%= authz_link_to :neutral, "#", { data: { action: "modal#open" } } do %>
+    <%= inline_svg("wrench.svg", classname: "w-5 h-5 fill-current mr-2") %>
+    <span>Start custom release</span>
+  <% end %>
+  <dialog data-modal-target="modal"
+          class="p-0 backdrop:bg-gray-400 backdrop:bg-opacity-50 open:animate-fade-in w-1/4">
+    <div class="relative bg-white rounded-lg shadow">
+      <%= render partial: "trains/custom_release_modal", locals: { app: @app, train: @train } %>
+    </div>
+  </dialog>
+</div>

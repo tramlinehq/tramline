@@ -19,9 +19,11 @@ module Installations
       set_clients
     end
 
-    def upload(apk_path, app_id)
+    def upload(apk_path, filename, app_id)
+      options = ::Google::Apis::RequestOptions.new
+      options.header = {"X-Goog-Upload-File-Name" => filename}
       execute do
-        fad_client.upload_medium(app_name(app_id), upload_source: apk_path, content_type: CONTENT_TYPE)&.name
+        fad_client.upload_medium(app_name(app_id), upload_source: apk_path, content_type: CONTENT_TYPE, options:)&.name
       end
     end
 

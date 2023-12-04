@@ -1,7 +1,9 @@
 require "rails_helper"
 
 describe Triggers::PullRequest do
-  let(:release) { create(:release) }
+  let(:app) { create(:app, :android, :with_valid_config) }
+  let(:train) { create(:train, app:) }
+  let(:release) { create(:release, train:) }
   let(:working_branch) { Faker::Lorem.word }
   let(:release_branch) { Faker::Lorem.word }
   let(:pr_title) { Faker::Lorem.word }
@@ -14,7 +16,7 @@ describe Triggers::PullRequest do
   }
   let(:merge_payload) { JSON.parse(File.read("spec/fixtures/github/merge_pull_request.json")).with_indifferent_access }
   let(:repo_integration) { instance_double(Installations::Github::Api) }
-  let(:repo_name) { release.train.app.config.code_repository_name }
+  let(:repo_name) { app.config.code_repository_name }
 
   before do
     allow(Installations::Github::Api).to receive(:new).and_return(repo_integration)

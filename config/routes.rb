@@ -46,7 +46,9 @@ Rails.application.routes.draw do
   end
 
   resources :apps do
-    resource :app_config, only: %i[edit update], path: :config
+    resource :app_config, only: %i[edit update], path: :config do
+      resources :app_variants, only: %i[create update]
+    end
 
     member do
       get :all_builds
