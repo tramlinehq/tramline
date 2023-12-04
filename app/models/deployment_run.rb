@@ -171,7 +171,7 @@ class DeploymentRun < ApplicationRecord
     return true if release_health_events.blank?
 
     rule_health = release_health_rules.map do |rule|
-      release_health_events.where(release_health_rule: rule).last.healthy?
+      release_health_events.where(release_health_rule: rule).last&.healthy?
     end.compact
 
     rule_health.all?
