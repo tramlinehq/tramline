@@ -59,6 +59,7 @@ class DeploymentRun < ApplicationRecord
     to: :deployment
   delegate :release_metadata, :train, :app, to: :release
   delegate :release_version, :platform, to: :release_platform_run
+  delegate :release_health_rules, to: :release_platform
 
   STAMPABLE_REASONS = %w[
     created
@@ -163,6 +164,17 @@ class DeploymentRun < ApplicationRecord
 
   def self.reached_production
     ready.includes(:step_run, :deployment).select(&:production_channel?)
+  end
+
+  def healthy?
+    return true if release_health_rules.blank?
+    return true if release_health_events.blank?
+
+    rule_health = release_health_rules.map do |rule|
+      release_health_events.where(release_health_rule: rule).last&.healthy?
+    end.compact
+
+    rule_health.all?
   end
 
   def fetch_health_data!

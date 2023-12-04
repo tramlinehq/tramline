@@ -1,6 +1,11 @@
 <% if release_data.present? %>
   <article class="mt-4">
     <div class="text-slate-500 text-md"><%= build_identifier %></div>
+    <% if current_user.release_monitoring? && release_health_rules.present? %>
+      <div class="text-slate-500 text-md mt-4">
+        Overall Release Health: <span class="<%= release_health_class %> font-semibold"><%= release_health %></span>
+      </div>
+    <% end %>
     <div class="grid grid-cols-2 gap-5 mt-4">
       <%= render ProgressCardComponent.new(name: "Staged Rollout",
                                            current: staged_rollout_percentage,
@@ -15,12 +20,18 @@
                                          provider: monitoring_provider,
                                          external_url: monitoring_provider_url) %>
       <%= render MetricCardComponent.new(name: "Errors",
-                                         values: { "total" => errors_count, "new" => new_errors_count },
+                                         values: { "total" => errors_count, "new" => new_errors_count},
                                          provider: monitoring_provider,
                                          external_url: monitoring_provider_url) %>
-      <% if helpers.current_user.release_monitoring? && adoption_chart_data.present? %>
+      <% if adoption_chart_data.present? %>
         <div class="col-span-2"><%= render ChartComponent.new(adoption_chart_data, icon: "sparkles.svg") %></div>
       <% end %>
     </div>
+    <% if current_user.release_monitoring? && events.present? %>
+      <div class="text-slate-500 text-md mt-4">Health Trigger Events</div>
+      <div class="mt-4 ml-2">
+        <%= render TimelineComponent.new(events:) %>
+      </div>
+    <% end %>
   </article>
 <% end %>

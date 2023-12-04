@@ -6,10 +6,7 @@ describe ReleaseHealthMetric do
   end
 
   describe "#check_release_health" do
-    let(:train) { create(:train) }
-    let(:release) { create(:release, train:) }
-    let(:step_run) { create(:step_run, release_platform_run: release.release_platform_runs.first) }
-    let(:deployment_run) { create(:deployment_run, step_run:) }
+    let(:deployment_run) { create(:deployment_run) }
     let(:healthy_metrics) {
       {daily_users: 100,
        daily_users_with_errors: 1,
@@ -45,7 +42,7 @@ describe ReleaseHealthMetric do
 
     context "when rules are defined" do
       it "evaluates rules to check release health and create events when unhealthy" do
-        user_stability_rule = create(:release_health_rule, :user_stability, train:)
+        user_stability_rule = create(:release_health_rule, :user_stability, release_platform: deployment_run.release_platform)
         unhealthy_metric.check_release_health
 
         expect(deployment_run.release_health_events.size).to eq(1)
@@ -53,15 +50,15 @@ describe ReleaseHealthMetric do
       end
 
       it "evaluates rules to check release health and does not create events when healthy" do
-        _user_stability_rule = create(:release_health_rule, :user_stability, train:)
+        _user_stability_rule = create(:release_health_rule, :user_stability, release_platform: deployment_run.release_platform)
         healthy_metric.check_release_health
 
         expect(deployment_run.release_health_events.size).to eq(0)
       end
 
       it "creates health events for only the broken rules" do
-        user_stability_rule = create(:release_health_rule, :user_stability, train:)
-        _session_stability_rule = create(:release_health_rule, :session_stability, train:)
+        user_stability_rule = create(:release_health_rule, :user_stability, release_platform: deployment_run.release_platform)
+        _session_stability_rule = create(:release_health_rule, :session_stability, release_platform: deployment_run.release_platform)
         unhealthy_metric.check_release_health
 
         expect(deployment_run.release_health_events.size).to eq(1)
@@ -69,7 +66,7 @@ describe ReleaseHealthMetric do
       end
 
       it "creates health event when health goes from unhealthy to healthy" do
-        _user_stability_rule = create(:release_health_rule, :user_stability, train:)
+        _user_stability_rule = create(:release_health_rule, :user_stability, release_platform: deployment_run.release_platform)
         _existing_metric = deployment_run.release_health_metrics.create!(**unhealthy_metrics)
         healthy_metric.check_release_health
 
@@ -78,7 +75,7 @@ describe ReleaseHealthMetric do
       end
 
       it "creates health event when health goes from healthy to unhealthy" do
-        _user_stability_rule = create(:release_health_rule, :user_stability, train:)
+        _user_stability_rule = create(:release_health_rule, :user_stability, release_platform: deployment_run.release_platform)
         _existing_metric = deployment_run.release_health_metrics.create!(**healthy_metrics)
         unhealthy_metric.check_release_health
 
@@ -87,7 +84,7 @@ describe ReleaseHealthMetric do
       end
 
       it "does nothing when health does not change" do
-        _user_stability_rule = create(:release_health_rule, :user_stability, train:)
+        _user_stability_rule = create(:release_health_rule, :user_stability, release_platform: deployment_run.release_platform)
         _existing_metric = deployment_run.release_health_metrics.create!(**unhealthy_metrics)
         unhealthy_metric.check_release_health
 

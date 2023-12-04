@@ -106,6 +106,19 @@ en:
           finished: "finished"
           partially_finished: "partially finished"
           stopped_after_partial_finish: "stopped after partial finish"
+      release_health_event:
+        health_status:
+          healthy: "is healthy"
+          unhealthy: "is unhealthy"
+      trigger_rule_expression:
+        metric:
+          user_stability: "User stability"
+          session_stability: "Session stability"
+          errors: "Errors count"
+          new_errors: "New errors count"
+      filter_rule_expression:
+        metric:
+          adoption_rate: "Adoption rate"
     attributes:
       integration:
         categories:

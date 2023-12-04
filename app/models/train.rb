@@ -59,7 +59,6 @@ class Train < ApplicationRecord
   has_many :deployments, through: :steps
   has_many :scheduled_releases, dependent: :destroy
   has_many :notification_settings, inverse_of: :train, dependent: :destroy
-  has_many :release_health_rules, dependent: :destroy
 
   scope :sequential, -> { order("trains.created_at ASC") }
   scope :running, -> { includes(:releases).where(releases: {status: Release.statuses[:on_track]}) }

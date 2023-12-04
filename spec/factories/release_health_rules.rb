@@ -1,28 +1,31 @@
 FactoryBot.define do
   factory :release_health_rule do
-    association :train
+    association :release_platform
 
-    comparator { "gte" }
-    threshold_value { 90.0 }
+    name { Faker::Lorem.word }
 
     trait :session_stability do
-      metric { "session_stability" }
+      after(:create) do |release_health_rule, _|
+        create(:trigger_rule_expression, :session_stability, release_health_rule:)
+      end
     end
 
     trait :user_stability do
-      metric { "user_stability" }
+      after(:create) do |release_health_rule, _|
+        create(:trigger_rule_expression, :user_stability, release_health_rule:)
+      end
     end
 
     trait :errors do
-      metric { "errors" }
-      threshold_value { 90 }
-      comparator { "lt" }
+      after(:create) do |release_health_rule, _|
+        create(:trigger_rule_expression, :errors, release_health_rule:)
+      end
     end
 
     trait :new_errors do
-      metric { "new_errors" }
-      threshold_value { 10 }
-      comparator { "lt" }
+      after(:create) do |release_health_rule, _|
+        create(:trigger_rule_expression, :new_errors, release_health_rule:)
+      end
     end
   end
 end

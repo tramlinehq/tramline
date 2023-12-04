@@ -416,16 +416,12 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_03_103432) do
   end
 
   create_table "release_health_rules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "train_id", null: false
-    t.string "metric", null: false
-    t.string "comparator", null: false
-    t.float "threshold_value", null: false
     t.boolean "is_halting", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["metric"], name: "index_release_health_rules_on_metric"
-    t.index ["train_id", "metric"], name: "index_release_health_rules_on_train_id_and_metric", unique: true
-    t.index ["train_id"], name: "index_release_health_rules_on_train_id"
+    t.string "name"
+    t.uuid "release_platform_id", null: false
+    t.index ["release_platform_id"], name: "index_release_health_rules_on_release_platform_id"
   end
 
   create_table "release_metadata", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -498,6 +494,19 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_03_103432) do
     t.boolean "new_hotfix_branch", default: false
     t.uuid "hotfixed_from"
     t.index ["train_id"], name: "index_releases_on_train_id"
+  end
+
+  create_table "rule_expressions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_health_rule_id", null: false
+    t.string "type", null: false
+    t.string "metric", null: false
+    t.string "comparator", null: false
+    t.float "threshold_value", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["metric"], name: "index_rule_expressions_on_metric"
+    t.index ["release_health_rule_id", "metric"], name: "index_rule_expressions_on_release_health_rule_id_and_metric", unique: true
+    t.index ["release_health_rule_id"], name: "index_rule_expressions_on_release_health_rule_id"
   end
 
   create_table "scheduled_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -672,12 +681,13 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_03_103432) do
   add_foreign_key "release_health_events", "release_health_metrics"
   add_foreign_key "release_health_events", "release_health_rules"
   add_foreign_key "release_health_metrics", "deployment_runs"
-  add_foreign_key "release_health_rules", "trains"
+  add_foreign_key "release_health_rules", "release_platforms"
   add_foreign_key "release_metadata", "release_platform_runs"
   add_foreign_key "release_platform_runs", "commits", column: "last_commit_id"
   add_foreign_key "release_platform_runs", "release_platforms"
   add_foreign_key "release_platforms", "apps"
   add_foreign_key "releases", "trains"
+  add_foreign_key "rule_expressions", "release_health_rules"
   add_foreign_key "scheduled_releases", "trains"
   add_foreign_key "staged_rollouts", "deployment_runs"
   add_foreign_key "step_runs", "commits"
