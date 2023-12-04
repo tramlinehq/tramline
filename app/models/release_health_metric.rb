@@ -27,8 +27,8 @@ class ReleaseHealthMetric < ApplicationRecord
   METRIC_VALUES = {
     session_stability: :session_stability,
     user_stability: :user_stability,
-    errors: :errors_count,
-    new_errors: :new_errors_count,
+    errors_count: :errors_count,
+    new_errors_count: :new_errors_count,
     adoption_rate: :adoption_rate
   }.with_indifferent_access
 
@@ -52,6 +52,10 @@ class ReleaseHealthMetric < ApplicationRecord
     release_health_rules.each do |rule|
       create_health_event(rule)
     end
+  end
+
+  def evaluate(metric_name)
+    METRIC_VALUES[metric_name].present? ? public_send(METRIC_VALUES[metric_name]) : nil
   end
 
   def create_health_event(release_health_rule)

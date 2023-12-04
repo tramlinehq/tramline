@@ -12,10 +12,11 @@
 #  release_health_rule_id :uuid             not null, indexed, indexed => [metric]
 #
 class TriggerRuleExpression < RuleExpression
-  enum metric: {
-    session_stability: "session_stability",
-    user_stability: "user_stability",
-    errors: "errors",
-    new_errors: "new_errors"
-  }
+  enum metric: ReleaseHealthMetric::METRIC_VALUES
+    .slice(
+      :session_stability,
+      :user_stability,
+      :errors_count,
+      :new_errors_count
+    ).transform_values(&:to_s)
 end

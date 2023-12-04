@@ -13,28 +13,24 @@ class ReleaseHealthRule < ApplicationRecord
   belongs_to :release_platform
   has_many :trigger_rule_expressions, dependent: :destroy
   has_many :filter_rule_expressions, dependent: :destroy
+  alias_method :filters, :filter_rule_expressions
+  alias_method :triggers, :trigger_rule_expressions
 
   scope :for_metric, ->(metric) { includes(:trigger_rule_expressions).where(trigger_rule_expressions: {metric:}) }
 
   def healthy?(metric)
-    return true if trigger_rule_expressions.blank?
+    return true if triggers.blank?
 
-    filters = filter_rule_expressions.map do |expr|
-      value = metric.send(ReleaseHealthMetric::METRIC_VALUES[expr.metric])
+    filters_passed = filters.all? do |expr|
+      value = metric.evaluate(expr.metric)
       expr.evaluate(value) if value
     end
 
-    return true unless filters.all?
+    return true unless filters_passed
 
-    triggers = trigger_rule_expressions.map do |expr|
-      value = metric.send(ReleaseHealthMetric::METRIC_VALUES[expr.metric])
+    triggers.none? do |expr|
+      value = metric.evaluate(expr.metric)
       expr.evaluate(value) if value
-    end.compact
-
-    !triggers.any?
-  end
-
-  def description
-    name + " rule with condition(s): " + trigger_rule_expressions.map(&:description).join(", ")
+    end
   end
 end

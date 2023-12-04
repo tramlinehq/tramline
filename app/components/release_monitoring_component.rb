@@ -6,6 +6,7 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   delegate :adoption_rate, to: :release_data
   delegate :app, :release_health_rules, to: :deployment_run
   delegate :monitoring_provider, to: :app
+  delegate :current_user, to: :helpers
 
   def initialize(deployment_run:)
     @deployment_run = deployment_run
@@ -38,10 +39,20 @@ class ReleaseMonitoringComponent < ViewComponent::Base
       {
         timestamp: time_format(event.event_timestamp, with_year: false),
         title:,
-        description: event.description,
+        description: event_description(event),
         type:
       }
     end
+  end
+
+  def event_description(event)
+    metric = event.release_health_metric
+    triggers = event.release_health_rule.triggers
+    status = event.health_status
+    triggers.map do |expr|
+      value = metric.evaluate(expr.metric)
+      "#{expr.display_attr(:metric)} (#{value}) #{expr.describe_comparator(status)} the threshold value (#{expr.threshold_value})"
+    end.join(", ")
   end
 
   def release_healthy?

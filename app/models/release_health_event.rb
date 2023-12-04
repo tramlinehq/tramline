@@ -22,11 +22,4 @@ class ReleaseHealthEvent < ApplicationRecord
   belongs_to :deployment_run
   belongs_to :release_health_rule
   belongs_to :release_health_metric
-
-  def description
-    release_health_rule.trigger_rule_expressions.map do |expr|
-      value = release_health_metric.send(ReleaseHealthMetric::METRIC_VALUES[expr.metric])
-      "#{expr.display_attr(:metric)} (#{value}) #{expr.describe_comparator(health_status)} the threshold value (#{expr.threshold_value})"
-    end.join(", ")
-  end
 end

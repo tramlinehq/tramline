@@ -1,7 +1,7 @@
 <% if release_data.present? %>
   <article class="mt-4">
     <div class="text-slate-500 text-md"><%= build_identifier %></div>
-    <% if helpers.current_user.release_monitoring? && release_health_rules.present? %>
+    <% if current_user.release_monitoring? && release_health_rules.present? %>
       <div class="text-slate-500 text-md mt-4">
         Overall Release Health: <span class="<%= release_health_class %> font-semibold"><%= release_health %></span>
       </div>
@@ -27,7 +27,7 @@
         <div class="col-span-2"><%= render ChartComponent.new(adoption_chart_data, icon: "sparkles.svg") %></div>
       <% end %>
     </div>
-    <% if helpers.current_user.release_monitoring? && events.present? %>
+    <% if current_user.release_monitoring? && events.present? %>
       <div class="text-slate-500 text-md mt-4">Health Trigger Events</div>
       <div class="mt-4 ml-2">
         <%= render TimelineComponent.new(events:) %>
