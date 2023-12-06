@@ -13,7 +13,7 @@ export default class extends RevealController {
 
   connect() {
     super.connect()
-    this.popperInstance = createPopper(this.elementTarget, this.popoverSelector, {
+    this.popperInstance = createPopper(this.elementTarget, this.popoverSelector(), {
       placement: this.placementValue,
       modifiers: [
         {
@@ -49,7 +49,7 @@ export default class extends RevealController {
   }
 
   // popover only works for one target
-  get popoverSelector() {
+  popoverSelector() {
     return this.element.querySelector(this.selector)
   }
 }

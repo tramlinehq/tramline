@@ -1,7 +1,5 @@
-# frozen_string_literal: true
-
 class V2::ButtonComponent < V2::BaseComponent
-  TYPES = %i[link button dropdown]
+  TYPES = %i[link button dropdown action]
   DROPDOWN_ARROW_STYLES = {
     double: "double_headed_arrow.svg",
     single: "single_headed_arrow.svg",
@@ -44,10 +42,9 @@ class V2::ButtonComponent < V2::BaseComponent
   VISUAL_ICON_TYPES = %i[external internal]
 
   renders_one :title_text
-  renders_many :dropdown_item_groups, ->(list_style: nil) { DropdownItemGroupComponent.new(list_style: list_style) }
 
-  def initialize(label: nil, scheme: :default, type: :button, visual_icon: nil, visual_icon_type: :internal, tooltip: nil, size: :xxs, options: nil, html_options: nil, arrow: nil)
-    arrow = (arrow.nil? && type == :dropdown) ? :double : :none
+  def initialize(label: nil, scheme: :switcher, type: :button, visual_icon: nil, visual_icon_type: :internal, tooltip: nil, size: :xxs, options: nil, html_options: nil, arrow: nil)
+    arrow = (arrow.nil? && type == :action) ? :double : :none
     raise ArgumentError, "Invalid scheme" unless SCHEMES.include?(scheme)
     raise ArgumentError, "Invalid button type" unless TYPES.include?(type)
     raise ArgumentError, "Invalid size" unless SIZES.keys.include?(size)
@@ -76,7 +73,7 @@ class V2::ButtonComponent < V2::BaseComponent
       link_to_component
     elsif button?
       button_to_component
-    elsif dropdown?
+    elsif action?
       button_component
     end
   end
@@ -137,19 +134,14 @@ class V2::ButtonComponent < V2::BaseComponent
   end
 
   def apply_html_options(options)
-    new_options = BUTTON_OPTIONS[scheme]
-    options ||= {}
-    options[:class] ||= "".dup
+    new_options = BUTTON_OPTIONS[get_scheme]
+    options = options ? options.dup : {}
+    options[:class] ||= ""
     options[:class] << " #{new_options[:class]}"
     options[:class] << " #{SIZES[@size]}"
-    options[:class].squish
+    options[:class] = options[:class].squish
 
     options[:data] ||= {}
-
-    if dropdown?
-      options[:data][:popup_target] = "element"
-      options[:data][:action] = "click->popup#toggle"
-    end
 
     if @tooltip
       options[:data][:popup_target] = "element"
@@ -163,7 +155,7 @@ class V2::ButtonComponent < V2::BaseComponent
 
   def button? = @type == :button
 
-  def dropdown? = @type == :dropdown
+  def action? = @type == :action
 
   ARROW_STYLE = "w-3 h-3 ml-2"
   EXTERNAL_ICON_STYLE = "w-8 h-8 rounded-full"
@@ -179,73 +171,17 @@ class V2::ButtonComponent < V2::BaseComponent
     end
   end
 
-  def scheme
+  def get_scheme
     @scheme = :disabled unless helpers.writer?
     @scheme
   end
 
   def icon_only?
-    @scheme == :icon_only
+    get_scheme == :icon_only
   end
 
   def arrow
     return if @arrow_type.eql?(:none)
     inline_svg(DROPDOWN_ARROW_STYLES[@arrow_type], classname: ARROW_STYLE)
-  end
-
-  class DropdownItemGroupComponent < V2::BaseComponent
-    renders_many :items, ->(**args) { DropdownItemComponent.new(**args) }
-
-    def initialize(list_style: DROPDOWN_STYLE)
-      @list_style = list_style
-    end
-
-    def call
-      content_tag(:ul, class: @list_style) do
-        items.collect do |item|
-          concat content_tag(:li, item)
-        end
-      end
-    end
-
-    class DropdownItemComponent < V2::BaseComponent
-      def initialize(link: nil, selected: false)
-        @link = link || {}
-        @selected = selected
-      end
-
-      ITEM_STYLE = "flex items-center justify-between py-3 px-4 rounded hover:bg-gray-50 dark:hover:bg-gray-600"
-      SELECTED_CHECK_STYLE = "w-3 h-3 text-green-500"
-
-      def call
-        if @link.present?
-          _link_to(link_path, **link_params) do
-            concat content
-            concat inline_svg("selected_check.svg", classname: SELECTED_CHECK_STYLE) if @selected
-          end
-        else
-          content_tag(:div, class: ITEM_STYLE) do
-            content
-          end
-        end
-      end
-
-      def _link_to(path, **args, &blk)
-        return link_to_external(path, **args, &blk) if @link[:external]
-        link_to(path, **args, &blk)
-      end
-
-      def link_path
-        @link[:path]
-      end
-
-      def link_class
-        { class: @link[:class].presence || ITEM_STYLE }
-      end
-
-      def link_params
-        link_class.merge(@link.except(:class))
-      end
-    end
   end
 end
