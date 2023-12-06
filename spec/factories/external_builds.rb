@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :external_build_metadata do
+  factory :external_build do
     association :step_run
     added_at { Time.current }
     metadata {

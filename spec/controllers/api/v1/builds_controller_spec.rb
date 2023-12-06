@@ -91,12 +91,12 @@ describe Api::V1::BuildsController do
           unit: "seconds"
         }
       ]
-      old_metadata = create(:external_build_metadata, step_run:)
+      old_metadata = create(:external_build, step_run:)
       patch :external_metadata,
         format: :json,
         params: {app_id: app.slug, version_name: step_run.build_version, version_code: step_run.build_number, external_metadata: single_metadata}
       expect(response).to have_http_status(:success)
-      new_metadata = response.parsed_body["external_build_metadata"]
+      new_metadata = response.parsed_body["external_build"]
       expect(new_metadata.dig("metadata", "app_launch_time")).to eq(single_metadata.find { |m| m[:identifier] == "app_launch_time" }.with_indifferent_access)
       expect(new_metadata.dig("metadata", "unit_test_coverage")).to eq(old_metadata.metadata.fetch("unit_test_coverage"))
     end

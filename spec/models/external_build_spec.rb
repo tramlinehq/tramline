@@ -1,8 +1,8 @@
 require "rails_helper"
 
-describe ExternalBuildMetadata do
+describe ExternalBuild do
   it "has valid factory" do
-    expect(create(:external_build_metadata)).to be_valid
+    expect(create(:external_build)).to be_valid
   end
 
   describe "#update_or_insert!" do
@@ -14,7 +14,7 @@ describe ExternalBuildMetadata do
     }
 
     it "creates new record" do
-      external_build_metadata = build(:external_build_metadata, step_run:)
+      external_build_metadata = build(:external_build, step_run:)
 
       persisted_metadata = external_build_metadata.update_or_insert!(metadata)
 
@@ -22,7 +22,7 @@ describe ExternalBuildMetadata do
     end
 
     it "updates existing record" do
-      existing_metadata = create(:external_build_metadata, step_run:, metadata: metadata.index_by { |k| k[:identifier] })
+      existing_metadata = create(:external_build, step_run:, metadata: metadata.index_by { |k| k[:identifier] })
 
       existing_metadata.update_or_insert!(updated_metadata)
 

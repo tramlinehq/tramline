@@ -1,32 +1,30 @@
 # == Schema Information
 #
-# Table name: external_build_metadata
+# Table name: external_builds
 #
 #  id          :uuid             not null, primary key
 #  added_at    :datetime         not null
 #  metadata    :jsonb            not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  step_run_id :uuid             not null, indexed, indexed
+#  step_run_id :uuid             not null, indexed
 #
-class ExternalBuildMetadata < ApplicationRecord
+class ExternalBuild < ApplicationRecord
   has_paper_trail
-
-  self.table_name = "external_build_metadata"
 
   METADATA_SCHEMA = Rails.root.join("config/schema/external_build_metadata.json")
 
-  belongs_to :step_run, inverse_of: :external_build_metadata
+  belongs_to :step_run, inverse_of: :external_build
 
   def update_or_insert!(new_metadata)
     validate_metadata_schema(new_metadata)
     return unless valid?
 
-    ExternalBuildMetadata.upsert_all(
+    ExternalBuild.upsert_all(
       [attributes_for_upsert(new_metadata)],
       unique_by: [:step_run_id],
-      on_duplicate: Arel.sql("metadata = COALESCE(external_build_metadata.metadata, '{}'::jsonb) || COALESCE(EXCLUDED.metadata, '{}'::jsonb), added_at = CURRENT_TIMESTAMP")
-    ).rows.first.first.then { |id| ExternalBuildMetadata.find_by(id: id) }
+      on_duplicate: Arel.sql("metadata = COALESCE(external_builds.metadata, '{}'::jsonb) || COALESCE(EXCLUDED.metadata, '{}'::jsonb), added_at = CURRENT_TIMESTAMP")
+    ).rows.first.first.then { |id| ExternalBuild.find_by(id: id) }
   end
 
   def attributes_for_upsert(new_metadata)

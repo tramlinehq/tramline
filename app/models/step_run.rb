@@ -32,7 +32,7 @@ class StepRun < ApplicationRecord
   belongs_to :release_platform_run
   belongs_to :commit, inverse_of: :step_runs
   has_one :build_artifact, inverse_of: :step_run, dependent: :destroy
-  has_one :external_build_metadata, inverse_of: :step_run, dependent: :destroy
+  has_one :external_build, inverse_of: :step_run, dependent: :destroy
   has_many :deployment_runs, -> { includes(:deployment).merge(Deployment.sequential) }, inverse_of: :step_run, dependent: :destroy
   has_many :deployments, through: :step
   has_many :running_deployments, through: :deployment_runs, source: :deployment

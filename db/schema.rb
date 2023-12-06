@@ -199,14 +199,13 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_06_064346) do
     t.index ["fetched_at"], name: "index_external_apps_on_fetched_at"
   end
 
-  create_table "external_build_metadata", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "external_builds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "step_run_id", null: false
     t.datetime "added_at", precision: nil, null: false
     t.jsonb "metadata", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["step_run_id"], name: "index_external_build_metadata_on_step_run_id"
-    t.index ["step_run_id"], name: "unique_index_external_build_metadata_on_step_run_id", unique: true
+    t.index ["step_run_id"], name: "index_external_builds_on_step_run_id", unique: true
   end
 
   create_table "external_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -678,7 +677,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_06_064346) do
   add_foreign_key "deployment_runs", "step_runs"
   add_foreign_key "deployments", "steps"
   add_foreign_key "external_apps", "apps"
-  add_foreign_key "external_build_metadata", "step_runs"
+  add_foreign_key "external_builds", "step_runs"
   add_foreign_key "external_releases", "deployment_runs"
   add_foreign_key "integrations", "apps"
   add_foreign_key "invites", "organizations"
