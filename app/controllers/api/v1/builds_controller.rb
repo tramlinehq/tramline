@@ -1,7 +1,7 @@
 class Api::V1::BuildsController < ApiController
   def external_metadata
     step_run = app.step_runs.where(build_number: build_params[:version_code], build_version: build_params[:version_name]).sole
-    external_build_metadata = step_run.build_external_build_metadata
+    external_build_metadata = ExternalBuildMetadata.find_or_initialize_by(step_run:)
     new_metadata = external_build_metadata.update_or_insert!(build_params[:external_metadata])
 
     if new_metadata.nil?
