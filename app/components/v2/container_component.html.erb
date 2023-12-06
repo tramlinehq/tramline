@@ -6,12 +6,12 @@
           <span><%= title %></span>
         </h1>
         <div class="ml-2">
-          <%= render V2::DropdownComponent.new(type: :switcher, arrow: :double) do |dropdown| %>
+          <%= render V2::ButtonComponent.new(scheme: :switcher, type: :dropdown, size: :xxs, html_options: { class: "-my-5" }) do |dropdown| %>
             <% dropdown.with_title_text do %>
               <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Switch</span>
             <% end %>
 
-            <% dropdown.with_item_group do |group| %>
+            <% dropdown.with_dropdown_item_group do |group| %>
               <% group.with_item(link: { path: root_path }) do %>
                 Synced Release Train
               <% end %>
@@ -25,6 +25,7 @@
           <% end %>
         </div>
       </div>
+
       <% if subtitle %>
         <span class="mt-1 text-sm"><%= subtitle %></span>
       <% end %>

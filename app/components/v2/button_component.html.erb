@@ -3,6 +3,18 @@
     <%= render_component %>
     <%= render(tooltip_component) %>
   </div>
+<% elsif dropdown? %>
+  <div data-controller="popup" data-popup-away-value="true">
+    <%= render_component %>
+    <div data-reveal
+         hidden
+         class="z-30 w-60 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
+      <% dropdown_item_groups.each do |group| %>
+        <%= group %>
+      <% end %>
+    </div>
+  </div>
 <% else %>
   <%= render_component %>
 <% end %>
+

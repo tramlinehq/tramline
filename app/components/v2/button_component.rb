@@ -1,29 +1,28 @@
 # frozen_string_literal: true
 
 class V2::ButtonComponent < V2::BaseComponent
-  TYPES = %i[link button].freeze
-  BASE_OPTS = "btn group px-2"
+  TYPES = %i[link button dropdown]
+  DROPDOWN_ARROW_STYLES = {
+    double: "double_headed_arrow.svg",
+    single: "single_headed_arrow.svg",
+    none: ""
+  }
+  BASE_OPTS = "btn group px-2 flex items-center"
   BUTTON_OPTIONS = {
     default: {
       class: "#{BASE_OPTS} text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
     },
-    dark: {
-      class: "#{BASE_OPTS} text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
-    },
     light: {
       class: "#{BASE_OPTS} text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
     },
-    primary: {
-      class: "#{BASE_OPTS} text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"
-    },
-    danger: {
-      class: "#{BASE_OPTS} text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
-    },
-    neutral: {
-      class: "#{BASE_OPTS} text-white bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm text-center dark:focus:ring-yellow-900"
-    },
     supporting: {
       class: "#{BASE_OPTS} text-gray-500 hover:bg-gray-200 font-medium text-sm dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 border-none shadow-none"
+    },
+    switcher: {
+      class: "text-gray-500 rounded-lg md:inline-flex hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600 items-center",
+    },
+    icon_only: {
+      class: "bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600",
     },
     disabled:
       {
@@ -31,29 +30,41 @@ class V2::ButtonComponent < V2::BaseComponent
         disabled: true
       }
   }
+  DROPDOWN_STYLE = "p-1 text-sm text-gray-700 dark:text-gray-200"
   SCHEMES = BUTTON_OPTIONS.keys
   SIZES = {
+    none: "",
     base: "px-5 py-2.5 text-sm",
-    sm: "px-3 py-2 text-sm",
+    sm: "py-2 px-4 text-sm",
     xs: "px-3 py-2 text-xs",
     xxs: "p-1.5 text-xs",
     lg: "px-5 py-3 text-base",
     xl: "px-6 py-3.5 text-base"
   }
+  VISUAL_ICON_TYPES = %i[external internal]
 
-  def initialize(label: nil, scheme: :default, type: :button, visual_icon: nil, tooltip: nil, size: :base, options: nil, html_options: nil)
+  renders_one :title_text
+  renders_many :dropdown_item_groups, ->(list_style: nil) { DropdownItemGroupComponent.new(list_style: list_style) }
+
+  def initialize(label: nil, scheme: :default, type: :button, visual_icon: nil, visual_icon_type: :internal, tooltip: nil, size: :xxs, options: nil, html_options: nil, arrow: nil)
+    arrow = (arrow.nil? && type == :dropdown) ? :double : :none
     raise ArgumentError, "Invalid scheme" unless SCHEMES.include?(scheme)
     raise ArgumentError, "Invalid button type" unless TYPES.include?(type)
     raise ArgumentError, "Invalid size" unless SIZES.keys.include?(size)
+    raise ArgumentError, "Invalid arrow type for dropdown" if DROPDOWN_ARROW_STYLES.keys.exclude?(arrow)
+    raise ArgumentError, "Cannot use tooltip with a dropdown" if tooltip && type == :dropdown
+    raise ArgumentError, "Visual Icon can only be internal or external" if visual_icon && VISUAL_ICON_TYPES.exclude?(visual_icon_type)
 
     @label = label
     @scheme = scheme
     @type = type
     @size = size
     @visual_icon = visual_icon
+    @visual_icon_type = visual_icon_type
     @tooltip = tooltip
     @options = options
     @html_options = html_options
+    @arrow_type = arrow
   end
 
   def before_render
@@ -65,6 +76,8 @@ class V2::ButtonComponent < V2::BaseComponent
       link_to_component
     elsif button?
       button_to_component
+    elsif dropdown?
+      button_component
     end
   end
 
@@ -75,8 +88,8 @@ class V2::ButtonComponent < V2::BaseComponent
     link_to(@options, @html_options) do
       concat icon
 
-      if content
-        concat content_tag(:span, content, class: classname)
+      if title_text?
+        concat content_tag(:span, title_text, class: classname)
       else
         if @label
           concat content_tag(:span, @label, class: classname)
@@ -91,8 +104,9 @@ class V2::ButtonComponent < V2::BaseComponent
 
     button_to(@options, @html_options) do
       concat icon
-      if content
-        concat content_tag(:span, content, class: classname)
+
+      if title_text?
+        concat content_tag(:span, title_text, class: classname)
       else
         if @label
           concat content_tag(:span, @label, class: classname)
@@ -101,11 +115,21 @@ class V2::ButtonComponent < V2::BaseComponent
     end
   end
 
+  def button_component
+    return button_tag(@options, @html_options) { icon } if icon_only?
+
+    classname = "ml-2"
+    button_tag(@options, @html_options) do
+      concat icon
+      concat content_tag(:span, "Open menu", class: "sr-only")
+      concat content_tag(:span, title_text, class: classname)
+      concat arrow
+    end
+  end
+
   def tooltip_component
     V2::TooltipComponent.new(text: @tooltip) if @tooltip
   end
-
-  private
 
   def apply_button_loader(value)
     content_tag(:span, value, class: "group-disabled:hidden") +
@@ -120,8 +144,14 @@ class V2::ButtonComponent < V2::BaseComponent
     options[:class] << " #{SIZES[@size]}"
     options[:class].squish
 
+    options[:data] ||= {}
+
+    if dropdown?
+      options[:data][:popup_target] = "element"
+      options[:data][:action] = "click->popup#toggle"
+    end
+
     if @tooltip
-      options[:data] ||= {}
       options[:data][:popup_target] = "element"
       options[:data][:action] = "mouseover->popup#show mouseout->popup#hide"
     end
@@ -129,17 +159,24 @@ class V2::ButtonComponent < V2::BaseComponent
     options.merge(new_options.except(:class))
   end
 
-  def link?
-    @type == :link
+  def link? = @type == :link
 
-  end
+  def button? = @type == :button
 
-  def button?
-    @type == :button
-  end
+  def dropdown? = @type == :dropdown
+
+  ARROW_STYLE = "w-3 h-3 ml-2"
+  EXTERNAL_ICON_STYLE = "w-8 h-8 rounded-full"
+  INTERNAL_ICON_STYLE = "w-4 h-4 rounded-full"
 
   def icon
-    inline_svg(@visual_icon, classname: "w-4 h-4 items-center") if @visual_icon
+    return unless @visual_icon
+
+    if @visual_icon_type.eql?(:external)
+      image_tag(@visual_icon, class: EXTERNAL_ICON_STYLE)
+    else
+      inline_svg(@visual_icon + ".svg", classname: INTERNAL_ICON_STYLE)
+    end
   end
 
   def scheme
@@ -148,6 +185,67 @@ class V2::ButtonComponent < V2::BaseComponent
   end
 
   def icon_only?
-    !@label && !content && @visual_icon
+    @scheme == :icon_only
+  end
+
+  def arrow
+    return if @arrow_type.eql?(:none)
+    inline_svg(DROPDOWN_ARROW_STYLES[@arrow_type], classname: ARROW_STYLE)
+  end
+
+  class DropdownItemGroupComponent < V2::BaseComponent
+    renders_many :items, ->(**args) { DropdownItemComponent.new(**args) }
+
+    def initialize(list_style: DROPDOWN_STYLE)
+      @list_style = list_style
+    end
+
+    def call
+      content_tag(:ul, class: @list_style) do
+        items.collect do |item|
+          concat content_tag(:li, item)
+        end
+      end
+    end
+
+    class DropdownItemComponent < V2::BaseComponent
+      def initialize(link: nil, selected: false)
+        @link = link || {}
+        @selected = selected
+      end
+
+      ITEM_STYLE = "flex items-center justify-between py-3 px-4 rounded hover:bg-gray-50 dark:hover:bg-gray-600"
+      SELECTED_CHECK_STYLE = "w-3 h-3 text-green-500"
+
+      def call
+        if @link.present?
+          _link_to(link_path, **link_params) do
+            concat content
+            concat inline_svg("selected_check.svg", classname: SELECTED_CHECK_STYLE) if @selected
+          end
+        else
+          content_tag(:div, class: ITEM_STYLE) do
+            content
+          end
+        end
+      end
+
+      def _link_to(path, **args, &blk)
+        return link_to_external(path, **args, &blk) if @link[:external]
+        link_to(path, **args, &blk)
+      end
+
+      def link_path
+        @link[:path]
+      end
+
+      def link_class
+        { class: @link[:class].presence || ITEM_STYLE }
+      end
+
+      def link_params
+        link_class.merge(@link.except(:class))
+      end
+    end
   end
 end
