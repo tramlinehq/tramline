@@ -69,7 +69,7 @@ class ReleaseHealthMetric < ApplicationRecord
   end
 
   def metric_healthy?(metric_name)
-    raise ArgumentError "Invalid metric name" unless metric_name.in? METRIC_VALUES.keys
+    raise ArgumentError, "Invalid metric name" unless metric_name.in? METRIC_VALUES.keys
 
     rule = release_health_rules.for_metric(metric_name).first
     return unless rule

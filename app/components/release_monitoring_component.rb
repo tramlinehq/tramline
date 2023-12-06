@@ -91,12 +91,12 @@ class ReleaseMonitoringComponent < ViewComponent::Base
 
   def errors_count
     value = release_data.errors_count
-    {value:, is_healthy: release_data.metric_healthy?("errors")}
+    {value:, is_healthy: release_data.metric_healthy?("errors_count")}
   end
 
   def new_errors_count
     value = release_data.new_errors_count
-    {value:, is_healthy: release_data.metric_healthy?("new_errors")}
+    {value:, is_healthy: release_data.metric_healthy?("new_errors_count")}
   end
 
   def adoption_chart_data
