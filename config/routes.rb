@@ -183,6 +183,7 @@ Rails.application.routes.draw do
       get "ping", to: "pings#show"
       get "releases/*release_id", to: "releases#show"
       get "apps/*app_id", to: "apps#show"
+      patch "apps/:app_id/builds/:version_name/:version_code/external_metadata", to: "builds#external_metadata"
     end
   end
 

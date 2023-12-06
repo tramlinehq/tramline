@@ -1,0 +1,42 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "identifier": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "value": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "type": {
+        "type": "string",
+        "enum": [
+          "number",
+          "text"
+        ]
+      },
+      "unit": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "identifier",
+      "value",
+      "type"
+    ]
+  }
+}
