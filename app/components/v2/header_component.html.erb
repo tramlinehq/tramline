@@ -40,8 +40,8 @@
 
             <%= render V2::DropdownComponent.new do |dropdown| %>
               <% dropdown.with_button(visual_icon: "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png",
-                                              visual_icon_type: :external,
-                                              size: :none,
+                                      visual_icon_type: :external,
+                                      size: :none,
               ).with_title_text do %>
                 <div class="text-left">
                   <div class="text-sm font-semibold leading-none text-gray-900 dark:text-white">
@@ -77,7 +77,12 @@
               html_options: { class: "ml-2" }
             ) %>
 
-            <%= render V2::ModalComponent.new(title: "Add a new app") %>
+            <%= render V2::ModalComponent.new(title: "Add a new app") do |modal| %>
+              <% modal.with_button(scheme: :light, visual_icon: "plus", type: :action, size: :xxs, arrow: :none, html_options: { class: "ml-2" }) %>
+              <% modal.with_body do %>
+                hi2u
+              <% end %>
+            <% end %>
 
             <%= render V2::ButtonComponent.new(
               scheme: :light,
@@ -93,20 +98,23 @@
       </div>
 
       <div class="flex justify-end items-center lg:order-2">
-        <%= link_to_external "https://docs.tramline.app",
-                             class: "text-gray-500 rounded-lg hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700" do %>
-          <span class="sr-only">View Docs</span>
-          <%= inline_svg("book.svg", classname: "w-4 h-4") %>
-        <% end %>
+        <%= render V2::ButtonComponent.new(
+          scheme: :naked_icon,
+          visual_icon: "book",
+          options: "https://docs.tramline.app",
+          type: :link_external,
+          size: :none,
+          html_options: { class: "ml-2" }
+        ) %>
 
         <span class="mx-4 w-px h-5 bg-gray-200 dark:bg-gray-600"></span>
 
         <%= render V2::DropdownComponent.new do |dropdown| %>
           <% dropdown.with_button(visual_icon: "https://flowbite.com/docs/images/people/profile-picture-5.jpg",
-                                          visual_icon_type: :external,
-                                          size: :none,
-                                          html_options: { class: "flex" },
-                                          scheme: :icon_only) %>
+                                  visual_icon_type: :external,
+                                  size: :none,
+                                  html_options: { class: "flex" },
+                                  scheme: :avatar_icon) %>
 
           <!-- <%# button.with_subtext do %> -->
           <!--            <div class="py-3 px-4">-->

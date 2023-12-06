@@ -32,7 +32,7 @@ class V2::DropdownComponent < V2::BaseComponent
 
       def call
         if @link.present?
-          _link_to(link_path, **link_params) do
+          _link_to(@link[:external], link_path, **link_params) do
             concat content
             concat inline_svg("selected_check.svg", classname: SELECTED_CHECK_STYLE) if @selected
           end
@@ -41,11 +41,6 @@ class V2::DropdownComponent < V2::BaseComponent
             content
           end
         end
-      end
-
-      def _link_to(path, **args, &blk)
-        return link_to_external(path, **args, &blk) if @link[:external]
-        link_to(path, **args, &blk)
       end
 
       def link_path

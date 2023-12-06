@@ -1,5 +1,5 @@
 class V2::ButtonComponent < V2::BaseComponent
-  TYPES = %i[link button dropdown action]
+  TYPES = %i[link link_external button dropdown action]
   DROPDOWN_ARROW_STYLES = {
     double: "double_headed_arrow.svg",
     single: "single_headed_arrow.svg",
@@ -17,10 +17,15 @@ class V2::ButtonComponent < V2::BaseComponent
       class: "#{BASE_OPTS} text-gray-500 hover:bg-gray-200 font-medium text-sm dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 border-none shadow-none"
     },
     switcher: {
-      class: "text-gray-500 rounded-lg md:inline-flex hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600 items-center",
+      class: "text-gray-500 rounded-lg md:inline-flex hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600 items-center"
     },
-    icon_only: {
+    naked_icon: {
+      class: "text-gray-500 rounded-lg hover:text-gray-900 dark:text-gray-400 dark:hover:text-white",
+      icon: true
+    },
+    avatar_icon: {
       class: "bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600",
+      icon: true
     },
     disabled:
       {
@@ -82,15 +87,13 @@ class V2::ButtonComponent < V2::BaseComponent
     classname = ""
     classname = "ml-2" unless icon_only?
 
-    link_to(@options, @html_options) do
+    _link_to(link_external?, @options, @html_options) do
       concat icon
 
       if title_text?
         concat content_tag(:span, title_text, class: classname)
-      else
-        if @label
-          concat content_tag(:span, @label, class: classname)
-        end
+      elsif @label
+        concat content_tag(:span, @label, class: classname)
       end
     end
   end
@@ -104,10 +107,8 @@ class V2::ButtonComponent < V2::BaseComponent
 
       if title_text?
         concat content_tag(:span, title_text, class: classname)
-      else
-        if @label
-          concat content_tag(:span, @label, class: classname)
-        end
+      elsif @label
+        concat content_tag(:span, @label, class: classname)
       end
     end
   end
@@ -119,7 +120,7 @@ class V2::ButtonComponent < V2::BaseComponent
     button_tag(@options, @html_options) do
       concat icon
       concat content_tag(:span, "Open menu", class: "sr-only")
-      concat content_tag(:span, title_text, class: classname)
+      concat content_tag(:span, title_text, class: classname) if title_text?
       concat arrow
     end
   end
@@ -151,7 +152,9 @@ class V2::ButtonComponent < V2::BaseComponent
     options.merge(new_options.except(:class))
   end
 
-  def link? = @type == :link
+  def link? = @type == :link || link_external?
+
+  def link_external? = @type == :link_external
 
   def button? = @type == :button
 
@@ -177,7 +180,7 @@ class V2::ButtonComponent < V2::BaseComponent
   end
 
   def icon_only?
-    get_scheme == :icon_only
+    BUTTON_OPTIONS.dig(get_scheme, :icon)
   end
 
   def arrow
