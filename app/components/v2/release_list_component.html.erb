@@ -32,10 +32,8 @@
     <%= render V2::ReleaseOverviewComponent.new %>
     <%= render V2::ReleaseOverviewComponent.new %>
     <%= render V2::ReleaseOverviewComponent.new %>
-
     <% if devops_report.present? %>
-      <article class="mb-8 pb-4">
-        <h2 class="text-2xl font-bold mb-4">Mobile DevOps</h2>
+      <%= render V2::SectionComponent.new(style: :titled, title: "Mobile Devops") do %>
         <div class="grid grid-cols-4 gap-x-1 my-3 gap-y-1">
           <%= render ChartComponent.new(devops_report[:mobile_devops][:frequency], icon: "cog.svg") %>
           <%= render ChartComponent.new(devops_report[:mobile_devops][:duration], icon: "cog.svg") %>
@@ -45,15 +43,14 @@
             <%= render ChartComponent.new(devops_report[:mobile_devops][:time_in_phases], icon: "cog.svg") %>
           </div>
         </div>
-      </article>
+      <% end %>
 
-      <article class="mb-8 pb-4">
-        <h2 class="text-2xl font-bold mb-4">Operational Efficiency</h2>
+      <%= render V2::SectionComponent.new(style: :titled, title: "Operational Efficiency") do %>
         <div class="grid grid-cols-4 gap-x-1 my-3 gap-y-1">
           <%= render ChartComponent.new(devops_report[:operational_efficiency][:contributors], icon: "user.svg") %>
           <%= render ChartComponent.new(devops_report[:operational_efficiency][:stability_contributors], icon: "user.svg") %>
         </div>
-      </article>
+      <% end %>
     <% end %>
 
     <%= render V2::TableComponent.new(caption: "Previous Releases",

@@ -1,0 +1,15 @@
+<% if boxed? %>
+  <section class="border border-l rounded-lg p-5 my-8">
+    <%= content %>
+  </section>
+<% else %>
+  <section class="my-8">
+    <div class="flex gap-5 items-center">
+      <h1 class="text-xl font-semibold text-neutral-800 dark:text-white"><%= title %></h1>
+      <div class="flex-1 h-full">
+        <div class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700 w-full m-0"></div>
+      </div>
+    </div>
+    <%= content %>
+  </section>
+<% end %>

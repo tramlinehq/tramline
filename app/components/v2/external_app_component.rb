@@ -18,9 +18,13 @@ class V2::ExternalAppComponent < V2::BaseComponent
   private
 
   def subtitle
-    return "Last changed #{ago_in_words @latest_external_apps.values.first.fetched_at}" if @latest_external_apps.values.first.present?
+    return "Last changed #{ago_in_words @latest_external_apps.values.first.fetched_at}." if external_apps?
     return "Fetching..." if app.has_store_integration?
-    "Add store deployment integration to fetch this information"
+    "Add store deployment integration to fetch this information."
+  end
+
+  def external_apps?
+    @latest_external_apps.values.first.present?
   end
 
   def store_icon_path(platform)

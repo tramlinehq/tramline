@@ -1,6 +1,6 @@
-<% if latest_external_apps.present? %>
-  <p class="text-gray-500 dark:text-gray-400 text-xs mb-4"><%= subtitle %></p>
-  <ul class="mb-6 divide-y divide-gray-200 dark:divide-gray-700">
+<p class="text-gray-500 dark:text-gray-400 text-sm mb-4"><%= subtitle %></p>
+<% if external_apps? %>
+  <ul class="mb-2 divide-y divide-gray-200 dark:divide-gray-700">
     <% latest_external_apps.each do |platform, external_app| %>
       <% channels(external_app).each do |channel| %>
         <% if releases(channel).size > 0 %>
