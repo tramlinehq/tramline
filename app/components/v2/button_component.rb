@@ -120,7 +120,11 @@ class V2::ButtonComponent < V2::BaseComponent
     button_tag(@options, @html_options) do
       concat icon
       concat content_tag(:span, "Open menu", class: "sr-only")
-      concat content_tag(:span, title_text, class: classname) if title_text?
+      if title_text?
+        concat content_tag(:span, title_text, class: classname)
+      elsif @label
+        concat content_tag(:span, @label, class: classname)
+      end
       concat arrow
     end
   end

@@ -42,7 +42,7 @@
             <%= render V2::DropdownComponent.new do |dropdown| %>
               <% dropdown.with_button(visual_icon: "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png",
                                       visual_icon_type: :external,
-                                      size: :none,
+                                      size: :xs,
               ).with_title_text do %>
                 <div class="text-left">
                   <div class="text-sm font-semibold leading-none text-gray-900 dark:text-white">
@@ -114,15 +114,12 @@
               <% end %>
             <% end %>
 
-            <%= render V2::ButtonComponent.new(
-              scheme: :light,
-              visual_icon: "box",
-              options: new_app_path,
-              type: :link,
-              size: :xxs,
-              label: "Store Status",
-              html_options: { class: "ml-2" }
-            ) %>
+            <%= render V2::ModalComponent.new(title: "Store Status", size: :xxsmall) do |modal| %>
+              <% modal.with_button(label: "Store Status", scheme: :light, visual_icon: "box", type: :action, size: :xxs, arrow: :none, html_options: { class: "ml-2" }) %>
+              <% modal.with_body do %>
+              <%= render V2::ExternalAppComponent.new(app: default_app) %>
+              <% end %>
+            <% end %>
           <% end %>
         </div>
       </div>

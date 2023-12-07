@@ -27,23 +27,25 @@
       </div>
 
       <% if subtitle %>
-        <span class="mt-1 text-sm"><%= subtitle %></span>
+        <span class="mt-1 text-sm">
+          <%= subtitle %>
+        </span>
       <% end %>
     </div>
   </div>
 
-  <div class="md:mt-0 flex flex-wrap gap-2 shrink-0">
+  <nav class="md:mt-0 flex flex-wrap gap-2 shrink-0">
     <% actions.each do |action| %>
       <%= action %>
     <% end %>
-  </div>
+  </nav>
 </div>
 
-<div class="-mx-2 flex flex-row flex-wrap mt-8 sm:space-x-2">
+<nav class="-mx-2 flex flex-row flex-wrap mt-8 sm:space-x-2">
   <% sub_actions.each do |sub_action| %>
     <%= sub_action %>
   <% end %>
-</div>
+</nav>
 
 <section class="mt-4">
   <%= body %>
