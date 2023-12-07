@@ -224,7 +224,7 @@ class Release < ApplicationRecord
       ongoing_head = train.ongoing_release.first_commit
       source_commitish, from_ref = ongoing_head.commit_hash, ongoing_head.short_sha
     else
-      source_commitish = from_ref = previous_release&.tag_name
+      source_commitish = from_ref = previous_release&.tag_name || previous_release&.last_commit&.short_sha
     end
 
     return if source_commitish.blank?
