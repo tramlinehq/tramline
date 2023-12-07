@@ -5,7 +5,7 @@ class Api::V1::BuildsController < ApiController
     new_metadata = external_build_metadata.update_or_insert!(build_params[:external_metadata].map(&:to_h))
 
     if new_metadata.errors.present?
-      render json: {error: new_metadata.errors.as_json}, status: :unprocessable_entity
+      render json: {error: new_metadata.errors}, status: :unprocessable_entity
     else
       render json: {external_build: new_metadata}, status: :ok
     end
