@@ -8,6 +8,7 @@ describe ExternalBuild do
   describe "#update_or_insert!" do
     let(:step_run) { create(:step_run) }
     let(:metadata) { [{identifier: "foo", value: 100, type: "number"}.with_indifferent_access] }
+    let(:invalid_metadata) { [{value: 100, type: "number"}.with_indifferent_access] }
     let(:updated_metadata) {
       [{identifier: "foo", value: 200, type: "number"}.with_indifferent_access,
         {identifier: "bar", value: 100, type: "number"}.with_indifferent_access]
@@ -27,6 +28,15 @@ describe ExternalBuild do
       existing_metadata.update_or_insert!(updated_metadata)
 
       expect(existing_metadata.reload.metadata.values).to match_array(updated_metadata)
+    end
+
+    it "validates the metadata" do
+      external_build_metadata = build(:external_build, step_run:)
+
+      persisted_metadata = external_build_metadata.update_or_insert!(invalid_metadata)
+
+      expect(persisted_metadata.errors).to contain_exactly("Metadata →\nThe property '#/0' did not contain a required property of 'identifier'")
+      expect(persisted_metadata.id).to be_nil
     end
   end
 end

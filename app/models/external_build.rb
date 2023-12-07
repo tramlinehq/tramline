@@ -18,7 +18,7 @@ class ExternalBuild < ApplicationRecord
 
   def update_or_insert!(new_metadata)
     validate_metadata_schema(new_metadata)
-    return unless valid?
+    return self if errors.present?
 
     ExternalBuild.upsert_all(
       [attributes_for_upsert(new_metadata)],
@@ -34,9 +34,8 @@ class ExternalBuild < ApplicationRecord
   end
 
   def validate_metadata_schema(new_metadata)
-    schemer = JSONSchemer.schema(METADATA_SCHEMA)
-    unless schemer.valid?(new_metadata)
-      errors.add(:metadata, "does not match the expected schema")
-    end
+    JSON::Validator.validate!(METADATA_SCHEMA.to_s, new_metadata)
+  rescue JSON::Schema::ValidationError => e
+    errors.add(:metadata, e.message)
   end
 end

@@ -79,6 +79,7 @@ gem "discard", "~> 1.3"
 gem "bugsnag-api", "~> 3.0"
 gem "data-anonymization", require: false
 gem "faker"
+gem "json-schema", "~> 4.1"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
