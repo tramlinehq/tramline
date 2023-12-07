@@ -23,7 +23,7 @@ class ExternalBuild < ApplicationRecord
     ExternalBuild.upsert_all(
       [attributes_for_upsert(new_metadata)],
       unique_by: [:step_run_id],
-      on_duplicate: Arel.sql("metadata = COALESCE(external_builds.metadata, '{}'::jsonb) || COALESCE(EXCLUDED.metadata, '{}'::jsonb), added_at = CURRENT_TIMESTAMP")
+      on_duplicate: Arel.sql("metadata = COALESCE(external_builds.metadata, '{}'::jsonb) || COALESCE(EXCLUDED.metadata, '{}'::jsonb), added_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP")
     ).rows.first.first.then { |id| ExternalBuild.find_by(id: id) }
   end
 
