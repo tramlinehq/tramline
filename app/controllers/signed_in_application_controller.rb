@@ -11,7 +11,9 @@ class SignedInApplicationController < ApplicationController
   helper_method :current_organization
   helper_method :current_user
   helper_method :default_app
+  helper_method :new_app
   helper_method :writer?
+  helper_method :default_timezones
   layout -> { ensure_supported_layout("signed_in_application") }
 
   rescue_from NotAuthorizedError, with: :user_not_authorized
@@ -113,6 +115,16 @@ class SignedInApplicationController < ApplicationController
     # else
     #   @app if @app.persisted?
     # end
+  end
+
+  def new_app
+    current_organization.apps.new
+  end
+
+  DEFAULT_TIMEZONE_LIST_REGEX = /Asia\/Kolkata/
+
+  def default_timezones
+    ActiveSupport::TimeZone.all.select { |tz| tz.match?(DEFAULT_TIMEZONE_LIST_REGEX) }
   end
 
   def app_id

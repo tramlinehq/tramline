@@ -20,7 +20,8 @@
 
             <% dropdown.with_item_group do |group| %>
               <% current_user.organizations.each do |organization| %>
-                <% group.with_item(link: { path: switch_accounts_organization_path(organization) }, selected: organization.id == current_organization.id) do %>
+                <% group.with_item(link: { path: switch_accounts_organization_path(organization) },
+                                   selected: organization.id == current_organization.id) do %>
                   <div class="text-left">
                     <div class="font-medium leading-none text-gray-900 dark:text-white mb-0.5 text-sm">
                       <%= organization.name %>
@@ -80,7 +81,36 @@
             <%= render V2::ModalComponent.new(title: "Add a new app") do |modal| %>
               <% modal.with_button(scheme: :light, visual_icon: "plus", type: :action, size: :xxs, arrow: :none, html_options: { class: "ml-2" }) %>
               <% modal.with_body do %>
-                hi2u
+                <%= form_with(model: [new_app], builder: EnhancedFormHelper::AuthzForm) do |form| %>
+                  <div class="grid gap-4 mb-4 sm:grid-cols-2">
+                    <div><%= form.labeled_text_field :name, "Name" %></div>
+                    <div><%= form.labeled_text_field :bundle_identifier, "Bundle Identifier" %></div>
+                    <div class="sm:col-span-2"
+                         data-controller="domain--build-number-help"
+                         data-domain--build-number-help-number-current-value="">
+                      <%= form.labeled_number_field :build_number,
+                                                    "Build Number",
+                                                    { data: { domain__build_number_help_target: "input",
+                                                              action: "domain--build-number-help#increment" } } %>
+                      <div class="text-sm my-1 dark:text-gray-200">
+                        <p class="">
+                          <span data-domain--build-number-help-target="helpTextTitle"></span>&nbsp;
+                          <span class="font-semibold" data-domain--build-number-help-target="helpTextVal"></span>
+                        </p>
+                        <p class="pt-1">
+                          This number
+                          <strong>must be</strong> the same or higher than the build number of the last build you
+                          deployed to the store.
+                          If you make a mistake, you can edit this later.
+                        </p>
+                      </div>
+                    </div>
+                    <div><%= form.labeled_select :platform, "Mobile Platform", options_for_select(App.allowed_platforms, "Android") %></div>
+                    <div><%= form.labeled_tz_select :timezone, "Timezone", default_timezones, { model: ActiveSupport::TimeZone } %></div>
+                    <div class="sm:col-span-2"><%= form.labeled_textarea :description, "Description" %></div>
+                  </div>
+                  <%= form.authz_submit "Add an app", "plus" %>
+                <% end %>
               <% end %>
             <% end %>
 
@@ -128,7 +158,9 @@
           <%# end %>
 
           <% dropdown.with_item_group(list_style: "p-1 text-gray-500 dark:text-gray-400") do |group| %>
-            <% group.with_item(link: { path: edit_accounts_organization_path(current_organization), "data-turbo": false, class: USER_PROFILE_LINK_CLASSES }) do %>
+            <% group.with_item(link: { path: edit_accounts_organization_path(current_organization),
+                                       "data-turbo": false,
+                                       class: USER_PROFILE_LINK_CLASSES }) do %>
               Settings
             <% end %>
 
@@ -138,13 +170,17 @@
               <% end %>
             <% end %>
 
-            <% group.with_item(link: { path: "https://calendar.app.google/bs6wimzo316W3yKz9", external: true, class: USER_PROFILE_LINK_CLASSES }) do %>
+            <% group.with_item(link: { path: "https://calendar.app.google/bs6wimzo316W3yKz9",
+                                       external: true,
+                                       class: USER_PROFILE_LINK_CLASSES }) do %>
               Book a demo ↗
             <% end %>
           <% end %>
 
           <% dropdown.with_item_group(list_style: "p-1 text-gray-500 dark:text-gray-400") do |group| %>
-            <% group.with_item(link: { path: destroy_user_session_path, "data-turbo": false, class: USER_PROFILE_LINK_CLASSES }) do %>
+            <% group.with_item(link: { path: destroy_user_session_path,
+                                       "data-turbo": false,
+                                       class: USER_PROFILE_LINK_CLASSES }) do %>
               Sign out
             <% end %>
           <% end %>

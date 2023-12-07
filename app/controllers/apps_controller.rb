@@ -18,7 +18,7 @@ class AppsController < SignedInApplicationController
 
   def new
     @timezones = default_timezones
-    @app = current_organization.apps.new
+    @app = new_app
   end
 
   def edit
@@ -93,12 +93,6 @@ class AppsController < SignedInApplicationController
 
   def app_update_params
     app_params.except(:timezone)
-  end
-
-  DEFAULT_TIMEZONE_LIST_REGEX = /Asia\/Kolkata/
-
-  def default_timezones
-    ActiveSupport::TimeZone.all.select { |tz| tz.match?(DEFAULT_TIMEZONE_LIST_REGEX) }
   end
 
   def app_id_key
