@@ -22,6 +22,12 @@ class AppsController < SignedInApplicationController
   end
 
   def edit
+    respond_to do |format|
+      format.html do |variant|
+        variant.none { render :new_edit }
+        variant.turbo_frame { render :new_edit }
+      end
+    end
   end
 
   def create

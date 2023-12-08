@@ -11,6 +11,12 @@ class IntegrationsController < SignedInApplicationController
 
   def index
     set_integrations_by_categories
+    respond_to do |format|
+      format.html do |variant|
+        variant.none
+        variant.turbo_frame
+      end
+    end
   end
 
   def create

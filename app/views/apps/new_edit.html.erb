@@ -1,0 +1,10 @@
+<%= render V2::TabbedContainerComponent.new(title: @app.name,
+                                            turbo_frame: "edit-app-tab-container",
+                                            tab_config: [[1, "General", edit_app_path(@app)],
+                                                         [2, "Install Integrations", app_integrations_path(@app)],
+                                                         [3, "Configure Integrations", root_path]]) do |container| %>
+  <% container.with_tab do %>
+    <%= render partial: "edit_form" %>
+  <% end %>
+<% end %>
+

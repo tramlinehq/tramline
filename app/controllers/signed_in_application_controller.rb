@@ -2,6 +2,7 @@ class SignedInApplicationController < ApplicationController
   DEFAULT_TIMEZONE = "Asia/Kolkata"
   include MetadataAwareness
 
+  before_action :turbo_frame_request_variant
   before_action :set_currents
   before_action :set_paper_trail_whodunnit
   before_action :set_sentry_context, if: -> { Rails.env.production? }
@@ -133,5 +134,9 @@ class SignedInApplicationController < ApplicationController
 
   def app_id_key
     :app_id
+  end
+
+  def turbo_frame_request_variant
+    request.variant = :turbo_frame if turbo_frame_request?
   end
 end

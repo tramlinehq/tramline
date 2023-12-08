@@ -1,0 +1,43 @@
+<section class="m-auto">
+  <% @integrations_by_categories.each do |category, integrations| %>
+    <div id="<%= category %>" class="mt-12">
+      <h3 class="text-2xl leading-snug text-slate-800 font-bold">
+        <%= Integration.human_enum_name(:category, category) %>
+      </h3>
+
+      <div class="text-lg text-slate-500 mt-4">
+        <%= Integration::CATEGORY_DESCRIPTIONS[category.to_sym] %>
+      </div>
+
+      <div class="grid grid-cols-12 gap-6 mt-4">
+        <% integrations.each do |integration| %>
+          <% if integration.providable.creatable? %>
+            <%= render partial: "creatable",
+                       locals: { current_organization: current_organization,
+                                 integration: integration,
+                                 category: category
+                       } %>
+          <% end %>
+
+          <% if integration.providable.connectable? %>
+            <%= render partial: "connectable",
+                       locals: { current_organization: current_organization,
+                                 integration: integration,
+                                 category: category
+                       } %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</section>
+
+<section>
+  <h3 class="text-2xl leading-snug text-slate-400 font-bold mt-16 mb-16 pt-8 border-t">Coming Soon!</h3>
+  <div class="grid grid-cols-4 place-items-center justify-center text-slate-400">
+    <div><%= image_tag "integrations/logo_gitlab.png", title: "GitLab", width: 90, class: "opacity-30" %></div>
+    <div><%= image_tag "integrations/logo_codemagic.png", title: "Codemagic", width: 100, class: "opacity-30" %></div>
+    <div><%= image_tag "integrations/logo_sentry.png", title: "Sentry", width: 110, class: "opacity-30" %></div>
+    <div><%= image_tag "integrations/logo_crashlytics.png", title: "Crashlytics", width: 110, class: "opacity-30" %></div>
+  </div>
+</section>
