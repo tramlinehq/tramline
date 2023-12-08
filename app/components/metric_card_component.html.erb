@@ -1,11 +1,13 @@
 <div class="rounded-lg border-slate-200 border flex flex-col p-4">
   <div class="flex flex-row justify-between">
     <div><%= name %></div>
-    <%= link_to_external external_url, title: "Monitoring Dashboard" do %>
-      <div><%= image_tag("integrations/logo_#{provider.to_s}.png", width: 20, height: 20) %></div>
+    <% if external_url.present? %>
+      <%= link_to_external external_url, title: "Monitoring Dashboard" do %>
+        <div><%= image_tag("integrations/logo_#{provider.to_s}.png", width: 20, height: 20) %></div>
+      <% end %>
     <% end %>
   </div>
-  <div class="grid grid-cols-2 divide-x mt-2 place-content-between">
+  <div class="grid grid-cols-<%= values.size %> divide-x mt-2 place-content-between">
     <% values.each do |key, val| %>
       <div class="flex flex-col p-2">
         <div class="text-xs text-gray-400 uppercase"><%= key %></div>

@@ -1,0 +1,19 @@
+<% if latest_step_run&.external_build.present? %>
+  <article class="mt-4">
+    <div>
+      <div class="text-lg">Active
+        build <%= "#{latest_step_run.build_version} (#{latest_step_run.build_number})" %></div>
+      <div class="flex flex-col w-full mt-2">
+        <%= render partial: "shared/external_build_metadata", locals: { external_build: latest_step_run.external_build } %>
+      </div>
+    </div>
+    <% if health_data.present? %>
+      <div class="text-lg mt-4">Trend</div>
+      <div class="grid grid-cols-2 gap-5 mt-4">
+        <div><%= render ChartComponent.new(chart_data(:app_launch_time), icon: "sparkles.svg") %></div>
+        <div><%= render ChartComponent.new(chart_data(:unit_test_coverage), icon: "sparkles.svg") %></div>
+        <div><%= render ChartComponent.new(chart_data(:mint_coverage), icon: "sparkles.svg") %></div>
+      </div>
+    <% end %>
+  </article>
+<% end %>

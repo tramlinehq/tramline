@@ -30,15 +30,15 @@ class ChartComponent < ViewComponent::Base
   end
 
   def title
-    I18n.t("charts.#{chart[:name]}.title")
+    chart[:title] || I18n.t("charts.#{chart[:name]}.title")
   end
 
   def chart_scope
-    I18n.t("charts.#{chart[:name]}.scope")
+    chart[:scope] || I18n.t("charts.#{chart[:name]}.scope")
   end
 
   def help_text
-    I18n.t("charts.#{chart[:name]}.help_text")
+    chart[:help_text] || I18n.t("charts.#{chart[:name]}.help_text")
   end
 
   def corner_icon

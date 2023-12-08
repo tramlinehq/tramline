@@ -5,7 +5,7 @@ class MetricCardComponent < ViewComponent::Base
   attr_reader :name, :values, :provider, :external_url
   delegate :current_user, to: :helpers
 
-  def initialize(name:, values:, provider:, external_url:)
+  def initialize(name:, values:, provider: nil, external_url: nil)
     @name = name
     @values = values
     @provider = provider
