@@ -11,9 +11,9 @@ class AppsController < SignedInApplicationController
   end
 
   def show
+    @train_in_creation = @app.train_in_creation
     @app_setup_instructions = @app.app_setup_instructions
     @train_setup_instructions = @app.train_setup_instructions
-    @train_in_creation = @app.train_in_creation
   end
 
   def new
@@ -22,6 +22,12 @@ class AppsController < SignedInApplicationController
   end
 
   def edit
+    @tab_configuration = [
+      [1, "General", edit_app_path(@app)],
+      [2, "Install Integrations", app_integrations_path(@app)],
+      [3, "Configure Integrations", edit_app_app_config_path(@app)]
+    ]
+
     respond_to do |format|
       format.html do |variant|
         variant.none { render :new_edit }

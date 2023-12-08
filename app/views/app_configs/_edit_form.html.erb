@@ -1,0 +1,128 @@
+<%= form_with(model: [@app, @config],
+              url: app_app_config_path(@app),
+              builder: ButtonHelper::AuthzForms,
+              method: :patch) do |form| %>
+  <section>
+    <div class="mb-8">
+      <h2 class="font-bold text-xl">
+        General
+      </h2>
+    </div>
+
+    <div class="grid gap-5 md:grid-cols-2 pb-8">
+      <div>
+        <%= form.label :code_repository, "Code Repository", class: "block text-sm font-medium mb-1" %>
+        <%= form.select :code_repository,
+                        options_for_select(
+                          display_channels(@code_repositories) { |chan| chan[:full_name] },
+                          @config.code_repository.to_json
+                        ),
+                        {},
+                        { class: "form-select w-full" } %>
+      </div>
+
+      <% if @app.notifications_set_up? %>
+        <div>
+          <div class="text-xl text-slate-600 font-medium mt-2 mb-4">Notifications</div>
+          <%= render partial: "shared/notifications_form",
+                     locals: { form:, app: @app, channels: @notification_channels, current: @config.notification_channel } %>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <% if @app.bitrise_connected? %>
+    <section class="border-t border-dashed pb-8">
+      <div class="my-8">
+        <h2 class="font-bold text-xl">
+          <%= image_tag "integrations/logo_bitrise.png", title: "Bitrise", width: 35, class: "pb-2" %>
+          Bitrise
+        </h2>
+      </div>
+
+      <div class="grid gap-5 md:grid-cols-2">
+        <% if @ci_cd_apps.present? %>
+          <div class="mb-4">
+            <%= form.label :bitrise_project_id, "App Name", class: "block text-sm font-medium mb-1" %>
+            <%= form.select :bitrise_project_id,
+                            options_for_select(
+                              display_channels(@ci_cd_apps) { |app| "#{app[:name]} (#{app[:id]})" },
+                              @config.bitrise_project_id.to_json
+                            ),
+                            { class: "form-select" },
+                            data: { controller: "input-select" } %>
+          </div>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <% if @app.firebase_connected? %>
+    <section class="border-t border-dashed pb-8">
+      <div class="my-8">
+        <h2 class="font-bold text-xl">
+          <%= image_tag "integrations/logo_firebase.png", title: "Firebase", width: 40, class: "pb-2" %>
+          Firebase App Distribution
+        </h2>
+      </div>
+
+      <div class="grid gap-5 md:grid-cols-2">
+        <% if @firebase_android_apps.present? %>
+          <div class="mb-4">
+            <%= form.label :firebase_android_config, "Android App", class: "block text-sm font-medium mb-1" %>
+            <%= form.select :firebase_android_config,
+                            options_for_select(
+                              display_channels(@firebase_android_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
+                              @config.firebase_android_config.to_json
+                            ),
+                            { class: "form-select" },
+                            data: { controller: "input-select" } %>
+          </div>
+        <% end %>
+
+        <% if @firebase_ios_apps.present? %>
+          <div>
+            <%= form.label :firebase_ios_config, "iOS App", class: "block text-sm font-medium mb-1" %>
+            <%= form.select :firebase_ios_config,
+                            options_for_select(
+                              display_channels(@firebase_ios_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
+                              @config.firebase_ios_config.to_json
+                            ),
+                            { class: "form-select" },
+                            data: { controller: "input-select" } %>
+          </div>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <% if @app.bugsnag_connected? %>
+    <section class="border-t border-dashed pb-8">
+      <div class="my-8">
+        <h2 class="font-bold text-xl">
+          <%= image_tag "integrations/logo_bugsnag.png", title: "Bugsnag", width: 35, class: "pb-2" %>
+          Bugsnag
+        </h2>
+      </div>
+
+      <div class="grid gap-5 md:grid-cols-2">
+        <% if @monitoring_projects.present? %>
+          <div class="mb-4">
+            <%= form.label :bugsnag_project_id, "Project Name", class: "block text-sm font-medium mb-1" %>
+            <%= form.select :bugsnag_project_id,
+                            options_for_select(
+                              display_channels(@monitoring_projects) { |project| "#{project[:name]} (#{project[:id]})" },
+                              @config.bugsnag_project_id.to_json
+                            ),
+                            { class: "form-select" },
+                            data: { controller: "input-select" } %>
+          </div>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <div class="mt-5">
+    <%= form.authz_submit :blue, "Update" %>
+  </div>
+<% end %>

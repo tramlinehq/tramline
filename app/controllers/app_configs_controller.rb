@@ -12,6 +12,13 @@ class AppConfigsController < SignedInApplicationController
 
   def edit
     @ci_cd_provider_name = @app.ci_cd_provider.display
+
+    respond_to do |format|
+      format.html do |variant|
+        variant.none
+        variant.turbo_frame
+      end
+    end
   end
 
   def update
