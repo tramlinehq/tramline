@@ -16,9 +16,9 @@ class BuildMetadataComponent < ViewComponent::Base
 
   def metrics
     values = {"App Size" => {value: step_run.build_size, unit: "MB"}}
-    values.merge number_values.to_h do |_k, metadata|
+    values.merge number_values.to_h { |_k, metadata|
       [metadata["name"], {value: metadata["value"], unit: UNIT_MAPPING.fetch(metadata["unit"], nil)}]
-    end
+    }
   end
 
   def number_values
