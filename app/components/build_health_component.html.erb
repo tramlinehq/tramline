@@ -4,7 +4,7 @@
       <div class="text-lg">Active
         build <%= "#{latest_step_run.build_version} (#{latest_step_run.build_number})" %></div>
       <div class="flex flex-col w-full mt-2">
-        <%= render partial: "shared/external_build_metadata", locals: { external_build: latest_step_run.external_build } %>
+        <%= render BuildMetadataComponent.new(step_run: latest_step_run) %>
       </div>
     </div>
     <% if health_data.present? %>

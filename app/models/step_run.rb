@@ -175,6 +175,10 @@ class StepRun < ApplicationRecord
   delegate :workflow_id, :workflow_name, :step_number, :build_artifact_name_pattern, :has_uploadables?, :has_findables?, :name, :app_variant, to: :step
   scope :not_failed, -> { where.not(status: [:ci_workflow_failed, :ci_workflow_halted, :build_not_found_in_store, :build_unavailable, :deployment_failed]) }
 
+  def build_size
+    build_artifact&.file_size_in_mb
+  end
+
   def active?
     release_platform_run.on_track? && !cancelled?
   end

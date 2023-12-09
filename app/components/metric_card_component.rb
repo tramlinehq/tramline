@@ -29,4 +29,19 @@ class MetricCardComponent < ViewComponent::Base
     return "unhealthy" if metric[:is_healthy] == false
     "healthy" if metric[:is_healthy] == true
   end
+
+  def metric_health(val)
+    return unless current_user.release_monitoring?
+    return if val[:is_healthy].blank?
+    return if val[:is_healthy]
+    inline_svg "exclamation.svg", classname: "w-5 h-5 text-red-800 ml-1"
+  end
+
+  def display_values
+    values.compact
+  end
+
+  def grid_size
+    display_values.size
+  end
 end
