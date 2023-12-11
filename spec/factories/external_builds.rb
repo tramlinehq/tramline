@@ -1,7 +1,6 @@
 FactoryBot.define do
   factory :external_build do
     association :step_run
-    added_at { Time.current }
     metadata {
       {
         "app_launch_time" => {
@@ -33,7 +32,7 @@ FactoryBot.define do
           name: "End to end test report",
           description: "A long report about end-to-end tests run against the build",
           value: "It is a long-established fact that a reader will be distracted.",
-          type: "text",
+          type: "string",
           unit: "none"
         }
       }

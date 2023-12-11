@@ -1,3 +1,5 @@
+VERSION_NAME_REGEX = /\d+\.\d+(\.\d+)?(-\w+)?/
+
 Rails.application.routes.draw do
   require "sidekiq/web"
   require "sidekiq/cron/web"
@@ -183,7 +185,7 @@ Rails.application.routes.draw do
       get "ping", to: "pings#show"
       get "releases/*release_id", to: "releases#show"
       get "apps/*app_id", to: "apps#show"
-      patch "apps/:app_id/builds/:version_name/:version_code/external_metadata", to: "builds#external_metadata", constraints: {version_name: /[^\/]+/}
+      patch "apps/:app_id/builds/:version_name/:version_code/external_metadata", to: "builds#external_metadata", constraints: {version_name: VERSION_NAME_REGEX}
     end
   end
 

@@ -22,8 +22,9 @@ class NotificationSettingsComponent < ViewComponent::Base
     staged_rollout_halted: {number: 11, icon: "halt.svg", description: "The staged rollout was halted for the production build in the store."},
     staged_rollout_fully_released: {number: 12, icon: "fast_forward.svg", description: "The staged rollout was fully released to 100% for the production build in the store."},
     deployment_finished: {number: 13, icon: "truck_delivery.svg", description: "The distribution was successful to a channel."},
-    release_ended: {number: 14, icon: "sparkles.svg", description: "The release finished successfully."},
-    release_stopped: {number: 15, icon: "close_icon.svg", description: "The release was stopped before it finished."}
+    deployment_failed: {number: 14, icon: "failure.svg", description: "The distribution to a channel failed."},
+    release_ended: {number: 15, icon: "sparkles.svg", description: "The release finished successfully."},
+    release_stopped: {number: 16, icon: "close_icon.svg", description: "The release was stopped before it finished."}
   }.with_indifferent_access
 
   unless Set.new(NOTIFICATIONS.keys).eql?(Set.new(NotificationSetting.kinds.keys))

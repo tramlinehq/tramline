@@ -20,6 +20,7 @@ class NotificationSetting < ApplicationRecord
 
   enum kind: {
     deployment_finished: "deployment_finished",
+    deployment_failed: "deployment_failed",
     release_ended: "release_ended",
     release_stopped: "release_stopped",
     release_started: "release_started",
