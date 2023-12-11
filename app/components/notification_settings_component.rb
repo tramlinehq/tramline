@@ -16,7 +16,7 @@ class NotificationSettingsComponent < ViewComponent::Base
     backmerge_failed: {number: 5, icon: "band_aid.svg", description: "Tramline failed to create a backmerge PR for the commit in the release."},
     submit_for_review: {number: 6, icon: "clipboard_copy.svg", description: "A build was submitted for review to store for the release."},
     review_approved: {number: 7, icon: "clipboard_check.svg", description: "A production build review was approved by the store."},
-    review_failed: {number: 8, icon: "clipboard_document.svg", description: "A production build review was rejected by the store."},
+    review_failed: {number: 8, icon: "failure.svg", description: "A production build review was rejected by the store."},
     staged_rollout_updated: {number: 9, icon: "chart.svg", description: "The staged rollout was increased for the production build in the store."},
     staged_rollout_paused: {number: 10, icon: "pause.svg", description: "The staged rollout was paused for the production build in the store."},
     staged_rollout_resumed: {number: 11, icon: "play.svg", description: "The staged rollout was resumed for the production build in the store."},

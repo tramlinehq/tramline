@@ -32,6 +32,7 @@ en:
           step_failed: "Step failed"
           submit_for_review: "Build submitted for review to App Store"
           review_approved: "Build review approved by App Store"
+          review_failed: "Build review rejected by App Store"
           staged_rollout_updated: "Staged rollout increased"
           release_scheduled: "Release scheduled"
           backmerge_failed: "Auto backmerge PR creation failed"
