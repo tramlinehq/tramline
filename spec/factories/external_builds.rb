@@ -1,7 +1,6 @@
 FactoryBot.define do
   factory :external_build do
     association :step_run
-    added_at { Time.current }
     metadata {
       {
         "app_launch_time" => {

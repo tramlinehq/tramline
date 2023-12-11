@@ -201,7 +201,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_06_064346) do
 
   create_table "external_builds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "step_run_id", null: false
-    t.datetime "added_at", precision: nil, null: false
     t.jsonb "metadata", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

@@ -3,7 +3,6 @@ class AddExternalBuildsForStepRuns < ActiveRecord::Migration[7.0]
     create_table :external_builds, id: :uuid do |t|
       t.belongs_to :step_run, null: false, index: false, foreign_key: true, type: :uuid
 
-      t.timestamp :added_at, null: false
       t.jsonb :metadata, null: false
       t.timestamps
     end

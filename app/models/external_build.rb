@@ -3,7 +3,6 @@
 # Table name: external_builds
 #
 #  id          :uuid             not null, primary key
-#  added_at    :datetime         not null
 #  metadata    :jsonb            not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
@@ -23,13 +22,12 @@ class ExternalBuild < ApplicationRecord
     ExternalBuild.upsert_all(
       [attributes_for_upsert(new_metadata)],
       unique_by: [:step_run_id],
-      on_duplicate: Arel.sql("metadata = COALESCE(external_builds.metadata, '{}'::jsonb) || COALESCE(EXCLUDED.metadata, '{}'::jsonb), added_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP")
+      on_duplicate: Arel.sql("metadata = COALESCE(external_builds.metadata, '{}'::jsonb) || COALESCE(EXCLUDED.metadata, '{}'::jsonb), updated_at = CURRENT_TIMESTAMP")
     ).rows.first.first.then { |id| ExternalBuild.find_by(id: id) }
   end
 
   def attributes_for_upsert(new_metadata)
-    {added_at: Time.current,
-     metadata: new_metadata.index_by { |item| item[:identifier] },
+    {metadata: new_metadata.index_by { |item| item[:identifier] },
      step_run_id: step_run_id}
   end
 
