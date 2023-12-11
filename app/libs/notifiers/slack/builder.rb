@@ -12,6 +12,7 @@ module Notifiers
         step_failed: Renderers::StepFailed,
         submit_for_review: Renderers::SubmitForReview,
         review_approved: Renderers::ReviewApproved,
+        review_failed: Renderers::ReviewFailed,
         staged_rollout_updated: Renderers::StagedRolloutUpdated,
         release_scheduled: Renderers::ReleaseScheduled,
         backmerge_failed: Renderers::BackmergeFailed,

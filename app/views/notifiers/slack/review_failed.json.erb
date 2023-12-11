@@ -1,0 +1,23 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*<%= @app_name %> (<%= @app_platform %>)* <%= @release_version %> (<%= @build_number %>) has been rejected by the store! :octagonal_sign: "
+      }
+    }
+    <% if @is_app_store_production %>
+    ,{
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "<%= apple_review_failed_text %>",
+          "emoji": false
+        }
+      ]
+    }
+    <% end %>
+  ]
+}
