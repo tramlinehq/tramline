@@ -1,16 +1,10 @@
-<div class="relative overflow-x-auto shadow sm:rounded-lg">
-  <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-    <caption class="p-4 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white dark:text-white dark:bg-gray-800">
-      <%= caption %>
-      <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
-        <%= caption_text %>
-      </p>
-    </caption>
+<div class="relative overflow-x-auto mb-8">
+  <table class="w-full table-auto text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-3 p-5">
     <% if rows.present? %>
-      <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+      <thead class="text-xs text-gray-700 uppercase font-semibold tracking-wide dark:text-gray-400 border-b dark:border-gray-700">
       <tr>
         <% columns.each do |column| %>
-          <th scope="col" class="px-6 py-3">
+          <th scope="col" class="px-4 py-3">
             <%= column %>
           </th>
         <% end %>

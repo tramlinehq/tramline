@@ -16,8 +16,6 @@ class ReleasesController < SignedInApplicationController
 
   def index
     @train = @app.trains.friendly.find(params[:train_id])
-    @devops_report = @train.devops_report
-    @releases = @app.trains.friendly.find(params[:train_id])&.releases
   end
 
   def create

@@ -1,37 +1,131 @@
-<%= render V2::ContainerComponent.new(title: "Releases") do |container| %>
+<%= render V2::ContainerComponent.new(title: train.name) do |container| %>
+  <% if train.hotfixable? %>
+    <% container.with_action do %>
+      <%= render V2::ModalComponent.new(title: "Start a hotfix release") do |modal| %>
+        <% modal.with_button(scheme: :light,
+                             visual_icon: "band_aid",
+                             type: :action,
+                             size: :xxs,
+                             arrow: :none).with_title_text.with_content("Start a hotfix") %>
+        <% modal.with_body do %>
+          <%= render partial: "trains/hotfix_form", locals: { app: app, train: train, hotfix_from: hotfix_from } %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= container.with_side_action do %>
+    <%= render V2::DropdownComponent.new do |dropdown| %>
+      <% dropdown.with_button(html_options: { class: "-my-5" }).with_title_text do %>
+        <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Switch</span>
+      <% end %>
+
+      <% dropdown.with_item_group do |group| %>
+        <% app.trains.each do |t| %>
+          <% group.with_item(link: { path: app_train_path(app, t) },
+                             selected: train.id == t.id) do %>
+            <%= t.name %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= container.with_side_action do %>
+    <%= render V2::ButtonComponent.new(
+      scheme: :light,
+      visual_icon: "plus",
+      type: :link,
+      size: :xxs,
+      options: new_app_train_path(app),
+      tooltip: "Add a new train",
+      arrow: :none) %>
+  <% end %>
+
   <% container.with_action do %>
     <%= render V2::DropdownComponent.new do |dropdown| %>
-      <% dropdown.with_button(scheme: :default, visual_icon: "play").with_title_text.with_content("Prepare release") %>
+      <% dropdown.with_button(scheme: :default, visual_icon: "play").with_title_text.with_content("Prepare new release") %>
       <% dropdown.with_item_group do |group| %>
-        <% group.with_item(link: { path: root_path }) do %>
-          Synced Release Train
-        <% end %>
-        <% group.with_item(link: { path: root_path }) do %>
-          iOS production Trainss
-        <% end %>
-        <% group.with_item(link: { path: root_path }) do %>
-          fail trina
+        <% if train.ongoing_release && train.upcoming_release_startable? %>
+          <% group.with_item(link: { path: app_train_releases_path(app, train) }) do %>
+            <%= start_upcoming_release_text %>
+          <% end %>
+          <% group.with_item(link: { path: app_train_releases_path(app, train) }) do %>
+            <%= start_upcoming_release_text(major: true) %>
+          <% end %>
+        <% elsif @train.manually_startable? %>
+          <% group.with_item(link: { path: app_train_releases_path(app, train) }) do %>
+            <%= start_release_text %>
+          <% end %>
+          <% group.with_item(link: { path: app_train_releases_path(app, train) }) do %>
+            <%= start_release_text(major: true) %>
+          <% end %>
         <% end %>
       <% end %>
     <% end %>
   <% end %>
 
   <% container.with_sub_action do %>
-    <%= render V2::ButtonComponent.new(scheme: :supporting, label: "Configure", visual_icon: "v2/cog", options: new_app_path, type: :link) %>
+    <%= render V2::ButtonComponent.new(
+      scheme: :supporting,
+      label: "Configure",
+      visual_icon: "v2/cog",
+      options: edit_app_train_path(app, train),
+      type: :link) %>
+  <% end %>
+
+
+  <% if train.send_notifications? %>
+    <% container.with_sub_action do %>
+      <%= render V2::ButtonComponent.new(
+        scheme: :supporting,
+        label: "Configure Notifications",
+        visual_icon: "bell",
+        options: app_train_notification_settings_path(app, train),
+        type: :link) %>
+    <% end %>
+  <% end %>
+
+  <% if train.activatable? %>
+    <% container.with_sub_action do %>
+      <%= render V2::ButtonComponent.new(
+        scheme: :supporting,
+        label: "Activate",
+        visual_icon: "play",
+        options: activate_app_train_path(app, train),
+        type: :button,
+        html_options: { method: :patch, data: { turbo_method: :patch, turbo_confirm: "This will start scheduling release kickoff(s). Are you sure?" } }) %>
+    <% end %>
+  <% end %>
+
+  <% if train.deactivatable? %>
+    <% container.with_sub_action do %>
+      <%= render V2::ButtonComponent.new(
+        scheme: :supporting,
+        label: "Deactivate",
+        visual_icon: "v2/pause",
+        options: deactivate_app_train_path(app, train),
+        type: :button,
+        html_options: { method: :patch, data: { turbo_method: :patch, turbo_confirm: "This will cancel all the scheduled release kickoff(s). Are you sure?" } }) %>
+    <% end %>
   <% end %>
 
   <% container.with_sub_action do %>
-    <%= render V2::ButtonComponent.new(scheme: :supporting, label: "Deactivate", visual_icon: "v2/pause", options: new_app_path, type: :link) %>
-  <% end %>
-
-  <% container.with_sub_action do %>
-    <%= render V2::ButtonComponent.new(scheme: :supporting, label: "Delete Permanently", visual_icon: "trash", options: new_app_path, type: :link) %>
+    <%= render V2::ButtonComponent.new(
+      scheme: :supporting,
+      label: "Remove",
+      visual_icon: "v2/trash",
+      options: app_train_path(app, train),
+      type: :link,
+      html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } }) %>
   <% end %>
 
   <% container.with_body do %>
-    <%= render V2::ReleaseOverviewComponent.new %>
-    <%= render V2::ReleaseOverviewComponent.new %>
-    <%= render V2::ReleaseOverviewComponent.new %>
+    <%= render V2::ReleaseOverviewComponent.new(ongoing_release) %>
+    <%= render V2::ReleaseOverviewComponent.new(upcoming_release) %>
+    <%= render V2::ReleaseOverviewComponent.new(hotfix_release) %>
+    <%= render V2::ReleaseOverviewComponent.new(last_completed_release) %>
+
     <% if devops_report.present? %>
       <%= render V2::SectionComponent.new(style: :titled, title: "Mobile Devops") do %>
         <div class="grid grid-cols-4 gap-x-1 my-3 gap-y-1">
@@ -53,75 +147,56 @@
       <% end %>
     <% end %>
 
-    <%= render V2::TableComponent.new(caption: "Previous Releases",
-                                      caption_text: "The last 20 releases you have made",
-                                      columns: ["release", "completed", "duration", ""]) do |table| %>
-      <% table.with_row do |row| %>
-        <% row.with_cell do %>
-          <div>Add V2::ReleaseList template here</div>
-        <% end %>
+    <%= render V2::SectionComponent.new(style: :titled, title: "Previous Releases") do %>
+      <%= render V2::TableComponent.new(columns: ["", "release", "dates", "duration", ""]) do |table| %>
+        <% previous_releases.each do |run| %>
+          <% table.with_row do |row| %>
+            <% row.with_cell(style: "") do %>
+              <%= render V2::StatusIndicatorPillComponent.new(status: :success, text: "Ongoing") %>
+            <% end %>
 
-        <% row.with_cell do %>
-          <div>Add V2::ReleaseList template here</div>
-        <% end %>
+            <% row.with_cell(style: "font-medium") do %>
+              <% if run.completed_at %>
+                <%= run.release_version %>
+              <% else %>
+                <%= version_in_progress(run.release_version) %>
+              <% end %>
+            <% end %>
 
-        <% row.with_cell do %>
-          <div>Add V2::ReleaseList template here</div>
-        <% end %>
+            <% row.with_cell do %>
+              <div><%= release_interval(run) %></div>
+            <% end %>
 
-        <% row.with_cell do %>
-          <%= inline_svg("v2/arrow_right.svg", classname: "w-4 h-4") %>
-        <% end %>
-      <% end %>
+            <% row.with_cell do %>
+              <div><%= release_duration(run) %></div>
+            <% end %>
 
-      <% table.with_row do |row| %>
-        <% row.with_cell do %>
-          <div>Add V2::ReleaseList template here</div>
-        <% end %>
-
-        <% row.with_cell do %>
-          <div>Add V2::ReleaseList template here</div>
-        <% end %>
-
-        <% row.with_cell do %>
-          <div>Add V2::ReleaseList template here</div>
-        <% end %>
-
-        <% row.with_cell do %>
-          <%= inline_svg("v2/arrow_right.svg", classname: "w-4 h-4") %>
-        <% end %>
-
-      <% end %>
-      <% table.with_row do |row| %>
-        <% row.with_cell do %>
-          <div>Add V2::ReleaseList template here</div>
-        <% end %>
-
-        <% row.with_cell do %>
-          <div>Add V2::ReleaseList template here</div>
-        <% end %>
-
-        <% row.with_cell do %>
-          <div>Add V2::ReleaseList template here</div>
-        <% end %>
-
-        <% row.with_cell do %>
-          <%= inline_svg("v2/arrow_right.svg", classname: "w-4 h-4") %>
+            <% row.with_cell(style: "text-right w-2") do %>
+              <%= render V2::ButtonComponent.new(
+                scheme: :supporting,
+                label: "Go to release",
+                visual_icon: "v2/arrow_right",
+                options: release_path(run.id),
+                size: :sm,
+                type: :link) %>
+            <% end %>
+          <% end %>
         <% end %>
       <% end %>
     <% end %>
   <% end %>
 
-  <% container.with_empty_state do %>
-    <div class="flex justify-center mt-24">
-      <div class="flex flex-col justify-start">
-        <h1 class="text-xl font-semibold text-neutral-800 dark:text-white">Create your very first release</h1>
-        <div class="mt-6 max-w-[200px] font-medium text-xs dark:text-gray-300 text-gray-400">
-          There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in
-          some form, by injected humour, or randomised words which don't look even slightly believable.
+  <% if empty? %>
+    <% container.with_empty_state do %>
+      <div class="flex justify-center mt-24">
+        <div class="flex flex-col justify-start">
+          <h1 class="text-xl font-semibold text-neutral-800 dark:text-white">Create your very first release</h1>
+          <div class="mt-6 max-w-[200px] font-medium text-sm dark:text-gray-300 text-gray-400">
+            Once you've finished configuring your train fully, you can start creating new releases.
+          </div>
         </div>
+        <%= image_tag("art/no_releases.png", width: 400, alt: "no releases yet", class: "rounded-sm") %>
       </div>
-      <%= image_tag("art/no_releases.png", width: 450, alt: "no releases yet", class: "rounded-sm") %>
-    </div>
+    <% end %>
   <% end %>
 <% end %>

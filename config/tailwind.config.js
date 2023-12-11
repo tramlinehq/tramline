@@ -29,7 +29,7 @@ module.exports = {
           "900": "#1e3a8a",
           "950": "#172554"
         },
-        backgroundLight: "rgb(248 249 252/1)",
+        backgroundLight: "rgb(251 252 252/1)",
         backgroundDark: "rgb(31 41 55/1)",
       },
       boxShadow: {

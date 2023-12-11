@@ -5,6 +5,7 @@ class V2::ContainerComponent < ViewComponent::Base
   renders_one :body
   renders_many :actions
   renders_many :sub_actions
+  renders_many :side_actions
 
   def initialize(title:, subtitle: nil)
     @title = title

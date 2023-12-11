@@ -25,11 +25,10 @@
   </div>
 </div>
 
-<div id="default-tab-content">
+<div id="tab-content">
   <% tabs.each do |tab| %>
     <turbo-frame id="<%= frame %>">
       <%= tab %>
     </turbo-frame>
   <% end %>
 </div>
-

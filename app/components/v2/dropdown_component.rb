@@ -6,7 +6,8 @@ class V2::DropdownComponent < V2::BaseComponent
   renders_many :item_groups, ->(list_style: nil) { ItemGroupComponent.new(list_style: list_style) }
 
   class ItemGroupComponent < V2::BaseComponent
-    DROPDOWN_STYLE = "p-1 text-sm text-gray-700 dark:text-gray-200"
+    DROPDOWN_STYLE = "text-sm text-gray-700 dark:text-gray-200 leading-none font-medium"
+    LIST_ITEM_STYLE = "p-0.5"
     renders_many :items, ->(**args) { ItemComponent.new(**args) }
 
     def initialize(list_style: DROPDOWN_STYLE)
@@ -16,7 +17,7 @@ class V2::DropdownComponent < V2::BaseComponent
     def call
       content_tag(:ul, class: @list_style) do
         items.collect do |item|
-          concat content_tag(:li, item)
+          concat content_tag(:li, item, class: LIST_ITEM_STYLE)
         end
       end
     end
@@ -27,7 +28,7 @@ class V2::DropdownComponent < V2::BaseComponent
         @selected = selected
       end
 
-      ITEM_STYLE = "flex items-center justify-between py-3 px-4 rounded hover:bg-gray-50 dark:hover:bg-gray-600"
+      ITEM_STYLE = "flex items-center rounded justify-between block px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white text-sm"
       SELECTED_CHECK_STYLE = "w-3 h-3 text-green-500"
 
       def call

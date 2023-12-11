@@ -8,13 +8,13 @@ class V2::ButtonComponent < V2::BaseComponent
   BASE_OPTS = "btn group px-2 flex items-center"
   BUTTON_OPTIONS = {
     default: {
-      class: "#{BASE_OPTS} text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+      class: "#{BASE_OPTS} text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
     },
     light: {
       class: "#{BASE_OPTS} text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
     },
     supporting: {
-      class: "#{BASE_OPTS} text-gray-500 hover:bg-gray-200 font-medium text-sm dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 border-none shadow-none"
+      class: "#{BASE_OPTS} text-gray-500 hover:bg-gray-100 text-sm dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 border-none shadow-none"
     },
     switcher: {
       class: "text-gray-500 rounded-lg md:inline-flex hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600 items-center"
@@ -116,7 +116,9 @@ class V2::ButtonComponent < V2::BaseComponent
   def button_component
     return button_tag(@options, @html_options) { icon } if icon_only?
 
-    classname = "ml-2"
+    classname = "ml-1"
+    classname = "ml-2" if icon.present?
+
     button_tag(@options, @html_options) do
       concat icon
       concat content_tag(:span, "Open menu", class: "sr-only")

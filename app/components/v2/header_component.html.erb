@@ -115,7 +115,7 @@
             <% end %>
 
             <%= render V2::ModalComponent.new(title: "Store Status", size: :xxsmall) do |modal| %>
-              <% modal.with_button(label: "Store Status", scheme: :light, visual_icon: "box", type: :action, size: :xxs, arrow: :none, html_options: { class: "ml-2" }) %>
+              <% modal.with_button(label: "Store Status", scheme: :light, visual_icon: "v2/storage", type: :action, size: :xxs, arrow: :none, html_options: { class: "ml-2" }) %>
               <% modal.with_body do %>
               <%= render V2::ExternalAppComponent.new(app: default_app) %>
               <% end %>
@@ -154,10 +154,9 @@
           <!--            </div>-->
           <%# end %>
 
-          <% dropdown.with_item_group(list_style: "p-1 text-gray-500 dark:text-gray-400") do |group| %>
+          <% dropdown.with_item_group(list_style: "text-gray-500 dark:text-gray-400") do |group| %>
             <% group.with_item(link: { path: edit_accounts_organization_path(current_organization),
-                                       "data-turbo": false,
-                                       class: USER_PROFILE_LINK_CLASSES }) do %>
+                                       "data-turbo": false}) do %>
               Settings
             <% end %>
 
@@ -168,16 +167,14 @@
             <% end %>
 
             <% group.with_item(link: { path: "https://calendar.app.google/bs6wimzo316W3yKz9",
-                                       external: true,
-                                       class: USER_PROFILE_LINK_CLASSES }) do %>
+                                       external: true}) do %>
               Book a demo ↗
             <% end %>
           <% end %>
 
-          <% dropdown.with_item_group(list_style: "p-1 text-gray-500 dark:text-gray-400") do |group| %>
+          <% dropdown.with_item_group(list_style: "text-gray-500 dark:text-gray-400") do |group| %>
             <% group.with_item(link: { path: destroy_user_session_path,
-                                       "data-turbo": false,
-                                       class: USER_PROFILE_LINK_CLASSES }) do %>
+                                       "data-turbo": false}) do %>
               Sign out
             <% end %>
           <% end %>

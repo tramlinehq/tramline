@@ -5,25 +5,12 @@
         <h1 class="text-2xl font-semibold text-neutral-800 dark:text-white">
           <span><%= title %></span>
         </h1>
-        <div class="ml-2">
-          <%= render V2::DropdownComponent.new do |dropdown| %>
-            <% dropdown.with_button(html_options: { class: "-my-5" }).with_title_text do %>
-              <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Switch</span>
-            <% end %>
 
-            <% dropdown.with_item_group do |group| %>
-              <% group.with_item(link: { path: root_path }) do %>
-                Synced Release Train
-              <% end %>
-              <% group.with_item(link: { path: root_path }) do %>
-                iOS production Trainss
-              <% end %>
-              <% group.with_item(link: { path: root_path }) do %>
-                fail trina
-              <% end %>
-            <% end %>
+        <nav class="flex flex-row flex-wrap items-center space-x-3 ml-3">
+          <% side_actions.each do |side_action| %>
+            <%= side_action %>
           <% end %>
-        </div>
+        </nav>
       </div>
 
       <% if subtitle %>
@@ -41,16 +28,18 @@
   </nav>
 </div>
 
-<nav class="-mx-2 flex flex-row flex-wrap mt-8 sm:space-x-2">
+<nav class="-mx-1.5 flex flex-row flex-wrap mt-10 sm:space-x-1">
   <% sub_actions.each do |sub_action| %>
     <%= sub_action %>
   <% end %>
 </nav>
 
-<section class="mt-4">
-  <%= body %>
-</section>
-
-<section class="mt-4">
-  <%= empty_state %>
-</section>
+<% if empty_state? %>
+  <section class="mt-4">
+    <%= empty_state %>
+  </section>
+<% else %>
+  <section class="mt-2">
+    <%= body %>
+  </section>
+<% end %>

@@ -1,5 +1,12 @@
 # frozen_string_literal: true
 class V2::ReleaseOverviewComponent < V2::BaseComponent
+
+  def initialize(release)
+    @release = release
+  end
+
+  attr_reader :release
+
   def author_avatar(name)
     user_avatar(name, limit: 2, size: 20, colors: 90)
   end

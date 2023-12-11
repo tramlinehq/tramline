@@ -1,40 +1,42 @@
-<%= render V2::SectionComponent.new(style: :boxed) do %>
-  <div class="flex items-center justify-between border-b pb-2">
-    <div>
-      <div class="flex items-center space-x-3 rtl:space-x-reverse">
-        <h1 class="text-xl font-semibold text-neutral-800 dark:text-white tracking-wide">
-          1.2.0
-        </h1>
-        <%= render V2::StatusIndicatorPillComponent.new(status: :success, text: "Ongoing") %>
+<% if release.present? %>
+  <%= render V2::SectionComponent.new(style: :boxed) do %>
+    <div class="flex items-center justify-between border-b pb-2">
+      <div>
+        <div class="flex items-center space-x-3 rtl:space-x-reverse">
+          <h1 class="text-xl font-semibold text-neutral-800 dark:text-white tracking-wide">
+            <%= release.release_version %>
+          </h1>
+          <%= render V2::StatusIndicatorPillComponent.new(status: :success, text: "Ongoing") %>
+        </div>
+
+        <div class="mt-2 flex flex-col gap-y-1">
+          <div class="text-sm items-center flex">
+            <span class="mr-1"><%= author_avatar("Akhil Vaidya") %></span>
+            <span>Started by <span class="underline">Akhil Jayaprakash</span> on 2021-08-01</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        Go to release ->
+      </div>
+    </div>
+
+    <div class="flex justify-between mt-4">
+      <div class="flex justify-start">
+        <%= render V2::HorizontalDataSetComponent.new %>
       </div>
 
-      <div class="mt-2 flex flex-col gap-y-1">
-        <div class="text-sm items-center flex">
-          <span class="mr-1"><%= author_avatar("Akhil Vaidya") %></span>
-          <span>Started by <span class="underline">Akhil Jayaprakash</span> on 2021-08-01</span>
+      <div class="flex flex-col text-sm">
+        <div class="flex">
+          <span class="mr-1"><%= github_icon %></span>
+          <code class="text-xs">r/production-v2/2021-07-25</code>
+        </div>
+
+        <div class="flex mt-2">
+          <span class="mr-1"><%= github_icon %></span>
+          <code class="text-xs">v1.2.3</code>
         </div>
       </div>
     </div>
-    <div>
-      Go to release ->
-    </div>
-  </div>
-
-  <div class="flex justify-between mt-4">
-    <div class="flex justify-start">
-      <%= render V2::HorizontalDataSetComponent.new %>
-    </div>
-
-    <div class="flex flex-col text-sm">
-      <div class="flex">
-        <span class="mr-1"><%= github_icon %></span>
-        <code class="text-xs">r/production-v2/2021-07-25</code>
-      </div>
-
-      <div class="flex mt-2">
-        <span class="mr-1"><%= github_icon %></span>
-        <code class="text-xs">v1.2.3</code>
-      </div>
-    </div>
-  </div>
+  <% end %>
 <% end %>
