@@ -24,6 +24,7 @@ en:
       notification_setting:
         kind:
           deployment_finished: "Distribution successful"
+          deployment_failed: "Distribution failed"
           release_ended: "Release finished"
           release_stopped: "Release stopped before finish"
           release_started: "New release started"
