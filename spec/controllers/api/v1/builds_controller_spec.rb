@@ -37,7 +37,7 @@ describe Api::V1::BuildsController do
         name: "End to end test report",
         description: "A long report about end-to-end tests run against the build",
         value: "It is a long-established fact that a reader will be distracted.",
-        type: "text",
+        type: "string",
         unit: "none"
       }
     ]
@@ -61,7 +61,7 @@ describe Api::V1::BuildsController do
     it "return not found" do
       patch :external_metadata,
         format: :json,
-        params: {app_id: app.slug, version_name: "invalid", version_code: step_run.build_number, external_metadata: metadata_params}
+        params: {app_id: app.slug, version_name: "10.22-unknown", version_code: step_run.build_number, external_metadata: metadata_params}
       expect(response).to have_http_status(:not_found)
     end
   end
