@@ -5,8 +5,8 @@
 #  id                      :uuid             not null, primary key
 #  approval_status         :string           default("pending"), not null
 #  build_notes_raw         :text             default([]), is an Array
-#  build_number            :string
-#  build_version           :string           not null
+#  build_number            :string           indexed => [build_version]
+#  build_version           :string           not null, indexed => [build_number]
 #  ci_link                 :string
 #  ci_ref                  :string
 #  scheduled_at            :datetime         not null
@@ -32,6 +32,7 @@ class StepRun < ApplicationRecord
   belongs_to :release_platform_run
   belongs_to :commit, inverse_of: :step_runs
   has_one :build_artifact, inverse_of: :step_run, dependent: :destroy
+  has_one :external_build, inverse_of: :step_run, dependent: :destroy
   has_many :deployment_runs, -> { includes(:deployment).merge(Deployment.sequential) }, inverse_of: :step_run, dependent: :destroy
   has_many :deployments, through: :step
   has_many :running_deployments, through: :deployment_runs, source: :deployment

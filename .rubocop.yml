@@ -30,6 +30,7 @@ Rails/SkipsModelValidations:
     - db/**/*
     - app/refinements/refined_string.rb
     - app/models/pull_request.rb # intentional use of upsert
+    - app/models/external_build.rb # intentional use of upsert
     - app/models/train.rb # intentional use of upsert all
     - app/models/notification_setting.rb # intentional use of upsert all
 
