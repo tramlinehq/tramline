@@ -453,6 +453,7 @@ class DeploymentRun < ApplicationRecord
 
   def release_failed
     event_stamp!(reason: :release_failed, kind: :error, data: stamp_data)
+    notify!("Deployment failed", :deployment_failed, notification_params)
   end
 
   def release_success

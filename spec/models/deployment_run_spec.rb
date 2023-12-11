@@ -242,6 +242,7 @@ describe DeploymentRun do
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:deep_link).and_return(nil)
     end
 
     context "with rollout" do

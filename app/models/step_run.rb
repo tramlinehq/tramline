@@ -143,7 +143,7 @@ class StepRun < ApplicationRecord
     event(:build_upload_failed) { transitions from: :build_ready, to: :build_unavailable }
     event(:start_deploy) { transitions from: [:build_available, :build_found_in_store, :build_ready], to: :deployment_started }
 
-    event(:fail_deploy, after_commit: -> { notify_on_failure!("Deployment failed!") }) do
+    event(:fail_deploy) do
       transitions from: :deployment_started, to: :deployment_failed
     end
 
