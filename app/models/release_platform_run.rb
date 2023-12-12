@@ -40,7 +40,7 @@ class ReleasePlatformRun < ApplicationRecord
   belongs_to :last_commit, class_name: "Commit", inverse_of: :release_platform_runs, optional: true
 
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
-  scope :have_not_reached_production, -> { on_track.reject(&:production_release_happened?) }
+  scope :have_not_submitted_production, -> { on_track.reject(&:production_release_submitted?) }
 
   STAMPABLE_REASONS = %w[version_changed tag_created version_corrected finished stopped]
 
@@ -279,7 +279,6 @@ class ReleasePlatformRun < ApplicationRecord
   # App Store requires a higher version name than that of the previously approved version name
   # and so a version bump is required for iOS once the build has been approved as well
   def version_bump_required?
-    return latest_deployed_store_release&.rollout_started? if release_platform.android?
     latest_deployed_store_release&.status&.in? DeploymentRun::READY_STATES
   end
 
@@ -297,6 +296,14 @@ class ReleasePlatformRun < ApplicationRecord
       .where(step: release_platform.release_step)
       .not_failed
       .any?(&:production_release_happened?)
+  end
+
+  def production_release_submitted?
+    step_runs
+      .includes(:deployment_runs)
+      .where(step: release_platform.release_step)
+      .not_failed
+      .any?(&:production_release_submitted?)
   end
 
   def commit_applied?(commit)

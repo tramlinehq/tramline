@@ -42,17 +42,23 @@ describe WebhookProcessors::Push do
     let(:release_platform_run) { create(:release_platform_run, release_platform:, release:, release_version: train.version_current) }
     let(:step) { create(:step, :release, :with_deployment, release_platform:) }
 
-    context "when production deployment has happened" do
-      [[:with_google_play_store, :with_production_channel],
-        [:with_google_play_store, :with_staged_rollout],
-        [:with_app_store, :with_production_channel],
-        [:with_app_store, :with_phased_release]].each do |test_case|
+    context "when production submission has happened" do
+      [[:with_google_play_store, :with_production_channel, :rollout_started],
+        [:with_google_play_store, :with_staged_rollout, :rollout_started],
+        [:with_app_store, :with_production_channel, :submitted_for_review],
+        [:with_app_store, :with_production_channel, :rollout_started],
+        [:with_app_store, :with_production_channel, :review_failed],
+        [:with_app_store, :with_phased_release, :submitted_for_review],
+        [:with_app_store, :with_phased_release, :rollout_started],
+        [:with_app_store, :with_phased_release, :review_failed]].each do |test_case|
         test_case_help = test_case.join(", ").humanize.downcase
 
         it "does not trigger step runs for the platform run #{test_case_help}" do
-          deployment = create(:deployment, *test_case, step: step)
+          deployment_traits = test_case[0..1]
+          deployment_run_trait = test_case.last
+          deployment = create(:deployment, *deployment_traits, step: step)
           step_run = create(:step_run, release_platform_run:, step:)
-          _deployment_run = create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
+          _deployment_run = create(:deployment_run, deployment_run_trait, deployment: deployment, step_run: step_run)
           allow(Triggers::StepRun).to receive(:call)
           described_class.process(release.reload, head_commit_attributes, rest_commit_attributes)
 

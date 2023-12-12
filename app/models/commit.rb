@@ -99,7 +99,7 @@ class Commit < ApplicationRecord
   def trigger_step_runs
     return unless applicable?
 
-    release_platform_runs.have_not_reached_production.each do |run|
+    release_platform_runs.have_not_submitted_production.each do |run|
       trigger_step_runs_for(run)
     end
   end

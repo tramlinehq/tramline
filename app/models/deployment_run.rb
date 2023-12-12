@@ -88,7 +88,8 @@ class DeploymentRun < ApplicationRecord
     failed: "failed"
   }
 
-  READY_STATES = [STATES[:rollout_started], STATES[:ready_to_release], STATES[:released], STATES[:submitted_for_review]]
+  STORE_SUBMISSION_STATES = [STATES[:rollout_started], STATES[:ready_to_release], STATES[:released], STATES[:submitted_for_review], STATES[:review_failed]]
+  READY_STATES = [STATES[:rollout_started], STATES[:ready_to_release], STATES[:released]]
 
   enum status: STATES
   enum failure_reason: {
@@ -442,6 +443,10 @@ class DeploymentRun < ApplicationRecord
 
   def production_release_happened?
     production_channel? && status.in?(READY_STATES)
+  end
+
+  def production_release_submitted?
+    production_channel? && status.in?(STORE_SUBMISSION_STATES)
   end
 
   private
