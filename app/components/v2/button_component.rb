@@ -16,6 +16,9 @@ class V2::ButtonComponent < V2::BaseComponent
     supporting: {
       class: "#{BASE_OPTS} text-gray-500 hover:bg-gray-100 text-sm dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 border-none shadow-none"
     },
+    link: {
+      class: "#{BASE_OPTS} text-gray-500 text-sm dark:bg-gray-800 dark:text-gray-400 border-none shadow-none hover:underline"
+    },
     switcher: {
       class: "text-gray-500 rounded-lg md:inline-flex hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600 items-center"
     },

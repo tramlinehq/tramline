@@ -6,37 +6,69 @@
           <h1 class="text-xl font-semibold text-neutral-800 dark:text-white tracking-wide">
             <%= release.release_version %>
           </h1>
-          <%= render V2::StatusIndicatorPillComponent.new(status: :success, text: "Ongoing") %>
-        </div>
-
-        <div class="mt-2 flex flex-col gap-y-1">
-          <div class="text-sm items-center flex">
-            <span class="mr-1"><%= author_avatar("Akhil Vaidya") %></span>
-            <span>Started by <span class="underline">Akhil Jayaprakash</span> on 2021-08-01</span>
-          </div>
+          <%= render V2::StatusIndicatorPillComponent.new(status: :success, text: "Finished") %>
         </div>
       </div>
       <div>
-        Go to release ->
+        <%= render V2::ButtonComponent.new(
+          scheme: :supporting,
+          label: "Go to release",
+          visual_icon: "v2/arrow_right",
+          options: release_path(release.id),
+          size: :sm,
+          html_options: { class: "-mr-2" },
+          type: :link) %>
       </div>
     </div>
 
-    <div class="flex justify-between mt-4">
+    <div class="flex justify-between items-start mt-2">
       <div class="flex justify-start">
-        <%= render V2::HorizontalDataSetComponent.new %>
-      </div>
-
-      <div class="flex flex-col text-sm">
-        <div class="flex">
-          <span class="mr-1"><%= github_icon %></span>
-          <code class="text-xs">r/production-v2/2021-07-25</code>
-        </div>
-
-        <div class="flex mt-2">
-          <span class="mr-1"><%= github_icon %></span>
-          <code class="text-xs">v1.2.3</code>
+        <div class="mt-2 flex gap-y-1 gap-x-2">
+          <%= render V2::HorizontalDataSetComponent.new(separator: :solid, bg_color: true) do |component| %>
+            <% component.with_data_set(title: "Started", icon: "clock", lines: [started_at]) %>
+            <% component.with_data_set(title: "Released", icon: "zap", lines: [released_at]) %>
+            <% component.with_data_set(title: "Duration", icon: "coffee", lines: [duration]) %>
+          <% end %>
         </div>
       </div>
+
+      <div class="flex flex-row justify-end space-x-1">
+        <%= render V2::ButtonComponent.new(label: release_branch,
+                                           scheme: :link,
+                                           visual_icon: "v2/github",
+                                           type: :link,
+                                           size: :xxs,
+                                           arrow: :none) %>
+        <%= render V2::ButtonComponent.new(label: release_tag,
+                                           scheme: :link,
+                                           visual_icon: "v2/github",
+                                           type: :link,
+                                           size: :xxs,
+                                           arrow: :none) %>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 justify-between mt-8 gap-x-3">
+      <% release.release_platform_runs.each do |run| %>
+        <% deployment_run = run.last_successful_deployment_run.first %>
+        <div class="flex flex-col gap-y-2">
+          <div class="flex items-center justify-start">
+            <%= render V2::BadgeComponent.new(text: "#21", icon: "integrations/logo_app_store.png") %>
+            <%= inline_svg("v2/connect_line.svg", classname: "w-5 h-5 inline-flex mx-2") %>
+            <%= render V2::BadgeComponent.new(text: build_info(deployment_run), icon: "integrations/logo_github.png") %>
+            <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2") %>
+            <span class="text-gray-600 font-normal text-sm"><%= build_deployed_at(deployment_run) %></span>
+          </div>
+
+          <%= render V2::HorizontalDataSetComponent.new do |component| %>
+            <% component.with_data_set(title: "Time in review phase", icon: "clock", lines: ["about 7 hours"]) %>
+            <% component.with_data_set(title: "Time in release phase", icon: "clock", lines: ["about 7 hours"]) %>
+            <% component.with_data_set(title: "RCs GENERATED", icon: "archive", uppercase_title: false, lines: ["about 7 hours"]) %>
+          <% end %>
+
+          <%= render V2::ReleaseMonitoringComponent.new(deployment_run: run.store_releases.last, metrics: [:stability, :adoption_rate], show_bundle_id: false) %>
+        </div>
+      <% end %>
     </div>
   <% end %>
 <% end %>

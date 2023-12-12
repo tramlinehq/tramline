@@ -128,7 +128,7 @@
 
     <% if devops_report.present? %>
       <%= render V2::SectionComponent.new(style: :titled, title: "Mobile Devops") do %>
-        <div class="grid grid-cols-4 gap-x-1 my-3 gap-y-1">
+        <div class="grid grid-cols-4 gap-x-2 my-3 gap-y-2">
           <%= render ChartComponent.new(devops_report[:mobile_devops][:frequency], icon: "cog.svg") %>
           <%= render ChartComponent.new(devops_report[:mobile_devops][:duration], icon: "cog.svg") %>
           <%= render ChartComponent.new(devops_report[:mobile_devops][:hotfixes], icon: "cog.svg") %>
@@ -140,7 +140,7 @@
       <% end %>
 
       <%= render V2::SectionComponent.new(style: :titled, title: "Operational Efficiency") do %>
-        <div class="grid grid-cols-4 gap-x-1 my-3 gap-y-1">
+        <div class="grid grid-cols-4 gap-x-2 my-3 gap-y-2">
           <%= render ChartComponent.new(devops_report[:operational_efficiency][:contributors], icon: "user.svg") %>
           <%= render ChartComponent.new(devops_report[:operational_efficiency][:stability_contributors], icon: "user.svg") %>
         </div>
@@ -152,7 +152,11 @@
         <% previous_releases.each do |run| %>
           <% table.with_row do |row| %>
             <% row.with_cell(style: "") do %>
-              <%= render V2::StatusIndicatorPillComponent.new(status: :success, text: "Ongoing") %>
+              <div class="flex space-x-2">
+                <%= render V2::StatusIndicatorPillComponent.new(status: :success, text: "Ongoing") %>
+                <%= render V2::BadgeComponent.new(text: "#21", icon: "integrations/logo_app_store.png") %>
+                <%= render V2::BadgeComponent.new(text: "#21", icon: "integrations/logo_app_store.png") %>
+              </div>
             <% end %>
 
             <% row.with_cell(style: "font-medium") do %>

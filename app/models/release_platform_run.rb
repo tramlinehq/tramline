@@ -299,6 +299,10 @@ class ReleasePlatformRun < ApplicationRecord
     deployment_runs.reached_production.sort_by(&:scheduled_at).reverse
   end
 
+  def last_successful_deployment_run
+    last_successful_run_for(release_platform.release_step)&.deployment_runs&.not_failed
+  end
+
   private
 
   def base_tag_name
@@ -318,10 +322,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def latest_deployed_store_release
-    last_successful_run_for(release_platform.release_step)
-      &.deployment_runs
-      &.not_failed
-      &.find { |dr| dr.deployment.production_channel? }
+    last_successful_deployment_run&.find { |dr| dr.deployment.production_channel? }
   end
 
   def last_successful_run_for(step)

@@ -1,4 +1,4 @@
-class ReleaseMonitoringComponent < ViewComponent::Base
+class V2::ReleaseMonitoringComponent < ViewComponent::Base
   METRICS = [:staged_rollout, :adoption_rate, :adoption_chart, :errors, :stability]
 
   def initialize(deployment_run:, metrics: METRICS, show_bundle_id: true)
@@ -8,11 +8,19 @@ class ReleaseMonitoringComponent < ViewComponent::Base
     @show_bundle_id = show_bundle_id
   end
 
-  delegate :adoption_rate, :errors_count, :new_errors_count, to: :release_data
+  delegate :adoption_rate, :errors_count, :new_errors_count, to: :release_data, allow_nil: true
   delegate :app, to: :deployment_run
   delegate :monitoring_provider, to: :app
 
   attr_reader :deployment_run, :metrics, :show_bundle_id
+
+  def empty_component?
+    release_data.nil? || release_data.blank?
+  end
+
+  def empty_metric_component(name)
+    render EmptyMetricCardComponent.new(name: name)
+  end
 
   def build_identifier
     "#{deployment_run.build_version} (#{deployment_run.build_number})"
@@ -59,13 +67,13 @@ class ReleaseMonitoringComponent < ViewComponent::Base
     range_end = release_data.fetched_at
     range_start = deployment_run.created_at
     @chart_data ||= deployment_run
-      .release_health_metrics
-      .group_by_day(:fetched_at, range: range_start..range_end)
-      .maximum("round(CAST(sessions_in_last_day::float * 100 / total_sessions_in_last_day::float as numeric), 2)")
-      .compact
-      .map { |k, v| [k.strftime("%d %b"), {adoption_rate: v, rollout_percentage: deployment_run.rollout_percentage_at(k)}] }
-      .last(10)
-      .to_h
+                      .release_health_metrics
+                      .group_by_day(:fetched_at, range: range_start..range_end)
+                      .maximum("round(CAST(sessions_in_last_day::float * 100 / total_sessions_in_last_day::float as numeric), 2)")
+                      .compact
+                      .map { |k, v| [k.strftime("%d %b"), {adoption_rate: v, rollout_percentage: deployment_run.rollout_percentage_at(k)}] }
+                      .last(10)
+                      .to_h
 
     return unless @chart_data.keys.size >= 2
 

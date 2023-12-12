@@ -1,43 +1,57 @@
-<% if release_data.present? %>
-  <article class="mt-4">
-    <% if show_bundle_id %>
-      <div class="text-slate-500 text-md"><%= build_identifier %></div>
-    <% end %>
+<article>
+  <% if show_bundle_id %>
+    <div class="text-slate-500 text-md"><%= build_identifier %></div>
+  <% end %>
 
-    <div class="grid grid-cols-2 gap-5 mt-4">
-      <% if :staged_rollout.in? metrics %>
+  <div class="grid grid-cols-2 gap-2">
+    <% if :staged_rollout.in? metrics %>
+      <% if empty_component? %>
+        <%= empty_metric_component("Staged Rollout") %>
+      <% else %>
         <%= render ProgressCardComponent.new(name: "Staged Rollout",
                                              current: staged_rollout_percentage,
                                              subtitle: staged_rollout_text,
                                              provider: store_provider) %>
       <% end %>
+    <% end %>
 
-      <% if :adoption_rate.in? metrics %>
+    <% if :adoption_rate.in? metrics %>
+      <% if empty_component? %>
+        <%= empty_metric_component("Adoption Rate") %>
+      <% else %>
         <%= render ProgressCardComponent.new(name: "Adoption Rate",
                                              current: adoption_rate,
                                              subtitle: "Last 24 hours",
                                              provider: monitoring_provider) %>
       <% end %>
+    <% end %>
 
-      <% if :stability.in? metrics %>
+    <% if :stability.in? metrics %>
+      <% if empty_component? %>
+        <%= empty_metric_component("Stability") %>
+      <% else %>
         <%= render MetricCardComponent.new(name: "Stability",
                                            values: { "users" => user_stability, "sessions" => session_stability },
                                            provider: monitoring_provider,
                                            external_url: monitoring_provider_url) %>
       <% end %>
+    <% end %>
 
-      <% if :errors.in? metrics %>
+    <% if :errors.in? metrics %>
+      <% if empty_component? %>
+        <%= empty_metric_component("Errors") %>
+      <% else %>
         <%= render MetricCardComponent.new(name: "Errors",
                                            values: { "total" => errors_count, "new" => new_errors_count },
                                            provider: monitoring_provider,
                                            external_url: monitoring_provider_url) %>
       <% end %>
+    <% end %>
 
-      <% if :adoption_chart.in? metrics %>
-        <% if helpers.current_user.release_monitoring? && adoption_chart_data.present? %>
-          <div class="col-span-2"><%= render ChartComponent.new(adoption_chart_data, icon: "sparkles.svg") %></div>
-        <% end %>
+    <% if :adoption_chart.in? metrics %>
+      <% if helpers.current_user.release_monitoring? && adoption_chart_data.present? %>
+        <div class="col-span-2"><%= render ChartComponent.new(adoption_chart_data, icon: "sparkles.svg") %></div>
       <% end %>
-    </div>
-  </article>
-<% end %>
+    <% end %>
+  </div>
+</article>

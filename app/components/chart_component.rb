@@ -42,7 +42,7 @@ class ChartComponent < ViewComponent::Base
   end
 
   def corner_icon
-    inline_svg(@icon, classname: "w-6 fill-current shrink-0")
+    inline_svg(@icon, classname: "w-5 fill-current shrink-0")
   end
 
   def help_icon

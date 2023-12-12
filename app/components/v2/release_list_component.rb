@@ -73,7 +73,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
   end
 
   def start_release_text(major: false)
-    text = train.automatic? ? "Manually start " : "Start "
+    text = train.automatic? ? "Manually start " : "Start"
     text += major ? "major " : "minor "
     text += "release "
     text + train.next_version(major_only: major)
