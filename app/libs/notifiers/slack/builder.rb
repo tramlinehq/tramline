@@ -23,6 +23,12 @@ module Notifiers
         deployment_failed: Renderers::DeploymentFailed
       }.with_indifferent_access
 
+      MissingSlackRenderer = Class.new(StandardError)
+
+      unless Set.new(RENDERERS.keys).eql?(Set.new(NotificationSetting.kinds.keys))
+        raise MissingSlackRenderer
+      end
+
       class RendererNotFound < ArgumentError; end
 
       def self.build(type, **params)
