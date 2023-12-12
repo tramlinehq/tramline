@@ -21,6 +21,11 @@ class ChartComponent < ViewComponent::Base
     chart[:value_format]
   end
 
+  def show_x_axis
+    return true if chart[:show_x_axis].nil?
+    chart[:show_x_axis]
+  end
+
   def series
     ungroup_series.to_json
   end

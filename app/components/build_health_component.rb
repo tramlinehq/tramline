@@ -45,7 +45,7 @@ class BuildHealthComponent < ViewComponent::Base
           data: {}
         }
 
-        acc[identifier][:data][step_run.build_number] = {value: data["value"]}
+        acc[identifier][:data][step_run.build_number] = {(data["unit"] || "value") => data["value"]}
       end
     end
   end
@@ -58,7 +58,8 @@ class BuildHealthComponent < ViewComponent::Base
       name: metadata_id,
       title: health_data[metadata_id][:name],
       scope: "Last 5 builds",
-      help_text: ""
+      help_text: "",
+      show_x_axis: false
     }
   end
 end

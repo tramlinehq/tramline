@@ -38,7 +38,7 @@ class MetricCardComponent < ViewComponent::Base
   end
 
   def display_values
-    values.compact
+    values.compact.reject { |k, v| v[:value].nil? }
   end
 
   def grid_size
