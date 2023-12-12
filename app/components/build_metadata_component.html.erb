@@ -1,15 +1,13 @@
 <div class="space-y-6 flex flex-col">
-  <div class="w-fit">
-    <%= render MetricCardComponent.new(name: "Build Metadata", values: metrics) %>
-  </div>
+  <%= render MetricCardComponent.new(name: "Build Metadata", values: metrics) %>
   <%= render TableComponent.new(columns: %w[name value]) do |table| %>
-    <% text_values.each do |k, metadata| %>
+    <% text_values.each do |metadata| %>
       <% table.with_row do |row| %>
         <% row.with_cell do %>
-          <%= metadata["name"] %>
+          <%= metadata.name %>
         <% end %>
         <% row.with_cell do %>
-          <%= metadata["value"] %>
+          <%= metadata.value %>
         <% end %>
       <% end %>
     <% end %>

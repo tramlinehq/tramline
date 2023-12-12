@@ -12,40 +12,46 @@ class BuildHealthComponent < ViewComponent::Base
   end
 
   def chartable_metadata
-    ["app_size"].concat release_platform_run.external_builds.last.metadata.filter { |_k, v| v["type"] == "number" }.keys
+    ["app_size"].concat release_platform_run
+      .external_builds
+      .last
+      .normalized_metadata
+      .filter(&:numerical?)
+      .map(&:identifier)
   end
 
   def app_size_data
-    {"app_size" => {
+    return {} unless step_runs.any?(&:build_size)
+    {
       identifier: "app_size",
       name: "App Size",
       description: "",
       type: "number",
       unit: "MB",
       data: step_runs.map { |srun| [srun.build_number, {value: srun.build_size}] }.to_h
-    }}
+    }
   end
 
   def health_data
     return unless step_runs.size > 1
 
-    step_runs.each_with_object(app_size_data) do |step_run, acc|
-      metadata = step_run.external_build&.metadata
+    step_runs.each_with_object({"app_size" => app_size_data}) do |step_run, acc|
+      metadata = step_run.external_build&.normalized_metadata
       next unless metadata
 
-      metadata.each do |identifier, data|
-        next unless data["type"] == "number"
+      metadata.each do |data|
+        next unless data.numerical?
 
-        acc[identifier] ||= {
-          identifier: data["identifier"],
-          name: data["name"],
-          description: data["description"],
-          type: data["type"],
-          unit: data["unit"],
+        acc[data.identifier] ||= {
+          identifier: data.identifier,
+          name: data.name,
+          description: data.description,
+          type: data.type,
+          unit: data.unit,
           data: {}
         }
 
-        acc[identifier][:data][step_run.build_number] = {(data["unit"] || "value") => data["value"]}
+        acc[data.identifier][:data][step_run.build_number] = {data.unit => data.value}
       end
     end
   end

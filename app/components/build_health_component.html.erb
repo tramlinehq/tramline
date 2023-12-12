@@ -3,7 +3,7 @@
     <div class="text-lg"><%= step.name %></div>
     <div class="grid grid-cols-2 gap-5 mt-4">
       <% chartable_metadata.each do |metadata| %>
-        <div><%= render ChartComponent.new(chart_data(metadata), icon: "chart_bar.svg") %></div>
+        <%= render ChartComponent.new(chart_data(metadata), icon: "chart_bar.svg") %>
       <% end %>
     </div>
   </article>

@@ -36,4 +36,38 @@ class ExternalBuild < ApplicationRecord
   rescue JSON::Schema::ValidationError => e
     errors.add(:metadata, e.message)
   end
+
+  def normalized_metadata
+    metadata.map { NormalizedMetadata.new(_2) }
+  end
+
+  class NormalizedMetadata
+    def initialize(metadata)
+      @metadata = metadata
+    end
+
+    def identifier = metadata["identifier"]
+
+    def value = metadata["value"]
+
+    def unit = metadata["unit"]
+
+    def description = metadata["description"]
+
+    def type = metadata["type"]
+
+    def name = metadata["name"]
+
+    def numerical?
+      type == "number"
+    end
+
+    def textual?
+      type == "string"
+    end
+
+    private
+
+    attr_reader :metadata
+  end
 end
