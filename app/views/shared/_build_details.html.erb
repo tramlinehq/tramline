@@ -4,37 +4,21 @@
     • Build <code><%= step_run.build_number %></code>
     • Commit <code><%= step_run.commit.short_sha %></code>
   </div>
-</div>
-
-<% if step_run&.external_build %>
-  <div data-controller="modal" class="flex">
-    <%= link_to "#", { data: { action: "modal#open" } } do %>
-      <div class="text-sm text-gray-500 mt-1">View Build Metadata</div>
-    <% end %>
-
-    <dialog data-modal-target="modal"
-            class="p-0 backdrop:bg-gray-400 backdrop:bg-opacity-50 open:animate-fade-in">
-      <div class="relative bg-white rounded-lg shadow">
-        <div class="flex flex-col items-start rounded-t p-4">
-          <div class="flex justify-between w-full items-center border-b py-4">
-            <h3 class="text-xl font-semibold text-gray-900 inline-flex items-center">
-              <%= inline_svg("chart_bar.svg", classname: "w-6 h-6 mr-1") %>
-              <%= "#{step_run.build_version} (#{step_run.build_number})" %>
-            </h3>
-            <button type="button" class="text-slate-400 hover:cursor-pointer hover:text-slate-500" data-action="modal#close">
-              <%= inline_svg("close_icon.svg", classname: "w-4 h-4 fill-current") %>
-              <span class="sr-only">Close modal</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="p-6">
+  <div>
+    <% if step_run&.external_build %>
+      <%= render V2::ModalComponent.new(title: "#{step_run.build_version} (#{step_run.build_number})") do |modal| %>
+        <% modal.with_button(scheme: :naked_icon,
+                             visual_icon: "info",
+                             type: :action,
+                             size: :xxs,
+                             arrow: :none) %>
+        <% modal.with_body do %>
           <%= render BuildMetadataComponent.new(step_run:) %>
-        </div>
-      </div>
-    </dialog>
+        <% end %>
+      <% end %>
+    <% end %>
   </div>
-<% end %>
+</div>
 
 <% if step_run.build_artifact.present? && with_artifact %>
   <div class="mt-1">

@@ -7,12 +7,8 @@ class BuildHealthComponent < ViewComponent::Base
     @release_platform_run = release_platform_run
   end
 
-  def latest_step_run
-    release_platform_run.last_run_for(step)
-  end
-
   def step_runs
-    @step_runs ||= release_platform_run.step_runs_for(step)
+    @step_runs ||= release_platform_run.step_runs_for(step).not_failed
   end
 
   def chartable_metadata

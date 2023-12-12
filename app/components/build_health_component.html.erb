@@ -1,21 +1,10 @@
-<% if latest_step_run&.external_build.present? %>
+<% if health_data.present? %>
   <article class="mt-4">
-    <div class="flex flex-row justify-between">
-      <div class="text-lg">
-        Active build <%= "#{latest_step_run.build_version} (#{latest_step_run.build_number})" %>
-      </div>
-      <div class="uppercase text-gray-400 text-sm"><%= step.name %></div>
+    <div class="text-lg"><%= step.name %></div>
+    <div class="grid grid-cols-2 gap-5 mt-4">
+      <% chartable_metadata.each do |metadata| %>
+        <div><%= render ChartComponent.new(chart_data(metadata), icon: "chart_bar.svg") %></div>
+      <% end %>
     </div>
-    <div class="flex flex-col w-full mt-2">
-      <%= render BuildMetadataComponent.new(step_run: latest_step_run) %>
-    </div>
-    <% if health_data.present? %>
-      <div class="text-lg mt-4">Trend</div>
-      <div class="grid grid-cols-2 gap-5 mt-4">
-        <% chartable_metadata.each do |metadata| %>
-          <div><%= render ChartComponent.new(chart_data(metadata), icon: "sparkles.svg") %></div>
-        <% end %>
-      </div>
-    <% end %>
   </article>
 <% end %>
