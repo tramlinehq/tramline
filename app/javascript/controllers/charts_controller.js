@@ -13,6 +13,7 @@ export default class extends Controller {
     format: {type: String, default: "number"},
     series: Array,
     showXAxis: {type: Boolean, default: true},
+    showYAxis: {type: Boolean, default: false},
   }
 
   initialize() {
@@ -197,7 +198,7 @@ export default class extends Controller {
         },
       },
       yaxis: {
-        show: false,
+        show: this.showYAxisValue,
       },
     }
   }

@@ -65,7 +65,8 @@ class BuildHealthComponent < ViewComponent::Base
       title: health_data[metadata_id][:name],
       scope: "Last 5 builds",
       help_text: "",
-      show_x_axis: false
+      show_x_axis: false,
+      show_y_axis: true
     }
   end
 end
