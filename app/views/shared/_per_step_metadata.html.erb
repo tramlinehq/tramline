@@ -31,9 +31,9 @@
       <% end %>
 
       <% if step_run&.build_version %>
-          <div class="flex flex-col">
-            <%= render partial: "shared/build_details", locals: { step_run:, with_artifact: false } %>
-          </div>
+        <div class="flex flex-col">
+          <%= render partial: "shared/build_details", locals: { step_run:, with_artifact: false } %>
+        </div>
       <% end %>
     </div>
 
