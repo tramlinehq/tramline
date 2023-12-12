@@ -4,6 +4,8 @@ class AddReviewFailedNotificationSettings < ActiveRecord::Migration[7.0]
   def up
     ActiveRecord::Base.transaction do
       Train.all.where.not(notification_channel: nil).each do |train|
+        next if train.notification_settings.empty?
+
         review_failed_setting = train.notification_settings.find_by(kind: NotificationSetting.kinds[:review_failed])
         next if review_failed_setting.present?
 
