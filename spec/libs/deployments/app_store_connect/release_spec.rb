@@ -353,21 +353,32 @@ describe Deployments::AppStoreConnect::Release do
     context "when failure" do
       let(:run) { create_deployment_run_for_ios(:started, deployment_traits: [:with_app_store, :with_production_channel], step_trait: :release) }
       let(:error) { Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "build", "code" => "not_found"}}) }
+      let(:retryable_error) { Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "release", "code" => "attachment_upload_in_progress"}}) }
 
       before do
         allow(providable_dbl).to receive(:submit_release).and_return(GitHub::Result.new { raise error })
       end
 
       it "marks the deployment run as failed when failure" do
+        allow(providable_dbl).to receive(:submit_release).and_return(GitHub::Result.new { raise error })
         described_class.submit_for_review!(run)
 
         expect(run.reload.failed?).to be(true)
       end
 
       it "adds the reason of failure to deployment run" do
+        allow(providable_dbl).to receive(:submit_release).and_return(GitHub::Result.new { raise error })
         described_class.submit_for_review!(run)
 
         expect(run.reload.failure_reason).to eq("build_not_found")
+      end
+
+      it "does not mark the deployment run as failed when the failure is retryable" do
+        allow(providable_dbl).to receive(:submit_release).and_return(GitHub::Result.new { raise retryable_error })
+        described_class.submit_for_review!(run)
+
+        expect(run.reload.failed?).to be(false)
+        expect(run.reload.failure_reason).to eq("attachment_upload_in_progress")
       end
     end
   end

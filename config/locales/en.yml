@@ -52,6 +52,7 @@ en:
           build_not_submittable: "the build not being submittable"
           build_mismatch: "the build not matching the release that exists in store"
           review_in_progress: "a review already being in progress"
+          attachment_upload_in_progress: "store version is not in a valid state to submit for review, attachment uploads still in progress"
           review_submission_exists: "a release already being added for review in the store"
           phased_release_not_found: "the release not being phased release enabled"
           release_already_exists: "a release already being present in the store"

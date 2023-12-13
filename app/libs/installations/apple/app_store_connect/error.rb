@@ -70,6 +70,11 @@ module Installations
         resource: "release",
         code: "version_already_exists",
         decorated_reason: :version_already_exists
+      },
+      {
+        resource: "release",
+        code: "attachment_upload_in_progress",
+        decorated_reason: :attachment_upload_in_progress
       }
     ]
 

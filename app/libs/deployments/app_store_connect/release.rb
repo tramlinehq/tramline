@@ -6,6 +6,8 @@ module Deployments
       ExternalReleaseNotInTerminalState = Class.new(StandardError)
       ReleaseNotFullyLive = Class.new(StandardError)
 
+      RETRYABLE_FAILURE_REASONS = [:attachment_upload_in_progress]
+
       def self.kickoff!(deployment_run)
         new(deployment_run).kickoff!
       end
@@ -132,8 +134,8 @@ module Deployments
         result = provider.submit_release(build_number, release_version)
 
         unless result.ok?
-          run.fail_with_error(result.error)
-          return
+          return run.update(failure_reason: result.error.reason) if result.error.reason.in? RETRYABLE_FAILURE_REASONS
+          return run.fail_with_error(result.error)
         end
 
         run.submit_for_review!
