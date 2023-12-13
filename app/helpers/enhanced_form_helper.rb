@@ -20,8 +20,9 @@ module EnhancedFormHelper
     TEXT_FIELD_CLASSES = "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
 
     def authz_submit(label, icon)
-      @template
-        .render(V2::ButtonComponent.new(scheme: :default, visual_icon: icon, type: :button, size: :base, label: label))
+      button_component = V2::ButtonComponent.new(scheme: :default, type: :button, size: :base, label: label)
+      button_component.with_icon(icon)
+      @template.render(button_component)
     end
 
     def labeled_text_field(method, label_text, options = {})

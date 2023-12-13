@@ -2,11 +2,12 @@
   <% if train.hotfixable? %>
     <% container.with_action do %>
       <%= render V2::ModalComponent.new(title: "Start a hotfix release") do |modal| %>
-        <% modal.with_button(scheme: :light,
-                             visual_icon: "band_aid",
-                             type: :action,
-                             size: :xxs,
-                             arrow: :none).with_title_text.with_content("Start a hotfix") %>
+        <% button = modal.with_button(scheme: :light,
+                                      type: :action,
+                                      size: :xxs,
+                                      arrow: :none) %>
+        <% button.with_icon("band_aid.svg") %>
+        <% button.with_title_text.with_content("Start a hotfix") %>
         <% modal.with_body do %>
           <%= render partial: "trains/hotfix_form", locals: { app: app, train: train, hotfix_from: hotfix_from } %>
         <% end %>
@@ -34,17 +35,20 @@
   <%= container.with_side_action do %>
     <%= render V2::ButtonComponent.new(
       scheme: :light,
-      visual_icon: "plus",
       type: :link,
       size: :xxs,
       options: new_app_train_path(app),
       tooltip: "Add a new train",
-      arrow: :none) %>
+      arrow: :none) do |b|
+      b.with_icon("plus.svg")
+    end %>
   <% end %>
 
   <% container.with_action do %>
     <%= render V2::DropdownComponent.new do |dropdown| %>
-      <% dropdown.with_button(scheme: :default, visual_icon: "play").with_title_text.with_content("Prepare new release") %>
+      <% button = dropdown.with_button(scheme: :default) %>
+      <% button.with_icon("play.svg", size: :md) %>
+      <% button.with_title_text.with_content("Prepare new release") %>
       <% dropdown.with_item_group do |group| %>
         <% if train.ongoing_release && train.upcoming_release_startable? %>
           <% group.with_item(link: { path: app_train_releases_path(app, train) }) do %>
@@ -69,9 +73,10 @@
     <%= render V2::ButtonComponent.new(
       scheme: :supporting,
       label: "Configure",
-      visual_icon: "v2/cog",
       options: edit_app_train_path(app, train),
-      type: :link) %>
+      type: :link) do |b|
+      b.with_icon("v2/cog.svg")
+    end %>
   <% end %>
 
 
@@ -80,9 +85,10 @@
       <%= render V2::ButtonComponent.new(
         scheme: :supporting,
         label: "Configure Notifications",
-        visual_icon: "bell",
         options: app_train_notification_settings_path(app, train),
-        type: :link) %>
+        type: :link) do |b|
+        b.with_icon("bell.svg")
+      end %>
     <% end %>
   <% end %>
 
@@ -91,10 +97,13 @@
       <%= render V2::ButtonComponent.new(
         scheme: :supporting,
         label: "Activate",
-        visual_icon: "play",
         options: activate_app_train_path(app, train),
         type: :button,
-        html_options: { method: :patch, data: { turbo_method: :patch, turbo_confirm: "This will start scheduling release kickoff(s). Are you sure?" } }) %>
+        html_options: { method: :patch,
+                        data: { turbo_method: :patch,
+                                turbo_confirm: "This will start scheduling release kickoff(s). Are you sure?" } }) do |b|
+        b.with_icon("play.svg")
+      end %>
     <% end %>
   <% end %>
 
@@ -103,10 +112,13 @@
       <%= render V2::ButtonComponent.new(
         scheme: :supporting,
         label: "Deactivate",
-        visual_icon: "v2/pause",
         options: deactivate_app_train_path(app, train),
         type: :button,
-        html_options: { method: :patch, data: { turbo_method: :patch, turbo_confirm: "This will cancel all the scheduled release kickoff(s). Are you sure?" } }) %>
+        html_options: { method: :patch,
+                        data: { turbo_method: :patch,
+                                turbo_confirm: "This will cancel all the scheduled release kickoff(s). Are you sure?" } }) do |b|
+        b.with_icon("v2/pause.svg")
+      end %>
     <% end %>
   <% end %>
 
@@ -114,10 +126,11 @@
     <%= render V2::ButtonComponent.new(
       scheme: :supporting,
       label: "Remove",
-      visual_icon: "v2/trash",
       options: app_train_path(app, train),
       type: :link,
-      html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } }) %>
+      html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } }) do |b|
+      b.with_icon("v2/trash.svg")
+    end %>
   <% end %>
 
   <% container.with_body do %>
@@ -150,12 +163,17 @@
     <%= render V2::SectionComponent.new(style: :titled, title: "Previous Releases") do %>
       <%= render V2::TableComponent.new(columns: ["", "release", "dates", "duration", ""]) do |table| %>
         <% previous_releases.each do |run| %>
+          <% release = release_component(run) %>
+
           <% table.with_row do |row| %>
             <% row.with_cell(style: "") do %>
               <div class="flex space-x-2">
-                <%= render V2::StatusIndicatorPillComponent.new(status: :success, text: "Ongoing") %>
-                <%= render V2::BadgeComponent.new(text: "#21", icon: "integrations/logo_app_store.png") %>
-                <%= render V2::BadgeComponent.new(text: "#21", icon: "integrations/logo_app_store.png") %>
+                <%= render V2::StatusIndicatorPillComponent.new(text: release.status[0], status: release.status[1]) %>
+                <% if release.hotfix_badge %>
+                  <%= render V2::BadgeComponent.new(release.hotfix_badge[:text]) do |badge| %>
+                    <% badge.with_icon(release.hotfix_badge[:icon]) %>
+                  <% end %>
+                <% end %>
               </div>
             <% end %>
 
@@ -168,21 +186,22 @@
             <% end %>
 
             <% row.with_cell do %>
-              <div><%= release_interval(run) %></div>
+              <div><%= release.interval %></div>
             <% end %>
 
             <% row.with_cell do %>
-              <div><%= release_duration(run) %></div>
+              <div><%= release.duration %></div>
             <% end %>
 
             <% row.with_cell(style: "text-right w-2") do %>
               <%= render V2::ButtonComponent.new(
                 scheme: :supporting,
                 label: "Go to release",
-                visual_icon: "v2/arrow_right",
                 options: release_path(run.id),
                 size: :sm,
-                type: :link) %>
+                type: :link) do |b|
+                b.with_icon("v2/arrow_right.svg")
+              end %>
             <% end %>
           <% end %>
         <% end %>

@@ -55,21 +55,8 @@ class V2::ReleaseListComponent < V2::BaseComponent
     train.releases.order(scheduled_at: :desc).take(100)
   end
 
-  def release_interval(run)
-    "#{release_start_time(run)} – #{release_end_time(run)}"
-  end
-
-  def release_start_time(run)
-    time_format run.scheduled_at, with_time: false, dash_empty: true
-  end
-
-  def release_end_time(run)
-    time_format run.completed_at, with_time: false, dash_empty: true
-  end
-
-  def release_duration(run)
-    return "–" unless run.completed_at
-    distance_of_time_in_words(run.scheduled_at, run.completed_at)
+  def release_component(run)
+    V2::BaseReleaseComponent.new(run)
   end
 
   def start_release_text(major: false)

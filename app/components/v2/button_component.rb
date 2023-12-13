@@ -1,4 +1,6 @@
 class V2::ButtonComponent < V2::BaseComponent
+  include Memery
+
   TYPES = %i[link link_external button dropdown action]
   DROPDOWN_ARROW_STYLES = {
     double: "double_headed_arrow.svg",
@@ -30,11 +32,10 @@ class V2::ButtonComponent < V2::BaseComponent
       class: "bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600",
       icon: true
     },
-    disabled:
-      {
-        class: "#{BASE_OPTS} opacity-30 disabled cursor-not-allowed bg-transparent",
-        disabled: true
-      }
+    disabled: {
+      class: "#{BASE_OPTS} opacity-30 disabled cursor-not-allowed bg-transparent",
+      disabled: true
+    }
   }
   DROPDOWN_STYLE = "p-1 text-sm text-gray-700 dark:text-gray-200"
   SCHEMES = BUTTON_OPTIONS.keys
@@ -47,25 +48,22 @@ class V2::ButtonComponent < V2::BaseComponent
     lg: "px-5 py-3 text-base",
     xl: "px-6 py-3.5 text-base"
   }
-  VISUAL_ICON_TYPES = %i[external internal]
 
   renders_one :title_text
+  renders_one :icon, V2::IconComponent
 
-  def initialize(label: nil, scheme: :switcher, type: :button, visual_icon: nil, visual_icon_type: :internal, tooltip: nil, size: :xxs, options: nil, html_options: nil, arrow: nil)
+  def initialize(label: nil, scheme: :switcher, type: :button, tooltip: nil, size: :xxs, options: nil, html_options: nil, arrow: nil)
     arrow = (arrow.nil? && type == :action) ? :double : :none
     raise ArgumentError, "Invalid scheme" unless SCHEMES.include?(scheme)
     raise ArgumentError, "Invalid button type" unless TYPES.include?(type)
     raise ArgumentError, "Invalid size" unless SIZES.keys.include?(size)
     raise ArgumentError, "Invalid arrow type for dropdown" if DROPDOWN_ARROW_STYLES.keys.exclude?(arrow)
     raise ArgumentError, "Cannot use tooltip with a dropdown" if tooltip && type == :dropdown
-    raise ArgumentError, "Visual Icon can only be internal or external" if visual_icon && VISUAL_ICON_TYPES.exclude?(visual_icon_type)
 
     @label = label
     @scheme = scheme
     @type = type
     @size = size
-    @visual_icon = visual_icon
-    @visual_icon_type = visual_icon_type
     @tooltip = tooltip
     @options = options
     @html_options = html_options
@@ -91,7 +89,7 @@ class V2::ButtonComponent < V2::BaseComponent
     classname = "ml-2" unless icon_only?
 
     _link_to(link_external?, @options, @html_options) do
-      concat icon
+      concat(icon) if icon?
 
       if title_text?
         concat content_tag(:span, title_text, class: classname)
@@ -106,7 +104,7 @@ class V2::ButtonComponent < V2::BaseComponent
     classname = "ml-2" unless icon_only?
 
     button_to(@options, @html_options) do
-      concat icon
+      concat(icon) if icon?
 
       if title_text?
         concat content_tag(:span, title_text, class: classname)
@@ -117,20 +115,21 @@ class V2::ButtonComponent < V2::BaseComponent
   end
 
   def button_component
-    return button_tag(@options, @html_options) { icon } if icon_only?
+    return button_tag(@options, @html_options) { render(icon) } if icon_only?
 
     classname = "ml-1"
-    classname = "ml-2" if icon.present?
+    classname = "ml-2" if icon?
+    classname += " mr-2" if arrow.present?
 
     button_tag(@options, @html_options) do
-      concat icon
+      concat(icon) if icon?
       concat content_tag(:span, "Open menu", class: "sr-only")
       if title_text?
         concat content_tag(:span, title_text, class: classname)
       elsif @label
         concat content_tag(:span, @label, class: classname)
       end
-      concat arrow
+      concat(render(arrow)) if arrow.present?
     end
   end
 
@@ -161,27 +160,13 @@ class V2::ButtonComponent < V2::BaseComponent
     options.merge(new_options.except(:class))
   end
 
-  def link? = @type == :link || link_external?
-
-  def link_external? = @type == :link_external
-
   def button? = @type == :button
 
   def action? = @type == :action
 
-  ARROW_STYLE = "w-3 h-3 ml-2"
-  EXTERNAL_ICON_STYLE = "w-8 h-8 rounded-full"
-  INTERNAL_ICON_STYLE = "w-4 h-4 rounded-full"
+  def link? = @type == :link || link_external?
 
-  def icon
-    return unless @visual_icon
-
-    if @visual_icon_type.eql?(:external)
-      image_tag(@visual_icon, class: EXTERNAL_ICON_STYLE)
-    else
-      inline_svg(@visual_icon + ".svg", classname: INTERNAL_ICON_STYLE)
-    end
-  end
+  def link_external? = @type == :link_external
 
   def get_scheme
     @scheme = :disabled unless helpers.writer?
@@ -192,8 +177,8 @@ class V2::ButtonComponent < V2::BaseComponent
     BUTTON_OPTIONS.dig(get_scheme, :icon)
   end
 
-  def arrow
+  memoize def arrow
     return if @arrow_type.eql?(:none)
-    inline_svg(DROPDOWN_ARROW_STYLES[@arrow_type], classname: ARROW_STYLE)
+    V2::IconComponent.new(DROPDOWN_ARROW_STYLES[@arrow_type], size: :sm)
   end
 end

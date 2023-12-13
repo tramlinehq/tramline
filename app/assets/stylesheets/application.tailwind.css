@@ -1,6 +1,18 @@
 @tailwind base;
 @tailwind components;
 
+@layer utilities {
+  .bg-diagonal-stripes {
+    background: repeating-linear-gradient(
+      45deg,
+      rgb(255, 255, 255) 0px,
+      rgb(255, 255, 255) 3px,
+      rgb(240, 240, 240) 3px,
+      rgb(240, 240, 240) 6px
+    );
+  }
+}
+
 /* Override color of turbo progress bar */
 .turbo-progress-bar {
   background-color: orangered;

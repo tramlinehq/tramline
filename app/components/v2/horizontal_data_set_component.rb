@@ -24,22 +24,18 @@ class V2::HorizontalDataSetComponent < V2::BaseComponent
   end
 
   class DataSetComponent < V2::BaseComponent
-    def initialize(title:, uppercase_title: true, icon: nil, lines: [])
+    renders_one :icon, V2::IconComponent
+
+    def initialize(title:, uppercase_title: true, lines: [])
       @title = title
       @uppercase_title = uppercase_title
       @lines = lines
-      @icon = icon
     end
 
     attr_reader :title, :lines
 
     def uppercase_title
       "uppercase" if @uppercase_title
-    end
-
-    def icon
-      return unless @icon
-      inline_svg("v2/#{@icon}.svg", classname: "w-3 h-3 inline-flex")
     end
   end
 end

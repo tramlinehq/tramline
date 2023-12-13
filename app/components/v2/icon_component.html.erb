@@ -1,0 +1,5 @@
+<% if internal? && svg? %>
+  <%= inline_svg(icon, classname: classname) %>
+<% else %>
+  <%= image_tag(icon, class: classname) %>
+<% end %>

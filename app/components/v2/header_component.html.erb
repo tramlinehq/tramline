@@ -10,7 +10,9 @@
       <div class="flex flex-wrap justify-between items-center py-3 px-4 pb-5 sm:pb-3 lg:px-6">
         <div class="flex items-center mb-2 sm:mb-0">
           <%= render V2::DropdownComponent.new do |dropdown| %>
-            <% dropdown.with_button(visual_icon: "building").with_title_text do %>
+            <% button = dropdown.with_button %>
+            <% button.with_icon("building.svg") %>
+            <% button.with_title_text do %>
               <div class="text-left">
                 <div class="text-sm font-semibold leading-none text-gray-900 dark:text-white">
                   <%= current_organization.name %>
@@ -40,10 +42,9 @@
             <%= inline_svg("layer_separator.svg", classname: "w-3 h-3 text-gray-500 dark:text-gray-400 mx-2") %>
 
             <%= render V2::DropdownComponent.new do |dropdown| %>
-              <% dropdown.with_button(visual_icon: "https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png",
-                                      visual_icon_type: :external,
-                                      size: :xs,
-              ).with_title_text do %>
+              <% button = dropdown.with_button(size: :xs) %>
+              <% button.with_icon("https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png", size: :xl_3) %>
+              <% button.with_title_text do %>
                 <div class="text-left">
                   <div class="text-sm font-semibold leading-none text-gray-900 dark:text-white">
                     <%= default_app.name %>
@@ -68,18 +69,18 @@
               <% end %>
             <% end %>
 
-            <%= render V2::ButtonComponent.new(
-              scheme: :light,
-              visual_icon: "v2/cog",
-              options: edit_app_path(default_app),
-              type: :link,
-              size: :xxs,
-              tooltip: "App Settings",
-              html_options: { class: "ml-2" }
-            ) %>
+            <%= render V2::ButtonComponent.new(scheme: :light,
+                                               options: edit_app_path(default_app),
+                                               type: :link,
+                                               size: :xxs,
+                                               tooltip: "App Settings",
+                                               html_options: { class: "ml-2" }) do |b| %>
+              <%= b.with_icon("v2/cog.svg", size: :md) %>
+            <% end %>
 
             <%= render V2::ModalComponent.new(title: "Add a new app") do |modal| %>
-              <% modal.with_button(scheme: :light, visual_icon: "plus", type: :action, size: :xxs, arrow: :none, html_options: { class: "ml-2" }) %>
+              <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none, html_options: { class: "ml-2" })
+                      .with_icon("plus.svg", size: :md) %>
               <% modal.with_body do %>
                 <%= form_with(model: [new_app], builder: EnhancedFormHelper::AuthzForm) do |form| %>
                   <div class="grid gap-4 mb-4 sm:grid-cols-2">
@@ -109,15 +110,16 @@
                     <div><%= form.labeled_tz_select :timezone, "Timezone", default_timezones, { model: ActiveSupport::TimeZone } %></div>
                     <div class="sm:col-span-2"><%= form.labeled_textarea :description, "Description" %></div>
                   </div>
-                  <%= form.authz_submit "Add an app", "plus" %>
+                  <%= form.authz_submit "Add an app", "plus.svg" %>
                 <% end %>
               <% end %>
             <% end %>
 
             <%= render V2::ModalComponent.new(title: "Store Status", size: :xxsmall) do |modal| %>
-              <% modal.with_button(label: "Store Status", scheme: :light, visual_icon: "v2/storage", type: :action, size: :xxs, arrow: :none, html_options: { class: "ml-2" }) %>
+              <% modal.with_button(label: "Store Status", scheme: :light, type: :action, size: :xxs, arrow: :none, html_options: { class: "ml-2" })
+                      .with_icon("v2/storage.svg", size: :md) %>
               <% modal.with_body do %>
-              <%= render V2::ExternalAppComponent.new(app: default_app) %>
+                <%= render V2::ExternalAppComponent.new(app: default_app) %>
               <% end %>
             <% end %>
           <% end %>
@@ -127,21 +129,18 @@
       <div class="flex justify-end items-center lg:order-2">
         <%= render V2::ButtonComponent.new(
           scheme: :naked_icon,
-          visual_icon: "book",
           options: "https://docs.tramline.app",
           type: :link_external,
           size: :none,
-          html_options: { class: "ml-2" }
-        ) %>
+          html_options: { class: "ml-2" }) do |b|
+          b.with_icon("book.svg", rounded: false)
+        end %>
 
         <span class="mx-4 w-px h-5 bg-gray-200 dark:bg-gray-600"></span>
 
         <%= render V2::DropdownComponent.new do |dropdown| %>
-          <% dropdown.with_button(visual_icon: "https://flowbite.com/docs/images/people/profile-picture-5.jpg",
-                                  visual_icon_type: :external,
-                                  size: :none,
-                                  html_options: { class: "flex" },
-                                  scheme: :avatar_icon) %>
+          <% dropdown.with_button(size: :none, html_options: { class: "flex" }, scheme: :avatar_icon)
+                     .with_icon("https://flowbite.com/docs/images/people/profile-picture-5.jpg", size: :xl_3) %>
 
           <!-- <%# button.with_subtext do %> -->
           <!--            <div class="py-3 px-4">-->
@@ -156,7 +155,7 @@
 
           <% dropdown.with_item_group(list_style: "text-gray-500 dark:text-gray-400") do |group| %>
             <% group.with_item(link: { path: edit_accounts_organization_path(current_organization),
-                                       "data-turbo": false}) do %>
+                                       "data-turbo": false }) do %>
               Settings
             <% end %>
 
@@ -167,14 +166,14 @@
             <% end %>
 
             <% group.with_item(link: { path: "https://calendar.app.google/bs6wimzo316W3yKz9",
-                                       external: true}) do %>
+                                       external: true }) do %>
               Book a demo ↗
             <% end %>
           <% end %>
 
           <% dropdown.with_item_group(list_style: "text-gray-500 dark:text-gray-400") do |group| %>
             <% group.with_item(link: { path: destroy_user_session_path,
-                                       "data-turbo": false}) do %>
+                                       "data-turbo": false }) do %>
               Sign out
             <% end %>
           <% end %>

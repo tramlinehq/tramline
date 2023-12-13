@@ -2,12 +2,18 @@ module ApplicationHelper
   using RefinedString
 
   STATUS_COLOR_PALETTE = {
-    success: %w[bg-green-100 text-green-600],
-    failure: %w[bg-rose-100 text-rose-600],
+    success: %w[bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300],
+    failure: %w[bg-rose-100 text-rose-800 dark:bg-red-900 dark:text-red-300],
     routine: %w[bg-sky-100 text-sky-600],
     neutral: %w[bg-slate-100 text-slate-500],
     ongoing: %w[bg-indigo-100 text-indigo-600],
     inert: %w[bg-amber-100 text-amber-600]
+  }
+
+  PILL_STATUS_COLOR_PALETTE = {
+    success: %w[bg-green-500],
+    failure: %w[bg-red-500],
+    ongoing: %w[bg-indigo-500],
   }
 
   def write_only(&block)
