@@ -70,6 +70,7 @@ class DeploymentRun < ApplicationRecord
     review_approved
     release_started
     released
+    review_failed
   ]
 
   STATES = {
@@ -83,14 +84,16 @@ class DeploymentRun < ApplicationRecord
     ready_to_release: "ready_to_release",
     rollout_started: "rollout_started",
     released: "released",
+    review_failed: "review_failed",
     failed: "failed"
   }
 
   READY_STATES = [STATES[:rollout_started], STATES[:ready_to_release], STATES[:released]]
+  STORE_SUBMISSION_STATES = READY_STATES + [STATES[:submitted_for_review], STATES[:review_failed]]
 
   enum status: STATES
   enum failure_reason: {
-    review_failed: "review_failed",
+    developer_rejected: "developer_rejected",
     invalid_release: "invalid_release",
     unknown_failure: "unknown_failure"
   }.merge(
@@ -134,11 +137,15 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :ready_to_release, after_commit: :mark_reviewed do
-      transitions from: :submitted_for_review, to: :ready_to_release
+      transitions from: [:submitted_for_review, :review_failed], to: :ready_to_release
     end
 
     event :engage_release, after_commit: :on_release_started do
       transitions from: [:uploaded, :ready_to_release], to: :rollout_started
+    end
+
+    event :fail_review, after_commit: :after_review_failure do
+      transitions from: :submitted_for_review, to: :review_failed
     end
 
     event :dispatch_fail, before: :set_reason, after_commit: :release_failed do
@@ -247,6 +254,11 @@ class DeploymentRun < ApplicationRecord
     notify!("Submitted for review!", :submit_for_review, notification_params)
     event_stamp!(reason: :submitted_for_review, kind: :notice, data: stamp_data)
     Deployments::AppStoreConnect::UpdateExternalReleaseJob.perform_async(id)
+  end
+
+  def after_review_failure
+    notify!("Review failed", :review_failed, notification_params)
+    event_stamp!(reason: :review_failed, kind: :error, data: stamp_data)
   end
 
   def get_upload_status(args)
@@ -431,6 +443,10 @@ class DeploymentRun < ApplicationRecord
 
   def production_release_happened?
     production_channel? && status.in?(READY_STATES)
+  end
+
+  def production_release_submitted?
+    production_channel? && status.in?(STORE_SUBMISSION_STATES)
   end
 
   private

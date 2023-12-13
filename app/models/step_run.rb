@@ -301,6 +301,12 @@ class StepRun < ApplicationRecord
       .any?(&:production_release_happened?)
   end
 
+  def production_release_submitted?
+    deployment_runs
+      .not_failed
+      .any?(&:production_release_submitted?)
+  end
+
   def relevant_changes
     if release.first_commit == commit && release.release_changelog.present?
       return release.release_changelog.merge_commit_messages if organization.merge_only_build_notes?

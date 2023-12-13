@@ -32,6 +32,7 @@ en:
           step_failed: "Step failed"
           submit_for_review: "Build submitted for review to App Store"
           review_approved: "Build review approved by App Store"
+          review_failed: "Build review rejected by App Store"
           staged_rollout_updated: "Staged rollout increased"
           release_scheduled: "Release scheduled"
           backmerge_failed: "Auto backmerge PR creation failed"
@@ -42,7 +43,7 @@ en:
       deployment_run:
         failure_reason:
           unknown_failure: "an unknown error, contact support!"
-          review_failed: "the store review failure"
+          developer_rejected: "the store version was rejected by you manually"
           app_not_found: "the app not being available in store"
           build_not_found: "the build not being available in store"
           missing_export_compliance: "the release missing export compliance"
