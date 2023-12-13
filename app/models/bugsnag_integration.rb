@@ -37,7 +37,8 @@ class BugsnagIntegration < ApplicationRecord
     sessions_with_errors: :unhandled_sessions_count,
     daily_users_with_errors: :accumulative_daily_users_with_unhandled,
     daily_users: :accumulative_daily_users_seen,
-    total_sessions_in_last_day: :total_sessions_count_in_last_24h
+    total_sessions_in_last_day: :total_sessions_count_in_last_24h,
+    external_release_id: :release_group_id
   }
 
   validate :correct_key, on: :create
@@ -96,8 +97,9 @@ class BugsnagIntegration < ApplicationRecord
     installation.find_release(project, release_stage_hack(platform), version, build_number, RELEASE_TRANSFORMATIONS)
   end
 
-  def dashboard_url(platform)
+  def dashboard_url(platform:, release_id:)
     return if project_url.blank?
+    return "#{project_url}/release_groups/#{release_id}" if release_id.present?
     "#{project_url}/overview?release_stage=#{release_stage_hack(platform)}"
   end
 

@@ -15,6 +15,7 @@
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
 #  deployment_run_id          :uuid             not null, indexed
+#  external_release_id        :string
 #
 class ReleaseHealthMetric < ApplicationRecord
   belongs_to :deployment_run
