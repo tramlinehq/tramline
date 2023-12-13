@@ -8,7 +8,7 @@ class Deployments::GoogleFirebase::UpdateUploadStatusJob
 
   sidekiq_retry_in do |count, ex|
     if ex.is_a?(Deployments::GoogleFirebase::Release::UploadNotComplete)
-      backoff_in(attempt: count, period: :minutes, type: :linear).to_i
+      backoff_in(attempt: count, period: :minutes, type: :static, factor: 2).to_i
     else
       elog(ex)
       :kill

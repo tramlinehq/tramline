@@ -96,7 +96,7 @@ describe Deployments::AppStoreConnect::UpdateExternalReleaseJob do
       it "retries if the build is not in terminal state" do
         expect(
           described_class.sidekiq_retry_in_block.call(1, Deployments::AppStoreConnect::Release::ExternalReleaseNotInTerminalState.new)
-        ).to be >= 600.seconds
+        ).to be >= 300.seconds
       end
 
       it "does not retry if there are unexpected errors" do
