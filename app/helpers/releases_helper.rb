@@ -72,6 +72,8 @@ module ReleasesHelper
         ["Failed to start release", :inert]
       when :submitted_for_review
         ["Submitted for review", :ongoing]
+      when :review_failed
+        ["Review rejected", :failure]
       when :ready_to_release
         ["Review approved", :ongoing]
       when :uploading
