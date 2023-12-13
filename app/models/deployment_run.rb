@@ -88,8 +88,8 @@ class DeploymentRun < ApplicationRecord
     failed: "failed"
   }
 
-  STORE_SUBMISSION_STATES = [STATES[:rollout_started], STATES[:ready_to_release], STATES[:released], STATES[:submitted_for_review], STATES[:review_failed]]
   READY_STATES = [STATES[:rollout_started], STATES[:ready_to_release], STATES[:released]]
+  STORE_SUBMISSION_STATES = READY_STATES + [STATES[:submitted_for_review], STATES[:review_failed]]
 
   enum status: STATES
   enum failure_reason: {
