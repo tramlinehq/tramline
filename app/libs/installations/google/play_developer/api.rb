@@ -23,11 +23,11 @@ module Installations
       set_client
     end
 
-    def upload(apk_path)
+    def upload(apk_path, skip_review)
       execute do
         edit = client.insert_edit(package_name)
         client.upload_edit_bundle(package_name, edit.id, upload_source: apk_path, content_type: CONTENT_TYPE)
-        client.commit_edit(package_name, edit.id)
+        client.commit_edit(package_name, edit.id, changes_not_sent_for_review: skip_review)
       end
     end
 
@@ -49,6 +49,16 @@ module Installations
           &.tracks
           &.map { |t| t.to_h }
           &.then { |tracks| Installations::Response::Keys.transform(tracks, transforms) }
+      end
+    end
+
+    def get_track(track_name, transforms)
+      execute do
+        edit = client.insert_edit(package_name)
+        client.get_edit_track(package_name, edit.id, track_name)
+          &.to_h
+          &.then { |track| Installations::Response::Keys.transform([track], transforms) }
+          &.first
       end
     end
 

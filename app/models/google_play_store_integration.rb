@@ -47,6 +47,11 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def rollout_release(channel, build_number, version, rollout_percentage, release_notes)
     GitHub::Result.new do
+      # error_body = {"error" => {"status" => "INVALID_ARGUMENT",
+      #                           "code" => 400,
+      #                           "message" => "Changes cannot be sent for review automatically. Please set the query parameter changesNotSentForReview to true. Once committed, the changes in this edit can be sent for review from the Google Play Console UI"}}
+      # error = Google::Apis::ClientError.new("Error", body: error_body.to_json)
+      # raise Installations::Google::PlayDeveloper::Error.new(error)
       installation.create_release(channel, build_number, version, rollout_percentage, release_notes)
     end
   end
@@ -64,14 +69,16 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   ALLOWED_ERRORS = [:build_exists_in_build_channel]
-  RETRYABLE_ERRORS = [:timeout, :duplicate_call, :unauthorized]
+  RETRYABLE_ERRORS = [:timeout, :duplicate_call, :unauthorized, :app_review_rejected]
 
   def upload(file)
     attempt = 1
+    skip_review = nil
     GitHub::Result.new do
-      installation.upload(file)
+      installation.upload(file, skip_review)
     rescue Installations::Google::PlayDeveloper::Error => ex
       attempt += 1
+      skip_review = true if ex.reason == :app_review_rejected
       retry if RETRYABLE_ERRORS.include?(ex.reason) && attempt <= 3
       raise ex unless ALLOWED_ERRORS.include?(ex.reason)
       elog(ex)
@@ -112,6 +119,15 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def draft_check?
     channel_data.find { |c| c[:name].in?(%w[alpha beta production]) && c[:releases].present? }.blank?
+  end
+
+  def build_added_to_public_track?(build_number)
+    channel_data&.any? { |c| c[:name].in?(%w[alpha beta production]) && build_number.in?(c[:releases].pluck(:build_number)) }
+  end
+
+  def build_present_in_channel?(channel, build_number)
+    track_data = installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS)
+    build_number.in?(track_data[:releases].pluck(:build_number))
   end
 
   def to_s

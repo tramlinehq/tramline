@@ -79,7 +79,9 @@ class StepRun < ApplicationRecord
     success: "success",
     cancelling: "cancelling",
     cancelled: "cancelled",
-    cancelled_before_start: "cancelled_before_start"
+    cancelled_before_start: "cancelled_before_start",
+    deployment_failed_with_sync_option: "deployment_failed_with_sync_option",
+    deployment_restarted: "deployment_restarted"
   }
 
   END_STATES = STATES.slice(
@@ -142,15 +144,22 @@ class StepRun < ApplicationRecord
     end
     event(:build_upload_failed) { transitions from: :build_ready, to: :build_unavailable }
     event(:start_deploy) { transitions from: [:build_available, :build_found_in_store, :build_ready], to: :deployment_started }
+    event(:restart_deploy, after_commit: :resume_deployments) do
+      transitions from: [:deployment_failed_with_sync_option], to: :deployment_restarted
+    end
 
     event(:fail_deploy) do
-      transitions from: :deployment_started, to: :deployment_failed
+      transitions from: [:deployment_started, :deployment_restarted], to: :deployment_failed
+    end
+
+    event(:fail_deployment_with_sync_option) do
+      transitions from: [:deployment_started, :deployment_restarted], to: :deployment_failed_with_sync_option
     end
 
     event(:finish) do
       after { event_stamp!(reason: :finished, kind: :success, data: stamp_data) }
       after { finalize_release }
-      transitions from: :deployment_started, to: :success
+      transitions from: [:deployment_started, :deployment_restarted], to: :success
     end
 
     event(:cancel, after_commit: -> { Releases::CancelWorkflowRunJob.perform_later(id) }) do
@@ -279,6 +288,11 @@ class StepRun < ApplicationRecord
     Triggers::Deployment.call(step_run: self, deployment: deployment)
   end
 
+  def resume_deployments
+    failed_deployment_run = deployment_runs.failed_with_sync_option.sole
+    failed_deployment_run.skip!
+  end
+
   def notification_params
     step.notification_params
       .merge(release_platform_run.notification_params)
@@ -347,6 +361,10 @@ class StepRun < ApplicationRecord
 
   def release_info
     slice(:build_version, :build_number, :updated_at, :platform)
+  end
+
+  def sync_store_status!
+    restart_deploy! if release_platform.store_provider.build_added_to_public_track?(build_number)
   end
 
   private

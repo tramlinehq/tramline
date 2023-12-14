@@ -97,7 +97,7 @@ module Installations
         status: "PERMISSION_DENIED",
         code: 403,
         message_matcher: /has already been used/i,
-        decorated_reason: :build_exists
+        decorated_reason: :build_exists_in_build_channel
       }
     ]
 

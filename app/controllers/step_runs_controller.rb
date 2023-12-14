@@ -2,7 +2,9 @@ class StepRunsController < SignedInApplicationController
   before_action :require_write_access!, only: %i[start retry_ci_workflow]
   before_action :set_release
   before_action :set_step, only: %i[start]
+  before_action :set_step_run, only: %i[retry_ci_workflow sync_store_status]
   before_action :ensure_startable, only: %i[start]
+  before_action :ensure_syncable, only: %i[sync_store_status]
 
   # FIXME: This action incorrectly consumes a step_id and not a step_run_id as the route suggests
   def start
@@ -12,18 +14,41 @@ class StepRunsController < SignedInApplicationController
   end
 
   def retry_ci_workflow
-    step_run = @release.step_runs.find(params[:id])
-    step_run.retry_ci!
+    @step_run.retry_ci!
     redirect_back fallback_location: root_path, notice: "CI workflow retried!"
   rescue
     error = "Failed to retry the CI workflow! Contact support if the issue persists."
     redirect_back fallback_location: root_path, flash: {error:}
   end
 
+  def sync_store_status
+    @step_run.sync_store_status!
+
+    if @step_run.deployment_started?
+      redirect_back fallback_location: root_path, notice: "Status updated from store, all good. Go ahead with rest of the release."
+    else
+      redirect_back fallback_location: root_path, notice: "You have not resolved anything, do it again. Ensure to submit the changes for review."
+    end
+  rescue
+    error = "Failed to sync the store status! Contact support if the issue persists."
+    redirect_back fallback_location: root_path, flash: {error:}
+  end
+
   private
+
+  def set_step_run
+    @step_run = @release.step_runs.find(params[:id])
+  end
 
   def ensure_startable
     unless @release.manually_startable_step?(@step)
+      redirect_back fallback_location: root_path,
+        flash: {error: "Cannot perform this operation. This step cannot be started."}
+    end
+  end
+
+  def ensure_syncable
+    unless @step_run.deployment_failed_with_sync_option?
       redirect_back fallback_location: root_path,
         flash: {error: "Cannot perform this operation. This step cannot be started."}
     end
