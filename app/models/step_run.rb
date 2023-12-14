@@ -176,7 +176,7 @@ class StepRun < ApplicationRecord
 
   delegate :release_platform, :release, :platform, to: :release_platform_run
   delegate :release_branch, :release_version, to: :release
-  delegate :train, to: :release_platform
+  delegate :train, :store_provider, to: :release_platform
   delegate :app, :ci_cd_provider, :unzip_artifact?, :notify!, to: :train
   delegate :organization, to: :app
   delegate :commit_hash, to: :commit
@@ -189,7 +189,7 @@ class StepRun < ApplicationRecord
   end
 
   def find_build
-    release_platform.store_provider.find_build(build_number)
+    store_provider.find_build(build_number)
   end
 
   def get_workflow_run
@@ -364,7 +364,8 @@ class StepRun < ApplicationRecord
   end
 
   def sync_store_status!
-    restart_deploy! if release_platform.store_provider.build_added_to_public_track?(build_number)
+    return unless deployment_failed_with_sync_option?
+    restart_deploy! if store_provider.build_present_in_public_track?(build_number)
   end
 
   private

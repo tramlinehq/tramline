@@ -23,7 +23,7 @@ module Installations
       set_client
     end
 
-    def upload(apk_path, skip_review)
+    def upload(apk_path, skip_review: nil)
       execute do
         edit = client.insert_edit(package_name)
         client.upload_edit_bundle(package_name, edit.id, upload_source: apk_path, content_type: CONTENT_TYPE)

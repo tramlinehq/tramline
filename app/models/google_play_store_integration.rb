@@ -75,7 +75,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     attempt = 1
     skip_review = nil
     GitHub::Result.new do
-      installation.upload(file, skip_review)
+      installation.upload(file, skip_review:)
     rescue Installations::Google::PlayDeveloper::Error => ex
       attempt += 1
       skip_review = true if ex.reason == :app_review_rejected
@@ -121,12 +121,13 @@ class GooglePlayStoreIntegration < ApplicationRecord
     channel_data.find { |c| c[:name].in?(%w[alpha beta production]) && c[:releases].present? }.blank?
   end
 
-  def build_added_to_public_track?(build_number)
+  def build_present_in_public_track?(build_number)
     channel_data&.any? { |c| c[:name].in?(%w[alpha beta production]) && build_number.in?(c[:releases].pluck(:build_number)) }
   end
 
   def build_present_in_channel?(channel, build_number)
     track_data = installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS)
+    return unless track_data
     build_number.in?(track_data[:releases].pluck(:build_number))
   end
 
