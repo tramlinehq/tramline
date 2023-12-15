@@ -242,11 +242,15 @@ class StepRun < ApplicationRecord
   end
 
   def in_progress?
-    on_track? || ci_workflow_triggered? || ci_workflow_started? || build_ready? || deployment_started?
+    on_track? || ci_workflow_triggered? || ci_workflow_started? || build_ready? || deployment_started? || deployment_restarted?
+  end
+
+  def blocked?
+    ci_workflow_failed? || ci_workflow_halted? || deployment_failed_with_sync_option?
   end
 
   def failed?
-    build_unavailable? || ci_workflow_unavailable? || ci_workflow_failed? || ci_workflow_halted? || deployment_failed?
+    build_unavailable? || ci_workflow_unavailable? || deployment_failed?
   end
 
   def done?

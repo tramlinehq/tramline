@@ -28,7 +28,7 @@ module ReleasesHelper
         ["In progress", :ongoing]
       when :build_ready
         ["Looking for build to deploy", :ongoing]
-      when :deployment_started
+      when :deployment_started, :deployment_restarted
         ["Deployments in progress", :ongoing]
       when :build_found_in_store
         ["Build found in store", :routine]
