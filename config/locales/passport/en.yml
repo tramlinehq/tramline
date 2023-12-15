@@ -34,7 +34,7 @@ en:
       build_not_found_in_store_html: 'Build <span class="emphasize">%{version}</span> was not found in the store'
       build_found_in_store_html: 'Build <span class="emphasize">%{version}</span> located in the store'
       deployment_restarted_html: 'Build <span class="emphasize">%{version}</span> review status was manually resolved from the store console, release resumed'
-      deployment_failed_with_sync_option_html: 'Build <span class="emphasize">%{version}</span> review status in the store needs to be manually resolved, release blocked'
+      failed_with_action_required_html: 'Build <span class="emphasize">%{version}</span> review status in the store needs to be manually resolved, release blocked'
       finished_html: 'Finished step <span class="emphasize">%{name}</span> for <span class="emphasize">%{sha}</span>'
     commit:
       created_html: 'New commit <span class="emphasize">%{sha}</span> has landed'

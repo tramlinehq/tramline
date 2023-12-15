@@ -46,7 +46,7 @@ module ReleasesHelper
         ["Build unavailable", :failure]
       when :deployment_failed
         ["Deployment failed", :failure]
-      when :deployment_failed_with_sync_option
+      when :failed_with_action_required
         ["Needs manual submission", :failure]
       when :cancelling
         ["Cancelling", :inert]
@@ -88,7 +88,7 @@ module ReleasesHelper
         ["Released", :success]
       when :failed
         ["Failed", :failure]
-      when :failed_with_sync_option
+      when :failed_with_action_required
         ["Needs manual submission", :failure]
       else
         ["Unknown", :neutral]

@@ -58,7 +58,7 @@ class StepRun < ApplicationRecord
     build_found_in_store
     deployment_restarted
     finished
-    deployment_failed_with_sync_option
+    failed_with_action_required
   ]
 
   # TODO: deprecate this
@@ -82,7 +82,7 @@ class StepRun < ApplicationRecord
     cancelling: "cancelling",
     cancelled: "cancelled",
     cancelled_before_start: "cancelled_before_start",
-    deployment_failed_with_sync_option: "deployment_failed_with_sync_option",
+    failed_with_action_required: "failed_with_action_required",
     deployment_restarted: "deployment_restarted"
   }
 
@@ -101,7 +101,7 @@ class StepRun < ApplicationRecord
   WORKFLOW_NOT_STARTED = [:on_track]
   WORKFLOW_IN_PROGRESS = [:ci_workflow_triggered, :ci_workflow_started]
   WORKFLOW_IMMUTABLE = STATES.keys - END_STATES - WORKFLOW_IN_PROGRESS - WORKFLOW_NOT_STARTED
-  FAILED_STATES = %w[ci_workflow_failed ci_workflow_halted build_not_found_in_store build_unavailable deployment_failed deployment_failed_with_sync_option]
+  FAILED_STATES = %w[ci_workflow_failed ci_workflow_halted build_not_found_in_store build_unavailable deployment_failed failed_with_action_required]
 
   enum status: STATES
 
@@ -148,7 +148,7 @@ class StepRun < ApplicationRecord
     event(:build_upload_failed) { transitions from: :build_ready, to: :build_unavailable }
     event(:start_deploy) { transitions from: [:build_available, :build_found_in_store, :build_ready], to: :deployment_started }
     event(:restart_deploy, after_commit: :resume_deployments) do
-      transitions from: [:deployment_failed_with_sync_option], to: :deployment_restarted
+      transitions from: [:failed_with_action_required], to: :deployment_restarted
     end
 
     event(:fail_deploy) do
@@ -156,7 +156,7 @@ class StepRun < ApplicationRecord
     end
 
     event :fail_deployment_with_sync_option, after_commit: :after_manual_submission_required do
-      transitions from: [:deployment_started, :deployment_restarted], to: :deployment_failed_with_sync_option
+      transitions from: [:deployment_started, :deployment_restarted], to: :failed_with_action_required
     end
 
     event(:finish) do
@@ -188,7 +188,7 @@ class StepRun < ApplicationRecord
   scope :not_failed, -> { where.not(status: FAILED_STATES) }
 
   def after_manual_submission_required
-    event_stamp!(reason: :deployment_failed_with_sync_option, kind: :error, data: stamp_data)
+    event_stamp!(reason: :failed_with_action_required, kind: :error, data: stamp_data)
     notify_on_failure!("manual submission required!")
   end
 
@@ -254,7 +254,7 @@ class StepRun < ApplicationRecord
   end
 
   def blocked?
-    ci_workflow_failed? || ci_workflow_halted? || deployment_failed_with_sync_option?
+    ci_workflow_failed? || ci_workflow_halted? || failed_with_action_required?
   end
 
   def failed?
@@ -302,7 +302,7 @@ class StepRun < ApplicationRecord
 
   def resume_deployments
     event_stamp!(reason: :deployment_restarted, kind: :notice, data: stamp_data)
-    failed_deployment_run = deployment_runs.failed_with_sync_option.sole
+    failed_deployment_run = deployment_runs.failed_with_action_required.sole
     failed_deployment_run.skip!
   end
 
@@ -318,7 +318,7 @@ class StepRun < ApplicationRecord
           commit_url: commit.url,
           artifact_download_link: build_artifact&.download_url,
           build_notes: build_notes,
-          manual_submission_required: status == STATES[:deployment_failed_with_sync_option]
+          manual_submission_required: status == STATES[:failed_with_action_required]
         }
       )
   end
@@ -378,7 +378,7 @@ class StepRun < ApplicationRecord
   end
 
   def sync_store_status!
-    return unless deployment_failed_with_sync_option?
+    return unless failed_with_action_required?
     restart_deploy! if store_provider.build_present_in_public_track?(build_number)
   end
 

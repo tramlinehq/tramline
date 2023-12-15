@@ -48,9 +48,9 @@ class StepRunsController < SignedInApplicationController
   end
 
   def ensure_syncable
-    unless @step_run.deployment_failed_with_sync_option?
+    unless @step_run.failed_with_action_required?
       redirect_back fallback_location: root_path,
-        flash: {error: "Cannot perform this operation. This step cannot be started."}
+        flash: {error: "Cannot perform this operation. This step does not require a manual submission."}
     end
   end
 

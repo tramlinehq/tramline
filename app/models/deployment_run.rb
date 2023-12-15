@@ -86,7 +86,7 @@ class DeploymentRun < ApplicationRecord
     rollout_started: "rollout_started",
     released: "released",
     review_failed: "review_failed",
-    failed_with_sync_option: "failed_with_sync_option",
+    failed_with_action_required: "failed_with_action_required",
     failed: "failed"
   }
 
@@ -151,12 +151,12 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :fail_with_sync_option, before: :set_reason do
-      transitions from: [:started, :prepared_release, :uploading, :uploaded, :submitted_for_review, :ready_to_release, :rollout_started, :failed_prepare_release, :failed_with_sync_option], to: :failed_with_sync_option
+      transitions from: [:started, :prepared_release, :uploading, :uploaded, :submitted_for_review, :ready_to_release, :rollout_started, :failed_prepare_release, :failed_with_action_required], to: :failed_with_action_required
       after { step_run.fail_deployment_with_sync_option! }
     end
 
     event :skip, after_commit: -> { event_stamp!(reason: :skipped, kind: :notice, data: stamp_data) } do
-      transitions from: :failed_with_sync_option, to: :released
+      transitions from: :failed_with_action_required, to: :released
       after { step_run.finish_deployment!(deployment) }
     end
 
