@@ -1,9 +1,32 @@
 class V2::DropdownComponent < V2::BaseComponent
-  DROPDOWN_ACTIONS = {popup_target: "element", action: "click->popup#toggle"}.freeze
-  BASE_BUTTON_OPTS = {scheme: :switcher, type: :action, size: :xxs, html_options: {data: DROPDOWN_ACTIONS}}.freeze
+  DROPDOWN_ACTIONS = { popup_target: "element", action: "click->popup#toggle" }.freeze
+  BASE_BUTTON_OPTS = { scheme: :switcher, type: :action, size: :xxs, html_options: { data: DROPDOWN_ACTIONS } }.freeze
+  STYLE = "z-30 w-52 bg-white shadow-md border border-gray-300 rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600".freeze
 
-  renders_one :button, ->(**args) { V2::ButtonComponent.new(**BASE_BUTTON_OPTS.deep_merge(args)) }
+  renders_one :button, ->(**args) do
+    args = args.merge(authz: @authz) # trickle down the auth setting to the button
+    V2::ButtonComponent.new(**BASE_BUTTON_OPTS.deep_merge(args))
+  end
   renders_many :item_groups, ->(list_style: nil) { ItemGroupComponent.new(list_style: list_style) }
+
+  def initialize(authz: true)
+    @authz = authz
+    @disabled = false
+  end
+
+  def popup_data_attrs
+    if disabled?
+      {}
+    else
+      {
+        data: {
+          controller: "popup",
+          popup_away_value: "true",
+          popup_target_selector_value: "[data-dropdown-reveal]"
+        }
+      }
+    end
+  end
 
   class ItemGroupComponent < V2::BaseComponent
     DROPDOWN_STYLE = "text-sm text-gray-700 dark:text-gray-200 leading-none font-medium"
@@ -49,7 +72,7 @@ class V2::DropdownComponent < V2::BaseComponent
       end
 
       def link_class
-        {class: @link[:class].presence || ITEM_STYLE}
+        { class: @link[:class].presence || ITEM_STYLE }
       end
 
       def link_params

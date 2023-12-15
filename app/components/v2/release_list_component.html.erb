@@ -16,15 +16,14 @@
   <% end %>
 
   <%= container.with_side_action do %>
-    <%= render V2::DropdownComponent.new do |dropdown| %>
+    <%= render V2::DropdownComponent.new(authz: false) do |dropdown| %>
       <% dropdown.with_button(html_options: { class: "-my-5" }).with_title_text do %>
         <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Switch</span>
       <% end %>
 
       <% dropdown.with_item_group do |group| %>
         <% app.trains.each do |t| %>
-          <% group.with_item(link: { path: app_train_path(app, t) },
-                             selected: train.id == t.id) do %>
+          <% group.with_item(link: { path: app_train_path(app, t) }, selected: train.id == t.id) do %>
             <%= t.name %>
           <% end %>
         <% end %>
@@ -51,18 +50,38 @@
       <% button.with_title_text.with_content("Prepare new release") %>
       <% dropdown.with_item_group do |group| %>
         <% if train.ongoing_release && train.upcoming_release_startable? %>
-          <% group.with_item(link: { path: app_train_releases_path(app, train) }) do %>
-            <%= start_upcoming_release_text %>
+          <% group.with_item do %>
+            <%= render V2::ButtonComponent.new(
+              scheme: :none,
+              size: :none,
+              label: start_upcoming_release_text,
+              options: app_train_releases_path(app, train),
+              type: :button) %>
           <% end %>
-          <% group.with_item(link: { path: app_train_releases_path(app, train) }) do %>
-            <%= start_upcoming_release_text(major: true) %>
+          <% group.with_item do %>
+            <%= render V2::ButtonComponent.new(
+              scheme: :none,
+              size: :none,
+              label: start_upcoming_release_text(major: true),
+              options: app_train_releases_path(app, train),
+              type: :button) %>
           <% end %>
         <% elsif @train.manually_startable? %>
           <% group.with_item(link: { path: app_train_releases_path(app, train) }) do %>
-            <%= start_release_text %>
+            <%= render V2::ButtonComponent.new(
+              scheme: :none,
+              size: :none,
+              label: start_release_text,
+              options: app_train_releases_path(app, train),
+              type: :button) %>
           <% end %>
           <% group.with_item(link: { path: app_train_releases_path(app, train) }) do %>
-            <%= start_release_text(major: true) %>
+            <%= render V2::ButtonComponent.new(
+              scheme: :none,
+              size: :none,
+              label: start_release_text(major: true),
+              options: app_train_releases_path(app, train),
+              type: :button) %>
           <% end %>
         <% end %>
       <% end %>
@@ -199,6 +218,7 @@
                 label: "Go to release",
                 options: release_path(run.id),
                 size: :sm,
+                authz: false,
                 type: :link) do |b|
                 b.with_icon("v2/arrow_right.svg")
               end %>

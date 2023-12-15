@@ -22,6 +22,7 @@
             options: release_path(release.id),
             size: :sm,
             html_options: { class: "-mr-2" },
+            authz: false,
             type: :link) do |b|
             b.with_icon("v2/arrow_right.svg")
           end %>
@@ -46,6 +47,7 @@
                                              scheme: :link,
                                              type: :link_external,
                                              options: release.branch_url,
+                                             authz: false,
                                              size: :xxs,
                                              arrow: :none) do |b|
             b.with_icon(vcs_icon, size: :sm)
@@ -56,6 +58,7 @@
                                              scheme: :link,
                                              type: :link_external,
                                              options: release.tag_url,
+                                             authz: false,
                                              size: :xxs,
                                              arrow: :none) do |b|
             b.with_icon(vcs_icon, size: :sm)
@@ -74,10 +77,12 @@
             <% component.with_data_set(title: "RCs GENERATED", uppercase_title: false, lines: ["about 7 hours"]).with_icon("v2/archive.svg") %>
           <% end %>
 
-          <%= render V2::ReleaseMonitoringComponent.new(
-            deployment_run: run.store_releases.last,
-            metrics: [:stability, :adoption_rate],
-            show_bundle_id: false) %>
+          <% if release.finished? %>
+            <%= render V2::ReleaseMonitoringComponent.new(
+              deployment_run: run.store_releases.last,
+              metrics: [:stability, :adoption_rate],
+              show_bundle_id: false) %>
+          <% end %>
         </div>
       <% end %>
     </div>

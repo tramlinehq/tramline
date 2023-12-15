@@ -1,4 +1,4 @@
-<div data-controller="reveal" data-reveal-away-value="true" data-reveal-target-selector-value="[data-modal-reveal]">
+<%= content_tag(:div, reveal_data_attrs) do %>
   <%= button %>
   <div data-modal-reveal
        hidden
@@ -15,6 +15,7 @@
               scheme: :naked_icon,
               type: :action,
               size: :none,
+              authz: false,
               html_options: { class: "ms-auto inline-flex justify-center items-center", data: { action: "reveal#hide" } }) do |b|
               b.with_icon("close_icon")
             end %>
@@ -25,4 +26,4 @@
     </div>
     <div class="bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40"></div>
   </div>
-</div>
+<% end %>

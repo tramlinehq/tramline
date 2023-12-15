@@ -9,7 +9,7 @@
 
       <div class="flex flex-wrap justify-between items-center py-3 px-4 pb-5 sm:pb-3 lg:px-6">
         <div class="flex items-center mb-2 sm:mb-0">
-          <%= render V2::DropdownComponent.new do |dropdown| %>
+          <%= render V2::DropdownComponent.new(authz: false) do |dropdown| %>
             <% button = dropdown.with_button %>
             <% button.with_icon("building.svg") %>
             <% button.with_title_text do %>
@@ -41,7 +41,7 @@
           <% if default_app %>
             <%= inline_svg("layer_separator.svg", classname: "w-3 h-3 text-gray-500 dark:text-gray-400 mx-2") %>
 
-            <%= render V2::DropdownComponent.new do |dropdown| %>
+            <%= render V2::DropdownComponent.new(authz: false) do |dropdown| %>
               <% button = dropdown.with_button(size: :xs) %>
               <% button.with_icon("https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png", size: :xl_3) %>
               <% button.with_title_text do %>
@@ -115,7 +115,7 @@
               <% end %>
             <% end %>
 
-            <%= render V2::ModalComponent.new(title: "Store Status", size: :xxsmall) do |modal| %>
+            <%= render V2::ModalComponent.new(title: "Store Status", size: :xxsmall, authz: false) do |modal| %>
               <% modal.with_button(label: "Store Status", scheme: :light, type: :action, size: :xxs, arrow: :none, html_options: { class: "ml-2" })
                       .with_icon("v2/storage.svg", size: :md) %>
               <% modal.with_body do %>
@@ -132,13 +132,14 @@
           options: "https://docs.tramline.app",
           type: :link_external,
           size: :none,
+          authz: false,
           html_options: { class: "ml-2" }) do |b|
           b.with_icon("book.svg", rounded: false)
         end %>
 
         <span class="mx-4 w-px h-5 bg-gray-200 dark:bg-gray-600"></span>
 
-        <%= render V2::DropdownComponent.new do |dropdown| %>
+        <%= render V2::DropdownComponent.new(authz: false) do |dropdown| %>
           <% dropdown.with_button(size: :none, html_options: { class: "flex" }, scheme: :avatar_icon)
                      .with_icon("https://flowbite.com/docs/images/people/profile-picture-5.jpg", size: :xl_3) %>
 

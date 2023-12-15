@@ -1,4 +1,4 @@
-<div data-controller="popup" data-popup-away-value="true" data-popup-target-selector-value="[data-dropdown-reveal]">
+<%= content_tag(:div, popup_data_attrs) do %>
   <%= button %>
   <div data-dropdown-reveal
        hidden
@@ -7,4 +7,4 @@
       <%= group %>
     <% end %>
   </div>
-</div>
+<% end %>

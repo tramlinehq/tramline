@@ -32,11 +32,9 @@ class V2::ButtonComponent < V2::BaseComponent
       class: "bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600",
       icon: true
     },
-    disabled: {
-      class: "#{BASE_OPTS} opacity-30 disabled cursor-not-allowed bg-transparent",
-      disabled: true
-    }
+    none: { class: "" },
   }
+  DISABLED_STYLE = "opacity-30 disabled cursor-not-allowed outline-none focus:outline-none"
   DROPDOWN_STYLE = "p-1 text-sm text-gray-700 dark:text-gray-200"
   SCHEMES = BUTTON_OPTIONS.keys
   SIZES = {
@@ -52,7 +50,7 @@ class V2::ButtonComponent < V2::BaseComponent
   renders_one :title_text
   renders_one :icon, V2::IconComponent
 
-  def initialize(label: nil, scheme: :switcher, type: :button, tooltip: nil, size: :xxs, options: nil, html_options: nil, arrow: nil)
+  def initialize(label: nil, scheme: :switcher, type: :button, tooltip: nil, size: :xxs, options: nil, html_options: nil, arrow: nil, authz: true)
     arrow = (arrow.nil? && type == :action) ? :double : :none
     raise ArgumentError, "Invalid scheme" unless SCHEMES.include?(scheme)
     raise ArgumentError, "Invalid button type" unless TYPES.include?(type)
@@ -68,9 +66,12 @@ class V2::ButtonComponent < V2::BaseComponent
     @options = options
     @html_options = html_options
     @arrow_type = arrow
+    @authz = authz
+    @disabled = false
   end
 
   def before_render
+    super
     @html_options = apply_html_options(@html_options)
   end
 
@@ -87,6 +88,7 @@ class V2::ButtonComponent < V2::BaseComponent
   def link_to_component
     classname = ""
     classname = "ml-2" unless icon_only?
+    @options = "javascript:void(0);" if disabled?
 
     _link_to(link_external?, @options, @html_options) do
       concat(icon) if icon?
@@ -137,17 +139,21 @@ class V2::ButtonComponent < V2::BaseComponent
     V2::TooltipComponent.new(text: @tooltip) if @tooltip
   end
 
+  # TODO: This is unused & incomplete; port it from ButtonHelper
+  # It adds a spinning loader to some types of buttons, perhaps all?
+  # It also disables the button while it is showing the spinning loader
   def apply_button_loader(value)
     content_tag(:span, value, class: "group-disabled:hidden") +
       content_tag(:span, "Processing...", class: "hidden group-disabled:inline group-disabled:opacity-60")
   end
 
   def apply_html_options(options)
-    new_options = BUTTON_OPTIONS[get_scheme]
+    new_options = BUTTON_OPTIONS[@scheme]
     options = options ? options.dup : {}
     options[:class] ||= ""
     options[:class] << " #{new_options[:class]}"
     options[:class] << " #{SIZES[@size]}"
+    options[:class] << " #{DISABLED_STYLE}" if disabled?
     options[:class] = options[:class].squish
 
     options[:data] ||= {}
@@ -168,13 +174,8 @@ class V2::ButtonComponent < V2::BaseComponent
 
   def link_external? = @type == :link_external
 
-  def get_scheme
-    @scheme = :disabled unless helpers.writer?
-    @scheme
-  end
-
   def icon_only?
-    BUTTON_OPTIONS.dig(get_scheme, :icon)
+    BUTTON_OPTIONS.dig(@scheme, :icon)
   end
 
   memoize def arrow
