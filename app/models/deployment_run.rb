@@ -71,6 +71,7 @@ class DeploymentRun < ApplicationRecord
     release_started
     released
     review_failed
+    skipped
   ]
 
   STATES = {
@@ -154,7 +155,7 @@ class DeploymentRun < ApplicationRecord
       after { step_run.fail_deployment_with_sync_option! }
     end
 
-    event(:skip) do
+    event :skip, after_commit: -> { event_stamp!(reason: :skipped, kind: :notice, data: stamp_data) } do
       transitions from: :failed_with_sync_option, to: :released
       after { step_run.finish_deployment!(deployment) }
     end

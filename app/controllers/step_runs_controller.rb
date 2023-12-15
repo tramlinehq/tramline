@@ -24,10 +24,10 @@ class StepRunsController < SignedInApplicationController
   def sync_store_status
     @step_run.sync_store_status!
 
-    if @step_run.deployment_started?
-      redirect_back fallback_location: root_path, notice: "Status updated from store, all good. Go ahead with rest of the release."
+    if @step_run.deployment_restarted?
+      redirect_back fallback_location: root_path, notice: "Status resolved on the console UI, the release train will move forward."
     else
-      redirect_back fallback_location: root_path, notice: "You have not resolved anything, do it again. Ensure to submit the changes for review."
+      redirect_back fallback_location: root_path, flash: {error: "Status remains unresolved on the console UI. Please make sure to submit the changes for review in a public track."}
     end
   rescue
     error = "Failed to sync the store status! Contact support if the issue persists."

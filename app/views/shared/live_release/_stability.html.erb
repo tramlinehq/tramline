@@ -60,13 +60,16 @@
             <% end %>
 
             <% if step_run&.deployment_failed_with_sync_option? && release.on_track? %>
-              <%= authz_button_to :blue,
-                                  "Sync store status",
-                                  sync_store_status_release_step_run_path(release, step_run),
-                                  method: :patch,
-                                  data: { turbo_method: :patch,
-                                          turbo_confirm: "Please ensure that you have manually submitted the build for review by creating a release in at least one public (alpha, beta, production) channel. Continue?" },
-                                  class: "btn-xs mb-2" %>
+              <div class="flex flex-col gap-y-2">
+                <%= render "shared/note_box", type: :error, message: "Due to a previous rejection, new changes cannot be submitted to the store from Tramline. Please submit the current build (#{step_run.build_number}) for review manually from the Google Play Console by creating a release in a public track (eg. Closed testing, Open testing). Once that is done, you can sync the store status with Tramline and move forward with the release train." %>
+                <%= authz_button_to :blue,
+                                    "Sync store status",
+                                    sync_store_status_release_step_run_path(release, step_run),
+                                    method: :patch,
+                                    data: { turbo_method: :patch,
+                                            turbo_confirm: "Please ensure that you have manually submitted the build for review by creating a release in at least one public (alpha, beta, production) channel. Continue?" },
+                                    class: "btn-xs mb-2" %>
+              </div>
             <% end %>
           </div>
 

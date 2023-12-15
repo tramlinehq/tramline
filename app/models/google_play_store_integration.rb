@@ -47,11 +47,6 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def rollout_release(channel, build_number, version, rollout_percentage, release_notes)
     GitHub::Result.new do
-      # error_body = {"error" => {"status" => "INVALID_ARGUMENT",
-      #                           "code" => 400,
-      #                           "message" => "Changes cannot be sent for review automatically. Please set the query parameter changesNotSentForReview to true. Once committed, the changes in this edit can be sent for review from the Google Play Console UI"}}
-      # error = Google::Apis::ClientError.new("Error", body: error_body.to_json)
-      # raise Installations::Google::PlayDeveloper::Error.new(error)
       installation.create_release(channel, build_number, version, rollout_percentage, release_notes)
     end
   end

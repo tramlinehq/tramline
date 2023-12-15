@@ -7,5 +7,17 @@
         "text": "The *<%= @step_type %>* step *<%= @step_name %>* failed because – <%= @step_fail_reason %> :rotating_light:"
       }
     }
+    <% if @manual_submission_required %>
+    ,{
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "<%= manual_submission_required_text %>",
+          "emoji": false
+        }
+      ]
+    }
+    <% end %>
   ]
 }
