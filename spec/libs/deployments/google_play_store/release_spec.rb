@@ -165,6 +165,15 @@ describe Deployments::GooglePlayStore::Release do
         allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
         expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :rollout_started?)
       end
+
+      it "marks the run as failed with manual action required when release fails due to app review rejection" do
+        error_body = {"error" => {"status" => "INVALID_ARGUMENT",
+                                  "code" => 400,
+                                  "message" => "Changes cannot be sent for review automatically. Please set the query parameter changesNotSentForReview to true. Once committed, the changes in this edit can be sent for review from the Google Play Console UI"}}
+        error = Google::Apis::ClientError.new("Error", body: error_body.to_json)
+        allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new { raise Installations::Google::PlayDeveloper::Error.new(error) })
+        expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :failed_with_action_required?)
+      end
     end
 
     context "when no staged rollout" do
@@ -198,6 +207,15 @@ describe Deployments::GooglePlayStore::Release do
       it "marks the run as released" do
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
         expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :released?)
+      end
+
+      it "marks the run as failed with manual action required when release fails due to app review rejection" do
+        error_body = {"error" => {"status" => "INVALID_ARGUMENT",
+                                  "code" => 400,
+                                  "message" => "Changes cannot be sent for review automatically. Please set the query parameter changesNotSentForReview to true. Once committed, the changes in this edit can be sent for review from the Google Play Console UI"}}
+        error = Google::Apis::ClientError.new("Error", body: error_body.to_json)
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new { raise Installations::Google::PlayDeveloper::Error.new(error) })
+        expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :failed_with_action_required?)
       end
     end
 
