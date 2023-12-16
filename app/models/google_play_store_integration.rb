@@ -36,6 +36,9 @@ class GooglePlayStoreIntegration < ApplicationRecord
   DEVELOPER_URL_TEMPLATE =
     Addressable::Template.new("https://play.google.com/console/u/0/developers/{project_id}")
   PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/play-console.png".freeze
+  MAX_RETRY_ATTEMPTS = 3
+  ALLOWED_ERRORS = [:build_exists_in_build_channel]
+  RETRYABLE_ERRORS = [:timeout, :duplicate_call, :unauthorized, :app_review_rejected]
 
   def access_key
     StringIO.new(json_key)
@@ -46,37 +49,28 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def rollout_release(channel, build_number, version, rollout_percentage, release_notes)
-    GitHub::Result.new do
-      installation.create_release(channel, build_number, version, rollout_percentage, release_notes)
+    execute_with_retry do |skip_review|
+      installation.create_release(channel, build_number, version, rollout_percentage, release_notes, skip_review:)
     end
   end
 
   def create_draft_release(channel, build_number, version, release_notes)
-    GitHub::Result.new do
-      installation.create_draft_release(channel, build_number, version, release_notes)
+    execute_with_retry do |skip_review|
+      installation.create_draft_release(channel, build_number, version, release_notes, skip_review:)
     end
   end
 
   def halt_release(channel, build_number, version, rollout_percentage)
-    GitHub::Result.new do
-      installation.halt_release(channel, build_number, version, rollout_percentage)
+    execute_with_retry do |skip_review|
+      installation.halt_release(channel, build_number, version, rollout_percentage, skip_review:)
     end
   end
 
-  ALLOWED_ERRORS = [:build_exists_in_build_channel]
-  RETRYABLE_ERRORS = [:timeout, :duplicate_call, :unauthorized, :app_review_rejected]
-
   def upload(file)
-    attempt = 1
-    skip_review = nil
-    GitHub::Result.new do
+    execute_with_retry do |skip_review|
       installation.upload(file, skip_review:)
     rescue Installations::Google::PlayDeveloper::Error => ex
-      attempt += 1
-      skip_review = true if ex.reason == :app_review_rejected
-      retry if RETRYABLE_ERRORS.include?(ex.reason) && attempt <= 3
       raise ex unless ALLOWED_ERRORS.include?(ex.reason)
-      elog(ex)
     end
   end
 
@@ -191,6 +185,19 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   private
+
+  def execute_with_retry
+    attempt = 1
+    skip_review = nil
+    GitHub::Result.new do
+      yield(skip_review)
+    rescue Installations::Google::PlayDeveloper::Error => ex
+      attempt += 1
+      skip_review = true if ex.reason == :app_review_rejected
+      retry if RETRYABLE_ERRORS.include?(ex.reason) && attempt <= MAX_RETRY_ATTEMPTS
+      raise ex
+    end
+  end
 
   def project_id
     JSON.parse(json_key)["project_id"]&.split("-")&.third
