@@ -87,6 +87,7 @@ Rails.application.routes.draw do
           member do
             post :start
             patch :retry_ci_workflow
+            patch :sync_store_status
           end
 
           resources :deployments, only: [] do

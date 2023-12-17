@@ -69,12 +69,14 @@ module Deployments
       def start_release!
         return unless google_play_store_integration?
 
+        skip_release = run.step_run.deployment_restarted? && provider.build_present_in_channel?(deployment_channel, build_number)
+
         if staged_rollout?
           run.engage_release!
-          create_draft_release!
+          create_draft_release!(skip_release:)
         else
           notes = production_channel? ? release_notes : build_notes
-          fully_release!(notes)
+          fully_release!(notes, skip_release:)
         end
       end
 
@@ -122,7 +124,9 @@ module Deployments
 
       private
 
-      def fully_release!(notes)
+      def fully_release!(notes, skip_release: false)
+        return run.complete! if skip_release
+
         result = provider.rollout_release(
           deployment_channel,
           build_number,
@@ -138,7 +142,9 @@ module Deployments
         end
       end
 
-      def create_draft_release!
+      def create_draft_release!(skip_release: false)
+        return run.create_staged_rollout!(config: staged_rollout_config) if skip_release
+
         result = provider.create_draft_release(
           deployment_channel,
           build_number,

@@ -28,6 +28,10 @@ FactoryBot.define do
       status { "deployment_started" }
     end
 
+    trait :deployment_restarted do
+      status { "deployment_restarted" }
+    end
+
     trait :success do
       status { "success" }
     end

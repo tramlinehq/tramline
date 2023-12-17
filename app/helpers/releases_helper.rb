@@ -28,7 +28,7 @@ module ReleasesHelper
         ["In progress", :ongoing]
       when :build_ready
         ["Looking for build to deploy", :ongoing]
-      when :deployment_started
+      when :deployment_started, :deployment_restarted
         ["Deployments in progress", :ongoing]
       when :build_found_in_store
         ["Build found in store", :routine]
@@ -46,6 +46,8 @@ module ReleasesHelper
         ["Build unavailable", :failure]
       when :deployment_failed
         ["Deployment failed", :failure]
+      when :failed_with_action_required
+        ["Needs manual submission", :failure]
       when :cancelling
         ["Cancelling", :inert]
       when :cancelled
@@ -86,6 +88,8 @@ module ReleasesHelper
         ["Released", :success]
       when :failed
         ["Failed", :failure]
+      when :failed_with_action_required
+        ["Needs manual submission", :failure]
       else
         ["Unknown", :neutral]
       end

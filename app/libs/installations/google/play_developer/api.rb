@@ -23,11 +23,11 @@ module Installations
       set_client
     end
 
-    def upload(apk_path)
+    def upload(apk_path, skip_review: nil)
       execute do
         edit = client.insert_edit(package_name)
         client.upload_edit_bundle(package_name, edit.id, upload_source: apk_path, content_type: CONTENT_TYPE)
-        client.commit_edit(package_name, edit.id)
+        client.commit_edit(package_name, edit.id, changes_not_sent_for_review: skip_review)
       end
     end
 
@@ -52,7 +52,17 @@ module Installations
       end
     end
 
-    def create_release(track_name, version_code, release_version, rollout_percentage, release_notes)
+    def get_track(track_name, transforms)
+      execute do
+        edit = client.insert_edit(package_name)
+        client.get_edit_track(package_name, edit.id, track_name)
+          &.to_h
+          &.then { |track| Installations::Response::Keys.transform([track], transforms) }
+          &.first
+      end
+    end
+
+    def create_release(track_name, version_code, release_version, rollout_percentage, release_notes, skip_review: nil)
       @track_name = track_name
       @version_code = version_code
       @release_version = release_version
@@ -62,11 +72,11 @@ module Installations
       execute do
         edit = client.insert_edit(package_name)
         edit_track(edit, active_release)
-        client.commit_edit(package_name, edit.id)
+        client.commit_edit(package_name, edit.id, changes_not_sent_for_review: skip_review)
       end
     end
 
-    def create_draft_release(track_name, version_code, release_version, release_notes)
+    def create_draft_release(track_name, version_code, release_version, release_notes, skip_review: nil)
       @track_name = track_name
       @version_code = version_code
       @release_version = release_version
@@ -75,11 +85,11 @@ module Installations
       execute do
         edit = client.insert_edit(package_name)
         edit_track(edit, draft_release)
-        client.commit_edit(package_name, edit.id)
+        client.commit_edit(package_name, edit.id, changes_not_sent_for_review: skip_review)
       end
     end
 
-    def halt_release(track_name, version_code, release_version, rollout_percentage)
+    def halt_release(track_name, version_code, release_version, rollout_percentage, skip_review: nil)
       @track_name = track_name
       @version_code = version_code
       @release_version = release_version
@@ -88,7 +98,7 @@ module Installations
       execute do
         edit = client.insert_edit(package_name)
         edit_track(edit, halted_release)
-        client.commit_edit(package_name, edit.id)
+        client.commit_edit(package_name, edit.id, changes_not_sent_for_review: skip_review)
       end
     end
 

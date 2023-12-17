@@ -33,6 +33,8 @@ en:
       build_unavailable_html: 'Build <span class="emphasize">%{version}</span> is not available'
       build_not_found_in_store_html: 'Build <span class="emphasize">%{version}</span> was not found in the store'
       build_found_in_store_html: 'Build <span class="emphasize">%{version}</span> located in the store'
+      deployment_restarted_html: 'Build <span class="emphasize">%{version}</span> review status was manually resolved from the store console, release resumed'
+      failed_with_action_required_html: 'Build <span class="emphasize">%{version}</span> review status in the store needs to be manually resolved, release blocked'
       finished_html: 'Finished step <span class="emphasize">%{name}</span> for <span class="emphasize">%{sha}</span>'
     commit:
       created_html: 'New commit <span class="emphasize">%{sha}</span> has landed'
@@ -46,6 +48,7 @@ en:
       review_approved_html: 'Review for release for <span class="emphasize">%{version}</span> approved by the store'
       release_started_html: 'Started the release of <span class="emphasize">%{version}</span> to <span class="emphasize">%{provider}</span> in <span class="emphasize">%{chan}</span>'
       released_html: 'Finished releasing <span class="emphasize">%{version}</span> to <span class="emphasize">%{provider}</span> in <span class="emphasize">%{chan}</span>'
+      skipped_html: 'Skipped releasing <span class="emphasize">%{version}</span> to <span class="emphasize">%{provider}</span> in <span class="emphasize">%{chan}</span> as it was manually overridden'
     staged_rollout:
       started_html: 'Staged release started with <span class="emphasize">%{rollout_percentage}%</span>'
       paused_html: 'Staged release paused at <span class="emphasize">%{rollout_percentage}%</span>'

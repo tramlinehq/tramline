@@ -71,6 +71,7 @@ class DeploymentRun < ApplicationRecord
     release_started
     released
     review_failed
+    skipped
   ]
 
   STATES = {
@@ -85,6 +86,7 @@ class DeploymentRun < ApplicationRecord
     rollout_started: "rollout_started",
     released: "released",
     review_failed: "review_failed",
+    failed_with_action_required: "failed_with_action_required",
     failed: "failed"
   }
 
@@ -146,6 +148,16 @@ class DeploymentRun < ApplicationRecord
 
     event :fail_review, after_commit: :after_review_failure do
       transitions from: :submitted_for_review, to: :review_failed
+    end
+
+    event :fail_with_sync_option, before: :set_reason do
+      transitions from: [:started, :prepared_release, :uploading, :uploaded, :submitted_for_review, :ready_to_release, :rollout_started, :failed_prepare_release, :failed_with_action_required], to: :failed_with_action_required
+      after { step_run.fail_deployment_with_sync_option! }
+    end
+
+    event :skip, after_commit: -> { event_stamp!(reason: :skipped, kind: :notice, data: stamp_data) } do
+      transitions from: :failed_with_action_required, to: :released
+      after { step_run.finish_deployment!(deployment) }
     end
 
     event :dispatch_fail, before: :set_reason, after_commit: :release_failed do
@@ -423,7 +435,11 @@ class DeploymentRun < ApplicationRecord
   def fail_with_error(error)
     elog(error)
     if error.is_a?(Installations::Error)
-      dispatch_fail!(reason: error.reason)
+      if error.reason == :app_review_rejected
+        fail_with_sync_option!(reason: error.reason)
+      else
+        dispatch_fail!(reason: error.reason)
+      end
     else
       dispatch_fail!
     end
