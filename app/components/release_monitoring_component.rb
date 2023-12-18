@@ -4,7 +4,7 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   attr_reader :deployment_run
 
   delegate :adoption_rate, to: :release_data
-  delegate :app, :release_health_rules, to: :deployment_run
+  delegate :app, :release_health_rules, :platform, to: :deployment_run
   delegate :monitoring_provider, to: :app
   delegate :current_user, to: :helpers
 
@@ -17,7 +17,7 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def monitoring_provider_url
-    monitoring_provider.dashboard_url(deployment_run.platform)
+    monitoring_provider.dashboard_url(platform:, release_id: release_data&.external_release_id)
   end
 
   def store_provider
