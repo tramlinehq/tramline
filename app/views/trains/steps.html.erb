@@ -1,7 +1,8 @@
 <%= render V2::TabbedContainerComponent.new(title: @train.name,
                                             turbo_frame: dom_id(@train, :edit_train),
                                             tab_config: @tab_configuration) do |container| %>
+
   <% container.with_tab do %>
-    <%= render partial: "notification_settings/all" %>
+    <%= render 'trains/all_steps', app: @app, train: @train %>
   <% end %>
 <% end %>

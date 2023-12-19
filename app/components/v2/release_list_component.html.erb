@@ -98,19 +98,6 @@
     end %>
   <% end %>
 
-
-  <% if train.send_notifications? %>
-    <% container.with_sub_action do %>
-      <%= render V2::ButtonComponent.new(
-        scheme: :supporting,
-        label: "Configure Notifications",
-        options: app_train_notification_settings_path(app, train),
-        type: :link) do |b|
-        b.with_icon("bell.svg")
-      end %>
-    <% end %>
-  <% end %>
-
   <% if train.activatable? %>
     <% container.with_sub_action do %>
       <%= render V2::ButtonComponent.new(

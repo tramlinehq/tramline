@@ -1,0 +1,6 @@
+<%= render partial: 'shared/errors', locals: { resource: @notification_setting } %>
+<% if @notification_settings.present? %>
+  <%= render NotificationSettingsComponent.new(train: @train, notification_settings: @notification_settings) %>
+<% else %>
+  <p>Enable notification for the app and the train to configure notification settings.</p>
+<% end %>

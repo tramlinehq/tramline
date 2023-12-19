@@ -70,7 +70,9 @@
     <div class="grid grid-cols-2 justify-between mt-8 gap-x-2">
       <% release.release_platform_runs.each do |run| %>
         <div class="flex flex-col gap-y-2">
-          <%= render V2::BuildInfoComponent.new(run.last_successful_deployment_run.first) %>
+          <% if run.last_successful_deployment_run %>
+            <%= render V2::BuildInfoComponent.new(run.last_successful_deployment_run&.first) %>
+          <% end %>
           <%= render V2::HorizontalDataSetComponent.new do |component| %>
             <% component.with_data_set(title: "Time in review phase", lines: ["about 7 hours"]).with_icon("v2/clock.svg") %>
             <% component.with_data_set(title: "Time in release phase", lines: ["about 7 hours"]).with_icon("v2/clock.svg") %>

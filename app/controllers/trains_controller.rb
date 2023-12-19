@@ -4,7 +4,8 @@ class TrainsController < SignedInApplicationController
 
   before_action :require_write_access!, only: %i[new create edit update destroy activate deactivate replicate]
   around_action :set_time_zone
-  before_action :set_train, only: %i[show edit update destroy activate deactivate replicate]
+  before_action :set_train, only: %i[show edit update destroy activate deactivate replicate steps]
+  before_action :set_tab_configuration, only: %i[edit steps]
   before_action :validate_integration_status, only: %i[new create]
   before_action :set_notification_channels, only: %i[new create edit update]
 
@@ -18,6 +19,21 @@ class TrainsController < SignedInApplicationController
   end
 
   def edit
+    respond_to do |format|
+      format.html do |variant|
+        variant.none { render :edit }
+        variant.turbo_frame { render :edit }
+      end
+    end
+  end
+
+  def steps
+    respond_to do |format|
+      format.html do |variant|
+        variant.none { render :steps }
+        variant.turbo_frame { render :steps }
+      end
+    end
   end
 
   def create
@@ -84,6 +100,14 @@ class TrainsController < SignedInApplicationController
 
   def set_train
     @train = @app.trains.friendly.find(params[:id])
+  end
+
+  def set_tab_configuration
+    @tab_configuration = [
+      [1, "General", edit_app_train_path(@app, @train)],
+      [2, "Steps", steps_app_train_path(@app, @train)],
+      ([3, "Notification Settings", app_train_notification_settings_path(@app, @train)] if @train.send_notifications?)
+    ].compact
   end
 
   def train_params

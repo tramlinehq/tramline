@@ -1,48 +1,41 @@
-<article data-controller="reveal">
-  <div class="text-xl text-slate-600 font-medium mt-2 mb-1">Tag Your Releases</div>
-  <div class="text-sm mt-1 mb-6">
-    By default, a tag is created at the end of the release with the final version of the release.<br/>
-    You can turn off creation of tag. Or, you can add an optional suffix to your tags.
-  </div>
-  <section data-controller="toggle-switch"
-           data-toggle-switch-on-label-value="Release Tag enabled"
-           data-toggle-switch-off-label-value="Release Tag disabled">
-    <div class="flex items-center">
-      <div class="form-switch">
-        <%= form.check_box :tag_releases,
-                           { id: "tag_releases-switch",
-                             class: "sr-only",
-                             data: { action: "toggle-switch#change reveal#toggle",
-                                     toggle_switch_target: "checkbox" } },
-                           "true", "false" %>
-        <label class="bg-slate-400" for="tag_releases-switch">
-          <span class="bg-white shadow-sm" aria-hidden="true"></span>
-          <span class="sr-only">Switch label</span>
-        </label>
-      </div>
-
-      <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"></div>
+<section data-controller="toggle-switch reveal"
+         data-reveal-target-selector-value="[data-tag-suffix-reveal]"
+         data-toggle-switch-on-label-value="Release Tag enabled"
+         data-toggle-switch-off-label-value="Release Tag disabled">
+  <div class="flex items-center">
+    <div class="form-switch">
+      <%= form.check_box :tag_releases,
+                         { id: "tag_releases-switch",
+                           class: "sr-only",
+                           data: { action: "toggle-switch#change reveal#toggle",
+                                   toggle_switch_target: "checkbox" } },
+                         "true", "false" %>
+      <label class="bg-slate-400" for="tag_releases-switch">
+        <span class="bg-white shadow-sm" aria-hidden="true"></span>
+        <span class="sr-only">Switch label</span>
+      </label>
     </div>
 
-    <section class="mt-6" data-reveal
-             <%= "hidden" unless @train.tag_releases? %> data-controller="help-text">
-      <div data-controller="domain--release-suffix-help"
-           data-domain--release-suffix-help-version-value="<%= @train.version_current || @train.version_seeded_with || "1.0.0" %>"
-           data-domain--release-suffix-help-version-suffix-current-value="<%= @train.tag_suffix %>"
-           data-domain--release-suffix-help-prefix-value="v">
-        <%= form.label :tag_suffix, class: "block text-sm font-medium mb-1" %>
-        <%= form.text_field :tag_suffix,
-                            class: "form-input w-full",
-                            placeholder: "Eg: nightly",
-                            autocomplete: "off",
-                            data: { domain__release_suffix_help_target: "input",
-                                    action: "domain--release-suffix-help#set" } %>
-        <div class="text-sm mt-1">
-          This is appended to the <strong>tag name</strong> of the release, as follows:&nbsp;
-          <span class="font-mono" data-domain--release-suffix-help-target="helpText"></span>
-        </div>
+    <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"></div>
+  </div>
+
+  <section class="mt-6" data-tag-suffix-reveal
+           <%= "hidden" unless @train.tag_releases? %> data-controller="help-text">
+    <div data-controller="domain--release-suffix-help"
+         data-domain--release-suffix-help-version-value="<%= @train.version_current || @train.version_seeded_with || "1.0.0" %>"
+         data-domain--release-suffix-help-version-suffix-current-value="<%= @train.tag_suffix %>"
+         data-domain--release-suffix-help-prefix-value="v">
+      <%= form.label :tag_suffix, class: "block text-sm font-medium mb-1" %>
+      <%= form.text_field :tag_suffix,
+                          class: "form-input w-full",
+                          placeholder: "Eg: nightly",
+                          autocomplete: "off",
+                          data: { domain__release_suffix_help_target: "input",
+                                  action: "domain--release-suffix-help#set" } %>
+      <div class="text-sm mt-1">
+        This is appended to the <strong>tag name</strong> of the release, as follows:&nbsp;
+        <span class="font-mono" data-domain--release-suffix-help-target="helpText"></span>
       </div>
-    </section>
+    </div>
   </section>
-  <div class="border-t border-dashed border-slate-200 pb-8 mt-8"></div>
-</article>
+</section>

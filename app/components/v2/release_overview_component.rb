@@ -1,5 +1,4 @@
 class V2::ReleaseOverviewComponent < V2::BaseReleaseComponent
-
   def initialize(release)
     @release = release
     super(@release)

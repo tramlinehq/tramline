@@ -1,8 +1,41 @@
 <% if editable %>
   <div class="p-1">
     <% if step.train.active_runs.none? %>
-      <%= authz_link_to :neutral, edit_app_train_platform_step_path(step.app, step.train, step.release_platform, step) do %>
-        <%= inline_svg("edit.svg", classname: "w-4") %>
+      <%= render V2::ModalComponent.new(title: "Edit step") do |modal| %>
+        <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none)
+                .with_icon("edit.svg", size: :md) %>
+        <% modal.with_body do %>
+          <%= form_with(model: step,
+                        url: app_train_platform_step_path(step.app, step.train, step.release_platform, step),
+                        builder: ButtonHelper::AuthzForms,
+                        method: :patch) do |form| %>
+
+            <%= render 'steps/form', form: form, step: step, release_platform: step.release_platform, ci_actions: step.train.ci_cd_provider.workflows, train: step.train %>
+
+            <div class="mb-8">
+              <div class="sm:flex sm:justify-between sm:items-center mt-8">
+                <p class="font-bold text-xl">
+                  <%= Deployment.display.pluralize %>
+                </p>
+              </div>
+
+              <% if step.deployments.size > 1 %>
+                <div class="text-sm mt-1">
+                  Automatic distribution to all non-production distribution channels without any manual approval is
+                  <mark><%= auto_deploy_status(step) %></mark>
+                </div>
+              <% end %>
+
+              <div class="mt-4">
+                <%= render partial: "shared/deployments", locals: { step: step, show_deployment_status: false, platform_run: nil, step_run: nil } %>
+              </div>
+            </div>
+
+            <div class="mt-5">
+              <%= form.authz_submit :blue, "Update" %>
+            </div>
+          <% end %>
+        <% end %>
       <% end %>
     <% else %>
       <div class="flex self-end">

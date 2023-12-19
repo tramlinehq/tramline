@@ -1,12 +1,11 @@
 <div>
-  <%= form.label :notification_channel, "Notification Channel", class: "block text-sm font-medium mb-1" %>
-  <%= form.select :notification_channel,
-                  options_for_select(
-                    display_channels(channels) { |chan| "#" + chan[:name] },
-                    current.to_json
-                  ),
-                  { class: "form-select w-full" },
-                  { data: { controller: "input-select" } } %>
+  <%= form.labeled_select :notification_channel, "Notification Channel",
+                          options_for_select(
+                            display_channels(channels) { |chan| "#" + chan[:name] },
+                            current.to_json
+                          ),
+                          {},
+                          { data: { controller: "input-select" } } %>
 
   <div class="text-sm mt-4">
     To receive notifications in <strong>private</strong> channels, <code>/invite @Tramline</code> into your

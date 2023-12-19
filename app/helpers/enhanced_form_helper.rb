@@ -25,30 +25,37 @@ module EnhancedFormHelper
       @template.render(button_component)
     end
 
+    def label_only(method, label_text)
+      label(method, label_text, class: LABEL_CLASSES)
+    end
+
+    def text_field_without_label(method, placeholder, options = {})
+      text_field(method, {class: TEXT_FIELD_CLASSES, placeholder:, required: true}
+                           .merge(options))
+    end
+
     def labeled_text_field(method, label_text, options = {})
-      label(method, label_text, class: LABEL_CLASSES) +
-        text_field(method, {class: TEXT_FIELD_CLASSES, placeholder: "Type #{label_text.downcase}", required: true}
-                             .merge(options))
+      label_only(method, label_text) + text_field_without_label(method, "Enter #{label_text.downcase}", options)
     end
 
     def labeled_number_field(method, label_text, options = {})
-      label(method, label_text, class: LABEL_CLASSES) +
-        number_field(method, {class: TEXT_FIELD_CLASSES, placeholder: "Type #{label_text.downcase}", required: true}
+      label_only(method, label_text) +
+        number_field(method, {class: TEXT_FIELD_CLASSES, placeholder: "Enter #{label_text.downcase}", required: true}
                                .merge(options))
     end
 
     def labeled_select(method, label_text, select_options, options = {}, html_options = {})
-      label(method, label_text, class: LABEL_CLASSES) +
+      label_only(method, label_text) +
         select(method, select_options, options, {class: SELECT_CLASSES}.merge(html_options))
     end
 
     def labeled_tz_select(method, label_text, select_options, options = {}, html_options = {})
-      label(method, label_text, class: LABEL_CLASSES) +
+      label_only(method, label_text) +
         time_zone_select(method, select_options, options, {class: SELECT_CLASSES}.merge(html_options))
     end
 
     def labeled_textarea(method, label_text, options = {})
-      label(method, label_text, class: LABEL_CLASSES) +
+      label_only(method, label_text) +
         text_area(method, {rows: 4, class: TEXT_AREA_CLASSES, placeholder: "Write #{label_text.downcase} here"}
                             .merge(options))
     end

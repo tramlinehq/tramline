@@ -1,10 +1,3 @@
-<article>
-  <div class="text-xl text-slate-600 font-medium mt-2">Build Queue</div>
-
-  <div class="text-sm mt-1 mb-6">
-    Control when commits are applied to trigger new builds in your release.<br/>By default, commits on the release branch are auto-applied.
-  </div>
-
   <div data-controller="domain--build-queue-help toggle-switch"
        data-toggle-switch-on-label-value="<%= TrainsHelper::BUILD_QUEUE_ENABLED_LABEL %>"
        data-toggle-switch-off-label-value="<%= TrainsHelper::BUILD_QUEUE_DISABLED_LABEL %>">
@@ -58,5 +51,3 @@
       </div>
     </div>
   </div>
-  <div class="border-t border-dashed border-slate-200 pb-8 mt-8"></div>
-</article>

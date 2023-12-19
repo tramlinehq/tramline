@@ -8,7 +8,7 @@
       </div>
 
       <div class="mt-4">
-        <%= form.hidden_field :kind, value: @step.kind %>
+        <%= form.hidden_field :kind, value: step.kind %>
         <%= form.label :name, class: "block text-sm font-medium mb-1" %>
         <%= form.text_field :name, class: "form-input w-full", placeholder: "Enter step name..", required: true %>
       </div>
@@ -18,11 +18,11 @@
         <%= form.text_area :description, class: "form-input w-full", placeholder: "Describe your step..." %>
       </div>
 
-      <% if @release_platform.android? %>
+      <% if release_platform.android? %>
         <div class="mt-4">
           <div data-controller="domain--release-suffix-help"
-               data-domain--release-suffix-help-version-value="<%= @train.version_current %>"
-               data-domain--release-suffix-help-version-suffix-current-value="<%= @step.release_suffix %>">
+               data-domain--release-suffix-help-version-value="<%= train.version_current %>"
+               data-domain--release-suffix-help-version-suffix-current-value="<%= step.release_suffix %>">
             <%= form.label :release_suffix, class: "block text-sm font-medium mb-1" %>
             <%= form.text_field :release_suffix,
                                 class: "form-input w-full",
@@ -50,8 +50,8 @@
         <%= form.label :ci_cd_channel, "CI workflow", class: "block text-sm font-medium mb-1" %>
         <div class="control">
           <%= form.select :ci_cd_channel,
-                          options_for_select(display_channels(@ci_actions) { |chan| chan[:name] },
-                                             @step.ci_cd_channel.to_json),
+                          options_for_select(display_channels(ci_actions) { |chan| chan[:name] },
+                                             step.ci_cd_channel.to_json),
                           { class: "form-select" },
                           data: { controller: "input-select" } %>
         </div>

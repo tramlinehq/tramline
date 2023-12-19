@@ -1,28 +1,21 @@
-<article hidden data-branching-selector-target="backmerge">
-  <div class="text-xl text-slate-600 font-medium mt-2">Continuous Backmerge</div>
-  <div class="text-sm mt-1 mb-6">
-    Enable backmerging of release branch commits into the working branch as they arrive.<br/> By default, merge happens at the end of the release.
-  </div>
-  <section data-controller="toggle-switch"
-           data-toggle-switch-on-label-value="Continuous Backmerge enabled"
-           data-toggle-switch-off-label-value="Continuous Backmerge disabled">
+<section data-controller="toggle-switch"
+         data-toggle-switch-on-label-value="Continuous Backmerge enabled"
+         data-toggle-switch-off-label-value="Continuous Backmerge disabled">
 
-    <div class="flex items-center">
-      <div class="form-switch">
-        <%= form.check_box :continuous_backmerge_enabled,
-                           { id: "release-backmerge-switch",
-                             class: "sr-only",
-                             data: { action: "toggle-switch#change",
-                                     toggle_switch_target: "checkbox" } },
-                           "true", "false" %>
-        <label class="bg-slate-400" for="release-backmerge-switch">
-          <span class="bg-white shadow-sm" aria-hidden="true"></span>
-          <span class="sr-only">Switch label</span>
-        </label>
-      </div>
-
-      <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"></div>
+  <div class="flex items-center">
+    <div class="form-switch">
+      <%= form.check_box :continuous_backmerge_enabled,
+                         { id: "release-backmerge-switch",
+                           class: "sr-only",
+                           data: { action: "toggle-switch#change",
+                                   toggle_switch_target: "checkbox" } },
+                         "true", "false" %>
+      <label class="bg-slate-400" for="release-backmerge-switch">
+        <span class="bg-white shadow-sm" aria-hidden="true"></span>
+        <span class="sr-only">Switch label</span>
+      </label>
     </div>
-  </section>
-  <div class="border-t border-dashed border-slate-200 pb-8 mt-8"></div>
-</article>
+
+    <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"></div>
+  </div>
+</section>

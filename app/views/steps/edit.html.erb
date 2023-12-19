@@ -8,7 +8,7 @@
                 builder: ButtonHelper::AuthzForms,
                 method: :patch) do |form| %>
 
-    <%= render 'form', form: form %>
+    <%= render "form", form: form, step: @step, release_platform: @release_platform, ci_actions: @ci_actions, train: @train %>
 
     <div class="mb-8">
       <div class="sm:flex sm:justify-between sm:items-center mt-8">
