@@ -1,30 +1,29 @@
-<% form_url = app_google_play_store_integration_path(@app) %>
+<% form_url = app_google_play_store_integration_path(app) %>
 
-<span data-controller="visibility">
-  <%= decorated_button_tag :neutral, "Connect", data: { turbo: "false", action: "visibility#toggle" } %>
+<%= form_with(model: [app, integration], builder: EnhancedFormHelper::AuthzForm, url: form_url) do |form| %>
+  <%= form.hidden_field :category, value: category %>
 
-  <%= modal_for("Add Service Account JSON Key") do %>
-    <%= form_with(model: [@app, integration], builder: ButtonHelper::AuthzForms, url: form_url) do |form| %>
-      <%= form.hidden_field :category, value: category %>
-      <%= form.fields_for :providable do |subform| %>
-        <%= subform.hidden_field :type, value: integration.providable_type %>
-        <%= subform.file_field :json_key_file, accept: 'application/json' %>
-      <% end %>
+  <%= form.fields_for :providable do |subform| %>
+    <%= subform.hidden_field :type, value: integration.providable_type %>
+    <%= subform.file_field :json_key_file, accept: "application/json" %>
+  <% end %>
 
-      <div class="flex items-center mt-5 mb-5" data-controller="reveal">
-        <%= form.authz_submit :blue, "Create", class: "flex", data: { action: "reveal#toggle" } %>
+  <div class="flex items-center mt-5 mb-5" data-controller="reveal">
+    <%= form.authz_submit "Create",
+                          "plus.svg",
+                          scheme: :default,
+                          size: :xs,
+                          html_options: { data: { action: "reveal#toggle" } } %>
 
-        <div class="flex text-white ml-5">
+    <div class="flex text-white ml-5">
           <span class="text-slate-500" data-reveal hidden>
             Verifying
             <%= render partial: "shared/loading" %>
           </span>
-        </div>
-      </div>
-    <% end %>
+    </div>
+  </div>
+<% end %>
 
-    <%= link_to_external "How to create a service account?",
-                         "https://docs.tramline.app/integrations/distribution/play_store",
-                         class: "underline text-slate-500 items-end" %>
-  <% end %>
-</span>
+<%= link_to_external "How to create a service account?",
+                     "https://docs.tramline.app/integrations/distribution/play_store",
+                     class: "underline text-slate-500 items-end" %>

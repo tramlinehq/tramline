@@ -1,41 +1,32 @@
-<% form_url = app_bugsnag_integration_path(@app) %>
+<% form_url = app_bugsnag_integration_path(app) %>
 
-<span data-controller="visibility">
-  <%= decorated_button_tag :neutral, { data: { turbo: "false", action: "visibility#toggle" } } do %>
-    Connect
+<%= form_with(model: [app, integration], url: form_url, builder: EnhancedFormHelper::AuthzForm) do |form| %>
+  <%= form.hidden_field :category, value: category %>
+
+  <%= form.fields_for :providable do |subform| %>
+    <%= subform.hidden_field :type, value: integration.providable_type %>
+    <%= subform.text_field :access_token, placeholder: "Paste here..." %>
   <% end %>
 
-  <%= modal_for("Add Personal Auth Token") do %>
-    <%= form_with(model: [@app, integration],
-                  url: form_url,
-                  builder: ButtonHelper::AuthzForms) do |form| %>
-      <%= form.hidden_field :category, value: category %>
+  <div class="flex items-center mt-5 mb-5" data-controller="reveal">
+    <%= form.authz_submit "Create",
+                          "plus.svg",
+                          scheme: :default,
+                          size: :xs,
+                          html_options: { data: { action: "reveal#toggle", turbo: false } } %>
 
-      <%= form.fields_for :providable do |subform| %>
-        <%= subform.hidden_field :type, value: integration.providable_type %>
-        <%= subform.text_field :access_token, placeholder: "Paste here..." %>
-      <% end %>
-
-      <div class="flex items-center mt-5 mb-5" data-controller="reveal">
-        <%= form.authz_submit :blue,
-                              "Create",
-                              class: "flex",
-                              data: { action: "reveal#toggle" } %>
-
-        <div class="flex text-white ml-5">
+    <div class="flex text-white ml-5">
           <span class="text-slate-500" data-reveal hidden>
             Verifying
             <%= render partial: "shared/loading" %>
           </span>
-        </div>
-      </div>
-    <% end %>
+    </div>
+  </div>
+<% end %>
 
-    <span>
-      Personal Auth Tokens for the Data Access API can be generated in the My Account section of
-      <%= link_to_external "Bugsnag settings.",
-                           "https://app.bugsnag.com/settings/my-account",
-                           class: "underline text-slate-500 items-end" %>
-    </span>
-  <% end %>
+<span>
+  Personal Auth Tokens for the Data Access API can be generated in the My Account section of
+  <%= link_to_external "Bugsnag settings.",
+                       "https://app.bugsnag.com/settings/my-account",
+                       class: "underline text-slate-500 items-end" %>
 </span>

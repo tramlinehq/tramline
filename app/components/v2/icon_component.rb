@@ -8,17 +8,20 @@ class V2::IconComponent < V2::BaseComponent
     xl_3: "w-8 h-8"
   }
 
-  def initialize(icon, rounded: true, size: :base)
+  def initialize(icon, rounded: true, size: :base, classes: "")
     raise ArgumentError, "Icon size must be one of #{SIZES.keys.join(', ')}" unless SIZES.keys.include?(size)
     @icon = icon
     @size = size
     @rounded = rounded
+    @classes = classes
   end
 
   attr_reader :icon
 
   def classname
-    "inline-flex #{size_class} #{rounded_class}"
+    classname = "inline-flex #{size_class} #{rounded_class}"
+    classname += " #{@classes}" if @classes
+    classname
   end
 
   def size_class

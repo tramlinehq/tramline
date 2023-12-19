@@ -1,5 +1,5 @@
 <% component = V2::EnhancedTurboFrameComponent.new(dom_id(@app, :edit_app)) %>
 <% component.with_loading_indicator %>
 <%= render component do %>
-  <%= render partial: "integrations/all" %>
+  <%= render V2::IntegrationListComponent.new(@app, @integrations_by_categories) %>
 <% end %>

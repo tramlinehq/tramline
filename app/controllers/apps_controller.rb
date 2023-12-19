@@ -23,9 +23,9 @@ class AppsController < SignedInApplicationController
 
   def edit
     @tab_configuration = [
-      [1, "General", edit_app_path(@app)],
-      [2, "Install Integrations", app_integrations_path(@app)],
-      [3, "Configure Integrations", edit_app_app_config_path(@app)]
+      [1, "General", edit_app_path(@app), "v2/cog.svg"],
+      [2, "Integrations", app_integrations_path(@app), "v2/blocks.svg"],
+      [3, "Configure Integrations", edit_app_app_config_path(@app), "v2/blocks.svg"]
     ]
 
     respond_to do |format|

@@ -9,7 +9,7 @@
           data-controller="activation"
           data-activation-active-value="<%= SELECTED_TAB_STYLE %>"
           data-activation-inactive-value="<%= TAB_STYLE %>">
-        <% sorted_configs.each do |(_position, name, path)| %>
+        <% sorted_configs.each do |(_position, name, path, icon)| %>
           <li class="me-2">
             <a href="<%= path %>"
                data-activation-target="target"
@@ -18,6 +18,7 @@
                data-turbo-frame="<%= frame %>"
                class="<%= style(path) %>"
                aria-selected="false">
+              <%= render V2::IconComponent.new(icon, size: :md, classes: "me-2") %>
               <%= name %>
             </a>
           </li>

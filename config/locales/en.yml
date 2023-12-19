@@ -10,7 +10,7 @@ en:
       bitrise_integration: "Bitrise"
       bugsnag_integration: "Bugsnag"
       google_play_store_integration: "Google Play Store"
-      app_store_integration: "App Store Connect & TestFlight"
+      app_store_integration: "App Store & TestFlight"
       gitlab_integration: "GitLab"
       github_integration: "GitHub"
       google_firebase_integration: "Firebase App Distribution"

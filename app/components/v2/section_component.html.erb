@@ -3,13 +3,20 @@
     <%= content %>
   </section>
 <% else %>
-  <section class="my-8">
-    <div class="flex gap-5 items-center">
+  <section class="my-10 space-y-8">
+    <div class="flex gap-x-5 items-center">
       <h1 class="text-xl font-semibold text-neutral-800 dark:text-white"><%= title %></h1>
       <div class="flex-1 h-full">
-        <div class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700 w-full m-0"></div>
+        <div class="h-px my-4 bg-gray-200 border-0 dark:bg-gray-700 w-full m-0"></div>
       </div>
     </div>
+
+    <% if subtitle.present? %>
+        <span class="text-sm text-neutral-500 dark:text-white">
+          <%= subtitle %>
+        </span>
+    <% end %>
+
     <%= content %>
   </section>
 <% end %>
