@@ -8,18 +8,17 @@
     <%= subform.text_field :access_token, placeholder: "Paste here..." %>
   <% end %>
 
-  <div class="flex items-center mt-5 mb-5" data-controller="reveal">
+  <div class="flex justify-start items-center my-5" data-controller="reveal">
     <%= form.authz_submit "Create",
                           "plus.svg",
                           scheme: :default,
                           size: :xs,
                           html_options: { data: { action: "reveal#toggle" } } %>
 
-    <div class="flex text-white ml-5">
-          <span class="text-slate-500" data-reveal hidden>
-            Verifying
-            <%= render partial: "shared/loading" %>
-          </span>
+    <div class="ml-5">
+      <div hidden data-reveal>
+        <%= render V2::LoadingIndicatorComponent.new(text: "Verifying...") %>
+      </div>
     </div>
   </div>
 <% end %>

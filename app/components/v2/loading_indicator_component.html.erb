@@ -1,5 +1,21 @@
-<div class="inline-flex w-fit my-6 turbo-frame-loader">
+<div class="inline-flex w-fit turbo-frame-loader">
   <div class="px-3 py-1 text-xs font-medium leading-none text-center text-blue-800 bg-blue-200 rounded-full <%= pulse %> dark:bg-blue-900 dark:text-blue-200">
-    <%= text %>
+    <% if @typewriter_only %>
+      <svg class="fill-current text-blue-800" viewBox="0 0 15 3" width="25" height="10">
+        <circle cx="1.5" cy="1.5" r="1.5">
+          <animate attributeName="opacity" dur="1s" values="0;1;0" repeatCount="indefinite" begin="0.1"/>
+        </circle>
+
+        <circle cx="7.5" cy="1.5" r="1.5">
+          <animate attributeName="opacity" dur="1s" values="0;1;0" repeatCount="indefinite" begin="0.2"/>
+        </circle>
+
+        <circle cx="13.5" cy="1.5" r="1.5">
+          <animate attributeName="opacity" dur="1s" values="0;1;0" repeatCount="indefinite" begin="0.3"/>
+        </circle>
+      </svg>
+    <% else %>
+      <%= text %>
+    <% end %>
   </div>
 </div>
