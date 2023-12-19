@@ -2,33 +2,37 @@
   <span><%= title %></span>
 </h1>
 
-<div class="mt-5">
-  <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
-    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center"
-        data-controller="activation"
-        data-activation-active-value="<%= SELECTED_TAB_STYLE %>"
-        data-activation-inactive-value="<%= TAB_STYLE %>">
-      <% sorted_configs.each do |(_position, name, path)| %>
-        <li class="me-2">
-          <a href="<%= path %>"
-             data-activation-target="target"
-             data-action="click->activation#toggle"
-             data-turbo-action="replace"
-             data-turbo-frame="<%= frame %>"
-             class="<%= style(path) %>"
-             aria-selected="false">
-            <%= name %>
-          </a>
-        </li>
-      <% end %>
-    </ul>
+<div data-controller="reveal">
+  <div class="mt-5">
+    <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+      <ul class="flex flex-wrap -mb-px text-sm font-medium text-center"
+          data-controller="activation"
+          data-activation-active-value="<%= SELECTED_TAB_STYLE %>"
+          data-activation-inactive-value="<%= TAB_STYLE %>">
+        <% sorted_configs.each do |(_position, name, path)| %>
+          <li class="me-2">
+            <a href="<%= path %>"
+               data-activation-target="target"
+               data-action="click->activation#toggle"
+               data-turbo-action="replace"
+               data-turbo-frame="<%= frame %>"
+               class="<%= style(path) %>"
+               aria-selected="false">
+              <%= name %>
+            </a>
+          </li>
+        <% end %>
+      </ul>
+    </div>
   </div>
-</div>
 
-<div id="tab-content">
-  <% tabs.each do |tab| %>
-    <turbo-frame id="<%= frame %>">
-      <%= tab %>
-    </turbo-frame>
-  <% end %>
+  <div id="tab-content">
+    <% tabs.each do |tab| %>
+      <% component = V2::EnhancedTurboFrameComponent.new(frame, classes: "with-turbo-frame-loader") %>
+      <% component.with_loading_indicator %>
+      <%= render component do %>
+        <%= tab %>
+      <% end %>
+    <% end %>
+  </div>
 </div>

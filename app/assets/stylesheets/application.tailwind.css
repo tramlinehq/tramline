@@ -13,6 +13,23 @@
   }
 }
 
+turbo-frame.with-turbo-frame-loader {
+  display: block;
+}
+
+turbo-frame.with-turbo-frame-loader .turbo-frame-loader {
+  display: none;
+}
+
+turbo-frame.with-turbo-frame-loader[busy] > .turbo-frame-loader {
+  opacity: 1;
+  display: block;
+}
+
+turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
+  opacity: .2;
+}
+
 /* Override color of turbo progress bar */
 .turbo-progress-bar {
   background-color: orangered;

@@ -1,3 +1,4 @@
 <%= turbo_frame_tag dom_id(@app, :edit_app) do %>
+  <%= render V2::LoadingIndicatorComponent.new %>
   <%= render partial: "integrations/all" %>
 <% end %>
