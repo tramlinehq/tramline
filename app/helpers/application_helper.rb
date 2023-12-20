@@ -14,7 +14,8 @@ module ApplicationHelper
     success: %w[bg-green-500],
     failure: %w[bg-red-500],
     ongoing: %w[bg-indigo-500],
-    inert: %w[bg-amber-500]
+    inert: %w[bg-amber-500],
+    neutral: %w[bg-slate-500]
   }
 
   def write_only(&block)

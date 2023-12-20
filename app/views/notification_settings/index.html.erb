@@ -2,6 +2,6 @@
                                             turbo_frame: dom_id(@train, :edit_train),
                                             tab_config: @tab_configuration) do |container| %>
   <% container.with_tab do %>
-    <%= render partial: "notification_settings/all" %>
+    <%= render NotificationSettingsComponent.new(train: @train, settings: @notification_settings) %>
   <% end %>
 <% end %>
