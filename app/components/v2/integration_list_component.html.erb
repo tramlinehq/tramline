@@ -1,7 +1,7 @@
 <% @integrations_by_categories.each do |category, integrations| %>
   <%= render V2::SectionComponent.new(style: :titled,
                                       title: Integration.human_enum_name(:category, category),
-                                      subtitle: Integration::CATEGORY_DESCRIPTIONS[category.to_sym].downcase) do %>
+                                      subtitle: Integration::CATEGORY_DESCRIPTIONS[category.to_sym].downcase) do |sc| %>
     <div id="<%= category %>">
       <div class="grid grid-cols-12 gap-6 mt-4">
         <% integrations.each do |integration| %>
@@ -9,6 +9,18 @@
         <% end %>
       </div>
     </div>
+
+    <% sc.with_sidenote do %>
+      <%= render V2::ModalComponent.new(title: "Configure #{Integration.human_enum_name(:category, category)}") do |modal| %>
+        <% modal.with_button(label: "Configure", scheme: :light, type: :action, size: :xxs, arrow: :none)
+                .with_icon("v2/cog.svg", size: :md) %>
+        <% modal.with_body do %>
+          <%= tag.turbo_frame id: "#{category}_config", src: edit_app_app_config_path(@app, integration_category: category), loading: :lazy do %>
+            <%= render V2::LoadingIndicatorComponent.new(skeleton_only: true) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
   <% end %>
 <% end %>
 

@@ -118,6 +118,11 @@ class GitlabIntegration < ApplicationRecord
     nil
   end
 
+  def further_setup?
+    return true if integration.version_control?
+    false
+  end
+
   def find_or_create_webhook!(id:, train_id:)
     GitHub::Result.new do
       if id

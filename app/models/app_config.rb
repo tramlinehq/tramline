@@ -66,6 +66,10 @@ class AppConfig < ApplicationRecord
     app.integrations.monitoring_provider&.further_setup?
   end
 
+  def further_code_repository_setup?
+    app.integrations.vcs_provider.further_setup?
+  end
+
   private
 
   def firebase_ready?

@@ -1,0 +1,36 @@
+<%= render V2::EnhancedTurboFrameComponent.new("#{@integration_category}_config") do %>
+  <% if @app.bitrise_connected? %>
+    <%= form_with(model: [@app, @config],
+                  url: app_app_config_path(@app),
+                  builder: EnhancedFormHelper::AuthzForm,
+                  method: :patch) do |form| %>
+      <section class="border-t border-dashed pb-8">
+        <div class="my-8">
+          <h2 class="font-bold text-xl">
+            <%= image_tag "integrations/logo_bitrise.png", title: "Bitrise", width: 35, class: "pb-2" %>
+            Bitrise
+          </h2>
+        </div>
+
+        <div class="grid gap-5 md:grid-cols-2">
+          <% if @ci_cd_apps.present? %>
+            <div class="mb-4">
+              <%= form.label :bitrise_project_id, "App Name", class: "block text-sm font-medium mb-1" %>
+              <%= form.select :bitrise_project_id,
+                              options_for_select(
+                                display_channels(@ci_cd_apps) { |app| "#{app[:name]} (#{app[:id]})" },
+                                @config.bitrise_project_id.to_json
+                              ),
+                              { class: "form-select" },
+                              data: { controller: "input-select" } %>
+            </div>
+          <% end %>
+        </div>
+      </section>
+
+      <%= form.authz_submit "Update", "plus.svg" %>
+    <% end %>
+  <% else %>
+    <%= render partial: "empty_state" %>
+  <% end %>
+<% end %>

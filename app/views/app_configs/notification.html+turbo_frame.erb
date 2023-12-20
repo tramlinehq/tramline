@@ -1,0 +1,14 @@
+<%= render V2::EnhancedTurboFrameComponent.new("#{@integration_category}_config") do %>
+  <% if @app.notifications_set_up? %>
+    <%= form_with(model: [@app, @config],
+                  url: app_app_config_path(@app),
+                  builder: EnhancedFormHelper::AuthzForm,
+                  method: :patch) do |form| %>
+      <div>
+        <div class="text-xl text-slate-600 font-medium mt-2 mb-4">Notifications</div>
+        <%= render partial: "shared/notifications_form",
+                   locals: { form:, app: @app, channels: @notification_channels, current: @config.notification_channel } %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
