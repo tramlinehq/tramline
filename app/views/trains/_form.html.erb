@@ -3,7 +3,6 @@
 <%= form_with(model: [app, train],
               url: url,
               builder: EnhancedFormHelper::AuthzForm) do |form| %>
-
   <div data-controller="branching-selector"
        data-branching-selector-domain--release-schedule-help-outlet="#release-schedule">
     <%= render V2::FormComponent.new do |form_component| %>

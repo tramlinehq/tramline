@@ -3,21 +3,23 @@
                 url: app_app_config_path(@app),
                 builder: EnhancedFormHelper::AuthzForm,
                 method: :patch) do |form| %>
-    <section>
-      <div class="grid gap-5 md:grid-cols-2 pb-8">
-        <div>
-          <%= form.label :code_repository, "Code Repository", class: "block text-sm font-medium mb-1" %>
-          <%= form.select :code_repository,
-                          options_for_select(
-                            display_channels(@code_repositories) { |chan| chan[:full_name] },
-                            @config.code_repository.to_json
-                          ),
-                          {},
-                          { class: "form-select w-full" } %>
-        </div>
-      </div>
-    </section>
+    <%= render V2::FormComponent.new(params) do |form_component| %>
+      <% form_component.with_section(heading: "Select") do |component| %>
+        <% component.with_description do %>
+          Primary working code repository.
+        <% end %>
 
-    <%= form.authz_submit "Update", "plus.svg" %>
+        <%= form.labeled_select :code_repository,
+                                "Code Repository",
+                                options_for_select(
+                                  display_channels(@code_repositories) { |chan| chan[:full_name] },
+                                  @config.code_repository.to_json
+                                ) %>
+      <% end %>
+    <% end %>
+
+    <div class="mt-8">
+      <%= form.authz_submit "Update", "plus.svg" %>
+    </div>
   <% end %>
 <% end %>

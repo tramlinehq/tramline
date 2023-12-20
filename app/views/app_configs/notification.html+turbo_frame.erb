@@ -4,10 +4,20 @@
                   url: app_app_config_path(@app),
                   builder: EnhancedFormHelper::AuthzForm,
                   method: :patch) do |form| %>
-      <div>
-        <div class="text-xl text-slate-600 font-medium mt-2 mb-4">Notifications</div>
-        <%= render partial: "shared/notifications_form",
-                   locals: { form:, app: @app, channels: @notification_channels, current: @config.notification_channel } %>
+      <%= render V2::FormComponent.new(params) do |form_component| %>
+        <% form_component.with_section(heading: "Select Channel") do |component| %>
+          <% component.with_description do %>
+            This will be your base notification channel. Later, when you create trains, you can add more granularity.
+          <% end %>
+
+          <%= render partial: "shared/notifications_form",
+                     locals: { form:, app: @app, channels: @notification_channels, current: @config.notification_channel } %>
+
+        <% end %>
+      <% end %>
+
+      <div class="mt-8">
+        <%= form.authz_submit "Update", "plus.svg" %>
       </div>
     <% end %>
   <% end %>

@@ -4,15 +4,13 @@
                   url: app_app_config_path(@app),
                   builder: EnhancedFormHelper::AuthzForm,
                   method: :patch) do |form| %>
-      <section class="border-t border-dashed pb-8">
-        <div class="my-8">
-          <h2 class="font-bold text-xl">
-            <%= image_tag "integrations/logo_bitrise.png", title: "Bitrise", width: 35, class: "pb-2" %>
-            Bitrise
-          </h2>
-        </div>
+      <%= render V2::FormComponent.new(params) do |form_component| %>
+        <% form_component.with_section(heading: "Select Project") do |component| %>
+          <% component.with_description do %>
+            This will be your base notification channel. Later, when you create trains, you can add more granularity.
+            <%= image_tag "integrations/logo_bitrise.png", title: "Bugsnag", width: 22, class: "my-2" %>
+          <% end %>
 
-        <div class="grid gap-5 md:grid-cols-2">
           <% if @ci_cd_apps.present? %>
             <div class="mb-4">
               <%= form.label :bitrise_project_id, "App Name", class: "block text-sm font-medium mb-1" %>
@@ -25,10 +23,12 @@
                               data: { controller: "input-select" } %>
             </div>
           <% end %>
-        </div>
-      </section>
+        <% end %>
+      <% end %>
 
-      <%= form.authz_submit "Update", "plus.svg" %>
+      <div class="mt-8">
+        <%= form.authz_submit "Update", "plus.svg" %>
+      </div>
     <% end %>
   <% else %>
     <%= render partial: "empty_state" %>

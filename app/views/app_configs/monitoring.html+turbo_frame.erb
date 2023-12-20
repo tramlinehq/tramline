@@ -4,31 +4,29 @@
                   url: app_app_config_path(@app),
                   builder: EnhancedFormHelper::AuthzForm,
                   method: :patch) do |form| %>
-      <section class="border-t border-dashed pb-8">
-        <div class="my-8">
-          <h2 class="font-bold text-xl">
-            <%= image_tag "integrations/logo_bugsnag.png", title: "Bugsnag", width: 35, class: "pb-2" %>
-            Bugsnag
-          </h2>
-        </div>
+      <%= render V2::FormComponent.new(params) do |form_component| %>
+        <% form_component.with_section(heading: "Select Project") do |component| %>
+          <% component.with_description do %>
+            For your connected Bugsnag organization.
+            <%= image_tag "integrations/logo_bugsnag.png", title: "Bugsnag", width: 22, class: "my-2" %>
+          <% end %>
 
-        <div class="grid gap-5 md:grid-cols-2">
           <% if @monitoring_projects.present? %>
             <div class="mb-4">
-              <%= form.label :bugsnag_project_id, "Project Name", class: "block text-sm font-medium mb-1" %>
-              <%= form.select :bugsnag_project_id,
-                              options_for_select(
-                                display_channels(@monitoring_projects) { |project| "#{project[:name]} (#{project[:id]})" },
-                                @config.bugsnag_project_id.to_json
-                              ),
-                              { class: "form-select" },
-                              data: { controller: "input-select" } %>
+              <%= form.labeled_select :bugsnag_project_id,
+                                      "Project",
+                                      options_for_select(
+                                        display_channels(@monitoring_projects) { |project| "#{project[:name]} (#{project[:id]})" },
+                                        @config.bugsnag_project_id.to_json
+                                      ) %>
             </div>
           <% end %>
-        </div>
-      </section>
+        <% end %>
+      <% end %>
 
-      <%= form.authz_submit "Update", "plus.svg" %>
+      <div class="mt-8">
+        <%= form.authz_submit "Update", "plus.svg" %>
+      </div>
     <% end %>
   <% end %>
 <% end %>
