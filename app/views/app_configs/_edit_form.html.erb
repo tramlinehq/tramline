@@ -1,6 +1,6 @@
 <%= form_with(model: [@app, @config],
               url: app_app_config_path(@app),
-              builder: ButtonHelper::AuthzForms,
+              builder: EnhancedFormHelper::AuthzForm,
               method: :patch) do |form| %>
   <section>
     <div class="mb-8">
@@ -123,6 +123,6 @@
   <% end %>
 
   <div class="mt-5">
-    <%= form.authz_submit :blue, "Update" %>
+    <%= form.authz_submit "Update", "plus.svg" %>
   </div>
 <% end %>

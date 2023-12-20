@@ -18,11 +18,10 @@
                           size: :xs,
                           html_options: { data: { action: "reveal#toggle" } } %>
 
-    <div class="flex text-white ml-5">
-          <span class="text-slate-500" data-reveal hidden>
-            Verifying
-            <%= render partial: "shared/loading" %>
-          </span>
+    <div class="ml-5">
+      <div hidden data-reveal>
+        <%= render V2::LoadingIndicatorComponent.new(text: "Verifying...") %>
+      </div>
     </div>
   </div>
 <% end %>
