@@ -2,6 +2,7 @@
 
 class PopulateLastCommitForReleasePlatformRuns < ActiveRecord::Migration[7.0]
   def up
+    return
     ActiveRecord::Base.transaction do
       ReleasePlatformRun.all.each do |prun|
         prun.update!(last_commit: prun.step_runs.flat_map(&:commit).max_by(&:timestamp))

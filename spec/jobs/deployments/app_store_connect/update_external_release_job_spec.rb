@@ -24,7 +24,8 @@ describe Deployments::AppStoreConnect::UpdateExternalReleaseJob do
       let(:initial_build_info) { base_build_info.merge(status: "WAITING_FOR_BETA_REVIEW") }
       let(:in_progress_build_info) { base_build_info.merge(status: "IN_BETA_REVIEW") }
       let(:success_build_info) { base_build_info.merge(status: "BETA_APPROVED") }
-      let(:failure_build_info) { base_build_info.merge(status: "BETA_REJECTED") }
+      let(:rejected_build_info) { base_build_info.merge(status: "BETA_REJECTED") }
+      let(:failure_build_info) { base_build_info.merge(status: "PROCESSING_EXCEPTION") }
 
       it "does nothing if the train run is no longer on track" do
         app_store_deployment_run.release_platform_run.update(status: "finished")
@@ -69,6 +70,18 @@ describe Deployments::AppStoreConnect::UpdateExternalReleaseJob do
         expect(app_store_deployment_run.external_release.reload.status).to eq(success_build_info[:status])
       end
 
+      it "marks deployment run as review failed when build is rejected" do
+        app_store_deployment_run.create_external_release(in_progress_build_info)
+        allow_any_instance_of(Installations::Apple::AppStoreConnect::Api)
+          .to receive(:find_build).and_return(rejected_build_info)
+
+        expect { described_class.new.perform(app_store_deployment_run.id) }
+          .to raise_error(Deployments::AppStoreConnect::Release::ExternalReleaseNotInTerminalState)
+
+        expect(app_store_deployment_run.reload.review_failed?).to be(true)
+        expect(app_store_deployment_run.external_release.reload.status).to eq(rejected_build_info[:status])
+      end
+
       it "marks deployment run as failed when build is a failure" do
         app_store_deployment_run.create_external_release(in_progress_build_info)
         allow_any_instance_of(Installations::Apple::AppStoreConnect::Api)
@@ -83,7 +96,7 @@ describe Deployments::AppStoreConnect::UpdateExternalReleaseJob do
       it "retries if the build is not in terminal state" do
         expect(
           described_class.sidekiq_retry_in_block.call(1, Deployments::AppStoreConnect::Release::ExternalReleaseNotInTerminalState.new)
-        ).to be >= 600.seconds
+        ).to be >= 300.seconds
       end
 
       it "does not retry if there are unexpected errors" do

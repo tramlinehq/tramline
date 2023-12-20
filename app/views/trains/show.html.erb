@@ -2,73 +2,70 @@
 
 <%= render partial: 'shared/errors', locals: { resource: @train } %>
 
-<div class="sm:flex sm:justify-between sm:items-center pb-8 border-b border-slate-200">
+<div class="sm:flex sm:justify-between sm:items-start pb-8 border-b border-slate-200">
   <div class="mb-4 sm:mb-0">
     <p class="text-2xl md:text-3xl text-slate-800 font-bold"><%= @train.name %> 🚦</p>
   </div>
 
-  <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-    <% if @train.activatable? %>
-      <%= authz_button_to :green, "Activate train", activate_app_train_path(@app, @train), method: :patch,
-                          data: { turbo_method: :patch, turbo_confirm: "This will start scheduling release kickoff(s). Are you sure?" } %>
-    <% end %>
-    <% if @train.deactivatable? %>
-      <%= authz_button_to :red, "Deactivate train", deactivate_app_train_path(@app, @train), method: :patch,
-                          data: { turbo_method: :patch, turbo_confirm: "This will cancel all the scheduled release kickoff(s). Are you sure?" } %>
-    <% end %>
-    <% if @train.ongoing_release %>
-      <%= decorated_link_to :green, "Ongoing Release", ongoing_release_app_train_releases_path(@app, @train) %>
-      <% if @train.upcoming_release %>
-        <%= decorated_link_to :blue, "Upcoming Release", upcoming_release_app_train_releases_path(@app, @train) %>
-      <% elsif @train.upcoming_release_startable? %>
-        <%= authz_button_to :blue, start_upcoming_release_text(@train.ongoing_release), app_train_releases_path(@app, @train) %>
-        <% if @train.fixed_build_number? %>
-          <%= render partial: "trains/custom_release_form", locals: { app: @app, train: @train } %>
-        <% else %>
+  <div class="flex flex-col gap-y-2">
+    <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+      <% if @train.activatable? %>
+        <%= authz_button_to :green, "Activate train", activate_app_train_path(@app, @train), method: :patch,
+                            data: { turbo_method: :patch, turbo_confirm: "This will start scheduling release kickoff(s). Are you sure?" } %>
+      <% end %>
+      <% if @train.deactivatable? %>
+        <%= authz_button_to :red, "Deactivate train", deactivate_app_train_path(@app, @train), method: :patch,
+                            data: { turbo_method: :patch, turbo_confirm: "This will cancel all the scheduled release kickoff(s). Are you sure?" } %>
+      <% end %>
+      <% if @train.ongoing_release %>
+        <%= decorated_link_to :green, "Ongoing Release", ongoing_release_app_train_releases_path(@app, @train) %>
+        <% if @train.upcoming_release %>
+          <%= decorated_link_to :blue, "Upcoming Release", upcoming_release_app_train_releases_path(@app, @train) %>
+        <% elsif @train.upcoming_release_startable? %>
+          <%= authz_button_to :blue, start_upcoming_release_text(@train.ongoing_release), app_train_releases_path(@app, @train) %>
           <%= authz_button_to :amber, start_upcoming_release_text(@train.ongoing_release, major: true), app_train_releases_path(@app, @train, has_major_bump: true) %>
+          <%= render partial: "trains/custom_release_form", locals: { app: @app, train: @train } %>
         <% end %>
-      <% end %>
-    <% elsif @train.manually_startable? %>
-      <%= authz_button_to :blue, start_release_text(@train), app_train_releases_path(@app, @train) %>
-      <% if @train.fixed_build_number? %>
-        <%= render partial: "trains/custom_release_form", locals: { app: @app, train: @train } %>
-      <% else %>
+      <% elsif @train.manually_startable? %>
+        <%= authz_button_to :blue, start_release_text(@train), app_train_releases_path(@app, @train) %>
         <%= authz_button_to :amber, start_release_text(@train, major: true), app_train_releases_path(@app, @train), { params: { release: { has_major_bump: true } } } %>
+        <%= render partial: "trains/custom_release_form", locals: { app: @app, train: @train } %>
       <% end %>
-    <% end %>
-    <% if @train.hotfixable? %>
-      <div data-controller="modal">
-        <%= authz_link_to :neutral, "#", { data: { action: "modal#open" } } do %>
-          <%= inline_svg("band_aid.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
-          <span class="ml-2">Start a hotfix</span>
+      <% if @train.hotfixable? %>
+        <div data-controller="modal">
+          <%= authz_link_to :neutral, "#", { data: { action: "modal#open" } } do %>
+            <%= inline_svg("band_aid.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
+            <span class="ml-2">Start a hotfix</span>
+          <% end %>
+          <dialog data-modal-target="modal"
+                  class="p-0 backdrop:bg-gray-400 backdrop:bg-opacity-50 open:animate-fade-in w-1/2">
+            <div class="relative bg-white rounded-lg shadow">
+              <%= render partial: "trains/hotfix_form", locals: { app: @app, train: @train, hotfix_from: @hotfix_from } %>
+            </div>
+          </dialog>
+        </div>
+      <% end %>
+    </div>
+    <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+      <%= authz_link_to (@train.active_runs.exists? ? :disabled : :neutral), edit_app_train_path(@app, @train) do %>
+        <%= inline_svg("edit.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
+        <span class="ml-2">Settings</span>
+      <% end %>
+
+      <% if @train.send_notifications? %>
+        <%= link_to app_train_notification_settings_path(@app, @train), class: "btn group border-slate-300 hover:border-slate-400 text-slate-600" do %>
+          <%= inline_svg("bell.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
+          <span class="ml-2">Notification Settings</span>
         <% end %>
-        <dialog data-modal-target="modal"
-                class="p-0 backdrop:bg-gray-400 backdrop:bg-opacity-50 open:animate-fade-in w-1/2">
-          <div class="relative bg-white rounded-lg shadow">
-            <%= render partial: "trains/hotfix_form", locals: { app: @app, train: @train, hotfix_from: @hotfix_from } %>
-          </div>
-        </dialog>
-      </div>
-    <% end %>
-
-    <%= authz_link_to (@train.active_runs.exists? ? :disabled : :neutral), edit_app_train_path(@app, @train) do %>
-      <%= inline_svg("edit.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
-      <span class="ml-2">Settings</span>
-    <% end %>
-
-    <% if @train.send_notifications? %>
-      <%= link_to app_train_notification_settings_path(@app, @train), class: "btn group border-slate-300 hover:border-slate-400 text-slate-600" do %>
-        <%= inline_svg("bell.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
-        <span class="ml-2">Notification Settings</span>
       <% end %>
-    <% end %>
 
-    <% if @train.releases.blank? %>
-      <%= authz_link_to :red, app_train_path(@app, @train), method: :delete,
-                        data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } do %>
-        <span>Delete</span>
+      <% if @train.releases.blank? %>
+        <%= authz_link_to :red, app_train_path(@app, @train), method: :delete,
+                          data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } do %>
+          <span>Delete</span>
+        <% end %>
       <% end %>
-    <% end %>
+    </div>
   </div>
 </div>
 
