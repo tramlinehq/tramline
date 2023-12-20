@@ -104,9 +104,9 @@ class TrainsController < SignedInApplicationController
 
   def set_tab_configuration
     @tab_configuration = [
-      [1, "General", edit_app_train_path(@app, @train)],
-      [2, "Steps", steps_app_train_path(@app, @train)],
-      ([3, "Notification Settings", app_train_notification_settings_path(@app, @train)] if @train.send_notifications?)
+      [1, "General", edit_app_train_path(@app, @train), "v2/cog.svg"],
+      [2, "Steps", steps_app_train_path(@app, @train), "v2/route.svg"],
+      ([3, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"] if @train.send_notifications?)
     ].compact
   end
 
@@ -196,7 +196,7 @@ class TrainsController < SignedInApplicationController
   end
 
   def train_path
-    app_train_path(@app, @train)
+    app_train_releases_path(@app, @train)
   end
 
   def set_notification_channels

@@ -31,8 +31,7 @@ module EnhancedFormHelper
     end
 
     def text_field_without_label(method, placeholder, options = {})
-      text_field(method, {class: TEXT_FIELD_CLASSES, placeholder:, required: true}
-                           .merge(options))
+      text_field(method, {class: TEXT_FIELD_CLASSES, placeholder:}.merge(options))
     end
 
     def labeled_text_field(method, label_text, options = {})
@@ -41,8 +40,7 @@ module EnhancedFormHelper
 
     def labeled_number_field(method, label_text, options = {})
       label_only(method, label_text) +
-        number_field(method, {class: TEXT_FIELD_CLASSES, placeholder: "Enter #{label_text.downcase}", required: true}
-                               .merge(options))
+        number_field(method, {class: TEXT_FIELD_CLASSES, placeholder: "Enter #{label_text.downcase}"}.merge(options))
     end
 
     def labeled_select(method, label_text, select_options, options = {}, html_options = {})

@@ -16,8 +16,10 @@
         <div data-controller="domain--branch-name-help"
              data-domain--branch-name-help-current-value="<%= train.display_name %>">
           <div class="mb-2">
-            <%= form.labeled_text_field :name, "Name", data: { domain__branch_name_help_target: "input",
-                                                               action: "domain--branch-name-help#set" } %>
+            <%= form.labeled_text_field :name, "Name",
+                                        required: true,
+                                        data: { domain__branch_name_help_target: "input",
+                                                action: "domain--branch-name-help#set" } %>
           </div>
           <div class="text-sm italic">
             <span data-domain--branch-name-help-target="helpTextTitle"></span>
@@ -133,6 +135,7 @@
 
           <div>
             <%= form.labeled_text_field :working_branch, "Working Branch",
+                                        required: true,
                                         class: text_field_classes(is_disabled: train.persisted?),
                                         placeholder: "eg., master, main",
                                         disabled: train.persisted? %>
@@ -214,7 +217,7 @@
       <% end %>
 
       <% if @app.cross_platform? %>
-        <%= form_component.with_advanced_section(heading: "Platform Specific Tags", html_options: {data: {controller: "reveal"}}) do |component| %>
+        <%= form_component.with_advanced_section(heading: "Platform Specific Tags", html_options: { data: { controller: "reveal" } }) do |component| %>
           <% component.with_description do %>
             Tag each platform release separately. By default, only one tag is created at the end of the release.
           <% end %>
@@ -225,6 +228,6 @@
   </div>
 
   <div class="mt-12">
-    <%= form.authz_submit train.persisted? ? "Update Train" : "Create Train", "plus.svg" %>
+    <%= form.authz_submit (train.persisted? ? "Update Train" : "Create Train"), "plus.svg" %>
   </div>
 <% end %>
