@@ -1,7 +1,7 @@
 <section class="my-4">
   <div class="px-5 py-3 bg-indigo-50 border border-indigo-100 rounded-sm text-left">
     <div class="text-slate-700 font-normal">To disable all notifications, go to
-      <%= link_to "Train Settings", edit_app_train_path(train.app, train), class: "underline" %>.</div>
+      <%= link_to "Train Settings", edit_app_train_path(train.app, train), class: "underline", data: {turbo: false} %>.</div>
   </div>
 </section>
 <%= render TableComponent.new(columns: %w[kind channels status settings]) do |table| %>
