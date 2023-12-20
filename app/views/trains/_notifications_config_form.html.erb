@@ -1,25 +1,9 @@
-<section data-controller="toggle-switch"
-         data-toggle-switch-on-label-value="Notifications enabled"
-         data-toggle-switch-off-label-value="Notifications disabled">
-
-  <div class="flex items-center">
-    <div class="form-switch">
-      <%= form.check_box :notifications_enabled,
-                         { id: "notifications-switch",
-                           class: "sr-only",
-                           data: { action: "toggle-switch#change",
-                                   toggle_switch_target: "checkbox" } },
-                         "true", "false" %>
-      <label class="bg-slate-400" for="notifications-switch">
-        <span class="bg-white shadow-sm" aria-hidden="true"></span>
-        <span class="sr-only">Switch label</span>
-      </label>
-    </div>
-
-    <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"></div>
-  </div>
-  <div data-toggle-switch-target="child" class="mt-4">
+<%= render V2::Form::SwitchComponent.new(form:,
+                                         field_name: :notifications_enabled,
+                                         on_label: "Notifications enabled",
+                                         off_label: "Notifications disabled") do |component| %>
+  <% component.with_child do %>
     <%= render partial: "shared/notifications_form",
                locals: { form:, app: @app, channels: @notification_channels, current: @current_notification_channel } %>
-  </div>
-</section>
+  <% end %>
+<% end %>

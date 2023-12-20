@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class V2::FormSectionComponent < V2::BaseComponent
+class V2::Form::SectionComponent < V2::BaseComponent
   renders_one :description
 
   def initialize(heading:, html_options: {})

@@ -1,61 +1,46 @@
 <% if @train.schedule_editable? %>
-  <section data-controller="domain--release-schedule-help toggle-switch"
-           data-toggle-switch-on-label-value="Release Schedule enabled"
-           data-toggle-switch-off-label-value="Release Schedule disabled">
-
-    <div class="flex items-center">
-      <div class="form-switch">
-        <%= form.check_box :release_schedule_enabled,
-                           { id: "release-schedule-switch",
-                             class: "sr-only",
-                             data: { action: "toggle-switch#change domain--release-schedule-help#change",
-                                     domain__release_schedule_help_target: "checkbox",
-                                     toggle_switch_target: "checkbox" } },
-                           "true", "false" %>
-        <label class="bg-slate-400" for="release-schedule-switch">
-          <span class="bg-white shadow-sm" aria-hidden="true"></span>
-          <span class="sr-only">Switch label</span>
-        </label>
-      </div>
-
-      <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"></div>
-    </div>
-
-    <div data-domain--release-schedule-help-target="config" class="mt-4">
-      <div class="grid gap-x-28 md:grid-cols-3">
-        <div class="col-span-1">
-          <%= form.label :kickoff_at, class: "block text-sm font-medium mb-1" %>
-          <%= form.datetime_field :kickoff_at,
-                                  class: "form-input",
-                                  min: Date.current,
+  <div data-controller="domain--release-schedule-help">
+    <%= render V2::Form::SwitchComponent.new(form:,
+                                             field_name: :release_schedule_enabled,
+                                             on_label: "Release Schedule enabled",
+                                             off_label: "Release Schedule disabled",
+                                             hide_child: !@train.release_schedule_enabled) do |component| %>
+      <% component.with_child do %>
+        <div class="grid gap-x-4 md:grid-cols-3">
+          <div class="col-span-1">
+            <%= form.label :kickoff_at, class: "block text-sm font-medium mb-1" %>
+            <%= form.datetime_field :kickoff_at,
+                                    class: "form-input",
+                                    min: Date.current,
+                                    data: { action: 'domain--release-schedule-help#change',
+                                            domain__release_schedule_help_target: "kickoffDate" } %>
+          </div>
+          <div class="col-span-2">
+            <%= form.label "Every", class: "block text-sm font-medium mb-1" %>
+            <%= form.number_field :repeat_duration_value,
+                                  class: "form-input w-1/4",
+                                  step: 1,
+                                  min: 1,
+                                  default: nil,
                                   data: { action: 'domain--release-schedule-help#change',
-                                          domain__release_schedule_help_target: "kickoffDate" } %>
+                                          domain__release_schedule_help_target: "nextDateNumber" } %>
+            <%= form.select :repeat_duration_unit,
+                            options_for_select([%w[Day(s) days], %w[Week(s) weeks]], @train.repeat_duration_unit.presence || "days"),
+                            { required: false },
+                            { class: "form-input w-1/4",
+                              data: { action: 'domain--release-schedule-help#change',
+                                      domain__release_schedule_help_target: "nextDateUnit" } } %>
+          </div>
+          <div class="col-span-3 mt-2">
+            <span class="text-sm italic mt-2 text-rose-700" data-domain--release-schedule-help-target="errOutput"></span>
+          </div>
+          <div class="col-span-3">
+            <span class="block text-sm mt-2 mb-1" data-domain--release-schedule-help-target="output"></span>
+          </div>
         </div>
-        <div class="col-span-2">
-          <%= form.label "Every", class: "block text-sm font-medium mb-1" %>
-          <%= form.number_field :repeat_duration_value,
-                                class: "form-input w-1/4",
-                                step: 1,
-                                min: 1,
-                                default: nil,
-                                data: { action: 'domain--release-schedule-help#change',
-                                        domain__release_schedule_help_target: "nextDateNumber" } %>
-          <%= form.select :repeat_duration_unit,
-                          options_for_select([%w[Day(s) days], %w[Week(s) weeks]], @train.repeat_duration_unit.presence || "days"),
-                          { required: false },
-                          { class: "form-input w-1/4",
-                            data: { action: 'domain--release-schedule-help#change',
-                                    domain__release_schedule_help_target: "nextDateUnit" } } %>
-        </div>
-        <div class="col-span-3 mt-2">
-          <span class="text-sm italic mt-2 text-rose-700" data-domain--release-schedule-help-target="errOutput"></span>
-        </div>
-        <div class="col-span-3">
-          <span class="block text-sm mt-2 mb-1" data-domain--release-schedule-help-target="output"></span>
-        </div>
-      </div>
-    </div>
-  </section>
+      <% end %>
+    <% end %>
+  </div>
 <% else %>
   <div class="text-sm mt-1 mb-6">
     Release Schedule cannot be edited once the train is activated.

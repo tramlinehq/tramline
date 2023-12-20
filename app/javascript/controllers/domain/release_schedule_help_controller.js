@@ -16,12 +16,7 @@ export default class extends Controller {
     const enabled = (this.checkboxTarget.checked === true)
     const disabled = ((this.checkboxTarget.checked === false))
 
-    if (enabled) {
-      this.configTarget.hidden = false
-    }
-
     if (disabled) {
-      this.configTarget.hidden = true
       this.__resetInput()
     }
 
@@ -71,7 +66,6 @@ export default class extends Controller {
   }
 
   __resetContents() {
-    this.configTarget.hidden = true
     this.outputTarget.textContent = ""
     this.errOutputTarget.textContent = ""
   }
