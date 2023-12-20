@@ -3,7 +3,7 @@
 class V2::Form::SectionComponent < V2::BaseComponent
   renders_one :description
 
-  def initialize(heading:, html_options: {})
+  def initialize(heading: nil, html_options: {})
     @heading = heading
     @html_options = html_options
   end
