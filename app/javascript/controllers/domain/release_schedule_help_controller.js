@@ -14,7 +14,7 @@ export default class extends Controller {
     this.__resetContents()
 
     const enabled = (this.checkboxTarget.checked === true)
-    const disabled = ((this.checkboxTarget.checked === false))
+    const disabled = (this.checkboxTarget.checked === false)
 
     if (disabled) {
       this.__resetInput()

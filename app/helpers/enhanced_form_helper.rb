@@ -34,23 +34,35 @@ module EnhancedFormHelper
       text_field(method, {class: TEXT_FIELD_CLASSES, placeholder:}.merge(options))
     end
 
+    def select_without_label(method, select_options, options = {}, html_options = {})
+      select(method, select_options, options, {class: SELECT_CLASSES}.merge(html_options))
+    end
+
+    def number_field_without_label(method, options = {})
+      number_field(method, {class: TEXT_FIELD_CLASSES, placeholder: 1}.merge(options))
+    end
+
     def labeled_text_field(method, label_text, options = {})
       label_only(method, label_text) + text_field_without_label(method, "Enter #{label_text.downcase}", options)
     end
 
     def labeled_number_field(method, label_text, options = {})
       label_only(method, label_text) +
-        number_field(method, {class: TEXT_FIELD_CLASSES, placeholder: "Enter #{label_text.downcase}"}.merge(options))
+        number_field_without_label(method, {class: TEXT_FIELD_CLASSES}.merge(options))
     end
 
     def labeled_select(method, label_text, select_options, options = {}, html_options = {})
-      label_only(method, label_text) +
-        select(method, select_options, options, {class: SELECT_CLASSES}.merge(html_options))
+      label_only(method, label_text) + select_without_label(method, select_options, options, html_options)
     end
 
     def labeled_tz_select(method, label_text, select_options, options = {}, html_options = {})
       label_only(method, label_text) +
         time_zone_select(method, select_options, options, {class: SELECT_CLASSES}.merge(html_options))
+    end
+
+    def labeled_datetime_field(method, label_text, options = {})
+      label_only(method, label_text) +
+        datetime_field(method, {class: TEXT_FIELD_CLASSES}.merge(options))
     end
 
     def labeled_textarea(method, label_text, options = {})

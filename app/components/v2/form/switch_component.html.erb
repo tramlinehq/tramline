@@ -17,8 +17,7 @@
       <%= form.check_box field_name,
                          { id: switch_id,
                            class: "sr-only",
-                           data: { action: "toggle-switch#change",
-                                   toggle_switch_target: "checkbox" } },
+                           data: switch_data },
                          "true", "false" %>
       <label class="bg-slate-400" for="<%= switch_id %>">
         <span class="bg-white shadow-sm" aria-hidden="true"></span>

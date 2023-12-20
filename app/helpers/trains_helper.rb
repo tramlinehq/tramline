@@ -37,17 +37,6 @@ module TrainsHelper
     end
   end
 
-  BUILD_QUEUE_ENABLED_LABEL = "Build Queue enabled"
-  BUILD_QUEUE_DISABLED_LABEL = "Build Queue disabled"
-
-  def build_queue_label(train)
-    if train.build_queue_enabled?
-      BUILD_QUEUE_ENABLED_LABEL
-    else
-      BUILD_QUEUE_DISABLED_LABEL
-    end
-  end
-
   def backmerge_text(train)
     if train.continuous_backmerge?
       "Changes on the release branch will be merged <b>continuously</b> to the working branch."
