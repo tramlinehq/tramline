@@ -1,13 +1,5 @@
 <% if enabled? %>
-  <section class="my-4">
-    <div class="px-5 py-3 bg-indigo-50 border border-indigo-100 rounded-sm text-left">
-      <div class="text-slate-700 text-sm">To disable all notifications, go to
-        <%= link_to "Train Settings", edit_app_train_path(train.app, train), class: "underline", data: { turbo: false } %>
-        .
-      </div>
-    </div>
-  </section>
-  <%= render V2::TableComponent.new(columns: %w[kind channels status settings]) do |table| %>
+  <%= render V2::TableComponent.new(columns: ["kind", "channels", "status", ""]) do |table| %>
     <% display_settings.each do |setting| %>
       <% table.with_row do |row| %>
         <% row.with_cell do %>
@@ -42,17 +34,69 @@
                                           arrow: :none) %>
             <% button.with_icon("v2/pencil.svg") %>
             <% modal.with_body do %>
-              <%= render partial: "form", locals: { app: train.app,
-                                                    train: train,
-                                                    notification_setting: setting,
-                                                    description: description_for(setting),
-                                                    icon: icon_for(setting) } %>
+              <div class="mb-4"><%= description_for(setting) %></div>
+              <%= form_with(model: [app, train, setting],
+                            url: app_train_notification_setting_path(app, train, setting),
+                            method: :put,
+                            builder: EnhancedFormHelper::AuthzForm) do |form| %>
+                <%= render V2::FormComponent.new do |form_component| %>
+                  <% form_component.with_section(heading: "") do |section| %>
+                    <% section.with_description do %>
+                      <div>
+                        Select one or more channel names for this type of notification.
+                        <p class="mt-1">To receive notifications in private channels, invite @Tramline into your private
+                          channel and
+                          then select it from this list.</p>
+
+                        <p class="mt-1">Refresh your notifications channels from here, if you can't find them in the
+                          list.</p>
+                      </div>
+                      <div class="mt-1">
+                        <%= render V2::ButtonComponent.new(label: "Refresh",
+                                                           scheme: :light,
+                                                           type: :action,
+                                                           size: :xxs,
+                                                           arrow: :none,
+                                                           html_options: { url: refresh_channels_app_integration_slack_integration_path(app,
+                                                                                                                                        app.notification_provider.integration,
+                                                                                                                                        app.notification_provider),
+                                                                           method: :post,
+                                                                           data: { turbo_method: :post } }) %>
+                      </div>
+                    <% end %>
+                    <%= render V2::Form::SwitchComponent.new(form:,
+                                                             field_name: :active,
+                                                             switch_id: "active-switch-#{setting.id}",
+                                                             on_label: "Notifications enabled",
+                                                             off_label: "Notifications disabled") do |component| %>
+                      <% component.with_child do %>
+                        <%= form.labeled_select :notification_channels,
+                                                "Channels",
+                                                options_for_select(
+                                                  display_channels(setting.channels) { |chan| "#" + chan[:name] },
+                                                  setting.notification_channels&.map(&:to_json)
+                                                ),
+                                                {},
+                                                { multiple: true, data: { controller: "input-select" } } %>
+                      <% end %>
+                    <% end %>
+                  <% end %>
+                <% end %>
+                <% form.authz_submit "Save", "plus.svg", size: :xs %>
+              <% end %>
             <% end %>
           <% end %>
         <% end %>
       <% end %>
     <% end %>
   <% end %>
+  <section class="my-4">
+    <div class="px-5 py-3 bg-indigo-50 border border-indigo-100 rounded-sm text-left">
+      <div class="text-slate-700 text-sm">To disable all notifications, go to
+        <%= link_to "Train Settings", edit_app_train_path(train.app, train), class: "underline", data: { turbo: false } %>
+      </div>
+    </div>
+  </section>
 <% else %>
   <p>Enable notification for the app and the train to configure notification settings.</p>
 <% end %>

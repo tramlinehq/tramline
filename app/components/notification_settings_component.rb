@@ -35,6 +35,7 @@ class NotificationSettingsComponent < ViewComponent::Base
   attr_reader :settings, :train
 
   delegate :writer?, to: :helpers
+  delegate :app, to: :train
 
   def display_settings
     settings.sort_by { |setting| NOTIFICATIONS[setting.kind][:number] }
