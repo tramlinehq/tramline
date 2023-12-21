@@ -1,3 +1,7 @@
-<%= render PageComponent.new(breadcrumb: breadcrumb(:edit_app, @app), title: "Settings: #{@app.name} ⚙️") do %>
-  <%= render partial: "apps/edit_form" %>
+<%= render V2::TabbedContainerComponent.new(title: @app.name,
+                                            turbo_frame: dom_id(@app, :edit_app),
+                                            tab_config: @tab_configuration) do |container| %>
+  <% container.with_tab do %>
+    <%= render partial: "edit_form" %>
+  <% end %>
 <% end %>

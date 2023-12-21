@@ -29,8 +29,8 @@ class AppsController < SignedInApplicationController
 
     respond_to do |format|
       format.html do |variant|
-        variant.none { render :new_edit }
-        variant.turbo_frame { render :new_edit }
+        variant.none
+        variant.turbo_frame
       end
     end
   end
