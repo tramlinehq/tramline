@@ -153,7 +153,7 @@ describe ReleasePlatformRun do
       release_platform_run.update!(last_commit: commit)
       steps = create_list(:step, 4, :with_deployment, release_platform:)
       _step_run_1 = create(:step_run, commit:, step: steps.first, status: "success", release_platform_run:)
-      _step_run_2 = create(:step_run, commit:, step: steps.second, status: "ci_workflow_failed", release_platform_run:)
+      _step_run_2 = create(:step_run, commit:, step: steps.second, status: "deployment_failed", release_platform_run:)
       _step_run_3 = create(:step_run, commit:, step: steps.third, status: "on_track", release_platform_run:)
 
       expectation = {

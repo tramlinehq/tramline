@@ -14,8 +14,10 @@
 #  release_health_rule_id   :uuid             not null, indexed => [deployment_run_id, release_health_metric_id], indexed
 #
 class ReleaseHealthEvent < ApplicationRecord
-  include HealthAwareness
+  include Displayable
   self.implicit_order_column = :event_timestamp
+
+  enum health_status: {healthy: "healthy", unhealthy: "unhealthy"}
 
   belongs_to :deployment_run
   belongs_to :release_health_rule

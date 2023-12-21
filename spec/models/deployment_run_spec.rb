@@ -242,6 +242,7 @@ describe DeploymentRun do
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:deep_link).and_return(nil)
     end
 
     context "with rollout" do
@@ -335,6 +336,43 @@ describe DeploymentRun do
         run.start_release!
 
         expect(run.reload.released?).to be(true)
+      end
+    end
+  end
+
+  describe "#healthy?" do
+    let(:deployment_run) { create(:deployment_run, :rollout_started) }
+
+    it "returns true if there are no rules defined" do
+      expect(deployment_run.healthy?).to be(true)
+    end
+
+    context "when rules are defined" do
+      let(:user_stability_rule) {
+        create(:release_health_rule,
+          :user_stability,
+          release_platform: deployment_run.release_platform)
+      }
+      let(:session_stability_rule) {
+        create(:release_health_rule,
+          :session_stability,
+          release_platform: deployment_run.release_platform)
+      }
+
+      it "returns false if a rule is unhealthy" do
+        create(:release_health_event, :unhealthy, release_health_rule: user_stability_rule, deployment_run:)
+
+        expect(deployment_run.healthy?).to be(false)
+      end
+
+      it "returns true if there are all rules are healthy" do
+        create(:release_health_event, :healthy, release_health_rule: user_stability_rule, deployment_run:)
+        create(:release_health_event, :healthy, release_health_rule: session_stability_rule, deployment_run:)
+        expect(deployment_run.healthy?).to be(true)
+      end
+
+      it "returns true if there are all no events" do
+        expect(deployment_run.healthy?).to be(true)
       end
     end
   end

@@ -3,7 +3,7 @@ module Backoffable
   InvalidPeriod = Class.new(ArgumentError)
   InvalidType = Class.new(ArgumentError)
   ALLOWED_PERIODS = [:minutes, :seconds]
-  ALLOWED_TYPES = [:exponential, :linear]
+  ALLOWED_TYPES = [:exponential, :linear, :static]
   LINEAR_BACKOFF_FACTOR = 5
 
   protected
@@ -22,6 +22,8 @@ module Backoffable
       base_delay * 2**attempt
     when :linear
       base_delay + (factor * attempt)
+    when :static
+      factor
     end
 
     delay += rand(0..1000) / 1000.0 # add some jitter

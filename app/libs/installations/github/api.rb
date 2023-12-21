@@ -272,6 +272,12 @@ module Installations
       end
     end
 
+    def assign_pr(repo, pr_number, login)
+      execute do
+        @client.add_assignees(repo, pr_number, [login])
+      end
+    end
+
     def cherry_pick_pr(repo, branch, sha, patch_branch_name, pr_title_prefix, transforms)
       # get_head_commit on working branch -- 1 api call
       # get commit we need to cherry pick - 1 api call
@@ -311,6 +317,7 @@ module Installations
           .create_pull_request(repo, branch, patch_branch_name, patch_pr_title, patch_pr_description)
           .then { |response| Installations::Response::Keys.transform([response], transforms) }
           .first
+          .tap { |pr| assign_pr(repo, pr[:number], commit_to_pick_login) }
       end
     rescue Installations::Errors::MergeConflict => e
       @client.delete_branch(repo, patch_branch_name)

@@ -1,4 +1,7 @@
 class ReleaseMonitoringComponent < ViewComponent::Base
+  include AssetsHelper
+  include ApplicationHelper
+
   METRICS = [:staged_rollout, :adoption_rate, :adoption_chart, :errors, :stability]
 
   def initialize(deployment_run:, metrics: METRICS, show_bundle_id: true)
@@ -8,18 +11,19 @@ class ReleaseMonitoringComponent < ViewComponent::Base
     @show_bundle_id = show_bundle_id
   end
 
-  delegate :adoption_rate, :errors_count, :new_errors_count, to: :release_data
-  delegate :app, to: :deployment_run
-  delegate :monitoring_provider, to: :app
-
   attr_reader :deployment_run, :metrics, :show_bundle_id
+
+  delegate :adoption_rate, to: :release_data
+  delegate :app, :release_health_rules, :platform, to: :deployment_run
+  delegate :monitoring_provider, to: :app
+  delegate :current_user, to: :helpers
 
   def build_identifier
     "#{deployment_run.build_version} (#{deployment_run.build_number})"
   end
 
   def monitoring_provider_url
-    monitoring_provider.dashboard_url(deployment_run.platform)
+    monitoring_provider.dashboard_url(platform:, release_id: release_data&.external_release_id)
   end
 
   def store_provider
@@ -34,6 +38,43 @@ class ReleaseMonitoringComponent < ViewComponent::Base
     @staged_rollout ||= deployment_run.staged_rollout
   end
 
+  def events
+    @deployment_run.release_health_events.last(3).map do |event|
+      type = event.healthy? ? :success : :error
+      title = event.healthy? ? "Rule is healthy" : "Rule is unhealthy"
+      {
+        timestamp: time_format(event.event_timestamp, with_year: false),
+        title:,
+        description: event_description(event),
+        type:
+      }
+    end
+  end
+
+  def event_description(event)
+    metric = event.release_health_metric
+    triggers = event.release_health_rule.triggers
+    status = event.health_status
+    triggers.map do |expr|
+      value = metric.evaluate(expr.metric)
+      "#{expr.display_attr(:metric)} (#{value}) #{expr.describe_comparator(status)} the threshold value (#{expr.threshold_value})"
+    end.join(", ")
+  end
+
+  def release_healthy?
+    @is_healthy ||= @deployment_run.healthy?
+  end
+
+  def release_health
+    return "Healthy" if release_healthy?
+    "Unhealthy"
+  end
+
+  def release_health_class
+    return "text-green-800" if release_healthy?
+    "text-red-800"
+  end
+
   def staged_rollout_percentage
     staged_rollout&.last_rollout_percentage || Deployment::FULL_ROLLOUT_VALUE
   end
@@ -45,13 +86,23 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def user_stability
-    return "-" if release_data.user_stability.blank?
-    "#{release_data.user_stability}%"
+    value = release_data.user_stability.blank? ? "-" : "#{release_data.user_stability}%"
+    {value:, is_healthy: release_data.metric_healthy?("user_stability")}
   end
 
   def session_stability
-    return "-" if release_data.session_stability.blank?
-    "#{release_data.session_stability}%"
+    value = release_data.session_stability.blank? ? "-" : "#{release_data.session_stability}%"
+    {value:, is_healthy: release_data.metric_healthy?("session_stability")}
+  end
+
+  def errors_count
+    value = release_data.errors_count
+    {value:, is_healthy: release_data.metric_healthy?("errors_count")}
+  end
+
+  def new_errors_count
+    value = release_data.new_errors_count
+    {value:, is_healthy: release_data.metric_healthy?("new_errors_count")}
   end
 
   def adoption_chart_data

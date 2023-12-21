@@ -21,6 +21,8 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   delegate :cache, to: Rails
   delegate :app, to: :integration
+  delegate :config, to: :app
+  delegate :firebase_app, to: :config
 
   validate :correct_key, on: :create
 
@@ -114,11 +116,11 @@ class GoogleFirebaseIntegration < ApplicationRecord
     (sliced || []).push(EMPTY_CHANNEL)
   end
 
-  def upload(file, filename, platform:)
+  def upload(file, filename, platform:, variant: nil)
     raise ArgumentError, "platform must be valid" unless valid_platforms.include?(platform)
 
     GitHub::Result.new do
-      installation.upload(file, filename, fetch_app_id(platform))
+      installation.upload(file, filename, firebase_app(platform, variant:))
     end
   end
 
@@ -150,7 +152,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   end
 
   def deep_link(release, platform)
-    "https://appdistribution.firebase.google.com/testerapps/#{fetch_app_id(platform)}/releases/#{release_name(release)}"
+    "https://appdistribution.firebase.google.com/testerapps/#{firebase_app(platform)}/releases/#{release_name(release)}"
   end
 
   class ReleaseInfo
@@ -189,17 +191,6 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   def valid_platforms
     App.platforms.slice(:android, :ios).keys
-  end
-
-  def fetch_app_id(platform)
-    case platform
-    when "android"
-      app.config.firebase_android_config["app_id"]
-    when "ios"
-      app.config.firebase_ios_config["app_id"]
-    else
-      raise ArgumentError, "platform must be valid"
-    end
   end
 
   def get_all_channels

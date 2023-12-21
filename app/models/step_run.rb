@@ -5,8 +5,8 @@
 #  id                      :uuid             not null, primary key
 #  approval_status         :string           default("pending"), not null
 #  build_notes_raw         :text             default([]), is an Array
-#  build_number            :string
-#  build_version           :string           not null
+#  build_number            :string           indexed => [build_version]
+#  build_version           :string           not null, indexed => [build_number]
 #  ci_link                 :string
 #  ci_ref                  :string
 #  scheduled_at            :datetime         not null
@@ -32,6 +32,7 @@ class StepRun < ApplicationRecord
   belongs_to :release_platform_run
   belongs_to :commit, inverse_of: :step_runs
   has_one :build_artifact, inverse_of: :step_run, dependent: :destroy
+  has_one :external_build, inverse_of: :step_run, dependent: :destroy
   has_many :deployment_runs, -> { includes(:deployment).merge(Deployment.sequential) }, inverse_of: :step_run, dependent: :destroy
   has_many :deployments, through: :step
   has_many :running_deployments, through: :deployment_runs, source: :deployment
@@ -55,7 +56,9 @@ class StepRun < ApplicationRecord
     build_unavailable
     build_not_found_in_store
     build_found_in_store
+    deployment_restarted
     finished
+    failed_with_action_required
   ]
 
   # TODO: deprecate this
@@ -78,7 +81,9 @@ class StepRun < ApplicationRecord
     success: "success",
     cancelling: "cancelling",
     cancelled: "cancelled",
-    cancelled_before_start: "cancelled_before_start"
+    cancelled_before_start: "cancelled_before_start",
+    failed_with_action_required: "failed_with_action_required",
+    deployment_restarted: "deployment_restarted"
   }
 
   END_STATES = STATES.slice(
@@ -96,6 +101,7 @@ class StepRun < ApplicationRecord
   WORKFLOW_NOT_STARTED = [:on_track]
   WORKFLOW_IN_PROGRESS = [:ci_workflow_triggered, :ci_workflow_started]
   WORKFLOW_IMMUTABLE = STATES.keys - END_STATES - WORKFLOW_IN_PROGRESS - WORKFLOW_NOT_STARTED
+  FAILED_STATES = %w[ci_workflow_failed ci_workflow_halted build_not_found_in_store build_unavailable deployment_failed failed_with_action_required]
 
   enum status: STATES
 
@@ -141,15 +147,22 @@ class StepRun < ApplicationRecord
     end
     event(:build_upload_failed) { transitions from: :build_ready, to: :build_unavailable }
     event(:start_deploy) { transitions from: [:build_available, :build_found_in_store, :build_ready], to: :deployment_started }
+    event(:restart_deploy, after_commit: :resume_deployments) do
+      transitions from: [:failed_with_action_required], to: :deployment_restarted
+    end
 
-    event(:fail_deploy, after_commit: -> { notify_on_failure!("Deployment failed!") }) do
-      transitions from: :deployment_started, to: :deployment_failed
+    event(:fail_deploy) do
+      transitions from: [:deployment_started, :deployment_restarted], to: :deployment_failed
+    end
+
+    event :fail_deployment_with_sync_option, after_commit: :after_manual_submission_required do
+      transitions from: [:deployment_started, :deployment_restarted], to: :failed_with_action_required
     end
 
     event(:finish) do
       after { event_stamp!(reason: :finished, kind: :success, data: stamp_data) }
       after { finalize_release }
-      transitions from: :deployment_started, to: :success
+      transitions from: [:deployment_started, :deployment_restarted], to: :success
     end
 
     event(:cancel, after_commit: -> { Releases::CancelWorkflowRunJob.perform_later(id) }) do
@@ -166,20 +179,25 @@ class StepRun < ApplicationRecord
 
   delegate :release_platform, :release, :platform, to: :release_platform_run
   delegate :release_branch, :release_version, to: :release
-  delegate :train, to: :release_platform
+  delegate :train, :store_provider, to: :release_platform
   delegate :app, :ci_cd_provider, :unzip_artifact?, :notify!, to: :train
   delegate :organization, to: :app
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
-  delegate :workflow_id, :workflow_name, :step_number, :build_artifact_name_pattern, :has_uploadables?, :has_findables?, :name, to: :step
-  scope :not_failed, -> { where.not(status: [:ci_workflow_failed, :ci_workflow_halted, :build_not_found_in_store, :build_unavailable, :deployment_failed]) }
+  delegate :workflow_id, :workflow_name, :step_number, :build_artifact_name_pattern, :has_uploadables?, :has_findables?, :name, :app_variant, to: :step
+  scope :not_failed, -> { where.not(status: FAILED_STATES) }
+
+  def after_manual_submission_required
+    event_stamp!(reason: :failed_with_action_required, kind: :error, data: stamp_data)
+    notify_on_failure!("manual submission required!")
+  end
 
   def active?
-    release_platform_run.on_track? && !cancelled?
+    release_platform_run.on_track? && !cancelled? && !status.in?(FAILED_STATES)
   end
 
   def find_build
-    release_platform.store_provider.find_build(build_number)
+    store_provider.find_build(build_number)
   end
 
   def get_workflow_run
@@ -232,11 +250,15 @@ class StepRun < ApplicationRecord
   end
 
   def in_progress?
-    on_track? || ci_workflow_triggered? || ci_workflow_started? || build_ready? || deployment_started?
+    on_track? || ci_workflow_triggered? || ci_workflow_started? || build_ready? || deployment_started? || deployment_restarted?
+  end
+
+  def blocked?
+    ci_workflow_failed? || ci_workflow_halted? || failed_with_action_required?
   end
 
   def failed?
-    build_unavailable? || ci_workflow_unavailable? || ci_workflow_failed? || ci_workflow_halted? || deployment_failed?
+    build_unavailable? || ci_workflow_unavailable? || deployment_failed?
   end
 
   def done?
@@ -278,6 +300,12 @@ class StepRun < ApplicationRecord
     Triggers::Deployment.call(step_run: self, deployment: deployment)
   end
 
+  def resume_deployments
+    event_stamp!(reason: :deployment_restarted, kind: :notice, data: stamp_data)
+    failed_deployment_run = deployment_runs.failed_with_action_required.sole
+    failed_deployment_run.skip!
+  end
+
   def notification_params
     step.notification_params
       .merge(release_platform_run.notification_params)
@@ -289,7 +317,8 @@ class StepRun < ApplicationRecord
           commit_message: commit.message,
           commit_url: commit.url,
           artifact_download_link: build_artifact&.download_url,
-          build_notes: build_notes
+          build_notes: build_notes,
+          manual_submission_required: status == STATES[:failed_with_action_required]
         }
       )
   end
@@ -298,6 +327,12 @@ class StepRun < ApplicationRecord
     deployment_runs
       .not_failed
       .any?(&:production_release_happened?)
+  end
+
+  def production_release_submitted?
+    deployment_runs
+      .not_failed
+      .any?(&:production_release_submitted?)
   end
 
   def relevant_changes
@@ -340,6 +375,11 @@ class StepRun < ApplicationRecord
 
   def release_info
     slice(:build_version, :build_number, :updated_at, :platform)
+  end
+
+  def sync_store_status!
+    return unless failed_with_action_required?
+    restart_deploy! if store_provider.build_present_in_public_track?(build_number)
   end
 
   private

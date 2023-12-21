@@ -30,10 +30,12 @@ class App < ApplicationRecord
 
   belongs_to :organization, class_name: "Accounts::Organization", optional: false
   has_one :config, class_name: "AppConfig", dependent: :destroy
+  has_many :variants, through: :config
   has_many :external_apps, inverse_of: :app, dependent: :destroy
   has_many :integrations, inverse_of: :app, dependent: :destroy
   has_many :trains, -> { sequential }, dependent: :destroy, inverse_of: :app
   has_many :releases, through: :trains
+  has_many :step_runs, through: :releases
   has_many :deployment_runs, through: :releases
   has_many :release_platforms, dependent: :destroy
   has_many :release_platform_runs, through: :releases
@@ -74,6 +76,11 @@ class App < ApplicationRecord
       ios: "iOS",
       cross_platform: "Cross Platform"
     }.invert
+  end
+
+  def variant_options
+    opts = {"Default (#{bundle_identifier})" => nil}
+    opts.merge variants.map.to_h { |v| [v.display_text, v.id] }
   end
 
   def active_runs

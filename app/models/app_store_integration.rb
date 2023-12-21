@@ -284,10 +284,17 @@ class AppStoreIntegration < ApplicationRecord
       )
     end
 
+    def review_failed?
+      build_info[:status].in?(
+        [
+          BETA_REJECTED
+        ]
+      )
+    end
+
     def failed?
       build_info[:status].in?(
         [
-          BETA_REJECTED,
           PROCESSING_EXCEPTION,
           MISSING_EXPORT_COMPLIANCE,
           EXPIRED
@@ -352,13 +359,20 @@ class AppStoreIntegration < ApplicationRecord
       )
     end
 
-    def failed?
+    def review_failed?
       release_info[:status].in?(
         [
           REJECTED,
           INVALID_BINARY,
-          DEVELOPER_REJECTED,
           METADATA_REJECTED
+        ]
+      )
+    end
+
+    def failed?
+      release_info[:status].in?(
+        [
+          DEVELOPER_REJECTED
         ]
       )
     end

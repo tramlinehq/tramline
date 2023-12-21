@@ -12,14 +12,22 @@ module Notifiers
         step_failed: Renderers::StepFailed,
         submit_for_review: Renderers::SubmitForReview,
         review_approved: Renderers::ReviewApproved,
+        review_failed: Renderers::ReviewFailed,
         staged_rollout_updated: Renderers::StagedRolloutUpdated,
         release_scheduled: Renderers::ReleaseScheduled,
         backmerge_failed: Renderers::BackmergeFailed,
         staged_rollout_paused: Renderers::StagedRolloutPaused,
         staged_rollout_resumed: Renderers::StagedRolloutResumed,
         staged_rollout_halted: Renderers::StagedRolloutHalted,
-        staged_rollout_fully_released: Renderers::StagedRolloutFullyReleased
+        staged_rollout_fully_released: Renderers::StagedRolloutFullyReleased,
+        deployment_failed: Renderers::DeploymentFailed
       }.with_indifferent_access
+
+      MissingSlackRenderer = Class.new(StandardError)
+
+      unless Set.new(RENDERERS.keys).eql?(Set.new(NotificationSetting.kinds.keys))
+        raise MissingSlackRenderer
+      end
 
       class RendererNotFound < ArgumentError; end
 

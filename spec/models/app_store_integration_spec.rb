@@ -42,6 +42,17 @@ describe AppStoreIntegration do
       }
     }
 
+    let(:failed_release_response) {
+      {
+        external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+        status: "DEVELOPER_REJECTED",
+        build_number: "33417",
+        name: "1.8.0",
+        phased_release_day: 0,
+        phased_release_status: "INACTIVE"
+      }
+    }
+
     let(:in_review_release_response) {
       {
         external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
@@ -88,8 +99,15 @@ describe AppStoreIntegration do
       expect(result.success?).to be(true)
     end
 
-    it "returns failed to be true when live release is rejected" do
+    it "returns review failed to be true when live release is rejected" do
       allow(api_double).to receive(:find_live_release).and_return(rejected_release_response)
+      result = app_store_integration.find_live_release.value!
+
+      expect(result.review_failed?).to be(true)
+    end
+
+    it "returns failed to be true when live release is developer rejected" do
+      allow(api_double).to receive(:find_live_release).and_return(failed_release_response)
       result = app_store_integration.find_live_release.value!
 
       expect(result.failed?).to be(true)
@@ -138,6 +156,15 @@ describe AppStoreIntegration do
           external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
           name: "1.8.0",
           build_number: build_number,
+          status: "EXPIRED",
+          added_at: Time.current.to_s
+        }
+      }
+      let(:rejected_build_response) {
+        {
+          external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+          name: "1.8.0",
+          build_number: build_number,
           status: "BETA_REJECTED",
           added_at: Time.current.to_s
         }
@@ -182,6 +209,15 @@ describe AppStoreIntegration do
 
         expect(result.success?).to be(false)
         expect(result.failed?).to be(true)
+      end
+
+      it "returns review failed to be true when rejected build" do
+        allow(api_double).to receive(:find_build).with(build_number, AppStoreIntegration::BUILD_TRANSFORMATIONS).and_return(rejected_build_response)
+        result = app_store_integration.find_build(build_number).value!
+
+        expect(result.success?).to be(false)
+        expect(result.failed?).to be(false)
+        expect(result.review_failed?).to be(true)
       end
     end
 

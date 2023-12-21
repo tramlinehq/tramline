@@ -15,20 +15,22 @@
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
 #  deployment_run_id          :uuid             not null, indexed
+#  external_release_id        :string
 #
 class ReleaseHealthMetric < ApplicationRecord
   belongs_to :deployment_run
   has_one :release_health_event, dependent: :nullify
 
-  delegate :train, to: :deployment_run
+  delegate :release_health_rules, to: :deployment_run
 
   after_create_commit :check_release_health
 
   METRIC_VALUES = {
     session_stability: :session_stability,
     user_stability: :user_stability,
-    errors: :errors_count,
-    new_errors: :new_errors_count
+    errors_count: :errors_count,
+    new_errors_count: :new_errors_count,
+    adoption_rate: :adoption_rate
   }.with_indifferent_access
 
   def user_stability
@@ -47,20 +49,34 @@ class ReleaseHealthMetric < ApplicationRecord
   end
 
   def check_release_health
-    return if train.release_health_rules.blank?
-    train.release_health_rules.each do |rule|
-      value = send(METRIC_VALUES[rule.metric])
-      next unless value
-      create_health_event(rule, value)
+    return if release_health_rules.blank?
+    release_health_rules.each do |rule|
+      create_health_event(rule)
     end
   end
 
-  def create_health_event(rule, value)
-    last_event = deployment_run.release_health_events.where(release_health_rule: rule).last
+  def evaluate(metric_name)
+    METRIC_VALUES[metric_name].present? ? public_send(METRIC_VALUES[metric_name]) : nil
+  end
 
-    current_status = rule.evaluate(value)
-    return if last_event.blank? && current_status == ReleaseHealthRule.health_statuses[:healthy]
+  def create_health_event(release_health_rule)
+    last_event = deployment_run.release_health_events.where(release_health_rule:).last
+    is_healthy = release_health_rule.healthy?(self)
+    return if last_event.blank? && is_healthy
+    current_status = is_healthy ? ReleaseHealthEvent.health_statuses[:healthy] : ReleaseHealthEvent.health_statuses[:unhealthy]
     return if last_event.present? && last_event.health_status == current_status
-    create_release_health_event(deployment_run:, release_health_rule: rule, health_status: current_status, event_timestamp: fetched_at)
+
+    create_release_health_event(deployment_run:, release_health_rule:, health_status: current_status, event_timestamp: fetched_at)
+  end
+
+  def metric_healthy?(metric_name)
+    raise ArgumentError, "Invalid metric name" unless metric_name.in? METRIC_VALUES.keys
+
+    rule = release_health_rules.for_metric(metric_name).first
+    return unless rule
+
+    event = deployment_run.release_health_events.where(release_health_rule: rule).last
+    return true if event.blank?
+    event.healthy?
   end
 end

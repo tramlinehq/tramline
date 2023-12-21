@@ -24,6 +24,7 @@ en:
       notification_setting:
         kind:
           deployment_finished: "Distribution successful"
+          deployment_failed: "Distribution failed"
           release_ended: "Release finished"
           release_stopped: "Release stopped before finish"
           release_started: "New release started"
@@ -31,6 +32,7 @@ en:
           step_failed: "Step failed"
           submit_for_review: "Build submitted for review to App Store"
           review_approved: "Build review approved by App Store"
+          review_failed: "Build review rejected by App Store"
           staged_rollout_updated: "Staged rollout increased"
           release_scheduled: "Release scheduled"
           backmerge_failed: "Auto backmerge PR creation failed"
@@ -41,7 +43,7 @@ en:
       deployment_run:
         failure_reason:
           unknown_failure: "an unknown error, contact support!"
-          review_failed: "the store review failure"
+          developer_rejected: "the store version was rejected by you manually"
           app_not_found: "the app not being available in store"
           build_not_found: "the build not being available in store"
           missing_export_compliance: "the release missing export compliance"
@@ -50,6 +52,7 @@ en:
           build_not_submittable: "the build not being submittable"
           build_mismatch: "the build not matching the release that exists in store"
           review_in_progress: "a review already being in progress"
+          attachment_upload_in_progress: "store version is not in a valid state to submit for review, attachment uploads still in progress"
           review_submission_exists: "a release already being added for review in the store"
           phased_release_not_found: "the release not being phased release enabled"
           release_already_exists: "a release already being present in the store"
@@ -106,6 +109,19 @@ en:
           finished: "finished"
           partially_finished: "partially finished"
           stopped_after_partial_finish: "stopped after partial finish"
+      release_health_event:
+        health_status:
+          healthy: "is healthy"
+          unhealthy: "is unhealthy"
+      trigger_rule_expression:
+        metric:
+          user_stability: "User stability"
+          session_stability: "Session stability"
+          errors: "Errors count"
+          new_errors: "New errors count"
+      filter_rule_expression:
+        metric:
+          adoption_rate: "Adoption rate"
     attributes:
       integration:
         categories:
@@ -127,6 +143,10 @@ en:
         release_suffix: "Release suffix"
     errors:
       models:
+        app_variant:
+          attributes:
+            bundle_identifier:
+              same_as_parent: "Cannot be the same as the parent app"
         accounts/user:
           attributes:
             email:

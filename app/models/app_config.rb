@@ -16,11 +16,13 @@
 class AppConfig < ApplicationRecord
   has_paper_trail
   include Notifiable
+  include PlatformAwareness
 
   MINIMUM_REQUIRED_CONFIG = %i[code_repository]
   PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
 
   belongs_to :app
+  has_many :variants, class_name: "AppVariant", dependent: :destroy
 
   validates :firebase_ios_config,
     allow_blank: true,
@@ -68,6 +70,11 @@ class AppConfig < ApplicationRecord
 
   def further_code_repository_setup?
     app.integrations.vcs_provider.further_setup?
+  end
+
+  def firebase_app(platform, variant: nil)
+    return variant.pick_firebase_app_id(platform) if variant&.in?(variants)
+    pick_firebase_app_id(platform)
   end
 
   private

@@ -1,6 +1,6 @@
 <div>
   <div class="px-4 py-2 bg-<%= step_color step.kind %>-50 rounded-md border-2 border-<%= step_color step.kind %>-300">
-    <div class="flex justify-between">
+    <div class="flex justify-between mb-1">
       <div class="flex flex-row items-center w-full">
         <h3 class="text-lg font-bold text-slate-800"><%= step.name %></h3>
         <%= status_badge "##{step.step_number}", %w[text-xs ml-2], :neutral %>
@@ -17,10 +17,18 @@
       <% end %>
     </div>
 
-    <div class="flex flex-col gap-y-5 mb-6">
-      <div class="flex flex-row items-center w-full">
-        <div class="text-slate-500 text-sm"><%= safe_simple_format(step.description) %></div>
-      </div>
+    <div class="flex flex-col gap-y-5 mb-5">
+      <% if step.app_variant.present? %>
+        <div class="flex flex-row items-center text-slate-600 text-xs">
+          App Variant – <%= step.app_variant.display_text %>
+        </div>
+      <% end %>
+
+      <% if step.description.present? %>
+        <div class="flex flex-row items-center w-full">
+          <div class="text-slate-500 text-sm"><%= safe_simple_format(step.description) %></div>
+        </div>
+      <% end %>
 
       <% if step_run&.build_version %>
         <div class="flex flex-col w-full">

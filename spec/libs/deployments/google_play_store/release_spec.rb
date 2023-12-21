@@ -139,4 +139,172 @@ describe Deployments::GooglePlayStore::Release do
       expect(providable_dbl).to have_received(:halt_release)
     end
   end
+
+  describe ".start_release!" do
+    let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+    end
+
+    context "when staged rollout" do
+      let(:deployment_run) { create(:deployment_run, :uploaded, :with_google_play_store, :with_staged_rollout) }
+
+      it "creates draft release" do
+        allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
+        described_class.start_release!(deployment_run)
+        expect(providable_dbl).to have_received(:create_draft_release)
+          .with(deployment_run.deployment_channel,
+            deployment_run.build_number,
+            deployment_run.release_version,
+            [{language: "en-US",
+              text: "The latest version contains bug fixes and performance improvements."}])
+      end
+
+      it "marks the run as release started" do
+        allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
+        expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :rollout_started?)
+      end
+
+      it "marks the run as failed with manual action required when release fails due to app review rejection" do
+        error_body = {"error" => {"status" => "INVALID_ARGUMENT",
+                                  "code" => 400,
+                                  "message" => "Changes cannot be sent for review automatically. Please set the query parameter changesNotSentForReview to true. Once committed, the changes in this edit can be sent for review from the Google Play Console UI"}}
+        error = Google::Apis::ClientError.new("Error", body: error_body.to_json)
+        allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new { raise Installations::Google::PlayDeveloper::Error.new(error) })
+        expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :failed_with_action_required?)
+      end
+    end
+
+    context "when no staged rollout" do
+      let(:deployment_run) { create(:deployment_run, :uploaded, :with_google_play_store) }
+
+      it "creates release with full rollout for non-production channel" do
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+        described_class.start_release!(deployment_run)
+        expect(providable_dbl).to have_received(:rollout_release)
+          .with(deployment_run.deployment_channel,
+            deployment_run.build_number,
+            deployment_run.release_version,
+            Deployment::FULL_ROLLOUT_VALUE,
+            [{language: "en-US", text: "Nothing new"}])
+      end
+
+      it "creates release with full rollout for production channel" do
+        deployment = create(:deployment, :with_release_step, :with_google_play_store, :with_production_channel)
+        deployment_run = create(:deployment_run, deployment:)
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+        described_class.start_release!(deployment_run)
+        expect(providable_dbl).to have_received(:rollout_release)
+          .with(deployment_run.deployment_channel,
+            deployment_run.build_number,
+            deployment_run.release_version,
+            Deployment::FULL_ROLLOUT_VALUE,
+            [{language: "en-US",
+              text: "The latest version contains bug fixes and performance improvements."}])
+      end
+
+      it "marks the run as released" do
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+        expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :released?)
+      end
+
+      it "marks the run as failed with manual action required when release fails due to app review rejection" do
+        error_body = {"error" => {"status" => "INVALID_ARGUMENT",
+                                  "code" => 400,
+                                  "message" => "Changes cannot be sent for review automatically. Please set the query parameter changesNotSentForReview to true. Once committed, the changes in this edit can be sent for review from the Google Play Console UI"}}
+        error = Google::Apis::ClientError.new("Error", body: error_body.to_json)
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new { raise Installations::Google::PlayDeveloper::Error.new(error) })
+        expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :failed_with_action_required?)
+      end
+    end
+
+    context "when step run is restarted and release is not present in the channel" do
+      context "when staged rollout" do
+        let(:step) { create(:step, :with_deployment, :release) }
+        let(:step_run) { create(:step_run, :deployment_restarted, step:) }
+        let(:deployment_run) { create(:deployment_run, :uploaded, :with_google_play_store, :with_staged_rollout, step_run:) }
+
+        it "creates the draft release" do
+          allow(providable_dbl).to receive(:build_present_in_channel?).and_return(false)
+          allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
+          described_class.start_release!(deployment_run)
+          expect(providable_dbl).to have_received(:create_draft_release)
+            .with(deployment_run.deployment_channel,
+              deployment_run.build_number,
+              deployment_run.release_version,
+              [{language: "en-US",
+                text: "The latest version contains bug fixes and performance improvements."}])
+        end
+
+        it "marks a run as release started" do
+          allow(providable_dbl).to receive(:build_present_in_channel?).and_return(false)
+          allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
+          expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :rollout_started?)
+        end
+      end
+
+      context "when no staged rollout" do
+        let(:step_run) { create(:step_run, :deployment_restarted) }
+        let(:deployment_run) { create(:deployment_run, :uploaded, :with_google_play_store, step_run:) }
+
+        it "creates a full rollout release" do
+          allow(providable_dbl).to receive(:build_present_in_channel?).and_return(false)
+          allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+          described_class.start_release!(deployment_run)
+          expect(providable_dbl).to have_received(:rollout_release)
+            .with(deployment_run.deployment_channel,
+              deployment_run.build_number,
+              deployment_run.release_version,
+              Deployment::FULL_ROLLOUT_VALUE,
+              [{language: "en-US", text: "Nothing new"}])
+        end
+
+        it "marks a run as released when no staged rollout" do
+          allow(providable_dbl).to receive(:build_present_in_channel?).and_return(false)
+          allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+          expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :released?)
+        end
+      end
+    end
+
+    context "when step run is restarted and release is present in the channel" do
+      context "when staged rollout" do
+        let(:step) { create(:step, :with_deployment, :release) }
+        let(:step_run) { create(:step_run, :deployment_restarted, step:) }
+        let(:deployment_run) { create(:deployment_run, :uploaded, :with_google_play_store, :with_staged_rollout, step_run:) }
+
+        it "does not create the draft release" do
+          allow(providable_dbl).to receive(:build_present_in_channel?).and_return(true)
+          allow(providable_dbl).to receive(:create_draft_release)
+          described_class.start_release!(deployment_run)
+          expect(providable_dbl).not_to have_received(:create_draft_release)
+        end
+
+        it "marks a run as release started" do
+          allow(providable_dbl).to receive(:build_present_in_channel?).and_return(true)
+          allow(providable_dbl).to receive(:create_draft_release)
+          expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :rollout_started?)
+        end
+      end
+
+      context "when no staged rollout" do
+        let(:step_run) { create(:step_run, :deployment_restarted) }
+        let(:deployment_run) { create(:deployment_run, :uploaded, :with_google_play_store, step_run:) }
+
+        it "does not create a full rollout release" do
+          allow(providable_dbl).to receive(:build_present_in_channel?).and_return(true)
+          allow(providable_dbl).to receive(:rollout_release)
+          described_class.start_release!(deployment_run)
+          expect(providable_dbl).not_to have_received(:rollout_release)
+        end
+
+        it "marks a run as released when no staged rollout" do
+          allow(providable_dbl).to receive(:build_present_in_channel?).and_return(true)
+          allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+          expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :released?)
+        end
+      end
+    end
+  end
 end

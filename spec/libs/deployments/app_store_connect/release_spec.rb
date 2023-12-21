@@ -353,21 +353,32 @@ describe Deployments::AppStoreConnect::Release do
     context "when failure" do
       let(:run) { create_deployment_run_for_ios(:started, deployment_traits: [:with_app_store, :with_production_channel], step_trait: :release) }
       let(:error) { Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "build", "code" => "not_found"}}) }
+      let(:retryable_error) { Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "release", "code" => "attachment_upload_in_progress"}}) }
 
       before do
         allow(providable_dbl).to receive(:submit_release).and_return(GitHub::Result.new { raise error })
       end
 
       it "marks the deployment run as failed when failure" do
+        allow(providable_dbl).to receive(:submit_release).and_return(GitHub::Result.new { raise error })
         described_class.submit_for_review!(run)
 
         expect(run.reload.failed?).to be(true)
       end
 
       it "adds the reason of failure to deployment run" do
+        allow(providable_dbl).to receive(:submit_release).and_return(GitHub::Result.new { raise error })
         described_class.submit_for_review!(run)
 
         expect(run.reload.failure_reason).to eq("build_not_found")
+      end
+
+      it "does not mark the deployment run as failed when the failure is retryable" do
+        allow(providable_dbl).to receive(:submit_release).and_return(GitHub::Result.new { raise retryable_error })
+        described_class.submit_for_review!(run)
+
+        expect(run.reload.failed?).to be(false)
+        expect(run.reload.failure_reason).to eq("attachment_upload_in_progress")
       end
     end
   end
@@ -400,7 +411,8 @@ describe Deployments::AppStoreConnect::Release do
       let(:initial_build_info) { AppStoreIntegration::TestFlightInfo.new(base_build_info.merge(status: "WAITING_FOR_BETA_REVIEW")) }
       let(:in_progress_build_info) { AppStoreIntegration::TestFlightInfo.new(base_build_info.merge(status: "IN_BETA_REVIEW")) }
       let(:success_build_info) { AppStoreIntegration::TestFlightInfo.new(base_build_info.merge(status: "BETA_APPROVED")) }
-      let(:failure_build_info) { AppStoreIntegration::TestFlightInfo.new(base_build_info.merge(status: "BETA_REJECTED")) }
+      let(:rejected_build_info) { AppStoreIntegration::TestFlightInfo.new(base_build_info.merge(status: "BETA_REJECTED")) }
+      let(:failure_build_info) { AppStoreIntegration::TestFlightInfo.new(base_build_info.merge(status: "MISSING_EXPORT_COMPLIANCE")) }
 
       it "finds build" do
         allow(providable_dbl).to receive(:find_build).and_return(GitHub::Result.new { initial_build_info })
@@ -452,6 +464,15 @@ describe Deployments::AppStoreConnect::Release do
         end
       end
 
+      it "marks the deployment run as review failed when rejected" do
+        allow(providable_dbl).to receive(:find_build).and_return(GitHub::Result.new { rejected_build_info })
+
+        expect { described_class.update_external_release(run) }
+          .to raise_error(Deployments::AppStoreConnect::Release::ExternalReleaseNotInTerminalState)
+
+        expect(run.reload.review_failed?).to be(true)
+      end
+
       it "marks the deployment run as failed when failure" do
         allow(providable_dbl).to receive(:find_build).and_return(GitHub::Result.new { failure_build_info })
 
@@ -465,7 +486,7 @@ describe Deployments::AppStoreConnect::Release do
 
         described_class.update_external_release(run)
 
-        expect(run.reload.failure_reason).to eq("review_failed")
+        expect(run.reload.failure_reason).to eq("developer_rejected")
       end
 
       it "raises error to re-poll when find build fails" do
@@ -500,7 +521,8 @@ describe Deployments::AppStoreConnect::Release do
       let(:initial_release_info) { AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "WAITING_FOR_REVIEW")) }
       let(:in_progress_release_info) { AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "IN_REVIEW")) }
       let(:success_release_info) { AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "PENDING_DEVELOPER_RELEASE")) }
-      let(:failure_release_info) { AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "REJECTED")) }
+      let(:rejected_release_info) { AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "REJECTED")) }
+      let(:failure_release_info) { AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "DEVELOPER_REJECTED")) }
 
       it "finds release" do
         allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { initial_release_info })
@@ -538,6 +560,15 @@ describe Deployments::AppStoreConnect::Release do
         expect(run.reload.ready_to_release?).to be(true)
       end
 
+      it "marks the deployment run as review failed when rejected" do
+        allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { rejected_release_info })
+
+        expect { described_class.update_external_release(run) }
+          .to raise_error(Deployments::AppStoreConnect::Release::ExternalReleaseNotInTerminalState)
+
+        expect(run.reload.review_failed?).to be(true)
+      end
+
       it "marks the deployment run as failed when failure" do
         allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { failure_release_info })
 
@@ -551,7 +582,7 @@ describe Deployments::AppStoreConnect::Release do
 
         described_class.update_external_release(run)
 
-        expect(run.reload.failure_reason).to eq("review_failed")
+        expect(run.reload.failure_reason).to eq("developer_rejected")
       end
 
       it "raises error to re-poll when find build fails" do

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_12_01_191245) do
+ActiveRecord::Schema[7.0].define(version: 2023_12_13_133617) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -63,6 +63,18 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_01_191245) do
     t.string "issuer_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "app_variants", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "app_config_id", null: false
+    t.string "name", null: false
+    t.string "bundle_identifier", null: false
+    t.jsonb "firebase_ios_config"
+    t.jsonb "firebase_android_config"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["app_config_id"], name: "index_app_variants_on_app_config_id"
+    t.index ["bundle_identifier", "app_config_id"], name: "index_app_variants_on_bundle_identifier_and_app_config_id", unique: true
   end
 
   create_table "apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -185,6 +197,14 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_01_191245) do
     t.string "platform"
     t.index ["app_id"], name: "index_external_apps_on_app_id"
     t.index ["fetched_at"], name: "index_external_apps_on_fetched_at"
+  end
+
+  create_table "external_builds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "step_run_id", null: false
+    t.jsonb "metadata", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["step_run_id"], name: "index_external_builds_on_step_run_id", unique: true
   end
 
   create_table "external_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -399,21 +419,18 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_01_191245) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "total_sessions_in_last_day"
+    t.string "external_release_id"
     t.index ["deployment_run_id"], name: "index_release_health_metrics_on_deployment_run_id"
     t.index ["fetched_at"], name: "index_release_health_metrics_on_fetched_at"
   end
 
   create_table "release_health_rules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "train_id", null: false
-    t.string "metric", null: false
-    t.string "comparator", null: false
-    t.float "threshold_value", null: false
     t.boolean "is_halting", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["metric"], name: "index_release_health_rules_on_metric"
-    t.index ["train_id", "metric"], name: "index_release_health_rules_on_train_id_and_metric", unique: true
-    t.index ["train_id"], name: "index_release_health_rules_on_train_id"
+    t.string "name"
+    t.uuid "release_platform_id", null: false
+    t.index ["release_platform_id"], name: "index_release_health_rules_on_release_platform_id"
   end
 
   create_table "release_metadata", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -488,6 +505,19 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_01_191245) do
     t.index ["train_id"], name: "index_releases_on_train_id"
   end
 
+  create_table "rule_expressions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_health_rule_id", null: false
+    t.string "type", null: false
+    t.string "metric", null: false
+    t.string "comparator", null: false
+    t.float "threshold_value", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["metric"], name: "index_rule_expressions_on_metric"
+    t.index ["release_health_rule_id", "metric"], name: "index_rule_expressions_on_release_health_rule_id_and_metric", unique: true
+    t.index ["release_health_rule_id"], name: "index_rule_expressions_on_release_health_rule_id"
+  end
+
   create_table "scheduled_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "train_id", null: false
     t.boolean "is_success", default: false
@@ -530,6 +560,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_01_191245) do
     t.boolean "sign_required", default: true
     t.string "approval_status", default: "pending", null: false
     t.text "build_notes_raw", default: [], array: true
+    t.index ["build_number", "build_version"], name: "index_step_runs_on_build_number_and_build_version"
     t.index ["commit_id"], name: "index_step_runs_on_commit_id"
     t.index ["release_platform_run_id"], name: "index_step_runs_on_release_platform_run_id"
     t.index ["step_id", "commit_id"], name: "index_step_runs_on_step_id_and_commit_id", unique: true
@@ -550,6 +581,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_01_191245) do
     t.string "kind"
     t.boolean "auto_deploy", default: true
     t.string "build_artifact_name_pattern"
+    t.uuid "app_variant_id"
     t.index ["ci_cd_channel", "release_platform_id"], name: "index_steps_on_ci_cd_channel_and_release_platform_id", unique: true
     t.index ["release_platform_id"], name: "index_steps_on_release_platform_id"
     t.index ["step_number", "release_platform_id"], name: "index_steps_on_step_number_and_release_platform_id", unique: true
@@ -633,6 +665,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_01_191245) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "app_configs", "apps"
+  add_foreign_key "app_variants", "app_configs"
   add_foreign_key "apps", "organizations"
   add_foreign_key "build_artifacts", "step_runs"
   add_foreign_key "build_queues", "releases"
@@ -644,6 +677,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_01_191245) do
   add_foreign_key "deployment_runs", "step_runs"
   add_foreign_key "deployments", "steps"
   add_foreign_key "external_apps", "apps"
+  add_foreign_key "external_builds", "step_runs"
   add_foreign_key "external_releases", "deployment_runs"
   add_foreign_key "integrations", "apps"
   add_foreign_key "invites", "organizations"
@@ -658,12 +692,13 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_01_191245) do
   add_foreign_key "release_health_events", "release_health_metrics"
   add_foreign_key "release_health_events", "release_health_rules"
   add_foreign_key "release_health_metrics", "deployment_runs"
-  add_foreign_key "release_health_rules", "trains"
+  add_foreign_key "release_health_rules", "release_platforms"
   add_foreign_key "release_metadata", "release_platform_runs"
   add_foreign_key "release_platform_runs", "commits", column: "last_commit_id"
   add_foreign_key "release_platform_runs", "release_platforms"
   add_foreign_key "release_platforms", "apps"
   add_foreign_key "releases", "trains"
+  add_foreign_key "rule_expressions", "release_health_rules"
   add_foreign_key "scheduled_releases", "trains"
   add_foreign_key "staged_rollouts", "deployment_runs"
   add_foreign_key "step_runs", "commits"

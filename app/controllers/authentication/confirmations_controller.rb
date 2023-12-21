@@ -6,6 +6,7 @@ class Authentication::ConfirmationsController < Devise::ConfirmationsController
 
     if resource.errors.empty?
       set_flash_message!(:notice, :confirmed)
+      SiteAnalytics.track(resource, resource.organizations.first, DeviceDetector.new(request.user_agent), "Email Confirmation")
     elsif resource.confirmed?
       set_flash_message!(:notice, :already_confirmed)
     else

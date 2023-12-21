@@ -2,49 +2,35 @@
 #
 # Table name: release_health_rules
 #
-#  id              :uuid             not null, primary key
-#  comparator      :string           not null
-#  is_halting      :boolean          default(FALSE), not null
-#  metric          :string           not null, indexed, indexed => [train_id]
-#  threshold_value :float            not null
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  train_id        :uuid             not null, indexed, indexed => [metric]
+#  id                  :uuid             not null, primary key
+#  is_halting          :boolean          default(FALSE), not null
+#  name                :string
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
+#  release_platform_id :uuid             not null, indexed
 #
 class ReleaseHealthRule < ApplicationRecord
-  include HealthAwareness
-  belongs_to :train
+  belongs_to :release_platform
+  has_many :trigger_rule_expressions, dependent: :destroy
+  has_many :filter_rule_expressions, dependent: :destroy
+  alias_method :filters, :filter_rule_expressions
+  alias_method :triggers, :trigger_rule_expressions
 
-  enum metric: {
-    session_stability: "session_stability",
-    user_stability: "user_stability",
-    errors: "errors",
-    new_errors: "new_errors"
-  }
+  scope :for_metric, ->(metric) { includes(:trigger_rule_expressions).where(trigger_rule_expressions: {metric:}) }
 
-  enum comparator: {
-    lt: "lt",
-    lte: "lte",
-    gt: "gt",
-    gte: "gte",
-    eq: "eq"
-  }
+  def healthy?(metric)
+    return true if triggers.blank?
 
-  COMPARATORS = {
-    lt: ->(value, threshold) { value < threshold },
-    lte: ->(value, threshold) { value <= threshold },
-    gt: ->(value, threshold) { value > threshold },
-    gte: ->(value, threshold) { value >= threshold },
-    eq: ->(value, threshold) { value == threshold }
-  }
+    filters_passed = filters.all? do |expr|
+      value = metric.evaluate(expr.metric)
+      expr.evaluate(value) if value
+    end
 
-  validates :metric, uniqueness: {scope: :train_id}
+    return true unless filters_passed
 
-  def evaluate(value)
-    comparator_proc = COMPARATORS[comparator.to_sym]
-    raise ArgumentError, "Invalid comparator" unless comparator_proc
-
-    return ReleaseHealthRule.health_statuses[:healthy] if comparator_proc.call(value, threshold_value)
-    ReleaseHealthRule.health_statuses[:unhealthy]
+    triggers.none? do |expr|
+      value = metric.evaluate(expr.metric)
+      expr.evaluate(value) if value
+    end
   end
 end

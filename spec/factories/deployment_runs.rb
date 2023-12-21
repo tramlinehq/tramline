@@ -21,6 +21,10 @@ FactoryBot.define do
       status { "submitted_for_review" }
     end
 
+    trait :review_failed do
+      status { "review_failed" }
+    end
+
     trait :ready_to_release do
       status { "ready_to_release" }
     end

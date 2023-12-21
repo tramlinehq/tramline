@@ -32,6 +32,7 @@ class ReleasePlatform < ApplicationRecord
   belongs_to :app
   belongs_to :train
 
+  has_many :release_health_rules, dependent: :destroy
   has_many :release_platform_runs, inverse_of: :release_platform, dependent: :destroy
   has_many :steps, -> { order(:step_number) }, inverse_of: :release_platform, dependent: :destroy
   has_many :deployments, through: :steps

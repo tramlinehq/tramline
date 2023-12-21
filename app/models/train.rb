@@ -25,7 +25,7 @@
 #  tag_suffix               :string
 #  version_current          :string
 #  version_seeded_with      :string
-#  versioning_strategy      :string           default(NULL)
+#  versioning_strategy      :string           default("semver")
 #  working_branch           :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
@@ -66,7 +66,7 @@ class Train < ApplicationRecord
 
   delegate :ready?, :config, :organization, to: :app
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :monitoring_provider, to: :integrations
-  delegate :fixed_build_number?, to: :organization
+  delegate :fixed_build_number?, :custom_release_version?, to: :organization
 
   enum status: {draft: "draft", active: "active", inactive: "inactive"}
   enum backmerge_strategy: {continuous: "continuous", on_finalize: "on_finalize"}
@@ -188,7 +188,7 @@ class Train < ApplicationRecord
   def diff_since_last_release?
     return vcs_provider.commit_log(ongoing_release.first_commit.commit_hash, working_branch).any? if ongoing_release
     return true if last_finished_release.blank?
-    vcs_provider.commit_log(last_finished_release.tag_name, working_branch).any?
+    vcs_provider.commit_log(last_finished_release.tag_name || last_finished_release.last_commit.commit_hash, working_branch).any?
   end
 
   def create_webhook!

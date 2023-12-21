@@ -59,6 +59,7 @@ class DeploymentRun < ApplicationRecord
     to: :deployment
   delegate :release_metadata, :train, :app, to: :release
   delegate :release_version, :platform, to: :release_platform_run
+  delegate :release_health_rules, to: :release_platform
 
   STAMPABLE_REASONS = %w[
     created
@@ -69,6 +70,8 @@ class DeploymentRun < ApplicationRecord
     review_approved
     release_started
     released
+    review_failed
+    skipped
   ]
 
   STATES = {
@@ -82,14 +85,17 @@ class DeploymentRun < ApplicationRecord
     ready_to_release: "ready_to_release",
     rollout_started: "rollout_started",
     released: "released",
+    review_failed: "review_failed",
+    failed_with_action_required: "failed_with_action_required",
     failed: "failed"
   }
 
   READY_STATES = [STATES[:rollout_started], STATES[:ready_to_release], STATES[:released]]
+  STORE_SUBMISSION_STATES = READY_STATES + [STATES[:submitted_for_review], STATES[:review_failed]]
 
   enum status: STATES
   enum failure_reason: {
-    review_failed: "review_failed",
+    developer_rejected: "developer_rejected",
     invalid_release: "invalid_release",
     unknown_failure: "unknown_failure"
   }.merge(
@@ -133,11 +139,25 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :ready_to_release, after_commit: :mark_reviewed do
-      transitions from: :submitted_for_review, to: :ready_to_release
+      transitions from: [:submitted_for_review, :review_failed], to: :ready_to_release
     end
 
     event :engage_release, after_commit: :on_release_started do
       transitions from: [:uploaded, :ready_to_release], to: :rollout_started
+    end
+
+    event :fail_review, after_commit: :after_review_failure do
+      transitions from: :submitted_for_review, to: :review_failed
+    end
+
+    event :fail_with_sync_option, before: :set_reason do
+      transitions from: [:started, :prepared_release, :uploading, :uploaded, :submitted_for_review, :ready_to_release, :rollout_started, :failed_prepare_release, :failed_with_action_required], to: :failed_with_action_required
+      after { step_run.fail_deployment_with_sync_option! }
+    end
+
+    event :skip, after_commit: -> { event_stamp!(reason: :skipped, kind: :notice, data: stamp_data) } do
+      transitions from: :failed_with_action_required, to: :released
+      after { step_run.finish_deployment!(deployment) }
     end
 
     event :dispatch_fail, before: :set_reason, after_commit: :release_failed do
@@ -163,6 +183,17 @@ class DeploymentRun < ApplicationRecord
 
   def self.reached_production
     ready.includes(:step_run, :deployment).select(&:production_channel?)
+  end
+
+  def healthy?
+    return true if release_health_rules.blank?
+    return true if release_health_events.blank?
+
+    rule_health = release_health_rules.map do |rule|
+      release_health_events.where(release_health_rule: rule).last&.healthy?
+    end.compact
+
+    rule_health.all?
   end
 
   def fetch_health_data!
@@ -235,6 +266,11 @@ class DeploymentRun < ApplicationRecord
     notify!("Submitted for review!", :submit_for_review, notification_params)
     event_stamp!(reason: :submitted_for_review, kind: :notice, data: stamp_data)
     Deployments::AppStoreConnect::UpdateExternalReleaseJob.perform_async(id)
+  end
+
+  def after_review_failure
+    notify!("Review failed", :review_failed, notification_params)
+    event_stamp!(reason: :review_failed, kind: :error, data: stamp_data)
   end
 
   def get_upload_status(args)
@@ -399,7 +435,11 @@ class DeploymentRun < ApplicationRecord
   def fail_with_error(error)
     elog(error)
     if error.is_a?(Installations::Error)
-      dispatch_fail!(reason: error.reason)
+      if error.reason == :app_review_rejected
+        fail_with_sync_option!(reason: error.reason)
+      else
+        dispatch_fail!(reason: error.reason)
+      end
     else
       dispatch_fail!
     end
@@ -419,6 +459,10 @@ class DeploymentRun < ApplicationRecord
 
   def production_release_happened?
     production_channel? && status.in?(READY_STATES)
+  end
+
+  def production_release_submitted?
+    production_channel? && status.in?(STORE_SUBMISSION_STATES)
   end
 
   private
@@ -441,6 +485,7 @@ class DeploymentRun < ApplicationRecord
 
   def release_failed
     event_stamp!(reason: :release_failed, kind: :error, data: stamp_data)
+    notify!("Deployment failed", :deployment_failed, notification_params)
   end
 
   def release_success
