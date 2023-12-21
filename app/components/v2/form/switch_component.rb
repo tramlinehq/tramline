@@ -33,7 +33,7 @@ class V2::Form::SwitchComponent < ViewComponent::Base
   end
 
   def switch_data
-    { action: data_actions,
-      toggle_switch_target: "checkbox" }.merge(@switch_data.except(:action))
+    {action: data_actions,
+     toggle_switch_target: "checkbox"}.merge(@switch_data.except(:action))
   end
 end

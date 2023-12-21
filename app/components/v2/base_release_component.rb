@@ -14,8 +14,8 @@ class V2::BaseReleaseComponent < V2::BaseComponent
       hotfixed_from = @release.hotfixed_from
       hotfixed_from_version = hotfixed_from.release_version.to_s
       # hotfixed_from_link = hotfixed_from.live_release_link
-      { text: "Hotfixed from #{hotfixed_from_version}",
-        icon: "band_aid.svg" }
+      {text: "Hotfixed from #{hotfixed_from_version}",
+       icon: "band_aid.svg"}
     end
   end
 
@@ -36,9 +36,7 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     distance_of_time_in_words(@release.scheduled_at, @release.completed_at)
   end
 
-  def release_branch
-    release.release_branch
-  end
+  delegate :release_branch, to: :release
 
   def release_tag
     release.tag_name

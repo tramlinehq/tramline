@@ -4,7 +4,7 @@ class V2::IntegrationCardComponent < V2::BaseComponent
     bugsnag: "Add Personal Auth Token",
     firebase: "Add Firebase Service Account JSON Key",
     google_play_store: "Add Service Account JSON Key",
-    bitrise: "Add Personal Access Token",
+    bitrise: "Add Personal Access Token"
   }
 
   def initialize(app, integration, category)
@@ -31,19 +31,15 @@ class V2::IntegrationCardComponent < V2::BaseComponent
 
   def creatable_form_partial
     render(partial: "integrations/providers/#{provider}",
-           locals: { app: @app, integration: @integration, category: @category })
+      locals: {app: @app, integration: @integration, category: @category})
   end
 
   def connectable_form_partial
     render(partial: "integrations/connectable",
-           locals: { app: @app, integration: @integration, category: @category, url: connect_path, type: providable_type })
+      locals: {app: @app, integration: @integration, category: @category, url: connect_path, type: providable_type})
   end
 
-  def creatable?
-    provider.creatable?
-  end
+  delegate :creatable?, to: :provider
 
-  def connectable?
-    provider.connectable?
-  end
+  delegate :connectable?, to: :provider
 end

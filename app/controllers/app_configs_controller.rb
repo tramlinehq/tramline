@@ -113,7 +113,7 @@ class AppConfigsController < SignedInApplicationController
 
   def require_integration_setup
     unless @app.app_setup_instructions[:app_config][:visible]
-      redirect_to app_path(@app), flash: { notice: "Finish the integration setup before configuring the app." }
+      redirect_to app_path(@app), flash: {notice: "Finish the integration setup before configuring the app."}
     end
   end
 
@@ -121,7 +121,7 @@ class AppConfigsController < SignedInApplicationController
     if Integration.categories.key?(params[:integration_category])
       @integration_category = params[:integration_category]
     else
-      redirect_to app_path(@app), flash: { notice: "Invalid integration category." }
+      redirect_to app_path(@app), flash: {notice: "Invalid integration category."}
     end
   end
 end

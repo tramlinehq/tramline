@@ -10,13 +10,9 @@ class V2::ReleaseListComponent < V2::BaseComponent
   attr_reader :train
   delegate :app, to: :train
 
-  def devops_report
-    train.devops_report
-  end
+  delegate :devops_report, to: :train
 
-  def hotfix_from
-    train.hotfix_from
-  end
+  delegate :hotfix_from, to: :train
 
   def empty?
     previous_releases.empty? &&
@@ -39,17 +35,11 @@ class V2::ReleaseListComponent < V2::BaseComponent
     train.releases.released.first
   end
 
-  memoize def ongoing_release
-    train.ongoing_release
-  end
+  memoize delegate :ongoing_release, to: :train
 
-  memoize def upcoming_release
-    train.upcoming_release
-  end
+  memoize delegate :upcoming_release, to: :train
 
-  memoize def hotfix_release
-    train.hotfix_release
-  end
+  memoize delegate :hotfix_release, to: :train
 
   def ordered_releases
     train.releases.order(scheduled_at: :desc).take(100)

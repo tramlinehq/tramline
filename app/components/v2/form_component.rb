@@ -1,7 +1,7 @@
 class V2::FormComponent < V2::BaseComponent
   renders_one :action
-  renders_many :sections, -> (**args) { V2::Form::SectionComponent.new(form: @form, **args) }
-  renders_many :advanced_sections, -> (**args) { V2::Form::SectionComponent.new(form: @form, **args) }
+  renders_many :sections, ->(**args) { V2::Form::SectionComponent.new(form: @form, **args) }
+  renders_many :advanced_sections, ->(**args) { V2::Form::SectionComponent.new(form: @form, **args) }
 
   def initialize(params)
     @params = params.merge(builder: EnhancedFormHelper::AuthzForm)

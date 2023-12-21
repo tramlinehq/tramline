@@ -1,6 +1,6 @@
 class V2::DropdownComponent < V2::BaseComponent
-  DROPDOWN_ACTIONS = { popup_target: "element", action: "click->popup#toggle" }.freeze
-  BASE_BUTTON_OPTS = { scheme: :switcher, type: :action, size: :xxs, html_options: { data: DROPDOWN_ACTIONS } }.freeze
+  DROPDOWN_ACTIONS = {popup_target: "element", action: "click->popup#toggle"}.freeze
+  BASE_BUTTON_OPTS = {scheme: :switcher, type: :action, size: :xxs, html_options: {data: DROPDOWN_ACTIONS}}.freeze
   STYLE = "z-30 w-52 bg-white shadow-md border border-gray-300 rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600".freeze
 
   renders_one :button, ->(**args) do
@@ -72,7 +72,7 @@ class V2::DropdownComponent < V2::BaseComponent
       end
 
       def link_class
-        { class: @link[:class].presence || ITEM_STYLE }
+        {class: @link[:class].presence || ITEM_STYLE}
       end
 
       def link_params

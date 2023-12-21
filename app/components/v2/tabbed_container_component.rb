@@ -6,7 +6,7 @@ class V2::TabbedContainerComponent < V2::BaseComponent
   TAB_STYLE = "inline-flex items-center justify-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 group"
   SELECTED_TAB_STYLE = "inline-flex items-center justify-center p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500 group"
 
-  def initialize(title:, tab_config: [], turbo_frame:)
+  def initialize(title:, turbo_frame:, tab_config: [])
     raise ArgumentError, "tab_config must be an array" unless tab_config.is_a?(Array)
     raise ArgumentError, "tab_config must be an array of arrays" unless tab_config.all? { _1.length == 4 }
 

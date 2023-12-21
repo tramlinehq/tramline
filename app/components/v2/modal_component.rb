@@ -1,5 +1,5 @@
 class V2::ModalComponent < V2::BaseComponent
-  BASE_OPTS = { html_options: { data: { action: "click->reveal#toggle" } } }.freeze
+  BASE_OPTS = {html_options: {data: {action: "click->reveal#toggle"}}}.freeze
   SIZES = [:xsmall, :small, :medium, :large, :full].freeze
   SIZE_TO_WIDTH = {
     xxsmall: "max-w-xs",

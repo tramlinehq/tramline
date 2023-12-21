@@ -32,7 +32,7 @@ class V2::ButtonComponent < V2::BaseComponent
       class: "bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600",
       icon: true
     },
-    none: { class: "" },
+    none: {class: ""}
   }
   DISABLED_STYLE = "opacity-30 disabled cursor-not-allowed outline-none focus:outline-none"
   DROPDOWN_STYLE = "p-1 text-sm text-gray-700 dark:text-gray-200"

@@ -21,10 +21,10 @@ class V2::BuildInfoComponent < V2::BaseComponent
   end
 
   def build_logo
-    "integrations/logo_#{step.ci_cd_provider.to_s}.png"
+    "integrations/logo_#{step.ci_cd_provider}.png"
   end
 
   def deployment_logo
-    "integrations/logo_#{deployment.integration_type.to_s}.png"
+    "integrations/logo_#{deployment.integration_type}.png"
   end
 end

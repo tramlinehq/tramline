@@ -2,7 +2,7 @@
 
 class V2::TableComponent < ViewComponent::Base
   renders_one :heading
-  renders_many :rows, -> (style: "") { RowComponent.new(style: style) }
+  renders_many :rows, ->(style: "") { RowComponent.new(style: style) }
 
   def initialize(columns:)
     @columns = columns
@@ -11,7 +11,7 @@ class V2::TableComponent < ViewComponent::Base
   attr_reader :columns
 
   class RowComponent < V2::BaseComponent
-    renders_many :cells, -> (style: "") { CellComponent.new(style: style) }
+    renders_many :cells, ->(style: "") { CellComponent.new(style: style) }
     ROW_STYLE = "border-b dark:bg-gray-800 dark:border-gray-700"
 
     def initialize(style: "")
@@ -19,7 +19,7 @@ class V2::TableComponent < ViewComponent::Base
     end
 
     def call
-      content_tag :tr, content, { class: ROW_STYLE + " #{@style}" } do
+      content_tag :tr, content, {class: ROW_STYLE + " #{@style}"} do
         cells.each do |cell|
           concat cell
         end
@@ -34,7 +34,7 @@ class V2::TableComponent < ViewComponent::Base
       end
 
       def call
-        content_tag :td, content, { class: CELL_STYLE + " #{@style}" }
+        content_tag :td, content, {class: CELL_STYLE + " #{@style}"}
       end
     end
   end
