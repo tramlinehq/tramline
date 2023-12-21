@@ -27,7 +27,7 @@
     </div>
   </div>
 
-  <div id="tab-content">
+  <div id="tab-content" class="mt-8">
     <% tabs.each do |tab| %>
       <% component = V2::EnhancedTurboFrameComponent.new(frame, classes: "with-turbo-frame-loader") %>
       <% component.with_loading_indicator %>

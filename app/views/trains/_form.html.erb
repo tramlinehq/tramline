@@ -1,35 +1,33 @@
 <% url = train.new_record? ? app_trains_path(app) : app_train_path(app, train) %>
 
-<%= form_with(model: [app, train],
-              url: url,
-              builder: EnhancedFormHelper::AuthzForm) do |form| %>
-  <div data-controller="branching-selector"
-       data-branching-selector-domain--release-schedule-help-outlet="#release-schedule">
-    <%= render V2::FormComponent.new do |form_component| %>
-      <% form_component.with_section(heading: "Basic") do |component| %>
-        <% component.with_description do %>
-          Configure the target website you want to monitor. You'll find the advanced configuration below, in the
-          advanced
-          settings section.
-        <% end %>
-        <div class="grid gap-4">
-          <div data-controller="domain--branch-name-help"
-               data-domain--branch-name-help-current-value="<%= train.display_name %>">
-            <%= form.labeled_text_field :name, "Name",
-                                        required: true,
-                                        data: { domain__branch_name_help_target: "input",
-                                                action: "domain--branch-name-help#set" } %>
-            <div class="text-sm mt-1">
-              <span data-domain--branch-name-help-target="helpTextTitle"></span>
-              <span class="font-mono" data-domain--branch-name-help-target="helpTextVal"></span>
-            </div>
-          </div>
-          <div><%= form.labeled_textarea :description, "Description" %></div>
-        </div>
+<div data-controller="branching-selector"
+     data-branching-selector-domain--release-schedule-help-outlet="#release-schedule">
+  <%= render V2::FormComponent.new(model: [app, train], url: url) do |f| %>
+    <% f.with_section(heading: "Basic") do |section| %>
+      <% section.with_description do %>
+        Configure the target website you want to monitor. You'll find the advanced configuration below, in the
+        advanced
+        settings section.
       <% end %>
 
-      <%= form_component.with_section(heading: "Version") do |component| %>
-        <% component.with_description do %>
+      <div class="grid gap-4">
+        <div data-controller="domain--branch-name-help"
+             data-domain--branch-name-help-current-value="<%= train.display_name %>">
+          <%= section.F.labeled_text_field :name, "Name",
+                                           required: true,
+                                           data: { domain__branch_name_help_target: "input",
+                                                   action: "domain--branch-name-help#set" } %>
+          <div class="text-sm mt-1">
+            <span data-domain--branch-name-help-target="helpTextTitle"></span>
+            <span class="font-mono" data-domain--branch-name-help-target="helpTextVal"></span>
+          </div>
+        </div>
+        <div><%= section.F.labeled_textarea :description, "Description" %></div>
+      </div>
+    <% end %>
+
+    <%= f.with_section(heading: "Version") do |section| %>
+      <% section.with_description do %>
           <span>
             Tramline increments the version name for every release build created, which guarantees that every build
             can be uniquely identified. We allow a
@@ -39,197 +37,203 @@
             <%= link_to_external "docs", "https://docs.tramline.app/automations#version-name", class: "underline" %>
             to learn more about versioning.
           </span>
-        <% end %>
-        <div data-controller="domain--version-name-help"
-             data-domain--version-name-help-disabled-value="<%= train.persisted? %>">
-          <%= form.label_only :major_version_seed, "Seed with your current version name (build name)" %>
-          <div class="flex flex-row gap-x-2">
-            <%= form.text_field_without_label :major_version_seed, "major",
-                                              class: text_field_classes(is_disabled: train.persisted?),
-                                              disabled: train.persisted?,
-                                              data: { domain__version_name_help_target: "majorInput",
-                                                      action: "domain--version-name-help#bump" } %>
-            <span class="mx-1">.</span>
-            <%= form.text_field_without_label :minor_version_seed, "minor",
-                                              class: text_field_classes(is_disabled: train.persisted?),
-                                              disabled: train.persisted?,
-                                              data: { domain__version_name_help_target: "minorInput",
-                                                      action: "domain--version-name-help#bump" } %>
-            <span class="mx-1">.</span>
-            <%= form.text_field_without_label :patch_version_seed, "patch (optional)",
-                                              class: text_field_classes(is_disabled: train.persisted?),
-                                              disabled: train.persisted?,
-                                              data: { domain__version_name_help_target: "patchInput",
-                                                      action: "domain--version-name-help#bump" } %>
-          </div>
+      <% end %>
 
-          <% unless train.persisted? %>
-            <div class="text-sm my-1">
-              <p class="text-rose-700" hidden data-domain--version-name-help-target="helpTextVal"></p>
-              <div class="mt-2">
-                <div class="grid gap-x-4 md:grid-cols-2">
-                  <div class="flex flex-col bg-slate-50 rounded-sm items-center justify-center py-2">
-                    <div class="flex-grow mb-2">
-                      <div class="uppercase tracking-wider text-xl drop-shadow-sm font-mono">
-                        <span data-domain--version-name-help-target="currentVersion">x.x</span>
-                      </div>
-                    </div>
-                    <div class="mt-2 text-stone text-xs drop-shadow-sm">
-                      Your <strong>current</strong> release version
+      <div data-controller="domain--version-name-help"
+           data-domain--version-name-help-disabled-value="<%= train.persisted? %>">
+        <%= section.F.label_only :major_version_seed, "Seed with your current version name (build name)" %>
+        <div class="flex flex-row gap-x-2">
+          <%= section.F.text_field_without_label :major_version_seed, "major",
+                                                 class: text_field_classes(is_disabled: train.persisted?),
+                                                 disabled: train.persisted?,
+                                                 data: { domain__version_name_help_target: "majorInput",
+                                                         action: "domain--version-name-help#bump" } %>
+          <span class="mx-1">.</span>
+          <%= section.F.text_field_without_label :minor_version_seed, "minor",
+                                                 class: text_field_classes(is_disabled: train.persisted?),
+                                                 disabled: train.persisted?,
+                                                 data: { domain__version_name_help_target: "minorInput",
+                                                         action: "domain--version-name-help#bump" } %>
+          <span class="mx-1">.</span>
+          <%= section.F.text_field_without_label :patch_version_seed, "patch (optional)",
+                                                 class: text_field_classes(is_disabled: train.persisted?),
+                                                 disabled: train.persisted?,
+                                                 data: { domain__version_name_help_target: "patchInput",
+                                                         action: "domain--version-name-help#bump" } %>
+        </div>
+
+        <% unless train.persisted? %>
+          <div class="text-sm my-1">
+            <p class="text-rose-700" hidden data-domain--version-name-help-target="helpTextVal"></p>
+            <div class="mt-2">
+              <div class="grid gap-x-4 md:grid-cols-2">
+                <div class="flex flex-col bg-slate-50 rounded-sm items-center justify-center py-2">
+                  <div class="flex-grow mb-2">
+                    <div class="uppercase tracking-wider text-xl drop-shadow-sm font-mono">
+                      <span data-domain--version-name-help-target="currentVersion">x.x</span>
                     </div>
                   </div>
-                  <div class="flex flex-col bg-slate-50 rounded-sm items-center justify-center py-2">
-                    <div class="flex-grow mb-2">
-                      <div class="uppercase tracking-wider text-xl drop-shadow-sm font-mono">
-                        <span data-domain--version-name-help-target="nextVersion">x.x</span>
-                      </div>
+                  <div class="mt-2 text-stone text-xs drop-shadow-sm">
+                    Your <strong>current</strong> release version
+                  </div>
+                </div>
+                <div class="flex flex-col bg-slate-50 rounded-sm items-center justify-center py-2">
+                  <div class="flex-grow mb-2">
+                    <div class="uppercase tracking-wider text-xl drop-shadow-sm font-mono">
+                      <span data-domain--version-name-help-target="nextVersion">x.x</span>
                     </div>
-                    <div class="mt-2 text-stone text-xs drop-shadow-sm">
-                      Your <strong>next</strong> release will start with this version
-                    </div>
+                  </div>
+                  <div class="mt-2 text-stone text-xs drop-shadow-sm">
+                    Your <strong>next</strong> release will start with this version
                   </div>
                 </div>
               </div>
             </div>
-          <% end %>
-        </div>
-      <% end %>
-
-      <% if app.notifications_set_up? %>
-        <%= form_component.with_section(heading: "Notifications") do |component| %>
-          <% component.with_description do %>
-            Enable notifications to be sent during the release. Advanced notifications can be configured in the
-            <% if @train.persisted? %>
-              <%= link_to "Notification Settings", app_train_notification_settings_path(@app, @train), class: "underline", data: {turbo: false} %>
-            <% else %>
-              Notification Settings
-            <% end %>for the train.
-          <% end %>
-          <%= render partial: "notifications_config_form", locals: { form: } %>
-        <% end %>
-      <% end %>
-
-      <%= form_component.with_section(heading: "Branching strategy") do |component| %>
-        <% component.with_description do %>
-          Refer to
-          the <%= link_to_external "docs", "https://docs.tramline.app/branching-strategies", class: "underline" %>
-          to learn more about our supported branching strategies.
-        <% end %>
-        <div class="grid gap-x-5 md:grid-cols-2">
-          <div>
-            <%= form.labeled_select :branching_strategy, "Strategy",
-                                    options_for_select(Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
-                                    {},
-                                    { class: text_field_classes(is_disabled: train.persisted?),
-                                      data: { action: 'branching-selector#change',
-                                              branching_selector_target: "branchingStrategy" },
-                                      disabled: train.persisted? } %>
           </div>
-
-          <div>
-            <%= form.labeled_text_field :working_branch, "Working Branch",
-                                        required: true,
-                                        class: text_field_classes(is_disabled: train.persisted?),
-                                        placeholder: "eg., master, main",
-                                        disabled: train.persisted? %>
-          </div>
-
-          <div hidden data-branching-selector-target="almostTrunk"></div>
-
-          <div><!-- this is required to maintain intended grid structure --></div>
-
-          <div hidden data-branching-selector-target="releaseBackMerge">
-            <div class="mt-2">
-              <%= form.labeled_text_field :release_backmerge_branch, "Release Backmerge Branch",
-                                          class: text_field_classes(is_disabled: train.persisted?),
-                                          placeholder: "eg., dev",
-                                          disabled: train.persisted? %>
-            </div>
-          </div>
-
-          <div hidden data-branching-selector-target="parallelBranches">
-            <div class="mt-2">
-              <%= form.labeled_text_field :release_branch, "Release Branch",
-                                          class: text_field_classes(is_disabled: train.persisted?),
-                                          placeholder: "eg., production",
-                                          disabled: train.persisted? %>
-            </div>
-          </div>
-        </div>
-      <% end %>
-
-      <%= form_component.with_advanced_section(heading: "Release Schedule",
-                                               html_options: { hidden: true,
-                                                               data: { branching_selector_target: "schedule" } }) do |component| %>
-        <% component.with_description do %>
-          Set a schedule for automatic kickoff of your release train. Leave blank for only manual control.
         <% end %>
-        <%= render partial: "release_schedule_form", locals: { form: } %>
-      <% end %>
+      </div>
+    <% end %>
 
-      <%= form_component.with_advanced_section(heading: "Build Queue") do |component| %>
-        <% component.with_description do %>
-          Control when commits are applied to trigger new builds in your release.
-          By default, commits on the release branch are auto-applied.
+    <% if app.notifications_set_up? %>
+      <%= f.with_section(heading: "Notifications") do |section| %>
+        <% section.with_description do %>
+          Enable notifications to be sent during the release. Advanced notifications can be configured in the
+          <% if @train.persisted? %>
+            <%= link_to "Notification Settings", app_train_notification_settings_path(@app, @train), class: "underline", data: { turbo: false } %>
+          <% else %>
+            Notification Settings
+          <% end %>for the train.
         <% end %>
-        <%= render partial: "build_queue_form", locals: { form: } %>
-      <% end %>
-
-      <%= form_component.with_advanced_section(heading: "Continuous Backmerge",
-                                               html_options: { hidden: true,
-                                                               data: { branching_selector_target: "backmerge" } }) do |component| %>
-        <% component.with_description do %>
-          Enable backmerging of release branch commits into the working branch as they arrive.
-          By default, merge happens at the end of the release.
-        <% end %>
-        <%= render V2::Form::SwitchComponent.new(form:,
-                                                 field_name: :continuous_backmerge_enabled,
-                                                 on_label: "Continuous Backmerge enabled",
-                                                 off_label: "Continuous Backmerge disabled")%>
-      <% end %>
-
-      <%= form_component.with_advanced_section(heading: "Manual Release Trigger") do |component| %>
-        <% component.with_description do %>
-          Always require a manual trigger for the release step of the train.
-          By default, the release step will be auto-triggered if it has run before in the release.
-        <% end %>
-        <%= render V2::Form::SwitchComponent.new(form:,
-                                                 field_name: :manual_release,
-                                                 on_label: "Manual Release enabled",
-                                                 off_label: "Manual Release disabled")%>
-      <% end %>
-
-      <%= form_component.with_advanced_section(heading: "Compact Build Notes") do |component| %>
-        <% component.with_description do %>
-          Compact the build notes by picking only the first line of commit messages.
-          By default, the entire commit message is used.
-        <% end %>
-        <%= render V2::Form::SwitchComponent.new(form:,
-                                                 field_name: :compact_build_notes,
-                                                 on_label: "Compact Build Notes enabled",
-                                                 off_label: "Compact Build Notes disabled")%>
-      <% end %>
-
-      <%= form_component.with_advanced_section(heading: "Tag Your Releases") do |component| %>
-        <% component.with_description do %>
-          By default, a tag is created at the end of the release with the final version of the release.
-          You can turn off creation of tag. Or, you can add an optional suffix to your tags.
-        <% end %>
-        <%= render partial: "release_tag_form", locals: { form: } %>
-      <% end %>
-
-      <% if @app.cross_platform? %>
-        <%= form_component.with_advanced_section(heading: "Platform Specific Tags", html_options: { data: { controller: "reveal" } }) do |component| %>
-          <% component.with_description do %>
-            Tag each platform release separately. By default, only one tag is created at the end of the release.
-          <% end %>
-          <%= render partial: "store_tags_form", locals: { form: } %>
-        <% end %>
+        <%= render partial: "notifications_config_form", locals: { form: section.F } %>
       <% end %>
     <% end %>
-  </div>
 
-  <div class="mt-12">
-    <%= form.authz_submit (train.persisted? ? "Update Train" : "Create Train"), "plus.svg" %>
-  </div>
-<% end %>
+    <%= f.with_section(heading: "Branching strategy") do |section| %>
+      <% section.with_description do %>
+        Refer to
+        the <%= link_to_external "docs", "https://docs.tramline.app/branching-strategies", class: "underline" %>
+        to learn more about our supported branching strategies.
+      <% end %>
+      <div class="grid gap-x-5 md:grid-cols-2">
+        <div>
+          <%= section.F.labeled_select :branching_strategy, "Strategy",
+                                       options_for_select(Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
+                                       {},
+                                       { class: text_field_classes(is_disabled: train.persisted?),
+                                         data: { action: 'branching-selector#change',
+                                                 branching_selector_target: "branchingStrategy" },
+                                         disabled: train.persisted? } %>
+        </div>
+
+        <div>
+          <%= section.F.labeled_text_field :working_branch, "Working Branch",
+                                           required: true,
+                                           class: text_field_classes(is_disabled: train.persisted?),
+                                           placeholder: "eg., master, main",
+                                           disabled: train.persisted? %>
+        </div>
+
+        <div hidden data-branching-selector-target="almostTrunk"></div>
+        <div><!-- this is required to maintain intended grid structure --></div>
+
+        <div hidden data-branching-selector-target="releaseBackMerge">
+          <div class="mt-2">
+            <%= section.F.labeled_text_field :release_backmerge_branch, "Release Backmerge Branch",
+                                             class: text_field_classes(is_disabled: train.persisted?),
+                                             placeholder: "eg., dev",
+                                             disabled: train.persisted? %>
+          </div>
+        </div>
+
+        <div hidden data-branching-selector-target="parallelBranches">
+          <div class="mt-2">
+            <%= section.F.labeled_text_field :release_branch, "Release Branch",
+                                             class: text_field_classes(is_disabled: train.persisted?),
+                                             placeholder: "eg., production",
+                                             disabled: train.persisted? %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <%= f.with_advanced_section(heading: "Release Schedule",
+                                html_options: { hidden: true,
+                                                data: { branching_selector_target: "schedule" } }) do |section| %>
+      <% section.with_description do %>
+        Set a schedule for automatic kickoff of your release train. Leave blank for only manual control.
+      <% end %>
+
+      <%= render partial: "release_schedule_form", locals: { form: section.F } %>
+    <% end %>
+
+    <%= f.with_advanced_section(heading: "Build Queue") do |section| %>
+      <% section.with_description do %>
+        Control when commits are applied to trigger new builds in your release.
+        By default, commits on the release branch are auto-applied.
+      <% end %>
+
+      <%= render partial: "build_queue_form", locals: { form: section.F } %>
+    <% end %>
+
+    <%= f.with_advanced_section(heading: "Continuous Backmerge",
+                                html_options: { hidden: true,
+                                                data: { branching_selector_target: "backmerge" } }) do |section| %>
+      <% section.with_description do %>
+        Enable backmerging of release branch commits into the working branch as they arrive.
+        By default, merge happens at the end of the release.
+      <% end %>
+
+      <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                               field_name: :continuous_backmerge_enabled,
+                                               on_label: "Continuous Backmerge enabled",
+                                               off_label: "Continuous Backmerge disabled") %>
+    <% end %>
+
+    <%= f.with_advanced_section(heading: "Manual Release Trigger") do |section| %>
+      <% section.with_description do %>
+        Always require a manual trigger for the release step of the train.
+        By default, the release step will be auto-triggered if it has run before in the release.
+      <% end %>
+
+      <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                               field_name: :manual_release,
+                                               on_label: "Manual Release enabled",
+                                               off_label: "Manual Release disabled") %>
+    <% end %>
+
+    <%= f.with_advanced_section(heading: "Compact Build Notes") do |section| %>
+      <% section.with_description do %>
+        Compact the build notes by picking only the first line of commit messages.
+        By default, the entire commit message is used.
+      <% end %>
+
+      <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                               field_name: :compact_build_notes,
+                                               on_label: "Compact Build Notes enabled",
+                                               off_label: "Compact Build Notes disabled") %>
+    <% end %>
+
+    <%= f.with_advanced_section(heading: "Tag Your Releases") do |section| %>
+      <% section.with_description do %>
+        By default, a tag is created at the end of the release with the final version of the release.
+        You can turn off creation of tag. Or, you can add an optional suffix to your tags.
+      <% end %>
+
+      <%= render partial: "release_tag_form", locals: { form: section.F } %>
+    <% end %>
+
+    <% if @app.cross_platform? %>
+      <%= f.with_advanced_section(heading: "Platform Specific Tags", html_options: { data: { controller: "reveal" } }) do |section| %>
+        <% section.with_description do %>
+          Tag each platform release separately. By default, only one tag is created at the end of the release.
+        <% end %>
+
+        <%= render partial: "store_tags_form", locals: { form: section.F } %>
+      <% end %>
+    <% end %>
+
+    <% f.with_action do %>
+      <%= f.F.authz_submit (train.persisted? ? "Update Train" : "Create Train"), "plus.svg" %>
+    <% end %>
+  <% end %>
+</div>
