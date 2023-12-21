@@ -56,7 +56,7 @@ module Deployments
           return if run.uploaded?
 
           run.build_artifact.with_open do |file|
-            result = provider.upload(file, platform:)
+            result = provider.upload(file, run.build_artifact.file.filename.to_s, platform:)
             if result.ok?
               run.start_upload!(op_name: result.value!)
             else

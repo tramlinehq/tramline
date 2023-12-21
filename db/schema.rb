@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_11_24_134628) do
+ActiveRecord::Schema[7.0].define(version: 2023_12_01_191245) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -583,6 +583,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_24_134628) do
     t.boolean "compact_build_notes", default: false
     t.boolean "tag_releases", default: true
     t.string "tag_suffix"
+    t.string "versioning_strategy", default: "semver"
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 
