@@ -39,7 +39,7 @@ module EnhancedFormHelper
     end
 
     def number_field_without_label(method, options = {})
-      number_field(method, {class: TEXT_FIELD_CLASSES, placeholder: 1}.merge(options))
+      number_field(method, {class: TEXT_FIELD_CLASSES, placeholder: 0}.merge(options))
     end
 
     def labeled_text_field(method, label_text, options = {})

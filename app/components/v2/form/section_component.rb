@@ -3,12 +3,14 @@
 class V2::Form::SectionComponent < V2::BaseComponent
   renders_one :description
 
-  def initialize(heading: nil, html_options: {})
+  def initialize(form: nil, heading: nil, html_options: {})
+    @form = form
     @heading = heading
     @html_options = html_options
   end
 
-  attr_reader :heading
+  attr_reader :heading, :form
+  alias_method :F, :form
 
   def data_fields
     return unless @html_options[:data]
