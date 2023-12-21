@@ -35,11 +35,11 @@ class V2::ReleaseListComponent < V2::BaseComponent
     train.releases.released.first
   end
 
-  memoize delegate :ongoing_release, to: :train
+  memoize def ongoing_release = train.ongoing_release
 
-  memoize delegate :upcoming_release, to: :train
+  memoize def upcoming_release = train.upcoming_release
 
-  memoize delegate :hotfix_release, to: :train
+  memoize def hotfix_release = train.hotfix_release
 
   def ordered_releases
     train.releases.order(scheduled_at: :desc).take(100)
