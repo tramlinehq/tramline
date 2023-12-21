@@ -1,38 +1,30 @@
 <% if app.firebase_connected? %>
-  <section class="border-t border-dashed pb-8">
-    <div class="my-8">
-      <h2 class="font-bold text-xl">
-        <%= image_tag "integrations/logo_firebase.png", title: "Firebase", width: 40, class: "pb-2" %>
-        Firebase App Distribution
-      </h2>
-    </div>
+  <% f.with_section(heading: "Select Apps") do |section| %>
+    <% section.with_description do %>
+      Apps against your connected Firebase project.
+      <%= image_tag "integrations/logo_firebase.png", title: "Firebase", width: 24, class: "py-2" %>
+    <% end %>
 
-    <div class="grid gap-5 md:grid-cols-2">
-      <% if firebase_android_apps.present? %>
-        <div class="mb-4">
-          <%= form.label :firebase_android_config, "Android App", class: "block text-sm font-medium mb-1" %>
-          <%= form.select :firebase_android_config,
-                          options_for_select(
-                            display_channels(firebase_android_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
-                            config.firebase_android_config.to_json
-                          ),
-                          { class: "form-select" },
-                          data: { controller: "input-select" } %>
-        </div>
-      <% end %>
+    <% if firebase_android_apps.present? %>
+      <div class="mb-4">
+        <%= section.F.labeled_select :firebase_android_config,
+                                     "Android App",
+                                     options_for_select(
+                                       display_channels(firebase_android_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
+                                       config.firebase_android_config.to_json
+                                     ) %>
+      </div>
+    <% end %>
 
-      <% if firebase_ios_apps.present? %>
-        <div>
-          <%= form.label :firebase_ios_config, "iOS App", class: "block text-sm font-medium mb-1" %>
-          <%= form.select :firebase_ios_config,
-                          options_for_select(
-                            display_channels(firebase_ios_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
-                            config.firebase_ios_config.to_json
-                          ),
-                          { class: "form-select" },
-                          data: { controller: "input-select" } %>
-        </div>
-      <% end %>
-    </div>
-  </section>
+    <% if firebase_ios_apps.present? %>
+      <div>
+        <%= section.F.labeled_select :firebase_ios_config,
+                                     "iOS App",
+                                     options_for_select(
+                                       display_channels(firebase_ios_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
+                                       config.firebase_ios_config.to_json
+                                     ) %>
+      </div>
+    <% end %>
+  <% end %>
 <% end %>

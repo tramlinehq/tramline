@@ -1,43 +1,8 @@
 <%= render V2::EnhancedTurboFrameComponent.new("#{@integration_category}_config") do %>
-  <% if @app.firebase_connected? %>
-    <%= form_with(model: [@app, @config],
-                  url: app_app_config_path(@app),
-                  builder: EnhancedFormHelper::AuthzForm,
-                  method: :patch) do |form| %>
-      <%= render V2::FormComponent.new(params) do |form_component| %>
-        <% form_component.with_section(heading: "Select Apps") do |component| %>
-          <% component.with_description do %>
-            Apps against your connected Firebase project.
-            <%= image_tag "integrations/logo_firebase.png", title: "Firebase", width: 24, class: "py-2" %>
-          <% end %>
-
-          <% if @firebase_android_apps.present? %>
-            <div class="mb-4">
-              <%= form.labeled_select :firebase_android_config,
-                                      "Android App",
-                                      options_for_select(
-                                        display_channels(@firebase_android_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
-                                        @config.firebase_android_config.to_json
-                                      ) %>
-            </div>
-          <% end %>
-
-          <% if @firebase_ios_apps.present? %>
-            <div>
-              <%= form.labeled_select :firebase_ios_config,
-                                      "iOS App",
-                                      options_for_select(
-                                        display_channels(@firebase_ios_apps) { |app| "#{app[:display_name]} #{app[:app_id]}" },
-                                        @config.firebase_ios_config.to_json
-                                      ) %>
-            </div>
-          <% end %>
-        <% end %>
-      <% end %>
-
-      <div class="mt-8">
-        <%= form.authz_submit "Update", "plus.svg" %>
-      </div>
+  <%= render V2::FormComponent.new(model: [@app, @config], url: app_app_config_path(@app), method: :patch) do |f| %>
+    <%= render partial: "app_configs/firebase_form", locals: { f:, config: @config, app: @app, firebase_ios_apps: @firebase_ios_apps, firebase_android_apps: @firebase_android_apps } %>
+    <% f.with_action do %>
+      <%= f.F.authz_submit "Update", "plus.svg" %>
     <% end %>
   <% end %>
 <% end %>

@@ -21,7 +21,7 @@ class AppConfigsController < SignedInApplicationController
     if @config.update(parsed_app_config_params)
       redirect_to app_path(@app), notice: "App Config was successfully updated."
     else
-      render :edit, status: :unprocessable_entity
+      redirect_back fallback_location: edit_app_path(@app), flash: {error: @config.errors.full_messages.to_sentence}
     end
   end
 

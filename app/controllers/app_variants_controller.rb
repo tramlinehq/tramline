@@ -3,6 +3,19 @@ class AppVariantsController < SignedInApplicationController
   before_action :require_write_access!, only: %i[create update]
   around_action :set_time_zone
 
+  def index
+    @tab_configuration = [
+      [1, "General", edit_app_path(@app), "v2/cog.svg"],
+      [2, "Integrations", app_integrations_path(@app), "v2/blocks.svg"],
+      [3, "App Variants", app_app_config_app_variants_path(@app), "dna.svg"]
+    ]
+    @config = @app.config
+    @app_variants = @config.variants.to_a
+    @new_app_variant = @config.variants.build
+    setup_config = @app.integrations.firebase_build_channel_provider.setup
+    @firebase_android_apps, @firebase_ios_apps = setup_config[:android], setup_config[:ios]
+  end
+
   def create
     @config = @app.config
     @app_variant = @config.variants.new(parsed_app_variant_params)

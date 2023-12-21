@@ -49,7 +49,7 @@ Rails.application.routes.draw do
 
   resources :apps do
     resource :app_config, only: %i[edit update], path: :config do
-      resources :app_variants, only: %i[create update]
+      resources :app_variants, only: %i[create update index]
     end
 
     member do
