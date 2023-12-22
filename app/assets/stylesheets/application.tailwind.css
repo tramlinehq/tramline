@@ -52,6 +52,18 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
   @apply text-xs font-medium tracking-normal text-main-600 dark:text-white;
 }
 
+.border-default {
+  @apply border border-main-200 dark:border-main-600 rounded-lg;
+}
+
+.border-default-b {
+  @apply border-b border-main-200 dark:border-main-600;
+}
+
+.box-padding {
+  @apply p-4;
+}
+
 /* new styles */
 
 /* Override color of turbo progress bar */

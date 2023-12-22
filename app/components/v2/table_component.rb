@@ -12,7 +12,7 @@ class V2::TableComponent < ViewComponent::Base
 
   class RowComponent < V2::BaseComponent
     renders_many :cells, ->(style: "") { CellComponent.new(style: style) }
-    ROW_STYLE = "border-b dark:bg-main dark:border-main-700"
+    ROW_STYLE = "border-default-b"
 
     def initialize(style: "")
       @style = style
