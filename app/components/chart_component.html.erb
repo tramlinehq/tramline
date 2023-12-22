@@ -1,14 +1,14 @@
 <% unless series_raw.blank? %>
-  <div class="w-full bg-white rounded-sm border border-gray-200 p-3">
+  <div class="w-full bg-white rounded-lg border border-main-200 p-3">
     <div class="flex justify-between items-start mb-4">
       <div>
-        <h5 class="flex leading-none text-lg font-normal text-gray-900 items-center gap-x-1">
+        <h1 class="flex heading-3 items-center gap-x-1">
           <%= title %>
-        </h5>
-        <p class="text-sm font-normal text-gray-400"><%= chart_scope %></p>
+        </h1>
+        <p class="text-sm font-normal text-main-400"><%= chart_scope %></p>
       </div>
 
-      <div class="flex py-0.5 text-base font-semibold text-green-700"><%= corner_icon %></div>
+      <div class="flex py-0.5 font-semibold text-green-700"><%= corner_icon %></div>
     </div>
 
     <% if area? %>

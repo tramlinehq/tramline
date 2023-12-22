@@ -1,6 +1,8 @@
 @tailwind base;
 @tailwind components;
 
+/* new styles */
+
 @layer utilities {
   .bg-diagonal-stripes {
     background: repeating-linear-gradient(
@@ -30,6 +32,28 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
   opacity: .2;
 }
 
+.heading-1 {
+  @apply text-2xl font-semibold tracking-wide text-main-800 dark:text-white;
+}
+
+.heading-2 {
+  @apply text-xl font-semibold tracking-wide text-main-800 dark:text-white;
+}
+
+.heading-3 {
+  @apply text-lg font-medium tracking-normal text-main-800 dark:text-white;
+}
+
+.heading-4 {
+  @apply text-base font-medium tracking-normal text-main-800 dark:text-white;
+}
+
+.heading-5 {
+  @apply text-xs font-medium tracking-normal text-main-600 dark:text-white;
+}
+
+/* new styles */
+
 /* Override color of turbo progress bar */
 .turbo-progress-bar {
   background-color: orangered;
@@ -39,14 +63,14 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
 .emphasize {
   @apply inline-block pr-1.5 pl-1.5 py-0;
   @apply rounded-md;
-  @apply bg-gray-200 text-slate-700;
+  @apply bg-main-200 text-slate-700;
 }
 
 .emphasize-link {
   @apply underline;
   @apply inline-block pr-1.5 pl-1.5 py-0;
   @apply rounded-md;
-  @apply bg-gray-200 text-slate-700;
+  @apply bg-main-200 text-slate-700;
 }
 
 /* Override height of slim-select box */
@@ -235,11 +259,11 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 .page.next.disabled {
-  @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white border border-gray-300 bg-slate-200 text-gray-500 shadow-sm
+  @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white border border-main-300 bg-slate-200 text-main-500 shadow-sm
 }
 
 .page.prev.disabled {
-    @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white border border-gray-300 bg-slate-200 text-gray-500 shadow-sm
+    @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white border border-main-300 bg-slate-200 text-main-500 shadow-sm
 }
 
 .page a, .page.gap {

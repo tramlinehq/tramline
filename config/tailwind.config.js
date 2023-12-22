@@ -30,6 +30,10 @@ module.exports = {
           "900": "#1e3a8a",
           "950": "#172554"
         },
+        main: {
+          ...colors.gray,
+          "DEFAULT": "#1f2937"
+        },
         backgroundLight: "rgb(251 252 252/1)",
         backgroundDark: "rgb(31 41 55/1)",
       },

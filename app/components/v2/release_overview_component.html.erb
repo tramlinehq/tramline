@@ -4,7 +4,7 @@
       <div class="flex items-center justify-between border-b px-3 py-2">
         <div>
           <div class="flex items-center space-x-3 rtl:space-x-reverse ">
-            <h1 class="text-xl font-semibold text-neutral-800 dark:text-white tracking-wide">
+            <h1 class="heading-2 text-main dark:text-white">
               <%= release.release_version %>
             </h1>
             <%= render V2::StatusIndicatorPillComponent.new(text: status.first, status: status.second) %>

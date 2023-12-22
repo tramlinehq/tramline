@@ -13,34 +13,35 @@ class V2::ButtonComponent < V2::BaseComponent
       class: "#{BASE_OPTS} text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
     },
     light: {
-      class: "#{BASE_OPTS} text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
+      class: "#{BASE_OPTS} text-main bg-white border border-main-300 focus:outline-none hover:bg-main-100 focus:ring-4 focus:ring-main-200 font-medium rounded-lg text-sm dark:bg-main-800 dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"
     },
     supporting: {
-      class: "#{BASE_OPTS} text-gray-500 hover:bg-gray-100 text-sm dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 border-none shadow-none"
+      class: "#{BASE_OPTS} text-main-500 hover:bg-main-100 text-sm dark:bg-main-800 dark:text-main-400 dark:hover:bg-main-700 border-none shadow-none"
     },
     link: {
-      class: "#{BASE_OPTS} text-gray-500 text-sm dark:bg-gray-800 dark:text-gray-400 border-none shadow-none hover:underline"
+      class: "#{BASE_OPTS} text-main-500 text-sm dark:bg-main-800 dark:text-main-400 border-none shadow-none hover:underline"
     },
     switcher: {
-      class: "text-gray-500 rounded-lg md:inline-flex hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600 items-center"
+      class: "text-main-500 rounded-lg md:inline-flex hover:text-main hover:bg-main-100 dark:text-main-400 dark:hover:text-white dark:hover:bg-main-700 focus:ring-4 focus:ring-main-300 dark:focus:ring-main-600 items-center"
     },
     naked_icon: {
-      class: "text-gray-500 rounded-lg hover:text-gray-900 dark:text-gray-400 dark:hover:text-white",
+      class: "text-main-500 rounded-lg hover:text-main dark:text-main-400 dark:hover:text-white",
       icon: true
     },
     avatar_icon: {
-      class: "bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600",
+      class: "bg-main-800 rounded-full md:mr-0 focus:ring-4 focus:ring-main-300 dark:focus:ring-main-600",
       icon: true
     },
     none: {class: ""}
   }
   DISABLED_STYLE = "opacity-30 disabled cursor-not-allowed outline-none focus:outline-none"
-  DROPDOWN_STYLE = "p-1 text-sm text-gray-700 dark:text-gray-200"
+  DROPDOWN_STYLE = "p-1 text-sm text-main-700 dark:text-main-200"
   SCHEMES = BUTTON_OPTIONS.keys
   SIZES = {
     none: "",
     base: "px-5 py-2.5 text-sm",
     sm: "py-2 px-4 text-sm",
+    md: "px-4 py-2 text-base",
     xs: "px-3 py-2 text-xs",
     xxs: "p-1.5 text-xs",
     lg: "px-5 py-3 text-base",
