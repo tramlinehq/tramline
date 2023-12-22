@@ -1,5 +1,5 @@
 module PasswordHelper
-  DEFAULT_BUTTON_STYLES = "text-gray-500 absolute bottom-0 top-8 right-0 flex items-center cursor-pointer "
+  DEFAULT_BUTTON_STYLES = "text-main-500 absolute bottom-0 top-8 right-0 flex items-center cursor-pointer "
   def password_toggle_button(styles: "")
     button_styles = DEFAULT_BUTTON_STYLES + styles
     visibility_target = {"password-visibility-target": "icon"}

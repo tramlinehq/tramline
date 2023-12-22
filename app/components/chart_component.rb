@@ -46,7 +46,7 @@ class ChartComponent < ViewComponent::Base
   end
 
   def help_icon
-    inline_svg("question_mark.svg", classname: "w-4 inline-flex fill-current shrink-0 text-gray-400")
+    inline_svg("question_mark.svg", classname: "w-4 inline-flex fill-current shrink-0 text-main-400")
   end
 
   def subgroup? = chart[:subgroup]

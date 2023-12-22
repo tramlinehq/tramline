@@ -13,14 +13,14 @@ class MetricCardComponent < ViewComponent::Base
   end
 
   def metric_color(is_healthy)
-    return "test-gray-800" unless current_user.release_monitoring?
+    return "text-main" unless current_user.release_monitoring?
     case is_healthy
     when true
       "text-green-800 font-semibold"
     when false
       "text-red-800 font-semibold"
     else
-      "test-gray-800"
+      "text-main"
     end
   end
 

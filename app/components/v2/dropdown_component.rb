@@ -1,7 +1,7 @@
 class V2::DropdownComponent < V2::BaseComponent
   DROPDOWN_ACTIONS = {popup_target: "element", action: "click->popup#toggle"}.freeze
   BASE_BUTTON_OPTS = {scheme: :switcher, type: :action, size: :xxs, html_options: {data: DROPDOWN_ACTIONS}}.freeze
-  STYLE = "z-30 w-52 bg-white shadow-md border border-gray-300 rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600".freeze
+  STYLE = "z-30 w-52 bg-white shadow-md border border-main-300 rounded divide-y divide-main-100 shadow dark:bg-main-700 dark:divide-main-600".freeze
 
   renders_one :button, ->(**args) do
     args = args.merge(authz: @authz) # trickle down the auth setting to the button
@@ -29,7 +29,7 @@ class V2::DropdownComponent < V2::BaseComponent
   end
 
   class ItemGroupComponent < V2::BaseComponent
-    DROPDOWN_STYLE = "text-sm text-gray-700 dark:text-gray-200 leading-none font-medium"
+    DROPDOWN_STYLE = "text-sm text-main-700 dark:text-main-200 leading-none font-medium"
     LIST_ITEM_STYLE = "p-0.5"
     renders_many :items, ->(**args) { ItemComponent.new(**args) }
 
@@ -51,7 +51,7 @@ class V2::DropdownComponent < V2::BaseComponent
         @selected = selected
       end
 
-      ITEM_STYLE = "flex items-center rounded justify-between block px-4 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white text-sm"
+      ITEM_STYLE = "flex items-center rounded justify-between block px-4 py-1.5 hover:bg-main-100 dark:hover:bg-main-600 dark:hover:text-white text-sm"
       SELECTED_CHECK_STYLE = "w-3 h-3 text-green-500"
 
       def call

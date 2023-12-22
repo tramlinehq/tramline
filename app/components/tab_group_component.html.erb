@@ -1,5 +1,5 @@
-<div data-controller="tabs" class="w-full bg-white border border-gray-200 rounded-lg shadow" data-tabs-active-tab-class="outline-none text-indigo-500" data-tabs-index-value="0">
-  <ul class="text-sm font-medium text-center text-gray-500 divide-x divide-gray-200 rounded-lg sm:flex">
+<div data-controller="tabs" class="w-full bg-white border border-main-200 rounded-lg shadow" data-tabs-active-tab-class="outline-none text-indigo-500" data-tabs-index-value="0">
+  <ul class="text-sm font-medium text-center text-main-500 divide-x divide-main-200 rounded-lg sm:flex">
     <% tab_headings.each do |tab| %>
       <li class="w-full">
         <button data-action="click->tabs#change"
@@ -7,14 +7,14 @@
                 data-tabs-target="tab"
                 aria-controls="overall-tab"
                 aria-selected="<%= tab[:selected] %>"
-                class="inline-block w-full p-4 rounded-tl-lg bg-gray-50 hover:bg-gray-100">
+                class="inline-block w-full p-4 rounded-tl-lg bg-main-50 hover:bg-main-100">
           <%= tab[:name] %>
         </button>
       </li>
     <% end %>
   </ul>
 
-  <div class="border-t border-gray-200 w-full">
+  <div class="border-t border-main-200 w-full">
     <% tabs.each do |tab| %>
       <%= tab %>
     <% end %>

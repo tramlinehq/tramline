@@ -33,19 +33,19 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
 }
 
 .heading-1 {
-  @apply text-2xl font-semibold tracking-wide text-main-800 dark:text-white;
+  @apply text-2xl font-semibold tracking-wide text-main dark:text-white;
 }
 
 .heading-2 {
-  @apply text-xl font-semibold tracking-wide text-main-800 dark:text-white;
+  @apply text-xl font-semibold tracking-wide text-main dark:text-white;
 }
 
 .heading-3 {
-  @apply text-lg font-medium tracking-normal text-main-800 dark:text-white;
+  @apply text-lg font-medium tracking-normal text-main dark:text-white;
 }
 
 .heading-4 {
-  @apply text-base font-medium tracking-normal text-main-800 dark:text-white;
+  @apply text-base font-medium tracking-normal text-main dark:text-white;
 }
 
 .heading-5 {

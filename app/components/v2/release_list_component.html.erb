@@ -18,7 +18,7 @@
   <%= container.with_side_action do %>
     <%= render V2::DropdownComponent.new(authz: false) do |dropdown| %>
       <% dropdown.with_button(html_options: { class: "-my-5" }).with_title_text do %>
-        <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Switch</span>
+        <span class="text-xs text-main-500 dark:text-main-400 font-medium">Switch</span>
       <% end %>
 
       <% dropdown.with_item_group do |group| %>
@@ -220,8 +220,8 @@
     <% container.with_empty_state do %>
       <div class="flex justify-center mt-24">
         <div class="flex flex-col justify-start">
-          <h1 class="text-xl font-semibold text-neutral-800 dark:text-white">Create your very first release</h1>
-          <div class="mt-6 max-w-[200px] font-medium text-sm dark:text-gray-300 text-gray-400">
+          <h1 class="text-xl font-semibold text-main dark:text-white">Create your very first release</h1>
+          <div class="mt-6 max-w-[200px] font-medium text-sm dark:text-main-300 text-main-400">
             Once you've finished configuring your train fully, you can start creating new releases.
           </div>
         </div>

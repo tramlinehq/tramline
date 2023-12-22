@@ -12,11 +12,11 @@ class V2::HorizontalDataSetComponent < V2::BaseComponent
   end
 
   def separator
-    "last:border-0 border-l border-#{@separator} border-gray-300"
+    "last:border-0 border-l border-#{@separator} border-main-300"
   end
 
   def bg_color
-    "bg-gray-100" if @bg_color
+    "bg-main-100" if @bg_color
   end
 
   def last_set?(i)

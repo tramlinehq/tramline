@@ -13,13 +13,13 @@ class V2::ButtonComponent < V2::BaseComponent
       class: "#{BASE_OPTS} text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
     },
     light: {
-      class: "#{BASE_OPTS} text-main bg-white border border-main-300 focus:outline-none hover:bg-main-100 focus:ring-4 focus:ring-main-200 font-medium rounded-lg text-sm dark:bg-main-800 dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"
+      class: "#{BASE_OPTS} text-main bg-white border border-main-300 focus:outline-none hover:bg-main-100 focus:ring-4 focus:ring-main-200 font-medium rounded-lg text-sm dark:bg-main dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"
     },
     supporting: {
-      class: "#{BASE_OPTS} text-main-500 hover:bg-main-100 text-sm dark:bg-main-800 dark:text-main-400 dark:hover:bg-main-700 border-none shadow-none"
+      class: "#{BASE_OPTS} text-main-500 hover:bg-main-100 text-sm dark:bg-main dark:text-main-400 dark:hover:bg-main-700 border-none shadow-none"
     },
     link: {
-      class: "#{BASE_OPTS} text-main-500 text-sm dark:bg-main-800 dark:text-main-400 border-none shadow-none hover:underline"
+      class: "#{BASE_OPTS} text-main-500 text-sm dark:bg-main dark:text-main-400 border-none shadow-none hover:underline"
     },
     switcher: {
       class: "text-main-500 rounded-lg md:inline-flex hover:text-main hover:bg-main-100 dark:text-main-400 dark:hover:text-white dark:hover:bg-main-700 focus:ring-4 focus:ring-main-300 dark:focus:ring-main-600 items-center"
@@ -29,7 +29,7 @@ class V2::ButtonComponent < V2::BaseComponent
       icon: true
     },
     avatar_icon: {
-      class: "bg-main-800 rounded-full md:mr-0 focus:ring-4 focus:ring-main-300 dark:focus:ring-main-600",
+      class: "bg-main rounded-full md:mr-0 focus:ring-4 focus:ring-main-300 dark:focus:ring-main-600",
       icon: true
     },
     none: {class: ""}

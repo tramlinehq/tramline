@@ -182,7 +182,7 @@ export default class extends Controller {
           show: true,
           style: {
             fontFamily: "Inter, sans-serif",
-            cssClass: 'text-xs font-normal fill-gray-500'
+            cssClass: 'text-xs font-normal fill-main-500'
           },
           tooltip: {
             enabled: false
@@ -281,7 +281,7 @@ export default class extends Controller {
           show: true,
           style: {
             fontFamily: "Inter, sans-serif",
-            cssClass: 'text-xs font-normal fill-gray-500'
+            cssClass: 'text-xs font-normal fill-main-500'
           }
         },
         axisBorder: {

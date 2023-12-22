@@ -33,9 +33,9 @@
       </div>
 
       <div class="mt-3 sm:pr-10">
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">Create a Release Train</h3>
+        <h3 class="text-lg font-semibold text-main-900 mb-2">Create a Release Train</h3>
         <% if is_train_completed %>
-          <p class="text-base font-normal text-gray-500">This is complete!</p>
+          <p class="text-base font-normal text-main-500">This is complete!</p>
         <% else %>
           <%= authz_link_to :green, new_app_train_path(@app) do %>
             <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
@@ -57,11 +57,11 @@
           </div>
         </div>
         <div class="mt-3 sm:pr-10">
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">Create iOS Review Steps</h3>
+          <h3 class="text-lg font-semibold text-main-900 mb-2">Create iOS Review Steps</h3>
           <% if is_ios_review_step_completed %>
-            <p class="text-base font-normal text-gray-500">This is complete!</p>
+            <p class="text-base font-normal text-main-500">This is complete!</p>
           <% else %>
-            <p class="text-base font-normal text-gray-500">Configure your iOS review or debug workflows</p>
+            <p class="text-base font-normal text-main-500">Configure your iOS review or debug workflows</p>
             <% if train_in_creation %>
               <%= authz_link_to :blue, new_app_train_platform_step_path(app, train_in_creation, train_in_creation.ios_train, kind: Step.kinds[:review]), class: "mt-4" do %>
                 <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
@@ -86,11 +86,11 @@
         </div>
 
         <div class="mt-3 sm:pr-10">
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">Setup iOS Release Step</h3>
+          <h3 class="text-lg font-semibold text-main-900 mb-2">Setup iOS Release Step</h3>
           <% if is_ios_release_step_completed %>
-            <p class="text-base font-normal text-gray-500">This is complete!</p>
+            <p class="text-base font-normal text-main-500">This is complete!</p>
           <% else %>
-            <p class="text-base font-normal text-gray-500">Configure your iOS release candidate workflow</p>
+            <p class="text-base font-normal text-main-500">Configure your iOS release candidate workflow</p>
             <% if train_in_creation %>
               <%= authz_link_to :blue, new_app_train_platform_step_path(app, train_in_creation, train_in_creation.ios_train, kind: Step.kinds[:release]), class: "mt-4" do %>
                 <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
@@ -114,11 +114,11 @@
           </div>
         </div>
         <div class="mt-3 sm:pr-10">
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">Create Android Review Steps</h3>
+          <h3 class="text-lg font-semibold text-main-900 mb-2">Create Android Review Steps</h3>
           <% if is_android_review_step_completed %>
-            <p class="text-base font-normal text-gray-500">This is complete!</p>
+            <p class="text-base font-normal text-main-500">This is complete!</p>
           <% else %>
-            <p class="text-base font-normal text-gray-500">Configure your Android review or debug workflows</p>
+            <p class="text-base font-normal text-main-500">Configure your Android review or debug workflows</p>
             <% if train_in_creation %>
               <%= authz_link_to :blue, new_app_train_platform_step_path(app, train_in_creation, train_in_creation.android_train, kind: Step.kinds[:review]), class: "mt-4" do %>
                 <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
@@ -143,11 +143,11 @@
         </div>
 
         <div class="mt-3 sm:pr-10">
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">Setup Android Release Step</h3>
+          <h3 class="text-lg font-semibold text-main-900 mb-2">Setup Android Release Step</h3>
           <% if is_android_release_step_completed %>
-            <p class="text-base font-normal text-gray-500">This is complete!</p>
+            <p class="text-base font-normal text-main-500">This is complete!</p>
           <% else %>
-            <p class="text-base font-normal text-gray-500">Configure your Android release candidate workflow</p>
+            <p class="text-base font-normal text-main-500">Configure your Android release candidate workflow</p>
             <% if train_in_creation %>
               <%= authz_link_to :blue, new_app_train_platform_step_path(app, train_in_creation, train_in_creation.android_train, kind: Step.kinds[:release]), class: "mt-4" do %>
                 <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
