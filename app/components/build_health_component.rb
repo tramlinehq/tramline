@@ -12,12 +12,14 @@ class BuildHealthComponent < ViewComponent::Base
   end
 
   def chartable_metadata
-    ["app_size"].concat release_platform_run
+    default_metadata = ["app_size"]
+    external_metadata = release_platform_run
       .external_builds
       .last
       .normalized_metadata
       .filter(&:numerical?)
       .map(&:identifier)
+    (default_metadata + external_metadata).uniq
   end
 
   def app_size_data
@@ -28,7 +30,7 @@ class BuildHealthComponent < ViewComponent::Base
       description: "",
       type: "number",
       unit: "MB",
-      data: step_runs.map { |srun| [srun.build_number, {value: srun.build_size}] }.to_h
+      data: step_runs.map { |srun| [srun.build_number, {"MB" => srun.build_size}] }.to_h
     }
   end
 
