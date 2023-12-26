@@ -101,7 +101,7 @@
     </article>
   <% end %>
 
-  <% if release.external_builds.any? %>
+  <% if release.external_builds.size > 1 %>
     <article data-controller="reveal">
       <div class="flex flex-row justify-between items-center">
         <div class="font-bold text-xl mt-8">
