@@ -41,8 +41,7 @@
 
       <% if train.fixed_build_number? %>
         <div>
-          <%= section.F.labeled_select :versioning_strategy,
-                                       "Versioning Strategy",
+          <%= section.F.labeled_select :versioning_strategy, "Versioning Strategy",
                                        options_for_select(Train.versioning_strategies.transform_values(&:titleize).invert, train.versioning_strategy),
                                        { required: true, },
                                        { disabled: train.persisted? } %>
@@ -54,19 +53,16 @@
         <%= section.F.label_only :major_version_seed, "Seed with your current version name (build name)" %>
         <div class="flex flex-row gap-x-2">
           <%= section.F.text_field_without_label :major_version_seed, "major",
-                                                 class: text_field_classes(is_disabled: train.persisted?),
                                                  disabled: train.persisted?,
                                                  data: { domain__version_name_help_target: "majorInput",
                                                          action: "domain--version-name-help#bump" } %>
           <span class="mx-1">.</span>
           <%= section.F.text_field_without_label :minor_version_seed, "minor",
-                                                 class: text_field_classes(is_disabled: train.persisted?),
                                                  disabled: train.persisted?,
                                                  data: { domain__version_name_help_target: "minorInput",
                                                          action: "domain--version-name-help#bump" } %>
           <span class="mx-1">.</span>
           <%= section.F.text_field_without_label :patch_version_seed, "patch (optional)",
-                                                 class: text_field_classes(is_disabled: train.persisted?),
                                                  disabled: train.persisted?,
                                                  data: { domain__version_name_help_target: "patchInput",
                                                          action: "domain--version-name-help#bump" } %>
@@ -129,8 +125,7 @@
           <%= section.F.labeled_select :branching_strategy, "Strategy",
                                        options_for_select(Train::BRANCHING_STRATEGIES.invert, train.branching_strategy),
                                        {},
-                                       { class: text_field_classes(is_disabled: train.persisted?),
-                                         data: { action: 'branching-selector#change',
+                                       { data: { action: 'branching-selector#change',
                                                  branching_selector_target: "branchingStrategy" },
                                          disabled: train.persisted? } %>
         </div>
@@ -138,7 +133,6 @@
         <div>
           <%= section.F.labeled_text_field :working_branch, "Working Branch",
                                            required: true,
-                                           class: text_field_classes(is_disabled: train.persisted?),
                                            placeholder: "eg., master, main",
                                            disabled: train.persisted? %>
         </div>
@@ -149,7 +143,6 @@
         <div hidden data-branching-selector-target="releaseBackMerge">
           <div class="mt-2">
             <%= section.F.labeled_text_field :release_backmerge_branch, "Release Backmerge Branch",
-                                             class: text_field_classes(is_disabled: train.persisted?),
                                              placeholder: "eg., dev",
                                              disabled: train.persisted? %>
           </div>
@@ -158,7 +151,6 @@
         <div hidden data-branching-selector-target="parallelBranches">
           <div class="mt-2">
             <%= section.F.labeled_text_field :release_branch, "Release Branch",
-                                             class: text_field_classes(is_disabled: train.persisted?),
                                              placeholder: "eg., production",
                                              disabled: train.persisted? %>
           </div>
@@ -243,7 +235,7 @@
     <% end %>
 
     <% f.with_action do %>
-      <%= f.F.authz_submit (train.persisted? ? "Update Train" : "Create Train"), "plus.svg" %>
+      <%= f.F.authz_submit (train.persisted? ? "Update Train" : "Create Train"), (train.persisted? ? "v2/archive.svg" : "plus.svg") %>
     <% end %>
   <% end %>
 </div>

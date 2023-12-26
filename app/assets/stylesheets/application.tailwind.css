@@ -64,6 +64,16 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
   @apply p-4;
 }
 
+/* Override height of slim-select box */
+.ss-main {
+  padding: 0 0.625rem 0 0.625rem !important;
+}
+
+.ss-main .ss-single-selected {
+  @apply bg-main-50 !important;
+  border: none !important;
+  height: 2.625rem !important;
+}
 /* new styles */
 
 /* Override color of turbo progress bar */
@@ -83,13 +93,6 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
   @apply inline-block pr-1.5 pl-1.5 py-0;
   @apply rounded-md;
   @apply bg-main-200 text-slate-700;
-}
-
-/* Override height of slim-select box */
-.ss-main .ss-single-selected {
-  @apply text-slate-800 bg-white border rounded px-3 py-2;
-  @apply leading-5 border-slate-200 hover:border-slate-300 focus:border-indigo-300 shadow-sm;
-  height: 2.375em;
 }
 
 /* Application theme starts here */
