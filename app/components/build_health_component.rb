@@ -56,7 +56,12 @@ class BuildHealthComponent < ViewComponent::Base
     end
   end
 
+  def chartable?(metadata_id)
+    health_data[metadata_id].present?
+  end
+
   def chart_data(metadata_id)
+    return if health_data[metadata_id].blank?
     {
       data: health_data[metadata_id][:data],
       type: "line",
