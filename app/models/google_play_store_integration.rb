@@ -49,14 +49,14 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def rollout_release(channel, build_number, version, rollout_percentage, release_notes)
-    execute_with_retry do |skip_review|
-      installation.create_release(channel, build_number, version, rollout_percentage, release_notes, skip_review:)
+    GitHub::Result.new do
+      installation.create_release(channel, build_number, version, rollout_percentage, release_notes)
     end
   end
 
   def create_draft_release(channel, build_number, version, release_notes)
-    execute_with_retry do |skip_review|
-      installation.create_draft_release(channel, build_number, version, release_notes, skip_review:)
+    GitHub::Result.new do
+      installation.create_draft_release(channel, build_number, version, release_notes)
     end
   end
 
