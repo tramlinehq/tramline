@@ -64,15 +64,19 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
   @apply p-4;
 }
 
-/* Override height of slim-select box */
 .ss-main {
   padding: 0 0.625rem 0 0.625rem !important;
 }
 
-.ss-main .ss-single-selected {
+.ss-main > .ss-single-selected  {
   @apply bg-main-50 !important;
   border: none !important;
   height: 2.625rem !important;
+}
+
+.ss-main > .ss-multi-selected  {
+  @apply bg-main-50 px-1 py-1 !important;
+  border: none !important;
 }
 /* new styles */
 
