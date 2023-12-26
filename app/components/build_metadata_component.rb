@@ -3,6 +3,7 @@ class BuildMetadataComponent < ViewComponent::Base
 
   UNIT_MAPPING = {
     "seconds" => "secs",
+    "milliseconds" => "ms",
     "percentage" => "%"
   }
 
@@ -17,7 +18,7 @@ class BuildMetadataComponent < ViewComponent::Base
   def metrics
     values = {"App Size" => {value: step_run.build_size, unit: "MB"}}
     values.merge number_values.to_h { |metadata|
-      [metadata.name, {value: metadata.value, unit: UNIT_MAPPING.fetch(metadata.unit, nil)}]
+      [metadata.name, {value: metadata.value, unit: UNIT_MAPPING.fetch(metadata.unit, metadata.unit)}]
     }
   end
 
