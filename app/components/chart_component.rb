@@ -21,6 +21,16 @@ class ChartComponent < ViewComponent::Base
     chart[:value_format]
   end
 
+  def show_x_axis
+    return true if chart[:show_x_axis].nil?
+    chart[:show_x_axis]
+  end
+
+  def show_y_axis
+    return false if chart[:show_y_axis].nil?
+    chart[:show_y_axis]
+  end
+
   def series
     ungroup_series.to_json
   end
@@ -30,15 +40,15 @@ class ChartComponent < ViewComponent::Base
   end
 
   def title
-    I18n.t("charts.#{chart[:name]}.title")
+    chart[:title] || I18n.t("charts.#{chart[:name]}.title")
   end
 
   def chart_scope
-    I18n.t("charts.#{chart[:name]}.scope")
+    chart[:scope] || I18n.t("charts.#{chart[:name]}.scope")
   end
 
   def help_text
-    I18n.t("charts.#{chart[:name]}.help_text")
+    chart[:help_text] || I18n.t("charts.#{chart[:name]}.help_text")
   end
 
   def corner_icon

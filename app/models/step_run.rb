@@ -192,6 +192,10 @@ class StepRun < ApplicationRecord
     notify_on_failure!("manual submission required!")
   end
 
+  def build_size
+    build_artifact&.file_size_in_mb
+  end
+
   def active?
     release_platform_run.on_track? && !cancelled? && !status.in?(FAILED_STATES)
   end

@@ -35,6 +35,7 @@ class ReleasePlatformRun < ApplicationRecord
   belongs_to :release_platform
   belongs_to :release
   has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
+  has_many :external_builds, through: :step_runs
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
   belongs_to :last_commit, class_name: "Commit", inverse_of: :release_platform_runs, optional: true

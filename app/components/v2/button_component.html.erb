@@ -1,0 +1,8 @@
+<% if tooltip_component %>
+  <div data-controller="popup" data-popup-away-value="true">
+    <%= render_component %>
+    <%= render(tooltip_component) %>
+  </div>
+<% else %>
+  <%= render_component %>
+<% end %>
