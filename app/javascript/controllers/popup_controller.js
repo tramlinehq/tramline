@@ -41,7 +41,8 @@ export default class extends RevealController {
     this.popperInstance.update()
   }
 
-  disconnect() {
+  disconnect(event) {
+    super.hide(event)
     super.disconnect()
     if (this.popperInstance) {
       this.popperInstance.destroy()

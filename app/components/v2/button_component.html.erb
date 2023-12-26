@@ -1,5 +1,5 @@
 <% if tooltip_component %>
-  <div data-controller="popup" data-popup-away-value="true">
+  <div data-controller="popup" data-popup-away-value="true" data-popup-target-selector-value="[data-tooltip-reveal]">
     <%= render_component %>
     <%= render(tooltip_component) %>
   </div>
