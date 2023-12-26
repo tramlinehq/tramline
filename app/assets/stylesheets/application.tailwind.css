@@ -32,6 +32,18 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
   opacity: .2;
 }
 
+.box-padding {
+  @apply p-4;
+}
+
+.border-default {
+  @apply border border-main-200 dark:border-main-600 rounded-lg;
+}
+
+.border-default-b {
+  @apply border-b border-main-200 dark:border-main-600;
+}
+
 .heading-1 {
   @apply text-2xl font-semibold tracking-wide text-main dark:text-white;
 }
@@ -52,18 +64,6 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
   @apply text-xs font-medium tracking-normal text-main-600 dark:text-white;
 }
 
-.border-default {
-  @apply border border-main-200 dark:border-main-600 rounded-lg;
-}
-
-.border-default-b {
-  @apply border-b border-main-200 dark:border-main-600;
-}
-
-.box-padding {
-  @apply p-4;
-}
-
 .ss-main {
   padding: 0 0.625rem 0 0.625rem !important;
 }
@@ -78,6 +78,7 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
   @apply bg-main-50 px-1 py-1 !important;
   border: none !important;
 }
+
 /* new styles */
 
 /* Override color of turbo progress bar */
@@ -214,17 +215,6 @@ input[type="search"]::-webkit-search-results-decoration {
 .form-checkbox,
 .form-radio:focus{
   @apply ring-0;
-}
-
-@keyframes fpFadeInDown {
-  from {
-    opacity: 0;
-    transform: translate3d(0, -8px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
 }
 
 /* Switch element */
