@@ -48,7 +48,7 @@ class V2::ButtonComponent < V2::BaseComponent
 
   renders_one :title_text
 
-  def initialize(label: nil, scheme: :switcher, type: :button, visual_icon: nil, visual_icon_type: :internal, tooltip: nil, size: :xxs, options: nil, html_options: nil, arrow: nil)
+  def initialize(label: nil, scheme: :switcher, type: :button, visual_icon: nil, visual_icon_type: :internal, tooltip: nil, size: :xxs, options: nil, html_options: nil, arrow: nil, authz: false)
     arrow = (arrow.nil? && type == :action) ? :double : :none
     raise ArgumentError, "Invalid scheme" unless SCHEMES.include?(scheme)
     raise ArgumentError, "Invalid button type" unless TYPES.include?(type)
@@ -67,6 +67,7 @@ class V2::ButtonComponent < V2::BaseComponent
     @options = options
     @html_options = html_options
     @arrow_type = arrow
+    @authz = authz
   end
 
   def before_render
@@ -179,7 +180,7 @@ class V2::ButtonComponent < V2::BaseComponent
   end
 
   def get_scheme
-    @scheme = :disabled unless helpers.writer?
+    @scheme = :disabled if @authz && !helpers.writer?
     @scheme
   end
 
