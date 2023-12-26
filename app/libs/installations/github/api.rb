@@ -333,12 +333,17 @@ module Installations
       artifacts.filter { |artifact| artifact["name"].downcase.include? name_pattern }.presence || artifacts
     end
 
-    def artifact_io_stream(artifact)
+    def artifact_download_url(artifact)
+      HTTP
+        .auth("Bearer #{@client.access_token}")
+        .get(artifact["archive_download_url"])
+        .then { |resp| resp.headers["Location"] }
+    end
+
+    def artifact_io_stream(url)
       # FIXME: return an IO stream instead of a TempFile
       # See issue: https://github.com/janko/down/issues/70
-      Down::Http.download(artifact["archive_download_url"],
-        headers: {"Authorization" => "Bearer #{@client.access_token}"},
-        follow: {max_hops: 1})
+      Down::Http.download(url)
     end
 
     def artifacts(artifacts_url)
