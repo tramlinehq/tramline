@@ -144,6 +144,10 @@ class Release < ApplicationRecord
 
   def self.for_branch(branch_name) = find_by(branch_name:)
 
+  def post_release_pr_required?
+    vcs_provider.diff_between?(train.working_branch, release_branch)
+  end
+
   def finish_after_partial_finish!
     with_lock do
       return unless partially_finished?
