@@ -258,6 +258,15 @@ module Installations
       end
     end
 
+    def diff?(repo, from_branch, to_branch)
+      execute do
+        @client
+          .compare(repo, from_branch, to_branch)
+          .dig(:files)
+          .present?
+      end
+    end
+
     def head(repo, working_branch_name, sha_only: true, commit_transforms: nil)
       raise ArgumentError, "transforms must be supplied when querying head object" if !sha_only && !commit_transforms
 

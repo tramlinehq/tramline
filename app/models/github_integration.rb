@@ -272,6 +272,10 @@ class GithubIntegration < ApplicationRecord
     installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS)
   end
 
+  def diff_between?(from_branch, to_branch)
+    installation.diff?(code_repository_name, from_branch, to_branch)
+  end
+
   def public_icon_img
     PUBLIC_ICON
   end

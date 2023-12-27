@@ -191,6 +191,11 @@ class Train < ApplicationRecord
     vcs_provider.commit_log(last_finished_release.tag_name || last_finished_release.last_commit.commit_hash, working_branch).any?
   end
 
+  def diff_for_release?
+    return false unless parallel_working_branch?
+    vcs_provider.diff_between?(release_branch, working_branch)
+  end
+
   def create_webhook!
     return false if Rails.env.test?
     result = vcs_provider.find_or_create_webhook!(id: vcs_webhook_id, train_id: id)
@@ -328,7 +333,7 @@ class Train < ApplicationRecord
     PullRequest.open.where(release_id: active_runs.ids, head_ref: branch_name)
   end
 
-  def pre_release_prs?
+  def parallel_working_branch?
     branching_strategy == "parallel_working"
   end
 
