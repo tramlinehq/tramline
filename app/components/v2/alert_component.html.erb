@@ -1,0 +1,20 @@
+<div data-controller="reveal"
+     data-reveal-target-selector-value="[data-alerts-reveal]">
+  <div data-alerts-reveal class="<%= size %> items-center p-4 mb-4 text-sm rounded-lg <%= style %>" role="alert">
+    <%= render V2::IconComponent.new("v2/info.svg", size: :md, classes: "mr-2") %>
+
+    <div>
+      <span class="font-medium"><%= title %></span>
+      <%= content %>
+    </div>
+
+    <%= render V2::ButtonComponent.new(
+      scheme: :naked_icon,
+      type: :action,
+      size: :none,
+      authz: false,
+      html_options: { class: "ms-auto inline-flex justify-center items-center", data: { action: "reveal#toggle" } }) do |b|
+      b.with_icon("close_icon")
+    end %>
+  </div>
+</div>
