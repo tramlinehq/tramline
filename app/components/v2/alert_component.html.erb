@@ -1,9 +1,10 @@
-<div data-controller="reveal"
-     data-reveal-target-selector-value="[data-alerts-reveal]">
-  <div data-alerts-reveal class="<%= size %> items-center p-4 mb-4 text-sm rounded-lg <%= style %>" role="alert">
+<div data-controller="alert">
+  <div data-alert-target="alert"
+       class="inline-flex <%= size %> items-center p-4 mb-4 text-sm rounded-lg <%= style %>"
+       role="alert">
     <%= render V2::IconComponent.new("v2/info.svg", size: :md, classes: "mr-2") %>
 
-    <div>
+    <div class="mr-6">
       <span class="font-medium"><%= title %></span>
       <%= content %>
     </div>
@@ -13,8 +14,8 @@
       type: :action,
       size: :none,
       authz: false,
-      html_options: { class: "ms-auto inline-flex justify-center items-center", data: { action: "reveal#toggle" } }) do |b|
-      b.with_icon("close_icon")
+      html_options: { class: "ms-auto inline-flex justify-center items-center #{colors}", data: { action: "alert#close" } }) do |b|
+      b.with_icon("close_icon.svg")
     end %>
   </div>
 </div>
