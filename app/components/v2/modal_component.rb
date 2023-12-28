@@ -17,13 +17,14 @@ class V2::ModalComponent < V2::BaseComponent
   end
   renders_one :body
 
-  def initialize(title:, size: :full, authz: true)
+  def initialize(title:, subtitle: nil, size: :full, authz: true)
     @title = title
+    @subtitle = subtitle
     @size = size
     @authz = authz
   end
 
-  attr_reader :title
+  attr_reader :title, :subtitle
 
   def reveal_data_attrs
     if disabled?
@@ -41,5 +42,13 @@ class V2::ModalComponent < V2::BaseComponent
 
   def max_width
     SIZE_TO_WIDTH.fetch(@size, SIZE_TO_WIDTH[:default])
+  end
+
+  def default_separator
+    if subtitle.blank?
+      "border-default-b py-2"
+    else
+      ""
+    end
   end
 end

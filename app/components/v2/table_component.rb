@@ -11,7 +11,7 @@ class V2::TableComponent < ViewComponent::Base
   attr_reader :columns
 
   class RowComponent < V2::BaseComponent
-    renders_many :cells, ->(style: "") { CellComponent.new(style: style) }
+    renders_many :cells, ->(style: "", wrap: false) { CellComponent.new(style:, wrap:) }
     ROW_STYLE = "border-default-b"
 
     def initialize(style: "")
@@ -27,14 +27,19 @@ class V2::TableComponent < ViewComponent::Base
     end
 
     class CellComponent < V2::BaseComponent
-      CELL_STYLE = "px-4 py-2 whitespace-nowrap"
+      CELL_STYLE = "px-4 py-2"
 
-      def initialize(style: "")
+      def initialize(style: "", wrap: false)
         @style = style
+        @wrap = wrap
       end
 
       def call
-        content_tag :td, content, {class: CELL_STYLE + " #{@style}"}
+        content_tag :td, content, {class: CELL_STYLE + " #{@style} #{wrap_style}".squish}
+      end
+
+      def wrap_style
+        "whitespace-nowrap" unless @wrap
       end
     end
   end
