@@ -217,6 +217,8 @@ module Installations
     end
 
     def create_pr!(repo, to, from, title, body, transforms)
+      raise Installations::Errors::PullRequestWithoutCommits unless diff?(repo, to, from)
+
       execute do
         @client
           .create_pull_request(repo, to, from, title, body)

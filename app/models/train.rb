@@ -186,9 +186,9 @@ class Train < ApplicationRecord
   end
 
   def diff_since_last_release?
-    return vcs_provider.commit_log(ongoing_release.first_commit.commit_hash, working_branch).any? if ongoing_release
+    return vcs_provider.diff_between?(ongoing_release.first_commit.commit_hash, working_branch) if ongoing_release
     return true if last_finished_release.blank?
-    vcs_provider.commit_log(last_finished_release.tag_name || last_finished_release.last_commit.commit_hash, working_branch).any?
+    vcs_provider.diff_between?(last_finished_release.tag_name || last_finished_release.last_commit.commit_hash, working_branch)
   end
 
   def diff_for_release?

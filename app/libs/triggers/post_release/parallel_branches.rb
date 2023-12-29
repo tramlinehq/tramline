@@ -20,8 +20,6 @@ class Triggers::PostRelease
     delegate :logger, to: Rails
 
     def create_and_merge_pr
-      return GitHub::Result.new { true } unless release.post_release_pr_required?
-
       Triggers::PullRequest.create_and_merge!(
         release: release,
         new_pull_request: release.pull_requests.post_release.open.build,
