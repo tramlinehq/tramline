@@ -1,0 +1,23 @@
+<div>
+  <p class="mt-2">
+    To receive notifications in private channels, invite <strong>@Tramline</strong> into your private
+    channel and then select it from this list.
+  </p>
+
+  <p class="mt-4">
+    Refresh your notifications channels from here, if you can't find them in the list.
+  </p>
+
+  <div class="mt-2">
+    <%= render V2::ButtonComponent.new(
+      label: "Refresh",
+      scheme: :light,
+      type: :action,
+      size: :xxs,
+      arrow: :none,
+      html_options: { url: refresh_channels_app_integration_slack_integration_path(app, app.notification_provider.integration, app.notification_provider),
+                      method: :post,
+                      data: { turbo_method: :post },
+                      class: "-mx-1" }) %>
+  </div>
+</div>

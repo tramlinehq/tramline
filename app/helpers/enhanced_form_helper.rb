@@ -19,6 +19,8 @@ module EnhancedFormHelper
     TEXT_AREA_CLASSES = "block p-2.5 w-full text-sm text-main-900 bg-main-50 rounded-lg border border-main-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
     TEXT_FIELD_CLASSES = "bg-main-50 border border-main-300 text-main-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
     DISABLED_CLASSES = "disabled:border-main-200 disabled:bg-main-100 disabled:text-main-600 disabled:cursor-not-allowed"
+    FILE_INPUT_CLASSES = "block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+
 
     def authz_submit(label, icon, scheme: :default, size: :sm, html_options: {})
       button_component =
@@ -74,6 +76,13 @@ module EnhancedFormHelper
                class: field_classes(is_disabled: options[:disabled], classes: TEXT_AREA_CLASSES),
                placeholder: "Write #{label_text.downcase} here" }.merge(options)
       label_only(method, label_text) + text_area(method, opts)
+    end
+
+    def labeled_file_field(method, label_text, help_text = nil, options = {})
+      opts = { class: field_classes(is_disabled: options[:disabled], classes: FILE_INPUT_CLASSES) }.merge(options)
+      output = label_only(method, label_text) + file_field(method, opts)
+      output += @template.content_tag(:p, help_text, class: "mt-1 text-sm text-gray-500 dark:text-gray-300") if help_text.present?
+      output
     end
 
     private

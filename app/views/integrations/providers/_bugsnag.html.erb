@@ -1,31 +1,31 @@
-<% form_url = app_bugsnag_integration_path(app) %>
+<%= render V2::FormComponent.new(model: [app, integration], url: app_bugsnag_integration_path(app)) do |f| %>
+  <% f.with_section(heading: "Add") do |section| %>
+    <% section.with_description do %>
+      <p>Personal Auth Tokens for the Data Access API</p>
+      <p class="mt-2 text-xs">
+        Generate it from the My Account section of
+        <%= link_to_external "Bugsnag settings.",
+                             "https://app.bugsnag.com/settings/my-account",
+                             class: "underline" %>
+      </p>
+    <% end %>
 
-<%= form_with(model: [app, integration], url: form_url, builder: EnhancedFormHelper::AuthzForm) do |form| %>
-  <%= form.hidden_field :category, value: category %>
+    <%= section.F.hidden_field :category, value: category %>
 
-  <%= form.fields_for :providable do |subform| %>
-    <%= subform.hidden_field :type, value: integration.providable_type %>
-    <%= subform.text_field :access_token, placeholder: "Paste here..." %>
+    <% section.F.fields_for :providable do |subf| %>
+      <%= subf.hidden_field :type, value: integration.providable_type %>
+      <div><%= subf.labeled_text_field :access_token, "Personal Auth Token" %></div>
+    <% end %>
   <% end %>
 
-  <div class="flex items-center mt-5 mb-5" data-controller="reveal">
-    <%= form.authz_submit "Create",
-                          "plus.svg",
-                          scheme: :default,
-                          size: :xs,
-                          html_options: { data: { action: "reveal#toggle", turbo: false } } %>
-
-    <div class="ml-5">
-      <div hidden data-reveal>
-        <%= render V2::LoadingIndicatorComponent.new(text: "Verifying...") %>
+  <% f.with_action do %>
+    <div class="flex items-center" data-controller="reveal">
+      <%= f.F.authz_submit "Create", "plus.svg", size: :xs, html_options: { data: { action: "reveal#toggle" } } %>
+      <div class="ml-5">
+        <div hidden data-reveal>
+          <%= render V2::LoadingIndicatorComponent.new(text: "Verifying...") %>
+        </div>
       </div>
     </div>
-  </div>
+  <% end %>
 <% end %>
-
-<span>
-  Personal Auth Tokens for the Data Access API can be generated in the My Account section of
-  <%= link_to_external "Bugsnag settings.",
-                       "https://app.bugsnag.com/settings/my-account",
-                       class: "underline text-slate-500 items-end" %>
-</span>

@@ -9,9 +9,7 @@
         <div class="relative box-padding bg-white rounded-lg shadow dark:bg-main">
           <div class="flex flex-col mb-8 py-2">
             <div class="flex justify-between items-center <%= default_separator %>">
-              <h1 class="heading-3">
-                <%= title %>
-              </h1>
+              <h1 class="heading-2"><%= title %></h1>
               <%= render V2::ButtonComponent.new(
                 scheme: :naked_icon,
                 type: :action,
@@ -23,7 +21,7 @@
             </div>
             <% if subtitle %>
               <div class="flex gap-x-2 items-center">
-                <span class="text-xs"><%= subtitle %></span>
+                <span class="text-sm"><%= subtitle %></span>
                 <div class="flex-1 h-full w-full">
                   <div class="h-px bg-main-200 dark:bg-main-600 w-full m-0"></div>
                 </div>

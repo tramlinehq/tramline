@@ -1,25 +1,22 @@
 <%= render V2::EnhancedTurboFrameComponent.new("#{@integration_category}_config") do %>
-  <%= form_with(model: [@app, @config],
-                url: app_app_config_path(@app),
-                builder: EnhancedFormHelper::AuthzForm,
-                method: :patch) do |form| %>
-    <%= render V2::FormComponent.new(params) do |form_component| %>
-      <% form_component.with_section(heading: "Select") do |component| %>
-        <% component.with_description do %>
-          Primary working code repository.
-        <% end %>
-
-        <%= form.labeled_select :code_repository,
-                                "Code Repository",
-                                options_for_select(
-                                  display_channels(@code_repositories) { |chan| chan[:full_name] },
-                                  @config.code_repository.to_json
-                                ) %>
+  <%= render V2::FormComponent.new(model: [@app, @config], url: app_app_config_path(@app), method: :patch) do |f| %>
+    <% f.with_section(heading: "Select") do |section| %>
+      <% section.with_description do %>
+        Primary working code repository.
       <% end %>
+
+      <div>
+        <%= section.F.labeled_select :code_repository,
+                                     "Code Repository",
+                                     options_for_select(
+                                       display_channels(@code_repositories) { |chan| chan[:full_name] },
+                                       @config.code_repository.to_json
+                                     ) %>
+      </div>
     <% end %>
 
-    <div class="mt-8">
-      <%= form.authz_submit "Update", "plus.svg" %>
-    </div>
+    <% f.with_action do %>
+      <%= f.F.authz_submit "Update", "plus.svg", size: :xs %>
+    <% end %>
   <% end %>
 <% end %>

@@ -3,11 +3,9 @@
     <% section.with_description do %>
       <div>
         App variants are akin to <strong>product flavors</strong> or <strong>build variants</strong>, but with an
-        explicit
-        requirement of having a different
-        bundle identifier.
-        For example, you can setup a staging variant <code><%= app.bundle_identifier + ".staging" %></code> that gets
-        deployed to a different Firebase app than the primary <code><%= app.bundle_identifier %></code> app.
+        explicit requirement of having a different bundle identifier. For example, you can setup a staging variant
+        <code><%= app.bundle_identifier + ".staging" %></code> that gets deployed to a different Firebase app than the
+        primary <code><%= app.bundle_identifier %></code> app.
       </div>
     <% end %>
     <div>

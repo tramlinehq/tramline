@@ -1,24 +1,21 @@
 <%= render V2::EnhancedTurboFrameComponent.new("#{@integration_category}_config") do %>
   <% if @app.notifications_set_up? %>
-    <%= form_with(model: [@app, @config],
-                  url: app_app_config_path(@app),
-                  builder: EnhancedFormHelper::AuthzForm,
-                  method: :patch) do |form| %>
-      <%= render V2::FormComponent.new(params) do |form_component| %>
-        <% form_component.with_section(heading: "Select Channel") do |component| %>
-          <% component.with_description do %>
-            This will be your base notification channel. Later, when you create trains, you can add more granularity.
-          <% end %>
-
-          <%= render partial: "shared/notifications_form",
-                     locals: { form:, app: @app, channels: @notification_channels, current: @config.notification_channel } %>
-
+    <%= render V2::FormComponent.new(model: [@app, @config], url: app_app_config_path(@app), method: :patch) do |f| %>
+      <% f.with_section(heading: "Select Channel") do |section| %>
+        <% section.with_description do %>
+          This will be your base notification channel. Later, when you create trains, you can add more granularity.
         <% end %>
+
+        <%= render partial: "shared/notifications_form",
+                   locals: { form: f.F,
+                             app: @app,
+                             channels: @notification_channels,
+                             current: @config.notification_channel } %>
       <% end %>
 
-      <div class="mt-8">
-        <%= form.authz_submit "Update", "plus.svg" %>
-      </div>
+      <% f.with_action do %>
+        <%= f.F.authz_submit "Update", "plus.svg", size: :xs %>
+      <% end %>
     <% end %>
   <% end %>
 <% end %>

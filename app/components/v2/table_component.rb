@@ -35,7 +35,7 @@ class V2::TableComponent < ViewComponent::Base
       end
 
       def call
-        content_tag :td, content, {class: CELL_STYLE + " #{@style} #{wrap_style}".squish}
+        content_tag :td, content, {class: CELL_STYLE + " #{@style} #{wrap_style}"}
       end
 
       def wrap_style

@@ -1,10 +1,10 @@
 class V2::IntegrationCardComponent < V2::BaseComponent
   CONNECTABLE_PROVIDER_TO_TITLE = {
-    app_store: "Add API details",
-    bugsnag: "Add Personal Auth Token",
-    firebase: "Add Firebase Service Account JSON Key",
-    google_play_store: "Add Service Account JSON Key",
-    bitrise: "Add Personal Access Token"
+    app_store: "API details",
+    bugsnag: "Auth Token",
+    firebase: "Firebase Service Account JSON Key",
+    google_play_store: "Service Account JSON Key",
+    bitrise: "Access Token"
   }
 
   def initialize(app, integration, category)
@@ -16,6 +16,7 @@ class V2::IntegrationCardComponent < V2::BaseComponent
   attr_reader :integration
   delegate :connected?, :disconnected?, :providable, :connection_data, :providable_type, to: :integration, allow_nil: true
   alias_method :provider, :providable
+  delegate :creatable?, :connectable?, to: :provider
 
   def connect_path
     connect_app_integrations_path(@app, integration)
@@ -38,8 +39,4 @@ class V2::IntegrationCardComponent < V2::BaseComponent
     render(partial: "integrations/connectable",
       locals: {app: @app, integration: @integration, category: @category, url: connect_path, type: providable_type})
   end
-
-  delegate :creatable?, to: :provider
-
-  delegate :connectable?, to: :provider
 end
