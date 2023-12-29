@@ -5,8 +5,7 @@
               builder: ButtonHelper::AuthzForms) do |form| %>
 
   <article class="grid gap-x-12 gap-y-2 grid-cols-2"
-           data-controller="branching-selector"
-           data-branching-selector-domain--release-schedule-help-outlet="#release-schedule">
+           data-controller="branching-selector">
     <section>
       <div data-controller="domain--branch-name-help"
            data-domain--branch-name-help-current-value="<%= train.display_name %>">
