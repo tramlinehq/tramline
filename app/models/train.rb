@@ -186,9 +186,14 @@ class Train < ApplicationRecord
   end
 
   def diff_since_last_release?
-    return vcs_provider.commit_log(ongoing_release.first_commit.commit_hash, working_branch).any? if ongoing_release
+    return vcs_provider.diff_between?(ongoing_release.first_commit.commit_hash, working_branch) if ongoing_release
     return true if last_finished_release.blank?
-    vcs_provider.commit_log(last_finished_release.tag_name || last_finished_release.last_commit.commit_hash, working_branch).any?
+    vcs_provider.diff_between?(last_finished_release.tag_name || last_finished_release.last_commit.commit_hash, working_branch)
+  end
+
+  def diff_for_release?
+    return false unless parallel_working_branch?
+    vcs_provider.diff_between?(release_branch, working_branch)
   end
 
   def create_webhook!
@@ -328,7 +333,7 @@ class Train < ApplicationRecord
     PullRequest.open.where(release_id: active_runs.ids, head_ref: branch_name)
   end
 
-  def pre_release_prs?
+  def parallel_working_branch?
     branching_strategy == "parallel_working"
   end
 

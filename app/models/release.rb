@@ -135,7 +135,7 @@ class Release < ApplicationRecord
   attr_accessor :has_major_bump, :force_finalize, :hotfix_platform, :custom_version
 
   delegate :versioning_strategy, to: :train
-  delegate :app, :pre_release_prs?, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
+  delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
   delegate :platform, to: :app
 
   def self.pending_release?
@@ -159,6 +159,14 @@ class Release < ApplicationRecord
 
   def backmerge_prs
     pull_requests.ongoing
+  end
+
+  def post_release_prs
+    pull_requests.post_release
+  end
+
+  def pre_release_prs
+    pull_requests.pre_release
   end
 
   def duration

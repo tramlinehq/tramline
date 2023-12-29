@@ -219,6 +219,10 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_BETWEEN_TRANSFORMATIONS) }
   end
 
+  def diff_between?(from_branch, to_branch)
+    with_api_retries { installation.diff?(code_repository_name, from_branch, to_branch) }
+  end
+
   def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title_prefix)
     # FIXME
     {}.merge_if_present(source: :gitlab)

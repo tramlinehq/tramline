@@ -217,6 +217,8 @@ module Installations
     end
 
     def create_pr!(repo, to, from, title, body, transforms)
+      raise Installations::Errors::PullRequestWithoutCommits unless diff?(repo, to, from)
+
       execute do
         @client
           .create_pull_request(repo, to, from, title, body)
@@ -255,6 +257,15 @@ module Installations
           .compare(repo, from_branch, to_branch)
           .dig(:commits)
           .then { |commits| Installations::Response::Keys.transform(commits, transforms) }
+      end
+    end
+
+    def diff?(repo, from_branch, to_branch)
+      execute do
+        @client
+          .compare(repo, from_branch, to_branch)
+          .dig(:files)
+          .present?
       end
     end
 

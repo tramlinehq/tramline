@@ -26,7 +26,8 @@ class Triggers::PostRelease
         to_branch_ref: working_branch,
         from_branch_ref: release_branch,
         title: pr_title,
-        description: pr_description
+        description: pr_description,
+        existing_pr: release.pull_requests.post_release.first
       ).then do |value|
         stamp_pr_success
         GitHub::Result.new { value }
