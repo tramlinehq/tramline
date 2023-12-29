@@ -228,6 +228,10 @@ class GitlabIntegration < ApplicationRecord
     {}.merge_if_present(source: :gitlab)
   end
 
+  def enable_auto_merge!(pr_number)
+    # FIXME
+  end
+
   def public_icon_img
     "https://storage.googleapis.com/tramline-public-assets/gitlab_small.png".freeze
   end

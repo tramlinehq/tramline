@@ -16,7 +16,7 @@ class GithubIntegration < ApplicationRecord
   include Rails.application.routes.url_helpers
   using RefinedHash
 
-  delegate :code_repository_name, :code_repo_namespace, to: :app_config
+  delegate :code_repository_name, :code_repo_namespace, :code_repo_name_only, to: :app_config
   delegate :app, to: :integration
   delegate :organization, to: :app
 
@@ -253,6 +253,10 @@ class GithubIntegration < ApplicationRecord
 
   def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title_prefix)
     installation.cherry_pick_pr(code_repository_name, to_branch, commit_hash, patch_branch, pr_title_prefix, PR_TRANSFORMATIONS).merge_if_present(source: :github)
+  end
+
+  def enable_auto_merge!(pr_number)
+    installation.enable_auto_merge(code_repo_namespace, code_repo_name_only, pr_number)
   end
 
   def find_pr(to_branch_ref, from_branch_ref)
