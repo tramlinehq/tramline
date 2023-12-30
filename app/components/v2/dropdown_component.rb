@@ -1,13 +1,13 @@
 class V2::DropdownComponent < V2::BaseComponent
-  DROPDOWN_ACTIONS = {popup_target: "element", action: "click->popup#toggle"}.freeze
-  BASE_BUTTON_OPTS = {scheme: :switcher, type: :action, size: :xxs, html_options: {data: DROPDOWN_ACTIONS}}.freeze
+  DROPDOWN_ACTIONS = { popup_target: "element", action: "click->popup#toggle" }.freeze
+  BASE_BUTTON_OPTS = { scheme: :switcher, type: :action, size: :xxs, html_options: { data: DROPDOWN_ACTIONS } }.freeze
   STYLE = "z-30 w-52 bg-white shadow-md border border-main-300 rounded divide-y divide-main-100 shadow dark:bg-main-700 dark:divide-main-600".freeze
 
   renders_one :button, ->(**args) do
     args = args.merge(authz: @authz) # trickle down the auth setting to the button
     V2::ButtonComponent.new(**BASE_BUTTON_OPTS.deep_merge(args))
   end
-  renders_many :item_groups, ->(list_style: nil) { ItemGroupComponent.new(list_style: list_style) }
+  renders_many :item_groups, ->(list_style: nil) { ItemGroupComponent.new(list_style: list_style, authz: @authz) }
 
   def initialize(authz: true)
     @authz = authz
@@ -31,10 +31,24 @@ class V2::DropdownComponent < V2::BaseComponent
   class ItemGroupComponent < V2::BaseComponent
     DROPDOWN_STYLE = "text-sm text-main-700 dark:text-main-200 leading-none font-medium"
     LIST_ITEM_STYLE = "p-0.5"
+    BASE_OPTS = { scheme: :list_item, size: :none, html_options: { class: "text-left" } }
+    # BASE_LINK_OPTS = BASE_OPTS.merge(type: :link )
+    BASE_BUTTON_OPTS = BASE_OPTS.merge(type: :button)
     renders_many :items, ->(**args) { ItemComponent.new(**args) }
 
-    def initialize(list_style: DROPDOWN_STYLE)
+    renders_many :buttons, -> (**args) do
+      args = args.merge(authz: @authz) # trickle down the auth setting to the buttons
+      V2::ButtonComponent.new(**BASE_BUTTON_OPTS.deep_merge(args))
+    end
+
+    # renders_many :links, ->(**args) do
+    #   args = args.merge(authz: @authz) # trickle down the auth setting to the links
+    #   LinkItemComponent.new(**BASE_LINK_OPTS.deep_merge(args))
+    # end
+
+    def initialize(list_style: DROPDOWN_STYLE, authz: true)
       @list_style = list_style
+      @authz = authz
     end
 
     def call
@@ -42,8 +56,32 @@ class V2::DropdownComponent < V2::BaseComponent
         items.collect do |item|
           concat content_tag(:li, item, class: LIST_ITEM_STYLE)
         end
+
+        buttons.collect do |button|
+          concat content_tag(:li, button, class: LIST_ITEM_STYLE)
+        end
+
+        # links.collect do |link|
+        #   concat content_tag(:li, link, class: LIST_ITEM_STYLE)
+        # end
       end
     end
+
+    # class LinkItemComponent < V2::ButtonComponent
+    #   def initialize(**args)
+    #     @selected = args.delete(:selected)
+    #     super(**args)
+    #   end
+    #
+    #   SELECTED_CHECK_STYLE = "w-3 h-3 text-green-500"
+    #
+    #   def call
+    #     content_tag(:div, class: "flex items-center") do
+    #       super
+    #       concat inline_svg("selected_check.svg", classname: SELECTED_CHECK_STYLE) if @selected
+    #     end
+    #   end
+    # end
 
     class ItemComponent < V2::BaseComponent
       def initialize(link: nil, selected: false)
@@ -61,7 +99,7 @@ class V2::DropdownComponent < V2::BaseComponent
             concat inline_svg("selected_check.svg", classname: SELECTED_CHECK_STYLE) if @selected
           end
         else
-          content_tag(:div, class: ITEM_STYLE) do
+          content_tag(:span, class: ITEM_STYLE) do
             content
           end
         end
@@ -72,7 +110,7 @@ class V2::DropdownComponent < V2::BaseComponent
       end
 
       def link_class
-        {class: @link[:class].presence || ITEM_STYLE}
+        { class: @link[:class].presence || ITEM_STYLE }
       end
 
       def link_params

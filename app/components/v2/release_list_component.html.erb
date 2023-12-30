@@ -50,39 +50,11 @@
       <% button.with_title_text.with_content("Prepare new release") %>
       <% dropdown.with_item_group do |group| %>
         <% if train.ongoing_release && train.upcoming_release_startable? %>
-          <% group.with_item do %>
-            <%= render V2::ButtonComponent.new(
-              scheme: :none,
-              size: :none,
-              label: start_upcoming_release_text,
-              options: app_train_releases_path(app, train),
-              type: :button) %>
-          <% end %>
-          <% group.with_item do %>
-            <%= render V2::ButtonComponent.new(
-              scheme: :none,
-              size: :none,
-              label: start_upcoming_release_text(major: true),
-              options: app_train_releases_path(app, train),
-              type: :button) %>
-          <% end %>
+          <%= group.with_button(label: start_upcoming_release_text, options: app_train_releases_path(app, train)) %>
+          <%= group.with_button(label: start_upcoming_release_text(major: true), options: app_train_releases_path(app, train)) %>
         <% elsif @train.manually_startable? %>
-          <% group.with_item(link: { path: app_train_releases_path(app, train) }) do %>
-            <%= render V2::ButtonComponent.new(
-              scheme: :none,
-              size: :none,
-              label: start_release_text,
-              options: app_train_releases_path(app, train),
-              type: :button) %>
-          <% end %>
-          <% group.with_item(link: { path: app_train_releases_path(app, train) }) do %>
-            <%= render V2::ButtonComponent.new(
-              scheme: :none,
-              size: :none,
-              label: start_release_text(major: true),
-              options: app_train_releases_path(app, train),
-              type: :button) %>
-          <% end %>
+          <%= group.with_button(label: start_release_text, options: app_train_releases_path(app, train)) %>
+          <%= group.with_button(label: start_release_text(major: true), options: app_train_releases_path(app, train)) %>
         <% end %>
       <% end %>
     <% end %>

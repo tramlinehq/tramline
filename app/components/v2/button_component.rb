@@ -32,6 +32,9 @@ class V2::ButtonComponent < V2::BaseComponent
       class: "bg-main rounded-full md:mr-0 focus:ring-4 focus:ring-main-300 dark:focus:ring-main-600",
       icon: true
     },
+    list_item: {
+      class: "flex items-center rounded justify-between block px-4 py-1.5 hover:bg-main-100 dark:hover:bg-main-600 dark:hover:text-white text-sm"
+    },
     none: {class: ""}
   }
   DISABLED_STYLE = "opacity-30 disabled cursor-not-allowed outline-none focus:outline-none"
