@@ -18,6 +18,15 @@ module Installations
       set_client
     end
 
+    def self.find_biggest(artifacts)
+      artifacts.max_by { |artifact| artifact["size_in_bytes"] }
+    end
+
+    def self.filter_by_name(artifacts, name_pattern)
+      return artifacts if name_pattern.blank?
+      artifacts.filter { |artifact| artifact["name"].downcase.include? name_pattern }.presence || artifacts
+    end
+
     def get_installation(id, transforms)
       execute do
         Octokit::Client.new(bearer_token: jwt.get)
@@ -335,13 +344,32 @@ module Installations
       raise e
     end
 
-    def self.find_biggest(artifacts)
-      artifacts.max_by { |artifact| artifact["size_in_bytes"] }
-    end
+    def enable_auto_merge(owner, repo, pr_number)
+      find_pr_id_query = <<-GRAPHQL
+        query {
+          repository(owner: "#{owner}", name: "#{repo}") {
+            pullRequest(number: #{pr_number}) {
+              id
+            }
+          }
+        }
+      GRAPHQL
 
-    def self.filter_by_name(artifacts, name_pattern)
-      return artifacts if name_pattern.blank?
-      artifacts.filter { |artifact| artifact["name"].downcase.include? name_pattern }.presence || artifacts
+      response = client.post "/graphql", {query: find_pr_id_query}.to_json
+      pull_request_id = response.dig(:data, :repository, :pullRequest, :id)
+      raise Installations::Errors::ResourceNotFound unless pull_request_id
+
+      enable_auto_merge = <<-GRAPHQL
+        mutation {
+          enablePullRequestAutoMerge(input: {pullRequestId: "#{pull_request_id}"}) {
+            pullRequest {
+              id
+            }
+          }
+        }
+      GRAPHQL
+
+      client.post "/graphql", {query: enable_auto_merge}.to_json
     end
 
     def artifact_download_url(artifact)
