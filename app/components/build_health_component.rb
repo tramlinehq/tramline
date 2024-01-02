@@ -8,7 +8,7 @@ class BuildHealthComponent < ViewComponent::Base
   end
 
   def step_runs
-    @step_runs ||= release_platform_run.step_runs_for(step).not_failed
+    @step_runs ||= release_platform_run.step_runs_for(step).not_failed.sequential
   end
 
   def chartable_metadata
@@ -30,7 +30,7 @@ class BuildHealthComponent < ViewComponent::Base
       description: "",
       type: "number",
       unit: "MB",
-      data: step_runs.map { |srun| [srun.build_number, {"MB" => srun.build_size}] }.to_h
+      data: step_runs.map { |srun| [srun.build_number, {"MB" => srun.build_size}] if srun.build_size }.compact.to_h
     }
   end
 
