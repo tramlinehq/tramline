@@ -101,7 +101,7 @@ class StepRun < ApplicationRecord
   WORKFLOW_NOT_STARTED = [:on_track]
   WORKFLOW_IN_PROGRESS = [:ci_workflow_triggered, :ci_workflow_started]
   WORKFLOW_IMMUTABLE = STATES.keys - END_STATES - WORKFLOW_IN_PROGRESS - WORKFLOW_NOT_STARTED
-  FAILED_STATES = %w[ci_workflow_failed ci_workflow_halted build_not_found_in_store build_unavailable deployment_failed failed_with_action_required]
+  FAILED_STATES = %w[ci_workflow_failed ci_workflow_halted build_not_found_in_store build_unavailable deployment_failed failed_with_action_required cancelled_before_start]
 
   enum status: STATES
 
