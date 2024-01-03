@@ -65,7 +65,7 @@ class BuildHealthComponent < ViewComponent::Base
   def chart_data(metadata_id)
     return if health_data[metadata_id].blank?
     {
-      data: health_data[metadata_id][:data],
+      data: health_data[metadata_id][:data].sort.to_h,
       type: "line",
       value_format: health_data[metadata_id][:type],
       name: metadata_id,
