@@ -227,7 +227,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   def last_run_for(step)
     return if last_commit.blank?
-    last_commit.step_runs_for(self).where(step: step).last
+    last_commit.step_runs_for(self).where(step: step).sequential.last
   end
 
   def current_step_number

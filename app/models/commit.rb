@@ -78,7 +78,7 @@ class Commit < ApplicationRecord
   end
 
   def step_runs_for(platform_run)
-    step_runs.where(release_platform_run: platform_run).includes(:step).order(:created_at)
+    step_runs.where(release_platform_run: platform_run).includes(:step)
   end
 
   def applied_at
