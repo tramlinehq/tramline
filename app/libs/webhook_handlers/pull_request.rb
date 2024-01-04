@@ -14,7 +14,7 @@ class WebhookHandlers::PullRequest < WebhookHandlers::Base
 
   memoize def runner
     return GITHUB::PullRequest.new(payload) if vcs_provider.integration.github_integration?
-    GITLAB::PullRequest.new(payload, train) if vcs_provider.integration.gitlab_integration?
+    GITLAB::PullRequest.new(payload) if vcs_provider.integration.gitlab_integration?
   end
 
   memoize def open_active_prs?

@@ -35,6 +35,8 @@ class Triggers::PullRequest
       @pull_request = @new_pull_request.update_or_insert!(create.value!)
     end
 
+    return GitHub::Result.new { @pull_request } if @pull_request.closed?
+
     merge.then { GitHub::Result.new { @pull_request.close! } }
   end
 
