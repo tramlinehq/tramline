@@ -54,7 +54,7 @@
               <% end %>
 
               <% dropdown.with_item_group do |group| %>
-                <% current_organization.apps.each do |app| %>
+                <% current_organization.apps.filter(&:persisted?).each do |app| %>
                   <% group.with_item(link: { path: app_path(app) }, selected: app.id == default_app.id) do %>
                     <div class="text-left">
                       <div class="font-medium leading-none mb-0.5 text-sm">

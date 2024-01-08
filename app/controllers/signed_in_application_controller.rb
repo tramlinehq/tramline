@@ -24,6 +24,10 @@ class SignedInApplicationController < ApplicationController
   helper_method :demo_org?, :demo_train?, :subscribed_org?, :billing?, :billing_link
   PATH_PARAMS_UNDER_APP = [:id, :app_id, :integration_id, :train_id, :platform_id]
 
+  def home
+
+  end
+
   def demo_org?
     current_organization&.demo?
   end
@@ -109,13 +113,12 @@ class SignedInApplicationController < ApplicationController
 
   def default_app
     return if @app.blank? || !@app.persisted?
-    @app
 
-    # if @app.blank?
-    #   current_organization.default_app
-    # else
-    #   @app if @app.persisted?
-    # end
+    if @app.blank?
+      current_organization.default_app
+    else
+      @app if @app.persisted?
+    end
   end
 
   def new_app

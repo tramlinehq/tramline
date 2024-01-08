@@ -3,20 +3,27 @@
              locals: { msg: "Contact us via the chat in the bottom right corner and we'll help you get setup with your release process." } %>
 <% end %>
 
-<%= render PageComponent.new(breadcrumb: breadcrumb(:apps), title: "Apps 👩‍💻") do |page| %>
-  <% page.with_action do %>
-    <%= authz_link_to :green, new_app_path do %>
-      <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
-      <span class="hidden xs:block ml-2">Add a new app</span>
-    <% end %>
-  <% end %>
+<%= render V2::ContainerComponent.new(title: "") do |container| %>
+  <% if @apps.blank? %>
+    <% container.with_empty_state do %>
+      <div class="flex justify-center mt-24">
+        <div class="flex flex-col justify-start">
+          <h1 class="text-xl font-semibold text-main dark:text-white">Create an app to get started</h1>
 
-  <% if @apps.any? %>
-    <%= render AppListComponent.new(apps: @apps) %>
-  <% else %>
-    <p>Go to the
-      <%= link_to "new app page", new_app_path %>
-      to create an app and configure their integrations.
-    </p>
+          <div class="mt-6 max-w-[200px] font-medium text-sm dark:text-main-300 text-main-400 mb-6">
+            Once you add your an app, you can then setup integrations and create your first release.
+          </div>
+
+          <%= render V2::ModalComponent.new(title: "Add a new app") do |modal| %>
+            <% modal.with_button(label: "Add a new app", scheme: :default, type: :action, size: :sm, arrow: :none)
+                    .with_icon("plus.svg", size: :md) %>
+            <% modal.with_body do %>
+              <%= render partial: "apps/form", locals: { app: new_app } %>
+            <% end %>
+          <% end %>
+        </div>
+        <%= image_tag("art/no_releases.png", width: 400, alt: "no releases yet", class: "rounded-sm") %>
+      </div>
+    <% end %>
   <% end %>
 <% end %>

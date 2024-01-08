@@ -5,54 +5,15 @@
   <% end %>
 <% end %>
 
-<%= render PageComponent.new(breadcrumb: breadcrumb(@app),
-                             title: "#{@app.name} 📱",
-                             subtitle: "#{@app.display_attr(:platform)} app (#{@app.bundle_identifier})") do |page| %>
+<% content_for :sticky_page_message do %>
+  <%= render partial: "shared/sticky_topbar_message",
+             locals: { msg: "Contact us via the chat in the bottom right corner and we'll help you get setup with your release process." } %>
+<% end %>
 
-  <% if @app.ready? %>
-    <% if @app.releases.exists? %>
-      <% page.with_action do %>
-        <%= decorated_link_to :neutral, all_builds_app_path(@app) do %>
-          <%= inline_svg("all_builds_icon.svg", classname: "w-4") %>
-          <span class="ml-2">All Builds</span>
-        <% end %>
-      <% end %>
-    <% end %>
+<%= render V2::ContainerComponent.new(title: "") do |container| %>
+  <% container.with_body do %>
+    <%= render partial: 'shared/errors', locals: { resource: @app } %>
 
-    <% page.with_action do %>
-      <%= authz_link_to :neutral, app_integrations_path(@app) do %>
-        <%= inline_svg("link_icon.svg", classname: "w-4 fill-current shrink-0 text-slate-500") %>
-
-        <span class="ml-2">Integrations</span>
-      <% end %>
-    <% end %>
-
-    <% page.with_action do %>
-      <%= authz_link_to :neutral, edit_app_app_config_path(@app) do %>
-        <%= inline_svg("configure_icon.svg", classname: "w-4 fill-current shrink-0") %>
-        <span class="ml-2">Configure</span>
-      <% end %>
-    <% end %>
-  <% end %>
-
-  <% page.with_action do %>
-    <%= authz_link_to :neutral, edit_app_path(@app) do %>
-      <%= inline_svg("edit.svg", classname: "w-4 fill-current text-slate-500 shrink-0") %>
-      <span class="ml-2">Settings</span>
-    <% end %>
-  <% end %>
-
-  <% if @app.releases.none? %>
-    <% page.with_action do %>
-      <%= authz_link_to :red, app_path(@app), method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } do %>
-        <span>Delete</span>
-      <% end %>
-    <% end %>
-  <% end %>
-
-  <%= render partial: 'shared/errors', locals: { resource: @app } %>
-
-  <div class="space-y-8">
     <% if @app.ready? %>
       <%= render partial: "shared/draft_mode_notice", locals: { app: @app } %>
       <%= render partial: "trains/setup_progress",
@@ -64,86 +25,28 @@
     <% else %>
       <%= render partial: "apps/setup_progress", locals: { setup_instructions: @app_setup_instructions } %>
     <% end %>
+  <% end %>
 
-    <% unless @app.guided_train_setup? %>
-      <section class="grid md:grid-cols-2 gap-x-20 pb-5 mt-8">
-        <% if @app.cross_platform? %>
-          <article>
-            <span class="pr-1"><%= image_tag("integrations/logo_google_play_store.png", width: 36) %></span>
-            <%= render(ExternalAppComponent.new(app: @app,
-                                                external_app: @app.latest_external_apps[:android],
-                                                heading: "Current Play Store Status")) %>
-          </article>
-          <article>
-            <span class="pr-1"><%= image_tag("integrations/logo_app_store.png", width: 36) %></span>
-            <%= render(ExternalAppComponent.new(app: @app,
-                                                external_app: @app.latest_external_apps[:ios],
-                                                heading: "Current App Store Status")) %>
-          </article>
-        <% else %>
-          <article>
-            <span class="pr-1"><%= image_tag(store_logo(@app), width: 36) %></span>
-            <%= render(ExternalAppComponent.new(app: @app, external_app: @app.latest_external_app)) %>
-          </article>
-          <article class="w-full">
-            <%= render "shared/demo/release_pilot" %>
-          </article>
-        <% end %>
-      </section>
+  <% if @apps.blank? %>
+    <% container.with_empty_state do %>
+      <div class="flex justify-center mt-24">
+        <div class="flex flex-col justify-start">
+          <h1 class="text-xl font-semibold text-main dark:text-white">Create an app to get started</h1>
 
-      <section>
-        <%= render TableComponent.new(columns: ["Name", "Description", "Current Release", "Actions"]) do |table| %>
-          <% table.with_heading do %>
-            <div class="flex justify-between items-end mb-2">
-              <h2 class="text-2xl text-slate-800 font-bold">Release Train</h2>
-              <%= authz_link_to :green, new_app_train_path(@app) do %>
-                <%= inline_svg("create_plus.svg", classname: "w-4 fill-current opacity-50 shrink-0") %>
-                <span class="hidden xs:block ml-2">Create another release train</span>
-              <% end %>
-            </div>
-          <% end %>
+          <div class="mt-6 max-w-[200px] font-medium text-sm dark:text-main-300 text-main-400 mb-6">
+            Once you add your an app, you can then setup integrations and create your first release.
+          </div>
 
-          <% @app.trains.each do |train| %>
-            <% table.with_row do |row| %>
-              <% row.with_cell do %>
-                <div class="flex items-center">
-                  <div class="font-medium text-slate-800">
-                    <%= link_to train.name, app_train_path(@app, train) %>
-                  </div>
-                </div>
-              <% end %>
-
-              <% row.with_cell do %>
-                <div class="text-left"><%= safe_simple_format(train.description) %></div>
-              <% end %>
-
-              <% row.with_cell do %>
-                <div class="text-left">
-                  <%= "#{train.releases.any? ? train.version_current : train.version_seeded_with} • #{@app.build_number}" %>
-                </div>
-              <% end %>
-
-              <% row.with_cell do %>
-                <div class="text-left flex flex-row gap-x-2">
-                  <%= authz_button_to :neutral, clone_app_train_path(@app, train), method: :post,
-                                      title: "Clone the train",
-                                      data: { turbo_confirm: "This will create a clone of this train. Proceed?" } do %>
-                    <%= inline_svg("clone.svg", classname: "inline-flex w-5") %>
-                  <% end %>
-
-                  <% if train.releases.blank? %>
-                    <%= authz_link_to :red, app_train_path(@app, train), method: :delete,
-                                      title: "Delete the train",
-                                      data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete this train?" } do %>
-                      <%= inline_svg("trash_solid.svg", classname: "inline-flex w-4") %>
-                    <% end %>
-                  <% end %>
-                </div>
-              <% end %>
+          <%= render V2::ModalComponent.new(title: "Add a new app") do |modal| %>
+            <% modal.with_button(label: "Add a new app", scheme: :default, type: :action, size: :sm, arrow: :none)
+                    .with_icon("plus.svg", size: :md) %>
+            <% modal.with_body do %>
+              <%= render partial: "apps/form", locals: { app: new_app } %>
             <% end %>
           <% end %>
-        <% end %>
-      </section>
+        </div>
+        <%= image_tag("art/no_releases.png", width: 400, alt: "no releases yet", class: "rounded-sm") %>
+      </div>
     <% end %>
-  </div>
+  <% end %>
 <% end %>

@@ -11,6 +11,7 @@ class AppsController < SignedInApplicationController
   end
 
   def show
+    @app = default_app
     @train_in_creation = @app.train_in_creation
     @app_setup_instructions = @app.app_setup_instructions
     @train_setup_instructions = @app.train_setup_instructions
