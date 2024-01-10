@@ -12,6 +12,8 @@ class IntegrationListeners::GitlabController < IntegrationListenerController
       handle_push
     when "ping"
       handle_ping
+    when "merge_request"
+      handle_pull_request
     else
       head :ok
     end
@@ -23,6 +25,12 @@ class IntegrationListeners::GitlabController < IntegrationListenerController
 
   def handle_push
     response = WebhookHandlers::Push.process(train, push_params)
+    Rails.logger.debug response.body
+    head response.status
+  end
+
+  def handle_pull_request
+    response = WebhookHandlers::PullRequest.process(train, pull_request_params)
     Rails.logger.debug response.body
     head response.status
   end
@@ -42,8 +50,27 @@ class IntegrationListeners::GitlabController < IntegrationListenerController
       :ref,
       :checkout_sha,
       project: [:path_with_namespace],
-      commits: [:id, :message, :title, :timestamp, :url, author: [:name, :email]],
-      repository: [:name]
+      commits: [:id, :message, :title, :timestamp, :url, author: [:name, :email]]
+    )
+  end
+
+  def pull_request_params
+    params.permit(
+      project: [:path_with_namespace],
+      object_attributes: [
+        :id,
+        :iid,
+        :target_branch,
+        :source_branch,
+        :state,
+        :action,
+        :title,
+        :description,
+        :url,
+        :created_at,
+        :updated_at,
+        last_commit: [:id]
+      ]
     )
   end
 end

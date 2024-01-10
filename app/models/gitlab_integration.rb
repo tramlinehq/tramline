@@ -86,8 +86,20 @@ class GitlabIntegration < ApplicationRecord
     body: :description,
     url: :web_url,
     state: :state,
-    head_ref: :sha,
-    base_ref: :sha, # TODO: this is a temporary fix, we should fetch the correct sha from GitLab and fill ths
+    head_ref: :source_branch,
+    base_ref: :target_branch,
+    opened_at: :created_at
+  }
+
+  WEBHOOK_PR_TRANSFORMATIONS = {
+    source_id: :id,
+    number: :iid,
+    title: :title,
+    body: :description,
+    url: :url,
+    state: :state,
+    head_ref: :source_branch,
+    base_ref: :target_branch,
     opened_at: :created_at
   }
 
