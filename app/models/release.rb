@@ -125,7 +125,6 @@ class Release < ApplicationRecord
   end
 
   before_create :set_version
-  after_create :set_default_release_metadata
   after_create :create_platform_runs
   after_create :create_active_build_queue, if: -> { train.build_queue_enabled? }
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
@@ -409,10 +408,6 @@ class Release < ApplicationRecord
     else
       (train.ongoing_release.presence || train).next_version(major_only: has_major_bump)
     end
-  end
-
-  def set_default_release_metadata
-    create_release_metadata!(locale: ReleaseMetadata::DEFAULT_LOCALE, release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES)
   end
 
   def previous_release
