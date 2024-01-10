@@ -7,6 +7,7 @@
 #  body                    :text
 #  closed_at               :datetime
 #  head_ref                :string           not null, indexed => [release_id]
+#  labels                  :jsonb
 #  number                  :bigint           not null, indexed => [release_id, phase], indexed
 #  opened_at               :datetime         not null
 #  phase                   :string           not null, indexed => [release_id, number], indexed
@@ -29,6 +30,7 @@ class PullRequest < ApplicationRecord
 
   enum phase: {
     pre_release: "pre_release",
+    mid_release: "mid_release",
     ongoing: "ongoing",
     post_release: "post_release"
   }

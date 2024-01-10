@@ -21,12 +21,15 @@
             <% if pr.base_ref == pr.head_ref %>
               <%= short_sha(pr.head_ref) %>
             <% else %>
-              <%= pr.head_ref %>
+              <%= pr.base_ref %> <- <%= pr.head_ref %>
             <% end %>
           </code>
           <% if pr.commit.present? %>
             <%= " • " %>
             <%= pr.commit.author_name || pr.commit.author_login %>
+          <% end %>
+          <% pr.labels&.each do |label| %>
+            <%= status_badge(label["name"], :neutral) %>
           <% end %>
         </div>
       </div>

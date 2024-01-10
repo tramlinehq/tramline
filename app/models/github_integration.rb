@@ -85,7 +85,15 @@ class GithubIntegration < ApplicationRecord
     head_ref: [:head, :ref],
     base_ref: [:base, :ref],
     opened_at: :created_at,
-    closed_at: :closed_at
+    closed_at: :closed_at,
+    labels: {
+      labels: {
+        id: :id,
+        name: :name,
+        color: :color,
+        description: :description
+      }
+    }
   }
 
   def install_path

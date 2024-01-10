@@ -92,7 +92,7 @@
 <%= render partial: "shared/live_release/separator" %>
 
 <div class="grid grid-cols-1 gap-6 mt-8">
-  <%= render partial: "shared/live_release/builds", locals: { release: @release, commits: @commits } %>
+  <%= render partial: "shared/live_release/builds", locals: { release: @release, commits: @commits, pull_requests: @mid_release_prs } %>
 </div>
 
 <% unless @release.finished? %>

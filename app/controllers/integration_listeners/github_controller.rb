@@ -46,18 +46,22 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def pull_request_params
-    params.require(:pull_request).permit(
-      :number,
-      :title,
-      :body,
-      :url,
-      :state,
-      :created_at,
-      :closed_at,
-      :id,
-      :html_url,
-      base: [:ref],
-      head: [:ref, repo: [:full_name]]
+    params.permit(
+      repository: [:full_name, :name],
+      pull_request: [
+        :number,
+        :title,
+        :body,
+        :url,
+        :state,
+        :created_at,
+        :closed_at,
+        :id,
+        :html_url,
+        base: [:ref],
+        head: [:ref, repo: [:full_name]],
+        labels: [:id, :name, :color, :description]
+      ]
     )
   end
 

@@ -169,6 +169,10 @@ class Release < ApplicationRecord
     pull_requests.pre_release
   end
 
+  def mid_release_prs
+    pull_requests.mid_release
+  end
+
   def duration
     return unless finished?
     ActiveSupport::Duration.build(completed_at - scheduled_at)
