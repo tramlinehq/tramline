@@ -77,6 +77,10 @@ Rails.application.routes.draw do
           end
         end
 
+        resources :release_platforms, shallow: false, only: [] do
+          resource :release_metadatum, only: %i[edit update], path: :metadata
+        end
+
         resources :build_queues, only: [], shallow: false do
           member do
             post :apply
@@ -113,10 +117,6 @@ Rails.application.routes.draw do
               end
             end
           end
-        end
-
-        resources :release_platform_runs, only: [], shallow: true do
-          resource :release_metadatum, only: %i[edit update], path: :metadata
         end
 
         collection do

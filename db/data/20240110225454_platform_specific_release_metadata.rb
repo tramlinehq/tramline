@@ -9,6 +9,7 @@ class PlatformSpecificReleaseMetadata < ActiveRecord::Migration[7.0]
         current_release_platform = r.release_metadata.release_platform_run
         if current_release_platform.blank?
           r.release_metadata.update!(release_platform_run: run1)
+          dup_release_metadata.update!(release_platform_run: run2)
         else
           run = [run1, run2].reject { |rpr| rpr == current_release_platform }.first
           dup_release_metadata.update!(release_platform_run: run)
