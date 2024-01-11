@@ -115,7 +115,9 @@ Rails.application.routes.draw do
           end
         end
 
-        resource :release_metadatum, only: %i[edit update], path: :metadata
+        resources :release_platform_runs, only: [], shallow: true do
+          resource :release_metadatum, only: %i[edit update], path: :metadata
+        end
 
         collection do
           get :live_release

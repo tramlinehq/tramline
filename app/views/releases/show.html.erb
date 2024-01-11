@@ -51,9 +51,11 @@
 
     <%= render partial: "shared/live_release/separator", locals: { margin_only: true } %>
 
-    <% if @release.release_metadata.present? %>
-      <%= render partial: "shared/live_release/release_metadata",
-                 locals: { release: @release, is_android: @app.android? } %>
+    <% if @release.release_metadata.exists? %>
+      <% @release.release_platform_runs.each do |release_platform_run| %>
+        <%= render partial: "shared/live_release/release_metadata",
+                   locals: { release_platform_run: release_platform_run, is_android: @app.android? } %>
+      <% end %>
     <% end %>
   </div>
 

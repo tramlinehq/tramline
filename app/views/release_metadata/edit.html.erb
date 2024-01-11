@@ -2,7 +2,7 @@
   <%= render partial: 'shared/errors', locals: { resource: @release_metadata } %>
 
   <%= form_with(model: @release_metadata,
-                url: release_release_metadatum_path(@release),
+                url: release_platform_run_release_metadatum_path(@release_platform_run),
                 builder: ButtonHelper::AuthzForms,
                 method: :patch) do |form| %>
 

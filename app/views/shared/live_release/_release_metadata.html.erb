@@ -1,9 +1,11 @@
-<% release_metadata = release.release_metadata %>
+<% release_metadata = release_platform_run.release_metadata %>
 
 <section>
   <div class="flex justify-between items-center mb-4">
     <%= render partial: "shared/live_release/section_title", locals: {heading: "Release Metadata", subheading: nil} %>
-    <%= authz_link_to (release.metadata_editable? ? :neutral : :disabled), "Edit", edit_release_release_metadatum_path(release) %>
+    <%= authz_link_to (release_platform_run.metadata_editable? ? :neutral : :disabled),
+                      "Edit",
+                      edit_release_platform_run_release_metadatum_path(release_platform_run) %>
   </div>
 
   <%= render MetaTableComponent.new do |mt| %>
