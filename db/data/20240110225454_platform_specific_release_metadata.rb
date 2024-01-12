@@ -1,21 +1,14 @@
 class PlatformSpecificReleaseMetadata < ActiveRecord::Migration[7.0]
   def up
     Release.all.each do |r|
-      run1 = r.release_platform_runs.first
-      run2 = r.release_platform_runs.second
-
       if r.app.cross_platform?
+        android = r.release_platform_runs.android.sole
+        ios = r.release_platform_runs.ios.sole
         dup_release_metadata = r.release_metadata.dup
-        current_release_platform = r.release_metadata.release_platform_run
-        if current_release_platform.blank?
-          r.release_metadata.update!(release_platform_run: run1)
-          dup_release_metadata.update!(release_platform_run: run2)
-        else
-          run = [run1, run2].reject { |rpr| rpr == current_release_platform }.first
-          dup_release_metadata.update!(release_platform_run: run)
-        end
+        r.release_metadata.update!(release_platform_run: android, promo_text: nil)
+        dup_release_metadata.update!(release_platform_run: ios)
       else
-        r.release_metadata.update!(release_platform_run: run1)
+        r.release_metadata.update!(release_platform_run: r.release_platform_runs.sole)
       end
     end
   end
