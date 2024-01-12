@@ -162,7 +162,8 @@ module Installations
       }
 
       execute(:post, MR_URL.expand(project_id:).to_s, params)
-        .then { |response| Installations::Response::Keys.transform(response, transforms) }
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def find_pr(project_id, target_branch, source_branch, transforms)
