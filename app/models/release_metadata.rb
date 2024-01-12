@@ -24,4 +24,4 @@ class ReleaseMetadata < ApplicationRecord
 
   validates :release_notes, format: {with: PLAINTEXT_REGEX, message: :no_special_characters, multiline: true}, length: {maximum: NOTES_MAX_LENGTH}
   validates :promo_text, format: {with: PLAINTEXT_REGEX, message: :no_special_characters, allow_blank: true, multiline: true}, length: {maximum: 170}
- end
+end

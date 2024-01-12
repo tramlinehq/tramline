@@ -4,7 +4,7 @@
 
 <section>
   <div class="flex justify-between items-center mb-4">
-    <%= render partial: "shared/live_release/section_title", locals: {heading: "#{release_platform.platform} Metadata", subheading: nil} %>
+    <%= render partial: "shared/live_release/section_title", locals: {heading: "#{release_platform.display_attr(:platform)} Metadata", subheading: nil} %>
     <%= authz_link_to (release_platform_run.metadata_editable? ? :neutral : :disabled),
                       "Edit",
                       edit_release_release_platform_release_metadatum_path(release, release_platform) %>

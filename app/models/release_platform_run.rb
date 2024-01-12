@@ -84,8 +84,8 @@ class ReleasePlatformRun < ApplicationRecord
 
   def set_default_release_metadata
     create_release_metadata!(locale: ReleaseMetadata::DEFAULT_LOCALE,
-                             release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES,
-                             release:)
+      release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES,
+      release:)
   end
 
   def finish_release
