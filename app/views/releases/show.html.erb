@@ -61,7 +61,7 @@
   <% if @release.release_metadata.exists? %>
     <% @release.release_platform_runs.each do |release_platform_run| %>
       <%= render partial: "shared/live_release/release_metadata",
-                 locals: { release_platform_run: release_platform_run, is_android: @app.android? } %>
+                 locals: { release_platform_run: release_platform_run } %>
     <% end %>
   <% end %>
 </div>
