@@ -15,6 +15,7 @@ class ReleaseMetadata < ApplicationRecord
   has_paper_trail
 
   belongs_to :release, inverse_of: :release_metadata
+  belongs_to :release_platform_run, inverse_of: :release_metadata, optional: true
 
   NOTES_MAX_LENGTH = 4000
   DEFAULT_LOCALE = "en-US"

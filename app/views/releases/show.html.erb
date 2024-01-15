@@ -50,16 +50,20 @@
     <% end %>
 
     <%= render partial: "shared/live_release/separator", locals: { margin_only: true } %>
-
-    <% if @release.release_metadata.present? %>
-      <%= render partial: "shared/live_release/release_metadata",
-                 locals: { release: @release, is_android: @app.android? } %>
-    <% end %>
   </div>
 
   <div>
     <%= render partial: "shared/live_release/commit_log", locals: { release: @release } %>
   </div>
+</div>
+
+<div class="grid grid-cols-2 gap-6 mt-8">
+  <% if @release.release_metadata.exists? %>
+    <% @release.release_platform_runs.each do |release_platform_run| %>
+      <%= render partial: "shared/live_release/release_metadata",
+                 locals: { release_platform_run: release_platform_run } %>
+    <% end %>
+  <% end %>
 </div>
 
 <%= render partial: "shared/live_release/separator" %>

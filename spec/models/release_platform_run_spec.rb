@@ -5,6 +5,16 @@ describe ReleasePlatformRun do
     expect(create(:release_platform_run)).to be_valid
   end
 
+  describe ".create" do
+    subject(:run) { create(:release_platform_run) }
+
+    it "creates the release metadata with default locale" do
+      expect(run.release_metadata).to be_present
+      expect(run.release_metadata.locale).to eq(ReleaseMetadata::DEFAULT_LOCALE)
+      expect(run.release_metadata.release_notes).to eq(ReleaseMetadata::DEFAULT_RELEASE_NOTES)
+    end
+  end
+
   describe "#metadata_editable" do
     let(:release_platform) { create(:release_platform) }
     let(:review_step) { create(:step, :review, :with_deployment, release_platform:) }

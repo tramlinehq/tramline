@@ -35,9 +35,9 @@ class Release < ApplicationRecord
 
   belongs_to :train
   belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :hotfixed_releases
-  has_one :release_metadata, dependent: :destroy, inverse_of: :release
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
   has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release
+  has_many :release_metadata, through: :release_platform_runs
   has_many :all_commits, dependent: :destroy, inverse_of: :release, class_name: "Commit"
   has_many :pull_requests, dependent: :destroy, inverse_of: :release
   has_many :step_runs, through: :release_platform_runs
@@ -125,7 +125,6 @@ class Release < ApplicationRecord
   end
 
   before_create :set_version
-  after_create :set_default_release_metadata
   after_create :create_platform_runs
   after_create :create_active_build_queue, if: -> { train.build_queue_enabled? }
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
@@ -335,7 +334,6 @@ class Release < ApplicationRecord
         release_branch: release_branch,
         release_branch_url: branch_url,
         release_url: live_release_link,
-        release_notes: release_metadata&.release_notes,
         release_version: release_version
       }
     )
@@ -413,10 +411,6 @@ class Release < ApplicationRecord
     else
       (train.ongoing_release.presence || train).next_version(major_only: has_major_bump)
     end
-  end
-
-  def set_default_release_metadata
-    create_release_metadata!(locale: ReleaseMetadata::DEFAULT_LOCALE, release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES)
   end
 
   def previous_release
