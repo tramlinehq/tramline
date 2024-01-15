@@ -35,7 +35,6 @@ module Deployments
         :deployment_channel,
         :build_number,
         :release_version,
-        :release_metadata,
         :google_firebase_integration?,
         :release_platform,
         :step_run,

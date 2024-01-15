@@ -34,6 +34,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   belongs_to :release_platform
   belongs_to :release
+  has_one :release_metadata, dependent: :destroy, inverse_of: :release_platform_run
   has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
   has_many :external_builds, through: :step_runs
   has_many :deployment_runs, through: :step_runs
@@ -74,11 +75,18 @@ class ReleasePlatformRun < ApplicationRecord
     end
   end
 
+  after_create :set_default_release_metadata
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
   delegate :versioning_strategy, to: :release
   delegate :all_commits, :original_release_version, :hotfix?, to: :release
   delegate :steps, :train, :app, :platform, to: :release_platform
+
+  def set_default_release_metadata
+    create_release_metadata!(locale: ReleaseMetadata::DEFAULT_LOCALE,
+      release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES,
+      release:)
+  end
 
   def finish_release
     if release.ready_to_be_finalized?
@@ -321,7 +329,8 @@ class ReleasePlatformRun < ApplicationRecord
     release.notification_params.merge(
       {
         release_version: release_version,
-        app_platform: release_platform.platform
+        app_platform: release_platform.platform,
+        release_notes: release_metadata&.release_notes
       }
     )
   end

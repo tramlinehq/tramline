@@ -1,8 +1,10 @@
-<%= render PageComponent.new(breadcrumb: breadcrumb(:release, @release), title: "Edit Release Metadata") do %>
+<% release_platform = @release_platform_run.release_platform %>
+
+<%= render PageComponent.new(breadcrumb: breadcrumb(:release, @release), title: "Edit #{release_platform.display_attr(:platform)} Metadata") do %>
   <%= render partial: 'shared/errors', locals: { resource: @release_metadata } %>
 
   <%= form_with(model: @release_metadata,
-                url: release_release_metadatum_path(@release),
+                url: release_release_platform_release_metadatum_path(@release, release_platform),
                 builder: ButtonHelper::AuthzForms,
                 method: :patch) do |form| %>
 
@@ -16,7 +18,7 @@
       <%= form.text_area :release_notes, class: "form-input w-full", value: @release_metadata.release_notes %>
     </div>
 
-    <% unless @app.android? %>
+    <% unless release_platform.android? %>
       <div class="mt-4">
         <%= form.label :promo_text, class: "block text-sm font-medium mb-1" %>
         <%= form.text_area :promo_text, class: "form-input w-full", value: @release_metadata.promo_text %>

@@ -57,8 +57,8 @@ class DeploymentRun < ApplicationRecord
     :release_platform,
     :internal_channel?,
     to: :deployment
-  delegate :release_metadata, :train, :app, to: :release
-  delegate :release_version, :platform, to: :release_platform_run
+  delegate :train, :app, to: :release
+  delegate :release_version, :release_metadata, :platform, to: :release_platform_run
   delegate :release_health_rules, to: :release_platform
 
   STAMPABLE_REASONS = %w[
