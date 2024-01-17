@@ -5,12 +5,20 @@ class WebhookHandlers::Gitlab::PullRequest
     @payload = payload
   end
 
-  def branch_name
+  def head_branch_name
     payload["object_attributes"]["source_branch"]
+  end
+
+  def base_branch_name
+    payload["object_attributes"]["target_branch"]
   end
 
   def closed?
     pull_request[:state] == "closed" || pull_request[:state] == "merged"
+  end
+
+  def opened?
+    pull_request[:state] == "opened"
   end
 
   def repository_name

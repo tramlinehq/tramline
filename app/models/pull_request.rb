@@ -45,6 +45,8 @@ class PullRequest < ApplicationRecord
     gitlab: "gitlab"
   }
 
+  scope :automatic, -> { where(phase: [:ongoing, :post_release]) }
+
   def update_or_insert!(attributes)
     PullRequest
       .upsert(normalize_attributes(attributes), unique_by: [:release_id, :phase, :number])

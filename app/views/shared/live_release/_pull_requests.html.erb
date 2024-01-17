@@ -13,15 +13,13 @@
           <%= pull_request_badge(pr) %>
         </div>
 
-        <% if pr.base_ref == pr.head_ref %>
-          <div class="font-mono text-xs mt-2">
+        <div class="font-mono text-xs mt-2">
+          <% if pr.base_ref == pr.head_ref %>
             HEAD – <%= short_sha(pr.head_ref) %>
-          </div>
-        <% else %>
-          <div class="font-mono text-xs mt-2">
+          <% else %>
             <%= pr.base_ref %> ← <%= pr.head_ref %>
-          </div>
-        <% end %>
+          <% end %>
+        </div>
 
         <% if pr.closed_at.nil? %>
           <div class="text-sm mt-2">Opened at – <%= pr.opened_at.to_s(:short) %></div>

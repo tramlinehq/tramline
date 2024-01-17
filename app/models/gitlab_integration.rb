@@ -168,6 +168,12 @@ class GitlabIntegration < ApplicationRecord
     installation.user_info(USER_INFO_TRANSFORMATIONS)
   end
 
+  def pull_requests_url(repo, branch_name, open: false)
+    state = open ? "opened" : "all"
+    q = URI.encode_www_form("state" => state, "target_branch" => branch_name)
+    "https://gitlab.com/#{repo}/-/merge_requests?#{q}"
+  end
+
   def branch_url(repo, branch_name)
     "https://gitlab.com/#{repo}/tree/#{branch_name}"
   end

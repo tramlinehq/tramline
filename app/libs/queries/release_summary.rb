@@ -44,7 +44,7 @@ class Queries::ReleaseSummary
       overall: Overall.from_release(release),
       steps_summary: StepsSummary.from_release(release),
       store_versions: StoreVersions.from_release(release),
-      pull_requests: release.pull_requests
+      pull_requests: release.pull_requests.automatic
     }
   end
 

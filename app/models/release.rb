@@ -276,6 +276,10 @@ class Release < ApplicationRecord
     train.vcs_provider&.tag_url(app.config&.code_repository_name, tag_name)
   end
 
+  def pull_requests_url(open = false)
+    train.vcs_provider&.pull_requests_url(app.config&.code_repository_name, branch_name, open:)
+  end
+
   def metadata_editable?
     release_platform_runs.any?(&:metadata_editable?)
   end

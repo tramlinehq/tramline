@@ -146,6 +146,13 @@ class GithubIntegration < ApplicationRecord
     installation.create_branch!(code_repository_name, from, to, source_type:)
   end
 
+  def pull_requests_url(repo, branch_name, open: false)
+    query_string = "is:pr base:#{branch_name}"
+    query_string += " is:open" if open
+    q = URI.encode_www_form("q" => query_string)
+    "https://github.com/#{repo}/pulls?#{q}"
+  end
+
   def branch_url(repo, branch_name)
     "https://github.com/#{repo}/tree/#{branch_name}"
   end
