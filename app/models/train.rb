@@ -152,7 +152,7 @@ class Train < ApplicationRecord
   end
 
   def hotfix_from
-    releases.finished.first
+    releases.finished.reorder(completed_at: :desc).first
   end
 
   def automatic?
@@ -416,7 +416,7 @@ class Train < ApplicationRecord
   end
 
   def last_finished_release
-    releases.where(status: "finished").order(completed_at: :desc).first
+    releases.where(status: "finished").reorder(completed_at: :desc).first
   end
 
   def set_constituent_seed_versions
