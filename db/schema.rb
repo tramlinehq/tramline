@@ -616,7 +616,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_01_10_092300) do
     t.boolean "compact_build_notes", default: false
     t.boolean "tag_releases", default: true
     t.string "tag_suffix"
-    t.boolean "fixed_build_number", default: false
     t.string "versioning_strategy", default: "semver"
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
