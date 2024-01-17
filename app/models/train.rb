@@ -325,6 +325,10 @@ class Train < ApplicationRecord
     integrations.build_channel
   end
 
+  def active_release_for?(branch_name)
+    active_runs.exists?(branch_name: branch_name)
+  end
+
   def open_active_prs_for?(branch_name)
     open_active_prs_for(branch_name).exists?
   end

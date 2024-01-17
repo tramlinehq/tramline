@@ -168,6 +168,10 @@ class Release < ApplicationRecord
     pull_requests.pre_release
   end
 
+  def mid_release_prs
+    pull_requests.mid_release
+  end
+
   def duration
     return unless finished?
     ActiveSupport::Duration.build(completed_at - scheduled_at)
@@ -270,6 +274,10 @@ class Release < ApplicationRecord
 
   def tag_url
     train.vcs_provider&.tag_url(app.config&.code_repository_name, tag_name)
+  end
+
+  def pull_requests_url(open = false)
+    train.vcs_provider&.pull_requests_url(app.config&.code_repository_name, branch_name, open:)
   end
 
   def metadata_editable?

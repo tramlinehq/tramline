@@ -1,4 +1,4 @@
-class WebhookProcessors::PullRequestJob < ApplicationJob
+class WebhookProcessors::ClosePullRequestJob < ApplicationJob
   queue_as :high
 
   # FIXME: We treat "closed" and "merged" as the same thing

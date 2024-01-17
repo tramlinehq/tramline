@@ -1,6 +1,6 @@
 <section>
   <div class="flex justify-between items-center">
-    <%= render partial: "shared/live_release/section_title", locals: {heading: "Commits after release kick-off", subheading: nil} %>
+    <%= render partial: "shared/live_release/section_title", locals: { heading: "Commits after release kick-off", subheading: nil } %>
 
     <p class="text-xs text-gray-500">
       Press
@@ -10,4 +10,39 @@
   </div>
 
   <%= render LiveRelease::CommitsComponent.new(commits) %>
+
+  <%= render partial: "shared/live_release/separator" %>
+
+  <% if @mid_release_prs.exists? %>
+    <div class="grid grid-cols-2 w-full mt-6" data-controller="reveal" data-reveal-toggle-keys-value="p">
+      <div class="col-span-1">
+        <div class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200 px-2 py-3">
+          <div class="font-semibold text-left">pull requests (<%= pull_requests.size %>)</div>
+        </div>
+      </div>
+
+      <div class="col-span-1 text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+        <div class="flex flex-col items-end h-full">
+          <div class="flex flex-row items-center flex-grow px-2">
+            <%= toggle_for(false) %>
+          </div>
+        </div>
+      </div>
+
+      <div data-reveal class="col-span-2">
+        <div class="flex flex-row gap-x-2 mt-4 text-sm">
+          <%= decorated_link_to :neutral, "View all on #{@release.vcs_provider.display} ↗", @release.pull_requests_url, { target: "_blank", rel: "nofollow noopener" } %>
+          <% if @mid_release_prs.open.exists? %>
+            <%= decorated_link_to :neutral, "View open (#{@mid_release_prs.open.size}) on #{@release.vcs_provider.display} ↗", @release.pull_requests_url(true), { target: "_blank", rel: "nofollow noopener" } %>
+          <% end %>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 mt-3">
+          <% @mid_release_prs.each do |pr| %>
+            <%= render partial: "shared/live_release/pull_request_thin", locals: { pr:, title_size: 80 } %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
 </section>

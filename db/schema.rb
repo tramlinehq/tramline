@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_12_13_133617) do
+ActiveRecord::Schema[7.0].define(version: 2024_01_10_092300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -370,6 +370,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_12_13_133617) do
     t.datetime "updated_at", null: false
     t.uuid "release_id"
     t.uuid "commit_id"
+    t.jsonb "labels"
     t.index ["commit_id"], name: "index_pull_requests_on_commit_id"
     t.index ["number"], name: "index_pull_requests_on_number"
     t.index ["phase"], name: "index_pull_requests_on_phase"
