@@ -149,8 +149,8 @@ describe Train do
     let(:release_platform_run) { create(:release_platform_run, release:, release_platform:) }
 
     it "returns the last finished release" do
-      create(:release, :finished, :with_no_platform_runs, train:)
-      latest_release = create(:release, :finished, :with_no_platform_runs, train:)
+      create(:release, :finished, :with_no_platform_runs, train:, completed_at: 2.hours.ago)
+      latest_release = create(:release, :finished, :with_no_platform_runs, train:, completed_at: Time.current)
 
       expect(train.hotfix_from).to eq(latest_release)
     end
