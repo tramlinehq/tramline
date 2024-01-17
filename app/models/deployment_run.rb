@@ -167,7 +167,7 @@ class DeploymentRun < ApplicationRecord
 
     event :complete, after_commit: :release_success do
       after { step_run.finish_deployment!(deployment) }
-      transitions from: [:created, :uploaded, :started, :submitted_for_review, :rollout_started, :ready_to_release], to: :released
+      transitions from: [:created, :uploaded, :started, :submitted_for_review, :rollout_started, :ready_to_release, :review_failed], to: :released
     end
   end
 
