@@ -234,6 +234,8 @@ class Release < ApplicationRecord
     if upcoming?
       ongoing_head = train.ongoing_release.first_commit
       source_commitish, from_ref = ongoing_head.commit_hash, ongoing_head.short_sha
+    elsif hotfix?
+      source_commitish = from_ref = hotfixed_from.tag_name || hotfixed_from.last_commit.short_sha
     else
       source_commitish = from_ref = previous_release&.tag_name || previous_release&.last_commit&.short_sha
     end
@@ -241,7 +243,7 @@ class Release < ApplicationRecord
     return if source_commitish.blank?
 
     create_release_changelog(
-      commits: vcs_provider.commit_log(source_commitish, train.working_branch),
+      commits: vcs_provider.commit_log(source_commitish, release_branch),
       from_ref:
     )
   end
@@ -418,7 +420,7 @@ class Release < ApplicationRecord
   end
 
   def previous_release
-    train.releases.where(status: "finished").order(completed_at: :desc).first
+    train.releases.where(status: "finished").reorder(completed_at: :desc).first
   end
 
   def on_start!
