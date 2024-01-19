@@ -42,7 +42,7 @@ class Triggers::PreRelease
     def source_ref
       if hotfix_branch?
         {
-          ref: release.hotfixed_from.tag_name,
+          ref: release.hotfixed_from.end_ref,
           type: :tag
         }
       else

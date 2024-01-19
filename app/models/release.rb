@@ -231,21 +231,29 @@ class Release < ApplicationRecord
   end
 
   def fetch_commit_log
+    # release branch for a new release may not exist on vcs provider since pre release job runs in parallel to fetch commit log job
+    target_branch = train.working_branch
     if upcoming?
       ongoing_head = train.ongoing_release.first_commit
       source_commitish, from_ref = ongoing_head.commit_hash, ongoing_head.short_sha
     elsif hotfix?
-      source_commitish = from_ref = hotfixed_from.tag_name || hotfixed_from.last_commit.short_sha
+      return if new_hotfix_branch? # there is no diff between the hotfixed from tag and the new hotfix release branch
+      source_commitish = from_ref = hotfixed_from.end_ref
+      target_branch = hotfixed_from.release_branch
     else
-      source_commitish = from_ref = previous_release&.tag_name || previous_release&.last_commit&.short_sha
+      source_commitish = from_ref = previous_release&.end_ref
     end
 
     return if source_commitish.blank?
 
     create_release_changelog(
-      commits: vcs_provider.commit_log(source_commitish, release_branch),
+      commits: vcs_provider.commit_log(source_commitish, target_branch),
       from_ref:
     )
+  end
+
+  def end_ref
+    tag_name || last_commit.short_sha
   end
 
   def release_version
