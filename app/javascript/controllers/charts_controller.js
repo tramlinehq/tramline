@@ -12,6 +12,8 @@ export default class extends Controller {
     type: String,
     format: {type: String, default: "number"},
     series: Array,
+    showXAxis: {type: Boolean, default: true},
+    showYAxis: {type: Boolean, default: false},
   }
 
   initialize() {
@@ -107,7 +109,7 @@ export default class extends Controller {
       xaxis: {
         tickPlacement: 'between',
         labels: {
-          show: true,
+          show: this.showXAxisValue,
         },
         tooltip: {
           enabled: false
@@ -179,7 +181,7 @@ export default class extends Controller {
       xaxis: {
         tickPlacement: 'between',
         labels: {
-          show: true,
+          show: this.showXAxisValue,
           style: {
             fontFamily: "Inter, sans-serif",
             cssClass: 'text-xs font-normal fill-main-500'
@@ -196,7 +198,7 @@ export default class extends Controller {
         },
       },
       yaxis: {
-        show: false,
+        show: this.showYAxisValue,
       },
     }
   }

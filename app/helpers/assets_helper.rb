@@ -2,6 +2,7 @@ module AssetsHelper
   include SvgHelper
 
   def inline_svg(asset_name, classname: "svg-container")
+    return if asset_name.blank?
     content_tag(:div, safe_svg(inline_file(asset_name)), class: classname)
   end
 

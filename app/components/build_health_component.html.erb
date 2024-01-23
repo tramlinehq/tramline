@@ -1,0 +1,12 @@
+<% if health_data.present? %>
+  <article class="mt-4">
+    <div class="text-lg"><%= step.name %></div>
+    <div class="grid grid-cols-2 gap-5 mt-4">
+      <% chartable_metadata.each do |metadata| %>
+        <% if chartable?(metadata) %>
+          <%= render ChartComponent.new(chart_data(metadata), icon: "chart_bar.svg") %>
+        <% end %>
+      <% end %>
+    </div>
+  </article>
+<% end %>

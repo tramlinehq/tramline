@@ -20,6 +20,7 @@ class Triggers::PatchPullRequest
     end.then do |value|
       pr = commit.build_pull_request(release:, phase: :ongoing).update_or_insert!(**value)
       logger.debug "Patch Pull Request: Created a patch PR successfully", pr
+      repo_integration.enable_auto_merge!(pr.number)
       stamp_pr_success(pr)
       GitHub::Result.new { value }
     end

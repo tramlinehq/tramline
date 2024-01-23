@@ -16,7 +16,7 @@ describe Triggers::Release do
       allow_any_instance_of(GooglePlayStoreIntegration).to receive(:draft_check?).and_return(false)
       allow(Installations::Github::Jwt).to receive(:new).and_return(github_jwt_double)
       allow(Installations::Github::Api).to receive(:new).and_return(github_api_double)
-      allow(github_api_double).to receive(:commits_between).and_return([1])
+      allow(github_api_double).to receive(:diff?).and_return(true)
     end
 
     it "creates a new release" do

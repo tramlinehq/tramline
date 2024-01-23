@@ -35,9 +35,9 @@ class Release < ApplicationRecord
 
   belongs_to :train
   belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :hotfixed_releases
-  has_one :release_metadata, dependent: :destroy, inverse_of: :release
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
   has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release
+  has_many :release_metadata, through: :release_platform_runs
   has_many :all_commits, dependent: :destroy, inverse_of: :release, class_name: "Commit"
   has_many :pull_requests, dependent: :destroy, inverse_of: :release
   has_many :step_runs, through: :release_platform_runs
@@ -126,7 +126,6 @@ class Release < ApplicationRecord
   end
 
   before_create :set_version
-  after_create :set_default_release_metadata
   after_create :create_platform_runs
   after_create :create_active_build_queue, if: -> { train.build_queue_enabled? }
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
@@ -136,7 +135,7 @@ class Release < ApplicationRecord
   attr_accessor :has_major_bump, :force_finalize, :hotfix_platform, :custom_version
 
   delegate :versioning_strategy, to: :train
-  delegate :app, :pre_release_prs?, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
+  delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
   delegate :platform, to: :app
 
   def self.pending_release?
@@ -160,6 +159,18 @@ class Release < ApplicationRecord
 
   def backmerge_prs
     pull_requests.ongoing
+  end
+
+  def post_release_prs
+    pull_requests.post_release
+  end
+
+  def pre_release_prs
+    pull_requests.pre_release
+  end
+
+  def mid_release_prs
+    pull_requests.mid_release
   end
 
   def duration
@@ -221,19 +232,29 @@ class Release < ApplicationRecord
   end
 
   def fetch_commit_log
+    # release branch for a new release may not exist on vcs provider since pre release job runs in parallel to fetch commit log job
+    target_branch = train.working_branch
     if upcoming?
       ongoing_head = train.ongoing_release.first_commit
       source_commitish, from_ref = ongoing_head.commit_hash, ongoing_head.short_sha
+    elsif hotfix?
+      return if new_hotfix_branch? # there is no diff between the hotfixed from tag and the new hotfix release branch
+      source_commitish = from_ref = hotfixed_from.end_ref
+      target_branch = hotfixed_from.release_branch
     else
-      source_commitish = from_ref = previous_release&.tag_name || previous_release&.last_commit&.short_sha
+      source_commitish = from_ref = previous_release&.end_ref
     end
 
     return if source_commitish.blank?
 
     create_release_changelog(
-      commits: vcs_provider.commit_log(source_commitish, train.working_branch),
+      commits: vcs_provider.commit_log(source_commitish, target_branch),
       from_ref:
     )
+  end
+
+  def end_ref
+    tag_name || last_commit.short_sha
   end
 
   def release_version
@@ -264,6 +285,10 @@ class Release < ApplicationRecord
 
   def tag_url
     train.vcs_provider&.tag_url(app.config&.code_repository_name, tag_name)
+  end
+
+  def pull_requests_url(open = false)
+    train.vcs_provider&.pull_requests_url(app.config&.code_repository_name, branch_name, open:)
   end
 
   def metadata_editable?
@@ -324,7 +349,6 @@ class Release < ApplicationRecord
         release_branch: release_branch,
         release_branch_url: branch_url,
         release_url: live_release_link,
-        release_notes: release_metadata&.release_notes,
         release_version: release_version
       }
     )
@@ -404,12 +428,8 @@ class Release < ApplicationRecord
     end
   end
 
-  def set_default_release_metadata
-    create_release_metadata!(locale: ReleaseMetadata::DEFAULT_LOCALE, release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES)
-  end
-
   def previous_release
-    train.releases.where(status: "finished").order(completed_at: :desc).first
+    train.releases.where(status: "finished").reorder(completed_at: :desc).first
   end
 
   def on_start!

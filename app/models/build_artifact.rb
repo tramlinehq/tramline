@@ -68,4 +68,9 @@ class BuildArtifact < ApplicationRecord
   def build_url(params)
     blob_redirect_url(file.signed_id, file.filename, params)
   end
+
+  def file_size_in_mb
+    return unless file
+    (file.byte_size.to_f / 1.megabyte).round(2)
+  end
 end

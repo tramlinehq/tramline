@@ -16,7 +16,7 @@ class GithubIntegration < ApplicationRecord
   include Rails.application.routes.url_helpers
   using RefinedHash
 
-  delegate :code_repository_name, :code_repo_namespace, to: :app_config
+  delegate :code_repository_name, :code_repo_namespace, :code_repo_name_only, to: :app_config
   delegate :app, to: :integration
   delegate :organization, to: :app
 
@@ -85,7 +85,15 @@ class GithubIntegration < ApplicationRecord
     head_ref: [:head, :ref],
     base_ref: [:base, :ref],
     opened_at: :created_at,
-    closed_at: :closed_at
+    closed_at: :closed_at,
+    labels: {
+      labels: {
+        id: :id,
+        name: :name,
+        color: :color,
+        description: :description
+      }
+    }
   }
 
   def install_path
@@ -136,6 +144,13 @@ class GithubIntegration < ApplicationRecord
 
   def create_branch!(from, to, source_type: :branch)
     installation.create_branch!(code_repository_name, from, to, source_type:)
+  end
+
+  def pull_requests_url(repo, branch_name, open: false)
+    query_string = "is:pr base:#{branch_name}"
+    query_string += " is:open" if open
+    q = URI.encode_www_form("q" => query_string)
+    "https://github.com/#{repo}/pulls?#{q}"
   end
 
   def branch_url(repo, branch_name)
@@ -228,7 +243,8 @@ class GithubIntegration < ApplicationRecord
       .artifacts(artifacts_url)
       .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern) }
       .then { |artifacts| API.find_biggest(artifacts) }
-      .then { |artifact| installation.artifact_io_stream(artifact) }
+      .then { |artifact| installation.artifact_download_url(artifact) }
+      .then { |url| installation.artifact_io_stream(url) }
       .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true) }
   end
 
@@ -255,6 +271,10 @@ class GithubIntegration < ApplicationRecord
     installation.cherry_pick_pr(code_repository_name, to_branch, commit_hash, patch_branch, pr_title_prefix, PR_TRANSFORMATIONS).merge_if_present(source: :github)
   end
 
+  def enable_auto_merge!(pr_number)
+    installation.enable_auto_merge(code_repo_namespace, code_repo_name_only, pr_number)
+  end
+
   def find_pr(to_branch_ref, from_branch_ref)
     from = namespaced_branch(from_branch_ref)
     installation.find_pr(code_repository_name, to_branch_ref, from, PR_TRANSFORMATIONS).merge_if_present(source: :github)
@@ -270,6 +290,10 @@ class GithubIntegration < ApplicationRecord
 
   def commit_log(from_branch, to_branch)
     installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS)
+  end
+
+  def diff_between?(from_branch, to_branch)
+    installation.diff?(code_repository_name, from_branch, to_branch)
   end
 
   def public_icon_img

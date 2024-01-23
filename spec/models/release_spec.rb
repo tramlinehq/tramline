@@ -88,14 +88,6 @@ describe Release do
   end
 
   describe ".create" do
-    it "creates the release metadata with default locale" do
-      run = create(:release)
-
-      expect(run.release_metadata).to be_present
-      expect(run.release_metadata.locale).to eq(ReleaseMetadata::DEFAULT_LOCALE)
-      expect(run.release_metadata.release_notes).to eq(ReleaseMetadata::DEFAULT_RELEASE_NOTES)
-    end
-
     it "creates the release platform run for android platform" do
       app = create(:app, :android)
       train = create(:train, app:)
@@ -335,6 +327,75 @@ describe Release do
       run = create(:release, :created)
 
       expect(run.retrigger_for_hotfix?).to be(false)
+    end
+  end
+
+  describe "#fetch_commit_log" do
+    let(:train) { create(:train) }
+    let(:release) { create(:release, :on_track, train:) }
+    let(:vcs_mock_provider) { instance_double(GithubIntegration) }
+    let(:diff) {
+      [{url: "https://sample.com",
+        message: "commit message",
+        timestamp: "2024-01-10T18:38:06.000Z",
+        author_url: "https://github.com/jondoe",
+        author_name: "Jon Doe",
+        commit_hash: SecureRandom.uuid.split("-").join,
+        author_email: "jon@doe.com",
+        author_login: "jon-doe"}.with_indifferent_access]
+    }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:vcs_provider).and_return(vcs_mock_provider)
+      allow(vcs_mock_provider).to receive(:commit_log).and_return(diff)
+    end
+
+    it "fetches the commits between last finished release and release branch" do
+      finished_release = create(:release, :finished, train:, completed_at: 2.days.ago, tag_name: "foo")
+      _older_finished_release = create(:release, :finished, train:, completed_at: 4.days.ago, tag_name: "bar")
+
+      release.fetch_commit_log
+      expect(vcs_mock_provider).to have_received(:commit_log).with(finished_release.tag_name, train.working_branch).once
+      expect(release.release_changelog.reload.commits.map(&:with_indifferent_access)).to eq(diff)
+      expect(release.release_changelog.reload.from_ref).to eq(finished_release.tag_name)
+    end
+
+    it "fetches the commits between ongoing release and release branch for upcoming release" do
+      ongoing_release = create(:release, :on_track, train:, scheduled_at: 1.day.ago)
+      commits = create_list(:commit, 5, :without_trigger, release: ongoing_release)
+      ongoing_head = commits.first
+
+      release.fetch_commit_log
+      expect(vcs_mock_provider).to have_received(:commit_log).with(ongoing_head.commit_hash, train.working_branch).once
+      expect(release.release_changelog.reload.commits.map(&:with_indifferent_access)).to eq(diff)
+      expect(release.release_changelog.reload.from_ref).to eq(ongoing_head.short_sha)
+    end
+
+    it "does not fetch commit log if no finished release exists for the train" do
+      release.fetch_commit_log
+      expect(vcs_mock_provider).not_to have_received(:commit_log)
+      expect(release.release_changelog).to be_nil
+    end
+
+    context "when hotfix release" do
+      it "fetches the commits between hotfixed from release and release branch" do
+        finished_release = create(:release, :finished, train:, completed_at: 2.days.ago, tag_name: "foo")
+        hotfix_release = create(:release, :on_track, :hotfix, train:, hotfixed_from: finished_release)
+
+        hotfix_release.fetch_commit_log
+        expect(vcs_mock_provider).to have_received(:commit_log).with(finished_release.tag_name, release.release_branch).once
+        expect(hotfix_release.release_changelog.reload.commits.map(&:with_indifferent_access)).to eq(diff)
+        expect(hotfix_release.release_changelog.reload.from_ref).to eq(finished_release.tag_name)
+      end
+
+      it "does not fetch commit log when new hotfix branch" do
+        finished_release = create(:release, :finished, train:, completed_at: 2.days.ago, tag_name: "foo")
+        hotfix_release = create(:release, :on_track, :hotfix, train:, hotfixed_from: finished_release, new_hotfix_branch: true)
+
+        hotfix_release.fetch_commit_log
+        expect(vcs_mock_provider).not_to have_received(:commit_log)
+        expect(hotfix_release.release_changelog).to be_nil
+      end
     end
   end
 end

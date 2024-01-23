@@ -48,6 +48,10 @@ class AppConfig < ApplicationRecord
     code_repository["namespace"]
   end
 
+  def code_repo_name_only
+    code_repository["name"]
+  end
+
   def bitrise_project
     bitrise_project_id&.fetch("id", nil)
   end

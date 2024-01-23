@@ -1,11 +1,27 @@
-<div>
-  <code><%= step_run.build_version %></code>
-  • Build <code><%= step_run.build_number %></code>
-  • Commit <code><%= step_run.commit.short_sha %></code>
+<div class="flex flex-row gap-x-2 items-center">
+  <div>
+    <code><%= step_run.build_version %></code>
+    • Build <code><%= step_run.build_number %></code>
+    • Commit <code><%= step_run.commit.short_sha %></code>
+  </div>
+  <div>
+    <% if step_run&.external_build %>
+      <%= render V2::ModalComponent.new(title: "#{step_run.build_version} (#{step_run.build_number})") do |modal| %>
+        <% modal.with_button(scheme: :naked_icon,
+                             visual_icon: "info",
+                             type: :action,
+                             size: :xxs,
+                             arrow: :none) %>
+        <% modal.with_body do %>
+          <%= render BuildMetadataComponent.new(step_run:) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
 </div>
 
 <% if step_run.build_artifact.present? && with_artifact %>
-  <div>
+  <div class="mt-1">
     <%= "Built " + ago_in_words(step_run.build_artifact.generated_at) %>
     • <%= "Uploaded to Tramline " + ago_in_words(step_run.build_artifact.uploaded_at) %>
   </div>

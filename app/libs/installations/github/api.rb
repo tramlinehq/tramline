@@ -18,6 +18,15 @@ module Installations
       set_client
     end
 
+    def self.find_biggest(artifacts)
+      artifacts.max_by { |artifact| artifact["size_in_bytes"] }
+    end
+
+    def self.filter_by_name(artifacts, name_pattern)
+      return artifacts if name_pattern.blank?
+      artifacts.filter { |artifact| artifact["name"].downcase.include? name_pattern }.presence || artifacts
+    end
+
     def get_installation(id, transforms)
       execute do
         Octokit::Client.new(bearer_token: jwt.get)
@@ -217,6 +226,8 @@ module Installations
     end
 
     def create_pr!(repo, to, from, title, body, transforms)
+      raise Installations::Errors::PullRequestWithoutCommits unless diff?(repo, to, from)
+
       execute do
         @client
           .create_pull_request(repo, to, from, title, body)
@@ -255,6 +266,15 @@ module Installations
           .compare(repo, from_branch, to_branch)
           .dig(:commits)
           .then { |commits| Installations::Response::Keys.transform(commits, transforms) }
+      end
+    end
+
+    def diff?(repo, from_branch, to_branch)
+      execute do
+        @client
+          .compare(repo, from_branch, to_branch)
+          .dig(:files)
+          .present?
       end
     end
 
@@ -324,21 +344,45 @@ module Installations
       raise e
     end
 
-    def self.find_biggest(artifacts)
-      artifacts.max_by { |artifact| artifact["size_in_bytes"] }
+    def enable_auto_merge(owner, repo, pr_number)
+      find_pr_id_query = <<-GRAPHQL
+        query {
+          repository(owner: "#{owner}", name: "#{repo}") {
+            pullRequest(number: #{pr_number}) {
+              id
+            }
+          }
+        }
+      GRAPHQL
+
+      response = client.post "/graphql", {query: find_pr_id_query}.to_json
+      pull_request_id = response.dig(:data, :repository, :pullRequest, :id)
+      raise Installations::Errors::ResourceNotFound unless pull_request_id
+
+      enable_auto_merge = <<-GRAPHQL
+        mutation {
+          enablePullRequestAutoMerge(input: {pullRequestId: "#{pull_request_id}"}) {
+            pullRequest {
+              id
+            }
+          }
+        }
+      GRAPHQL
+
+      client.post "/graphql", {query: enable_auto_merge}.to_json
     end
 
-    def self.filter_by_name(artifacts, name_pattern)
-      return artifacts if name_pattern.blank?
-      artifacts.filter { |artifact| artifact["name"].downcase.include? name_pattern }.presence || artifacts
+    def artifact_download_url(artifact)
+      HTTP
+        .auth("Bearer #{@client.access_token}")
+        .get(artifact["archive_download_url"])
+        .then { |resp| resp.headers["Location"] }
     end
 
-    def artifact_io_stream(artifact)
+    def artifact_io_stream(url)
       # FIXME: return an IO stream instead of a TempFile
       # See issue: https://github.com/janko/down/issues/70
-      Down::Http.download(artifact["archive_download_url"],
-        headers: {"Authorization" => "Bearer #{@client.access_token}"},
-        follow: {max_hops: 1})
+      Down::Http.download(url)
     end
 
     def artifacts(artifacts_url)

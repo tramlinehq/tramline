@@ -6,8 +6,7 @@ const STRATEGIES = {
   parallel_working: "parallel_working"
 }
 export default class extends Controller {
-  static targets = ["branchingStrategy", "almostTrunk", "releaseBackMerge", "parallelBranches", "schedule", "backmerge"]
-  static outlets = ["domain--release-schedule-help"]
+  static targets = ["branchingStrategy", "almostTrunk", "releaseBackMerge", "parallelBranches", "backmerge"]
 
   initialize() {
     this.showCorrectInputs()
@@ -23,15 +22,12 @@ export default class extends Controller {
 
     if (selectedBranchingStrategy === STRATEGIES.almost_trunk) {
       this.almostTrunkTarget.hidden = false
-      this.__showSchedule()
       this.__showBackmergeConfig()
     } else if (selectedBranchingStrategy === STRATEGIES.release_backmerge) {
       this.releaseBackMergeTarget.hidden = false
-      this.__hideSchedule()
       this.__hideBackmergeConfig()
     } else if (selectedBranchingStrategy === STRATEGIES.parallel_working) {
       this.parallelBranchesTarget.hidden = false
-      this.__hideSchedule()
       this.__hideBackmergeConfig()
     }
   }
@@ -40,18 +36,6 @@ export default class extends Controller {
     this.almostTrunkTarget.hidden = true
     this.releaseBackMergeTarget.hidden = true
     this.parallelBranchesTarget.hidden = true
-  }
-
-  __hideSchedule() {
-    this.scheduleTarget.hidden = true
-
-    if (this.hasDomainReleaseScheduleHelpOutlet) {
-      this.domainReleaseScheduleHelpOutlet.resetSchedule()
-    }
-  }
-
-  __showSchedule() {
-    this.scheduleTarget.hidden = false
   }
 
   __hideBackmergeConfig() {

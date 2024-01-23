@@ -101,7 +101,7 @@ class StepRun < ApplicationRecord
   WORKFLOW_NOT_STARTED = [:on_track]
   WORKFLOW_IN_PROGRESS = [:ci_workflow_triggered, :ci_workflow_started]
   WORKFLOW_IMMUTABLE = STATES.keys - END_STATES - WORKFLOW_IN_PROGRESS - WORKFLOW_NOT_STARTED
-  FAILED_STATES = %w[ci_workflow_failed ci_workflow_halted build_not_found_in_store build_unavailable deployment_failed failed_with_action_required]
+  FAILED_STATES = %w[ci_workflow_failed ci_workflow_halted build_not_found_in_store build_unavailable deployment_failed failed_with_action_required cancelled_before_start]
 
   enum status: STATES
 
@@ -186,10 +186,15 @@ class StepRun < ApplicationRecord
   delegate :download_url, to: :build_artifact
   delegate :workflow_id, :workflow_name, :step_number, :build_artifact_name_pattern, :has_uploadables?, :has_findables?, :name, :app_variant, to: :step
   scope :not_failed, -> { where.not(status: FAILED_STATES) }
+  scope :sequential, -> { order("step_runs.scheduled_at ASC") }
 
   def after_manual_submission_required
     event_stamp!(reason: :failed_with_action_required, kind: :error, data: stamp_data)
     notify_on_failure!("manual submission required!")
+  end
+
+  def build_size
+    build_artifact&.file_size_in_mb
   end
 
   def active?

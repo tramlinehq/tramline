@@ -44,22 +44,26 @@
   <div>
     <%= render partial: "shared/live_release/kick_off", locals: { release: @release, release_train: @train } %>
 
-    <% if @release.pre_release_prs? %>
+    <% if @pre_release_prs.present? %>
       <%= render partial: "shared/live_release/separator", locals: { margin_only: true } %>
       <%= render partial: "shared/live_release/pre_release_prs", locals: { pre_release_prs: @pre_release_prs } %>
     <% end %>
 
     <%= render partial: "shared/live_release/separator", locals: { margin_only: true } %>
-
-    <% if @release.release_metadata.present? %>
-      <%= render partial: "shared/live_release/release_metadata",
-                 locals: { release: @release, is_android: @app.android? } %>
-    <% end %>
   </div>
 
   <div>
     <%= render partial: "shared/live_release/commit_log", locals: { release: @release } %>
   </div>
+</div>
+
+<div class="grid grid-cols-2 gap-6 mt-8">
+  <% if @release.release_metadata.exists? %>
+    <% @release.release_platform_runs.each do |release_platform_run| %>
+      <%= render partial: "shared/live_release/release_metadata",
+                 locals: { release_platform_run: release_platform_run } %>
+    <% end %>
+  <% end %>
 </div>
 
 <%= render partial: "shared/live_release/separator" %>
@@ -92,7 +96,7 @@
 <%= render partial: "shared/live_release/separator" %>
 
 <div class="grid grid-cols-1 gap-6 mt-8">
-  <%= render partial: "shared/live_release/builds", locals: { release: @release, commits: @commits } %>
+  <%= render partial: "shared/live_release/builds", locals: { release: @release, commits: @commits, pull_requests: @mid_release_prs } %>
 </div>
 
 <% unless @release.finished? %>

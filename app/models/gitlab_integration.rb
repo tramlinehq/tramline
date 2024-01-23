@@ -86,8 +86,20 @@ class GitlabIntegration < ApplicationRecord
     body: :description,
     url: :web_url,
     state: :state,
-    head_ref: :sha,
-    base_ref: :sha, # TODO: this is a temporary fix, we should fetch the correct sha from GitLab and fill ths
+    head_ref: :source_branch,
+    base_ref: :target_branch,
+    opened_at: :created_at
+  }
+
+  WEBHOOK_PR_TRANSFORMATIONS = {
+    source_id: :id,
+    number: :iid,
+    title: :title,
+    body: :description,
+    url: :url,
+    state: :state,
+    head_ref: :source_branch,
+    base_ref: :target_branch,
     opened_at: :created_at
   }
 
@@ -161,6 +173,12 @@ class GitlabIntegration < ApplicationRecord
     installation.user_info(USER_INFO_TRANSFORMATIONS)
   end
 
+  def pull_requests_url(repo, branch_name, open: false)
+    state = open ? "opened" : "all"
+    q = URI.encode_www_form("state" => state, "target_branch" => branch_name)
+    "https://gitlab.com/#{repo}/-/merge_requests?#{q}"
+  end
+
   def branch_url(repo, branch_name)
     "https://gitlab.com/#{repo}/tree/#{branch_name}"
   end
@@ -224,9 +242,17 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_BETWEEN_TRANSFORMATIONS) }
   end
 
+  def diff_between?(from_branch, to_branch)
+    with_api_retries { installation.diff?(code_repository_name, from_branch, to_branch) }
+  end
+
   def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title_prefix)
     # FIXME
     {}.merge_if_present(source: :gitlab)
+  end
+
+  def enable_auto_merge!(pr_number)
+    # FIXME
   end
 
   def public_icon_img

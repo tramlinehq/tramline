@@ -152,7 +152,7 @@ class Train < ApplicationRecord
   end
 
   def hotfix_from
-    releases.finished.first
+    releases.finished.reorder(completed_at: :desc).first
   end
 
   def automatic?
@@ -186,9 +186,14 @@ class Train < ApplicationRecord
   end
 
   def diff_since_last_release?
-    return vcs_provider.commit_log(ongoing_release.first_commit.commit_hash, working_branch).any? if ongoing_release
+    return vcs_provider.diff_between?(ongoing_release.first_commit.commit_hash, working_branch) if ongoing_release
     return true if last_finished_release.blank?
-    vcs_provider.commit_log(last_finished_release.tag_name || last_finished_release.last_commit.commit_hash, working_branch).any?
+    vcs_provider.diff_between?(last_finished_release.tag_name || last_finished_release.last_commit.commit_hash, working_branch)
+  end
+
+  def diff_for_release?
+    return false unless parallel_working_branch?
+    vcs_provider.diff_between?(release_branch, working_branch)
   end
 
   def create_webhook!
@@ -320,6 +325,10 @@ class Train < ApplicationRecord
     integrations.build_channel
   end
 
+  def active_release_for?(branch_name)
+    active_runs.exists?(branch_name: branch_name)
+  end
+
   def open_active_prs_for?(branch_name)
     open_active_prs_for(branch_name).exists?
   end
@@ -328,7 +337,7 @@ class Train < ApplicationRecord
     PullRequest.open.where(release_id: active_runs.ids, head_ref: branch_name)
   end
 
-  def pre_release_prs?
+  def parallel_working_branch?
     branching_strategy == "parallel_working"
   end
 
@@ -407,7 +416,7 @@ class Train < ApplicationRecord
   end
 
   def last_finished_release
-    releases.where(status: "finished").order(completed_at: :desc).first
+    releases.where(status: "finished").reorder(completed_at: :desc).first
   end
 
   def set_constituent_seed_versions
@@ -474,7 +483,6 @@ class Train < ApplicationRecord
       errors.add(:repeat_duration, "invalid schedule, provide both kickoff and period for repeat") unless kickoff_at.present? && repeat_duration.present?
       errors.add(:kickoff_at, "the schedule kickoff should be in the future") if kickoff_at && kickoff_at <= Time.current
       errors.add(:repeat_duration, "the repeat duration should be more than 1 day") if repeat_duration && repeat_duration < 1.day
-      errors.add(:kickoff_at, "scheduled trains allowed only for Almost Trunk branching strategy") if branching_strategy != "almost_trunk"
     end
   end
 
