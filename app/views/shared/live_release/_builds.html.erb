@@ -11,9 +11,8 @@
 
   <%= render LiveRelease::CommitsComponent.new(commits) %>
 
-  <%= render partial: "shared/live_release/separator" %>
-
   <% if @mid_release_prs.exists? %>
+    <%= render partial: "shared/live_release/separator" %>
     <div class="grid grid-cols-2 w-full mt-6" data-controller="reveal" data-reveal-toggle-keys-value="p">
       <div class="col-span-1">
         <div class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200 px-2 py-3">
