@@ -20,7 +20,7 @@ class Triggers::PostRelease
     release.with_lock do
       return unless release.post_release_started?
 
-      if release.pull_requests.open.exists? || (release.unmerged_commits.exists? && !force_finalize)
+      if release.pull_requests.automatic.open.exists? || (release.unmerged_commits.exists? && !force_finalize)
         release.fail_post_release_phase!
       else
         release.event_stamp!(reason: :finalizing, kind: :notice, data: {version: release.release_version})
