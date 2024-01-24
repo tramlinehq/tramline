@@ -50,6 +50,7 @@ class DeploymentRun < ApplicationRecord
     :app_store?,
     :test_flight?,
     :store?,
+    :send_build_notes?,
     :staged_rollout?,
     :staged_rollout_config,
     :google_firebase_integration?,
