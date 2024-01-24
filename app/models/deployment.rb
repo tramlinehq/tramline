@@ -7,7 +7,7 @@
 #  deployment_number      :integer          default(0), not null, indexed => [step_id]
 #  discarded_at           :datetime         indexed
 #  is_staged_rollout      :boolean          default(FALSE)
-#  send_build_notes       :boolean          default(TRUE)
+#  send_build_notes       :boolean
 #  staged_rollout_config  :decimal(, )      default([]), is an Array
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
