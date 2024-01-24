@@ -40,7 +40,7 @@
 
     <div class="flex flex-row items-center gap-4 w-full">
       <div class="w-6"></div>
-      <div>
+      <div data-dropdown-stream-target="hideElement">
         <%= form.check_box :send_build_notes, class: "form-checkbox" %>
         <%= form.label :send_build_notes, "Send auto-generated build notes", class: "text-sm" %>
       </div>
