@@ -1,6 +1,7 @@
 FactoryBot.define do
   factory :deployment do
     sequence(:build_artifact_channel) { |n| {id: n} }
+    send_build_notes { true }
     association :integration
 
     trait :with_step do

@@ -217,6 +217,19 @@ describe Deployments::GooglePlayStore::Release do
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new { raise Installations::Google::PlayDeveloper::Error.new(error) })
         expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :failed_with_action_required?)
       end
+
+      it "does not send release notes when deployment is configured so" do
+        deployment = create(:deployment, :with_release_step, :with_google_play_store, send_build_notes: false)
+        deployment_run = create(:deployment_run, deployment:)
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+        described_class.start_release!(deployment_run)
+        expect(providable_dbl).to have_received(:rollout_release)
+          .with(deployment_run.deployment_channel,
+            deployment_run.build_number,
+            deployment_run.release_version,
+            Deployment::FULL_ROLLOUT_VALUE,
+            [])
+      end
     end
 
     context "when step run is restarted and release is not present in the channel" do
