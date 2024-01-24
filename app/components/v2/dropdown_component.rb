@@ -1,6 +1,6 @@
 class V2::DropdownComponent < V2::BaseComponent
-  DROPDOWN_ACTIONS = { popup_target: "element", action: "click->popup#toggle" }.freeze
-  BASE_BUTTON_OPTS = { scheme: :switcher, type: :action, size: :xxs, html_options: { data: DROPDOWN_ACTIONS } }.freeze
+  DROPDOWN_ACTIONS = {popup_target: "element", action: "click->popup#toggle"}.freeze
+  BASE_BUTTON_OPTS = {scheme: :switcher, type: :action, size: :xxs, html_options: {data: DROPDOWN_ACTIONS}}.freeze
   STYLE = "z-30 w-52 bg-white shadow-md border border-main-300 rounded divide-y divide-main-100 shadow dark:bg-main-700 dark:divide-main-600".freeze
 
   renders_one :button, ->(**args) do
@@ -31,12 +31,12 @@ class V2::DropdownComponent < V2::BaseComponent
   class ItemGroupComponent < V2::BaseComponent
     DROPDOWN_STYLE = "text-sm text-main-700 dark:text-main-200 leading-none font-medium"
     LIST_ITEM_STYLE = "p-0.5"
-    BASE_OPTS = { scheme: :list_item, size: :none, html_options: { class: "text-left" } }
+    BASE_OPTS = {scheme: :list_item, size: :none, html_options: {class: "text-left"}}
     # BASE_LINK_OPTS = BASE_OPTS.merge(type: :link )
     BASE_BUTTON_OPTS = BASE_OPTS.merge(type: :button)
     renders_many :items, ->(**args) { ItemComponent.new(**args) }
 
-    renders_many :buttons, -> (**args) do
+    renders_many :buttons, ->(**args) do
       args = args.merge(authz: @authz) # trickle down the auth setting to the buttons
       V2::ButtonComponent.new(**BASE_BUTTON_OPTS.deep_merge(args))
     end
@@ -110,7 +110,7 @@ class V2::DropdownComponent < V2::BaseComponent
       end
 
       def link_class
-        { class: @link[:class].presence || ITEM_STYLE }
+        {class: @link[:class].presence || ITEM_STYLE}
       end
 
       def link_params

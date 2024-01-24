@@ -20,7 +20,7 @@ class V2::AlertComponent < ViewComponent::Base
     sm: "min-w-60",
     md: "min-w-80",
     lg: "w-1/2",
-    xl: "w-3/4",
+    xl: "w-3/4"
   }
 
   def initialize(type: :blue, title: "Alert", size: :base)

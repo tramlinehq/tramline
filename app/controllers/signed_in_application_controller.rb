@@ -25,7 +25,6 @@ class SignedInApplicationController < ApplicationController
   PATH_PARAMS_UNDER_APP = [:id, :app_id, :integration_id, :train_id, :platform_id]
 
   def home
-
   end
 
   def demo_org?
@@ -116,8 +115,8 @@ class SignedInApplicationController < ApplicationController
 
     if @app.blank?
       current_organization.default_app
-    else
-      @app if @app.persisted?
+    elsif @app.persisted?
+      @app
     end
   end
 

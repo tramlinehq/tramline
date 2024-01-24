@@ -21,7 +21,6 @@ module EnhancedFormHelper
     DISABLED_CLASSES = "disabled:border-main-200 disabled:bg-main-100 disabled:text-main-600 disabled:cursor-not-allowed"
     FILE_INPUT_CLASSES = "block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
 
-
     def authz_submit(label, icon, scheme: :default, size: :sm, html_options: {})
       button_component =
         V2::ButtonComponent.new(scheme: scheme, type: :button, size: size, label: label, html_options: html_options)
@@ -34,17 +33,17 @@ module EnhancedFormHelper
     end
 
     def text_field_without_label(method, placeholder, options = {})
-      hopts = { class: field_classes(is_disabled: options[:disabled], classes: TEXT_FIELD_CLASSES), placeholder: }.merge(options)
+      hopts = {class: field_classes(is_disabled: options[:disabled], classes: TEXT_FIELD_CLASSES), placeholder:}.merge(options)
       text_field(method, hopts)
     end
 
     def select_without_label(method, select_options, options = {}, html_options = {})
-      hopts = { class: field_classes(is_disabled: html_options[:disabled], classes: SELECT_CLASSES) }.merge(html_options)
+      hopts = {class: field_classes(is_disabled: html_options[:disabled], classes: SELECT_CLASSES)}.merge(html_options)
       select(method, select_options, options, hopts)
     end
 
     def number_field_without_label(method, options = {})
-      hopts = { class: field_classes(is_disabled: options[:disabled], classes: TEXT_FIELD_CLASSES), placeholder: 0 }.merge(options)
+      hopts = {class: field_classes(is_disabled: options[:disabled], classes: TEXT_FIELD_CLASSES), placeholder: 0}.merge(options)
       number_field(method, hopts)
     end
 
@@ -53,7 +52,7 @@ module EnhancedFormHelper
     end
 
     def labeled_number_field(method, label_text, options = {})
-      hopts = { class: field_classes(is_disabled: options[:disabled], classes: TEXT_FIELD_CLASSES) }.merge(options)
+      hopts = {class: field_classes(is_disabled: options[:disabled], classes: TEXT_FIELD_CLASSES)}.merge(options)
       label_only(method, label_text) + number_field_without_label(method, hopts)
     end
 
@@ -62,24 +61,24 @@ module EnhancedFormHelper
     end
 
     def labeled_tz_select(method, label_text, select_options, options = {}, html_options = {})
-      opts = { class: field_classes(is_disabled: html_options[:disabled], classes: SELECT_CLASSES) }.merge(html_options)
+      opts = {class: field_classes(is_disabled: html_options[:disabled], classes: SELECT_CLASSES)}.merge(html_options)
       label_only(method, label_text) + time_zone_select(method, select_options, options, opts)
     end
 
     def labeled_datetime_field(method, label_text, options = {})
-      hopts = { class: field_classes(is_disabled: options[:disabled], classes: TEXT_FIELD_CLASSES) }.merge(options)
+      hopts = {class: field_classes(is_disabled: options[:disabled], classes: TEXT_FIELD_CLASSES)}.merge(options)
       label_only(method, label_text) + datetime_field(method, hopts)
     end
 
     def labeled_textarea(method, label_text, options = {})
-      opts = { rows: 4,
-               class: field_classes(is_disabled: options[:disabled], classes: TEXT_AREA_CLASSES),
-               placeholder: "Write #{label_text.downcase} here" }.merge(options)
+      opts = {rows: 4,
+              class: field_classes(is_disabled: options[:disabled], classes: TEXT_AREA_CLASSES),
+              placeholder: "Write #{label_text.downcase} here"}.merge(options)
       label_only(method, label_text) + text_area(method, opts)
     end
 
     def labeled_file_field(method, label_text, help_text = nil, options = {})
-      opts = { class: field_classes(is_disabled: options[:disabled], classes: FILE_INPUT_CLASSES) }.merge(options)
+      opts = {class: field_classes(is_disabled: options[:disabled], classes: FILE_INPUT_CLASSES)}.merge(options)
       output = label_only(method, label_text) + file_field(method, opts)
       output += @template.content_tag(:p, help_text, class: "mt-1 text-sm text-gray-500 dark:text-gray-300") if help_text.present?
       output
