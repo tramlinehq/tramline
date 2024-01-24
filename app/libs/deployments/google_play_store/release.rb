@@ -169,6 +169,7 @@ module Deployments
       end
 
       def build_notes
+        return [] unless run.send_build_notes?
         return [] if run.step_run.build_notes.blank?
 
         [{
