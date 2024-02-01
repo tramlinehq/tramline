@@ -14,6 +14,7 @@ class Releases::UploadArtifact
   end
 
   sidekiq_retries_exhausted do |msg, ex|
+    elog(ex)
     run = StepRun.find(msg["args"].first)
     run.build_upload_failed!
     run.event_stamp!(reason: :build_unavailable, kind: :error, data: {version: run.build_version})
@@ -23,13 +24,8 @@ class Releases::UploadArtifact
     run = StepRun.find(step_run_id)
     return unless run.active?
 
-    begin
-      run.artifacts_url = artifacts_url
-      run.upload_artifact!
-      run.event_stamp!(reason: :build_available, kind: :notice, data: {version: run.build_version})
-    rescue => e
-      elog(e)
-      raise
-    end
+    run.artifacts_url = artifacts_url
+    run.upload_artifact!
+    run.event_stamp!(reason: :build_available, kind: :notice, data: {version: run.build_version})
   end
 end
