@@ -1,6 +1,6 @@
 class Releases::UploadArtifact
   include Sidekiq::Job
-  include Loggable
+  extend Loggable
   queue_as :high
 
   sidekiq_options retry: 3
