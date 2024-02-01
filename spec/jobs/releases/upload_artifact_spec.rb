@@ -18,13 +18,16 @@ describe Releases::UploadArtifact do
       expect(step_run.build_artifact).to be_present
     end
 
-    it "marks run as build_unavailable" do
-      allow_any_instance_of(GithubIntegration).to receive(:get_artifact).and_raise(StandardError.new("test error"))
+    it "retries if artifacts are not found" do
+      expect(
+        described_class.sidekiq_retry_in_block.call(1, Installations::Errors::ArtifactsNotFound.new)
+      ).to be >= 10.seconds
+    end
 
-      described_class.new.perform(step_run.id, artifacts_url)
-
-      expect(step_run.reload.build_unavailable?).to be(true)
-      expect(step_run.build_artifact).not_to be_present
+    it "does not retry if there are unexpected errors" do
+      expect(
+        described_class.sidekiq_retry_in_block.call(1, StandardError.new)
+      ).to be(:kill)
     end
 
     it "does nothing if the run is not active" do
