@@ -9,14 +9,14 @@ describe Deployments::AppStoreConnect::Release do
 
     before do
       allow(test_flight_job).to receive(:perform_later)
-      allow(app_store_job).to receive(:perform_later)
+      allow(app_store_job).to receive(:perform_async)
     end
 
     it "does nothing if not allowed" do
       run = create(:deployment_run)
       expect(described_class.kickoff!(run)).to be_nil
 
-      expect(app_store_job).not_to have_received(:perform_later)
+      expect(app_store_job).not_to have_received(:perform_async)
       expect(test_flight_job).not_to have_received(:perform_later)
     end
 
@@ -32,7 +32,7 @@ describe Deployments::AppStoreConnect::Release do
       it "starts preparing the release" do
         described_class.kickoff!(run)
 
-        expect(app_store_job).to have_received(:perform_later).with(run.id).once
+        expect(app_store_job).to have_received(:perform_async).with(run.id, false).once
       end
     end
 
@@ -134,17 +134,17 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     it "does nothing if not allowed" do
-      run = create(:deployment_run, :started)
+      run = create(:deployment_run, :preparing_release)
 
       expect(described_class.prepare_for_release!(run)).to be_nil
 
-      expect(run.reload.started?).to be(true)
+      expect(run.reload.preparing_release?).to be(true)
     end
 
     context "when successful" do
       let(:run) {
         create_deployment_run_for_ios(
-          :started,
+          :preparing_release,
           deployment_traits: [:with_app_store, :with_production_channel],
           step_trait: :release
         )
@@ -177,7 +177,7 @@ describe Deployments::AppStoreConnect::Release do
       end
 
       it "prepares the release for staged deployment" do
-        run = create_deployment_run_for_ios(:started, deployment_traits: [:with_phased_release, :with_app_store], step_trait: :release)
+        run = create_deployment_run_for_ios(:preparing_release, deployment_traits: [:with_phased_release, :with_app_store], step_trait: :release)
         described_class.prepare_for_release!(run)
 
         release_metadata = run.release_platform_run.release_metadata
@@ -195,7 +195,7 @@ describe Deployments::AppStoreConnect::Release do
     context "when failure" do
       let(:run) {
         create_deployment_run_for_ios(
-          :started,
+          :preparing_release,
           deployment_traits: [:with_app_store, :with_production_channel],
           step_trait: :release
         )
@@ -222,7 +222,7 @@ describe Deployments::AppStoreConnect::Release do
     context "when retryable failure" do
       let(:run) {
         create_deployment_run_for_ios(
-          :started,
+          :preparing_release,
           deployment_traits: [:with_app_store, :with_production_channel],
           step_trait: :release
         )
@@ -249,7 +249,7 @@ describe Deployments::AppStoreConnect::Release do
     context "when invalid release" do
       let(:run) {
         create_deployment_run_for_ios(
-          :started,
+          :preparing_release,
           deployment_traits: [:with_app_store, :with_phased_release],
           step_trait: :release
         )

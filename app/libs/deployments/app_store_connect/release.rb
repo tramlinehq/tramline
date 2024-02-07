@@ -5,6 +5,7 @@ module Deployments
 
       ExternalReleaseNotInTerminalState = Class.new(StandardError)
       ReleaseNotFullyLive = Class.new(StandardError)
+      VersionNotFoundError = Class.new(StandardError)
 
       RETRYABLE_FAILURE_REASONS = [:attachment_upload_in_progress]
 
@@ -77,7 +78,7 @@ module Deployments
         to: :run
 
       def kickoff!
-        return Deployments::AppStoreConnect::PrepareForReleaseJob.perform_later(run.id) if app_store_release?
+        return run.start_prepare_release! if app_store_release?
         Deployments::AppStoreConnect::TestFlightReleaseJob.perform_later(run.id) if test_flight_release?
       end
 
@@ -109,11 +110,12 @@ module Deployments
         result = provider.prepare_release(build_number, release_version, staged_rollout?, release_metadata, force)
 
         unless result.ok?
-          if result.error.reason.in? [:release_already_exists]
-            run.fail_prepare_release!(reason: result.error.reason)
-          else
-            run.fail_with_error(result.error)
+          case result.error.reason
+          when :release_not_found then raise VersionNotFoundError
+          when :release_already_exists then run.fail_prepare_release!(reason: result.error.reason)
+          else run.fail_with_error(result.error)
           end
+
           return
         end
 

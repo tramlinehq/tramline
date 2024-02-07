@@ -13,6 +13,10 @@ FactoryBot.define do
       status { "started" }
     end
 
+    trait :preparing_release do
+      status { "preparing_release" }
+    end
+
     trait :prepared_release do
       status { "prepared_release" }
     end

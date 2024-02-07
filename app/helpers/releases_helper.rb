@@ -68,6 +68,8 @@ module ReleasesHelper
         ["About to start", :inert]
       when :started
         ["Running", :ongoing]
+      when :preparing_release
+        ["Preparing store version", :ongoing]
       when :prepared_release
         ["Ready for review", :ongoing]
       when :failed_prepare_release

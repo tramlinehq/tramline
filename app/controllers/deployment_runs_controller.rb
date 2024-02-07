@@ -2,6 +2,7 @@ class DeploymentRunsController < SignedInApplicationController
   before_action :set_deployment_run
   before_action :ensure_reviewable, only: [:submit_for_review]
   before_action :ensure_releasable, only: [:start_release]
+  before_action :ensure_preparable, only: [:prepare_release]
 
   def submit_for_review
     Deployments::AppStoreConnect::Release.submit_for_review!(@deployment_run)
@@ -24,13 +25,9 @@ class DeploymentRunsController < SignedInApplicationController
   end
 
   def prepare_release
-    Deployments::AppStoreConnect::Release.prepare_for_release!(@deployment_run, force: deployment_run_params[:force])
+    @deployment_run.start_prepare_release!(force: deployment_run_params[:force])
 
-    if @deployment_run.failed? || @deployment_run.failed_prepare_release?
-      redirect_back fallback_location: root_path, flash: {error: "Failed to prepare the release due to #{@deployment_run.display_attr(:failure_reason)}."}
-    else
-      redirect_back fallback_location: root_path, notice: "The new release has been prepared."
-    end
+    redirect_back fallback_location: root_path, notice: "The new release has begun preparing."
   end
 
   private
@@ -50,6 +47,13 @@ class DeploymentRunsController < SignedInApplicationController
     unless @deployment_run.releasable?
       redirect_back fallback_location: root_path,
         flash: {error: "Cannot perform this operation. This deployment cannot be released."}
+    end
+  end
+
+  def ensure_preparable
+    unless @deployment_run.may_start_prepare_release?
+      redirect_back fallback_location: root_path,
+        flash: {error: "Cannot perform this operation. This deployment cannot be prepared for release."}
     end
   end
 
