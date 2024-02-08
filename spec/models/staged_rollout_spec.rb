@@ -429,17 +429,24 @@ describe StagedRollout do
       let(:deployment_run) { create(:deployment_run, :with_staged_rollout, :rollout_started) }
       let(:release_metadata) { deployment_run.step_run.release.release_metadata }
       let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+      let(:rollout) { create(:staged_rollout, :stopped, config: [1, 80, 100], current_stage: 1, deployment_run:) }
 
       before do
         allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
         allow(providable_dbl).to receive(:deep_link)
-        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
       end
 
       it "resumes the rollout if stopped" do
-        rollout =  create(:staged_rollout, :stopped, config: [1, 80, 100], current_stage: 1, deployment_run:)
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
         rollout.resume!
         expect(rollout.reload.started?).to be(true)
+      end
+
+      it "does not resume the rollout if store call fails" do
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new { raise })
+        rollout.resume_release!
+
+        expect(rollout.reload.stopped?).to be(true)
       end
     end
 
@@ -517,16 +524,6 @@ describe StagedRollout do
         rollout.resume_release!
 
         expect(rollout.reload.paused?).to be(true)
-      end
-
-      it "does nothing when controllable rollout" do
-        goog_deployment_run = create_deployment_run_for_ios(:with_staged_rollout, :rollout_started,
-          deployment_traits: [:with_google_play_store],
-          step_trait: :release)
-        controllable_rollout = create(:staged_rollout, :paused, current_stage: 0, deployment_run: goog_deployment_run)
-        controllable_rollout.resume_release!
-
-        expect(controllable_rollout.reload.paused?).to be(true)
       end
     end
   end

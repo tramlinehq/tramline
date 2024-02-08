@@ -9,7 +9,7 @@ class StagedRolloutComponent < ViewComponent::Base
   FULLY_RELEASE_CONFIRM = "You are about to release this build to all users in production.\n\nAre you sure?"
   PAUSE_RELEASE_CONFIRM = "You are about to pause the scheduled phased release in production.\n\nAre you sure?"
   RESUME_RELEASE_CONFIRM = "You are about to resume the scheduled phased release in production.\n\nAre you sure?"
-  RESUME_HALTED_CONFIRM = "You are about to resume the halted rollout of this build to production.\n\nAre you sure?"
+  RESUME_HALTED_CONFIRM = "You are about to resume the halted rollout of this build in production.\n\nAre you sure?"
 
   def initialize(staged_rollout)
     @staged_rollout = staged_rollout
