@@ -3,12 +3,13 @@ class StagedRolloutComponent < ViewComponent::Base
   include ButtonHelper
   include AssetsHelper
 
-  HALT_CONFIRM = "You are about to halt the rollout of this build to production, it can not be resumed.\n\nAre you sure?"
+  HALT_CONFIRM = "You are about to halt the rollout of this build to production.\n\nAre you sure?"
   START_RELEASE_CONFIRM = "You are about to release this build to the first stage in production.\n\nAre you sure?"
   RELEASE_CONFIRM = "You are about to release this build to the next stage in production.\n\nAre you sure?"
   FULLY_RELEASE_CONFIRM = "You are about to release this build to all users in production.\n\nAre you sure?"
   PAUSE_RELEASE_CONFIRM = "You are about to pause the scheduled phased release in production.\n\nAre you sure?"
   RESUME_RELEASE_CONFIRM = "You are about to resume the scheduled phased release in production.\n\nAre you sure?"
+  RESUME_HALTED_CONFIRM = "You are about to resume the halted rollout of this build in production.\n\nAre you sure?"
 
   def initialize(staged_rollout)
     @staged_rollout = staged_rollout
@@ -38,6 +39,7 @@ class StagedRolloutComponent < ViewComponent::Base
       actions << {form_url: increase_release_path, confirm: START_RELEASE_CONFIRM, type: :blue, name: "Start Rollout"} if created?
       actions << {form_url: increase_release_path, confirm: RELEASE_CONFIRM, type: :blue, name: "Increase Rollout"} if started?
       actions << {form_url: increase_release_path, confirm: RELEASE_CONFIRM, type: :blue, name: "Retry"} if failed?
+      actions << {form_url: resume_release_path, confirm: RESUME_HALTED_CONFIRM, type: :blue, name: "Resume Rollout"} if stopped?
     end
 
     if automatic_rollout?
