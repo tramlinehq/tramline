@@ -6,7 +6,7 @@ class Deployments::AppStoreConnect::PrepareForReleaseJob
   sidekiq_options retry: 3
 
   sidekiq_retry_in do |count, ex|
-    if ex.is_a?(Deployments::AppStoreConnect::Release::VersionNotFoundError)
+    if ex.is_a?(Deployments::AppStoreConnect::Release::PreparedVersionNotFoundError)
       backoff_in(attempt: count, period: :minutes, type: :static, factor: 1).to_i
     else
       :kill

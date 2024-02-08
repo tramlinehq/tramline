@@ -5,7 +5,7 @@ module Deployments
 
       ExternalReleaseNotInTerminalState = Class.new(StandardError)
       ReleaseNotFullyLive = Class.new(StandardError)
-      VersionNotFoundError = Class.new(StandardError)
+      PreparedVersionNotFoundError = Class.new(StandardError)
 
       RETRYABLE_FAILURE_REASONS = [:attachment_upload_in_progress]
 
@@ -111,7 +111,7 @@ module Deployments
 
         unless result.ok?
           case result.error.reason
-          when :release_not_found then raise VersionNotFoundError
+          when :release_not_found then raise PreparedVersionNotFoundError
           when :release_already_exists then run.fail_prepare_release!(reason: result.error.reason)
           else run.fail_with_error(result.error)
           end
