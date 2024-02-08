@@ -366,12 +366,20 @@ class DeploymentRun < ApplicationRecord
   end
 
   def on_resume_release!
-    return unless store? && app_store_integration?
+    return unless store?
 
     release_platform_run.with_lock do
-      return unless automatic_rollout?
+      return unless rolloutable?
 
-      yield Deployments::AppStoreConnect::Release.resume_phased_release!(self)
+      if google_play_store_integration?
+        result = Deployments::GooglePlayStore::Release.release_with(self, rollout_value: staged_rollout.last_rollout_percentage)
+      elsif app_store_integration?
+        result = Deployments::AppStoreConnect::Release.resume_phased_release!(self)
+      else
+        raise UnknownStoreError
+      end
+
+      yield result
     end
   end
 

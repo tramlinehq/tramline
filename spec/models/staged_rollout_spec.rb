@@ -425,89 +425,109 @@ describe StagedRollout do
   end
 
   describe "#resume_release!" do
-    let(:deployment_run) {
-      create_deployment_run_for_ios(:with_staged_rollout, :rollout_started, :with_external_release,
-        deployment_traits: [:with_app_store, :with_phased_release],
-        step_trait: :release)
-    }
-    let(:rollout) { create(:staged_rollout, :paused, current_stage: 0, deployment_run: deployment_run, config: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE) }
-    let(:providable_dbl) { instance_double(AppStoreIntegration) }
-    let(:resumed_release_info) {
-      AppStoreIntegration::AppStoreReleaseInfo.new(
-        {
-          external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
-          name: "1.2.0",
-          build_number: 9012,
-          added_at: 1.day.ago,
-          status: "READY_FOR_SALE",
-          phased_release_day: 2,
-          phased_release_status: "ACTIVE"
-        }
-      )
-    }
+    context "when controllable rollout" do
+      let(:deployment_run) { create(:deployment_run, :with_staged_rollout, :rollout_started) }
+      let(:release_metadata) { deployment_run.step_run.release.release_metadata }
+      let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
-    before do
-      allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
-      allow(providable_dbl).to receive(:deep_link)
-    end
+      before do
+        allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
+        allow(providable_dbl).to receive(:deep_link)
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+      end
 
-    [:created, :started, :completed, :stopped, :failed, :fully_released].each do |trait|
-      it "does nothing if the rollout hasn't #{trait}" do
-        allow(providable_dbl).to receive(:resume_phased_release)
-        unrolled_rollout = create(:staged_rollout, trait, deployment_run: deployment_run)
-        unrolled_rollout.resume_release!
-
-        expect(providable_dbl).not_to have_received(:resume_phased_release)
+      it "resumes the rollout if stopped" do
+        rollout =  create(:staged_rollout, :stopped, config: [1, 80, 100], current_stage: 1, deployment_run:)
+        rollout.resume!
+        expect(rollout.reload.started?).to be(true)
       end
     end
 
-    it "resumes the release in store" do
-      allow(providable_dbl).to receive(:resume_phased_release).and_return(GitHub::Result.new { resumed_release_info })
-      rollout.resume_release!
+    context "when automatic rollout" do
+      let(:deployment_run) {
+        create_deployment_run_for_ios(:with_staged_rollout, :rollout_started, :with_external_release,
+          deployment_traits: [:with_app_store, :with_phased_release],
+          step_trait: :release)
+      }
+      let(:rollout) { create(:staged_rollout, :paused, current_stage: 0, deployment_run: deployment_run, config: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE) }
+      let(:providable_dbl) { instance_double(AppStoreIntegration) }
+      let(:resumed_release_info) {
+        AppStoreIntegration::AppStoreReleaseInfo.new(
+          {
+            external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+            name: "1.2.0",
+            build_number: 9012,
+            added_at: 1.day.ago,
+            status: "READY_FOR_SALE",
+            phased_release_day: 2,
+            phased_release_status: "ACTIVE"
+          }
+        )
+      }
 
-      expect(providable_dbl).to have_received(:resume_phased_release)
-    end
+      before do
+        allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
+        allow(providable_dbl).to receive(:deep_link)
+      end
 
-    it "marks the rollout as started" do
-      allow(providable_dbl).to receive(:resume_phased_release).and_return(GitHub::Result.new { resumed_release_info })
-      rollout.resume_release!
+      [:created, :started, :completed, :stopped, :failed, :fully_released].each do |trait|
+        it "does nothing if the rollout hasn't #{trait}" do
+          allow(providable_dbl).to receive(:resume_phased_release)
+          unrolled_rollout = create(:staged_rollout, trait, deployment_run: deployment_run)
+          unrolled_rollout.resume_release!
 
-      expect(rollout.reload.started?).to be(true)
-    end
+          expect(providable_dbl).not_to have_received(:resume_phased_release)
+        end
+      end
 
-    it "does not mark the rollout as started if completed" do
-      completed_release_info = AppStoreIntegration::AppStoreReleaseInfo.new(
-        {
-          external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
-          name: "1.2.0",
-          build_number: 9012,
-          added_at: 1.day.ago,
-          status: "READY_FOR_SALE",
-          phased_release_day: 8,
-          phased_release_status: "COMPLETE"
-        }
-      )
-      allow(providable_dbl).to receive(:resume_phased_release).and_return(GitHub::Result.new { completed_release_info })
-      rollout.resume_release!
+      it "resumes the release in store" do
+        allow(providable_dbl).to receive(:resume_phased_release).and_return(GitHub::Result.new { resumed_release_info })
+        rollout.resume_release!
 
-      expect(rollout.reload.completed?).to be(true)
-    end
+        expect(providable_dbl).to have_received(:resume_phased_release)
+      end
 
-    it "does not resume the rollout if store call fails" do
-      allow(providable_dbl).to receive(:resume_phased_release).and_return(GitHub::Result.new { raise })
-      rollout.resume_release!
+      it "marks the rollout as started" do
+        allow(providable_dbl).to receive(:resume_phased_release).and_return(GitHub::Result.new { resumed_release_info })
+        rollout.resume_release!
 
-      expect(rollout.reload.paused?).to be(true)
-    end
+        expect(rollout.reload.started?).to be(true)
+      end
 
-    it "does nothing when controllable rollout" do
-      goog_deployment_run = create_deployment_run_for_ios(:with_staged_rollout, :rollout_started,
-        deployment_traits: [:with_google_play_store],
-        step_trait: :release)
-      controllable_rollout = create(:staged_rollout, :paused, current_stage: 0, deployment_run: goog_deployment_run)
-      controllable_rollout.resume_release!
+      it "does not mark the rollout as started if completed" do
+        completed_release_info = AppStoreIntegration::AppStoreReleaseInfo.new(
+          {
+            external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+            name: "1.2.0",
+            build_number: 9012,
+            added_at: 1.day.ago,
+            status: "READY_FOR_SALE",
+            phased_release_day: 8,
+            phased_release_status: "COMPLETE"
+          }
+        )
+        allow(providable_dbl).to receive(:resume_phased_release).and_return(GitHub::Result.new { completed_release_info })
+        rollout.resume_release!
 
-      expect(controllable_rollout.reload.paused?).to be(true)
+        expect(rollout.reload.completed?).to be(true)
+      end
+
+      it "does not resume the rollout if store call fails" do
+        allow(providable_dbl).to receive(:resume_phased_release).and_return(GitHub::Result.new { raise })
+        rollout.resume_release!
+
+        expect(rollout.reload.paused?).to be(true)
+      end
+
+      it "does nothing when controllable rollout" do
+        goog_deployment_run = create_deployment_run_for_ios(:with_staged_rollout, :rollout_started,
+          deployment_traits: [:with_google_play_store],
+          step_trait: :release)
+        controllable_rollout = create(:staged_rollout, :paused, current_stage: 0, deployment_run: goog_deployment_run)
+        controllable_rollout.resume_release!
+
+        expect(controllable_rollout.reload.paused?).to be(true)
+      end
     end
   end
 end
