@@ -118,10 +118,10 @@ class DeploymentRun < ApplicationRecord
       transitions from: :created, to: :started
     end
 
-    event :start_prepare_release,
-      after_commit: ->(args = {force: false}) { Deployments::AppStoreConnect::PrepareForReleaseJob.perform_async(id, args.fetch(:force, false)) },
-      guard: :app_store? do
-      transitions from: [:started, :failed_prepare_release], to: :preparing_release
+    event :start_prepare_release, after_commit: ->(args = {force: false}) { Deployments::AppStoreConnect::PrepareForReleaseJob.perform_async(id, args.fetch(:force, false)) } do
+      transitions from: [:started, :failed_prepare_release], to: :preparing_release do
+        guard { |_| app_store? }
+      end
     end
 
     event :prepare_release, guard: :app_store? do
