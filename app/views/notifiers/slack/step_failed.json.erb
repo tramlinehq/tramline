@@ -4,7 +4,7 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "The *<%= @step_type %>* step *<%= @step_name %>* failed because – <%= @step_fail_reason %> :rotating_light:"
+        "text": "The *<%= @step_type %>* step *<%= @step_name %>* failed for <<%= @commit_url %>|<%= @commit_sha %>> because – <%= @step_fail_reason %> :rotating_light:"
       }
     }
     <% if @manual_submission_required %>
