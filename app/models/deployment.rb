@@ -8,6 +8,7 @@
 #  discarded_at           :datetime         indexed
 #  is_staged_rollout      :boolean          default(FALSE)
 #  send_build_notes       :boolean
+#  send_release_notes     :boolean          default(FALSE)
 #  staged_rollout_config  :decimal(, )      default([]), is an Array
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
@@ -25,10 +26,12 @@ class Deployment < ApplicationRecord
   belongs_to :step, inverse_of: :deployments
   belongs_to :integration, optional: true
 
+  attr_accessor :send_notes
+
   validates :deployment_number, presence: true
   validates :build_artifact_channel, uniqueness: {scope: [:integration_id, :step_id]}
   validate :staged_rollout_is_allowed
-  validate :correct_staged_rollout_config, if: :staged_rollout?
+  validate :correct_staged_rollout_config, if: :staged_rollout?, on: :create
   validate :non_prod_build_channel, if: -> { step.review? }
 
   delegate :google_play_store_integration?,
@@ -41,12 +44,18 @@ class Deployment < ApplicationRecord
 
   scope :sequential, -> { order("deployments.deployment_number ASC") }
 
+  after_initialize :set_notes_config
   before_save :set_deployment_number, if: :new_record?
   before_save :set_default_staged_rollout, if: [:new_record?, :app_store_integration?, :staged_rollout?]
+  before_save :set_default_prod_notes_config, if: [:new_record?, :production_channel?]
 
   FULL_ROLLOUT_VALUE = BigDecimal("100")
 
   def staged_rollout? = is_staged_rollout
+
+  def send_notes?
+    send_build_notes? || send_release_notes?
+  end
 
   def set_deployment_number
     self.deployment_number = step.all_deployments.maximum(:deployment_number).to_i + 1
@@ -144,6 +153,16 @@ class Deployment < ApplicationRecord
   end
 
   private
+
+  def set_notes_config
+    return self.send_notes = "send_build_notes" if send_build_notes?
+    return self.send_notes = "send_release_notes" if send_release_notes?
+    self.send_notes = "send_no_notes"
+  end
+
+  def set_default_prod_notes_config
+    self.send_release_notes = true
+  end
 
   def set_default_staged_rollout
     self.staged_rollout_config = AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE

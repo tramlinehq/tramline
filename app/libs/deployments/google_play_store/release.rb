@@ -42,6 +42,7 @@ module Deployments
         :google_play_store_integration?,
         :staged_rollout_config,
         :production_channel?,
+        :deployment_notes,
         to: :run
 
       def kickoff!
@@ -75,8 +76,7 @@ module Deployments
           run.engage_release!
           create_draft_release!(skip_release:)
         else
-          notes = production_channel? ? release_notes : build_notes
-          fully_release!(notes, skip_release:)
+          fully_release!(skip_release:)
         end
       end
 
@@ -124,7 +124,7 @@ module Deployments
 
       private
 
-      def fully_release!(notes, skip_release: false)
+      def fully_release!(skip_release: false)
         return run.complete! if skip_release
 
         result = provider.rollout_release(
@@ -132,7 +132,7 @@ module Deployments
           build_number,
           release_version,
           Deployment::FULL_ROLLOUT_VALUE,
-          notes
+          release_notes
         )
 
         if result.ok?
@@ -160,21 +160,11 @@ module Deployments
       end
 
       def release_notes
-        return [] if release_metadata.blank?
+        return [] if deployment_notes.blank?
 
         [{
           language: release_metadata.locale,
-          text: release_metadata.release_notes
-        }]
-      end
-
-      def build_notes
-        return [] unless run.send_build_notes?
-        return [] if run.step_run.build_notes.blank?
-
-        [{
-          language: ReleaseMetadata::DEFAULT_LOCALE,
-          text: run.step_run.build_notes
+          text: deployment_notes
         }]
       end
     end

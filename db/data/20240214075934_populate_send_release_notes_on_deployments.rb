@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
-class PopulateSendBuildNotesOnDeployments < ActiveRecord::Migration[7.0]
+class PopulateSendReleaseNotesOnDeployments < ActiveRecord::Migration[7.0]
   def up
-    return
     ActiveRecord::Base.transaction do
       Deployment.all.each do |deployment|
-        next if deployment.production_channel?
-        deployment.update!(send_build_notes: true)
+        next unless deployment.production_channel?
+        deployment.update!(send_release_notes: true)
       end
     end
   end

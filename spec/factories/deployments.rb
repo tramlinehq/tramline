@@ -26,6 +26,8 @@ FactoryBot.define do
 
     trait :with_production_channel do
       build_artifact_channel { {is_production: true} }
+      send_build_notes { false }
+      send_release_notes { true }
     end
 
     trait :with_google_play_store do
@@ -54,6 +56,8 @@ FactoryBot.define do
       build_artifact_channel { {is_production: true} }
       is_staged_rollout { true }
       staged_rollout_config { [1, 100] }
+      send_build_notes { false }
+      send_release_notes { true }
     end
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_01_23_232432) do
+ActiveRecord::Schema[7.0].define(version: 2024_02_14_075803) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -182,6 +182,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_01_23_232432) do
     t.boolean "is_staged_rollout", default: false
     t.datetime "discarded_at"
     t.boolean "send_build_notes"
+    t.boolean "send_release_notes", default: false
     t.index ["build_artifact_channel", "integration_id", "step_id"], name: "idx_deployments_on_build_artifact_chan_and_integration_and_step", unique: true
     t.index ["deployment_number", "step_id"], name: "index_deployments_on_deployment_number_and_step_id", unique: true
     t.index ["discarded_at"], name: "index_deployments_on_discarded_at"
