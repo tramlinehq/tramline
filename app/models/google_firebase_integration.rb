@@ -152,6 +152,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
   end
 
   def deep_link(release, platform)
+    return if release.blank? || platform.blank?
     "https://appdistribution.firebase.google.com/testerapps/#{firebase_app(platform)}/releases/#{release_name(release)}"
   end
 
