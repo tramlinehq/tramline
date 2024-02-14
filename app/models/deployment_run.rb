@@ -50,7 +50,9 @@ class DeploymentRun < ApplicationRecord
     :app_store?,
     :test_flight?,
     :store?,
-    :send_build_notes?,
+    :send_notes?,
+    :release_notes?,
+    :build_notes?,
     :staged_rollout?,
     :staged_rollout_config,
     :google_firebase_integration?,
@@ -191,6 +193,11 @@ class DeploymentRun < ApplicationRecord
 
   def self.reached_production
     ready.includes(:step_run, :deployment).select(&:production_channel?)
+  end
+
+  def deployment_notes
+    return step_run.build_notes.truncate(ReleaseMetadata::NOTES_MAX_LENGTH) if build_notes?
+    release_metadata.release_notes if release_notes?
   end
 
   def healthy?

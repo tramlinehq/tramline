@@ -41,8 +41,20 @@
     <div class="flex flex-row items-center gap-4 w-full">
       <div class="w-6"></div>
       <div data-dropdown-stream-target="hideElement">
-        <%= form.check_box :send_build_notes, class: "form-checkbox" %>
-        <%= form.label :send_build_notes, "Send auto-generated build notes", class: "text-sm" %>
+        <div class="flex flex-row items-center gap-x-4">
+          <div class="flex flex-row items-center gap-x-2">
+            <%= form.radio_button :notes, "build_notes" %>
+            <%= form.label :build_notes, "Send auto-generated build notes" %>
+          </div>
+          <div class="flex flex-row items-center gap-x-2">
+            <%= form.radio_button :notes, "release_notes" %>
+            <%= form.label :release_notes, "Send Release Notes" %>
+          </div>
+          <div class="flex flex-row items-center gap-x-2">
+            <%= form.radio_button :notes, "no_notes" %>
+            <%= form.label :no_notes, "Send No Notes" %>
+          </div>
+        </div>
       </div>
       <div class="flex-grow" data-dropdown-stream-target="showElement" hidden>
         <div data-controller="reveal" class="inline-flex gap-x-4">

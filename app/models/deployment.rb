@@ -7,6 +7,7 @@
 #  deployment_number      :integer          default(0), not null, indexed => [step_id]
 #  discarded_at           :datetime         indexed
 #  is_staged_rollout      :boolean          default(FALSE)
+#  notes                  :string           default("no_notes"), not null
 #  send_build_notes       :boolean
 #  staged_rollout_config  :decimal(, )      default([]), is an Array
 #  created_at             :datetime         not null
@@ -25,10 +26,12 @@ class Deployment < ApplicationRecord
   belongs_to :step, inverse_of: :deployments
   belongs_to :integration, optional: true
 
+  enum notes: {build_notes: "build_notes", release_notes: "release_notes", no_notes: "no_notes"}
+
   validates :deployment_number, presence: true
   validates :build_artifact_channel, uniqueness: {scope: [:integration_id, :step_id]}
   validate :staged_rollout_is_allowed
-  validate :correct_staged_rollout_config, if: :staged_rollout?
+  validate :correct_staged_rollout_config, if: :staged_rollout?, on: :create
   validate :non_prod_build_channel, if: -> { step.review? }
 
   delegate :google_play_store_integration?,
@@ -43,10 +46,15 @@ class Deployment < ApplicationRecord
 
   before_save :set_deployment_number, if: :new_record?
   before_save :set_default_staged_rollout, if: [:new_record?, :app_store_integration?, :staged_rollout?]
+  before_save :set_default_prod_notes_config, if: [:new_record?, :production_channel?]
 
   FULL_ROLLOUT_VALUE = BigDecimal("100")
 
   def staged_rollout? = is_staged_rollout
+
+  def send_notes?
+    !no_notes?
+  end
 
   def set_deployment_number
     self.deployment_number = step.all_deployments.maximum(:deployment_number).to_i + 1
@@ -144,6 +152,10 @@ class Deployment < ApplicationRecord
   end
 
   private
+
+  def set_default_prod_notes_config
+    self.notes = "release_notes"
+  end
 
   def set_default_staged_rollout
     self.staged_rollout_config = AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE

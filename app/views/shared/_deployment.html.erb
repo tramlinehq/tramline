@@ -4,6 +4,19 @@
            locals: { name: show_deployment(deployment),
                      provider_name: deployment.integration_type.to_s } %>
 
+<% if deployment.build_notes? %>
+  <div class="inline-flex text-slate-500 text-xs ml-1" title="Auto-generated Notes">
+    <%= inline_svg("clipboard_copy.svg", classname: "w-4 inline-flex") %>
+    <span>+</span>
+    <%= inline_svg("bolt.svg", classname: "w-4 inline-flex") %>
+  </div>
+<% end %>
+<% if deployment.release_notes? %>
+  <div class="inline-flex text-slate-500 ml-1" title="Public Release Notes">
+    <%= inline_svg("clipboard_copy.svg", classname: "w-4 inline-flex") %>
+  </div>
+<% end %>
+
 <% if deployment.staged_rollout? %>
   <span class="ml-1"><%= status_badge("Staged rollout enabled", :neutral) %></span>
 <% end %>

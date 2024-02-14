@@ -2,6 +2,7 @@
 
 class PopulateSendBuildNotesOnDeployments < ActiveRecord::Migration[7.0]
   def up
+    return
     ActiveRecord::Base.transaction do
       Deployment.all.each do |deployment|
         next if deployment.production_channel?

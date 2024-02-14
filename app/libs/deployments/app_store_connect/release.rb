@@ -75,6 +75,7 @@ module Deployments
         :staged_rollout_config,
         :release_metadata,
         :internal_channel?,
+        :deployment_notes,
         to: :run
 
       def kickoff!
@@ -100,8 +101,7 @@ module Deployments
       end
 
       def update_build_notes!
-        build_notes = run.step_run.build_notes.truncate(ReleaseMetadata::NOTES_MAX_LENGTH)
-        provider.update_release_notes(build_number, build_notes)
+        provider.update_release_notes(build_number, deployment_notes)
       end
 
       def prepare_for_release!(force: false)
