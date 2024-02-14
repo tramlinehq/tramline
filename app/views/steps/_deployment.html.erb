@@ -43,16 +43,16 @@
       <div data-dropdown-stream-target="hideElement">
         <div class="flex flex-row items-center gap-x-4">
           <div class="flex flex-row items-center gap-x-2">
-            <%= form.radio_button :send_notes, "send_build_notes" %>
-            <%= form.label :send_build_notes, "Send auto-generated build notes" %>
+            <%= form.radio_button :notes, "build_notes" %>
+            <%= form.label :build_notes, "Send auto-generated build notes" %>
           </div>
           <div class="flex flex-row items-center gap-x-2">
-            <%= form.radio_button :send_notes, "send_release_notes" %>
-            <%= form.label :send_release_notes, "Send Release Notes" %>
+            <%= form.radio_button :notes, "release_notes" %>
+            <%= form.label :release_notes, "Send Release Notes" %>
           </div>
           <div class="flex flex-row items-center gap-x-2">
-            <%= form.radio_button :send_notes, "send_no_notes" %>
-            <%= form.label :send_no_notes, "Send No Notes" %>
+            <%= form.radio_button :notes, "no_notes" %>
+            <%= form.label :no_notes, "Send No Notes" %>
           </div>
         </div>
       </div>

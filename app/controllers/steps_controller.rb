@@ -131,7 +131,7 @@ class StepsController < SignedInApplicationController
         :build_artifact_channel,
         :deployment_number,
         :is_staged_rollout,
-        :send_notes,
+        :notes,
         :staged_rollout_config
       ])
   end
@@ -147,7 +147,7 @@ class StepsController < SignedInApplicationController
         attributes.merge(
           staged_rollout_config: attributes[:staged_rollout_config]&.safe_csv_parse,
           build_artifact_channel: attributes[:build_artifact_channel]&.safe_json_parse
-        ).merge(deployment_notes_config(attributes[:send_notes]))
+        )
       ]
     end
   end
@@ -157,11 +157,5 @@ class StepsController < SignedInApplicationController
       .build_channel_integrations
       .map { |bc| [bc.providable.display, bc.id] }
       .push(Integration::EXTERNAL_BUILD_INTEGRATION[:build_integration])
-  end
-
-  def deployment_notes_config(send_notes)
-    return {send_build_notes: true} if send_notes == "send_build_notes"
-    return {send_release_notes: true} if send_notes == "send_release_notes"
-    {}
   end
 end

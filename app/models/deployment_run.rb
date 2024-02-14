@@ -51,8 +51,8 @@ class DeploymentRun < ApplicationRecord
     :test_flight?,
     :store?,
     :send_notes?,
-    :send_release_notes?,
-    :send_build_notes?,
+    :release_notes?,
+    :build_notes?,
     :staged_rollout?,
     :staged_rollout_config,
     :google_firebase_integration?,
@@ -196,8 +196,8 @@ class DeploymentRun < ApplicationRecord
   end
 
   def deployment_notes
-    return step_run.build_notes.truncate(ReleaseMetadata::NOTES_MAX_LENGTH) if send_build_notes?
-    release_metadata.release_notes if send_release_notes?
+    return step_run.build_notes.truncate(ReleaseMetadata::NOTES_MAX_LENGTH) if build_notes?
+    release_metadata.release_notes if release_notes?
   end
 
   def healthy?

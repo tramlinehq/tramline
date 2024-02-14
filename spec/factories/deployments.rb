@@ -2,6 +2,7 @@ FactoryBot.define do
   factory :deployment do
     sequence(:build_artifact_channel) { |n| {id: n} }
     send_build_notes { true }
+    notes { "build_notes" }
     association :integration
 
     trait :with_step do
@@ -26,8 +27,7 @@ FactoryBot.define do
 
     trait :with_production_channel do
       build_artifact_channel { {is_production: true} }
-      send_build_notes { false }
-      send_release_notes { true }
+      notes { "release_notes" }
     end
 
     trait :with_google_play_store do
@@ -56,8 +56,7 @@ FactoryBot.define do
       build_artifact_channel { {is_production: true} }
       is_staged_rollout { true }
       staged_rollout_config { [1, 100] }
-      send_build_notes { false }
-      send_release_notes { true }
+      notes { "release_notes" }
     end
   end
 end

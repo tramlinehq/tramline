@@ -7,8 +7,8 @@
 #  deployment_number      :integer          default(0), not null, indexed => [step_id]
 #  discarded_at           :datetime         indexed
 #  is_staged_rollout      :boolean          default(FALSE)
+#  notes                  :string           default("no_notes"), not null
 #  send_build_notes       :boolean
-#  send_release_notes     :boolean          default(FALSE)
 #  staged_rollout_config  :decimal(, )      default([]), is an Array
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
@@ -26,7 +26,7 @@ class Deployment < ApplicationRecord
   belongs_to :step, inverse_of: :deployments
   belongs_to :integration, optional: true
 
-  attr_accessor :send_notes
+  enum notes: {build_notes: "build_notes", release_notes: "release_notes", no_notes: "no_notes"}
 
   validates :deployment_number, presence: true
   validates :build_artifact_channel, uniqueness: {scope: [:integration_id, :step_id]}
@@ -44,7 +44,6 @@ class Deployment < ApplicationRecord
 
   scope :sequential, -> { order("deployments.deployment_number ASC") }
 
-  after_initialize :set_notes_config
   before_save :set_deployment_number, if: :new_record?
   before_save :set_default_staged_rollout, if: [:new_record?, :app_store_integration?, :staged_rollout?]
   before_save :set_default_prod_notes_config, if: [:new_record?, :production_channel?]
@@ -54,7 +53,7 @@ class Deployment < ApplicationRecord
   def staged_rollout? = is_staged_rollout
 
   def send_notes?
-    send_build_notes? || send_release_notes?
+    !no_notes?
   end
 
   def set_deployment_number
@@ -154,14 +153,8 @@ class Deployment < ApplicationRecord
 
   private
 
-  def set_notes_config
-    return self.send_notes = "send_build_notes" if send_build_notes?
-    return self.send_notes = "send_release_notes" if send_release_notes?
-    self.send_notes = "send_no_notes"
-  end
-
   def set_default_prod_notes_config
-    self.send_release_notes = true
+    self.notes = "release_notes"
   end
 
   def set_default_staged_rollout
