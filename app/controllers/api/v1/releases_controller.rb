@@ -7,16 +7,17 @@ class Api::V1::ReleasesController < ApiController
   private
 
   def all_versions
-    release&.all_store_step_runs&.map(&:release_info)&.group_by { _1[:platform] }
+    releases
+      .flat_map { |release| release.all_store_step_runs&.map(&:release_info) }
+      .then { |store_releases| store_releases.group_by { _1[:platform] } }
   end
 
-  def release
+  def releases
     @release ||=
       authorized_organization
         .releases
         .where(branch_name: release_param)
         .or(authorized_organization.releases.where(id: release_param))
-        .first
   end
 
   def release_param
