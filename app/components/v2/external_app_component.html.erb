@@ -3,29 +3,31 @@
 <% if external_apps? %>
   <ul class="mb-2 divide-y divide-main-200 dark:divide-main-700">
     <% latest_external_apps.each do |platform, external_app| %>
-      <% channels(external_app).each do |channel| %>
-        <% if releases(channel).size > 0 %>
-          <li class="py-3 last:pb-0">
-            <div class="flex justify-between align-center gap-x-2">
-              <%= image_tag(store_icon_path(platform), class: "w-4 h-4", alt: "store icon") %>
-              <div class="flex-1 min-w-0 w-full">
-                <p class="text-sm font-semibold text-main-900 leading-none mb-3 dark:text-white"><%= channel_name channel %></p>
-                <% releases(channel)&.each do |release| %>
-                  <div class="w-full grid grid-cols-5 space-x-1 items-center">
-                    <div class="col-span-3 grid grid-cols-5 justify-start text-xs font-medium text-main-500 dark:text-main-400 divide-x divide-main-200">
-                      <span class="col-span-2"><%= release_version(release) %></span>
-                      <span class="col-span-3 pl-2 font-semibold"><%= release_number(release) %></span>
+      <% if external_app %>
+        <% channels(external_app).each do |channel| %>
+          <% if releases(channel).size > 0 %>
+            <li class="py-3 last:pb-0">
+              <div class="flex justify-between align-center gap-x-2">
+                <%= image_tag(store_icon_path(platform), class: "w-4 h-4", alt: "store icon") %>
+                <div class="flex-1 min-w-0 w-full">
+                  <p class="text-sm font-semibold text-main-900 leading-none mb-3 dark:text-white"><%= channel_name channel %></p>
+                  <% releases(channel)&.each do |release| %>
+                    <div class="w-full grid grid-cols-5 space-x-1 items-center">
+                      <div class="col-span-3 grid grid-cols-5 justify-start text-xs font-medium text-main-500 dark:text-main-400 divide-x divide-main-200">
+                        <span class="col-span-2"><%= release_version(release) %></span>
+                        <span class="col-span-3 pl-2 font-semibold"><%= release_number(release) %></span>
+                      </div>
+                      <div class="col-span-2">
+                        <% if release[:user_fraction] %>
+                          <%= render V2::ProgressBarComponent.new(percent: release_percent(release), label: false) %>
+                        <% end %>
+                      </div>
                     </div>
-                    <div class="col-span-2">
-                      <% if release[:user_fraction] %>
-                        <%= render V2::ProgressBarComponent.new(percent: release_percent(release), label: false) %>
-                      <% end %>
-                    </div>
-                  </div>
-                <% end %>
+                  <% end %>
+                </div>
               </div>
-            </div>
-          </li>
+            </li>
+          <% end %>
         <% end %>
       <% end %>
     <% end %>

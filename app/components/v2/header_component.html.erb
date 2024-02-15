@@ -79,7 +79,7 @@
             <% end %>
 
             <%= render V2::ModalComponent.new(title: "Add a new app") do |modal| %>
-              <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none, html_options: { class: "ml-2" })
+              <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none, tooltip: "Add a new app", html_options: { class: "ml-2" })
                       .with_icon("plus.svg", size: :md) %>
               <% modal.with_body do %>
                 <%= render partial: "apps/form", locals: { app: new_app } %>

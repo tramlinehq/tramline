@@ -1,7 +1,7 @@
 class V2::BuildInfoComponent < V2::BaseComponent
   def initialize(deployment_run)
     @deployment_run = deployment_run
-    @step_run = deployment_run.step_run
+    @step_run = deployment_run&.step_run
   end
 
   delegate :step, to: :@step_run

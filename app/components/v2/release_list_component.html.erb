@@ -23,7 +23,7 @@
 
       <% dropdown.with_item_group do |group| %>
         <% app.trains.each do |t| %>
-          <% group.with_item(link: { path: app_train_path(app, t) }, selected: train.id == t.id) do %>
+          <% group.with_item(link: { path: app_train_releases_path(app, t) }, selected: train.id == t.id) do %>
             <%= t.name %>
           <% end %>
         <% end %>
