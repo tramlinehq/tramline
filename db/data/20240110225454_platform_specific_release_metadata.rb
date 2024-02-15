@@ -1,5 +1,6 @@
 class PlatformSpecificReleaseMetadata < ActiveRecord::Migration[7.0]
   def up
+    return
     ActiveRecord::Base.transaction do
       Release.all.each do |r|
         runs = r.release_platform_runs.includes(:release_platform)

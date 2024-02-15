@@ -469,7 +469,7 @@ class StepRun < ApplicationRecord
 
   def after_finish_ci
     return Releases::FindBuildJob.perform_async(id) if has_findables?
-    return Releases::UploadArtifact.perform_later(id, artifacts_url) if has_uploadables?
+    return Releases::UploadArtifact.perform_async(id, artifacts_url) if has_uploadables?
     trigger_deployment
   end
 

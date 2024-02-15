@@ -1,9 +1,9 @@
 en:
   staged_rollout:
     ios:
-      checkbox: "Enable Phased Release?"
+      checkbox: "Enable Phased Release"
     android:
-      checkbox: "Enable Staged Rollout?"
+      checkbox: "Enable Staged Rollout"
   activerecord:
     models:
       slack_integration: "Slack"

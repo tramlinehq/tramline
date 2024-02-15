@@ -131,6 +131,7 @@ class StepsController < SignedInApplicationController
         :build_artifact_channel,
         :deployment_number,
         :is_staged_rollout,
+        :notes,
         :staged_rollout_config
       ])
   end

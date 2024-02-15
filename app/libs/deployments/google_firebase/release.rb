@@ -38,6 +38,7 @@ module Deployments
         :google_firebase_integration?,
         :release_platform,
         :step_run,
+        :deployment_notes,
         to: :run
       delegate :platform, to: :release_platform
 
@@ -89,7 +90,7 @@ module Deployments
       end
 
       def update_build_notes!(release)
-        provider.update_release_notes(release, step_run.build_notes)
+        provider.update_release_notes(release, deployment_notes)
       end
 
       def start_release!

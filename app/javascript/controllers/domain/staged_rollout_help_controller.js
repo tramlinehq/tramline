@@ -1,6 +1,6 @@
 import {Controller} from "@hotwired/stimulus";
 
-const baseHelpText = "You will be able to rollout to users in the following stages: "
+const baseHelpText = "Rollout to users will be in the following stages: "
 
 export default class extends Controller {
   static targets = [

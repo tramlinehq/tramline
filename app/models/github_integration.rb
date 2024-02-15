@@ -243,6 +243,7 @@ class GithubIntegration < ApplicationRecord
       .artifacts(artifacts_url)
       .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern) }
       .then { |artifacts| API.find_biggest(artifacts) }
+      .tap { |artifact| raise Installations::Errors::ArtifactsNotFound if artifact.blank? }
       .then { |artifact| installation.artifact_download_url(artifact) }
       .then { |url| installation.artifact_io_stream(url) }
       .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true) }

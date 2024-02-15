@@ -3,8 +3,8 @@ class StagedRolloutsController < SignedInApplicationController
   before_action :set_deployment_run
   before_action :set_staged_rollout
   before_action :ensure_controlled_rolloutable, only: [:increase, :halt]
-  before_action :ensure_rolloutable, only: [:fully_release]
-  before_action :ensure_auto_rolloutable, only: [:pause, :resume]
+  before_action :ensure_rolloutable, only: [:fully_release, :resume]
+  before_action :ensure_auto_rolloutable, only: [:pause]
 
   def increase
     @staged_rollout.move_to_next_stage!

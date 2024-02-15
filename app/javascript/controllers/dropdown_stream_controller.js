@@ -8,10 +8,10 @@ export default class extends Controller {
     dynamicSelectKey: String,
     showElementIf: String,
   }
-  static targets = ["dynamicSelect", "showElement"]
+  static targets = ["dynamicSelect", "showElement", "hideElement"]
 
   connect() {
-    useMutation(this, {  childList: true, subtree: true, element: this.dynamicSelectTarget })
+    useMutation(this, {childList: true, subtree: true, element: this.dynamicSelectTarget})
     this.showElementOnDynamicSelectChange()
   }
 
@@ -35,18 +35,12 @@ export default class extends Controller {
       const parsedMatchers = this.__safeJSONParse(this.showElementIfValue)
 
       if (parsedSelected && parsedMatchers) {
-        if (this.__is_any(parsedSelected, parsedMatchers)) {
-          this.showElementTarget.style.display = "block"
-        } else {
-          this.showElementTarget.style.display = "none"
-        }
+        this.showElementTarget.hidden = !this.__is_any(parsedSelected, parsedMatchers)
       } else {
-        if (selectedShowElementValue === this.showElementIfValue) {
-          this.showElementTarget.style.display = "block"
-        } else {
-          this.showElementTarget.style.display = "none"
-        }
+        this.showElementTarget.hidden = selectedShowElementValue !== this.showElementIfValue
       }
+
+      if (this.hasHideElementTarget) this.hideElementTarget.hidden = !this.showElementTarget.hidden
     }
   }
 

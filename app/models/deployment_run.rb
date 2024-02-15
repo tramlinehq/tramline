@@ -50,6 +50,9 @@ class DeploymentRun < ApplicationRecord
     :app_store?,
     :test_flight?,
     :store?,
+    :send_notes?,
+    :release_notes?,
+    :build_notes?,
     :staged_rollout?,
     :staged_rollout_config,
     :google_firebase_integration?,
@@ -77,6 +80,7 @@ class DeploymentRun < ApplicationRecord
   STATES = {
     created: "created",
     started: "started",
+    preparing_release: "preparing_release",
     prepared_release: "prepared_release",
     submitted_for_review: "submitted_for_review",
     failed_prepare_release: "failed_prepare_release",
@@ -116,12 +120,18 @@ class DeploymentRun < ApplicationRecord
       transitions from: :created, to: :started
     end
 
+    event :start_prepare_release, after_commit: ->(args = {force: false}) { Deployments::AppStoreConnect::PrepareForReleaseJob.perform_async(id, args.fetch(:force, false)) } do
+      transitions from: [:started, :failed_prepare_release], to: :preparing_release do
+        guard { |_| app_store? }
+      end
+    end
+
     event :prepare_release, guard: :app_store? do
-      transitions from: [:started, :failed_prepare_release], to: :prepared_release
+      transitions from: :preparing_release, to: :prepared_release
     end
 
     event :fail_prepare_release, before: :set_reason, after_commit: -> { event_stamp!(reason: :prepare_release_failed, kind: :error, data: stamp_data) } do
-      transitions from: [:started, :failed_prepare_release], to: :failed_prepare_release do
+      transitions from: :preparing_release, to: :failed_prepare_release do
         guard { |_| app_store? }
       end
     end
@@ -161,7 +171,7 @@ class DeploymentRun < ApplicationRecord
     end
 
     event :dispatch_fail, before: :set_reason, after_commit: :release_failed do
-      transitions from: [:started, :prepared_release, :uploading, :uploaded, :submitted_for_review, :ready_to_release, :rollout_started, :failed_prepare_release], to: :failed
+      transitions from: [:started, :prepared_release, :uploading, :uploaded, :submitted_for_review, :ready_to_release, :rollout_started, :preparing_release, :failed_prepare_release], to: :failed
       after { step_run.fail_deployment!(deployment) }
     end
 
@@ -183,6 +193,11 @@ class DeploymentRun < ApplicationRecord
 
   def self.reached_production
     ready.includes(:step_run, :deployment).select(&:production_channel?)
+  end
+
+  def deployment_notes
+    return step_run.build_notes.truncate(ReleaseMetadata::NOTES_MAX_LENGTH) if build_notes?
+    release_metadata.release_notes if release_notes?
   end
 
   def healthy?
@@ -358,12 +373,20 @@ class DeploymentRun < ApplicationRecord
   end
 
   def on_resume_release!
-    return unless store? && app_store_integration?
+    return unless store?
 
     release_platform_run.with_lock do
-      return unless automatic_rollout?
+      return unless rolloutable?
 
-      yield Deployments::AppStoreConnect::Release.resume_phased_release!(self)
+      if google_play_store_integration?
+        result = Deployments::GooglePlayStore::Release.release_with(self, rollout_value: staged_rollout.last_rollout_percentage)
+      elsif app_store_integration?
+        result = Deployments::AppStoreConnect::Release.resume_phased_release!(self)
+      else
+        raise UnknownStoreError
+      end
+
+      yield result
     end
   end
 

@@ -56,8 +56,9 @@ class StagedRollout < ApplicationRecord
       transitions from: :started, to: :paused
     end
 
-    event :resume, guard: -> { deployment_run.automatic_rollout? }, after_commit: -> { event_stamp!(reason: :resumed, kind: :success, data: stamp_data) } do
-      transitions from: :paused, to: :started
+    event :resume, after_commit: -> { event_stamp!(reason: :resumed, kind: :success, data: stamp_data) } do
+      transitions from: :paused, to: :started, guard: -> { deployment_run.automatic_rollout? }
+      transitions from: :stopped, to: :started, guard: -> { deployment_run.controllable_rollout? }
     end
 
     event :fail, after_commit: -> { fail_stamp } do
@@ -177,7 +178,7 @@ class StagedRollout < ApplicationRecord
   end
 
   def resume_release!
-    return unless paused?
+    return unless (paused? && deployment_run.automatic_rollout?) || (stopped? && deployment_run.controllable_rollout?)
 
     deployment_run.on_resume_release! do |result|
       if result.ok?
