@@ -8,6 +8,9 @@ class AppsController < SignedInApplicationController
 
   def index
     @apps = current_organization.apps
+    if @apps.exists?
+      redirect_to app_path(@apps.first)
+    end
   end
 
   def show
@@ -15,6 +18,10 @@ class AppsController < SignedInApplicationController
     @train_in_creation = @app.train_in_creation
     @app_setup_instructions = @app.app_setup_instructions
     @train_setup_instructions = @app.train_setup_instructions
+
+    if @app.trains.exists?
+      redirect_to app_train_releases_path(@app, @app.trains.first)
+    end
   end
 
   def new
