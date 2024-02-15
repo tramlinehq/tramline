@@ -5,7 +5,7 @@
     <% latest_external_apps.each do |platform, external_app| %>
       <% if external_app %>
         <% channels(external_app).each do |channel| %>
-          <% if releases(channel).size > 0 %>
+          <% if releases(channel) && releases(channel).size > 0 %>
             <li class="py-3 last:pb-0">
               <div class="flex justify-between align-center gap-x-2">
                 <%= image_tag(store_icon_path(platform), class: "w-4 h-4", alt: "store icon") %>
