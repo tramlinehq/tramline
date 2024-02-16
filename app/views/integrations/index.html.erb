@@ -1,6 +1,7 @@
-<% breadcrumb :integrations, @app %>
-
-<div class="mb-8"><h1 class="text-2xl md:text-3xl text-slate-800 font-bold">Integrations 🤖</h1></div>
-
-<%= render partial: "shared/errors", locals: { resource: @integration } %>
-<%= render V2::IntegrationListComponent.new(@app, @integrations_by_categories) %>
+<%= render V2::TabbedContainerComponent.new(title: @app.name,
+                                            turbo_frame: dom_id(@app, :edit_app),
+                                            tab_config: @tab_configuration) do |container| %>
+  <% container.with_tab do %>
+    <%= render V2::IntegrationListComponent.new(@app, @integrations_by_categories) %>
+  <% end %>
+<% end %>

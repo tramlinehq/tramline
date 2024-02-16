@@ -61,7 +61,7 @@ class AppConfig < ApplicationRecord
   end
 
   def further_build_channel_setup?
-    app.integrations.build_channel.map(&:providable).any?(&:further_build_channel_setup?)
+    app.integrations.build_channel.map(&:providable).any?(&:further_setup?)
   end
 
   def further_ci_cd_setup?

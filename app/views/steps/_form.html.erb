@@ -1,92 +1,65 @@
-<div class="border-b border-dashed pb-5">
-  <div class="grid gap-5 md:grid-cols-2">
-    <div>
-      <div class="mb-8">
-        <h2 class="font-bold text-xl">
-          What should we call it?
-        </h2>
-      </div>
+<% form.with_section(heading: "What should we call it?") do |section| %>
+  <% section.with_description do %>
+    A name that defines this part of the release process.
+  <% end %>
 
-      <div class="mt-4">
-        <%= form.hidden_field :kind, value: step.kind %>
-        <%= form.label :name, class: "block text-sm font-medium mb-1" %>
-        <%= form.text_field :name, class: "form-input w-full", placeholder: "Enter step name..", required: true %>
-      </div>
-
-      <div class="mt-4">
-        <%= form.label :description, class: "block text-sm font-medium mb-1" %>
-        <%= form.text_area :description, class: "form-input w-full", placeholder: "Describe your step..." %>
-      </div>
-
-      <% if release_platform.android? %>
-        <div class="mt-4">
-          <div data-controller="domain--release-suffix-help"
-               data-domain--release-suffix-help-version-value="<%= train.version_current %>"
-               data-domain--release-suffix-help-version-suffix-current-value="<%= step.release_suffix %>">
-            <%= form.label :release_suffix, class: "block text-sm font-medium mb-1" %>
-            <%= form.text_field :release_suffix,
-                                class: "form-input w-full",
-                                placeholder: "Eg: qa-staging",
-                                autocomplete: "off",
-                                data: { domain__release_suffix_help_target: "input",
-                                        action: "domain--release-suffix-help#set" } %>
-            <div class="text-sm mt-1">
-              This is appended to the <strong>version name</strong> of the app, as follows:&nbsp;
-              <span class="font-mono" data-domain--release-suffix-help-target="helpText"></span>
-            </div>
-          </div>
-        </div>
-      <% end %>
-    </div>
-
-    <div>
-      <div class="mb-8">
-        <h2 class="font-bold text-xl">
-          How do we build your app?
-        </h2>
-      </div>
-
-      <div class="mt-4">
-        <%= form.label :ci_cd_channel, "CI workflow", class: "block text-sm font-medium mb-1" %>
-        <div class="control">
-          <%= form.select :ci_cd_channel,
-                          options_for_select(display_channels(ci_actions) { |chan| chan[:name] },
-                                             step.ci_cd_channel.to_json),
-                          { class: "form-select" },
-                          data: { controller: "input-select" } %>
-        </div>
-
+  <div class="grid gap-4">
+    <div><%= section.F.labeled_text_field :name, "Name", required: true %></div>
+    <div><%= section.F.labeled_textarea :description, "Description" %></div>
+    <%= section.F.hidden_field :kind, value: step.kind %>
+    <% if release_platform.android? %>
+      <div data-controller="domain--release-suffix-help"
+           data-domain--release-suffix-help-version-value="<%= train.version_current %>"
+           data-domain--release-suffix-help-version-suffix-current-value="<%= step.release_suffix %>">
+        <%= section.F.labeled_text_field :release_suffix,
+                                         "Release Suffix",
+                                         placeholder: "Eg: qa-staging",
+                                         data: { domain__release_suffix_help_target: "input",
+                                                 action: "domain--release-suffix-help#set" } %>
         <div class="text-sm mt-1">
-          This CI workflow should generate a valid build artifact (aab/apk/ipa).
+          This is appended to the <strong>version name</strong> of the app, as follows:&nbsp;
+          <span class="font-mono" data-domain--release-suffix-help-target="helpText"></span>
         </div>
       </div>
+    <% end %>
+  </div>
+<% end %>
 
-      <div class="mt-4">
-        <%= form.label "Build Artifact Name (Optional)", class: "block text-sm font-medium mb-1" %>
-        <%= form.text_field :build_artifact_name_pattern, class: "form-input w-full" %>
-        <div class="text-sm">
-          <p class="mt-1">If your CI workflow generates multiple artifacts, provide a name to choose the correct build
-            artifact
-            (aab/apk/ipa) among the files generated.</p>
-          <p class="mt-1">When left blank, Tramline will choose the largest file generated as the build artifact.</p>
-          <p class="mt-1">
-            To understand the build artifact selection
-            better, <%= link_to_external "read the docs", "https://docs.tramline.app/integrations/ci-cd/#build-artifact-selection", class: "underline" %>
-            .</p>
-        </div>
+<% form.with_section(heading: "How do we build your app?") do |section| %>
+  <% section.with_description do %>
+    The generated build artifact will be moved across the configured <%= Deployment.display.downcase %> channels below.
+  <% end %>
+
+  <div class="grid gap-4">
+    <div>
+      <%= section.F.labeled_select :ci_cd_channel, "CI workflow",
+                                   options_for_select(display_channels(ci_actions) { |chan| chan[:name] },
+                                                      step.ci_cd_channel.to_json),
+                                   {},
+                                   data: { controller: "input-select" } %>
+      <div class="text-sm mt-1">
+        This CI workflow should generate a valid build artifact (aab/apk/ipa).
       </div>
+    </div>
 
-      <% if @app.variants.exists? %>
-        <div class="mt-4">
-          <%= form.label "Pick an app variant", class: "block text-sm font-medium mb-1" %>
-          <%= form.select :app_variant_id, options_for_select(@app.variant_options, @step.app_variant&.id), { class: "form-select" }, data: { controller: "input-select" } %>
-        </div>
-      <% end %>
+    <div>
+      <%= section.F.labeled_text_field :build_artifact_name_pattern, "Build Artifact Name (Optional)" %>
+      <div class="text-sm">
+        <p class="mt-1">
+          If your CI workflow generates multiple artifacts, provide a name to choose the correct build artifact
+          (aab/apk/ipa) among the files generated.</p>
+        <p class="mt-1">
+          When left blank, Tramline will choose the largest file generated as the build artifact.
+        </p>
+        <p class="mt-1">
+          To understand more about build artifact
+          selection, <%= link_to_external "check out the docs.", "https://docs.tramline.app/integrations/ci-cd/#build-artifact-selection", class: "underline" %>
+        </p>
+      </div>
     </div>
+
+    <% if @app.variants.exists? %>
+      <div><%= section.F.labeled_select :app_variant_id, "Pick an app variant", options_for_select(@app.variant_options, @step.app_variant&.id) %></div>
+    <% end %>
   </div>
-  <div class="mt-4 px-5 py-3 bg-indigo-50 border border-indigo-100 rounded-sm text-left">
-    <div class="text-slate-700 font-normal">
-      <%= "The generated build artifact above will be moved across the configured #{Deployment.display.downcase} channels below." %>
-    </div>
-  </div>
-</div>
+<% end %>

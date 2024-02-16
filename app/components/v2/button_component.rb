@@ -7,7 +7,7 @@ class V2::ButtonComponent < V2::BaseComponent
     single: "single_headed_arrow.svg",
     none: ""
   }
-  BASE_OPTS = "btn group px-2 flex items-center"
+  BASE_OPTS = "btn group px-2 inline-flex items-center"
   BUTTON_OPTIONS = {
     default: {
       class: "#{BASE_OPTS} text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
@@ -35,14 +35,14 @@ class V2::ButtonComponent < V2::BaseComponent
     list_item: {
       class: "flex items-center rounded justify-between block px-4 py-1.5 hover:bg-main-100 dark:hover:bg-main-600 dark:hover:text-white text-sm"
     },
-    none: {class: ""}
+    none: { class: "" }
   }
   DISABLED_STYLE = "opacity-30 disabled cursor-not-allowed outline-none focus:outline-none"
   DROPDOWN_STYLE = "p-1 text-sm text-main-700 dark:text-main-200"
   SCHEMES = BUTTON_OPTIONS.keys
   SIZES = {
     none: "",
-    base: "px-5 py-2.5 text-sm",
+    base: "px-5 py-2.5 text-base",
     sm: "py-2 px-4 text-sm",
     md: "px-4 py-2 text-base",
     xs: "px-3 py-2 text-xs",
@@ -54,8 +54,8 @@ class V2::ButtonComponent < V2::BaseComponent
   renders_one :title_text
   renders_one :icon, V2::IconComponent
 
-  def initialize(label: nil, scheme: :switcher, type: :button, tooltip: nil, size: :xxs, options: nil, html_options: nil, arrow: nil, authz: true)
-    arrow = (arrow.nil? && type == :action) ? :double : :none
+  def initialize(label: nil, scheme: :switcher, type: :button, tooltip: nil, size: :xxs, options: nil, html_options: nil, arrow: :none, authz: true, turbo: true)
+    arrow = scheme == :switcher ? :double : arrow
     raise ArgumentError, "Invalid scheme" unless SCHEMES.include?(scheme)
     raise ArgumentError, "Invalid button type" unless TYPES.include?(type)
     raise ArgumentError, "Invalid size" unless SIZES.keys.include?(size)
@@ -72,6 +72,7 @@ class V2::ButtonComponent < V2::BaseComponent
     @arrow_type = arrow
     @authz = authz
     @disabled = false
+    @turbo = turbo
   end
 
   def before_render
@@ -129,12 +130,13 @@ class V2::ButtonComponent < V2::BaseComponent
 
     button_tag(@options, @html_options) do
       concat(icon) if icon?
-      concat content_tag(:span, "Open menu", class: "sr-only")
+
       if title_text?
         concat content_tag(:span, title_text, class: classname)
       elsif @label
         concat content_tag(:span, @label, class: classname)
       end
+
       concat(render(arrow)) if arrow.present?
     end
   end
@@ -153,7 +155,7 @@ class V2::ButtonComponent < V2::BaseComponent
 
   def apply_html_options(options)
     new_options = BUTTON_OPTIONS[@scheme]
-    options = options ? options.dup : {}
+    options = options ? options.deep_dup : {}
     options[:class] ||= ""
     options[:class] << " #{new_options[:class]}"
     options[:class] << " #{SIZES[@size]}"
@@ -161,10 +163,12 @@ class V2::ButtonComponent < V2::BaseComponent
     options[:class] = options[:class].squish
 
     options[:data] ||= {}
+    options[:data][:turbo] = @turbo
 
     if @tooltip
       options[:data][:popup_target] = "element"
-      options[:data][:action] = "mouseover->popup#show mouseout->popup#hide"
+      options[:data][:action] ||= ""
+      options[:data][:action] << " mouseover->popup#show mouseout->popup#hide"
     end
 
     options.merge(new_options.except(:class))

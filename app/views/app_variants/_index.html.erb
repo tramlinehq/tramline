@@ -1,6 +1,6 @@
-<% subtitle = "App variants are akin to product flavors or build variants, with an explicit requirement of having a different bundle id." %>
+<% subtitle = "Akin to product flavors or build variants, with an explicit requirement of having a different bundle id." %>
 
-<%= render V2::SectionComponent.new(style: :titled, title: "Setup Variants", subtitle: subtitle) do |section| %>
+<%= render V2::SectionComponent.new(style: :titled, title: "App Variants", subtitle: subtitle) do |section| %>
   <% section.with_sidenote do %>
     <%= render V2::ModalComponent.new(title: "Add a new App Variant") do |modal| %>
       <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
@@ -27,7 +27,10 @@
 
   <% if @app_variants.blank? %>
     <div class="text-main-500 text-sm">
-      No app variants have been configured yet.
+      <%= render V2::EmptyStateComponent.new(title: "Add new to begin",
+                                             text: "No app variants have been configured yet.",
+                                             banner_image: "dna.svg",
+                                             type: :subdued) %>
     </div>
   <% end %>
 <% end %>

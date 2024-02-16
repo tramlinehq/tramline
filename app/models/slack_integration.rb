@@ -56,6 +56,10 @@ class SlackIntegration < ApplicationRecord
     false
   end
 
+  def further_setup?
+    false
+  end
+
   def install_path
     unless integration.notification? || integration.build_channel?
       raise Integration::IntegrationNotImplemented, "We don't support that yet!"

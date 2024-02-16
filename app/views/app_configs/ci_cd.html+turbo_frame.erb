@@ -1,31 +1,27 @@
 <%= render V2::EnhancedTurboFrameComponent.new("#{@integration_category}_config") do %>
-  <% if @app.bitrise_connected? %>
-    <%= render V2::FormComponent.new(model: [@app, @config], url: app_app_config_path(@app), method: :patch) do |f| %>
-      <% f.with_section(heading: "Select Project") do |section| %>
-        <% section.with_description do %>
-          This will be your base notification channel. Later, when you create trains, you can add more granularity.
-          <%= image_tag "integrations/logo_bitrise.png", title: "Bugsnag", width: 22, class: "my-2" %>
-        <% end %>
-
-        <% if @ci_cd_apps.present? %>
-          <div>
-            <%= section.F.labeled_select :bitrise_project_id,
-                                         "App Name",
-                                         options_for_select(
-                                           display_channels(@ci_cd_apps) { |app| "#{app[:name]} (#{app[:id]})" },
-                                           @config.bitrise_project_id.to_json
-                                         ),
-                                         {},
-                                         data: { controller: "input-select" } %>
-          </div>
-        <% end %>
+  <%= render V2::FormComponent.new(model: [@app, @config], url: app_app_config_path(@app), method: :patch) do |f| %>
+    <% f.with_section(heading: "Select Project") do |section| %>
+      <% section.with_description do %>
+        This will be your base notification channel. Later, when you create trains, you can add more granularity.
+        <%= image_tag "integrations/logo_bitrise.png", title: "Bugsnag", width: 22, class: "my-2" %>
       <% end %>
 
-      <% f.with_action do %>
-        <%= f.F.authz_submit "Update", "plus.svg", size: :xs %>
+      <% if @ci_cd_apps.present? %>
+        <div>
+          <%= section.F.labeled_select :bitrise_project_id,
+                                       "App Name",
+                                       options_for_select(
+                                         display_channels(@ci_cd_apps) { |app| "#{app[:name]} (#{app[:id]})" },
+                                         @config.bitrise_project_id.to_json
+                                       ),
+                                       {},
+                                       data: { controller: "input-select" } %>
+        </div>
       <% end %>
     <% end %>
-  <% else %>
-    <%= render partial: "empty_state" %>
+
+    <% f.with_action do %>
+      <%= f.F.authz_submit "Update", "plus.svg", size: :xs %>
+    <% end %>
   <% end %>
 <% end %>

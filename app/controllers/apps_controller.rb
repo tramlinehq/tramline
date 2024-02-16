@@ -19,7 +19,7 @@ class AppsController < SignedInApplicationController
     @app_setup_instructions = @app.app_setup_instructions
     @train_setup_instructions = @app.train_setup_instructions
 
-    if @app.trains.exists?
+    if @app.trains.size > 1 || (@app.trains.size == 1 && !@app.trains.first.in_creation?)
       redirect_to app_train_releases_path(@app, @app.trains.first)
     end
   end

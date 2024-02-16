@@ -6,24 +6,17 @@
 <%= render V2::ContainerComponent.new(title: "") do |container| %>
   <% if @apps.blank? %>
     <% container.with_empty_state do %>
-      <div class="flex justify-center mt-24">
-        <div class="flex flex-col justify-start">
-          <h1 class="text-xl font-semibold text-main dark:text-white">Create an app to get started</h1>
-
-          <div class="mt-6 max-w-[200px] font-medium text-sm dark:text-main-300 text-main-400 mb-6">
-            Once you add your an app, you can then setup integrations and create your first release.
-          </div>
-
-          <%= render V2::ModalComponent.new(title: "Add a new app") do |modal| %>
-            <% modal.with_button(label: "Add a new app", scheme: :default, type: :action, size: :sm, arrow: :none)
-                    .with_icon("plus.svg", size: :md) %>
-            <% modal.with_body do %>
-              <%= render partial: "apps/form", locals: { app: new_app } %>
-            <% end %>
+      <%= render V2::EmptyStateComponent.new(title: "Create an app to get started",
+                                             text: "Once you add your app, you can then setup integrations and create your first release.",
+                                             banner_image: "art/no_releases.png") do %>
+        <%= render V2::ModalComponent.new(title: "Add a new app") do |modal| %>
+          <% modal.with_button(label: "Add a new app", scheme: :default, type: :action, size: :sm, arrow: :none)
+                  .with_icon("plus.svg", size: :md) %>
+          <% modal.with_body do %>
+            <%= render partial: "apps/form", locals: { app: new_app } %>
           <% end %>
-        </div>
-        <%= image_tag("art/no_releases.png", width: 400, alt: "no releases yet", class: "rounded-sm") %>
-      </div>
+        <% end %>
+      <% end %>
     <% end %>
   <% end %>
 <% end %>

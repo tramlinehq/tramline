@@ -87,7 +87,7 @@ class GoogleFirebaseIntegration < ApplicationRecord
     installation.list_groups(GROUPS_TRANSFORMATIONS)
   end
 
-  def further_build_channel_setup?
+  def further_setup?
     true
   end
 
