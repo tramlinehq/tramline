@@ -18,10 +18,7 @@
                 url: app_train_releases_path(app, train),
                 builder: ButtonHelper::AuthzForms) do |form| %>
     <section class="mb-6 flex flex-col">
-      <%= form.text_field :custom_release_version,
-                          class: "form-input w-1/2",
-                          placeholder: "Enter a version name...",
-                          required: true %>
+      <%= form.labeled_text_field :custom_release_version, "Version Name", autocomplete: "off", placeholder: "Eg. 1.1.2" %>
     </section>
 
     <%= form.authz_submit :blue, "Start release" %>

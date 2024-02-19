@@ -1,47 +1,52 @@
-<div class="flex flex-col space-y-6">
-  <div>Hotfix releases are special releases that allow you to trigger any stage of your release pipeline,
-    bypassing the defined order.
-  </div>
+<div class="flex flex-col space-y-4 text-sm">
+  <%= render V2::FormComponent.new(model: [app, train, Release.new],
+                                   method: :post,
+                                   url: app_train_releases_path(app, train),
+                                   free_form: false) do |f| %>
+    <% f.with_section(heading: "Branch") do |section| %>
+      <% section.with_description do %>
+        <div>
+          Hotfix releases are special releases that allow you to trigger any stage of your release pipeline,
+          bypassing the defined order.
+        </div>
+      <% end %>
 
-  <div>This hotfix will be against your last successful release:
-    <strong><%= hotfix_from.release_version %></strong>.
-  </div>
-
-  <div>
-    By default we will repurpose the release branch <strong><%= hotfix_from.release_branch %></strong> from the last
-    successful release.
-    You can override this setting below.
-  </div>
-
-  <%= form_with(model: [app, train, Release.new],
-                method: :post,
-                url: app_train_releases_path(app, train),
-                builder: EnhancedFormHelper::AuthzForm) do |form| %>
-
-    <%= render V2::Form::SwitchComponent.new(form:,
-                                             field_name: :new_hotfix_branch,
-                                             on_label: "Hotfix branch will be created from #{hotfix_from.tag_name}",
-                                             off_label: "Create a new hotfix branch") %>
-
-    <% if app.cross_platform? %>
-      <div class="mt-1 mb-6">
-        By default, the hotfix will be applied to both Android and iOS platforms. <br>
-        To change that, enable platform specific hotfix and choose the platform you want to apply the hotfix to.
+      <div>
+        By default we will repurpose the release branch <strong><%= hotfix_from.release_branch %></strong> from the
+        last
+        successful release.
+        You can override this setting below.
       </div>
 
-      <%= render V2::Form::SwitchComponent.new(form:,
-                                               field_name: :platform_specific_hotfix,
-                                               on_label: "Hotfix will be applied to the selected platform",
-                                               off_label: "Hotfix will be applied to all platforms") do |switch| %>
-        <% switch.with_child do %>
-          <%= form.labeled_select :hotfix_platform,
-                                  "Pick the platform to apply the hotfix",
-                                  options_for_select(ReleasePlatform.allowed_platforms, "Android") %>
-        <% end %>
-      <% end %>
+      <%= render V2::Form::SwitchComponent.new(form: f.F,
+                                               field_name: :new_hotfix_branch,
+                                               on_label: "Hotfix branch will be cut from #{hotfix_from.tag_name}",
+                                               off_label: "Create a new hotfix branch") %>
     <% end %>
 
-    <%= form.hidden_field :release_type, value: "hotfix" %>
-    <div class="mt-4"><%= form.authz_submit "Start hotfix", "plus.svg" %></div>
+    <% if app.cross_platform? %>
+      <% f.with_section(heading: "Platform") do |section| %>
+        <% section.with_description do %>
+          By default, the hotfix will be applied to both Android and iOS platforms.
+        <% end %>
+
+        <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                                 field_name: :platform_specific_hotfix,
+                                                 on_label: "Applied to the selected platform",
+                                                 off_label: "Applied to all platforms") do |switch| %>
+          <% switch.with_child do %>
+            <%= f.F.labeled_select :hotfix_platform,
+                                   "Pick the platform to apply the hotfix",
+                                   options_for_select(ReleasePlatform.allowed_platforms, "Android") %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%= f.F.hidden_field :release_type, value: "hotfix" %>
+    <% end %>
+
+    <% f.with_action do %>
+      <%= f.F.authz_submit "Start", "v2/zap.svg" %>
+    <% end %>
   <% end %>
 </div>

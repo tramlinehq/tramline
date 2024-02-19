@@ -1,0 +1,14 @@
+<ul class="grid w-full gap-6 md:grid-cols-2 text-sm">
+  <% options.each do |opt| %>
+    <li>
+      <%= form.radio_button_tag(opt[:opt_name], opt[:opt_value], opt[:checked], opt[:options]) %>
+      <label for="<%= opt[:id] %>" class="inline-flex items-center justify-between w-full p-3 text-main-500 bg-white border border-main-200 rounded-lg cursor-pointer dark:hover:text-main-300 dark:border-main-700 dark:peer-checked:text-blue-700 peer-checked:border-blue-800 peer-checked:text-blue-800 hover:text-main-600 peer-checked:bg-main-100 hover:bg-main-100 dark:text-main-400 dark:bg-main-800 dark:peer-checked:bg-main-700 dark:hover:bg-main-700">
+        <div class="block">
+          <div class="w-full text-base font-semibold"><%= opt[:title] %></div>
+          <div class="w-full"><%= opt[:subtitle] %></div>
+        </div>
+        <%= render opt[:icon] %>
+      </label>
+    </li>
+  <% end %>
+</ul>

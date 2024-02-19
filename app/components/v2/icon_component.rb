@@ -5,6 +5,7 @@ class V2::IconComponent < V2::BaseComponent
     xs: "w-2.5 h-2.5",
     md: "w-4 h-4",
     lg: "w-5 h-5",
+    xl: "w-6 h-6",
     xl_3: "w-8 h-8"
   }
 

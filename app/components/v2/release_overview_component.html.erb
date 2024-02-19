@@ -2,19 +2,20 @@
   <%= render V2::SectionComponent.new(style: :boxed) do %>
     <div class="<%= striped_header %> -mx-2">
       <div class="flex items-center justify-between border-default-b px-3 py-2">
-        <div>
-          <div class="flex items-center space-x-3 rtl:space-x-reverse ">
-            <h1 class="heading-2 text-main dark:text-white">
-              <%= release.release_version %>
-            </h1>
-            <%= render V2::StatusIndicatorPillComponent.new(text: status.first, status: status.second) %>
-            <% if hotfix_badge %>
-              <%= render V2::BadgeComponent.new(hotfix_badge[:text]) do |badge| %>
-                <% badge.with_icon(hotfix_badge[:icon]) %>
-              <% end %>
+        <div class="flex items-center space-x-3 rtl:space-x-reverse ">
+          <h1 class="heading-2 text-main dark:text-white">
+            <%= release.release_version %>
+          </h1>
+
+          <%= render V2::StatusIndicatorPillComponent.new(text: status.first, status: status.second) %>
+
+          <% if hotfix_badge %>
+            <%= render V2::BadgeComponent.new(hotfix_badge[:text]) do |badge| %>
+              <% badge.with_icon(hotfix_badge[:icon]) %>
             <% end %>
-          </div>
+          <% end %>
         </div>
+
         <div>
           <%= render V2::ButtonComponent.new(
             scheme: :supporting,

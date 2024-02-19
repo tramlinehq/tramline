@@ -11,6 +11,10 @@ class V2::FormComponent < V2::BaseComponent
     @form = form
   end
 
+  def free_form?
+    @params[:free_form]
+  end
+
   attr_reader :form
   alias_method :F, :form
 end

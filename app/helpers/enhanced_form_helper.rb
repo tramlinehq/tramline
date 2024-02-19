@@ -51,7 +51,11 @@ module EnhancedFormHelper
     end
 
     def labeled_text_field(method, label_text, options = {})
-      label_only(method, label_text) + text_field_without_label(method, "Enter #{label_text.downcase}", options)
+      if options[:hidden]
+        text_field_without_label(method, "Enter #{label_text.downcase}", options)
+      else
+        label_only(method, label_text) + text_field_without_label(method, "Enter #{label_text.downcase}", options)
+      end
     end
 
     def labeled_number_field(method, label_text, options = {})

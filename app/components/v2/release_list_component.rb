@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class V2::ReleaseListComponent < V2::BaseComponent
   include Memery
 
@@ -8,11 +6,8 @@ class V2::ReleaseListComponent < V2::BaseComponent
   end
 
   attr_reader :train
-  delegate :app, to: :train
 
-  delegate :devops_report, to: :train
-
-  delegate :hotfix_from, to: :train
+  delegate :app, :devops_report, :hotfix_from, to: :train
 
   def empty?
     previous_releases.empty? &&
@@ -37,9 +32,9 @@ class V2::ReleaseListComponent < V2::BaseComponent
 
   memoize def ongoing_release = train.ongoing_release
 
-  memoize def upcoming_release = train.upcoming_release
-
   memoize def hotfix_release = train.hotfix_release
+
+  memoize def upcoming_release = train.upcoming_release
 
   def ordered_releases
     train.releases.order(scheduled_at: :desc).take(100)
@@ -49,16 +44,79 @@ class V2::ReleaseListComponent < V2::BaseComponent
     V2::BaseReleaseComponent.new(run)
   end
 
+  def release_options
+    if train.ongoing_release && train.upcoming_release_startable?
+      [
+        {
+          title: "Minor",
+          subtitle: start_upcoming_release_text,
+          icon: "v2/play-empty.svg",
+          opt_name: "has_major_bump",
+          opt_value: true,
+          checked: true,
+          options: {data: {action: "reveal#hide"}}
+        },
+        {
+          title: "Major",
+          subtitle: start_upcoming_release_text(major: true),
+          icon: "v2/fast_forward.svg",
+          opt_name: "has_major_bump",
+          opt_value: true,
+          checked: false,
+          options: {data: {action: "reveal#hide"}}
+        },
+        {
+          title: "Custom",
+          subtitle: "Specify a release version",
+          icon: "v2/user_cog.svg",
+          opt_name: "has_major_bump",
+          opt_value: true,
+          checked: false,
+          options: {data: {action: "reveal#show"}}
+        }
+      ]
+    elsif @train.manually_startable?
+      [
+        {
+          title: "Minor",
+          subtitle: start_release_text,
+          icon: "v2/play-empty.svg",
+          opt_name: "has_major_bump",
+          opt_value: false,
+          checked: true,
+          options: {data: {action: "reveal#hide"}}
+        },
+        {
+          title: "Major",
+          subtitle: start_release_text(major: true),
+          icon: "v2/fast_forward.svg",
+          opt_name: "has_major_bump",
+          opt_value: true,
+          checked: false,
+          options: {data: {action: "reveal#hide"}}
+        },
+        {
+          title: "Custom",
+          subtitle: "Specify a release version",
+          icon: "v2/user_cog.svg",
+          opt_name: "has_major_bump",
+          opt_value: true,
+          checked: false,
+          options: {data: {action: "reveal#show"}}
+        }
+      ]
+    end
+  end
+
+  private
+
   def start_release_text(major: false)
-    text = train.automatic? ? "Manually start " : "Start"
-    text += major ? "major " : "minor "
-    text += "release "
+    text = train.automatic? ? "Manually release version " : "Release version "
     text + train.next_version(major_only: major)
   end
 
   def start_upcoming_release_text(major: false)
     text = "Prepare next "
-    text += major ? "major " : "minor "
     text += "release "
     text + train.ongoing_release.next_version(major_only: major)
   end
