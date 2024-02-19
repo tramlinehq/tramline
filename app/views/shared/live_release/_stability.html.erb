@@ -87,12 +87,12 @@
     </ol>
   </div>
 
-  <% if release.production_release_happened? %>
-    <article data-controller="reveal">
-      <div class="flex flex-row justify-between items-center">
-        <div class="font-bold text-xl mt-8">Release Health</div>
-        <%= toggle_for(true) %>
-      </div>
+  <% if release.production_release_happened? && release.store_releases.any?(&:latest_health_data) %>
+    <article data-controller="reveal" class="mt-8">
+      <%= toggle_for(true, full_width: true) do %>
+        <div class="font-bold text-xl">Release Health</div>
+      <% end %>
+
       <div data-reveal hidden>
         <% release.store_releases.each do |store_release| %>
           <%= render ReleaseMonitoringComponent.new(deployment_run: store_release) %>
@@ -102,13 +102,13 @@
   <% end %>
 
   <% if release.external_builds.size > 1 %>
-    <article data-controller="reveal">
-      <div class="flex flex-row justify-between items-center">
-        <div class="font-bold text-xl mt-8">
+    <article data-controller="reveal" class="mt-8">
+      <%= toggle_for(true, full_width: true) do %>
+        <div class="font-bold text-xl">
           Build Health
         </div>
-        <%= toggle_for(true) %>
-      </div>
+      <% end %>
+
       <div data-reveal hidden>
         <% release.steps.each do |step| %>
           <%= render BuildHealthComponent.new(step:, release_platform_run: release) %>
