@@ -1,6 +1,5 @@
-# frozen_string_literal: true
-
 class V2::TabbedContainerComponent < V2::BaseComponent
+  renders_one :back_button, V2::BackButtonComponent
   renders_many :tabs
 
   TAB_STYLE = "inline-flex items-center justify-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-main-600 hover:border-main-300 dark:hover:text-main-300 group"

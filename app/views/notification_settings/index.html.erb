@@ -1,6 +1,7 @@
 <%= render V2::TabbedContainerComponent.new(title: @train.name,
                                             turbo_frame: dom_id(@train, :edit_train),
                                             tab_config: @tab_configuration) do |container| %>
+  <% container.with_back_button %>
   <% container.with_tab do %>
     <%= render NotificationSettingsComponent.new(train: @train, settings: @notification_settings) %>
   <% end %>

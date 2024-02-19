@@ -1,6 +1,5 @@
-# frozen_string_literal: true
-
 class V2::ContainerComponent < ViewComponent::Base
+  renders_one :back_button, V2::BackButtonComponent
   renders_one :empty_state
   renders_one :body
   renders_many :actions

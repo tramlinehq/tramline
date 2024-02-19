@@ -9,7 +9,6 @@ class StepRunsController < SignedInApplicationController
   # FIXME: This action incorrectly consumes a step_id and not a step_run_id as the route suggests
   def start
     Triggers::StepRun.call(@step, @release.last_commit, @release)
-
     redirect_back fallback_location: root_path, notice: "Step successfully started"
   end
 

@@ -1,4 +1,12 @@
-<h1 class="heading-1"><%= title %></h1>
+<% if back_button %>
+  <div class="my-2 mb-4">
+    <%= back_button %>
+  </div>
+<% end %>
+
+<h1 class="heading-1">
+  <%= title %>
+</h1>
 
 <div data-controller="reveal">
   <div class="mt-5">
