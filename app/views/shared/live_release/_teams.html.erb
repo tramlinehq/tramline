@@ -35,9 +35,9 @@
           <% end %>
         </div>
 
-        <div class="max-h-100 overflow-x-hidden hover:overflow-x-auto overflow-y-hidden hover:overflow-y-scroll grid grid-cols-1 gap-3 mt-3">
+        <div class="max-h-96 overflow-y-hidden hover:overflow-y-auto grid grid-cols-1 gap-3 mt-3">
           <% @mid_release_prs.open.each do |pr| %>
-            <%= render partial: "shared/live_release/pull_request_thin", locals: { pr:, title_size: 70 } %>
+            <%= render partial: "shared/live_release/pull_request_thin", locals: { pr:, title_size: 68 } %>
           <% end %>
         </div>
       </div>
