@@ -13,6 +13,7 @@
 #  encrypted_password     :string           default(""), not null
 #  failed_attempts        :integer          default(0), not null
 #  full_name              :string           not null
+#  github_login           :string
 #  last_sign_in_at        :datetime
 #  last_sign_in_ip        :string
 #  locked_at              :datetime
@@ -26,6 +27,7 @@
 #  unlock_token           :string           indexed
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
+#  github_id              :string
 #
 class Accounts::User < ApplicationRecord
   extend FriendlyId
