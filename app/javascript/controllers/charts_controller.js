@@ -3,7 +3,7 @@ import ApexCharts from "apexcharts"
 import humanizeDuration from "humanize-duration";
 
 const formatTypes = ["number", "time"]
-const chartTypes = ["area", "line", "stacked-bar"]
+const chartTypes = ["area", "line", "stacked-bar", "polar-area"]
 
 export default class extends Controller {
   static targets = ["chart"]
@@ -38,6 +38,8 @@ export default class extends Controller {
       chartOptions = this.lineOptions(series)
     } else if (chartType === "stacked-bar") {
       chartOptions = this.stackedBarOptions(series)
+    } else if (chartType === "polar-area") {
+      chartOptions = this.polarAreaOptions(series[0])
     }
 
     this.chart = new ApexCharts(this.chartTarget, chartOptions);
@@ -299,6 +301,44 @@ export default class extends Controller {
       fill: {
         opacity: 1,
       },
+    }
+  }
+
+  polarAreaOptions(series) {
+    let self = this;
+
+    return {
+      series: series["data"],
+      colors: series["colors"],
+      labels: series["labels"],
+      chart: {
+        type: "polarArea"
+      },
+      tooltip: {
+        style: {
+          fontFamily: "Inter, sans-serif",
+        },
+        y: {
+          formatter(val) {
+            if (self.__isTimeFormat()) {
+              return self.__formatSeconds(val)
+            } else {
+              return val
+            }
+          },
+        },
+      },
+      stroke: {
+        show: true,
+        width: 0,
+        colors: ["transparent"],
+      },
+      fill: {
+        opacity: 0.8,
+      },
+      yaxis: {
+        show: this.showYAxisValue,
+      }
     }
   }
 

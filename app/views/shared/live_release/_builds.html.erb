@@ -9,6 +9,22 @@
     </p>
   </div>
 
+  <div class="w-1/2 my-8">
+    <%= render ChartComponent.new({ data: { "team-1": { "value": 1, color: "#F44336" },
+                                            "team-2": { "value": 10, color: "#E91E63" },
+                                            "team-3": { "value": 5, color: "#9C27B0" },
+                                            "team-4": { "value": 8, color: "#767857" },
+                                            "team-5": { "value": 3, color: "#678858" } },
+                                    type: "polar-area",
+                                    value_format: "number",
+                                    name: "Team Contribution",
+                                    title: "",
+                                    scope: "Team contribution to the release",
+                                    help_text: "",
+                                    show_x_axis: true,
+                                    show_y_axis: true }, icon: "chart_bar.svg") %>
+  </div>
+
   <%= render LiveRelease::CommitsComponent.new(commits) %>
 
   <% if @mid_release_prs.exists? %>

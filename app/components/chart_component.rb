@@ -1,7 +1,7 @@
 class ChartComponent < ViewComponent::Base
   include AssetsHelper
   using RefinedHash
-  CHART_TYPES = %w[area line donut stacked-bar]
+  CHART_TYPES = %w[area line donut stacked-bar polar-area]
   InvalidChartType = Class.new(StandardError)
   CHART_COLORS = %w[#1A56DB #9061F9 #E74694 #31C48D #FDBA8C #16BDCA #7E3BF2 #1C64F2 #F05252]
 
@@ -33,6 +33,25 @@ class ChartComponent < ViewComponent::Base
 
   def series
     ungroup_series.to_json
+  end
+
+  # input:
+  # {"team-a": {value: 1,
+  #             color: "#145688"},
+  #  "team-b": {value: 10,
+  #             color: "#145680"}}
+  # output:
+  # { data: [1, 10],
+  #   labels: ["team-a", "team-b"],
+  #   colors: ["#145688", "#145680"] }
+
+  def linear_series(input = series_raw)
+    res = input.each_with_object({"labels" => [], "data" => [], "colors" => []}) do |(category, data), result|
+      result["labels"] << category.to_s
+      result["data"] << data[:value]
+      result["colors"] << data[:color]
+    end
+    [res].to_json
   end
 
   def series_raw
@@ -70,6 +89,8 @@ class ChartComponent < ViewComponent::Base
   def donut? = chart[:type] == "donut"
 
   def stacked_bar? = chart[:type] == "stacked-bar"
+
+  def polar_area? = chart[:type] == "polar-area"
 
   # Input:
   # {
