@@ -41,16 +41,13 @@ class Commit < ApplicationRecord
 
   delegate :release_platform_runs, :notify!, :train, :platform, to: :release
 
-  UNKNOWN_TEAM_NAME = "unknown"
-  UNKNOWN_TEAM_COLOR = "#bcbcbc"
-
   def self.count_by_team
     reorder("")
       .left_outer_joins(user: [memberships: :team])
       .where("teams.organization_id = ? OR teams.id IS NULL", Current.organization.id)
-      .select("COALESCE(teams.name, '#{UNKNOWN_TEAM_NAME}') AS team_name, COALESCE(teams.color, '#{UNKNOWN_TEAM_COLOR}') AS team_color, COUNT(commits.id) AS commits_count")
+      .select("COALESCE(teams.name, '#{Accounts::Team::UNKNOWN_TEAM_NAME}') AS team_name, COALESCE(teams.color, '#{Accounts::Team::UNKNOWN_TEAM_COLOR}') AS team_color, COUNT(commits.id) AS commits_count")
       .group("team_name", "team_color")
-      .order("team_name")
+      .order("commits_count DESC")
       .map { |result| [result.attributes["team_name"], {value: result.attributes["commits_count"], color: result.attributes["team_color"]}] }
       .to_h
   end
