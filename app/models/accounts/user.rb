@@ -47,6 +47,7 @@ class Accounts::User < ApplicationRecord
   has_many :all_organizations, through: :memberships, source: :organization
   has_many :sent_invites, class_name: "Invite", foreign_key: "sender_id", inverse_of: :sender, dependent: :destroy
   has_many :invitations, class_name: "Invite", foreign_key: "recipient_id", inverse_of: :recipient, dependent: :destroy
+  has_many :commits, foreign_key: "author_login", primary_key: "github_login", dependent: :nullify, inverse_of: :user
 
   friendly_id :full_name, use: :slugged
 

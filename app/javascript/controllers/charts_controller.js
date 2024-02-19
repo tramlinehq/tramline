@@ -317,27 +317,26 @@ export default class extends Controller {
       tooltip: {
         style: {
           fontFamily: "Inter, sans-serif",
-        },
-        y: {
-          formatter(val) {
-            if (self.__isTimeFormat()) {
-              return self.__formatSeconds(val)
-            } else {
-              return val
-            }
-          },
-        },
+        }
       },
       stroke: {
         show: true,
         width: 0,
         colors: ["transparent"],
       },
+      states: {
+        hover: {
+          filter: {
+            type: "darken",
+            value: 1,
+          },
+        },
+      },
       fill: {
-        opacity: 0.8,
+        opacity: 1,
       },
       yaxis: {
-        show: this.showYAxisValue,
+        show: this.showYAxisValue
       }
     }
   }
