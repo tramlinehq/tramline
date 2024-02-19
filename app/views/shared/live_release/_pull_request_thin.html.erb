@@ -14,21 +14,25 @@
       </div>
     </div>
 
-    <div class="text-xs mt-1 text-slate-500 flex flex-row gap-x-2">
-      <div class="font-mono">
-        <% if pr.base_ref == pr.head_ref %>
-          <%= short_sha(pr.head_ref) %>
-        <% else %>
-          <%= pr.base_ref %> ← <%= pr.head_ref %>
+    <div class="mt-1 flex flex-col gap-y-2">
+      <div class="text-xs text-slate-500 flex gap-x-2">
+        <div class="font-mono">
+          <% if pr.base_ref == pr.head_ref %>
+            <%= short_sha(pr.head_ref) %>
+          <% else %>
+            <%= pr.base_ref %> ← <%= pr.head_ref %>
+          <% end %>
+        </div>
+        <% if pr.commit.present? %>
+          <%= " • " %>
+          <%= pr.commit.author_name || pr.commit.author_login %>
         <% end %>
       </div>
-      <% if pr.commit.present? %>
-        <%= " • " %>
-        <%= pr.commit.author_name || pr.commit.author_login %>
-      <% end %>
-      <% pr.labels&.each do |label| %>
-        <%= status_badge(label["name"], :neutral) %>
-      <% end %>
+      <div>
+        <% pr.labels&.each do |label| %>
+          <%= status_badge(label["name"], :neutral) %>
+        <% end %>
+      </div>
     </div>
   </div>
 <% end %>
