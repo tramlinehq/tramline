@@ -9,7 +9,7 @@
       <%= render V2::EmptyStateComponent.new(title: "Create an app to get started",
                                              text: "Once you add your app, you can then setup integrations and create your first release.",
                                              banner_image: "art/no_releases.png") do %>
-        <%= render V2::ModalComponent.new(title: "Add a new app") do |modal| %>
+        <%= render V2::ModalComponent.new(title: "Add a new app", dismissable: false) do |modal| %>
           <% modal.with_button(label: "Add a new app", scheme: :default, type: :action, size: :sm, arrow: :none)
                   .with_icon("plus.svg", size: :md) %>
           <% modal.with_body do %>

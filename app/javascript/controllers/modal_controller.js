@@ -1,14 +1,17 @@
-import { Controller } from "@hotwired/stimulus"
+import {Controller} from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["modal"]
+  static values = {
+    dismissable: Boolean,
+  }
 
   open(event) {
     event.preventDefault();
-
     this.modalTarget.showModal();
-
-    this.modalTarget.addEventListener('click', (e) =>  this.backdropClick(e));
+    if (this.dismissableValue) {
+      this.modalTarget.addEventListener('click', (e) => this.backdropClick(e));
+    }
   }
 
   backdropClick(event) {
@@ -17,7 +20,6 @@ export default class extends Controller {
 
   close(event) {
     event.preventDefault();
-
     this.modalTarget.close();
   }
 }
