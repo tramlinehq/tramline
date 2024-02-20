@@ -58,7 +58,7 @@ class V2::ButtonComponent < V2::BaseComponent
     arrow = (scheme == :switcher) ? :double : arrow
     raise ArgumentError, "Invalid scheme" unless SCHEMES.include?(scheme)
     raise ArgumentError, "Invalid button type" unless TYPES.include?(type)
-    raise ArgumentError, "Invalid size" unless SIZES.keys.include?(size)
+    raise ArgumentError, "Invalid size" unless SIZES.key?(size)
     raise ArgumentError, "Invalid arrow type for dropdown" if DROPDOWN_ARROW_STYLES.keys.exclude?(arrow)
     raise ArgumentError, "Cannot use tooltip with a dropdown" if tooltip && type == :dropdown
 

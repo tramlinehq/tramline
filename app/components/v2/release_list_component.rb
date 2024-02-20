@@ -3,10 +3,12 @@ class V2::ReleaseListComponent < V2::BaseComponent
 
   def initialize(train:)
     @train = train
+    @ongoing_release = train.ongoing_release
+    @hotfix_release = train.hotfix_release
+    @upcoming_release = train.upcoming_release
   end
 
-  attr_reader :train
-
+  attr_reader :train, :ongoing_release, :hotfix_release, :upcoming_release
   delegate :app, :devops_report, :hotfix_from, to: :train
 
   def empty?
@@ -29,12 +31,6 @@ class V2::ReleaseListComponent < V2::BaseComponent
   memoize def last_completed_release
     train.releases.released.first
   end
-
-  memoize def ongoing_release = train.ongoing_release
-
-  memoize def hotfix_release = train.hotfix_release
-
-  memoize def upcoming_release = train.upcoming_release
 
   def ordered_releases
     train.releases.order(scheduled_at: :desc).take(100)

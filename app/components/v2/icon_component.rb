@@ -10,7 +10,7 @@ class V2::IconComponent < V2::BaseComponent
   }
 
   def initialize(icon, rounded: true, size: :base, classes: "")
-    raise ArgumentError, "Icon size must be one of #{SIZES.keys.join(", ")}" unless SIZES.keys.include?(size)
+    raise ArgumentError, "Icon size must be one of #{SIZES.keys.join(", ")}" unless SIZES.key?(size)
     @icon = icon
     @size = size
     @rounded = rounded
