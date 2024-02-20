@@ -46,6 +46,10 @@ export default class extends Controller {
     this.chart.render();
   }
 
+  disconnect() {
+    this.chart.destroy()
+  }
+
   areaOptions(series) {
     let self = this;
 
