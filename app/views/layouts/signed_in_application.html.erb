@@ -7,7 +7,7 @@
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slim-select/1.27.1/slimselect.min.css">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet"/>
   <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
   <%= javascript_importmap_tags %>
   <meta name="environment" content="<%= Rails.env %>"/>
@@ -18,18 +18,18 @@
 <body class="bg-backgroundLight dark:bg-backgroundDark text-main dark:text-white">
 <div class="flex h-screen overflow-hidden">
   <div class="relative flex flex-col flex-1 overflow-y-scroll overflow-x-hidden h-full">
-    <%#= render partial: 'shared/header' %>
     <%= render V2::HeaderComponent.new %>
 
     <main class="mb-64">
       <div class="py-8 w-full max-w-7xl mx-auto">
-        <%= render partial: 'shared/flash' %>
-        <%= breadcrumbs fragment_class: 'text-slate-500', separator: ' » ', class: 'text-sm text-slate-500 mb-4' %>
+        <%= yield :sticky_top_message %>
+        <%= render V2::FlashComponent.new(flash) %>
+        <%= yield :error_resource %>
         <%= yield %>
       </div>
     </main>
 
-    <%= render partial: 'shared/footer' %>
+    <%= render partial: "shared/footer" %>
   </div>
 </div>
 </body>

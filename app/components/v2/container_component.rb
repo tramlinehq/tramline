@@ -6,10 +6,11 @@ class V2::ContainerComponent < ViewComponent::Base
   renders_many :sub_actions
   renders_many :side_actions
 
-  def initialize(title:, subtitle: nil)
+  def initialize(title:, subtitle: nil, error_resource: nil)
     @title = title
     @subtitle = subtitle
+    @error_resource = error_resource
   end
 
-  attr_reader :title, :subtitle
+  attr_reader :title, :subtitle, :error_resource
 end

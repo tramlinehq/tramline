@@ -1,7 +1,9 @@
 <% release_platform = @release_platform_run.release_platform %>
 
 <%= render PageComponent.new(breadcrumb: breadcrumb(:release, @release), title: "Edit #{release_platform.display_attr(:platform)} Metadata") do %>
-  <%= render partial: 'shared/errors', locals: { resource: @release_metadata } %>
+  <% content_for :error_resource do %>
+    <%= render V2::ErrorComponent.new(@release_metadata) %>
+  <% end %>
 
   <%= form_with(model: @release_metadata,
                 url: release_release_platform_release_metadatum_path(@release, release_platform),

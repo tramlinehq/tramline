@@ -4,6 +4,10 @@
   </div>
 <% end %>
 
+<% content_for :error_resource do %>
+  <%= render V2::ErrorComponent.new(error_resource) %>
+<% end %>
+
 <div class="mb-1 flex justify-between">
   <div class="flex flex-row justify-between items-center">
     <div>

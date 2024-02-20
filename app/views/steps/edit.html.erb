@@ -1,6 +1,5 @@
-<%= render V2::ContainerComponent.new(title: "Edit #{@step.kind} step 🪜", subtitle: platform_subtitle(@app, @step)) do |container| %>
+<%= render V2::ContainerComponent.new(title: "Edit #{@step.kind} step 🪜", subtitle: platform_subtitle(@app, @step), error_resource: @step) do |container| %>
   <%= container.with_body do %>
-    <%= render partial: 'shared/errors', locals: { resource: @step } %>
     <%= render V2::FormComponent.new(model: @step, url: app_train_platform_step_path(@app, @train, @release_platform, @step), method: :patch) do |f| %>
       <%= render "form", form: f, step: @step, release_platform: @release_platform, ci_actions: @ci_actions, train: @train %>
       <div class="mb-8">

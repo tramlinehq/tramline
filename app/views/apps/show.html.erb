@@ -1,19 +1,19 @@
 <% if @app.ready? && !@app.send_notifications? %>
-  <% content_for :sticky_page_message do %>
-    <%= render partial: "shared/sticky_topbar_message",
-               locals: { msg: "You haven't yet added the integration for notifications. Set it up to receive timely updates about your release!" } %>
+  <% content_for :sticky_top_message do %>
+    <%= render V2::AlertComponent.new(kind: :more_info, type: :notice, title: "Setup Notifications?", dismissible: false) do %>
+      You haven't yet added the integration for notifications. Set it up to receive timely updates about your release!
+    <% end %>
   <% end %>
 <% end %>
 
-<% content_for :sticky_page_message do %>
-  <%= render partial: "shared/sticky_topbar_message",
-             locals: { msg: "Contact us via the chat in the bottom right corner and we'll help you get setup with your release process." } %>
+<% content_for :sticky_top_message do %>
+  <%= render V2::AlertComponent.new(kind: :more_info, type: :notice, title: "Need help?", dismissible: false) do %>
+    Contact us via the chat in the bottom right corner and we'll help you get setup with your release process.
+  <% end %>
 <% end %>
 
-<%= render V2::ContainerComponent.new(title: "") do |container| %>
+<%= render V2::ContainerComponent.new(title: "", error_resource: @app) do |container| %>
   <% container.with_body do %>
-    <%= render partial: 'shared/errors', locals: { resource: @app } %>
-
     <% if @app.ready? %>
       <%= render partial: "shared/draft_mode_notice", locals: { app: @app } %>
       <%= render partial: "trains/setup_progress",

@@ -8,6 +8,10 @@
   <%= title %>
 </h1>
 
+<% content_for :error_resource do %>
+  <%= render V2::ErrorComponent.new(error_resource) %>
+<% end %>
+
 <div data-controller="reveal">
   <div class="mt-5">
     <div class="mb-4 border-default-b">

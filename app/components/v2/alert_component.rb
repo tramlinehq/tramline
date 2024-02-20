@@ -1,18 +1,16 @@
 class V2::AlertComponent < ViewComponent::Base
   COLORS = {
-    blue: "text-blue-800 bg-blue-50 dark:bg-gray-800 dark:text-blue-400",
-    red: "text-red-800 bg-red-50 dark:bg-gray-800 dark:text-red-400",
-    green: "text-green-800 bg-green-50 dark:bg-gray-800 dark:text-green-400",
-    yellow: "text-yellow-800 bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300",
-    gray: "text-gray-800 bg-gray-50 dark:bg-gray-800 dark:text-gray-300"
+    notice: "text-blue-800 bg-blue-50 dark:bg-gray-800 dark:text-blue-400",
+    error: "text-red-800 bg-red-50 dark:bg-gray-800 dark:text-red-400",
+    alert: "text-red-800 bg-red-50 dark:bg-gray-800 dark:text-red-400",
+    success: "text-green-800 bg-green-50 dark:bg-gray-800 dark:text-green-400"
   }
 
   STYLES = {
-    blue: "border-t-4 border-blue-300 dark:border-blue-800 " + COLORS[:blue],
-    red: "border-t-4 border-red-300 dark:border-red-800 " + COLORS[:red],
-    green: "border-t-4 border-green-300 dark:border-green-800 " + COLORS[:green],
-    yellow: "border-t-4 border-yellow-300 dark:border-yellow-800 " + COLORS[:yellow],
-    gray: "border-t-4 border-gray-300 dark:border-gray-600" + COLORS[:gray]
+    notice: "border-t-4 border-blue-300 dark:border-blue-800 " + COLORS[:notice],
+    error: "border-t-4 border-red-300 dark:border-red-800 " + COLORS[:error],
+    alert: "border-t-4 border-red-300 dark:border-red-800 " + COLORS[:alert],
+    success: "border-t-4 border-green-300 dark:border-green-800 " + COLORS[:success]
   }
 
   SIZES = {
@@ -23,13 +21,21 @@ class V2::AlertComponent < ViewComponent::Base
     xl: "w-3/4"
   }
 
-  def initialize(type: :blue, title: "Alert", size: :base)
+  KINDS = [:alert, :more_info]
+
+  def initialize(kind: :alert, type: :notice, title: "Alert", size: :base, dismissible: true)
+    raise ArgumentError, "Invalid type" unless COLORS.key?(type.to_sym)
+    raise ArgumentError, "Invalid size" unless SIZES.key?(size.to_sym)
+    raise ArgumentError, "Invalid kind" unless KINDS.include?(kind.to_sym)
+
     @type = type.to_sym
     @title = title
     @size = size.to_sym
+    @kind = kind.to_sym
+    @dismissible = dismissible
   end
 
-  attr_reader :title
+  attr_reader :title, :dismissible
 
   def size
     SIZES[@size]
@@ -41,5 +47,13 @@ class V2::AlertComponent < ViewComponent::Base
 
   def colors
     COLORS[@type]
+  end
+
+  def alert?
+    @kind == :alert
+  end
+
+  def more_info?
+    @kind == :more_info
   end
 end

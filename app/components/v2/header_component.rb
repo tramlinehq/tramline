@@ -1,5 +1,6 @@
 class V2::HeaderComponent < V2::BaseComponent
   USER_PROFILE_LINK_CLASSES = "hover:bg-main-100 dark:hover:bg-main-600 dark:text-main-400 dark:hover:text-white"
+  renders_one :sticky_message
 
   def user_email
     current_user.email

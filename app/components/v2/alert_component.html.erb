@@ -1,21 +1,47 @@
 <div data-controller="alert">
-  <div data-alert-target="alert"
-       class="inline-flex <%= size %> items-center p-4 mb-4 text-sm rounded-lg <%= style %>"
-       role="alert">
-    <%= render V2::IconComponent.new("v2/info.svg", size: :md, classes: "mr-2") %>
+  <% if alert? %>
+    <div data-alert-target="alert"
+         class="inline-flex <%= size %> items-center p-2.5 mb-4 text-sm rounded-lg <%= style %>"
+         role="alert">
+      <%= render V2::IconComponent.new("v2/info.svg", size: :md, classes: "mr-2") %>
 
-    <div class="mr-6">
-      <span class="font-medium"><%= title %></span>
-      <%= content %>
+      <div class="mr-6"><%= title %></div>
+
+      <% if dismissible %>
+        <%= render V2::ButtonComponent.new(
+          scheme: :naked_icon,
+          type: :action,
+          size: :none,
+          authz: false,
+          html_options: { class: "ms-auto inline-flex justify-center items-center #{colors}", data: { action: "alert#close" } }) do |b|
+          b.with_icon("close_icon.svg")
+        end %>
+      <% end %>
     </div>
+  <% elsif more_info? %>
+    <div data-alert-target="alert"
+         class="p-4 mb-4 text-blue-800 border border-blue-300 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
+         role="alert">
+      <div class="flex items-center">
+        <%= render V2::IconComponent.new("v2/info.svg", size: :md, classes: "mr-2") %>
+        <h3 class="text-lg font-medium"><%= title %></h3>
+      </div>
+      <div class="mt-2 text-sm">
+        <%= content %>
+      </div>
 
-    <%= render V2::ButtonComponent.new(
-      scheme: :naked_icon,
-      type: :action,
-      size: :none,
-      authz: false,
-      html_options: { class: "ms-auto inline-flex justify-center items-center #{colors}", data: { action: "alert#close" } }) do |b|
-      b.with_icon("close_icon.svg")
-    end %>
-  </div>
+      <% if dismissible %>
+        <div class="flex mt-4">
+          <%= render V2::ButtonComponent.new(
+            scheme: :none,
+            type: :action,
+            size: :none,
+            authz: false,
+            label: "Dismiss",
+            html_options: { class: "text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800",
+                            data: { action: "alert#close" } }) %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 </div>

@@ -11,7 +11,8 @@
   <% end %>
 </div>
 
-<% if resource.present? %>
-  <%= render partial: 'shared/errors' %>
+<% content_for :error_resource do %>
+  <%= render V2::ErrorComponent.new(resource) %>
 <% end %>
-<%= render partial: "shared/flash" %>
+
+<%= render V2::FlashComponent.new(flash) %>

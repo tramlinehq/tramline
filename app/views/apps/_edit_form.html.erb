@@ -1,5 +1,3 @@
-<%= render partial: "shared/errors", locals: { resource: @app } %>
-
 <%= render V2::FormComponent.new(model: [@app], url: app_path(@app), method: :patch) do |f| %>
   <% f.with_section(heading: "Basics") do |section| %>
     <div><%= section.F.labeled_text_field :name, "Name", required: true %></div>

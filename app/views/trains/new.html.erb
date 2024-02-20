@@ -1,7 +1,6 @@
-<%= render V2::ContainerComponent.new(title: "Create a new train") do |container| %>
+<%= render V2::ContainerComponent.new(title: "Create a new train", error_resource: @train) do |container| %>
   <% container.with_back_button %>
   <% container.with_body do %>
-    <%= render partial: 'shared/errors', locals: { resource: @train } %>
     <%= render 'form', app: @app, train: @train %>
   <% end %>
 <% end %>

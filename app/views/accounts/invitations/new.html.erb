@@ -3,7 +3,9 @@
                 url: accounts_organization_invitations_path(@invite.organization, @invite),
                 builder: ButtonHelper::AuthzForms,
                 html: { method: :post }) do |form| %>
-    <%= render "shared/errors", resource: @invite %>
+    <% content_for :error_resource do %>
+      <%= render V2::ErrorComponent.new(@invite) %>
+    <% end %>
 
     <div class="space-y-4">
       <%= form.hidden_field :organization_id, value: @invite.organization.id %>

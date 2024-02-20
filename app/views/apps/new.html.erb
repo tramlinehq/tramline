@@ -1,6 +1,6 @@
+<!--DELETE ME-->
 <%= render PageComponent.new(breadcrumb: breadcrumb(:new_app), title: "Add a new app 📱") do %>
   <%= form_with(model: [@app], builder: ButtonHelper::AuthzForms) do |form| %>
-    <%= render partial: "shared/errors", locals: { resource: @app } %>
 
     <div class="grid gap-5 md:grid-cols-2">
       <%= render "form", form: form, app: @app %>
