@@ -210,8 +210,8 @@ class Release < ApplicationRecord
     created? || on_track? || partially_finished?
   end
 
-  def pull_request_acceptable?
-    committable? || post_release_started? || post_release_failed?
+  def active?
+    !(stopped? || finished?)
   end
 
   def queue_commit?

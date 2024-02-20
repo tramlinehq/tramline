@@ -92,7 +92,7 @@
   <% end %>
 </div>
 
-<% if current_organization.teams.any? || @mid_release_prs.any? %>
+<% if @release.active? && (current_organization.teams.any? || @mid_release_prs.any?) %>
   <%= render partial: "shared/live_release/separator" %>
 
   <div class="grid grid-cols-2 gap-6 mt-8">
