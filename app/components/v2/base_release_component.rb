@@ -14,12 +14,15 @@ class V2::BaseReleaseComponent < V2::BaseComponent
       hotfixed_from = @release.hotfixed_from
       hotfixed_from_version = hotfixed_from.release_version.to_s
       # hotfixed_from_link = hotfixed_from.live_release_link
-      {text: "Hotfixed from #{hotfixed_from_version}",
-       icon: "band_aid.svg"}
+      {
+        text: "Hotfixed from #{hotfixed_from_version}",
+        icon: "band_aid.svg"
+      }
     end
   end
 
   memoize def interval
+    return start_time unless @release.completed_at
     "#{start_time} — #{end_time}"
   end
 

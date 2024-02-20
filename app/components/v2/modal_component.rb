@@ -6,7 +6,7 @@ class V2::ModalComponent < V2::BaseComponent
     sm: "max-w-md",
     md: "max-w-lg",
     lg: "max-w-xl",
-    default: "max-w-2xl",
+    default: "max-w-2xl"
   }.freeze
 
   renders_one :button, ->(**args) do
@@ -32,7 +32,7 @@ class V2::ModalComponent < V2::BaseComponent
     if disabled?
       {}
     else
-      { data: { controller: "modal", modal_dismissable_value: dismissable } }
+      {data: {controller: "modal", modal_dismissable_value: dismissable}}
     end
   end
 

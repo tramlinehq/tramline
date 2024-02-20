@@ -114,16 +114,18 @@
           <% dropdown.with_button(size: :none, html_options: { class: "flex" }, scheme: :avatar_icon)
                      .with_icon("https://flowbite.com/docs/images/people/profile-picture-5.jpg", size: :xl_3) %>
 
-          <!-- <%# button.with_subtext do %> -->
-          <!--            <div class="py-3 px-4">-->
-          <!--              <span class="block text-sm font-semibold text-main-900 dark:text-white">-->
-          <%#= user_name %>
-          <!--              </span>-->
-          <!--              <span class="block text-sm text-main-500 truncate dark:text-main-400">-->
-          <%#= user_email %>
-          <!--              </span>-->
-          <!--            </div>-->
-          <%# end %>
+
+          <% dropdown.with_subtext do %>
+            <div class="py-3 px-4">
+              <div class="text-sm text-main-500 dark:text-main-400">
+                <%= user_name %>
+              </div>
+
+              <div class="text-sm truncate font-semibold text-main-600 dark:text-main-400">
+                <%= user_email %>
+              </div>
+            </div>
+          <% end %>
 
           <% dropdown.with_item_group(list_style: "text-main-500 dark:text-main-400") do |group| %>
             <% group.with_item(link: { path: edit_accounts_organization_path(current_organization),

@@ -4,6 +4,7 @@ class AppsController < SignedInApplicationController
 
   before_action :require_write_access!, only: %i[new create edit update destroy]
   before_action :set_integrations, only: %i[show destroy]
+  before_action :set_tab_config, only: %i[edit update]
   around_action :set_time_zone
 
   def index
@@ -30,12 +31,6 @@ class AppsController < SignedInApplicationController
   end
 
   def edit
-    @tab_configuration = [
-      [1, "General", edit_app_path(@app), "v2/cog.svg"],
-      [2, "Integrations", app_integrations_path(@app), "v2/blocks.svg"],
-      [3, "App Variants", app_app_config_app_variants_path(@app), "dna.svg"]
-    ]
-
     respond_to do |format|
       format.html do |variant|
         variant.none
@@ -52,7 +47,7 @@ class AppsController < SignedInApplicationController
         format.html { redirect_to app_path(@app), notice: "App was successfully created." }
         format.json { render :show, status: :created, location: @app }
       else
-        format.html { render :new, status: :unprocessable_entity }
+        format.html { render :index, status: :unprocessable_entity }
         format.json { render json: @app.errors, status: :unprocessable_entity }
       end
     end
@@ -95,6 +90,14 @@ class AppsController < SignedInApplicationController
   end
 
   private
+
+  def set_tab_config
+    @tab_configuration = [
+      [1, "General", edit_app_path(@app), "v2/cog.svg"],
+      [2, "Integrations", app_integrations_path(@app), "v2/blocks.svg"],
+      [3, "App Variants", app_app_config_app_variants_path(@app), "dna.svg"]
+    ]
+  end
 
   def set_integrations
     @integrations = @app.integrations

@@ -7,6 +7,8 @@ class V2::DropdownComponent < V2::BaseComponent
     args = args.merge(authz: @authz) # trickle down the auth setting to the button
     V2::ButtonComponent.new(**BASE_BUTTON_OPTS.deep_merge(args))
   end
+
+  renders_one :subtext
   renders_many :item_groups, ->(list_style: nil) { ItemGroupComponent.new(list_style: list_style, authz: @authz) }
 
   def initialize(authz: true)

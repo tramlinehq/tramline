@@ -62,7 +62,9 @@
                   <%= render partial: "shared/notifications_refresh", locals: { app: app } %>
                 <% end %>
 
-                <% f.F.authz_submit "Save", "plus.svg", size: :xs %>
+                <% f.with_action do %>
+                  <% f.F.authz_submit "Save", "v2/archive.svg", size: :xs %>
+                <% end %>
               <% end %>
             <% end %>
           <% end %>

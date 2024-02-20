@@ -15,7 +15,7 @@ class V2::OptionCardsComponent < V2::BaseComponent
     opts.map do |option|
       option[:id] = option[:title].parameterize
       option[:icon] = V2::IconComponent.new(option[:icon], size: :xl)
-      option[:options] = { id: option[:id], class: "hidden peer", required: true }.merge(option[:options] || {})
+      option[:options] = {id: option[:id], class: "hidden peer", required: true}.merge(option[:options] || {})
       option
     end
   end

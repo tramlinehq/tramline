@@ -21,8 +21,8 @@ class V2::ReleaseListComponent < V2::BaseComponent
     train
       .releases
       .completed
-      .where.not(id: [ongoing_release, upcoming_release, hotfix_release, last_completed_release])
       .order(scheduled_at: :desc)
+      .where.not(id: last_completed_release)
       .take(10)
   end
 

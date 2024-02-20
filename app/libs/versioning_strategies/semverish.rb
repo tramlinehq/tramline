@@ -93,8 +93,8 @@ class VersioningStrategies::Semverish
 
   def to_s(patch_glob: false)
     to_a
-      .take(patch_glob ? 2 : 3)
-      .concat([patch_glob ? "*" : nil])
+      .take((partial? || patch_glob) ? 2 : 3)
+      .concat([(patch_glob && !partial?) ? "*" : nil])
       .compact
       .join(".")
   end
