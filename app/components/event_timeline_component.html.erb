@@ -1,13 +1,15 @@
 <% events_by_days.each_with_index do |(day, events), index| %>
   <div class="relative" data-controller="reveal" data-reveal-toggle-keys-value="e">
     <% if cross_platform_app? %>
-      <div class="w-1 bg-slate-200 absolute h-full left-1/2 -translate-x-1/2 -z-50"></div>
+      <div class="w-1 bg-main-200 absolute h-full left-1/2 -translate-x-1/2 -z-50"></div>
     <% end %>
-    <div class="flex flex-col items-center mb-2 bg-white py-1">
+
+    <div class="flex flex-col items-center mb-2 bg-backgroundLight dark:bg-backgroundDark py-1">
       <%= inline_svg('calendar_time.svg', classname: "inline-flex w-10") %>
-      <time class="text-xl font-semibold text-slate-900"><%= day %></time>
+      <time class="text-xl font-semibold text-main-900"><%= day %></time>
       <%= toggle_for(hide_timeline?(index)) %>
     </div>
+
     <div data-reveal <%= hide_timeline(index) %>>
       <% if cross_platform_app? %>
         <div class="grid grid-cols-2 items-center">
@@ -23,20 +25,20 @@
             <%= activity_metadata(passport, :right) %>
           <% end %>
         </div>
-        <div class="w-4 py-1 bg-slate-200 absolute h-1 left-1/2 -translate-x-1/2 -z-50"></div>
+        <div class="w-4 py-1 bg-main-200 absolute h-1 left-1/2 -translate-x-1/2 -z-50"></div>
       <% else %>
         <div class="grid grid-cols-9 items-center">
           <% events.each do |passport| %>
             <div class="col-span-1 justify-self-end mr-2">
               <%= activity_metadata_content(passport, " justify-self-start ml-2") %>
             </div>
-            <section class="grid col-span-8 justify-self-start border-slate-200 border-l-4 grid-flow-col items-center">
-              <div class="border-t-3 mr-1 border-slate-200 w-10"></div>
+            <section class="grid col-span-8 justify-self-start border-main-200 border-l-4 grid-flow-col items-center">
+              <div class="border-t-3 mr-1 border-main-200 w-10"></div>
               <%= render EventTimeline::EventMessageComponent.new(passport: passport) %>
             </section>
           <% end %>
-          <div class="col-span-1 justify-self-end border-slate-200 border-r-4 h-2"></div>
-          <div class="col-span-8 justify-self-start border-slate-200 border-l-8 h-2"></div>
+          <div class="col-span-1 justify-self-end border-main-200 border-r-4 h-2"></div>
+          <div class="col-span-8 justify-self-start border-main-200 border-l-8 h-2"></div>
         </div>
       <% end %>
     </div>

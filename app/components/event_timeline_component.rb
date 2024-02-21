@@ -34,7 +34,7 @@ class EventTimelineComponent < ViewComponent::Base
     end
   end
 
-  BASE_ACTIVITY_METADATA_STYLES = "text-xs text-slate-400 bg-white p-1".freeze
+  BASE_ACTIVITY_METADATA_STYLES = "text-xs text-slate-400 bg-backgroundLight dark:bg-backgroundDark p-1".freeze
 
   def activity_metadata(passport, direction)
     justification =
