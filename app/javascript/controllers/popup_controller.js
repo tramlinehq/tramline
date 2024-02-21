@@ -4,25 +4,37 @@ import {createPopper} from "@popperjs/core"
 import RevealController from "stimulus-reveal"
 
 export default class extends RevealController {
-  static targets = ["element"];
+  static targets = ["element", "popupArrow"];
 
   static values = {
     placement: {type: String, default: "bottom"},
-    offset: {type: Array, default: [0, 7]}
+    offset: {type: Array, default: [0, 10]}
   };
 
   connect() {
     super.connect()
+
+    let modifiers = [
+      {
+        name: "offset",
+        options: {
+          offset: this.offsetValue,
+        },
+      },
+    ]
+
+    if (this.hasPopupArrowTarget) {
+      modifiers.push({
+        name: "arrow",
+        options: {
+          element: this.popupArrowTarget,
+        },
+      })
+    }
+
     this.popperInstance = createPopper(this.elementTarget, this.popoverSelector(), {
       placement: this.placementValue,
-      modifiers: [
-        {
-          name: "offset",
-          options: {
-            offset: this.offsetValue,
-          },
-        },
-      ],
+      modifiers: modifiers,
     });
   }
 

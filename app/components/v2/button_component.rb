@@ -56,20 +56,19 @@ class V2::ButtonComponent < V2::BaseComponent
 
   renders_one :title_text
   renders_one :icon, V2::IconComponent
+  renders_one :tooltip, V2::TooltipComponent
 
-  def initialize(label: nil, scheme: :switcher, type: :button, tooltip: nil, size: :xxs, options: nil, html_options: nil, arrow: :none, authz: true, turbo: true)
+  def initialize(label: nil, scheme: :switcher, type: :button, size: :xxs, options: nil, html_options: nil, arrow: :none, authz: true, turbo: true)
     arrow = (scheme == :switcher) ? :double : arrow
     raise ArgumentError, "Invalid scheme" unless SCHEMES.include?(scheme)
     raise ArgumentError, "Invalid button type" unless TYPES.include?(type)
     raise ArgumentError, "Invalid size" unless SIZES.key?(size)
     raise ArgumentError, "Invalid arrow type for dropdown" if DROPDOWN_ARROW_STYLES.keys.exclude?(arrow)
-    raise ArgumentError, "Cannot use tooltip with a dropdown" if tooltip && type == :dropdown
 
     @label = label
     @scheme = scheme
     @type = type
     @size = size
-    @tooltip = tooltip
     @options = options
     @html_options = html_options
     @arrow_type = arrow
@@ -95,7 +94,7 @@ class V2::ButtonComponent < V2::BaseComponent
 
   def link_to_component
     classname = ""
-    classname = "ml-2" unless icon_only?
+    classname = "ml-1.5" unless icon_only?
     @options = "javascript:void(0);" if disabled?
 
     _link_to(link_external?, @options, @html_options) do
@@ -111,7 +110,7 @@ class V2::ButtonComponent < V2::BaseComponent
 
   def button_to_component
     classname = ""
-    classname = "ml-2" unless icon_only?
+    classname = "ml-1.5" unless icon_only?
 
     button_to(@options, @html_options) do
       concat(icon) if icon?
@@ -128,7 +127,7 @@ class V2::ButtonComponent < V2::BaseComponent
     return button_tag(@options, @html_options) { render(icon) } if icon_only?
 
     classname = "ml-1"
-    classname = "ml-2" if icon?
+    classname = "ml-1.5" if icon?
     classname += " mr-2" if arrow.present?
 
     button_tag(@options, @html_options) do
@@ -142,10 +141,6 @@ class V2::ButtonComponent < V2::BaseComponent
 
       concat(render(arrow)) if arrow.present?
     end
-  end
-
-  def tooltip_component
-    V2::TooltipComponent.new(text: @tooltip) if @tooltip
   end
 
   # TODO: This is unused & incomplete; port it from ButtonHelper
@@ -168,7 +163,7 @@ class V2::ButtonComponent < V2::BaseComponent
     options[:data] ||= {}
     options[:data][:turbo] = @turbo
 
-    if @tooltip
+    if tooltip?
       options[:data][:popup_target] = "element"
       options[:data][:action] ||= ""
       options[:data][:action] << " mouseover->popup#show mouseout->popup#hide"

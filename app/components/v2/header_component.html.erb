@@ -12,9 +12,9 @@
           <%= render V2::ButtonComponent.new(scheme: :light,
                                              options: edit_accounts_organization_path(current_organization),
                                              type: :link,
-                                             size: :xxs,
-                                             tooltip: "Organization Settings") do |b| %>
-            <%= b.with_icon("v2/building.svg", size: :md) %>
+                                             size: :xxs) do |b| %>
+            <% b.with_tooltip("Organization Settings") %>
+            <% b.with_icon("v2/building.svg", size: :md) %>
           <% end %>
 
           <%= render V2::DropdownComponent.new(authz: false) do |dropdown| %>
@@ -80,14 +80,15 @@
             <%= render V2::ButtonComponent.new(scheme: :light,
                                                options: edit_app_path(default_app),
                                                type: :link,
-                                               size: :xxs,
-                                               tooltip: "App Settings") do |b| %>
-              <%= b.with_icon("v2/cog.svg", size: :md) %>
+                                               size: :xxs) do |b| %>
+              <% b.with_tooltip("App Settings") %>
+              <% b.with_icon("v2/cog.svg", size: :md) %>
             <% end %>
 
             <%= render V2::ModalComponent.new(title: "Add a new app", dismissable: false) do |modal| %>
-              <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none, tooltip: "Add a new app")
-                      .with_icon("plus.svg", size: :md) %>
+              <% mb = modal.with_button(scheme: :light, type: :action, size: :xxs) %>
+              <% mb.with_tooltip("Add a new app") %>
+              <% mb.with_icon("plus.svg", size: :md) %>
               <% modal.with_body do %>
                 <%= render partial: "apps/form", locals: { app: new_app } %>
               <% end %>
@@ -119,6 +120,7 @@
           type: :link_external,
           size: :none,
           authz: false) do |b|
+          b.with_tooltip("Read the docs")
           b.with_icon("book.svg", rounded: false)
         end %>
 

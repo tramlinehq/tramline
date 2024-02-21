@@ -52,11 +52,7 @@ class ChartComponent < ViewComponent::Base
   end
 
   def corner_icon
-    inline_svg(@icon, classname: "w-5 fill-current shrink-0")
-  end
-
-  def help_icon
-    inline_svg("question_mark.svg", classname: "w-4 inline-flex fill-current shrink-0 text-main-400")
+    V2::IconComponent.new(@icon, size: :md, classes: "fill-current")
   end
 
   def subgroup? = chart[:subgroup]
