@@ -51,17 +51,21 @@
       <div data-controller="domain--version-name-help"
            data-domain--version-name-help-disabled-value="<%= train.persisted? %>">
         <%= section.F.label_only :major_version_seed, "Seed with your current version name (build name)" %>
-        <div class="flex flex-row gap-x-2">
+        <div class="flex flex-row gap-x-2 items-center">
           <%= section.F.text_field_without_label :major_version_seed, "major",
                                                  disabled: train.persisted?,
                                                  data: { domain__version_name_help_target: "majorInput",
                                                          action: "domain--version-name-help#bump" } %>
-          <span class="mx-1">.</span>
+          <span class="mx-1">
+            <%= render V2::IconComponent.new("v2/circle.svg", size: :xs) %>
+          </span>
           <%= section.F.text_field_without_label :minor_version_seed, "minor",
                                                  disabled: train.persisted?,
                                                  data: { domain__version_name_help_target: "minorInput",
                                                          action: "domain--version-name-help#bump" } %>
-          <span class="mx-1">.</span>
+          <span class="mx-1">
+            <%= render V2::IconComponent.new("v2/circle.svg", size: :xs) %>
+          </span>
           <%= section.F.text_field_without_label :patch_version_seed, "patch (optional)",
                                                  disabled: train.persisted?,
                                                  data: { domain__version_name_help_target: "patchInput",
