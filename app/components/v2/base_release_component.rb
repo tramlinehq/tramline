@@ -9,6 +9,7 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     ReleasesHelper::SHOW_RELEASE_STATUS.fetch(@release.status.to_sym)
   end
 
+  # TODO: UI: just render the badge component?
   memoize def hotfix_badge
     if @release.hotfix?
       hotfixed_from = @release.hotfixed_from

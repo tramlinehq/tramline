@@ -12,19 +12,15 @@ class V2::ReleaseListComponent < V2::BaseComponent
   delegate :app, :devops_report, :hotfix_from, to: :train
 
   def empty?
-    previous_releases.empty? &&
-      ongoing_release.nil? &&
-      upcoming_release.nil? &&
-      hotfix_release.nil? &&
-      last_completed_release.nil?
+    previous_releases.empty? && ongoing_release.nil? && upcoming_release.nil? && hotfix_release.nil? && last_completed_release.nil?
   end
 
   memoize def previous_releases
     train
       .releases
       .completed
-      .order(scheduled_at: :desc)
       .where.not(id: last_completed_release)
+      .order(completed_at: :desc, scheduled_at: :desc)
       .take(10)
   end
 

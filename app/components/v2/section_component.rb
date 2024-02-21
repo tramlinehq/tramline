@@ -7,7 +7,7 @@ class V2::SectionComponent < V2::BaseComponent
 
   def initialize(style: :boxed, title: nil, subtitle: nil)
     raise ArgumentError, "Invalid style: #{style}" unless STYLES.include?(style)
-    raise ArgumentError, "Title must exist if style is titled" if style == :titled && title.blank?
+    raise ArgumentError, "Title must exist if style is titled" if style == :titled && title.nil?
     raise ArgumentError, "Subtitle can only exist when title is supplied" if title.blank? && subtitle.present?
 
     @style = style

@@ -1,3 +1,5 @@
+<% release_component = V2::BaseReleaseComponent.new(@release) %>
+
 <% if @release.finished? || @release.stopped? || @release.stopped_after_partial_finish? %>
   <% content_for :sticky_top_message do %>
     <%= render V2::AlertComponent.new(kind: :more_info, type: :notice, title: "Release Locked", dismissible: false) do %>
@@ -6,104 +8,129 @@
   <% end %>
 <% end %>
 
-<% breadcrumb :release, @release %>
-
-<div class="sm:flex sm:justify-between sm:items-center pb-8 border-b border-slate-200">
-  <!-- Left: Title -->
-  <div class="mb-4 sm:mb-0">
-    <h2 class="text-2xl md:text-3xl text-slate-800 font-bold">
-      <%= release_title(@release) %>
-    </h2>
-  </div>
-
-  <!-- Right: Actions -->
-  <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-    <%= decorated_link_to :neutral, "Release Activity", timeline_release_path(@release) %>
-
-    <% if @release.partially_finished? %>
-      <%= authz_button_to :green, "Mark release as finished", finish_release_release_path(@release.id), method: :post,
-                          data: { turbo_method: :post,
-                                  turbo_confirm: "You have finished release to only one of the platforms. Are you sure you want to finish the release?" } %>
-    <% end %>
-
-    <% if @release.stoppable? %>
-      <%= authz_button_to :red, "Stop release", release_path(@release.id), method: :delete,
-                          data: { turbo_method: :delete, turbo_confirm: stop_release_warning(@release) } %>
-    <% end %>
-  </div>
-</div>
-
-<% if @release.finished? %>
-  <div class="mt-8">
-    <%= render FinalSummaryComponent.new(release: @release) %>
-  </div>
-
-  <%= render partial: "shared/live_release/separator" %>
-<% end %>
-
-<div class="grid grid-cols-2 gap-6 mt-8">
-  <div>
-    <%= render partial: "shared/live_release/kick_off", locals: { release: @release, release_train: @train } %>
-
-    <% if @pre_release_prs.present? %>
-      <%= render partial: "shared/live_release/separator", locals: { margin_only: true } %>
-      <%= render partial: "shared/live_release/pre_release_prs", locals: { pre_release_prs: @pre_release_prs } %>
-    <% end %>
-
-    <%= render partial: "shared/live_release/separator", locals: { margin_only: true } %>
-  </div>
-
-  <div>
-    <%= render partial: "shared/live_release/commit_log", locals: { release: @release } %>
-  </div>
-</div>
-
-<div class="grid grid-cols-2 gap-6 mt-8">
-  <% if @release.release_metadata.exists? %>
-    <% @release.release_platform_runs.each do |release_platform_run| %>
-      <%= render partial: "shared/live_release/release_metadata",
-                 locals: { release_platform_run: release_platform_run } %>
+<%= render V2::ContainerComponent.new(title: @release.release_version) do |container| %>
+  <% container.with_back_button %>
+  <% container.with_side_action do %>
+    <% if release_component.hotfix_badge %>
+      <%= render V2::BadgeComponent.new(release_component.hotfix_badge[:text]) do |badge| %>
+        <% badge.with_icon(release_component.hotfix_badge[:icon]) %>
+      <% end %>
     <% end %>
   <% end %>
-</div>
 
-<%= render partial: "shared/live_release/separator" %>
-
-<div class="mt-8">
-  <%= render partial: "shared/live_release/section_title", locals: { heading: "Build Stability", subheading: "#{time_ago_in_words(@release.updated_at)} ago" } %>
-</div>
-
-<div class="grid grid-cols-2 gap-6 mt-8">
-  <% @release.release_platform_runs.each do |run| %>
-    <%= render partial: "shared/live_release/stability", locals: { platform: "#{run.display_attr(:platform)} release", release: run, steps: run.release_platform.steps } %>
-  <% end %>
-</div>
-
-<% if @release.active_build_queue.present? || @release.continuous_backmerge? %>
-  <%= render partial: "shared/live_release/separator" %>
-<% end %>
-
-<div class="grid grid-cols-2 gap-6 mt-8">
-  <% if @release.active_build_queue.present? %>
-    <%= render partial: "shared/live_release/build_queue", locals: { release: @release, build_queue: @release.active_build_queue } %>
+  <% container.with_sub_action do %>
+    <%= render V2::ButtonComponent.new(
+      scheme: :supporting,
+      type: :link,
+      size: :xxs,
+      options: timeline_release_path(@release),
+      label: "Release Activity",
+      arrow: :none) do |b|
+      b.with_icon("v2/activity.svg")
+    end %>
   <% end %>
 
-  <% if @release.continuous_backmerge? %>
-    <%= render partial: "shared/live_release/backmerge", locals: { release: @release } %>
+  <% if @release.partially_finished? %>
+    <% container.with_action do %>
+      <%= render V2::ButtonComponent.new(
+        scheme: :light,
+        type: :link,
+        size: :xxs,
+        options: finish_release_release_path(@release.id),
+        label: "Mark release as finished",
+        html_options: { method: :delete,
+                        data: { turbo_method: :post,
+                                turbo_confirm: "You have finished release to only one of the platforms. Are you sure you want to finish the release?" } }) do |b|
+        b.with_icon("v2/list_checks.svg")
+      end %>
+    <% end %>
   <% end %>
-</div>
 
+  <% if @release.stoppable? %>
+    <% container.with_action do %>
+      <%= render V2::ButtonComponent.new(
+        scheme: :danger,
+        type: :link,
+        size: :xxs,
+        label: "Stop release",
+        options: release_path(@release.id),
+        html_options: { method: :post, data: { turbo_method: :delete, turbo_confirm: stop_release_warning(@release) } }) do |b|
+        b.with_icon("v2/stop.svg")
+      end %>
+    <% end %>
+  <% end %>
 
-<%= render partial: "shared/live_release/separator" %>
+  <% container.with_body do %>
+    <% if @release.finished? %>
+      <div class="mt-8">
+        <%= render FinalSummaryComponent.new(release: @release) %>
+      </div>
 
-<div class="grid grid-cols-1 gap-6 mt-8">
-  <%= render partial: "shared/live_release/builds", locals: { release: @release, commits: @commits, pull_requests: @mid_release_prs } %>
-</div>
+      <%= render partial: "shared/live_release/separator" %>
+    <% end %>
 
-<% unless @release.finished? %>
-  <%= render partial: "shared/live_release/separator" %>
+    <div class="grid grid-cols-2 gap-6 mt-8">
+      <div>
+        <%= render partial: "shared/live_release/kick_off", locals: { release: @release, release_train: @train } %>
 
-  <div class="mt-8">
-    <%= render partial: "shared/live_release/finalize", locals: { release: @release, open_ongoing_prs: @ongoing_open_release_prs, post_release_prs: @post_release_prs } %>
-  </div>
+        <% if @pre_release_prs.present? %>
+          <%= render partial: "shared/live_release/separator", locals: { margin_only: true } %>
+          <%= render partial: "shared/live_release/pre_release_prs", locals: { pre_release_prs: @pre_release_prs } %>
+        <% end %>
+
+        <%= render partial: "shared/live_release/separator", locals: { margin_only: true } %>
+      </div>
+
+      <div><%= render partial: "shared/live_release/commit_log", locals: { release: @release } %></div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-6 mt-8">
+      <% if @release.release_metadata.exists? %>
+        <% @release.release_platform_runs.each do |release_platform_run| %>
+          <%= render partial: "shared/live_release/release_metadata",
+                     locals: { release_platform_run: release_platform_run } %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%= render partial: "shared/live_release/separator" %>
+
+    <div class="mt-8">
+      <%= render partial: "shared/live_release/section_title", locals: { heading: "Build Stability", subheading: "#{time_ago_in_words(@release.updated_at)} ago" } %>
+    </div>
+
+    <div class="grid grid-cols-2 gap-6 mt-8">
+      <% @release.release_platform_runs.each do |run| %>
+        <%= render partial: "shared/live_release/stability", locals: { platform: "#{run.display_attr(:platform)} release", release: run, steps: run.release_platform.steps } %>
+      <% end %>
+    </div>
+
+    <% if @release.active_build_queue.present? || @release.continuous_backmerge? %>
+      <%= render partial: "shared/live_release/separator" %>
+    <% end %>
+
+    <div class="grid grid-cols-2 gap-6 mt-8">
+      <% if @release.active_build_queue.present? %>
+        <%= render partial: "shared/live_release/build_queue", locals: { release: @release, build_queue: @release.active_build_queue } %>
+      <% end %>
+
+      <% if @release.continuous_backmerge? %>
+        <%= render partial: "shared/live_release/backmerge", locals: { release: @release } %>
+      <% end %>
+    </div>
+
+    <%= render partial: "shared/live_release/separator" %>
+
+    <div class="grid grid-cols-1 gap-6 mt-8">
+      <%= render partial: "shared/live_release/builds", locals: { release: @release, commits: @commits, pull_requests: @mid_release_prs } %>
+    </div>
+
+    <% unless @release.finished? %>
+      <%= render partial: "shared/live_release/separator" %>
+
+      <div class="mt-8">
+        <%= render partial: "shared/live_release/finalize", locals: { release: @release, open_ongoing_prs: @ongoing_open_release_prs, post_release_prs: @post_release_prs } %>
+      </div>
+    <% end %>
+  <% end %>
 <% end %>

@@ -47,7 +47,7 @@ class Release < ApplicationRecord
   has_many :hotfixed_releases, class_name: "Release", inverse_of: :hotfixed_from, dependent: :destroy
 
   scope :pending_release, -> { where.not(status: [:finished, :stopped, :stopped_after_partial_finish]) }
-  scope :completed, -> { where(status: [:finished, :stopped]) }
+  scope :completed, -> { where(status: [:finished, :stopped, :stopped_after_partial_finish]) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   scope :sequential, -> { order("releases.scheduled_at DESC") }
 
