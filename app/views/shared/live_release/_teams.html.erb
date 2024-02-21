@@ -16,7 +16,7 @@
   </section>
 <% end %>
 
-<% if pull_requests.exists? %>
+<% if pull_requests.open.exists? %>
   <section>
     <%= render partial: "shared/live_release/section_title", locals: { heading: "Ongoing Work", subheading: nil } %>
 
@@ -28,25 +28,22 @@
         <% end %>
       </div>
 
-      <% if pull_requests.open.exists? %>
-        <div class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
-          <%= toggle_for(false, full_width: true) do %>
-            <div class="text-xs font-semibold uppercase text-slate-500 group-hover:text-slate-800 mr-1">
-              open pull requests (<%= pull_requests.open.size %>)
-            </div>
+
+      <div class="text-xs font-semibold uppercase text-slate-500 bg-slate-50 border-t border-b border-slate-200">
+        <%= toggle_for(false, full_width: true) do %>
+          <div class="text-xs font-semibold uppercase text-slate-500 group-hover:text-slate-800 mr-1">
+            open pull requests (<%= pull_requests.open.size %>)
+          </div>
+        <% end %>
+      </div>
+
+      <div data-reveal class="col-span-2">
+        <div class="max-h-96 overflow-y-hidden hover:overflow-y-auto grid grid-cols-1 gap-3 mt-3">
+          <% @mid_release_prs.open.each do |pr| %>
+            <%= render partial: "shared/live_release/pull_request_thin", locals: { pr:, title_size: 68 } %>
           <% end %>
         </div>
-
-        <div data-reveal class="col-span-2">
-          <div class="max-h-96 overflow-y-hidden hover:overflow-y-auto grid grid-cols-1 gap-3 mt-3">
-            <% @mid_release_prs.open.each do |pr| %>
-              <%= render partial: "shared/live_release/pull_request_thin", locals: { pr:, title_size: 68 } %>
-            <% end %>
-          </div>
-        </div>
-      <% else %>
-        <p class="uppercase text-xs">No open PRs</p>
-      <% end %>
+      </div>
     </div>
   </section>
 <% end %>
