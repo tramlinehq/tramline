@@ -2,7 +2,7 @@
   <section>
     <%= render partial: "shared/live_release/section_title", locals: { heading: "Team Analysis", subheading: nil } %>
     <div class="mt-6">
-      <%= render ChartComponent.new({ data: commits.count_by_team(current_organization),
+      <%= render ChartComponent.new({ data: commits.count_by_team(current_organization).sort_by(&:last).to_h,
                                       colors: current_organization.team_colors,
                                       type: "polar-area",
                                       value_format: "number",
