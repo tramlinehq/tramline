@@ -146,10 +146,12 @@ class ChartComponent < ViewComponent::Base
   end
 
   def cartesian_series(input = series_raw)
+    x_values = input.flat_map { |item| item[:data].keys }.uniq
     input.map do |series|
       series.update_key(:data) do |data|
-        data.map do |x, y|
-          {x: x, y: y}
+        x_values.map do |x|
+          y = data[x] || 0
+          {x:, y:}
         end
       end
     end
