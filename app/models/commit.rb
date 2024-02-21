@@ -42,6 +42,8 @@ class Commit < ApplicationRecord
   delegate :release_platform_runs, :notify!, :train, :platform, to: :release
 
   def self.count_by_team(org)
+    return unless org.teams.exists?
+
     reorder("")
       .left_outer_joins(user: [memberships: :team])
       .where("teams.organization_id = ? OR teams.id IS NULL", org.id)

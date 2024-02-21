@@ -33,6 +33,8 @@ class ReleaseChangelog < ApplicationRecord
   end
 
   def commits_by_team
+    return unless release.organization.teams.exists?
+
     relevant_commits = normalized_commits
     user_logins = relevant_commits.map(&:author_login).uniq
     users = Accounts::User
