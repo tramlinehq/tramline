@@ -59,7 +59,7 @@
     </div>
 
     <% if @app.variants.exists? %>
-      <div><%= section.F.labeled_select :app_variant_id, "Pick an app variant", options_for_select(@app.variant_options, @step.app_variant&.id) %></div>
+      <div><%= section.F.labeled_select :app_variant_id, "Pick an app variant", options_for_select(@app.variant_options, step.app_variant&.id) %></div>
     <% end %>
   </div>
 <% end %>
