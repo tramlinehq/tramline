@@ -129,6 +129,7 @@ class Charts::DevopsReport
       .group_by(&:release_version)
       .sort_by { |v, _| v.to_semverish }.to_h
       .transform_values { |releases| releases[0].all_commits.count_by_team(organization) }
+      .compact_blank
   end
 
   memoize def team_contributors(last: LAST_RELEASES)
@@ -136,7 +137,7 @@ class Charts::DevopsReport
       .group_by(&:release_version)
       .sort_by { |v, _| v.to_semverish }.to_h
       .transform_values { |releases| releases[0].release_changelog&.commits_by_team }
-      .compact
+      .compact_blank
   end
 
   memoize def time_in_review(last: LAST_RELEASES)
