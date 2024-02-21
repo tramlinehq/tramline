@@ -32,7 +32,7 @@ class ChartComponent < ViewComponent::Base
   end
 
   def series
-    ungroup_series.to_json
+    ungroup_series(group_colors: chart[:colors] || {}).to_json
   end
 
   # input:
@@ -46,10 +46,11 @@ class ChartComponent < ViewComponent::Base
   #   colors: ["#145688", "#145680"] }
 
   def linear_series(input = series_raw)
-    res = input.each_with_object({"labels" => [], "data" => [], "colors" => []}) do |(category, data), result|
-      result["labels"] << category.to_s
-      result["data"] << data[:value]
-      result["colors"] << data[:color]
+    group_colors = chart[:colors] || {}
+    res = input.each_with_object({labels: [], data: [], colors: []}) do |(category, data), result|
+      result[:labels] << category.to_s
+      result[:data] << data
+      result[:colors] << group_colors[category]
     end
     [res].to_json
   end
@@ -121,12 +122,12 @@ class ChartComponent < ViewComponent::Base
   #  {:name=>"Android Release", :group=>"android", :data=>{"8.0.1"=>4, "8.0.2"=>5}},
   #  {:name=>"QA iOS Review", :group=>"ios", :data=>{"8.0.1"=>6, "8.0.2"=>7}},
   #  {:name=>"iOS Release", :group=>"ios", :data=>{"8.0.1"=>8, "8.0.2"=>9}}]
-  def ungroup_series(input = series_raw)
+  def ungroup_series(input = series_raw, group_colors: {})
     input.each_with_object([]) do |(category, grouped_maps), result|
       grouped_maps.each do |group, inner_data|
         if inner_data.is_a?(Hash) && stacked?
           inner_data.each do |name, value|
-            color = CHART_COLORS[result.size % CHART_COLORS.length]
+            color = group_colors[group] || CHART_COLORS[result.size % CHART_COLORS.length]
             grouped_name = "#{name} (#{group})"
             item = result.find { |r| r[:name] == grouped_name && r[:group] == group }
             item ||= {name: grouped_name, group: group, data: {}, color:}
@@ -134,7 +135,7 @@ class ChartComponent < ViewComponent::Base
             result.push(item) unless result.include?(item)
           end
         else
-          color = CHART_COLORS[result.size % CHART_COLORS.length]
+          color = group_colors[group] || CHART_COLORS[result.size % CHART_COLORS.length]
           item = result.find { |r| r[:name] == group }
           item ||= {name: group, data: {}, color:}
           item[:data][category] = inner_data

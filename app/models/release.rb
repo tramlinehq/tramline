@@ -135,7 +135,7 @@ class Release < ApplicationRecord
 
   delegate :versioning_strategy, to: :train
   delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
-  delegate :platform, to: :app
+  delegate :platform, :organization, to: :app
 
   def self.pending_release?
     pending_release.exists?

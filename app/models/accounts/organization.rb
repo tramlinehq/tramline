@@ -66,4 +66,10 @@ class Accounts::Organization < ApplicationRecord
   def rotate_api_key
     update(api_key: SecureRandom.hex)
   end
+
+  def team_colors
+    colors = teams.pluck(:name, :color).to_h || {}
+    colors[Accounts::Team::UNKNOWN_TEAM_NAME] = Accounts::Team::UNKNOWN_TEAM_COLOR
+    colors
+  end
 end

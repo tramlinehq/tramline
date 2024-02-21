@@ -2,12 +2,13 @@
   <section>
     <%= render partial: "shared/live_release/section_title", locals: { heading: "Team Analysis", subheading: nil } %>
     <div class="mt-6">
-      <%= render ChartComponent.new({ data: commits.count_by_team,
+      <%= render ChartComponent.new({ data: commits.count_by_team(current_organization),
+                                      colors: current_organization.team_colors,
                                       type: "polar-area",
                                       value_format: "number",
-                                      name: "Team Contribution",
-                                      title: "Team Contributions",
-                                      scope: "number of commits to the release",
+                                      name: "Build stability fixes",
+                                      title: "Build stability fixes",
+                                      scope: "Commits during the release per team",
                                       help_text: "",
                                       show_x_axis: false,
                                       show_y_axis: false }, icon: "pie_chart.svg") %>

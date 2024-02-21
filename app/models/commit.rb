@@ -41,15 +41,12 @@ class Commit < ApplicationRecord
 
   delegate :release_platform_runs, :notify!, :train, :platform, to: :release
 
-  def self.count_by_team
+  def self.count_by_team(org)
     reorder("")
       .left_outer_joins(user: [memberships: :team])
-      .where("teams.organization_id = ? OR teams.id IS NULL", Current.organization.id)
-      .select("COALESCE(teams.name, '#{Accounts::Team::UNKNOWN_TEAM_NAME}') AS team_name, COALESCE(teams.color, '#{Accounts::Team::UNKNOWN_TEAM_COLOR}') AS team_color, COUNT(commits.id) AS commits_count")
-      .group("team_name", "team_color")
-      .order("team_name")
-      .map { |result| [result.attributes["team_name"], {value: result.attributes["commits_count"], color: result.attributes["team_color"]}] }
-      .to_h
+      .where("teams.organization_id = ? OR teams.id IS NULL", org.id)
+      .group("COALESCE(teams.name, '#{Accounts::Team::UNKNOWN_TEAM_NAME}')")
+      .count("commits.id")
   end
 
   def self.between(base_step_run, head_step_run)

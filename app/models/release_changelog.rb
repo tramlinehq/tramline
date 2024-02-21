@@ -32,6 +32,23 @@ class ReleaseChangelog < ApplicationRecord
     commits.pluck("author_name").uniq
   end
 
+  def commits_by_team
+    relevant_commits = normalized_commits
+    user_logins = relevant_commits.map(&:author_login).uniq
+    users = Accounts::User
+      .joins(memberships: [:team, :organization])
+      .where(github_login: user_logins, memberships: {organization: release.organization})
+      .select("github_login", "teams.name AS team_name")
+
+    relevant_commits.group_by(&:author_login).each_with_object({}) do |(login, commits), teams_data|
+      user = users.find { |user| user.github_login == login }
+      team_name = user&.team_name || Accounts::Team::UNKNOWN_TEAM_NAME
+
+      teams_data[team_name] = 0 unless teams_data.key?(team_name)
+      teams_data[team_name] += commits.size
+    end
+  end
+
   private
 
   class NormalizedCommit
