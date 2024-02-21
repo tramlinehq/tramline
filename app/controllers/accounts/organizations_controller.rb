@@ -1,12 +1,12 @@
 class Accounts::OrganizationsController < SignedInApplicationController
   before_action :require_write_access!, only: %i[edit]
 
-  def index
-    @organizations = current_user.organizations
-  end
-
   def edit
     @organization = current_user.organizations.friendly.find(params[:id])
+    @tab_configuration = [
+      [1, "Settings", edit_accounts_organization_path(@organization), "v2/cog.svg"],
+      [2, "Team", accounts_organization_team_path(@organization), "v2/user_cog.svg"]
+    ]
   end
 
   def rotate_api_key

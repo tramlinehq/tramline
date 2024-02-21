@@ -15,13 +15,6 @@ class NotificationSettingsController < SignedInApplicationController
       [2, "Steps", steps_app_train_path(@app, @train), "v2/route.svg"],
       [3, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"]
     ]
-
-    respond_to do |format|
-      format.html do |variant|
-        variant.none
-        variant.turbo_frame
-      end
-    end
   end
 
   def update

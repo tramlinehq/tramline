@@ -18,7 +18,7 @@ class StepsController < SignedInApplicationController
     @step = @release_platform.steps.new(kind:)
 
     if @step.release? && @release_platform.has_release_step?
-      redirect_back fallback_location: app_train_path(@app, @train), flash: {error: "You can only have one release step in a train!"}
+      redirect_back fallback_location: app_train_releases_path(@app, @train), flash: {error: "You can only have one release step in a train!"}
     end
 
     set_build_channels
@@ -71,7 +71,7 @@ class StepsController < SignedInApplicationController
     if @app.guided_train_setup?
       redirect_to app_path(@app), notice: "Step was successfully created."
     else
-      redirect_to app_train_path(@app, @train), notice: "Step was successfully created."
+      redirect_to app_train_releases_path(@app, @train), notice: "Step was successfully created."
     end
   end
 
@@ -108,7 +108,7 @@ class StepsController < SignedInApplicationController
 
   def integrations_are_ready?
     unless @train.ready?
-      redirect_to app_train_path(@app, @train), alert: "Cannot create steps before notifiers are complete."
+      redirect_to app_train_releases_path(@app, @train), alert: "Cannot create steps before notifiers are complete."
     end
   end
 

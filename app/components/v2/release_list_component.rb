@@ -62,7 +62,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
           subtitle: "Specify a release version",
           icon: "v2/user_cog.svg",
           opt_name: "has_major_bump",
-          opt_value: true,
+          opt_value: false,
           checked: false,
           options: {data: {action: "reveal#show"}}
         }
@@ -92,11 +92,13 @@ class V2::ReleaseListComponent < V2::BaseComponent
           subtitle: "Specify a release version",
           icon: "v2/user_cog.svg",
           opt_name: "has_major_bump",
-          opt_value: true,
+          opt_value: false,
           checked: false,
           options: {data: {action: "reveal#show"}}
         }
       ]
+    else
+      []
     end
   end
 

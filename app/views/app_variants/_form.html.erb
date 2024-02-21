@@ -1,5 +1,5 @@
 <%= render V2::FormComponent.new(model: [app, app.config, app_variant], url: app_app_config_app_variants_path(app), method: :post) do |f| %>
-  <% f.with_section(heading: "Create") do |section| %>
+  <% f.with_section(heading: "Basic") do |section| %>
     <% section.with_description do %>
       <div>
         App variants are akin to <strong>product flavors</strong> or <strong>build variants</strong>, but with an

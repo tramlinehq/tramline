@@ -1,0 +1,21 @@
+<%= render V2::FormComponent.new(model: invite,
+                                 url: accounts_organization_invitations_path(invite.organization, invite),
+                                 method: :post) do |f| %>
+  <% f.with_section(heading: "Basic") do |section| %>
+    <% section.with_description do %>
+      An invitation mail will be sent to your team member with instructions to join Tramline
+    <% end %>
+    <%= section.F.hidden_field :organization_id, value: invite.organization.id %>
+
+    <div>
+      <%= section.F.labeled_email_field :email, "Email", autofocus: true %>
+    </div>
+
+    <div>
+      <%= section.F.labeled_select :role, "Role", options_for_select(Accounts::Membership.allowed_roles, "developer") %>
+    </div>
+  <% end %>
+  <% f.with_action do %>
+    <% f.F.authz_submit "Invite", "plus.svg", size: :xs %>
+  <% end %>
+<% end %>

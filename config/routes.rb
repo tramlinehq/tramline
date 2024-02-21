@@ -37,13 +37,13 @@ Rails.application.routes.draw do
   end
 
   namespace :accounts do
-    resources :organizations, only: [:edit, :index] do
+    resources :organizations, only: [:edit] do
       member do
         get :switch
       end
 
       resource :team, only: [:show]
-      resources :invitations, only: %i[new create]
+      resources :invitations, only: [:create]
     end
   end
 

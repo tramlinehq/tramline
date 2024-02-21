@@ -16,12 +16,6 @@ class IntegrationsController < SignedInApplicationController
       [2, "Integrations", app_integrations_path(@app), "v2/blocks.svg"],
       [3, "App Variants", app_app_config_app_variants_path(@app), "dna.svg"]
     ]
-    respond_to do |format|
-      format.html do |variant|
-        variant.none
-        variant.turbo_frame
-      end
-    end
   end
 
   def create

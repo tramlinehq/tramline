@@ -75,7 +75,9 @@ class ReleasesController < SignedInApplicationController
 
   def destroy
     @release.stop!
-    redirect_to app_train_path(@release.train.app, @release.train), notice: "The release was stopped."
+    @train = @release.train
+    @app = @train.app
+    redirect_to train_path, notice: "The release was stopped."
   end
 
   # TODO: This action can be deprecated once there are no more releases with pending manual finalize
@@ -143,7 +145,7 @@ class ReleasesController < SignedInApplicationController
   end
 
   def train_path
-    app_train_path(@app, @train)
+    app_train_releases_path(@app, @train)
   end
 
   def release_params

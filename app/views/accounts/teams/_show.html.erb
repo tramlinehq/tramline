@@ -1,0 +1,64 @@
+<%= render V2::SectionComponent.new(style: :titled,
+                                    title: "Members",
+                                    subtitle: "Users in your organization") do |sc| %>
+  <% sc.with_sidenote do %>
+    <%= render V2::ModalComponent.new(title: "Add team member") do |modal| %>
+      <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
+              .with_icon("v2/plus.svg", size: :md) %>
+      <% modal.with_body do %>
+        <%= render partial: "accounts/invitations/form", locals: {invite: Accounts::Invite.new(sender: current_user, organization: current_organization)} %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render V2::TableComponent.new(columns: ["Email", "Status", "Preferred Name", "Full Name", "Role"]) do |table| %>
+    <% @team.each do |member| %>
+      <% table.with_row do |row| %>
+        <% row.with_cell do %>
+          <div class="font-medium text-slate-800">
+            <%= member.email %>
+          </div>
+        <% end %>
+        <% row.with_cell do %>
+          <%= render V2::StatusIndicatorPillComponent.new(text: "Active", status: :success) %>
+        <% end %>
+        <% row.with_cell do %>
+          <%= member.preferred_name %>
+        <% end %>
+        <% row.with_cell do %>
+          <%= member.full_name %>
+        <% end %>
+        <% row.with_cell do %>
+          <%= member.role_for(current_organization).titleize %>
+        <% end %>
+      <% end %>
+    <% end %>
+    <% @invited_team.each do |invite| %>
+      <% table.with_row do |row| %>
+        <% row.with_cell do %>
+          <div class="font-medium text-slate-800">
+            <%= invite.email %>
+          </div>
+        <% end %>
+        <% row.with_cell do %>
+          <%= render V2::StatusIndicatorPillComponent.new(text: "Invited", status: :neutral) %>
+        <% end %>
+        <% row.with_cell do %>
+          <div class="font-medium text-slate-800">
+            -
+          </div>
+        <% end %>
+        <% row.with_cell do %>
+          <div class="font-medium text-slate-800">
+            -
+          </div>
+        <% end %>
+        <% row.with_cell do %>
+          <%= invite.role.titleize %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+

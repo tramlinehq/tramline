@@ -1,5 +1,5 @@
 class V2::ModalComponent < V2::BaseComponent
-  BASE_OPTS = {html_options: {data: {action: "click->modal#open"}}}.freeze
+  BASE_OPTS = {html_options: {data: {action: "click->dialog#open"}}}.freeze
   SIZE_TO_WIDTH = {
     xxs: "max-w-xs",
     xs: "max-w-sm",
@@ -32,7 +32,7 @@ class V2::ModalComponent < V2::BaseComponent
     if disabled?
       {}
     else
-      {data: {controller: "modal", modal_dismissable_value: dismissable}}
+      {data: {controller: "dialog", dialog_dismissable_value: dismissable}}
     end
   end
 

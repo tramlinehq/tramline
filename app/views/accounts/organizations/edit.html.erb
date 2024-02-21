@@ -1,37 +1,9 @@
-<%= render V2::ContainerComponent.new(title: "Settings: #{@organization.name}") do |container| %>
+<%= render V2::TabbedContainerComponent.new(title: @organization.name,
+                                            turbo_frame: dom_id(@organization, :edit_org),
+                                            tab_config: @tab_configuration) do |container| %>
   <% container.with_back_button %>
-  <% container.with_body do %>
-    <%= render V2::SectionComponent.new(style: :titled, title: "API", subtitle: "Use these credentials to make API calls to Tramline") do %>
-      <div class="flex flex-col gap-y-6">
-        <div data-controller="clipboard" data-clipboard-success-content-value="copied!">
-          <div class="relative w-1/3">
-            <label class="block text-sm font-medium mb-1" for="account_id">Account ID</label>
-            <input type="text"
-                   id="account_id"
-                   readonly
-                   value="<%= @organization.id %>"
-                   data-clipboard-target="source"
-                   class="form-input w-full"/>
-            <%= copy_to_clipboard_button("button", styles: "mr-3") %>
-          </div>
-        </div>
-
-        <div data-controller="password-visibility clipboard" data-clipboard-success-content-value="copied!">
-          <div class="relative w-1/3">
-            <label class="block text-sm font-medium mb-1" for="api_key">API Key</label>
-            <input type="password"
-                   id="api_key"
-                   readonly
-                   value="<%= @organization.api_key %>"
-                   data-clipboard-target="source"
-                   data-password-visibility-target="input"
-                   class="form-input w-full"/>
-            <%= password_toggle_button(styles: "mr-3") %>
-            <%= copy_to_clipboard_button("button", styles: "mr-10") %>
-          </div>
-        </div>
-      </div>
-    <% end %>
+  <% container.with_tab do %>
+    <%= render partial: "edit_form" %>
   <% end %>
 <% end %>
 

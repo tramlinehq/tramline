@@ -58,6 +58,11 @@ module EnhancedFormHelper
       end
     end
 
+    def labeled_email_field(method, label_text, options = {})
+      hopts = {class: field_classes(is_disabled: options[:disabled], classes: TEXT_FIELD_CLASSES), placeholder: "Enter #{label_text.downcase}"}.merge(options)
+      label_only(method, label_text) + email_field(method, hopts)
+    end
+
     def labeled_number_field(method, label_text, options = {})
       hopts = {class: field_classes(is_disabled: options[:disabled], classes: TEXT_FIELD_CLASSES)}.merge(options)
       label_only(method, label_text) + number_field_without_label(method, hopts)

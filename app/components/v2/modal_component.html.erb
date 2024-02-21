@@ -1,6 +1,6 @@
 <%= content_tag(:div, reveal_data_attrs) do %>
   <%= button %>
-  <dialog data-modal-target="modal"
+  <dialog data-dialog-target="dialog"
           class="overflow-y-auto backdrop:bg-main-900/50 backdrop:dark:bg-main-900/80
           box-padding rounded-lg shadow
           dark:bg-main bg-white
@@ -15,7 +15,7 @@
           size: :none,
           authz: false,
           html_options: { class: "ms-auto inline-flex justify-center items-center",
-                          data: { action: "modal#close" } }) do |b|
+                          data: { action: "dialog#close" } }) do |b|
           b.with_icon("close_icon.svg")
         end %>
       </div>
