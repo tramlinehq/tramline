@@ -182,6 +182,17 @@
           </div>
         <% end %>
       <% end %>
+
+      <% if teams_present? %>
+        <% component.with_tab do %>
+          <div class="hidden p-4 bg-white rounded-lg" data-tabs-target="panel">
+            <div class="grid grid-cols-2 gap-4">
+              <%= render ChartComponent.new(team_release_chart, icon: "pie_chart.svg") %>
+              <%= render ChartComponent.new(team_stability_chart, icon: "pie_chart.svg") %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
     <% end %>
   <% else %>
     <div class="flex flex-wrap justify-between items-center px-5 py-3 bg-indigo-50 border border-indigo-100 rounded-sm text-left">
