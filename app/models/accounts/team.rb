@@ -15,13 +15,29 @@ class Accounts::Team < ApplicationRecord
   belongs_to :organization, inverse_of: :memberships, optional: false
   has_many :memberships, dependent: :nullify
 
-  validates :color, uniqueness: {scope: :organization_id}
+  validates :color, uniqueness: { scope: :organization_id }
 
   before_create :assign_random_color
 
   PALETTE = %w[#1A56DB #9061F9 #FF6E4A #5AAA4E #7A6FFF #3A9CA6 #FFB997 #537ABD #E3BBFF #AAD4AA]
   UNKNOWN_TEAM_NAME = "Unknown"
   UNKNOWN_TEAM_COLOR = "#BCBCBC"
+
+  SAMPLE_TEAM_COLOR = { Platform: PALETTE[0],
+                        Payments: PALETTE[1],
+                        Checkout: PALETTE[2],
+                        Support: PALETTE[3],
+                        Marketplace: PALETTE[4],
+                        Growth: PALETTE[5] }
+
+  def self.sample_team_commits
+    { Platform: rand(1..10),
+      Payments: rand(1..10),
+      Checkout: rand(1..10),
+      Support: rand(1..10),
+      Marketplace: rand(1..10),
+      Growth: rand(1..10) }
+  end
 
   private
 

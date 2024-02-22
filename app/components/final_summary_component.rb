@@ -97,8 +97,8 @@ class FinalSummaryComponent < ViewComponent::Base
   end
 
   def team_stability_chart
-    {data: team_stability_commits,
-     colors: team_colors,
+    {data: Accounts::Team::sample_team_commits.sort_by(&:last).reverse.to_h,
+     colors: Accounts::Team::SAMPLE_TEAM_COLOR,
      type: "polar-area",
      value_format: "number",
      name: "Stability Contribution",
@@ -110,8 +110,8 @@ class FinalSummaryComponent < ViewComponent::Base
   end
 
   def team_release_chart
-    {data: team_release_commits,
-     colors: team_colors,
+    {data: Accounts::Team::sample_team_commits.sort_by(&:last).reverse.to_h,
+     colors: Accounts::Team::SAMPLE_TEAM_COLOR,
      type: "polar-area",
      value_format: "number",
      name: "Release Contribution",
