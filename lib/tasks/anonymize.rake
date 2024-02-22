@@ -41,7 +41,7 @@ namespace :anonymize do
         whitelist "name", "slug", "description", "status", "branching_strategy", "version_seeded_with", "version_current",
           "repeat_duration", "build_queue_wait_time", "build_queue_size", "backmerge_strategy", "manual_release",
           "tag_platform_releases", "tag_all_store_releases", "compact_build_notes", "tag_releases", "build_queue_enabled",
-          "kickoff_at"
+          "kickoff_at", "versioning_strategy", "send_build_notes", "notifications_enabled", "tag_suffix", "tag_platform_releases"
         whitelist_timestamps
         anonymize("app_id") { |field| app.id }
         anonymize("notification_channel") { |field| {"id" => "dummy", "name" => "test", "is_private" => false} }
@@ -73,7 +73,7 @@ namespace :anonymize do
         continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) }
 
         primary_key "id"
-        whitelist "release_platform_id", "status", "step_number", "slug", "release_suffix", "kind", "auto_deploy"
+        whitelist "release_platform_id", "status", "step_number", "slug", "release_suffix", "kind", "auto_deploy", "app_variant_id"
         whitelist_timestamps
         anonymize("ci_cd_channel") do |field|
           {"id" => "dummy", "name" => "CI Workflow #{Faker::JapaneseMedia::StudioGhibli.character}"}
@@ -111,7 +111,7 @@ namespace :anonymize do
 
         primary_key "id"
         whitelist "train_id", "branch_name", "status", "original_release_version", "release_version", "scheduled_at",
-          "completed_at", "stopped_at", "is_automatic", "tag_name"
+          "completed_at", "stopped_at", "is_automatic", "tag_name", "release_type", "hotfixed_from", "new_hotfix_branch"
         whitelist_timestamps
       end
 
@@ -121,16 +121,6 @@ namespace :anonymize do
         primary_key "id"
         whitelist "release_id", "scheduled_at", "applied_at", "is_active"
         whitelist_timestamps
-      end
-
-      table "release_metadata" do
-        continue { |index, record| Release.exists?(record["release_id"]) }
-
-        primary_key "id"
-        whitelist "release_platform_run_id", "locale", "created_at", "updated_at", "release_id"
-        whitelist_timestamps
-        anonymize("release_notes").using FieldStrategy::LoremIpsum.new
-        anonymize("promo_text").using FieldStrategy::LoremIpsum.new
       end
 
       table "release_changelogs" do
@@ -157,16 +147,6 @@ namespace :anonymize do
         end
       end
 
-      table "release_platform_runs" do
-        continue { |index, record| Release.exists?(record["release_id"]) }
-
-        primary_key "id"
-        whitelist "release_platform_id", "code_name", "scheduled_at", "commit_sha", "status", "branch_name",
-          "release_version", "completed_at", "stopped_at", "original_release_version", "release_id",
-          "tag_name", "in_store_resubmission"
-        whitelist_timestamps
-      end
-
       table "commits" do
         continue { |index, record| Release.exists?(record["release_id"]) }
 
@@ -185,15 +165,37 @@ namespace :anonymize do
 
         primary_key "id"
         whitelist "release_platform_run_id", "number", "state", "phase", "source", "head_ref", "base_ref", "opened_at",
-          "closed_at", "release_id", "commit_id"
+          "closed_at", "release_id", "commit_id", "source_id", "labels"
         whitelist_timestamps
         anonymize("title") { |field| Faker::Lorem.paragraph_by_chars(number: field.value.size) }
         anonymize("body") { |field| Faker::Lorem.paragraph_by_chars(number: field.value.size) }
         anonymize("url").using FieldStrategy::RandomUrl.new
       end
 
+      table "release_platform_runs" do
+        continue { |index, record| Release.exists?(record["release_id"]) }
+
+        primary_key "id"
+        whitelist "release_platform_id", "code_name", "scheduled_at", "commit_sha", "status", "branch_name",
+          "release_version", "completed_at", "stopped_at", "original_release_version", "release_id",
+          "tag_name", "in_store_resubmission", "last_commit_id"
+        whitelist_timestamps
+      end
+
+      table "release_metadata" do
+        continue { |index, record| Release.exists?(record["release_id"]) }
+        continue { |index, record| ReleasePlatformRun.exists?(record["release_platform_run_id"]) }
+
+        primary_key "id"
+        whitelist "release_platform_run_id", "locale", "created_at", "updated_at", "release_id"
+        whitelist_timestamps
+        anonymize("release_notes").using FieldStrategy::LoremIpsum.new
+        anonymize("promo_text").using FieldStrategy::LoremIpsum.new
+      end
+
       table "step_runs" do
         continue { |index, record| ReleasePlatformRun.exists?(record["release_platform_run_id"]) }
+        continue { |index, record| Step.exists?(record["step_id"]) }
 
         primary_key "id"
         whitelist "step_id", "release_platform_run_id", "scheduled_at", "status", "commit_id", "build_version",
@@ -205,6 +207,7 @@ namespace :anonymize do
 
       table "deployment_runs" do
         continue { |index, record| StepRun.exists?(record["step_run_id"]) }
+        continue { |index, record| Deployment.exists?(record["deployment_id"]) }
 
         primary_key "id"
         whitelist "deployment_id", "step_run_id", "scheduled_at", "status", "initial_rollout_percentage", "failure_reason"
@@ -232,7 +235,7 @@ namespace :anonymize do
         continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) }
         primary_key "id"
         whitelist "deployment_run_id", "sessions", "sessions_in_last_day", "sessions_with_errors", "daily_users",
-          "daily_users_with_errors", "errors_count", "new_errors_count", "fetched_at", "total_sessions_in_last_day"
+          "daily_users_with_errors", "errors_count", "new_errors_count", "fetched_at", "total_sessions_in_last_day", "external_release_id"
         whitelist_timestamps
       end
 
