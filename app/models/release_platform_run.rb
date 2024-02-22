@@ -191,8 +191,7 @@ class ReleasePlatformRun < ApplicationRecord
     return false if last_commit.blank?
     return true if (hotfix? || patch_fix?) && last_commit.run_for(step, self).blank?
     return false if upcoming_release_step?(step)
-    return true if ongoing_release_step?(step) && allow_blocked_step?
-    return false if ongoing_release_step?(step) && train.hotfix_release.present?
+    return false if ongoing_release_step?(step) && train.hotfix_release.present? && !allow_blocked_step?
     return true if step.first? && step_runs_for(step).empty?
     return false if step.first?
 
