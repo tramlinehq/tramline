@@ -6,7 +6,7 @@
     <div><%= image_tag("integrations/logo_#{provider.to_s}.png", width: 20, height: 20) %></div>
   </div>
   <div class="flex flex-row justify-between items-end">
-    <div class="text-xl"><%= current %>%</div>
+    <div class="<%= text_size %>"><%= current %>%</div>
     <div class="text-xs text-main-400"><%= subtitle %></div>
   </div>
   <div class="border-slate-200">

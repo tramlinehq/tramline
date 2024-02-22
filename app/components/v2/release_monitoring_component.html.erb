@@ -3,15 +3,16 @@
     <div class="text-slate-500 text-md"><%= build_identifier %></div>
   <% end %>
 
-  <div class="grid grid-cols-2 gap-2">
+  <div class="grid <%= grid_cols %> gap-2 text-xs">
     <% if :staged_rollout.in? metrics %>
-      <% if empty_component? %>
+      <% if staged_rollout.nil? %>
         <%= empty_metric_component("Staged Rollout") %>
       <% else %>
         <%= render ProgressCardComponent.new(name: "Staged Rollout",
                                              current: staged_rollout_percentage,
                                              subtitle: staged_rollout_text,
-                                             provider: store_provider) %>
+                                             provider: store_provider,
+                                             size:) %>
       <% end %>
     <% end %>
 
@@ -22,7 +23,8 @@
         <%= render ProgressCardComponent.new(name: "Adoption Rate",
                                              current: adoption_rate,
                                              subtitle: "Last 24 hours",
-                                             provider: monitoring_provider) %>
+                                             provider: monitoring_provider,
+                                             size:) %>
       <% end %>
     <% end %>
 
@@ -33,6 +35,7 @@
         <%= render MetricCardComponent.new(name: "Stability",
                                            values: { "users" => user_stability, "sessions" => session_stability },
                                            provider: monitoring_provider,
+                                           size:,
                                            external_url: monitoring_provider_url) %>
       <% end %>
     <% end %>
@@ -44,6 +47,7 @@
         <%= render MetricCardComponent.new(name: "Errors",
                                            values: { "total" => errors_count, "new" => new_errors_count },
                                            provider: monitoring_provider,
+                                           size:,
                                            external_url: monitoring_provider_url) %>
       <% end %>
     <% end %>

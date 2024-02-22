@@ -2,10 +2,24 @@
   <%= render V2::SectionComponent.new(style: :boxed) do %>
     <div class="<%= striped_header %> -mx-2">
       <div class="flex items-center justify-between border-default-b px-3 py-2">
-        <div class="flex items-center space-x-3 rtl:space-x-reverse ">
-          <h1 class="heading-2 text-main dark:text-white">
-            <%= release.release_version %>
-          </h1>
+        <div class="flex items-center space-x-3 rtl:space-x-reverse">
+          <% if release_version_drift? %>
+            <div class="flex items-center space-x-1">
+              <%= render V2::IconComponent.new("v2/android.svg", size: :lg) %>
+              <%= release_version(android_release_version) %>
+            </div>
+
+            <div class="flex items-center">
+              <%= render V2::IconComponent.new("v2/plus_fat.svg", size: :lg) %>
+            </div>
+
+            <div class="flex items-center space-x-1">
+              <%= render V2::IconComponent.new("v2/ios.svg", size: :lg) %>
+              <%= release_version(ios_release_version) %>
+            </div>
+          <% else %>
+            <%= release_version(release.release_version) %>
+          <% end %>
 
           <%= render V2::StatusIndicatorPillComponent.new(text: status.first, status: status.second) %>
 
@@ -38,6 +52,7 @@
             <% component.with_data_set(title: "Started", lines: [start_time]).with_icon("v2/clock.svg") %>
             <% component.with_data_set(title: "Released", lines: [end_time]).with_icon("v2/zap.svg") %>
             <% component.with_data_set(title: "Duration", lines: [duration]).with_icon("v2/coffee.svg") %>
+            <% component.with_data_set(title: "Release Pilot", lines: ["Jack Shephard"]).with_icon("v2/plane_takeoff.svg") %>
           <% end %>
         </div>
       </div>
@@ -68,23 +83,45 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-2 justify-between mt-8 gap-x-2">
+    <div class="grid grid-cols-2 justify-between mt-4 gap-x-6 gap-y-3">
       <% release.release_platform_runs.each do |run| %>
-        <div class="flex flex-col gap-y-2">
-          <% if run.last_successful_deployment_run %>
-            <%= render V2::BuildInfoComponent.new(run.last_successful_deployment_run&.first) %>
+        <div class="grid gap-y-2 items-end">
+          <% run.store_releases.each do |store_release| %>
+            <%= render V2::BuildInfoComponent.new(store_release) %>
           <% end %>
-          <%= render V2::HorizontalDataSetComponent.new do |component| %>
-            <% component.with_data_set(title: "Time in review phase", lines: ["about 7 hours"]).with_icon("v2/clock.svg") %>
-            <% component.with_data_set(title: "Time in release phase", lines: ["about 7 hours"]).with_icon("v2/clock.svg") %>
-            <% component.with_data_set(title: "RCs GENERATED", uppercase_title: false, lines: ["about 7 hours"]).with_icon("v2/archive.svg") %>
-          <% end %>
+        </div>
+      <% end %>
 
+      <% release.release_platform_runs.each do %>
+        <div class="border-default box-padding">
+          <%= render TimelineComponent.new(events: [{ title: "Success", description: "Staged release completed with 100.00%", timestamp: time_format(Time.current), type: :success },
+                                                    { title: "Failed", description: "Hi2u", timestamp: time_format(Time.current), type: :error },
+                                                    { title: "Success", description: "CI workflow Tramline Android Release Candidate triggered for build 16.69", timestamp: time_format(Time.current), type: :success },
+                                                    { title: "Failed", description: "Hi2u", timestamp: time_format(Time.current), type: :error },
+                                                    { title: "Failed", description: "Hi2u", timestamp: time_format(Time.current), type: :error }]) %>
+        </div>
+      <% end %>
+
+      <% release.release_platform_runs.each do %>
+        <div>
+          <%= render V2::HorizontalDataSetComponent.new do |component| %>
+            <% component.with_data_set(title: "Time in review phase", lines: ["about 10 days"]).with_icon("v2/clock.svg") %>
+            <% component.with_data_set(title: "Time in release phase", lines: ["about 7 hours"]).with_icon("v2/clock.svg") %>
+            <% component.with_data_set(title: "Commits", lines: [40]).with_icon("v2/clipboard_list.svg") %>
+            <% component.with_data_set(title: "Review builds", lines: [10]).with_icon("v2/archive.svg") %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% release.release_platform_runs.each do |run| %>
+        <div>
           <% if release.finished? %>
             <%= render V2::ReleaseMonitoringComponent.new(
               deployment_run: run.store_releases.last,
-              metrics: [:stability, :adoption_rate],
-              show_bundle_id: false) %>
+              metrics: [:stability, :adoption_rate, :staged_rollout],
+              show_bundle_id: false,
+              cols: 3,
+              size: :sm) %>
           <% end %>
         </div>
       <% end %>

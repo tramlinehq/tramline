@@ -13,11 +13,11 @@ class V2::BuildInfoComponent < V2::BaseComponent
   end
 
   def ci_info
-    "##{@step_run.ci_ref}"
+    @step_run.commit.short_sha
   end
 
   def build_deployed_at
-    "Last build deployed #{ago_in_words @deployment_run.updated_at}"
+    ago_in_words @deployment_run.updated_at
   end
 
   def build_logo

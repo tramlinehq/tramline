@@ -4,13 +4,33 @@
 /* new styles */
 
 @layer utilities {
-  .bg-diagonal-stripes {
+  .bg-diagonal-stripes-soft-gray {
     background: repeating-linear-gradient(
       45deg,
       rgb(255, 255, 255) 0px,
       rgb(255, 255, 255) 4px,
       rgb(242, 242, 242) 4px,
       rgb(242, 242, 242) 8px
+    );
+  }
+
+  .bg-diagonal-stripes-soft-red {
+    background: repeating-linear-gradient(
+      45deg,
+      rgb(255, 255, 255) 0px,
+      rgb(255, 255, 255) 4px,
+      #fdf1f1 4px,
+      #fdf1f1 8px
+    );
+  }
+
+  .bg-diagonal-stripes-soft-blue {
+    background: repeating-linear-gradient(
+      45deg,
+      rgb(255, 255, 255) 0px,
+      rgb(255, 255, 255) 4px,
+      #ebf7fd 4px,
+      #ebf7fd 8px
     );
   }
 }

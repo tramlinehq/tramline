@@ -36,7 +36,7 @@ class V2::BaseReleaseComponent < V2::BaseComponent
   end
 
   memoize def duration
-    return "–" unless @release.completed_at
+    return distance_of_time_in_words(@release.scheduled_at, Time.current) unless @release.completed_at
     distance_of_time_in_words(@release.scheduled_at, @release.completed_at)
   end
 

@@ -1,13 +1,19 @@
 <% if @deployment_run %>
-  <div class="flex items-center justify-stretch">
-    <%= render V2::BadgeComponent.new(build_info) do |badge| %>
-      <% badge.with_icon(deployment_logo) %>
-    <% end %>
-    <%= inline_svg("v2/connect_line.svg", classname: "w-5 h-5 inline-flex mx-2") %>
-    <%= render V2::BadgeComponent.new(ci_info) do |badge| %>
-      <% badge.with_icon(build_logo) %>
-    <% end %>
-    <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2") %>
-    <span class="text-main-600 font-normal text-sm"><%= build_deployed_at %></span>
+  <div class="flex items-center justify-between">
+    <div class="flex items-center justify-stretch">
+      <%= render V2::BadgeComponent.new(build_info) do |badge| %>
+        <% badge.with_icon(deployment_logo) %>
+      <% end %>
+      <%= inline_svg("v2/connect_line.svg", classname: "w-5 h-5 inline-flex mx-2") %>
+
+      <%= render V2::BadgeComponent.new(ci_info) do |badge| %>
+        <% badge.with_icon(build_logo) %>
+      <% end %>
+    </div>
+
+    <div class="flex items-center">
+      <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2") %>
+      <span class="text-main-600 font-normal text-sm"><%= build_deployed_at %></span>
+    </div>
   </div>
 <% end %>

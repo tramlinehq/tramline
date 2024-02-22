@@ -115,10 +115,15 @@
   <% end %>
 
   <% container.with_body do %>
+    <%= render V2::ReleaseOverviewComponent.new(hotfix_release) %>
     <%= render V2::ReleaseOverviewComponent.new(ongoing_release) %>
     <%= render V2::ReleaseOverviewComponent.new(upcoming_release) %>
-    <%= render V2::ReleaseOverviewComponent.new(hotfix_release) %>
     <%= render V2::ReleaseOverviewComponent.new(last_completed_release) %>
+    <%#= render V2::ReleaseOverviewComponent.new(train.releases.finished.first(2).last) %>
+    <%#= render V2::ReleaseOverviewComponent.new(train.releases.finished.first(3).last) %>
+    <%#= render V2::ReleaseOverviewComponent.new(train.releases.finished.first(4).last) %>
+    <%#= render V2::ReleaseOverviewComponent.new(train.releases.finished.first(5).last) %>
+    <%#= render V2::ReleaseOverviewComponent.new(train.releases.finished.first(6).last) %>
 
     <% if devops_report.present? %>
       <%= render V2::SectionComponent.new(style: :titled, title: "Mobile Devops") do %>
