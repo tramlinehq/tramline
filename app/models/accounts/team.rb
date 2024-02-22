@@ -42,11 +42,11 @@ class Accounts::Team < ApplicationRecord
   private
 
   def assign_random_color
-    self.color = generate_unique_color
+    self.color = PALETTE.sample
   end
 
   def generate_unique_color
-    organization_colors = Team.where(organization_id: organization_id).pluck(:color)
+    organization_colors = Accounts::Team.where(organization_id: organization_id).pluck(:color)
     available_colors = PALETTE - organization_colors
     if available_colors.empty?
       SecureRandom.hex(6)
