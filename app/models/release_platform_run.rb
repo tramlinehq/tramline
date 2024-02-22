@@ -181,12 +181,17 @@ class ReleasePlatformRun < ApplicationRecord
     end
   end
 
+  def allow_blocked_step?
+    Flipper.enabled?(:allow_blocked_step, self)
+  end
+
   def manually_startable_step?(step)
     return false if train.inactive?
     return false unless on_track?
     return false if last_commit.blank?
     return true if (hotfix? || patch_fix?) && last_commit.run_for(step, self).blank?
     return false if upcoming_release_step?(step)
+    return true if ongoing_release_step?(step) && allow_blocked_step?
     return false if ongoing_release_step?(step) && train.hotfix_release.present?
     return true if step.first? && step_runs_for(step).empty?
     return false if step.first?
@@ -198,6 +203,7 @@ class ReleasePlatformRun < ApplicationRecord
     return false if train.inactive?
     return false unless on_track?
     return false if last_commit.blank?
+    return false if allow_blocked_step?
     return true if train.hotfix_release.present? && train.hotfix_release != release && step.release?
 
     (next_step == step) && previous_step_run_for(step)&.success? && upcoming_release_step?(step)
