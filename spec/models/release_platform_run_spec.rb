@@ -1,4 +1,5 @@
 require "rails_helper"
+using RefinedString
 
 describe ReleasePlatformRun do
   it "has a valid factory" do
@@ -107,6 +108,19 @@ describe ReleasePlatformRun do
 
       expect(release_platform_run.manually_startable_step?(steps.first)).to be(false)
       expect(release_platform_run.manually_startable_step?(steps.second)).to be(true)
+    end
+
+    it "release step cannot be started when release platform run is in fix mode but there is a hotfix running" do
+      release_step = create(:step, :release, :with_deployment, release_platform:)
+      release_platform_run = create(:release_platform_run, release_platform:, in_store_resubmission: true)
+      commit = create(:commit, release: release_platform_run.release)
+      release_platform_run.update!(last_commit: commit)
+      create(:step_run, step: steps.first, status: "ci_workflow_triggered", release_platform_run:, commit:)
+      _hotfix_release = create(:release, train: release_platform.train, release_type: Release.release_types[:hotfix])
+
+      expect(release_platform_run.manually_startable_step?(steps.first)).to be(false)
+      expect(release_platform_run.manually_startable_step?(steps.second)).to be(true)
+      expect(release_platform_run.manually_startable_step?(release_step)).to be(false)
     end
   end
 
@@ -247,7 +261,7 @@ describe ReleasePlatformRun do
     end
 
     it "is true when it has step run and production deployment run has started rollout" do
-      release_step_run = create(:step_run, step: release_step, release_platform_run:)
+      release_step_run = create(:step_run, step: release_step, release_platform_run:, build_version: release_platform_run.release_version)
       create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
       release_platform_run.bump_version!
       expect(release_platform_run).to be_patch_fix
@@ -289,7 +303,7 @@ describe ReleasePlatformRun do
       end
 
       it "is true when it has step run and production deployment run has started rollout" do
-        release_step_run = create(:step_run, step: release_step, release_platform_run:)
+        release_step_run = create(:step_run, step: release_step, release_platform_run:, build_version: release_platform_run.release_version)
         create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
         expect(release_platform_run).to be_version_bump_required
       end
@@ -301,6 +315,21 @@ describe ReleasePlatformRun do
 
       it "is true when rollout has started for production deployment" do
         expect(release_platform_run.metadata_editable?).to be(true)
+      end
+
+      it "is false when changes already exist since last production deployment" do
+        next_version = release_platform_run.release_version.to_semverish.bump!(:patch).to_s
+        release_step_run = create(:step_run, step: release_step, release_platform_run:, build_version: next_version)
+        create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
+        expect(release_platform_run).not_to be_version_bump_required
+      end
+
+      it "is true when new changes have come since last production deployment" do
+        next_version = release_platform_run.release_version.to_semverish.bump!(:patch).to_s
+        release_platform_run.update!(release_version: next_version)
+        release_step_run = create(:step_run, step: release_step, release_platform_run:, build_version: next_version)
+        create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
+        expect(release_platform_run).to be_version_bump_required
       end
     end
 
@@ -327,22 +356,37 @@ describe ReleasePlatformRun do
       end
 
       it "is false when it has step run and production deployment run has not started rollout" do
-        release_step_run = create(:step_run, step: release_step, release_platform_run:)
+        release_step_run = create(:step_run, step: release_step, release_platform_run:, build_version: release_platform_run.release_version)
         create(:deployment_run, deployment: production_deployment, step_run: release_step_run)
         expect(release_platform_run).not_to be_version_bump_required
       end
 
       it "is true when it has step run and production deployment run has started rollout" do
-        release_step_run = create(:step_run, step: release_step, release_platform_run:)
+        release_step_run = create(:step_run, step: release_step, release_platform_run:, build_version: release_platform_run.release_version)
         create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
         release_platform_run.update!(last_commit: release_step_run.commit)
         expect(release_platform_run).to be_version_bump_required
       end
 
       it "is true when it has step run and production deployment run has been review approved" do
-        release_step_run = create(:step_run, step: release_step, release_platform_run:)
+        release_step_run = create(:step_run, step: release_step, release_platform_run:, build_version: release_platform_run.release_version)
         create(:deployment_run, :ready_to_release, deployment: production_deployment, step_run: release_step_run)
         release_platform_run.update!(last_commit: release_step_run.commit)
+        expect(release_platform_run).to be_version_bump_required
+      end
+
+      it "is false when changes already exist since last production deployment" do
+        next_version = release_platform_run.release_version.to_semverish.bump!(:patch).to_s
+        release_step_run = create(:step_run, step: release_step, release_platform_run:, build_version: next_version)
+        create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
+        expect(release_platform_run).not_to be_version_bump_required
+      end
+
+      it "is true when new changes have come since last production deployment" do
+        next_version = release_platform_run.release_version.to_semverish.bump!(:patch).to_s
+        release_platform_run.update!(release_version: next_version)
+        release_step_run = create(:step_run, step: release_step, release_platform_run:, build_version: next_version)
+        create(:deployment_run, :rollout_started, deployment: production_deployment, step_run: release_step_run)
         expect(release_platform_run).to be_version_bump_required
       end
     end
@@ -365,7 +409,7 @@ describe ReleasePlatformRun do
         release_version = "1.2"
         deployment = create(:deployment, *test_case, step: release_step)
         release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version:)
-        step_run = create(:step_run, release_platform_run:, step: release_step)
+        step_run = create(:step_run, release_platform_run:, step: release_step, build_version: release_version)
         create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
 
         release_platform_run.bump_version!
@@ -378,7 +422,7 @@ describe ReleasePlatformRun do
         release_version = "1.2.3"
         deployment = create(:deployment, *test_case, step: release_step)
         release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version:)
-        step_run = create(:step_run, release_platform_run:, step: release_step)
+        step_run = create(:step_run, release_platform_run:, step: release_step, build_version: release_version)
         create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
 
         release_platform_run.bump_version!
@@ -409,7 +453,7 @@ describe ReleasePlatformRun do
         ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version: ongoing_release_version)
         deployment = create(:deployment, :with_google_play_store, :with_production_channel, step: release_step)
         _upcoming_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: upcoming_release, release_version: upcoming_release_version)
-        step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step: release_step)
+        step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step: release_step, build_version: ongoing_release_platform_run.release_version)
         create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
 
         ongoing_release_platform_run.bump_version!
@@ -429,7 +473,7 @@ describe ReleasePlatformRun do
         ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: ongoing_release, release_version: ongoing_release_version)
         deployment = create(:deployment, :with_google_play_store, :with_production_channel, step: release_step)
         _upcoming_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: upcoming_release, release_version: upcoming_release_version)
-        step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step: release_step)
+        step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step: release_step, build_version: ongoing_release_platform_run.release_version)
         create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
 
         ongoing_release_platform_run.bump_version!
@@ -446,7 +490,7 @@ describe ReleasePlatformRun do
       it "bumps version to next release version" do
         ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: ongoing_release, release_version: ongoing_release_version)
         deployment = create(:deployment, :with_google_play_store, :with_production_channel, step: release_step)
-        step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step: release_step)
+        step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step: release_step, build_version: ongoing_release_platform_run.release_version)
         create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
 
         ongoing_release_platform_run.bump_version!

@@ -188,6 +188,10 @@ class StepRun < ApplicationRecord
   scope :not_failed, -> { where.not(status: FAILED_STATES) }
   scope :sequential, -> { order("step_runs.scheduled_at ASC") }
 
+  def basic_build_version
+    build_version.split("-").first
+  end
+
   def after_manual_submission_required
     event_stamp!(reason: :failed_with_action_required, kind: :error, data: stamp_data)
     notify_on_failure!("manual submission required!")

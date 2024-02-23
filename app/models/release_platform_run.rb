@@ -189,9 +189,9 @@ class ReleasePlatformRun < ApplicationRecord
     return false if train.inactive?
     return false unless on_track?
     return false if last_commit.blank?
+    return false if ongoing_release_step?(step) && train.hotfix_release.present? && !allow_blocked_step?
     return true if (hotfix? || patch_fix?) && last_commit.run_for(step, self).blank?
     return false if upcoming_release_step?(step)
-    return false if ongoing_release_step?(step) && train.hotfix_release.present? && !allow_blocked_step?
     return true if step.first? && step_runs_for(step).empty?
     return false if step.first?
 
@@ -292,8 +292,18 @@ class ReleasePlatformRun < ApplicationRecord
   # Play Store does not have constraints around version name
   # App Store requires a higher version name than that of the previously approved version name
   # and so a version bump is required for iOS once the build has been approved as well
+  #
+  # Additionally, we don't bump versions until commits since the previous store version have also reached store
+  # --
+  # Example,
+  # Current version: 16.72 (1% on store)
+  # Patch fix commit: bump to 16.73
+  # 16.73 never reaches store
+  # Patch fix commit: no bump required
+  # --
   def version_bump_required?
-    latest_deployed_store_release&.status&.in? DeploymentRun::READY_STATES
+    store_release = latest_deployed_store_release
+    store_release&.status&.in?(DeploymentRun::READY_STATES) && store_release.step_run.basic_build_version == release_version
   end
 
   def patch_fix?

@@ -314,10 +314,6 @@ class Release < ApplicationRecord
     end
   end
 
-  def version_bump_required?
-    release_platform_runs.any?(&:version_bump_required?)
-  end
-
   def patch_fix?
     return false unless committable?
     release_platform_runs.any?(&:patch_fix?)

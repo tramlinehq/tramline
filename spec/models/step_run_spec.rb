@@ -135,7 +135,7 @@ describe StepRun do
       end
 
       it "is true when it is the running step's next-in-line deployment, previous deployment hasn't finished and release is in fix mode" do
-        inactive_step_run = create(:step_run, :deployment_started, step: release_step, release_platform_run:)
+        inactive_step_run = create(:step_run, :deployment_started, step: release_step, release_platform_run:, build_version: release_platform_run.release_version)
         _old_beta_deployment_run = create(:deployment_run, :released, step_run: inactive_step_run, deployment: regular_deployment)
         _old_prod_deployment_run = create(:deployment_run, :rollout_started, step_run: inactive_step_run, deployment: production_deployment)
         release_platform_run.bump_version!
