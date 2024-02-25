@@ -33,6 +33,8 @@ class Release < ApplicationRecord
   self.implicit_order_column = :scheduled_at
   self.ignored_columns += ["release_version"]
 
+  TERMINAL_STATES = [:finished, :stopped, :stopped_after_partial_finish]
+
   belongs_to :train
   belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :hotfixed_releases
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
@@ -46,7 +48,7 @@ class Release < ApplicationRecord
   has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
   has_many :hotfixed_releases, class_name: "Release", inverse_of: :hotfixed_from, dependent: :destroy
 
-  scope :pending_release, -> { where.not(status: [:finished, :stopped, :stopped_after_partial_finish]) }
+  scope :pending_release, -> { where.not(status: TERMINAL_STATES) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   scope :sequential, -> { order("releases.scheduled_at DESC") }
 
@@ -211,7 +213,7 @@ class Release < ApplicationRecord
   end
 
   def active?
-    !(stopped? || finished?)
+    !status.to_sym.in?(TERMINAL_STATES)
   end
 
   def queue_commit?
