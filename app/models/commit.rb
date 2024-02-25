@@ -49,6 +49,9 @@ class Commit < ApplicationRecord
       .where("teams.organization_id = ? OR teams.id IS NULL", org.id)
       .group("COALESCE(teams.name, '#{Accounts::Team::UNKNOWN_TEAM_NAME}')")
       .count("commits.id")
+      .sort_by(&:last)
+      .reverse
+      .to_h
   end
 
   def self.between(base_step_run, head_step_run)
