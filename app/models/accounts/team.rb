@@ -26,14 +26,14 @@ class Accounts::Team < ApplicationRecord
   private
 
   def assign_random_color
-    self.color = PALETTE.sample
+    self.color = generate_unique_color
   end
 
   def generate_unique_color
-    organization_colors = Accounts::Team.where(organization_id: organization_id).pluck(:color)
+    organization_colors = organization.teams.pluck(:color)
     available_colors = PALETTE - organization_colors
     if available_colors.empty?
-      SecureRandom.hex(6)
+      "#" + SecureRandom.hex(3)
     else
       available_colors.sample
     end

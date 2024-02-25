@@ -1,14 +1,16 @@
 class ChartComponent < ViewComponent::Base
   include AssetsHelper
   using RefinedHash
-  CHART_TYPES = %w[area line donut stacked-bar polar-area]
+  CHART_TYPES = %w[area line stacked-bar polar-area]
   InvalidChartType = Class.new(StandardError)
   CHART_COLORS = %w[#1A56DB #9061F9 #E74694 #31C48D #FDBA8C #16BDCA #7E3BF2 #1C64F2 #F05252]
 
   def initialize(chart, icon:)
-    @chart = chart
+    raise InvalidChartType if chart && !chart[:type].in?(CHART_TYPES)
+
     @icon = icon
-    raise InvalidChartType unless chart[:type].in?(CHART_TYPES)
+    @chart = chart
+    @chart = {} if chart.blank?
   end
 
   attr_reader :chart
@@ -32,31 +34,36 @@ class ChartComponent < ViewComponent::Base
   end
 
   def series
-    ungroup_series(group_colors: chart[:colors] || {}).to_json
+    ungroup_series(group_colors: colors).to_json
   end
 
   # input:
-  # {"team-a": {value: 1,
-  #             color: "#145688"},
-  #  "team-b": {value: 10,
-  #             color: "#145680"}}
+  # {"team-a": 1,
+  #  "team-b": 10}
+  # group-colors:
+  # {"team-a": "#145688",
+  #  "team-b": "#145680"}
   # output:
   # { data: [1, 10],
   #   labels: ["team-a", "team-b"],
   #   colors: ["#145688", "#145680"] }
 
   def linear_series(input = series_raw)
-    group_colors = chart[:colors] || {}
     res = input.each_with_object({labels: [], data: [], colors: []}) do |(category, data), result|
       result[:labels] << category.to_s
       result[:data] << data
-      result[:colors] << group_colors[category]
+      result[:colors] << colors[category]
     end
+    res[:colors] = CHART_COLORS if colors.empty?
     [res].to_json
   end
 
   def series_raw
     chart[:data]
+  end
+
+  def colors
+    chart[:colors] || {}
   end
 
   def title
@@ -86,8 +93,6 @@ class ChartComponent < ViewComponent::Base
   def line? = chart[:type] == "line"
 
   def area? = chart[:type] == "area"
-
-  def donut? = chart[:type] == "donut"
 
   def stacked_bar? = chart[:type] == "stacked-bar"
 
@@ -122,7 +127,7 @@ class ChartComponent < ViewComponent::Base
   #  {:name=>"Android Release", :group=>"android", :data=>{"8.0.1"=>4, "8.0.2"=>5}},
   #  {:name=>"QA iOS Review", :group=>"ios", :data=>{"8.0.1"=>6, "8.0.2"=>7}},
   #  {:name=>"iOS Release", :group=>"ios", :data=>{"8.0.1"=>8, "8.0.2"=>9}}]
-  def ungroup_series(input = series_raw, group_colors: {})
+  def ungroup_series(input = series_raw, group_colors: colors)
     input.each_with_object([]) do |(category, grouped_maps), result|
       grouped_maps.each do |group, inner_data|
         if inner_data.is_a?(Hash) && stacked?

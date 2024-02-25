@@ -261,12 +261,12 @@
       <div class="grid grid-cols-2 gap-x-1 my-3 gap-y-1">
         <%= render ChartComponent.new(@devops_report[:operational_efficiency][:contributors], icon: "user.svg") %>
         <%= render ChartComponent.new(@devops_report[:operational_efficiency][:stability_contributors], icon: "user.svg") %>
-<!--        <div class="col-span-2">-->
-          <%#= render ChartComponent.new(@devops_report[:operational_efficiency][:team_contributors], icon: "user.svg") %>
-<!--        </div>-->
-<!--        <div class="col-span-2">-->
-          <%#= render ChartComponent.new(@devops_report[:operational_efficiency][:team_stability_contributors], icon: "user.svg") %>
-<!--        </div>-->
+        <div class="col-span-2">
+          <%= render ChartComponent.new(@devops_report[:operational_efficiency][:team_contributors], icon: "user.svg") %>
+        </div>
+        <div class="col-span-2">
+          <%= render ChartComponent.new(@devops_report[:operational_efficiency][:team_stability_contributors], icon: "user.svg") %>
+        </div>
       </div>
     </article>
   <% end %>
