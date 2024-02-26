@@ -11,7 +11,7 @@
     <% end %>
   <% end %>
 
-  <%= render V2::TableComponent.new(columns: ["Email", "Status", "Preferred Name", "Full Name", "Role"]) do |table| %>
+  <%= render V2::TableComponent.new(columns: ["Email", "Status", "Preferred Name", "Full Name", "Role", "VCS Username"]) do |table| %>
     <% @team.each do |member| %>
       <% table.with_row do |row| %>
         <% row.with_cell do %>
@@ -30,6 +30,9 @@
         <% end %>
         <% row.with_cell do %>
           <%= member.role_for(current_organization).titleize %>
+        <% end %>
+        <% row.with_cell do %>
+          <%= member.github_login || "-" %>
         <% end %>
       <% end %>
     <% end %>
@@ -55,6 +58,11 @@
         <% end %>
         <% row.with_cell do %>
           <%= invite.role.titleize %>
+        <% end %>
+        <% row.with_cell do %>
+          <div class="font-medium text-slate-800">
+            -
+          </div>
         <% end %>
       <% end %>
     <% end %>

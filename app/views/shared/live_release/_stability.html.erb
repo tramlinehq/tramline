@@ -15,7 +15,9 @@
   <% if release.finished? || release.stopped? %>
     <section class="my-4">
       <div class="flex flex-wrap justify-between items-center px-5 py-3 bg-indigo-50 border border-indigo-100 rounded-sm text-left">
-        <div class="text-slate-800 font-semibold">This release was <%= release.display_attr(:status) %> and is now locked.</div>
+        <div class="text-slate-800 font-semibold">This release was <%= release.display_attr(:status) %> and is now
+          locked.
+        </div>
         <% if release.tag_name.present? %>
           <%= link_to_external release.tag_name, release.tag_url, class: "underline text-slate-500" %>
         <% end %>
@@ -43,8 +45,9 @@
                                     "Move to this step",
                                     start_release_step_run_path(release, step),
                                     { class: "btn-xs mb-1" } %>
-                <div class="text-sm font-normal text-main-500 bg-main-50 p-2 rounded-sm border border-main-200">
-                  You cannot start this release step until the <%= blocked_step_release_link(release.release) %> is finished.
+                <div class="text-sm font-normal text-gray-500 bg-gray-50 p-2 rounded-sm border border-gray-200">
+                  You cannot start this release step until the <%= blocked_step_release_link(release.release) %> is
+                  finished.
                 </div>
               </div>
             <% end %>
@@ -84,10 +87,33 @@
     </ol>
   </div>
 
-  <% if release.production_release_happened? %>
-    <div class="font-bold text-xl mt-8">Release Health</div>
-    <% release.store_releases.each do |store_release| %>
-      <%= render ReleaseMonitoringComponent.new(deployment_run: store_release) %>
-    <% end %>
+  <% if release.production_release_happened? && release.store_releases.any?(&:latest_health_data) %>
+    <article data-controller="reveal" class="mt-8">
+      <%= toggle_for(true, full_width: true) do %>
+        <div class="font-bold text-xl">Release Health</div>
+      <% end %>
+
+      <div data-reveal hidden>
+        <% release.store_releases.each do |store_release| %>
+          <%= render ReleaseMonitoringComponent.new(deployment_run: store_release) %>
+        <% end %>
+      </div>
+    </article>
+  <% end %>
+
+  <% if release.external_builds.size > 1 %>
+    <article data-controller="reveal" class="mt-8">
+      <%= toggle_for(true, full_width: true) do %>
+        <div class="font-bold text-xl">
+          Build Health
+        </div>
+      <% end %>
+
+      <div data-reveal hidden>
+        <% release.steps.each do |step| %>
+          <%= render BuildHealthComponent.new(step:, release_platform_run: release) %>
+        <% end %>
+      </div>
+    </article>
   <% end %>
 </section>

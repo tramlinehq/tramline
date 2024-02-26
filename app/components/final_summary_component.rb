@@ -3,6 +3,9 @@ class FinalSummaryComponent < ViewComponent::Base
   include LinkHelper
   attr_reader :release
 
+  delegate :current_organization, to: :helpers
+  delegate :team_colors, to: :current_organization
+
   def initialize(release:)
     @release = release
   end
@@ -25,6 +28,14 @@ class FinalSummaryComponent < ViewComponent::Base
     summary[:pull_requests]
   end
 
+  def team_stability_commits
+    summary[:team_stability_commits]
+  end
+
+  def team_release_commits
+    summary[:team_release_commits]
+  end
+
   def store_versions_by_platform
     summary[:store_versions].all.sort_by(&:platform).group_by(&:platform)
   end
@@ -44,7 +55,8 @@ class FinalSummaryComponent < ViewComponent::Base
       "Overall",
       store_versions? ? "Store versions" : nil,
       "Step summary",
-      pull_requests? ? "Pull requests" : nil
+      pull_requests? ? "Pull requests" : nil,
+      (current_organization.team_analysis_enabled? && teams_present?) ? "Team analysis" : nil
     ].compact
   end
 
@@ -54,6 +66,10 @@ class FinalSummaryComponent < ViewComponent::Base
 
   def pull_requests?
     pull_requests.present?
+  end
+
+  def teams_present?
+    team_stability_commits.present? || team_release_commits.present?
   end
 
   def loaded?
@@ -78,5 +94,31 @@ class FinalSummaryComponent < ViewComponent::Base
 
   def staged_rollouts?(store_version)
     store_version.staged_rollouts.present?
+  end
+
+  def team_stability_chart
+    {data: team_stability_commits,
+     colors: team_colors,
+     type: "polar-area",
+     value_format: "number",
+     name: "Stability Contribution",
+     title: "Stability Contribution",
+     scope: "Fixes (commits) during the release",
+     help_text: "",
+     show_x_axis: false,
+     show_y_axis: false}
+  end
+
+  def team_release_chart
+    {data: team_release_commits,
+     colors: team_colors,
+     type: "polar-area",
+     value_format: "number",
+     name: "Release Contribution",
+     title: "Release Contribution",
+     scope: "Work done (commits) for the release",
+     help_text: "",
+     show_x_axis: false,
+     show_y_axis: false}
   end
 end

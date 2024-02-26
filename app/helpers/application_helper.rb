@@ -44,11 +44,11 @@ module ApplicationHelper
     )
   end
 
-  def toggle_for(hide, &block)
+  def toggle_for(hide, full_width: false, &block)
     render(
       partial: "shared/toggle_button",
       locals: {
-        hide: hide, block: block
+        hide: hide, block: block, full_width: full_width
       }
     )
   end

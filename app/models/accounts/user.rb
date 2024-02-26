@@ -13,6 +13,7 @@
 #  encrypted_password     :string           default(""), not null
 #  failed_attempts        :integer          default(0), not null
 #  full_name              :string           not null
+#  github_login           :string
 #  last_sign_in_at        :datetime
 #  last_sign_in_ip        :string
 #  locked_at              :datetime
@@ -26,6 +27,7 @@
 #  unlock_token           :string           indexed
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
+#  github_id              :string
 #
 class Accounts::User < ApplicationRecord
   extend FriendlyId
@@ -45,6 +47,7 @@ class Accounts::User < ApplicationRecord
   has_many :all_organizations, through: :memberships, source: :organization
   has_many :sent_invites, class_name: "Invite", foreign_key: "sender_id", inverse_of: :sender, dependent: :destroy
   has_many :invitations, class_name: "Invite", foreign_key: "recipient_id", inverse_of: :recipient, dependent: :destroy
+  has_many :commits, foreign_key: "author_login", primary_key: "github_login", dependent: :nullify, inverse_of: :user
 
   friendly_id :full_name, use: :slugged
 

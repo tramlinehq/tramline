@@ -1,7 +1,7 @@
-<button class="group px-2 py-3 transform flex" data-action="reveal#toggle">
-    <div class="flex items-baseline truncate">
-        <%= capture(&block) if block.present? %>
-        <span data-reveal <%= "hidden" if hide %>><%= inline_svg("caret.svg", classname: "w-2.5 h-2.5 shrink-0 fill-current rotate-0 text-slate-500 group-hover:text-slate-800") %></span>
-        <span data-reveal <%= "hidden" unless hide %>><%= inline_svg("caret.svg", classname: "w-2.5 h-2.5 shrink-0 fill-current rotate-180 text-slate-500 group-hover:text-slate-800") %></span>
-    </div>
+<button class="group px-2 py-3 transform <%= full_width ? "w-full" : "flex" %>" data-action="reveal#toggle">
+  <div class="flex items-baseline truncate <%= "justify-between" if full_width %>">
+    <%= capture(&block) if block.present? %>
+    <span data-reveal <%= "hidden" if hide %>><%= inline_svg("caret.svg", classname: "w-2.5 h-2.5 shrink-0 fill-current rotate-0 text-slate-500 group-hover:text-slate-800") %></span>
+    <span data-reveal <%= "hidden" unless hide %>><%= inline_svg("caret.svg", classname: "w-2.5 h-2.5 shrink-0 fill-current rotate-180 text-slate-500 group-hover:text-slate-800") %></span>
+  </div>
 </button>

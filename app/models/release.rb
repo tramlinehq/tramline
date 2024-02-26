@@ -33,6 +33,8 @@ class Release < ApplicationRecord
   self.implicit_order_column = :scheduled_at
   self.ignored_columns += ["release_version"]
 
+  TERMINAL_STATES = [:finished, :stopped, :stopped_after_partial_finish]
+
   belongs_to :train
   belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :hotfixed_releases
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
@@ -46,8 +48,8 @@ class Release < ApplicationRecord
   has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
   has_many :hotfixed_releases, class_name: "Release", inverse_of: :hotfixed_from, dependent: :destroy
 
-  scope :pending_release, -> { where.not(status: [:finished, :stopped, :stopped_after_partial_finish]) }
-  scope :completed, -> { where(status: [:finished, :stopped, :stopped_after_partial_finish]) }
+  scope :completed, -> { where(status: TERMINAL_STATES) }
+  scope :pending_release, -> { where.not(status: TERMINAL_STATES) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   scope :sequential, -> { order("releases.scheduled_at DESC") }
 
@@ -136,7 +138,7 @@ class Release < ApplicationRecord
 
   delegate :versioning_strategy, to: :train
   delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
-  delegate :platform, to: :app
+  delegate :platform, :organization, to: :app
 
   def self.pending_release?
     pending_release.exists?
@@ -211,8 +213,8 @@ class Release < ApplicationRecord
     created? || on_track? || partially_finished?
   end
 
-  def pull_request_acceptable?
-    committable? || post_release_started? || post_release_failed?
+  def active?
+    !status.to_sym.in?(TERMINAL_STATES)
   end
 
   def queue_commit?
@@ -313,10 +315,6 @@ class Release < ApplicationRecord
         pr.close!
       end
     end
-  end
-
-  def version_bump_required?
-    release_platform_runs.any?(&:version_bump_required?)
   end
 
   def patch_fix?

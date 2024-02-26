@@ -6,7 +6,11 @@ class Charts::DevopsReport
 
   def self.all(train) = new(train).all
 
-  def initialize(train) = @train = train
+  def initialize(train)
+    @train = train
+    @organization = train.organization
+    @team_colors = organization.team_colors
+  end
 
   def warm
     cache.write(cache_key, report)
@@ -66,6 +70,22 @@ class Charts::DevopsReport
           type: "line",
           value_format: "number",
           name: "operational_efficiency.contributors"
+        },
+        team_stability_contributors: {
+          data: team_stability_contributors,
+          stacked: true,
+          type: "stacked-bar",
+          value_format: "number",
+          name: "operational_efficiency.team_stability_contributors",
+          colors: team_colors
+        },
+        team_contributors: {
+          data: team_contributors,
+          stacked: true,
+          type: "stacked-bar",
+          value_format: "number",
+          name: "operational_efficiency.team_contributors",
+          colors: team_colors
         }
       }
     }
@@ -102,6 +122,22 @@ class Charts::DevopsReport
       .group_by(&:release_version)
       .sort_by { |v, _| v.to_semverish }.to_h
       .transform_values { {contributors: _1.flat_map(&:release_changelog).compact.flat_map(&:unique_authors).size} }
+  end
+
+  memoize def team_stability_contributors(last: LAST_RELEASES)
+    finished_releases(last)
+      .group_by(&:release_version)
+      .sort_by { |v, _| v.to_semverish }.to_h
+      .transform_values { |releases| releases[0].all_commits.count_by_team(organization) }
+      .compact_blank
+  end
+
+  memoize def team_contributors(last: LAST_RELEASES)
+    finished_releases(last)
+      .group_by(&:release_version)
+      .sort_by { |v, _| v.to_semverish }.to_h
+      .transform_values { |releases| releases[0].release_changelog&.commits_by_team }
+      .compact_blank
   end
 
   memoize def time_in_review(last: LAST_RELEASES)
@@ -164,7 +200,7 @@ class Charts::DevopsReport
 
   private
 
-  attr_reader :train
+  attr_reader :train, :organization, :team_colors
   delegate :cache, to: Rails
 
   memoize def finished_releases(n)

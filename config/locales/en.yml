@@ -325,6 +325,14 @@ en:
         title: "Stability contributors"
         scope: "Last 6 releases"
         help_text: "Contributors who have added commits to a running release branch"
+      team_contributors:
+        title: "Release contribution"
+        scope: "Last 6 releases. Commits per team."
+        help_text: ""
+      team_stability_contributors:
+        title: "Release stability fixes"
+        scope: "Last 6 releases. Commits after release start per team."
+        help_text: ""
   datetime:
     distance_in_words:
       x_weeks:
@@ -348,4 +356,3 @@ en:
       x_seconds:
         one: "1 second"
         other: "%{count} secs"
-

@@ -23,7 +23,8 @@ class BuildHealthComponent < ViewComponent::Base
   end
 
   def app_size_data
-    return {} unless step_runs.any?(&:build_size)
+    return nil unless step_runs.any?(&:build_size)
+
     {
       identifier: "app_size",
       name: "App Size",
