@@ -1,4 +1,4 @@
-<%= render V2::ContainerComponent.new(title: train.name) do |container| %>
+<%= render V2::ContainerComponent.new(title: train.name, subtitle: train.description) do |container| %>
   <% if train.hotfixable? %>
     <% container.with_action do %>
       <%= render V2::ModalComponent.new(title: "Start a hotfix release",

@@ -19,7 +19,7 @@
 
           <%= render V2::DropdownComponent.new(authz: false) do |dropdown| %>
             <% button = dropdown.with_button(size: :xs) %>
-            <% button.with_icon("https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png", size: :xxl) %>
+            <% button.with_icon("art/org_default.png", size: :xxl) %>
             <% button.with_title_text do %>
               <div class="text-left">
                 <div class="text-sm font-semibold leading-none text-main dark:text-white">
@@ -56,7 +56,9 @@
                 <div class="text-left">
                   <div class="text-sm font-semibold leading-none text-main dark:text-white">
                     <%= default_app.name %>
-                    <span class="text-main-500 dark:text-main-400"><%= default_app.bundle_identifier %></span>
+                    <span class="text-sm text-main-500 dark:text-main-400">
+                      <%= default_app.bundle_identifier %>
+                    </span>
                   </div>
                 </div>
               <% end %>

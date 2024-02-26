@@ -1,5 +1,5 @@
 # This is a base component for other release-related components
-# Note that this doesn't actually render anything
+# Note: this doesn't actually render anything
 class V2::BaseReleaseComponent < V2::BaseComponent
   include Memery
   using RefinedHash
@@ -9,11 +9,13 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     @release = release
   end
 
+  delegate :release_branch, :tag_name, to: :release
+
   memoize def status
+    return ReleasesHelper::SHOW_RELEASE_STATUS.fetch(:upcoming) if @release.upcoming?
     ReleasesHelper::SHOW_RELEASE_STATUS.fetch(@release.status.to_sym)
   end
 
-  # TODO: UI: just render the badge component?
   def hotfix_badge
     if @release.hotfix?
       hotfixed_from = @release.hotfixed_from
@@ -68,11 +70,5 @@ class V2::BaseReleaseComponent < V2::BaseComponent
   memoize def duration
     return distance_of_time_in_words(@release.scheduled_at, @release.end_time) if @release.end_time
     distance_of_time_in_words(@release.scheduled_at, Time.current)
-  end
-
-  delegate :release_branch, to: :release
-
-  def release_tag
-    release.tag_name
   end
 end

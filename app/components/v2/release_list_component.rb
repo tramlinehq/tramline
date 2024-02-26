@@ -29,10 +29,6 @@ class V2::ReleaseListComponent < V2::BaseComponent
     train.releases.released.first
   end
 
-  def ordered_releases
-    train.releases.order(scheduled_at: :desc).take(100)
-  end
-
   def release_component(run)
     V2::BaseReleaseComponent.new(run)
   end

@@ -16,6 +16,17 @@ class V2::BuildInfoComponent < V2::BaseComponent
     failed_with_action_required: {text: "Needs manual submission", status: :failure}
   }
 
+  STAGED_ROLLOUT_STATUS = {
+    created: {text: "Rollout started", status: :ongoing},
+    started: {text: "Rollout started", status: :ongoing},
+    paused: {text: "Rollout paused", status: :neutral},
+    resumed: {text: "Rollout started", status: :ongoing},
+    stopped: {text: "Rollout was halted", status: :neutral},
+    failed: {text: "Rollout failed", status: :failure},
+    completed: {text: "Released", status: :success},
+    fully_released: {text: "Released", status: :success}
+  }
+
   def initialize(deployment_run)
     @deployment_run = deployment_run
     @staged_rollout = deployment_run.staged_rollout
@@ -26,31 +37,11 @@ class V2::BuildInfoComponent < V2::BaseComponent
   delegate :deployment, :external_link, to: :@deployment_run
 
   def status
-    return staged_rollout_status if @staged_rollout.present?
-    STATUS[@deployment_run.status.to_sym] || {text: "Unknown", status: :neutral}
-  end
-
-  def staged_rollout_status
-    percentage = "%.0f" % @staged_rollout.last_rollout_percentage if @staged_rollout.last_rollout_percentage.present?
-
-    case @staged_rollout.status.to_sym
-    when :created
-      {text: "Rollout started", status: :ongoing}
-    when :started
-      {text: "Rolled out to #{percentage}%", status: :ongoing}
-    when :failed
-      {text: "Failed to rollout out after #{percentage}%", status: :failure}
-    when :completed
-      {text: "Released", status: :success}
-    when :stopped
-      {text: "Rollout halted at #{percentage}%", status: :neutral}
-    when :fully_released
-      {text: "Released", status: :success}
-    when :paused
-      {text: "Rollout paused at #{percentage}%", status: :neutral}
-    else
-      {text: "Unknown", status: :neutral}
+    if @staged_rollout.present?
+      return STAGED_ROLLOUT_STATUS[@staged_rollout.status.to_sym]
     end
+
+    STATUS[@deployment_run.status.to_sym] || {text: "Unknown", status: :neutral}
   end
 
   def build_info

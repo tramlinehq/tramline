@@ -3,7 +3,6 @@ class AppConfigsController < SignedInApplicationController
 
   before_action :require_write_access!, only: %i[edit update]
   before_action :set_integration_category, only: %i[edit]
-  before_action :require_integration_setup, only: %i[edit]
   before_action :set_app_config, only: %i[edit update]
 
   def edit
@@ -109,12 +108,6 @@ class AppConfigsController < SignedInApplicationController
 
   def set_notification_channels
     @notification_channels = @app.notification_provider.channels if @app.notifications_set_up?
-  end
-
-  def require_integration_setup
-    unless @app.integrations.category_ready?(@integration_category)
-      redirect_to app_path(@app), flash: {notice: "Finish the integration setup before configuring the app."}
-    end
   end
 
   def set_integration_category

@@ -22,7 +22,6 @@
           <% end %>
 
           <%= render V2::StatusIndicatorPillComponent.new(text: status.first, status: status.second) %>
-
           <%= render(hotfix_badge) unless hotfix_badge.nil? %>
         </div>
 
@@ -65,8 +64,8 @@
             b.with_icon(vcs_icon, size: :sm)
           end %>
         <% end %>
-        <% if release_tag.present? %>
-          <%= render V2::ButtonComponent.new(label: release_tag,
+        <% if tag_name.present? %>
+          <%= render V2::ButtonComponent.new(label: tag_name,
                                              scheme: :link,
                                              type: :link_external,
                                              options: release.tag_url,
@@ -79,7 +78,7 @@
       </div>
     </div>
 
-    <div class="grid <%= grid_size %> justify-between mt-4 gap-x-6 gap-y-3">
+    <div class="grid grid-cols-2 justify-between mt-4 gap-x-6 gap-y-3">
       <% platform_runs.each do |run| %>
         <div class="grid gap-y-2 items-end content-end">
           <% run.store_releases.each do |store_release| %>
@@ -101,14 +100,12 @@
 
       <% platform_runs.each do |run| %>
         <div>
-          <% if run.store_releases.first.present? %>
-            <%= render V2::ReleaseMonitoringComponent.new(
-              deployment_run: run.store_releases.first,
-              metrics: [:stability, :adoption_rate, :staged_rollout],
-              show_bundle_id: false,
-              cols: 3,
-              size: :sm) %>
-          <% end %>
+          <%= render V2::ReleaseMonitoringComponent.new(
+            deployment_run: run.store_releases.first,
+            metrics: [:stability, :adoption_rate, :staged_rollout],
+            show_bundle_id: false,
+            cols: 3,
+            size: :sm) %>
         </div>
       <% end %>
     </div>

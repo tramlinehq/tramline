@@ -7,7 +7,7 @@ module ApplicationHelper
     routine: %w[bg-sky-100 text-sky-600],
     neutral: %w[bg-slate-100 text-slate-500],
     ongoing: %w[bg-indigo-100 text-indigo-600],
-    inert: %w[bg-amber-100 text-amber-600]
+    inert: %w[bg-amber-100 text-amber-800]
   }
 
   PILL_STATUS_COLOR_PALETTE = {

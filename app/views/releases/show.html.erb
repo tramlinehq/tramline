@@ -11,7 +11,7 @@
 <%= render V2::ContainerComponent.new(title: @release.release_version) do |container| %>
   <% container.with_back_button %>
   <% container.with_side_action do %>
-    <%= release_component.hotfix_badge %>
+    <%= render(release_component.hotfix_badge) unless release_component.hotfix_badge.nil? %>
   <% end %>
 
   <% container.with_sub_action do %>
