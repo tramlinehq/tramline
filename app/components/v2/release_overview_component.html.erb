@@ -101,9 +101,9 @@
 
       <% platform_runs.each do |run| %>
         <div>
-          <% if run.store_releases.last.present? %>
+          <% if run.store_releases.first.present? %>
             <%= render V2::ReleaseMonitoringComponent.new(
-              deployment_run: run.store_releases.last,
+              deployment_run: run.store_releases.first,
               metrics: [:stability, :adoption_rate, :staged_rollout],
               show_bundle_id: false,
               cols: 3,
