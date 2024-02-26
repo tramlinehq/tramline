@@ -68,6 +68,7 @@ def nuke_train(train)
         srun.deployment_runs&.delete_all
         srun.build_artifact&.delete
         srun.passports&.delete_all
+        srun.external_build&.delete
       end
       prun.step_runs&.delete_all
       prun.passports&.delete_all
