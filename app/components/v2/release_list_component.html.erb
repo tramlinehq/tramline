@@ -103,15 +103,17 @@
     <% end %>
   <% end %>
 
-  <% container.with_sub_action do %>
-    <%= render V2::ButtonComponent.new(
-      scheme: :supporting,
-      label: "Remove",
-      options: app_train_path(app, train),
-      type: :link,
-      html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } }) do |b|
-      b.with_icon("v2/trash.svg")
-    end %>
+  <% if train.releases.blank? %>
+    <% container.with_sub_action do %>
+      <%= render V2::ButtonComponent.new(
+        scheme: :supporting,
+        label: "Remove",
+        options: app_train_path(app, train),
+        type: :link,
+        html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } }) do |b|
+        b.with_icon("v2/trash.svg")
+      end %>
+    <% end %>
   <% end %>
 
   <% container.with_body do %>
