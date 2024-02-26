@@ -115,7 +115,7 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
 }
 
 .heading-5 {
-  @apply text-xs font-medium tracking-normal text-main-600 dark:text-white;
+  @apply text-xs font-medium tracking-wide text-main-600 dark:text-white;
 }
 
 .ss-main {

@@ -185,14 +185,14 @@ class DeploymentRun < ApplicationRecord
   scope :matching_runs_for, ->(integration) { includes(:deployment).where(deployments: {integration: integration}) }
   scope :has_begun, -> { where.not(status: :created) }
   scope :not_failed, -> { where.not(status: [:failed, :failed_prepare_release]) }
-  scope :ready, -> { where(status: READY_STATES) }
+  scope :ready, -> { where(status: STORE_SUBMISSION_STATES) }
 
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 
   UnknownStoreError = Class.new(StandardError)
 
   def self.reached_production
-    ready.includes(:step_run, :deployment).select(&:production_channel?)
+    ready.includes([:staged_rollout, {step_run: [:commit], deployment: [:integration]}]).select(&:production_channel?)
   end
 
   def deployment_notes
@@ -474,7 +474,7 @@ class DeploymentRun < ApplicationRecord
       .merge(step_run.notification_params)
       .merge(
         {
-          project_link: external_release&.external_link.presence || deployment.project_link,
+          project_link: external_link,
           deep_link: provider&.deep_link(external_release&.external_id, release_platform.platform)
         }
       )
@@ -486,6 +486,10 @@ class DeploymentRun < ApplicationRecord
 
   def production_release_submitted?
     production_channel? && status.in?(STORE_SUBMISSION_STATES)
+  end
+
+  def external_link
+    external_release&.external_link.presence || deployment.project_link
   end
 
   private

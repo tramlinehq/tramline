@@ -18,10 +18,11 @@ class V2::ReleaseListComponent < V2::BaseComponent
   memoize def previous_releases
     train
       .releases
+      .includes([:release_platform_runs, hotfixed_from: [:release_platform_runs]])
       .completed
       .where.not(id: last_completed_release)
       .order(completed_at: :desc, scheduled_at: :desc)
-      .take(10)
+      .limit(10)
   end
 
   memoize def last_completed_release

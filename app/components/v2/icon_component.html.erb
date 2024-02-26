@@ -1,5 +1,9 @@
-<% if internal? && svg? %>
-  <%= inline_svg(icon, classname: classname) %>
+<% if tooltip? %>
+  <% tooltip.with_body do %>
+    <% render_component %>
+  <% end %>
+
+  <%= tooltip %>
 <% else %>
-  <%= image_tag(icon, class: classname) %>
+  <%= render_component %>
 <% end %>

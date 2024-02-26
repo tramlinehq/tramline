@@ -148,42 +148,38 @@
 
     <%= render V2::SectionComponent.new(style: :titled, title: "Previous Releases") do %>
       <%= render V2::TableComponent.new(columns: ["", "release", "dates", "duration", ""]) do |table| %>
-        <% previous_releases.each do |run| %>
-          <% release = release_component(run) %>
+        <% previous_releases.each do |release| %>
+          <% release_component = release_component(release) %>
 
           <% table.with_row do |row| %>
             <% row.with_cell(style: "") do %>
               <div class="flex space-x-2">
-                <%= render V2::StatusIndicatorPillComponent.new(text: release.status[0], status: release.status[1]) %>
-                <% if release.hotfix_badge %>
-                  <%= render V2::BadgeComponent.new(release.hotfix_badge[:text]) do |badge| %>
-                    <% badge.with_icon(release.hotfix_badge[:icon]) %>
-                  <% end %>
-                <% end %>
+                <%= render V2::StatusIndicatorPillComponent.new(text: release_component.status[0], status: release_component.status[1]) %>
+                <%= render(release_component.hotfix_badge) unless release_component.hotfix_badge.nil? %>
               </div>
             <% end %>
 
             <% row.with_cell(style: "font-medium") do %>
-              <% if run.completed_at %>
-                <%= render V2::BadgeComponent.new(run.release_version) %>
+              <% if release.completed_at %>
+                <%= render V2::BadgeComponent.new(release_component.release_version) %>
               <% else %>
-                <%= render V2::BadgeComponent.new(version_in_progress(run.release_version)) %>
+                <%= render V2::BadgeComponent.new(version_in_progress(release_component.release_version)) %>
               <% end %>
             <% end %>
 
             <% row.with_cell do %>
-              <div><%= release.interval %></div>
+              <div><%= release_component.interval %></div>
             <% end %>
 
             <% row.with_cell do %>
-              <div><%= release.duration %></div>
+              <div><%= release_component.duration %></div>
             <% end %>
 
             <% row.with_cell(style: "text-right w-2") do %>
               <%= render V2::ButtonComponent.new(
                 scheme: :supporting,
                 label: "Go to release",
-                options: release_path(run.id),
+                options: release_path(release.id),
                 size: :sm,
                 authz: false,
                 type: :link) do |b|

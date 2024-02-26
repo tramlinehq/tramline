@@ -6,16 +6,17 @@ class V2::ReleaseOverviewComponent < V2::BaseReleaseComponent
 
   attr_reader :release
 
-  def author_avatar
-    user_avatar(release_author, limit: 2, size: 42, colors: 90)
-  end
-
-  def release_author
-    release.app.organization.owner.full_name
+  def commit_count
+    [release.applied_commits.size, 1].max - 1
   end
 
   def cross_platform?
     release.app.cross_platform?
+  end
+
+  def platform_runs
+    @platform_runs ||=
+      release.release_platform_runs.includes(step_runs: {deployment_runs: [:staged_rollout]})
   end
 
   def vcs_icon

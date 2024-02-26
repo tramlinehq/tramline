@@ -52,7 +52,9 @@ class ChartComponent < ViewComponent::Base
   end
 
   def corner_icon
-    V2::IconComponent.new(@icon, size: :md, classes: "fill-current")
+    icon = V2::IconComponent.new("v2/info.svg", size: :md, classes: "text-main-500")
+    icon.with_tooltip(help_text, placement: "top")
+    icon
   end
 
   def subgroup? = chart[:subgroup]

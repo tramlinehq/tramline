@@ -303,25 +303,49 @@ en:
       frequency:
         title: "Release frequency"
         scope: "Last 6 months"
-        help_text: ""
+        help_text: "How often do you release every month?"
       time_in_review:
         title: "Time in review (iOS)"
         scope: "Last 6 versions"
-        help_text: ""
+        help_text: "Time spent in review on the App Store"
       hotfixes:
         title: "Fixes during release"
         scope: "Last 6 releases"
-        help_text: ""
+        help_text: "Fixes made after the release has partially reached the store"
       time_in_phases:
         title: "Duration across steps"
         scope: "Last 6 releases"
-        help_text: ""
+        help_text: "Time taken in each step of the release process"
     operational_efficiency:
       contributors:
         title: "Contributors"
         scope: "Last 6 releases"
-        help_text: ""
+        help_text: "Total contributors across releases"
       stability_contributors:
         title: "Stability contributors"
         scope: "Last 6 releases"
-        help_text: ""
+        help_text: "Contributors who have added commits to a running release branch"
+  datetime:
+    distance_in_words:
+      x_weeks:
+        one: "1 week"
+        other: "%{count} weeks"
+      x_days:
+        one: "1 day"
+        other: "%{count} days"
+      x_hours:
+        one: "one hour"
+        other: "%{count} hrs"
+      x_months:
+        one: "1 month"
+        other: "%{count} months"
+      x_years:
+        one: "1 year"
+        other: "%{count} years"
+      x_minutes:
+        one: "1 minute"
+        other: "%{count} mins"
+      x_seconds:
+        one: "1 second"
+        other: "%{count} secs"
+

@@ -11,11 +11,7 @@
 <%= render V2::ContainerComponent.new(title: @release.release_version) do |container| %>
   <% container.with_back_button %>
   <% container.with_side_action do %>
-    <% if release_component.hotfix_badge %>
-      <%= render V2::BadgeComponent.new(release_component.hotfix_badge[:text]) do |badge| %>
-        <% badge.with_icon(release_component.hotfix_badge[:icon]) %>
-      <% end %>
-    <% end %>
+    <%= release_component.hotfix_badge %>
   <% end %>
 
   <% container.with_sub_action do %>

@@ -6,13 +6,7 @@
           <%= datum_set.title %>
         </h1>
 
-        <div class="flex items-start space-x-2">
-          <% if datum_set.icon? %>
-            <span class="text-main-500">
-              <%= render datum_set.icon %>
-            </span>
-          <% end %>
-
+        <div class="flex items-start space-x-0">
           <div class="flex flex-col">
             <% datum_set.lines.each do |line| %>
               <span class="text-main-500 font-normal text-sm">

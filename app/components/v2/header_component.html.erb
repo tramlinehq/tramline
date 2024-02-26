@@ -19,7 +19,7 @@
 
           <%= render V2::DropdownComponent.new(authz: false) do |dropdown| %>
             <% button = dropdown.with_button(size: :xs) %>
-            <% button.with_icon("https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png", size: :xl_3) %>
+            <% button.with_icon("https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png", size: :xxl) %>
             <% button.with_title_text do %>
               <div class="text-left">
                 <div class="text-sm font-semibold leading-none text-main dark:text-white">
@@ -51,7 +51,7 @@
 
             <%= render V2::DropdownComponent.new(authz: false) do |dropdown| %>
               <% button = dropdown.with_button(size: :xs) %>
-              <% button.with_icon("https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png", size: :xl_3) %>
+              <% button.with_icon("art/cross_platform_default.png", size: :xxl, rounded: false) %>
               <% button.with_title_text do %>
                 <div class="text-left">
                   <div class="text-sm font-semibold leading-none text-main dark:text-white">
@@ -131,7 +131,7 @@
 
         <%= render V2::DropdownComponent.new(authz: false) do |dropdown| %>
           <% dropdown.with_button(size: :none, html_options: { class: "flex" }, scheme: :avatar_icon)
-                     .with_icon("https://flowbite.com/docs/images/people/profile-picture-5.jpg", size: :xl_3) %>
+                     .with_icon(user_avatar(user_name), raw_svg: true, size: :xl_3) %>
 
 
           <% dropdown.with_subtext do %>

@@ -12,12 +12,12 @@ class V2::TooltipComponent < ViewComponent::Base
 
   def call
     content_tag(:div,
-      nil,
+      class: "inline-flex",
       data: {controller: "popup",
              popup_away_value: "true",
              popup_target_selector_value: "[data-tooltip-popup]",
              popup_placement_value: placement}) do
-      concat body
+      concat content_tag(:div, body, data: {action: "mouseover->popup#show mouseout->popup#hide", popup_target: "element"})
       concat tooltip
     end
   end

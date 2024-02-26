@@ -6,15 +6,19 @@ class V2::IconComponent < V2::BaseComponent
     md: "w-4 h-4",
     lg: "w-5 h-5",
     xl: "w-6 h-6",
+    xxl: "w-7 h-7",
     xl_3: "w-8 h-8"
   }
 
-  def initialize(icon, rounded: true, size: :base, classes: "")
+  renders_one :tooltip, V2::TooltipComponent
+
+  def initialize(icon, raw_svg: false, rounded: true, size: :base, classes: "")
     raise ArgumentError, "Icon size must be one of #{SIZES.keys.join(", ")}" unless SIZES.key?(size)
     @icon = icon
     @size = size
     @rounded = rounded
     @classes = classes
+    @raw_svg = raw_svg
   end
 
   attr_reader :icon
@@ -30,7 +34,8 @@ class V2::IconComponent < V2::BaseComponent
   end
 
   def rounded_class
-    "rounded-full" if @rounded
+    return "rounded-full" if @rounded
+    "rounded-sm"
   end
 
   def external?
@@ -44,7 +49,21 @@ class V2::IconComponent < V2::BaseComponent
     !external?
   end
 
-  def svg?
+  def svg_file?
     @icon.ends_with?(".svg")
+  end
+
+  def raw_svg?
+    @raw_svg
+  end
+
+  def render_component
+    if internal? && raw_svg?
+      content_tag(:div, icon, class: classname)
+    elsif internal? && svg_file?
+      inline_svg(icon, classname: classname)
+    else
+      image_tag(icon, class: classname)
+    end
   end
 end

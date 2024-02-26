@@ -24,38 +24,6 @@ class Queries::ReleaseSummary
     cache.fetch(cache_key)
   end
 
-  private
-
-  attr_reader :release_id
-  delegate :cache, to: Rails
-
-  memoize def release
-    Release
-      .where(id: release_id)
-      .includes(:all_commits,
-        :pull_requests,
-        train: [:release_platforms],
-        release_platform_runs: {step_runs: {deployment_runs: [{deployment: [:integration]}, :staged_rollout]}})
-      .sole
-  end
-
-  def data
-    {
-      overall: Overall.from_release(release),
-      steps_summary: StepsSummary.from_release(release),
-      store_versions: StoreVersions.from_release(release),
-      pull_requests: release.pull_requests.automatic
-    }
-  end
-
-  def thaw
-    cache.delete(cache_key)
-  end
-
-  def cache_key
-    "release/#{release_id}/summary"
-  end
-
   class Queries::ReleaseSummary::Overall
     include ActiveModel::Model
     include ActiveModel::Attributes
@@ -113,6 +81,7 @@ class Queries::ReleaseSummary
           {
             name: step.name,
             platform: pr.display_attr(:platform),
+            platform_raw: pr.platform,
             started_at: started_at,
             phase: step.kind,
             ended_at: ended_at,
@@ -139,6 +108,7 @@ class Queries::ReleaseSummary
       attribute :ended_at, :datetime
       attribute :duration, :integer
       attribute :platform, :string
+      attribute :platform_raw, :string
       attribute :phase, :string
       attribute :builds_created_count, :integer
       attribute :name, :string
@@ -187,5 +157,37 @@ class Queries::ReleaseSummary
         )
       end
     end
+  end
+
+  private
+
+  attr_reader :release_id
+  delegate :cache, to: Rails
+
+  memoize def release
+    Release
+      .where(id: release_id)
+      .includes(:all_commits,
+        :pull_requests,
+        train: [:release_platforms],
+        release_platform_runs: {step_runs: {deployment_runs: [{deployment: [:integration]}, :staged_rollout]}})
+      .sole
+  end
+
+  def data
+    {
+      overall: Overall.from_release(release),
+      steps_summary: StepsSummary.from_release(release),
+      store_versions: StoreVersions.from_release(release),
+      pull_requests: release.pull_requests.automatic
+    }
+  end
+
+  def thaw
+    cache.delete(cache_key)
+  end
+
+  def cache_key
+    "release/#{release_id}/summary"
   end
 end

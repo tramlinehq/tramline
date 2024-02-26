@@ -1,4 +1,4 @@
-VERSION_NAME_REGEX = /\d+\.\d+(\.\d+)?(-\w+)?/
+VERSION_NAME_REGEX = /\d+\.\d+(\.\d+)?(-\w+)?/ unless defined? VERSION_NAME_REGEX
 
 Rails.application.routes.draw do
   require "sidekiq/web"

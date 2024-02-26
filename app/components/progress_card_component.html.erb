@@ -1,9 +1,9 @@
 <div class="rounded-lg border-slate-200 border flex flex-col p-4 gap-y-4">
-  <div class="flex flex-row justify-between">
-    <h1 class="heading-4">
+  <div class="flex flex-row items-center justify-between">
+    <h1 class="heading-5 uppercase">
       <%= name %>
     </h1>
-    <div><%= image_tag("integrations/logo_#{provider.to_s}.png", width: 20, height: 20) %></div>
+    <%= render V2::IconComponent.new("integrations/logo_#{provider.to_s}.png", size: :md, rounded: false) %>
   </div>
   <div class="flex flex-row justify-between items-end">
     <div class="<%= text_size %>"><%= current %>%</div>

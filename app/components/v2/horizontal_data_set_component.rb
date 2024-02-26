@@ -1,8 +1,5 @@
-# frozen_string_literal: true
-
 class V2::HorizontalDataSetComponent < V2::BaseComponent
   SEPARATORS = [:solid, :dashed]
-
   renders_many :data_sets, "DataSetComponent"
 
   def initialize(separator: :dashed, bg_color: false)
@@ -24,7 +21,7 @@ class V2::HorizontalDataSetComponent < V2::BaseComponent
   end
 
   class DataSetComponent < V2::BaseComponent
-    renders_one :icon, V2::IconComponent
+    renders_one :tooltip, V2::TooltipComponent
 
     def initialize(title:, uppercase_title: true, lines: [])
       @title = title
