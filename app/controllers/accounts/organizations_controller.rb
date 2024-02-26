@@ -7,6 +7,7 @@ class Accounts::OrganizationsController < SignedInApplicationController
 
   def edit
     @organization = current_user.organizations.friendly.find(params[:id])
+    @teams = @organization.teams
   end
 
   def rotate_api_key

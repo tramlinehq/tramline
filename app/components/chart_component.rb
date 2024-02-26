@@ -1,14 +1,16 @@
 class ChartComponent < ViewComponent::Base
   include AssetsHelper
   using RefinedHash
-  CHART_TYPES = %w[area line donut stacked-bar]
+  CHART_TYPES = %w[area line stacked-bar polar-area]
   InvalidChartType = Class.new(StandardError)
   CHART_COLORS = %w[#1A56DB #9061F9 #E74694 #31C48D #FDBA8C #16BDCA #7E3BF2 #1C64F2 #F05252]
 
   def initialize(chart, icon:)
-    @chart = chart
+    raise InvalidChartType if chart && !chart[:type].in?(CHART_TYPES)
+
     @icon = icon
-    raise InvalidChartType unless chart[:type].in?(CHART_TYPES)
+    @chart = chart
+    @chart = {} if chart.blank?
   end
 
   attr_reader :chart
@@ -32,11 +34,36 @@ class ChartComponent < ViewComponent::Base
   end
 
   def series
-    ungroup_series.to_json
+    ungroup_series(group_colors: colors).to_json
+  end
+
+  # input:
+  # {"team-a": 1,
+  #  "team-b": 10}
+  # group-colors:
+  # {"team-a": "#145688",
+  #  "team-b": "#145680"}
+  # output:
+  # { data: [1, 10],
+  #   labels: ["team-a", "team-b"],
+  #   colors: ["#145688", "#145680"] }
+
+  def linear_series(input = series_raw)
+    res = input.each_with_object({labels: [], data: [], colors: []}) do |(category, data), result|
+      result[:labels] << category.to_s
+      result[:data] << data
+      result[:colors] << colors[category]
+    end
+    res[:colors] = CHART_COLORS if colors.empty?
+    [res].to_json
   end
 
   def series_raw
     chart[:data]
+  end
+
+  def colors
+    chart[:colors] || {}
   end
 
   def title
@@ -67,9 +94,9 @@ class ChartComponent < ViewComponent::Base
 
   def area? = chart[:type] == "area"
 
-  def donut? = chart[:type] == "donut"
-
   def stacked_bar? = chart[:type] == "stacked-bar"
+
+  def polar_area? = chart[:type] == "polar-area"
 
   # Input:
   # {
@@ -100,12 +127,12 @@ class ChartComponent < ViewComponent::Base
   #  {:name=>"Android Release", :group=>"android", :data=>{"8.0.1"=>4, "8.0.2"=>5}},
   #  {:name=>"QA iOS Review", :group=>"ios", :data=>{"8.0.1"=>6, "8.0.2"=>7}},
   #  {:name=>"iOS Release", :group=>"ios", :data=>{"8.0.1"=>8, "8.0.2"=>9}}]
-  def ungroup_series(input = series_raw)
+  def ungroup_series(input = series_raw, group_colors: colors)
     input.each_with_object([]) do |(category, grouped_maps), result|
       grouped_maps.each do |group, inner_data|
         if inner_data.is_a?(Hash) && stacked?
           inner_data.each do |name, value|
-            color = CHART_COLORS[result.size % CHART_COLORS.length]
+            color = group_colors[group] || CHART_COLORS[result.size % CHART_COLORS.length]
             grouped_name = "#{name} (#{group})"
             item = result.find { |r| r[:name] == grouped_name && r[:group] == group }
             item ||= {name: grouped_name, group: group, data: {}, color:}
@@ -113,7 +140,7 @@ class ChartComponent < ViewComponent::Base
             result.push(item) unless result.include?(item)
           end
         else
-          color = CHART_COLORS[result.size % CHART_COLORS.length]
+          color = group_colors[group] || CHART_COLORS[result.size % CHART_COLORS.length]
           item = result.find { |r| r[:name] == group }
           item ||= {name: group, data: {}, color:}
           item[:data][category] = inner_data
@@ -124,10 +151,12 @@ class ChartComponent < ViewComponent::Base
   end
 
   def cartesian_series(input = series_raw)
+    x_values = input.flat_map { |item| item[:data].keys }.uniq
     input.map do |series|
       series.update_key(:data) do |data|
-        data.map do |x, y|
-          {x: x, y: y}
+        x_values.map do |x|
+          y = data[x] || 0
+          {x:, y:}
         end
       end
     end

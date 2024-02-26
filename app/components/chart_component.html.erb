@@ -43,5 +43,16 @@
         <div data-charts-target="chart"></div>
       </div>
     <% end %>
+
+    <% if polar_area? %>
+      <div data-controller="charts"
+           data-charts-type-value="polar-area"
+           data-charts-format-value="<%= value_format %>"
+           data-charts-show-x-axis-value="<%= show_x_axis %>"
+           data-charts-show-y-axis-value="<%= show_y_axis %>"
+           data-charts-series-value="<%= linear_series %>">
+        <div data-charts-target="chart"></div>
+      </div>
+    <% end %>
   </div>
 <% end %>

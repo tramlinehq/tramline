@@ -17,6 +17,7 @@ class Accounts::Organization < ApplicationRecord
   has_paper_trail
 
   has_many :memberships, dependent: :delete_all, inverse_of: :organization
+  has_many :teams, dependent: :delete_all, inverse_of: :organization
   has_many :users, through: :memberships, dependent: :delete_all
   has_many :apps, -> { sequential }, dependent: :destroy, inverse_of: :organization
   has_many :releases, through: :apps
@@ -58,11 +59,21 @@ class Accounts::Organization < ApplicationRecord
     Flipper.enabled?(:custom_release_version, self)
   end
 
+  def team_analysis_enabled?
+    Flipper.enabled?(:team_analysis_enabled, self)
+  end
+
   def owner
     users.includes(:memberships).where(memberships: {role: "owner"}).sole
   end
 
   def rotate_api_key
     update(api_key: SecureRandom.hex)
+  end
+
+  def team_colors
+    colors = teams.pluck(:name, :color).to_h || {}
+    colors[Accounts::Team::UNKNOWN_TEAM_NAME] = Accounts::Team::UNKNOWN_TEAM_COLOR
+    colors
   end
 end

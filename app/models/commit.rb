@@ -4,6 +4,7 @@
 #
 #  id                      :uuid             not null, primary key
 #  author_email            :string           not null
+#  author_login            :string
 #  author_name             :string           not null
 #  backmerge_failure       :boolean          default(FALSE)
 #  commit_hash             :string           not null, indexed => [release_id]
@@ -26,6 +27,7 @@ class Commit < ApplicationRecord
   has_many :release_platform_runs, dependent: :nullify, inverse_of: :last_commit
   belongs_to :release, inverse_of: :all_commits
   belongs_to :build_queue, inverse_of: :commits, optional: true
+  belongs_to :user, foreign_key: "author_login", primary_key: "github_login", optional: true, inverse_of: :commits, class_name: "Accounts::User"
   has_one :pull_request, inverse_of: :commit, dependent: :nullify
 
   scope :sequential, -> { order(timestamp: :desc) }
@@ -38,6 +40,19 @@ class Commit < ApplicationRecord
   after_create_commit -> { Releases::BackmergeCommitJob.perform_later(id) }, if: -> { release.release_changes? }
 
   delegate :release_platform_runs, :notify!, :train, :platform, to: :release
+
+  def self.count_by_team(org)
+    return unless org.teams.exists?
+
+    reorder("")
+      .left_outer_joins(user: [memberships: :team])
+      .where("teams.organization_id = ? OR teams.id IS NULL", org.id)
+      .group("COALESCE(teams.name, '#{Accounts::Team::UNKNOWN_TEAM_NAME}')")
+      .count("commits.id")
+      .sort_by(&:last)
+      .reverse
+      .to_h
+  end
 
   def self.between(base_step_run, head_step_run)
     return none if head_step_run.nil?

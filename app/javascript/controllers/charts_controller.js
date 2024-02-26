@@ -3,7 +3,7 @@ import ApexCharts from "apexcharts"
 import humanizeDuration from "humanize-duration";
 
 const formatTypes = ["number", "time"]
-const chartTypes = ["area", "line", "stacked-bar"]
+const chartTypes = ["area", "line", "stacked-bar", "polar-area"]
 
 export default class extends Controller {
   static targets = ["chart"]
@@ -38,10 +38,16 @@ export default class extends Controller {
       chartOptions = this.lineOptions(series)
     } else if (chartType === "stacked-bar") {
       chartOptions = this.stackedBarOptions(series)
+    } else if (chartType === "polar-area") {
+      chartOptions = this.polarAreaOptions(series[0])
     }
 
     this.chart = new ApexCharts(this.chartTarget, chartOptions);
     this.chart.render();
+  }
+
+  disconnect() {
+    this.chart.destroy()
   }
 
   areaOptions(series) {
@@ -275,7 +281,7 @@ export default class extends Controller {
         },
       },
       legend: {
-        show: false,
+        show: true,
       },
       xaxis: {
         show: true,
@@ -299,6 +305,43 @@ export default class extends Controller {
       fill: {
         opacity: 1,
       },
+    }
+  }
+
+  polarAreaOptions(series) {
+    let self = this;
+
+    return {
+      series: series["data"],
+      colors: series["colors"],
+      labels: series["labels"],
+      chart: {
+        type: "polarArea"
+      },
+      tooltip: {
+        style: {
+          fontFamily: "Inter, sans-serif",
+        }
+      },
+      stroke: {
+        show: true,
+        width: 0,
+        colors: ["transparent"],
+      },
+      states: {
+        hover: {
+          filter: {
+            type: "darken",
+            value: 1,
+          },
+        },
+      },
+      fill: {
+        opacity: 1,
+      },
+      yaxis: {
+        show: this.showYAxisValue
+      }
     }
   }
 

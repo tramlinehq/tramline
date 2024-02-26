@@ -16,7 +16,7 @@
 
   <% if commits.present? %>
     <div class="bg-slate-50 border-t border-b border-slate-200 mt-4">
-      <%= toggle_for(false) do %>
+      <%= toggle_for(false, full_width: true) do %>
         <div class="text-xs font-semibold uppercase text-slate-500 group-hover:text-slate-800 mr-1">
           <%= commits_count %> commits
         </div>
