@@ -8,8 +8,8 @@ namespace :one_off do
     File.foreach(csv_file).with_index do |line, line_num|
       puts "Processing line #{line_num}"
       user_email, github_login, team_name = line.split(",")
-      team = org.teams.find_or_create_by!(name: team_name)
-      user = org.users.find_by(email: user_email)
+      team = org.teams.find_or_create_by!(name: team_name.strip)
+      user = org.users.find_by(email: user_email.strip)
       if user.blank?
         puts "Missing user #{user_email}"
         next
@@ -18,7 +18,7 @@ namespace :one_off do
       membership = user.memberships.find_by!(organization: org)
       user.transaction do
         membership.update!(team:)
-        user.update!(github_login:)
+        user.update!(github_login: github_login.strip)
       end
     end
   end
