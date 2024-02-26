@@ -60,7 +60,6 @@ Rails.application.routes.draw do
     resources :trains, only: %i[new create edit update show destroy] do
       member do
         get :steps
-        post :clone, to: "trains#replicate"
         patch :activate
         patch :deactivate
       end

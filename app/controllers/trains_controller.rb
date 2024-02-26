@@ -5,7 +5,7 @@ class TrainsController < SignedInApplicationController
   before_action :require_write_access!, only: %i[new create edit update destroy activate deactivate replicate]
   around_action :set_time_zone
   before_action :set_train, only: %i[show edit update destroy activate deactivate replicate steps]
-  before_action :set_tab_configuration, only: %i[edit steps]
+  before_action :set_tab_configuration, only: %i[edit steps destroy activate deactivate]
   before_action :validate_integration_status, only: %i[new create]
   before_action :set_notification_channels, only: %i[new create edit update]
 
@@ -19,21 +19,9 @@ class TrainsController < SignedInApplicationController
   end
 
   def edit
-    respond_to do |format|
-      format.html do |variant|
-        variant.none { render :edit }
-        variant.turbo_frame { render :edit }
-      end
-    end
   end
 
   def steps
-    respond_to do |format|
-      format.html do |variant|
-        variant.none { render :steps }
-        variant.turbo_frame { render :steps }
-      end
-    end
   end
 
   def create
@@ -58,15 +46,7 @@ class TrainsController < SignedInApplicationController
     if @train.destroy
       redirect_to app_path(@app), status: :see_other, notice: "Train was deleted!"
     else
-      render :show, status: :unprocessable_entity
-    end
-  end
-
-  def replicate
-    if @train.replicate
-      redirect_to app_path(@app), status: :see_other, notice: "Train was cloned!"
-    else
-      render :show, status: :unprocessable_entity
+      render :edit, status: :unprocessable_entity
     end
   end
 
@@ -74,7 +54,7 @@ class TrainsController < SignedInApplicationController
     if @train.activate!
       redirect_to train_path, notice: "Train was activated!"
     else
-      render :show, status: :unprocessable_entity
+      render :edit, status: :unprocessable_entity
     end
   end
 
@@ -84,7 +64,7 @@ class TrainsController < SignedInApplicationController
     if @train.deactivate!
       redirect_to train_path, notice: "Train was deactivated!"
     else
-      render :show, status: :unprocessable_entity
+      render :edit, status: :unprocessable_entity
     end
   end
 

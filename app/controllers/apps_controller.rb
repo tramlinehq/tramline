@@ -25,11 +25,6 @@ class AppsController < SignedInApplicationController
     end
   end
 
-  def new
-    @timezones = default_timezones
-    @app = new_app
-  end
-
   def edit
   end
 
