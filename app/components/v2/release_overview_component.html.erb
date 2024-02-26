@@ -79,7 +79,7 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-2 justify-between mt-4 gap-x-6 gap-y-3">
+    <div class="grid <%= grid_size %> justify-between mt-4 gap-x-6 gap-y-3">
       <% platform_runs.each do |run| %>
         <div class="grid gap-y-2 items-end content-end">
           <% run.store_releases.each do |store_release| %>

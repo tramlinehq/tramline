@@ -46,4 +46,9 @@ class V2::ReleaseOverviewComponent < V2::BaseReleaseComponent
   def ios_release_version
     release.release_platform_runs.find { |r| r.platform == "ios" }.release_version
   end
+
+  def grid_size
+    return "grid-cols-2" if release.app.cross_platform?
+    "grid-cols-1 w-2/3"
+  end
 end
