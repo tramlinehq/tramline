@@ -1,4 +1,4 @@
-<% if current_organization.teams.any? %>
+<% if current_organization.team_analysis_enabled? && current_organization.teams.any? %>
   <section>
     <%= render partial: "shared/live_release/section_title", locals: { heading: "Team Analysis", subheading: nil } %>
     <div class="mt-6">

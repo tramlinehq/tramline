@@ -56,7 +56,7 @@ class FinalSummaryComponent < ViewComponent::Base
       store_versions? ? "Store versions" : nil,
       "Step summary",
       pull_requests? ? "Pull requests" : nil,
-      teams_present? ? "Team analysis" : nil
+      (current_organization.team_analysis_enabled? && teams_present?) ? "Team analysis" : nil
     ].compact
   end
 

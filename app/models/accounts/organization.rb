@@ -59,6 +59,10 @@ class Accounts::Organization < ApplicationRecord
     Flipper.enabled?(:custom_release_version, self)
   end
 
+  def team_analysis_enabled?
+    Flipper.enabled?(:team_analysis_enabled, self)
+  end
+
   def owner
     users.includes(:memberships).where(memberships: {role: "owner"}).sole
   end

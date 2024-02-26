@@ -183,7 +183,7 @@
         <% end %>
       <% end %>
 
-      <% if teams_present? %>
+      <% if current_organization.team_analysis_enabled? && teams_present? %>
         <% component.with_tab do %>
           <div class="hidden p-4 bg-white rounded-lg" data-tabs-target="panel">
             <div class="grid grid-cols-2 gap-4">
