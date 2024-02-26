@@ -46,7 +46,7 @@ class Commit < ApplicationRecord
 
     reorder("")
       .left_outer_joins(user: [memberships: :team])
-      .where("teams.organization_id = ? OR teams.id IS NULL", org.id)
+      .where(memberships: {organization_id: org.id})
       .group("COALESCE(teams.name, '#{Accounts::Team::UNKNOWN_TEAM_NAME}')")
       .count("commits.id")
       .sort_by(&:last)
