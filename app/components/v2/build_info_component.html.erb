@@ -17,8 +17,12 @@
     </div>
 
     <div class="flex items-center">
-      <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2") %>
-      <span class="text-main-600 font-normal text-sm"><%= build_deployed_at %></span>
+      <%= render V2::TooltipComponent.new("Last activity on #{last_activity_at}", placement: "top") do |tooltip| %>
+        <% tooltip.with_body do %>
+          <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2") %>
+          <span class="text-main-600 font-normal text-sm"><%= build_deployed_at %></span>
+        <% end %>
+      <% end %>
     </div>
   </div>
 <% end %>

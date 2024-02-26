@@ -60,6 +60,11 @@ class V2::BuildInfoComponent < V2::BaseComponent
     ago_in_words @deployment_run.updated_at
   end
 
+  def last_activity_at
+    last_updated_at = @staged_rollout&.updated_at || @deployment_run.updated_at
+    time_format(last_updated_at)
+  end
+
   def build_logo
     "integrations/logo_#{step.ci_cd_provider}.png"
   end
