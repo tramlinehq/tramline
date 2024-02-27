@@ -57,7 +57,7 @@ Rails.application.routes.draw do
       post :refresh_external
     end
 
-    resources :trains, only: %i[new create edit update show destroy] do
+    resources :trains, only: %i[new create edit update destroy] do
       member do
         get :steps
         patch :activate
@@ -67,7 +67,7 @@ Rails.application.routes.draw do
       resources :notification_settings, only: %i[index update]
 
       resources :release_platforms, only: [], path: :platforms, as: :platforms do
-        resources :steps, only: %i[new create edit update]
+        resources :steps, only: %i[new create update]
       end
 
       resources :releases, only: %i[show create destroy index], shallow: true do

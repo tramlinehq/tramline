@@ -2,10 +2,10 @@ class StepsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
-  before_action :require_write_access!, only: %i[new create edit update]
-  before_action :set_train, only: %i[new create edit update]
-  before_action :set_release_platform, only: %i[new create edit update]
-  before_action :set_ci_actions, only: %i[new create edit]
+  before_action :require_write_access!, only: %i[new create update]
+  before_action :set_train, only: %i[new create update]
+  before_action :set_release_platform, only: %i[new create update]
+  before_action :set_ci_actions, only: %i[new create]
   before_action :integrations_are_ready?, only: %i[new create]
   around_action :set_time_zone
 
@@ -22,16 +22,6 @@ class StepsController < SignedInApplicationController
     end
 
     set_build_channels
-  end
-
-  def edit
-    @step =
-      Step
-        .joins(release_platform: :app)
-        .where(release_platforms: {apps: {organization: current_organization}})
-        .friendly
-        .find(params[:id])
-    head :forbidden and return if @train.active_runs.exists?
   end
 
   def create
@@ -61,7 +51,7 @@ class StepsController < SignedInApplicationController
       redirect_to edit_app_train_path(@app, @train), notice: "Step was successfully updated."
     else
       @ci_actions = @train.ci_cd_provider.workflows
-      render :edit, status: :unprocessable_entity
+      redirect_to steps_app_train_path(@app, @train), flash: {error: @step.errors.full_messages.to_sentence}
     end
   end
 
