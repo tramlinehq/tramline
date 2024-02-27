@@ -404,6 +404,10 @@ class Train < ApplicationRecord
     Charts::DevopsReport.all(self)
   end
 
+  def has_production_deployment?
+    release_platforms.any?(&:has_production_deployment?)
+  end
+
   private
 
   def train_link
