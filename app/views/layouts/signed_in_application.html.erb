@@ -21,8 +21,8 @@
     <%= render V2::HeaderComponent.new %>
 
     <main class="mb-64">
+      <%= yield :sticky_top_message %>
       <div class="py-8 w-full max-w-7xl mx-auto">
-        <%= yield :sticky_top_message %>
         <%= render V2::FlashComponent.new(flash) %>
         <%= yield :error_resource %>
         <%= yield %>

@@ -38,7 +38,7 @@ class V2::ButtonComponent < V2::BaseComponent
     list_item: {
       class: "flex items-center rounded justify-between block px-4 py-1.5 hover:bg-main-100 dark:hover:bg-main-600 dark:hover:text-white"
     },
-    none: { class: "" }
+    none: {class: ""}
   }
   DISABLED_STYLE = "opacity-40 disabled cursor-not-allowed outline-none focus:outline-none focus:ring-0"
   DROPDOWN_STYLE = "p-1 text-sm text-main-700 dark:text-main-200"

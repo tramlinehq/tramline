@@ -1,11 +1,12 @@
 <div data-controller="alert">
   <% if alert? %>
     <div data-alert-target="alert"
-         class="inline-flex <%= size %> items-center p-2.5 mb-4 text-sm rounded-lg <%= style %>"
+         class="flex <%= size %> items-center p-2.5 mb-4 text-sm rounded-lg <%= style %> justify-between"
          role="alert">
-      <%= render V2::IconComponent.new("v2/info.svg", size: :md, classes: "mr-2") %>
-
-      <div class="mr-6"><%= title %></div>
+      <div class="flex justify-start gap-x-2 items-center">
+        <%= render V2::IconComponent.new("v2/info.svg", size: :md) %>
+        <div class="mr-6"><%= title %></div>
+      </div>
 
       <% if dismissible %>
         <%= render V2::ButtonComponent.new(
@@ -13,7 +14,7 @@
           type: :action,
           size: :none,
           authz: false,
-          html_options: { class: "ms-auto inline-flex justify-center items-center #{colors}", data: { action: "alert#close" } }) do |b|
+          html_options: { class: "ms-auto inline-flex justify-center items-center", data: { action: "alert#close" } }) do |b|
           b.with_icon("close_icon.svg")
         end %>
       <% end %>
