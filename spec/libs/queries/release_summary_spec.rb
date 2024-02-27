@@ -33,6 +33,7 @@ describe Queries::ReleaseSummary, type: :model do
                                                                 "name" => step.name,
                                                                 "phase" => "release",
                                                                 "platform" => "Android",
+                                                                "platform_raw" => "android",
                                                                 "started_at" => Time.current})
         expect(actual[:store_versions].all[0].attributes).to eq({"build_number" => step_run.build_number,
                                                                  "built_at" => Time.current,
