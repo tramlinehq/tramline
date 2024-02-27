@@ -1,5 +1,13 @@
-<div class="w-full bg-main-200 rounded-full dark:bg-main-700">
-  <div class="bg-blue-600 text-xs font-normal text-main-700 dark:text-blue-100 text-center p-1.5 leading-none rounded-full" style="<%= fill %>">
-    <%= perc %>
+<% if label %>
+  <%= render V2::TooltipComponent.new(perc, placement: "top") do |tooltip| %>
+    <% tooltip.with_body do %>
+      <div class="w-full bg-gray-200 rounded-sm h-2.5 dark:bg-gray-700">
+        <div title="<%= perc %>" class="bg-blue-600 h-2.5 rounded-sm dark:bg-blue-500" style="<%= fill %>"></div>
+      </div>
+    <% end %>
+  <% end %>
+<% else %>
+  <div class="w-full bg-gray-200 rounded-sm h-2.5 dark:bg-gray-700">
+    <div title="<%= perc %>" class="bg-blue-600 h-2.5 rounded-sm dark:bg-blue-500" style="<%= fill %>"></div>
   </div>
-</div>
+<% end %>

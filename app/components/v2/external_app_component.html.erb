@@ -17,6 +17,7 @@
                         <span class="col-span-2"><%= release_version(release) %></span>
                         <span class="col-span-3 pl-2 font-semibold"><%= release_number(release) %></span>
                       </div>
+
                       <div class="col-span-2">
                         <% if release[:user_fraction] %>
                           <%= render V2::ProgressBarComponent.new(percent: release_percent(release), label: false) %>

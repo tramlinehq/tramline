@@ -1,16 +1,16 @@
-# frozen_string_literal: true
-
 class V2::ProgressBarComponent < ViewComponent::Base
   def initialize(percent:, label: false)
     @percent = percent
     @label = label
   end
 
+  attr_reader :label
+
   def fill
     "width: #{@percent}%;"
   end
 
   def perc
-    "#{@percent}%" if @label
+    "#{@percent}%"
   end
 end

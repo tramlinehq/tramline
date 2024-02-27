@@ -1,5 +1,4 @@
 class ProgressCardComponent < ViewComponent::Base
-  attr_reader :name, :current, :subtitle, :provider
   TEXT_SIZE = {
     sm: "text-base",
     base: "text-xl"
@@ -13,9 +12,7 @@ class ProgressCardComponent < ViewComponent::Base
     @size = size
   end
 
-  def fraction
-    "#{current}%"
-  end
+  attr_reader :name, :current, :subtitle, :provider
 
   def text_size
     TEXT_SIZE[@size]
