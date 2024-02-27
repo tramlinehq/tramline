@@ -4,11 +4,16 @@ class ApplicationController < ActionController::Base
   include ExceptionHandler if Rails.env.production? || ENV.fetch("GRACEFUL_ERROR_PAGES", "false").to_boolean
   layout -> { ensure_supported_layout("application") }
   before_action :store_user_location!, if: :storable_location?
+  helper_method :writer?
 
   class NotAuthorizedError < StandardError; end
 
   def raise_not_found
     raise ActionController::RoutingError, "Unknown url: #{params[:unmatched_route]}"
+  end
+
+  def writer?
+    false
   end
 
   protected
