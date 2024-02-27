@@ -149,47 +149,58 @@
     <% end %>
 
     <%= render V2::SectionComponent.new(style: :titled, title: "Previous Releases") do %>
-      <%= render V2::TableComponent.new(columns: ["", "release", "dates", "duration", ""]) do |table| %>
-        <% previous_releases.each do |release| %>
-          <% release_component = release_component(release) %>
+      <% if previous_releases.exists? %>
+        <%= render V2::TableComponent.new(columns: ["", "release", "dates", "duration", ""]) do |table| %>
+          <% previous_releases.each do |release| %>
+            <% release_component = release_component(release) %>
 
-          <% table.with_row do |row| %>
-            <% row.with_cell(style: "") do %>
-              <div class="flex space-x-2">
-                <%= render V2::StatusIndicatorPillComponent.new(text: release_component.status[0], status: release_component.status[1]) %>
-                <%= render(release_component.hotfix_badge) unless release_component.hotfix_badge.nil? %>
-              </div>
-            <% end %>
-
-            <% row.with_cell(style: "font-medium") do %>
-              <% if release.completed_at %>
-                <%= render V2::BadgeComponent.new(release_component.release_version) %>
-              <% else %>
-                <%= render V2::BadgeComponent.new(version_in_progress(release_component.release_version)) %>
+            <% table.with_row do |row| %>
+              <% row.with_cell(style: "") do %>
+                <div class="flex space-x-2">
+                  <%= render V2::StatusIndicatorPillComponent.new(text: release_component.status[0], status: release_component.status[1]) %>
+                  <%= render(release_component.hotfix_badge) unless release_component.hotfix_badge.nil? %>
+                </div>
               <% end %>
-            <% end %>
 
-            <% row.with_cell do %>
-              <div><%= release_component.interval %></div>
-            <% end %>
+              <% row.with_cell(style: "font-medium") do %>
+                <% if release.completed_at %>
+                  <%= render V2::BadgeComponent.new(release_component.release_version) %>
+                <% else %>
+                  <%= render V2::BadgeComponent.new(version_in_progress(release_component.release_version)) %>
+                <% end %>
+              <% end %>
 
-            <% row.with_cell do %>
-              <div><%= release_component.duration %></div>
-            <% end %>
+              <% row.with_cell do %>
+                <div><%= release_component.interval %></div>
+              <% end %>
 
-            <% row.with_cell(style: "text-right w-2") do %>
-              <%= render V2::ButtonComponent.new(
-                scheme: :supporting,
-                label: "Go to release",
-                options: release_path(release.id),
-                size: :sm,
-                authz: false,
-                type: :link) do |b|
-                b.with_icon("v2/arrow_right.svg")
-              end %>
+              <% row.with_cell do %>
+                <div><%= release_component.duration %></div>
+              <% end %>
+
+              <% row.with_cell(style: "text-right w-2") do %>
+                <%= render V2::ButtonComponent.new(
+                  scheme: :supporting,
+                  label: "Go to release",
+                  options: release_path(release.id),
+                  size: :sm,
+                  authz: false,
+                  type: :link) do |b|
+                  b.with_icon("v2/arrow_right.svg")
+                end %>
+              <% end %>
             <% end %>
           <% end %>
         <% end %>
+      <% else %>
+        <div class="mt-20">
+          <%= render V2::EmptyStateComponent.new(
+            title: "No previous releases",
+            text: "There are no other releases for this train yet.",
+            banner_image: "v2/archive_x.svg",
+            type: :subdued
+          ) %>
+        </div>
       <% end %>
     <% end %>
   <% end %>
