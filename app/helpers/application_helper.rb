@@ -135,7 +135,7 @@ module ApplicationHelper
   end
 
   def time_format(timestamp, with_year: false, with_time: true, only_time: false, only_date: false, dash_empty: false)
-    return "-" if dash_empty && timestamp.nil?
+    return "--" if dash_empty && timestamp.nil?
     return unless timestamp
     return timestamp.strftime("%-l:%M %P") if only_time
     return timestamp.strftime("%A #{timestamp.day.ordinalize} %B, %Y") if only_date

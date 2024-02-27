@@ -39,12 +39,12 @@ class V2::BaseReleaseComponent < V2::BaseComponent
 
     result[:review] =
       result[:review].update_key(:duration) do |duration|
-        duration.humanize_duration || "-"
+        duration.humanize_duration || "--"
       end
 
     result[:release] =
       result[:release].update_key(:duration) do |duration|
-        duration.humanize_duration || "-"
+        duration.humanize_duration || "--"
       end
 
     result
