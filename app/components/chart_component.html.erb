@@ -1,10 +1,19 @@
-<% unless series_raw.blank? %>
+<% if insufficient? %>
+  <div class="flex flex-col w-full bg-white box-padding border-default gap-y-6">
+    <div class="flex justify-between items-start mb-4">
+      <h1 class="flex heading-3 gap-x-1"><%= title %></h1>
+      <div class="flex py-0.5 font-semibold"><%= render corner_icon %></div>
+    </div>
+
+    <div class="flex justify-center items-center py-6 opacity-50">
+      <%= render V2::EmptyStateComponent.new(text: "Waiting for more data", banner_image: "v2/clock.svg", type: :subdued) %>
+    </div>
+  </div>
+<% else %>
   <div class="w-full bg-white box-padding border-default">
     <div class="flex justify-between items-start mb-4">
       <div>
-        <h1 class="flex heading-3 items-center gap-x-1">
-          <%= title %>
-        </h1>
+        <h1 class="flex heading-3 gap-x-1"><%= title %></h1>
         <p class="text-sm font-normal text-main-400"><%= chart_scope %></p>
       </div>
 

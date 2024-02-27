@@ -37,6 +37,10 @@ class ChartComponent < ViewComponent::Base
     ungroup_series(group_colors: colors).to_json
   end
 
+  def insufficient?
+    series_raw.blank? || series_raw.keys.size < 1
+  end
+
   # input:
   # {"team-a": 1,
   #  "team-b": 10}
