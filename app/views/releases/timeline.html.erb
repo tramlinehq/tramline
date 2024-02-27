@@ -1,5 +1,5 @@
 <%= render V2::ContainerComponent.new(title: "Release Activity") do |container| %>
-  <% container.with_back_button %>
+  <% container.with_back_button(to: "the release", path: release_path(@release)) %>
   <% container.with_body do %>
     <turbo-frame id="events" data-turbo-action="replace">
       <% if @app.cross_platform? %>

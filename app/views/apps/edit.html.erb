@@ -2,7 +2,7 @@
                                             turbo_frame: dom_id(@app, :edit_app),
                                             tab_config: @tab_configuration,
                                             error_resource: @app) do |container| %>
-  <% container.with_back_button %>
+  <% container.with_back_button(to: "the app", path: app_path(@app)) %>
   <% container.with_tab do %>
     <%= render partial: "edit_form" %>
   <% end %>

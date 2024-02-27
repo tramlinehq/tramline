@@ -2,7 +2,7 @@
                                             turbo_frame: dom_id(@train, :edit_train),
                                             tab_config: @tab_configuration,
                                             error_resource: @train) do |container| %>
-  <% container.with_back_button %>
+  <% container.with_back_button(to: "the train", path: app_train_releases_path(@app, @train)) %>
   <% container.with_tab do %>
     <%= render 'form', app: @app, train: @train %>
   <% end %>

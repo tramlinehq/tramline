@@ -1,7 +1,7 @@
 <% release_platform = @release_platform_run.release_platform %>
 
 <%= render V2::ContainerComponent.new(title: "Edit #{release_platform.display_attr(:platform)} Metadata") do |container| %>
-  <% container.with_back_button %>
+  <% container.with_back_button(to: "the release", path: release_path(@release)) %>
   <% container.with_body do %>
     <% content_for :error_resource do %>
       <%= render V2::ErrorComponent.new(@release_metadata) %>

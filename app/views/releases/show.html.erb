@@ -9,7 +9,7 @@
 <% end %>
 
 <%= render V2::ContainerComponent.new(title: @release.release_version) do |container| %>
-  <% container.with_back_button %>
+  <% container.with_back_button(to: "the train", path: app_train_releases_path(@app, @train)) %>
   <% container.with_side_action do %>
     <%= render(release_component.hotfix_badge) unless release_component.hotfix_badge.nil? %>
   <% end %>
