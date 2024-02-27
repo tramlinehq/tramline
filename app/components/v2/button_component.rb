@@ -58,7 +58,7 @@ class V2::ButtonComponent < V2::BaseComponent
   renders_one :icon, V2::IconComponent
   renders_one :tooltip, V2::TooltipComponent
 
-  def initialize(label: nil, scheme: :switcher, type: :button, size: :xxs, options: nil, html_options: nil, arrow: :none, authz: true, turbo: true)
+  def initialize(label: nil, scheme: :switcher, type: :button, size: :xxs, options: nil, html_options: nil, arrow: :none, authz: true, turbo: true, disabled: false)
     arrow = (scheme == :switcher) ? :double : arrow
     raise ArgumentError, "Invalid scheme" unless SCHEMES.include?(scheme)
     raise ArgumentError, "Invalid button type" unless TYPES.include?(type)
@@ -73,7 +73,7 @@ class V2::ButtonComponent < V2::BaseComponent
     @html_options = html_options
     @arrow_type = arrow
     @authz = authz
-    @disabled = false
+    @disabled = disabled
     @turbo = turbo
   end
 

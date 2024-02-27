@@ -10,7 +10,6 @@ class V2::BaseComponent < ViewComponent::Base
   end
 
   def before_render
-    @disabled = false
     if defined? @authz
       @disabled = true if !writer? && @authz
     end

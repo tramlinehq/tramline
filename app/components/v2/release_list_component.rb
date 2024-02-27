@@ -34,69 +34,43 @@ class V2::ReleaseListComponent < V2::BaseComponent
   end
 
   def release_options
-    if train.ongoing_release && train.upcoming_release_startable?
-      [
-        {
-          title: "Minor",
-          subtitle: start_upcoming_release_text,
-          icon: "v2/play-empty.svg",
-          opt_name: "has_major_bump",
-          opt_value: true,
-          checked: true,
-          options: {data: {action: "reveal#hide"}}
-        },
-        {
-          title: "Major",
-          subtitle: start_upcoming_release_text(major: true),
-          icon: "v2/fast_forward.svg",
-          opt_name: "has_major_bump",
-          opt_value: true,
-          checked: false,
-          options: {data: {action: "reveal#hide"}}
-        },
-        {
-          title: "Custom",
-          subtitle: "Specify a release version",
-          icon: "v2/user_cog.svg",
-          opt_name: "has_major_bump",
-          opt_value: false,
-          checked: false,
-          options: {data: {action: "reveal#show"}}
-        }
-      ]
-    elsif @train.manually_startable?
-      [
-        {
-          title: "Minor",
-          subtitle: start_release_text,
-          icon: "v2/play-empty.svg",
-          opt_name: "has_major_bump",
-          opt_value: false,
-          checked: true,
-          options: {data: {action: "reveal#hide"}}
-        },
-        {
-          title: "Major",
-          subtitle: start_release_text(major: true),
-          icon: "v2/fast_forward.svg",
-          opt_name: "has_major_bump",
-          opt_value: true,
-          checked: false,
-          options: {data: {action: "reveal#hide"}}
-        },
-        {
-          title: "Custom",
-          subtitle: "Specify a release version",
-          icon: "v2/user_cog.svg",
-          opt_name: "has_major_bump",
-          opt_value: false,
-          checked: false,
-          options: {data: {action: "reveal#show"}}
-        }
-      ]
-    else
-      []
-    end
+    return [] unless train.manually_startable?
+    return [] if train.ongoing_release && !train.upcoming_release_startable?
+
+    start_minor_text = start_release_text
+    start_major_text = start_release_text(major: true)
+    start_minor_text = start_upcoming_release_text if train.upcoming_release_startable?
+    start_major_text = start_upcoming_release_text(major: true) if train.upcoming_release_startable?
+
+    [
+      {
+        title: "Minor",
+        subtitle: start_minor_text,
+        icon: "v2/play-empty.svg",
+        opt_name: "has_major_bump",
+        opt_value: true,
+        checked: true,
+        options: {data: {action: "reveal#hide"}}
+      },
+      {
+        title: "Major",
+        subtitle: start_major_text,
+        icon: "v2/fast_forward.svg",
+        opt_name: "has_major_bump",
+        opt_value: true,
+        checked: false,
+        options: {data: {action: "reveal#hide"}}
+      },
+      {
+        title: "Custom",
+        subtitle: "Specify a release version",
+        icon: "v2/user_cog.svg",
+        opt_name: "has_major_bump",
+        opt_value: false,
+        checked: false,
+        options: {data: {action: "reveal#show"}}
+      }
+    ]
   end
 
   private
