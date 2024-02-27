@@ -2,7 +2,7 @@ class AppsController < SignedInApplicationController
   include Pagy::Backend
   include Filterable
 
-  before_action :require_write_access!, only: %i[new create edit update destroy]
+  before_action :require_write_access!, only: %i[create edit update destroy]
   before_action :set_integrations, only: %i[show destroy]
   before_action :set_tab_config, only: %i[edit update]
   around_action :set_time_zone

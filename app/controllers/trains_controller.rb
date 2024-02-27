@@ -4,15 +4,10 @@ class TrainsController < SignedInApplicationController
 
   before_action :require_write_access!, only: %i[new create edit update destroy activate deactivate]
   around_action :set_time_zone
-  before_action :set_train, only: %i[show edit update destroy activate deactivate steps]
+  before_action :set_train, only: %i[edit update destroy activate deactivate steps]
   before_action :set_tab_configuration, only: %i[edit steps destroy activate deactivate]
   before_action :validate_integration_status, only: %i[new create]
   before_action :set_notification_channels, only: %i[new create edit update]
-
-  def show
-    @devops_report = @train.devops_report if @train.devops_report?(current_user)
-    @hotfix_from = @train.hotfix_from
-  end
 
   def new
     @train = @app.trains.new
