@@ -351,8 +351,8 @@ export default class extends Controller {
       return humanizeDuration(ms, {
         round: false,
         largest: 1,
-        maxDecimalPoints: 1,
-        units: ["w", "d", "h", "m"],
+        maxDecimalPoints: 0,
+        units: ["d", "h", "m"],
         language: "shortEn",
         languages: {shortEn: {h: () => "h", m: () => "m", d: () => "d", w: () => "w"}}
       })
