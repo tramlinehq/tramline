@@ -74,10 +74,11 @@ class Queries::ReleaseSummary
   class Queries::ReleaseSummary::StepsSummary
     def self.from_release(release)
       attributes = release.release_platform_runs.map do |pr|
+        release_phase_start = pr.step_runs_for(pr.release_platform.release_step)&.first&.scheduled_at
         pr.steps.map do |step|
           step_runs = pr.step_runs_for(step).sequential
           started_at = step_runs.first&.scheduled_at
-          ended_at = step_runs.last&.updated_at
+          ended_at = step.review? ? release_phase_start : step_runs.last&.updated_at
           {
             name: step.name,
             platform: pr.display_attr(:platform),

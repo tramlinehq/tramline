@@ -31,21 +31,20 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     @step_summary ||= Queries::ReleaseSummary::StepsSummary.from_release(@release).all
     platform_steps = @step_summary.select { |step| step.platform_raw == platform }
 
-    initial_data = {review: {duration: 0, builds_created_count: 0}, release: {duration: 0, builds_created_count: 0}}
-    result = platform_steps.each_with_object(initial_data) do |step, acc|
-      acc[step.phase.to_sym][:duration] += step.duration || 0
+    initial_data = {started_at: nil, ended_at: nil, builds_created_count: 0, duration: "--"}
+    initial_phase_data = {review: initial_data, release: initial_data}
+
+    result = platform_steps.each_with_object(initial_phase_data) do |step, acc|
+      acc[step.phase.to_sym][:started_at] = [step.started_at, acc[step.phase.to_sym][:started_at]].compact.min
+      acc[step.phase.to_sym][:ended_at] = [step.ended_at, acc[step.phase.to_sym][:ended_at]].compact.max
       acc[step.phase.to_sym][:builds_created_count] += step.builds_created_count || 0
     end
 
-    result[:review] =
-      result[:review].update_key(:duration) do |duration|
-        duration.humanize_duration || "--"
-      end
-
-    result[:release] =
-      result[:release].update_key(:duration) do |duration|
-        duration.humanize_duration || "--"
-      end
+    [:review, :release].each do |phase|
+      next unless result[phase][:started_at] && result[phase][:ended_at]
+      duration = distance_of_time_in_words(result[phase][:started_at], result[phase][:ended_at])
+      result[phase][:duration] = duration
+    end
 
     result
   end

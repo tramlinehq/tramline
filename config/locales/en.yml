@@ -333,26 +333,3 @@ en:
         title: "Release stability fixes"
         scope: "Last 6 releases. Commits after release start per team."
         help_text: ""
-  datetime:
-    distance_in_words:
-      x_weeks:
-        one: "1 week"
-        other: "%{count} weeks"
-      x_days:
-        one: "1 day"
-        other: "%{count} days"
-      x_hours:
-        one: "one hour"
-        other: "%{count} hrs"
-      x_months:
-        one: "1 month"
-        other: "%{count} months"
-      x_years:
-        one: "1 year"
-        other: "%{count} years"
-      x_minutes:
-        one: "1 minute"
-        other: "%{count} mins"
-      x_seconds:
-        one: "1 second"
-        other: "%{count} secs"
