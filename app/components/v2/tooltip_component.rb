@@ -1,5 +1,5 @@
 class V2::TooltipComponent < ViewComponent::Base
-  TOOLTIP_CLASSES = "absolute z-30 px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-main-900 rounded-lg shadow-sm tooltip dark:bg-main-700"
+  TOOLTIP_CLASSES = "absolute z-30 px-3 py-2 text-sm font-medium text-white bg-main-900 rounded-lg shadow-sm tooltip dark:bg-main-700"
 
   renders_one :body
 

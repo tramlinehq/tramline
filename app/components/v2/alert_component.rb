@@ -21,21 +21,25 @@ class V2::AlertComponent < ViewComponent::Base
     xl: "w-3/4"
   }
 
+  ACTION_BUTTON_STYLES = "flex items-center text-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
+
   KINDS = [:alert, :more_info]
 
-  def initialize(kind: :alert, type: :notice, title: "Alert", size: :base, dismissible: true)
+  def initialize(kind: :alert, type: :notice, title: "Alert", size: :base, dismissible: true, info: nil)
     raise ArgumentError, "Invalid type" unless COLORS.key?(type.to_sym)
     raise ArgumentError, "Invalid size" unless SIZES.key?(size.to_sym)
     raise ArgumentError, "Invalid kind" unless KINDS.include?(kind.to_sym)
+    raise ArgumentError, "Info is supplied only with more_info type" if kind == :alert && info.present?
 
     @type = type.to_sym
     @title = title
     @size = size.to_sym
     @kind = kind.to_sym
+    @info = info
     @dismissible = dismissible
   end
 
-  attr_reader :title, :dismissible
+  attr_reader :title, :dismissible, :info
 
   def size
     SIZES[@size]
@@ -55,5 +59,9 @@ class V2::AlertComponent < ViewComponent::Base
 
   def more_info?
     @kind == :more_info
+  end
+
+  def info?
+    @info.present? && @info[:label].present? && @info[:link].present?
   end
 end
