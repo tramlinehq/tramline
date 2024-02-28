@@ -29,7 +29,7 @@ class Triggers::Release
     return Response.new(:unprocessable_entity, "Cannot start a train that is not active!") if train.inactive?
     return Response.new(:unprocessable_entity, "Cannot start a train that has no release step. Please add at least one release step to the train.") unless train.release_platforms.all?(&:has_release_step?)
     return Response.new(:unprocessable_entity, "No more releases can be started until the ongoing release is finished!") if train.ongoing_release.present? && automatic
-    return Response.new(:unprocessable_entity, "No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present?
+    return Response.new(:unprocessable_entity, "No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present? && !hotfix?
     return Response.new(:unprocessable_entity, "Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable?
     return Response.new(:unprocessable_entity, "App is in draft mode, cannot start a release!") if train.app.in_draft_mode?
     return Response.new(:unprocessable_entity, "Hotfix platform - #{hotfix_platform} is not valid!") if invalid_hotfix_platform?
@@ -51,7 +51,7 @@ class Triggers::Release
       train.with_lock do
         raise AppInDraftMode.new("App is in draft mode, cannot start a release!") if train.app.in_draft_mode?
         raise ReleaseAlreadyInProgress.new("No more releases can be started until the ongoing release is finished!") if train.ongoing_release.present? && automatic
-        raise ReleaseAlreadyInProgress.new("No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present?
+        raise ReleaseAlreadyInProgress.new("No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present? && !hotfix?
         raise UpcomingReleaseNotAllowed.new("Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable?
         raise NothingToRelease.new("No diff since last release") if regular_release? && !train.diff_since_last_release?
         raise NothingToRelease.new("No diff between working and release branch") if train.parallel_working_branch? && !train.diff_for_release?
