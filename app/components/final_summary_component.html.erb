@@ -187,8 +187,8 @@
         <% component.with_tab do %>
           <div class="hidden p-4 bg-white rounded-lg" data-tabs-target="panel">
             <div class="grid grid-cols-2 gap-4">
-              <%= render ChartComponent.new(team_release_chart, icon: "pie_chart.svg") %>
-              <%= render ChartComponent.new(team_stability_chart, icon: "pie_chart.svg") %>
+              <%= render ChartComponent.new(team_release_chart) %>
+              <%= render ChartComponent.new(team_stability_chart) %>
             </div>
           </div>
         <% end %>

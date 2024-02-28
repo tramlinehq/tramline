@@ -5,10 +5,9 @@ class ChartComponent < ViewComponent::Base
   InvalidChartType = Class.new(StandardError)
   CHART_COLORS = %w[#1A56DB #9061F9 #E74694 #31C48D #FDBA8C #16BDCA #7E3BF2 #1C64F2 #F05252]
 
-  def initialize(chart, icon:)
+  def initialize(chart)
     raise InvalidChartType if chart && !chart[:type].in?(CHART_TYPES)
 
-    @icon = icon
     @chart = chart
     @chart = {} if chart.blank?
   end

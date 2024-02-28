@@ -54,7 +54,7 @@
 
     <% if :adoption_chart.in? metrics %>
       <% if helpers.current_user.release_monitoring? && adoption_chart_data.present? %>
-        <div class="col-span-2"><%= render ChartComponent.new(adoption_chart_data, icon: "sparkles.svg") %></div>
+        <div class="col-span-2"><%= render ChartComponent.new(adoption_chart_data) %></div>
       <% end %>
     <% end %>
   </div>
