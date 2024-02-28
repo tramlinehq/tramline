@@ -261,7 +261,7 @@ en:
     generic:
       team_name: "The Tramline team"
   errors:
-    format: "%{attribute} →\n%{message}"
+    format: "%{attribute} → %{message}"
     messages:
       http_code:
         '400':
