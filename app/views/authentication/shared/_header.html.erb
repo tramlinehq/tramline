@@ -11,8 +11,5 @@
   <% end %>
 </div>
 
-<% content_for :error_resource do %>
-  <%= render V2::ErrorComponent.new(resource) %>
-<% end %>
-
+<%= render V2::ErrorComponent.new(resource) %>
 <%= render V2::FlashComponent.new(flash) %>

@@ -204,14 +204,12 @@
           <% end %>
         <% end %>
       <% else %>
-        <div class="mt-20">
-          <%= render V2::EmptyStateComponent.new(
-            title: "No previous releases",
-            text: "There are no other releases for this train yet.",
-            banner_image: "v2/archive_x.svg",
-            type: :subdued
-          ) %>
-        </div>
+        <%= render V2::EmptyStateComponent.new(
+          title: "No previous releases",
+          text: "There are no other releases for this train yet.",
+          banner_image: "v2/archive_x.svg",
+          type: :subdued
+        ) %>
       <% end %>
     <% end %>
   <% end %>

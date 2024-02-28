@@ -6,7 +6,7 @@
 
 <% if @app.ready? && !@app.send_notifications? %>
   <% content_for :sticky_top_message do %>
-    <%= render V2::AlertComponent.new(kind: :more_info, type: :notice, title: "Setup Notifications", dismissible: false) do %>
+    <%= render V2::AlertComponent.new(kind: :more_info, type: :notice, title: "Setup Notifications", dismissible: false, info: { label: "Connect", link: app_integrations_path(@app, anchor: "notification")}) do %>
       You haven't yet added the integration for notifications. Set it up to receive timely updates about your release!
     <% end %>
   <% end %>

@@ -81,10 +81,8 @@
     </div>
   </section>
 <% else %>
-  <div class="mt-20">
-    <%= render V2::EmptyStateComponent.new(title: "Notifications Disabled",
-                                           text: "Enable notifications for the app and the train to configure notification settings.",
-                                           banner_image: "bell.svg",
-                                           type: :subdued) %>
-  </div>
+  <%= render V2::EmptyStateComponent.new(title: "Notifications are disabled",
+                                         text: "Enable notifications for the app and the train to configure notification settings.",
+                                         banner_image: "bell.svg",
+                                         type: :subdued) %>
 <% end %>

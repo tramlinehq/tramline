@@ -12,8 +12,13 @@ class AppVariantsController < SignedInApplicationController
     @config = @app.config
     @app_variants = @config.variants.to_a
     @new_app_variant = @config.variants.build
-    setup_config = @app.integrations.firebase_build_channel_provider.setup
-    @firebase_android_apps, @firebase_ios_apps = setup_config[:android], setup_config[:ios]
+    setup_config = @app.integrations.firebase_build_channel_provider&.setup
+
+    if setup_config
+      @firebase_android_apps, @firebase_ios_apps = setup_config[:android], setup_config[:ios]
+    else
+      @unconfigured = true
+    end
   end
 
   def create
