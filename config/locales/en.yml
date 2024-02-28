@@ -328,7 +328,7 @@ en:
       team_contributors:
         title: "Release contribution"
         scope: "Last 6 releases. Commits per team."
-        help_text: "These are the changes made to the working branch between releases by members in these respective teams. This is a good indicator of how much the team is contributing to the features in each release."
+        help_text: "These are the changes made to the working branch between releases by members in these respective teams. This is a rough indicator of how much the team is contributing to the features in each release."
       team_stability_contributors:
         title: "Release stability fixes"
         scope: "Last 6 releases. Commits after release start per team."
