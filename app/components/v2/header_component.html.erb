@@ -154,20 +154,18 @@
 
           <% dropdown.with_item_group(list_style: "text-main-500 dark:text-main-400") do |group| %>
             <% if billing? %>
-              <% group.with_item(link: { path: billing_link, external: true, class: USER_PROFILE_LINK_CLASSES }) do %>
+              <% group.with_item(link: { path: billing_link, external: true }) do %>
                 Go to billing ↗
               <% end %>
             <% end %>
 
-            <% group.with_item(link: { path: "https://calendar.app.google/bs6wimzo316W3yKz9",
-                                       external: true }) do %>
+            <% group.with_item(link: { path: "https://calendar.app.google/bs6wimzo316W3yKz9", external: true }) do %>
               Book a demo ↗
             <% end %>
           <% end %>
 
           <% dropdown.with_item_group(list_style: "text-main-500 dark:text-main-400") do |group| %>
-            <% group.with_item(link: { path: destroy_user_session_path,
-                                       "data-turbo": false }) do %>
+            <% group.with_item(link: { path: destroy_user_session_path, "data-turbo": false }) do %>
               Sign out
             <% end %>
           <% end %>
