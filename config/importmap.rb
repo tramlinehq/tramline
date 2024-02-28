@@ -34,4 +34,3 @@ pin "@sentry/utils/esm/buildPolyfills", to: "https://ga.jspm.io/npm:@sentry/util
 pin "apexcharts", to: "https://ga.jspm.io/npm:apexcharts@3.43.0/dist/apexcharts.common.js"
 pin "humanize-duration", to: "https://ga.jspm.io/npm:humanize-duration@3.30.0/humanize-duration.js"
 pin "@popperjs/core", to: "https://ga.jspm.io/npm:@popperjs/core@2.11.8/lib/index.js"
-pin "flowbite", to: "https://ga.jspm.io/npm:flowbite@2.2.0/lib/esm/index.js"
