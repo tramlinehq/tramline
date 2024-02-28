@@ -73,6 +73,10 @@ class V2::ReleaseListComponent < V2::BaseComponent
     ]
   end
 
+  def ios_enabled?
+    train.app.cross_platform? || train.app.ios?
+  end
+
   private
 
   def start_release_text(major: false)

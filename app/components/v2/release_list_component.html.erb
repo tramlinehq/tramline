@@ -133,7 +133,9 @@
           <%= render ChartComponent.new(devops_report[:mobile_devops][:frequency], icon: "cog.svg") %>
           <%= render ChartComponent.new(devops_report[:mobile_devops][:duration], icon: "cog.svg") %>
           <%= render ChartComponent.new(devops_report[:mobile_devops][:hotfixes], icon: "cog.svg") %>
-          <%= render ChartComponent.new(devops_report[:mobile_devops][:time_in_review], icon: "cog.svg") %>
+          <% if ios_enabled? %>
+            <%= render ChartComponent.new(devops_report[:mobile_devops][:time_in_review], icon: "cog.svg") %>
+          <% end %>
           <div class="col-span-2">
             <%= render ChartComponent.new(devops_report[:mobile_devops][:time_in_phases], icon: "cog.svg") %>
           </div>
