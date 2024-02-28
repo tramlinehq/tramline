@@ -48,27 +48,24 @@ class V2::ReleaseListComponent < V2::BaseComponent
         subtitle: start_minor_text,
         icon: "v2/play-empty.svg",
         opt_name: "has_major_bump",
-        opt_value: true,
-        checked: true,
-        options: {data: {action: "reveal#hide"}}
+        opt_value: "false",
+        options: {checked: true, data: {action: "reveal#hide"}}
       },
       {
         title: "Major",
         subtitle: start_major_text,
         icon: "v2/fast_forward.svg",
         opt_name: "has_major_bump",
-        opt_value: true,
-        checked: false,
-        options: {data: {action: "reveal#hide"}}
+        opt_value: "true",
+        options: {checked: false, data: {action: "reveal#hide"}}
       },
       {
         title: "Custom",
         subtitle: "Specify a release version",
         icon: "v2/user_cog.svg",
         opt_name: "has_major_bump",
-        opt_value: false,
-        checked: false,
-        options: {data: {action: "reveal#show"}}
+        opt_value: nil,
+        options: {checked: false, data: {action: "reveal#show"}}
       }
     ]
   end

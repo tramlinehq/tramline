@@ -8,6 +8,7 @@ class Triggers::Release
   UpcomingReleaseNotAllowed = Class.new(StandardError)
 
   def self.call(train, has_major_bump: false, release_type: "release", new_hotfix_branch: false, automatic: false, hotfix_platform: nil, custom_version: nil)
+    has_major_bump = false if custom_version.present?
     new(train, has_major_bump:, release_type:, new_hotfix_branch:, automatic:, hotfix_platform:, custom_version:).call
   end
 

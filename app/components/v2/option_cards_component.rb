@@ -1,21 +1,23 @@
 class V2::OptionCardsComponent < V2::BaseComponent
-  REQUIRED_OPTIONS = %i[title icon opt_name opt_value]
+  LABEL_CLASSES = "inline-flex items-center justify-between w-full p-3 text-main-500 bg-white border border-main-200 rounded-lg cursor-pointer dark:hover:text-main-300 dark:border-main-700 dark:peer-checked:text-blue-700 peer-checked:border-blue-800 peer-checked:text-blue-800 hover:text-main-600 peer-checked:bg-main-100 hover:bg-main-100 dark:text-main-400 dark:bg-main-800 dark:peer-checked:bg-main-700 dark:hover:bg-main-700"
 
   def initialize(form:, options:)
     raise ArgumentError, "form is required" unless form
     raise ArgumentError, "options must be an array" unless options.is_a?(Array)
 
     @form = form
-    @options = identify(options)
+    @options = enhance_opts(options)
   end
 
   attr_reader :form, :options
 
-  def identify(opts)
+  def enhance_opts(opts)
     opts.map do |option|
-      option[:id] = option[:title].parameterize
+      base_id = "#{form.object_name}_#{option[:opt_name]}"
+      base_id += "_#{option[:opt_value]}" if option[:opt_value]
+      option[:id] = base_id
       option[:icon] = V2::IconComponent.new(option[:icon], size: :xl)
-      option[:options] = {id: option[:id], class: "hidden peer", required: true}.merge(option[:options] || {})
+      option[:options] = {class: "hidden peer", required: true}.merge(option[:options] || {})
       option
     end
   end

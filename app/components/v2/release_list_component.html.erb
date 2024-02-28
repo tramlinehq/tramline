@@ -44,9 +44,9 @@
       <% modal.with_button(label: "Prepare new release", scheme: :default, type: :action, size: :xxs, disabled: release_options.empty?)
               .with_icon("play.svg", size: :md) %>
       <% modal.with_body do %>
-        <%= render V2::FormComponent.new(url: app_train_releases_path(app, train), free_form: true) do |form| %>
+        <%= render V2::FormComponent.new(model: [app, train, train.releases.new], url: app_train_releases_path(app, train), free_form: true) do |form| %>
           <div data-controller="reveal">
-            <%= render V2::OptionCardsComponent.new(form:, options: release_options) %>
+            <%= render V2::OptionCardsComponent.new(form: form.F, options: release_options) %>
             <div class="mt-2" hidden data-reveal>
               <%= form.F.labeled_text_field :custom_release_version,
                                             "Version Name",
