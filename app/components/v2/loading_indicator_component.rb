@@ -1,10 +1,11 @@
 class V2::LoadingIndicatorComponent < ViewComponent::Base
-  def initialize(text: "Loading...", pulse: true, typewriter_only: false, skeleton_only: false)
+  def initialize(text: "Loading...", pulse: true, typewriter_only: false, skeleton_only: false, turbo_frame: false)
     raise ArgumentError, "Indicator can only be a skeleton or typewriter" if typewriter_only && skeleton_only
     @text = text
     @pulse = pulse
     @skeleton_only = skeleton_only
     @typewriter_only = typewriter_only
+    @turbo_frame = turbo_frame
   end
 
   attr_reader :text
@@ -17,5 +18,9 @@ class V2::LoadingIndicatorComponent < ViewComponent::Base
 
   def pulse_wrapper_classes
     PULSE_WRAPPER_CLASSES + " #{pulse}"
+  end
+
+  def turbo_frame_loader
+    "turbo-frame-loader" if @turbo_frame
   end
 end

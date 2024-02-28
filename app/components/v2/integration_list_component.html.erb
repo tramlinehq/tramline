@@ -17,7 +17,7 @@
                   .with_icon("v2/cog.svg", size: :md) %>
           <% modal.with_body do %>
             <%= tag.turbo_frame id: "#{category}_config", src: edit_app_app_config_path(@app, integration_category: category), loading: :lazy, class: "with-turbo-frame-loader" do %>
-              <%= render V2::LoadingIndicatorComponent.new(skeleton_only: true) %>
+              <%= render V2::LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
             <% end %>
           <% end %>
         <% end %>

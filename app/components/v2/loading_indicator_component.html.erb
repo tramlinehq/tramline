@@ -1,5 +1,5 @@
 <% if @typewriter_only %>
-  <div class="inline-flex w-fit turbo-frame-loader">
+  <div class="inline-flex w-fit <%= turbo_frame_loader %>">
     <div class="<%= pulse_wrapper_classes %>">
       <svg class="fill-current text-blue-800" viewBox="0 0 15 3" width="25" height="10">
         <circle cx="1.5" cy="1.5" r="1.5">
@@ -16,7 +16,7 @@
     <span class="sr-only">Loading...</span>
   </div>
 <% elsif @skeleton_only %>
-  <div class="max-w-sm animate-pulse turbo-frame-loader">
+  <div class="max-w-sm animate-pulse <%= turbo_frame_loader %>">
     <div class="h-2.5 bg-main-200 rounded-full dark:bg-main-700 w-48 mb-4"></div>
     <div class="h-2 bg-main-200 rounded-full dark:bg-main-700 max-w-[360px] mb-2.5"></div>
     <div class="h-2 bg-main-200 rounded-full dark:bg-main-700 mb-2.5"></div>
@@ -26,7 +26,7 @@
     <span class="sr-only">Loading...</span>
   </div>
 <% else %>
-  <div class="inline-flex w-fit turbo-frame-loader">
+  <div class="inline-flex w-fit <%= turbo_frame_loader %>">
     <div class="<%= pulse_wrapper_classes %>">
       <%= text %>
     </div>
