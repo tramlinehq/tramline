@@ -129,7 +129,6 @@ class V2::ButtonComponent < V2::BaseComponent
 
     classname = "group-disabled:hidden ml-1"
     classname = "group-disabled:hidden ml-1.5" if icon?
-    classname += " mr-2" if arrow.present?
 
     button_tag(@options, @html_options) do
       concat(icon) if icon?
@@ -190,6 +189,6 @@ class V2::ButtonComponent < V2::BaseComponent
 
   memoize def arrow
     return if @arrow_type.eql?(:none)
-    V2::IconComponent.new(DROPDOWN_ARROW_STYLES[@arrow_type], size: :sm)
+    V2::IconComponent.new(DROPDOWN_ARROW_STYLES[@arrow_type], size: :sm, classes: "ml-2")
   end
 end

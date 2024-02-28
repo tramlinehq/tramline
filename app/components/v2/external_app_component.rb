@@ -17,10 +17,8 @@ class V2::ExternalAppComponent < V2::BaseComponent
 
   private
 
-  def subtitle
-    return "Last changed #{ago_in_words @latest_external_apps.values.first.fetched_at}." if external_apps?
-    return "Fetching..." if app.has_store_integration?
-    "Add store deployment integration to fetch this information."
+  def fetched_at
+    ago_in_words @latest_external_apps.values.first.fetched_at
   end
 
   def external_apps?

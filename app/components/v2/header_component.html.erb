@@ -94,14 +94,15 @@
                                                options: all_builds_app_path(default_app),
                                                type: :link,
                                                size: :xxs,
-                                               authz: false,
-                                               label: "Builds") do |b| %>
-              <%= b.with_icon("v2/drill.svg", size: :md) %>
+                                               authz: false) do |b| %>
+              <% b.with_tooltip("All Builds") %>
+              <% b.with_icon("v2/hard_hat.svg", size: :md) %>
             <% end %>
 
             <%= render V2::ModalComponent.new(title: "Store Status", size: :xs, authz: false) do |modal| %>
-              <% modal.with_button(label: "Store Status", scheme: :light, type: :action, size: :xxs, arrow: :none)
-                      .with_icon("v2/storage.svg", size: :md) %>
+              <% button = modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none) %>
+              <% button.with_tooltip("Store Status") %>
+              <% button.with_icon("v2/upload_cloud.svg", size: :md) %>
               <% modal.with_body do %>
                 <%= render V2::ExternalAppComponent.new(app: default_app) %>
               <% end %>
