@@ -3,7 +3,7 @@
 <% if @release.finished? || @release.stopped? || @release.stopped_after_partial_finish? %>
   <% content_for :sticky_top_message do %>
     <%= render V2::AlertComponent.new(kind: :more_info, type: :notice, title: "Release Locked", dismissible: false) do %>
-      This release was <%= @release.display_attr(:status) %> and is now locked. You cannot make any more changes to it. If you need to make changes, please contact the release pilot.
+      This release was <%= @release.display_attr(:status) %> and is now locked.You cannot make any more changes to it.
     <% end %>
   <% end %>
 <% end %>

@@ -6,33 +6,36 @@
       <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
               .with_icon("v2/plus.svg", size: :md) %>
       <% modal.with_body do %>
-        <%= render partial: "accounts/invitations/form", locals: {invite: Accounts::Invite.new(sender: current_user, organization: current_organization)} %>
+        <%= render partial: "accounts/invitations/form", locals: { invite: Accounts::Invite.new(sender: current_user, organization: current_organization) } %>
       <% end %>
     <% end %>
   <% end %>
 
-  <%= render V2::TableComponent.new(columns: ["Email", "Status", "Preferred Name", "Full Name", "Role", "VCS Username"]) do |table| %>
+  <%= render V2::TableComponent.new(columns: ["Full Name", "Status", "Email", "Preferred Name", "Role", "VCS Username", "Team"]) do |table| %>
     <% @team.each do |member| %>
       <% table.with_row do |row| %>
+        <% row.with_cell do %>
+          <%= member.full_name %>
+        <% end %>
+        <% row.with_cell do %>
+          <%= render V2::StatusIndicatorPillComponent.new(text: "Active", status: :success) %>
+        <% end %>
         <% row.with_cell do %>
           <div class="font-medium text-slate-800">
             <%= member.email %>
           </div>
         <% end %>
         <% row.with_cell do %>
-          <%= render V2::StatusIndicatorPillComponent.new(text: "Active", status: :success) %>
-        <% end %>
-        <% row.with_cell do %>
           <%= member.preferred_name %>
-        <% end %>
-        <% row.with_cell do %>
-          <%= member.full_name %>
         <% end %>
         <% row.with_cell do %>
           <%= member.role_for(current_organization).titleize %>
         <% end %>
         <% row.with_cell do %>
           <%= member.github_login || "-" %>
+        <% end %>
+        <% row.with_cell do %>
+          <%= member.team_for(current_organization)&.name || "-" %>
         <% end %>
       <% end %>
     <% end %>

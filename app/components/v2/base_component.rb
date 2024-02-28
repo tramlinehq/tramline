@@ -3,7 +3,7 @@ class V2::BaseComponent < ViewComponent::Base
   include LinkHelper
   include AssetsHelper
 
-  delegate :billing?, :current_user, :current_organization, :default_app, :new_app, :default_timezones, to: :helpers
+  delegate :billing?, :billing_link, :current_user, :current_organization, :default_app, :new_app, :default_timezones, to: :helpers
 
   def writer?
     helpers&.writer?

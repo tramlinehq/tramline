@@ -102,6 +102,10 @@ class Accounts::User < ApplicationRecord
     access_for(organization).role
   end
 
+  def team_for(organization)
+    access_for(organization).team
+  end
+
   def writer_for?(organization)
     access_for(organization).writer?
   end

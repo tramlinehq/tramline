@@ -19,7 +19,7 @@ class V2::ButtonComponent < V2::BaseComponent
       class: "#{BASE_OPTS} text-main bg-white border border-main-300 focus:outline-none hover:bg-main-100 focus:ring-4 focus:ring-main-200 font-medium rounded-lg dark:bg-main dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"
     },
     supporting: {
-      class: "#{BASE_OPTS} text-main-500 hover:bg-main-100 dark:bg-main dark:text-main-400 dark:hover:bg-main-700 border-none shadow-none"
+      class: "#{BASE_OPTS} text-main-500 hover:bg-main-100 dark:bg-main dark:text-main-400 dark:hover:bg-main-700 border-none shadow-none rounded-sm"
     },
     link: {
       class: "#{BASE_OPTS} text-main-500 dark:bg-main dark:text-main-400 border-none shadow-none hover:underline"
