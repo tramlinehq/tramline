@@ -1,34 +1,33 @@
 class V2::TooltipComponent < ViewComponent::Base
   TOOLTIP_CLASSES = "absolute z-30 px-3 py-2 text-sm font-medium text-white bg-main-900 rounded-lg shadow-sm tooltip dark:bg-main-700"
+  DETAILED_TOOLTIP_CLASSES = "absolute z-30 text-sm font-normal text-main-500 bg-white border-default p-3 rounded-lg shadow-sm w-fit max-w-xs dark:bg-main-800 dark:border-main-600 dark:text-main-400"
+  InvalidType = Class.new(ArgumentError)
 
   renders_one :body
+  renders_one :detailed_text
 
-  def initialize(text, placement: "bottom")
+  ALLOWED_TYPES = [:simple, :detailed]
+
+  def initialize(text, placement: "bottom", type: :simple)
+    raise InvalidType unless type.in?(ALLOWED_TYPES)
+
     @text = text
     @placement = placement
+    @type = type
   end
 
-  attr_reader :text, :placement
+  attr_reader :text, :placement, :type
 
-  def call
-    content_tag(:div,
-      class: "inline-flex",
-      data: {controller: "popup",
-             popup_away_value: "true",
-             popup_target_selector_value: "[data-tooltip-popup]",
-             popup_placement_value: placement}) do
-      concat content_tag(:div, body, class: "w-full", data: {action: "mouseover->popup#show mouseout->popup#hide", popup_target: "element"})
-      concat tooltip
-    end
+  def simple?
+    type == :simple
   end
 
-  def tooltip
-    content_tag(:div, class: TOOLTIP_CLASSES, role: "tooltip", hidden: true, data: {tooltip_popup: true}) do
-      concat content_tag(:div,
-        nil,
-        class: "tooltip-arrow",
-        data: {popup_target: "popupArrow"})
-      concat text
-    end
+  def detailed?
+    type == :detailed
+  end
+
+  def offset
+    return [0, 8] if simple?
+    [0, 6]
   end
 end

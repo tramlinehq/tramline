@@ -7,7 +7,7 @@ class V2::ButtonComponent < V2::BaseComponent
     single: "single_headed_arrow.svg",
     none: ""
   }
-  BASE_OPTS = "btn group px-2 inline-flex items-center"
+  BASE_OPTS = "group inline-flex items-center"
   BUTTON_OPTIONS = {
     default: {
       class: "#{BASE_OPTS} text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
@@ -49,7 +49,7 @@ class V2::ButtonComponent < V2::BaseComponent
     sm: "py-2 px-4 text-sm",
     md: "px-4 py-2 text-base",
     xs: "px-3 py-2 text-xs",
-    xxs: "p-1.5 text-xs",
+    xxs: "px-2 py-1.5 text-xs",
     lg: "px-5 py-3 text-base",
     xl: "px-6 py-3.5 text-base"
   }
@@ -94,7 +94,7 @@ class V2::ButtonComponent < V2::BaseComponent
 
   def link_to_component
     classname = ""
-    classname = "ml-1.5" unless icon_only?
+    classname = "ml-1.5" if icon? && !icon_only?
     @options = "javascript:void(0);" if disabled?
 
     _link_to(link_external?, @options, @html_options) do
@@ -110,7 +110,7 @@ class V2::ButtonComponent < V2::BaseComponent
 
   def button_to_component
     classname = "group-disabled:hidden"
-    classname += " ml-1.5" unless icon_only?
+    classname += " ml-1.5" if icon? && !icon_only?
 
     button_to(@options, @html_options) do
       concat(icon) if icon?

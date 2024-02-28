@@ -81,9 +81,29 @@ class ChartComponent < ViewComponent::Base
     chart[:help_text] || I18n.t("charts.#{chart[:name]}.help_text")
   end
 
+  def help_link
+    I18n.t("charts.#{chart[:name]}.help_link") if I18n.exists?("charts.#{chart[:name]}.help_link")
+  end
+
   def corner_icon
     icon = V2::IconComponent.new("v2/info.svg", size: :md, classes: "text-main-500")
-    icon.with_tooltip(help_text, placement: "top")
+    if help_text.present?
+      icon.with_tooltip(help_text, placement: "top", type: :detailed) do |tooltip|
+        tooltip.with_detailed_text do
+          content_tag(:div, nil, class: "flex flex-col gap-y-4 items-start") do
+            concat help_text
+            if help_link.present?
+              concat render(V2::ButtonComponent.new(scheme: :link,
+                label: "Learn more",
+                options: help_link,
+                type: :link_external,
+                size: :none,
+                authz: false) { |b| b.with_icon("v2/arrow_right.svg") })
+            end
+          end
+        end
+      end
+    end
     icon
   end
 
