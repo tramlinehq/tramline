@@ -1,67 +1,69 @@
-<% if insufficient? %>
-  <div class="flex flex-col w-full bg-white box-padding border-default gap-y-6">
-    <div class="flex justify-between items-start mb-4">
-      <h1 class="flex heading-3 gap-x-1"><%= title %></h1>
-      <div class="flex py-0.5 font-semibold"><%= render corner_icon %></div>
-    </div>
-
-    <div class="flex justify-center items-center py-6 opacity-50">
-      <%= render V2::EmptyStateComponent.new(text: "Waiting for more data", banner_image: "v2/clock.svg", type: :subdued) %>
-    </div>
-  </div>
-<% else %>
-  <div class="w-full bg-white box-padding border-default">
-    <div class="flex justify-between items-start mb-4">
-      <div>
+<% if chart.present? %>
+  <% if insufficient? %>
+    <div class="flex flex-col w-full bg-white box-padding border-default gap-y-6">
+      <div class="flex justify-between items-start mb-4">
         <h1 class="flex heading-3 gap-x-1"><%= title %></h1>
-        <p class="text-sm font-normal text-main-400"><%= chart_scope %></p>
+        <div class="flex py-0.5 font-semibold"><%= render corner_icon %></div>
       </div>
 
-      <div class="flex py-0.5 font-semibold"><%= render corner_icon %></div>
+      <div class="flex justify-center items-center py-6 opacity-50">
+        <%= render V2::EmptyStateComponent.new(text: "Waiting for more data", banner_image: "v2/clock.svg", type: :subdued) %>
+      </div>
     </div>
+  <% else %>
+    <div class="w-full bg-white box-padding border-default">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <h1 class="flex heading-3 gap-x-1"><%= title %></h1>
+          <p class="text-sm font-normal text-main-400"><%= chart_scope %></p>
+        </div>
 
-    <% if area? %>
-      <div data-controller="charts"
-           data-charts-type-value="area"
-           data-charts-format-value="<%= value_format %>"
-           data-charts-show-x-axis-value="<%= show_x_axis %>"
-           data-charts-show-y-axis-value="<%= show_y_axis %>"
-           data-charts-series-value="<%= series %>">
-        <div data-charts-target="chart"></div>
+        <div class="flex py-0.5 font-semibold"><%= render corner_icon %></div>
       </div>
-    <% end %>
 
-    <% if line? %>
-      <div data-controller="charts"
-           data-charts-type-value="line"
-           data-charts-format-value="<%= value_format %>"
-           data-charts-show-x-axis-value="<%= show_x_axis %>"
-           data-charts-show-y-axis-value="<%= show_y_axis %>"
-           data-charts-series-value="<%= series %>">
-        <div data-charts-target="chart"></div>
-      </div>
-    <% end %>
+      <% if area? %>
+        <div data-controller="charts"
+             data-charts-type-value="area"
+             data-charts-format-value="<%= value_format %>"
+             data-charts-show-x-axis-value="<%= show_x_axis %>"
+             data-charts-show-y-axis-value="<%= show_y_axis %>"
+             data-charts-series-value="<%= series %>">
+          <div data-charts-target="chart"></div>
+        </div>
+      <% end %>
 
-    <% if stacked_bar? %>
-      <div data-controller="charts"
-           data-charts-type-value="stacked-bar"
-           data-charts-format-value="<%= value_format %>"
-           data-charts-show-x-axis-value="<%= show_x_axis %>"
-           data-charts-show-y-axis-value="<%= show_y_axis %>"
-           data-charts-series-value="<%= series %>">
-        <div data-charts-target="chart"></div>
-      </div>
-    <% end %>
+      <% if line? %>
+        <div data-controller="charts"
+             data-charts-type-value="line"
+             data-charts-format-value="<%= value_format %>"
+             data-charts-show-x-axis-value="<%= show_x_axis %>"
+             data-charts-show-y-axis-value="<%= show_y_axis %>"
+             data-charts-series-value="<%= series %>">
+          <div data-charts-target="chart"></div>
+        </div>
+      <% end %>
 
-    <% if polar_area? %>
-      <div data-controller="charts"
-           data-charts-type-value="polar-area"
-           data-charts-format-value="<%= value_format %>"
-           data-charts-show-x-axis-value="<%= show_x_axis %>"
-           data-charts-show-y-axis-value="<%= show_y_axis %>"
-           data-charts-series-value="<%= linear_series %>">
-        <div data-charts-target="chart"></div>
-      </div>
-    <% end %>
-  </div>
+      <% if stacked_bar? %>
+        <div data-controller="charts"
+             data-charts-type-value="stacked-bar"
+             data-charts-format-value="<%= value_format %>"
+             data-charts-show-x-axis-value="<%= show_x_axis %>"
+             data-charts-show-y-axis-value="<%= show_y_axis %>"
+             data-charts-series-value="<%= series %>">
+          <div data-charts-target="chart"></div>
+        </div>
+      <% end %>
+
+      <% if polar_area? %>
+        <div data-controller="charts"
+             data-charts-type-value="polar-area"
+             data-charts-format-value="<%= value_format %>"
+             data-charts-show-x-axis-value="<%= show_x_axis %>"
+             data-charts-show-y-axis-value="<%= show_y_axis %>"
+             data-charts-series-value="<%= linear_series %>">
+          <div data-charts-target="chart"></div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 <% end %>

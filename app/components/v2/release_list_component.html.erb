@@ -146,6 +146,15 @@
         <div class="grid grid-cols-4 gap-x-2 my-3 gap-y-2">
           <%= render ChartComponent.new(devops_report[:operational_efficiency][:contributors]) %>
           <%= render ChartComponent.new(devops_report[:operational_efficiency][:stability_contributors]) %>
+          <div><!-- to maintain grid height --></div>
+          <% if current_organization.team_analysis_enabled? %>
+            <div class="col-span-2">
+              <%= render ChartComponent.new(devops_report[:operational_efficiency][:team_contributors]) %>
+            </div>
+            <div class="col-span-2">
+              <%= render ChartComponent.new(devops_report[:operational_efficiency][:team_stability_contributors]) %>
+            </div>
+          <% end %>
         </div>
       <% end %>
     <% end %>
