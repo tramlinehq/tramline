@@ -8,9 +8,19 @@
   </div>
 <% end %>
 
-<h1 class="heading-1">
-  <%= title %>
-</h1>
+<div class="mb-1 flex justify-between">
+  <h1 class="heading-1">
+    <%= title %>
+  </h1>
+</div>
+
+<% if sub_actions? %>
+  <nav class="-mx-1.5 flex flex-row flex-wrap mt-4 sm:space-x-1">
+    <% sub_actions.each do |sub_action| %>
+      <%= sub_action %>
+    <% end %>
+  </nav>
+<% end %>
 
 <div data-controller="reveal">
   <div class="mt-5">

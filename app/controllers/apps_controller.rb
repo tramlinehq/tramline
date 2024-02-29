@@ -33,36 +33,27 @@ class AppsController < SignedInApplicationController
   def create
     @app = current_organization.apps.new(app_params)
 
-    respond_to do |format|
-      if @app.save
-        format.html { redirect_to app_path(@app), notice: "App was successfully created." }
-        format.json { render :show, status: :created, location: @app }
-      else
-        format.html { render :index, status: :unprocessable_entity }
-        format.json { render json: @app.errors, status: :unprocessable_entity }
-      end
+    if @app.save
+      redirect_to app_path(@app), notice: "App was successfully created."
+    else
+      @apps = current_organization.apps
+      redirect_back fallback_location: apps_path, flash: { error: "#{@app.errors.full_messages.to_sentence}." }
     end
   end
 
   def update
-    respond_to do |format|
-      if @app.update(app_update_params)
-        format.html { redirect_to app_path(@app), notice: "App was updated." }
-        format.json { render :show, status: :updated, location: @app }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @app.errors, status: :unprocessable_entity }
-      end
+    if @app.update(app_update_params)
+      redirect_to app_path(@app), notice: "App was updated."
+    else
+      render :edit, status: :unprocessable_entity
     end
   end
 
   def destroy
-    respond_to do |format|
-      if @app.destroy
-        format.html { redirect_to apps_path, status: :see_other, notice: "App was deleted!" }
-      else
-        format.html { render :show, status: :unprocessable_entity }
-      end
+    if @app.destroy
+      redirect_to apps_path, status: :see_other, notice: "App was deleted!"
+    else
+      redirect_back fallback_location: apps_path, flash: { error: "Could not remove the app. #{@app.errors.full_messages.to_sentence}." }
     end
   end
 
@@ -76,7 +67,6 @@ class AppsController < SignedInApplicationController
 
   def refresh_external
     @app.create_external!
-
     redirect_to app_path(@app), notice: "Store status was successfully refreshed."
   end
 

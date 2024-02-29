@@ -39,9 +39,9 @@ class TrainsController < SignedInApplicationController
 
   def destroy
     if @train.destroy
-      redirect_to app_path(@app), status: :see_other, notice: "Train was deleted!"
+      redirect_to app_path(@app), status: :see_other, notice: "Train was removed!"
     else
-      render :edit, status: :unprocessable_entity
+      train_redirect_back("Could not remove the train. #{@train.errors.full_messages.to_sentence}.")
     end
   end
 
@@ -49,7 +49,7 @@ class TrainsController < SignedInApplicationController
     if @train.activate!
       redirect_to train_path, notice: "Train was activated!"
     else
-      render :edit, status: :unprocessable_entity
+      train_redirect_back("Could not activate the train. #{@train.errors.full_messages.to_sentence}.")
     end
   end
 
@@ -59,7 +59,7 @@ class TrainsController < SignedInApplicationController
     if @train.deactivate!
       redirect_to train_path, notice: "Train was deactivated!"
     else
-      render :edit, status: :unprocessable_entity
+      train_redirect_back("Could not deactivate the train. #{@train.errors.full_messages.to_sentence}.")
     end
   end
 
@@ -71,6 +71,10 @@ class TrainsController < SignedInApplicationController
     else
       redirect_to steps_app_train_path(@app, @train), notice: "Train was successfully created."
     end
+  end
+
+  def train_redirect_back(message)
+    redirect_back fallback_location: app_train_releases_path(@app, @train), flash: { error: message }
   end
 
   def set_train

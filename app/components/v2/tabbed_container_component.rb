@@ -1,6 +1,7 @@
 class V2::TabbedContainerComponent < V2::BaseComponent
   renders_one :back_button, V2::BackButtonComponent
   renders_many :tabs
+  renders_many :sub_actions
 
   TAB_STYLE = "inline-flex items-center justify-start py-4 pr-4 pl-0.5 border-b-2 border-transparent rounded-t-lg hover:text-main-600 hover:border-main-300 dark:hover:text-main-300 group"
   SELECTED_TAB_STYLE = "inline-flex items-center justify-start py-4 pr-4 pl-0.5 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500 group"
