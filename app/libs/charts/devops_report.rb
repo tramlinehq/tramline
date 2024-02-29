@@ -208,6 +208,7 @@ class Charts::DevopsReport
       .releases
       .limit(n)
       .finished
+      .reorder("completed_at DESC")
       .includes(:release_changelog, {release_platform_runs: [:release_platform]}, :all_commits, step_runs: [:deployment_runs, :step])
   end
 
