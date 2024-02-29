@@ -44,7 +44,7 @@
       <% table.with_row do |row| %>
         <% row.with_cell do %>
           <div class="font-medium text-slate-800">
-            <%= invite.email %>
+            -
           </div>
         <% end %>
         <% row.with_cell do %>
@@ -52,7 +52,7 @@
         <% end %>
         <% row.with_cell do %>
           <div class="font-medium text-slate-800">
-            -
+            <%= invite.email %>
           </div>
         <% end %>
         <% row.with_cell do %>
@@ -62,6 +62,11 @@
         <% end %>
         <% row.with_cell do %>
           <%= invite.role.titleize %>
+        <% end %>
+        <% row.with_cell do %>
+          <div class="font-medium text-slate-800">
+            -
+          </div>
         <% end %>
         <% row.with_cell do %>
           <div class="font-medium text-slate-800">
