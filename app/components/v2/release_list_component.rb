@@ -26,7 +26,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
   end
 
   memoize def last_completed_release
-    train.releases.released.first
+    train.releases.reorder("completed_at DESC").released.first
   end
 
   def release_component(run)
