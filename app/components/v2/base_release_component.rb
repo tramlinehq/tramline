@@ -32,7 +32,7 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     platform_steps = @step_summary.select { |step| step.platform_raw == platform }
 
     initial_data = {started_at: nil, ended_at: nil, builds_created_count: 0, duration: "--"}
-    initial_phase_data = {review: initial_data, release: initial_data}
+    initial_phase_data = {review: initial_data.dup, release: initial_data.dup}
 
     result = platform_steps.each_with_object(initial_phase_data) do |step, acc|
       acc[step.phase.to_sym][:started_at] = [step.started_at, acc[step.phase.to_sym][:started_at]].compact.min
