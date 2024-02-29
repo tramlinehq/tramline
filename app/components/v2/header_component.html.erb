@@ -53,13 +53,12 @@
               <% button = dropdown.with_button(size: :xs) %>
               <% button.with_icon("art/cross_platform_default.png", size: :xxl, rounded: false) %>
               <% button.with_title_text do %>
-                <div class="text-left">
-                  <div class="text-sm font-semibold leading-none text-main dark:text-white">
-                    <%= default_app.name %>
-                    <span class="text-sm text-main-500 dark:text-main-400">
+                <div class="flex items-center justify-center gap-x-1 text-sm font-semibold leading-none text-main dark:text-white">
+                  <%= render V2::IconComponent.new("v2/#{default_app.platform}.svg", size: :md) %>
+                  <%= default_app.name %>
+                  <span class="text-sm text-main-500 dark:text-main-400">
                       <%= default_app.bundle_identifier %>
                     </span>
-                  </div>
                 </div>
               <% end %>
 
