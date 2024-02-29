@@ -74,13 +74,13 @@ def nuke_train(train)
       prun.passports&.delete_all
       prun.release_metadata&.delete
     end
+    run.pull_requests&.delete_all
     run.release_platform_runs&.delete_all
     run.all_commits.each do |commit|
       commit.passports&.delete_all
     end
     run.all_commits&.delete_all
     run.release_changelog&.delete
-    run.pull_requests&.delete_all
     run.build_queues&.delete_all
     run.passports&.delete_all
   end
