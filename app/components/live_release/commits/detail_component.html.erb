@@ -6,11 +6,12 @@
   </div>
 
   <div class="flex flex-row gap-x-2 justify-self-end items-center">
+    <%= render V2::TeamPillComponent.new(team) %>
     <%= render partial: "shared/live_release/commit_backmerge_status", locals: { commit: commit } %>
-    <div class="px-2"><%= details_toggle %></div>
+    <%= details_toggle %>
   </div>
 
-  <div data-reveal class="pb-4 whitespace-nowrap col-span-2" <%="hidden" if stale? %>>
+  <div data-reveal class="pb-4 whitespace-nowrap col-span-2" <%= "hidden" if stale? %>>
     <% if stale? %>
       <div class="my-2"><span class="font-medium">This commit has been replaced by a newer commit.</span></div>
     <% end %>

@@ -13,7 +13,7 @@ class LiveRelease::Commits::DetailComponent < ViewComponent::Base
 
   attr_reader :commit, :release, :number
   delegate :writer?, to: :helpers
-  delegate :stale?, to: :commit
+  delegate :stale?, :team, to: :commit
 
   def number_style
     if stale?
