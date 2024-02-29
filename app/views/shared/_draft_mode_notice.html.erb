@@ -1,8 +1,8 @@
 <% if app.draft? %>
-  <article class="mt-10">
+  <article class="mb-10">
     <div class="max-w-sm p-6 bg-white border border-main-200 rounded-lg shadow dark:bg-main dark:border-main-700">
-      <%= inline_svg('clock.svg', classname: "inline-flex w-10 mb-3") %>
-      <h5 class="mb-2 text-2xl font-semibold tracking-tight text-main-900 dark:text-white">App in Draft mode</h5>
+      <%= render V2::IconComponent.new("clock.svg", size: :xl_3, classes: "handle cursor-grabbing") %>
+      <h5 class="mb-2 heading-2">App in Draft mode</h5>
       <p class="mb-3 font-normal text-main-500 dark:text-main-400">
         Your app on the <strong>Google Play Store</strong> is currently in a
         draft state.
