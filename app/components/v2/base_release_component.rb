@@ -41,8 +41,8 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     end
 
     [:review, :release].each do |phase|
-      next unless result[phase][:started_at] && result[phase][:ended_at]
-      duration = distance_of_time_in_words(result[phase][:started_at], result[phase][:ended_at])
+      next unless result[phase][:started_at]
+      duration = distance_of_time_in_words(result[phase][:started_at], result[phase][:ended_at] || Time.current)
       result[phase][:duration] = duration
     end
 

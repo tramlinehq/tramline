@@ -202,7 +202,7 @@ class StepRun < ApplicationRecord
   end
 
   def active?
-    release_platform_run.on_track? && !cancelled? && !status.in?(FAILED_STATES)
+    release_platform_run.on_track? && !cancelled? && !success? && !status.in?(FAILED_STATES)
   end
 
   def find_build

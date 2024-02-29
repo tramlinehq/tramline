@@ -77,8 +77,9 @@ class Queries::ReleaseSummary
         release_phase_start = pr.step_runs_for(pr.release_platform.release_step)&.first&.scheduled_at
         pr.steps.map do |step|
           step_runs = pr.step_runs_for(step).sequential
+          last_step_run = step_runs.last
           started_at = step_runs.first&.scheduled_at
-          ended_at = step.review? ? release_phase_start : step_runs.last&.updated_at
+          ended_at = (step.review? ? release_phase_start : step_runs.last&.updated_at) if last_step_run && !last_step_run.active?
           {
             name: step.name,
             platform: pr.display_attr(:platform),
