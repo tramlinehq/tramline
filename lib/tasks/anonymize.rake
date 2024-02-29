@@ -28,6 +28,7 @@ namespace :anonymize do
     end
 
     user_ids = app.organization.users.pluck(:id)
+    user_github_logins = app.organization.users.pluck(:github_login)
 
     database "TramlineDatabase" do
       strategy DataAnon::Strategy::Whitelist
@@ -140,7 +141,7 @@ namespace :anonymize do
                "parents" => [{"sha" => "dummy"}],
                "author_url" => "https://github.com/tramlinehq",
                "author_name" => Faker::Name.name,
-               "author_login" => Faker::Twitter.screen_name,
+               "author_login" => user_github_logins.sample,
                "author_timestamp" => commit["author_timestamp"]}
             end
           end
@@ -157,6 +158,7 @@ namespace :anonymize do
         anonymize("message") { |field| Faker::Lorem.paragraph_by_chars(number: field.value.size) }
         anonymize("author_name") { |field| Faker::Name.name }
         anonymize("author_email").using FieldStrategy::RandomMailinatorEmail.new
+        anonymize("author_login").using FieldStrategy::SelectFromList.new(user_github_logins)
         anonymize("url").using FieldStrategy::RandomUrl.new
       end
 
@@ -263,8 +265,10 @@ namespace :anonymize do
     end
 
     app.releases.each do |release|
-      RefreshReportsJob.perform_now(release.id)
+      Queries::ReleaseSummary.warm(release.id)
     end
+    train = app.trains.find(train_id)
+    Charts::DevopsReport.warm(train)
   end
 
   def source_db_config
