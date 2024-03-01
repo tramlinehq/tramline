@@ -1,10 +1,10 @@
-<ol class="relative border-s border-gray-200 dark:border-gray-700">
+<ol class="relative border-s border-main-200 dark:border-main-700">
   <% events.each do |event| %>
-    <li class="flex items-center gap-x-2 mb-2 ms-4">
-      <div class="absolute w-3 h-3 <%= event_color(event) %> rounded-full -start-1.5 border"></div>
-      <time class="text-xs font-normal leading-none text-gray-400 dark:text-gray-500"><%= event[:timestamp] %></time>
-<!--      <h3 class="text-xs font-medium text-gray-900 dark:text-white"><%#= event[:title] %></h3>-->
-      <p class="text-xs font-normal text-gray-500 dark:text-gray-400"><%= event[:description] %></p>
+    <li class="mb-10 ms-4">
+      <div class="absolute w-3 h-3 <%= event_color(event) %> rounded-full mt-1.5 -start-1.5 border"></div>
+      <time class="mb-1 text-sm font-normal leading-none text-main-400 dark:text-main-500"><%= event[:timestamp] %></time>
+      <h3 class="text-md font-medium text-main-900 dark:text-white"><%= event[:title] %></h3>
+      <p class="mb-4 text-sm font-normal text-main-500 dark:text-main-400"><%= event[:description] %></p>
     </li>
   <% end %>
 </ol>
