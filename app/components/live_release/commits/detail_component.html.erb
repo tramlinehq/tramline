@@ -25,7 +25,7 @@
             <% commit.step_runs_for(run).each do |step_run| %>
               <div class="border-dashed border-t border-slate-700 last:border-t-0 mb-2"></div>
 
-              <div class="pt-2 <%= "text-gray-900/50" if stale? %>">
+              <div class="pt-2 <%= "text-main-900/50" if stale? %>">
                 <div class="mb-2 font-medium text-base">
                   <%= step_run.step.name %>
                   <%= dev_show { step_run.id.strip } %>
