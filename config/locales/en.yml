@@ -294,7 +294,7 @@ en:
       adoption_rate:
         title: "Adoption Rate"
         scope: "With rollout percentage"
-        help_text: ""
+        help_text: "How fast are users adopting the new release as it is being rolled out?\n\nThe adoption percentage represents the proportion of sessions that the release has seen over a 24 hour period."
     devops:
       duration:
         title: "Release duration"
@@ -328,8 +328,8 @@ en:
       team_contributors:
         title: "Release contribution"
         scope: "Last 6 releases. Commits per team."
-        help_text: "These are the changes made to the working branch between releases by members in these respective teams. This is a rough indicator of how much the team is contributing to the features in each release."
+        help_text: "These are the changes made to the working branch between releases by members in these respective teams.\n\nThis is a rough indicator of how much the team is contributing to the features in each release."
       team_stability_contributors:
         title: "Release stability fixes"
         scope: "Last 6 releases. Commits after release start per team."
-        help_text: "These are the changes made to the release branch after the release has started by members in these respective teams. This is a good indicator of how much the team is involved in the release stability."
+        help_text: "These are the changes made to the release branch after the release has started by members in these respective teams.\n\nThis is a good indicator of how much the team is involved in the release stability."

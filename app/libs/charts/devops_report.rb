@@ -77,7 +77,8 @@ class Charts::DevopsReport
           type: "stacked-bar",
           value_format: "number",
           name: "operational_efficiency.team_stability_contributors",
-          colors: team_colors
+          colors: team_colors,
+          show_y_axis: true
         },
         team_contributors: {
           data: team_contributors,
@@ -85,7 +86,8 @@ class Charts::DevopsReport
           type: "stacked-bar",
           value_format: "number",
           name: "operational_efficiency.team_contributors",
-          colors: team_colors
+          colors: team_colors,
+          show_y_axis: true
         }
       }
     }

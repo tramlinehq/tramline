@@ -91,7 +91,7 @@ class ChartComponent < ViewComponent::Base
       icon.with_tooltip(help_text, placement: "top", type: :detailed) do |tooltip|
         tooltip.with_detailed_text do
           content_tag(:div, nil, class: "flex flex-col gap-y-4 items-start") do
-            concat help_text
+            concat simple_format(help_text)
             if help_link.present?
               concat render(V2::ButtonComponent.new(scheme: :link,
                 label: "Learn more",

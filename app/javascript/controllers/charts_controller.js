@@ -300,7 +300,7 @@ export default class extends Controller {
         },
       },
       yaxis: {
-        show: false,
+        show: this.showYAxisValue,
       },
       fill: {
         opacity: 1,
