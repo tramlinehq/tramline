@@ -35,15 +35,6 @@ module ApplicationHelper
     end
   end
 
-  def modal_for(heading, &block)
-    render(
-      partial: "shared/modal",
-      locals: {
-        heading: heading, block: block
-      }
-    )
-  end
-
   def toggle_for(hide, full_width: false, &block)
     render(
       partial: "shared/toggle_button",

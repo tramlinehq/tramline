@@ -46,7 +46,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
       {
         title: "Minor",
         subtitle: start_minor_text,
-        icon: "v2/play-empty.svg",
+        icon: "v2/play_empty.svg",
         opt_name: "has_major_bump",
         opt_value: "false",
         options: {checked: true, data: {action: "reveal#hide"}}
