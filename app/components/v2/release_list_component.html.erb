@@ -234,9 +234,10 @@
     <% end %>
   <% elsif empty? %>
     <% container.with_empty_state do %>
+      <%= render V2::ScheduledTrainComponent.new %>
       <%= render V2::EmptyStateComponent.new(
-        title: "Create your very first release",
-        text: "Once you've finished configuring your train fully, you can start creating new releases.",
+        title: empty_state[:title],
+        text: empty_state[:text],
         banner_image: "art/no_releases.png") %>
     <% end %>
   <% end %>

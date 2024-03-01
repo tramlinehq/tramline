@@ -71,7 +71,28 @@ class V2::ReleaseListComponent < V2::BaseComponent
   end
 
   def ios_enabled?
-    train.app.cross_platform? || train.app.ios?
+    app.cross_platform? || app.ios?
+  end
+
+  def empty_state
+    if train.scheduled?
+      if train.activatable?
+        {
+          title: "Activate the train",
+          text: "Once you've activated, we will automatically start running your scheduled releases."
+        }
+      else
+        {
+          title: "Upcoming release",
+          text: "Your first scheduled release will automatically kick-off at #{train.kickoff_at.to_s(:short)}. You can also manually run a new release by clicking the prepare button."
+        }
+      end
+    else
+      {
+        title: "Create your very first release",
+        text: "Once you've finished configuring your train fully, you can start creating new releases."
+      }
+    end
   end
 
   private
