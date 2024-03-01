@@ -18,7 +18,7 @@ class IntegrationsController < SignedInApplicationController
     if @integration.save
       redirect_to app_path(@app), notice: "Integration was successfully created."
     else
-      redirect_to app_integrations_path(@app), flash: {error: "#{@integration.errors.full_messages.to_sentence}"}
+      redirect_to app_integrations_path(@app), flash: {error: @integration.errors.full_messages.to_sentence}
     end
   end
 

@@ -74,7 +74,7 @@ class TrainsController < SignedInApplicationController
   end
 
   def train_redirect_back(message)
-    redirect_back fallback_location: app_train_releases_path(@app, @train), flash: { error: message }
+    redirect_back fallback_location: app_train_releases_path(@app, @train), flash: {error: message}
   end
 
   def set_train

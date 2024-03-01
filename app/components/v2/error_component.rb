@@ -8,7 +8,7 @@ class V2::ErrorComponent < V2::BaseComponent
 
     content_tag(:div) do
       @errors.collect do |error|
-        concat render(V2::AlertComponent.new(type: :error, title: simple_format(error.full_message).html_safe))
+        concat render(V2::AlertComponent.new(type: :error, title: simple_format(error.full_message, sanitize: true)))
       end
     end
   end

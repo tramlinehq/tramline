@@ -37,7 +37,7 @@ class AppsController < SignedInApplicationController
       redirect_to app_path(@app), notice: "App was successfully created."
     else
       @apps = current_organization.apps
-      redirect_back fallback_location: apps_path, flash: { error: "#{@app.errors.full_messages.to_sentence}." }
+      redirect_back fallback_location: apps_path, flash: {error: "#{@app.errors.full_messages.to_sentence}."}
     end
   end
 
@@ -53,7 +53,7 @@ class AppsController < SignedInApplicationController
     if @app.destroy
       redirect_to apps_path, status: :see_other, notice: "App was deleted!"
     else
-      redirect_back fallback_location: apps_path, flash: { error: "Could not remove the app. #{@app.errors.full_messages.to_sentence}." }
+      redirect_back fallback_location: apps_path, flash: {error: "Could not remove the app. #{@app.errors.full_messages.to_sentence}."}
     end
   end
 

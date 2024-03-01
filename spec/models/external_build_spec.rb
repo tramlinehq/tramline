@@ -35,7 +35,7 @@ describe ExternalBuild do
 
       persisted_metadata = external_build_metadata.update_or_insert!(invalid_metadata)
 
-      expect(persisted_metadata.errors).to contain_exactly("Metadata →\nThe property '#/0' did not contain a required property of 'identifier'")
+      expect(persisted_metadata.errors).to contain_exactly("Metadata → The property '#/0' did not contain a required property of 'identifier'")
       expect(persisted_metadata.id).to be_nil
     end
   end
