@@ -1,22 +1,34 @@
 class ReleaseMonitoringComponent < ViewComponent::Base
-  include AssetsHelper
-  include ApplicationHelper
-
   METRICS = [:staged_rollout, :adoption_rate, :adoption_chart, :errors, :stability]
 
-  def initialize(deployment_run:, metrics: METRICS, show_bundle_id: true)
+  SIZES = {
+    sm: {cols: 2, size: 4}
+  }
+
+  def initialize(deployment_run:, metrics: METRICS, show_bundle_id: true, cols: 2, size: :base)
     raise ArgumentError, "metrics must be one of #{METRICS}" unless (metrics - METRICS).empty?
+
     @deployment_run = deployment_run
     @metrics = metrics
     @show_bundle_id = show_bundle_id
+    @cols = cols
+    @size = size
   end
 
-  attr_reader :deployment_run, :metrics, :show_bundle_id
-
-  delegate :adoption_rate, to: :release_data
+  delegate :adoption_rate, to: :release_data, allow_nil: true
   delegate :app, :release_health_rules, :platform, to: :deployment_run
   delegate :monitoring_provider, to: :app
   delegate :current_user, to: :helpers
+
+  attr_reader :deployment_run, :metrics, :show_bundle_id, :size
+
+  def empty_component?
+    release_data.nil? || release_data.blank?
+  end
+
+  def empty_metric_component(name)
+    render EmptyMetricCardComponent.new(name:, size:)
+  end
 
   def build_identifier
     "#{deployment_run.build_version} (#{deployment_run.build_number})"
@@ -35,7 +47,7 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def staged_rollout
-    @staged_rollout ||= deployment_run.staged_rollout
+    @staged_rollout ||= deployment_run&.staged_rollout
   end
 
   def events
@@ -126,5 +138,9 @@ class ReleaseMonitoringComponent < ViewComponent::Base
       value_format: "number",
       name: "release_health.adoption_rate"
     }
+  end
+
+  def grid_cols
+    "grid-cols-#{@cols}"
   end
 end
