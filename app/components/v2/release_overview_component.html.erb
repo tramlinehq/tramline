@@ -78,7 +78,15 @@
       </div>
     </div>
 
-    <div class="grid <%= grid_size %> justify-between mt-4 gap-x-6 gap-y-3">
+    <div class="grid <%= grid_size %> justify-between mt-3 gap-x-6 gap-y-3">
+      <% if cross_platform? %>
+        <% platform_runs.each do |run| %>
+        <span class="text-xl text-main-400/50 border-b border-main-300/30 py-1 justify-self-start pl-0.5 pr-1.5">
+          <%= run.display_attr(:platform) %>
+        </span>
+        <% end %>
+      <% end %>
+
       <% platform_runs.each do |run| %>
         <div class="grid gap-y-2 items-end content-end">
           <% run.store_releases.each do |store_release| %>
