@@ -7,6 +7,10 @@ class V2::HeaderComponent < V2::BaseComponent
   end
 
   def user_name
-    current_user.preferred_name
+    current_user.preferred_name || user_full_name
+  end
+
+  def user_full_name
+    current_user.full_name
   end
 end

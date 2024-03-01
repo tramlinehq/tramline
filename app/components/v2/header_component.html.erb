@@ -136,8 +136,7 @@
 
         <%= render V2::DropdownComponent.new(authz: false) do |dropdown| %>
           <% dropdown.with_button(size: :none, html_options: { class: "flex" }, scheme: :avatar_icon)
-                     .with_icon(user_avatar(user_name), raw_svg: true, size: :xl_3) %>
-
+                     .with_icon(user_avatar(user_full_name), raw_svg: true, size: :xl_3) %>
 
           <% dropdown.with_subtext do %>
             <div class="py-3 px-4">
