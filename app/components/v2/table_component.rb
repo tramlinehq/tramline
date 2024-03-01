@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class V2::TableComponent < ViewComponent::Base
+class V2::TableComponent < V2::BaseComponent
   renders_one :heading
   renders_many :rows, ->(style: "") { RowComponent.new(style: style) }
 

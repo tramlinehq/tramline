@@ -1,4 +1,4 @@
-class V2::BackButtonComponent < ViewComponent::Base
+class V2::BackButtonComponent < V2::BaseComponent
   def initialize(path: nil, to: nil)
     @path = path
     @link_data = (!path) ? history_nav : {}

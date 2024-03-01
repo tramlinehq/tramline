@@ -1,4 +1,4 @@
-class V2::ContainerComponent < ViewComponent::Base
+class V2::ContainerComponent < V2::BaseComponent
   renders_one :back_button, V2::BackButtonComponent
   renders_one :empty_state
   renders_one :body

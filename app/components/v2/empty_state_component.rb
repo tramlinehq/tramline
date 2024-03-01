@@ -1,4 +1,4 @@
-class V2::EmptyStateComponent < ViewComponent::Base
+class V2::EmptyStateComponent < V2::BaseComponent
   TYPES = [:giant, :subdued]
 
   def initialize(text:, banner_image:, title: "", type: :giant)

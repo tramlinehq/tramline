@@ -1,4 +1,4 @@
-class V2::LoadingIndicatorComponent < ViewComponent::Base
+class V2::LoadingIndicatorComponent < V2::BaseComponent
   def initialize(text: "Loading...", pulse: true, typewriter_only: false, skeleton_only: false, turbo_frame: false)
     raise ArgumentError, "Indicator can only be a skeleton or typewriter" if typewriter_only && skeleton_only
     @text = text

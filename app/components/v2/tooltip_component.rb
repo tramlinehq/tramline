@@ -1,4 +1,4 @@
-class V2::TooltipComponent < ViewComponent::Base
+class V2::TooltipComponent < V2::BaseComponent
   TOOLTIP_CLASSES = "absolute z-30 px-3 py-2 text-sm font-medium text-white bg-main-900 rounded-lg shadow-sm tooltip dark:bg-main-700"
   DETAILED_TOOLTIP_CLASSES = "absolute z-30 text-sm font-normal text-main-500 bg-white border-default p-3 rounded-lg shadow-sm w-fit max-w-xs dark:bg-main-800 dark:border-main-600 dark:text-main-400"
   InvalidType = Class.new(ArgumentError)
