@@ -1,0 +1,90 @@
+<%= render V2::SectionComponent.new(style: :boxed) do %>
+  <div class="grid grid-cols-5 gap-1 text-main-500 dark:text-main-400">
+    <div class="pb-1 pl-0.5 heading-5">Sunday</div>
+    <div class="pb-1 pl-0.5 heading-5">Monday</div>
+    <div class="pb-1 pl-0.5 heading-5">Today</div>
+    <div class="pb-1 pl-0.5 heading-5">Wednesday</div>
+    <div class="pb-1 pl-0.5 heading-5">Thursday</div>
+  </div>
+
+  <div class="grid grid-cols-5 bg-main-50 border border-main-200 divide-x divide-main-200 rounded-lg">
+    <div class="h-20 sm:h-28 lg:h-36 p-2">
+      <div class="h-full flex flex-col justify-between">
+        <!-- Events -->
+        <div class="grow flex flex-col p-0.5 sm:p-1.5 overflow-hidden">
+          <div class="text-2xl">16.56</div>
+          <div class="text-sm">Ran at 10:00 pm</div>
+        </div>
+
+        <!-- Cell footer -->
+        <div class="flex justify-between items-end p-0.5 sm:p-1.5">
+          <%= render V2::StatusIndicatorPillComponent.new(text: "Failed", status: :failure) %>
+          <div class="flex justify-self-end text-sm text-main-500">30th Nov</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-20 sm:h-28 lg:h-36 p-1">
+      <div class="h-full flex flex-col justify-between">
+        <!-- Events -->
+        <div class="grow flex flex-col p-0.5 sm:p-1.5 overflow-hidden">
+          <div class="text-2xl">16.56</div>
+          <div class="text-sm">Ran at 10:00 pm</div>
+        </div>
+
+        <!-- Cell footer -->
+        <div class="flex justify-between items-center p-0.5 sm:p-1.5">
+          <%= render V2::StatusIndicatorPillComponent.new(text: "Released", status: :success) %>
+          <div class="text-sm text-main-500">1st Dec</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-20 sm:h-28 lg:h-36 p-1">
+      <div class="h-full flex flex-col justify-between">
+        <!-- Events -->
+        <div class="grow flex flex-col p-0.5 sm:p-1.5 overflow-hidden">
+          <div class="text-2xl">16.56</div>
+          <div class="text-sm">In progress</div>
+        </div>
+
+        <!-- Cell footer -->
+        <div class="flex justify-between items-center p-0.5 sm:p-1.5">
+          <%= render V2::StatusIndicatorPillComponent.new(text: "Ongoing", status: :ongoing) %>
+          <div class="text-sm text-main-500">3rd Dec</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-20 sm:h-28 lg:h-36 p-1">
+      <div class="h-full flex flex-col justify-between">
+        <!-- Events -->
+        <div class="grow flex flex-col p-0.5 sm:p-1.5 overflow-hidden">
+          <div class="text-2xl">16.56</div>
+          <div class="text-sm">Scheduled for 11:00 pm</div>
+        </div>
+
+        <!-- Cell footer -->
+        <div class="flex justify-between items-center p-0.5 sm:p-1.5">
+          <%= render V2::StatusIndicatorPillComponent.new(text: "Scheduled", status: :neutral) %>
+          <div class="text-sm text-main-500">5th Dec</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-20 sm:h-28 lg:h-36 p-1">
+      <div class="h-full flex flex-col justify-between">
+        <!-- Events -->
+        <div class="grow flex flex-col p-0.5 sm:p-1.5 overflow-hidden">
+          <div class="text-sm">Nothing scheduled today</div>
+        </div>
+
+        <!-- Cell footer -->
+        <div class="flex justify-between items-center p-0.5 sm:p-1.5">
+          <div></div>
+          <div class="text-sm text-main-500">7th Dec</div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
