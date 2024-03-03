@@ -5,12 +5,12 @@ class ReleaseMonitoringComponent < ViewComponent::Base
     sm: {cols: 2, size: 4}
   }
 
-  def initialize(deployment_run:, metrics: METRICS, show_bundle_id: true, cols: 2, size: :base)
+  def initialize(deployment_run:, metrics: METRICS, show_version_info: true, cols: 2, size: :base)
     raise ArgumentError, "metrics must be one of #{METRICS}" unless (metrics - METRICS).empty?
 
     @deployment_run = deployment_run
     @metrics = metrics
-    @show_bundle_id = show_bundle_id
+    @show_version_info = show_version_info
     @cols = cols
     @size = size
   end
@@ -20,7 +20,7 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   delegate :monitoring_provider, to: :app
   delegate :current_user, to: :helpers
 
-  attr_reader :deployment_run, :metrics, :show_bundle_id, :size
+  attr_reader :deployment_run, :metrics, :show_version_info, :size
 
   def empty_component?
     release_data.blank?

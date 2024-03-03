@@ -113,7 +113,7 @@
             <%= render ReleaseMonitoringComponent.new(
               deployment_run: run.store_submitted_releases.first,
               metrics: [:stability, :adoption_rate, :staged_rollout],
-              show_bundle_id: false,
+              show_version_info: false,
               cols: 3,
               size: :sm) %>
           <% end %>
