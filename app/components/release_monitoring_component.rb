@@ -23,7 +23,7 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   attr_reader :deployment_run, :metrics, :show_bundle_id, :size
 
   def empty_component?
-    release_data.nil? || release_data.blank?
+    release_data.blank?
   end
 
   def empty_metric_component(name)

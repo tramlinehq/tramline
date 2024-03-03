@@ -90,7 +90,7 @@
 
       <% platform_runs.each do |run| %>
         <div class="grid gap-y-2 items-end content-end">
-          <% run.store_releases.each do |store_release| %>
+          <% run.store_submitted_releases.each do |store_release| %>
             <%= render V2::BuildInfoComponent.new(store_release) %>
           <% end %>
         </div>
@@ -109,9 +109,9 @@
 
       <% platform_runs.each do |run| %>
         <div>
-          <% if run.store_releases.first.present? %>
+          <% if run.store_submitted_releases.first.present? %>
             <%= render ReleaseMonitoringComponent.new(
-              deployment_run: run.store_releases.first,
+              deployment_run: run.store_submitted_releases.first,
               metrics: [:stability, :adoption_rate, :staged_rollout],
               show_bundle_id: false,
               cols: 3,

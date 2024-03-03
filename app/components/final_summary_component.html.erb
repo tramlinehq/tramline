@@ -175,7 +175,7 @@
       <% if pull_requests? %>
         <% component.with_tab do %>
           <div class="hidden p-4 bg-white rounded-lg" data-tabs-target="panel">
-            <h2 class="mb-2 text-xl font-extrabold tracking-tight">Pull requests created during the release</h2>
+            <h2 class="mb-2 text-xl font-extrabold tracking-tight">Pull requests automatically created during the release</h2>
             <div id="accordion-flush" data-accordion="collapse" data-active-classes="bg-white" data-inactive-classes="text-main-500">
               <%= render partial: "shared/live_release/pull_requests_thin", locals: { prs: pull_requests, title_size: 80 } %>
             </div>

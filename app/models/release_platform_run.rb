@@ -354,6 +354,10 @@ class ReleasePlatformRun < ApplicationRecord
     deployment_runs.reached_production.sort_by(&:scheduled_at).reverse
   end
 
+  def store_submitted_releases
+    deployment_runs.reached_submission.sort_by(&:scheduled_at).reverse
+  end
+
   def last_successful_deployment_run
     last_successful_run_for(release_platform.release_step)&.deployment_runs&.not_failed
   end

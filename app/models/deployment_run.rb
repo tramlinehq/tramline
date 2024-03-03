@@ -185,14 +185,18 @@ class DeploymentRun < ApplicationRecord
   scope :matching_runs_for, ->(integration) { includes(:deployment).where(deployments: {integration: integration}) }
   scope :has_begun, -> { where.not(status: :created) }
   scope :not_failed, -> { where.not(status: [:failed, :failed_prepare_release]) }
-  scope :ready, -> { where(status: STORE_SUBMISSION_STATES) }
+  scope :ready, -> { where(status: READY_STATES) }
 
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
 
   UnknownStoreError = Class.new(StandardError)
 
   def self.reached_production
-    ready.includes([:staged_rollout, {step_run: [:commit], deployment: [:integration]}]).select(&:production_channel?)
+    ready.includes(:step_run, :deployment).select(&:production_channel?)
+  end
+
+  def self.reached_submission
+    where(status: STORE_SUBMISSION_STATES).includes([:staged_rollout, {step_run: [:commit], deployment: [:integration]}]).select(&:production_channel?)
   end
 
   def deployment_notes
