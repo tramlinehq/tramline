@@ -23,6 +23,7 @@
 
           <%= render V2::StatusIndicatorPillComponent.new(text: status.first, status: status.second) %>
           <%= render(hotfix_badge) unless hotfix_badge.nil? %>
+          <%= render(scheduled_badge) if automatic? %>
         </div>
 
         <div>

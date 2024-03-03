@@ -27,6 +27,21 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     end
   end
 
+  def scheduled_badge
+    if @release.is_automatic?
+      badge = V2::BadgeComponent.new("Automatic")
+      badge.with_icon("v2/robot.svg")
+    else
+      badge = V2::BadgeComponent.new("Manual")
+      badge.with_icon("v2/person_standing.svg")
+    end
+    badge
+  end
+
+  def automatic?
+    @release.train.automatic?
+  end
+
   def step_summary(platform)
     @step_summary ||= Queries::ReleaseSummary::StepsSummary.from_release(@release).all
     platform_steps = @step_summary.select { |step| step.platform_raw == platform }

@@ -1,4 +1,4 @@
-<%= render V2::ContainerComponent.new(title: train.name, subtitle: train.description) do |container| %>
+<%= render V2::ContainerComponent.new(title: train.name, subtitle: description) do |container| %>
   <% if train.hotfixable? %>
     <% container.with_action do %>
       <%= render V2::ModalComponent.new(title: "Start a hotfix release",
@@ -170,6 +170,7 @@
                 <div class="flex space-x-2">
                   <%= render V2::StatusIndicatorPillComponent.new(text: release_component.status[0], status: release_component.status[1]) %>
                   <%= render(release_component.hotfix_badge) unless release_component.hotfix_badge.nil? %>
+                  <%= render(release_component.scheduled_badge) if release_component.automatic? %>
                 </div>
               <% end %>
 

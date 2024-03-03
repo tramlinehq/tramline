@@ -85,6 +85,7 @@ class StagedRollout < ApplicationRecord
   end
 
   def display_current_stage
+    return 0 if created?
     (current_stage || 0).succ
   end
 

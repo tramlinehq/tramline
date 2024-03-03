@@ -88,7 +88,8 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def staged_rollout_percentage
-    staged_rollout&.last_rollout_percentage || Deployment::FULL_ROLLOUT_VALUE
+    return Deployment::FULL_ROLLOUT_VALUE unless staged_rollout
+    staged_rollout.last_rollout_percentage || 0
   end
 
   def staged_rollout_text

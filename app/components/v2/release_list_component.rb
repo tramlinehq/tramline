@@ -1,5 +1,6 @@
 class V2::ReleaseListComponent < V2::BaseComponent
   include Memery
+  include TrainsHelper
 
   def initialize(train:)
     @train = train
@@ -93,6 +94,15 @@ class V2::ReleaseListComponent < V2::BaseComponent
         text: "Once you've finished configuring your train fully, you can start creating new releases."
       }
     end
+  end
+
+  def description
+    base = train.description || ""
+    if train.automatic?
+      base += " • " if base.present?
+      base += release_schedule(train)
+    end
+    base
   end
 
   private
