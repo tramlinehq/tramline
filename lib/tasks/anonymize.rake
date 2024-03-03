@@ -107,6 +107,14 @@ namespace :anonymize do
         end
       end
 
+      table "scheduled_releases" do
+        continue { |index, record| Train.exists?(record["train_id"]) }
+
+        primary_key "id"
+        whitelist "train_id", "failure_reason", "is_success", "scheduled_at"
+        whitelist_timestamps
+      end
+
       table "releases" do
         continue { |index, record| Train.exists?(record["train_id"]) }
 
