@@ -1,4 +1,6 @@
-<%= render PageComponent.new(breadcrumb: breadcrumb(:new_train, @app), title: "Create a new train 🚦") do %>
-  <%= render partial: 'shared/errors', locals: { resource: @train } %>
-  <%= render 'form', app: @app, train: @train %>
+<%= render V2::ContainerComponent.new(title: "Create a new train", error_resource: @train) do |container| %>
+  <% container.with_back_button(to: "the app", path: app_path(@app)) %>
+  <% container.with_body do %>
+    <%= render 'form', app: @app, train: @train %>
+  <% end %>
 <% end %>

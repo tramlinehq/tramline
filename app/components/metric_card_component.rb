@@ -2,25 +2,31 @@ class MetricCardComponent < ViewComponent::Base
   include LinkHelper
   include AssetsHelper
 
-  attr_reader :name, :values, :provider, :external_url
-  delegate :current_user, to: :helpers
+  TEXT_SIZE = {
+    sm: "text-base",
+    base: "text-xl"
+  }
 
-  def initialize(name:, values:, provider: nil, external_url: nil)
+  def initialize(name:, values:, provider: nil, external_url: nil, size: :base)
     @name = name
     @values = values
     @provider = provider
     @external_url = external_url
+    @size = size
   end
 
+  attr_reader :name, :values, :provider, :external_url
+  delegate :current_user, to: :helpers
+
   def metric_color(is_healthy)
-    return "test-gray-800" unless current_user.release_monitoring?
+    return "text-main" unless current_user.release_monitoring?
     case is_healthy
     when true
       "text-green-800 font-semibold"
     when false
       "text-red-800 font-semibold"
     else
-      "test-gray-800"
+      "text-main"
     end
   end
 
@@ -43,5 +49,9 @@ class MetricCardComponent < ViewComponent::Base
 
   def grid_size
     display_values.size
+  end
+
+  def text_size
+    TEXT_SIZE[@size]
   end
 end

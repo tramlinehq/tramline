@@ -1,0 +1,64 @@
+<div data-controller="alert">
+  <% if alert? %>
+    <div data-alert-target="alert"
+         class="flex <%= size %> items-center p-2.5 mb-4 text-sm rounded-lg <%= style %> justify-between"
+         role="alert">
+      <div class="flex justify-start gap-x-3 items-center">
+        <%= render V2::IconComponent.new("v2/info.svg", size: :md, classes: "flex-shrink-0 w-4 h-4") %>
+        <div class="mr-6"><%= title %></div>
+      </div>
+
+      <% if dismissible %>
+        <%= render V2::ButtonComponent.new(
+          scheme: :naked_icon,
+          type: :action,
+          size: :none,
+          authz: false,
+          html_options: { class: "ms-auto inline-flex justify-center items-center", data: { action: "alert#close" } }) do |b|
+          b.with_icon("close_icon.svg")
+        end %>
+      <% end %>
+    </div>
+  <% elsif more_info? %>
+    <div data-alert-target="alert"
+         class="p-6 mb-4 text-blue-800 border border-blue-300 bg-blue-50 dark:bg-main-800 dark:text-blue-400 dark:border-blue-800"
+         role="alert">
+      <div class="flex items-center">
+        <%= render V2::IconComponent.new("v2/info.svg", size: :md, classes: "mr-2") %>
+        <h3 class="text-lg font-medium"><%= title %></h3>
+      </div>
+
+      <div class="my-2 text-sm">
+        <%= content %>
+      </div>
+
+      <% if info? || dismissible %>
+        <div class="flex mt-4 gap-x-2">
+          <% if info? %>
+            <%= render V2::ButtonComponent.new(
+              scheme: :none,
+              options: info[:link],
+              type: :link_external,
+              label: info[:label],
+              size: :none,
+              authz: false,
+              html_options: { class: ACTION_BUTTON_STYLES }) do |b|
+              b.with_icon("v2/eye.svg", size: :md, rounded: false)
+            end %>
+          <% end %>
+
+          <% if dismissible %>
+            <%= render V2::ButtonComponent.new(
+              scheme: :none,
+              type: :action,
+              size: :none,
+              authz: false,
+              label: "Dismiss",
+              html_options: { class: ACTION_BUTTON_STYLES,
+                              data: { action: "alert#close" } }) %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

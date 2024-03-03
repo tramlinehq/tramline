@@ -1,0 +1,59 @@
+<% content_for :error_resource do %>
+  <%= render V2::ErrorComponent.new(error_resource) %>
+<% end %>
+
+<% if back_button %>
+  <div class="my-2 mb-4">
+    <%= back_button %>
+  </div>
+<% end %>
+
+<div class="mb-1 flex justify-between">
+  <h1 class="heading-1">
+    <%= title %>
+  </h1>
+</div>
+
+<% if sub_actions? %>
+  <nav class="-mx-1.5 flex flex-row flex-wrap mt-4 sm:space-x-1">
+    <% sub_actions.each do |sub_action| %>
+      <%= sub_action %>
+    <% end %>
+  </nav>
+<% end %>
+
+<div data-controller="reveal">
+  <div class="mt-5">
+    <div class="mb-4 border-default-b">
+      <ul class="flex flex-wrap -mb-px text-sm font-medium text-center"
+          data-controller="activation"
+          data-activation-active-value="<%= SELECTED_TAB_STYLE %>"
+          data-activation-inactive-value="<%= TAB_STYLE %>">
+        <% sorted_configs.each do |(_position, name, path, icon)| %>
+          <li class="me-2">
+            <a href="<%= path %>"
+               data-activation-target="target"
+               data-action="click->activation#toggle"
+               data-turbo-action="replace"
+               data-turbo-frame="<%= frame %>"
+               class="<%= style(path) %>"
+               aria-selected="false">
+              <%= render V2::IconComponent.new(icon, size: :md, classes: "me-2") %>
+              <%= name %>
+            </a>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+  <div id="tab-content" class="mt-8">
+    <% tabs.each do |tab| %>
+      <% component = V2::EnhancedTurboFrameComponent.new(frame, classes: "with-turbo-frame-loader") %>
+      <% component.with_loading_indicator %>
+      <%= render component do %>
+        <%= tab %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

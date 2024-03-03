@@ -1,14 +1,14 @@
-<%= render PageComponent.new(breadcrumb: breadcrumb(:new_step, @train),
-                             title: "Create a new #{@step.kind} step 🪜",
-                             subtitle: platform_subtitle(@app, @step)) do %>
-  <%= render partial: 'shared/errors', locals: { resource: @step } %>
-
-  <%= form_with(model: @step, url: app_train_platform_steps_path(@app, @train, @release_platform), builder: ButtonHelper::AuthzForms) do |form| %>
-    <%= render "form", form: form %>
-    <%= render "new_deployments", app: @app, form: form %>
-
-    <div class="mt-10">
-      <%= form.authz_submit :blue, "Create" %>
-    </div>
+<%= render V2::ContainerComponent.new(title: "Create a new #{@step.kind} step 🪜",
+                                      subtitle: platform_subtitle(@app, @step),
+                                      error_resource: @step) do |container| %>
+  <% container.with_back_button %>
+  <% container.with_body do %>
+    <%= render V2::FormComponent.new(model: @step, url: app_train_platform_steps_path(@app, @train, @release_platform)) do |form| %>
+      <%= render "form", form: form, step: @step, release_platform: @release_platform, ci_actions: @ci_actions, train: @train %>
+      <%= render "new_deployments", app: @app, form: form %>
+      <% form.with_action do %>
+        <%= form.F.authz_submit "Create", "plus.svg" %>
+      <% end %>
+    <% end %>
   <% end %>
 <% end %>

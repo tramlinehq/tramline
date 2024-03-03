@@ -1,0 +1,35 @@
+<%= render V2::FormComponent.new(model: [@app], url: app_path(@app), method: :patch) do |f| %>
+  <% f.with_section(heading: "Basics") do |section| %>
+    <div><%= section.F.labeled_text_field :name, "Name", required: true %></div>
+    <div><%= section.F.labeled_textarea :description, "Description" %></div>
+  <% end %>
+
+  <% f.with_section(heading: "Build Settings") do |section| %>
+    <% section.with_description do %>
+      <div>
+        If you're going to deploy to the App Store or Play Store, the <strong>bundle identifier</strong> must match
+        the identifier in the store listing.
+      </div>
+      <div class="mt-4">
+        The <strong>build number</strong> must be the same or higher than the build number of the last build you
+        deployed to the store.
+      </div>
+    <% end %>
+
+    <div><%= section.F.labeled_text_field :bundle_identifier, "Bundle Identifier", required: true %></div>
+
+    <div data-controller="domain--build-number-help"
+         data-domain--build-number-help-number-current-value="<%= @app.build_number.presence %>">
+      <%= section.F.labeled_number_field :build_number, "Build Number", data: { domain__build_number_help_target: "input",
+                                                                                action: "domain--build-number-help#increment" } %>
+      <div class="text-sm mt-1">
+        <span data-domain--build-number-help-target="helpTextTitle"></span>&nbsp;
+        <span class="font-mono" data-domain--build-number-help-target="helpTextVal"></span>
+      </div>
+    </div>
+  <% end %>
+
+  <% f.with_action do %>
+    <% f.F.authz_submit "Update", "v2/archive.svg" %>
+  <% end %>
+<% end %>

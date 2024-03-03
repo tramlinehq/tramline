@@ -71,6 +71,10 @@ class Accounts::Organization < ApplicationRecord
     update(api_key: SecureRandom.hex)
   end
 
+  def default_app
+    apps.first
+  end
+
   def team_colors
     colors = teams.pluck(:name, :color).to_h || {}
     colors[Accounts::Team::UNKNOWN_TEAM_NAME] = Accounts::Team::UNKNOWN_TEAM_COLOR

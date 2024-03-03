@@ -10,7 +10,7 @@ en:
       bitrise_integration: "Bitrise"
       bugsnag_integration: "Bugsnag"
       google_play_store_integration: "Google Play Store"
-      app_store_integration: "App Store Connect & TestFlight"
+      app_store_integration: "App Store & TestFlight"
       gitlab_integration: "GitLab"
       github_integration: "GitHub"
       google_firebase_integration: "Firebase App Distribution"
@@ -261,7 +261,7 @@ en:
     generic:
       team_name: "The Tramline team"
   errors:
-    format: "%{attribute} →\n%{message}"
+    format: "%{attribute} → %{message}"
     messages:
       http_code:
         '400':
@@ -294,7 +294,7 @@ en:
       adoption_rate:
         title: "Adoption Rate"
         scope: "With rollout percentage"
-        help_text: ""
+        help_text: "How fast are users adopting the new release as it is being rolled out?\n\nThe adoption percentage represents the proportion of sessions that the release has seen over a 24 hour period."
     devops:
       duration:
         title: "Release duration"
@@ -303,33 +303,33 @@ en:
       frequency:
         title: "Release frequency"
         scope: "Last 6 months"
-        help_text: ""
+        help_text: "How often do you release every month?"
       time_in_review:
         title: "Time in review (iOS)"
         scope: "Last 6 versions"
-        help_text: ""
+        help_text: "Time spent in review on the App Store"
       hotfixes:
         title: "Fixes during release"
         scope: "Last 6 releases"
-        help_text: ""
+        help_text: "Fixes made after the release has partially reached the store"
       time_in_phases:
         title: "Duration across steps"
         scope: "Last 6 releases"
-        help_text: ""
+        help_text: "Time taken in each step of the release process"
     operational_efficiency:
       contributors:
         title: "Contributors"
         scope: "Last 6 releases"
-        help_text: ""
+        help_text: "Total contributors across releases"
       stability_contributors:
         title: "Stability contributors"
         scope: "Last 6 releases"
-        help_text: ""
+        help_text: "Contributors who have added commits to a running release branch"
       team_contributors:
         title: "Release contribution"
         scope: "Last 6 releases. Commits per team."
-        help_text: ""
+        help_text: "These are the changes made to the working branch between releases by members in these respective teams.\n\nThis is a rough indicator of how much the team is contributing to the features in each release."
       team_stability_contributors:
         title: "Release stability fixes"
         scope: "Last 6 releases. Commits after release start per team."
-        help_text: ""
+        help_text: "These are the changes made to the release branch after the release has started by members in these respective teams.\n\nThis is a good indicator of how much the team is involved in the release stability."

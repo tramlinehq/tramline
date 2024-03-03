@@ -4,7 +4,7 @@
   <%= form_for(resource, as: resource_name,
                url: password_path(resource_name), html: { method: :put, 'data-turbo' => "false" }) do |f| %>
     <div class="space-y-6">
-      <%= render "shared/flash", resource: resource %>
+      <%= render V2::FlashComponent.new(flash) %>
       <%= f.hidden_field :reset_password_token %>
 
       <div>

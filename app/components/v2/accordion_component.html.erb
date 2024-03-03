@@ -1,0 +1,23 @@
+<section data-controller="reveal" data-reveal-target-selector-value="[data-accordion-reveal]" class="flex flex-col mt-16">
+  <div class="flex flex-row items-center px-2 border-default-b pb-2">
+    <a class="group transform flex" data-action="reveal#toggle">
+      <div class="flex items-center -mx-3 gap-2 text-main-500 focus:ring-4 focus:ring-main-200 dark:focus:ring-main dark:text-main-400">
+        <span data-accordion-reveal
+              <%= "hidden" unless auto_hide %>>
+          <%= inline_svg("v2/plus.svg", classname: "w-4 h-4 fill-current") %>
+        </span>
+
+        <span data-accordion-reveal
+              <%= "hidden" if auto_hide %>>
+          <%= inline_svg("v2/plus.svg", classname: "w-4 h-4 fill-current transform rotate-45") %>
+        </span>
+
+        <span class="select-none"><%= title %></span>
+      </div>
+    </a>
+  </div>
+
+  <div hidden data-accordion-reveal>
+    <%= content %>
+  </div>
+</section>

@@ -8,11 +8,7 @@
 # |------------+-----------------------------------+-----------------------------------+--------------------------------------------|
 
 class Accounts::InvitationsController < SignedInApplicationController
-  before_action :require_write_access!, only: %i[new create]
-
-  def new
-    @invite = Accounts::Invite.new(sender: current_user, organization: current_organization)
-  end
+  before_action :require_write_access!, only: %i[create]
 
   def create
     @invite = Accounts::Invite.new(invite_params)
@@ -27,13 +23,14 @@ class Accounts::InvitationsController < SignedInApplicationController
         end
       rescue Postmark::ApiInputError
         flash[:error] = "Sorry, there was a delivery error while sending the invite!"
-        render :new, status: :unprocessable_entity
+        redirect_to accounts_organization_team_path(current_organization)
       end
 
       redirect_to accounts_organization_team_path(current_organization),
         notice: "Sent an invite to #{@invite.email}!"
     else
-      render :new, status: :unprocessable_entity
+      redirect_to accounts_organization_team_path(current_organization),
+        notice: "Failed to send an invite to #{@invite.email}!"
     end
   end
 

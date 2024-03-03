@@ -4,7 +4,7 @@ const BASE_HELP_TEXT = "Changes will be applied to the release every "
 const ERR_HELP_TEXT = "You must set a valid build queue config when it is enabled"
 
 export default class extends Controller {
-  static targets = ["checkbox", "config", "size", "waitTimeValue", "waitTimeUnit", "output", "errOutput"];
+  static targets = ["checkbox", "size", "waitTimeValue", "waitTimeUnit", "output", "errOutput"];
 
   initialize() {
     this.change();
@@ -15,14 +15,6 @@ export default class extends Controller {
 
     const buildQueueEnabled = (this.checkboxTarget.checked === true)
     const buildQueueDisabled = ((this.checkboxTarget.checked === false))
-
-    if (buildQueueEnabled) {
-      this.configTarget.hidden = false
-    }
-
-    if (buildQueueDisabled) {
-      this.configTarget.hidden = true
-    }
 
     if (this.__isEmptyConfig() && buildQueueDisabled) {
       return;
@@ -41,7 +33,6 @@ export default class extends Controller {
   }
 
   __resetContents() {
-    this.configTarget.hidden = true
     this.errOutputTarget.textContent = ""
     this.outputTarget.textContent = ""
   }

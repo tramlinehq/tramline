@@ -1,0 +1,36 @@
+<section class="grid gap-4"
+         data-controller="toggle-switch"
+         data-toggle-switch-on-label-value="<%= on_label %>"
+         data-toggle-switch-off-label-value="<%= off_label %>">
+  <% if heading.present? %>
+    <div class="text-slate-600 font-medium"><%= heading %></div>
+  <% end %>
+
+  <% if description.present? %>
+    <div class="text-sm">
+      <%= description %>
+    </div>
+  <% end %>
+
+  <div class="flex items-center">
+    <div class="form-switch">
+      <%= form.check_box field_name,
+                         { id: switch_id,
+                           class: "sr-only",
+                           data: switch_data },
+                         "true", "false" %>
+      <label class="bg-slate-400" for="<%= switch_id %>">
+        <span class="bg-white shadow-sm" aria-hidden="true"></span>
+        <span class="sr-only">Switch label</span>
+      </label>
+    </div>
+
+    <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"></div>
+  </div>
+
+  <% if child.present? %>
+    <div data-toggle-switch-target="child" <%= hide_child %>>
+      <%= child %>
+    </div>
+  <% end %>
+</section>

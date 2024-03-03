@@ -1,62 +1,44 @@
-<article>
-  <div class="text-xl text-slate-600 font-medium mt-2">Build Queue</div>
-
-  <div class="text-sm mt-1 mb-6">
-    Control when commits are applied to trigger new builds in your release.<br/>By default, commits on the release branch are auto-applied.
-  </div>
-
-  <div data-controller="domain--build-queue-help toggle-switch"
-       data-toggle-switch-on-label-value="<%= TrainsHelper::BUILD_QUEUE_ENABLED_LABEL %>"
-       data-toggle-switch-off-label-value="<%= TrainsHelper::BUILD_QUEUE_DISABLED_LABEL %>">
-    <div class="flex items-center">
-      <div class="form-switch">
-        <%= form.check_box :build_queue_enabled,
-                           { id: "build-queue-switch", class: "sr-only",
-                             data: { action: "toggle-switch#change domain--build-queue-help#change",
-                                     domain__build_queue_help_target: "checkbox",
-                                     toggle_switch_target: "checkbox" } },
-                           "true",
-                           "false" %>
-        <label class="bg-slate-400" for="build-queue-switch">
-          <span class="bg-white shadow-sm" aria-hidden="true"></span>
-          <span class="sr-only">Switch label</span>
-        </label>
-      </div>
-
-      <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"><%= build_queue_label(@train) %></div>
-    </div>
-
-    <div data-domain--build-queue-help-target="config" class="mt-4">
-      <div class="flex flex-row gap-x-2 items-center">
-        <%= form.label "Apply after ", class: "text-sm mb-1" %>
-        <%= form.number_field :build_queue_size,
-                              class: "form-input w-1/6",
-                              step: 1,
-                              min: 1,
-                              placeholder: 5,
-                              data: { action: 'domain--build-queue-help#change',
-                                      domain__build_queue_help_target: "size" } %>
-        <%= form.label :build_queue_wait_time_value, "commits or after", class: "text-sm mb-1" %>
-        <%= form.number_field :build_queue_wait_time_value,
-                              class: "form-input w-1/6",
-                              step: 1,
-                              min: 1,
-                              placeholder: 3,
-                              data: { action: 'domain--build-queue-help#change',
-                                      domain__build_queue_help_target: "waitTimeValue" } %>
-        <%= form.select :build_queue_wait_time_unit,
-                        options_for_select([%w[Minute(s) minutes], %w[Hour(s) hours]], @train.build_queue_wait_time_unit || "hours"),
-                        { required: false },
-                        { class: "form-input w-1/6",
-                          data: { action: 'domain--build-queue-help#change',
-                                  domain__build_queue_help_target: "waitTimeUnit" } } %>
+<div data-controller="domain--build-queue-help">
+  <%= render V2::Form::SwitchComponent.new(form:,
+                                           field_name: :build_queue_enabled,
+                                           on_label: "Build Queue enabled",
+                                           off_label: "Build Queue disabled",
+                                           hide_child: !@train.build_queue_enabled,
+                                           switch_data: { action: "domain--build-queue-help#change",
+                                                          domain__build_queue_help_target: "checkbox" }) do |component| %>
+    <% component.with_child do %>
+      <div class="flex flex-row gap-x-2 items-baseline">
+        <%= form.label_only :build_queue_size, "Apply after" %>
+        <div class="w-1/6">
+          <%= form.number_field_without_label :build_queue_size,
+                                              step: 1,
+                                              min: 1,
+                                              placeholder: 5,
+                                              data: { action: 'domain--build-queue-help#change',
+                                                      domain__build_queue_help_target: "size" } %>
+        </div>
+        <%= form.label_only :build_queue_size, "commits or after" %>
+        <div class="w-1/6">
+          <%= form.number_field_without_label :build_queue_wait_time_value,
+                                              step: 1,
+                                              min: 1,
+                                              placeholder: 3,
+                                              data: { action: 'domain--build-queue-help#change',
+                                                      domain__build_queue_help_target: "waitTimeValue" } %>
+        </div>
+        <div class="w-1/6">
+          <%= form.select_without_label :build_queue_wait_time_unit,
+                                        options_for_select([%w[Minute(s) minutes], %w[Hour(s) hours]], @train.build_queue_wait_time_unit || "hours"),
+                                        { required: false },
+                                        { data: { action: 'domain--build-queue-help#change',
+                                                  domain__build_queue_help_target: "waitTimeUnit" } } %>
+        </div>
       </div>
 
       <div class="mt-4">
         <span class="text-sm italic text-rose-700" data-domain--build-queue-help-target="errOutput"></span>
         <span class="block text-sm mb-1" data-domain--build-queue-help-target="output"></span>
       </div>
-    </div>
-  </div>
-  <div class="border-t border-dashed border-slate-200 pb-8 mt-8"></div>
-</article>
+    <% end %>
+  <% end %>
+</div>

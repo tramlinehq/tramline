@@ -1,0 +1,28 @@
+<% if boxed? %>
+  <section class="border-default box-padding my-10">
+    <%= content %>
+  </section>
+<% else %>
+  <section class="my-10">
+    <div class="flex gap-x-5 items-center">
+      <h1 class="heading-2 text-main dark:text-white"><%= title %></h1>
+      <div class="flex-1 h-full">
+        <div class="h-px bg-main-200 dark:bg-main-600 w-full m-0"></div>
+      </div>
+    </div>
+
+    <div class="flex justify-between">
+      <% if subtitle.present? %>
+        <span class="text-sm text-neutral-500 dark:text-white">
+          <%= subtitle %>
+        </span>
+      <% end %>
+
+      <%= sidenote %>
+    </div>
+
+    <div class="mt-6">
+      <%= content %>
+    </div>
+  </section>
+<% end %>

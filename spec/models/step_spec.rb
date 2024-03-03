@@ -101,7 +101,7 @@ describe Step do
       step.save
 
       expect(step.persisted?).to be(false)
-      expect(step.errors).to contain_exactly("Release suffix →\nonly allows letters and underscore")
+      expect(step.errors).to contain_exactly("Release suffix → only allows letters and underscore")
     end
 
     it "allows release suffix to be nil for ios apps" do

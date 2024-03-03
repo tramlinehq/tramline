@@ -2,22 +2,21 @@ class TrainsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
-  before_action :require_write_access!, only: %i[new create edit update destroy activate deactivate replicate]
+  before_action :require_write_access!, only: %i[new create edit update destroy activate deactivate]
   around_action :set_time_zone
-  before_action :set_train, only: %i[show edit update destroy activate deactivate replicate]
+  before_action :set_train, only: %i[edit update destroy activate deactivate steps]
+  before_action :set_tab_configuration, only: %i[edit steps destroy activate deactivate]
   before_action :validate_integration_status, only: %i[new create]
   before_action :set_notification_channels, only: %i[new create edit update]
-
-  def show
-    @devops_report = @train.devops_report if @train.devops_report?(current_user)
-    @hotfix_from = @train.hotfix_from
-  end
 
   def new
     @train = @app.trains.new
   end
 
   def edit
+  end
+
+  def steps
   end
 
   def create
@@ -32,7 +31,7 @@ class TrainsController < SignedInApplicationController
 
   def update
     if @train.update(parsed_train_update_params)
-      redirect_to train_path, notice: "Train was updated"
+      redirect_to edit_app_train_path(@app, @train), notice: "Train was updated"
     else
       render :edit, status: :unprocessable_entity
     end
@@ -40,17 +39,9 @@ class TrainsController < SignedInApplicationController
 
   def destroy
     if @train.destroy
-      redirect_to app_path(@app), status: :see_other, notice: "Train was deleted!"
+      redirect_to app_path(@app), status: :see_other, notice: "Train was removed!"
     else
-      render :show, status: :unprocessable_entity
-    end
-  end
-
-  def replicate
-    if @train.replicate
-      redirect_to app_path(@app), status: :see_other, notice: "Train was cloned!"
-    else
-      render :show, status: :unprocessable_entity
+      train_redirect_back("Could not remove the train. #{@train.errors.full_messages.to_sentence}.")
     end
   end
 
@@ -58,7 +49,7 @@ class TrainsController < SignedInApplicationController
     if @train.activate!
       redirect_to train_path, notice: "Train was activated!"
     else
-      render :show, status: :unprocessable_entity
+      train_redirect_back("Could not activate the train. #{@train.errors.full_messages.to_sentence}.")
     end
   end
 
@@ -68,7 +59,7 @@ class TrainsController < SignedInApplicationController
     if @train.deactivate!
       redirect_to train_path, notice: "Train was deactivated!"
     else
-      render :show, status: :unprocessable_entity
+      train_redirect_back("Could not deactivate the train. #{@train.errors.full_messages.to_sentence}.")
     end
   end
 
@@ -78,12 +69,24 @@ class TrainsController < SignedInApplicationController
     if @train.in_creation? && @app.trains.size == 1
       redirect_to app_path(@app), notice: "Train was successfully created."
     else
-      redirect_to train_path, notice: "Train was successfully created."
+      redirect_to steps_app_train_path(@app, @train), notice: "Train was successfully created."
     end
+  end
+
+  def train_redirect_back(message)
+    redirect_back fallback_location: app_train_releases_path(@app, @train), flash: {error: message}
   end
 
   def set_train
     @train = @app.trains.friendly.find(params[:id])
+  end
+
+  def set_tab_configuration
+    @tab_configuration = [
+      [1, "General", edit_app_train_path(@app, @train), "v2/cog.svg"],
+      [2, "Steps", steps_app_train_path(@app, @train), "v2/route.svg"],
+      [3, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"]
+    ].compact
   end
 
   def train_params
@@ -173,7 +176,7 @@ class TrainsController < SignedInApplicationController
   end
 
   def train_path
-    app_train_path(@app, @train)
+    app_train_releases_path(@app, @train)
   end
 
   def set_notification_channels

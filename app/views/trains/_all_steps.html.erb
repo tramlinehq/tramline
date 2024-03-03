@@ -1,0 +1,16 @@
+<div class="grid md:grid-cols-2 gap-x-11 pb-5 mt-8">
+  <% train.release_platforms.each do |release_platform| %>
+    <section>
+      <div class="text-2xl font-bold mb-4 mt-2"><%= steps_heading(release_platform) %></div>
+      <% if release_platform.steps.size > 0 && release_platform.persisted? %>
+        <div>
+          <%= render partial: "shared/step_tree_viz", locals: { train: train, release_platform:, editable: true } %>
+        </div>
+      <% elsif release_platform.persisted? %>
+        <div>
+          <%= render partial: "trains/step_creation", locals: { app: app, train: train, release_platform: } %>
+        </div>
+      <% end %>
+    </section>
+  <% end %>
+</div>

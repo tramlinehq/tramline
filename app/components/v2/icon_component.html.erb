@@ -1,0 +1,9 @@
+<% if tooltip? %>
+  <% tooltip.with_body do %>
+    <% render_component %>
+  <% end %>
+
+  <%= tooltip %>
+<% else %>
+  <%= render_component %>
+<% end %>

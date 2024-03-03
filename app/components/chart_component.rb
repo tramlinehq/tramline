@@ -5,10 +5,9 @@ class ChartComponent < ViewComponent::Base
   InvalidChartType = Class.new(StandardError)
   CHART_COLORS = %w[#1A56DB #9061F9 #E74694 #31C48D #FDBA8C #16BDCA #7E3BF2 #1C64F2 #F05252]
 
-  def initialize(chart, icon:)
+  def initialize(chart)
     raise InvalidChartType if chart && !chart[:type].in?(CHART_TYPES)
 
-    @icon = icon
     @chart = chart
     @chart = {} if chart.blank?
   end
@@ -35,6 +34,10 @@ class ChartComponent < ViewComponent::Base
 
   def series
     ungroup_series(group_colors: colors).to_json
+  end
+
+  def insufficient?
+    series_raw.blank? || series_raw.keys.size < 1
   end
 
   # input:
@@ -78,12 +81,30 @@ class ChartComponent < ViewComponent::Base
     chart[:help_text] || I18n.t("charts.#{chart[:name]}.help_text")
   end
 
-  def corner_icon
-    inline_svg(@icon, classname: "w-6 fill-current shrink-0")
+  def help_link
+    I18n.t("charts.#{chart[:name]}.help_link") if I18n.exists?("charts.#{chart[:name]}.help_link")
   end
 
-  def help_icon
-    inline_svg("question_mark.svg", classname: "w-4 inline-flex fill-current shrink-0 text-gray-400")
+  def corner_icon
+    icon = V2::IconComponent.new("v2/info.svg", size: :md, classes: "text-main-500")
+    if help_text.present?
+      icon.with_tooltip(help_text, placement: "top", type: :detailed) do |tooltip|
+        tooltip.with_detailed_text do
+          content_tag(:div, nil, class: "flex flex-col gap-y-4 items-start") do
+            concat simple_format(help_text)
+            if help_link.present?
+              concat render(V2::ButtonComponent.new(scheme: :link,
+                label: "Learn more",
+                options: help_link,
+                type: :link_external,
+                size: :none,
+                authz: false) { |b| b.with_icon("v2/arrow_right.svg") })
+            end
+          end
+        end
+      end
+    end
+    icon
   end
 
   def subgroup? = chart[:subgroup]

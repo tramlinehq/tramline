@@ -50,7 +50,7 @@ class Train < ApplicationRecord
 
   belongs_to :app
   has_many :releases, -> { sequential }, inverse_of: :train, dependent: :destroy
-  has_many :active_runs, -> { pending_release }, class_name: "Release", inverse_of: :train, dependent: :destroy
+  has_many :active_runs, -> { pending_release.includes(:all_commits) }, class_name: "Release", inverse_of: :train, dependent: :destroy
   has_many :deployment_runs, through: :releases
   has_many :external_releases, through: :deployment_runs
   has_many :release_platforms, dependent: :destroy
@@ -308,9 +308,10 @@ class Train < ApplicationRecord
 
   def upcoming_release_startable?
     manually_startable? &&
-      ongoing_release.present? &&
       release_platforms.any?(&:has_production_deployment?) &&
-      release_platforms.all?(&:has_review_steps?)
+      release_platforms.all?(&:has_review_steps?) &&
+      ongoing_release.present? &&
+      upcoming_release.blank?
   end
 
   def continuous_backmerge?
@@ -401,6 +402,10 @@ class Train < ApplicationRecord
 
   def devops_report
     Charts::DevopsReport.all(self)
+  end
+
+  def has_production_deployment?
+    release_platforms.any?(&:has_production_deployment?)
   end
 
   private

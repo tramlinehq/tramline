@@ -201,8 +201,9 @@ class StepRun < ApplicationRecord
     build_artifact&.file_size_in_mb
   end
 
+  # TODO: move these explicit state checks to use a constant, perhaps END_STATES
   def active?
-    release_platform_run.on_track? && !cancelled? && !status.in?(FAILED_STATES)
+    release_platform_run.on_track? && !cancelled? && !success? && !status.in?(FAILED_STATES)
   end
 
   def find_build

@@ -1,0 +1,11 @@
+<% if color.present? %>
+  <span class="inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-md tracking-wide border" style="<%= background_style %>">
+    <span class="w-2 h-2 me-2 rounded-full" style="<%= pill_style %>"></span>
+    <span style="<%= text_style %>"><%= text %></span>
+  </span>
+<% else %>
+  <span class="inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-md <%= background %> tracking-wide">
+    <span class="w-2 h-2 me-2 rounded-full <%= pill %>"></span>
+    <%= text %>
+  </span>
+<% end %>

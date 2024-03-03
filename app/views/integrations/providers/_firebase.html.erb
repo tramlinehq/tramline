@@ -1,0 +1,31 @@
+<%= render V2::FormComponent.new(model: [app, integration], url: app_google_firebase_integration_path(app)) do |f| %>
+  <% f.with_section(heading: "Add") do |section| %>
+    <% section.with_description do %>
+      <p>Your Service Account Key</p>
+      <p class="mt-2 text-xs">
+        <%= link_to_external "How to create a firebase service account?",
+                             "https://docs.tramline.app/integrations/distribution/firebase",
+                             class: "underline" %>
+      </p>
+    <% end %>
+
+    <%= section.F.hidden_field :category, value: category %>
+
+    <% section.F.fields_for :providable do |subf| %>
+      <%= subf.hidden_field :type, value: integration.providable_type %>
+      <div><%= subf.labeled_text_field :project_number, "Project Number" %></div>
+      <div><%= subf.labeled_file_field :json_key_file, "Upload Service Account JSON Key", "Only .json files.", accept: "application/json" %></div>
+    <% end %>
+  <% end %>
+
+  <% f.with_action do %>
+    <div class="flex items-center" data-controller="reveal">
+      <%= f.F.authz_submit "Create", "plus.svg", size: :xs, html_options: { data: { action: "reveal#toggle" } } %>
+      <div class="ml-5">
+        <div hidden data-reveal>
+          <%= render V2::LoadingIndicatorComponent.new(text: "Verifying...") %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>

@@ -7,6 +7,7 @@ module ReleasesHelper
     stopped: ["Stopped", :inert],
     created: ["Running", :ongoing],
     on_track: ["Running", :ongoing],
+    upcoming: ["Upcoming", :inert],
     post_release: ["Finalizing", :neutral],
     post_release_started: ["Finalizing", :neutral],
     post_release_failed: ["Finalizing", :neutral],

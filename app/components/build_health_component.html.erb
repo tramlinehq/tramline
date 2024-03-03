@@ -4,7 +4,7 @@
     <div class="grid grid-cols-2 gap-5 mt-4">
       <% chartable_metadata.each do |metadata| %>
         <% if chartable?(metadata) %>
-          <%= render ChartComponent.new(chart_data(metadata), icon: "chart_bar.svg") %>
+          <%= render ChartComponent.new(chart_data(metadata)) %>
         <% end %>
       <% end %>
     </div>

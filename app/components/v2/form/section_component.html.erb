@@ -1,0 +1,16 @@
+<section <%= data_fields %> <% "hidden" if hidden? %>>
+  <div class="grid grid-cols-3 items-start xl:space-x-20 space-y-8 xl:space-y-0">
+    <div class="col-span-1 whitespace-normal">
+      <% if heading.present? %>
+        <h1 class="mt-1.5 mb-2 heading-4"><%= heading %></h1>
+      <% end %>
+      <div class="text-sm font-light text-main-500 dark:text-main-400">
+        <%= description %>
+      </div>
+    </div>
+
+    <div class="col-span-2 grid gap-y-4 border-default box-padding bg-white dark:bg-main-700">
+      <%= content %>
+    </div>
+  </div>
+</section>

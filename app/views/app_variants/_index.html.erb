@@ -1,0 +1,42 @@
+<% if @unconfigured %>
+  <%= render V2::EmptyStateComponent.new(title: "App Variants are unavailable",
+                                         text: "App Variants can only be configured for Firebase App Distribution at the moment.",
+                                         banner_image: "dna.svg",
+                                         type: :subdued) %>
+<% else %>
+  <% subtitle = "Akin to product flavors or build variants, with an explicit requirement of having a different bundle id." %>
+  <%= render V2::SectionComponent.new(style: :titled, title: "App Variants", subtitle: subtitle) do |section| %>
+    <% section.with_sidenote do %>
+      <%= render V2::ModalComponent.new(title: "Add a new App Variant") do |modal| %>
+        <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
+                .with_icon("v2/plus.svg", size: :md) %>
+        <% modal.with_body do %>
+          <%= render partial: "form", locals: { app: @app, app_variant: @new_app_variant, firebase_ios_apps: @firebase_ios_apps, firebase_android_apps: @firebase_android_apps } %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= render V2::TableComponent.new(columns: ["name", "bundle identifier"]) do |table| %>
+      <% @app_variants.each do |variant| %>
+        <% table.with_row do |row| %>
+          <% row.with_cell do %>
+            <%= variant.name %>
+          <% end %>
+
+          <% row.with_cell do %>
+            <%= variant.bundle_identifier %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <% if @app_variants.blank? %>
+      <div class="text-main-500 text-sm">
+        <%= render V2::EmptyStateComponent.new(title: "Add new to begin",
+                                               text: "No app variants have been configured yet.",
+                                               banner_image: "dna.svg",
+                                               type: :subdued) %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

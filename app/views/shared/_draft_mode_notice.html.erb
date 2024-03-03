@@ -1,23 +1,23 @@
 <% if app.draft? %>
-  <article class="mt-10">
-    <div class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-      <%= inline_svg('clock.svg', classname: "inline-flex w-10 mb-3") %>
-      <h5 class="mb-2 text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">App in Draft mode</h5>
-      <p class="mb-3 font-normal text-gray-500 dark:text-gray-400">
+  <article class="mb-10">
+    <div class="max-w-sm p-6 bg-white border border-main-200 rounded-lg shadow dark:bg-main dark:border-main-700">
+      <%= render V2::IconComponent.new("clock.svg", size: :xl_3, classes: "handle cursor-grabbing") %>
+      <h5 class="mb-2 heading-2">App in Draft mode</h5>
+      <p class="mb-3 font-normal text-main-500 dark:text-main-400">
         Your app on the <strong>Google Play Store</strong> is currently in a
         draft state.
       </p>
-      <p class="mb-3 font-normal text-gray-500 dark:text-gray-400">
+      <p class="mb-3 font-normal text-main-500 dark:text-main-400">
         Tramline cannot release your app to the store for your very first release.
       </p>
-      <p class="mb-3 font-normal text-gray-500 dark:text-gray-400">
+      <p class="mb-3 font-normal text-main-500 dark:text-main-400">
         Make at least one manual release on a public track (open testing,
         closed testing, production) before starting a release on Tramline.
       </p>
-      <p class="mb-3 font-normal text-gray-500 dark:text-gray-400">
+      <p class="mb-3 font-normal text-main-500 dark:text-main-400">
         Meanwhile, you can still finish your Tramline setup all the way through 🚀
       </p>
-      <p class="mb-6 font-normal text-gray-500 dark:text-gray-400">Good luck!</p>
+      <p class="mb-6 font-normal text-main-500 dark:text-main-400">Good luck!</p>
       <%= link_to_external "Publish a draft app ↗",
                            "https://support.google.com/googleplay/android-developer/answer/9859751?hl=en",
                            class: "text-blue-600 hover:underline", title: "Publish a draft app" %>

@@ -1,15 +1,33 @@
 class ReleaseMonitoringComponent < ViewComponent::Base
-  include AssetsHelper
-  include ApplicationHelper
-  attr_reader :deployment_run
+  METRICS = [:staged_rollout, :adoption_rate, :adoption_chart, :errors, :stability]
 
-  delegate :adoption_rate, to: :release_data
+  SIZES = {
+    sm: {cols: 2, size: 4}
+  }
+
+  def initialize(deployment_run:, metrics: METRICS, show_version_info: true, cols: 2, size: :base)
+    raise ArgumentError, "metrics must be one of #{METRICS}" unless (metrics - METRICS).empty?
+
+    @deployment_run = deployment_run
+    @metrics = metrics
+    @show_version_info = show_version_info
+    @cols = cols
+    @size = size
+  end
+
+  delegate :adoption_rate, to: :release_data, allow_nil: true
   delegate :app, :release_health_rules, :platform, to: :deployment_run
   delegate :monitoring_provider, to: :app
   delegate :current_user, to: :helpers
 
-  def initialize(deployment_run:)
-    @deployment_run = deployment_run
+  attr_reader :deployment_run, :metrics, :show_version_info, :size
+
+  def empty_component?
+    release_data.blank?
+  end
+
+  def empty_metric_component(name)
+    render EmptyMetricCardComponent.new(name:, size:)
   end
 
   def build_identifier
@@ -29,7 +47,7 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def staged_rollout
-    @staged_rollout ||= deployment_run.staged_rollout
+    @staged_rollout ||= deployment_run&.staged_rollout
   end
 
   def events
@@ -70,7 +88,8 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def staged_rollout_percentage
-    staged_rollout&.last_rollout_percentage || Deployment::FULL_ROLLOUT_VALUE
+    return Deployment::FULL_ROLLOUT_VALUE unless staged_rollout
+    staged_rollout.last_rollout_percentage || 0
   end
 
   def staged_rollout_text
@@ -120,5 +139,9 @@ class ReleaseMonitoringComponent < ViewComponent::Base
       value_format: "number",
       name: "release_health.adoption_rate"
     }
+  end
+
+  def grid_cols
+    "grid-cols-#{@cols}"
   end
 end

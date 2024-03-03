@@ -2,10 +2,10 @@ class StepsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
-  before_action :require_write_access!, only: %i[new create edit update]
-  before_action :set_train, only: %i[new create edit update]
-  before_action :set_release_platform, only: %i[new create edit update]
-  before_action :set_ci_actions, only: %i[new create edit]
+  before_action :require_write_access!, only: %i[new create update]
+  before_action :set_train, only: %i[new create update]
+  before_action :set_release_platform, only: %i[new create update]
+  before_action :set_ci_actions, only: %i[new create]
   before_action :integrations_are_ready?, only: %i[new create]
   around_action :set_time_zone
 
@@ -18,20 +18,10 @@ class StepsController < SignedInApplicationController
     @step = @release_platform.steps.new(kind:)
 
     if @step.release? && @release_platform.has_release_step?
-      redirect_back fallback_location: app_train_path(@app, @train), flash: {error: "You can only have one release step in a train!"}
+      redirect_back fallback_location: app_train_releases_path(@app, @train), flash: {error: "You can only have one release step in a train!"}
     end
 
     set_build_channels
-  end
-
-  def edit
-    @step =
-      Step
-        .joins(release_platform: :app)
-        .where(release_platforms: {apps: {organization: current_organization}})
-        .friendly
-        .find(params[:id])
-    head :forbidden and return if @train.active_runs.exists?
   end
 
   def create
@@ -58,10 +48,10 @@ class StepsController < SignedInApplicationController
     head :forbidden and return if @train.active_runs.exists?
 
     if @step.update(parsed_step_params)
-      redirect_to edit_app_train_path(@app, @train), notice: "Step was successfully updated."
+      redirect_to steps_app_train_path(@app, @train), notice: "Step was successfully updated."
     else
       @ci_actions = @train.ci_cd_provider.workflows
-      render :edit, status: :unprocessable_entity
+      redirect_to steps_app_train_path(@app, @train), flash: {error: @step.errors.full_messages.to_sentence}
     end
   end
 
@@ -70,8 +60,10 @@ class StepsController < SignedInApplicationController
   def new_step_redirect
     if @app.guided_train_setup?
       redirect_to app_path(@app), notice: "Step was successfully created."
+    elsif @train.in_creation?
+      redirect_to steps_app_train_path(@app, @train), notice: "Step was successfully created."
     else
-      redirect_to app_train_path(@app, @train), notice: "Step was successfully created."
+      redirect_to app_train_releases_path(@app, @train), notice: "Step was successfully created."
     end
   end
 
@@ -108,7 +100,7 @@ class StepsController < SignedInApplicationController
 
   def integrations_are_ready?
     unless @train.ready?
-      redirect_to app_train_path(@app, @train), alert: "Cannot create steps before notifiers are complete."
+      redirect_to app_train_releases_path(@app, @train), alert: "Cannot create steps before notifiers are complete."
     end
   end
 

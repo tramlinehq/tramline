@@ -13,4 +13,9 @@ module LinkHelper
 
     link_to(name, options, html_options, &block)
   end
+
+  def _link_to(external, options, html_options, &blk)
+    return link_to_external(options, html_options, &blk) if external
+    link_to(options, html_options, &blk)
+  end
 end

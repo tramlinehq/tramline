@@ -1,0 +1,124 @@
+<% if release.present? %>
+  <%= render V2::SectionComponent.new(style: :boxed) do %>
+    <div class="<%= striped_header %> -mx-2">
+      <div class="flex items-center justify-between border-default-b px-3 py-2">
+        <div class="flex items-center space-x-3 rtl:space-x-reverse">
+          <% if release_version_drift? %>
+            <div class="flex items-center space-x-1">
+              <%= render V2::IconComponent.new("v2/android.svg", size: :lg) %>
+              <%= release_version(android_release_version) %>
+            </div>
+
+            <div class="flex items-center">
+              <%= render V2::IconComponent.new("v2/plus_fat.svg", size: :lg) %>
+            </div>
+
+            <div class="flex items-center space-x-1">
+              <%= render V2::IconComponent.new("v2/ios.svg", size: :lg) %>
+              <%= release_version(ios_release_version) %>
+            </div>
+          <% else %>
+            <%= release_version(release.release_version) %>
+          <% end %>
+
+          <%= render V2::StatusIndicatorPillComponent.new(text: status.first, status: status.second) %>
+          <%= render(hotfix_badge) unless hotfix_badge.nil? %>
+          <%= render(scheduled_badge) if automatic? %>
+        </div>
+
+        <div>
+          <%= render V2::ButtonComponent.new(
+            scheme: :supporting,
+            label: "Go to release",
+            options: release_path(release.id),
+            size: :sm,
+            html_options: { class: "-mr-2" },
+            authz: false,
+            type: :link) do |b|
+            b.with_icon("v2/arrow_right.svg")
+          end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-between items-start mt-2">
+      <div class="flex justify-start">
+        <div class="mt-2 flex gap-y-1 gap-x-2">
+          <%= render V2::HorizontalDataSetComponent.new(separator: :solid, bg_color: true) do |component| %>
+            <% component.with_data_set(title: "Started", lines: [start_time]) %>
+            <% component.with_data_set(title: "Released", lines: [end_time]) %>
+            <% component.with_data_set(title: "Duration", lines: [duration]) %>
+            <% component.with_data_set(title: "Stability Commits", lines: [commit_count]) %>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="flex flex-row justify-end space-x-1">
+        <% if release_branch.present? %>
+          <%= render V2::ButtonComponent.new(label: release_branch,
+                                             scheme: :link,
+                                             type: :link_external,
+                                             options: release.branch_url,
+                                             authz: false,
+                                             size: :xxs,
+                                             arrow: :none) do |b|
+            b.with_icon(vcs_icon, size: :sm)
+          end %>
+        <% end %>
+        <% if tag_name.present? %>
+          <%= render V2::ButtonComponent.new(label: tag_name,
+                                             scheme: :link,
+                                             type: :link_external,
+                                             options: release.tag_url,
+                                             authz: false,
+                                             size: :xxs,
+                                             arrow: :none) do |b|
+            b.with_icon(vcs_icon, size: :sm)
+          end %>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="grid <%= grid_size %> justify-between mt-3 gap-x-6 gap-y-3">
+      <% if cross_platform? %>
+        <% platform_runs.each do |run| %>
+        <span class="text-xl text-main-400/50 border-b border-main-300/30 py-1 justify-self-start pl-0.5 pr-1.5">
+          <%= run.display_attr(:platform) %>
+        </span>
+        <% end %>
+      <% end %>
+
+      <% platform_runs.each do |run| %>
+        <div class="grid gap-y-2 items-end content-end">
+          <% run.store_submitted_releases.each do |store_release| %>
+            <%= render V2::BuildInfoComponent.new(store_release) %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% platform_runs.each do |run| %>
+        <div>
+          <% summary = step_summary(run.platform) %>
+          <%= render V2::HorizontalDataSetComponent.new do |component| %>
+            <% component.with_data_set(title: "Time in review phase", lines: [summary[:review][:duration]]) %>
+            <% component.with_data_set(title: "Review builds", lines: [summary[:review][:builds_created_count]]) %>
+            <% component.with_data_set(title: "Time in release phase", lines: [summary[:release][:duration]]) %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% platform_runs.each do |run| %>
+        <div>
+          <% if run.store_submitted_releases.first.present? %>
+            <%= render ReleaseMonitoringComponent.new(
+              deployment_run: run.store_submitted_releases.first,
+              metrics: [:stability, :adoption_rate, :staged_rollout],
+              show_version_info: false,
+              cols: 3,
+              size: :sm) %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

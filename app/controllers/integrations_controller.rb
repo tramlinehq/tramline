@@ -11,14 +11,14 @@ class IntegrationsController < SignedInApplicationController
 
   def index
     set_integrations_by_categories
+    set_tab_configuration
   end
 
   def create
     if @integration.save
       redirect_to app_path(@app), notice: "Integration was successfully created."
     else
-      set_integrations_by_categories
-      render :index, status: :unprocessable_entity
+      redirect_to app_integrations_path(@app), flash: {error: @integration.errors.full_messages.to_sentence}
     end
   end
 
@@ -47,6 +47,14 @@ class IntegrationsController < SignedInApplicationController
 
   def set_providable_params
     @integration.providable.assign_attributes(providable_params)
+  end
+
+  def set_tab_configuration
+    @tab_configuration = [
+      [1, "General", edit_app_path(@app), "v2/cog.svg"],
+      [2, "Integrations", app_integrations_path(@app), "v2/blocks.svg"],
+      [3, "App Variants", app_app_config_app_variants_path(@app), "dna.svg"]
+    ]
   end
 
   def integration_params

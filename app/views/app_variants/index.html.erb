@@ -1,0 +1,20 @@
+<%= render V2::TabbedContainerComponent.new(title: @app.name,
+                                            turbo_frame: dom_id(@app, :edit_app),
+                                            tab_config: @tab_configuration) do |container| %>
+  <% container.with_back_button(to: "the app", path: app_path(@app)) %>
+  <% container.with_tab do %>
+    <%= render partial: "index" %>
+  <% end %>
+  <% if @app.releases.none? %>
+    <% container.with_sub_action do %>
+      <%= render V2::ButtonComponent.new(
+        scheme: :supporting,
+        label: "Remove",
+        options: app_path(@app),
+        type: :link,
+        html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete the app?" } }) do |b|
+        b.with_icon("v2/trash.svg")
+      end %>
+    <% end %>
+  <% end %>
+<% end %>

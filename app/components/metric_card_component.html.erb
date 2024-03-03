@@ -1,26 +1,20 @@
-<% unless display_values.empty? %>
-  <div class="rounded-lg border-slate-200 border flex flex-col p-4">
-    <div class="flex flex-row justify-between">
-      <div><%= name %></div>
-      <% if external_url.present? %>
-        <%= link_to_external external_url, title: "Monitoring Dashboard" do %>
-          <div><%= image_tag("integrations/logo_#{provider.to_s}.png", width: 20, height: 20) %></div>
-        <% end %>
-      <% end %>
-    </div>
-    <div class="grid grid-cols-<%= grid_size %> divide-x mt-2 place-content-between">
-      <% display_values.each do |key, val| %>
-        <div class="flex flex-col p-2">
-          <div class="text-xs text-gray-400 uppercase"><%= key %></div>
-          <div class="flex items-center gap-x-1 text-xl <%= metric_color(val[:is_healthy]) %>" title="<%= metric_title(val) %>">
-            <div class="flex items-baseline">
-              <%= val[:value] %>
-              <span class="ml-1 text-xs text-gray-400"><%= val[:unit] %></span>
-            </div>
-            <%= metric_health(val) %>
-          </div>
-        </div>
-      <% end %>
-    </div>
+<div class="flex flex-col border-default box-padding gap-y-4">
+  <div class="flex flex-row items-center justify-between">
+    <h1 class="heading-5 uppercase">
+      <%= name %>
+    </h1>
+    <%= link_to_external external_url, title: "Monitoring Dashboard" do %>
+      <%= render V2::IconComponent.new("integrations/logo_#{provider.to_s}.png", size: :md, rounded: false) %>
+    <% end %>
   </div>
-<% end %>
+  <div class="grid grid-cols-2 divide-x place-content-between">
+    <% values.each do |key, val| %>
+      <div class="flex flex-col py-1 first:px-0 px-3 gap-y-1">
+        <div class="text-xs text-main-400 uppercase"><%= key %></div>
+        <div class="flex items-center gap-x-1 <%= text_size %> <%= metric_color(val[:is_healthy]) %>" title="<%= metric_title(val) %>">
+          <%= val[:value] %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

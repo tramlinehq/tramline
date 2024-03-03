@@ -1,4 +1,4 @@
-VERSION_NAME_REGEX = /\d+\.\d+(\.\d+)?(-\w+)?/
+VERSION_NAME_REGEX = /\d+\.\d+(\.\d+)?(-\w+)?/ unless defined? VERSION_NAME_REGEX
 
 Rails.application.routes.draw do
   require "sidekiq/web"
@@ -37,19 +37,19 @@ Rails.application.routes.draw do
   end
 
   namespace :accounts do
-    resources :organizations, only: [:edit, :index] do
+    resources :organizations, only: [:edit] do
       member do
         get :switch
       end
 
       resource :team, only: [:show]
-      resources :invitations, only: %i[new create]
+      resources :invitations, only: [:create]
     end
   end
 
   resources :apps do
     resource :app_config, only: %i[edit update], path: :config do
-      resources :app_variants, only: %i[create update]
+      resources :app_variants, only: %i[create update index]
     end
 
     member do
@@ -57,9 +57,9 @@ Rails.application.routes.draw do
       post :refresh_external
     end
 
-    resources :trains, only: %i[new create edit update show destroy] do
+    resources :trains, only: %i[new create edit update destroy] do
       member do
-        post :clone, to: "trains#replicate"
+        get :steps
         patch :activate
         patch :deactivate
       end
@@ -67,10 +67,10 @@ Rails.application.routes.draw do
       resources :notification_settings, only: %i[index update]
 
       resources :release_platforms, only: [], path: :platforms, as: :platforms do
-        resources :steps, only: %i[new create edit update]
+        resources :steps, only: %i[new create update]
       end
 
-      resources :releases, only: %i[show create destroy], shallow: true do
+      resources :releases, only: %i[show create destroy index], shallow: true do
         resources :commits, only: [], shallow: false do
           member do
             post :apply

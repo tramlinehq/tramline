@@ -1,15 +1,14 @@
 <div class="rounded-lg border-slate-200 border flex flex-col p-4 gap-y-4">
-  <div class="flex flex-row justify-between">
-    <div><%= name %></div>
-    <div><%= image_tag("integrations/logo_#{provider.to_s}.png", width: 20, height: 20) %></div>
+  <div class="flex flex-row items-center justify-between">
+    <h1 class="heading-5 uppercase">
+      <%= name %>
+    </h1>
+    <%= render V2::IconComponent.new("integrations/logo_#{provider.to_s}.png", size: :md, rounded: false) %>
   </div>
   <div class="flex flex-row justify-between items-end">
-    <div class="text-xl"><%= current %>%</div>
-    <div class="text-xs text-gray-400"><%= subtitle %></div>
+    <div class="<%= text_size %>"><%= current %>%</div>
+    <div class="text-xs text-main-400"><%= subtitle %></div>
   </div>
-  <div class="border-slate-200">
-    <div class="relative w-full h-2 bg-slate-300">
-      <div class="absolute inset-0 bg-emerald-500" aria-hidden="true" style="width: <%= fraction %>"></div>
-    </div>
-  </div>
+
+  <%= render V2::ProgressBarComponent.new(percent: current, label: false) %>
 </div>

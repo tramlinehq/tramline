@@ -1,38 +1,30 @@
-<% form_url = app_bitrise_integration_path(@app) %>
-
-<span data-controller="visibility">
-  <%= decorated_button_tag :neutral, { data: { turbo: "false", action: "visibility#toggle" } } do %>
-    Connect
-  <% end %>
-
-  <%= modal_for("Add Personal Access Token") do %>
-    <%= form_with(model: [@app, integration],
-                  url: form_url,
-                  builder: ButtonHelper::AuthzForms) do |form| %>
-      <%= form.hidden_field :category, value: category %>
-
-      <%= form.fields_for :providable do |subform| %>
-        <%= subform.hidden_field :type, value: integration.providable_type %>
-        <%= subform.text_field :access_token, placeholder: "Paste here..." %>
-      <% end %>
-
-      <div class="flex items-center mt-5 mb-5" data-controller="reveal">
-        <%= form.authz_submit :blue,
-                              "Create",
-                              class: "flex",
-                              data: { action: "reveal#toggle" } %>
-
-        <div class="flex text-white ml-5">
-          <span class="text-slate-500" data-reveal hidden>
-            Verifying
-            <%= render partial: "shared/loading" %>
-          </span>
-        </div>
-      </div>
+<%= render V2::FormComponent.new(model: [app, integration], url: app_bitrise_integration_path(app)) do |f| %>
+  <% f.with_section(heading: "Add") do |section| %>
+    <% section.with_description do %>
+      <p>Your Bitrise PAT (personal access token)</p>
+      <p class="mt-2 text-xs">
+        <%= link_to_external "How to add a personal access token?",
+                             "https://devcenter.bitrise.io/en/accounts/personal-access-tokens.html",
+                             class: "underline" %>
+      </p>
     <% end %>
 
-    <%= link_to_external "How to add a personal access token?",
-                         "https://devcenter.bitrise.io/en/accounts/personal-access-tokens.html",
-                         class: "underline text-slate-500 items-end" %>
+    <%= section.F.hidden_field :category, value: category %>
+
+    <% section.F.fields_for :providable do |subf| %>
+      <%= subf.hidden_field :type, value: integration.providable_type %>
+      <div><%= subf.labeled_text_field :access_token, "Personal Access Token" %></div>
+    <% end %>
   <% end %>
-</span>
+
+  <% f.with_action do %>
+    <div class="flex items-center" data-controller="reveal">
+      <%= f.F.authz_submit "Create", "plus.svg", size: :xs, html_options: { data: { action: "reveal#toggle" } } %>
+      <div class="ml-5">
+        <div hidden data-reveal>
+          <%= render V2::LoadingIndicatorComponent.new(text: "Verifying...") %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>

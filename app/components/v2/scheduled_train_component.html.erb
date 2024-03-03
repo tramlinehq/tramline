@@ -1,0 +1,47 @@
+<%= render V2::SectionComponent.new(style: :titled, title: "Schedule") do %>
+  <div class="grid grid-cols-5 gap-1 text-main-500 dark:text-main-400">
+    <div class="pb-1 pl-0.5 heading-5">Past</div>
+    <div class="pb-1 pl-0.5 heading-5">Previous</div>
+    <div class="pb-1 pl-0.5 heading-5">Current</div>
+    <div class="pb-1 pl-0.5 heading-5">Next</div>
+    <div class="pb-1 pl-0.5 heading-5">Future</div>
+  </div>
+
+  <div class="grid grid-cols-5 bg-main-50 border border-main-200 divide-x divide-main-200 rounded-lg">
+    <% if past_releases.empty? %>
+      <div class="h-20 sm:h-28 lg:h-36 p-1 col-span-2">
+        <div class="h-full flex flex-col justify-between">
+          <!-- Events -->
+          <div class="grow flex flex-col p-0.5 sm:p-1.5 overflow-hidden">
+            NO PAST RELEASES
+          </div>
+        </div>
+      </div>
+    <% else %>
+      <% past_releases.each do |scheduled_release| %>
+        <%= render partial: "scheduled_release/show", locals: { header: past_text(scheduled_release), title: past_title(scheduled_release), status: status(scheduled_release), footer: time_format(scheduled_release.scheduled_at, only_day: true) } %>
+      <% end %>
+    <% end %>
+
+    <% if ongoing_release.present? %>
+      <% ongoing_status = ReleasesHelper::SHOW_RELEASE_STATUS.fetch(ongoing_release.status.to_sym) %>
+      <%= render partial: "scheduled_release/show", locals: { header: ongoing_text, title: ongoing_release.release_version, status: { text: ongoing_status.first, status: ongoing_status.last }, footer: time_format(ongoing_release.scheduled_at, only_day: true) } %>
+    <% else %>
+      <%= render partial: "scheduled_release/show", locals: { header: "Nothing running", title: nil, status: nil, footer: time_format(Time.current, only_day: true) } %>
+    <% end %>
+
+    <% if future_release.present? %>
+      <%= render partial: "scheduled_release/show", locals: { header: time_text(future_release), title: train.next_version, status: status(future_release), footer: time_format(future_release.scheduled_at, only_day: true) } %>
+      <%= render partial: "scheduled_release/show", locals: { header: time_text(future_release), title: train.next_version, status: status(future_release), footer: time_format(next_run_at, only_day: true) } %>
+    <% else %>
+      <div class="h-20 sm:h-28 lg:h-36 p-1 col-span-2">
+        <div class="h-full flex flex-col justify-between">
+          <!-- Events -->
+          <div class="grow flex flex-col p-0.5 sm:p-1.5 overflow-hidden">
+            NO FUTURE RELEASES
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>

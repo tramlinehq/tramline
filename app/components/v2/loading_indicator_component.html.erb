@@ -1,0 +1,34 @@
+<% if @typewriter_only %>
+  <div class="inline-flex w-fit <%= turbo_frame_loader %>">
+    <div class="<%= pulse_wrapper_classes %>">
+      <svg class="fill-current text-blue-800" viewBox="0 0 15 3" width="25" height="10">
+        <circle cx="1.5" cy="1.5" r="1.5">
+          <animate attributeName="opacity" dur="1s" values="0;1;0" repeatCount="indefinite" begin="0.1"/>
+        </circle>
+        <circle cx="7.5" cy="1.5" r="1.5">
+          <animate attributeName="opacity" dur="1s" values="0;1;0" repeatCount="indefinite" begin="0.2"/>
+        </circle>
+        <circle cx="13.5" cy="1.5" r="1.5">
+          <animate attributeName="opacity" dur="1s" values="0;1;0" repeatCount="indefinite" begin="0.3"/>
+        </circle>
+      </svg>
+    </div>
+    <span class="sr-only">Loading...</span>
+  </div>
+<% elsif @skeleton_only %>
+  <div class="max-w-sm animate-pulse <%= turbo_frame_loader %>">
+    <div class="h-2.5 bg-main-200 rounded-full dark:bg-main-700 w-48 mb-4"></div>
+    <div class="h-2 bg-main-200 rounded-full dark:bg-main-700 max-w-[360px] mb-2.5"></div>
+    <div class="h-2 bg-main-200 rounded-full dark:bg-main-700 mb-2.5"></div>
+    <div class="h-2 bg-main-200 rounded-full dark:bg-main-700 max-w-[330px] mb-2.5"></div>
+    <div class="h-2 bg-main-200 rounded-full dark:bg-main-700 max-w-[300px] mb-2.5"></div>
+    <div class="h-2 bg-main-200 rounded-full dark:bg-main-700 max-w-[360px]"></div>
+    <span class="sr-only">Loading...</span>
+  </div>
+<% else %>
+  <div class="inline-flex w-fit <%= turbo_frame_loader %>">
+    <div class="<%= pulse_wrapper_classes %>">
+      <%= text %>
+    </div>
+  </div>
+<% end %>

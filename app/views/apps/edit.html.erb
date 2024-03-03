@@ -1,17 +1,23 @@
-<%= render PageComponent.new(breadcrumb: breadcrumb(:edit_app, @app), title: "Settings: #{@app.name} ⚙️") do %>
-  <%= form_with(model: [@app],
-                url: app_path(@app),
-                builder: ButtonHelper::AuthzForms,
-                method: :patch) do |form| %>
-
-    <%= render partial: "shared/errors", locals: { resource: @app } %>
-
-    <div class="grid gap-5 md:grid-cols-2">
-      <%= render "form", form: form, app: @app %>
-    </div>
-
-    <div class="mt-5">
-      <%= form.authz_submit :blue, "Update" %>
-    </div>
+<%= render V2::TabbedContainerComponent.new(title: @app.name,
+                                            turbo_frame: dom_id(@app, :edit_app),
+                                            tab_config: @tab_configuration,
+                                            error_resource: @app) do |container| %>
+  <% container.with_back_button(to: "the app", path: app_path(@app)) %>
+  <% container.with_tab do %>
+    <%= render partial: "edit_form" %>
+  <% end %>
+  <% if @app.releases.none? %>
+    <% container.with_sub_action do %>
+      <%= render V2::ButtonComponent.new(
+        scheme: :supporting,
+        label: "Remove",
+        options: app_path(@app),
+        type: :link,
+        html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete the app?" } }) do |b|
+        b.with_icon("v2/trash.svg")
+      end %>
+    <% end %>
   <% end %>
 <% end %>
+
+

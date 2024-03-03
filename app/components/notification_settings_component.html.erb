@@ -1,62 +1,88 @@
-<section class="my-4">
-  <div class="px-5 py-3 bg-indigo-50 border border-indigo-100 rounded-sm text-left">
-    <div class="text-slate-700 font-normal">To disable all notifications, go to
-      <%= link_to "Train Settings", edit_app_train_path(train.app, train), class: "underline" %>.</div>
-  </div>
-</section>
-<%= render TableComponent.new(columns: %w[kind channels status settings]) do |table| %>
-  <% settings.each do |setting| %>
-    <% table.with_row do |row| %>
-      <% row.with_cell do %>
-        <div class="inline-flex items-center">
-          <%= inline_svg(icon_for(setting), classname: "w-5 h-5 fill-current mr-2") %>
-          <%= setting.display_attr(:kind) %>
-        </div>
-      <% end %>
-
-      <% row.with_cell do %>
-        <% if setting.active? %>
-          <div class="overflow-x-hidden hover:overflow-x-auto">
-            <% setting.notification_channels&.each do |channel| %>
-              <div class="inline-flex items-center ml-2">
-                <span class="pr-2">
-                  <%= image_tag("integrations/logo_#{setting.notification_provider}.png", width: 18) %>
-                </span>
-                <%= channel["name"] %>
-              </div>
-            <% end %>
+<% if enabled? %>
+  <%= render V2::TableComponent.new(columns: ["kind", "channels", "status", ""]) do |table| %>
+    <% display_settings.each do |setting| %>
+      <% table.with_row do |row| %>
+        <% row.with_cell do %>
+          <div class="inline-flex items-center">
+            <%= render V2::IconComponent.new(icon_for(setting), size: :md, classes: "mr-2") %>
+            <%= setting.display_attr(:kind) %>
           </div>
         <% end %>
-      <% end %>
 
-      <% row.with_cell do %>
-        <span class="py-0.5">
+        <% row.with_cell do %>
           <% if setting.active? %>
-            <%= status_badge("enabled", :success) %>
-          <% else %>
-            <%= status_badge("disabled", :neutral) %>
-          <% end %>
-        </span>
-      <% end %>
-
-      <% row.with_cell do %>
-        <div data-controller="modal" class="px-2">
-          <%= authz_link_to :neutral, "#", { data: { action: "modal#open" } } do %>
-            <%= inline_svg("edit.svg", classname: "w-4 h-4 fill-current text-slate-500 shrink-0") %>
-          <% end %>
-
-          <dialog data-modal-target="modal"
-                  class="p-0 backdrop:bg-gray-400 backdrop:bg-opacity-50 open:animate-fade-in w-2/3">
-            <div class="relative bg-white rounded-lg shadow">
-              <%= render partial: "form", locals: { app: train.app,
-                                                    train: train,
-                                                    notification_setting: setting,
-                                                    description: description_for(setting),
-                                                    icon: icon_for(setting)} %>
+            <div class="overflow-x-hidden hover:overflow-x-auto">
+              <% setting.notification_channels&.each do |channel| %>
+                <div class="inline-flex items-center">
+                  <%= render V2::IconComponent.new("integrations/logo_#{setting.notification_provider}.png", size: :md, classes: "mr-2") %>
+                  <%= channel["name"] %>
+                </div>
+              <% end %>
             </div>
-          </dialog>
-        </div>
+          <% end %>
+        <% end %>
+
+        <% row.with_cell do %>
+          <%= render V2::StatusIndicatorPillComponent.new(text: status_text(setting), status: status_type(setting)) %>
+        <% end %>
+
+        <% row.with_cell(wrap: true) do %>
+          <%= render V2::ModalComponent.new(title: "Notification: #{setting.display_attr(:kind)}",
+                                            subtitle: description_for(setting)) do |modal| %>
+            <% button = modal.with_button(scheme: :light,
+                                          type: :action,
+                                          size: :xxs,
+                                          arrow: :none) %>
+            <% button.with_icon("v2/pencil.svg") %>
+            <% modal.with_body do %>
+              <%= render V2::FormComponent.new(model: [app, train, setting],
+                                               url: app_train_notification_setting_path(app, train, setting),
+                                               method: :put) do |f| %>
+                <% f.with_section(heading: "Select") do |section| %>
+                  <% section.with_description do %>
+                    <div>One or more channel names for this type of notification.</div>
+                  <% end %>
+                  <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                                           field_name: :active,
+                                                           switch_id: "active-switch-#{setting.id}",
+                                                           on_label: "Notifications enabled",
+                                                           off_label: "Notifications disabled") do |switch| %>
+                    <% switch.with_child do %>
+                      <%= section.F.labeled_select :notification_channels,
+                                                   "Channels",
+                                                   options_for_select(
+                                                     display_channels(setting.channels) { |chan| "#" + chan[:name] },
+                                                     setting.notification_channels&.map(&:to_json)
+                                                   ),
+                                                   {},
+                                                   { multiple: true, data: { controller: "input-select" } } %>
+                    <% end %>
+                  <% end %>
+
+                  <%= render partial: "shared/notifications_refresh", locals: { app: app } %>
+                <% end %>
+
+                <% f.with_action do %>
+                  <% f.F.authz_submit "Save", "v2/archive.svg", size: :xs %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
       <% end %>
     <% end %>
   <% end %>
+
+  <section class="my-4">
+    <div class="px-5 py-3 bg-indigo-50 border border-indigo-100 rounded-sm text-left">
+      <div class="text-slate-700 text-sm">To disable all notifications, go to
+        <%= link_to "Train Settings", edit_app_train_path(train.app, train), class: "underline", data: { turbo: false } %>
+      </div>
+    </div>
+  </section>
+<% else %>
+  <%= render V2::EmptyStateComponent.new(title: "Notifications are disabled",
+                                         text: "Enable notifications for the app and the train to configure notification settings.",
+                                         banner_image: "bell.svg",
+                                         type: :subdued) %>
 <% end %>

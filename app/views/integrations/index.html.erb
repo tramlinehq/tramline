@@ -1,51 +1,20 @@
-<% breadcrumb :integrations, @app %>
-
-<div class="mb-8"><h1 class="text-2xl md:text-3xl text-slate-800 font-bold">Integrations 🤖</h1></div>
-
-<%= render partial: 'shared/errors', locals: { resource: @integration } %>
-
-<section class="border-t">
-  <div class="m-auto">
-    <% @integrations_by_categories.each do |category, integrations| %>
-      <div id="<%= category %>" class="mt-12">
-        <h3 class="text-2xl leading-snug text-slate-800 font-bold">
-          <%= Integration.human_enum_name(:category, category) %>
-        </h3>
-
-        <div class="text-lg text-slate-500 mt-4">
-          <%= Integration::CATEGORY_DESCRIPTIONS[category.to_sym] %>
-        </div>
-
-        <div class="grid grid-cols-12 gap-6 mt-4">
-          <% integrations.each do |integration| %>
-            <% if integration.providable.creatable? %>
-              <%= render partial: "creatable",
-                         locals: { current_organization: current_organization,
-                                   integration: integration,
-                                   category: category
-                         } %>
-            <% end %>
-
-            <% if integration.providable.connectable? %>
-              <%= render partial: "connectable",
-                         locals: { current_organization: current_organization,
-                                   integration: integration,
-                                   category: category
-                         } %>
-            <% end %>
-          <% end %>
-        </div>
-      </div>
+<%= render V2::TabbedContainerComponent.new(title: @app.name,
+                                            turbo_frame: dom_id(@app, :edit_app),
+                                            tab_config: @tab_configuration) do |container| %>
+  <% container.with_back_button(to: "the app", path: app_path(@app)) %>
+  <% container.with_tab do %>
+    <%= render V2::IntegrationListComponent.new(@app, @integrations_by_categories) %>
+  <% end %>
+  <% if @app.releases.none? %>
+    <% container.with_sub_action do %>
+      <%= render V2::ButtonComponent.new(
+        scheme: :supporting,
+        label: "Remove",
+        options: app_path(@app),
+        type: :link,
+        html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete the app?" } }) do |b|
+        b.with_icon("v2/trash.svg")
+      end %>
     <% end %>
-  </div>
-</section>
-
-<section>
-  <h3 class="text-2xl leading-snug text-slate-400 font-bold mt-16 mb-16 pt-8 border-t">Coming Soon!</h3>
-  <div class="grid grid-cols-4 place-items-center justify-center text-slate-400">
-    <div><%= image_tag "integrations/logo_gitlab.png", title: "GitLab", width: 90, class: "opacity-30" %></div>
-    <div><%= image_tag "integrations/logo_codemagic.png", title: "Codemagic", width: 100, class: "opacity-30" %></div>
-    <div><%= image_tag "integrations/logo_sentry.png", title: "Sentry", width: 110, class: "opacity-30" %></div>
-    <div><%= image_tag "integrations/logo_crashlytics.png", title: "Crashlytics", width: 110, class: "opacity-30" %></div>
-  </div>
-</section>
+  <% end %>
+<% end %>

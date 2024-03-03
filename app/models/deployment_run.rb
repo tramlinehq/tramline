@@ -195,6 +195,10 @@ class DeploymentRun < ApplicationRecord
     ready.includes(:step_run, :deployment).select(&:production_channel?)
   end
 
+  def self.reached_submission
+    where(status: STORE_SUBMISSION_STATES).includes([:staged_rollout, {step_run: [:commit], deployment: [:integration]}]).select(&:production_channel?)
+  end
+
   def deployment_notes
     return step_run.build_notes.truncate(ReleaseMetadata::NOTES_MAX_LENGTH) if build_notes?
     release_metadata.release_notes if release_notes?
@@ -474,7 +478,7 @@ class DeploymentRun < ApplicationRecord
       .merge(step_run.notification_params)
       .merge(
         {
-          project_link: external_release&.external_link.presence || deployment.project_link,
+          project_link: external_link,
           deep_link: provider&.deep_link(external_release&.external_id, release_platform.platform)
         }
       )
@@ -486,6 +490,10 @@ class DeploymentRun < ApplicationRecord
 
   def production_release_submitted?
     production_channel? && status.in?(STORE_SUBMISSION_STATES)
+  end
+
+  def external_link
+    external_release&.external_link.presence || deployment.project_link
   end
 
   private

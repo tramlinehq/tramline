@@ -8,30 +8,33 @@
 
   <div class="flex flex-col gap-y-4">
     <div class="flex flex-row items-center gap-4 w-full">
-      <div>
-        <%= inline_svg("grip.svg", classname: "handle cursor-grabbing w-6") %>
+      <%= render V2::IconComponent.new("grip.svg", size: :lg, classes: "handle cursor-grabbing") %>
+
+      <div class="flex-grow w-1/2">
+        <%= form.select_without_label :integration_id,
+                                      options_for_select(@build_channel_integrations, @selected_integration),
+                                      {},
+                                      data: { controller: "input-select",
+                                              action: "dropdown-stream#fetchDynamicSelect domain--staged-rollout-help#clear" } %>
       </div>
 
       <div class="flex-grow w-1/2">
-        <%= form.select :integration_id, options_for_select(@build_channel_integrations, @selected_integration),
-                        { class: "block form-select" },
-                        data: { controller: "input-select",
-                                action: "dropdown-stream#fetchDynamicSelect domain--staged-rollout-help#clear" } %>
-      </div>
-
-      <div class="flex-grow w-1/2">
-        <%= form.select :build_artifact_channel,
-                        options_for_select(display_channels(@selected_build_channels) { |chan| deployment_channel_name(chan) }),
-                        { class: "block form-select" },
-                        { data: { dropdown_stream_target: "dynamicSelect",
-                                  action: "dropdown-stream#showElementOnDynamicSelectChange domain--staged-rollout-help#clear",
-                                  controller: "input-select" } } %>
+        <%= form.select_without_label :build_artifact_channel,
+                                      options_for_select(display_channels(@selected_build_channels) { |chan| deployment_channel_name(chan) }),
+                                      {},
+                                      { data: { dropdown_stream_target: "dynamicSelect",
+                                                action: "dropdown-stream#showElementOnDynamicSelectChange domain--staged-rollout-help#clear",
+                                                controller: "input-select" } } %>
       </div>
 
       <div>
-        <button type="button" data-action="nested-form-ext#remove">
-          <%= inline_svg("trash.svg", classname: "w-6") %>
-        </button>
+        <%= render V2::ButtonComponent.new(
+          scheme: :naked_icon,
+          type: :action,
+          size: :none,
+          html_options: { data: { action: "nested-form-ext#remove" } }) do |b|
+          b.with_icon("v2/trash.svg", size: :md)
+        end %>
 
         <%= form.hidden_field :_destroy %>
       </div>
@@ -39,53 +42,38 @@
 
 
     <div class="flex flex-row items-center gap-4 w-full">
-      <div class="w-6"></div>
       <div data-dropdown-stream-target="hideElement">
-        <div class="flex flex-row items-center gap-x-4">
-          <div class="flex flex-row items-center gap-x-2">
-            <%= form.radio_button :notes, "build_notes" %>
-            <%= form.label :build_notes, "Send auto-generated build notes" %>
-          </div>
-          <div class="flex flex-row items-center gap-x-2">
-            <%= form.radio_button :notes, "release_notes" %>
-            <%= form.label :release_notes, "Send Release Notes" %>
-          </div>
-          <div class="flex flex-row items-center gap-x-2">
-            <%= form.radio_button :notes, "no_notes" %>
-            <%= form.label :no_notes, "Send No Notes" %>
-          </div>
+        <div class="flex">
+          <%= form.labeled_radio_option(:notes, "build_notes", "Send auto-generated build notes") %>
+          <%= form.labeled_radio_option(:notes, "release_notes", "Send Release Notes") %>
+          <%= form.labeled_radio_option(:notes, "no_notes", "Send No Notes") %>
         </div>
       </div>
-      <div class="flex-grow" data-dropdown-stream-target="showElement" hidden>
-        <div data-controller="reveal" class="inline-flex gap-x-4">
-          <div class="flex items-center gap-x-6">
-            <% if step.release? %>
-              <div class="flex flex-row gap-x-3 items-center">
-                <div>
-                  <%= form.check_box :is_staged_rollout, class: "form-checkbox", data: { action: "reveal#toggle" } %>
-                  <%= form.label :is_staged_rollout, t("staged_rollout.#{step.release_platform.platform}.checkbox"), class: "text-sm" %>
-                </div>
+      <div class="flex grow">
+        <div data-controller="reveal" data-dropdown-stream-target="showElement" hidden>
+          <% if step.release? %>
+            <div class="flex gap-x-3 items-center">
+              <%= form.labeled_checkbox :is_staged_rollout,
+                                        t("staged_rollout.#{step.release_platform.platform}.checkbox"),
+                                        data: { action: "reveal#toggle" } %>
 
-                <% if step.release_platform.ios? %>
+              <% if step.release_platform.ios? %>
                 <span class="text-xs text-slate-400">
                   Phased release in App Store goes from 1%, 2%, 5%, 10%, 20%, 50% to 100% over 7 days
                 </span>
-                <% else %>
-                  <%= form.text_field :staged_rollout_config,
-                                      class: "form-input",
-                                      hidden: true,
-                                      placeholder: "1, 2, 5, 10, 20, 50, 100",
-                                      data: { reveal: true,
-                                              domain__staged_rollout_help_target: "input",
-                                              action: "domain--staged-rollout-help#validateString" } %>
-                <% end %>
-
-                <div class="text-sm text-slate-600 italic">
-                  <span data-domain--staged-rollout-help-target="helpErrorText helpSuccessText"></span>
-                </div>
-              </div>
-            <% end %>
-          </div>
+              <% else %>
+                <%= form.text_field_without_label :staged_rollout_config,
+                                                  "1, 2, 5, 10, 20, 50, 100",
+                                                  { hidden: true,
+                                                    data: { reveal: true,
+                                                            domain__staged_rollout_help_target: "input",
+                                                            action: "domain--staged-rollout-help#validateString" } } %>
+              <% end %>
+            </div>
+            <div class="text-sm text-slate-600 italic">
+              <span data-domain--staged-rollout-help-target="helpErrorText helpSuccessText"></span>
+            </div>
+          <% end %>
         </div>
       </div>
     </div>

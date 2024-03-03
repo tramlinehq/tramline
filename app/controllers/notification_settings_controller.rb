@@ -8,7 +8,13 @@ class NotificationSettingsController < SignedInApplicationController
   around_action :set_time_zone
 
   def index
-    @notification_settings = @train.notification_settings
+    @notification_settings = @train.notification_settings if @train.send_notifications?
+
+    @tab_configuration = [
+      [1, "General", edit_app_train_path(@app, @train), "v2/cog.svg"],
+      [2, "Steps", steps_app_train_path(@app, @train), "v2/route.svg"],
+      [3, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"]
+    ]
   end
 
   def update

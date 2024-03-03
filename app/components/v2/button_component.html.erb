@@ -1,8 +1,9 @@
-<% if tooltip_component %>
-  <div data-controller="popup" data-popup-away-value="true">
-    <%= render_component %>
-    <%= render(tooltip_component) %>
-  </div>
+<% if tooltip_allowed? %>
+  <% tooltip.with_body do %>
+    <% render_component %>
+  <% end %>
+  <%= tooltip %>
 <% else %>
   <%= render_component %>
 <% end %>
+

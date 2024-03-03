@@ -1,36 +1,32 @@
-<% form_url = app_appstore_integration_path(@app) %>
-
-<span data-controller="visibility">
-  <%= decorated_button_tag :neutral, "Connect", data: { turbo: "false", action: "visibility#toggle" } %>
-  <%= modal_for("Add API details") do %>
-    <%= form_with(model: [@app, integration], builder: ButtonHelper::AuthzForms, url: form_url) do |form| %>
-      <%= form.hidden_field :category, value: category %>
-
-      <%= form.fields_for :providable do |subform| %>
-        <%= subform.hidden_field :type, value: integration.providable_type %>
-
-        <%= subform.label :key_id, "Key ID", class: "block text-sm font-medium mb-1 w-full" %>
-        <%= subform.text_field :key_id, placeholder: "Paste here...", class: "mb-3" %>
-        <%= subform.label :issuer_id, "Issuer ID", class: "block text-sm font-medium mb-1 w-full" %>
-        <%= subform.text_field :issuer_id, placeholder: "Paste here...", class: "mb-3" %>
-        <%= subform.label :p8_key_file, "Upload p8 key file", class: "block text-sm font-medium mb-1 w-full" %>
-        <%= subform.file_field :p8_key_file, accept: ".p8" %>
-      <% end %>
-
-      <div class="flex items-center mt-5 mb-5" data-controller="reveal">
-        <%= form.authz_submit :blue, "Create", class: "flex", data: { action: "reveal#toggle" } %>
-
-        <div class="flex text-white ml-5">
-          <span class="text-slate-500" data-reveal hidden>
-            Verifying
-            <%= render partial: "shared/loading" %>
-          </span>
-        </div>
-      </div>
+<%= render V2::FormComponent.new(model: [app, integration], url: app_appstore_integration_path(app)) do |f| %>
+  <% f.with_section(heading: "Add") do |section| %>
+    <% section.with_description do %>
+      <p>Your API key for App Store Connect API</p>
+      <p class="mt-2 text-xs">
+        <%= link_to_external "How to create an API key for App Store Connect API?",
+                             "https://developer.apple.com/documentation/appstoreconnectapi/creating_api_keys_for_app_store_connect_api",
+                             class: "underline" %>
+      </p>
     <% end %>
 
-    <%= link_to_external "How to create an API key for App Store Connect API?",
-                         "https://developer.apple.com/documentation/appstoreconnectapi/creating_api_keys_for_app_store_connect_api",
-                         class: "underline text-slate-500 items-end" %>
+    <%= section.F.hidden_field :category, value: category %>
+
+    <% section.F.fields_for :providable do |subf| %>
+      <%= subf.hidden_field :type, value: integration.providable_type %>
+      <div><%= subf.labeled_text_field :key_id, "Key ID" %></div>
+      <div><%= subf.labeled_text_field :issuer_id, "Issuer ID" %></div>
+      <div><%= subf.labeled_file_field :p8_key_file, "Upload key file", "Only .p8 files.", accept: ".p8" %></div>
+    <% end %>
   <% end %>
-</span>
+
+  <% f.with_action do %>
+    <div class="flex items-center" data-controller="reveal">
+      <%= f.F.authz_submit "Create", "plus.svg", size: :xs, html_options: { data: { action: "reveal#toggle" } } %>
+      <div class="ml-5">
+        <div hidden data-reveal>
+          <%= render V2::LoadingIndicatorComponent.new(text: "Verifying...") %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>

@@ -95,7 +95,7 @@
 
       <div data-reveal hidden>
         <% release.store_releases.each do |store_release| %>
-          <%= render ReleaseMonitoringComponent.new(deployment_run: store_release) %>
+          <article class="mt-4"><%= render ReleaseMonitoringComponent.new(deployment_run: store_release) %></article>
         <% end %>
       </div>
     </article>

@@ -12,10 +12,12 @@ function getMetaContent(name) {
 application.debug = getMetaContent("environment") === "development";
 window.Stimulus = application
 
-Stimulus.handleError = (error, message, detail) => {
-  console.error(message, detail)
-  Sentry.init({dsn: getMetaContent("sentryDSNUrl"),});
-  Sentry.captureException(error);
+if (getMetaContent("environment") !== "development") {
+  Stimulus.handleError = (error, message, detail) => {
+    console.error(message, detail)
+    Sentry.init({dsn: getMetaContent("sentryDSNUrl"),});
+    Sentry.captureException(error);
+  }
 }
 
 export { application }

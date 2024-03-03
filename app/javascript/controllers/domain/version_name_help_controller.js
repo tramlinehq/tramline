@@ -23,7 +23,9 @@ export default class extends Controller {
     this.majorVersion = ""
     this.minorVersion = ""
     this.patchVersion = ""
-    this.helpTextValTarget.hidden = true
+    if(this.hasHelpTextValTarget) {
+      this.helpTextValTarget.hidden = true
+    }
   }
 
   bump() {

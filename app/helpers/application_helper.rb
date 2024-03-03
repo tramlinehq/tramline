@@ -2,12 +2,21 @@ module ApplicationHelper
   using RefinedString
 
   STATUS_COLOR_PALETTE = {
-    success: %w[bg-green-100 text-green-600],
-    failure: %w[bg-rose-100 text-rose-600],
+    success: %w[bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300],
+    failure: %w[bg-rose-100 text-rose-800 dark:bg-red-900 dark:text-red-300],
     routine: %w[bg-sky-100 text-sky-600],
     neutral: %w[bg-slate-100 text-slate-500],
     ongoing: %w[bg-indigo-100 text-indigo-600],
-    inert: %w[bg-amber-100 text-amber-600]
+    inert: %w[bg-amber-100 text-amber-800]
+  }
+
+  PILL_STATUS_COLOR_PALETTE = {
+    success: %w[bg-green-500],
+    failure: %w[bg-red-500],
+    routine: %w[bg-sky-500],
+    ongoing: %w[bg-indigo-500],
+    inert: %w[bg-amber-500],
+    neutral: %w[bg-slate-500]
   }
 
   def write_only(&block)
@@ -25,15 +34,6 @@ module ApplicationHelper
     if resource.eql?(controller_name)
       style
     end
-  end
-
-  def modal_for(heading, &block)
-    render(
-      partial: "shared/modal",
-      locals: {
-        heading: heading, block: block
-      }
-    )
   end
 
   def toggle_for(hide, full_width: false, &block)
@@ -126,10 +126,11 @@ module ApplicationHelper
       .tap { |list| with_none ? list.unshift(["None", nil]) : nil }
   end
 
-  def time_format(timestamp, with_year: false, with_time: true, only_time: false, only_date: false, dash_empty: false)
-    return "-" if dash_empty && timestamp.nil?
+  def time_format(timestamp, with_year: false, with_time: true, only_time: false, only_date: false, dash_empty: false, only_day: false)
+    return "--" if dash_empty && timestamp.nil?
     return unless timestamp
     return timestamp.strftime("%-l:%M %P") if only_time
+    return timestamp.strftime("#{timestamp.day.ordinalize} %b") if only_day
     return timestamp.strftime("%A #{timestamp.day.ordinalize} %B, %Y") if only_date
     timestamp.strftime("%b #{timestamp.day.ordinalize}#{", %Y" if with_year}#{" at %-l:%M %P" if with_time}")
   end

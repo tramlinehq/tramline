@@ -70,6 +70,10 @@ class Commit < ApplicationRecord
     end
   end
 
+  def team
+    user&.team_for(release.organization)
+  end
+
   def applicable?
     commit_hash == release.latest_commit_hash
   rescue

@@ -1,55 +1,21 @@
-<article data-controller="reveal">
-  <div class="text-xl text-slate-600 font-medium mt-2 mb-1">Platform Specific Tags</div>
-  <div class="text-sm mt-1 mb-6">
-    Tag each platform release separately.<br/>By default, only one tag is created at the end of the release.
-  </div>
-  <section data-controller="toggle-switch"
-           data-toggle-switch-on-label-value="Platform Specific Tags enabled"
-           data-toggle-switch-off-label-value="Platform Specific Tags disabled">
-    <div class="flex items-center">
-      <div class="form-switch">
-        <%= form.check_box :tag_platform_releases,
-                           { id: "platform-specific-tags-switch",
-                             class: "sr-only",
-                             data: { action: "toggle-switch#change reveal#toggle",
-                                     toggle_switch_target: "checkbox" } },
-                           "true", "false" %>
-        <label class="bg-slate-400" for="platform-specific-tags-switch">
-          <span class="bg-white shadow-sm" aria-hidden="true"></span>
-          <span class="sr-only">Switch label</span>
-        </label>
-      </div>
-
-      <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"></div>
-    </div>
-
-    <section class="mt-6" data-reveal
-             <%= "hidden" unless @train.tag_platform_releases? %> data-controller="toggle-switch"
-             data-toggle-switch-on-label-value="Tag All Store Releases enabled"
-             data-toggle-switch-off-label-value="Tag All Store Releases disabled">
-      <div class="border-t border-dashed border-slate-200 pb-8 mt-8"></div>
-      <div class="text-xl text-slate-600 font-medium mt-2 mb-1">Tag All Store Releases</div>
-      <div class="text-sm mt-1 mb-6">
+<%= render V2::Form::SwitchComponent.new(form:,
+                                         field_name: :tag_platform_releases,
+                                         on_label: "Platform Specific Tags enabled",
+                                         off_label: "Platform Specific Tags disabled",
+                                         hide_child: !@train.tag_platform_releases?) do |component| %>
+  <% component.with_child do %>
+    <%= render V2::Form::SwitchComponent.new(form:,
+                                             field_name: :tag_all_store_releases,
+                                             on_label: "Tag All Store Releases enabled",
+                                             off_label: "Tag All Store Releases disabled") do |sub_component| %>
+      <% sub_component.with_heading do %>
+        Tag All Store Releases
+      <% end %>
+      <% sub_component.with_description do %>
         Always tag a build that reaches the store production channel.
         <br/>There can be multiple such builds when there are release fixes during staged rollout.
         <br/>By default, only the final build of the release is tagged.
-      </div>
-      <div class="flex items-center">
-        <div class="form-switch">
-          <%= form.check_box :tag_all_store_releases,
-                             { id: "tag-all-store-releases-switch",
-                               class: "sr-only",
-                               data: { action: "toggle-switch#change",
-                                       toggle_switch_target: "checkbox" } },
-                             "true", "false" %>
-          <label class="bg-slate-400" for="tag-all-store-releases-switch">
-            <span class="bg-white shadow-sm" aria-hidden="true"></span>
-            <span class="sr-only">Switch label</span>
-          </label>
-        </div>
-
-        <div class="text-sm text-slate-600 ml-2" data-toggle-switch-target="output"></div>
-      </div>
-    </section>
-  </section>
-</article>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

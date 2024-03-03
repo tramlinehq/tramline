@@ -2,6 +2,7 @@ class SignedInApplicationController < ApplicationController
   DEFAULT_TIMEZONE = "Asia/Kolkata"
   include MetadataAwareness
 
+  before_action :turbo_frame_request_variant
   before_action :set_currents
   before_action :set_paper_trail_whodunnit
   before_action :set_sentry_context, if: -> { Rails.env.production? }
@@ -10,7 +11,10 @@ class SignedInApplicationController < ApplicationController
   before_action :set_app
   helper_method :current_organization
   helper_method :current_user
+  helper_method :default_app
+  helper_method :new_app
   helper_method :writer?
+  helper_method :default_timezones
   layout -> { ensure_supported_layout("signed_in_application") }
 
   rescue_from NotAuthorizedError, with: :user_not_authorized
@@ -19,6 +23,9 @@ class SignedInApplicationController < ApplicationController
 
   helper_method :demo_org?, :demo_train?, :subscribed_org?, :billing?, :billing_link
   PATH_PARAMS_UNDER_APP = [:id, :app_id, :integration_id, :train_id, :platform_id]
+
+  def home
+  end
 
   def demo_org?
     current_organization&.demo?
@@ -103,11 +110,35 @@ class SignedInApplicationController < ApplicationController
     @app = current_organization.apps.friendly.find(app_id)
   end
 
+  def default_app
+    return if @app.blank? || !@app.persisted?
+
+    if @app.blank?
+      current_organization.default_app
+    elsif @app.persisted?
+      @app
+    end
+  end
+
+  def new_app
+    current_organization.apps.new
+  end
+
+  DEFAULT_TIMEZONE_LIST_REGEX = /Asia\/Kolkata/
+
+  def default_timezones
+    ActiveSupport::TimeZone.all.select { |tz| tz.match?(DEFAULT_TIMEZONE_LIST_REGEX) }
+  end
+
   def app_id
     params[app_id_key]
   end
 
   def app_id_key
     :app_id
+  end
+
+  def turbo_frame_request_variant
+    request.variant = :turbo_frame if turbo_frame_request?
   end
 end

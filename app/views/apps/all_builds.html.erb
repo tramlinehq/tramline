@@ -1,34 +1,42 @@
-<%= render PageComponent.new(breadcrumb: breadcrumb(:all_builds, @app), title: "All Builds 🛠️") do %>
+<%= render V2::ContainerComponent.new(title: "All Builds") do |container| %>
+  <% container.with_back_button %>
+  <% container.with_body do %>
+    <%= render V2::SectionComponent.new(style: :titled, title: "Search by version") do %>
+      <div class="col-span-1">
+        <%= render SearchBarComponent.new(
+          path: all_builds_app_path(@app, *@all_builds_params),
+          placeholder: "version code or name",
+          value: params[:search_pattern],
+          turbo_frame: "all_builds") %>
+      </div>
 
-  <div class="col-span-1">
-    <%= render SearchBarComponent.new(
-      path: all_builds_app_path(@app, *@all_builds_params),
-      placeholder: "Search by version code or name",
-      value: params[:search_pattern],
-      turbo_frame: "all_builds") %>
-  </div>
+      <%= tag.turbo_frame id: "all_builds", target: "_top", data: { turbo_action: "advance" }, class: "col-span-full" do %>
+        <div class="col-span-1 my-4">
+          <%= render FilterButtonComponent.new(
+            name: "Completed",
+            on: @filters.dig(:release_status, :is_on),
+            path: all_builds_app_path(@app),
+            method: :get,
+            filter_params: get_query_filter(:release_status),
+            query_params: @all_builds_params) %>
+        </div>
 
-  <%= tag.turbo_frame id: "all_builds", target: "_top", data: { turbo_action: "advance" }, class: "col-span-full" do %>
-    <div class="col-span-1 my-4">
-      <%= render FilterButtonComponent.new(
-        name: "Completed",
-        on: @filters.dig(:release_status, :is_on),
-        path: all_builds_app_path(@app),
-        method: :get,
-        filter_params: get_query_filter(:release_status),
-        query_params: @all_builds_params) %>
-    </div>
-
-    <% if @builds.present? %>
-      <%= render AllBuildsTableComponent.new(
-        builds: @builds,
-        paginator: @pagy,
-        query_params: @all_builds_params) %>
-      <footer>
-        <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
-      </footer>
-    <% else %>
-      <p class="text-lg text-slate-400 my-4">No builds found</p>
+        <% if @builds.present? %>
+          <%= render AllBuildsTableComponent.new(
+            builds: @builds,
+            paginator: @pagy,
+            query_params: @all_builds_params) %>
+          <footer>
+            <div class="text-sm text-slate-400">† All timestamps shown are in the timezone configured for the app.</div>
+          </footer>
+        <% else %>
+          <%= render V2::EmptyStateComponent.new(
+            title: "No builds found",
+            text: "Try a different search term or filter, or create a new release to generate builds.",
+            banner_image: "v2/hard_hat.svg",
+            type: :subdued) %>
+        <% end %>
+      <% end %>
     <% end %>
   <% end %>
 <% end %>

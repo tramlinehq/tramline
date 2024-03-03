@@ -1,46 +1,35 @@
-<div>
-  <%= form.label :name, class: "block text-sm font-medium mb-1" %>
-  <%= form.text_field :name, class: "form-input w-full", placeholder: "Enter app name...", required: true %>
-</div>
+<%= form_with(model: [app], builder: EnhancedFormHelper::AuthzForm) do |form| %>
+  <div class="grid gap-4 mb-4 sm:grid-cols-2">
+    <div><%= form.labeled_text_field :name, "Name" %></div>
+    <div><%= form.labeled_text_field :bundle_identifier, "Bundle Identifier" %></div>
 
-<div>
-  <%= form.label :description, class: "block text-sm font-medium mb-1" %>
-  <%= form.text_area :description, class: "form-input w-full", placeholder: "Describe your app..." %>
-</div>
+    <div class="sm:col-span-2"
+         data-controller="domain--build-number-help"
+         data-domain--build-number-help-number-current-value="">
 
-<div>
-  <%= form.label :bundle_identifier, class: "block text-sm font-medium mb-1" %>
-  <%= form.text_field :bundle_identifier, class: "form-input w-full", placeholder: "eg., com.just.use.rails", required: true %>
-  <div class="text-sm mt-1">If you're going to deploy to the App Store or Play Store, this <strong>must</strong>
-    match the
-    identifier in the store listing.
+      <%= form.labeled_number_field :build_number,
+                                    "Build Number",
+                                    { data: { domain__build_number_help_target: "input",
+                                              action: "domain--build-number-help#increment" } } %>
+      <div class="text-sm my-1 dark:text-main-200">
+        <p>
+          <span data-domain--build-number-help-target="helpTextTitle"></span>&nbsp;
+          <span class="font-semibold" data-domain--build-number-help-target="helpTextVal"></span>
+        </p>
+
+        <p class="pt-1">
+          This number
+          <strong>must be</strong> the same or higher than the build number of the last build you
+          deployed to the store.
+          If you make a mistake, you can edit this later.
+        </p>
+      </div>
+    </div>
+
+    <div><%= form.labeled_select :platform, "Mobile Platform", options_for_select(App.allowed_platforms, "Android") %></div>
+    <div><%= form.labeled_tz_select :timezone, "Timezone", default_timezones, { model: ActiveSupport::TimeZone } %></div>
+    <div class="sm:col-span-2"><%= form.labeled_textarea :description, "Description" %></div>
   </div>
-</div>
 
-<div data-controller="domain--build-number-help"
-     data-domain--build-number-help-number-current-value="<%= app.build_number.presence %>">
-  <%= form.label :build_number, class: "block text-sm font-medium mb-1" %>
-  <%= form.number_field :build_number,
-                        class: "form-input w-full",
-                        placeholder: "eg., your last versionCode",
-                        required: true,
-                        data: { domain__build_number_help_target: "input",
-                                action: "domain--build-number-help#increment" } %>
-
-  <div class="text-sm mt-1">
-    <p class="italic">
-      <span data-domain--build-number-help-target="helpTextTitle"></span>&nbsp;
-      <span class="font-mono" data-domain--build-number-help-target="helpTextVal"></span>
-    </p>
-    <p class="pt-2">
-      Tramline increments the build number for every release build created, which guarantees that every build can be
-      uniquely identified. Once this is setup, teams do not need to worry about manually incrementing the build number
-      for every release.
-    </p>
-    <p class="pt-1">
-      This number
-      <strong>must be</strong> the same or higher than the build number of the last build you deployed to the store.
-      If you make a mistake, you can edit this later.
-    </p>
-  </div>
-</div>
+  <%= form.authz_submit "Add an app", "plus.svg" %>
+<% end %>
