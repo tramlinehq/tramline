@@ -51,8 +51,4 @@ class V2::ReleaseOverviewComponent < V2::BaseReleaseComponent
     return "grid-cols-2" if cross_platform?
     "grid-cols-1 w-2/3"
   end
-
-  def cross_platform?
-    release.app.cross_platform?
-  end
 end
