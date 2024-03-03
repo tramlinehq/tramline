@@ -104,7 +104,7 @@ class Train < ApplicationRecord
   before_create :set_default_status
   after_create :create_release_platforms
   after_create :create_default_notification_settings
-  after_update :schedule_release!, if: -> { scheduled? && kickoff_at_previously_was.blank? }
+  after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
   after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
 
   before_destroy :ensure_deletable, prepend: true do
@@ -156,7 +156,7 @@ class Train < ApplicationRecord
   end
 
   def automatic?
-    scheduled? && repeat_duration.present?
+    kickoff_at.present? && repeat_duration.present?
   end
 
   def tag_platform_at_release_end?
@@ -316,10 +316,6 @@ class Train < ApplicationRecord
 
   def continuous_backmerge?
     backmerge_strategy == Train.backmerge_strategies[:continuous]
-  end
-
-  def scheduled?
-    kickoff_at.present?
   end
 
   def branching_strategy_name
@@ -488,8 +484,8 @@ class Train < ApplicationRecord
   end
 
   def valid_schedule
-    if scheduled? || repeat_duration.present?
-      errors.add(:repeat_duration, "invalid schedule, provide both kickoff and period for repeat") unless scheduled? && repeat_duration.present?
+    if kickoff_at.present? || repeat_duration.present?
+      errors.add(:repeat_duration, "invalid schedule, provide both kickoff and period for repeat") unless kickoff_at.present? && repeat_duration.present?
       errors.add(:kickoff_at, "the schedule kickoff should be in the future") if kickoff_at && kickoff_at <= Time.current
       errors.add(:repeat_duration, "the repeat duration should be more than 1 day") if repeat_duration && repeat_duration < 1.day
     end

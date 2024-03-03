@@ -76,7 +76,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
   end
 
   def empty_state
-    if train.scheduled?
+    if train.automatic?
       if train.activatable?
         {
           title: "Activate the train",
