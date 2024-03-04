@@ -184,6 +184,10 @@ class Deployment < ApplicationRecord
     if staged_rollout_config.sort != staged_rollout_config
       errors.add(:staged_rollout_config, :increasing_order)
     end
+
+    if staged_rollout_config.any? { |value| value > FULL_ROLLOUT_VALUE }
+      errors.add(:staged_rollout_config, :max_100)
+    end
   end
 
   def non_prod_build_channel

@@ -194,6 +194,7 @@ en:
               at_least_one: "should have at least one rollout percentage value"
               zero_rollout: "cannot start with zero rollout"
               increasing_order: "staged rollout should be in increasing order"
+              max_100: "staged rollout cannot be more than 100%"
             build_artifact_channel:
               prod_channel_in_review_not_allowed: "cannot add production deployment to review step"
         release_metadata:
