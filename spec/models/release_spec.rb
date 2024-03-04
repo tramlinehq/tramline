@@ -85,6 +85,36 @@ describe Release do
         end
       end
     end
+
+    context "when ongoing hotfix release" do
+      {
+        "1.2.3" => {major: "2.0.0", minor: "1.4.0"},
+        "1.2" => {major: "2.0", minor: "1.5"}
+      }.each do |ver, expect|
+        it "minor bump: sets the original_release_version to next version of the hotfix release" do
+          train = create(:train, version_seeded_with: ver)
+          old_release = create(:release, :finished, train:)
+          _ongoing_release = create(:release, :on_track, :hotfix, train:, hotfixed_from: old_release)
+          run = build(:release, original_release_version: nil, train:)
+
+          expect(run.original_release_version).to be_nil
+          run.save!
+          expect(run.original_release_version).to eq(expect[:minor])
+        end
+
+        it "major bump: sets the original_release_version to next version of the hotfix release" do
+          train = create(:train, version_seeded_with: ver)
+          old_release = create(:release, :finished, train:)
+          _ongoing_release = create(:release, :on_track, :hotfix, train:, hotfixed_from: old_release)
+          run = build(:release, original_release_version: nil, train:)
+          run.has_major_bump = true
+
+          expect(run.original_release_version).to be_nil
+          run.save!
+          expect(run.original_release_version).to eq(expect[:major])
+        end
+      end
+    end
   end
 
   describe ".create" do
