@@ -12,7 +12,7 @@ class LiveRelease::Commits::DetailComponent < ViewComponent::Base
   end
 
   attr_reader :commit, :release, :number
-  delegate :writer?, to: :helpers
+  delegate :writer?, :current_organization, to: :helpers
   delegate :stale?, :team, to: :commit
 
   def number_style
