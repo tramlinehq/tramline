@@ -80,4 +80,8 @@ class Accounts::Organization < ApplicationRecord
     colors[Accounts::Team::UNKNOWN_TEAM_NAME] = Accounts::Team::UNKNOWN_TEAM_COLOR
     colors
   end
+
+  def teams_supported?
+    teams.exists?
+  end
 end
