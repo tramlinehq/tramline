@@ -11,10 +11,10 @@
 
         <% row.with_cell do %>
           <% if setting.active? %>
-            <div class="overflow-x-hidden hover:overflow-x-auto">
+            <div class="flex overflow-x-hidden hover:overflow-x-auto gap-x-3">
               <% setting.notification_channels&.each do |channel| %>
                 <div class="inline-flex items-center">
-                  <%= render V2::IconComponent.new("integrations/logo_#{setting.notification_provider}.png", size: :md, classes: "mr-2") %>
+                  <%= render V2::IconComponent.new("integrations/logo_#{setting.notification_provider}.png", size: :md, classes: "mr-1") %>
                   <%= channel["name"] %>
                 </div>
               <% end %>
