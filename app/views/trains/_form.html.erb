@@ -1,5 +1,11 @@
 <% url = train.new_record? ? app_trains_path(app) : app_train_path(app, train) %>
 
+<% if @edit_not_allowed %>
+  <%= render V2::AlertComponent.new(kind: :banner, type: :notice, title: "Train not editable", dismissible: false, full_screen: false) do %>
+    The train settings can not be edited while there are active releases. Please stop or finish the releases to make changes.
+  <% end %>
+<% end %>
+
 <div data-controller="branching-selector"
      data-branching-selector-domain--release-schedule-help-outlet="#release-schedule">
   <%= render V2::FormComponent.new(model: [app, train], url: url) do |f| %>
@@ -239,7 +245,7 @@
     <% end %>
 
     <% f.with_action do %>
-      <%= f.F.authz_submit (train.persisted? ? "Update Train" : "Create Train"), (train.persisted? ? "v2/archive.svg" : "plus.svg") %>
+      <%= f.F.authz_submit (train.persisted? ? "Update Train" : "Create Train"), (train.persisted? ? "v2/archive.svg" : "plus.svg"), disabled: @edit_not_allowed %>
     <% end %>
   <% end %>
 </div>

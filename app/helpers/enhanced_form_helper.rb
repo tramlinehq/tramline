@@ -24,9 +24,9 @@ module EnhancedFormHelper
     FILE_INPUT_CLASSES = "block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
     OPTION_CLASSES = "w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
 
-    def authz_submit(label, icon, scheme: :default, size: :sm, html_options: {})
+    def authz_submit(label, icon, scheme: :default, size: :sm, disabled: false, html_options: {})
       button_component =
-        V2::ButtonComponent.new(scheme: scheme, type: :action, size: size, label: label, html_options: html_options, turbo: false)
+        V2::ButtonComponent.new(scheme:, type: :action, size:, label:, html_options:, turbo: false, disabled:)
       button_component.with_icon(icon)
       @template.render(button_component)
     end

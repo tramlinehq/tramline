@@ -19,16 +19,16 @@
         end %>
       <% end %>
     </div>
-  <% elsif more_info? %>
+  <% elsif banner? %>
     <div data-alert-target="alert"
-         class="p-6 mb-4 text-blue-800 border border-blue-300 bg-blue-50 dark:bg-main-800 dark:text-blue-400 dark:border-blue-800"
+         class="px-6 py-4 mb-4 text-blue-800 border border-blue-300 bg-blue-50 dark:bg-main-800 dark:text-blue-400 dark:border-blue-800 <%= border_style %>"
          role="alert">
       <div class="flex items-center">
         <%= render V2::IconComponent.new("v2/info.svg", size: :md, classes: "mr-2") %>
         <h3 class="text-lg font-medium"><%= title %></h3>
       </div>
 
-      <div class="my-2 text-sm">
+      <div class="mt-2 text-sm">
         <%= content %>
       </div>
 

@@ -1,3 +1,9 @@
+<% if @edit_not_allowed %>
+  <%= render V2::AlertComponent.new(kind: :banner, type: :notice, title: "Steps not editable", dismissible: false, full_screen: false) do %>
+    The steps can not be edited while there are active releases. Please stop or finish the releases to make changes.
+  <% end %>
+<% end %>
+
 <div class="grid md:grid-cols-2 gap-x-11 pb-5 mt-8">
   <% train.release_platforms.each do |release_platform| %>
     <section>

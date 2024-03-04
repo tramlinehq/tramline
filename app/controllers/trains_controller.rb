@@ -14,9 +14,11 @@ class TrainsController < SignedInApplicationController
   end
 
   def edit
+    @edit_not_allowed = @train.active_runs.exists?
   end
 
   def steps
+    @edit_not_allowed = @train.active_runs.exists?
   end
 
   def create

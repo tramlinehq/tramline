@@ -23,13 +23,15 @@ class V2::AlertComponent < V2::BaseComponent
 
   ACTION_BUTTON_STYLES = "flex items-center text-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
 
-  KINDS = [:alert, :more_info]
+  KINDS = [:alert, :banner]
 
-  def initialize(kind: :alert, type: :notice, title: "Alert", size: :base, dismissible: true, info: nil)
+  def initialize(kind: :alert, type: :notice, title: "Alert", size: :base, dismissible: true, info: nil, full_screen: nil)
+    full_screen = full_screen.nil? ? (kind == :banner) : full_screen
     raise ArgumentError, "Invalid type" unless COLORS.key?(type.to_sym)
     raise ArgumentError, "Invalid size" unless SIZES.key?(size.to_sym)
     raise ArgumentError, "Invalid kind" unless KINDS.include?(kind.to_sym)
     raise ArgumentError, "Info is supplied only with more_info type" if kind == :alert && info.present?
+    raise ArgumentError, "Only banners can be fullscreen" if full_screen && kind != :banner
 
     @type = type.to_sym
     @title = title
@@ -37,9 +39,10 @@ class V2::AlertComponent < V2::BaseComponent
     @kind = kind.to_sym
     @info = info
     @dismissible = dismissible
+    @full_screen = full_screen
   end
 
-  attr_reader :title, :dismissible, :info
+  attr_reader :title, :dismissible, :info, :full_screen
 
   def size
     SIZES[@size]
@@ -57,11 +60,16 @@ class V2::AlertComponent < V2::BaseComponent
     @kind == :alert
   end
 
-  def more_info?
-    @kind == :more_info
+  def banner?
+    @kind == :banner
   end
 
   def info?
     @info.present? && @info[:label].present? && @info[:link].present?
+  end
+
+  def border_style
+    return if full_screen
+    "rounded-lg"
   end
 end
