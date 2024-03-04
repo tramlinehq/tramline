@@ -7,11 +7,8 @@
   <div>
     <% if step_run&.external_build %>
       <%= render V2::ModalComponent.new(title: "#{step_run.build_version} (#{step_run.build_number})") do |modal| %>
-        <% modal.with_button(scheme: :naked_icon,
-                             visual_icon: "info",
-                             type: :action,
-                             size: :xxs,
-                             arrow: :none) %>
+        <% button = modal.with_button(scheme: :naked_icon, type: :action) %>
+        <% button.with_icon("v2/info.svg", size: :sm) %>
         <% modal.with_body do %>
           <%= render BuildMetadataComponent.new(step_run:) %>
         <% end %>

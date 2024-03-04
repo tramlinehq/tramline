@@ -103,7 +103,7 @@ class Accounts::User < ApplicationRecord
   end
 
   def team_for(organization)
-    access_for(organization).team
+    access_for(organization)&.team
   end
 
   def writer_for?(organization)
