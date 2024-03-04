@@ -230,7 +230,6 @@
     <% end %>
   <% elsif empty? %>
     <% container.with_empty_state do %>
-      <%= render V2::ScheduledTrainComponent.new %>
       <%= render V2::EmptyStateComponent.new(
         title: empty_state[:title],
         text: empty_state[:text],
