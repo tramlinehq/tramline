@@ -3,8 +3,10 @@
     <h1 class="heading-5 uppercase">
       <%= name %>
     </h1>
-    <%= link_to_external external_url, title: "Monitoring Dashboard" do %>
-      <%= render V2::IconComponent.new("integrations/logo_#{provider.to_s}.png", size: :md, rounded: false) %>
+    <% if external_url.present? %>
+      <%= link_to_external external_url, title: "Monitoring Dashboard" do %>
+        <%= render V2::IconComponent.new("integrations/logo_#{provider.to_s}.png", size: :md, rounded: false) %>
+      <% end %>
     <% end %>
   </div>
   <div class="grid grid-cols-2 divide-x place-content-between">
