@@ -8,11 +8,10 @@
     <%= render V2::ButtonComponent.new(
       label: "Refresh",
       scheme: :light,
-      type: :action,
+      type: :link,
       size: :xxs,
-      arrow: :none,
-      html_options: { url: refresh_channels_app_integration_slack_integration_path(app, app.notification_provider.integration, app.notification_provider),
-                      method: :post,
+      options: refresh_channels_app_integration_slack_integration_path(app, app.notification_provider.integration, app.notification_provider),
+      html_options: { method: :post,
                       data: { turbo_method: :post },
                       class: "-mx-1" }) %>
   </div>
