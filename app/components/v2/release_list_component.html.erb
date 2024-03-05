@@ -1,4 +1,4 @@
-<%= render V2::ContainerComponent.new(title: train.name, subtitle: description) do |container| %>
+<%= render V2::ContainerComponent.new(title: train.name, subtitle: train.description) do |container| %>
   <% if train.hotfixable? %>
     <% container.with_action do %>
       <%= render V2::ModalComponent.new(title: "Start a hotfix release",
@@ -117,6 +117,8 @@
   <% end %>
 
   <% container.with_body do %>
+    <%= render V2::ScheduledTrainComponent.new(train) %>
+
     <%= render V2::ReleaseOverviewComponent.new(hotfix_release) %>
     <%= render V2::ReleaseOverviewComponent.new(ongoing_release) %>
     <%= render V2::ReleaseOverviewComponent.new(upcoming_release) %>
@@ -230,6 +232,8 @@
     <% end %>
   <% elsif empty? %>
     <% container.with_empty_state do %>
+      <%#= render V2::ScheduledTrainComponent.new(train) %>
+
       <%= render V2::EmptyStateComponent.new(
         title: empty_state[:title],
         text: empty_state[:text],

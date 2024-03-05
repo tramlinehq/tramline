@@ -37,6 +37,7 @@ class Release < ApplicationRecord
 
   belongs_to :train
   belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :hotfixed_releases
+  has_one :scheduled_release
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
   has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release
   has_many :release_metadata, through: :release_platform_runs
