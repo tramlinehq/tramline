@@ -12,6 +12,8 @@ class V2::ScheduledTrainComponent < V2::BaseComponent
 
   def scheduled_release_status(scheduled_release)
     return unless scheduled_release
+    release = scheduled_release.release
+    return release_status(release) if release.present?
     return {text: "Pending", status: :routine} if scheduled_release.pending?
     return {text: "Completed", status: :success} if scheduled_release.is_success
     {text: "Skipped", status: :neutral}
