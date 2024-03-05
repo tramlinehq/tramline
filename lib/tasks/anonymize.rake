@@ -215,6 +215,14 @@ namespace :anonymize do
         anonymize("build_number").using FieldStrategy::FormattedStringNumber.new
       end
 
+      table "external_builds" do
+        continue { |index, record| StepRun.exists?(record["step_run_id"]) }
+
+        primary_key "id"
+        whitelist "metadata", "step_run_id"
+        whitelist_timestamps
+      end
+
       table "deployment_runs" do
         continue { |index, record| StepRun.exists?(record["step_run_id"]) }
         continue { |index, record| Deployment.exists?(record["deployment_id"]) }
@@ -275,7 +283,7 @@ namespace :anonymize do
     app.releases.each do |release|
       Queries::ReleaseSummary.warm(release.id)
     end
-    train = app.trains.find(train_id)
+    train = app.trains.reload.find(train_id)
     Charts::DevopsReport.warm(train)
   end
 
