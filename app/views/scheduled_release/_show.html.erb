@@ -5,7 +5,7 @@
       <% if title %>
         <div class="heading-2"><%= title %></div>
       <% else %>
-        <%= render V2::IconComponent.new("v2/coffee.svg", size: :lg, rounded: false, classes: "mt-1 ") %>
+        <%= render V2::IconComponent.new(empty_icon, size: :lg, rounded: false, classes: "mt-1") %>
       <% end %>
     </div>
 

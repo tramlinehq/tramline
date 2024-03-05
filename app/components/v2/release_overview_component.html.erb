@@ -1,7 +1,7 @@
 <% if release.present? %>
   <%= render V2::SectionComponent.new(style: :boxed) do %>
     <div class="<%= striped_header %> -mx-2">
-      <div class="flex items-center justify-between border-default-b px-3 py-2">
+      <div class="flex items-center justify-between border-default-b px-2 pb-2">
         <div class="flex items-center space-x-3 rtl:space-x-reverse">
           <% if release_version_drift? %>
             <div class="flex items-center space-x-1">

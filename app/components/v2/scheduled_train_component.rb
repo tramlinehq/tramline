@@ -13,13 +13,17 @@ class V2::ScheduledTrainComponent < V2::BaseComponent
   def scheduled_release_status(scheduled_release)
     return unless scheduled_release
     return {text: "Pending", status: :routine} if scheduled_release.pending?
-    return {text: "Success", status: :success} if scheduled_release.is_success
+    return {text: "Completed", status: :success} if scheduled_release.is_success
     {text: "Skipped", status: :neutral}
   end
 
   def release_status(release)
     status = ReleasesHelper::SHOW_RELEASE_STATUS.fetch(release.status.to_sym)
     { text: status.first, status: status.last }
+  end
+
+  def inactive_status
+    { text: "Inactive", status: :failure } if train.inactive?
   end
 
   def time_text(scheduled_release)
