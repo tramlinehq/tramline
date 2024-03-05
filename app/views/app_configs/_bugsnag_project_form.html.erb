@@ -1,0 +1,26 @@
+<% form.with_section(heading: platform) do |section| %>
+  <% section.with_description do %>
+    For your connected Bugsnag organization.
+    <%= image_tag "integrations/logo_bugsnag.png", title: "Bugsnag", width: 22, class: "my-2" %>
+  <% end %>
+
+  <div data-controller="nested-select" class="grid gap-y-4" data-nested-select-selected-option-value="<%= stage %>">
+    <div>
+      <%= section.F.labeled_select "bugsnag_#{platform}_project_id".downcase.to_sym,
+                                   "Project",
+                                   options_for_select(
+                                     display_channels(projects) { |project| "#{project[:name]} (#{project[:id]})" },
+                                     project
+                                   ),
+                                   {},
+                                   { data: { nested_select_target: "primary", action: "nested-select#updateNestedOptions" } } %>
+    </div>
+    <div>
+      <%= section.F.labeled_select "bugsnag_#{platform}_release_stage".downcase.to_sym,
+                                   "Release Stage",
+                                   {},
+                                   {},
+                                   { data: { nested_select_target: "nested", controller: "input-select" } } %>
+    </div>
+  </div>
+<% end %>

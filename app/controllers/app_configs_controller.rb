@@ -72,9 +72,12 @@ class AppConfigsController < SignedInApplicationController
         :code_repository,
         :notification_channel,
         :bitrise_project_id,
-        :bugsnag_project_id,
         :firebase_android_config,
-        :firebase_ios_config
+        :firebase_ios_config,
+        :bugsnag_ios_release_stage,
+        :bugsnag_ios_project_id,
+        :bugsnag_android_release_stage,
+        :bugsnag_android_project_id
       )
   end
 
@@ -83,9 +86,10 @@ class AppConfigsController < SignedInApplicationController
       .merge(code_repository: app_config_params[:code_repository]&.safe_json_parse)
       .merge(notification_channel: app_config_params[:notification_channel]&.safe_json_parse)
       .merge(bitrise_project_id: app_config_params[:bitrise_project_id]&.safe_json_parse)
-      .merge(bugsnag_project_id: app_config_params[:bugsnag_project_id]&.safe_json_parse)
+      .merge(bugsnag_config(app_config_params.slice(*bugsnag_config_params)))
       .merge(firebase_ios_config: app_config_params[:firebase_ios_config]&.safe_json_parse)
       .merge(firebase_android_config: app_config_params[:firebase_android_config]&.safe_json_parse)
+      .except(*bugsnag_config_params)
       .compact
   end
 
@@ -116,5 +120,22 @@ class AppConfigsController < SignedInApplicationController
     else
       redirect_to app_path(@app), flash: {notice: "Invalid integration category."}
     end
+  end
+
+  def bugsnag_config_params
+    [:bugsnag_ios_project_id, :bugsnag_ios_release_stage, :bugsnag_android_project_id, :bugsnag_android_release_stage]
+  end
+
+  def bugsnag_config(config_params)
+    config = {}
+    if config_params[:bugsnag_ios_release_stage].present?
+      config[:bugsnag_ios_config] = {project_id: config_params[:bugsnag_ios_project_id].safe_json_parse,
+                                     release_stage: config_params[:bugsnag_ios_release_stage]}
+    end
+    if config_params[:bugsnag_android_release_stage].present?
+      config[:bugsnag_android_config] = {project_id: config_params[:bugsnag_android_project_id].safe_json_parse,
+                                         release_stage: config_params[:bugsnag_android_release_stage]}
+    end
+    config
   end
 end

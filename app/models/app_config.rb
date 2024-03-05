@@ -3,6 +3,8 @@
 # Table name: app_configs
 #
 #  id                      :uuid             not null, primary key
+#  bugsnag_android_config  :jsonb
+#  bugsnag_ios_config      :jsonb
 #  code_repository         :json
 #  firebase_android_config :jsonb
 #  firebase_ios_config     :jsonb
@@ -21,8 +23,12 @@ class AppConfig < ApplicationRecord
   MINIMUM_REQUIRED_CONFIG = %i[code_repository]
   PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
 
+  # self.ignored_columns += ["bugsnag_project_id"]
+
   belongs_to :app
   has_many :variants, class_name: "AppVariant", dependent: :destroy
+
+  attr_accessor :bugsnag_ios_release_stage, :bugsnag_android_release_stage, :bugsnag_ios_project_id, :bugsnag_android_project_id
 
   validates :firebase_ios_config,
     allow_blank: true,
@@ -30,6 +36,8 @@ class AppConfig < ApplicationRecord
   validates :firebase_android_config,
     allow_blank: true,
     json: {message: ->(errors) { errors }, schema: PLATFORM_AWARE_CONFIG_SCHEMA}
+
+  after_initialize :set_bugsnag_config, if: :persisted?
 
   def ready?
     MINIMUM_REQUIRED_CONFIG.all? { |config| public_send(config).present? } && firebase_ready? && bitrise_ready? && bugsnag_ready?
@@ -56,10 +64,6 @@ class AppConfig < ApplicationRecord
     bitrise_project_id&.fetch("id", nil)
   end
 
-  def bugsnag_project
-    bugsnag_project_id&.fetch("id", nil)
-  end
-
   def further_build_channel_setup?
     app.integrations.build_channel.map(&:providable).any?(&:further_setup?)
   end
@@ -81,7 +85,22 @@ class AppConfig < ApplicationRecord
     pick_firebase_app_id(platform)
   end
 
+  def bugsnag_project(platform)
+    pick_bugsnag_project_id(platform)
+  end
+
+  def bugsnag_release_stage(platform)
+    pick_bugsnag_release_stage(platform)
+  end
+
   private
+
+  def set_bugsnag_config
+    self.bugsnag_ios_release_stage = bugsnag_ios_config&.fetch("release_stage", nil)
+    self.bugsnag_ios_project_id = bugsnag_ios_config&.fetch("project_id", nil)
+    self.bugsnag_android_release_stage = bugsnag_android_config&.fetch("release_stage", nil)
+    self.bugsnag_android_project_id = bugsnag_android_config&.fetch("project_id", nil)
+  end
 
   def firebase_ready?
     return true unless app.firebase_connected?
@@ -95,7 +114,7 @@ class AppConfig < ApplicationRecord
 
   def bugsnag_ready?
     return true unless app.bugsnag_connected?
-    bugsnag_project.present?
+    configs_ready?(bugsnag_ios_config, bugsnag_android_config)
   end
 
   def configs_ready?(ios, android)

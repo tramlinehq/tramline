@@ -1,22 +1,12 @@
 <%= render V2::EnhancedTurboFrameComponent.new("#{@integration_category}_config") do %>
-  <% if @app.bugsnag_connected? %>
+  <% if @app.bugsnag_connected? && @monitoring_projects.present? %>
     <%= render V2::FormComponent.new(model: [@app, @config], url: app_app_config_path(@app), method: :patch) do |f| %>
-      <% f.with_section(heading: "Select Project") do |section| %>
-        <% section.with_description do %>
-          For your connected Bugsnag organization.
-          <%= image_tag "integrations/logo_bugsnag.png", title: "Bugsnag", width: 22, class: "my-2" %>
-        <% end %>
+      <% if @app.ios? || @app.cross_platform? %>
+        <%= render partial: "bugsnag_project_form", locals: {form: f, platform: "iOS", projects: @monitoring_projects, project: @config.bugsnag_ios_project_id, stage: @config.bugsnag_ios_release_stage} %>
+      <% end %>
 
-        <% if @monitoring_projects.present? %>
-          <div>
-            <%= section.F.labeled_select :bugsnag_project_id,
-                                         "Project",
-                                         options_for_select(
-                                           display_channels(@monitoring_projects) { |project| "#{project[:name]} (#{project[:id]})" },
-                                           @config.bugsnag_project_id.to_json
-                                         ) %>
-          </div>
-        <% end %>
+      <% if @app.android? || @app.cross_platform? %>
+        <%= render partial: "bugsnag_project_form", locals: {form: f, platform: "Android", projects: @monitoring_projects, project: @config.bugsnag_android_project_id, stage: @config.bugsnag_android_release_stage} %>
       <% end %>
 
       <% f.with_action do %>
