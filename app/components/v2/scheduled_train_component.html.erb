@@ -12,7 +12,7 @@
       <%= render partial: "scheduled_release/show", locals: {
         title: nil,
         header: "There are no past releases",
-        empty_icon: "v2/coffee.svg",
+        empty_icon: "v2/fast_forward.svg",
         box_classes: nil,
         status: inactive_status,
         footer: nil,
@@ -25,7 +25,7 @@
           title: past_title(scheduled_release),
           status: scheduled_release_status(scheduled_release),
           box_classes: nil,
-          empty_icon: "v2/coffee.svg",
+          empty_icon: "v2/fast_forward.svg",
           footer: time_format(scheduled_release.scheduled_at, only_day: true)
         } %>
       <% end %>

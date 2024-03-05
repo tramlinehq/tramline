@@ -19,16 +19,16 @@ class V2::ScheduledTrainComponent < V2::BaseComponent
 
   def release_status(release)
     status = ReleasesHelper::SHOW_RELEASE_STATUS.fetch(release.status.to_sym)
-    { text: status.first, status: status.last }
+    {text: status.first, status: status.last}
   end
 
   def inactive_status
-    { text: "Inactive", status: :failure } if train.inactive?
+    {text: "Inactive", status: :failure} if train.inactive?
   end
 
   def time_text(scheduled_release)
     return unless scheduled_release
-    return "Scheduled for #{time_format(scheduled_release.scheduled_at, only_time: true)}" if (scheduled_release.scheduled_at.past? || scheduled_release.scheduled_at.future?)
+    return "Scheduled for #{time_format(scheduled_release.scheduled_at, only_time: true)}" if scheduled_release.scheduled_at.past? || scheduled_release.scheduled_at.future?
     "Running"
   end
 
