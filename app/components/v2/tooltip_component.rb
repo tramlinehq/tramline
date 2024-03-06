@@ -8,15 +8,16 @@ class V2::TooltipComponent < V2::BaseComponent
 
   ALLOWED_TYPES = [:simple, :detailed]
 
-  def initialize(text, placement: "bottom", type: :simple)
+  def initialize(text, placement: "bottom", type: :simple, cursor: true)
     raise InvalidType unless type.in?(ALLOWED_TYPES)
 
     @text = text
     @placement = placement
     @type = type
+    @cursor = cursor
   end
 
-  attr_reader :text, :placement, :type
+  attr_reader :text, :placement, :type, :cursor
 
   def simple?
     type == :simple
