@@ -30,7 +30,7 @@
     <% end %>
   <% end %>
 
-  <%= render V2::TableComponent.new(columns: ["Full Name", "Status", "Email", "Preferred Name", "Role", "VCS Username", "Team"]) do |table| %>
+  <%= render V2::TableComponent.new(columns: ["Full Name", "Status", "Email", "Preferred Name", "Role", "VCS Username", "Team", "Invited By"]) do |table| %>
     <% @team.each do |member| %>
       <% table.with_row do |row| %>
         <% row.with_cell do %>
@@ -56,15 +56,16 @@
         <% row.with_cell do %>
           <%= render V2::TeamPillComponent.new(member.team_for(current_organization)) %>
         <% end %>
+        <% row.with_cell do %>
+          <%= member.successful_invite&.email || "–" %>
+        <% end %>
       <% end %>
     <% end %>
 
     <% @invited_team.each do |invite| %>
       <% table.with_row do |row| %>
         <% row.with_cell do %>
-          <div class="font-medium text-slate-800">
-            -
-          </div>
+          -
         <% end %>
         <% row.with_cell do %>
           <%= render V2::StatusIndicatorPillComponent.new(text: "Invited", status: :neutral) %>
@@ -75,22 +76,19 @@
           </div>
         <% end %>
         <% row.with_cell do %>
-          <div class="font-medium text-slate-800">
-            -
-          </div>
+          -
         <% end %>
         <% row.with_cell do %>
           <%= invite.role.titleize %>
         <% end %>
         <% row.with_cell do %>
-          <div class="font-medium text-slate-800">
-            -
-          </div>
+          -
         <% end %>
         <% row.with_cell do %>
-          <div class="font-medium text-slate-800">
-            -
-          </div>
+          -
+        <% end %>
+        <% row.with_cell do %>
+          <%= invite.sender&.email || "–" %>
         <% end %>
       <% end %>
     <% end %>

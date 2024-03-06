@@ -92,7 +92,7 @@ class Accounts::User < ApplicationRecord
     return false unless valid?
 
     transaction do
-      invite.mark_accepted!
+      invite.mark_accepted!(self)
       memberships.new(organization: invite.organization, role: invite.role)
       save!
     end
@@ -112,6 +112,10 @@ class Accounts::User < ApplicationRecord
 
   def owner_for?(organization)
     access_for(organization).owner?
+  end
+
+  def successful_invite
+    invitations.filter(&:accepted?).first
   end
 
   def release_monitoring?
