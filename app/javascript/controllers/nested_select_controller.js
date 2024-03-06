@@ -11,9 +11,7 @@ export default class extends Controller {
 
   updateNestedOptions() {
     const selectedValue = JSON.parse(this.primaryTarget.selectedOptions[0].value)
-
     this.populateNestedDropdowns(selectedValue.release_stages)
-
   }
 
   populateNestedDropdowns(options) {
