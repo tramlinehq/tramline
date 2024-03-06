@@ -101,7 +101,7 @@ class BugsnagIntegration < ApplicationRecord
   end
 
   def find_release(platform, version, build_number)
-    installation.find_release(project(platform), release_stage(platform), version, build_number, RELEASE_TRANSFORMATIONS)
+    installation.find_release(project_id(platform), release_stage(platform), version, build_number, RELEASE_TRANSFORMATIONS)
   end
 
   def dashboard_url(platform:, release_id:)
@@ -114,6 +114,10 @@ class BugsnagIntegration < ApplicationRecord
 
   def project_url(platform)
     project(platform)&.fetch("url", nil)
+  end
+
+  def project_id(platform)
+    project(platform)&.fetch("id", nil)
   end
 
   def app_config

@@ -5,6 +5,8 @@ class AppConfigsController < SignedInApplicationController
   before_action :set_integration_category, only: %i[edit]
   before_action :set_app_config, only: %i[edit update]
 
+  BUGSNAG_CONFIG_PARAMS = [:bugsnag_ios_project_id, :bugsnag_ios_release_stage, :bugsnag_android_project_id, :bugsnag_android_release_stage].freeze
+
   def edit
     respond_to do |format|
       format.html do |variant|
@@ -86,10 +88,10 @@ class AppConfigsController < SignedInApplicationController
       .merge(code_repository: app_config_params[:code_repository]&.safe_json_parse)
       .merge(notification_channel: app_config_params[:notification_channel]&.safe_json_parse)
       .merge(bitrise_project_id: app_config_params[:bitrise_project_id]&.safe_json_parse)
-      .merge(bugsnag_config(app_config_params.slice(*bugsnag_config_params)))
+      .merge(bugsnag_config(app_config_params.slice(*BUGSNAG_CONFIG_PARAMS)))
       .merge(firebase_ios_config: app_config_params[:firebase_ios_config]&.safe_json_parse)
       .merge(firebase_android_config: app_config_params[:firebase_android_config]&.safe_json_parse)
-      .except(*bugsnag_config_params)
+      .except(*BUGSNAG_CONFIG_PARAMS)
       .compact
   end
 
@@ -120,10 +122,6 @@ class AppConfigsController < SignedInApplicationController
     else
       redirect_to app_path(@app), flash: {notice: "Invalid integration category."}
     end
-  end
-
-  def bugsnag_config_params
-    [:bugsnag_ios_project_id, :bugsnag_ios_release_stage, :bugsnag_android_project_id, :bugsnag_android_release_stage]
   end
 
   def bugsnag_config(config_params)
