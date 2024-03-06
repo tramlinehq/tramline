@@ -57,7 +57,7 @@
           <%= render V2::TeamPillComponent.new(member.team_for(current_organization)) %>
         <% end %>
         <% row.with_cell do %>
-          <%= member.successful_invite&.email || "–" %>
+          <%= member.successful_invite&.sender&.email || "–" %>
         <% end %>
       <% end %>
     <% end %>

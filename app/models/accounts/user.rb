@@ -115,7 +115,7 @@ class Accounts::User < ApplicationRecord
   end
 
   def successful_invite
-    invitations.filter(&:accepted?).first
+    invitations.find(&:accepted?)
   end
 
   def release_monitoring?
