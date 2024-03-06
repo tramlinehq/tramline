@@ -14,7 +14,8 @@ class ReleaseKickoffJob < ApplicationJob
       release = response.body
       scheduled_release.update!(is_success: true, release:)
     else
-      scheduled_release.update!(failure_reason: response.body)
+      failure_reason = response.body
+      scheduled_release.update!(failure_reason:)
     end
   end
 end
