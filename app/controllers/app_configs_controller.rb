@@ -131,12 +131,12 @@ class AppConfigsController < SignedInApplicationController
 
     if config_params[:bugsnag_ios_release_stage].present?
       config[:bugsnag_ios_config] = {project_id: config_params[:bugsnag_ios_project_id].safe_json_parse,
-                                     release_stage: config_params[:bugsnag_ios_release_stage]}
+                                      release_stage: config_params[:bugsnag_ios_release_stage]}
     end
 
     if config_params[:bugsnag_android_release_stage].present?
       config[:bugsnag_android_config] = {project_id: config_params[:bugsnag_android_project_id].safe_json_parse,
-                                         release_stage: config_params[:bugsnag_android_release_stage]}
+                                          release_stage: config_params[:bugsnag_android_release_stage]}
     end
 
     config
