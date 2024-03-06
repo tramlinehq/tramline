@@ -17,7 +17,14 @@
         status: inactive_status,
         footer: nil,
       } %>
-      <%= render partial: "scheduled_release/empty", locals: { header: "No past releases"} %>
+      <%= render partial: "scheduled_release/show", locals: {
+        title: nil,
+        header: "There are no past releases",
+        empty_icon: "v2/fast_forward.svg",
+        box_classes: nil,
+        status: inactive_status,
+        footer: nil,
+      } %>
     <% else %>
       <% past_releases.each do |scheduled_release| %>
         <%= render partial: "scheduled_release/show", locals: {
