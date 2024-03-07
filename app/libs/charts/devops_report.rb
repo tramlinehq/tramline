@@ -1,5 +1,6 @@
 class Charts::DevopsReport
   include Memery
+  include Loggable
   using RefinedString
 
   def self.warm(train) = new(train).warm
