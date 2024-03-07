@@ -6,13 +6,16 @@ class ConnectScheduledReleasesWithRelease < ActiveRecord::Migration[7.0]
         # check redundantly to be sure
         next unless train.automatic?
 
-        # find last 10 scheduled releases
-        last_10 = train.scheduled_releases.where("scheduled_at < ?", Time.current.beginning_of_day).order(scheduled_at: :asc).last(10)
+        # find scheduled releases
+        scheduled = train.scheduled_releases.where("scheduled_at < ?", Time.current.beginning_of_day)
 
         # skip if there are no scheduled releases
-        next if last_10.blank?
+        next if scheduled.blank?
 
-        last_10.each do |scheduled_release|
+        scheduled.each do |scheduled_release|
+          # skip if the scheduled release is not automatic
+          next unless scheduled_release.automatic?
+
           # find a release within a 10 minute window around the scheduled release schedule time
           target_date = scheduled_release.scheduled_at
           release = train.releases.where("scheduled_at >= ? AND scheduled_at <= ?", target_date - 10.minutes, target_date + 10.minutes).first
