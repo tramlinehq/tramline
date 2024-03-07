@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_02_19_082821) do
+ActiveRecord::Schema[7.0].define(version: 2024_03_05_080020) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -54,6 +54,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_02_19_082821) do
     t.jsonb "firebase_ios_config"
     t.jsonb "firebase_android_config"
     t.jsonb "bugsnag_project_id"
+    t.jsonb "bugsnag_ios_config"
+    t.jsonb "bugsnag_android_config"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
@@ -530,6 +532,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_02_19_082821) do
     t.datetime "scheduled_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "release_id"
     t.index ["train_id"], name: "index_scheduled_releases_on_train_id"
   end
 

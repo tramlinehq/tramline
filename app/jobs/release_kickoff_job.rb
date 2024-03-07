@@ -11,9 +11,11 @@ class ReleaseKickoffJob < ApplicationJob
     response = Triggers::Release.call(scheduled_release.train, automatic: true)
 
     if response.success?
-      scheduled_release.update!(is_success: true)
+      release = response.body
+      scheduled_release.update!(is_success: true, release:)
     else
-      scheduled_release.update!(failure_reason: response.body)
+      failure_reason = response.body
+      scheduled_release.update!(failure_reason:)
     end
   end
 end
