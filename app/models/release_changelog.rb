@@ -35,7 +35,7 @@ class ReleaseChangelog < ApplicationRecord
   def commits_by_team
     return unless release.organization.teams.exists?
 
-    relevant_commits = normalized_commits
+    relevant_commits = normalized_commits.reject { |c| c.author_login.nil? }
     user_logins = relevant_commits.map(&:author_login).uniq
     users = Accounts::User
       .joins(memberships: [:team, :organization])
@@ -43,8 +43,12 @@ class ReleaseChangelog < ApplicationRecord
       .select("github_login", "teams.name AS team_name")
 
     by_team = relevant_commits.group_by(&:author_login).each_with_object({}) do |(login, commits), teams_data|
-      user = users.find { |user| user.github_login == login }
-      team_name = user&.team_name || Accounts::Team::UNKNOWN_TEAM_NAME
+      if login == release.vcs_provider.bot_name
+        team_name = Accounts::Team::TRAMLINE_TEAM_NAME
+      else
+        user = users.find { |user| user.github_login == login }
+        team_name = user&.team_name || Accounts::Team::UNKNOWN_TEAM_NAME
+      end
 
       teams_data[team_name] = 0 unless teams_data.key?(team_name)
       teams_data[team_name] += commits.size

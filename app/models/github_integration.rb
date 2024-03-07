@@ -205,6 +205,10 @@ class GithubIntegration < ApplicationRecord
     installation.get_installation(installation_id, INSTALLATION_TRANSFORMATIONS)
   end
 
+  def bot_name
+    "#{creds.integrations.github.app_name}[bot]"
+  end
+
   ## CI/CD
 
   def workflows

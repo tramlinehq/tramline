@@ -22,6 +22,7 @@ class Accounts::Team < ApplicationRecord
   PALETTE = %w[#1A56DB #9061F9 #FF6E4A #5AAA4E #7A6FFF #3A9CA6 #FFB997 #537ABD #E3BBFF #AAD4AA]
   UNKNOWN_TEAM_NAME = "Unknown"
   UNKNOWN_TEAM_COLOR = "#BCBCBC"
+  TRAMLINE_TEAM_NAME = "tramline[bot]"
 
   private
 
