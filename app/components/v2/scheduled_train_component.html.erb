@@ -26,14 +26,33 @@
         footer: nil,
       } %>
     <% else %>
-      <% past_releases.each do |scheduled_release| %>
+      <% if past_releases[0] %>
         <%= render partial: "scheduled_release/show", locals: {
-          header: past_text(scheduled_release),
-          title: past_title(scheduled_release),
-          status: scheduled_release_status(scheduled_release),
+          header: past_text(past_releases[0]),
+          title: past_title(past_releases[0]),
+          status: scheduled_release_status(past_releases[0]),
           box_classes: nil,
           empty_icon: "v2/fast_forward.svg",
-          footer: time_format(scheduled_release.scheduled_at, only_day: true)
+          footer: time_format(past_releases[0].scheduled_at, only_day: true)
+        } %>
+      <% end %>
+      <% if past_releases[1] %>
+        <%= render partial: "scheduled_release/show", locals: {
+          header: past_text(past_releases[1]),
+          title: past_title(past_releases[1]),
+          status: scheduled_release_status(past_releases[1]),
+          box_classes: nil,
+          empty_icon: "v2/fast_forward.svg",
+          footer: time_format(past_releases[1].scheduled_at, only_day: true)
+        } %>
+      <% else %>
+        <%= render partial: "scheduled_release/show", locals: {
+          title: nil,
+          header: "There are no past releases",
+          empty_icon: "v2/fast_forward.svg",
+          box_classes: nil,
+          status: inactive_status,
+          footer: nil,
         } %>
       <% end %>
     <% end %>
