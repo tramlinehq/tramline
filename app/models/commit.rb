@@ -44,7 +44,7 @@ class Commit < ApplicationRecord
   def self.count_by_team(org)
     return unless org.teams.exists?
 
-    reorder("")
+    res = reorder("")
       .left_outer_joins(user: [memberships: :team])
       .where("memberships.organization_id = ? OR memberships.organization_id IS NULL", org.id)
       .group("COALESCE(teams.name, '#{Accounts::Team::UNKNOWN_TEAM_NAME}')")
@@ -52,6 +52,9 @@ class Commit < ApplicationRecord
       .sort_by(&:last)
       .reverse
       .to_h
+
+    org.team_names.each { |team_name| res[team_name] ||= 0 }
+    res
   end
 
   def self.between(base_step_run, head_step_run)

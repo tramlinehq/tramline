@@ -81,6 +81,11 @@ class Accounts::Organization < ApplicationRecord
     colors
   end
 
+  def team_names
+    return unless teams.exists?
+    teams.pluck(:name) << Accounts::Team::UNKNOWN_TEAM_NAME
+  end
+
   def teams_supported?
     teams.exists?
   end

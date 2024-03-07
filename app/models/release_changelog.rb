@@ -54,6 +54,7 @@ class ReleaseChangelog < ApplicationRecord
       teams_data[team_name] += commits.size
     end
 
+    release.organization.team_names.each { |team_name| by_team[team_name] ||= 0 }
     by_team.sort_by(&:last).reverse.to_h
   end
 
