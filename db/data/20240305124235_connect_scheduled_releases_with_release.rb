@@ -14,7 +14,7 @@ class ConnectScheduledReleasesWithRelease < ActiveRecord::Migration[7.0]
 
         scheduled.each do |scheduled_release|
           # skip if the scheduled release is not automatic
-          next unless scheduled_release.automatic?
+          next unless scheduled_release.is_automatic?
 
           # find a release within a 10 minute window around the scheduled release schedule time
           target_date = scheduled_release.scheduled_at
