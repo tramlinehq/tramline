@@ -16,6 +16,7 @@ class ScheduledRelease < ApplicationRecord
   self.implicit_order_column = :scheduled_at
 
   belongs_to :train
+  belongs_to :release, optional: true
   delegate :app, to: :train
 
   scope :pending, -> { where("scheduled_at > ?", Time.current) }

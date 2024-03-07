@@ -1,16 +1,19 @@
-<div class="h-20 sm:h-28 lg:h-32 p-2">
+<div class="h-20 sm:h-28 lg:h-32 box-padding <%= box_classes %> text-main-600">
   <div class="h-full flex flex-col justify-between">
-
-    <div class="grow flex flex-col gap-y-2 p-0.5 sm:p-1.5 overflow-hidden">
-      <div class="text-sm"><%= header %></div>
-      <div class="heading-2"><%= title || "–" %></div>
+    <div class="grow flex flex-col gap-y-1 overflow-hidden">
+      <div class="text-main-500 font-normal text-sm"><%= header %></div>
+      <% if title %>
+        <div class="heading-2"><%= title %></div>
+      <% else %>
+        <%= render V2::IconComponent.new(empty_icon, size: :lg, rounded: false, classes: "mt-1") %>
+      <% end %>
     </div>
 
-    <div class="flex justify-between items-end p-0.5 sm:p-1.5">
+    <div class="flex justify-between">
       <% if status.present? %>
         <%= render V2::StatusIndicatorPillComponent.new(**status) %>
       <% end %>
-      <div class="flex justify-self-end text-sm text-main-500"><%= footer %></div>
+      <div class="flex ml-auto text-sm text-main-500 tracking-tight"><%= footer %></div>
     </div>
   </div>
 </div>
