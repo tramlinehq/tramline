@@ -54,6 +54,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_03_05_080020) do
     t.jsonb "firebase_ios_config"
     t.jsonb "firebase_android_config"
     t.jsonb "bugsnag_project_id"
+    t.jsonb "bugsnag_ios_config"
+    t.jsonb "bugsnag_android_config"
     t.index ["app_id"], name: "index_app_configs_on_app_id", unique: true
   end
 
