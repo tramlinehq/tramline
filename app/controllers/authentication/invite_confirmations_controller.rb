@@ -29,7 +29,7 @@ class Authentication::InviteConfirmationsController < ApplicationController
   private
 
   def check_accepted_invitation
-    redirect_to root_path, notice: t("invitation.flash.already_accepted") if @invite.accepted_at.present?
+    redirect_to root_path, notice: t("invitation.flash.already_accepted") if @invite.accepted?
   end
 
   def set_invite_token

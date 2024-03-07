@@ -6,7 +6,7 @@
   <div class="grid <%= grid_cols %> gap-2 text-xs">
     <% if :staged_rollout.in? metrics %>
       <% if staged_rollout.nil? %>
-        <%= empty_metric_component("Staged Rollout") %>
+        <%= render EmptyMetricCardComponent.new(name: "Staged Rollout", help_text: "This data loads up when the staged/phased rollout begins.") %>
       <% else %>
         <%= render ProgressCardComponent.new(name: "Staged Rollout",
                                              current: staged_rollout_percentage,
@@ -18,7 +18,7 @@
 
     <% if :adoption_rate.in? metrics %>
       <% if empty_component? %>
-        <%= empty_metric_component("Adoption Rate") %>
+        <%= render EmptyMetricCardComponent.new(name: "Adoption Rate", help_text: "This data gets pulled from your monitoring integration.") %>
       <% else %>
         <%= render ProgressCardComponent.new(name: "Adoption Rate",
                                              current: adoption_rate,
@@ -30,7 +30,7 @@
 
     <% if :stability.in? metrics %>
       <% if empty_component? %>
-        <%= empty_metric_component("Stability") %>
+        <%= render EmptyMetricCardComponent.new(name: "Stability", help_text: "This data gets pulled from your monitoring integration.") %>
       <% else %>
         <%= render MetricCardComponent.new(name: "Stability",
                                            values: { "users" => user_stability, "sessions" => session_stability },
@@ -42,7 +42,7 @@
 
     <% if :errors.in? metrics %>
       <% if empty_component? %>
-        <%= empty_metric_component("Errors") %>
+        <%= render EmptyMetricCardComponent.new(name: "Errors", help_text: "This data gets pulled from your monitoring integration.") %>
       <% else %>
         <%= render MetricCardComponent.new(name: "Errors",
                                            values: { "total" => errors_count, "new" => new_errors_count },

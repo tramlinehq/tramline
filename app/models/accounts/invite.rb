@@ -64,14 +64,18 @@ class Accounts::Invite < ApplicationRecord
     end
   end
 
-  def mark_accepted!
-    update!(accepted_at: Time.zone.now)
+  def mark_accepted!(recipient)
+    update!(accepted_at: Time.zone.now, recipient: recipient)
   end
 
   def accept_only_once
-    if accepted_at.present?
+    if accepted?
       errors.add(:recipient, "has already accepted the invite!")
     end
+  end
+
+  def accepted?
+    accepted_at.present?
   end
 
   def registration_url

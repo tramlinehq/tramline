@@ -35,6 +35,8 @@ class Accounts::Organization < ApplicationRecord
 
   auto_strip_attributes :name, squish: true
 
+  scope :sequential, -> { reorder("organizations.created_at ASC") }
+
   def demo?
     Flipper.enabled?(:demo_mode, self)
   end

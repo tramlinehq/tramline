@@ -32,7 +32,11 @@ class V2::BuildInfoComponent < V2::BaseComponent
 
   def staged_rollout_status
     percentage = ""
-    percentage = "%.0f" % @staged_rollout.last_rollout_percentage if @staged_rollout.last_rollout_percentage.present?
+
+    if @staged_rollout.last_rollout_percentage.present?
+      formatter = (@staged_rollout.last_rollout_percentage % 1 == 0) ? "%.0f" : "%.02f"
+      percentage = formatter % @staged_rollout.last_rollout_percentage
+    end
 
     case @staged_rollout.status.to_sym
     when :created

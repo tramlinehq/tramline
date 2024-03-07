@@ -56,7 +56,7 @@ class V2::ButtonComponent < V2::BaseComponent
 
   renders_one :title_text
   renders_one :icon, V2::IconComponent
-  renders_one :tooltip, V2::TooltipComponent
+  renders_one :tooltip, ->(text, **args) { V2::TooltipComponent.new(text, **args.merge(cursor: false)) }
 
   def initialize(label: nil, scheme: :switcher, type: :button, size: :xxs, options: nil, html_options: nil, arrow: :none, authz: true, turbo: true, disabled: false)
     arrow = (scheme == :switcher) ? :double : arrow
