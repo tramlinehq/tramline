@@ -8,6 +8,7 @@
   </div>
 
   <div class="grid grid-cols-5 border border-main-200 divide-x divide-main-200 rounded-b-lg">
+    <!-- past -->
     <% if past_releases.empty? %>
       <%= render partial: "scheduled_release/show", locals: {
         title: nil,
@@ -26,16 +27,6 @@
         footer: nil,
       } %>
     <% else %>
-      <% if past_releases[0] %>
-        <%= render partial: "scheduled_release/show", locals: {
-          header: past_text(past_releases[0]),
-          title: past_title(past_releases[0]),
-          status: scheduled_release_status(past_releases[0]),
-          box_classes: nil,
-          empty_icon: "v2/fast_forward.svg",
-          footer: time_format(past_releases[0].scheduled_at, only_day: true)
-        } %>
-      <% end %>
       <% if past_releases[1] %>
         <%= render partial: "scheduled_release/show", locals: {
           header: past_text(past_releases[1]),
@@ -55,8 +46,20 @@
           footer: nil,
         } %>
       <% end %>
+
+      <% if past_releases[0] %>
+        <%= render partial: "scheduled_release/show", locals: {
+          header: past_text(past_releases[0]),
+          title: past_title(past_releases[0]),
+          status: scheduled_release_status(past_releases[0]),
+          box_classes: nil,
+          empty_icon: "v2/fast_forward.svg",
+          footer: time_format(past_releases[0].scheduled_at, only_day: true)
+        } %>
+      <% end %>
     <% end %>
 
+    <!-- ongoing -->
     <% if ongoing_release.present? %>
       <%= render partial: "scheduled_release/show", locals: {
         header: ongoing_text,
@@ -77,6 +80,7 @@
       } %>
     <% end %>
 
+    <!-- future -->
     <% if future_release.present? %>
       <%= render partial: "scheduled_release/show", locals: {
         header: time_text(future_release),
