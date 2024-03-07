@@ -60,7 +60,7 @@ class Train < ApplicationRecord
   has_many :scheduled_releases, dependent: :destroy
   has_many :notification_settings, inverse_of: :train, dependent: :destroy
 
-  scope :sequential, -> { order("trains.created_at ASC") }
+  scope :sequential, -> { reorder("trains.created_at ASC") }
   scope :running, -> { includes(:releases).where(releases: {status: Release.statuses[:on_track]}) }
   scope :only_with_runs, -> { joins(:releases).where.not(releases: {status: "stopped"}).distinct }
 

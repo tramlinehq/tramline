@@ -68,7 +68,7 @@ class App < ApplicationRecord
   delegate :draft_check?, to: :android_store_provider, allow_nil: true
 
   scope :with_trains, -> { joins(:trains).distinct }
-  scope :sequential, -> { order("apps.created_at ASC") }
+  scope :sequential, -> { reorder("apps.created_at ASC") }
 
   def self.allowed_platforms
     {
