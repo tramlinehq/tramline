@@ -26,10 +26,6 @@ class ReleaseMonitoringComponent < ViewComponent::Base
     release_data.blank?
   end
 
-  def empty_metric_component(name, help_text = nil)
-    render EmptyMetricCardComponent.new(name:, help_text:, size:)
-  end
-
   def build_identifier
     "#{deployment_run.build_version} (#{deployment_run.build_number})"
   end
