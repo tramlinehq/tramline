@@ -23,6 +23,7 @@ class Accounts::Team < ApplicationRecord
   UNKNOWN_TEAM_NAME = "Unknown"
   UNKNOWN_TEAM_COLOR = "#BCBCBC"
   TRAMLINE_TEAM_NAME = "tramline[bot]"
+  TRAMLINE_TEAM_COLOR = "#1A9C1D"
 
   private
 

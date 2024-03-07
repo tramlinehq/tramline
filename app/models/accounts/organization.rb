@@ -80,6 +80,7 @@ class Accounts::Organization < ApplicationRecord
   def team_colors
     colors = teams.pluck(:name, :color).to_h || {}
     colors[Accounts::Team::UNKNOWN_TEAM_NAME] = Accounts::Team::UNKNOWN_TEAM_COLOR
+    colors[Accounts::Team::TRAMLINE_TEAM_NAME] = Accounts::Team::TRAMLINE_TEAM_COLOR
     colors
   end
 
