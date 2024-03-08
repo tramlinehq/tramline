@@ -45,6 +45,8 @@ Rails.application.routes.draw do
       resource :team, only: [:show]
       resources :invitations, only: [:create]
     end
+
+    resource :user, only: [:edit, :update]
   end
 
   resources :apps do

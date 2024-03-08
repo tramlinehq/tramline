@@ -1,0 +1,49 @@
+<%= render V2::ContainerComponent.new(title: "Account settings", error_resource: @user) do |container| %>
+  <% container.with_back_button %>
+  <% container.with_body do %>
+    <%= render V2::FormComponent.new(model: @user) do |f| %>
+      <% f.with_section(heading: "Basic account information") do |section| %>
+        <div class="grid gap-4">
+          <div><%= section.F.labeled_text_field :full_name, "Name", required: true %></div>
+          <div><%= section.F.labeled_text_field :preferred_name, "Preferred Name", required: true %></div>
+        </div>
+      <% end %>
+
+      <% f.with_section(heading: "GitHub Account") do |section| %>
+        <% section.with_description do %>
+          Connect your Tramline account with Github to identify your and your team's work.
+        <% end %>
+        <div class="grid gap-4">
+          <div><%= section.F.labeled_text_field :github_login, "GitHub Login", required: true %></div>
+        </div>
+      <% end %>
+
+      <% f.with_section(heading: "Memberships") do |section| %>
+        <% section.with_description do %>
+          These are the organizations and teams you are a member of. You can change your team membership here. If an organization has no teams, you can still be a member of the organization, but you won't be able to join any teams.
+        <% end %>
+        <div class="grid gap-4">
+          <% @user.memberships.each do |membership| %>
+            <% org = membership.organization %>
+            <% section.F.fields_for :memberships, membership do |membership_fields| %>
+              <%= membership_fields.hidden_field :id, value: membership.id %>
+              <% if org.teams.any? %>
+                <div><%= membership_fields.labeled_select :team_id, "Team for #{org.name}", options_for_select(org.teams.pluck(:name, :id).to_h, membership.team&.id) %></div>
+              <% else %>
+                <%= render V2::TooltipComponent.new("This organization has no teams. You can still be a member of the organization, but you won't be able to join any teams.", placement: "bottom") do |tooltip| %>
+                  <% tooltip.with_body do %>
+                    <div><%= membership_fields.labeled_select :team_id, "Team for #{org.name}", options_for_select(org.teams.pluck(:name, :id).to_h, membership.team&.id), {}, { disabled: true } %></div>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% f.with_action do %>
+        <%= f.F.authz_submit "Save", "v2/archive.svg", authz: false %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
