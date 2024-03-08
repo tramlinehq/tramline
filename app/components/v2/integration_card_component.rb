@@ -14,7 +14,7 @@ class V2::IntegrationCardComponent < V2::BaseComponent
   end
 
   attr_reader :integration
-  delegate :connected?, :disconnected?, :providable, :connection_data, :providable_type, to: :integration, allow_nil: true
+  delegate :connected?, :disconnected?, :providable, :connection_data, :providable_type, :ci_cd?, to: :integration, allow_nil: true
   alias_method :provider, :providable
   delegate :creatable?, :connectable?, to: :provider
 
@@ -38,5 +38,9 @@ class V2::IntegrationCardComponent < V2::BaseComponent
   def connectable_form_partial
     render(partial: "integrations/connectable",
       locals: {app: @app, integration: @integration, category: @category, url: connect_path, type: providable_type})
+  end
+
+  def disconnectable?
+    integration.disconnectable? && ci_cd?
   end
 end

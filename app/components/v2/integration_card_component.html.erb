@@ -18,7 +18,20 @@
         </div>
 
         <% if connected? %>
-          <%= render V2::StatusIndicatorPillComponent.new(text: "Connected", status: :success) %>
+          <div class="flex justify-between w-full items-baseline">
+            <%= render V2::StatusIndicatorPillComponent.new(text: "Connected", status: :success) %>
+            <% if ci_cd? %>
+              <%= render V2::ButtonComponent.new(
+                scheme: :naked_icon,
+                options: app_integration_path(@app, integration),
+                type: :link,
+                size: :none,
+                disabled: !disconnectable?,
+                html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want disconnect the integration?" } }) do |b|
+                b.with_icon("v2/trash.svg", size: :sm)
+              end %>
+            <% end %>
+          </div>
         <% end %>
 
         <% if disconnected? %>

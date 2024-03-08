@@ -283,6 +283,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_03_05_080020) do
     t.uuid "providable_id"
     t.string "providable_type"
     t.jsonb "metadata"
+    t.datetime "discarded_at"
+    t.index ["app_id", "category", "providable_type", "status"], name: "unique_connected_integration_category", unique: true, where: "((status)::text = 'connected'::text)"
     t.index ["app_id"], name: "index_integrations_on_app_id"
     t.index ["providable_type", "providable_id"], name: "index_integrations_on_providable_type_and_providable_id", unique: true
   end

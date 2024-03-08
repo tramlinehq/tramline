@@ -3,19 +3,21 @@
 # Table name: integrations
 #
 #  id              :uuid             not null, primary key
-#  category        :string           not null
+#  category        :string           not null, indexed => [app_id, providable_type, status]
+#  discarded_at    :datetime
 #  metadata        :jsonb
-#  providable_type :string           indexed => [providable_id]
-#  status          :string
+#  providable_type :string           indexed => [providable_id], indexed => [app_id, category, status]
+#  status          :string           indexed => [app_id, category, providable_type]
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  app_id          :uuid             not null, indexed
+#  app_id          :uuid             not null, indexed, indexed => [category, providable_type, status]
 #  providable_id   :uuid             indexed => [providable_type]
 #
 class Integration < ApplicationRecord
   has_paper_trail
   using RefinedArray
   using RefinedString
+  include Discard::Model
 
   belongs_to :app
 
@@ -77,6 +79,7 @@ class Integration < ApplicationRecord
   validates :category, presence: true
   validate :allowed_integrations_for_app
   validate :validate_providable, on: :create
+  validates_uniqueness_of :providable_type, scope: [:app_id, :category, :status], message: "can only have one integration per providable_type", if: :connected?
 
   attr_accessor :current_user, :code
 
@@ -90,7 +93,7 @@ class Integration < ApplicationRecord
 
   class << self
     def by_categories_for(app)
-      existing_integrations = app.integrations.includes(:providable)
+      existing_integrations = app.integrations.connected.includes(:providable)
       integrations = ALLOWED_INTEGRATIONS_FOR_APP[app.platform]
 
       integrations.each_with_object({}) do |(category, providers), combination|
@@ -149,7 +152,7 @@ class Integration < ApplicationRecord
     end
 
     def ci_cd_provider
-      ci_cd.first&.providable
+      ci_cd.connected.first&.providable
     end
 
     def monitoring_provider
@@ -181,6 +184,15 @@ class Integration < ApplicationRecord
     def providable_error_message(meta)
       meta[:value].errors.full_messages[0]
     end
+  end
+
+  def disconnect
+    return unless disconnectable?
+    update(status: :disconnected, discarded_at: Time.current)
+  end
+
+  def disconnectable?
+    app.active_runs.none?
   end
 
   def set_metadata!
