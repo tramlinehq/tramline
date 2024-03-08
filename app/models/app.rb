@@ -244,7 +244,7 @@ class App < ApplicationRecord
     external_app_data = provider&.channel_data
 
     if external_app_data && latest_external_app&.channel_data != external_app_data
-      external_apps.create!(channel_data: external_app_data, fetched_at: Time.current, platform:)
+      external_apps.update!(channel_data: external_app_data, fetched_at: Time.current, platform:)
     end
   end
 

@@ -13,4 +13,9 @@ class V2::HeaderComponent < V2::BaseComponent
   def user_full_name
     current_user.full_name
   end
+
+  def app_icon(app)
+    return app.latest_external_apps[:android].icon.blob.url if app.latest_external_apps[:android].icon.attached?
+    "art/cross_platform_default.png"
+  end
 end
