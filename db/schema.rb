@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_03_05_080020) do
+ActiveRecord::Schema[7.0].define(version: 2024_03_08_124921) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -592,7 +592,11 @@ ActiveRecord::Schema[7.0].define(version: 2024_03_05_080020) do
     t.boolean "auto_deploy", default: true
     t.string "build_artifact_name_pattern"
     t.uuid "app_variant_id"
+    t.uuid "integration_id"
+    t.datetime "discarded_at"
     t.index ["ci_cd_channel", "release_platform_id"], name: "index_steps_on_ci_cd_channel_and_release_platform_id", unique: true
+    t.index ["discarded_at"], name: "index_steps_on_discarded_at"
+    t.index ["integration_id"], name: "index_steps_on_integration_id"
     t.index ["release_platform_id"], name: "index_steps_on_release_platform_id"
     t.index ["step_number", "release_platform_id"], name: "index_steps_on_step_number_and_release_platform_id", unique: true
   end

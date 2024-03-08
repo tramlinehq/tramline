@@ -180,11 +180,11 @@ class StepRun < ApplicationRecord
   delegate :release_platform, :release, :platform, to: :release_platform_run
   delegate :release_branch, :release_version, to: :release
   delegate :train, :store_provider, to: :release_platform
-  delegate :app, :ci_cd_provider, :unzip_artifact?, :notify!, to: :train
+  delegate :app, :unzip_artifact?, :notify!, to: :train
   delegate :organization, to: :app
   delegate :commit_hash, to: :commit
   delegate :download_url, to: :build_artifact
-  delegate :workflow_id, :workflow_name, :step_number, :build_artifact_name_pattern, :has_uploadables?, :has_findables?, :name, :app_variant, to: :step
+  delegate :ci_cd_provider, :workflow_id, :workflow_name, :step_number, :build_artifact_name_pattern, :has_uploadables?, :has_findables?, :name, :app_variant, to: :step
   scope :not_failed, -> { where.not(status: FAILED_STATES) }
   scope :sequential, -> { order("step_runs.scheduled_at ASC") }
 

@@ -98,7 +98,7 @@
 
     <div class="grid grid-cols-2 gap-6 mt-8">
       <% @release.release_platform_runs.each do |run| %>
-        <%= render partial: "shared/live_release/stability", locals: { platform: "#{run.display_attr(:platform)} release", release: run, steps: run.release_platform.steps } %>
+        <%= render partial: "shared/live_release/stability", locals: { platform: "#{run.display_attr(:platform)} release", release: run, steps: run.release_platform.active_steps_for(@release) } %>
       <% end %>
     </div>
 
