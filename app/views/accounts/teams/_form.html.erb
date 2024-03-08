@@ -1,0 +1,16 @@
+<%= render V2::FormComponent.new(model: [current_organization, team], url: url, method: form_method) do |f| %>
+  <% f.with_section(heading: "Basic details") do |section| %>
+    <% section.with_description do %>
+      <div>Choose a color for your team.</div>
+    <% end %>
+    <div><%= section.F.labeled_text_field :name, "Team Name", required: true %></div>
+    <div>
+      <%= section.F.label_only :color, "Color" %>
+      <%= section.F.color_field :color %>
+    </div>
+  <% end %>
+
+  <% f.with_action do %>
+    <% f.F.authz_submit "Save", "v2/archive.svg", size: :xs %>
+  <% end %>
+<% end %>

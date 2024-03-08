@@ -68,6 +68,11 @@ module EnhancedFormHelper
       label_only(method, label_text) + number_field_without_label(method, hopts)
     end
 
+    def labeled_color_field(method, label_text, options = {})
+      hopts = {class: field_classes(is_disabled: options[:disabled], classes: TEXT_FIELD_CLASSES)}.merge(options)
+      label_only(method, label_text) + color_field(method, hopts)
+    end
+
     def labeled_select(method, label_text, select_options, options = {}, html_options = {})
       label_only(method, label_text) + select_without_label(method, select_options, options, html_options)
     end

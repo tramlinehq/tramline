@@ -17,23 +17,25 @@ class Accounts::Team < ApplicationRecord
 
   validates :color, uniqueness: {scope: :organization_id}
 
-  before_create :assign_random_color
+  after_initialize :assign_random_color, if: :new_record?
 
-  PALETTE = %w[#1A56DB #9061F9 #FF6E4A #5AAA4E #7A6FFF #3A9CA6 #FFB997 #537ABD #E3BBFF #AAD4AA]
+  DEFAULT_PALETTE = %w[#1A56DB #9061F9 #FF6E4A #5AAA4E #7A6FFF #3A9CA6 #FFB997 #537ABD #E3BBFF #AAD4AA]
   UNKNOWN_TEAM_NAME = "Unknown"
   UNKNOWN_TEAM_COLOR = "#BCBCBC"
   TRAMLINE_TEAM_NAME = "tramline[bot]"
   TRAMLINE_TEAM_COLOR = "#7C7C7C"
 
+  scope :sequential, -> { reorder("teams.created_at ASC") }
+
   private
 
   def assign_random_color
-    self.color = generate_unique_color
+    self.color ||= generate_unique_color
   end
 
   def generate_unique_color
     organization_colors = organization.teams.pluck(:color)
-    available_colors = PALETTE - organization_colors
+    available_colors = DEFAULT_PALETTE - organization_colors
     if available_colors.empty?
       "#" + SecureRandom.hex(3)
     else

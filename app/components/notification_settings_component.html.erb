@@ -31,8 +31,7 @@
                                             subtitle: description_for(setting)) do |modal| %>
             <% button = modal.with_button(scheme: :light,
                                           type: :action,
-                                          size: :xxs,
-                                          arrow: :none) %>
+                                          size: :xxs) %>
             <% button.with_icon("v2/pencil.svg") %>
             <% modal.with_body do %>
               <%= render V2::FormComponent.new(model: [app, train, setting],
