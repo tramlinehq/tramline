@@ -107,7 +107,7 @@ describe StepRun do
 
     context "with release step" do
       let(:train) { create(:train) }
-      let(:store_integration) {train.build_channel_integrations.first}
+      let(:store_integration) { train.build_channel_integrations.first }
       let(:release_platform) { create(:release_platform, train:) }
       let(:release_step) { create(:step, :release, :with_deployment, release_platform:) }
       let(:regular_deployment) { create(:deployment, step: release_step, integration: store_integration) }

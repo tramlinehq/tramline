@@ -79,7 +79,7 @@ class Integration < ApplicationRecord
   validates :category, presence: true
   validate :allowed_integrations_for_app
   validate :validate_providable, on: :create
-  validates_uniqueness_of :providable_type, scope: [:app_id, :category, :status], message: "can only have one integration per providable_type", if: :connected?
+  validates :providable_type, uniqueness: {scope: [:app_id, :category, :status], message: :unique_connected_integration_category, if: :connected?}
 
   attr_accessor :current_user, :code
 

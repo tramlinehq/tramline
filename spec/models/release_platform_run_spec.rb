@@ -183,10 +183,10 @@ describe ReleasePlatformRun do
       _step_run_3 = create(:step_run, commit:, step: steps.third, status: "on_track", release_platform_run:)
 
       expectation = {
-        steps.first => { in_progress: false, done: true, failed: false },
-        steps.second => { in_progress: false, done: false, failed: true },
-        steps.third => { in_progress: true, done: false, failed: false },
-        steps.fourth => { not_started: true }
+        steps.first => {in_progress: false, done: true, failed: false},
+        steps.second => {in_progress: false, done: false, failed: true},
+        steps.third => {in_progress: true, done: false, failed: false},
+        steps.fourth => {not_started: true}
       }
 
       expect(release_platform_run.overall_movement_status).to eq(expectation)
@@ -204,8 +204,8 @@ describe ReleasePlatformRun do
       _step_run_2 = create(:step_run, commit: commit_2, step: steps.second, status: "success", release_platform_run:)
 
       expectation = {
-        steps.first => { in_progress: false, done: false, failed: true },
-        steps.second => { in_progress: false, done: true, failed: false }
+        steps.first => {in_progress: false, done: false, failed: true},
+        steps.second => {in_progress: false, done: true, failed: false}
       }
 
       expect(release_platform_run.overall_movement_status).to eq(expectation)
@@ -254,7 +254,6 @@ describe ReleasePlatformRun do
     let(:review_step) { create(:step, :review, :with_deployment, release_platform:) }
     let(:production_deployment) { factory_tree[:deployment] }
     let(:regular_deployment) { create(:deployment, step: release_step, integration: production_deployment.integration) }
-    let(:release) { create(:release, train:) }
     let(:release_platform_run) { create(:release_platform_run, :on_track, release_platform:, release:) }
 
     it "is false when it has step run and production deployment run has not started rollout" do
@@ -287,7 +286,6 @@ describe ReleasePlatformRun do
       let(:review_step) { create(:step, :review, :with_deployment, release_platform:) }
       let(:production_deployment) { factory_tree[:deployment] }
       let(:regular_deployment) { create(:deployment, step: release_step, integration: production_deployment.integration) }
-      let(:release) { create(:release, train:) }
       let(:release_platform_run) { create(:release_platform_run, :on_track, release_platform:, release:) }
 
       it "is false when it does not have a release step run" do
@@ -347,7 +345,6 @@ describe ReleasePlatformRun do
       let(:review_step) { create(:step, :review, :with_deployment, release_platform:) }
       let(:production_deployment) { factory_tree[:deployment] }
       let(:regular_deployment) { create(:deployment, step: release_step, integration: production_deployment.integration) }
-      let(:release) { create(:release, train:) }
       let(:release_platform_run) { create(:release_platform_run, :on_track, release_platform:, release:) }
 
       it "is false when it does not have a release step run" do
@@ -400,9 +397,9 @@ describe ReleasePlatformRun do
 
   describe "#bump_version!" do
     [[:android, :with_production_channel],
-     [:android, :with_staged_rollout],
-     [:ios, :with_production_channel],
-     [:ios, :with_phased_release]].each do |platform, deployment_trait|
+      [:android, :with_staged_rollout],
+      [:ios, :with_production_channel],
+      [:ios, :with_phased_release]].each do |platform, deployment_trait|
       test_case_help = [platform, deployment_trait].join(", ").humanize.downcase
 
       it "updates the minor version if the current version is a partial semver with #{test_case_help}" do

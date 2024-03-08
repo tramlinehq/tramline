@@ -53,10 +53,10 @@ describe WebhookProcessors::Push do
           deployment_traits = test_case[1..2]
           deployment_run_trait = test_case.last
           factory_tree = create_deployment_run_tree(platform,
-                                                    deployment_run_trait,
-                                                    deployment_traits:,
-                                                    step_traits: [:release],
-                                                    release_traits: [:with_no_platform_runs])
+            deployment_run_trait,
+            deployment_traits:,
+            step_traits: [:release],
+            release_traits: [:with_no_platform_runs])
           release = factory_tree[:release]
 
           allow(Triggers::StepRun).to receive(:call)
@@ -136,11 +136,13 @@ describe WebhookProcessors::Push do
 
     context "when build queue" do
       let(:queue_size) { 3 }
-      let(:factory_tree) { create_deployment_run_tree(:android, :uploaded,
-                                                      step_traits: [:release],
-                                                      step_run_traits: [:deployment_restarted],
-                                                      train_traits: [:with_build_queue],
-                                                      release_traits: [:with_no_platform_runs, :on_track]) }
+      let(:factory_tree) {
+        create_deployment_run_tree(:android, :uploaded,
+          step_traits: [:release],
+          step_run_traits: [:deployment_restarted],
+          train_traits: [:with_build_queue],
+          release_traits: [:with_no_platform_runs, :on_track])
+      }
       let(:train) { factory_tree[:train] }
       let(:release) { factory_tree[:release] }
 

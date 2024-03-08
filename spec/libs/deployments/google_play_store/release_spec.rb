@@ -94,7 +94,7 @@ describe Deployments::GooglePlayStore::Release do
     end
 
     it "adds failure reason to deployment run if upload fails" do
-      error_body = { "error" => { "status" => "PERMISSION_DENIED", "code" => 403, "message" => "We have failed to run 'bundletool build-apks' on this Android App Bundle. Please ensure your bundle is valid by running 'bundletool build-apks' locally and try again. Error message output: File 'BundleConfig.pb' was not found" } }
+      error_body = {"error" => {"status" => "PERMISSION_DENIED", "code" => 403, "message" => "We have failed to run 'bundletool build-apks' on this Android App Bundle. Please ensure your bundle is valid by running 'bundletool build-apks' locally and try again. Error message output: File 'BundleConfig.pb' was not found"}}
       error = ::Google::Apis::ClientError.new("Error", body: error_body.to_json)
       allow(providable_dbl).to receive(:upload).and_return(GitHub::Result.new { raise Installations::Google::PlayDeveloper::Error.new(error) })
 
@@ -118,9 +118,9 @@ describe Deployments::GooglePlayStore::Release do
 
     it "does nothing if rollout hasn't started" do
       factory_tree = create_deployment_run_tree(:android, :uploaded,
-                                                deployment_traits: [:with_staged_rollout],
-                                                step_traits: [:release],
-                                                step_run_traits: [:deployment_started, :with_build_artifact])
+        deployment_traits: [:with_staged_rollout],
+        step_traits: [:release],
+        step_run_traits: [:deployment_started, :with_build_artifact])
       unstarted_run = factory_tree[:deployment_run]
       allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
 
@@ -131,9 +131,9 @@ describe Deployments::GooglePlayStore::Release do
 
     it "halts the deployments on playstore" do
       factory_tree = create_deployment_run_tree(:android, :rollout_started,
-                                                deployment_traits: [:with_staged_rollout],
-                                                step_traits: [:release],
-                                                step_run_traits: [:deployment_started, :with_build_artifact])
+        deployment_traits: [:with_staged_rollout],
+        step_traits: [:release],
+        step_run_traits: [:deployment_started, :with_build_artifact])
       run = factory_tree[:deployment_run]
       run.create_staged_rollout!(config: run.staged_rollout_config)
       allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
@@ -152,21 +152,23 @@ describe Deployments::GooglePlayStore::Release do
     end
 
     context "when staged rollout" do
-      let(:factory_tree) { create_deployment_run_tree(:android, :uploaded,
-                                                      deployment_traits: [:with_staged_rollout],
-                                                      step_traits: [:release],
-                                                      step_run_traits: [:deployment_started, :with_build_artifact]) }
+      let(:factory_tree) {
+        create_deployment_run_tree(:android, :uploaded,
+          deployment_traits: [:with_staged_rollout],
+          step_traits: [:release],
+          step_run_traits: [:deployment_started, :with_build_artifact])
+      }
       let(:deployment_run) { factory_tree[:deployment_run] }
 
       it "creates draft release" do
         allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
         described_class.start_release!(deployment_run)
         expect(providable_dbl).to have_received(:create_draft_release)
-                                    .with(deployment_run.deployment_channel,
-                                          deployment_run.build_number,
-                                          deployment_run.release_version,
-                                          [{ language: "en-US",
-                                             text: "The latest version contains bug fixes and performance improvements." }])
+          .with(deployment_run.deployment_channel,
+            deployment_run.build_number,
+            deployment_run.release_version,
+            [{language: "en-US",
+              text: "The latest version contains bug fixes and performance improvements."}])
       end
 
       it "marks the run as release started" do
@@ -175,9 +177,9 @@ describe Deployments::GooglePlayStore::Release do
       end
 
       it "marks the run as failed with manual action required when release fails due to app review rejection" do
-        error_body = { "error" => { "status" => "INVALID_ARGUMENT",
-                                    "code" => 400,
-                                    "message" => "Changes cannot be sent for review automatically. Please set the query parameter changesNotSentForReview to true. Once committed, the changes in this edit can be sent for review from the Google Play Console UI" } }
+        error_body = {"error" => {"status" => "INVALID_ARGUMENT",
+                                  "code" => 400,
+                                  "message" => "Changes cannot be sent for review automatically. Please set the query parameter changesNotSentForReview to true. Once committed, the changes in this edit can be sent for review from the Google Play Console UI"}}
         error = Google::Apis::ClientError.new("Error", body: error_body.to_json)
         allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new { raise Installations::Google::PlayDeveloper::Error.new(error) })
         expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :failed_with_action_required?)
@@ -185,10 +187,12 @@ describe Deployments::GooglePlayStore::Release do
     end
 
     context "when no staged rollout" do
-      let(:factory_tree) { create_deployment_run_tree(:android, :uploaded,
-                                                      deployment_traits: [:with_production_channel],
-                                                      step_traits: [:release],
-                                                      step_run_traits: [:deployment_started, :with_build_artifact]) }
+      let(:factory_tree) {
+        create_deployment_run_tree(:android, :uploaded,
+          deployment_traits: [:with_production_channel],
+          step_traits: [:release],
+          step_run_traits: [:deployment_started, :with_build_artifact])
+      }
       let(:deployment_run) { factory_tree[:deployment_run] }
       let(:deployment) { factory_tree[:deployment] }
 
@@ -197,23 +201,23 @@ describe Deployments::GooglePlayStore::Release do
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
         described_class.start_release!(deployment_run)
         expect(providable_dbl).to have_received(:rollout_release)
-                                    .with(deployment_run.deployment_channel,
-                                          deployment_run.build_number,
-                                          deployment_run.release_version,
-                                          Deployment::FULL_ROLLOUT_VALUE,
-                                          [{ language: "en-US", text: "Nothing new" }])
+          .with(deployment_run.deployment_channel,
+            deployment_run.build_number,
+            deployment_run.release_version,
+            Deployment::FULL_ROLLOUT_VALUE,
+            [{language: "en-US", text: "Nothing new"}])
       end
 
       it "creates release with full rollout for production channel" do
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
         described_class.start_release!(deployment_run)
         expect(providable_dbl).to have_received(:rollout_release)
-                                    .with(deployment_run.deployment_channel,
-                                          deployment_run.build_number,
-                                          deployment_run.release_version,
-                                          Deployment::FULL_ROLLOUT_VALUE,
-                                          [{ language: "en-US",
-                                             text: "The latest version contains bug fixes and performance improvements." }])
+          .with(deployment_run.deployment_channel,
+            deployment_run.build_number,
+            deployment_run.release_version,
+            Deployment::FULL_ROLLOUT_VALUE,
+            [{language: "en-US",
+              text: "The latest version contains bug fixes and performance improvements."}])
       end
 
       it "marks the run as released" do
@@ -222,9 +226,9 @@ describe Deployments::GooglePlayStore::Release do
       end
 
       it "marks the run as failed with manual action required when release fails due to app review rejection" do
-        error_body = { "error" => { "status" => "INVALID_ARGUMENT",
-                                    "code" => 400,
-                                    "message" => "Changes cannot be sent for review automatically. Please set the query parameter changesNotSentForReview to true. Once committed, the changes in this edit can be sent for review from the Google Play Console UI" } }
+        error_body = {"error" => {"status" => "INVALID_ARGUMENT",
+                                  "code" => 400,
+                                  "message" => "Changes cannot be sent for review automatically. Please set the query parameter changesNotSentForReview to true. Once committed, the changes in this edit can be sent for review from the Google Play Console UI"}}
         error = Google::Apis::ClientError.new("Error", body: error_body.to_json)
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new { raise Installations::Google::PlayDeveloper::Error.new(error) })
         expect { described_class.start_release!(deployment_run) }.to change(deployment_run, :failed_with_action_required?)
@@ -235,11 +239,11 @@ describe Deployments::GooglePlayStore::Release do
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
         described_class.start_release!(deployment_run)
         expect(providable_dbl).to have_received(:rollout_release)
-                                    .with(deployment_run.deployment_channel,
-                                          deployment_run.build_number,
-                                          deployment_run.release_version,
-                                          Deployment::FULL_ROLLOUT_VALUE,
-                                          [])
+          .with(deployment_run.deployment_channel,
+            deployment_run.build_number,
+            deployment_run.release_version,
+            Deployment::FULL_ROLLOUT_VALUE,
+            [])
       end
 
       it "sends build notes when deployment is configured so" do
@@ -247,11 +251,11 @@ describe Deployments::GooglePlayStore::Release do
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
         described_class.start_release!(deployment_run)
         expect(providable_dbl).to have_received(:rollout_release)
-                                    .with(deployment_run.deployment_channel,
-                                          deployment_run.build_number,
-                                          deployment_run.release_version,
-                                          Deployment::FULL_ROLLOUT_VALUE,
-                                          [{ language: "en-US", text: "Nothing new" }])
+          .with(deployment_run.deployment_channel,
+            deployment_run.build_number,
+            deployment_run.release_version,
+            Deployment::FULL_ROLLOUT_VALUE,
+            [{language: "en-US", text: "Nothing new"}])
       end
 
       it "sends release notes when deployment is configured so" do
@@ -259,21 +263,23 @@ describe Deployments::GooglePlayStore::Release do
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
         described_class.start_release!(deployment_run)
         expect(providable_dbl).to have_received(:rollout_release)
-                                    .with(deployment_run.deployment_channel,
-                                          deployment_run.build_number,
-                                          deployment_run.release_version,
-                                          Deployment::FULL_ROLLOUT_VALUE,
-                                          [{ language: "en-US",
-                                             text: "The latest version contains bug fixes and performance improvements." }])
+          .with(deployment_run.deployment_channel,
+            deployment_run.build_number,
+            deployment_run.release_version,
+            Deployment::FULL_ROLLOUT_VALUE,
+            [{language: "en-US",
+              text: "The latest version contains bug fixes and performance improvements."}])
       end
     end
 
     context "when step run is restarted and release is not present in the channel" do
       context "when staged rollout" do
-        let(:factory_tree) { create_deployment_run_tree(:android, :uploaded,
-                                                        deployment_traits: [:with_staged_rollout],
-                                                        step_traits: [:release],
-                                                        step_run_traits: [:deployment_restarted]) }
+        let(:factory_tree) {
+          create_deployment_run_tree(:android, :uploaded,
+            deployment_traits: [:with_staged_rollout],
+            step_traits: [:release],
+            step_run_traits: [:deployment_restarted])
+        }
         let(:deployment_run) { factory_tree[:deployment_run] }
         let(:step_run) { factory_tree[:step_run] }
         let(:step) { factory_tree[:step] }
@@ -284,11 +290,11 @@ describe Deployments::GooglePlayStore::Release do
           allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
           described_class.start_release!(deployment_run)
           expect(providable_dbl).to have_received(:create_draft_release)
-                                      .with(deployment_run.deployment_channel,
-                                            deployment_run.build_number,
-                                            deployment_run.release_version,
-                                            [{ language: "en-US",
-                                               text: "The latest version contains bug fixes and performance improvements." }])
+            .with(deployment_run.deployment_channel,
+              deployment_run.build_number,
+              deployment_run.release_version,
+              [{language: "en-US",
+                text: "The latest version contains bug fixes and performance improvements."}])
         end
 
         it "marks a run as release started" do
@@ -299,9 +305,11 @@ describe Deployments::GooglePlayStore::Release do
       end
 
       context "when no staged rollout" do
-        let(:factory_tree) { create_deployment_run_tree(:android, :uploaded,
-                                                        step_traits: [:release],
-                                                        step_run_traits: [:deployment_restarted]) }
+        let(:factory_tree) {
+          create_deployment_run_tree(:android, :uploaded,
+            step_traits: [:release],
+            step_run_traits: [:deployment_restarted])
+        }
         let(:deployment_run) { factory_tree[:deployment_run] }
         let(:step_run) { factory_tree[:step_run] }
 
@@ -310,11 +318,11 @@ describe Deployments::GooglePlayStore::Release do
           allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
           described_class.start_release!(deployment_run)
           expect(providable_dbl).to have_received(:rollout_release)
-                                      .with(deployment_run.deployment_channel,
-                                            deployment_run.build_number,
-                                            deployment_run.release_version,
-                                            Deployment::FULL_ROLLOUT_VALUE,
-                                            [{ language: "en-US", text: "Nothing new" }])
+            .with(deployment_run.deployment_channel,
+              deployment_run.build_number,
+              deployment_run.release_version,
+              Deployment::FULL_ROLLOUT_VALUE,
+              [{language: "en-US", text: "Nothing new"}])
         end
 
         it "marks a run as released when no staged rollout" do
@@ -327,10 +335,12 @@ describe Deployments::GooglePlayStore::Release do
 
     context "when step run is restarted and release is present in the channel" do
       context "when staged rollout" do
-        let(:factory_tree) { create_deployment_run_tree(:android, :uploaded,
-                                                        step_traits: [:release],
-                                                        deployment_traits: [:with_staged_rollout],
-                                                        step_run_traits: [:deployment_restarted]) }
+        let(:factory_tree) {
+          create_deployment_run_tree(:android, :uploaded,
+            step_traits: [:release],
+            deployment_traits: [:with_staged_rollout],
+            step_run_traits: [:deployment_restarted])
+        }
         let(:deployment_run) { factory_tree[:deployment_run] }
         let(:step_run) { factory_tree[:step_run] }
 
@@ -349,9 +359,11 @@ describe Deployments::GooglePlayStore::Release do
       end
 
       context "when no staged rollout" do
-        let(:factory_tree) { create_deployment_run_tree(:android, :uploaded,
-                                                        step_traits: [:release],
-                                                        step_run_traits: [:deployment_restarted]) }
+        let(:factory_tree) {
+          create_deployment_run_tree(:android, :uploaded,
+            step_traits: [:release],
+            step_run_traits: [:deployment_restarted])
+        }
         let(:deployment_run) { factory_tree[:deployment_run] }
         let(:step_run) { factory_tree[:step_run] }
 

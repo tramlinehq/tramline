@@ -34,8 +34,8 @@ class Step < ApplicationRecord
   has_many :deployments, -> { kept.sequential }, inverse_of: :step, dependent: :destroy
   has_many :all_deployments, -> { sequential }, class_name: "Deployment", inverse_of: :step, dependent: :destroy
   has_many :deployment_runs, through: :deployments
-  validates :ci_cd_channel, presence: true, uniqueness: { scope: :release_platform_id, message: "you have already used this in another step of this train!" }
-  validates :release_suffix, format: { with: /\A[a-zA-Z\-_]+\z/, message: "only allows letters and underscore" }, if: -> { release_suffix.present? }
+  validates :ci_cd_channel, presence: true, uniqueness: {scope: :release_platform_id, message: "you have already used this in another step of this train!"}
+  validates :release_suffix, format: {with: /\A[a-zA-Z\-_]+\z/, message: "only allows letters and underscore"}, if: -> { release_suffix.present? }
   validates :deployments, presence: true, on: :create
   validate :unique_deployments, on: :create
   validate :unique_store_deployments_per_train, on: :create

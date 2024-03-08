@@ -171,9 +171,9 @@ describe Train do
   describe "#hotfixable?" do
     let(:factory_tree) {
       create_deployment_tree(:android,
-                             :with_production_channel,
-                             step_traits: [:release],
-                             train_traits: [:with_almost_trunk, :active])
+        :with_production_channel,
+        step_traits: [:release],
+        train_traits: [:with_almost_trunk, :active])
     }
     let(:train) { factory_tree[:train] }
     let(:release_platform) { factory_tree[:release_platform] }
@@ -205,4 +205,3 @@ describe Train do
     end
   end
 end
-

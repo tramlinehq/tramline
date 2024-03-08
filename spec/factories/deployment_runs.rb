@@ -71,10 +71,10 @@ FactoryBot.define do
 end
 
 def create_deployment_run_tree(platform, *traits, deployment_traits: [], step_traits: [:review], step_run_traits: [:deployment_started], train_traits: [], release_traits: [])
-  create_deployment_tree(platform, *deployment_traits, step_traits:, train_traits: ) => { app:, train:, release_platform:, step:, deployment: }
+  create_deployment_tree(platform, *deployment_traits, step_traits:, train_traits:) => { app:, train:, release_platform:, step:, deployment: }
   release = create(:release, *release_traits, train:)
   release_platform_run = create(:release_platform_run, release_platform:, release:)
   step_run = create(:step_run, *step_run_traits, step:, release_platform_run:)
   deployment_run = create(:deployment_run, *traits, deployment:, step_run:)
-  { app:, train:, release_platform:, step:, deployment:, release:, release_platform_run:, step_run:, deployment_run: }
+  {app:, train:, release_platform:, step:, deployment:, release:, release_platform_run:, step_run:, deployment_run:}
 end

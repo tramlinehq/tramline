@@ -49,8 +49,8 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     it "does nothing if not allowed" do
-      factory_tree =  create_deployment_run_tree(:ios, :started, deployment_traits: [:with_production_channel], step_traits: [:release])
-      run =  factory_tree[:deployment_run]
+      factory_tree = create_deployment_run_tree(:ios, :started, deployment_traits: [:with_production_channel], step_traits: [:release])
+      run = factory_tree[:deployment_run]
 
       expect(described_class.to_test_flight!(run)).to be_nil
 

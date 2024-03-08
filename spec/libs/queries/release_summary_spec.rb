@@ -14,11 +14,11 @@ describe Queries::ReleaseSummary, type: :model do
     it "returns summary when cache is warmed" do
       freeze_time do
         create_deployment_run_tree(:android,
-                                   :released,
-                                   deployment_traits: [:with_production_channel],
-                                   release_traits: [:with_no_platform_runs],
-                                   step_traits: [:release],
-                                   step_run_traits: [:success]) => { step:, release:, step_run:, deployment_run: }
+          :released,
+          deployment_traits: [:with_production_channel],
+          release_traits: [:with_no_platform_runs],
+          step_traits: [:release],
+          step_run_traits: [:success]) => { step:, release:, step_run:, deployment_run: }
         deployment_run.event_stamp_now!(reason: :release_started, kind: :notice, data: deployment_run.send(:stamp_data))
         described_class.warm(release.id)
         actual = described_class.all(release.id)

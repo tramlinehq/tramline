@@ -239,6 +239,7 @@ describe DeploymentRun do
 
   describe "#start_release!" do
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:deep_link).and_return(nil)
