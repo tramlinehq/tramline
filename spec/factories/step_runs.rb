@@ -83,13 +83,3 @@ FactoryBot.define do
     end
   end
 end
-
-def create_step_run_for_ios(trait)
-  app = create(:app, :ios)
-  train = create(:train, app: app)
-  release = create(:release, train:)
-  release_platform = create(:release_platform, train:, platform: "ios")
-  release_platform_run = create(:release_platform_run, release_platform:, release:)
-  step = create(:step, :with_deployment, release_platform:)
-  create(:step_run, trait, step:, release_platform_run:)
-end

@@ -2,7 +2,7 @@ require "rails_helper"
 
 describe Releases::FindBuildJob do
   describe "#perform" do
-    let(:step_run) { create_step_run_for_ios(:build_ready) }
+    let(:step_run) { create_deployment_run_tree(:ios, step_run_traits: [:build_ready])[:step_run] }
     let(:build_info) {
       {
         name: "1.2.0",

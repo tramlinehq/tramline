@@ -70,14 +70,11 @@ FactoryBot.define do
   end
 end
 
-def create_deployment_run_for_ios(*traits, deployment_traits: [], step_trait: :review, step_run_trait: :deployment_started)
-  app = create(:app, :ios)
-  train = create(:train, app: app)
-  release = create(:release, train:)
-  release_platform = create(:release_platform, train:)
+def create_deployment_run_tree(platform, *traits, deployment_traits: [], step_traits: [:review], step_run_traits: [:deployment_started], train_traits: [], release_traits: [])
+  create_deployment_tree(platform, *deployment_traits, step_traits:, train_traits: ) => { app:, train:, release_platform:, step:, deployment: }
+  release = create(:release, *release_traits, train:)
   release_platform_run = create(:release_platform_run, release_platform:, release:)
-  step = create(:step, :with_deployment, step_trait, release_platform: release_platform)
-  deployment = create(:deployment, *deployment_traits, integration: train.build_channel_integrations.first, step: step)
-  step_run = create(:step_run, step_run_trait, step: step, release_platform_run:)
-  create(:deployment_run, *traits, deployment: deployment, step_run: step_run)
+  step_run = create(:step_run, *step_run_traits, step:, release_platform_run:)
+  deployment_run = create(:deployment_run, *traits, deployment:, step_run:)
+  { app:, train:, release_platform:, step:, deployment:, release:, release_platform_run:, step_run:, deployment_run: }
 end

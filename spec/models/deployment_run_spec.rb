@@ -143,8 +143,10 @@ describe DeploymentRun do
   end
 
   describe "#push_to_slack!" do
+    let(:app) { create(:app, :android) }
     let(:slack_deployment_run) { create(:deployment_run, :started, :with_slack) }
-    let(:store_deployment_run) { create(:deployment_run, :started, :with_google_play_store) }
+    let(:store_deployment) { create(:deployment, :with_step, integration: app.android_store_provider.integration) }
+    let(:store_deployment_run) { create(:deployment_run, :started, deployment: store_deployment) }
     let(:providable_dbl) { instance_double(SlackIntegration) }
 
     before do
@@ -236,19 +238,21 @@ describe DeploymentRun do
   end
 
   describe "#start_release!" do
-    let(:step) { create(:step, :release, :with_deployment) }
-    let(:step_run) { create(:step_run, :deployment_started, step: step) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
-
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:deep_link).and_return(nil)
     end
 
     context "with rollout" do
+      let(:factory_tree) { create_deployment_tree(:android, :with_staged_rollout, step_traits: [:release]) }
+      let(:step) { factory_tree[:step] }
+      let(:deployment) { factory_tree[:deployment] }
+      let(:store_integration) { factory_tree[:train].build_channel_integrations.first }
+      let(:step_run) { create(:step_run, :deployment_started, step:) }
+
       it "kicks off the rollout if possible" do
         allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
-        deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
         run = create(:deployment_run, :uploaded, deployment:)
 
         run.start_release!
@@ -258,7 +262,6 @@ describe DeploymentRun do
 
       it "creates a staged rollout association" do
         allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
-        deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
         run = create(:deployment_run, :uploaded, deployment:)
 
         run.start_release!
@@ -268,8 +271,6 @@ describe DeploymentRun do
 
       it "creates a draft deployments" do
         allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
-        staged_rollout_config = [1, 100]
-        deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, staged_rollout_config:, step: step_run.step)
         run = create(:deployment_run, :uploaded, deployment:)
 
         run.start_release!
@@ -279,7 +280,6 @@ describe DeploymentRun do
 
       it "marks it as failed if create draft deployments fails" do
         allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new { raise })
-        deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
         run = create(:deployment_run, :uploaded, deployment:)
 
         run.start_release!
@@ -289,7 +289,6 @@ describe DeploymentRun do
 
       it "fails to create staged rollout if run is not rolloutable" do
         allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
-        deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step)
         run = create(:deployment_run, :uploaded, deployment:)
         run.release_platform_run.update(status: "stopped")
 
@@ -300,6 +299,12 @@ describe DeploymentRun do
     end
 
     context "with no rollout" do
+      let(:factory_tree) { create_deployment_tree(:android, step_traits: [:release]) }
+      let(:step) { factory_tree[:step] }
+      let(:deployment) { factory_tree[:deployment] }
+      let(:store_integration) { factory_tree[:train].build_channel_integrations.first }
+      let(:step_run) { create(:step_run, :deployment_started, step:) }
+
       before do
         repo_integration = instance_double(Installations::Github::Api)
         allow(Installations::Github::Api).to receive(:new).and_return(repo_integration)
@@ -310,7 +315,6 @@ describe DeploymentRun do
       it "fully promotes to the store" do
         full_release_value = 100
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
-        deployment = create(:deployment, :with_google_play_store, step: step_run.step)
         run = create(:deployment_run, :uploaded, deployment:)
 
         run.start_release!
@@ -330,7 +334,6 @@ describe DeploymentRun do
 
       it "completes the run" do
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
-        deployment = create(:deployment, :with_google_play_store, step: step_run.step)
         run = create(:deployment_run, :uploaded, deployment:)
 
         run.start_release!

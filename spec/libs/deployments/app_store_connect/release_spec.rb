@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require "rails_helper"
 
 describe Deployments::AppStoreConnect::Release do
@@ -21,13 +19,8 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when production channel" do
-      let(:run) {
-        create_deployment_run_for_ios(
-          :started,
-          deployment_traits: [:with_app_store, :with_production_channel],
-          step_trait: :release
-        )
-      }
+      let(:factory_tree) { create_deployment_run_tree(:ios, :started, deployment_traits: [:with_production_channel], step_traits: [:release]) }
+      let(:run) { factory_tree[:deployment_run] }
 
       it "starts preparing the release" do
         described_class.kickoff!(run)
@@ -37,13 +30,8 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when not production channel" do
-      let(:run) {
-        create_deployment_run_for_ios(
-          :started,
-          deployment_traits: [:with_app_store],
-          step_trait: :review
-        )
-      }
+      let(:factory_tree) { create_deployment_run_tree(:ios, :started, step_traits: [:review]) }
+      let(:run) { factory_tree[:deployment_run] }
 
       it "starts adding to beta group when testflight" do
         described_class.kickoff!(run)
@@ -61,11 +49,8 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     it "does nothing if not allowed" do
-      run = create_deployment_run_for_ios(
-        :started,
-        deployment_traits: [:with_app_store, :with_production_channel],
-        step_trait: :release
-      )
+      factory_tree =  create_deployment_run_tree(:ios, :started, deployment_traits: [:with_production_channel], step_traits: [:release])
+      run =  factory_tree[:deployment_run]
 
       expect(described_class.to_test_flight!(run)).to be_nil
 
@@ -73,13 +58,8 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when successful" do
-      let(:run) {
-        create_deployment_run_for_ios(
-          :started,
-          deployment_traits: [:with_app_store],
-          step_trait: :release
-        )
-      }
+      let(:factory_tree) { create_deployment_run_tree(:ios, :started, step_traits: [:release]) }
+      let(:run) { factory_tree[:deployment_run] }
 
       before do
         allow(providable_dbl).to receive(:release_to_testflight).and_return(GitHub::Result.new)
@@ -99,13 +79,8 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when failure" do
-      let(:run) {
-        create_deployment_run_for_ios(
-          :started,
-          deployment_traits: [:with_app_store],
-          step_trait: :release
-        )
-      }
+      let(:factory_tree) { create_deployment_run_tree(:ios, :started, step_traits: [:release]) }
+      let(:run) { factory_tree[:deployment_run] }
       let(:error) { Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "beta_group", "code" => "not_found"}}) }
 
       before do
@@ -142,13 +117,8 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when successful" do
-      let(:run) {
-        create_deployment_run_for_ios(
-          :preparing_release,
-          deployment_traits: [:with_app_store, :with_production_channel],
-          step_trait: :release
-        )
-      }
+      let(:factory_tree) { create_deployment_run_tree(:ios, :preparing_release, deployment_traits: [:with_production_channel], step_traits: [:release]) }
+      let(:run) { factory_tree[:deployment_run] }
       let(:base_release_info) {
         {
           external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
@@ -177,7 +147,7 @@ describe Deployments::AppStoreConnect::Release do
       end
 
       it "prepares the release for staged deployment" do
-        run = create_deployment_run_for_ios(:preparing_release, deployment_traits: [:with_phased_release, :with_app_store], step_trait: :release)
+        run = create_deployment_run_tree(:ios, :preparing_release, deployment_traits: [:with_phased_release], step_traits: [:release])[:deployment_run]
         described_class.prepare_for_release!(run)
 
         release_metadata = run.release_platform_run.release_metadata
@@ -193,13 +163,8 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when failure" do
-      let(:run) {
-        create_deployment_run_for_ios(
-          :preparing_release,
-          deployment_traits: [:with_app_store, :with_production_channel],
-          step_trait: :release
-        )
-      }
+      let(:factory_tree) { create_deployment_run_tree(:ios, :preparing_release, deployment_traits: [:with_production_channel], step_traits: [:release]) }
+      let(:run) { factory_tree[:deployment_run] }
       let(:error) { Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "build", "code" => "not_found"}}) }
 
       before do
@@ -220,13 +185,8 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when retryable failure" do
-      let(:run) {
-        create_deployment_run_for_ios(
-          :preparing_release,
-          deployment_traits: [:with_app_store, :with_production_channel],
-          step_trait: :release
-        )
-      }
+      let(:factory_tree) { create_deployment_run_tree(:ios, :preparing_release, deployment_traits: [:with_production_channel], step_traits: [:release]) }
+      let(:run) { factory_tree[:deployment_run] }
       let(:error) { Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "release", "code" => "release_already_prepared"}}) }
 
       before do
@@ -247,13 +207,8 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when invalid release" do
-      let(:run) {
-        create_deployment_run_for_ios(
-          :preparing_release,
-          deployment_traits: [:with_app_store, :with_phased_release],
-          step_trait: :release
-        )
-      }
+      let(:factory_tree) { create_deployment_run_tree(:ios, :preparing_release, deployment_traits: [:with_phased_release], step_traits: [:release]) }
+      let(:run) { factory_tree[:deployment_run] }
       let(:base_release_info) {
         {
           external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
@@ -328,13 +283,8 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when successful" do
-      let(:run) {
-        create_deployment_run_for_ios(
-          :prepared_release,
-          deployment_traits: [:with_app_store, :with_production_channel],
-          step_trait: :release
-        )
-      }
+      let(:factory_tree) { create_deployment_run_tree(:ios, :prepared_release, deployment_traits: [:with_production_channel], step_traits: [:release]) }
+      let(:run) { factory_tree[:deployment_run] }
 
       before do
         allow(providable_dbl).to receive(:submit_release).and_return(GitHub::Result.new)
@@ -354,7 +304,8 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when failure" do
-      let(:run) { create_deployment_run_for_ios(:started, deployment_traits: [:with_app_store, :with_production_channel], step_trait: :release) }
+      let(:factory_tree) { create_deployment_run_tree(:ios, :started, deployment_traits: [:with_production_channel], step_traits: [:release]) }
+      let(:run) { factory_tree[:deployment_run] }
       let(:error) { Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "build", "code" => "not_found"}}) }
       let(:retryable_error) { Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "release", "code" => "attachment_upload_in_progress"}}) }
 
@@ -402,7 +353,8 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when testflight" do
-      let(:run) { create_deployment_run_for_ios(:submitted_for_review, :with_external_release, deployment_traits: [:with_app_store]) }
+      let(:factory_tree) { create_deployment_run_tree(:ios, :submitted_for_review, :with_external_release, step_traits: [:release]) }
+      let(:run) { factory_tree[:deployment_run] }
       let(:base_build_info) {
         {
           external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
@@ -427,7 +379,7 @@ describe Deployments::AppStoreConnect::Release do
       end
 
       it "creates external release" do
-        run_without_external_release = create_deployment_run_for_ios(:submitted_for_review, deployment_traits: [:with_app_store])
+        run_without_external_release = create_deployment_run_tree(:ios, :submitted_for_review)[:deployment_run]
         allow(providable_dbl).to receive(:find_build).and_return(GitHub::Result.new { initial_build_info })
 
         expect(run_without_external_release.external_release).not_to be_present
@@ -504,13 +456,8 @@ describe Deployments::AppStoreConnect::Release do
     end
 
     context "when production" do
-      let(:run) {
-        create_deployment_run_for_ios(
-          :submitted_for_review,
-          deployment_traits: [:with_app_store, :with_production_channel],
-          step_trait: :release
-        )
-      }
+      let(:factory_tree) { create_deployment_run_tree(:ios, :submitted_for_review, deployment_traits: [:with_production_channel], step_traits: [:release]) }
+      let(:run) { factory_tree[:deployment_run] }
       let(:base_release_info) {
         {
           external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
@@ -602,13 +549,8 @@ describe Deployments::AppStoreConnect::Release do
 
   describe ".start_release!" do
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
-    let(:run) {
-      create_deployment_run_for_ios(
-        :ready_to_release,
-        deployment_traits: [:with_app_store, :with_production_channel],
-        step_trait: :release
-      )
-    }
+    let(:factory_tree) { create_deployment_run_tree(:ios, :ready_to_release, deployment_traits: [:with_production_channel], step_traits: [:release]) }
+    let(:run) { factory_tree[:deployment_run] }
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
@@ -635,9 +577,7 @@ describe Deployments::AppStoreConnect::Release do
       end
 
       it "creates staged rollout if staged rollout enabled" do
-        run_with_staged_rollout = create_deployment_run_for_ios(:ready_to_release,
-          deployment_traits: [:with_app_store, :with_phased_release],
-          step_trait: :release)
+        run_with_staged_rollout = create_deployment_run_tree(:ios, :ready_to_release, deployment_traits: [:with_phased_release], step_traits: [:release])[:deployment_run]
         described_class.start_release!(run_with_staged_rollout)
 
         expect(run_with_staged_rollout.reload.staged_rollout).to be_present
@@ -683,14 +623,8 @@ describe Deployments::AppStoreConnect::Release do
   describe ".track_live_release_status" do
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
     let(:build_number) { "123" }
-    let(:run) {
-      create_deployment_run_for_ios(
-        :rollout_started,
-        :with_external_release,
-        deployment_traits: [:with_app_store, :with_production_channel],
-        step_trait: :release
-      )
-    }
+    let(:factory_tree) { create_deployment_run_tree(:ios, :rollout_started, :with_external_release, deployment_traits: [:with_production_channel], step_traits: [:release]) }
+    let(:run) { factory_tree[:deployment_run] }
     let(:base_release_info) {
       {
         external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
@@ -743,12 +677,7 @@ describe Deployments::AppStoreConnect::Release do
       }
 
       let(:run_with_staged_rollout) {
-        create_deployment_run_for_ios(
-          :rollout_started,
-          :with_external_release,
-          deployment_traits: [:with_app_store, :with_phased_release],
-          step_trait: :release
-        )
+        create_deployment_run_tree(:ios, :rollout_started, :with_external_release, deployment_traits: [:with_phased_release], step_traits: [:release])[:deployment_run]
       }
 
       before do
@@ -862,14 +791,8 @@ describe Deployments::AppStoreConnect::Release do
   describe ".complete_phased_release!" do
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
     let(:build_number) { "123" }
-    let(:run) {
-      create_deployment_run_for_ios(
-        :rollout_started,
-        :with_external_release,
-        deployment_traits: [:with_app_store, :with_phased_release],
-        step_trait: :release
-      )
-    }
+    let(:factory_tree) { create_deployment_run_tree(:ios, :rollout_started, :with_external_release, deployment_traits: [:with_phased_release], step_traits: [:release]) }
+    let(:run) { factory_tree[:deployment_run] }
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)

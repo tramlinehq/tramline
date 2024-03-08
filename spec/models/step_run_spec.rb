@@ -107,10 +107,11 @@ describe StepRun do
 
     context "with release step" do
       let(:train) { create(:train) }
+      let(:store_integration) {train.build_channel_integrations.first}
       let(:release_platform) { create(:release_platform, train:) }
       let(:release_step) { create(:step, :release, :with_deployment, release_platform:) }
-      let(:regular_deployment) { create(:deployment, :with_google_play_store, step: release_step) }
-      let(:production_deployment) { create(:deployment, :with_google_play_store, :with_staged_rollout, step: release_step) }
+      let(:regular_deployment) { create(:deployment, step: release_step, integration: store_integration) }
+      let(:production_deployment) { create(:deployment, :with_staged_rollout, step: release_step, integration: store_integration) }
       let(:release) { create(:release, train:) }
       let(:release_platform_run) { create(:release_platform_run, :on_track, release_platform:, release:) }
 
@@ -224,7 +225,7 @@ describe StepRun do
       allow(Triggers::Deployment).to receive(:call)
       step = create(:step, :release, :with_deployment)
       regular_deployment = step.deployments.first
-      prod_deployment = create(:deployment, :with_production_channel, :with_google_play_store, step: step)
+      prod_deployment = create(:deployment, :with_production_channel, step: step, integration: step.train.build_channel_integrations.first)
       step_run = create(:step_run, :build_available, step: step)
 
       step_run.finish_deployment!(regular_deployment)
