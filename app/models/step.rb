@@ -69,7 +69,7 @@ class Step < ApplicationRecord
   end
 
   def set_ci_cd_provider
-    self.integration ||= train.ci_cd_provider.integration
+    update(integration: train.ci_cd_provider.integration)
   end
 
   def active_deployments_for(release, step_run = nil)
