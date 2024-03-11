@@ -186,13 +186,16 @@ class Integration < ApplicationRecord
     end
   end
 
+  def disconnectable?
+    return false unless ci_cd?
+    return false if app.active_runs.exists?
+
+    Step.kept.where(integration: self).none?
+  end
+
   def disconnect
     return unless disconnectable?
     update(status: :disconnected, discarded_at: Time.current)
-  end
-
-  def disconnectable?
-    app.active_runs.none?
   end
 
   def set_metadata!
