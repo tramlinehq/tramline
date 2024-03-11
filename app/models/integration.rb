@@ -187,7 +187,6 @@ class Integration < ApplicationRecord
   end
 
   def disconnectable?
-    return false unless ci_cd?
     return false if app.active_runs.exists?
 
     Step.kept.where(integration: self).none?
