@@ -245,7 +245,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   def current_step_number
     return if steps.blank?
-    return 1 if running_steps.blank?
+    return steps.minimum(:step_number) if running_steps.blank?
     running_steps.order(:step_number).last.step_number
   end
 
