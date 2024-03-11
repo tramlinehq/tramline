@@ -8,7 +8,7 @@ class V2::ScheduledTrainComponent < V2::BaseComponent
     previous_time =
       if @ongoing_release.present?
         if @ongoing_release.is_automatic?
-          @ongoing_release.scheduled_release.sheduled_at
+          @ongoing_release.scheduled_release.scheduled_at
         else
           @ongoing_release.scheduled_at
         end
