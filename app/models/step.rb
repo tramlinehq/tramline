@@ -91,11 +91,13 @@ class Step < ApplicationRecord
   end
 
   def set_step_number
+    all_steps = release_platform.all_steps
+
     if review?
-      self.step_number = release_platform.all_steps.review.maximum(:step_number).to_i + 1
+      self.step_number = all_steps.review.maximum(:step_number).to_i + 1
       release_platform.release_step&.update!(step_number: step_number.succ)
     else
-      self.step_number = release_platform.all_steps.maximum(:step_number).to_i + 1
+      self.step_number = all_steps.maximum(:step_number).to_i + 1
     end
   end
 
