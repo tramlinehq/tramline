@@ -92,4 +92,8 @@ class Accounts::Organization < ApplicationRecord
   def teams_supported?
     teams.exists?
   end
+
+  def team_options
+    teams.pluck(:name, :id).push([Accounts::Team::UNKNOWN_TEAM_NAME, nil])
+  end
 end

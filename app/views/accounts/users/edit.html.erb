@@ -28,11 +28,11 @@
             <% section.F.fields_for :memberships, membership do |membership_fields| %>
               <%= membership_fields.hidden_field :id, value: membership.id %>
               <% if org.teams.any? %>
-                <div><%= membership_fields.labeled_select :team_id, "Team for #{org.name}", options_for_select(org.teams.pluck(:name, :id).to_h, membership.team&.id) %></div>
+                <div><%= membership_fields.labeled_select :team_id, "Team for #{org.name}", options_for_select(org.team_options, membership.team&.id || "") %></div>
               <% else %>
                 <%= render V2::TooltipComponent.new("This organization has no teams. You can still be a member of the organization, but you won't be able to join any teams.", placement: "bottom") do |tooltip| %>
                   <% tooltip.with_body do %>
-                    <div><%= membership_fields.labeled_select :team_id, "Team for #{org.name}", options_for_select(org.teams.pluck(:name, :id).to_h, membership.team&.id), {}, { disabled: true } %></div>
+                    <div><%= membership_fields.labeled_select :team_id, "Team for #{org.name}", options_for_select(org.team_options, membership.team&.id || ""), {}, { disabled: true } %></div>
                   <% end %>
                 <% end %>
               <% end %>
