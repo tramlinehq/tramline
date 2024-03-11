@@ -47,11 +47,12 @@
     <% container.with_action do %>
       <%= render V2::ButtonComponent.new(
         scheme: :danger,
-        type: :link,
+        type: :button,
         size: :xxs,
         label: "Stop release",
         options: release_path(@release.id),
-        html_options: { method: :post, data: { turbo_method: :delete, turbo_confirm: stop_release_warning(@release) } }) do |b|
+        turbo: false,
+        html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: stop_release_warning(@release) } }) do |b|
         b.with_icon("v2/stop.svg")
       end %>
     <% end %>
