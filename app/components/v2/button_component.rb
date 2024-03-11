@@ -156,6 +156,7 @@ class V2::ButtonComponent < V2::BaseComponent
     options[:class] << " #{SIZES[@size]}"
     options[:class] << " #{DISABLED_STYLE}" if disabled?
     options[:class] = options[:class].squish
+    options[:disabled] = true if disabled?
 
     options[:data] ||= {}
     if @turbo
