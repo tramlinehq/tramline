@@ -63,7 +63,7 @@ end
 
 def create_deployment_tree(platform = :android, *traits, train_traits: [], step_traits: [])
   app = create(:app, platform)
-  train = create(:train, *train_traits, app: app)
+  train = create(:train, *train_traits, :with_no_platforms, app: app)
   release_platform = create(:release_platform, train:, platform:)
   step = create(:step, :with_deployment, *step_traits, release_platform: release_platform, integration: app.ci_cd_provider.integration)
   deployment = create(:deployment, *traits, integration: train.build_channel_integrations.first, step: step)
