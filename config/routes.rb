@@ -137,7 +137,7 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :integrations, only: %i[index create] do
+    resources :integrations, only: %i[index create destroy] do
       collection do
         get :connect, to: "integrations#connect", as: :connect
 

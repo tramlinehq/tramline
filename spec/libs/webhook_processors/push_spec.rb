@@ -37,28 +37,28 @@ describe WebhookProcessors::Push do
   end
 
   describe "#process" do
-    let(:release) { create(:release, :with_no_platform_runs, :created, train: train) }
-    let(:release_platform) { create(:release_platform, train: train) }
-    let(:release_platform_run) { create(:release_platform_run, release_platform:, release:, release_version: train.version_current) }
-    let(:step) { create(:step, :release, :with_deployment, release_platform:) }
-
     context "when production submission has happened" do
-      [[:with_google_play_store, :with_production_channel, :rollout_started],
-        [:with_google_play_store, :with_staged_rollout, :rollout_started],
-        [:with_app_store, :with_production_channel, :submitted_for_review],
-        [:with_app_store, :with_production_channel, :rollout_started],
-        [:with_app_store, :with_production_channel, :review_failed],
-        [:with_app_store, :with_phased_release, :submitted_for_review],
-        [:with_app_store, :with_phased_release, :rollout_started],
-        [:with_app_store, :with_phased_release, :review_failed]].each do |test_case|
+      [[:android, :with_google_play_store, :with_production_channel, :rollout_started],
+        [:android, :with_google_play_store, :with_staged_rollout, :rollout_started],
+        [:ios, :with_app_store, :with_production_channel, :submitted_for_review],
+        [:ios, :with_app_store, :with_production_channel, :rollout_started],
+        [:ios, :with_app_store, :with_production_channel, :review_failed],
+        [:ios, :with_app_store, :with_phased_release, :submitted_for_review],
+        [:ios, :with_app_store, :with_phased_release, :rollout_started],
+        [:ios, :with_app_store, :with_phased_release, :review_failed]].each do |test_case|
         test_case_help = test_case.join(", ").humanize.downcase
 
         it "does not trigger step runs for the platform run #{test_case_help}" do
-          deployment_traits = test_case[0..1]
+          platform = test_case.first
+          deployment_traits = test_case[1..2]
           deployment_run_trait = test_case.last
-          deployment = create(:deployment, *deployment_traits, step: step)
-          step_run = create(:step_run, release_platform_run:, step:)
-          _deployment_run = create(:deployment_run, deployment_run_trait, deployment: deployment, step_run: step_run)
+          factory_tree = create_deployment_run_tree(platform,
+            deployment_run_trait,
+            deployment_traits:,
+            step_traits: [:release],
+            release_traits: [:with_no_platform_runs])
+          release = factory_tree[:release]
+
           allow(Triggers::StepRun).to receive(:call)
           described_class.process(release.reload, head_commit_attributes, rest_commit_attributes)
 
@@ -69,8 +69,10 @@ describe WebhookProcessors::Push do
 
     context "when hotfix release" do
       it "does not trigger step runs for the platform run for the first commit" do
-        _older_release = create(:release, :finished, train:)
-        release = create(:release, :hotfix, train:)
+        factory_tree = create_deployment_run_tree(:android, release_traits: [:hotfix])
+        release = factory_tree[:release]
+        _older_release = create(:release, :finished, train:, scheduled_at: 1.day.ago)
+
         allow(Triggers::StepRun).to receive(:call)
         described_class.process(release.reload, head_commit_attributes, rest_commit_attributes)
 
@@ -78,11 +80,9 @@ describe WebhookProcessors::Push do
       end
 
       it "does not trigger step runs for the platform run for subsequent commit" do
-        _older_release = create(:release, :finished, train:)
-        release = create(:release, :hotfix, train:)
-        deployment = create(:deployment, :with_google_play_store, step: step)
-        step_run = create(:step_run, release_platform_run:, step:)
-        _deployment_run = create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
+        factory_tree = create_deployment_run_tree(:android, :rollout_started, release_traits: [:hotfix])
+        release = factory_tree[:release]
+        _older_release = create(:release, :finished, train:, scheduled_at: 1.day.ago)
         allow(Triggers::StepRun).to receive(:call)
         described_class.process(release.reload, head_commit_attributes, rest_commit_attributes)
 
@@ -91,33 +91,42 @@ describe WebhookProcessors::Push do
     end
 
     it "starts the release" do
+      factory_tree = create_deployment_run_tree(:android, release_traits: [:with_no_platform_runs])
+      release = factory_tree[:release]
       described_class.process(release, head_commit_attributes, rest_commit_attributes)
 
       expect(release.reload.on_track?).to be(true)
     end
 
     it "creates a new commit" do
+      factory_tree = create_deployment_run_tree(:android, release_traits: [:with_no_platform_runs])
+      release = factory_tree[:release]
       expect {
         described_class.process(release, head_commit_attributes, rest_commit_attributes)
       }.to change(Commit, :count)
     end
 
     it "creates multiple commits if present" do
-      described_class.process(release, head_commit_attributes, rest_commit_attributes)
+      factory_tree = create_deployment_run_tree(:android, release_traits: [:with_no_platform_runs])
+      release = factory_tree[:release]
 
-      expect(Commit.count).to eq(3)
+      expect {
+        described_class.process(release, head_commit_attributes, rest_commit_attributes)
+      }.to change(Commit, :count).by(3)
     end
 
     it "creates only the head commit if none other" do
-      described_class.process(release, head_commit_attributes, [])
+      factory_tree = create_deployment_run_tree(:android, release_traits: [:with_no_platform_runs])
+      release = factory_tree[:release]
 
-      expect(Commit.count).to eq(1)
+      expect {
+        described_class.process(release, head_commit_attributes, [])
+      }.to change(Commit, :count).by(1)
     end
 
     it "triggers step runs" do
-      release_platform = train.release_platforms.first
-      _release_platform_run = create(:release_platform_run, release_platform:, release:, release_version: train.version_current)
-      create(:step, :with_deployment, release_platform:)
+      factory_tree = create_deployment_run_tree(:android, release_traits: [:with_no_platform_runs])
+      release = factory_tree[:release]
       allow(Triggers::StepRun).to receive(:call)
 
       described_class.process(release, head_commit_attributes, rest_commit_attributes)
@@ -127,13 +136,21 @@ describe WebhookProcessors::Push do
 
     context "when build queue" do
       let(:queue_size) { 3 }
-      let(:train) { create(:train, :with_build_queue, version_seeded_with: "1.5.0", build_queue_size: queue_size) }
-      let(:release) { create(:release, :with_no_platform_runs, :on_track, train: train) }
-      let(:release_platform) { create(:release_platform, train: train) }
+      let(:factory_tree) {
+        create_deployment_run_tree(:android, :uploaded,
+          step_traits: [:release],
+          step_run_traits: [:deployment_restarted],
+          train_traits: [:with_build_queue],
+          release_traits: [:with_no_platform_runs, :on_track])
+      }
+      let(:train) { factory_tree[:train] }
+      let(:release) { factory_tree[:release] }
+
+      before do
+        train.update!(build_queue_size: queue_size)
+      end
 
       it "triggers step run for the first commit" do
-        create(:step, :with_deployment, release_platform:)
-        create(:release_platform_run, release_platform:, release:, release_version: train.version_current)
         allow(Triggers::StepRun).to receive(:call)
 
         described_class.process(release, head_commit_attributes, [])
@@ -143,8 +160,6 @@ describe WebhookProcessors::Push do
 
       it "adds the subsequent commits to the queue" do
         _old_commit = create(:commit, release:, timestamp: 1.minute.ago)
-        create(:step, :with_deployment, release_platform:)
-        create(:release_platform_run, release_platform:, release:, release_version: train.version_current)
         allow(Triggers::StepRun).to receive(:call)
 
         described_class.process(release, head_commit_attributes, [])
@@ -156,8 +171,6 @@ describe WebhookProcessors::Push do
 
       it "adds all commits to the queue when multiple commits" do
         old_commit = create(:commit, release:)
-        create(:step, :with_deployment, release_platform:)
-        create(:release_platform_run, release_platform:, release:, release_version: train.version_current)
         allow(Triggers::StepRun).to receive(:call)
 
         described_class.process(release, head_commit_attributes, rest_commit_attributes.take(1))
@@ -171,8 +184,6 @@ describe WebhookProcessors::Push do
 
       it "applies the build queue if head commit crosses the queue size" do
         _old_commit = create(:commit, release:)
-        create(:step, :with_deployment, release_platform:)
-        create(:release_platform_run, release_platform:, release:, release_version: train.version_current)
         allow(Triggers::StepRun).to receive(:call)
 
         described_class.process(release, head_commit_attributes, rest_commit_attributes)
@@ -182,8 +193,6 @@ describe WebhookProcessors::Push do
 
       it "does not apply the build queue if head commit does not cross the queue size" do
         _old_commit = create(:commit, release:)
-        create(:step, :with_deployment, release_platform:)
-        create(:release_platform_run, release_platform:, release:, release_version: train.version_current)
         allow(Triggers::StepRun).to receive(:call)
 
         described_class.process(release, head_commit_attributes, rest_commit_attributes.take(1))

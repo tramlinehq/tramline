@@ -6,6 +6,10 @@ FactoryBot.define do
     bundle_identifier { "com.example.com" }
     build_number { Faker::Number.number(digits: 4) }
 
+    after(:build) do |app|
+      app.config = build(:app_config, app: app)
+    end
+
     trait :android do
       platform { "android" }
       after(:create) do |app, _|
@@ -31,12 +35,6 @@ FactoryBot.define do
         create(:integration, category: "ci_cd", providable: create(:github_integration), app:)
         create(:integration, :with_google_play_store, app:)
         create(:integration, :with_app_store, app:)
-      end
-    end
-
-    trait :with_valid_config do
-      after(:build) do |app|
-        app.config = build(:app_config, app: app)
       end
     end
 

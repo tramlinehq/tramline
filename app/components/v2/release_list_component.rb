@@ -33,6 +33,10 @@ class V2::ReleaseListComponent < V2::BaseComponent
     V2::BaseReleaseComponent.new(run)
   end
 
+  def release_startable?
+    app.ready? && release_options.present?
+  end
+
   def release_options
     return [] unless train.manually_startable?
     return [] if train.ongoing_release && !train.upcoming_release_startable?

@@ -72,15 +72,15 @@ describe Deployment do
 
   describe "#set_default_staged_rollout" do
     it "sets app store default rollout sequence" do
-      step = create(:step, :release, :with_deployment)
-      app_store_deployment = create(:deployment, :with_app_store, :with_phased_release, step: step)
+      factory_tree = create_deployment_tree(:ios, :with_phased_release, step_traits: [:release])
+      app_store_deployment = factory_tree[:deployment]
 
       expect(app_store_deployment.staged_rollout_config).to eq(AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE)
     end
 
     it "does not set app store default rollout sequence if not app store" do
-      step = create(:step, :release, :with_deployment)
-      deployment = create(:deployment, :with_google_play_store, :with_staged_rollout, step: step)
+      factory_tree = create_deployment_tree(:android, :with_staged_rollout, step_traits: [:release])
+      deployment = factory_tree[:deployment]
 
       expect(deployment.staged_rollout_config).not_to eq(AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE)
     end
@@ -88,10 +88,12 @@ describe Deployment do
 
   describe "#uploadable?" do
     it "is true when app is android" do
-      step = create(:step, :with_deployment)
-      d1 = create(:deployment, :with_google_play_store, step: step)
-      d2 = create(:deployment, :with_slack, step: step)
-      d3 = create(:deployment, :with_external, step: step)
+      factory_tree = create_deployment_tree(:android, :with_staged_rollout, step_traits: [:release])
+      step = factory_tree[:step]
+
+      d1 = factory_tree[:deployment]
+      d2 = create(:deployment, :with_slack, step:)
+      d3 = create(:deployment, :with_external, step:)
 
       expect(d1.uploadable?).to be(true)
       expect(d2.uploadable?).to be(true)
@@ -99,11 +101,8 @@ describe Deployment do
     end
 
     it "is false when app is ios and deployment is app store" do
-      app = create(:app, :ios)
-      train = create(:train, app: app)
-      release_platform = create(:release_platform, train: train, platform: "ios")
-      step = create(:step, :with_deployment, release_platform:)
-      deployment = create(:deployment, integration: train.build_channel_integrations.first, step: step)
+      factory_tree = create_deployment_tree(:ios, step_traits: [:release])
+      deployment = factory_tree[:deployment]
 
       expect(deployment.uploadable?).to be(false)
     end

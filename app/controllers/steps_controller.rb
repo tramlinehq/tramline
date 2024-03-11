@@ -50,7 +50,7 @@ class StepsController < SignedInApplicationController
     if @step.update(parsed_step_params)
       redirect_to steps_app_train_path(@app, @train), notice: "Step was successfully updated."
     else
-      @ci_actions = @train.ci_cd_provider.workflows
+      @ci_actions = @step.ci_cd_provider.workflows
       redirect_to steps_app_train_path(@app, @train), flash: {error: @step.errors.full_messages.to_sentence}
     end
   end

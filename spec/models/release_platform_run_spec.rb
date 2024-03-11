@@ -17,11 +17,13 @@ describe ReleasePlatformRun do
   end
 
   describe "#metadata_editable" do
-    let(:release_platform) { create(:release_platform) }
+    let(:factory_tree) { create_deployment_tree(:android, :with_staged_rollout, step_traits: [:release]) }
+    let(:release_platform) { factory_tree[:release_platform] }
+    let(:release_step) { factory_tree[:step] }
+    let(:release) { create(:release, train:) }
     let(:review_step) { create(:step, :review, :with_deployment, release_platform:) }
-    let(:release_step) { create(:step, :release, :with_deployment, release_platform:) }
-    let(:regular_deployment) { create(:deployment, :with_google_play_store, step: release_step) }
-    let(:production_deployment) { create(:deployment, :with_google_play_store, :with_staged_rollout, step: release_step) }
+    let(:production_deployment) { factory_tree[:deployment] }
+    let(:regular_deployment) { create(:deployment, step: release_step, integration: production_deployment.integration) }
     let(:release_platform_run) { create(:release_platform_run, :on_track, release_platform:) }
     let(:commit) { create(:commit, release: release_platform_run.release) }
 
@@ -244,13 +246,14 @@ describe ReleasePlatformRun do
   end
 
   describe "#patch_fix?" do
-    let(:train) { create(:train) }
-    let(:release_platform) { create(:release_platform, train:) }
-    let(:review_step) { create(:step, :review, :with_deployment, release_platform:) }
-    let(:release_step) { create(:step, :release, :with_deployment, release_platform:) }
-    let(:regular_deployment) { create(:deployment, :with_google_play_store, step: release_step) }
-    let(:production_deployment) { create(:deployment, :with_google_play_store, :with_staged_rollout, step: release_step) }
+    let(:factory_tree) { create_deployment_tree(:android, :with_staged_rollout, step_traits: [:release]) }
+    let(:train) { factory_tree[:train] }
+    let(:release_platform) { factory_tree[:release_platform] }
+    let(:release_step) { factory_tree[:step] }
     let(:release) { create(:release, train:) }
+    let(:review_step) { create(:step, :review, :with_deployment, release_platform:) }
+    let(:production_deployment) { factory_tree[:deployment] }
+    let(:regular_deployment) { create(:deployment, step: release_step, integration: production_deployment.integration) }
     let(:release_platform_run) { create(:release_platform_run, :on_track, release_platform:, release:) }
 
     it "is false when it has step run and production deployment run has not started rollout" do
@@ -275,14 +278,14 @@ describe ReleasePlatformRun do
 
   describe "#version_bump_required?" do
     context "when android app" do
-      let(:app) { create(:app, :android) }
-      let(:train) { create(:train, app:) }
-      let(:release_platform) { create(:release_platform, train:) }
-      let(:review_step) { create(:step, :review, :with_deployment, release_platform:) }
-      let(:release_step) { create(:step, :release, :with_deployment, release_platform:) }
-      let(:regular_deployment) { create(:deployment, :with_google_play_store, step: release_step) }
-      let(:production_deployment) { create(:deployment, :with_google_play_store, :with_staged_rollout, step: release_step) }
+      let(:factory_tree) { create_deployment_tree(:android, :with_production_channel, step_traits: [:release]) }
+      let(:train) { factory_tree[:train] }
+      let(:release_platform) { factory_tree[:release_platform] }
+      let(:release_step) { factory_tree[:step] }
       let(:release) { create(:release, train:) }
+      let(:review_step) { create(:step, :review, :with_deployment, release_platform:) }
+      let(:production_deployment) { factory_tree[:deployment] }
+      let(:regular_deployment) { create(:deployment, step: release_step, integration: production_deployment.integration) }
       let(:release_platform_run) { create(:release_platform_run, :on_track, release_platform:, release:) }
 
       it "is false when it does not have a release step run" do
@@ -334,14 +337,14 @@ describe ReleasePlatformRun do
     end
 
     context "when iOS app" do
-      let(:app) { create(:app, :ios) }
-      let(:train) { create(:train, app:) }
-      let(:release_platform) { create(:release_platform, train:, platform: app.platform) }
-      let(:review_step) { create(:step, :review, :with_deployment, release_platform:) }
-      let(:release_step) { create(:step, :release, :with_deployment, release_platform:) }
-      let(:regular_deployment) { create(:deployment, :with_app_store, step: release_step) }
-      let(:production_deployment) { create(:deployment, :with_app_store, :with_phased_release, step: release_step) }
+      let(:factory_tree) { create_deployment_tree(:ios, :with_phased_release, step_traits: [:release]) }
+      let(:train) { factory_tree[:train] }
+      let(:release_platform) { factory_tree[:release_platform] }
+      let(:release_step) { factory_tree[:step] }
       let(:release) { create(:release, train:) }
+      let(:review_step) { create(:step, :review, :with_deployment, release_platform:) }
+      let(:production_deployment) { factory_tree[:deployment] }
+      let(:regular_deployment) { create(:deployment, step: release_step, integration: production_deployment.integration) }
       let(:release_platform_run) { create(:release_platform_run, :on_track, release_platform:, release:) }
 
       it "is false when it does not have a release step run" do
@@ -393,24 +396,19 @@ describe ReleasePlatformRun do
   end
 
   describe "#bump_version!" do
-    let(:app) { create(:app, :android) }
-    let(:train) { create(:train, app:) }
-    let(:release_platform) { create(:release_platform, train:) }
-    let(:release_step) { create(:step, :release, :with_deployment, release_platform:) }
-    let(:release) { create(:release, train:) }
-
-    [[:with_google_play_store, :with_production_channel],
-      [:with_google_play_store, :with_staged_rollout],
-      [:with_app_store, :with_production_channel],
-      [:with_app_store, :with_phased_release]].each do |test_case|
-      test_case_help = test_case.join(", ").humanize.downcase
+    [[:android, :with_production_channel],
+      [:android, :with_staged_rollout],
+      [:ios, :with_production_channel],
+      [:ios, :with_phased_release]].each do |platform, deployment_trait|
+      test_case_help = [platform, deployment_trait].join(", ").humanize.downcase
 
       it "updates the minor version if the current version is a partial semver with #{test_case_help}" do
         release_version = "1.2"
-        deployment = create(:deployment, *test_case, step: release_step)
+        create_deployment_tree(platform, deployment_trait, step_traits: [:release]) => {train:, release_platform:, step:, deployment:}
+        release = create(:release, train:)
         release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version:)
-        step_run = create(:step_run, release_platform_run:, step: release_step, build_version: release_version)
-        create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
+        step_run = create(:step_run, release_platform_run:, step:, build_version: release_version)
+        create(:deployment_run, :rollout_started, deployment:, step_run:)
 
         release_platform_run.bump_version!
         release_platform_run.reload
@@ -420,10 +418,11 @@ describe ReleasePlatformRun do
 
       it "updates the patch version if the current version is a proper semver with #{test_case_help}" do
         release_version = "1.2.3"
-        deployment = create(:deployment, *test_case, step: release_step)
+        create_deployment_tree(platform, deployment_trait, step_traits: [:release]) => {train:, release_platform:, step:, deployment:}
+        release = create(:release, train:)
         release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version:)
-        step_run = create(:step_run, release_platform_run:, step: release_step, build_version: release_version)
-        create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
+        step_run = create(:step_run, release_platform_run:, step:, build_version: release_version)
+        create(:deployment_run, :rollout_started, deployment:, step_run:)
 
         release_platform_run.bump_version!
         release_platform_run.reload
@@ -434,8 +433,10 @@ describe ReleasePlatformRun do
 
     it "does not do anything if no production deployments" do
       release_version = "1.2.3"
+      create_deployment_tree => {train:, release_platform:, step:}
+      release = create(:release, train:)
       release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version:)
-      step_run = create(:step_run, step: release_step, release_platform_run:)
+      step_run = create(:step_run, step:, release_platform_run:)
       create(:deployment_run, step_run: step_run)
 
       expect {
@@ -446,15 +447,20 @@ describe ReleasePlatformRun do
     context "when upcoming release and proper semver" do
       let(:ongoing_release_version) { "1.2.3" }
       let(:upcoming_release_version) { "1.3.0" }
+      let(:factory_tree) { create_deployment_tree(:android, :with_production_channel, step_traits: [:release]) }
+      let(:train) { factory_tree[:train] }
+      let(:release_platform) { factory_tree[:release_platform] }
+      let(:step) { factory_tree[:step] }
+      let(:deployment) { factory_tree[:deployment] }
+      let(:release) { create(:release, train:) }
       let(:ongoing_release) { create(:release, :with_no_platform_runs, train:, original_release_version: ongoing_release_version) }
       let(:upcoming_release) { create(:release, :with_no_platform_runs, train:, original_release_version: upcoming_release_version) }
 
       it "bumps patch version" do
         ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release:, release_version: ongoing_release_version)
-        deployment = create(:deployment, :with_google_play_store, :with_production_channel, step: release_step)
         _upcoming_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: upcoming_release, release_version: upcoming_release_version)
-        step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step: release_step, build_version: ongoing_release_platform_run.release_version)
-        create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
+        step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step:, build_version: ongoing_release_platform_run.release_version)
+        create(:deployment_run, :rollout_started, deployment:, step_run: step_run)
 
         ongoing_release_platform_run.bump_version!
         ongoing_release_platform_run.reload
@@ -466,15 +472,20 @@ describe ReleasePlatformRun do
     context "when upcoming release and partial semver" do
       let(:ongoing_release_version) { "1.2" }
       let(:upcoming_release_version) { "1.3" }
+      let(:factory_tree) { create_deployment_tree(:android, :with_production_channel, step_traits: [:release]) }
+      let(:train) { factory_tree[:train] }
+      let(:release_platform) { factory_tree[:release_platform] }
+      let(:step) { factory_tree[:step] }
+      let(:deployment) { factory_tree[:deployment] }
+      let(:release) { create(:release, train:) }
       let(:ongoing_release) { create(:release, :with_no_platform_runs, train:, original_release_version: ongoing_release_version) }
       let(:upcoming_release) { create(:release, :with_no_platform_runs, train:, original_release_version: upcoming_release_version) }
 
       it "bumps version to higher than current upcoming release version" do
         ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: ongoing_release, release_version: ongoing_release_version)
-        deployment = create(:deployment, :with_google_play_store, :with_production_channel, step: release_step)
         _upcoming_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: upcoming_release, release_version: upcoming_release_version)
-        step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step: release_step, build_version: ongoing_release_platform_run.release_version)
-        create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
+        step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step:, build_version: ongoing_release_platform_run.release_version)
+        create(:deployment_run, :rollout_started, deployment:, step_run: step_run)
 
         ongoing_release_platform_run.bump_version!
         ongoing_release_platform_run.reload
@@ -485,13 +496,18 @@ describe ReleasePlatformRun do
 
     context "when no upcoming release and partial semver" do
       let(:ongoing_release_version) { "1.2" }
+      let(:factory_tree) { create_deployment_tree(:android, :with_production_channel, step_traits: [:release]) }
+      let(:train) { factory_tree[:train] }
+      let(:release_platform) { factory_tree[:release_platform] }
+      let(:step) { factory_tree[:step] }
+      let(:deployment) { factory_tree[:deployment] }
+      let(:release) { create(:release, train:) }
       let(:ongoing_release) { create(:release, :with_no_platform_runs, train:, original_release_version: ongoing_release_version) }
 
       it "bumps version to next release version" do
         ongoing_release_platform_run = create(:release_platform_run, :on_track, release_platform:, release: ongoing_release, release_version: ongoing_release_version)
-        deployment = create(:deployment, :with_google_play_store, :with_production_channel, step: release_step)
-        step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step: release_step, build_version: ongoing_release_platform_run.release_version)
-        create(:deployment_run, :rollout_started, deployment: deployment, step_run: step_run)
+        step_run = create(:step_run, release_platform_run: ongoing_release_platform_run, step:, build_version: ongoing_release_platform_run.release_version)
+        create(:deployment_run, :rollout_started, deployment:, step_run: step_run)
 
         ongoing_release_platform_run.bump_version!
         ongoing_release_platform_run.reload

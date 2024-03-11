@@ -1,7 +1,7 @@
 require "rails_helper"
 
 describe Triggers::PullRequest do
-  let(:app) { create(:app, :android, :with_valid_config) }
+  let(:app) { create(:app, :android) }
   let(:train) { create(:train, app:) }
   let(:release) { create(:release, train:) }
   let(:working_branch) { Faker::Lorem.word }

@@ -3,7 +3,7 @@ require "rails_helper"
 describe Deployments::AppStoreConnect::PrepareForReleaseJob do
   describe "#perform" do
     it "marks the run as prepared_release" do
-      run = create_deployment_run_for_ios(:preparing_release, deployment_traits: [:with_production_channel], step_trait: :release)
+      run = create_deployment_run_tree(:ios, :preparing_release, deployment_traits: [:with_production_channel], step_traits: [:release])[:deployment_run]
       success_release_info = {
         external_id: "31aafef2-d5fb-45d4-9b02-f0ab5911c1b2",
         status: "PREPARE_FOR_SUBMISSION",

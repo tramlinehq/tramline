@@ -47,11 +47,12 @@
     <% container.with_action do %>
       <%= render V2::ButtonComponent.new(
         scheme: :danger,
-        type: :link,
+        type: :button,
         size: :xxs,
         label: "Stop release",
         options: release_path(@release.id),
-        html_options: { method: :post, data: { turbo_method: :delete, turbo_confirm: stop_release_warning(@release) } }) do |b|
+        turbo: false,
+        html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: stop_release_warning(@release) } }) do |b|
         b.with_icon("v2/stop.svg")
       end %>
     <% end %>
@@ -98,7 +99,7 @@
 
     <div class="grid grid-cols-2 gap-6 mt-8">
       <% @release.release_platform_runs.each do |run| %>
-        <%= render partial: "shared/live_release/stability", locals: { platform: "#{run.display_attr(:platform)} release", release: run, steps: run.release_platform.steps } %>
+        <%= render partial: "shared/live_release/stability", locals: { platform: "#{run.display_attr(:platform)} release", release: run, steps: run.release_platform.active_steps_for(@release) } %>
       <% end %>
     </div>
 

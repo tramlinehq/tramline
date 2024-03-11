@@ -4,7 +4,18 @@ class V2::ScheduledTrainComponent < V2::BaseComponent
   def initialize(train)
     @train = train
     @ongoing_release = train.ongoing_release
-    previous_time = @ongoing_release.present? ? @ongoing_release.scheduled_at : Time.current
+
+    previous_time =
+      if @ongoing_release.present?
+        if @ongoing_release.automatic?
+          @ongoing_release.scheduled_release.sheduled_at
+        else
+          @ongoing_release.scheduled_at
+        end
+      else
+        Time.current
+      end
+
     @past_releases = train.scheduled_releases.where("scheduled_at < ?", previous_time).order(scheduled_at: :asc).last(2)
     @future_release = train.scheduled_releases.pending.order(scheduled_at: :asc).first
   end

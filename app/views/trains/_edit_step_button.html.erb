@@ -6,7 +6,7 @@
                 .with_icon("edit.svg", size: :md) %>
         <% modal.with_body do %>
           <%= render V2::FormComponent.new(model: step, url: app_train_platform_step_path(step.app, step.train, step.release_platform, step), method: :patch) do |f| %>
-            <%= render 'steps/form', form: f, step: step, release_platform: step.release_platform, ci_actions: step.train.ci_cd_provider.workflows, train: step.train %>
+            <%= render 'steps/form', form: f, step: step, release_platform: step.release_platform, ci_actions: step.ci_cd_provider.workflows, train: step.train %>
 
             <div class="mb-8">
               <div class="sm:flex sm:justify-between sm:items-center mt-8">
