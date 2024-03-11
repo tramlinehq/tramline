@@ -188,7 +188,6 @@ class Integration < ApplicationRecord
 
   def disconnectable?
     return false if app.active_runs.exists?
-
     Step.kept.where(integration: self).none?
   end
 

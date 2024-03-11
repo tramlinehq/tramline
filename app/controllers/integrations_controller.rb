@@ -35,7 +35,7 @@ class IntegrationsController < SignedInApplicationController
 
     unless @integration.disconnectable?
       redirect_back fallback_location: root_path,
-        flash: {error: "Cannot disconnect integrations when releases are running."}
+        flash: {error: "Cannot disconnect since the integration is currently being used by a release or in a step."}
       return
     end
 
