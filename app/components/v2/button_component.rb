@@ -109,7 +109,7 @@ class V2::ButtonComponent < V2::BaseComponent
   end
 
   def button_to_component
-    classname = "group-disabled:hidden"
+    classname = disabled? ? "" : "group-disabled:hidden"
     classname += " ml-1.5" if icon? && !icon_only?
 
     button_to(@options, @html_options) do
@@ -119,7 +119,7 @@ class V2::ButtonComponent < V2::BaseComponent
         concat content_tag(:span, title_text, class: classname)
       elsif @label
         concat content_tag(:span, @label, class: classname)
-        concat apply_button_loader
+        concat apply_button_loader unless disabled?
       end
     end
   end
@@ -127,8 +127,8 @@ class V2::ButtonComponent < V2::BaseComponent
   def button_component
     return button_tag(@options, @html_options) { render(icon) } if icon_only?
 
-    classname = "group-disabled:hidden ml-1"
-    classname = "group-disabled:hidden ml-1.5" if icon?
+    classname = icon? ? "ml-1.5" : "ml-1"
+    classname += " group-disabled:hidden" unless disabled?
 
     button_tag(@options, @html_options) do
       concat(icon) if icon?
@@ -137,7 +137,7 @@ class V2::ButtonComponent < V2::BaseComponent
         concat content_tag(:span, title_text, class: classname)
       elsif @label
         concat content_tag(:span, @label, class: classname)
-        concat apply_button_loader
+        concat apply_button_loader unless disabled?
       end
 
       concat(render(arrow)) if arrow.present?
