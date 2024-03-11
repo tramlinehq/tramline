@@ -34,7 +34,8 @@ class ReleasePlatform < ApplicationRecord
 
   has_many :release_health_rules, dependent: :destroy
   has_many :release_platform_runs, inverse_of: :release_platform, dependent: :destroy
-  has_many :steps, -> { order(:step_number) }, inverse_of: :release_platform, dependent: :destroy
+  has_many :steps, -> { kept.order(:step_number) }, inverse_of: :release_platform, dependent: :destroy
+  has_many :all_steps, -> { order(:step_number) }, class_name: "Step", inverse_of: :release_platform, dependent: :destroy
   has_many :deployments, through: :steps
 
   enum platform: {android: "android", ios: "ios"}
@@ -51,6 +52,17 @@ class ReleasePlatform < ApplicationRecord
       android: "Android",
       ios: "iOS"
     }.invert
+  end
+
+  def active_steps_for(release)
+    # no release
+    return steps unless release
+    return steps if release.active?
+
+    # historical release only
+    all_steps
+      .where("created_at <= ?", release.end_time)
+      .where("discarded_at IS NULL OR discarded_at >= ?", release.end_time)
   end
 
   def has_release_step?

@@ -6,29 +6,30 @@ describe StagedRollout do
   end
 
   describe "#start!" do
-    let(:deployment_run) { create(:deployment_run, :rollout_started, :with_staged_rollout) }
+    let(:factory_tree) { create_deployment_run_tree(:android, :rollout_started, deployment_traits: [:with_staged_rollout], step_traits: [:release]) }
+    let(:deployment_run) { factory_tree[:deployment_run] }
     let(:staged_rollout) { create(:staged_rollout, :created, deployment_run:) }
 
     it "does not start if deployment run is not rolloutable" do
       deployment_run.release_platform_run.update(status: "stopped")
-
       expect { staged_rollout.start! }.to raise_error(AASM::InvalidTransition)
     end
   end
 
   describe "#retry!" do
-    let(:deployment_run) { create(:deployment_run, :rollout_started, :with_staged_rollout) }
+    let(:factory_tree) { create_deployment_run_tree(:android, :rollout_started, deployment_traits: [:with_staged_rollout], step_traits: [:release]) }
+    let(:deployment_run) { factory_tree[:deployment_run] }
     let(:staged_rollout) { create(:staged_rollout, :failed, deployment_run:) }
 
     it "does not retry if deployment run is not rolloutable" do
       deployment_run.release_platform_run.update(status: "stopped")
-
       expect { staged_rollout.retry! }.to raise_error(AASM::InvalidTransition)
     end
   end
 
   describe "#halt!" do
-    let(:deployment_run) { create(:deployment_run, :rollout_started, :with_staged_rollout) }
+    let(:factory_tree) { create_deployment_run_tree(:android, :rollout_started, deployment_traits: [:with_staged_rollout], step_traits: [:release]) }
+    let(:deployment_run) { factory_tree[:deployment_run] }
     let(:staged_rollout) { create(:staged_rollout, :failed, deployment_run:) }
 
     it "does not halt if deployment run is not rolloutable" do
@@ -74,9 +75,10 @@ describe StagedRollout do
     end
 
     context "when google play store" do
-      let(:deployment_run) { create(:deployment_run, :with_staged_rollout, :rollout_started) }
+      let(:factory_tree) { create_deployment_run_tree(:android, :rollout_started, deployment_traits: [:with_staged_rollout], step_traits: [:release]) }
+      let(:deployment_run) { factory_tree[:deployment_run] }
       let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
-      let(:rollout) { create(:staged_rollout, :started, current_stage: 0, deployment_run: deployment_run) }
+      let(:rollout) { create(:staged_rollout, :started, current_stage: 0, deployment_run:) }
 
       before do
         allow_any_instance_of(DeploymentRun).to receive(:provider).and_return(providable_dbl)
@@ -107,11 +109,8 @@ describe StagedRollout do
     end
 
     context "when app store" do
-      let(:deployment_run) {
-        create_deployment_run_for_ios(:with_staged_rollout, :rollout_started, :with_external_release,
-          deployment_traits: [:with_app_store, :with_phased_release],
-          step_trait: :release)
-      }
+      let(:factory_tree) { create_deployment_run_tree(:ios, :rollout_started, :with_external_release, deployment_traits: [:with_phased_release], step_traits: [:release]) }
+      let(:deployment_run) { factory_tree[:deployment_run] }
       let(:rollout) { create(:staged_rollout, :started, current_stage: 0, deployment_run: deployment_run) }
       let(:providable_dbl) { instance_double(AppStoreIntegration) }
 
@@ -166,7 +165,8 @@ describe StagedRollout do
   end
 
   describe "#move_to_next_stage!" do
-    let(:deployment_run) { create(:deployment_run, :with_staged_rollout, :rollout_started) }
+    let(:factory_tree) { create_deployment_run_tree(:android, :rollout_started, deployment_traits: [:with_staged_rollout], step_traits: [:release]) }
+    let(:deployment_run) { factory_tree[:deployment_run] }
     let(:release_metadata) { deployment_run.step_run.release.release_metadata }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
@@ -246,25 +246,26 @@ describe StagedRollout do
   end
 
   describe "#fully_release!" do
-    let(:deployment_run) { create(:deployment_run, :with_staged_rollout, :rollout_started) }
-    let(:rollout) { create(:staged_rollout, :started, current_stage: 0, deployment_run: deployment_run) }
+    let(:factory_tree) { create_deployment_run_tree(:android, :rollout_started, deployment_traits: [:with_staged_rollout], step_traits: [:release]) }
+    let(:deployment_run) { factory_tree[:deployment_run] }
+    let(:rollout) { create(:staged_rollout, :started, current_stage: 0, deployment_run:) }
 
     it "does nothing if the rollout hasn't started" do
-      unrolled_rollout = create(:staged_rollout, :created, deployment_run: deployment_run)
+      unrolled_rollout = create(:staged_rollout, :created, deployment_run:)
       unrolled_rollout.fully_release!
 
       expect(rollout.reload.fully_released?).to be(false)
     end
 
     it "does nothing if the rollout is completed" do
-      unrolled_rollout = create(:staged_rollout, :completed, deployment_run: deployment_run)
+      unrolled_rollout = create(:staged_rollout, :completed, deployment_run:)
       unrolled_rollout.fully_release!
 
       expect(rollout.reload.fully_released?).to be(false)
     end
 
     it "does nothing if the rollout is stopped" do
-      unrolled_rollout = create(:staged_rollout, :stopped, deployment_run: deployment_run)
+      unrolled_rollout = create(:staged_rollout, :stopped, deployment_run:)
       unrolled_rollout.fully_release!
 
       expect(rollout.reload.fully_released?).to be(false)
@@ -302,15 +303,9 @@ describe StagedRollout do
     end
 
     context "when app store" do
-      let(:deployment_run) {
-        create_deployment_run_for_ios(
-          :rollout_started,
-          :with_external_release,
-          deployment_traits: [:with_app_store, :with_phased_release],
-          step_trait: :release
-        )
-      }
-      let(:rollout) { create(:staged_rollout, :started, current_stage: 0, deployment_run: deployment_run) }
+      let(:factory_tree) { create_deployment_run_tree(:ios, :rollout_started, deployment_traits: [:with_phased_release], step_traits: [:release]) }
+      let(:deployment_run) { factory_tree[:deployment_run] }
+      let(:rollout) { create(:staged_rollout, :started, current_stage: 0, deployment_run:) }
       let(:providable_dbl) { instance_double(AppStoreIntegration) }
       let(:live_release_info) {
         AppStoreIntegration::AppStoreReleaseInfo.new(
@@ -356,12 +351,9 @@ describe StagedRollout do
   end
 
   describe "#pause_release!" do
-    let(:deployment_run) {
-      create_deployment_run_for_ios(:with_staged_rollout, :rollout_started, :with_external_release,
-        deployment_traits: [:with_app_store, :with_phased_release],
-        step_trait: :release)
-    }
-    let(:rollout) { create(:staged_rollout, :started, current_stage: 0, deployment_run: deployment_run) }
+    let(:factory_tree) { create_deployment_run_tree(:ios, :rollout_started, :with_external_release, deployment_traits: [:with_phased_release], step_traits: [:release]) }
+    let(:deployment_run) { factory_tree[:deployment_run] }
+    let(:rollout) { create(:staged_rollout, :started, current_stage: 0, deployment_run:) }
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
     let(:paused_release_info) {
       AppStoreIntegration::AppStoreReleaseInfo.new(
@@ -414,10 +406,9 @@ describe StagedRollout do
     end
 
     it "does nothing when controllable rollout" do
-      goog_deployment_run = create_deployment_run_for_ios(:with_staged_rollout, :rollout_started,
-        deployment_traits: [:with_google_play_store],
-        step_trait: :release)
-      controllable_rollout = create(:staged_rollout, :started, current_stage: 0, deployment_run: goog_deployment_run)
+      factory_tree = create_deployment_run_tree(:android, :rollout_started, deployment_traits: [:with_staged_rollout], step_traits: [:release])
+      deployment_run = factory_tree[:deployment_run]
+      controllable_rollout = create(:staged_rollout, :started, current_stage: 0, deployment_run:)
       controllable_rollout.pause_release!
 
       expect(controllable_rollout.reload.paused?).to be(false)
@@ -426,7 +417,8 @@ describe StagedRollout do
 
   describe "#resume_release!" do
     context "when controllable rollout" do
-      let(:deployment_run) { create(:deployment_run, :with_staged_rollout, :rollout_started) }
+      let(:factory_tree) { create_deployment_run_tree(:android, :rollout_started, deployment_traits: [:with_staged_rollout], step_traits: [:release]) }
+      let(:deployment_run) { factory_tree[:deployment_run] }
       let(:release_metadata) { deployment_run.step_run.release.release_metadata }
       let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
       let(:rollout) { create(:staged_rollout, :stopped, config: [1, 80, 100], current_stage: 1, deployment_run:) }
@@ -451,11 +443,8 @@ describe StagedRollout do
     end
 
     context "when automatic rollout" do
-      let(:deployment_run) {
-        create_deployment_run_for_ios(:with_staged_rollout, :rollout_started, :with_external_release,
-          deployment_traits: [:with_app_store, :with_phased_release],
-          step_trait: :release)
-      }
+      let(:factory_tree) { create_deployment_run_tree(:ios, :rollout_started, :with_external_release, deployment_traits: [:with_phased_release], step_traits: [:release]) }
+      let(:deployment_run) { factory_tree[:deployment_run] }
       let(:rollout) { create(:staged_rollout, :paused, current_stage: 0, deployment_run: deployment_run, config: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE) }
       let(:providable_dbl) { instance_double(AppStoreIntegration) }
       let(:resumed_release_info) {

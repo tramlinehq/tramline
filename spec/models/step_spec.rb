@@ -77,8 +77,11 @@ describe Step do
   end
 
   describe "#create" do
+    let(:train) { create(:train, :with_no_platforms) }
+    let(:release_platform) { create(:release_platform, train: train) }
+
     it "saves deployments along with it" do
-      step = build(:step)
+      step = build(:step, release_platform:)
       step.deployments = build_list(:deployment, 2)
       step.save!
 
@@ -86,7 +89,7 @@ describe Step do
     end
 
     it "adds incremented deployment numbers to created deployments" do
-      step = build(:step)
+      step = build(:step, release_platform:)
       step.deployments = build_list(:deployment, 2)
       step.save!
 
@@ -94,9 +97,7 @@ describe Step do
     end
 
     it "validates release suffix to be valid if present" do
-      app = create(:app, :android)
-      release_platform = create(:release_platform, app: app)
-      step = build(:step, :with_deployment, release_platform: release_platform, release_suffix: "%^&")
+      step = build(:step, :with_deployment, release_platform:, release_suffix: "%^&")
 
       step.save
 

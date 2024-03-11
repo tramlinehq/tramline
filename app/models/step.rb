@@ -7,6 +7,7 @@
 #  build_artifact_name_pattern :string
 #  ci_cd_channel               :jsonb            not null, indexed => [release_platform_id]
 #  description                 :string           not null
+#  discarded_at                :datetime         indexed
 #  kind                        :string
 #  name                        :string           not null
 #  release_suffix              :string
@@ -16,21 +17,24 @@
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  app_variant_id              :uuid
+#  integration_id              :uuid             indexed
 #  release_platform_id         :uuid             not null, indexed => [ci_cd_channel], indexed, indexed => [step_number]
 #
 class Step < ApplicationRecord
   has_paper_trail
   extend FriendlyId
+  include Discard::Model
 
   self.implicit_order_column = :step_number
 
   belongs_to :release_platform, inverse_of: :steps
   belongs_to :app_variant, inverse_of: :steps, optional: true
+  belongs_to :integration, optional: true
   has_many :step_runs, inverse_of: :step, dependent: :destroy
   has_many :deployments, -> { kept.sequential }, inverse_of: :step, dependent: :destroy
   has_many :all_deployments, -> { sequential }, class_name: "Deployment", inverse_of: :step, dependent: :destroy
   has_many :deployment_runs, through: :deployments
-  validates :ci_cd_channel, presence: true, uniqueness: {scope: :release_platform_id, message: "you have already used this in another step of this train!"}
+  validates :ci_cd_channel, presence: true, uniqueness: {scope: :release_platform_id, conditions: -> { kept }, message: "you have already used this in another step of this train!"}
   validates :release_suffix, format: {with: /\A[a-zA-Z\-_]+\z/, message: "only allows letters and underscore"}, if: -> { release_suffix.present? }
   validates :deployments, presence: true, on: :create
   validate :unique_deployments, on: :create
@@ -40,6 +44,7 @@ class Step < ApplicationRecord
   after_initialize :set_default_status, if: :new_record?
   before_validation :set_step_number, if: :new_record?
   before_save -> { self.build_artifact_name_pattern = build_artifact_name_pattern.downcase }, if: -> { build_artifact_name_pattern.present? }
+  after_create :set_ci_cd_provider
 
   enum status: {
     active: "active",
@@ -57,7 +62,15 @@ class Step < ApplicationRecord
 
   delegate :app, :train, to: :release_platform
   delegate :android?, to: :app
-  delegate :ci_cd_provider, :notify!, to: :train
+  delegate :notify!, to: :train
+
+  def ci_cd_provider
+    integration.providable
+  end
+
+  def set_ci_cd_provider
+    update(integration: train.ci_cd_provider.integration)
+  end
 
   def active_deployments_for(release, step_run = nil)
     # no release
@@ -78,8 +91,14 @@ class Step < ApplicationRecord
   end
 
   def set_step_number
-    self.step_number = release_platform.steps.review.maximum(:step_number).to_i + 1
-    release_platform.release_step&.update!(step_number: step_number.succ) if review?
+    all_steps = release_platform.all_steps
+
+    if review?
+      self.step_number = all_steps.review.maximum(:step_number).to_i + 1
+      release_platform.release_step&.update!(step_number: step_number.succ)
+    else
+      self.step_number = all_steps.maximum(:step_number).to_i + 1
+    end
   end
 
   def set_default_status

@@ -2,13 +2,16 @@ require "rails_helper"
 
 describe Deployments::GooglePlayStore::Release do
   describe ".kickoff!" do
-    let(:step) { create(:step, :with_deployment) }
-    let(:step_run) { create(:step_run, :deployment_started, step: step) }
+    let(:factory_tree) { create_deployment_run_tree(:android, :started, step_run_traits: [:deployment_started]) }
+    let(:deployment_run) { factory_tree[:deployment_run] }
+    let(:step_run) { factory_tree[:step_run] }
+    let(:step) { factory_tree[:step] }
+    let(:deployment) { factory_tree[:deployment] }
+    let(:store_integration) { factory_tree[:train].build_channel_integrations.first }
 
     it "marks as uploaded if there is another similar deployment which has uploaded" do
-      integration = create(:integration, :with_google_play_store)
-      deployment1 = create(:deployment, step: step, integration: integration)
-      deployment2 = create(:deployment, step: step, integration: integration)
+      deployment1 = create(:deployment, step:, integration: store_integration)
+      deployment2 = create(:deployment, step:, integration: store_integration)
       _uploaded_run = create(:deployment_run, :uploaded, deployment: deployment1, step_run: step_run)
       deployment_run = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
 
@@ -31,8 +34,6 @@ describe Deployments::GooglePlayStore::Release do
     end
 
     it "starts upload if it is the only deployment with google play store" do
-      deployment = create(:deployment, :with_google_play_store, step: step)
-      deployment_run = create(:deployment_run, :started, deployment: deployment, step_run: step_run)
       allow(Deployments::GooglePlayStore::Upload).to receive(:perform_later)
 
       described_class.kickoff!(deployment_run)
@@ -56,9 +57,6 @@ describe Deployments::GooglePlayStore::Release do
       deployment1 = create(:deployment, step: step)
       _ignored_run = create(:deployment_run, :released, deployment: deployment1, step_run: step_run)
 
-      deployment2 = create(:deployment, :with_google_play_store, step: step)
-      deployment_run = create(:deployment_run, :started, deployment: deployment2, step_run: step_run)
-
       allow(Deployments::GooglePlayStore::Upload).to receive(:perform_later)
 
       described_class.kickoff!(deployment_run)
@@ -68,8 +66,9 @@ describe Deployments::GooglePlayStore::Release do
   end
 
   describe ".upload!" do
+    let(:factory_tree) { create_deployment_run_tree(:android, :started, step_run_traits: [:deployment_started, :with_build_artifact]) }
+    let(:store_deployment_run) { factory_tree[:deployment_run] }
     let(:slack_deployment_run) { create(:deployment_run, :started, :with_slack) }
-    let(:store_deployment_run) { create(:deployment_run, :started, :with_google_play_store) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
     before do
@@ -111,10 +110,6 @@ describe Deployments::GooglePlayStore::Release do
   end
 
   describe ".halt_release!" do
-    let(:step) { create(:step, :release, :with_deployment) }
-    let(:step_run) { create(:step_run, :deployment_started, step: step) }
-    let(:deployment) { create(:deployment, :with_google_play_store, :with_staged_rollout, step: step_run.step) }
-    let(:run) { create(:deployment_run, :rollout_started, :with_staged_rollout, deployment:, step_run:) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
     before do
@@ -122,7 +117,11 @@ describe Deployments::GooglePlayStore::Release do
     end
 
     it "does nothing if rollout hasn't started" do
-      unstarted_run = create(:deployment_run, :uploaded, deployment:, step_run:)
+      factory_tree = create_deployment_run_tree(:android, :uploaded,
+        deployment_traits: [:with_staged_rollout],
+        step_traits: [:release],
+        step_run_traits: [:deployment_started, :with_build_artifact])
+      unstarted_run = factory_tree[:deployment_run]
       allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
 
       described_class.halt_release!(unstarted_run)
@@ -131,6 +130,11 @@ describe Deployments::GooglePlayStore::Release do
     end
 
     it "halts the deployments on playstore" do
+      factory_tree = create_deployment_run_tree(:android, :rollout_started,
+        deployment_traits: [:with_staged_rollout],
+        step_traits: [:release],
+        step_run_traits: [:deployment_started, :with_build_artifact])
+      run = factory_tree[:deployment_run]
       run.create_staged_rollout!(config: run.staged_rollout_config)
       allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
 
@@ -148,7 +152,13 @@ describe Deployments::GooglePlayStore::Release do
     end
 
     context "when staged rollout" do
-      let(:deployment_run) { create(:deployment_run, :uploaded, :with_google_play_store, :with_staged_rollout) }
+      let(:factory_tree) {
+        create_deployment_run_tree(:android, :uploaded,
+          deployment_traits: [:with_staged_rollout],
+          step_traits: [:release],
+          step_run_traits: [:deployment_started, :with_build_artifact])
+      }
+      let(:deployment_run) { factory_tree[:deployment_run] }
 
       it "creates draft release" do
         allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
@@ -177,9 +187,17 @@ describe Deployments::GooglePlayStore::Release do
     end
 
     context "when no staged rollout" do
-      let(:deployment_run) { create(:deployment_run, :uploaded, :with_google_play_store) }
+      let(:factory_tree) {
+        create_deployment_run_tree(:android, :uploaded,
+          deployment_traits: [:with_production_channel],
+          step_traits: [:release],
+          step_run_traits: [:deployment_started, :with_build_artifact])
+      }
+      let(:deployment_run) { factory_tree[:deployment_run] }
+      let(:deployment) { factory_tree[:deployment] }
 
       it "creates release with full rollout for non-production channel" do
+        deployment_run = create_deployment_run_tree(:android, :uploaded, step_run_traits: [:deployment_started, :with_build_artifact])[:deployment_run]
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
         described_class.start_release!(deployment_run)
         expect(providable_dbl).to have_received(:rollout_release)
@@ -191,8 +209,6 @@ describe Deployments::GooglePlayStore::Release do
       end
 
       it "creates release with full rollout for production channel" do
-        deployment = create(:deployment, :with_release_step, :with_google_play_store, :with_production_channel)
-        deployment_run = create(:deployment_run, deployment:)
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
         described_class.start_release!(deployment_run)
         expect(providable_dbl).to have_received(:rollout_release)
@@ -219,8 +235,7 @@ describe Deployments::GooglePlayStore::Release do
       end
 
       it "does not send release notes when deployment is configured so" do
-        deployment = create(:deployment, :with_release_step, :with_google_play_store, notes: "no_notes")
-        deployment_run = create(:deployment_run, deployment:)
+        deployment.update!(notes: "no_notes")
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
         described_class.start_release!(deployment_run)
         expect(providable_dbl).to have_received(:rollout_release)
@@ -232,8 +247,7 @@ describe Deployments::GooglePlayStore::Release do
       end
 
       it "sends build notes when deployment is configured so" do
-        deployment = create(:deployment, :with_release_step, :with_google_play_store, notes: "build_notes")
-        deployment_run = create(:deployment_run, deployment:)
+        deployment.update!(notes: "build_notes")
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
         described_class.start_release!(deployment_run)
         expect(providable_dbl).to have_received(:rollout_release)
@@ -245,8 +259,7 @@ describe Deployments::GooglePlayStore::Release do
       end
 
       it "sends release notes when deployment is configured so" do
-        deployment = create(:deployment, :with_release_step, :with_google_play_store, notes: "release_notes")
-        deployment_run = create(:deployment_run, deployment:)
+        deployment.update!(notes: "release_notes")
         allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
         described_class.start_release!(deployment_run)
         expect(providable_dbl).to have_received(:rollout_release)
@@ -261,9 +274,16 @@ describe Deployments::GooglePlayStore::Release do
 
     context "when step run is restarted and release is not present in the channel" do
       context "when staged rollout" do
-        let(:step) { create(:step, :with_deployment, :release) }
-        let(:step_run) { create(:step_run, :deployment_restarted, step:) }
-        let(:deployment_run) { create(:deployment_run, :uploaded, :with_google_play_store, :with_staged_rollout, step_run:) }
+        let(:factory_tree) {
+          create_deployment_run_tree(:android, :uploaded,
+            deployment_traits: [:with_staged_rollout],
+            step_traits: [:release],
+            step_run_traits: [:deployment_restarted])
+        }
+        let(:deployment_run) { factory_tree[:deployment_run] }
+        let(:step_run) { factory_tree[:step_run] }
+        let(:step) { factory_tree[:step] }
+        let(:deployment) { factory_tree[:deployment] }
 
         it "creates the draft release" do
           allow(providable_dbl).to receive(:build_present_in_channel?).and_return(false)
@@ -285,8 +305,13 @@ describe Deployments::GooglePlayStore::Release do
       end
 
       context "when no staged rollout" do
-        let(:step_run) { create(:step_run, :deployment_restarted) }
-        let(:deployment_run) { create(:deployment_run, :uploaded, :with_google_play_store, step_run:) }
+        let(:factory_tree) {
+          create_deployment_run_tree(:android, :uploaded,
+            step_traits: [:release],
+            step_run_traits: [:deployment_restarted])
+        }
+        let(:deployment_run) { factory_tree[:deployment_run] }
+        let(:step_run) { factory_tree[:step_run] }
 
         it "creates a full rollout release" do
           allow(providable_dbl).to receive(:build_present_in_channel?).and_return(false)
@@ -310,9 +335,14 @@ describe Deployments::GooglePlayStore::Release do
 
     context "when step run is restarted and release is present in the channel" do
       context "when staged rollout" do
-        let(:step) { create(:step, :with_deployment, :release) }
-        let(:step_run) { create(:step_run, :deployment_restarted, step:) }
-        let(:deployment_run) { create(:deployment_run, :uploaded, :with_google_play_store, :with_staged_rollout, step_run:) }
+        let(:factory_tree) {
+          create_deployment_run_tree(:android, :uploaded,
+            step_traits: [:release],
+            deployment_traits: [:with_staged_rollout],
+            step_run_traits: [:deployment_restarted])
+        }
+        let(:deployment_run) { factory_tree[:deployment_run] }
+        let(:step_run) { factory_tree[:step_run] }
 
         it "does not create the draft release" do
           allow(providable_dbl).to receive(:build_present_in_channel?).and_return(true)
@@ -329,8 +359,13 @@ describe Deployments::GooglePlayStore::Release do
       end
 
       context "when no staged rollout" do
-        let(:step_run) { create(:step_run, :deployment_restarted) }
-        let(:deployment_run) { create(:deployment_run, :uploaded, :with_google_play_store, step_run:) }
+        let(:factory_tree) {
+          create_deployment_run_tree(:android, :uploaded,
+            step_traits: [:release],
+            step_run_traits: [:deployment_restarted])
+        }
+        let(:deployment_run) { factory_tree[:deployment_run] }
+        let(:step_run) { factory_tree[:step_run] }
 
         it "does not create a full rollout release" do
           allow(providable_dbl).to receive(:build_present_in_channel?).and_return(true)

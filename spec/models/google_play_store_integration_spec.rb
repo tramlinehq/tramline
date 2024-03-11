@@ -6,7 +6,8 @@ describe GooglePlayStoreIntegration do
   end
 
   describe "#upload" do
-    let(:integration) { create(:integration, :with_google_play_store) }
+    let(:app) { create(:app, platform: :android) }
+    let(:integration) { create(:integration, :with_google_play_store, app:) }
     let(:google_integration) { integration.providable }
     let(:file) { Tempfile.new("test_artifact.aab") }
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
