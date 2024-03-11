@@ -16,6 +16,7 @@ class Accounts::Team < ApplicationRecord
   has_many :memberships, dependent: :nullify
 
   validates :color, uniqueness: {scope: :organization_id}
+  validates :name, presence: {message: :not_blank}, length: {maximum: 30, message: :too_long}
 
   after_initialize :assign_random_color, if: :new_record?
 

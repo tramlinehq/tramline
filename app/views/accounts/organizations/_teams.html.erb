@@ -42,7 +42,7 @@
               scheme: :light,
               options: accounts_organization_team_path(current_organization, team),
               type: :link,
-              html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete the team?" } }) do |b|
+              html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete the team? This will not remove the users that are part of the team." } }) do |b|
               b.with_icon("v2/trash.svg")
             end %>
           </div>
