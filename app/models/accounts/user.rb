@@ -41,6 +41,8 @@ class Accounts::User < ApplicationRecord
   validates :email, presence: {message: :not_blank},
     uniqueness: {case_sensitive: false, message: :already_taken},
     length: {maximum: 105, message: :too_long}
+  validates :full_name, presence: {message: :not_blank}, length: {maximum: 70, message: :too_long}
+  validates :preferred_name, length: {maximum: 70, message: :too_long}
 
   has_many :memberships, dependent: :delete_all, inverse_of: :user
   has_many :organizations, -> { where(status: :active).sequential }, through: :memberships
@@ -54,6 +56,7 @@ class Accounts::User < ApplicationRecord
   auto_strip_attributes :full_name, :preferred_name, squish: true
 
   accepts_nested_attributes_for :organizations
+  accepts_nested_attributes_for :memberships, allow_destroy: false
 
   def self.valid_email_domain?(user)
     return false if user.email.blank?

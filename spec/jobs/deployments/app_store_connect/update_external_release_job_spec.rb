@@ -3,17 +3,16 @@ require "rails_helper"
 describe Deployments::AppStoreConnect::UpdateExternalReleaseJob do
   describe "#perform" do
     context "when non app store deployment" do
-      let(:play_store_deployment_run) { create(:deployment_run, :submitted_for_review, :with_google_play_store) }
+      let(:play_store_deployment_run) { create_deployment_run_tree(:android, :submitted_for_review)[:deployment_run] }
 
       it "does nothing if deployment is not for app store" do
         described_class.new.perform(play_store_deployment_run.id)
-
         expect(play_store_deployment_run.reload.submitted_for_review?).to be(true)
       end
     end
 
     context "when app store deployment" do
-      let(:app_store_deployment_run) { create_deployment_run_for_ios(:submitted_for_review) }
+      let(:app_store_deployment_run) { create_deployment_run_tree(:ios, :submitted_for_review)[:deployment_run] }
       let(:base_build_info) {
         {
           name: "1.2.0",

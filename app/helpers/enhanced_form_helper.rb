@@ -24,9 +24,9 @@ module EnhancedFormHelper
     FILE_INPUT_CLASSES = "block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
     OPTION_CLASSES = "w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
 
-    def authz_submit(label, icon, scheme: :default, size: :sm, disabled: false, html_options: {})
+    def authz_submit(label, icon, scheme: :default, size: :sm, disabled: false, html_options: {}, authz: true)
       button_component =
-        V2::ButtonComponent.new(scheme:, type: :action, size:, label:, html_options:, turbo: false, disabled:)
+        V2::ButtonComponent.new(scheme:, type: :action, size:, label:, html_options:, turbo: false, disabled:, authz:)
       button_component.with_icon(icon)
       @template.render(button_component)
     end
@@ -66,6 +66,11 @@ module EnhancedFormHelper
     def labeled_number_field(method, label_text, options = {})
       hopts = {class: field_classes(is_disabled: options[:disabled], classes: TEXT_FIELD_CLASSES)}.merge(options)
       label_only(method, label_text) + number_field_without_label(method, hopts)
+    end
+
+    def labeled_color_field(method, label_text, options = {})
+      hopts = {class: field_classes(is_disabled: options[:disabled], classes: TEXT_FIELD_CLASSES)}.merge(options)
+      label_only(method, label_text) + color_field(method, hopts)
     end
 
     def labeled_select(method, label_text, select_options, options = {}, html_options = {})

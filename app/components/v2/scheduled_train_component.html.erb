@@ -1,15 +1,32 @@
 <%= render V2::SectionComponent.new(style: :titled, title: "Schedule", subtitle: release_schedule(train)) do %>
   <div class="grid grid-cols-5 bg-main-500/80 divide-x divide-main-200 text-center py-2 rounded-t-lg">
-      <div class="pl-0.5 text-xs uppercase tracking-wider font-medium text-white dark:text-main-400">Past</div>
-      <div class="pl-0.5 text-xs uppercase tracking-wider font-medium text-white dark:text-main-400">Previous</div>
-      <div class="pl-0.5 text-xs uppercase tracking-wider font-medium text-white dark:text-main-400">Current</div>
-      <div class="pl-0.5 text-xs uppercase tracking-wider font-medium text-white dark:text-main-400">Next</div>
-      <div class="pl-0.5 text-xs uppercase tracking-wider font-medium text-white dark:text-main-400">Future</div>
+    <div class="pl-0.5 text-xs uppercase tracking-wider font-medium text-white dark:text-main-400">Past</div>
+    <div class="pl-0.5 text-xs uppercase tracking-wider font-medium text-white dark:text-main-400">Previous</div>
+    <div class="pl-0.5 text-xs uppercase tracking-wider font-medium text-white dark:text-main-400">Current</div>
+    <div class="pl-0.5 text-xs uppercase tracking-wider font-medium text-white dark:text-main-400">Next</div>
+    <div class="pl-0.5 text-xs uppercase tracking-wider font-medium text-white dark:text-main-400">Future</div>
   </div>
 
   <div class="grid grid-cols-5 border border-main-200 divide-x divide-main-200 rounded-b-lg">
     <!-- past -->
-    <% if past_releases.empty? %>
+    <% if past_releases.size == 2 %>
+      <%= render partial: "scheduled_release/show", locals: {
+        header: past_text(past_releases[0]),
+        title: past_title(past_releases[0]),
+        status: scheduled_release_status(past_releases[0]),
+        box_classes: nil,
+        empty_icon: "v2/fast_forward.svg",
+        footer: time_format(past_releases[0].scheduled_at, only_day: true)
+      } %>
+      <%= render partial: "scheduled_release/show", locals: {
+        header: past_text(past_releases[1]),
+        title: past_title(past_releases[1]),
+        status: scheduled_release_status(past_releases[1]),
+        box_classes: nil,
+        empty_icon: "v2/fast_forward.svg",
+        footer: time_format(past_releases[1].scheduled_at, only_day: true)
+      } %>
+    <% elsif past_releases.size == 1 %>
       <%= render partial: "scheduled_release/show", locals: {
         title: nil,
         header: "There are no past releases",
@@ -19,24 +36,15 @@
         footer: nil,
       } %>
       <%= render partial: "scheduled_release/show", locals: {
-        title: nil,
-        header: "There are no past releases",
-        empty_icon: "v2/fast_forward.svg",
+        header: past_text(past_releases[0]),
+        title: past_title(past_releases[0]),
+        status: scheduled_release_status(past_releases[0]),
         box_classes: nil,
-        status: inactive_status,
-        footer: nil,
+        empty_icon: "v2/fast_forward.svg",
+        footer: time_format(past_releases[0].scheduled_at, only_day: true)
       } %>
     <% else %>
-      <% if past_releases[1] %>
-        <%= render partial: "scheduled_release/show", locals: {
-          header: past_text(past_releases[1]),
-          title: past_title(past_releases[1]),
-          status: scheduled_release_status(past_releases[1]),
-          box_classes: nil,
-          empty_icon: "v2/fast_forward.svg",
-          footer: time_format(past_releases[1].scheduled_at, only_day: true)
-        } %>
-      <% else %>
+      <% 2.times do %>
         <%= render partial: "scheduled_release/show", locals: {
           title: nil,
           header: "There are no past releases",
@@ -44,17 +52,6 @@
           box_classes: nil,
           status: inactive_status,
           footer: nil,
-        } %>
-      <% end %>
-
-      <% if past_releases[0] %>
-        <%= render partial: "scheduled_release/show", locals: {
-          header: past_text(past_releases[0]),
-          title: past_title(past_releases[0]),
-          status: scheduled_release_status(past_releases[0]),
-          box_classes: nil,
-          empty_icon: "v2/fast_forward.svg",
-          footer: time_format(past_releases[0].scheduled_at, only_day: true)
         } %>
       <% end %>
     <% end %>

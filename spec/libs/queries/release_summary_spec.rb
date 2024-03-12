@@ -13,16 +13,13 @@ describe Queries::ReleaseSummary, type: :model do
 
     it "returns summary when cache is warmed" do
       freeze_time do
-        app = create(:app, :android)
-        train = create(:train, app:)
-        release_platform = create(:release_platform, app:, train:)
-        step = create(:step, :release, :with_deployment, release_platform:)
-        deployment = create(:deployment, :with_production_channel, :with_google_play_store, step:)
-        release = create(:release, :with_no_platform_runs, train:)
-        release_platform_run = create(:release_platform_run, release:, release_platform:)
-        step_run = create(:step_run, :success, step: step, release_platform_run:)
-        drun = create(:deployment_run, :released, step_run:, deployment:)
-        drun.event_stamp_now!(reason: :release_started, kind: :notice, data: drun.send(:stamp_data))
+        create_deployment_run_tree(:android,
+          :released,
+          deployment_traits: [:with_production_channel],
+          release_traits: [:with_no_platform_runs],
+          step_traits: [:release],
+          step_run_traits: [:success]) => { step:, release:, step_run:, deployment_run: }
+        deployment_run.event_stamp_now!(reason: :release_started, kind: :notice, data: deployment_run.send(:stamp_data))
         described_class.warm(release.id)
         actual = described_class.all(release.id)
         expect(actual[:overall].attributes["version"]).to eq(release.release_version)

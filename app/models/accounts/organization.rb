@@ -17,7 +17,7 @@ class Accounts::Organization < ApplicationRecord
   has_paper_trail
 
   has_many :memberships, dependent: :delete_all, inverse_of: :organization
-  has_many :teams, dependent: :delete_all, inverse_of: :organization
+  has_many :teams, -> { sequential }, dependent: :delete_all, inverse_of: :organization
   has_many :users, through: :memberships, dependent: :delete_all
   has_many :apps, -> { sequential }, dependent: :destroy, inverse_of: :organization
   has_many :releases, through: :apps
@@ -91,5 +91,9 @@ class Accounts::Organization < ApplicationRecord
 
   def teams_supported?
     teams.exists?
+  end
+
+  def team_options
+    teams.pluck(:name, :id).push([Accounts::Team::UNKNOWN_TEAM_NAME, nil])
   end
 end

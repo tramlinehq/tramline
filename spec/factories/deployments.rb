@@ -2,7 +2,7 @@ FactoryBot.define do
   factory :deployment do
     sequence(:build_artifact_channel) { |n| {id: n} }
     send_build_notes { true }
-    notes { "build_notes" }
+    notes { Deployment.notes[:build_notes] }
     association :integration
 
     trait :with_step do
@@ -27,7 +27,7 @@ FactoryBot.define do
 
     trait :with_production_channel do
       build_artifact_channel { {is_production: true} }
-      notes { "release_notes" }
+      notes { Deployment.notes[:release_notes] }
     end
 
     trait :with_google_play_store do
@@ -56,7 +56,16 @@ FactoryBot.define do
       build_artifact_channel { {is_production: true} }
       is_staged_rollout { true }
       staged_rollout_config { [1, 100] }
-      notes { "release_notes" }
+      notes { Deployment.notes[:release_notes] }
     end
   end
+end
+
+def create_deployment_tree(platform = :android, *traits, train_traits: [], step_traits: [])
+  app = create(:app, platform)
+  train = create(:train, *train_traits, :with_no_platforms, app: app)
+  release_platform = create(:release_platform, train:, platform:)
+  step = create(:step, :with_deployment, *step_traits, release_platform: release_platform, integration: app.ci_cd_provider.integration)
+  deployment = create(:deployment, *traits, integration: train.build_channel_integrations.first, step: step)
+  {app:, train:, release_platform:, step:, deployment:}
 end

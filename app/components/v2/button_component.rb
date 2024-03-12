@@ -13,7 +13,7 @@ class V2::ButtonComponent < V2::BaseComponent
       class: "#{BASE_OPTS} text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
     },
     danger: {
-      class: "#{BASE_OPTS} text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-center dark:bg-red-600 dark:hover:bg-blue-700 dark:focus:ring-red-800"
+      class: "#{BASE_OPTS} text-red-800 bg-white border border-main-300 focus:outline-none enabled:hover:bg-red-800 enabled:hover:text-white enabled:hover:border-main-200 focus:ring-4 focus:ring-red-200 font-medium rounded-lg dark:bg-main dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"
     },
     light: {
       class: "#{BASE_OPTS} text-main bg-white border border-main-300 focus:outline-none hover:bg-main-100 focus:ring-4 focus:ring-main-200 font-medium rounded-lg dark:bg-main dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"
@@ -109,7 +109,7 @@ class V2::ButtonComponent < V2::BaseComponent
   end
 
   def button_to_component
-    classname = "group-disabled:hidden"
+    classname = disabled? ? "" : "group-disabled:hidden"
     classname += " ml-1.5" if icon? && !icon_only?
 
     button_to(@options, @html_options) do
@@ -119,7 +119,7 @@ class V2::ButtonComponent < V2::BaseComponent
         concat content_tag(:span, title_text, class: classname)
       elsif @label
         concat content_tag(:span, @label, class: classname)
-        concat apply_button_loader
+        concat apply_button_loader unless disabled?
       end
     end
   end
@@ -127,8 +127,8 @@ class V2::ButtonComponent < V2::BaseComponent
   def button_component
     return button_tag(@options, @html_options) { render(icon) } if icon_only?
 
-    classname = "group-disabled:hidden ml-1"
-    classname = "group-disabled:hidden ml-1.5" if icon?
+    classname = icon? ? "ml-1.5" : "ml-1"
+    classname += " group-disabled:hidden" unless disabled?
 
     button_tag(@options, @html_options) do
       concat(icon) if icon?
@@ -137,7 +137,7 @@ class V2::ButtonComponent < V2::BaseComponent
         concat content_tag(:span, title_text, class: classname)
       elsif @label
         concat content_tag(:span, @label, class: classname)
-        concat apply_button_loader
+        concat apply_button_loader unless disabled?
       end
 
       concat(render(arrow)) if arrow.present?
@@ -156,6 +156,7 @@ class V2::ButtonComponent < V2::BaseComponent
     options[:class] << " #{SIZES[@size]}"
     options[:class] << " #{DISABLED_STYLE}" if disabled?
     options[:class] = options[:class].squish
+    options[:disabled] = true if disabled?
 
     options[:data] ||= {}
     if @turbo

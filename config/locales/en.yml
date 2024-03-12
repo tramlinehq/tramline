@@ -205,6 +205,9 @@ en:
               no_special_characters: "only allows letters, numbers, emojis, and some special characters"
         integration:
           format: "%{message}"
+          attributes:
+            providable_type:
+              unique_connected_integration_category: "only one integration of this category can be connected to the app"
         app_store_integration:
           attributes:
             key_id:

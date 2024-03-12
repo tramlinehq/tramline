@@ -110,7 +110,7 @@
       <% end %>
 
       <div data-reveal hidden>
-        <% release.steps.each do |step| %>
+        <% release.release_platform.active_steps_for(release.release).each do |step| %>
           <%= render BuildHealthComponent.new(step:, release_platform_run: release) %>
         <% end %>
       </div>

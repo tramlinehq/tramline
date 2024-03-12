@@ -8,6 +8,7 @@
 #  scheduled_at   :datetime         not null
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
+#  release_id     :uuid
 #  train_id       :uuid             not null, indexed
 #
 class ScheduledRelease < ApplicationRecord

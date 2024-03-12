@@ -30,6 +30,22 @@ class IntegrationsController < SignedInApplicationController
     respond_to(&:turbo_stream)
   end
 
+  def destroy
+    @integration = @app.integrations.find(params[:id])
+
+    unless @integration.disconnectable?
+      redirect_back fallback_location: root_path,
+        flash: {error: "Cannot disconnect since the integration is currently being used by a release or in a step."}
+      return
+    end
+
+    if @integration.disconnect
+      redirect_to app_integrations_path(@app), notice: "Integration was successfully disconnected."
+    else
+      redirect_to app_integrations_path(@app), flash: {error: @integration.errors.full_messages.to_sentence}
+    end
+  end
+
   private
 
   def set_integrations_by_categories

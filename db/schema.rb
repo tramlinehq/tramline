@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_03_05_080020) do
+ActiveRecord::Schema[7.0].define(version: 2024_03_11_074531) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -283,6 +283,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_03_05_080020) do
     t.uuid "providable_id"
     t.string "providable_type"
     t.jsonb "metadata"
+    t.datetime "discarded_at"
+    t.index ["app_id", "category", "providable_type", "status"], name: "unique_connected_integration_category", unique: true, where: "((status)::text = 'connected'::text)"
     t.index ["app_id"], name: "index_integrations_on_app_id"
     t.index ["providable_type", "providable_id"], name: "index_integrations_on_providable_type_and_providable_id", unique: true
   end
@@ -590,7 +592,11 @@ ActiveRecord::Schema[7.0].define(version: 2024_03_05_080020) do
     t.boolean "auto_deploy", default: true
     t.string "build_artifact_name_pattern"
     t.uuid "app_variant_id"
-    t.index ["ci_cd_channel", "release_platform_id"], name: "index_steps_on_ci_cd_channel_and_release_platform_id", unique: true
+    t.uuid "integration_id"
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_steps_on_discarded_at"
+    t.index ["integration_id"], name: "index_steps_on_integration_id"
+    t.index ["release_platform_id", "ci_cd_channel"], name: "index_kept_steps_on_release_platform_id_and_ci_cd_channel", unique: true, where: "(discarded_at IS NULL)"
     t.index ["release_platform_id"], name: "index_steps_on_release_platform_id"
     t.index ["step_number", "release_platform_id"], name: "index_steps_on_step_number_and_release_platform_id", unique: true
   end

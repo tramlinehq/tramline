@@ -150,6 +150,12 @@
           <% end %>
 
           <% dropdown.with_item_group(list_style: "text-main-500 dark:text-main-400") do |group| %>
+            <% group.with_item(link: { path: edit_accounts_user_path, "data-turbo": false }) do %>
+              Settings
+            <% end %>
+          <% end %>
+
+          <% dropdown.with_item_group(list_style: "text-main-500 dark:text-main-400") do |group| %>
             <% if billing? %>
               <% group.with_item(link: { path: billing_link, external: true }) do %>
                 Go to billing ↗

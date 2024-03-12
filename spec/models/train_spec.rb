@@ -169,9 +169,17 @@ describe Train do
   end
 
   describe "#hotfixable?" do
-    let(:train) { create(:train, :with_almost_trunk, :with_no_platforms, :active) }
+    let(:factory_tree) {
+      create_deployment_tree(:android,
+        :with_production_channel,
+        step_traits: [:release],
+        train_traits: [:with_almost_trunk, :active])
+    }
+    let(:train) { factory_tree[:train] }
+    let(:release_platform) { factory_tree[:release_platform] }
+    let(:step) { factory_tree[:step] }
+    let(:deployment) { factory_tree[:deployment] }
     let(:release) { create(:release, :finished, :with_no_platform_runs, train:) }
-    let(:release_platform) { create(:release_platform, train:) }
 
     before do
       _finished_release_run = create(:release_platform_run, release:, release_platform:)
@@ -186,18 +194,13 @@ describe Train do
 
     it "is false if there is an ongoing release in progress" do
       ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:, hotfixed_from: release)
-      release_platform = create(:release_platform, train:)
       release_platform_run = create(:release_platform_run, release: ongoing_release, release_platform:)
-      step = create(:step, :release, :with_deployment, release_platform:)
       _step_run = create(:step_run, :deployment_started, step: step, release_platform_run:)
 
       expect(train.reload.hotfixable?).to be(false)
     end
 
     it "is true when a production train with a release to hotfix is available" do
-      step = create(:step, :release, :with_deployment, release_platform: create(:release_platform, train:))
-      _deployment = create(:deployment, :with_google_play_store, build_artifact_channel: {is_production: true}, step: step)
-
       expect(train.reload.hotfixable?).to be(true)
     end
   end
