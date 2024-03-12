@@ -1,11 +1,34 @@
 class Accounts::TeamsController < SignedInApplicationController
-  def show
-    @tab_configuration = [
-      [1, "Settings", edit_accounts_organization_path(current_organization), "v2/cog.svg"],
-      [2, "Team", accounts_organization_team_path(current_organization), "v2/user_cog.svg"]
-    ]
-    @teams = current_organization.teams
-    @users = current_organization.users.includes(:invitations)
-    @invited_users = current_organization.invites.includes(:sender).not_accepted
+  before_action :require_write_access!, only: %i[create update destroy]
+
+  def create
+    @team = current_organization.teams.new(team_params)
+    if @team.save
+      redirect_to teams_accounts_organization_path(current_organization), notice: "Team created."
+    else
+      redirect_to teams_accounts_organization_path(current_organization), flash: {error: "There was an error: #{@team.errors.full_messages.to_sentence}"}
+    end
+  end
+
+  def update
+    @team = current_organization.teams.find_by(id: params[:id])
+    if @team.update(team_params)
+      redirect_to teams_accounts_organization_path(current_organization), notice: "Team was updated."
+    else
+      redirect_to teams_accounts_organization_path(current_organization), flash: {error: "There was an error: #{@team.errors.full_messages.to_sentence}"}
+    end
+  end
+
+  def destroy
+    @team = current_organization.teams.find_by(id: params[:id])
+    if @team.delete
+      redirect_to teams_accounts_organization_path(current_organization), notice: "Team was deleted."
+    else
+      redirect_to teams_accounts_organization_path(current_organization), flash: {error: "There was an error: #{@team.errors.full_messages.to_sentence}"}
+    end
+  end
+
+  def team_params
+    params.require(:accounts_team).permit(:name, :color)
   end
 end

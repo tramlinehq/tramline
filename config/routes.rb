@@ -40,11 +40,14 @@ Rails.application.routes.draw do
     resources :organizations, only: [:edit] do
       member do
         get :switch
+        get :teams
       end
 
-      resource :team, only: [:show]
+      resources :teams, only: %i[create update destroy]
       resources :invitations, only: [:create]
     end
+
+    resource :user, only: [:edit, :update]
   end
 
   resources :apps do

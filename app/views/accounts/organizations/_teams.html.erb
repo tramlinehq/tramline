@@ -1,7 +1,19 @@
 <%= render V2::SectionComponent.new(style: :titled,
                                     title: "Teams (#{@teams.size})",
                                     subtitle: "Teams in your organization") do |sc| %>
-  <%= render V2::TableComponent.new(columns: ["Name", "Color"]) do |table| %>
+  <% sc.with_sidenote do %>
+    <%= render V2::ModalComponent.new(title: "Add team") do |modal| %>
+      <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
+              .with_icon("v2/plus.svg", size: :md) %>
+      <% modal.with_body do %>
+        <%= render partial: "accounts/teams/form", locals: { team: Accounts::Team.new(organization: current_organization),
+                                                             url: accounts_organization_teams_path(current_organization),
+                                                             form_method: :post } %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= render V2::TableComponent.new(columns: ["Name", "Color", ""]) do |table| %>
     <% @teams.each do |team| %>
       <% table.with_row do |row| %>
         <% row.with_cell do %>
@@ -10,6 +22,29 @@
         <% row.with_cell do %>
           <div class="flex items-center justify-start">
             <div class="p-3 rounded-full" style="background-color: <%= team.color %>"></div>
+          </div>
+        <% end %>
+        <% row.with_cell do %>
+          <div class="flex gap-x-2 justify-end">
+            <%= render V2::ModalComponent.new(title: "Edit team") do |modal| %>
+              <% modal.with_button(scheme: :light,
+                                   type: :action,
+                                   size: :xxs,
+                                   arrow: :none)
+                      .with_icon("v2/pencil.svg") %>
+              <% modal.with_body do %>
+                <%= render partial: "accounts/teams/form", locals: { team:,
+                                                                     url: accounts_organization_team_path(current_organization, team),
+                                                                     form_method: :put } %>
+              <% end %>
+            <% end %>
+            <%= render V2::ButtonComponent.new(
+              scheme: :light,
+              options: accounts_organization_team_path(current_organization, team),
+              type: :link,
+              html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete the team? This will not remove the users that are part of the team." } }) do |b|
+              b.with_icon("v2/trash.svg")
+            end %>
           </div>
         <% end %>
       <% end %>
