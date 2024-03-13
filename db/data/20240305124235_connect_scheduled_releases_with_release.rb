@@ -1,5 +1,6 @@
 class ConnectScheduledReleasesWithRelease < ActiveRecord::Migration[7.0]
   def up
+    return
     ActiveRecord::Base.transaction do
       # scan all automatic trains
       Train.where.not(kickoff_at: nil).where.not(repeat_duration: nil).each do |train|

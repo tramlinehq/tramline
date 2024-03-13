@@ -2,6 +2,7 @@
 
 class PopulatePlatformSpecificBugsnagConfig < ActiveRecord::Migration[7.0]
   def up
+    return
     ActiveRecord::Base.transaction do
       AppConfig.all.each do |app_config|
         next if app_config.bugsnag_project_id.blank?
