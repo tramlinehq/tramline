@@ -23,13 +23,13 @@ class Accounts::InvitationsController < SignedInApplicationController
         end
       rescue Postmark::ApiInputError
         flash[:error] = "Sorry, there was a delivery error while sending the invite!"
-        redirect_to accounts_organization_team_path(current_organization)
+        redirect_to accounts_organization_teams_path(current_organization)
       end
 
-      redirect_to accounts_organization_team_path(current_organization),
+      redirect_to accounts_organization_teams_path(current_organization),
         notice: "Sent an invite to #{@invite.email}!"
     else
-      redirect_to accounts_organization_team_path(current_organization),
+      redirect_to accounts_organization_teams_path(current_organization),
         notice: "Failed to send an invite to #{@invite.email}!"
     end
   end
