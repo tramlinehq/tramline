@@ -81,6 +81,14 @@ class Accounts::Organization < ApplicationRecord
     apps.first
   end
 
+  def members
+    users.includes(memberships: :organization, invitations: :organization)
+  end
+
+  def pending_invites
+    invites.includes(:sender).not_accepted
+  end
+
   def team_colors
     colors = teams.pluck(:name, :color).to_h || {}
     colors[Accounts::Team::UNKNOWN_TEAM_NAME] = Accounts::Team::UNKNOWN_TEAM_COLOR

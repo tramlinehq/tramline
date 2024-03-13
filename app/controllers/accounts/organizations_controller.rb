@@ -15,8 +15,8 @@ class Accounts::OrganizationsController < SignedInApplicationController
       [2, "Team", teams_accounts_organization_path(current_organization), "v2/user_cog.svg"]
     ]
     @teams = current_organization.teams
-    @users = current_organization.users.includes(:invitations)
-    @invited_users = current_organization.invites.includes(:sender).not_accepted
+    @users = current_organization.members
+    @invited_users = current_organization.pending_invites
   end
 
   def rotate_api_key

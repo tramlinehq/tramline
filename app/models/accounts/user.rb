@@ -117,8 +117,10 @@ class Accounts::User < ApplicationRecord
     access_for(organization).owner?
   end
 
-  def successful_invite
-    invitations.find(&:accepted?)
+  def successful_invite_for(organization)
+    invitations
+      .filter { |i| i.organization == organization }
+      .find(&:accepted?)
   end
 
   def release_monitoring?
