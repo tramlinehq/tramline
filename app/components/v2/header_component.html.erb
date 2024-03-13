@@ -81,6 +81,7 @@
               <% end %>
             <% end %>
 
+
             <%= render V2::ButtonComponent.new(scheme: :light,
                                                options: edit_app_path(default_app),
                                                type: :link,
@@ -149,9 +150,11 @@
             </div>
           <% end %>
 
-          <% dropdown.with_item_group(list_style: "text-main-500 dark:text-main-400") do |group| %>
-            <% group.with_item(link: { path: edit_accounts_user_path, "data-turbo": false }) do %>
-              Settings
+          <% if current_organization.user_settings_enabled? %>
+            <% dropdown.with_item_group(list_style: "text-main-500 dark:text-main-400") do |group| %>
+              <% group.with_item(link: { path: edit_accounts_user_path, "data-turbo": false }) do %>
+                Settings
+              <% end %>
             <% end %>
           <% end %>
 
