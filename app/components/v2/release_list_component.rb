@@ -50,7 +50,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
       {
         title: "Minor",
         subtitle: start_minor_text,
-        icon: "v2/play_empty.svg",
+        icon: "v2/play_fill.svg",
         opt_name: "has_major_bump",
         opt_value: "false",
         options: {checked: true, data: {action: "reveal#hide"}}
@@ -58,7 +58,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
       {
         title: "Major",
         subtitle: start_major_text,
-        icon: "v2/fast_forward.svg",
+        icon: "v2/forward_step_fill.svg",
         opt_name: "has_major_bump",
         opt_value: "true",
         options: {checked: false, data: {action: "reveal#hide"}}
@@ -66,7 +66,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
       {
         title: "Custom",
         subtitle: "Specify a release version",
-        icon: "v2/user_cog.svg",
+        icon: "v2/user_cog_fill.svg",
         opt_name: "has_major_bump",
         opt_value: nil,
         options: {checked: false, data: {action: "reveal#show"}}
