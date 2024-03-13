@@ -86,4 +86,14 @@ class V2::BuildInfoComponent < V2::BaseComponent
   def deployment_logo
     "integrations/logo_#{deployment.integration_type}.png"
   end
+
+  def commits_since_last_release
+    previous_step_run = @step_run.previous_step_runs.not_failed.last
+    return unless previous_step_run
+
+    previous_store_release = previous_step_run.last_run_for(@deployment_run.deployment)
+    return unless previous_store_release
+
+    Commit.between(previous_step_run, @step_run)
+  end
 end

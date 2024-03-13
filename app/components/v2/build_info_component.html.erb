@@ -12,6 +12,16 @@
         <% badge.with_icon(build_logo) %>
         <% badge.with_link(ci_info, ci_link) %>
       <% end %>
+      <% if commits_since_last_release.present? %>
+        <%= render V2::ModalComponent.new(title: "Changes since last submission", size: :xl_3) do |modal| %>
+          <% button = modal.with_button(scheme: :naked_icon, type: :action, size: :none) %>
+          <% button.with_icon("v2/diff.svg", size: :md) %>
+          <% button.with_tooltip("Changes since last submission", placement: "top") %>
+          <% modal.with_body do %>
+            <%= render V2::CommitListComponent.new(commits_since_last_release) %>
+          <% end %>
+        <% end %>
+      <% end %>
 
       <%= render V2::StatusIndicatorPillComponent.new(**status) %>
     </div>

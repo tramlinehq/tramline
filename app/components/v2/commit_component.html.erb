@@ -1,0 +1,28 @@
+<div class="flex text-sm items-center space-x-4 rtl:space-x-reverse w-full">
+  <div class="w-full flex flex-col gap-y-1">
+    <%= render(V2::ButtonComponent.new(scheme: :link,
+                                       label: message.truncate(80),
+                                       options:  url,
+                                       type: :link_external,
+                                       size: :none,
+                                       authz: false)) %>
+    <div class="flex flex-row gap-x-2 items-center">
+      <%= render V2::IconComponent.new(user_avatar(author_name, size: 24, limit: 2), raw_svg: true, size: :xl) %>
+      <span class="text-xs text-main-500">
+        <span class="font-semibold">
+          <%= render(V2::ButtonComponent.new(scheme: :link,
+                                             label: author_login,
+                                             options: author_link,
+                                             type: :link_external,
+                                             size: :none,
+                                             authz: false)) %>
+        </span>
+        committed <%= ago_in_words(timestamp) %></span>
+    </div>
+  </div>
+
+  <div class="flex flex-row gap-x-2 justify-self-end items-center">
+    <span class="text-xs font-mono text-main-500 border border-main-200 dark:border-main-600 rounded-md bg-main-200 py-0.5 px-2"><%= short_sha %></span>
+    <%= render V2::TeamPillComponent.new(team) if current_organization.teams_supported? %>
+  </div>
+</div>
