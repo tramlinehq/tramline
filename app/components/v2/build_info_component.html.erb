@@ -12,18 +12,25 @@
         <% badge.with_icon(build_logo) %>
         <% badge.with_link(ci_info, ci_link) %>
       <% end %>
-      <% if commits_since_last_release.present? %>
-        <%= render V2::ModalComponent.new(title: "Changes since last submission", size: :xl_3) do |modal| %>
+
+      <%= render V2::StatusIndicatorPillComponent.new(**status) %>
+
+      <% if previous_release.present? %>
+        <%= render V2::ModalComponent.new(title: "Changes since last submission",
+                                          subtitle: "#{previous_release.build_version} (#{previous_release.build_number}) –> #{deployment_run.build_version} (#{deployment_run.build_number})",
+                                          size: :xl_3) do |modal| %>
           <% button = modal.with_button(scheme: :naked_icon, type: :action, size: :none) %>
           <% button.with_icon("v2/diff.svg", size: :md) %>
           <% button.with_tooltip("Changes since last submission", placement: "top") %>
           <% modal.with_body do %>
-            <%= render V2::CommitListComponent.new(commits_since_last_release) %>
+            <%= render V2::CommitListComponent.new do |cl| %>
+              <% commits_since_last_release.each do |commit| %>
+                <% cl.with_commit(commit) %>
+              <% end %>
+            <% end %>
           <% end %>
         <% end %>
       <% end %>
-
-      <%= render V2::StatusIndicatorPillComponent.new(**status) %>
     </div>
 
     <%= render V2::TooltipComponent.new("Last activity on #{last_activity_at}", placement: "top") do |tooltip| %>

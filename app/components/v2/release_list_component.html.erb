@@ -135,6 +135,12 @@
     <%= render V2::ReleaseOverviewComponent.new(ongoing_release) %>
     <%= render V2::ReleaseOverviewComponent.new(upcoming_release) %>
     <%= render V2::ReleaseOverviewComponent.new(last_completed_release) %>
+    <%= render V2::ReleaseOverviewComponent.new(previous_releases[0]) %>
+    <%= render V2::ReleaseOverviewComponent.new(previous_releases[2]) %>
+    <%= render V2::ReleaseOverviewComponent.new(previous_releases[3]) %>
+    <%= render V2::ReleaseOverviewComponent.new(previous_releases[4]) %>
+    <%= render V2::ReleaseOverviewComponent.new(previous_releases[5]) %>
+    <%= render V2::ReleaseOverviewComponent.new(previous_releases[6]) %>
 
     <% if devops_report.present? %>
       <%= render V2::SectionComponent.new(style: :titled, title: "Mobile Devops") do %>

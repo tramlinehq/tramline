@@ -1,7 +1,7 @@
-<ul class="divide-y divide-gray-200 dark:divide-gray-700 px-4">
+<ul class="divide-y divide-gray-200 dark:divide-gray-700 px-1">
   <% commits.each do |commit| %>
     <li class="pb-3 last:pb-0 pt-3 first:pt-0">
-      <%= render V2::CommitComponent.new(commit) %>
+      <%= commit %>
     </li>
   <% end %>
 </ul>

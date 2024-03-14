@@ -1,7 +1,3 @@
 class V2::CommitListComponent < V2::BaseComponent
-  def initialize(commits)
-    @commits = commits
-  end
-
-  attr_reader :commits
+  renders_many :commits, V2::CommitComponent
 end

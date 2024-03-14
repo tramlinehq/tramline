@@ -2,13 +2,14 @@
   <div class="w-full flex flex-col gap-y-1">
     <%= render(V2::ButtonComponent.new(scheme: :link,
                                        label: message.truncate(80),
-                                       options:  url,
+                                       options: url,
                                        type: :link_external,
                                        size: :none,
-                                       authz: false)) %>
+                                       authz: false,
+                                       html_options: {class: "inline-flex items-center text-main dark:bg-main dark:text-main-200 border-none shadow-none hover:underline"})) %>
     <div class="flex flex-row gap-x-2 items-center">
       <%= render V2::IconComponent.new(user_avatar(author_name, size: 24, limit: 2), raw_svg: true, size: :xl) %>
-      <span class="text-xs text-main-500">
+      <span class="text-xs text-neutral-500 dark:text-white">
         <span class="font-semibold">
           <%= render(V2::ButtonComponent.new(scheme: :link,
                                              label: author_login,
@@ -17,7 +18,7 @@
                                              size: :none,
                                              authz: false)) %>
         </span>
-        committed <%= ago_in_words(timestamp) %></span>
+        committed on <%= time_format(timestamp, only_day: true) %></span>
     </div>
   </div>
 

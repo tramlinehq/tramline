@@ -6,7 +6,7 @@
           dark:bg-main bg-white
           open:animate-fade-in
           w-full <%= max_width %>">
-    <div class="flex flex-col mb-3 pb-2">
+    <div class="flex flex-col mb-3 pb-2 gap-y-1">
       <div class="flex justify-between items-center <%= default_separator %>">
         <h1 class="heading-2"><%= title %></h1>
         <%= render V2::ButtonComponent.new(
@@ -21,7 +21,7 @@
       </div>
       <% if subtitle %>
         <div class="flex gap-x-2 items-center">
-          <span class="text-sm"><%= subtitle %></span>
+          <span class="text-sm text-neutral-500 dark:text-white"><%= subtitle %></span>
           <div class="flex-1 h-full w-full">
             <div class="h-px bg-main-200 dark:bg-main-600 w-full m-0"></div>
           </div>

@@ -22,6 +22,7 @@ class V2::BuildInfoComponent < V2::BaseComponent
     @step_run = deployment_run.step_run
   end
 
+  attr_reader :deployment_run
   delegate :step, to: :@step_run
   delegate :deployment, :external_link, to: :@deployment_run
 
@@ -87,13 +88,16 @@ class V2::BuildInfoComponent < V2::BaseComponent
     "integrations/logo_#{deployment.integration_type}.png"
   end
 
-  def commits_since_last_release
+  def previous_release
     previous_step_run = @step_run.previous_step_runs.not_failed.last
     return unless previous_step_run
 
-    previous_store_release = previous_step_run.last_run_for(@deployment_run.deployment)
-    return unless previous_store_release
+    previous_step_run.last_run_for(@deployment_run.deployment)
+  end
 
-    Commit.between(previous_step_run, @step_run)
+  def commits_since_last_release
+    return unless previous_release
+
+    Commit.between(previous_release.step_run, @step_run)
   end
 end
