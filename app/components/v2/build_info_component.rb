@@ -24,7 +24,6 @@ class V2::BuildInfoComponent < V2::BaseComponent
     @step_run = deployment_run.step_run
   end
 
-  attr_reader :deployment_run
   delegate :step, to: :@step_run
   delegate :deployment, :external_link, to: :@deployment_run
 
@@ -104,6 +103,6 @@ class V2::BuildInfoComponent < V2::BaseComponent
   end
 
   def diff_between
-    "#{previous_release.build_version} (#{previous_release.build_number}) → #{deployment_run.build_version} (#{deployment_run.build_number})"
+    "#{previous_release.build_display_name} → #{@deployment_run.build_display_name}"
   end
 end

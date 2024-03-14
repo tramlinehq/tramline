@@ -199,6 +199,10 @@ class DeploymentRun < ApplicationRecord
     where(status: STORE_SUBMISSION_STATES).includes([:staged_rollout, {step_run: [:commit], deployment: [:integration]}]).select(&:production_channel?)
   end
 
+  def build_display_name
+    "#{build_version} (#{build_number})"
+  end
+
   def deployment_notes
     return step_run.build_notes.truncate(ReleaseMetadata::NOTES_MAX_LENGTH) if build_notes?
     release_metadata.release_notes if release_notes?
