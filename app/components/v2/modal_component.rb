@@ -34,7 +34,7 @@ class V2::ModalComponent < V2::BaseComponent
     if disabled?
       {}
     else
-      {data: {controller: "dialog", dialog_dismissable_value: dismissable}}
+      {class: "inline-flex items-center", data: {controller: "dialog", dialog_dismissable_value: dismissable}}
     end
   end
 

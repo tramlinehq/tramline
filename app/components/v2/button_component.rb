@@ -28,7 +28,7 @@ class V2::ButtonComponent < V2::BaseComponent
       class: "text-main-500 rounded-lg md:inline-flex hover:text-main hover:bg-main-100 dark:text-main-400 dark:hover:text-white dark:hover:bg-main-700 focus:ring-4 focus:ring-main-300 dark:focus:ring-main-600 items-center"
     },
     naked_icon: {
-      class: "text-main-500 rounded-lg hover:text-main dark:text-main-400 dark:hover:text-white",
+      class: "#{BASE_OPTS} text-main-500 rounded-lg hover:text-main dark:text-main-400 dark:hover:text-white",
       icon: true
     },
     avatar_icon: {
