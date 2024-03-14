@@ -17,7 +17,7 @@
 
       <% if previous_release.present? %>
         <%= render V2::ModalComponent.new(title: "Changes since last submission",
-                                          subtitle: "#{previous_release.build_version} (#{previous_release.build_number}) –> #{deployment_run.build_version} (#{deployment_run.build_number})",
+                                          subtitle: diff_between,
                                           size: :xl_3) do |modal| %>
           <% button = modal.with_button(scheme: :naked_icon, type: :action, size: :none) %>
           <% button.with_icon("v2/diff.svg", size: :md) %>

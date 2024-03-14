@@ -1,4 +1,6 @@
 class V2::BuildInfoComponent < V2::BaseComponent
+  include Memery
+
   STATUS = {
     created: {text: "About to start", status: :inert},
     started: {text: "Running", status: :ongoing},
@@ -88,7 +90,7 @@ class V2::BuildInfoComponent < V2::BaseComponent
     "integrations/logo_#{deployment.integration_type}.png"
   end
 
-  def previous_release
+  memoize def previous_release
     previous_step_run = @step_run.previous_step_runs.not_failed.last
     return unless previous_step_run
 
@@ -99,5 +101,9 @@ class V2::BuildInfoComponent < V2::BaseComponent
     return unless previous_release
 
     Commit.between(previous_release.step_run, @step_run)
+  end
+
+  def diff_between
+    "#{previous_release.build_version} (#{previous_release.build_number}) → #{deployment_run.build_version} (#{deployment_run.build_number})"
   end
 end
