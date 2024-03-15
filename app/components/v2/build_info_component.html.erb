@@ -20,7 +20,7 @@
                                           subtitle: diff_between,
                                           size: :xl_3) do |modal| %>
           <% button = modal.with_button(scheme: :naked_icon, type: :action, size: :none) %>
-          <% button.with_icon("v2/diff.svg", size: :md) %>
+          <% button.with_icon("v2/diff.svg", size: :lg) %>
           <% button.with_tooltip("Changes since last submission", placement: "top") %>
           <% modal.with_body do %>
             <%= render V2::CommitListComponent.new do |cl| %>
