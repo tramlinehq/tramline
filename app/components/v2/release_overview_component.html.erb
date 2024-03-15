@@ -90,8 +90,8 @@
 
       <% platform_runs.each do |run| %>
         <div class="grid gap-y-2 items-end content-end">
-          <% run.store_submitted_releases.each do |store_release| %>
-            <%= render V2::BuildInfoComponent.new(store_release) %>
+          <% run.store_submitted_releases.each_with_index do |store_release, index| %>
+            <%= render V2::BuildInfoComponent.new(store_release, index:, all_releases: run.store_submitted_releases) %>
           <% end %>
         </div>
       <% end %>

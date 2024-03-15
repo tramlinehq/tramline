@@ -392,18 +392,15 @@ class StepRun < ApplicationRecord
     restart_deploy! if store_provider.build_present_in_public_track?(build_number)
   end
 
-  def previous_step_runs
+  private
+
+  def previous_step_run
     release_platform_run
       .step_runs_for(step)
       .where("scheduled_at < ?", scheduled_at)
       .where.not(id: id)
       .order(:scheduled_at)
-  end
-
-  private
-
-  def previous_step_run
-    previous_step_runs.last
+      .last
   end
 
   def find_workflow_run
