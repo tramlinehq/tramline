@@ -14,6 +14,23 @@
       <% end %>
 
       <%= render V2::StatusIndicatorPillComponent.new(**status) %>
+
+      <% if previous_release.present? %>
+        <%= render V2::ModalComponent.new(title: "Changes since last submission",
+                                          subtitle: diff_between,
+                                          size: :xl_3) do |modal| %>
+          <% button = modal.with_button(scheme: :naked_icon, type: :action, size: :none) %>
+          <% button.with_icon("v2/diff.svg", size: :lg) %>
+          <% button.with_tooltip("Changes since last submission", placement: "top") %>
+          <% modal.with_body do %>
+            <%= render V2::CommitListComponent.new do |cl| %>
+              <% commits_since_last_release.each do |commit| %>
+                <% cl.with_commit(commit) %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
     </div>
 
     <%= render V2::TooltipComponent.new("Last activity on #{last_activity_at}", placement: "top") do |tooltip| %>
