@@ -74,6 +74,7 @@ class StagedRollout < ApplicationRecord
     end
 
     event :complete, after_commit: -> { event_stamp!(reason: :completed, kind: :success, data: stamp_data) } do
+      after { notify!("Staged rollout was completed!", :staged_rollout_completed, notification_params) }
       after { deployment_run.complete! }
       transitions from: [:failed, :started, :paused], to: :completed
     end
@@ -101,7 +102,7 @@ class StagedRollout < ApplicationRecord
     end
 
     retry! if failed?
-    complete! if finish_rollout && finished?
+    return complete! if finish_rollout && finished?
     notify!("Staged rollout was updated!", :staged_rollout_updated, notification_params)
   end
 

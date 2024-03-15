@@ -18,11 +18,12 @@ class NotificationSettingsComponent < ViewComponent::Base
     staged_rollout_paused: {number: 10, icon: "v2/pause.svg", description: "The staged rollout was paused for the production build in the store"},
     staged_rollout_resumed: {number: 11, icon: "v2/play.svg", description: "The staged rollout was resumed for the production build in the store"},
     staged_rollout_halted: {number: 12, icon: "v2/stop_circle.svg", description: "The staged rollout was halted for the production build in the store"},
-    staged_rollout_fully_released: {number: 13, icon: "v2/fast_forward.svg", description: "The staged rollout was fully released to 100% for the production build in the store"},
-    deployment_finished: {number: 14, icon: "v2/truck.svg", description: "The distribution was successful to a channel"},
-    deployment_failed: {number: 15, icon: "v2/alert_circle.svg", description: "The distribution to a channel failed"},
-    release_ended: {number: 16, icon: "v2/sparkles.svg", description: "The release finished successfully"},
-    release_stopped: {number: 17, icon: "v2/stop_circle.svg", description: "The release was stopped before it finished"}
+    staged_rollout_completed: {number: 13, icon: "v2/stop_circle.svg", description: "The staged rollout was completed for the production build in the store"},
+    staged_rollout_fully_released: {number: 14, icon: "v2/fast_forward.svg", description: "The staged rollout was fully released to 100% for the production build in the store"},
+    deployment_finished: {number: 15, icon: "v2/truck.svg", description: "The distribution was successful to a channel"},
+    deployment_failed: {number: 16, icon: "v2/alert_circle.svg", description: "The distribution to a channel failed"},
+    release_ended: {number: 17, icon: "v2/sparkles.svg", description: "The release finished successfully"},
+    release_stopped: {number: 18, icon: "v2/stop_circle.svg", description: "The release was stopped before it finished"}
   }.with_indifferent_access
 
   unless Set.new(NOTIFICATIONS.keys).eql?(Set.new(NotificationSetting.kinds.keys))
