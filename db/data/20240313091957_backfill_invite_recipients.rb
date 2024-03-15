@@ -6,7 +6,8 @@ class BackfillInviteRecipients < ActiveRecord::Migration[7.0]
       Accounts::Invite.where(recipient_id: nil).each do |invite|
         recipient = Accounts::User.find_by(email: invite.email)
         next unless recipient
-        invite.update!(recipient:)
+        invite.recipient = recipient
+        invite.save!(validate: false)
       end
     end
   end
