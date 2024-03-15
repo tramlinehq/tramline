@@ -9,4 +9,8 @@ class V2::CommitComponent < V2::BaseComponent
   def author_link
     author_url || "mailto:#{author_email}"
   end
+
+  def author_info
+    author_login || author_name
+  end
 end
