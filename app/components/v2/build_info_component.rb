@@ -1,4 +1,6 @@
 class V2::BuildInfoComponent < V2::BaseComponent
+  include Memery
+
   STATUS = {
     created: {text: "About to start", status: :inert},
     started: {text: "Running", status: :ongoing},
@@ -16,13 +18,15 @@ class V2::BuildInfoComponent < V2::BaseComponent
     failed_with_action_required: {text: "Needs manual submission", status: :failure}
   }
 
-  def initialize(deployment_run)
+  def initialize(deployment_run, index:, all_releases:)
     @deployment_run = deployment_run
     @staged_rollout = deployment_run.staged_rollout
     @step_run = deployment_run.step_run
+    @index = index
+    @all_releases = all_releases
   end
 
-  delegate :step, to: :@step_run
+  delegate :step, :release_platform_run, to: :@step_run
   delegate :deployment, :external_link, to: :@deployment_run
 
   def status
@@ -85,5 +89,20 @@ class V2::BuildInfoComponent < V2::BaseComponent
 
   def deployment_logo
     "integrations/logo_#{deployment.integration_type}.png"
+  end
+
+  memoize def previous_release
+    return if @all_releases.size == 1
+    return if @index == @all_releases.size
+    @all_releases.fetch(@index + 1, nil)
+  end
+
+  def commits_since_last_release
+    return unless previous_release
+    release_platform_run.commits_between(previous_release.step_run, @step_run)
+  end
+
+  def diff_between
+    "#{previous_release.build_display_name} → #{@deployment_run.build_display_name}"
   end
 end

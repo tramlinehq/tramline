@@ -340,6 +340,10 @@ class ReleasePlatformRun < ApplicationRecord
       .pluck(:message)
   end
 
+  def commits_between(older_step_run, newer_step_run)
+    all_commits.between(older_step_run, newer_step_run)
+  end
+
   def notification_params
     release.notification_params.merge(
       {
