@@ -18,7 +18,8 @@
       <% if previous_release.present? %>
         <%= render V2::ModalComponent.new(title: "Changes since last submission",
                                           subtitle: diff_between,
-                                          size: :xl_3) do |modal| %>
+                                          size: :xl_3,
+                                          authz: false) do |modal| %>
           <% button = modal.with_button(scheme: :naked_icon, type: :action, size: :none) %>
           <% button.with_icon("v2/diff.svg", size: :lg) %>
           <% button.with_tooltip("Changes since last submission", placement: "top") %>
