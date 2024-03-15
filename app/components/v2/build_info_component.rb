@@ -26,7 +26,7 @@ class V2::BuildInfoComponent < V2::BaseComponent
     @all_releases = all_releases
   end
 
-  delegate :step, to: :@step_run
+  delegate :step, :release_platform_run, to: :@step_run
   delegate :deployment, :external_link, to: :@deployment_run
 
   def status
@@ -99,7 +99,7 @@ class V2::BuildInfoComponent < V2::BaseComponent
 
   def commits_since_last_release
     return unless previous_release
-    Commit.between(previous_release.step_run, @step_run)
+    release_platform_run.commits_between(previous_release.step_run, @step_run)
   end
 
   def diff_between
