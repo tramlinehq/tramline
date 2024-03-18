@@ -4,11 +4,11 @@ module Notifiers
       TEMPLATE_FILE = "staged_rollout_updated.json.erb".freeze
 
       def main_text
-        "Staged rollout for the release is now *complete*"
+        "Staged rollout for the release is now *complete* at stage *#{@current_stage} (#{@rollout_percentage}%)*."
       end
 
       def secondary_text
-        "You can not change this release from Tramline any more as it is locked."
+        "The rollout on this release is now locked on Tramline and cannot be altered further."
       end
     end
   end

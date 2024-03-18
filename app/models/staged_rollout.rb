@@ -210,7 +210,7 @@ class StagedRollout < ApplicationRecord
 
   def stamp_data
     data = {current_stage: display_current_stage, is_fully_released: fully_released?}
-    data[:rollout_percentage] = "%.2f" % last_rollout_percentage if last_rollout_percentage.present?
+    data[:rollout_percentage] = "%.2f" % config[current_stage] if current_stage.present?
     data
   end
 end
