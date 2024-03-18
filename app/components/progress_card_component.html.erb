@@ -1,25 +1,10 @@
 <div class="flex flex-col border-default box-padding gap-y-4">
   <div class="flex flex-row items-center justify-between">
-    <div class="flex items-center justify-start gap-x-1.5">
-      <%= render V2::IconComponent.new("integrations/logo_#{provider.to_s}.png", size: :md, rounded: false) %>
-
-      <h1 class="heading-5 uppercase">
-        <%= name %>
-      </h1>
-    </div>
-
-    <div class="flex justify-end">
-      <%= render V2::ButtonComponent.new(
-        scheme: :naked_icon,
-        options: "/",
-        size: :none,
-        authz: false,
-        type: :link) do |b|
-        b.with_icon("v2/arrow_right.svg", size: :sm)
-      end %>
-    </div>
+    <h1 class="heading-5 uppercase">
+      <%= name %>
+    </h1>
+    <%= render V2::IconComponent.new("integrations/logo_#{provider.to_s}.png", size: :md, rounded: false) %>
   </div>
-
   <div class="flex flex-row justify-between items-end">
     <div class="<%= text_size %>"><%= current %>%</div>
     <div class="text-xs text-main-400"><%= subtitle %></div>
