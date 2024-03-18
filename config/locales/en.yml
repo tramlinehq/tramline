@@ -34,6 +34,7 @@ en:
           review_approved: "Build review approved by App Store"
           review_failed: "Build review rejected by App Store"
           staged_rollout_updated: "Staged rollout increased"
+          staged_rollout_completed: "Staged rollout finished"
           release_scheduled: "Release scheduled"
           backmerge_failed: "Auto backmerge PR creation failed"
           staged_rollout_paused: "Staged rollout paused for App Store"

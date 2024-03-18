@@ -35,6 +35,7 @@ class NotificationSetting < ApplicationRecord
     staged_rollout_paused: "staged_rollout_paused",
     staged_rollout_resumed: "staged_rollout_resumed",
     staged_rollout_halted: "staged_rollout_halted",
+    staged_rollout_completed: "staged_rollout_completed",
     staged_rollout_fully_released: "staged_rollout_fully_released"
   }
 
