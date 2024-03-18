@@ -192,6 +192,10 @@ class Release < ApplicationRecord
     all_commits.where(backmerge_failure: true)
   end
 
+  def stability_commits
+    all_commits.where.not(id: first_commit.id)
+  end
+
   def compare_url
     vcs_provider.compare_url(train.working_branch, release_branch)
   end
