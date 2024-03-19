@@ -193,7 +193,7 @@ class Release < ApplicationRecord
   end
 
   def stability_commits
-    all_commits.where.not(id: first_commit.id)
+    all_commits.where.not(id: first_commit&.id)
   end
 
   def compare_url
