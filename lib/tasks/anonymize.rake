@@ -15,6 +15,7 @@ namespace :anonymize do
     abort "Train ID not found!" if train_id.blank?
     puts "Train with id #{train_id} will be copied to #{app.name}!" if train_id.present?
 
+    ci_cd_integration = app.integrations.ci_cd.first
     app_store_integration = app.integrations.build_channel.find(&:app_store_integration?)
     play_store_integration = app.integrations.build_channel.find(&:google_play_store_integration?)
     firebase_integration = app.integrations.build_channel.find(&:google_firebase_integration?)
@@ -81,6 +82,9 @@ namespace :anonymize do
         end
         anonymize("name").using FieldStrategy::LoremIpsum.new
         anonymize("description").using FieldStrategy::LoremIpsum.new
+        anonymize("integration_id") do |field|
+          ci_cd_integration.id
+        end
       end
 
       table "deployments" do
