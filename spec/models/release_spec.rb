@@ -428,4 +428,21 @@ describe Release do
       end
     end
   end
+
+  describe "#stability_commits" do
+    let(:factory_tree) { create_deployment_run_tree(:android, release_traits: [:on_track]) }
+    let(:release) { factory_tree[:release] }
+
+    it "returns the subsequent commits made on the release branch after release starts" do
+      stability_commits = create_list(:commit, 4, release:)
+      expect(release.stability_commits).to exist
+      expect(release.stability_commits).to eq(stability_commits)
+      expect(release.all_commits.size).to eq(stability_commits.size + 1)
+    end
+
+    it "returns nothing if no fixes are made" do
+      expect(release.all_commits).to exist
+      expect(release.stability_commits).to be_none
+    end
+  end
 end

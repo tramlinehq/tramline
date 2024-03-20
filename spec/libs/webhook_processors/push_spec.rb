@@ -137,14 +137,10 @@ describe WebhookProcessors::Push do
     context "when build queue" do
       let(:queue_size) { 3 }
       let(:factory_tree) {
-        create_deployment_run_tree(:android, :uploaded,
-          step_traits: [:release],
-          step_run_traits: [:deployment_restarted],
-          train_traits: [:with_build_queue],
-          release_traits: [:with_no_platform_runs, :on_track])
+        create_deployment_tree(:android, step_traits: [:release], train_traits: [:with_build_queue])
       }
       let(:train) { factory_tree[:train] }
-      let(:release) { factory_tree[:release] }
+      let(:release) { create(:release, :on_track, train:) }
 
       before do
         train.update!(build_queue_size: queue_size)

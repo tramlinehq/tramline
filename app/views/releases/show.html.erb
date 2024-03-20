@@ -121,7 +121,7 @@
       <%= render partial: "shared/live_release/separator" %>
 
       <div class="grid grid-cols-2 gap-6 mt-8">
-        <%= render partial: "shared/live_release/teams", locals: { release: @release, commits: @commits, pull_requests: @mid_release_prs } %>
+        <%= render partial: "shared/live_release/teams", locals: { release: @release, commits: @release.stability_commits, pull_requests: @mid_release_prs } %>
       </div>
     <% end %>
 

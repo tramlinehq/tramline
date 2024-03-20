@@ -131,7 +131,7 @@ class Charts::DevopsReport
     finished_releases(last)
       .group_by(&:release_version)
       .sort_by { |v, _| v.to_semverish }.to_h
-      .transform_values { |releases| releases[0].all_commits.count_by_team(organization) }
+      .transform_values { |releases| releases[0].stability_commits.count_by_team(organization) }
       .compact_blank
   end
 

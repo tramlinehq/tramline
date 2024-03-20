@@ -12,7 +12,7 @@
 class Accounts::Team < ApplicationRecord
   has_paper_trail
 
-  belongs_to :organization, inverse_of: :memberships, optional: false
+  belongs_to :organization, inverse_of: :teams, optional: false
   has_many :memberships, dependent: :nullify
 
   validates :color, uniqueness: {scope: :organization_id}

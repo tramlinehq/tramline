@@ -97,7 +97,7 @@ class FinalSummaryComponent < ViewComponent::Base
   end
 
   def team_stability_chart
-    {data: team_stability_commits,
+    {data: team_stability_commits.reject { |_, value| value.zero? },
      colors: team_colors,
      type: "polar-area",
      value_format: "number",
@@ -110,7 +110,7 @@ class FinalSummaryComponent < ViewComponent::Base
   end
 
   def team_release_chart
-    {data: team_release_commits,
+    {data: team_release_commits.reject { |_, value| value.zero? },
      colors: team_colors,
      type: "polar-area",
      value_format: "number",

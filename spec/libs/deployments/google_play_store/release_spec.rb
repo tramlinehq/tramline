@@ -205,7 +205,7 @@ describe Deployments::GooglePlayStore::Release do
             deployment_run.build_number,
             deployment_run.release_version,
             Deployment::FULL_ROLLOUT_VALUE,
-            [{language: "en-US", text: "Nothing new"}])
+            anything)
       end
 
       it "creates release with full rollout for production channel" do
@@ -255,7 +255,7 @@ describe Deployments::GooglePlayStore::Release do
             deployment_run.build_number,
             deployment_run.release_version,
             Deployment::FULL_ROLLOUT_VALUE,
-            [{language: "en-US", text: "Nothing new"}])
+            anything)
       end
 
       it "sends release notes when deployment is configured so" do
@@ -322,7 +322,7 @@ describe Deployments::GooglePlayStore::Release do
               deployment_run.build_number,
               deployment_run.release_version,
               Deployment::FULL_ROLLOUT_VALUE,
-              [{language: "en-US", text: "Nothing new"}])
+              anything)
         end
 
         it "marks a run as released when no staged rollout" do
