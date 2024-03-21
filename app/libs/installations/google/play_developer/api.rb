@@ -102,6 +102,13 @@ module Installations
       end
     end
 
+    def fetch_icon(locale)
+      execute do
+        edit = client.insert_edit(package_name)
+        client.list_edit_images(package_name, edit.id, locale, "icon")&.images&.first&.url
+      end
+    end
+
     private
 
     NOTES_MAX_LENGTH = 495
