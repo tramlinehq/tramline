@@ -38,7 +38,11 @@ class BuildHealthComponent < ViewComponent::Base
   def health_data
     return unless step_runs.size > 1
 
-    @health_data ||= step_runs.each_with_object({"app_size" => app_size_data}) do |step_run, acc|
+    initial_health_data = app_size_data
+    if release_platform_run.external_builds.any? { |em| em.normalized_metadata.any? { |m| m.identifier == "app_size" } }
+      initial_health_data = {}
+    end
+    @health_data ||= step_runs.each_with_object(initial_health_data) do |step_run, acc|
       metadata = step_run.external_build&.normalized_metadata
       next unless metadata
 
