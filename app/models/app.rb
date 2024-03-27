@@ -78,6 +78,10 @@ class App < ApplicationRecord
     }.invert
   end
 
+  def deploy_action_enabled?
+    Flipper.enabled?(:deploy_action_enabled, self)
+  end
+
   def variant_options
     opts = {"Default (#{bundle_identifier})" => nil}
     opts.merge variants.map.to_h { |v| [v.display_text, v.id] }
