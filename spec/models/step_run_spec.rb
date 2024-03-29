@@ -390,6 +390,7 @@ describe StepRun do
       train.update!(notification_channel: {id: "123"})
       ci_cd_dbl = instance_double(GithubIntegration)
 
+      allow_any_instance_of(SlackIntegration).to receive(:installation).and_return(slack_api_dbl)
       allow(slack_api_dbl).to receive(:rich_message)
       allow(step_run).to receive(:ci_cd_provider).and_return(ci_cd_dbl)
       allow(ci_cd_dbl).to receive(:get_artifact).and_return(artifact_stream)
@@ -398,7 +399,6 @@ describe StepRun do
 
     context "when upload file to slack passes" do
       before do
-        allow_any_instance_of(SlackIntegration).to receive(:installation).and_return(slack_api_dbl)
         allow(slack_api_dbl).to receive(:upload_file).and_return("unique_file_id")
       end
 
@@ -451,9 +451,7 @@ describe StepRun do
       end
 
       it "does not notify build availability" do
-        allow(slack_api_dbl).to receive(:upload_file).and_return("unique_file_id")
         step_run.upload_artifact!
-
         expect(slack_api_dbl).not_to have_received(:rich_message)
       end
     end
