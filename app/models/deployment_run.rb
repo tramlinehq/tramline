@@ -527,7 +527,13 @@ class DeploymentRun < ApplicationRecord
     end
 
     event_stamp!(reason: :released, kind: :success, data: stamp_data)
-    train.notify_with_snippet!("Deployment was successful!", :deployment_finished, notification_params, step_run.build_notes, "Changes since the last release:")
+    return if external?
+
+    train.notify_with_snippet!("Deployment was successful!",
+      :deployment_finished,
+      notification_params,
+      step_run.build_notes,
+      "Changes since the last release:")
   end
 
   def stamp_data
