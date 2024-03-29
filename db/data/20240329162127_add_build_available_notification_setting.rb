@@ -12,7 +12,6 @@ class AddBuildAvailableNotificationSetting < ActiveRecord::Migration[7.0]
         train.notification_settings.create!(kind: NotificationSetting.kinds[:build_available], active: false)
       end
     end
-
   end
 
   def down
