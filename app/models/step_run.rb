@@ -16,6 +16,7 @@
 #  updated_at              :datetime         not null
 #  commit_id               :uuid             not null, indexed, indexed => [step_id]
 #  release_platform_run_id :uuid             not null, indexed
+#  slack_file_id           :string
 #  step_id                 :uuid             not null, indexed, indexed => [commit_id]
 #
 class StepRun < ApplicationRecord
@@ -137,7 +138,7 @@ class StepRun < ApplicationRecord
     event(:finish_ci, after_commit: :after_finish_ci) { transitions from: :ci_workflow_started, to: :build_ready }
     event(:build_found, after_commit: :trigger_deployment) { transitions from: :build_ready, to: :build_found_in_store }
 
-    event(:upload_artifact, after_commit: :trigger_deployment) do
+    event(:upload_artifact, after_commit: :after_artifact_uploaded) do
       before { add_build_artifact(artifacts_url) }
       transitions from: :build_ready, to: :build_available
     end
@@ -392,6 +393,10 @@ class StepRun < ApplicationRecord
     restart_deploy! if store_provider.build_present_in_public_track?(build_number)
   end
 
+  def build_display_name
+    "#{build_version} (#{build_number})"
+  end
+
   private
 
   def previous_step_run
@@ -444,6 +449,8 @@ class StepRun < ApplicationRecord
 
     get_build_artifact(url).with_open do |artifact_stream|
       build_build_artifact(generated_at: generated_at).save_file!(artifact_stream)
+      artifact_stream.file.rewind
+      self.slack_file_id = train.upload_file_for_notifications!(artifact_stream.file, build_artifact.get_filename)
     end
   end
 
@@ -470,6 +477,11 @@ class StepRun < ApplicationRecord
   def after_retrigger_ci
     WorkflowProcessors::WorkflowRunJob.perform_later(id)
     event_stamp!(reason: :ci_retriggered, kind: :notice, data: stamp_data)
+  end
+
+  def after_artifact_uploaded
+    notify!("A new build is available!", :build_available, notification_params, slack_file_id, build_display_name) if slack_file_id
+    trigger_deployment
   end
 
   def after_finish_ci

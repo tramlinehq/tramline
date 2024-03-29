@@ -375,6 +375,88 @@ describe StepRun do
     end
   end
 
+  describe "#upload_artifact!" do
+    let(:artifact_fixture) { "spec/fixtures/storage/test_artifact.aab.zip" }
+    let(:artifact_file) { Rack::Test::UploadedFile.new(artifact_fixture, "application/zip") }
+    let(:artifact_stream) { Artifacts::Stream.new(artifact_file, is_archive: true) }
+    let(:deployment_run_tree) { create_deployment_run_tree(:android, step_run_traits: [:build_ready], train_traits: [:active]) }
+    let(:step_run) { deployment_run_tree[:step_run] }
+    let(:app) { deployment_run_tree[:app] }
+    let(:train) { deployment_run_tree[:train] }
+    let(:slack_api_dbl) { instance_double(Installations::Slack::Api) }
+
+    before do
+      create(:integration, :notification, app:)
+      train.update!(notification_channel: {id: "123"})
+      ci_cd_dbl = instance_double(GithubIntegration)
+
+      allow_any_instance_of(SlackIntegration).to receive(:installation).and_return(slack_api_dbl)
+      allow(slack_api_dbl).to receive(:rich_message)
+      allow(step_run).to receive(:ci_cd_provider).and_return(ci_cd_dbl)
+      allow(ci_cd_dbl).to receive(:get_artifact).and_return(artifact_stream)
+      allow(Triggers::Deployment).to receive(:call)
+    end
+
+    context "when upload file to slack passes" do
+      before do
+        allow(slack_api_dbl).to receive(:upload_file).and_return("unique_file_id")
+      end
+
+      it "attaches build artifact to the step run" do
+        step_run.upload_artifact!
+        expect(step_run.build_artifact).to be_present
+      end
+
+      it "uploads artifact to notification provider" do
+        step_run.upload_artifact!
+        file_name = step_run.build_artifact.file.filename.to_s
+
+        expect(slack_api_dbl).to have_received(:upload_file).with(anything, file_name)
+      end
+
+      it "sets the slack_file_id" do
+        step_run.upload_artifact!
+        expect(step_run.slack_file_id).to eq("unique_file_id")
+      end
+
+      it "marks step run as build available" do
+        step_run.upload_artifact!
+        expect(step_run.reload.build_available?).to be(true)
+      end
+
+      it "notifies build availability if slack upload passes" do
+        step_run.upload_artifact!
+        expect(slack_api_dbl).to have_received(:rich_message).with(anything, anything, anything, "unique_file_id", step_run.build_display_name)
+      end
+
+      it "triggers deployments" do
+        step_run.upload_artifact!
+        expect(Triggers::Deployment).to have_received(:call).with(step_run:, deployment: step_run.deployments.first)
+      end
+    end
+
+    context "when upload to slack fails" do
+      before do
+        allow(slack_api_dbl).to receive(:upload_file).and_raise(Installations::Slack::Api::FailedToUploadFile)
+      end
+
+      it "still marks step run as build available" do
+        step_run.upload_artifact!
+        expect(step_run.reload.build_available?).to be(true)
+      end
+
+      it "still trigger deployments" do
+        step_run.upload_artifact!
+        expect(Triggers::Deployment).to have_received(:call)
+      end
+
+      it "does not notify build availability" do
+        step_run.upload_artifact!
+        expect(slack_api_dbl).not_to have_received(:rich_message)
+      end
+    end
+  end
+
   describe "#retry_ci!" do
     let(:step_run) { create(:step_run, :ci_workflow_failed, build_number: "1") }
     let(:providable) { instance_double(GithubIntegration) }

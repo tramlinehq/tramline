@@ -10,6 +10,7 @@ module Notifiers
         release_started: Renderers::ReleaseStarted,
         step_started: Renderers::StepStarted,
         step_failed: Renderers::StepFailed,
+        build_available: Renderers::BuildAvailable,
         submit_for_review: Renderers::SubmitForReview,
         review_approved: Renderers::ReviewApproved,
         review_failed: Renderers::ReviewFailed,

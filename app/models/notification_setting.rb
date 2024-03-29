@@ -25,6 +25,7 @@ class NotificationSetting < ApplicationRecord
     release_stopped: "release_stopped",
     release_started: "release_started",
     step_started: "step_started",
+    build_available: "build_available",
     step_failed: "step_failed",
     submit_for_review: "submit_for_review",
     review_approved: "review_approved",
@@ -49,10 +50,10 @@ class NotificationSetting < ApplicationRecord
     app.notifications_set_up? && active? && notification_channels.present?
   end
 
-  def notify!(message, params)
+  def notify!(message, params, file_id = nil, file_title = nil)
     return unless send_notifications?
     notification_channels.each do |channel|
-      notification_provider.notify!(channel["id"], message, kind, params)
+      notification_provider.notify!(channel["id"], message, kind, params, file_id, file_title)
     end
   end
 

@@ -37,6 +37,7 @@ class DeploymentRun < ApplicationRecord
     :build_number,
     :build_artifact,
     :build_version,
+    :build_display_name,
     to: :step_run
   delegate :deployment_number,
     :notify!,
@@ -197,10 +198,6 @@ class DeploymentRun < ApplicationRecord
 
   def self.reached_submission
     where(status: STORE_SUBMISSION_STATES).includes([:staged_rollout, {step_run: [:commit], deployment: [:integration]}]).select(&:production_channel?)
-  end
-
-  def build_display_name
-    "#{build_version} (#{build_number})"
   end
 
   def deployment_notes
@@ -530,7 +527,13 @@ class DeploymentRun < ApplicationRecord
     end
 
     event_stamp!(reason: :released, kind: :success, data: stamp_data)
-    train.notify_with_snippet!("Deployment was successful!", :deployment_finished, notification_params, step_run.build_notes, "Changes since the last release:")
+    return if external?
+
+    train.notify_with_snippet!("Deployment was successful!",
+      :deployment_finished,
+      notification_params,
+      step_run.build_notes,
+      "Changes since the last release:")
   end
 
   def stamp_data
