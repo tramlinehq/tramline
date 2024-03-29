@@ -137,7 +137,7 @@ class StepRun < ApplicationRecord
     event(:finish_ci, after_commit: :after_finish_ci) { transitions from: :ci_workflow_started, to: :build_ready }
     event(:build_found, after_commit: :trigger_deployment) { transitions from: :build_ready, to: :build_found_in_store }
 
-    event(:upload_artifact, after_commit: :trigger_deployment) do
+    event(:upload_artifact, after_commit: :after_artifact_uploaded) do
       before { add_build_artifact(artifacts_url) }
       transitions from: :build_ready, to: :build_available
     end
@@ -392,6 +392,10 @@ class StepRun < ApplicationRecord
     restart_deploy! if store_provider.build_present_in_public_track?(build_number)
   end
 
+  def build_display_name
+    "#{build_version} (#{build_number})"
+  end
+
   private
 
   def previous_step_run
@@ -443,7 +447,7 @@ class StepRun < ApplicationRecord
     generated_at = Time.current
 
     get_build_artifact(url).with_open do |artifact_stream|
-      build_build_artifact(generated_at: generated_at).save_file!(artifact_stream)
+      build_build_artifact(generated_at: generated_at).call(artifact_stream)
     end
   end
 
@@ -470,6 +474,11 @@ class StepRun < ApplicationRecord
   def after_retrigger_ci
     WorkflowProcessors::WorkflowRunJob.perform_later(id)
     event_stamp!(reason: :ci_retriggered, kind: :notice, data: stamp_data)
+  end
+
+  def after_artifact_uploaded
+    Releases::BuildAvailableNotificationJob.perform_later(id, notification_params)
+    trigger_deployment
   end
 
   def after_finish_ci

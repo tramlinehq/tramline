@@ -371,6 +371,12 @@ class Train < ApplicationRecord
     notification_settings.where(kind: type).sole.notify_with_snippet!(message, params, snippet_content, snippet_title)
   end
 
+  def notify_with_attachment!(message, type, params, attachment, attachment_title, attachment_name)
+    return unless active?
+    return unless send_notifications?
+    notification_settings.where(kind: type).sole.notify_with_attachment!(message, params, attachment, attachment_title, attachment_name)
+  end
+
   def notification_params
     app.notification_params.merge(
       {

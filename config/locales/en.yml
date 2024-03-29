@@ -41,6 +41,7 @@ en:
           staged_rollout_resumed: "Staged rollout resumed for App Store"
           staged_rollout_halted: "Staged rollout halted"
           staged_rollout_fully_released: "Staged rollout bypassed to release to 100%"
+          build_available: "New build available"
       deployment_run:
         failure_reason:
           unknown_failure: "an unknown error, contact support!"

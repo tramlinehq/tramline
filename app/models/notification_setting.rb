@@ -25,6 +25,7 @@ class NotificationSetting < ApplicationRecord
     release_stopped: "release_stopped",
     release_started: "release_started",
     step_started: "step_started",
+    build_available: "build_available",
     step_failed: "step_failed",
     submit_for_review: "submit_for_review",
     review_approved: "review_approved",
@@ -60,6 +61,13 @@ class NotificationSetting < ApplicationRecord
     return unless send_notifications?
     notification_channels.each do |channel|
       notification_provider.notify_with_snippet!(channel["id"], message, kind, params, snippet_content, snippet_title)
+    end
+  end
+
+  def notify_with_attachment!(message, params, attachment, attachment_title, attachment_name)
+    return unless send_notifications?
+    notification_channels.each do |channel|
+      notification_provider.notify_with_attachment!(channel["id"], message, kind, params, attachment, attachment_title, attachment_name)
     end
   end
 

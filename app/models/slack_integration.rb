@@ -115,7 +115,7 @@ class SlackIntegration < ApplicationRecord
     "app/#{app.id}/slack_integration/#{id}/channels"
   end
 
-  def notify!(channel, message, type, params)
+  def notify!(channel, message, type, params, file = nil)
     installation.rich_message(channel, message, notifier(type, params))
   rescue => e
     elog(e)
@@ -132,6 +132,12 @@ class SlackIntegration < ApplicationRecord
       msg.prepend("*#{snippet_title}*\n\n") if idx == 0
       installation.message(channel, msg, thread_id:)
     end
+  rescue => e
+    elog(e)
+  end
+
+  def notify_with_attachment!(channel, message, type, params, attachment, attachment_title, attachment_name)
+    installation.rich_message_with_attachment(channel, message, notifier(type, params), attachment, attachment_title, attachment_name)
   rescue => e
     elog(e)
   end
