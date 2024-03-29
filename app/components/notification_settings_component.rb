@@ -24,7 +24,7 @@ class NotificationSettingsComponent < ViewComponent::Base
     deployment_finished: {number: 16, icon: "v2/truck.svg", description: "The distribution was successful to a channel"},
     deployment_failed: {number: 17, icon: "v2/alert_circle.svg", description: "The distribution to a channel failed"},
     release_ended: {number: 18, icon: "v2/sparkles.svg", description: "The release finished successfully"},
-    release_stopped: {number: 19, icon: "v2/stop_circle.svg", description: "The release was stopped before it finished"},
+    release_stopped: {number: 19, icon: "v2/stop_circle.svg", description: "The release was stopped before it finished"}
   }.with_indifferent_access
 
   unless Set.new(NOTIFICATIONS.keys).eql?(Set.new(NotificationSetting.kinds.keys))
