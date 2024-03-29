@@ -27,9 +27,12 @@ module Artifacts
       unzip.each do |entry|
         basename = File.basename(entry.name)
         ext = File.extname(entry.name)
-        Tempfile.open([basename, ext]) do |extract_file|
+        extract_file = Tempfile.new([basename, ext])
+        begin
           entry.extract(extract_file) { true }
           yield(StreamIO.new(extract_file, ext))
+        ensure
+          extract_file.close(true)
         end
       end
     end

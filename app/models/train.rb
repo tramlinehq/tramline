@@ -359,10 +359,10 @@ class Train < ApplicationRecord
     vcs_provider.create_branch!(from, to, source_type:)
   end
 
-  def notify!(message, type, params)
+  def notify!(message, type, params, file_id = nil, file_title = nil)
     return unless active?
     return unless send_notifications?
-    notification_settings.where(kind: type).sole.notify!(message, params)
+    notification_settings.where(kind: type).sole.notify!(message, params, file_id, file_title)
   end
 
   def notify_with_snippet!(message, type, params, snippet_content, snippet_title)
@@ -371,10 +371,10 @@ class Train < ApplicationRecord
     notification_settings.where(kind: type).sole.notify_with_snippet!(message, params, snippet_content, snippet_title)
   end
 
-  def notify_with_attachment!(message, type, params, attachment, attachment_title, attachment_name)
+  def upload_file_for_notifications!(file, file_name)
     return unless active?
     return unless send_notifications?
-    notification_settings.where(kind: type).sole.notify_with_attachment!(message, params, attachment, attachment_title, attachment_name)
+    notification_provider.upload_file!(file, file_name)
   end
 
   def notification_params

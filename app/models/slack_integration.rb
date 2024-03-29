@@ -115,8 +115,8 @@ class SlackIntegration < ApplicationRecord
     "app/#{app.id}/slack_integration/#{id}/channels"
   end
 
-  def notify!(channel, message, type, params, file = nil)
-    installation.rich_message(channel, message, notifier(type, params))
+  def notify!(channel, message, type, params, file_id = nil, file_title = nil)
+    installation.rich_message(channel, message, notifier(type, params), file_id, file_title)
   rescue => e
     elog(e)
   end
@@ -136,8 +136,8 @@ class SlackIntegration < ApplicationRecord
     elog(e)
   end
 
-  def notify_with_attachment!(channel, message, type, params, attachment, attachment_title, attachment_name)
-    installation.rich_message_with_attachment(channel, message, notifier(type, params), attachment, attachment_title, attachment_name)
+  def upload_file!(file, file_name)
+    installation.upload_file(file, file_name)
   rescue => e
     elog(e)
   end

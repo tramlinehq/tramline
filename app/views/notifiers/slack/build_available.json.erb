@@ -4,8 +4,17 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "New build from *<%= @step_type %>* step *<%= @step_name %>* is now available! :sparkles:"
+        "text": "New build *<%= @release_version %> (<%= @build_number %>)* from <%= @step_type %> step *<%= @step_name %>* is now available! :female-construction-worker:"
       }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Additionally, a direct download of the build artifact will become available in this message thread."
+        }
+      ]
     }
   ]
 }

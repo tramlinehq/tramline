@@ -448,7 +448,9 @@ class StepRun < ApplicationRecord
     generated_at = Time.current
 
     get_build_artifact(url).with_open do |artifact_stream|
-      build_build_artifact(generated_at: generated_at).call(artifact_stream)
+      build_build_artifact(generated_at: generated_at).save_file!(artifact_stream)
+      artifact_stream.file.rewind
+      self.slack_file_id = train.upload_file_for_notifications!(artifact_stream.file, build_artifact.get_filename)
     end
   end
 
@@ -478,7 +480,7 @@ class StepRun < ApplicationRecord
   end
 
   def after_artifact_uploaded
-    Releases::BuildAvailableNotificationJob.perform_later(id, notification_params)
+    notify!("A new build is available!", :build_available, notification_params, slack_file_id, build_display_name) if slack_file_id
     trigger_deployment
   end
 

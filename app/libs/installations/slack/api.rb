@@ -49,7 +49,7 @@ module Installations
       execute(:post, PUBLISH_CHAT_MESSAGE_URL, json_params)
     end
 
-    def rich_message(channel, text, block)
+    def rich_message(channel, text, block, file_id = nil, file_title = nil)
       json_params = {
         json: {
           channel: channel,
@@ -58,36 +58,40 @@ module Installations
         }.merge(block)
       }
 
-      execute(:post, PUBLISH_CHAT_MESSAGE_URL, json_params)
+      message = execute(:post, PUBLISH_CHAT_MESSAGE_URL, json_params)
+
+      if file_id && file_title
+        thread_ts = message.dig("message", "ts")
+        complete_upload_params = {
+          json: {
+            files: [{id: file_id, title: file_title}],
+            channel_id: channel,
+            thread_ts:
+          }
+        }
+
+        execute(:post, COMPLETE_FILE_UPLOAD_URL, complete_upload_params)
+      end
     end
 
-    def rich_message_with_attachment(channel, text, block, attachment, attachment_title, attachment_name)
+    def upload_file(file, file_name)
       start_upload_params = {
         params: {
-          filename: attachment_name,
-          length: attachment.size
+          filename: file_name,
+          length: file.size
         }
       }
       upload_response = execute(:get, START_FILE_UPLOAD_URL, start_upload_params)
 
       upload_params = {
         form: {
-          file: HTTP::FormData::File.new(attachment)
+          file: HTTP::FormData::File.new(file)
         }
       }
       resp = HTTP.post(upload_response["upload_url"], upload_params)
       raise unless resp.status.success?
 
-      msg = rich_message(channel, text, block)
-      thread_ts = msg.dig("message", "ts")
-      complete_upload_params = {
-        json: {
-          files: [{id: upload_response["file_id"], title: attachment_title}],
-          channel_id: channel,
-          thread_ts:
-        }
-      }
-      execute(:post, COMPLETE_FILE_UPLOAD_URL, complete_upload_params)
+      upload_response["file_id"]
     end
 
     def list_channels(transforms, cursor = nil)

@@ -50,10 +50,10 @@ class NotificationSetting < ApplicationRecord
     app.notifications_set_up? && active? && notification_channels.present?
   end
 
-  def notify!(message, params)
+  def notify!(message, params, file_id = nil, file_title = nil)
     return unless send_notifications?
     notification_channels.each do |channel|
-      notification_provider.notify!(channel["id"], message, kind, params)
+      notification_provider.notify!(channel["id"], message, kind, params, file_id, file_title)
     end
   end
 
@@ -61,13 +61,6 @@ class NotificationSetting < ApplicationRecord
     return unless send_notifications?
     notification_channels.each do |channel|
       notification_provider.notify_with_snippet!(channel["id"], message, kind, params, snippet_content, snippet_title)
-    end
-  end
-
-  def notify_with_attachment!(message, params, attachment, attachment_title, attachment_name)
-    return unless send_notifications?
-    notification_channels.each do |channel|
-      notification_provider.notify_with_attachment!(channel["id"], message, kind, params, attachment, attachment_title, attachment_name)
     end
   end
 
