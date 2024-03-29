@@ -16,6 +16,7 @@
 #  updated_at              :datetime         not null
 #  commit_id               :uuid             not null, indexed, indexed => [step_id]
 #  release_platform_run_id :uuid             not null, indexed
+#  slack_file_id           :string
 #  step_id                 :uuid             not null, indexed, indexed => [commit_id]
 #
 class StepRun < ApplicationRecord
