@@ -3,6 +3,8 @@ module Installations
     include Vaultable
     attr_reader :installation_scopes, :installation_state, :oauth_access_token
 
+    FailedToUploadFile = Class.new(StandardError)
+
     PUBLISH_CHAT_MESSAGE_URL = "https://slack.com/api/chat.postMessage"
     LIST_CHANNELS_URL = "https://slack.com/api/conversations.list"
     GET_TEAM_URL = "https://slack.com/api/team.info"
@@ -89,7 +91,7 @@ module Installations
         }
       }
       resp = HTTP.post(upload_response["upload_url"], upload_params)
-      raise unless resp.status.success?
+      raise FailedToUploadFile, "could not upload file to Slack" unless resp.status.success?
 
       upload_response["file_id"]
     end
