@@ -9,12 +9,7 @@ class NotificationSettingsController < SignedInApplicationController
 
   def index
     @notification_settings = @train.notification_settings if @train.send_notifications?
-
-    @tab_configuration = [
-      [1, "General", edit_app_train_path(@app, @train), "v2/cog.svg"],
-      [2, "Steps", steps_app_train_path(@app, @train), "v2/route.svg"],
-      [3, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"]
-    ]
+    set_tab_configuration
   end
 
   def update
@@ -24,11 +19,20 @@ class NotificationSettingsController < SignedInApplicationController
       redirect_to app_train_notification_settings_path(@app, @train), notice: "Notification setting was updated"
     else
       @notification_settings = @train.notification_settings
+      set_tab_configuration
       render :index, status: :unprocessable_entity
     end
   end
 
   private
+
+  def set_tab_configuration
+    @tab_configuration = [
+      [1, "General", edit_app_train_path(@app, @train), "v2/cog.svg"],
+      [2, "Steps", steps_app_train_path(@app, @train), "v2/route.svg"],
+      [3, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"]
+    ]
+  end
 
   def set_notification_setting
     @notification_setting = @train.notification_settings.find(params[:id])
