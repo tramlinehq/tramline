@@ -19,6 +19,7 @@ class Accounts::Membership < ApplicationRecord
   belongs_to :team, inverse_of: :memberships, optional: true
 
   validates :user_id, uniqueness: {scope: :organization_id}
+  validate :team_can_only_be_set_once
 
   def self.allowed_roles
     roles.except(:owner).transform_keys(&:titleize).to_a
@@ -26,5 +27,16 @@ class Accounts::Membership < ApplicationRecord
 
   def writer?
     role.in? %w[owner developer]
+  end
+
+  def team_set?
+    team.present?
+  end
+
+  def team_can_only_be_set_once
+    if team_id_changed? && team_id_was.present?
+      errors.add(:team_id, "cannot be changed once set")
+      false
+    end
   end
 end

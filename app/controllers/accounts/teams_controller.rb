@@ -21,7 +21,7 @@ class Accounts::TeamsController < SignedInApplicationController
 
   def destroy
     @team = current_organization.teams.find_by(id: params[:id])
-    if @team.delete
+    if @team.destroy
       redirect_to teams_accounts_organization_path(current_organization), notice: "Team was deleted."
     else
       redirect_to teams_accounts_organization_path(current_organization), flash: {error: "There was an error: #{@team.errors.full_messages.to_sentence}"}
