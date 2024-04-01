@@ -18,9 +18,7 @@ class NotificationSettingsController < SignedInApplicationController
     if @notification_setting.update(parsed_notif_setting_params)
       redirect_to app_train_notification_settings_path(@app, @train), notice: "Notification setting was updated"
     else
-      @notification_settings = @train.notification_settings
-      set_tab_configuration
-      render :index, status: :unprocessable_entity
+      redirect_to app_train_notification_settings_path(@app, @train), flash: {error: "There was an error: #{@notification_setting.errors.full_messages.to_sentence}"}
     end
   end
 
