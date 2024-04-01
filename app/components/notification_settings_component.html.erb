@@ -51,7 +51,7 @@
                                                    "Channels",
                                                    options_for_select(
                                                      display_channels(setting.channels) { |chan| "#" + chan[:name] },
-                                                     setting.notification_channels&.map(&:to_json)
+                                                     default_channels_for(setting)
                                                    ),
                                                    {},
                                                    { multiple: true, data: { controller: "input-select" } } %>

@@ -53,6 +53,10 @@ class NotificationSettingsComponent < ViewComponent::Base
     NOTIFICATIONS[setting.kind][:icon] || "aerial_lift.svg"
   end
 
+  def default_channels_for(setting)
+    setting.notification_channels&.map(&:to_json).presence || train.notification_channel.to_json
+  end
+
   def enabled?
     train.send_notifications?
   end
