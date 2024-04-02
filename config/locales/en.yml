@@ -300,11 +300,11 @@ en:
       stability_contributors:
         title: "Stability Contribution"
         scope: "Fixes (commits) during the release"
-        help_text: "These are the changes made to the working branch between releases by members in these respective teams.\n\nThis is a rough indicator of how much the team is contributing to the features in each release."
+        help_text: "These are the changes made to the release branch after the release was started.\n\nThis is a good indicator of how much the team was involved in the release stability."
       release_contributors:
         title: "Release Contribution"
         scope: "Work done (commits) for the release"
-        help_text: "Contributors who have added commits to a running release branch"
+        help_text: "These are the changes made to the working branch between releases.\n\nThis is a rough indicator of how much the team contributed to the features in the release."
     team:
       build_stability:
         title: "Build stability fixes"
