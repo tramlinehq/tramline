@@ -1,0 +1,25 @@
+<div class="flex flex-col border-default box-padding gap-y-4">
+  <div class="flex flex-row items-center justify-between">
+    <div class="flex items-center justify-start gap-x-1.5">
+      <%= render icon %>
+
+      <h1 class="heading-5 uppercase">
+        <%= name %>
+      </h1>
+    </div>
+
+    <div class="flex justify-end">
+      <%= render V2::ButtonComponent.new(
+        scheme: :naked_icon,
+        options: external_url,
+        html_options: { title: external_url_title },
+        size: :none,
+        authz: false,
+        type: :link_external) do |b|
+        b.with_icon("v2/arrow_right.svg", size: :sm)
+      end %>
+    </div>
+  </div>
+
+  <%= content %>
+</div>

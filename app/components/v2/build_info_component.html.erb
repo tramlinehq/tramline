@@ -1,6 +1,6 @@
 <% if @deployment_run %>
   <div class="flex items-center justify-between">
-    <div class="flex items-center justify-stretch gap-x-2">
+    <div class="flex items-center justify-stretch gap-x-1.5">
       <%= render V2::BadgeComponent.new do |badge| %>
         <% badge.with_icon(deployment_logo) %>
         <% badge.with_link(build_info, external_link) %>
