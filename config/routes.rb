@@ -67,7 +67,7 @@ Rails.application.routes.draw do
         patch :deactivate
       end
 
-      resources :notification_settings, only: %i[index update]
+      resources :notification_settings, only: %i[index update edit]
 
       resources :release_platforms, only: [], path: :platforms, as: :platforms do
         resources :steps, only: %i[new create update]

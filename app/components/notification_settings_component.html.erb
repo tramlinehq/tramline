@@ -1,11 +1,12 @@
 <% if enabled? %>
   <%= render V2::TableComponent.new(columns: ["kind", "channels", "status", ""]) do |table| %>
     <% display_settings.each do |setting| %>
+      <% setting = notification_setting_component(setting) %>
       <% table.with_row do |row| %>
         <% row.with_cell do %>
           <div class="inline-flex items-center">
-            <%= render V2::IconComponent.new(icon_for(setting), size: :md, classes: "mr-2") %>
-            <%= setting.display_attr(:kind) %>
+            <%= render V2::IconComponent.new(setting.icon, size: :md, classes: "mr-2") %>
+            <%= setting.display %>
           </div>
         <% end %>
 
@@ -23,47 +24,16 @@
         <% end %>
 
         <% row.with_cell do %>
-          <%= render V2::StatusIndicatorPillComponent.new(text: status_text(setting), status: status_type(setting)) %>
+          <%= render setting.status_pill %>
         <% end %>
 
         <% row.with_cell(wrap: true) do %>
-          <%= render V2::ModalComponent.new(title: "Notification: #{setting.display_attr(:kind)}",
-                                            subtitle: description_for(setting)) do |modal| %>
-            <% button = modal.with_button(scheme: :light,
-                                          type: :action,
-                                          size: :xxs) %>
+          <%= render V2::ModalComponent.new(title: setting.modal_title, subtitle: setting.description) do |modal| %>
+            <% button = modal.with_button(scheme: :light, type: :action, size: :xxs) %>
             <% button.with_icon("v2/pencil.svg") %>
             <% modal.with_body do %>
-              <%= render V2::FormComponent.new(model: [app, train, setting],
-                                               url: app_train_notification_setting_path(app, train, setting),
-                                               method: :put) do |f| %>
-                <% f.with_section(heading: "Select") do |section| %>
-                  <% section.with_description do %>
-                    <div>One or more channel names for this type of notification.</div>
-                  <% end %>
-                  <%= render V2::Form::SwitchComponent.new(form: section.F,
-                                                           field_name: :active,
-                                                           switch_id: "active-switch-#{setting.id}",
-                                                           on_label: "Notifications enabled",
-                                                           off_label: "Notifications disabled") do |switch| %>
-                    <% switch.with_child do %>
-                      <%= section.F.labeled_select :notification_channels,
-                                                   "Channels",
-                                                   options_for_select(
-                                                     display_channels(setting.channels) { |chan| "#" + chan[:name] },
-                                                     default_channels_for(setting)
-                                                   ),
-                                                   {},
-                                                   { multiple: true, data: { controller: "input-select" } } %>
-                    <% end %>
-                  <% end %>
-
-                  <%= render partial: "shared/notifications_refresh", locals: { app: app } %>
-                <% end %>
-
-                <% f.with_action do %>
-                  <% f.F.authz_submit "Save", "v2/archive.svg", size: :xs %>
-                <% end %>
+              <%= tag.turbo_frame id: setting.edit_frame_id, src: setting.edit_path, loading: :lazy, class: "with-turbo-frame-loader", target: "_top" do %>
+                <%= render V2::LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
               <% end %>
             <% end %>
           <% end %>

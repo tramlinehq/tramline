@@ -2,14 +2,25 @@ class NotificationSettingsController < SignedInApplicationController
   using RefinedString
   using RefinedInteger
 
-  before_action :require_write_access!, only: %i[update]
-  before_action :set_train, only: %i[index update]
-  before_action :set_notification_setting, only: %i[update]
+  before_action :require_write_access!, only: %i[update edit]
+  before_action :set_train, only: %i[index update edit]
+  before_action :set_notification_setting, only: %i[update edit]
   around_action :set_time_zone
 
   def index
     @notification_settings = @train.notification_settings if @train.send_notifications?
     set_tab_configuration
+  end
+
+  def edit
+    @setting = NotificationSettingsComponent::NotificationSettingComponent.new(@app, @train, @notification_setting)
+    set_tab_configuration
+
+    respond_to do |format|
+      format.html do |variant|
+        variant.turbo_frame
+      end
+    end
   end
 
   def update
