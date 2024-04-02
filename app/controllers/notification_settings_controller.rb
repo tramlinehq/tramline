@@ -15,12 +15,6 @@ class NotificationSettingsController < SignedInApplicationController
   def edit
     @setting = NotificationSettingsComponent::NotificationSettingComponent.new(@app, @train, @notification_setting)
     set_tab_configuration
-
-    respond_to do |format|
-      format.html do |variant|
-        variant.turbo_frame
-      end
-    end
   end
 
   def update
