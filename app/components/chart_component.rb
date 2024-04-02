@@ -86,8 +86,8 @@ class ChartComponent < ViewComponent::Base
   end
 
   def corner_icon
-    icon = V2::IconComponent.new("v2/info.svg", size: :md, classes: "text-main-500")
     if help_text.present?
+      icon = V2::IconComponent.new("v2/info.svg", size: :md, classes: "text-main-500")
       icon.with_tooltip(help_text, placement: "top", type: :detailed) do |tooltip|
         tooltip.with_detailed_text do
           content_tag(:div, nil, class: "flex flex-col gap-y-4 items-start") do
@@ -103,8 +103,9 @@ class ChartComponent < ViewComponent::Base
           end
         end
       end
+
+      icon
     end
-    icon
   end
 
   def subgroup? = chart[:subgroup]

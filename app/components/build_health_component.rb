@@ -42,6 +42,7 @@ class BuildHealthComponent < ViewComponent::Base
     if release_platform_run.external_builds.any? { |em| em.normalized_metadata.any? { |m| m.identifier == "app_size" } }
       initial_health_data = {}
     end
+
     @health_data ||= step_runs.each_with_object(initial_health_data) do |step_run, acc|
       metadata = step_run.external_build&.normalized_metadata
       next unless metadata
@@ -75,8 +76,8 @@ class BuildHealthComponent < ViewComponent::Base
       value_format: health_data[metadata_id][:type],
       name: metadata_id,
       title: health_data[metadata_id][:name],
-      scope: "All builds",
-      help_text: "",
+      scope: "Across all the builds",
+      help_text: health_data[metadata_id][:description],
       show_x_axis: false,
       show_y_axis: true
     }

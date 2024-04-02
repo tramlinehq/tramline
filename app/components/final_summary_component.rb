@@ -97,28 +97,26 @@ class FinalSummaryComponent < ViewComponent::Base
   end
 
   def team_stability_chart
-    {data: team_stability_commits&.reject { |_, value| value.zero? },
-     colors: team_colors,
-     type: "polar-area",
-     value_format: "number",
-     name: "Stability Contribution",
-     title: "Stability Contribution",
-     scope: "Fixes (commits) during the release",
-     help_text: "",
-     show_x_axis: false,
-     show_y_axis: false}
+    {
+      data: team_stability_commits&.reject { |_, value| value.zero? },
+      colors: team_colors,
+      type: "polar-area",
+      value_format: "number",
+      name: "release_summary.stability_contributors",
+      show_x_axis: false,
+      show_y_axis: false
+    }
   end
 
   def team_release_chart
-    {data: team_release_commits&.reject { |_, value| value.zero? },
-     colors: team_colors,
-     type: "polar-area",
-     value_format: "number",
-     name: "Release Contribution",
-     title: "Release Contribution",
-     scope: "Work done (commits) for the release",
-     help_text: "",
-     show_x_axis: false,
-     show_y_axis: false}
+    {
+      data: team_release_commits&.reject { |_, value| value.zero? },
+      colors: team_colors,
+      type: "polar-area",
+      value_format: "number",
+      name: "release_summary.release_contributors",
+      show_x_axis: false,
+      show_y_axis: false
+    }
   end
 end
