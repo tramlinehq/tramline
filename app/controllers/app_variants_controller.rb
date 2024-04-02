@@ -1,6 +1,6 @@
 class AppVariantsController < SignedInApplicationController
   using RefinedString
-  before_action :require_write_access!, only: %i[create update]
+  before_action :require_write_access!, only: %i[create update index]
   around_action :set_time_zone
 
   def index

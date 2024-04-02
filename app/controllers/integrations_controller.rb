@@ -1,7 +1,7 @@
 class IntegrationsController < SignedInApplicationController
   using RefinedString
 
-  before_action :require_write_access!, only: %i[connect create]
+  before_action :require_write_access!, only: %i[connect create index build_artifact_channels destroy]
   before_action :set_integration, only: %i[connect create]
   before_action :set_providable, only: %i[connect create]
 
