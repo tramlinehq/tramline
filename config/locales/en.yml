@@ -296,6 +296,20 @@ en:
       not_authorized_policy: "Not Authorized %{model} on %{query} action"
       not_logged_in: "You must be logged in to access this page"
   charts:
+    release_summary:
+      stability_contributors:
+        title: "Stability Contribution"
+        scope: "Fixes (commits) during the release"
+        help_text: "These are the changes made to the working branch between releases by members in these respective teams.\n\nThis is a rough indicator of how much the team is contributing to the features in each release."
+      release_contributors:
+        title: "Release Contribution"
+        scope: "Work done (commits) for the release"
+        help_text: "Contributors who have added commits to a running release branch"
+    team:
+      build_stability:
+        title: "Build stability fixes"
+        scope: "Commits during the release per team"
+        help_text: "Larger cross-sections represent more fixes by the particular team"
     release_health:
       adoption_rate:
         title: "Adoption Rate"
