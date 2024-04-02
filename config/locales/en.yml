@@ -309,7 +309,7 @@ en:
       build_stability:
         title: "Build stability fixes"
         scope: "Commits during the release per team"
-        help_text: "Larger cross-sections represent more fixes by the particular team"
+        help_text: "Larger cross-sections represent more fixes by the particular team."
     release_health:
       adoption_rate:
         title: "Adoption Rate"
