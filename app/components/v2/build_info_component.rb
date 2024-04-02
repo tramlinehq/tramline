@@ -75,12 +75,11 @@ class V2::BuildInfoComponent < V2::BaseComponent
   end
 
   def build_deployed_at
-    ago_in_words @deployment_run.updated_at
+    time_format @deployment_run.updated_at
   end
 
   def last_activity_at
-    last_updated_at = @staged_rollout&.updated_at || @deployment_run.updated_at
-    time_format(last_updated_at)
+    ago_in_words(@staged_rollout&.updated_at || @deployment_run.updated_at)
   end
 
   def build_logo

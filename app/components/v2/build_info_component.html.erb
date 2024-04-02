@@ -34,11 +34,11 @@
       <% end %>
     </div>
 
-    <%= render V2::TooltipComponent.new("Last activity on #{last_activity_at}", placement: "top") do |tooltip| %>
+    <%= render V2::TooltipComponent.new("Originally started on #{build_deployed_at}", placement: "top") do |tooltip| %>
       <% tooltip.with_body do %>
         <div class="flex items-center">
           <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2 text-main-500") %>
-          <span class="text-main-500 font-normal text-sm"><%= build_deployed_at %></span>
+          <span class="text-main-500 font-normal text-sm"><%= last_activity_at %></span>
         </div>
       <% end %>
     <% end %>
