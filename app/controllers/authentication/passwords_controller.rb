@@ -2,6 +2,7 @@ class Authentication::PasswordsController < Devise::PasswordsController
   include ExceptionHandler
   before_action :ensure_valid_token, only: [:edit]
 
+  def edit = super
 
   private
 
