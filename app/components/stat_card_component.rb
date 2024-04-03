@@ -11,7 +11,6 @@ class StatCardComponent < V2::BaseComponent
     @type = type
     @external_url = external_url
     @external_url_title = external_url_title
-
     @empty_stat_help_text = empty_stat_help_text
   end
 
