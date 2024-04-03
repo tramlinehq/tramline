@@ -15,7 +15,7 @@ class MetricCardComponent < ViewComponent::Base
     @size = size
   end
 
-  attr_reader :name, :values, :provider, :external_url
+  attr_reader :name, :values, :provider, :external_url, :size
   delegate :current_user, to: :helpers
 
   def metric_color(is_healthy)

@@ -87,7 +87,7 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
 }
 
 .box-padding {
-  @apply p-4;
+  @apply p-3.5;
 }
 
 .border-default {

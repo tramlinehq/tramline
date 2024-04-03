@@ -1,14 +1,10 @@
-<div class="flex flex-col border-default box-padding gap-y-4">
-  <div class="flex flex-row items-center justify-between">
-    <h1 class="heading-5 uppercase">
-      <%= name %>
-    </h1>
-    <%= render V2::IconComponent.new("integrations/logo_#{provider.to_s}.png", size: :md, rounded: false) %>
-  </div>
+<%= render StatCardComponent.new(name, size:, external_url:, external_url_title: "Go to dashboard") do |stat| %>
+  <% stat.with_icon("integrations/logo_#{provider.to_s}.png", size: :md, rounded: false) %>
+
   <div class="flex flex-row justify-between items-end">
     <div class="<%= text_size %>"><%= current %>%</div>
     <div class="text-xs text-main-400"><%= subtitle %></div>
   </div>
 
   <%= render V2::ProgressBarComponent.new(percent: current, label: false) %>
-</div>
+<% end %>

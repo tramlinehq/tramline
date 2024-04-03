@@ -1,14 +1,6 @@
-<div class="flex flex-col border-default box-padding gap-y-4">
-  <div class="flex flex-row items-center justify-between">
-    <h1 class="heading-5 uppercase">
-      <%= name %>
-    </h1>
-    <% if external_url.present? %>
-      <%= link_to_external external_url, title: "Monitoring Dashboard" do %>
-        <%= render V2::IconComponent.new("integrations/logo_#{provider.to_s}.png", size: :md, rounded: false) %>
-      <% end %>
-    <% end %>
-  </div>
+<%= render StatCardComponent.new(name, size:, external_url:, external_url_title: "Go to dashboard") do |stat| %>
+  <% stat.with_icon("integrations/logo_#{provider.to_s}.png", size: :md, rounded: false) if provider %>
+
   <div class="grid grid-cols-2 divide-x place-content-between">
     <% values.each do |key, val| %>
       <div class="flex flex-col py-1 first:px-0 px-3 gap-y-1">
@@ -19,4 +11,4 @@
       </div>
     <% end %>
   </div>
-</div>
+<% end %>
