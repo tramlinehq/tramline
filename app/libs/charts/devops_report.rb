@@ -64,13 +64,15 @@ class Charts::DevopsReport
           data: release_stability_contributors,
           type: "line",
           value_format: "number",
-          name: "operational_efficiency.stability_contributors"
+          name: "operational_efficiency.stability_contributors",
+          show_y_axis: true
         },
         contributors: {
           data: contributors,
           type: "line",
           value_format: "number",
-          name: "operational_efficiency.contributors"
+          name: "operational_efficiency.contributors",
+          show_y_axis: true
         },
         team_stability_contributors: {
           data: team_stability_contributors,
@@ -105,7 +107,7 @@ class Charts::DevopsReport
   end
 
   memoize def frequency(period = :month, format = "%b", last: LAST_TIME_PERIOD)
-    finished_releases(last)
+    finished_releases(last, hotfix: true)
       .reorder("")
       .group_by_period(period, :completed_at, last: last, current: true, format:)
       .count
@@ -206,13 +208,17 @@ class Charts::DevopsReport
   attr_reader :train, :organization, :team_colors
   delegate :cache, to: Rails
 
-  memoize def finished_releases(n)
-    train
-      .releases
-      .limit(n)
-      .finished
-      .reorder("completed_at DESC")
-      .includes(:release_changelog, {release_platform_runs: [:release_platform]}, :all_commits, step_runs: [:deployment_runs, :step])
+  memoize def finished_releases(n, hotfix: false)
+    releases =
+      train
+        .releases
+        .limit(n)
+        .finished
+        .reorder("completed_at DESC")
+        .includes(:release_changelog, {release_platform_runs: [:release_platform]}, :all_commits, step_runs: [:deployment_runs, :step])
+
+    return releases if hotfix
+    releases.release
   end
 
   def cache_key

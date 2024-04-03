@@ -323,11 +323,11 @@ en:
       frequency:
         title: "Release frequency"
         scope: "Last 6 months"
-        help_text: "How often do you release every month?"
+        help_text: "How often do you release every month?\n<strong>Note</strong>: This includes hotfix releases."
       time_in_review:
         title: "Time in review (iOS)"
         scope: "Last 6 versions"
-        help_text: "Time spent in review on the App Store"
+        help_text: "Time spent in review on the App Store.\n<strong>Note</strong>: This includes hotfix releases."
       hotfixes:
         title: "Fixes during release"
         scope: "Last 6 releases"

@@ -137,7 +137,7 @@
     <%= render V2::ReleaseOverviewComponent.new(last_completed_release) %>
 
     <% if devops_report.present? %>
-      <%= render V2::SectionComponent.new(style: :titled, title: "Mobile Devops") do %>
+      <%= render V2::SectionComponent.new(style: :titled, title: "Mobile DevOps") do %>
         <div class="grid grid-cols-4 gap-x-2 my-3 gap-y-2">
           <%= render ChartComponent.new(devops_report[:mobile_devops][:frequency]) %>
           <%= render ChartComponent.new(devops_report[:mobile_devops][:duration]) %>
