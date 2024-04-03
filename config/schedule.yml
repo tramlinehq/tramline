@@ -3,6 +3,6 @@ refresh_external_apps:
   class: "RefreshExternalAppsJob"
   active_job: true
 schedule_train_releases:
-  cron: "0 */12 * * *"
+  cron: "0 */1 * * *"
   class: "ScheduleTrainReleasesJob"
   active_job: true
