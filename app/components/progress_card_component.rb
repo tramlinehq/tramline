@@ -4,15 +4,16 @@ class ProgressCardComponent < ViewComponent::Base
     base: "text-xl"
   }
 
-  def initialize(name:, current:, subtitle:, provider:, size: :base)
+  def initialize(name:, current:, subtitle:, provider:, external_url:, size: :base)
     @name = name
     @current = current
     @subtitle = subtitle
     @provider = provider
+    @external_url = external_url
     @size = size
   end
 
-  attr_reader :name, :current, :subtitle, :provider
+  attr_reader :name, :current, :subtitle, :provider, :external_url
 
   def text_size
     TEXT_SIZE[@size]
