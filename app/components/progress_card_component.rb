@@ -13,7 +13,7 @@ class ProgressCardComponent < ViewComponent::Base
     @size = size
   end
 
-  attr_reader :name, :current, :subtitle, :provider, :external_url
+  attr_reader :name, :current, :subtitle, :provider, :external_url, :size
 
   def text_size
     TEXT_SIZE[@size]

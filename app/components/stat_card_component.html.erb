@@ -11,7 +11,7 @@
     <div class="grid grid-cols-2 divide-x place-content-between">
       <div class="flex flex-col py-1 first:px-0 px-3 gap-y-1">
         <div class="text-xs text-main-400 uppercase">%</div>
-        <div class="text-base text-main-400">N/A</div>
+        <div class="<%= empty_stat_text_size %> text-main-400">N/A</div>
       </div>
     </div>
   </div>
@@ -19,24 +19,26 @@
   <div class="flex flex-col border-default box-padding gap-y-4">
     <div class="flex flex-row items-center justify-between">
       <div class="flex items-center justify-start gap-x-1.5">
-        <%= render icon %>
+        <%= render icon if icon? %>
 
         <h1 class="heading-5 uppercase">
           <%= name %>
         </h1>
       </div>
 
-      <div class="flex justify-end">
-        <%= render V2::ButtonComponent.new(
-          scheme: :naked_icon,
-          options: external_url,
-          html_options: { title: external_url_title },
-          size: :none,
-          authz: false,
-          type: :link_external) do |b|
-          b.with_icon("v2/arrow_right.svg", size: :sm)
-        end %>
-      </div>
+      <% if external_url %>
+        <div class="flex justify-end">
+          <%= render V2::ButtonComponent.new(
+            scheme: :naked_icon,
+            options: external_url,
+            html_options: { title: external_url_title },
+            size: :none,
+            authz: false,
+            type: :link_external) do |b|
+            b.with_icon("v2/arrow_right.svg", size: :sm)
+          end %>
+        </div>
+      <% end %>
     </div>
 
     <%= content %>
