@@ -1,4 +1,4 @@
-<%= render StatCardComponent.new(name, external_url:, external_url_title: "Monitoring Dashboard") do |stat| %>
+<%= render StatCardComponent.new(name, external_url:, external_url_title: "Go to dashboard") do |stat| %>
   <% stat.with_icon("integrations/logo_#{provider.to_s}.png", size: :md, rounded: false) %>
 
   <div class="grid grid-cols-2 divide-x place-content-between">
