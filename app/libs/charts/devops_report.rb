@@ -192,8 +192,8 @@ class Charts::DevopsReport
     end
   end
 
+  # ci workflow time (per step, area graph)
   def ci_workflow_time
-    # ci workflow time (per step, area graph)
     raise NotImplementedError
   end
 

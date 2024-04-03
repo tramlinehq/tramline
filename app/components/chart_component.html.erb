@@ -18,7 +18,9 @@
           <p class="text-sm font-normal text-main-400"><%= chart_scope %></p>
         </div>
 
-        <div class="flex"><%= render corner_icon %></div>
+        <% if help_text.present? %>
+          <div class="flex"><%= render corner_icon %></div>
+        <% end %>
       </div>
 
       <% if area? %>
