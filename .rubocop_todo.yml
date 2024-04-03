@@ -12,6 +12,7 @@ Rails/I18nLocaleTexts:
     - 'app/controllers/app_configs_controller.rb'
     - 'app/controllers/apps_controller.rb'
     - 'app/controllers/authentication/invite_confirmations_controller.rb'
+    - 'app/controllers/authentication/passwords_controller.rb'
     - 'app/controllers/integration_listener_controller.rb'
     - 'app/controllers/integrations_controller.rb'
     - 'app/controllers/releases_controller.rb'

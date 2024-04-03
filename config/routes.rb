@@ -15,7 +15,12 @@ Rails.application.routes.draw do
   end
 
   devise_for :users,
-    controllers: {registrations: "authentication/registrations", sessions: "authentication/sessions", confirmations: "authentication/confirmations"},
+    controllers: {
+      registrations: "authentication/registrations",
+      sessions: "authentication/sessions",
+      confirmations: "authentication/confirmations",
+      passwords: "authentication/passwords"
+    },
     class_name: "Accounts::User"
 
   devise_scope :user do
