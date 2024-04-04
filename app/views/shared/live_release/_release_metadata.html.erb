@@ -12,12 +12,12 @@
 
   <%= render MetaTableComponent.new do |mt| %>
     <% mt.with_description("Release Notes") do %>
-      <%= safe_simple_format release_metadata.release_notes %>
+      <p class="whitespace-pre-wrap"><%= release_metadata.release_notes %></p>
     <% end %>
 
     <% unless release_platform.android? %>
       <% mt.with_description("Promotional Text") do %>
-        <%= safe_simple_format release_metadata.promo_text %>
+        <p class="whitespace-pre-wrap"><%= release_metadata.promo_text %></p>
       <% end %>
     <% end %>
   <% end %>
