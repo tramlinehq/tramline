@@ -1,0 +1,8 @@
+<%= render V2::TabbedContainerComponent.new(title: @train.name,
+                                            turbo_frame: dom_id(@train, :edit_train),
+                                            tab_config: @tab_configuration) do |container| %>
+  <% container.with_back_button(to: "the train", path: app_train_releases_path(@app, @train)) %>
+  <% container.with_tab do %>
+    <%= render 'trains/rules', app: @app, train: @train %>
+  <% end %>
+<% end %>

@@ -24,31 +24,41 @@ class RuleExpression < ApplicationRecord
   }
 
   COMPARATORS = {
-    lt: ->(value, threshold) { value < threshold },
-    lte: ->(value, threshold) { value <= threshold },
-    gt: ->(value, threshold) { value > threshold },
-    gte: ->(value, threshold) { value >= threshold },
-    eq: ->(value, threshold) { value == threshold }
-  }
+    lt: {fn: ->(value, threshold) { value < threshold },
+         description: {healthy: ">=", unhealthy: "<"},
+         expression: "<"},
+    lte: {fn: ->(value, threshold) { value <= threshold },
+          description: {healthy: ">", unhealthy: "<="},
+          expression: "<="},
+    gt: {fn: ->(value, threshold) { value > threshold },
+         description: {healthy: "<=", unhealthy: ">"},
+         expression: ">"},
+    gte: {fn: ->(value, threshold) { value >= threshold },
+          description: {healthy: "<", unhealthy: ">="},
+          expression: ">="},
+    eq: {fn: ->(value, threshold) { value == threshold },
+         description: {healthy: "!=", unhealthy: "=="},
+         expression: "=="}
+  }.with_indifferent_access
 
   validates :metric, uniqueness: {scope: :release_health_rule_id}
 
+  def self.comparator_options
+    COMPARATORS.map { |k, v| [v[:expression], k] }.to_h
+  end
+
   def evaluate(value)
-    comparator_proc = COMPARATORS[comparator.to_sym]
+    comparator_proc = COMPARATORS[comparator.to_sym][:fn]
     raise ArgumentError, "Invalid comparator" unless comparator_proc
 
     comparator_proc.call(value, threshold_value)
   end
 
-  COMPARATOR_DESCRIPTION = {
-    lt: {healthy: "is above", unhealthy: "is below"},
-    lte: {healthy: "is above", unhealthy: "is below"},
-    gt: {healthy: "is below", unhealthy: "is above"},
-    gte: {healthy: "is below", unhealthy: "is above"},
-    eq: {healthy: "is not equal to", unhealthy: "is equal to"}
-  }.with_indifferent_access
-
   def describe_comparator(health_status)
-    COMPARATOR_DESCRIPTION[comparator][health_status]
+    COMPARATORS[comparator][:description][health_status]
+  end
+
+  def to_s(health_status)
+    "#{metric.titleize} #{describe_comparator(health_status)} #{threshold_value}"
   end
 end

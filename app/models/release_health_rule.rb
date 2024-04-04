@@ -18,6 +18,10 @@ class ReleaseHealthRule < ApplicationRecord
 
   scope :for_metric, ->(metric) { includes(:trigger_rule_expressions).where(trigger_rule_expressions: {metric:}) }
 
+  validates :trigger_rule_expressions, presence: true
+  accepts_nested_attributes_for :trigger_rule_expressions
+  accepts_nested_attributes_for :filter_rule_expressions
+
   def healthy?(metric)
     return true if triggers.blank?
 

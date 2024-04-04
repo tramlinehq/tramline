@@ -1,0 +1,31 @@
+<div data-controller="nested-form" data-nested-form-wrapper-selector-value=".nested-form-wrapper" class="grid gap-y-4">
+  <div class="text-sm font-semibold">
+    <%= description %>
+  </div>
+  <div>
+    <%= render V2::ButtonComponent.new(
+      scheme: :light,
+      type: :action,
+      size: :xs,
+      label: button_text,
+      html_options: { data: { action: "nested-form#add" } }) do |b|
+      b.with_icon("plus.svg", rounded: false)
+    end %>
+  </div>
+
+  <template data-nested-form-target="template">
+    <%= form.fields_for field, klass.new, child_index: 'NEW_RECORD' do |expression_form| %>
+      <%= render partial: "rule_expression_form", locals: { form: expression_form } %>
+    <% end %>
+  </template>
+
+  <div class="flex flex-col">
+    <% if is_seeded %>
+      <%= form.fields_for field, klass.new do |expression_form| %>
+        <%= render partial: "rule_expression_form", locals: { form: expression_form } %>
+      <% end %>
+    <% end %>
+
+    <div data-nested-form-target="target"></div>
+  </div>
+</div>
