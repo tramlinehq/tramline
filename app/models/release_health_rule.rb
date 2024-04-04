@@ -19,6 +19,7 @@ class ReleaseHealthRule < ApplicationRecord
   scope :for_metric, ->(metric) { includes(:trigger_rule_expressions).where(trigger_rule_expressions: {metric:}) }
 
   validates :trigger_rule_expressions, presence: true
+  validate :unique_metrics
   accepts_nested_attributes_for :trigger_rule_expressions
   accepts_nested_attributes_for :filter_rule_expressions
 
@@ -36,5 +37,23 @@ class ReleaseHealthRule < ApplicationRecord
       value = metric.evaluate(expr.metric)
       expr.evaluate(value) if value
     end
+  end
+
+  private
+
+  def unique_metrics
+    trigger_duplicates = triggers
+      .group_by { |expr| expr.values_at(:metric) }
+      .values
+      .detect { |arr| arr.size > 1 }
+
+    errors.add(:trigger_rule_expressions, :duplicate_metrics) if trigger_duplicates
+
+    filter_duplicates = filters
+      .group_by { |expr| expr.values_at(:metric) }
+      .values
+      .detect { |arr| arr.size > 1 }
+
+    errors.add(:filter_rule_expressions, :duplicate_metrics) if filter_duplicates
   end
 end

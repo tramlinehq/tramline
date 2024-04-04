@@ -8,9 +8,9 @@ class ReleaseHealthRulesController < SignedInApplicationController
     @rule = @release_platform.release_health_rules.new(rule_params)
 
     if @rule.save
-      redirect_back fallback_location: rules_app_train_path(@app, @train), flash: {notice: "Rule was successfully created."}
+      redirect_back fallback_location: rules_app_train_path(@app, @train), flash: {notice: t(".success")}
     else
-      redirect_back fallback_location: rules_app_train_path(@app, @train), flash: {error: @rule.errors.full_messages.to_sentence}
+      redirect_back fallback_location: rules_app_train_path(@app, @train), flash: {error: t(".failure", errors: @rule.errors.full_messages.to_sentence)}
     end
   end
 
@@ -19,9 +19,9 @@ class ReleaseHealthRulesController < SignedInApplicationController
     @rule = @release_platform.release_health_rules.find(params[:id])
 
     if @rule.destroy
-      redirect_back fallback_location: rules_app_train_path(@app, @train), flash: {notice: "Rule was successfully removed."}
+      redirect_back fallback_location: rules_app_train_path(@app, @train), flash: {notice: t(".success")}
     else
-      redirect_back fallback_location: rules_app_train_path(@app, @train), flash: {error: @rule.errors.full_messages.to_sentence}
+      redirect_back fallback_location: rules_app_train_path(@app, @train), flash: {error: t(".failure", errors: @rule.errors.full_messages.to_sentence)}
     end
   end
 

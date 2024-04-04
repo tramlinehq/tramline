@@ -30,7 +30,8 @@ class ReleaseHealthMetric < ApplicationRecord
     user_stability: :user_stability,
     errors_count: :errors_count,
     new_errors_count: :new_errors_count,
-    adoption_rate: :adoption_rate
+    adoption_rate: :adoption_rate,
+    staged_rollout: :staged_rollout
   }.with_indifferent_access
 
   def user_stability
@@ -46,6 +47,10 @@ class ReleaseHealthMetric < ApplicationRecord
   def adoption_rate
     return 0 if total_sessions_in_last_day.blank? || total_sessions_in_last_day.zero?
     ((sessions_in_last_day.to_f / total_sessions_in_last_day.to_f) * 100).ceil(2)
+  end
+
+  def staged_rollout
+    deployment_run.rollout_percentage
   end
 
   def check_release_health
