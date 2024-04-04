@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_03_29_111852) do
+ActiveRecord::Schema[7.0].define(version: 2024_04_04_130620) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -439,6 +439,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_03_29_111852) do
     t.datetime "updated_at", null: false
     t.string "name"
     t.uuid "release_platform_id", null: false
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_release_health_rules_on_discarded_at"
     t.index ["release_platform_id"], name: "index_release_health_rules_on_release_platform_id"
   end
 

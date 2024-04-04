@@ -18,7 +18,7 @@ class ReleaseHealthRulesController < SignedInApplicationController
     head :forbidden and return if @train.active_runs.exists?
     @rule = @release_platform.release_health_rules.find(params[:id])
 
-    if @rule.destroy
+    if @rule.discard
       redirect_back fallback_location: rules_app_train_path(@app, @train), flash: {notice: t(".success")}
     else
       redirect_back fallback_location: rules_app_train_path(@app, @train), flash: {error: t(".failure", errors: @rule.errors.full_messages.to_sentence)}

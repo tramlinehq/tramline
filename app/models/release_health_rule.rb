@@ -3,6 +3,7 @@
 # Table name: release_health_rules
 #
 #  id                  :uuid             not null, primary key
+#  discarded_at        :datetime         indexed
 #  is_halting          :boolean          default(FALSE), not null
 #  name                :string
 #  created_at          :datetime         not null
@@ -10,6 +11,9 @@
 #  release_platform_id :uuid             not null, indexed
 #
 class ReleaseHealthRule < ApplicationRecord
+  has_paper_trail
+  include Discard::Model
+
   belongs_to :release_platform
   has_many :trigger_rule_expressions, dependent: :destroy
   has_many :filter_rule_expressions, dependent: :destroy
