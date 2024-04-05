@@ -68,4 +68,18 @@
       <% end %>
     <% end %>
   </div>
+
+  <% if current_user.release_monitoring? && release_health_rules.present? %>
+    <div class="flex flex-col gap-y-2 border-default box-padding mt-2">
+      <div class="heading-5 uppercase">
+        Overall Release Health: <span class="<%= release_health_class %> font-semibold"><%= release_health %></span>
+      </div>
+
+      <% if events.present? %>
+        <div class="ml-1">
+          <%= render TimelineComponent.new(events:) %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 </article>

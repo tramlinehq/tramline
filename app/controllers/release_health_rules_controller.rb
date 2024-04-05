@@ -15,7 +15,6 @@ class ReleaseHealthRulesController < SignedInApplicationController
   end
 
   def destroy
-    head :forbidden and return if @train.active_runs.exists?
     @rule = @release_platform.release_health_rules.find(params[:id])
 
     if @rule.discard

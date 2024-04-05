@@ -1,11 +1,11 @@
-class ReleaseMonitoringComponent < ViewComponent::Base
+class ReleaseMonitoringComponent < V2::BaseComponent
   METRICS = [:staged_rollout, :adoption_rate, :adoption_chart, :errors, :stability]
 
   SIZES = {
     sm: {cols: 2, size: 4}
   }
 
-  def initialize(deployment_run:, metrics: METRICS, show_version_info: true, cols: 2, size: :base)
+  def initialize(deployment_run:, metrics: METRICS, show_version_info: true, cols: 2, size: :base, num_events: 3)
     raise ArgumentError, "metrics must be one of #{METRICS}" unless (metrics - METRICS).empty?
 
     @deployment_run = deployment_run
@@ -13,6 +13,7 @@ class ReleaseMonitoringComponent < ViewComponent::Base
     @show_version_info = show_version_info
     @cols = cols
     @size = size
+    @num_events = num_events
   end
 
   delegate :adoption_rate, to: :release_data, allow_nil: true
@@ -47,12 +48,12 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def events
-    @deployment_run.release_health_events.last(3).map do |event|
+    @deployment_run.release_health_events.reorder("event_timestamp DESC").first(@num_events).map do |event|
       type = event.healthy? ? :success : :error
-      title = event.healthy? ? "Rule is healthy" : "Rule is unhealthy"
+      rule_health = event.healthy? ? "healthy" : "unhealthy"
       {
         timestamp: time_format(event.event_timestamp, with_year: false),
-        title:,
+        title: "#{event.release_health_rule.name} is #{rule_health}",
         description: event_description(event),
         type:
       }
@@ -65,8 +66,9 @@ class ReleaseMonitoringComponent < ViewComponent::Base
     status = event.health_status
     triggers.map do |expr|
       value = metric.evaluate(expr.metric)
-      "#{expr.display_attr(:metric)} (#{value}) #{expr.describe_comparator(status)} the threshold value (#{expr.threshold_value})"
-    end.join(", ")
+      is_healthy = expr.evaluate(value) if value
+      "#{expr.display_attr(:metric)} (#{value}) #{expr.describe_comparator(status)} the threshold value (#{expr.threshold_value})" if is_healthy
+    end.compact.join(", ")
   end
 
   def release_healthy?
@@ -84,8 +86,7 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def staged_rollout_percentage
-    return Deployment::FULL_ROLLOUT_VALUE unless staged_rollout
-    staged_rollout.last_rollout_percentage || 0
+    deployment_run.rollout_percentage
   end
 
   def staged_rollout_text

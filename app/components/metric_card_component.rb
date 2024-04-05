@@ -1,7 +1,4 @@
-class MetricCardComponent < ViewComponent::Base
-  include LinkHelper
-  include AssetsHelper
-
+class MetricCardComponent < V2::BaseComponent
   TEXT_SIZE = {
     sm: "text-base",
     base: "text-xl"
