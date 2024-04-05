@@ -3,7 +3,7 @@
     <div class="text-slate-500 text-md mb-2"><%= build_identifier %></div>
   <% end %>
 
-  <div class="grid <%= grid_cols %> gap-2 text-xs">
+  <div class="grid <%= grid_cols %> gap-3 text-xs">
     <% if :staged_rollout.in? metrics %>
       <% if staged_rollout.nil? %>
         <%= render StatCardComponent.new("Staged Rollout",
@@ -62,24 +62,24 @@
       <% end %>
     <% end %>
 
+    <% if current_user.release_monitoring? && release_health_rules.present? %>
+      <div class="<%= full_span %> flex flex-col gap-y-2 border-default box-padding">
+        <div class="heading-5 uppercase">
+          Overall Release Health: <span class="<%= release_health_class %> font-semibold"><%= release_health %></span>
+        </div>
+
+        <% if events.present? %>
+          <div class="ml-1">
+            <%= render TimelineComponent.new(events:) %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
     <% if :adoption_chart.in? metrics %>
       <% if adoption_chart_data.present? %>
-        <div class="col-span-2"><%= render ChartComponent.new(adoption_chart_data) %></div>
+        <div class="<%= full_span %>"><%= render ChartComponent.new(adoption_chart_data) %></div>
       <% end %>
     <% end %>
   </div>
-
-  <% if current_user.release_monitoring? && release_health_rules.present? %>
-    <div class="flex flex-col gap-y-2 border-default box-padding mt-2">
-      <div class="heading-5 uppercase">
-        Overall Release Health: <span class="<%= release_health_class %> font-semibold"><%= release_health %></span>
-      </div>
-
-      <% if events.present? %>
-        <div class="ml-1">
-          <%= render TimelineComponent.new(events:) %>
-        </div>
-      <% end %>
-    </div>
-  <% end %>
 </article>

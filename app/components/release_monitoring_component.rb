@@ -141,4 +141,8 @@ class ReleaseMonitoringComponent < V2::BaseComponent
   def grid_cols
     "grid-cols-#{@cols}"
   end
+
+  def full_span
+    "col-span-#{@cols}"
+  end
 end
