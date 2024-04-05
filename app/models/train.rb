@@ -404,10 +404,6 @@ class Train < ApplicationRecord
     hotfix_from.present? && release_platforms.any?(&:has_production_deployment?)
   end
 
-  def devops_report?(user)
-    user.release_health? && releases.size > 1
-  end
-
   def devops_report
     Charts::DevopsReport.all(self)
   end
