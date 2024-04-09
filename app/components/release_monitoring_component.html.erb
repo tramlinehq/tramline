@@ -65,7 +65,9 @@
     <% if current_user.release_monitoring? && release_health_rules.present? %>
       <div class="<%= full_span %> flex flex-col gap-y-2 border-default box-padding">
         <div class="heading-5 uppercase">
-          Overall Release Health: <span class="<%= release_health_class %> font-semibold"><%= release_health %></span>
+          <span>Overall Release Health: </span>
+          <span class="<%= release_health_class %> font-semibold"><%= release_health %></span>
+          <span><%= health_status_duration  %></span>
         </div>
 
         <% if events.present? %>

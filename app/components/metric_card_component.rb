@@ -15,8 +15,11 @@ class MetricCardComponent < V2::BaseComponent
   attr_reader :name, :values, :provider, :external_url, :size
   delegate :current_user, to: :helpers
 
+  def health_defined?(val)
+    current_user.release_monitoring? && !val[:is_healthy].nil?
+  end
+
   def metric_color(is_healthy)
-    return "text-main" unless current_user.release_monitoring?
     case is_healthy
     when true
       "text-green-800 font-semibold"
@@ -28,16 +31,14 @@ class MetricCardComponent < V2::BaseComponent
   end
 
   def metric_title(metric)
-    return unless current_user.release_monitoring?
     return "unhealthy" if metric[:is_healthy] == false
     "healthy" if metric[:is_healthy] == true
   end
 
-  def metric_health(val)
-    return unless current_user.release_monitoring?
-    return if val[:is_healthy].blank?
-    return if val[:is_healthy]
-    inline_svg "exclamation.svg", classname: "w-5 h-5 text-red-800 ml-1"
+  def rule_for(metric)
+    rule = metric[:rule]
+    return unless rule
+    "Using rule: #{rule.name} – #{rule.trigger_rule_expressions.map(&:to_s).join(", ")}"
   end
 
   def display_values

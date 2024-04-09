@@ -69,8 +69,13 @@ module ApplicationHelper
     end
   end
 
-  def ago_in_words(time)
-    (time.presence && time_ago_in_words(time, include_seconds: true) + " ago") || "N/A"
+  def ago_in_words(time, prefix: nil, suffix: "ago")
+    return "N/A" unless time
+    builder = ""
+    builder += "#{prefix} " if prefix
+    builder += time_ago_in_words(time, include_seconds: true)
+    builder += " #{suffix}" if suffix
+    builder
   end
 
   def time_in_words(time)

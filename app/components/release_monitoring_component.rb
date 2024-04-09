@@ -48,7 +48,7 @@ class ReleaseMonitoringComponent < V2::BaseComponent
   end
 
   def events
-    @deployment_run.release_health_events.reorder("event_timestamp DESC").first(@num_events).map do |event|
+    deployment_run.release_health_events.reorder("event_timestamp DESC").first(@num_events).map do |event|
       type = event.healthy? ? :success : :error
       rule_health = event.healthy? ? "healthy" : "unhealthy"
       {
@@ -72,15 +72,23 @@ class ReleaseMonitoringComponent < V2::BaseComponent
   end
 
   def release_healthy?
-    @is_healthy ||= @deployment_run.healthy?
+    @is_healthy ||= deployment_run.healthy?
   end
 
   def release_health
+    return "Unknown" if release_data.blank?
     return "Healthy" if release_healthy?
     "Unhealthy"
   end
 
+  def health_status_duration
+    last_event = deployment_run.release_health_events.reorder("event_timestamp DESC").first
+    return unless last_event
+    ago_in_words(last_event.event_timestamp, prefix: "since", suffix: nil)
+  end
+
   def release_health_class
+    return "text-main-600" if release_data.blank?
     return "text-green-800" if release_healthy?
     "text-red-800"
   end
@@ -97,22 +105,38 @@ class ReleaseMonitoringComponent < V2::BaseComponent
 
   def user_stability
     value = release_data.user_stability.blank? ? "-" : "#{release_data.user_stability}%"
-    {value:, is_healthy: release_data.metric_healthy?("user_stability")}
+    {
+      value:,
+      is_healthy: release_data.metric_healthy?("user_stability"),
+      rule: release_data.rule_for_metric("user_stability")
+    }
   end
 
   def session_stability
     value = release_data.session_stability.blank? ? "-" : "#{release_data.session_stability}%"
-    {value:, is_healthy: release_data.metric_healthy?("session_stability")}
+    {
+      value:,
+      is_healthy: release_data.metric_healthy?("session_stability"),
+      rule: release_data.rule_for_metric("session_stability")
+    }
   end
 
   def errors_count
     value = release_data.errors_count
-    {value:, is_healthy: release_data.metric_healthy?("errors_count")}
+    {
+      value:,
+      is_healthy: release_data.metric_healthy?("errors_count"),
+      rule: release_data.rule_for_metric("errors_count")
+    }
   end
 
   def new_errors_count
     value = release_data.new_errors_count
-    {value:, is_healthy: release_data.metric_healthy?("new_errors_count")}
+    {
+      value:,
+      is_healthy: release_data.metric_healthy?("new_errors_count"),
+      rule: release_data.rule_for_metric("new_errors_count")
+    }
   end
 
   def adoption_chart_data

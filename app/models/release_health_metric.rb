@@ -74,10 +74,14 @@ class ReleaseHealthMetric < ApplicationRecord
     create_release_health_event(deployment_run:, release_health_rule:, health_status: current_status, event_timestamp: fetched_at)
   end
 
+  def rule_for_metric(metric_name)
+    release_health_rules.for_metric(metric_name).first
+  end
+
   def metric_healthy?(metric_name)
     raise ArgumentError, "Invalid metric name" unless metric_name.in? METRIC_VALUES.keys
 
-    rule = release_health_rules.for_metric(metric_name).first
+    rule = rule_for_metric(metric_name)
     return unless rule
 
     event = deployment_run.release_health_events.where(release_health_rule: rule).last

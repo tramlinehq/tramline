@@ -5,9 +5,19 @@
     <% values.each do |key, val| %>
       <div class="flex flex-col py-1 first:px-0 px-3 gap-y-1">
         <div class="text-xs text-main-400 uppercase"><%= key %></div>
-        <div class="flex items-center gap-x-1 <%= text_size %> <%= metric_color(val[:is_healthy]) %>" title="<%= metric_title(val) %>">
-          <%= val[:value] %>
-        </div>
+        <% if health_defined?(val) %>
+          <%= render V2::TooltipComponent.new(rule_for(val), placement: "top") do |tooltip| %>
+            <% tooltip.with_body do %>
+              <div class="flex items-center gap-x-1 <%= text_size %> <%= metric_color(val[:is_healthy]) %>">
+                <%= val[:value] %>
+              </div>
+            <% end %>
+          <% end %>
+        <% else %>
+          <div class="flex items-center gap-x-1 <%= text_size %> text-main">
+            <%= val[:value] %>
+          </div>
+        <% end %>
       </div>
     <% end %>
   </div>
