@@ -71,6 +71,7 @@ class DeploymentRun < ApplicationRecord
     prepare_release_failed
     inflight_release_replaced
     submitted_for_review
+    resubmitted_for_review
     review_approved
     release_started
     released
@@ -137,8 +138,8 @@ class DeploymentRun < ApplicationRecord
       end
     end
 
-    event :submit_for_review, after_commit: :after_submission do
-      transitions from: [:started, :prepared_release], to: :submitted_for_review
+    event :submit_for_review, after_commit: ->(args = {resubmission: false}) { after_submission(args.fetch(:resubmission, false)) } do
+      transitions from: [:started, :prepared_release, :review_failed], to: :submitted_for_review
     end
 
     event :start_upload, after: :get_upload_status do
@@ -282,9 +283,13 @@ class DeploymentRun < ApplicationRecord
     step_run.deployment_runs.first == self
   end
 
-  def after_submission
-    notify!("Submitted for review!", :submit_for_review, notification_params)
-    event_stamp!(reason: :submitted_for_review, kind: :notice, data: stamp_data)
+  def after_submission(resubmission = false)
+    notify!("Submitted for review!", :submit_for_review, notification_params.merge(resubmission:))
+    if resubmission
+      event_stamp!(reason: :resubmitted_for_review, kind: :notice, data: stamp_data)
+    else
+      event_stamp!(reason: :submitted_for_review, kind: :notice, data: stamp_data)
+    end
     Deployments::AppStoreConnect::UpdateExternalReleaseJob.perform_async(id)
   end
 
