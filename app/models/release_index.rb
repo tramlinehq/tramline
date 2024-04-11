@@ -9,44 +9,52 @@
 #  train_id        :uuid             not null, indexed
 #
 class ReleaseIndex < ApplicationRecord
-  TOLERANCE_UNITS = [:day, :number]
-
-  COMPONENTS = {
-    hotfixes: {default_weight: 0.30, default_tolerance: 0..1, tolerance_unit: :number},
-    rollout_fixes: {default_weight: 0.20, default_tolerance: 1..2, tolerance_unit: :number},
-    rollout_duration: {default_weight: 0.15, default_tolerance: 7..10, tolerance_unit: :day},
-    review_duration: {default_weight: 0.05, default_tolerance: 1..3, tolerance_unit: :day},
-    stability_duration: {default_weight: 0.15, default_tolerance: 5..10, tolerance_unit: :day},
-    stability_changes: {default_weight: 0.15, default_tolerance: 10..20, tolerance_unit: :number}
-  }
-
-  COMPONENTS.each do |component, details|
-    tolerance_unit = details[:tolerance_unit]
-    unless TOLERANCE_UNITS.include?(tolerance_unit)
-      raise ArgumentError, "Invalid tolerance unit '#{tolerance_unit}' used in component '#{component}'"
-    end
-  end
-
-  COMPONENT_MULTIPLIERS = {
-    great: 1,
-    acceptable: 0.5,
-    mediocre: 0
-  }
-
   belongs_to :train
   has_many :release_index_components, dependent: :destroy
   alias_method :components, :release_index_components
 
-  after_initialize :create_components
+  after_initialize :build_components, if: :new_record?
   validate :validate_weightage_sum
   validate :constrained_tolerable_range
 
+  def score(**args)
+    Score.new(self, **args)
+  end
+
+  GRADES = [:great, :acceptable, :mediocre]
+
+  class Score
+    def initialize(release_index, **args)
+      @release_index = release_index
+      args_keys = args.keys.to_set
+      allowed_components = ReleaseIndexComponent::DEFAULT_COMPONENTS.keys.to_set
+      raise ArgumentError, "Args do not match the valid reldex components" unless args_keys.subset?(allowed_components)
+      @args = args
+    end
+
+    delegate :tolerable_range, to: :@release_index
+
+    def reldex
+      @reldex ||= @release_index.components.sum do |component|
+        component.score(@args[component.name.to_sym])
+      end
+    end
+
+    def grade
+      if reldex < tolerable_range.begin
+        GRADES[0]
+      elsif tolerable_range.cover?(reldex)
+        GRADES[1]
+      else
+        GRADES[2]
+      end
+    end
+  end
+
   private
 
-  def create_components
-    return unless new_record?
-
-    COMPONENTS.each do |component, details|
+  def build_components
+    ReleaseIndexComponent::DEFAULT_COMPONENTS.each do |component, details|
       components.build(
         name: component.to_s,
         tolerable_range: details[:default_tolerance],
@@ -59,7 +67,7 @@ class ReleaseIndex < ApplicationRecord
   def validate_weightage_sum
     total_weight = components.sum(&:weight)
     unless (total_weight - 1.000).abs < 0.001
-      errors.add(:base, "The total weightage of components must be equal 100%")
+      errors.add(:base, "total weightage of components must be equal 100%")
     end
   end
 

@@ -14,23 +14,40 @@
 class ReleaseIndexComponent < ApplicationRecord
   using RefinedArray
 
-  belongs_to :release_index
-  enum name: ReleaseIndex::COMPONENTS.keys.map(&:to_s).zip_map_self
-  validates :name, uniqueness: {scope: :release_index_id}
+  TOLERANCE_UNITS = [:day, :number]
 
-  def tolerable?(value)
-    tolerable_range.cover?(value)
-  end
+  DEFAULT_COMPONENTS = {
+    hotfixes: {default_weight: 0.30, default_tolerance: 0..1, tolerance_unit: :number},
+    rollout_fixes: {default_weight: 0.20, default_tolerance: 1..2, tolerance_unit: :number},
+    rollout_duration: {default_weight: 0.15, default_tolerance: 7..10, tolerance_unit: :day},
+    duration: {default_weight: 0.05, default_tolerance: 1..3, tolerance_unit: :day},
+    stability_duration: {default_weight: 0.15, default_tolerance: 5..10, tolerance_unit: :day},
+    stability_changes: {default_weight: 0.15, default_tolerance: 10..20, tolerance_unit: :number}
+  }
 
-  def action_score(value)
-    if value < tolerable_range.begin; then 1
-    elsif tolerable?(value); then 0.5
-    else
-      0
+  DEFAULT_COMPONENTS.each do |component, details|
+    tolerance_unit = details[:tolerance_unit]
+    unless TOLERANCE_UNITS.include?(tolerance_unit)
+      raise ArgumentError, "Invalid tolerance unit '#{tolerance_unit}' used in component '#{component}'"
     end
   end
 
+  belongs_to :release_index
+  enum name: DEFAULT_COMPONENTS.keys.map(&:to_s).zip_map_self
+  enum tolerable_unit: TOLERANCE_UNITS.map(&:to_s).zip_map_self
+  validates :name, uniqueness: {scope: :release_index_id}
+
   def score(value)
     action_score(value) * weight
+  end
+
+  private
+
+  def action_score(value)
+    if value < tolerable_range.begin; then 1
+    elsif tolerable_range.cover?(value); then 0.5
+    else
+      0
+    end
   end
 end
