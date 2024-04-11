@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_03_29_111852) do
+ActiveRecord::Schema[7.0].define(version: 2024_04_11_101449) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -442,6 +442,26 @@ ActiveRecord::Schema[7.0].define(version: 2024_03_29_111852) do
     t.index ["release_platform_id"], name: "index_release_health_rules_on_release_platform_id"
   end
 
+  create_table "release_index_components", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_index_id", null: false
+    t.numrange "tolerable_range", null: false
+    t.string "tolerable_unit", null: false
+    t.string "name", null: false
+    t.decimal "weight", precision: 4, scale: 3, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name", "release_index_id"], name: "index_release_index_components_on_name_and_release_index_id", unique: true
+    t.index ["release_index_id"], name: "index_release_index_components_on_release_index_id"
+  end
+
+  create_table "release_indices", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "train_id", null: false
+    t.numrange "tolerable_range", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["train_id"], name: "index_release_indices_on_train_id"
+  end
+
   create_table "release_metadata", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_run_id"
     t.string "locale", null: false
@@ -719,6 +739,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_03_29_111852) do
   add_foreign_key "release_health_events", "release_health_rules"
   add_foreign_key "release_health_metrics", "deployment_runs"
   add_foreign_key "release_health_rules", "release_platforms"
+  add_foreign_key "release_index_components", "release_indices"
+  add_foreign_key "release_indices", "trains"
   add_foreign_key "release_metadata", "release_platform_runs"
   add_foreign_key "release_platform_runs", "commits", column: "last_commit_id"
   add_foreign_key "release_platform_runs", "release_platforms"
