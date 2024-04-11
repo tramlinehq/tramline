@@ -76,7 +76,7 @@ class ReleaseMonitoringComponent < V2::BaseComponent
   end
 
   def release_health
-    return "Unknown" if release_data.blank?
+    return "Not Available" if release_data.blank?
     return "Healthy" if release_healthy?
     "Unhealthy"
   end
