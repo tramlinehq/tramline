@@ -270,6 +270,8 @@ class AppStoreIntegration < ApplicationRecord
     PROCESSING_EXCEPTION = "PROCESSING_EXCEPTION"
     BETA_APPROVED = "BETA_APPROVED"
     IN_BETA_TESTING = "IN_BETA_TESTING"
+    WAITING_FOR_BETA_REVIEW = "WAITING_FOR_BETA_REVIEW"
+    IN_BETA_REVIEW = "IN_BETA_REVIEW"
 
     def attributes
       build_info
@@ -288,6 +290,15 @@ class AppStoreIntegration < ApplicationRecord
       build_info[:status].in?(
         [
           BETA_REJECTED
+        ]
+      )
+    end
+
+    def waiting_for_review?
+      build_info[:status].in?(
+        [
+          WAITING_FOR_BETA_REVIEW,
+          IN_BETA_REVIEW
         ]
       )
     end
@@ -320,6 +331,8 @@ class AppStoreIntegration < ApplicationRecord
     INVALID_BINARY = "INVALID_BINARY"
     PHASED_RELEASE_COMPLETE = "COMPLETE"
     PHASED_RELEASE_INACTIVE = "INACTIVE"
+    IN_REVIEW = "IN_REVIEW"
+    WAITING_FOR_REVIEW = "WAITING_FOR_REVIEW"
 
     def attributes
       release_info.except(:phased_release_day, :phased_release_status)
@@ -365,6 +378,15 @@ class AppStoreIntegration < ApplicationRecord
           REJECTED,
           INVALID_BINARY,
           METADATA_REJECTED
+        ]
+      )
+    end
+
+    def waiting_for_review?
+      release_info[:status].in?(
+        [
+          IN_REVIEW,
+          WAITING_FOR_REVIEW
         ]
       )
     end

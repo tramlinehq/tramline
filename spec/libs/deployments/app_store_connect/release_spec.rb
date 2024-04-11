@@ -502,7 +502,7 @@ describe Deployments::AppStoreConnect::Release do
         expect(run.external_release.reload.status).to eq("IN_REVIEW")
       end
 
-      it "marks deployment run as completed if build is successful" do
+      it "marks deployment run as ready to release if review is successful" do
         allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { success_release_info })
 
         described_class.update_external_release(run)
@@ -519,6 +519,15 @@ describe Deployments::AppStoreConnect::Release do
         expect(run.reload.review_failed?).to be(true)
       end
 
+      it "marks the deployment run as submitted for review when a rejected release is resubmitted" do
+        run.review_failed!
+        allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { in_progress_release_info })
+
+        described_class.update_external_release(run)
+
+        expect(run.reload.submitted_for_review?).to be(true)
+      end
+
       it "marks the deployment run as failed when failure" do
         allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { failure_release_info })
 
@@ -527,7 +536,7 @@ describe Deployments::AppStoreConnect::Release do
         expect(run.reload.failed?).to be(true)
       end
 
-      it "adds the failure reason as review failed when failure" do
+      it "adds the failure reason as developer rejected when failure" do
         allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { failure_release_info })
 
         described_class.update_external_release(run)

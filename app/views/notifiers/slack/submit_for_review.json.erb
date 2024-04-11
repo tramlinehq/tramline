@@ -4,7 +4,7 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*<%= @app_name %> (<%= @app_platform %>)* <%= @release_version %> (<%= @build_number %>) has been submitted for review to <%= @deployment_channel_type %> (<%= deployment_channel_display_name %>)! :tada:"
+        "text": "<%= @app_name %> (<%= @app_platform %>) <%= @release_version %> (<%= @build_number %>) has been *<%= submitted_text %>* for review to <%= @deployment_channel_type %> (<%= deployment_channel_display_name %>)! :tada:"
       }
     },
     {

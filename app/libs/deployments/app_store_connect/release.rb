@@ -161,6 +161,9 @@ module Deployments
           run.complete!
         elsif release_info.failed?
           run.dispatch_fail!(reason: :developer_rejected)
+        elsif release_info.waiting_for_review? && run.review_failed?
+          # A failed review was re-submitted or responded to outside Tramline
+          run.submit_for_review!(resubmission: true)
         else
           run.fail_review! if release_info.review_failed? && !run.review_failed?
           raise ExternalReleaseNotInTerminalState, "Retrying in some time..."
