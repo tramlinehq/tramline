@@ -1,0 +1,16 @@
+<li class="mb-4 last:mb-0 ms-4">
+  <%= render V2::IconComponent.new("progress_check.svg", size: :md, classes: "absolute border-main-200 dark:border-main-900 rounded-full mt-2 -start-2 border my-1") %>
+  <div class="flex flex-col gap-2 shrink items-start">
+    <div class="flex flex-row gap-2 items-center">
+      <div class="px-4 tracking-wide rounded-sm text-sm font-semibold uppercase bg-indigo-400 text-white">
+        <%= condition_text %>
+      </div>
+      <% if condition_subtitle %>
+        <span class="text-xs text-main-500">
+          <%= condition_subtitle %>
+        </span>
+      <% end %>
+    </div>
+    <%= content %>
+  </div>
+</li>

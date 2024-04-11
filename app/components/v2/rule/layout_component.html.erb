@@ -1,0 +1,15 @@
+<ol class="relative border-s border-dashed border-main-200 dark:border-main-700">
+  <%= render V2::Rule::PartComponent.new(condition_text: "if", condition_subtitle: "any of the following happens") do %>
+    <%= if_statement %>
+  <% end %>
+
+  <% if when_statement %>
+    <%= render V2::Rule::PartComponent.new(condition_text: "when", condition_subtitle: "all of these filters match") do %>
+      <%= when_statement %>
+    <% end %>
+  <% end %>
+
+  <%= render V2::Rule::PartComponent.new(condition_text: "then") do %>
+    <div class="text-sm text-red-800">Release is unhealthy</div>
+  <% end %>
+</ol>

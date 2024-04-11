@@ -3,25 +3,27 @@
               builder: EnhancedFormHelper::AuthzForm) do |form| %>
   <div class="grid gap-4 mb-4">
     <div>
-      <%= form.labeled_text_field :name, "Name" %>
+      <%= form.labeled_text_field :name, "Name", required: true %>
     </div>
 
-    <%= render partial: "rule_expressions_form", locals: { form:,
-                                                           id: "trigger_rules",
-                                                           description: "Release is unhealthy when any of these conditions are met...",
-                                                           button_text: "Add health condition",
-                                                           field: :trigger_rule_expressions,
-                                                           klass: TriggerRuleExpression,
-                                                           is_seeded: true } %>
-
-    <%= render partial: "rule_expressions_form", locals: { form:,
-                                                           id: "filter_rules",
-                                                           description: "If all of these filters match...",
-                                                           button_text: "Add filter condition",
-                                                           field: :filter_rule_expressions,
-                                                           klass: FilterRuleExpression,
-                                                           is_seeded: false } %>
-
+    <%= render V2::Rule::LayoutComponent.new do |rule_layout| %>
+      <% rule_layout.with_if_statement do %>
+        <%= render partial: "rule_expressions_form", locals: { form:,
+                                                               id: "trigger_rules",
+                                                               button_text: "Add health condition",
+                                                               field: :trigger_rule_expressions,
+                                                               klass: TriggerRuleExpression,
+                                                               is_seeded: true } %>
+      <% end %>
+      <% rule_layout.with_when_statement do %>
+        <%= render partial: "rule_expressions_form", locals: { form:,
+                                                               id: "filter_rules",
+                                                               button_text: "Add filter condition",
+                                                               field: :filter_rule_expressions,
+                                                               klass: FilterRuleExpression,
+                                                               is_seeded: false } %>
+      <% end %>
+    <% end %>
   </div>
   <%= form.authz_submit "Save", "v2/archive.svg" %>
 <% end %>
