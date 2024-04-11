@@ -82,6 +82,10 @@ class ReleasePlatformRun < ApplicationRecord
   delegate :all_commits, :original_release_version, :hotfix?, to: :release
   delegate :steps, :train, :app, :platform, to: :release_platform
 
+  def check_release_health
+    deployment_runs.each(&:check_release_health)
+  end
+
   def set_default_release_metadata
     create_release_metadata!(locale: ReleaseMetadata::DEFAULT_LOCALE,
       release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES,

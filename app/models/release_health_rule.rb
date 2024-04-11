@@ -27,6 +27,8 @@ class ReleaseHealthRule < ApplicationRecord
   accepts_nested_attributes_for :trigger_rule_expressions
   accepts_nested_attributes_for :filter_rule_expressions
 
+  after_create_commit :check_release_health
+
   def healthy?(metric)
     return true if triggers.blank?
 
@@ -44,6 +46,10 @@ class ReleaseHealthRule < ApplicationRecord
   end
 
   private
+
+  def check_release_health
+    release_platform.release_platform_runs.on_track.each(&:check_release_health)
+  end
 
   def unique_metrics
     trigger_duplicates = triggers

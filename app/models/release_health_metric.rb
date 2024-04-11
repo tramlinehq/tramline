@@ -19,7 +19,7 @@
 #
 class ReleaseHealthMetric < ApplicationRecord
   belongs_to :deployment_run
-  has_one :release_health_event, dependent: :nullify
+  has_many :release_health_events, dependent: :nullify
 
   delegate :release_health_rules, to: :deployment_run
 
@@ -67,11 +67,10 @@ class ReleaseHealthMetric < ApplicationRecord
   def create_health_event(release_health_rule)
     last_event = deployment_run.release_health_events.where(release_health_rule:).last
     is_healthy = release_health_rule.healthy?(self)
-    return if last_event.blank? && is_healthy
     current_status = is_healthy ? ReleaseHealthEvent.health_statuses[:healthy] : ReleaseHealthEvent.health_statuses[:unhealthy]
     return if last_event.present? && last_event.health_status == current_status
 
-    create_release_health_event(deployment_run:, release_health_rule:, health_status: current_status, event_timestamp: fetched_at)
+    release_health_events.create(deployment_run:, release_health_rule:, health_status: current_status, event_timestamp: Time.current)
   end
 
   def rule_for_metric(metric_name)
