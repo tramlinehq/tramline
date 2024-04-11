@@ -34,16 +34,16 @@ class ReleaseIndex < ApplicationRecord
 
     delegate :tolerable_range, to: :@release_index
 
-    def reldex
-      @reldex ||= @release_index.components.sum do |component|
+    def value
+      @value ||= @release_index.components.sum do |component|
         component.score(@args[component.name.to_sym])
       end
     end
 
     def grade
-      if reldex < tolerable_range.begin
+      if value < tolerable_range.begin
         GRADES[0]
-      elsif tolerable_range.cover?(reldex)
+      elsif tolerable_range.cover?(value)
         GRADES[1]
       else
         GRADES[2]

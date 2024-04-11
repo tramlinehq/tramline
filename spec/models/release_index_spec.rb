@@ -35,7 +35,7 @@ describe ReleaseIndex do
       }
 
       score = reldex.score(**metrics)
-      expect(score.reldex).to eq 0.550
+      expect(score.value).to eq 0.550
     end
 
     it "computes the reldex grade" do
