@@ -53,7 +53,7 @@ class ReleaseMonitoringComponent < V2::BaseComponent
       rule_health = event.healthy? ? "healthy" : "unhealthy"
       {
         timestamp: time_format(event.event_timestamp, with_year: false),
-        title: "#{event.release_health_rule.name} is #{rule_health}",
+        title: "#{event.release_health_rule.display_name} is #{rule_health}",
         description: event_description(event),
         type:
       }

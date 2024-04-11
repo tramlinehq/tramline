@@ -131,6 +131,9 @@ en:
       filter_rule_expression:
         metric:
           adoption_rate: "Adoption rate"
+      release_health_rule:
+        name:
+          discarded: "%{name} (DELETED)"
     attributes:
       integration:
         categories:
@@ -173,6 +176,8 @@ en:
               invalid_format: "Enter a valid email format"
         train:
           attributes:
+            name:
+              invalid: "can only contain alphanumerics, underscores, hyphens and forward-slashes"
             tag_all_store_releases:
               not_allowed: "cannot enable tags for all store releases without enabling platform-specific tags"
             build_queue_size:
@@ -247,6 +252,8 @@ en:
               unknown_failure: "an unrecognized error occurred connecting to Firebase, please try again!"
         release_health_rule:
           attributes:
+            name:
+              invalid: "can only contain alphanumerics, underscores and hyphens"
             trigger_rule_expressions:
               duplicate_metrics: "cannot have multiple health conditions with the same metric"
             filter_rule_expressions:

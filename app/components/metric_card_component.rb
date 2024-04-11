@@ -38,7 +38,7 @@ class MetricCardComponent < V2::BaseComponent
   def rule_for(metric)
     rule = metric[:rule]
     return unless rule
-    "Using rule: #{rule.name} – #{rule.trigger_rule_expressions.map(&:to_s).join(", ")}"
+    "Healthy if #{rule.trigger_rule_expressions.map(&:to_s).join(", ")} using #{rule.name} rule"
   end
 
   def display_values

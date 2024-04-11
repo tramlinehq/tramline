@@ -92,7 +92,7 @@ class Train < ApplicationRecord
   validate :tag_release_config
   validate :valid_train_configuration, on: :activate_context
   validate :working_branch_presence, on: :create
-  validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
+  validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: :invalid}
 
   after_initialize :set_constituent_seed_versions, if: :persisted?
   after_initialize :set_release_schedule, if: :persisted?

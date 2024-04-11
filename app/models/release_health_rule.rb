@@ -24,10 +24,17 @@ class ReleaseHealthRule < ApplicationRecord
 
   validates :trigger_rule_expressions, presence: true
   validate :unique_metrics
+  validates :name, presence: true, format: {with: /\A[a-zA-Z0-9\s_-]+\z/, message: :invalid}
   accepts_nested_attributes_for :trigger_rule_expressions
   accepts_nested_attributes_for :filter_rule_expressions
 
+  auto_strip_attributes :name, squish: true
   after_create_commit :check_release_health
+
+  def display_name
+    return name if kept?
+    I18n.t("activerecord.values.release_health_rule.name.discarded", name: name)
+  end
 
   def healthy?(metric)
     return true if triggers.blank?
