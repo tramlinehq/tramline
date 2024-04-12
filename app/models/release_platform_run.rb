@@ -91,7 +91,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def unhealthy?
-    deployment_runs.any?(&:unhealthy?)
+    latest_store_release&.unhealthy?
   end
 
   def set_default_release_metadata
