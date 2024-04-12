@@ -65,13 +65,14 @@ class ReleaseMonitoringComponent < V2::BaseComponent
   end
 
   def event_description(event)
+    return if event.healthy?
     metric = event.release_health_metric
     triggers = event.release_health_rule.triggers
-    status = event.health_status
     triggers.map do |expr|
       value = metric.evaluate(expr.metric)
-      is_healthy = expr.evaluate(value) if value
-      "#{expr.display_attr(:metric)} (#{value}) #{expr.describe_comparator(status)} the threshold value (#{expr.threshold_value})" if is_healthy
+      is_unhealthy = expr.evaluate(value) if value
+      trigger_status = is_unhealthy ? :unhealthy : :healthy
+      "#{expr.display_attr(:metric)} (#{value}) #{expr.describe_comparator(trigger_status)} the threshold value (#{expr.threshold_value})" if is_unhealthy
     end.compact.join(", ")
   end
 
@@ -112,7 +113,7 @@ class ReleaseMonitoringComponent < V2::BaseComponent
     {
       value:,
       is_healthy: release_data.metric_healthy?("user_stability"),
-      rule: release_data.rule_for_metric("user_stability")
+      rules: release_data.rules_for_metric("user_stability")
     }
   end
 
@@ -121,7 +122,7 @@ class ReleaseMonitoringComponent < V2::BaseComponent
     {
       value:,
       is_healthy: release_data.metric_healthy?("session_stability"),
-      rule: release_data.rule_for_metric("session_stability")
+      rules: release_data.rules_for_metric("session_stability")
     }
   end
 
@@ -130,7 +131,7 @@ class ReleaseMonitoringComponent < V2::BaseComponent
     {
       value:,
       is_healthy: release_data.metric_healthy?("errors_count"),
-      rule: release_data.rule_for_metric("errors_count")
+      rules: release_data.rules_for_metric("errors_count")
     }
   end
 
@@ -139,7 +140,7 @@ class ReleaseMonitoringComponent < V2::BaseComponent
     {
       value:,
       is_healthy: release_data.metric_healthy?("new_errors_count"),
-      rule: release_data.rule_for_metric("new_errors_count")
+      rules: release_data.rules_for_metric("new_errors_count")
     }
   end
 

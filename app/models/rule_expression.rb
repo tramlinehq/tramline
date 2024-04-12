@@ -56,7 +56,7 @@ class RuleExpression < ApplicationRecord
     COMPARATORS[comparator][:description][health_status]
   end
 
-  def to_s(health_status = "healthy")
+  def to_s(health_status = :unhealthy)
     "#{metric.titleize} #{describe_comparator(health_status)} #{threshold_value}"
   end
 end

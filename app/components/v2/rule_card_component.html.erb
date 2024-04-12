@@ -18,7 +18,7 @@
           <% if idx > 0 %>
             <%= logical_operator_tag("or") %>
           <% end %>
-          <div class="text-sm text-main"><%= expr.to_s(:unhealthy) %></div>
+          <div class="text-sm text-main"><%= expr.to_s %></div>
         <% end %>
       </div>
     <% end %>
@@ -29,7 +29,7 @@
             <% if idx > 0 %>
               <%= logical_operator_tag("and") %>
             <% end %>
-            <div class="text-sm text-main"><%= expr.to_s(:unhealthy) %></div>
+            <div class="text-sm text-main"><%= expr.to_s %></div>
           <% end %>
         </div>
       <% end %>

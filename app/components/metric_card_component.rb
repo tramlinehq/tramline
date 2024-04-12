@@ -35,10 +35,16 @@ class MetricCardComponent < V2::BaseComponent
     "healthy" if metric[:is_healthy] == true
   end
 
-  def rule_for(metric)
-    rule = metric[:rule]
-    return unless rule
-    "Healthy if #{rule.trigger_rule_expressions.map(&:to_s).join(", ")} using #{rule.name} rule"
+  def rules_for(metric)
+    metric[:rules]
+  end
+
+  def rule_description(rule)
+    content_tag(:div, class: "flex flex-col items-start text-xs") do
+      concat content_tag(:span, "Unhealthy if #{rule.trigger_rule_expressions.map(&:to_s).join(", ")}")
+      concat content_tag(:span, "When #{rule.filter_rule_expressions.map(&:to_s).join(" & ")}")
+      concat content_tag(:span, "Using #{rule.name} rule")
+    end
   end
 
   def display_values
