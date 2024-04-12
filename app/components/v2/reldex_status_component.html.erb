@@ -1,0 +1,180 @@
+<div class="inline-flex items-center font-medium text-xs px-1.5 py-0.5 rounded-md tracking-wide border gap-x-1.5 bg-green-100 dark:bg-green-900">
+  <span class="text-green-800 dark:text-green-300">GREAT</span>
+  <%= render V2::ModalComponent.new(title: "Reldex for #{release_version}",
+                                    size: :md,
+                                    type: :drawer,
+                                    authz: false) do |modal| %>
+    <% button = modal.with_button(scheme: :naked_icon, type: :action, size: :none) %>
+    <% button.with_icon("v2/info_full.svg", size: :base) %>
+    <% button.with_tooltip("Open release score details", placement: "top") %>
+    <% modal.with_body do %>
+      <div class="flex items-center gap-x-2">
+        <div class="text-lg border-default px-1.5 py-0.5">
+          <math>
+            <mrow>
+              <mi>0.88</mi>
+              <mo>/</mo>
+              <mn>1.00</mn>
+            </mrow>
+          </math>
+        </div>
+        <div class="inline-flex items-end font-medium text-lg px-1.5 py-0.5 rounded-md tracking-wide border-default bg-rose-100 text-rose-800 dark:bg-green-900 dark:text-green-300 gap-x-1.5 uppercase">
+          Mediocre
+        </div>
+      </div>
+
+      <%= render V2::SectionComponent.new(style: :titled, title: "Reldex tolerance", size: :compact) do %>
+        <%= render V2::TableComponent.new(columns: ["", "grade"], size: :compact) do |table| %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              reldex ≥ 0.8
+            <% end %>
+            <% row.with_cell(style: "bg-green-100") do %>
+              Great
+            <% end %>
+          <% end %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              0.5 < reldex < 0.8
+            <% end %>
+            <% row.with_cell(style: "bg-sky-100") do %>
+              Acceptable
+            <% end %>
+          <% end %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              reldex ≤ 0.5
+            <% end %>
+            <% row.with_cell(style: "bg-rose-100") do %>
+              Mediocre
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%= render V2::SectionComponent.new(style: :titled, title: "Score breakdown", size: :compact) do %>
+        <%= render V2::TableComponent.new(columns: ["", "value", "score"], size: :compact) do |table| %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              Stability Changes
+            <% end %>
+            <% row.with_cell do %>
+              14
+            <% end %>
+            <% row.with_cell do %>
+              0.2
+            <% end %>
+          <% end %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              Hotfixes
+            <% end %>
+            <% row.with_cell do %>
+              1
+            <% end %>
+            <% row.with_cell do %>
+              0.4
+            <% end %>
+          <% end %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              Rollout Duration
+            <% end %>
+            <% row.with_cell do %>
+              3 days
+            <% end %>
+            <% row.with_cell do %>
+              0.3
+            <% end %>
+          <% end %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              Rollout Duration
+            <% end %>
+            <% row.with_cell do %>
+              3 days
+            <% end %>
+            <% row.with_cell do %>
+              0.3
+            <% end %>
+          <% end %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              Rollout Duration
+            <% end %>
+            <% row.with_cell do %>
+              3 days
+            <% end %>
+            <% row.with_cell do %>
+              0.3
+            <% end %>
+          <% end %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              Rollout Duration
+            <% end %>
+            <% row.with_cell do %>
+              3 days
+            <% end %>
+            <% row.with_cell do %>
+              0.3
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <div class="text-main-500 font-normal">
+        <p class="mt-2">
+          †
+          Reldex or Release Process Index, is a quantitative metric that measures the
+          efficacy of a mobile release process.
+        </p>
+
+        <p class="mt-2">
+          Inspired from Apdex, it aggregates various components of the release process into a single score between 0 and 1.
+        </p>
+
+        <p class="mt-2">
+          <math>
+            <mrow>
+              <mi>reldex</mi>
+              <mo>=</mo>
+            </mrow>
+            <mrow>
+              <munderover>
+                <mo>∑</mo>
+                <mrow>
+                  <mi>n</mi>
+                  <mo>=</mo>
+                  <mn>1</mn>
+                </mrow>
+                <mrow>
+                  <mo>6</mo>
+                </mrow>
+              </munderover>
+            </mrow>
+            <mrow>
+              <mo>(</mo>
+              <mrow>
+                <msub>
+                  <mi>component_score</mi>
+                  <mn>n</mn>
+                </msub>
+                <mo>×</mo>
+                <msub>
+                  <mi>component_weight</mi>
+                  <mn>n</mn>
+                </msub>
+              </mrow>
+              <mo>)</mo>
+            </mrow>
+          </math>
+        </p>
+
+        <p class="mt-2">
+          Each component receives a score of 1, 0.5, or 0 based on its tolerable range. These scores are combined to determine the reldex that is then graded under <em>great</em>, <em>acceptable</em> and <em>mediocre</em>.
+        </p>
+      </div>
+    <% end %>
+  <% end %>
+</div>

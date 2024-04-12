@@ -45,10 +45,13 @@
       <div class="flex justify-start">
         <div class="mt-2 flex gap-y-1 gap-x-2">
           <%= render V2::HorizontalDataSetComponent.new(separator: :solid, bg_color: true) do |component| %>
-            <% component.with_data_set(title: "Started", lines: [start_time]) %>
-            <% component.with_data_set(title: "Released", lines: [end_time]) %>
-            <% component.with_data_set(title: "Duration", lines: [duration]) %>
-            <% component.with_data_set(title: "Stability Commits", lines: [commit_count]) %>
+            <% component.with_data_set(title: "Started").with_content(start_time) %>
+            <% component.with_data_set(title: "Released").with_content(end_time) %>
+            <% component.with_data_set(title: "Duration").with_content(duration) %>
+            <% component.with_data_set(title: "Stability Commits").with_content(commit_count) %>
+            <% component.with_data_set(title: "Reldex") do %>
+              <%= render V2::ReldexStatusComponent.new(release) %>
+            <% end %>
           <% end %>
         </div>
       </div>
@@ -101,9 +104,9 @@
         <div>
           <% summary = step_summary(run.platform) %>
           <%= render V2::HorizontalDataSetComponent.new do |component| %>
-            <% component.with_data_set(title: "Time in review phase", lines: [summary[:review][:duration]]) %>
-            <% component.with_data_set(title: "Review builds", lines: [summary[:review][:builds_created_count]]) %>
-            <% component.with_data_set(title: "Time in release phase", lines: [summary[:release][:duration]]) %>
+            <% component.with_data_set(title: "Time in review phase").with_content(summary[:review][:duration]) %>
+            <% component.with_data_set(title: "Review builds").with_content(summary[:review][:builds_created_count]) %>
+            <% component.with_data_set(title: "Time in release phase").with_content(summary[:release][:duration]) %>
           <% end %>
         </div>
       <% end %>

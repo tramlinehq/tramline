@@ -32,8 +32,6 @@ class ReleaseIndex < ApplicationRecord
       @args = args
     end
 
-    delegate :tolerable_range, to: :@release_index
-
     def value
       @value ||= @release_index.components.sum do |component|
         component.score(@args[component.name.to_sym])
@@ -49,6 +47,10 @@ class ReleaseIndex < ApplicationRecord
         GRADES[2]
       end
     end
+
+    private
+
+    delegate :tolerable_range, to: :@release_index
   end
 
   private
