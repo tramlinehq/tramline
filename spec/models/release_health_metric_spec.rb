@@ -35,13 +35,25 @@ describe ReleaseHealthMetric do
 
     context "when no rules" do
       it "does nothing" do
-        unhealthy_metric.check_release_health
-
-        expect(deployment_run.release_health_events.size).to eq(0)
+        expect { unhealthy_metric.check_release_health }.not_to change { deployment_run.release_health_events.reload.size }
       end
     end
 
     context "when rules are defined" do
+      it "does nothing if rules are not actionable" do
+        user_stability_rule = create(:release_health_rule, :user_stability, release_platform: deployment_run.release_platform)
+        create(:filter_rule_expression, release_health_rule: user_stability_rule, metric: "adoption_rate", comparator: "gt", threshold_value: 50)
+
+        expect { unhealthy_metric.check_release_health }.not_to change { deployment_run.release_health_events.reload.size }
+      end
+
+      it "creates events if rules are actionable" do
+        user_stability_rule = create(:release_health_rule, :user_stability, release_platform: deployment_run.release_platform)
+        create(:filter_rule_expression, release_health_rule: user_stability_rule, metric: "adoption_rate", comparator: "gt", threshold_value: 1)
+
+        expect { unhealthy_metric.check_release_health }.to change { deployment_run.release_health_events.reload.size }.by(1)
+      end
+
       it "evaluates rules to check release health and create events when unhealthy" do
         user_stability_rule = create(:release_health_rule, :user_stability, release_platform: deployment_run.release_platform)
         unhealthy_metric.check_release_health

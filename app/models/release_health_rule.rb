@@ -36,15 +36,18 @@ class ReleaseHealthRule < ApplicationRecord
     I18n.t("activerecord.values.release_health_rule.name.discarded", name: name)
   end
 
-  def healthy?(metric)
-    return true if triggers.blank?
+  def actionable?(metric)
+    return true if filters.blank?
 
-    filters_passed = filters.all? do |expr|
+    filters.all? do |expr|
       value = metric.evaluate(expr.metric)
       expr.evaluate(value) if value
     end
+  end
 
-    return true unless filters_passed
+  def healthy?(metric)
+    return true if triggers.blank?
+    return true if !actionable?(metric)
 
     triggers.none? do |expr|
       value = metric.evaluate(expr.metric)

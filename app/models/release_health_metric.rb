@@ -65,6 +65,8 @@ class ReleaseHealthMetric < ApplicationRecord
   end
 
   def create_health_event(release_health_rule)
+    return unless release_health_rule.actionable?(self)
+
     last_event = deployment_run.release_health_events.where(release_health_rule:).last
     is_healthy = release_health_rule.healthy?(self)
     current_status = is_healthy ? ReleaseHealthEvent.health_statuses[:healthy] : ReleaseHealthEvent.health_statuses[:unhealthy]
