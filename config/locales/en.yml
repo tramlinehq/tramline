@@ -256,8 +256,6 @@ en:
               invalid: "can only contain alphanumerics, underscores and hyphens"
             trigger_rule_expressions:
               duplicate_metrics: "cannot have multiple health conditions with the same metric"
-            filter_rule_expressions:
-              duplicate_metrics: "cannot have multiple filter conditions with the same metric"
   invitation:
     flash:
       invite_issued: "Invitation issued"

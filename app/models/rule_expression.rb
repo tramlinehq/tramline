@@ -41,8 +41,6 @@ class RuleExpression < ApplicationRecord
          expression: "=="}
   }.with_indifferent_access
 
-  validates :metric, uniqueness: {scope: :release_health_rule_id}
-
   def self.comparator_options
     COMPARATORS.map { |k, v| [v[:expression], k] }.to_h
   end

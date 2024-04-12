@@ -65,12 +65,5 @@ class ReleaseHealthRule < ApplicationRecord
       .detect { |arr| arr.size > 1 }
 
     errors.add(:trigger_rule_expressions, :duplicate_metrics) if trigger_duplicates
-
-    filter_duplicates = filters
-      .group_by { |expr| expr.values_at(:metric) }
-      .values
-      .detect { |arr| arr.size > 1 }
-
-    errors.add(:filter_rule_expressions, :duplicate_metrics) if filter_duplicates
   end
 end
