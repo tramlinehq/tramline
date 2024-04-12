@@ -62,7 +62,7 @@
       <% end %>
     <% end %>
 
-    <% if current_user.release_monitoring? && release_health_rules.present? %>
+    <% if show_release_health? %>
       <div class="<%= full_span %> flex flex-col gap-y-2 border-default box-padding">
         <div class="heading-5 uppercase">
           <span>Overall Release Health: </span>

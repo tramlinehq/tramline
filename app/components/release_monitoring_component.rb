@@ -17,11 +17,15 @@ class ReleaseMonitoringComponent < V2::BaseComponent
   end
 
   delegate :adoption_rate, to: :release_data, allow_nil: true
-  delegate :app, :release_health_rules, :platform, :external_link, to: :deployment_run
+  delegate :app, :release_health_rules, :platform, :external_link, :show_health?, to: :deployment_run
   delegate :monitoring_provider, to: :app
   delegate :current_user, to: :helpers
 
   attr_reader :deployment_run, :metrics, :show_version_info, :size
+
+  def show_release_health?
+    current_user.release_monitoring? && release_health_rules.present? && show_health?
+  end
 
   def empty_component?
     release_data.blank?

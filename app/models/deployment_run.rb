@@ -205,6 +205,15 @@ class DeploymentRun < ApplicationRecord
     latest_health_data&.check_release_health
   end
 
+  def show_health?
+    return false unless latest_health_data
+    latest_health_data.fetched_at > 1.day.ago
+  end
+
+  def unhealthy?
+    !healthy?
+  end
+
   def deployment_notes
     return step_run.build_notes.truncate(ReleaseMetadata::NOTES_MAX_LENGTH) if build_notes?
     release_metadata.release_notes if release_notes?

@@ -86,6 +86,14 @@ class ReleasePlatformRun < ApplicationRecord
     deployment_runs.each(&:check_release_health)
   end
 
+  def show_health?
+    deployment_runs.any?(&:show_health?)
+  end
+
+  def unhealthy?
+    deployment_runs.any?(&:unhealthy?)
+  end
+
   def set_default_release_metadata
     create_release_metadata!(locale: ReleaseMetadata::DEFAULT_LOCALE,
       release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES,

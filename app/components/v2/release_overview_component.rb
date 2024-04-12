@@ -6,6 +6,10 @@ class V2::ReleaseOverviewComponent < V2::BaseReleaseComponent
 
   attr_reader :release
 
+  def show_release_unhealthy?
+    current_user.release_monitoring? && release.show_health? && release.unhealthy?
+  end
+
   def commit_count
     [release.applied_commits.size, 1].max - 1
   end
