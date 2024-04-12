@@ -1,4 +1,4 @@
-<ol class="relative border-s border-dashed border-main-200 dark:border-main-700">
+<ol class="relative border-s border-dashed border-main-300 dark:border-main-700 ml-1">
   <%= render V2::Rule::PartComponent.new(condition_text: "if", condition_subtitle: "any of the following happens") do %>
     <%= if_statement %>
   <% end %>
@@ -10,6 +10,6 @@
   <% end %>
 
   <%= render V2::Rule::PartComponent.new(condition_text: "then") do %>
-    <div class="text-sm text-red-800">Release is unhealthy</div>
+    <%= render V2::StatusIndicatorPillComponent.new(text: "Release is unhealthy", status: :failure)  %>
   <% end %>
 </ol>

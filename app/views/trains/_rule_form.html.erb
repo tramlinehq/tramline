@@ -1,7 +1,7 @@
 <%= form_with(model: [app, train, release_platform, rule],
               url: app_train_platform_release_health_rules_path(app, train, release_platform),
               builder: EnhancedFormHelper::AuthzForm) do |form| %>
-  <div class="grid gap-4 mb-4">
+  <div class="grid gap-4 mb-6">
     <div>
       <%= form.labeled_text_field :name, "Name", required: true %>
     </div>

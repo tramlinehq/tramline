@@ -13,21 +13,25 @@
   </div>
   <%= render V2::Rule::LayoutComponent.new do |rule_layout| %>
     <% rule_layout.with_if_statement do %>
-      <% rule.trigger_rule_expressions.each_with_index do |expr, idx| %>
-        <% if idx > 0 %>
-          <%= logical_operator_tag("or") %>
+      <div class="flex flex-col items-start gap-1">
+        <% rule.trigger_rule_expressions.each_with_index do |expr, idx| %>
+          <% if idx > 0 %>
+            <%= logical_operator_tag("or") %>
+          <% end %>
+          <div class="text-sm text-main"><%= expr.to_s(:unhealthy) %></div>
         <% end %>
-        <div class="text-sm text-gray-900"><%= expr.to_s(:unhealthy) %></div>
-      <% end %>
+      </div>
     <% end %>
     <% if rule.filter_rule_expressions.exists? %>
       <% rule_layout.with_when_statement do %>
-        <% rule.filter_rule_expressions.each_with_index do |expr, idx| %>
-          <% if idx > 0 %>
-            <%= logical_operator_tag("and") %>
+        <div class="flex flex-col items-start gap-1">
+          <% rule.filter_rule_expressions.each_with_index do |expr, idx| %>
+            <% if idx > 0 %>
+              <%= logical_operator_tag("and") %>
+            <% end %>
+            <div class="text-sm text-main"><%= expr.to_s(:unhealthy) %></div>
           <% end %>
-          <div class="text-sm text-gray-900"><%= expr.to_s(:unhealthy) %></div>
-        <% end %>
+        </div>
       <% end %>
     <% end %>
   <% end %>
