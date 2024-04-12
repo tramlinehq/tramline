@@ -25,24 +25,19 @@ class RuleExpression < ApplicationRecord
 
   COMPARATORS = {
     lt: {fn: ->(value, threshold) { value < threshold },
-         description: {healthy: ">=", unhealthy: "<"},
-         expression: "<"},
+         description: {healthy: ">=", unhealthy: "<"}},
     lte: {fn: ->(value, threshold) { value <= threshold },
-          description: {healthy: ">", unhealthy: "<="},
-          expression: "<="},
+          description: {healthy: ">", unhealthy: "<="}},
     gt: {fn: ->(value, threshold) { value > threshold },
-         description: {healthy: "<=", unhealthy: ">"},
-         expression: ">"},
+         description: {healthy: "<=", unhealthy: ">"}},
     gte: {fn: ->(value, threshold) { value >= threshold },
-          description: {healthy: "<", unhealthy: ">="},
-          expression: ">="},
+          description: {healthy: "<", unhealthy: ">="}},
     eq: {fn: ->(value, threshold) { value == threshold },
-         description: {healthy: "!=", unhealthy: "=="},
-         expression: "=="}
+         description: {healthy: "!=", unhealthy: "=="}}
   }.with_indifferent_access
 
   def self.comparator_options
-    COMPARATORS.map { |k, v| [v[:expression], k] }.to_h
+    COMPARATORS.map { |k, v| [v[:description][:unhealthy], k] }.to_h
   end
 
   def evaluate(value)
