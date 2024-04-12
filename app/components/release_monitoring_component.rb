@@ -17,7 +17,7 @@ class ReleaseMonitoringComponent < V2::BaseComponent
   end
 
   delegate :adoption_rate, to: :release_data, allow_nil: true
-  delegate :app, :release_health_rules, :platform, :external_link, :show_health?, to: :deployment_run
+  delegate :app, :train, :release_health_rules, :platform, :external_link, :show_health?, to: :deployment_run
   delegate :monitoring_provider, to: :app
   delegate :current_user, to: :helpers
 

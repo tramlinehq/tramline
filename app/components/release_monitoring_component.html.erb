@@ -64,10 +64,21 @@
 
     <% if show_release_health? %>
       <div class="<%= full_span %> flex flex-col gap-y-2 border-default box-padding">
-        <div class="heading-5 uppercase">
-          <span>Overall Release Health: </span>
-          <span class="<%= release_health_class %> font-semibold"><%= release_health %></span>
-          <span><%= health_status_duration  %></span>
+        <div class="flex justify-between items-center">
+          <div class="heading-5 uppercase">
+            <span>Overall Release Health: </span>
+            <span class="<%= release_health_class %> font-semibold"><%= release_health %></span>
+            <span><%= health_status_duration %></span>
+          </div>
+          <%= render V2::ButtonComponent.new(
+            scheme: :naked_icon,
+            options: rules_app_train_path(app, train),
+            size: :none,
+            authz: true,
+            type: :link_external) do |b|
+            b.with_icon("v2/arrow_right.svg", size: :sm)
+            b.with_tooltip("Go to rules configuration", placement: "top")
+          end %>
         </div>
 
         <% if events.present? %>
