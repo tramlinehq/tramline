@@ -99,7 +99,8 @@ class ReleaseMonitoringComponent < V2::BaseComponent
   end
 
   def staged_rollout_percentage
-    deployment_run.rollout_percentage
+    return Deployment::FULL_ROLLOUT_VALUE unless staged_rollout
+    staged_rollout.last_rollout_percentage || 0
   end
 
   def staged_rollout_text
@@ -110,38 +111,20 @@ class ReleaseMonitoringComponent < V2::BaseComponent
 
   def user_stability
     value = release_data.user_stability.blank? ? "-" : "#{release_data.user_stability}%"
-    {
-      value:,
-      is_healthy: release_data.metric_healthy?("user_stability"),
-      rules: release_data.rules_for_metric("user_stability")
-    }
+    metric_data("user_stability", value)
   end
 
   def session_stability
     value = release_data.session_stability.blank? ? "-" : "#{release_data.session_stability}%"
-    {
-      value:,
-      is_healthy: release_data.metric_healthy?("session_stability"),
-      rules: release_data.rules_for_metric("session_stability")
-    }
+    metric_data("session_stability", value)
   end
 
   def errors_count
-    value = release_data.errors_count
-    {
-      value:,
-      is_healthy: release_data.metric_healthy?("errors_count"),
-      rules: release_data.rules_for_metric("errors_count")
-    }
+    metric_data("errors_count", release_data.errors_count)
   end
 
   def new_errors_count
-    value = release_data.new_errors_count
-    {
-      value:,
-      is_healthy: release_data.metric_healthy?("new_errors_count"),
-      rules: release_data.rules_for_metric("new_errors_count")
-    }
+    metric_data("new_errors_count", release_data.new_errors_count)
   end
 
   def adoption_chart_data
@@ -173,5 +156,15 @@ class ReleaseMonitoringComponent < V2::BaseComponent
 
   def full_span
     "col-span-#{@cols}"
+  end
+
+  private
+
+  def metric_data(metric_name, value)
+    {
+      value:,
+      is_healthy: release_data.metric_healthy?(metric_name),
+      rules: release_data.rules_for_metric(metric_name)
+    }
   end
 end
