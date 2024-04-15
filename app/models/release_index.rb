@@ -18,37 +18,51 @@ class ReleaseIndex < ApplicationRecord
   validate :constrained_tolerable_range
 
   def score(**args)
-    Score.new(self, **args)
+    Score.compute(self, **args)
   end
 
   GRADES = [:great, :acceptable, :mediocre]
 
   class Score
+    def self.compute(release_index, **args)
+      new(release_index, **args)
+    end
+
     def initialize(release_index, **args)
       @release_index = release_index
       args_keys = args.keys.to_set
       allowed_components = ReleaseIndexComponent::DEFAULT_COMPONENTS.keys.to_set
       raise ArgumentError, "Args do not match the valid reldex components" unless args_keys.subset?(allowed_components)
       @args = args
+      @value = 0
+      @components = []
+      @grade = nil
+      compute
     end
 
-    def value
-      @value ||= @release_index.components.sum do |component|
-        component.score(@args[component.name.to_sym])
+    attr_reader :value, :components, :release_index, :grade
+
+    private
+
+    def compute
+      @release_index.components.each do |component|
+        component_score = component.score(@args[component.name.to_sym])
+        @value += component_score.value
+        @components << component_score
       end
+
+      @grade = compute_grade
     end
 
-    def grade
-      if value < tolerable_range.begin
+    def compute_grade
+      if @value < tolerable_range.begin
         GRADES[0]
-      elsif tolerable_range.cover?(value)
+      elsif tolerable_range.cover?(@value)
         GRADES[1]
       else
         GRADES[2]
       end
     end
-
-    private
 
     delegate :tolerable_range, to: :@release_index
   end

@@ -64,6 +64,10 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     result
   end
 
+  memoize def release_summary
+    Queries::ReleaseSummary.all(@release.id)
+  end
+
   memoize def release_version
     @release.release_version
   end

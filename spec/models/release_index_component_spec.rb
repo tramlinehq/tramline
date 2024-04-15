@@ -28,7 +28,7 @@ describe ReleaseIndexComponent do
     }.each do |input, output|
       it "returns #{output} when the tolerable range input is #{input}" do
         output *= weight
-        expect(component.score(input)).to eq output
+        expect(component.score(input).value).to eq output
       end
     end
   end

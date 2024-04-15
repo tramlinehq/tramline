@@ -59,5 +59,25 @@ describe Queries::ReleaseSummary, type: :model do
       expect(actual[:overall].attributes["version"]).to eq(release.release_version)
       expect(actual[:team_stability_commits]).to eq({"Unknown" => stability_commits.size, team.name => 0})
     end
+
+    it "returns reldex when release index exists" do
+      create_deployment_run_tree(:android,
+        :released,
+        deployment_traits: [:with_production_channel],
+        release_traits: [:with_no_platform_runs],
+        step_traits: [:release],
+        step_run_traits: [:success]) => { step:, train:, release:, step_run:, deployment_run: }
+
+      reldex = create(:release_index, train:)
+      deployment_run.event_stamp_now!(reason: :release_started, kind: :notice, data: deployment_run.send(:stamp_data))
+      described_class.warm(release.id)
+      actual = described_class.all(release.id)
+
+      score = actual[:reldex]
+      expect(score.grade).to eq(:mediocre)
+      expect(score.value).to eq(0.55)
+      expect(score.release_index.id).to eq(reldex.id)
+      expect(score.components.map(&:value)).to match_array([0.0, 0.075, 0.075, 0.1, 0.15, 0.15])
+    end
   end
 end

@@ -38,16 +38,31 @@ class ReleaseIndexComponent < ApplicationRecord
   validates :name, uniqueness: {scope: :release_index_id}
 
   def score(value)
-    action_score(value) * weight
+    Score.new(self, value)
   end
 
-  private
-
-  def action_score(value)
-    if value < tolerable_range.begin; then 1
-    elsif tolerable_range.cover?(value); then 0.5
-    else
-      0
+  class Score
+    def initialize(component, input_value)
+      @release_index_component = component
+      @input_value = input_value
     end
+
+    attr_reader :release_index_component
+
+    def value
+      range_value * weight
+    end
+
+    private
+
+    def range_value
+      if @input_value < tolerable_range.begin; then 1
+      elsif tolerable_range.cover?(@input_value); then 0.5
+      else
+        0
+      end
+    end
+
+    delegate :tolerable_range, :weight, to: :@release_index_component
   end
 end

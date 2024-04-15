@@ -1,5 +1,5 @@
 <div class="inline-flex items-center font-medium text-xs px-1.5 py-0.5 rounded-md tracking-wide border gap-x-1.5 bg-green-100 dark:bg-green-900">
-  <span class="text-green-800 dark:text-green-300">GREAT</span>
+  <span class="text-green-800 dark:text-green-300"><%= grade %></span>
   <%= render V2::ModalComponent.new(title: "Reldex for #{release_version}",
                                     size: :sm,
                                     type: :drawer,
@@ -12,14 +12,14 @@
         <div class="text-lg border-default px-1.5 py-0.5">
           <math>
             <mrow>
-              <mi>0.88</mi>
+              <mi><%= final_score %></mi>
               <mo>/</mo>
               <mn>1.00</mn>
             </mrow>
           </math>
         </div>
         <div class="inline-flex items-end font-medium text-lg px-1.5 py-0.5 rounded-md tracking-wide border-default bg-rose-100 text-rose-800 dark:bg-green-900 dark:text-green-300 gap-x-1.5 uppercase">
-          Mediocre
+          <%= grade %>
         </div>
       </div>
 
@@ -30,7 +30,7 @@
               reldex ≥ 0.8
             <% end %>
             <% row.with_cell(style: "bg-green-100") do %>
-              Great
+              Excellent
             <% end %>
           <% end %>
           <% table.with_row do |row| %>
