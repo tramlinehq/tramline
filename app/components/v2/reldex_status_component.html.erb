@@ -1,7 +1,7 @@
 <div class="inline-flex items-center font-medium text-xs px-1.5 py-0.5 rounded-md tracking-wide border gap-x-1.5 bg-green-100 dark:bg-green-900">
   <span class="text-green-800 dark:text-green-300">GREAT</span>
   <%= render V2::ModalComponent.new(title: "Reldex for #{release_version}",
-                                    size: :md,
+                                    size: :sm,
                                     type: :drawer,
                                     authz: false) do |modal| %>
     <% button = modal.with_button(scheme: :naked_icon, type: :action, size: :none) %>
@@ -89,21 +89,10 @@
           <% end %>
           <% table.with_row do |row| %>
             <% row.with_cell do %>
-              Rollout Duration
+              Overall Duration
             <% end %>
             <% row.with_cell do %>
-              3 days
-            <% end %>
-            <% row.with_cell do %>
-              0.3
-            <% end %>
-          <% end %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              Rollout Duration
-            <% end %>
-            <% row.with_cell do %>
-              3 days
+              6 days
             <% end %>
             <% row.with_cell do %>
               0.3
@@ -111,13 +100,24 @@
           <% end %>
           <% table.with_row do |row| %>
             <% row.with_cell do %>
-              Rollout Duration
+              Stability Duration
             <% end %>
             <% row.with_cell do %>
               3 days
             <% end %>
             <% row.with_cell do %>
-              0.3
+              0.1
+            <% end %>
+          <% end %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              Rollout Fixes
+            <% end %>
+            <% row.with_cell do %>
+              2
+            <% end %>
+            <% row.with_cell do %>
+              0.7
             <% end %>
           <% end %>
         <% end %>
