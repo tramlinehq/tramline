@@ -68,17 +68,6 @@ class ReleaseHealthMetric < ApplicationRecord
     METRIC_VALUES[metric_name].present? ? public_send(METRIC_VALUES[metric_name]) : nil
   end
 
-  def create_health_event(release_health_rule)
-    return unless release_health_rule.actionable?(self)
-
-    last_event = deployment_run.release_health_events.where(release_health_rule:).last
-    is_healthy = release_health_rule.healthy?(self)
-    current_status = is_healthy ? ReleaseHealthEvent.health_statuses[:healthy] : ReleaseHealthEvent.health_statuses[:unhealthy]
-    return if last_event.present? && last_event.health_status == current_status
-
-    release_health_events.create(deployment_run:, release_health_rule:, health_status: current_status, event_timestamp: Time.current)
-  end
-
   def rules_for_metric(metric_name)
     release_health_rules.for_metric(metric_name)
   end
@@ -90,9 +79,34 @@ class ReleaseHealthMetric < ApplicationRecord
     return unless rules
 
     rules.all? do |rule|
-      event = deployment_run.release_health_events.where(release_health_rule: rule).last
-      return true if event.blank?
-      event.healthy?
+      event = last_health_event_for(rule)
+      event.nil? || event.healthy? || triggers_healthy_for?(rule, metric_name)
+    end
+  end
+
+  private
+
+  def create_health_event(release_health_rule)
+    return unless release_health_rule.actionable?(self)
+
+    last_event = last_event_for(release_health_rule)
+    is_healthy = release_health_rule.healthy?(self)
+    current_status = is_healthy ? ReleaseHealthEvent.health_statuses[:healthy] : ReleaseHealthEvent.health_statuses[:unhealthy]
+    return if last_event.present? && last_event.health_status == current_status
+
+    release_health_events.create(deployment_run:, release_health_rule:, health_status: current_status, event_timestamp: Time.current)
+  end
+
+  def last_event_for(rule)
+    deployment_run.release_health_events.where(release_health_rule: rule).last
+  end
+
+  def triggers_healthy_for?(rule, metric_name)
+    triggers = rule.triggers.where(metric: metric_name)
+    return true if triggers.blank?
+    triggers.none? do |expr|
+      value = evaluate(expr.metric)
+      value && !expr.evaluate(value)
     end
   end
 end
