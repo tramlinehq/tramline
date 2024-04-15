@@ -1,6 +1,6 @@
 <div class="flex flex-col gap-4 border-default box-padding min-w-80">
   <div class="flex items-center gap-4 justify-between pb-2 border-default-b">
-    <div class="heading-3"><%= rule.name %></div>
+    <h3 class="heading-3"><%= rule.name %></h3>
     <%= render V2::ButtonComponent.new(
       scheme: :danger,
       options: app_train_platform_release_health_rule_path(app, train, release_platform, rule),
