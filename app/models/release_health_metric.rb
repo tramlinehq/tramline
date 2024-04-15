@@ -76,11 +76,11 @@ class ReleaseHealthMetric < ApplicationRecord
     raise ArgumentError, "Invalid metric name" unless metric_name.in? METRIC_VALUES.keys
 
     rules = rules_for_metric(metric_name)
-    return unless rules
+    return if rules.blank?
 
     rules.all? do |rule|
-      event = last_health_event_for(rule)
-      event.nil? || event.healthy? || triggers_healthy_for?(rule, metric_name)
+      event = last_event_for(rule)
+      event.nil? || event.healthy? || healthy_for_triggers?(rule, metric_name)
     end
   end
 
@@ -101,12 +101,12 @@ class ReleaseHealthMetric < ApplicationRecord
     deployment_run.release_health_events.where(release_health_rule: rule).last
   end
 
-  def triggers_healthy_for?(rule, metric_name)
+  def healthy_for_triggers?(rule, metric_name)
     triggers = rule.triggers.where(metric: metric_name)
     return true if triggers.blank?
     triggers.none? do |expr|
       value = evaluate(expr.metric)
-      value && !expr.evaluate(value)
+      value && expr.evaluate(value)
     end
   end
 end

@@ -105,4 +105,39 @@ describe ReleaseHealthMetric do
       end
     end
   end
+
+  describe "#metric_healthy?" do
+    let(:deployment_run_tree) { create_deployment_run_tree(:android) }
+    let(:deployment_run) { deployment_run_tree[:deployment_run] }
+    let(:release_platform) { deployment_run_tree[:release_platform] }
+
+    it "raises ArgumentError when invalid metric name" do
+      expect { create(:release_health_metric).metric_healthy?("invalid") }.to raise_error(ArgumentError, "Invalid metric name")
+    end
+
+    it "returns nil when no rules" do
+      expect(create(:release_health_metric).metric_healthy?("session_stability")).to be_nil
+    end
+
+    it "returns true when all rules are healthy" do
+      create(:release_health_rule, :user_stability, release_platform:)
+      metric = create(:release_health_metric, daily_users: 100, daily_users_with_errors: 0, deployment_run:)
+      expect(metric.reload.metric_healthy?("user_stability")).to be(true)
+    end
+
+    it "returns false when any rule is unhealthy" do
+      create(:release_health_rule, :user_stability, release_platform:)
+      metric = create(:release_health_metric, daily_users: 100, daily_users_with_errors: 99, deployment_run:)
+      expect(metric.reload.metric_healthy?("user_stability")).to be(false)
+    end
+
+    it "returns true when rule is unhealthy but the trigger is healthy" do
+      release_health_rule = create(:release_health_rule, :user_stability, release_platform:)
+      create(:trigger_rule_expression, :session_stability, release_health_rule:)
+      metric = create(:release_health_metric, deployment_run:, daily_users: 100, daily_users_with_errors: 1, sessions_with_errors: 90, sessions: 100)
+
+      expect(metric.reload.metric_healthy?("user_stability")).to be(true)
+      expect(metric.reload.metric_healthy?("session_stability")).to be(false)
+    end
+  end
 end
