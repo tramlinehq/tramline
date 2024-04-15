@@ -1,6 +1,4 @@
-class V2::RuleListComponent < V2::BaseComponent
-  include Memery
-
+class V2::ReleaseHealthRuleListComponent < V2::BaseComponent
   def initialize(release_platform:)
     @release_platform = release_platform
   end

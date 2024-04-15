@@ -14,6 +14,6 @@
   <% end %>
 <% else %>
   <% train.release_platforms.each do |release_platform| %>
-    <%= render V2::RuleListComponent.new(release_platform:) %>
+    <%= render V2::ReleaseHealthRuleListComponent.new(release_platform:) %>
   <% end %>
 <% end %>

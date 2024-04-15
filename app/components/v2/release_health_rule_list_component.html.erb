@@ -19,7 +19,7 @@
   <% else %>
     <div class="flex flex-wrap flex-row gap-4 items-start">
       <% release_platform.release_health_rules.each do |rule| %>
-        <%= render V2::RuleCardComponent.new(rule:) %>
+        <%= render V2::ReleaseHealthRuleCardComponent.new(rule:) %>
       <% end %>
     </div>
   <% end %>
