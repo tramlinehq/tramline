@@ -14,13 +14,13 @@ FactoryBot.define do
     end
 
     trait :errors do
-      metric { "errors" }
+      metric { "errors_count" }
       threshold_value { 90 }
       comparator { "gte" }
     end
 
     trait :new_errors do
-      metric { "new_errors" }
+      metric { "new_errors_count" }
       threshold_value { 10 }
       comparator { "gte" }
     end

@@ -201,6 +201,20 @@ class DeploymentRun < ApplicationRecord
     where(status: STORE_SUBMISSION_STATES).includes([:staged_rollout, {step_run: [:commit], deployment: [:integration]}]).select(&:production_channel?)
   end
 
+  def check_release_health
+    return unless latest_health_data&.fresh?
+    latest_health_data.check_release_health
+  end
+
+  def show_health?
+    return true if latest_health_data&.fresh?
+    false
+  end
+
+  def unhealthy?
+    !healthy?
+  end
+
   def deployment_notes
     return step_run.build_notes.truncate(ReleaseMetadata::NOTES_MAX_LENGTH) if build_notes?
     release_metadata.release_notes if release_notes?

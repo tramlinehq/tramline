@@ -6,6 +6,10 @@ class V2::ReleaseOverviewComponent < V2::BaseReleaseComponent
 
   attr_reader :release
 
+  def show_release_unhealthy?
+    current_user.release_monitoring? && release.show_health? && release.unhealthy?
+  end
+
   def commit_count
     [release.applied_commits.size, 1].max - 1
   end
@@ -48,7 +52,7 @@ class V2::ReleaseOverviewComponent < V2::BaseReleaseComponent
   end
 
   def grid_size
-    return "grid-cols-2" if cross_platform?
+    return "grid-cols-2" if release.release_platform_runs.size > 1
     "grid-cols-1 w-2/3"
   end
 end

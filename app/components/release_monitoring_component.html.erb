@@ -3,7 +3,7 @@
     <div class="text-slate-500 text-md mb-2"><%= build_identifier %></div>
   <% end %>
 
-  <div class="grid <%= grid_cols %> gap-2 text-xs">
+  <div class="grid <%= grid_cols %> gap-3 text-xs">
     <% if :staged_rollout.in? metrics %>
       <% if staged_rollout.nil? %>
         <%= render StatCardComponent.new("Staged Rollout",
@@ -62,9 +62,36 @@
       <% end %>
     <% end %>
 
+    <% if show_release_health? %>
+      <div class="<%= full_span %> flex flex-col gap-y-2 border-default box-padding">
+        <div class="flex justify-between items-center">
+          <h5 class="heading-5 uppercase">
+            <span>Overall Release Health: </span>
+            <span class="<%= release_health_class %> font-semibold"><%= release_health %></span>
+            <span><%= health_status_duration %></span>
+          </h5>
+          <%= render V2::ButtonComponent.new(
+            scheme: :naked_icon,
+            options: rules_app_train_path(app, train),
+            size: :none,
+            authz: true,
+            type: :link_external) do |b|
+            b.with_icon("v2/arrow_right.svg", size: :sm)
+            b.with_tooltip("Go to rules configuration", placement: "top")
+          end %>
+        </div>
+
+        <% if events.present? %>
+          <div class="ml-1">
+            <%= render TimelineComponent.new(events:) %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
     <% if :adoption_chart.in? metrics %>
       <% if adoption_chart_data.present? %>
-        <div class="col-span-2"><%= render ChartComponent.new(adoption_chart_data) %></div>
+        <div class="<%= full_span %>"><%= render ChartComponent.new(adoption_chart_data) %></div>
       <% end %>
     <% end %>
   </div>

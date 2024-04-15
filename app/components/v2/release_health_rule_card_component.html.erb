@@ -1,0 +1,38 @@
+<div class="flex flex-col gap-4 border-default box-padding min-w-80">
+  <div class="flex items-center gap-4 justify-between pb-2 border-default-b">
+    <h3 class="heading-3"><%= rule.name %></h3>
+    <%= render V2::ButtonComponent.new(
+      scheme: :danger,
+      options: app_train_platform_release_health_rule_path(app, train, release_platform, rule),
+      type: :button,
+      size: :xxs,
+      turbo: false,
+      html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want remove the release health rule?" } }) do |b|
+      b.with_icon("v2/trash.svg", size: :sm)
+    end %>
+  </div>
+  <%= render V2::Rule::LayoutComponent.new do |rule_layout| %>
+    <% rule_layout.with_if_statement do %>
+      <div class="flex flex-col items-start gap-1">
+        <% rule.trigger_rule_expressions.each_with_index do |expr, idx| %>
+          <% if idx > 0 %>
+            <%= logical_operator_tag("or") %>
+          <% end %>
+          <div class="text-sm text-main"><%= expr.to_s %></div>
+        <% end %>
+      </div>
+    <% end %>
+    <% if rule.filter_rule_expressions.exists? %>
+      <% rule_layout.with_when_statement do %>
+        <div class="flex flex-col items-start gap-1">
+          <% rule.filter_rule_expressions.each_with_index do |expr, idx| %>
+            <% if idx > 0 %>
+              <%= logical_operator_tag("and") %>
+            <% end %>
+            <div class="text-sm text-main"><%= expr.to_s %></div>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>
