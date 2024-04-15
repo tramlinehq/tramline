@@ -34,6 +34,10 @@ class ReleaseHealthMetric < ApplicationRecord
     staged_rollout: :staged_rollout
   }.with_indifferent_access
 
+  def fresh?
+    fetched_at > 3.hours.ago
+  end
+
   def user_stability
     return if daily_users.blank? || daily_users.zero?
     ((1 - (daily_users_with_errors.to_f / daily_users.to_f)) * 100).ceil(3)

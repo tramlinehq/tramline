@@ -2,7 +2,7 @@
                                     title: "#{release_platform.display_attr(:platform)}",
                                     subtitle: "Configure key health metrics for monitoring the status of releases as they are rolled out") do |section| %>
   <% section.with_sidenote do %>
-    <%= render V2::ModalComponent.new(title: "Add a new rule") do |modal| %>
+    <%= render V2::ModalComponent.new(title: "Add a new rule", dismissable: false) do |modal| %>
       <% modal.with_button(label: "Add", scheme: :light, type: :action, size: :xxs, arrow: :none)
               .with_icon("v2/plus.svg", size: :md) %>
       <% modal.with_body do %>

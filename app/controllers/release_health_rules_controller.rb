@@ -2,7 +2,6 @@ class ReleaseHealthRulesController < SignedInApplicationController
   before_action :require_write_access!, only: %i[create destroy]
   before_action :set_train, only: %i[create destroy]
   before_action :set_release_platform, only: %i[create destroy]
-  around_action :set_time_zone
 
   def create
     @rule = @release_platform.release_health_rules.new(rule_params)

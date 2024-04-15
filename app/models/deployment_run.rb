@@ -202,12 +202,13 @@ class DeploymentRun < ApplicationRecord
   end
 
   def check_release_health
-    latest_health_data&.check_release_health
+    return unless latest_health_data&.fresh?
+    latest_health_data.check_release_health
   end
 
   def show_health?
-    return false unless latest_health_data
-    latest_health_data.fetched_at > 1.day.ago
+    return true if latest_health_data&.fresh?
+    false
   end
 
   def unhealthy?
