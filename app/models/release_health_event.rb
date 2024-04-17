@@ -15,6 +15,8 @@
 #
 class ReleaseHealthEvent < ApplicationRecord
   include Displayable
+  include Memery
+
   self.implicit_order_column = :event_timestamp
 
   enum health_status: {healthy: "healthy", unhealthy: "unhealthy"}
@@ -22,4 +24,39 @@ class ReleaseHealthEvent < ApplicationRecord
   belongs_to :deployment_run
   belongs_to :release_health_rule
   belongs_to :release_health_metric
+
+  scope :for_rule, ->(rule) { where(release_health_rule: rule) }
+
+  delegate :notify!, to: :deployment_run
+
+  after_create_commit :notify_health_rule_triggered
+
+  private
+
+  def notify_health_rule_triggered
+    return if previous_event.blank? && healthy?
+    return if previous_event.present? && previous_event.health_status == health_status
+    notify!("One of the release health rules has been triggered", :release_health_events, notification_params)
+  end
+
+  def notification_params
+    deployment_run.notification_params.merge(
+      {
+        rule_filters:,
+        rule_triggers:
+      }
+    )
+  end
+
+  def rule_filters
+    release_health_rule.filters.map { |expr| "#{expr.metric.titleize} is #{release_health_metric.evaluate(expr.metric)}%" }
+  end
+
+  def rule_triggers
+    release_health_rule.triggers.map { |expr| expr.evaluation(release_health_metric.evaluate(expr.metric)) }
+  end
+
+  memoize def previous_event
+    deployment_run.release_health_events.for_rule(release_health_rule).where.not(id:).reorder("event_timestamp").last
+  end
 end

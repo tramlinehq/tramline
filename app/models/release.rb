@@ -362,7 +362,8 @@ class Release < ApplicationRecord
         release_branch: release_branch,
         release_branch_url: branch_url,
         release_url: live_release_link,
-        release_version: release_version
+        release_version: release_version,
+        is_release_unhealthy: unhealthy?
       }
     )
   end

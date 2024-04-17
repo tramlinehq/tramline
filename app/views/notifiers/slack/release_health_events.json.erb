@@ -1,0 +1,35 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "<%= main_text %>"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        <% @rule_triggers.each_with_index do |filter, idx| %>
+        {
+          "type": "plain_text",
+          "text": "<%= trigger_text(filter) %>"
+        }
+        <% if idx < @rule_triggers.size - 1 %>,<% end %>
+        <% end %>
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        <% @rule_filters.each_with_index do |filter, idx| %>
+        {
+          "type": "plain_text",
+          "text": "<%= filter %>"
+        }
+        <% if idx < @rule_filters.size - 1 %>,<% end %>
+        <% end %>
+      ]
+    }
+  ]
+}
