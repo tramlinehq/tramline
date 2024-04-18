@@ -9,7 +9,7 @@ module Notifiers
       end
 
       def trigger_text(trigger)
-        health_symbol = (trigger[:health_status] == :healthy) ? ":large_green_circle:" : ":red_circle:"
+        health_symbol = trigger[:is_healthy] ? ":large_green_circle:" : ":red_circle:"
 
         "#{health_symbol} #{trigger[:expression]}"
       end

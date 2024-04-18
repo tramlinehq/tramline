@@ -25,7 +25,7 @@ class TriggerRuleExpression < RuleExpression
   def evaluation(value)
     return unless value
     status = evaluate(value) ? :unhealthy : :healthy
-    {health_status: status,
+    {is_healthy: (status == :healthy),
      expression: "#{display_attr(:metric)} (#{value}) #{describe_comparator(status)} the threshold value (#{threshold_value})"}
   end
 end

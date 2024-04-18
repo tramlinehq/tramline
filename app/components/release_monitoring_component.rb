@@ -70,8 +70,8 @@ class ReleaseMonitoringComponent < V2::BaseComponent
     triggers = event.release_health_rule.triggers
     triggers.map do |expr|
       value = metric.evaluate(expr.metric)
-      expr.evaluation(value) => { health_status:, expression: }
-      expression if health_status == :unhealthy
+      expr.evaluation(value) => { is_healthy:, expression: }
+      expression unless is_healthy
     end.compact.join(", ")
   end
 
