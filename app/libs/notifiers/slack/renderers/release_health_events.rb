@@ -4,8 +4,8 @@ module Notifiers
       TEMPLATE_FILE = "release_health_events.json.erb".freeze
 
       def main_text
-        return "The release is *unhealthy*. :broken_heart:" if @is_release_unhealthy
-        "The release is *healthy*. :green_heart:"
+        return "The release is *unhealthy*! :broken_heart:" if @is_release_unhealthy
+        "The release is *healthy*! :green_heart:"
       end
 
       def trigger_text(trigger)
