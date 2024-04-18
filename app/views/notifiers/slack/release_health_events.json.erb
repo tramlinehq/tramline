@@ -10,26 +10,40 @@
     {
       "type": "context",
       "elements": [
-        <% @rule_triggers.each_with_index do |filter, idx| %>
         {
-          "type": "plain_text",
-          "text": "<%= trigger_text(filter) %>"
+          "type": "mrkdwn",
+          "text": "_Health Metrics_"
         }
-        <% if idx < @rule_triggers.size - 1 %>,<% end %>
-        <% end %>
       ]
     },
     {
       "type": "context",
       "elements": [
-        <% @rule_filters.each_with_index do |filter, idx| %>
         {
-          "type": "plain_text",
-          "text": "<%= filter %>"
+          "type": "mrkdwn",
+          "text": "<%= trigger_text %>"
         }
-        <% if idx < @rule_filters.size - 1 %>,<% end %>
-        <% end %>
       ]
     }
+    <% if @rule_filters.present? %>,
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "_Conditions_"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "<%= filter_text %>"
+        }
+      ]
+    }
+    <% end %>
   ]
 }

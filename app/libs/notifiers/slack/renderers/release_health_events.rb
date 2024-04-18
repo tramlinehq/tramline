@@ -8,10 +8,15 @@ module Notifiers
         "The release is *healthy*! :green_heart:"
       end
 
-      def trigger_text(trigger)
-        health_symbol = trigger[:is_healthy] ? ":large_green_circle:" : ":red_circle:"
+      def trigger_text
+        safe_string(@release_health_rule_triggers.map do |trigger|
+          health_symbol = trigger[:is_healthy] ? ":large_green_circle:" : ":red_circle:"
+          "#{health_symbol} #{trigger[:expression]}"
+        end.join("\n "))
+      end
 
-        "#{health_symbol} #{trigger[:expression]}"
+      def filter_text
+        safe_string(@release_health_rule_filters.map { |filter| ":clock5: #{filter}" }.join("\n "))
       end
     end
   end

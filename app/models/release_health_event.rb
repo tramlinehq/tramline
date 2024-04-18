@@ -41,8 +41,8 @@ class ReleaseHealthEvent < ApplicationRecord
   def notification_params
     deployment_run.notification_params.merge(
       {
-        rule_filters:,
-        rule_triggers:
+        release_health_rule_filters: rule_filters,
+        release_health_rule_triggers: rule_triggers
       }
     )
   end
