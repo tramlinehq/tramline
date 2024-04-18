@@ -49,6 +49,7 @@ en:
           staged_rollout_halted: "Staged rollout halted"
           staged_rollout_fully_released: "Staged rollout bypassed to release to 100%"
           build_available: "New build generated"
+          release_health_events: "Release health events"
       deployment_run:
         failure_reason:
           unknown_failure: "an unknown error, contact support!"
@@ -131,6 +132,7 @@ en:
       filter_rule_expression:
         metric:
           adoption_rate: "Adoption rate"
+          staged_rollout: "Staged rollout"
       release_health_rule:
         name:
           discarded: "%{name} (DELETED)"

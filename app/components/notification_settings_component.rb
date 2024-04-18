@@ -24,7 +24,8 @@ class NotificationSettingsComponent < ViewComponent::Base
     deployment_finished: {icon: "v2/truck.svg", description: "The distribution was successful to a channel"},
     deployment_failed: {icon: "v2/alert_circle.svg", description: "The distribution to a channel failed"},
     release_ended: {icon: "v2/sparkles.svg", description: "The release finished successfully"},
-    release_stopped: {icon: "v2/stop_circle.svg", description: "The release was stopped before it finished"}
+    release_stopped: {icon: "v2/stop_circle.svg", description: "The release was stopped before it finished"},
+    release_health_events: {icon: "v2/heart_pulse.svg", description: "A health event has occurred for the release"}
   }.map
     .with_index { |(key, value), index| [key, value.merge(number: index.succ)] }
     .to_h
