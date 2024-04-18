@@ -147,6 +147,16 @@ class Release < ApplicationRecord
 
   def self.for_branch(branch_name) = find_by(branch_name:)
 
+  def unhealthy?
+    release_platform_runs.any?(&:unhealthy?)
+  end
+
+  def show_health?
+    return true if ongoing? || partially_finished?
+    return true if finished? && release_platform_runs.any?(&:show_health?)
+    false
+  end
+
   def finish_after_partial_finish!
     with_lock do
       return unless partially_finished?
@@ -352,7 +362,8 @@ class Release < ApplicationRecord
         release_branch: release_branch,
         release_branch_url: branch_url,
         release_url: live_release_link,
-        release_version: release_version
+        release_version: release_version,
+        is_release_unhealthy: unhealthy?
       }
     )
   end

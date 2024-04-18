@@ -12,5 +12,5 @@
 #  release_health_rule_id :uuid             not null, indexed, indexed => [metric]
 #
 class FilterRuleExpression < RuleExpression
-  enum metric: ReleaseHealthMetric::METRIC_VALUES.slice(:adoption_rate).transform_values(&:to_s)
+  enum metric: ReleaseHealthMetric::METRIC_VALUES.slice(:adoption_rate, :staged_rollout).transform_values(&:to_s)
 end

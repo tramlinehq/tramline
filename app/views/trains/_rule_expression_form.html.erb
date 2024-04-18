@@ -1,0 +1,27 @@
+<div class="nested-form-wrapper flex items-center gap-2 mt-2 first:mt-0" data-new-record="<%= form.object.new_record? %>">
+  <div>
+    <%= form.select_without_label :metric,
+                                  form.object.class::metrics,
+                                  { required: true } %>
+  </div>
+  <div>
+    <%= form.select_without_label :comparator,
+                                  RuleExpression::comparator_options,
+                                  { required: true } %>
+  </div>
+  <div>
+    <%= form.text_field_without_label :threshold_value, "90.0",
+                                      { required: true } %>
+  </div>
+  <div>
+    <%= render V2::ButtonComponent.new(
+      scheme: :naked_icon,
+      type: :action,
+      size: :none,
+      html_options: { data: { action: "nested-form#remove" } }) do |b|
+      b.with_icon("v2/trash.svg", size: :md)
+    end %>
+
+    <%= form.hidden_field :_destroy %>
+  </div>
+</div>

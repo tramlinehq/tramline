@@ -4,6 +4,13 @@ en:
       checkbox: "Enable Phased Release"
     android:
       checkbox: "Enable Staged Rollout"
+  release_health_rules:
+    create:
+      success: "Rule was successfully created."
+      failure: "Failed to create rules: %{errors}"
+    destroy:
+      success: "Rule was successfully removed."
+      failure: "Failed to remove rule: %{errors}"
   activerecord:
     models:
       slack_integration: "Slack"
@@ -42,6 +49,7 @@ en:
           staged_rollout_halted: "Staged rollout halted"
           staged_rollout_fully_released: "Staged rollout bypassed to release to 100%"
           build_available: "New build generated"
+          release_health_events: "Release health events"
       deployment_run:
         failure_reason:
           unknown_failure: "an unknown error, contact support!"
@@ -124,6 +132,10 @@ en:
       filter_rule_expression:
         metric:
           adoption_rate: "Adoption rate"
+          staged_rollout: "Staged rollout"
+      release_health_rule:
+        name:
+          discarded: "%{name} (DELETED)"
     attributes:
       integration:
         categories:
@@ -135,7 +147,7 @@ en:
       bitrise_integration:
         access_token: "Bitrise Personal Access Token"
       bugsnag_integration:
-          access_token: "Bugsnag Personal Access Token"
+        access_token: "Bugsnag Personal Access Token"
       google_play_store_integration:
         json_key: "Google Play Store JSON Key"
       train:
@@ -166,6 +178,8 @@ en:
               invalid_format: "Enter a valid email format"
         train:
           attributes:
+            name:
+              invalid: "can only contain alphanumerics, underscores, hyphens and forward-slashes"
             tag_all_store_releases:
               not_allowed: "cannot enable tags for all store releases without enabling platform-specific tags"
             build_queue_size:
@@ -238,6 +252,12 @@ en:
               invalid_config: "configuration is invalid, please check!"
               permission_denied: "permission denied to access the project using the key!"
               unknown_failure: "an unrecognized error occurred connecting to Firebase, please try again!"
+        release_health_rule:
+          attributes:
+            name:
+              invalid: "can only contain alphanumerics, underscores and hyphens"
+            trigger_rule_expressions:
+              duplicate_metrics: "cannot have multiple health conditions with the same metric"
   invitation:
     flash:
       invite_issued: "Invitation issued"

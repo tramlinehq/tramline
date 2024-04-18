@@ -1,11 +1,11 @@
-class ReleaseMonitoringComponent < ViewComponent::Base
+class ReleaseMonitoringComponent < V2::BaseComponent
   METRICS = [:staged_rollout, :adoption_rate, :adoption_chart, :errors, :stability]
 
   SIZES = {
     sm: {cols: 2, size: 4}
   }
 
-  def initialize(deployment_run:, metrics: METRICS, show_version_info: true, cols: 2, size: :base)
+  def initialize(deployment_run:, metrics: METRICS, show_version_info: true, cols: 2, size: :base, num_events: 3)
     raise ArgumentError, "metrics must be one of #{METRICS}" unless (metrics - METRICS).empty?
 
     @deployment_run = deployment_run
@@ -13,14 +13,19 @@ class ReleaseMonitoringComponent < ViewComponent::Base
     @show_version_info = show_version_info
     @cols = cols
     @size = size
+    @num_events = num_events
   end
 
   delegate :adoption_rate, to: :release_data, allow_nil: true
-  delegate :app, :release_health_rules, :platform, :external_link, to: :deployment_run
+  delegate :app, :train, :release_health_rules, :platform, :external_link, :show_health?, to: :deployment_run
   delegate :monitoring_provider, to: :app
   delegate :current_user, to: :helpers
 
   attr_reader :deployment_run, :metrics, :show_version_info, :size
+
+  def show_release_health?
+    current_user.release_monitoring? && release_health_rules.present? && show_health?
+  end
 
   def empty_component?
     release_data.blank?
@@ -47,12 +52,12 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def events
-    @deployment_run.release_health_events.last(3).map do |event|
+    deployment_run.release_health_events.reorder("event_timestamp DESC").first(@num_events).map do |event|
       type = event.healthy? ? :success : :error
-      title = event.healthy? ? "Rule is healthy" : "Rule is unhealthy"
+      rule_health = event.healthy? ? "healthy" : "unhealthy"
       {
         timestamp: time_format(event.event_timestamp, with_year: false),
-        title:,
+        title: "#{event.release_health_rule.display_name} is #{rule_health}",
         description: event_description(event),
         type:
       }
@@ -60,25 +65,34 @@ class ReleaseMonitoringComponent < ViewComponent::Base
   end
 
   def event_description(event)
+    return if event.healthy?
     metric = event.release_health_metric
     triggers = event.release_health_rule.triggers
-    status = event.health_status
     triggers.map do |expr|
       value = metric.evaluate(expr.metric)
-      "#{expr.display_attr(:metric)} (#{value}) #{expr.describe_comparator(status)} the threshold value (#{expr.threshold_value})"
-    end.join(", ")
+      expr.evaluation(value) => { is_healthy:, expression: }
+      expression unless is_healthy
+    end.compact.join(", ")
   end
 
   def release_healthy?
-    @is_healthy ||= @deployment_run.healthy?
+    @is_healthy ||= deployment_run.healthy?
   end
 
   def release_health
+    return "Not Available" if release_data.blank?
     return "Healthy" if release_healthy?
     "Unhealthy"
   end
 
+  def health_status_duration
+    last_event = deployment_run.release_health_events.reorder("event_timestamp DESC").first
+    return unless last_event
+    ago_in_words(last_event.event_timestamp, prefix: "since", suffix: nil)
+  end
+
   def release_health_class
+    return "text-main-600" if release_data.blank?
     return "text-green-800" if release_healthy?
     "text-red-800"
   end
@@ -96,22 +110,20 @@ class ReleaseMonitoringComponent < ViewComponent::Base
 
   def user_stability
     value = release_data.user_stability.blank? ? "-" : "#{release_data.user_stability}%"
-    {value:, is_healthy: release_data.metric_healthy?("user_stability")}
+    metric_data("user_stability", value)
   end
 
   def session_stability
     value = release_data.session_stability.blank? ? "-" : "#{release_data.session_stability}%"
-    {value:, is_healthy: release_data.metric_healthy?("session_stability")}
+    metric_data("session_stability", value)
   end
 
   def errors_count
-    value = release_data.errors_count
-    {value:, is_healthy: release_data.metric_healthy?("errors_count")}
+    metric_data("errors_count", release_data.errors_count)
   end
 
   def new_errors_count
-    value = release_data.new_errors_count
-    {value:, is_healthy: release_data.metric_healthy?("new_errors_count")}
+    metric_data("new_errors_count", release_data.new_errors_count)
   end
 
   def adoption_chart_data
@@ -139,5 +151,19 @@ class ReleaseMonitoringComponent < ViewComponent::Base
 
   def grid_cols
     "grid-cols-#{@cols}"
+  end
+
+  def full_span
+    "col-span-#{@cols}"
+  end
+
+  private
+
+  def metric_data(metric_name, value)
+    {
+      value:,
+      is_healthy: release_data.metric_healthy?(metric_name),
+      rules: release_data.rules_for_metric(metric_name)
+    }
   end
 end

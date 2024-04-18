@@ -93,7 +93,7 @@ class Train < ApplicationRecord
   validate :tag_release_config
   validate :valid_train_configuration, on: :activate_context
   validate :working_branch_presence, on: :create
-  validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: I18n.t("train_name")}
+  validates :name, format: {with: /\A[a-zA-Z0-9\s_\/-]+\z/, message: :invalid}
 
   after_initialize :set_constituent_seed_versions, if: :persisted?
   after_initialize :set_release_schedule, if: :persisted?
@@ -403,10 +403,6 @@ class Train < ApplicationRecord
     return false if hotfix_release.present?
     return false if ongoing_release.present? && ongoing_release.release_step_started?
     hotfix_from.present? && release_platforms.any?(&:has_production_deployment?)
-  end
-
-  def devops_report?(user)
-    user.release_health? && releases.size > 1
   end
 
   def devops_report

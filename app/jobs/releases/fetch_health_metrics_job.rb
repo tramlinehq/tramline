@@ -1,7 +1,7 @@
 class Releases::FetchHealthMetricsJob < ApplicationJob
   queue_as :high
 
-  RELEASE_MONITORING_PERIOD_IN_DAYS = 7
+  RELEASE_MONITORING_PERIOD_IN_DAYS = 15
 
   def perform(deployment_run_id)
     run = DeploymentRun.find(deployment_run_id)

@@ -1,7 +1,4 @@
-class MetricCardComponent < ViewComponent::Base
-  include LinkHelper
-  include AssetsHelper
-
+class MetricCardComponent < V2::BaseComponent
   TEXT_SIZE = {
     sm: "text-base",
     base: "text-xl"
@@ -18,8 +15,11 @@ class MetricCardComponent < ViewComponent::Base
   attr_reader :name, :values, :provider, :external_url, :size
   delegate :current_user, to: :helpers
 
+  def health_defined?(val)
+    current_user.release_monitoring? && !val[:is_healthy].nil?
+  end
+
   def metric_color(is_healthy)
-    return "text-main" unless current_user.release_monitoring?
     case is_healthy
     when true
       "text-green-800 font-semibold"
@@ -31,16 +31,20 @@ class MetricCardComponent < ViewComponent::Base
   end
 
   def metric_title(metric)
-    return unless current_user.release_monitoring?
     return "unhealthy" if metric[:is_healthy] == false
     "healthy" if metric[:is_healthy] == true
   end
 
-  def metric_health(val)
-    return unless current_user.release_monitoring?
-    return if val[:is_healthy].blank?
-    return if val[:is_healthy]
-    inline_svg "exclamation.svg", classname: "w-5 h-5 text-red-800 ml-1"
+  def rules_for(metric)
+    metric[:rules]
+  end
+
+  def rule_description(rule)
+    content_tag(:div, class: "flex flex-col items-start text-xs") do
+      concat content_tag(:span, "Unhealthy if #{rule.trigger_rule_expressions.map(&:to_s).join(", ")}")
+      concat content_tag(:span, "When #{rule.filter_rule_expressions.map(&:to_s).join(" & ")}")
+      concat content_tag(:span, "Using #{rule.name} rule")
+    end
   end
 
   def display_values

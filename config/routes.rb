@@ -68,6 +68,7 @@ Rails.application.routes.draw do
     resources :trains, only: %i[new create edit update destroy] do
       member do
         get :steps
+        get :rules
         patch :activate
         patch :deactivate
       end
@@ -76,6 +77,7 @@ Rails.application.routes.draw do
 
       resources :release_platforms, only: [], path: :platforms, as: :platforms do
         resources :steps, only: %i[new create update]
+        resources :release_health_rules, path: :rules
       end
 
       resources :releases, only: %i[show create destroy index], shallow: true do

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_04_11_101449) do
+ActiveRecord::Schema[7.0].define(version: 2024_04_12_094811) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -439,6 +439,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_04_11_101449) do
     t.datetime "updated_at", null: false
     t.string "name"
     t.uuid "release_platform_id", null: false
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_release_health_rules_on_discarded_at"
     t.index ["release_platform_id"], name: "index_release_health_rules_on_release_platform_id"
   end
 
@@ -543,7 +545,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_04_11_101449) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["metric"], name: "index_rule_expressions_on_metric"
-    t.index ["release_health_rule_id", "metric"], name: "index_rule_expressions_on_release_health_rule_id_and_metric", unique: true
+    t.index ["release_health_rule_id", "metric"], name: "unique_index_on_release_health_rule_id_and_metric_for_triggers", unique: true, where: "((type)::text = 'TriggerRuleExpression'::text)"
     t.index ["release_health_rule_id"], name: "index_rule_expressions_on_release_health_rule_id"
   end
 

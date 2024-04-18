@@ -22,6 +22,9 @@
           <% end %>
 
           <%= render V2::StatusIndicatorPillComponent.new(text: status.first, status: status.second) %>
+          <% if show_release_unhealthy? %>
+            <%= render V2::StatusIndicatorPillComponent.new(text: "Release is unhealthy", status: :failure)  %>
+          <% end %>
           <%= render(hotfix_badge) unless hotfix_badge.nil? %>
           <%= render(scheduled_badge) if automatic? %>
         </div>
@@ -119,7 +122,8 @@
               metrics: [:stability, :adoption_rate, :staged_rollout],
               show_version_info: false,
               cols: 3,
-              size: :sm) %>
+              size: :sm,
+              num_events: 1) %>
           <% end %>
         </div>
       <% end %>

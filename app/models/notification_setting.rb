@@ -37,7 +37,8 @@ class NotificationSetting < ApplicationRecord
     staged_rollout_resumed: "staged_rollout_resumed",
     staged_rollout_halted: "staged_rollout_halted",
     staged_rollout_completed: "staged_rollout_completed",
-    staged_rollout_fully_released: "staged_rollout_fully_released"
+    staged_rollout_fully_released: "staged_rollout_fully_released",
+    release_health_events: "release_health_events"
   }
 
   scope :active, -> { where(active: true) }

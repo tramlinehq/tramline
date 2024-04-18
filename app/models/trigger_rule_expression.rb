@@ -19,4 +19,13 @@ class TriggerRuleExpression < RuleExpression
       :errors_count,
       :new_errors_count
     ).transform_values(&:to_s)
+
+  validates :metric, uniqueness: {scope: :release_health_rule_id}
+
+  def evaluation(value)
+    return unless value
+    status = evaluate(value) ? :unhealthy : :healthy
+    {is_healthy: (status == :healthy),
+     expression: "#{display_attr(:metric)} (#{value}) #{describe_comparator(status)} the threshold value (#{threshold_value})"}
+  end
 end
