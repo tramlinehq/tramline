@@ -87,7 +87,7 @@ class ChartComponent < ViewComponent::Base
 
   def corner_icon
     if help_text.present?
-      icon = V2::IconComponent.new("v2/info.svg", size: :md, classes: "text-main-500")
+      icon = V2::IconComponent.new("v2/info.svg", size: :md, classes: "text-secondary")
       icon.with_tooltip(help_text, placement: "top", type: :detailed) do |tooltip|
         tooltip.with_detailed_text do
           content_tag(:div, nil, class: "flex flex-col gap-y-4 items-start") do

@@ -8,6 +8,6 @@ class V2::ReleaseHealthRuleCardComponent < V2::BaseComponent
   delegate :train, :app, to: :release_platform
 
   def logical_operator_tag(text)
-    content_tag(:div, text, class: "text-xs text-main-500 uppercase bg-main-100 px-2")
+    content_tag(:div, text, class: "text-xs text-secondary uppercase bg-main-100 px-2")
   end
 end

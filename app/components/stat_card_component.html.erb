@@ -1,5 +1,5 @@
 <% if empty_stat? %>
-  <div class="flex flex-col border-default box-padding gap-y-4">
+  <div class="flex flex-col gap-y-4 card-sm">
     <div class="flex flex-row items-center justify-between">
       <h5 class="heading-5 uppercase">
         <%= name %>
@@ -10,8 +10,8 @@
 
     <div class="grid grid-cols-2 divide-x place-content-between">
       <div class="flex flex-col py-1 first:px-0 px-3 gap-y-1">
-        <div class="text-xs text-main-400 uppercase">%</div>
-        <div class="<%= empty_stat_text_size %> text-main-400">N/A</div>
+        <div class="text-xs text-secondary-50 uppercase">%</div>
+        <div class="<%= empty_stat_text_size %> text-secondary-50">N/A</div>
       </div>
     </div>
   </div>

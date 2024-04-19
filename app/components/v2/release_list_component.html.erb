@@ -19,7 +19,7 @@
   <%= container.with_side_action do %>
     <%= render V2::DropdownComponent.new(authz: false) do |dropdown| %>
       <% dropdown.with_button(html_options: { class: "-my-5" }).with_title_text do %>
-        <span class="text-xs text-main-500 dark:text-main-400 font-medium">Switch</span>
+        <span class="text-xs text-secondary dark:text-secondary-50 font-medium">Switch</span>
       <% end %>
 
       <% dropdown.with_item_group do |group| %>
@@ -138,7 +138,7 @@
 
     <% if devops_report.present? %>
       <%= render V2::SectionComponent.new(style: :titled, title: "Mobile DevOps") do %>
-        <div class="grid grid-cols-4 gap-x-2 my-3 gap-y-2">
+        <div class="grid grid-cols-4 my-3 gap-x-2 gap-y-3">
           <%= render ChartComponent.new(devops_report[:mobile_devops][:frequency]) %>
           <%= render ChartComponent.new(devops_report[:mobile_devops][:duration]) %>
           <%= render ChartComponent.new(devops_report[:mobile_devops][:hotfixes]) %>

@@ -12,7 +12,7 @@
         </div>
         <div class="mt-3 sm:pr-10">
           <h3 class="text-lg font-semibold text-main-900">Add an App</h3>
-          <p class="text-base font-normal text-main-500">This is complete!</p>
+          <p class="text-base font-normal text-secondary">This is complete!</p>
         </div>
       </li>
 
@@ -27,7 +27,7 @@
         </div>
         <div class="mt-3 sm:pr-10">
           <h3 class="text-lg font-semibold text-main-900">Version Control Integration</h3>
-          <p class="text-base font-normal text-main-500 mt-2">
+          <p class="text-base font-normal text-secondary mt-2">
             <%= link_to "Configure", app_integrations_path(@app, anchor: "version_control"), class: "underline" %>&nbsp;where
             your code lives.
           </p>
@@ -45,8 +45,8 @@
         </div>
         <div class="mt-3 sm:pr-10">
           <h3 class="text-lg font-semibold text-main-900">CI/CD Integration</h3>
-          <p class="text-base font-normal text-main-500">
-          <p class="text-base font-normal text-main-500 mt-2">
+          <p class="text-base font-normal text-secondary">
+          <p class="text-base font-normal text-secondary mt-2">
             <%= link_to "Configure", app_integrations_path(@app, anchor: "ci_cd"), class: "underline" %>&nbsp;your CI/CD
             provider.
           </p>
@@ -65,7 +65,7 @@
 
         <div class="mt-3 sm:pr-10">
           <h3 class="text-lg font-semibold text-main-900">Deployment Integration</h3>
-          <p class="text-base font-normal text-main-500 mt-2">
+          <p class="text-base font-normal text-secondary mt-2">
             <%= link_to "Configure", app_integrations_path(@app, anchor: "build_channel"), class: "underline" %>&nbsp;one or
             more deployment providers for the platform(s).
           </p>
@@ -85,7 +85,7 @@
 
         <div class="mt-3 sm:pr-2">
           <h3 class="text-lg font-semibold text-main-900">Update Configuration</h3>
-          <p class="text-base font-normal text-main-500 mt-2">
+          <p class="text-base font-normal text-secondary mt-2">
             <% if is_app_config_visible %>
               <%= link_to "Finish", app_integrations_path(@app), class: "underline" %>&nbsp;configuring all your
               integrations.

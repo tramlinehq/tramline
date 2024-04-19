@@ -12,7 +12,7 @@
                   <% releases(channel)&.each do |release| %>
                     <div class="w-full grid grid-cols-5 space-x-1 items-center">
 
-                      <div class="col-span-3 grid grid-cols-5 justify-start text-xs font-medium text-main-500 dark:text-main-400 divide-x divide-main-200">
+                      <div class="col-span-3 grid grid-cols-5 justify-start text-xs font-medium text-secondary dark:text-secondary-50 divide-x divide-main-200">
                         <span class="col-span-2"><%= release_version(release) %></span>
                         <span class="col-span-3 pl-2 font-semibold"><%= release_number(release) %></span>
                       </div>
@@ -35,11 +35,11 @@
 <% end %>
 
 <% if external_apps? %>
-  <p class="flex mt-16 justify-center text-main-500 dark:text-main-400 text-xs">
+  <p class="flex mt-16 justify-center text-secondary dark:text-secondary-50 text-xs">
     Last changed <%= fetched_at %>
   </p>
 <% elsif app.has_store_integration? %>
-  <p class="flex mt-16 justify-center text-main-500 dark:text-main-400 text-xs">
+  <p class="flex mt-16 justify-center text-secondary dark:text-secondary-50 text-xs">
     Fetching...
   </p>
 <% else %>

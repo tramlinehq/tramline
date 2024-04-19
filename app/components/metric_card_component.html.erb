@@ -4,7 +4,7 @@
   <div class="grid grid-cols-2 divide-x place-content-between">
     <% values.each do |key, val| %>
       <div class="flex flex-col py-1 first:px-0 px-3 gap-y-1">
-        <div class="text-xs text-main-400 uppercase"><%= key %></div>
+        <div class="text-xs text-secondary-50 uppercase"><%= key %></div>
         <% if health_defined?(val) %>
           <div class="<%= text_size %> <%= metric_color(val[:is_healthy]) %>">
             <%= render V2::TooltipComponent.new(nil, placement: "top", type: :detailed) do |tooltip| %>

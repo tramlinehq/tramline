@@ -1,5 +1,5 @@
 module ClipboardHelper
-  DEFAULT_BUTTON_STYLES = "text-main-500 absolute bottom-0 top-7 right-0 flex items-center cursor-pointer "
+  DEFAULT_BUTTON_STYLES = "text-secondary absolute bottom-0 top-7 right-0 flex items-center cursor-pointer "
   def copy_to_clipboard_button(target, styles: "")
     content_tag(:button,
       type: "button",
