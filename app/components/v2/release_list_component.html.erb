@@ -170,7 +170,7 @@
 
     <%= render V2::SectionComponent.new(style: :titled, title: "Previous Releases") do %>
       <% if previous_releases.exists? %>
-        <%= render V2::TableComponent.new(columns: ["", "release", "dates", "duration", ""]) do |table| %>
+        <%= render V2::TableComponent.new(columns: release_table_columns, size: :default) do |table| %>
           <% previous_releases.each do |release| %>
             <% release_component = release_component(release) %>
 
@@ -192,11 +192,21 @@
               <% end %>
 
               <% row.with_cell do %>
-                <div><%= release_component.interval %></div>
+                <%= render V2::BadgeComponent.new(release_component.branch) %>
+              <% end %>
+
+              <% if reldex_defined? %>
+                <% row.with_cell do %>
+                  <% if (reldex = release_component.release_summary&.fetch(:reldex, nil)) %>
+                    <%= render V2::ReldexStatusComponent.new(release:, reldex_score: reldex) %>
+                  <% else %>
+                    –
+                  <% end %>
+                <% end %>
               <% end %>
 
               <% row.with_cell do %>
-                <div><%= release_component.duration %></div>
+                <div><%= release_component.interval %></div>
               <% end %>
 
               <% row.with_cell(style: "text-right w-2") do %>

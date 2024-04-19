@@ -72,6 +72,10 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     @release.release_version
   end
 
+  memoize def branch
+    @release.branch_name
+  end
+
   memoize def interval
     return start_time unless @release.end_time
     "#{start_time} — #{end_time}"
