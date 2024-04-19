@@ -31,9 +31,13 @@ module.exports = {
           "900": "#1e3a8a",
           "950": "#172554"
         },
+        secondary: {
+          "50": "rgb(147 157 184/var(--tw-text-opacity))",
+          DEFAULT: "rgb(100 110 135/var(--tw-text-opacity))"
+        },
         main: {
           ...colors.gray,
-          "DEFAULT": "#1f2937"
+          DEFAULT: "#1f2937"
         },
         backgroundDark: "rgb(31 41 55/1)",
         backgroundLight: "rgb(251 252 252/1)"

@@ -125,8 +125,8 @@ class BugsnagIntegration < ApplicationRecord
   end
 
   def correct_key
-    if access_token.present?
-      errors.add(:access_token, :no_orgs) if list_organizations.size < 1
+    if access_token.present? && list_organizations.empty?
+      errors.add(:access_token, :no_orgs)
     end
   end
 

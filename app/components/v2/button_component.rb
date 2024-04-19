@@ -19,16 +19,16 @@ class V2::ButtonComponent < V2::BaseComponent
       class: "#{BASE_OPTS} text-main bg-white border border-main-300 focus:outline-none hover:bg-main-100 focus:ring-4 focus:ring-main-200 font-medium rounded-lg dark:bg-main dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"
     },
     supporting: {
-      class: "#{BASE_OPTS} text-main-500 hover:bg-main-100 dark:bg-main dark:text-main-400 dark:hover:bg-main-700 border-none shadow-none rounded-sm"
+      class: "#{BASE_OPTS} text-secondary hover:bg-main-100 dark:bg-main dark:text-secondary-50 dark:hover:bg-main-700 border-none shadow-none rounded-sm"
     },
     link: {
-      class: "#{BASE_OPTS} text-main-500 dark:bg-main dark:text-main-400 border-none shadow-none hover:underline"
+      class: "#{BASE_OPTS} text-secondary dark:bg-main dark:text-secondary-50 border-none shadow-none hover:underline"
     },
     switcher: {
-      class: "text-main-500 rounded-lg md:inline-flex hover:text-main hover:bg-main-100 dark:text-main-400 dark:hover:text-white dark:hover:bg-main-700 focus:ring-4 focus:ring-main-300 dark:focus:ring-main-600 items-center"
+      class: "text-secondary rounded-lg md:inline-flex hover:text-main hover:bg-main-100 dark:text-secondary-50 dark:hover:text-white dark:hover:bg-main-700 focus:ring-4 focus:ring-main-300 dark:focus:ring-main-600 items-center"
     },
     naked_icon: {
-      class: "#{BASE_OPTS} text-main-500 rounded-lg hover:text-main dark:text-main-400 dark:hover:text-white",
+      class: "#{BASE_OPTS} text-secondary rounded-lg hover:text-main dark:text-secondary-50 dark:hover:text-white",
       icon: true
     },
     avatar_icon: {

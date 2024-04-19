@@ -14,14 +14,14 @@ module EnhancedFormHelper
   end
 
   class AuthzForm < ActionView::Helpers::FormBuilder
-    LABEL_CLASSES = "block mb-2 text-sm font-medium text-main-900 dark:text-white"
-    SIDE_LABEL_CLASSES = "ms-2 text-sm font-medium text-main-900 dark:text-white"
-    SELECT_CLASSES = "bg-main-50 border border-main-300 text-main-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-    TEXT_AREA_CLASSES = "block p-2.5 w-full text-sm text-main-900 bg-main-50 rounded-lg border border-main-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-    TEXT_FIELD_CLASSES = "bg-main-50 border border-main-300 text-main-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 w-full p-2.5 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+    LABEL_CLASSES = "block mb-2 text-xs font-medium text-secondary dark:text-white leading-6 cursor-pointer"
+    SIDE_LABEL_CLASSES = "ms-2 text-xs font-medium text-secondary dark:text-white"
+    SELECT_CLASSES = "bg-main-50 border border-main-300 text-main text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+    TEXT_AREA_CLASSES = "block p-2.5 w-full text-sm text-main bg-main-50 rounded-lg border border-main-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+    TEXT_FIELD_CLASSES = "bg-main-50 border border-main-300 text-main text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 w-full p-2.5 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
     CHECK_BOX_CLASSES = "w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
     DISABLED_CLASSES = "disabled:border-main-200 disabled:bg-main-100 disabled:text-main-600 disabled:cursor-not-allowed"
-    FILE_INPUT_CLASSES = "block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+    FILE_INPUT_CLASSES = "block w-full text-sm text-main border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
     OPTION_CLASSES = "w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
 
     def authz_submit(label, icon, scheme: :default, size: :sm, disabled: false, html_options: {}, authz: true)

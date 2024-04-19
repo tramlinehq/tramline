@@ -22,7 +22,7 @@
 
     <main class="mb-64">
       <%= yield :sticky_top_message %>
-      <div class="py-8 px-8 w-full max-w-9xl mx-auto">
+      <div class="p-10 w-full max-w-9xl mx-auto">
         <%= render V2::FlashComponent.new(flash) %>
         <%= yield :error_resource %>
         <%= yield %>

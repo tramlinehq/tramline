@@ -1,5 +1,5 @@
 class V2::OptionCardsComponent < V2::BaseComponent
-  LABEL_CLASSES = "inline-flex items-center justify-between w-full p-3 text-main-500 bg-white border border-main-200 rounded-lg cursor-pointer dark:hover:text-main-300 dark:border-main-700 dark:peer-checked:text-blue-700 peer-checked:border-blue-800 peer-checked:text-blue-800 hover:text-main-600 peer-checked:bg-main-100 hover:bg-main-100 dark:text-main-400 dark:bg-main-800 dark:peer-checked:bg-main-700 dark:hover:bg-main-700"
+  LABEL_CLASSES = "inline-flex items-center justify-between w-full p-3 text-secondary bg-white border border-main-200 rounded-lg cursor-pointer dark:hover:text-main-300 dark:border-main-700 dark:peer-checked:text-blue-700 peer-checked:border-blue-800 peer-checked:text-blue-800 hover:text-main-600 peer-checked:bg-main-100 hover:bg-main-100 dark:text-secondary-50 dark:bg-main-800 dark:peer-checked:bg-main-700 dark:hover:bg-main-700"
 
   def initialize(form:, options:)
     raise ArgumentError, "form is required" unless form

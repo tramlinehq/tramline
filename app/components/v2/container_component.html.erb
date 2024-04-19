@@ -8,7 +8,7 @@
   </div>
 <% end %>
 
-<div class="mb-1 flex justify-between">
+<div class="flex justify-between">
   <div class="flex flex-row justify-between items-center">
     <div>
       <div class="flex items-center">
@@ -26,7 +26,7 @@
       </div>
 
       <% if subtitle %>
-        <div class="mt-2 text-sm text-main">
+        <div class="mt-2 text-sm text-secondary">
           <%= subtitle %>
         </div>
       <% end %>
@@ -34,7 +34,7 @@
   </div>
 
   <% if actions? %>
-    <nav class="md:mt-0 flex flex-wrap gap-2 shrink-0">
+    <nav class="flex flex-wrap gap-2 shrink-0">
       <% actions.each do |action| %>
         <%= action %>
       <% end %>
@@ -43,7 +43,7 @@
 </div>
 
 <% if sub_actions? %>
-  <nav class="-mx-1.5 flex flex-row flex-wrap mt-4 sm:space-x-1">
+  <nav class="-mx-1.5 flex flex-row flex-wrap mt-6 sm:space-x-1">
     <% sub_actions.each do |sub_action| %>
       <%= sub_action %>
     <% end %>

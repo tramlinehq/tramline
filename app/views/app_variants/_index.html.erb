@@ -31,7 +31,7 @@
     <% end %>
 
     <% if @app_variants.blank? %>
-      <div class="text-main-500 text-sm">
+      <div class="text-secondary text-sm">
         <%= render V2::EmptyStateComponent.new(title: "Add new to begin",
                                                text: "No app variants have been configured yet.",
                                                banner_image: "dna.svg",

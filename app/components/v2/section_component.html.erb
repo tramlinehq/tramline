@@ -1,5 +1,5 @@
 <% if boxed? %>
-  <section class="border-default box-padding <%= section_margin %>">
+  <section class="card-default <%= section_margin %>">
     <%= content %>
   </section>
 <% else %>
@@ -16,7 +16,7 @@
 
     <div class="flex justify-between">
       <% if subtitle.present? %>
-        <span class="text-sm text-neutral-500 dark:text-white">
+        <span class="text-sm text-secondary dark:text-white">
           <%= subtitle %>
         </span>
       <% end %>

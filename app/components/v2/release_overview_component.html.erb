@@ -1,6 +1,6 @@
 <% if release.present? %>
   <%= render V2::SectionComponent.new(style: :boxed) do %>
-    <div class="<%= striped_header %> -mx-2">
+    <div class="<%= striped_header %> rounded -mx-2">
       <div class="flex items-center justify-between border-default-b px-3 py-2">
         <div class="flex items-center space-x-3 rtl:space-x-reverse">
           <% if release_version_drift? %>
@@ -90,7 +90,7 @@
     <div class="grid <%= grid_size %> justify-between mt-3 gap-x-6 gap-y-3">
       <% if cross_platform? %>
         <% platform_runs.each do |run| %>
-        <span class="text-xl text-main-400/50 border-b border-main-300/30 py-1 justify-self-start pl-0.5 pr-1.5">
+        <span class="text-xl text-secondary-50/50 border-b border-main-300/30 py-1 justify-self-start pl-0.5 pr-1.5">
           <%= run.display_attr(:platform) %>
         </span>
         <% end %>

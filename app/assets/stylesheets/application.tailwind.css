@@ -87,15 +87,23 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
 }
 
 .box-padding {
-  @apply p-3.5;
+  @apply px-4 py-3.5;
+}
+
+.border-default-b {
+  @apply border-b border-main-200 dark:border-main-600;
 }
 
 .border-default {
   @apply border border-main-200 dark:border-main-600 rounded-lg;
 }
 
-.border-default-b {
-  @apply border-b border-main-200 dark:border-main-600;
+.card-sm {
+  @apply box-padding border-default bg-white dark:bg-slate-800;
+}
+
+.card-default {
+  @apply card-sm shadow-sm;
 }
 
 .heading-1 {
@@ -322,11 +330,11 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 .page.next.disabled {
-  @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white border border-main-300 bg-slate-200 text-main-500 shadow-sm
+  @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white border border-main-300 bg-slate-200 text-secondary shadow-sm
 }
 
 .page.prev.disabled {
-    @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white border border-main-300 bg-slate-200 text-main-500 shadow-sm
+    @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white border border-main-300 bg-slate-200 text-secondary shadow-sm
 }
 
 .page a, .page.gap {
