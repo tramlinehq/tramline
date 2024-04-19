@@ -74,6 +74,7 @@ module Installations
 
         execute(:post, COMPLETE_FILE_UPLOAD_URL, complete_upload_params)
       end
+      message
     end
 
     def upload_file(file, file_name)
