@@ -56,11 +56,11 @@ class ReleaseIndex < ApplicationRecord
 
     def compute_grade
       if @value < tolerable_range.begin
-        GRADES[0]
+        GRADES[2]
       elsif tolerable_range.cover?(@value)
         GRADES[1]
       else
-        GRADES[2]
+        GRADES[0]
       end
     end
 

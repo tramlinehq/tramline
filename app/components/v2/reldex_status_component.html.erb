@@ -59,7 +59,7 @@
               <% row.with_cell do %>
                 <%= component.release_index_component.name.humanize %>
               <% end %>
-              <% row.with_cell do %>
+              <% row.with_cell(style: component_grade_color(component)) do %>
                 <%= component_raw_value(component) %>
               <% end %>
               <% row.with_cell do %>

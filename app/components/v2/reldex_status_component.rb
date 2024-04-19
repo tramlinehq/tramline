@@ -58,5 +58,18 @@ class V2::ReldexStatusComponent < V2::BaseComponent
     builder
   end
 
+  def component_grade_color(component)
+    case component.range_value
+    when 1
+      "bg-green-100 dark:bg-green-900"
+    when 0.5
+      "bg-sky-100 dark:bg-sky-900"
+    when 0
+      "bg-rose-100 dark:bg-rose-900"
+    else
+      raise ArgumentError, "Invalid component value"
+    end
+  end
+
   delegate :release_version, to: :@release
 end

@@ -53,8 +53,6 @@ class ReleaseIndexComponent < ApplicationRecord
       range_value * weight
     end
 
-    private
-
     def range_value
       if @input_value < tolerable_range.begin; then 1
       elsif tolerable_range.cover?(@input_value); then 0.5
