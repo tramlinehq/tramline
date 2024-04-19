@@ -83,6 +83,10 @@ class NotificationSettingsComponent < ViewComponent::Base
       }
     end
 
+    def needs_invite?
+      setting.kind == NotificationSetting.kinds[:build_available]
+    end
+
     def edit_frame_id
       "#{setting.kind}_config"
     end

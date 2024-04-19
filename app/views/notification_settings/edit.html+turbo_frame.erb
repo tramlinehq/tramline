@@ -19,6 +19,9 @@
         <% end %>
       <% end %>
 
+      <% if @setting.needs_invite? %>
+        <span class="text-secondary">To allow file uploads in channels, invite <strong>@Tramline</strong> into your channels.</span>
+      <% end %>
       <%= render partial: "shared/notifications_refresh", locals: { app: @app } %>
     <% end %>
 
