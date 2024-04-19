@@ -1,5 +1,5 @@
-<div class="inline-flex items-center font-medium text-xs px-1.5 py-0.5 rounded-md tracking-wide border gap-x-1.5 bg-green-100 dark:bg-green-900">
-  <span class="text-green-800 dark:text-green-300"><%= grade %></span>
+<div class="inline-flex items-center font-medium text-xs px-1.5 py-0.5 rounded-md tracking-wide border gap-x-1.5 <%= grade_bg_color %>">
+  <span class="<%= grade_color %> uppercase"><%= grade %></span>
   <%= render V2::ModalComponent.new(title: "Reldex for #{release_version}",
                                     size: :sm,
                                     type: :drawer,
@@ -18,7 +18,7 @@
             </mrow>
           </math>
         </div>
-        <div class="inline-flex items-end font-medium text-lg px-1.5 py-0.5 rounded-md tracking-wide border-default bg-rose-100 text-rose-800 dark:bg-green-900 dark:text-green-300 gap-x-1.5 uppercase">
+        <div class="inline-flex items-end font-medium text-lg px-1.5 py-0.5 rounded-md tracking-wide border-default <%= grade_color %> <%= grade_bg_color %> gap-x-1.5 uppercase">
           <%= grade %>
         </div>
       </div>
@@ -27,7 +27,7 @@
         <%= render V2::TableComponent.new(columns: ["", "grade"], size: :compact) do |table| %>
           <% table.with_row do |row| %>
             <% row.with_cell do %>
-              reldex ≥ 0.8
+              reldex ≥ <%= tolerable_min %>
             <% end %>
             <% row.with_cell(style: "bg-green-100") do %>
               Excellent
@@ -35,7 +35,7 @@
           <% end %>
           <% table.with_row do |row| %>
             <% row.with_cell do %>
-              0.5 < reldex < 0.8
+              <%= tolerable_min %> < reldex < <%= tolerable_max %>
             <% end %>
             <% row.with_cell(style: "bg-sky-100") do %>
               Acceptable
@@ -43,7 +43,7 @@
           <% end %>
           <% table.with_row do |row| %>
             <% row.with_cell do %>
-              reldex ≤ 0.5
+              reldex ≤ <%= tolerable_min %>
             <% end %>
             <% row.with_cell(style: "bg-rose-100") do %>
               Mediocre
@@ -54,70 +54,17 @@
 
       <%= render V2::SectionComponent.new(style: :titled, title: "Score breakdown", size: :compact) do %>
         <%= render V2::TableComponent.new(columns: ["", "value", "score"], size: :compact) do |table| %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              Stability Changes
-            <% end %>
-            <% row.with_cell do %>
-              14
-            <% end %>
-            <% row.with_cell do %>
-              0.2
-            <% end %>
-          <% end %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              Hotfixes
-            <% end %>
-            <% row.with_cell do %>
-              1
-            <% end %>
-            <% row.with_cell do %>
-              0.4
-            <% end %>
-          <% end %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              Rollout Duration
-            <% end %>
-            <% row.with_cell do %>
-              3 days
-            <% end %>
-            <% row.with_cell do %>
-              0.3
-            <% end %>
-          <% end %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              Overall Duration
-            <% end %>
-            <% row.with_cell do %>
-              6 days
-            <% end %>
-            <% row.with_cell do %>
-              0.3
-            <% end %>
-          <% end %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              Stability Duration
-            <% end %>
-            <% row.with_cell do %>
-              3 days
-            <% end %>
-            <% row.with_cell do %>
-              0.1
-            <% end %>
-          <% end %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              Rollout Fixes
-            <% end %>
-            <% row.with_cell do %>
-              2
-            <% end %>
-            <% row.with_cell do %>
-              0.7
+          <% components.each do |component| %>
+            <% table.with_row do |row| %>
+              <% row.with_cell do %>
+                <%= component.release_index_component.name.humanize %>
+              <% end %>
+              <% row.with_cell do %>
+                <%= component_raw_value(component) %>
+              <% end %>
+              <% row.with_cell do %>
+                <%= component.value %>
+              <% end %>
             <% end %>
           <% end %>
         <% end %>
@@ -131,7 +78,8 @@
         </p>
 
         <p class="mt-2">
-          Inspired from Apdex, it aggregates various components of the release process into a single score between 0 and 1.
+          Inspired from Apdex, it aggregates various components of the release process into a single score between 0 and
+          1.
         </p>
 
         <p class="mt-2">
@@ -172,7 +120,8 @@
         </p>
 
         <p class="mt-2">
-          Each component receives a score of 1, 0.5, or 0 based on its tolerable range. These scores are combined to determine the reldex that is then graded under <em>great</em>, <em>acceptable</em> and <em>mediocre</em>.
+          Each component receives a score of 1, 0.5, or 0 based on its tolerable range. These scores are combined to
+          determine the reldex that is then graded under <em>great</em>, <em>acceptable</em> and <em>mediocre</em>.
         </p>
       </div>
     <% end %>

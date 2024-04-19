@@ -186,7 +186,7 @@ class Queries::ReleaseSummary
       stability_changes: 5
     }
 
-    release.train.release_index.score(**params)
+    release.train.release_index&.score(**params)
   end
 
   def data

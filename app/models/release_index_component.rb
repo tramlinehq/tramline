@@ -47,7 +47,7 @@ class ReleaseIndexComponent < ApplicationRecord
       @input_value = input_value
     end
 
-    attr_reader :release_index_component
+    attr_reader :release_index_component, :input_value
 
     def value
       range_value * weight
