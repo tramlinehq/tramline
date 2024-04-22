@@ -15,6 +15,7 @@ class ReleaseIndex < ApplicationRecord
 
   attr_accessor :tolerable_min, :tolerable_max
 
+  after_initialize :set_defaults, if: :new_record?
   after_initialize :build_components, if: :new_record?
   after_initialize :set_tolerable_values, if: :persisted?
 
@@ -22,10 +23,7 @@ class ReleaseIndex < ApplicationRecord
   validate :validate_weightage_sum
   validate :constrained_tolerable_range
 
-  def set_tolerable_values
-    self.tolerable_min = tolerable_range.min
-    self.tolerable_max = tolerable_range.max
-  end
+  DEFAULT_TOLERABLE_RANGE = 0.5..0.8
 
   def score(**args)
     Score.compute(self, **args)
@@ -55,7 +53,7 @@ class ReleaseIndex < ApplicationRecord
     private
 
     def compute
-      @release_index.components.each do |component|
+      @release_index.components.where.not(weight: 0).find_each do |component|
         component_score = component.score(@args[component.name.to_sym])
         @value += component_score.value
         @components << component_score
@@ -78,6 +76,15 @@ class ReleaseIndex < ApplicationRecord
   end
 
   private
+
+  def set_defaults
+    self.tolerable_range = DEFAULT_TOLERABLE_RANGE
+  end
+
+  def set_tolerable_values
+    self.tolerable_min = tolerable_range.min
+    self.tolerable_max = tolerable_range.max
+  end
 
   def build_components
     ReleaseIndexComponent::DEFAULT_COMPONENTS.each do |component, details|

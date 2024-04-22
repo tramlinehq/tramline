@@ -105,6 +105,7 @@ class Train < ApplicationRecord
   before_create :set_default_status
   after_create :create_release_platforms
   after_create :create_default_notification_settings
+  after_create :create_release_index
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
   after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
 
