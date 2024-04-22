@@ -14,9 +14,7 @@
   <%= render V2::FormComponent.new(model: [app, train], url: url) do |f| %>
     <% f.with_section(heading: "Basic") do |section| %>
       <% section.with_description do %>
-        Configure the target website you want to monitor. You'll find the advanced configuration below, in the
-        advanced
-        settings section.
+        Configure the release train. You'll find the advanced configuration below, in the advanced settings section.
       <% end %>
 
       <div class="grid gap-4">
