@@ -35,7 +35,10 @@ class V2::HorizontalDataSetComponent < V2::BaseComponent
     end
 
     def call
-      content
+      content_tag :div, class: "space-y-2" do
+        concat content_tag :h5, title, class: "heading-5 #{uppercase_title}"
+        concat content_tag :div, content, class: "flex text-secondary font-normal text-sm"
+      end
     end
   end
 end
