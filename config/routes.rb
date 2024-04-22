@@ -72,6 +72,7 @@ Rails.application.routes.draw do
         patch :activate
         patch :deactivate
       end
+      resource :release_index, only: %i[edit update]
 
       resources :notification_settings, only: %i[index update edit]
 

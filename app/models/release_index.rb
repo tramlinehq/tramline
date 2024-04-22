@@ -13,9 +13,18 @@ class ReleaseIndex < ApplicationRecord
   has_many :release_index_components, dependent: :destroy
   alias_method :components, :release_index_components
 
+  attr_accessor :tolerable_min, :tolerable_max
+
   after_initialize :build_components, if: :new_record?
+  after_initialize :set_tolerable_values, if: :persisted?
+
   validate :validate_weightage_sum
   validate :constrained_tolerable_range
+
+  def set_tolerable_values
+    self.tolerable_min = tolerable_range.min
+    self.tolerable_max = tolerable_range.max
+  end
 
   def score(**args)
     Score.compute(self, **args)

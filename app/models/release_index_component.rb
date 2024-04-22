@@ -13,6 +13,7 @@
 #
 class ReleaseIndexComponent < ApplicationRecord
   using RefinedArray
+  include Displayable
 
   TOLERANCE_UNITS = [:day, :number]
 
@@ -35,7 +36,22 @@ class ReleaseIndexComponent < ApplicationRecord
   belongs_to :release_index
   enum name: DEFAULT_COMPONENTS.keys.map(&:to_s).zip_map_self
   enum tolerable_unit: TOLERANCE_UNITS.map(&:to_s).zip_map_self
+
+  attr_accessor :tolerable_min, :tolerable_max, :weight_percentage
+
   validates :name, uniqueness: {scope: :release_index_id}
+
+  after_initialize :set_tolerable_values, if: :persisted?
+
+  def set_tolerable_values
+    self.tolerable_min = tolerable_range.min
+    self.tolerable_max = tolerable_range.max
+    self.weight_percentage = weight * 100
+  end
+
+  def description
+    I18n.t("activerecord.values.release_index_component.description.#{name}")
+  end
 
   def score(value)
     Score.new(self, value)

@@ -14,14 +14,15 @@ module EnhancedFormHelper
   end
 
   class AuthzForm < ActionView::Helpers::FormBuilder
-    LABEL_CLASSES = "block mb-2 text-xs font-medium text-secondary dark:text-white leading-6 cursor-pointer"
-    SIDE_LABEL_CLASSES = "ms-2 text-xs font-medium text-secondary dark:text-white"
-    SELECT_CLASSES = "bg-main-50 border border-main-300 text-main text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-    TEXT_AREA_CLASSES = "block p-2.5 w-full text-sm text-main bg-main-50 rounded-lg border border-main-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+    BASE_LABEL_CLASSES = "text-xs font-medium text-secondary dark:text-white leading-6 cursor-pointer"
+    LABEL_CLASSES = "mb-2 #{BASE_LABEL_CLASSES}"
+    SIDE_LABEL_CLASSES = "ms-2 #{BASE_LABEL_CLASSES}"
+    SELECT_CLASSES = "bg-main-50 border border-main-300 text-main text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 w-full p-2.5 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+    TEXT_AREA_CLASSES = "p-2.5 w-full text-sm text-main bg-main-50 rounded-lg border border-main-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
     TEXT_FIELD_CLASSES = "bg-main-50 border border-main-300 text-main text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 w-full p-2.5 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
     CHECK_BOX_CLASSES = "w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
     DISABLED_CLASSES = "disabled:border-main-200 disabled:bg-main-100 disabled:text-main-600 disabled:cursor-not-allowed"
-    FILE_INPUT_CLASSES = "block w-full text-sm text-main border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+    FILE_INPUT_CLASSES = "w-full text-sm text-main border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
     OPTION_CLASSES = "w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
 
     def authz_submit(label, icon, scheme: :default, size: :sm, disabled: false, html_options: {}, authz: true)
@@ -31,8 +32,18 @@ module EnhancedFormHelper
       @template.render(button_component)
     end
 
-    def label_only(method, label_text)
-      label(method, label_text, class: LABEL_CLASSES)
+    def label_only(method, label_text, type: :default)
+      classes = case type
+      when :default
+        LABEL_CLASSES
+      when :side
+        SIDE_LABEL_CLASSES
+      when :base
+        BASE_LABEL_CLASSES
+      else
+        raise ArgumentError, "Invalid label type"
+      end
+      label(method, label_text, class: classes)
     end
 
     def text_field_without_label(method, placeholder, options = {})
@@ -105,7 +116,7 @@ module EnhancedFormHelper
       hopts = {class: field_classes(is_disabled: options[:disabled], classes: CHECK_BOX_CLASSES)}.merge(options)
       @template.content_tag(:div, class: "flex items-center") do
         @template.concat check_box(method, hopts)
-        @template.concat label(method, label_text, class: SIDE_LABEL_CLASSES)
+        @template.concat label_only(method, label_text, type: :side)
       end
     end
 
@@ -113,7 +124,7 @@ module EnhancedFormHelper
       hopts = {class: field_classes(is_disabled: options[:disabled], classes: OPTION_CLASSES)}.merge(options)
       @template.content_tag(:div, class: "flex items-center me-4") do
         @template.concat radio_button(method, value, hopts)
-        @template.concat label("#{method}_#{value}", label_text, class: SIDE_LABEL_CLASSES)
+        @template.concat label_only("#{method}_#{value}", label_text, type: :side)
       end
     end
 
