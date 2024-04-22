@@ -147,6 +147,25 @@ class Release < ApplicationRecord
 
   def self.for_branch(branch_name) = find_by(branch_name:)
 
+  def index_score
+    return if hotfix?
+
+    submitted_at = deployment_runs.map(&:submitted_at).compact.min
+    rollout_started_at = deployment_runs.map(&:release_started_at).compact.min
+    rollout_fixes = deployment_runs.reached_production.group_by(&:platform).transform_values(&:size).values.max - 1
+
+    params = {
+      hotfixes: all_hotfixes.size,
+      rollout_fixes:,
+      rollout_duration: ActiveSupport::Duration.build(completed_at - rollout_started_at).to_i / 1.day.to_i,
+      duration: duration.to_i / 1.day.to_i,
+      stability_duration: ActiveSupport::Duration.build(submitted_at - scheduled_at).to_i / 1.day.to_i,
+      stability_changes: stability_commits.count
+    }
+
+    train.release_index&.score(**params)
+  end
+
   def unhealthy?
     release_platform_runs.any?(&:unhealthy?)
   end
@@ -394,6 +413,27 @@ class Release < ApplicationRecord
 
   def hotfixes
     app.releases.hotfix.where(hotfixed_from: self)
+  end
+
+  def all_hotfixes
+    query = <<~SQL.squish
+              WITH RECURSIVE hotfix_tree AS (
+          SELECT *
+          FROM releases
+          WHERE hotfixed_from = :id
+          AND release_type = 'hotfix'
+          UNION ALL
+          SELECT r.*
+          FROM releases r
+          JOIN hotfix_tree h ON r.hotfixed_from = h.id
+          WHERE r.release_type = 'hotfix'
+      )
+      SELECT *
+      FROM hotfix_tree
+      ORDER BY scheduled_at DESC;
+    SQL
+
+    Release.find_by_sql [query, {id: id}]
   end
 
   private

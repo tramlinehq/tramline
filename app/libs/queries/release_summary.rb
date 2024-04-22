@@ -176,24 +176,6 @@ class Queries::ReleaseSummary
       .sole
   end
 
-  def release_index_scores
-    submitted_at = release.deployment_runs.map(&:submitted_at).compact.min
-    rollout_started_at = release.deployment_runs.map(&:release_started_at).compact.min
-    rollout_fixes = release.deployment_runs.reached_production.group_by(&:platform).transform_values(&:size).values.max - 1
-    hotfixes = release.hotfixes.size
-
-    params = {
-      hotfixes:,
-      rollout_fixes:,
-      rollout_duration: ActiveSupport::Duration.build(release.completed_at - rollout_started_at).to_i / 1.day.to_i,
-      duration: release.duration.to_i / 1.day.to_i,
-      stability_duration: ActiveSupport::Duration.build(submitted_at - release.scheduled_at).to_i / 1.day.to_i,
-      stability_changes: release.stability_commits.count
-    }
-
-    release.train.release_index&.score(**params)
-  end
-
   def data
     {
       overall: Overall.from_release(release),
@@ -202,7 +184,7 @@ class Queries::ReleaseSummary
       pull_requests: release.pull_requests.automatic,
       team_stability_commits: release.stability_commits.count_by_team(release.organization),
       team_release_commits: release.release_changelog&.commits_by_team,
-      reldex: release_index_scores
+      reldex: release.index_score
     }
   end
 

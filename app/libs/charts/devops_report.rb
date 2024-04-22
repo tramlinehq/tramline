@@ -57,6 +57,12 @@ class Charts::DevopsReport
           type: "stacked-bar",
           value_format: "time",
           name: "devops.time_in_phases"
+        },
+        reldex_scores: {
+          data: reldex_scores,
+          type: "area",
+          value_format: "number",
+          name: "devops.reldex"
         }
       },
       operational_efficiency: {
@@ -112,6 +118,15 @@ class Charts::DevopsReport
       .group_by_period(period, :completed_at, last: last, current: true, format:)
       .count
       .transform_values { {releases: _1} }
+  end
+
+  memoize def reldex_scores(last: LAST_RELEASES)
+    return if train.release_index.blank?
+
+    finished_releases(last)
+      .group_by(&:release_version)
+      .sort_by { |v, _| v.to_semverish }.to_h
+      .transform_values { {reldex: _1.first.index_score&.value} }
   end
 
   memoize def release_stability_contributors(last: LAST_RELEASES)
