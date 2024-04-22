@@ -91,9 +91,10 @@
         </div>
         <% components.each do |component| %>
           <div class="grid grid-cols-6 gap-x-10 text-sm items-center">
-            <% section.F.fields_for :components, component do |component_fields| %>
+            <% section.F.fields_for :release_index_components, component do |component_fields| %>
               <div class="col-span-2">
                 <div class="flex items-center gap-1">
+                  <%= component_fields.hidden_field :id, value: component.id %>
                   <%= component.display_attr(:name) %>
                   <%= render V2::ButtonComponent.new(scheme: :naked_icon, type: :action, size: :none) do |button| %>
                     <% button.with_icon("v2/info_full.svg", size: :base) %>

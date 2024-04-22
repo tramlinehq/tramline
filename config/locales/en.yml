@@ -11,6 +11,9 @@ en:
     destroy:
       success: "Rule was successfully removed."
       failure: "Failed to remove rule: %{errors}"
+  release_indices:
+    update:
+      success: "Release Index config was successfully updated."
   activerecord:
     models:
       slack_integration: "Slack"

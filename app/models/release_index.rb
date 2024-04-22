@@ -18,6 +18,7 @@ class ReleaseIndex < ApplicationRecord
   after_initialize :build_components, if: :new_record?
   after_initialize :set_tolerable_values, if: :persisted?
 
+  accepts_nested_attributes_for :release_index_components
   validate :validate_weightage_sum
   validate :constrained_tolerable_range
 
