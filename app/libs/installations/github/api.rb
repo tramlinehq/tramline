@@ -285,11 +285,13 @@ module Installations
         obj = @client.ref(repo, "heads/#{working_branch_name}")[:object]
         if obj[:type].eql? "commit"
           return obj[:sha] if sha_only
-          return @client.commit(repo, obj[:sha])
-              .then { |commit| Installations::Response::Keys.transform([commit], commit_transforms) }
-              .first
+          return get_commit(repo, obj[:sha], commit_transforms)
         end
       end
+    end
+
+    def get_commit(repo, sha, commit_transforms)
+      @client.commit(repo, sha).then { |commit| Installations::Response::Keys.transform([commit], commit_transforms) }.first
     end
 
     def assign_pr(repo, pr_number, login)

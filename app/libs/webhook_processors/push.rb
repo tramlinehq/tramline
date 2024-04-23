@@ -36,5 +36,15 @@ class WebhookProcessors::Push
     attributes
       .slice(:commit_hash, :message, :timestamp, :author_name, :author_email, :author_login, :url)
       .merge(release:)
+      .merge(parents: commit_log.find { _1[:commit_hash] == attributes[:commit_hash] }&.dig(:parents))
+  end
+
+  def commit_log
+    if rest_commits.empty?
+      return @commit_log ||= [train.vcs_provider.get_commit(head_commit[:commit_hash])]
+    end
+
+    @commit_log ||= train.vcs_provider.commit_log(rest_commits.last[:commit_hash], head_commit[:commit_hash])
+    @commit_log << train.vcs_provider.get_commit(rest_commits.last[:commit_hash])
   end
 end

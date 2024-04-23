@@ -346,10 +346,13 @@ class ReleasePlatformRun < ApplicationRecord
     step_runs.exists?(commit: commit)
   end
 
-  def commit_messages_before(step_run)
-    all_commits
-      .between(previous_successful_run_before(step_run), step_run)
-      .pluck(:message)
+  def previous_successful_run_before(step_run)
+    step_runs
+      .where(step: step_run.step)
+      .where.not(id: step_run.id)
+      .success
+      .order(scheduled_at: :asc)
+      .last
   end
 
   def commits_between(older_step_run, newer_step_run)
@@ -403,15 +406,6 @@ class ReleasePlatformRun < ApplicationRecord
     step_runs
       .where(step: step)
       .not_failed
-      .order(scheduled_at: :asc)
-      .last
-  end
-
-  def previous_successful_run_before(step_run)
-    step_runs
-      .where(step: step_run.step)
-      .where.not(id: step_run.id)
-      .success
       .order(scheduled_at: :asc)
       .last
   end

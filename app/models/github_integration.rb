@@ -298,6 +298,10 @@ class GithubIntegration < ApplicationRecord
     installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_TRANSFORMATIONS)
   end
 
+  def get_commit(commit_hash)
+    installation.get_commit(code_repository_name, commit_hash, COMMITS_TRANSFORMATIONS)
+  end
+
   def diff_between?(from_branch, to_branch)
     installation.diff?(code_repository_name, from_branch, to_branch)
   end

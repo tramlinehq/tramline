@@ -347,11 +347,16 @@ class StepRun < ApplicationRecord
   end
 
   def relevant_changes
-    if release.first_commit == commit && release.release_changelog.present?
-      return release.release_changelog.merge_commit_messages if organization.merge_only_build_notes?
-      return release.release_changelog.commit_messages
-    end
-    release_platform_run.commit_messages_before(self)
+    previous_step_run = release_platform_run.previous_successful_run_before(self)
+
+    changelog_commits = release.release_changelog&.commit_messages(organization.merge_only_build_notes?)
+    commits_before = release_platform_run
+      .commits_between(previous_step_run, self)
+      .commit_messages(organization.merge_only_build_notes?)
+
+    return commits_before if previous_step_run.present?
+
+    (changelog_commits || []) + (commits_before || [])
   end
 
   def build_notes
