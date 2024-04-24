@@ -44,8 +44,8 @@ class WebhookProcessors::Push
   def commit_log
     return @commit_log ||= [train.vcs_provider.get_commit(head_commit[:commit_hash])] if rest_commits.empty?
 
-    @commit_log ||= train.vcs_provider.commit_log(rest_commits.last[:commit_hash], head_commit[:commit_hash])
-    @commit_log << train.vcs_provider.get_commit(rest_commits.last[:commit_hash])
+    @commit_log ||= train.vcs_provider.commit_log(rest_commits.first[:commit_hash], head_commit[:commit_hash])
+    @commit_log << train.vcs_provider.get_commit(rest_commits.first[:commit_hash])
   rescue => e
     elog(e)
     @commit_log = []
