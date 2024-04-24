@@ -3,8 +3,8 @@ module Commitable
 
   class_methods do
     def messages_for(commits, first_parent_only = false)
-      return commits.map(&:message) unless first_parent_only
-      return commits.map(&:message) if commits.any? { |c| c.parents.blank? }
+      return commits unless first_parent_only
+      return commits if commits.any? { |c| c.parents.blank? }
 
       commit_map = commits.index_by(&:commit_hash)
       first_commit = commits.first
@@ -17,7 +17,7 @@ module Commitable
         parent_commits << commit if commit
       end
 
-      parent_commits.map(&:message)
+      parent_commits
     end
   end
 end

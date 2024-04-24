@@ -44,7 +44,7 @@ class Commit < ApplicationRecord
   delegate :release_platform_runs, :notify!, :train, :platform, to: :release
 
   def self.commit_messages(first_parent_only = false)
-    Commit.messages_for(all.reorder("timestamp DESC"), first_parent_only)
+    Commit.messages_for(all.reorder("timestamp DESC"), first_parent_only).map(&:message)
   end
 
   def self.count_by_team(org)
