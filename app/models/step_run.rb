@@ -356,7 +356,7 @@ class StepRun < ApplicationRecord
 
     return commits_before if previous_step_run.present?
 
-    (changelog_commits || []) + (commits_before || [])
+    (commits_before || []) + (changelog_commits || [])
   end
 
   def build_notes

@@ -1,4 +1,5 @@
 class WebhookProcessors::Push
+  include Loggable
   def self.process(release, head_commit, rest_commits)
     new(release, head_commit, rest_commits).process
   end
@@ -40,11 +41,12 @@ class WebhookProcessors::Push
   end
 
   def commit_log
-    if rest_commits.empty?
-      return @commit_log ||= [train.vcs_provider.get_commit(head_commit[:commit_hash])]
-    end
+    return @commit_log ||= [train.vcs_provider.get_commit(head_commit[:commit_hash])] if rest_commits.empty?
 
     @commit_log ||= train.vcs_provider.commit_log(rest_commits.last[:commit_hash], head_commit[:commit_hash])
     @commit_log << train.vcs_provider.get_commit(rest_commits.last[:commit_hash])
+  rescue => e
+    elog(e)
+    @commit_log = []
   end
 end

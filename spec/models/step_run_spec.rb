@@ -547,6 +547,7 @@ describe StepRun do
       latest = create(:step_run, :on_track, step: first_step, release_platform_run:, commit: create(:commit, message: "feat: 1", release:))
 
       expected = [
+        "feat: 1",
         "message 1",
         "message 2"
       ]
