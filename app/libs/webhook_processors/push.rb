@@ -40,6 +40,7 @@ class WebhookProcessors::Push
       .merge(parents: commit_log.find { _1[:commit_hash] == attributes[:commit_hash] }&.dig(:parents))
   end
 
+  # TODO: fetch parents for Gitlab commits also
   def commit_log
     return @commit_log ||= [train.vcs_provider.get_commit(head_commit[:commit_hash])] if rest_commits.empty?
 
