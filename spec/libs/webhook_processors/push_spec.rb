@@ -36,6 +36,10 @@ describe WebhookProcessors::Push do
     ]
   end
 
+  before do
+    allow_any_instance_of(described_class).to receive(:commit_log).and_return([])
+  end
+
   describe "#process" do
     context "when production submission has happened" do
       [[:android, :with_google_play_store, :with_production_channel, :rollout_started],
