@@ -2,7 +2,7 @@
   <% if insufficient? %>
     <div class="flex flex-col w-full card-default gap-y-6">
       <div class="flex justify-between items-start mb-4">
-        <h1 class="flex heading-3 gap-x-1"><%= title %></h1>
+        <h3 class="flex heading-4 gap-x-1"><%= title %></h3>
         <div class="flex"><%= render corner_icon %></div>
       </div>
 
@@ -14,8 +14,8 @@
     <div class="w-full card-default">
       <div class="flex justify-between items-start mb-4">
         <div>
-          <h1 class="flex heading-3 gap-x-1"><%= title %></h1>
-          <p class="text-sm font-normal text-secondary-50"><%= chart_scope %></p>
+          <h3 class="flex heading-5-sc gap-x-1"><%= title %></h3>
+          <p class="text-xs font-normal text-secondary-50"><%= chart_scope %></p>
         </div>
 
         <% if help_text.present? %>

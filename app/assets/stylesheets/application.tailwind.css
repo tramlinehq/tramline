@@ -33,6 +33,78 @@
       #ebf7fd 8px
     );
   }
+
+  .small-caps {
+    font-variant: small-caps;
+  }
+
+  .all-small-caps {
+    font-variant: all-small-caps;
+  }
+
+  .tracking-tightish {
+    letter-spacing: -0.02em;
+  }
+
+  .tracking-wideish {
+    letter-spacing: 0.02em;
+  }
+
+  .tracking-neat {
+    letter-spacing: -0.01em;
+  }
+
+  .box-padding {
+    @apply px-4 py-3.5;
+  }
+
+  .border-default-t {
+    @apply border-t border-main-200 dark:border-main-600;
+  }
+
+  .border-default-r {
+    @apply border-r border-main-200 dark:border-main-600;
+  }
+
+  .border-default-b {
+    @apply border-b border-main-200 dark:border-main-600;
+  }
+
+  .border-default-l {
+    @apply border-l border-main-200 dark:border-main-600;
+  }
+
+  .border-default {
+    @apply border border-main-200 dark:border-main-600 rounded-lg;
+  }
+
+  .card-default {
+    @apply box-padding border-default bg-white dark:bg-slate-800;
+  }
+
+  .heading-1 {
+    @apply text-2xl font-medium tracking-tightish text-main dark:text-white;
+  }
+
+  .heading-2 {
+    @apply text-xl font-medium tracking-neat text-main dark:text-white;
+  }
+
+  .heading-3 {
+    @apply text-lg font-normal tracking-tightish text-main dark:text-white;
+  }
+
+  .heading-4 {
+    @apply text-base font-normal tracking-neat text-main dark:text-white;
+  }
+
+  .heading-5 {
+    @apply text-xs font-medium tracking-normal text-main-600 dark:text-white;
+  }
+
+  .heading-5-sc {
+    @apply text-xs uppercase font-medium tracking-wideish text-main-600 dark:text-white;
+  }
 }
 
 turbo-frame.with-turbo-frame-loader {
@@ -86,57 +158,32 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
   left: -4px;
 }
 
-.box-padding {
-  @apply px-4 py-3.5;
+.ql-toolbar.ql-snow {
+  @apply border-0;
+  @apply border-default-b border-default-t rounded-tl-lg border-default-r rounded-tr-lg border-default-l !important;
 }
 
-.border-default-b {
-  @apply border-b border-main-200 dark:border-main-600;
+.ql-container {
+  @apply whitespace-pre-wrap p-0;
 }
 
-.border-default {
-  @apply border border-main-200 dark:border-main-600 rounded-lg;
-}
-
-.card-sm {
-  @apply box-padding border-default bg-white dark:bg-slate-800;
-}
-
-.card-default {
-  @apply card-sm shadow-sm;
-}
-
-.heading-1 {
-  @apply text-2xl font-semibold tracking-wide text-main dark:text-white;
-}
-
-.heading-2 {
-  @apply text-xl font-semibold tracking-wide text-main dark:text-white;
-}
-
-.heading-3 {
-  @apply text-lg font-medium tracking-normal text-main dark:text-white;
-}
-
-.heading-4 {
-  @apply text-base font-medium tracking-normal text-main dark:text-white;
-}
-
-.heading-5 {
-  @apply text-xs font-medium tracking-wide text-main-600 dark:text-white;
+.ql-container.ql-snow {
+  @apply border-0;
+  @apply border-default-b rounded-bl-lg border-default-r rounded-br-lg border-default-l !important;
+  @apply bg-main-50
 }
 
 .ss-main {
   padding: 0 0.625rem 0 0.625rem !important;
 }
 
-.ss-main > .ss-single-selected  {
+.ss-main > .ss-single-selected {
   @apply bg-main-50 !important;
   border: none !important;
   height: 2.625rem !important;
 }
 
-.ss-main > .ss-multi-selected  {
+.ss-main > .ss-multi-selected {
   @apply bg-main-50 px-1 py-1 !important;
   border: none !important;
 }
@@ -275,7 +322,7 @@ input[type="search"]::-webkit-search-results-decoration {
 .form-multiselect,
 .form-select,
 .form-checkbox,
-.form-radio:focus{
+.form-radio:focus {
   @apply ring-0;
 }
 
@@ -318,15 +365,15 @@ input[type="search"]::-webkit-search-results-decoration {
 /* Application theme ends here */
 
 .pagy-info {
-    @apply text-sm text-slate-500 sm:text-left mt-2
+  @apply text-sm text-slate-500 sm:text-left mt-2
 }
 
 .page.next a {
-    @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white hover:bg-indigo-500 border border-slate-200 text-slate-600 hover:text-white shadow-sm
+  @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white hover:bg-indigo-500 border border-slate-200 text-slate-600 hover:text-white shadow-sm
 }
 
 .page.prev a {
-    @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white hover:bg-indigo-500 border border-slate-200 text-slate-600 hover:text-white shadow-sm
+  @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white hover:bg-indigo-500 border border-slate-200 text-slate-600 hover:text-white shadow-sm
 }
 
 .page.next.disabled {
@@ -334,15 +381,15 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 .page.prev.disabled {
-    @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white border border-main-300 bg-slate-200 text-secondary shadow-sm
+  @apply inline-flex items-center justify-center rounded leading-5 px-2.5 py-2 bg-white border border-main-300 bg-slate-200 text-secondary shadow-sm
 }
 
 .page a, .page.gap {
-    @apply inline-flex items-center justify-center leading-5 px-3.5 py-2 bg-white hover:bg-indigo-500 border border-slate-200 text-slate-600 hover:text-white shadow-sm
+  @apply inline-flex items-center justify-center leading-5 px-3.5 py-2 bg-white hover:bg-indigo-500 border border-slate-200 text-slate-600 hover:text-white shadow-sm
 }
 
 .page.active {
-    @apply inline-flex items-center justify-center leading-5 px-3.5 py-2 bg-white border border-slate-200 text-indigo-500
+  @apply inline-flex items-center justify-center leading-5 px-3.5 py-2 bg-white border border-slate-200 text-indigo-500
 }
 
 @tailwind utilities;

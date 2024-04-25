@@ -15,14 +15,14 @@
   <!-- current deploy: <%= Site.git_ref %> at <%= Site.git_ref_at %> -->
 </head>
 
-<body class="bg-backgroundLight dark:bg-backgroundDark text-main dark:text-white">
+<body class="bg-backgroundLight dark:bg-backgroundDark text-main dark:text-white subpixel-antialiased dark:antialiased">
 <div class="flex h-screen overflow-hidden">
   <div class="relative flex flex-col flex-1 overflow-y-scroll overflow-x-hidden h-full">
     <%= render V2::HeaderComponent.new %>
 
-    <main class="mb-64">
+    <main class="mb-20 2xl:mb-0">
       <%= yield :sticky_top_message %>
-      <div class="p-10 w-full max-w-9xl mx-auto">
+      <div class="p-10 w-full max-w-8xl mx-auto">
         <%= render V2::FlashComponent.new(flash) %>
         <%= yield :error_resource %>
         <%= yield %>

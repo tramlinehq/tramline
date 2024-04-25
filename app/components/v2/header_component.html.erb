@@ -1,5 +1,5 @@
 <header class="antialiased my-1 shadow">
-  <nav class="bg-white px-10 dark:bg-main-900">
+  <nav class="bg-white px-4 dark:bg-main-900">
     <div class="flex justify-between items-center">
       <div class="flex justify-start items-center">
         <a href="/" class="flex mr-6">
@@ -96,7 +96,7 @@
                                                size: :xxs,
                                                authz: false) do |b| %>
               <% b.with_tooltip("All Builds") %>
-              <% b.with_icon("v2/hard_hat.svg", size: :md) %>
+              <% b.with_icon("v2/drill.svg", size: :md) %>
             <% end %>
 
             <%= render V2::ModalComponent.new(title: "Store Status", size: :xs, authz: false) do |modal| %>
