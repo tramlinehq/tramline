@@ -376,7 +376,7 @@ en:
         help_text: "Time taken in each step of the release process"
       reldex:
         title: "Reldex"
-        scope: "Last 6 releases"
+        scope: "Last 10 releases"
         help_text: "Reldex or Release Process Index, is a quantitative metric that measures the efficacy of a mobile release process.\n\nInspired from Apdex, it aggregates various components of the release process into a single score between 0 and 1."
     operational_efficiency:
       contributors:

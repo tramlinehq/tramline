@@ -145,12 +145,14 @@
           <% if ios_enabled? %>
             <%= render ChartComponent.new(devops_report[:mobile_devops][:time_in_review]) %>
           <% end %>
-          <%= render ChartComponent.new(devops_report[:mobile_devops][:reldex_scores]) %>
-        </div>
-        <div class="grid grid-cols-4 my-3 gap-x-2 gap-y-3">
           <div class="col-span-2">
             <%= render ChartComponent.new(devops_report[:mobile_devops][:time_in_phases]) %>
           </div>
+          <% if devops_report[:mobile_devops][:reldex_scores].present? %>
+            <div class="col-span-2">
+              <%= render ChartComponent.new(devops_report[:mobile_devops][:reldex_scores]) %>
+            </div>
+          <% end %>
         </div>
       <% end %>
 

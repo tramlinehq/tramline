@@ -56,13 +56,52 @@ class Charts::DevopsReport
           stacked: true,
           type: "stacked-bar",
           value_format: "time",
-          name: "devops.time_in_phases"
+          name: "devops.time_in_phases",
+          height: "250"
         },
         reldex_scores: {
           data: reldex_scores,
-          type: "area",
+          type: "line",
           value_format: "number",
-          name: "devops.reldex"
+          name: "devops.reldex",
+          height: "250",
+          annotations: {
+            yaxis: [
+              {
+                y: 0,
+                y2: train.release_index.tolerable_range.min,
+                borderColor: "#ef4444",
+                fillColor: "#fecdd3",
+                label: {
+                  textAnchor: "start",
+                  position: "left",
+                  offsetX: 7,
+                  offsetY: 18,
+                  borderColor: "#ef4444",
+                  style: {
+                    color: "#ef4444",
+                    background: "#fecdd3"
+                  },
+                  text: "Mediocre"
+                }
+              },
+              {
+                y: train.release_index.tolerable_range.max,
+                borderColor: "#22c55e",
+                label: {
+                  textAnchor: "start",
+                  position: "left",
+                  offsetX: 7,
+                  borderColor: "#22c55e",
+                  style: {
+                    color: "#22c55e",
+                    background: "#bbf7d0"
+                  },
+                  text: "Excellent"
+                }
+              }
+            ]
+          }
         }
       },
       operational_efficiency: {
@@ -87,7 +126,8 @@ class Charts::DevopsReport
           value_format: "number",
           name: "operational_efficiency.team_stability_contributors",
           colors: team_colors,
-          show_y_axis: true
+          show_y_axis: true,
+          height: "250"
         },
         team_contributors: {
           data: team_contributors,
@@ -96,7 +136,8 @@ class Charts::DevopsReport
           value_format: "number",
           name: "operational_efficiency.team_contributors",
           colors: team_colors,
-          show_y_axis: true
+          show_y_axis: true,
+          height: "250"
         }
       }
     }
@@ -120,7 +161,7 @@ class Charts::DevopsReport
       .transform_values { {releases: _1} }
   end
 
-  memoize def reldex_scores(last: LAST_RELEASES)
+  memoize def reldex_scores(last: 10)
     return if train.release_index.blank?
 
     finished_releases(last)

@@ -40,6 +40,10 @@ class ChartComponent < ViewComponent::Base
     series_raw.blank? || series_raw.keys.size < 1
   end
 
+  def height
+    chart[:height] || "100%"
+  end
+
   # input:
   # {"team-a": 1,
   #  "team-b": 10}
@@ -75,6 +79,10 @@ class ChartComponent < ViewComponent::Base
 
   def chart_scope
     chart[:scope] || I18n.t("charts.#{chart[:name]}.scope")
+  end
+
+  def annotations
+    (chart[:annotations] || {}).to_json
   end
 
   def help_text
