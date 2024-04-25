@@ -1,22 +1,7 @@
-<div class="card-sm <%= bg_color %> flex justify-items-stretch">
+<div class="card-default <%= bg_color %> flex justify-items-stretch">
   <div class="space-x-4 flex">
     <% data_sets.each_with_index do |datum_set, i| %>
-      <div class="space-y-2">
-        <h1 class="heading-5 <%= datum_set.uppercase_title %>">
-          <%= datum_set.title %>
-        </h1>
-
-        <div class="flex items-start space-x-0">
-          <div class="flex flex-col">
-            <% datum_set.lines.each do |line| %>
-              <span class="text-secondary font-normal text-sm">
-                <%= line %>
-              </span>
-            <% end %>
-          </div>
-        </div>
-      </div>
-
+      <%= datum_set %>
       <% unless last_set?(i) %>
         <div class="<%= separator %>"></div>
       <% end %>

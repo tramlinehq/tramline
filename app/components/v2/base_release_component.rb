@@ -64,6 +64,10 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     result
   end
 
+  def commit_count
+    [@release.applied_commits.size, 1].max - 1
+  end
+
   memoize def release_version
     @release.release_version
   end

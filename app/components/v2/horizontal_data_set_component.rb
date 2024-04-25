@@ -23,16 +23,22 @@ class V2::HorizontalDataSetComponent < V2::BaseComponent
   class DataSetComponent < V2::BaseComponent
     renders_one :tooltip, V2::TooltipComponent
 
-    def initialize(title:, uppercase_title: true, lines: [])
+    def initialize(title:, uppercase_title: true)
       @title = title
       @uppercase_title = uppercase_title
-      @lines = lines
     end
 
-    attr_reader :title, :lines
+    attr_reader :title
 
     def uppercase_title
       "uppercase" if @uppercase_title
+    end
+
+    def call
+      content_tag :div, class: "space-y-2" do
+        concat content_tag :h5, title, class: "heading-5 #{uppercase_title}"
+        concat content_tag :div, content, class: "flex text-secondary font-normal text-sm"
+      end
     end
   end
 end

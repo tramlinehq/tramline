@@ -1,4 +1,4 @@
-<div class="flex text-sm items-center justify-between space-x-4 rtl:space-x-reverse">
+<div class="flex text-sm items-center justify-between space-x-4">
   <div class="flex flex-col gap-y-1">
     <%= render(V2::ButtonComponent.new(scheme: :link,
                                        label: message.truncate(80),
@@ -8,13 +8,16 @@
                                        authz: false,
                                        html_options: { class: "inline-flex items-center text-main dark:bg-main dark:text-main-200 border-none shadow-none hover:underline" })) %>
     <div class="flex flex-row gap-x-1.5 items-center">
-      <%= render V2::ButtonComponent.new(scheme: :link,
-                                         options: author_link,
-                                         type: :link_external,
-                                         size: :none,
-                                         authz: false) do |button| %>
-        <% button.with_icon(user_avatar(author_name, limit: 2, size: 24), raw_svg: true, size: :xl) %>
+      <% if show_avatar? %>
+        <%= render V2::ButtonComponent.new(scheme: :link,
+                                           options: author_link,
+                                           type: :link_external,
+                                           size: :none,
+                                           authz: false) do |button| %>
+          <% button.with_icon(user_avatar(author_name, limit: 2, size: 24), raw_svg: true, size: :xl) %>
+        <% end %>
       <% end %>
+
       <span class="text-xs text-neutral-500 dark:text-white">
         <span class="font-semibold">
           <%= render(V2::ButtonComponent.new(scheme: :link,
@@ -31,10 +34,15 @@
   <div class="flex flex-row gap-x-2 items-center">
     <div>
       <%= render V2::BadgeComponent.new do |badge| %>
-        <% badge.with_icon("integrations/logo_#{commit.train.ci_cd_provider}.png") %>
+        <% if ci_cd_provider.present? %>
+          <% badge.with_icon("integrations/logo_#{commit.train.ci_cd_provider}.png") %>
+        <% end %>
         <% badge.with_link(short_sha, url) %>
       <% end %>
     </div>
-    <%= render V2::TeamPillComponent.new(team) if current_organization.teams_supported? %>
+
+    <% if team.present? %>
+      <%= render V2::TeamPillComponent.new(team) if current_organization.teams_supported? %>
+    <% end %>
   </div>
 </div>

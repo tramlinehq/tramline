@@ -6,6 +6,7 @@
 #  branch_name              :string           not null
 #  completed_at             :datetime
 #  hotfixed_from            :uuid
+#  internal_notes           :jsonb
 #  is_automatic             :boolean          default(FALSE)
 #  new_hotfix_branch        :boolean          default(FALSE)
 #  original_release_version :string
@@ -16,6 +17,7 @@
 #  tag_name                 :string
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
+#  release_pilot_id         :uuid
 #  train_id                 :uuid             not null, indexed
 #
 class Release < ApplicationRecord
@@ -37,6 +39,7 @@ class Release < ApplicationRecord
 
   belongs_to :train
   belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :hotfixed_releases
+  belongs_to :release_pilot, class_name: "Accounts::User", optional: true
   has_one :scheduled_release, dependent: :destroy
   has_one :release_changelog, dependent: :destroy, inverse_of: :release
   has_many :release_platform_runs, -> { sequential }, dependent: :destroy, inverse_of: :release

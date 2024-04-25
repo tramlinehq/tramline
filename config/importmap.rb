@@ -2,7 +2,6 @@
 
 pin "application", preload: true
 pin "@hotwired/turbo-rails", to: "turbo.min.js", preload: true
-pin "@hotwired/stimulus", to: "https://ga.jspm.io/npm:@hotwired/stimulus@3.2.2/dist/stimulus.js"
 pin "@hotwired/stimulus-loading", to: "stimulus-loading.js", preload: true
 pin_all_from "app/javascript/controllers", under: "controllers"
 pin "flatpickr", to: "https://ga.jspm.io/npm:flatpickr@4.6.9/dist/flatpickr.js"
@@ -21,7 +20,6 @@ pin "stimulus-rails-nested-form", to: "https://ga.jspm.io/npm:stimulus-rails-nes
 pin "stimulus-use", to: "https://ga.jspm.io/npm:stimulus-use@0.51.3/dist/index.js"
 pin "hotkeys-js", to: "https://ga.jspm.io/npm:hotkeys-js@3.10.1/dist/hotkeys.esm.js"
 pin "stimulus-password-visibility", to: "https://ga.jspm.io/npm:stimulus-password-visibility@2.1.1/dist/stimulus-password-visibility.mjs"
-pin "stimulus-clipboard", to: "https://ga.jspm.io/npm:stimulus-clipboard@4.0.1/dist/stimulus-clipboard.mjs"
 pin "stimulus-confetti", to: "https://ga.jspm.io/npm:stimulus-confetti@1.0.1/dist/stimulus_confetti.modern.js"
 pin "canvas-confetti", to: "https://ga.jspm.io/npm:canvas-confetti@1.6.0/dist/confetti.module.mjs"
 pin "tailwindcss-stimulus-components", to: "https://ga.jspm.io/npm:tailwindcss-stimulus-components@4.0.4/dist/tailwindcss-stimulus-components.module.js"
@@ -34,3 +32,12 @@ pin "@sentry/utils/esm/buildPolyfills", to: "https://ga.jspm.io/npm:@sentry/util
 pin "apexcharts", to: "https://ga.jspm.io/npm:apexcharts@3.43.0/dist/apexcharts.common.js"
 pin "humanize-duration", to: "https://ga.jspm.io/npm:humanize-duration@3.30.0/humanize-duration.js"
 pin "@popperjs/core", to: "https://ga.jspm.io/npm:@popperjs/core@2.11.8/lib/index.js"
+pin "quill", to: "https://ga.jspm.io/npm:quill@2.0.0/quill.js"
+pin "eventemitter3", to: "https://ga.jspm.io/npm:eventemitter3@5.0.1/index.mjs"
+pin "fast-diff", to: "https://ga.jspm.io/npm:fast-diff@1.3.0/diff.js"
+pin "lodash-es", to: "https://ga.jspm.io/npm:lodash-es@4.17.21/lodash.js"
+pin "lodash.clonedeep", to: "https://ga.jspm.io/npm:lodash.clonedeep@4.5.0/index.js"
+pin "lodash.isequal", to: "https://ga.jspm.io/npm:lodash.isequal@4.5.0/index.js"
+pin "parchment", to: "https://ga.jspm.io/npm:parchment@3.0.0/dist/parchment.js"
+pin "quill-delta", to: "https://ga.jspm.io/npm:quill-delta@5.1.0/dist/Delta.js"
+pin "@hotwired/stimulus", to: "https://ga.jspm.io/npm:@hotwired/stimulus@3.2.2/dist/stimulus.js"

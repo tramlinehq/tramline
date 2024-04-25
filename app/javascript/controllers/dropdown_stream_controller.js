@@ -1,4 +1,4 @@
-import {Controller} from "@hotwired/stimulus";
+import {Controller} from "@hotwired/stimulus"
 import {useMutation} from "stimulus-use"
 import {get} from "@rails/request.js"
 

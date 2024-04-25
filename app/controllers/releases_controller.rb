@@ -3,7 +3,7 @@ class ReleasesController < SignedInApplicationController
   include Filterable
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
-  before_action :set_release, only: [:show, :timeline, :destroy]
+  before_action :set_release, only: [:show, :overview, :change_queue, :timeline, :destroy, :update]
 
   def index
     @train = @app.trains.friendly.find(params[:train_id])
@@ -38,6 +38,83 @@ class ReleasesController < SignedInApplicationController
     else
       redirect_back fallback_location: root_path, flash: {error: response.body}
     end
+  end
+
+  def update
+    @train = @release.train
+    @app = @train.app
+
+    if @release.update(update_release_params)
+      redirect_to edit_app_train_path(@app, @train), notice: "Release was updated"
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def overview # the new live release page
+    @train = @release.train
+    @app = @train.app
+    set_commits
+    set_pull_requests
+    @tab_configuration =
+      {
+        "kickoff" => [
+          [1, "Overview", overview_release_path(@release), "v2/gauge.svg"],
+          [2, "Change queue", change_queue_release_path(@release), "v2/list_end.svg"]
+        ],
+
+        "stability" => [
+          [2, "Internal builds", root_path, "v2/drill.svg"],
+          [2, "Regression testing", root_path, "v2/tablet_smartphone.svg"],
+          [3, "Release candidate", root_path, "v2/gallery_horizontal_end.svg"],
+          [4, "Beta soak", root_path, "v2/alarm_clock.svg"]
+        ],
+
+        "metadata" => [
+          [2, "Notes", root_path, "v2/text.svg"],
+          [2, "Screenshots", root_path, "v2/wand.svg"]
+        ],
+
+        "release" => [
+          [2, "Approvals", root_path, "v2/list_checks.svg"],
+          [2, "App submission", root_path, "v2/mail.svg"],
+          [3, "Store review", root_path, "v2/mail_search.svg"],
+          [4, "Rollout to users", root_path, "v2/rocket.svg"]
+        ]
+      }
+  end
+
+  def change_queue
+    @train = @release.train
+    @app = @train.app
+    set_commits
+    set_pull_requests
+    @tab_configuration =
+      {
+        "kickoff" => [
+          [1, "Overview", overview_release_path(@release), "v2/gauge.svg"],
+          [2, "Change queue", change_queue_release_path(@release), "v2/list_end.svg"]
+        ],
+
+        "stability" => [
+          [2, "Internal builds", root_path, "v2/drill.svg"],
+          [2, "Regression testing", root_path, "v2/tablet_smartphone.svg"],
+          [3, "Release candidate", root_path, "v2/gallery_horizontal_end.svg"],
+          [4, "Beta soak", root_path, "v2/alarm_clock.svg"]
+        ],
+
+        "metadata" => [
+          [2, "Notes", root_path, "v2/text.svg"],
+          [2, "Screenshots", root_path, "v2/wand.svg"]
+        ],
+
+        "release" => [
+          [2, "Approvals", root_path, "v2/list_checks.svg"],
+          [2, "App submission", root_path, "v2/mail.svg"],
+          [3, "Store review", root_path, "v2/mail_search.svg"],
+          [4, "Rollout to users", root_path, "v2/rocket.svg"]
+        ]
+      }
   end
 
   def live_release
@@ -155,7 +232,8 @@ class ReleasesController < SignedInApplicationController
       :has_major_bump,
       :hotfix_platform,
       :platform_specific_hotfix,
-      :custom_release_version
+      :custom_release_version,
+      :internal_notes
     ])[:release] || {}
   end
 
@@ -163,6 +241,10 @@ class ReleasesController < SignedInApplicationController
     release_params
       .merge(hotfix_config(release_params.slice(:hotfix_platform, :platform_specific_hotfix)))
       .except(:platform_specific_hotfix)
+  end
+
+  def update_release_params
+    release_params.slice(:internal_notes)
   end
 
   def hotfix_config(config_params)

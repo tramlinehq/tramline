@@ -1,0 +1,21 @@
+<%= render V2::ReleaseComponent.new(@release,
+                                    title: @train.name,
+                                    turbo_frame: dom_id(@app, :edit_org),
+                                    tab_config: @tab_configuration) do |container| %>
+  <% container.with_back_button %>
+  <% container.with_tab do %>
+    <% release_component = V2::BaseReleaseComponent.new(@release) %>
+    <div class="flex justify-between items-start mt-2">
+      <div class="flex justify-start">
+        <div class="mt-2 flex gap-y-1 gap-x-2">
+          <%= render V2::HorizontalDataSetComponent.new(separator: :solid, bg_color: true) do |component| %>
+            <% component.with_data_set(title: "Started", lines: [release_component.start_time]) %>
+            <% component.with_data_set(title: "Released", lines: [release_component.end_time]) %>
+            <% component.with_data_set(title: "Duration", lines: [release_component.duration]) %>
+            <% component.with_data_set(title: "Stability Commits", lines: [release_component.commit_count]) %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>

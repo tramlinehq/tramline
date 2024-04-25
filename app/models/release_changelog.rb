@@ -85,6 +85,10 @@ class ReleaseChangelog < ApplicationRecord
 
     def message = commit["message"]
 
+    def team = nil # FIXME: stub
+
+    def train = nil # FIXME: stub
+
     private
 
     attr_reader :commit
