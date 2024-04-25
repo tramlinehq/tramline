@@ -37,11 +37,11 @@ class V2::ReldexStatusComponent < V2::BaseComponent
   def grade_bg_color
     case grade
     when :great
-      "bg-green-100 dark:bg-green-900"
+      "bg-green-100 dark:bg-green-800"
     when :acceptable
-      "bg-sky-100 dark:bg-sky-900"
+      "bg-sky-100 dark:bg-sky-800"
     when :mediocre
-      "bg-rose-100 dark:bg-rose-900"
+      "bg-rose-100 dark:bg-rose-800"
     else
       raise ArgumentError, "Invalid grade"
     end

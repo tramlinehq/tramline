@@ -8,7 +8,7 @@
             <% row.with_cell do %>
               ≥ Acceptable Max
             <% end %>
-            <% row.with_cell(style: "bg-green-100") do %>
+            <% row.with_cell(style: bg_color(:excellent)) do %>
               Excellent
             <% end %>
           <% end %>
@@ -16,7 +16,7 @@
             <% row.with_cell do %>
               Within Acceptable Range
             <% end %>
-            <% row.with_cell(style: "bg-sky-100") do %>
+            <% row.with_cell(style: bg_color(:acceptable)) do %>
               Acceptable
             <% end %>
           <% end %>
@@ -24,7 +24,7 @@
             <% row.with_cell do %>
               ≤ Acceptable Min
             <% end %>
-            <% row.with_cell(style: "bg-rose-100") do %>
+            <% row.with_cell(style: bg_color(:mediocre)) do %>
               Mediocre
             <% end %>
           <% end %>
@@ -58,7 +58,7 @@
             <% row.with_cell do %>
               ≤ Acceptable Min
             <% end %>
-            <% row.with_cell(style: "bg-green-100") do %>
+            <% row.with_cell(style: bg_color(:excellent)) do %>
               1
             <% end %>
           <% end %>
@@ -66,7 +66,7 @@
             <% row.with_cell do %>
               Within Acceptable Range
             <% end %>
-            <% row.with_cell(style: "bg-sky-100") do %>
+            <% row.with_cell(style: bg_color(:acceptable)) do %>
               0.5
             <% end %>
           <% end %>
@@ -74,7 +74,7 @@
             <% row.with_cell do %>
               ≥ Acceptable Max
             <% end %>
-            <% row.with_cell(style: "bg-rose-100") do %>
+            <% row.with_cell(style: bg_color(:mediocre)) do %>
               0
             <% end %>
           <% end %>
@@ -83,52 +83,58 @@
     <% end %>
 
     <section data-controller="domain--release-index">
-      <div class="grid grid-cols-1 space-y-2 gap-y-2 divide-y divide-main-200 items-center">
-        <div class="grid grid-cols-6 gap-x-10 uppercase text-secondary text-xs font-medium items-center">
+      <div class="grid grid-cols-1 items-center divide-default">
+        <div class="px-1 py-2 grid grid-cols-6 gap-x-10 uppercase text-secondary dark:text-white text-xs font-medium items-center">
           <div class="col-span-2">Component</div>
           <div class="col-span-1">Weight</div>
           <div class="col-span-3">Acceptable Range</div>
         </div>
         <% components.each do |component| %>
-          <div class="grid grid-cols-6 gap-x-10 text-sm items-center">
-            <% section.F.fields_for :release_index_components, component do |component_fields| %>
-              <div class="col-span-2">
-                <div class="flex items-center gap-1">
-                  <%= component_fields.hidden_field :id, value: component.id %>
-                  <%= component.display_attr(:name) %>
-                  <%= render V2::ButtonComponent.new(scheme: :naked_icon, type: :action, size: :none) do |button| %>
-                    <% button.with_icon("v2/info_full.svg", size: :base) %>
-                    <% button.with_tooltip(nil, placement: "top", type: :detailed) do |tooltip| %>
-                      <% tooltip.with_detailed_text do %>
-                        <div class="flex flex-col gap-2">
-                          <%= simple_format component.description %>
-                        </div>
+          <div class="" data-controller="domain--release-index-component">
+            <div class="px-1 py-2 grid grid-cols-6 gap-x-10 text-sm items-center">
+              <% section.F.fields_for :release_index_components, component do |component_fields| %>
+                <div class="col-span-2">
+                  <div class="flex items-center gap-1.5">
+                    <%= component_fields.hidden_field :id, value: component.id %>
+                    <%= component.display_attr(:name) %>
+                    <%= render V2::ButtonComponent.new(scheme: :naked_icon, type: :action, size: :none) do |button| %>
+                      <% button.with_icon("v2/info.svg", size: :base) %>
+                      <% button.with_tooltip(nil, placement: "top", type: :detailed) do |tooltip| %>
+                        <% tooltip.with_detailed_text do %>
+                          <div class="flex flex-col gap-2">
+                            <%= simple_format component.description %>
+                          </div>
+                        <% end %>
                       <% end %>
-                    <% end %> %>
-                  <% end %>
+                    <% end %>
+                    <div hidden data-domain--release-index-component-target="inactive">
+                      <%= render V2::StatusIndicatorPillComponent.new(text: "Excluded", status: :neutral) %>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div class="col-span-1 flex flex-row gap-1 items-center">
-                <%= component_fields.number_field_without_label :weight_percentage, step: 5, in: 0..100,
-                                                                data: { domain__release_index_target: "weight",
-                                                                        action: "domain--release-index#computeTotal" } %>
-                %
-              </div>
-              <div class="col-span-3">
-                <div class="mt-6">
-                  <%= render V2::RangeSliderComponent.new(form: component_fields, **tolerable_range_config(component.name)) %>
+                <div class="col-span-1 flex flex-row gap-1 items-center">
+                  <%= component_fields.number_field_without_label :weight_percentage, step: 5, in: 0..100,
+                                                                  data: { domain__release_index_target: "weight",
+                                                                          domain__release_index_component_target: "weight",
+                                                                          action: "domain--release-index#computeTotal domain--release-index-component#markActionable" } %>
+                  %
                 </div>
-              </div>
-            <% end %>
+                <div class="col-span-3">
+                  <div class="mt-6">
+                    <%= render V2::RangeSliderComponent.new(form: component_fields, **tolerable_range_config(component.name)) %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
           </div>
         <% end %>
-        <div class="grid grid-cols-6 gap-x-10 text-secondary text-xs items-center pt-2">
-          <div class="col-span-2">Total:</div>
+        <div class="px-1 py-2 grid grid-cols-6 gap-x-10 text-secondary dark:text-white text-xs items-center pt-2">
+          <div class="col-span-2 uppercase">Total:</div>
           <div class="col-span-1">
             <div data-domain--release-index-target="total"></div>
           </div>
           <div class="col-span-3">
-            <div class="text-red-600" data-domain--release-index-target="errorMessage"></div>
+            <div class="text-red-600 dark:text-red-400" data-domain--release-index-target="errorMessage"></div>
           </div>
         </div>
       </div>

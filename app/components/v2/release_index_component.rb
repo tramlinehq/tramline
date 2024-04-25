@@ -18,10 +18,18 @@ class V2::ReleaseIndexComponent < V2::BaseComponent
     stability_changes: {allowed_range: 0..50, step: 1}
   }
 
-  EXCELLENT_COLOR = "#bbf7d0"
-  ACCEPTABLE_COLOR = "#bae6fd"
-  MEDIOCRE_COLOR = "#fecdd3"
-
+  COLORS = {
+    dark: {
+      excellent: "#14532d",
+      acceptable: "#0c4a6e",
+      mediocre: "#881337"
+    },
+    light: {
+      excellent: "#bbf7d0",
+      acceptable: "#bae6fd",
+      mediocre: "#fecdd3"
+    }
+  }
   def base_form_config
     {from_method: :tolerable_min,
      to_method: :tolerable_max}
@@ -30,12 +38,31 @@ class V2::ReleaseIndexComponent < V2::BaseComponent
   def tolerable_range_config(component)
     base_form_config
       .merge(TOLERANCE_RANGES[component.to_sym])
-      .merge(colors: {below_range: EXCELLENT_COLOR, within_range: ACCEPTABLE_COLOR, above_range: MEDIOCRE_COLOR})
+      .merge(colors: {below_range: color(:excellent), within_range: color(:acceptable), above_range: color(:mediocre)})
   end
 
   def reldex_form_params
     base_form_config.merge({allowed_range: 0..1,
                              step: "0.1",
-                             colors: {below_range: MEDIOCRE_COLOR, within_range: ACCEPTABLE_COLOR, above_range: EXCELLENT_COLOR}})
+                             colors: {below_range: color(:mediocre), within_range: color(:acceptable), above_range: color(:excellent)}})
+  end
+
+  def bg_color(grade)
+    case grade
+    when :excellent
+      "bg-green-100 dark:bg-green-900"
+    when :acceptable
+      "bg-sky-100 dark:bg-sky-900"
+    when :mediocre
+      "bg-rose-100 dark:bg-rose-900"
+    else
+      raise ArgumentError, "Invalid grade"
+    end
+  end
+
+  private
+
+  def color(grade, theme = :light)
+    COLORS[theme][grade]
   end
 end

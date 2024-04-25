@@ -1,4 +1,4 @@
-<div class="inline-flex items-center font-medium text-xs px-1.5 py-0.5 rounded-md tracking-wide border gap-x-1.5 <%= grade_bg_color %>">
+<div class="inline-flex items-center font-medium text-xs px-1.5 py-0.5 rounded-md tracking-wide border border-main-200 dark:border-main-600 gap-x-1.5 <%= grade_bg_color %>">
   <span class="<%= grade_color %> uppercase"><%= grade %></span>
   <%= render V2::ModalComponent.new(title: "Reldex for #{release_version}",
                                     size: :sm,
@@ -29,7 +29,7 @@
             <% row.with_cell do %>
               reldex ≥ <%= tolerable_min %>
             <% end %>
-            <% row.with_cell(style: "bg-green-100") do %>
+            <% row.with_cell(style: "bg-green-100 dark:bg-green-900") do %>
               Excellent
             <% end %>
           <% end %>
@@ -37,7 +37,7 @@
             <% row.with_cell do %>
               <%= tolerable_min %> < reldex < <%= tolerable_max %>
             <% end %>
-            <% row.with_cell(style: "bg-sky-100") do %>
+            <% row.with_cell(style: "bg-sky-100 dark:bg-sky-900") do %>
               Acceptable
             <% end %>
           <% end %>
@@ -45,7 +45,7 @@
             <% row.with_cell do %>
               reldex ≤ <%= tolerable_min %>
             <% end %>
-            <% row.with_cell(style: "bg-rose-100") do %>
+            <% row.with_cell(style: "bg-rose-100 dark:bg-rose-900") do %>
               Mediocre
             <% end %>
           <% end %>

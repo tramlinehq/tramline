@@ -14,10 +14,10 @@ export default class extends Controller {
     })
     this.totalTarget.textContent = totalWeight + "%"
     if (totalWeight !== 100) {
-      this.totalTarget.classList.add("text-red-600")
+      this.totalTarget.classList.add("text-red-600", "dark:text-red-400")
       this.errorMessageTarget.textContent = "Total weight must be 100%"
     } else {
-      this.totalTarget.classList.remove("text-red-600")
+      this.totalTarget.classList.remove("text-red-600", "dark:text-red-400")
       this.errorMessageTarget.textContent = ""
     }
   }
