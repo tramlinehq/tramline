@@ -94,6 +94,10 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
   @apply border-b border-main-200 dark:border-main-600;
 }
 
+.divide-default {
+  @apply divide-y divide-main-200 dark:divide-main-600;
+}
+
 .border-default {
   @apply border border-main-200 dark:border-main-600 rounded-lg;
 }
