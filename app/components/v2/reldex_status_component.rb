@@ -1,9 +1,11 @@
-class V2::ReldexStatusComponent < V2::BaseComponent
+class V2::ReldexStatusComponent < V2::BaseReldexComponent
   def initialize(release:, reldex_score:)
     raise ArgumentError, "reldex score is not a Score object" unless reldex_score.instance_of?(::ReleaseIndex::Score)
     @release = release
     @reldex_score = reldex_score
   end
+
+  delegate :release_version, to: :@release
 
   def final_score
     @reldex_score.value
@@ -21,32 +23,6 @@ class V2::ReldexStatusComponent < V2::BaseComponent
     @reldex_score.release_index.tolerable_range.max
   end
 
-  def grade_color
-    case grade
-    when :great
-      "text-green-800 dark:text-green-300"
-    when :acceptable
-      "text-sky-800 dark:text-sky-300"
-    when :mediocre
-      "text-rose-800 dark:text-rose-300"
-    else
-      raise ArgumentError, "Invalid grade"
-    end
-  end
-
-  def grade_bg_color
-    case grade
-    when :great
-      "bg-green-100 dark:bg-green-800"
-    when :acceptable
-      "bg-sky-100 dark:bg-sky-800"
-    when :mediocre
-      "bg-rose-100 dark:bg-rose-800"
-    else
-      raise ArgumentError, "Invalid grade"
-    end
-  end
-
   def components
     @reldex_score.components
   end
@@ -61,15 +37,13 @@ class V2::ReldexStatusComponent < V2::BaseComponent
   def component_grade_color(component)
     case component.range_value
     when 1
-      "bg-green-100 dark:bg-green-900"
+      bg_color(:excellent)
     when 0.5
-      "bg-sky-100 dark:bg-sky-900"
+      bg_color(:acceptable)
     when 0
-      "bg-rose-100 dark:bg-rose-900"
+      bg_color(:mediocre)
     else
       raise ArgumentError, "Invalid component value"
     end
   end
-
-  delegate :release_version, to: :@release
 end

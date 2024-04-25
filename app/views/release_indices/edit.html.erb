@@ -4,6 +4,6 @@
                                             error_resource: @train) do |container| %>
   <% container.with_back_button(to: "the train", path: app_train_releases_path(@app, @train)) %>
   <% container.with_tab do %>
-    <%= render V2::ReleaseIndexComponent.new(@release_index) %>
+    <%= render V2::ReldexFormComponent.new(@release_index) %>
   <% end %>
 <% end %>
