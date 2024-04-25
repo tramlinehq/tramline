@@ -18,6 +18,7 @@
     <div class="flex items-center gap-2">
       <%= form.label_only(from_method, "Min", type: :base) %>
       <%= form.number_field_without_label from_method,
+                                          compact: true,
                                           in: allowed_range,
                                           step: step,
                                           data: { range_slider_target: "fromInput", action: "change->range-slider#controlFromInput" } %>
@@ -25,6 +26,7 @@
     <div class="flex items-center gap-2 justify-end">
       <%= form.label_only(to_method, "Max", type: :base) %>
       <%= form.number_field_without_label to_method,
+                                          compact: true,
                                           in: allowed_range,
                                           step: step,
                                           data: { range_slider_target: "toInput", action: "change->range-slider#controlToInput" } %>

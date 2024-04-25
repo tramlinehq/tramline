@@ -44,14 +44,7 @@
           the overall release score.
         </div>
         <div>
-          Reldex aggregates various components of the release process into a single score between 0 and 1.
-        </div>
-        <div>
           <%= render partial: "release_indices/computation" %>
-        </div>
-        <div>
-          Each component receives a score of 1, 0.5, or 0 based on its acceptable range. These scores are combined to
-          determine the reldex that is then graded under <em>great</em>, <em>acceptable</em> and <em>mediocre</em>.
         </div>
         <%= render V2::TableComponent.new(columns: ["Value", "Score (unweighted)"], size: :compact) do |table| %>
           <% table.with_row do |row| %>
@@ -86,12 +79,12 @@
       <div class="grid grid-cols-1 items-center divide-default">
         <div class="px-1 py-2 grid grid-cols-6 gap-x-10 uppercase text-secondary dark:text-white text-xs font-medium items-center">
           <div class="col-span-2">Component</div>
-          <div class="col-span-1">Weight</div>
+          <div class="col-span-1">Weight (%)</div>
           <div class="col-span-3">Acceptable Range</div>
         </div>
         <% components.each do |component| %>
           <div class="" data-controller="domain--release-index-component">
-            <div class="px-1 py-2 grid grid-cols-6 gap-x-10 text-sm items-center">
+            <div class="px-1 py-3 grid grid-cols-6 items-center gap-x-10 text-sm">
               <% section.F.fields_for :release_index_components, component do |component_fields| %>
                 <div class="col-span-2">
                   <div class="flex items-center gap-1.5">
@@ -108,19 +101,20 @@
                       <% end %>
                     <% end %>
                     <div hidden data-domain--release-index-component-target="inactive">
-                      <%= render V2::StatusIndicatorPillComponent.new(text: "Excluded", status: :neutral) %>
+                      <%= render V2::BadgeComponent.new("Excluded") %>
                     </div>
                   </div>
                 </div>
-                <div class="col-span-1 flex flex-row gap-1 items-center">
-                  <%= component_fields.number_field_without_label :weight_percentage, step: 5, in: 0..100,
+                <div class="col-span-1">
+                  <%= component_fields.number_field_without_label :weight_percentage,
+                                                                  compact: true,
+                                                                  step: 5, in: 0..100,
                                                                   data: { domain__release_index_target: "weight",
                                                                           domain__release_index_component_target: "weight",
                                                                           action: "domain--release-index#computeTotal domain--release-index-component#markActionable" } %>
-                  %
                 </div>
                 <div class="col-span-3">
-                  <div class="mt-6">
+                  <div class="mt-3">
                     <%= render V2::RangeSliderComponent.new(form: component_fields, **tolerable_range_config(component.name)) %>
                   </div>
                 </div>
@@ -128,8 +122,8 @@
             </div>
           </div>
         <% end %>
-        <div class="px-1 py-2 grid grid-cols-6 gap-x-10 text-secondary dark:text-white text-xs items-center pt-2">
-          <div class="col-span-2 uppercase">Total:</div>
+        <div class="px-1 py-2 grid grid-cols-6 gap-x-10 text-secondary dark:text-white text-xs items-center">
+          <div class="col-span-2 uppercase font-medium">Total</div>
           <div class="col-span-1">
             <div data-domain--release-index-target="total"></div>
           </div>

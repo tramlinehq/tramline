@@ -15,7 +15,7 @@ class ReleaseIndicesController < SignedInApplicationController
     if @release_index.update(parsed_params)
       redirect_to edit_app_train_release_index_path(@app, @train), notice: t(".success")
     else
-      render :edit, status: :unprocessable_entity
+      redirect_to edit_app_train_release_index_path(@app, @train), flash: {error: t(".failure", errors: @release_index.errors.full_messages.to_sentence)}
     end
   end
 

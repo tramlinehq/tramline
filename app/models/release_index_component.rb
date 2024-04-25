@@ -44,8 +44,8 @@ class ReleaseIndexComponent < ApplicationRecord
   after_initialize :set_tolerable_values, if: :persisted?
 
   def set_tolerable_values
-    self.tolerable_min = tolerable_range.min
-    self.tolerable_max = tolerable_range.max
+    self.tolerable_min = tolerable_range.min.to_i
+    self.tolerable_max = tolerable_range.max.to_i
     self.weight_percentage = weight * 100
   end
 

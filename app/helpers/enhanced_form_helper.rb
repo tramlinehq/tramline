@@ -17,9 +17,11 @@ module EnhancedFormHelper
     BASE_LABEL_CLASSES = "text-xs font-medium text-secondary dark:text-white leading-6 cursor-pointer"
     LABEL_CLASSES = "mb-2 #{BASE_LABEL_CLASSES}"
     SIDE_LABEL_CLASSES = "ms-2 #{BASE_LABEL_CLASSES}"
+    BASE_FIELD_CLASSES = "bg-main-50 border border-main-300 text-main rounded-lg focus:ring-primary-600 focus:border-primary-600 w-full dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
     SELECT_CLASSES = "bg-main-50 border border-main-300 text-main text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 w-full p-2.5 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
     TEXT_AREA_CLASSES = "p-2.5 w-full text-sm text-main bg-main-50 rounded-lg border border-main-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-    TEXT_FIELD_CLASSES = "bg-main-50 border border-main-300 text-main text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 w-full p-2.5 dark:bg-main-700 dark:border-main-600 dark:placeholder-main-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+    COMPACT_TEXT_FIELD_CLASSES = "#{BASE_FIELD_CLASSES} text-xs"
+    TEXT_FIELD_CLASSES = "#{BASE_FIELD_CLASSES} p-2.5 text-sm"
     CHECK_BOX_CLASSES = "w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
     DISABLED_CLASSES = "disabled:border-main-200 disabled:bg-main-100 disabled:text-main-600 disabled:cursor-not-allowed"
     FILE_INPUT_CLASSES = "w-full text-sm text-main border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
@@ -57,7 +59,8 @@ module EnhancedFormHelper
     end
 
     def number_field_without_label(method, options = {})
-      hopts = {class: field_classes(is_disabled: options[:disabled], classes: TEXT_FIELD_CLASSES), placeholder: 0}.merge(options)
+      classes = options[:compact] ? COMPACT_TEXT_FIELD_CLASSES : TEXT_FIELD_CLASSES
+      hopts = {class: field_classes(is_disabled: options[:disabled], classes:), placeholder: 0}.merge(options)
       number_field(method, hopts)
     end
 

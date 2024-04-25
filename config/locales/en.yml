@@ -14,6 +14,7 @@ en:
   release_indices:
     update:
       success: "Release Index config was successfully updated."
+      failure: "Failed to update config: %{errors}"
   activerecord:
     models:
       slack_integration: "Slack"
