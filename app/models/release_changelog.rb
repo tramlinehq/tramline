@@ -20,7 +20,7 @@ class ReleaseChangelog < ApplicationRecord
   end
 
   def commit_messages(first_parent_only = false)
-    ReleaseChangelog.messages_for(normalized_commits.sort_by(&:timestamp).reverse, first_parent_only).map(&:message)
+    ReleaseChangelog.commit_log(normalized_commits.sort_by(&:timestamp).reverse, first_parent_only).map(&:message)
   end
 
   def unique_authors

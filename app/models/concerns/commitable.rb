@@ -2,7 +2,7 @@ module Commitable
   extend ActiveSupport::Concern
 
   class_methods do
-    def messages_for(commits, first_parent_only = false)
+    def commit_log(commits, first_parent_only = false)
       return commits unless first_parent_only
       return commits if commits.any? { |c| c.parents.blank? }
 
