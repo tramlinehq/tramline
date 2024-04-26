@@ -270,7 +270,6 @@ class DeploymentRun < ApplicationRecord
   end
 
   def submitted_at
-    return unless released?
     return unless production_channel?
 
     if google_play_store_integration?
@@ -281,7 +280,6 @@ class DeploymentRun < ApplicationRecord
   end
 
   def release_started_at
-    return unless released?
     return unless production_channel?
 
     passport = passports.where(reason: :release_started).last

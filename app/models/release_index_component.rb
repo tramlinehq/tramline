@@ -21,8 +21,8 @@ class ReleaseIndexComponent < ApplicationRecord
     hotfixes: {default_weight: 0.30, default_tolerance: 0..1, tolerance_unit: :number},
     rollout_fixes: {default_weight: 0.20, default_tolerance: 1..2, tolerance_unit: :number},
     rollout_duration: {default_weight: 0.15, default_tolerance: 7..10, tolerance_unit: :day},
-    duration: {default_weight: 0.05, default_tolerance: 1..3, tolerance_unit: :day},
-    stability_duration: {default_weight: 0.15, default_tolerance: 5..10, tolerance_unit: :day},
+    duration: {default_weight: 0.05, default_tolerance: 14..17, tolerance_unit: :day},
+    stability_duration: {default_weight: 0.15, default_tolerance: 7..10, tolerance_unit: :day},
     stability_changes: {default_weight: 0.15, default_tolerance: 10..20, tolerance_unit: :number}
   }
 

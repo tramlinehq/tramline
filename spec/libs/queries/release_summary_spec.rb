@@ -73,10 +73,10 @@ describe Queries::ReleaseSummary, type: :model do
       actual = described_class.all(release.id)
 
       score = actual[:reldex]
-      expect(score.grade).to eq(:mediocre)
-      expect(score.value).to eq(0.55)
-      expect(score.release_index.id).to eq(reldex.id)
-      expect(score.components.map(&:value)).to match_array([0.0, 0.075, 0.075, 0.1, 0.15, 0.15])
+      expect(score.grade).to eq(:great)
+      expect(score.value).to eq(1)
+      expect(score.release_index.id).to eq(train.release_index.id)
+      expect(score.components.map(&:value)).to match_array([0.05, 0.15, 0.15, 0.15, 0.2, 0.3])
     end
   end
 end

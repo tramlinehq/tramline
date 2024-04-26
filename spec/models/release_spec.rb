@@ -445,4 +445,21 @@ describe Release do
       expect(release.stability_commits).to be_none
     end
   end
+
+  describe "#all_hotfixes" do
+    it "returns all hotfixes for the release" do
+      release = create(:release)
+      hotfixes = create_list(:release, 3, :hotfix, hotfixed_from: release)
+
+      expect(release.all_hotfixes).to contain_exactly(*hotfixes)
+    end
+
+    it "returns hotfixes of hotfixes" do
+      release = create(:release)
+      hotfix = create(:release, :hotfix, hotfixed_from: release)
+      hotfix_hotfix = create(:release, :hotfix, hotfixed_from: hotfix)
+
+      expect(release.all_hotfixes).to contain_exactly(hotfix, hotfix_hotfix)
+    end
+  end
 end

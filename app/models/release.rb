@@ -149,17 +149,26 @@ class Release < ApplicationRecord
 
   def index_score
     return if hotfix?
+    return unless finished?
+
+    rollout_duration = 0
+    stability_duration = 0
+    rollout_fixes = 0
 
     submitted_at = deployment_runs.map(&:submitted_at).compact.min
     rollout_started_at = deployment_runs.map(&:release_started_at).compact.min
-    rollout_fixes = deployment_runs.reached_production.group_by(&:platform).transform_values(&:size).values.max - 1
+    max_store_versions = deployment_runs.reached_production.group_by(&:platform).transform_values(&:size).values.max
+
+    rollout_fixes = max_store_versions - 1 if max_store_versions.present?
+    rollout_duration = ActiveSupport::Duration.build(completed_at - rollout_started_at).in_days if rollout_started_at.present?
+    stability_duration = ActiveSupport::Duration.build(submitted_at - scheduled_at).in_days if submitted_at.present?
 
     params = {
       hotfixes: all_hotfixes.size,
       rollout_fixes:,
-      rollout_duration: ActiveSupport::Duration.build(completed_at - rollout_started_at).to_i / 1.day.to_i,
-      duration: duration.to_i / 1.day.to_i,
-      stability_duration: ActiveSupport::Duration.build(submitted_at - scheduled_at).to_i / 1.day.to_i,
+      rollout_duration:,
+      duration: duration.in_days,
+      stability_duration:,
       stability_changes: stability_commits.count
     }
 

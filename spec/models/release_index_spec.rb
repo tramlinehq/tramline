@@ -27,9 +27,9 @@ describe ReleaseIndex do
       {
         hotfixes: 1,
         rollout_fixes: 1,
-        rollout_duration: 7,
-        duration: 12,
-        stability_duration: 5,
+        rollout_duration: 11,
+        duration: 18,
+        stability_duration: 7,
         stability_changes: 5
       }
     end
@@ -38,7 +38,7 @@ describe ReleaseIndex do
       reldex = create(:release_index, tolerable_range: 0.5..0.8)
 
       score = reldex.score(**metrics)
-      expect(score.value).to eq 0.550
+      expect(score.value).to eq 0.650
     end
 
     it "computes the reldex grade" do
@@ -52,7 +52,7 @@ describe ReleaseIndex do
       reldex = create(:release_index, tolerable_range: 0.5..0.8)
 
       score = reldex.score(**metrics)
-      expect(score.components.map(&:value)).to match_array([0.0, 0.075, 0.075, 0.1, 0.15, 0.15])
+      expect(score.components.map(&:value)).to match_array([0.15, 0.2, 0.0, 0.0, 0.15, 0.15])
     end
 
     it "contains the release index itself" do

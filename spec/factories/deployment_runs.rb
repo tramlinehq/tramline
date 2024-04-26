@@ -39,6 +39,9 @@ FactoryBot.define do
 
     trait :released do
       status { "released" }
+      after(:create) do |deployment_run, _|
+        deployment_run.event_stamp_now!(reason: :released, kind: :notice)
+      end
     end
 
     trait :failed do
@@ -47,6 +50,9 @@ FactoryBot.define do
 
     trait :rollout_started do
       status { "rollout_started" }
+      after(:create) do |deployment_run, _|
+        deployment_run.event_stamp_now!(reason: :release_started, kind: :notice)
+      end
     end
 
     trait :with_external_release do
