@@ -66,6 +66,9 @@ class V2::BaseReleaseComponent < V2::BaseComponent
 
   memoize def release_summary
     Queries::ReleaseSummary.all(@release.id)
+
+  def commit_count
+    [@release.applied_commits.size, 1].max - 1
   end
 
   memoize def release_version

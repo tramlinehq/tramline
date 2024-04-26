@@ -52,7 +52,7 @@ class V2::BuildInfoComponent < V2::BaseComponent
     when :completed
       {text: "Released", status: :success}
     when :stopped
-      {text: "Rollout halted at #{percentage}%", status: :neutral}
+      {text: "Rollout halted at #{percentage}%", status: :inert}
     when :fully_released
       {text: "Released", status: :success}
     when :paused

@@ -6,8 +6,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
+
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slim-select/1.27.1/slimselect.min.css">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.bubble.css" rel="stylesheet"/>
+
   <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
   <%= javascript_importmap_tags %>
   <meta name="environment" content="<%= Rails.env %>"/>
@@ -15,14 +19,14 @@
   <!-- current deploy: <%= Site.git_ref %> at <%= Site.git_ref_at %> -->
 </head>
 
-<body class="bg-backgroundLight dark:bg-backgroundDark text-main dark:text-white">
+<body class="bg-backgroundLight dark:bg-backgroundDark text-main dark:text-white subpixel-antialiased dark:antialiased">
 <div class="flex h-screen overflow-hidden">
   <div class="relative flex flex-col flex-1 overflow-y-scroll overflow-x-hidden h-full">
     <%= render V2::HeaderComponent.new %>
 
-    <main class="mb-64">
+    <main class="mb-20 2xl:mb-0">
       <%= yield :sticky_top_message %>
-      <div class="p-10 w-full max-w-9xl mx-auto">
+      <div class="p-10 w-full max-w-8xl mx-auto">
         <%= render V2::FlashComponent.new(flash) %>
         <%= yield :error_resource %>
         <%= yield %>

@@ -10,13 +10,13 @@ class V2::ButtonComponent < V2::BaseComponent
   BASE_OPTS = "group inline-flex items-center"
   BUTTON_OPTIONS = {
     default: {
-      class: "#{BASE_OPTS} text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+      class: "#{BASE_OPTS} shadow-default text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
     },
     danger: {
-      class: "#{BASE_OPTS} text-red-800 bg-white border border-main-300 focus:outline-none enabled:hover:bg-red-800 enabled:hover:text-white enabled:hover:border-main-200 focus:ring-4 focus:ring-red-200 font-medium rounded-lg dark:bg-main dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"
+      class: "#{BASE_OPTS} shadow-default text-red-800 bg-white border border-main-300 focus:outline-none enabled:hover:bg-red-800 enabled:hover:text-white enabled:hover:border-main-200 focus:ring-4 focus:ring-red-200 font-medium rounded-lg dark:bg-main dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"
     },
     light: {
-      class: "#{BASE_OPTS} text-main bg-white border border-main-300 focus:outline-none hover:bg-main-100 focus:ring-4 focus:ring-main-200 font-medium rounded-lg dark:bg-main dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"
+      class: "#{BASE_OPTS} shadow-default text-main bg-white border border-main-300 focus:outline-none hover:bg-main-100 focus:ring-4 focus:ring-main-200 font-medium rounded-lg dark:bg-main dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"
     },
     supporting: {
       class: "#{BASE_OPTS} text-secondary hover:bg-main-100 dark:bg-main dark:text-secondary-50 dark:hover:bg-main-700 border-none shadow-none rounded-sm"

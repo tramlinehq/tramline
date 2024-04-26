@@ -102,10 +102,13 @@ module EnhancedFormHelper
     end
 
     def labeled_textarea(method, label_text, options = {})
-      opts = {rows: 4,
-              class: field_classes(is_disabled: options[:disabled], classes: TEXT_AREA_CLASSES),
-              placeholder: "Write #{label_text.downcase} here"}.merge(options)
-      label_only(method, label_text) + text_area(method, opts)
+      opts = {placeholder: "Write #{label_text.downcase} here"}.merge(options)
+      label_only(method, label_text) + textarea(method, opts)
+    end
+
+    def textarea(method, options)
+      opts = {rows: 4, class: field_classes(is_disabled: options[:disabled], classes: TEXT_AREA_CLASSES)}.merge(options)
+      text_area(method, opts)
     end
 
     def labeled_file_field(method, label_text, help_text = nil, options = {})

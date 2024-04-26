@@ -10,10 +10,6 @@ class V2::ReleaseOverviewComponent < V2::BaseReleaseComponent
     current_user.release_monitoring? && release.show_health? && release.unhealthy?
   end
 
-  def commit_count
-    [release.applied_commits.size, 1].max - 1
-  end
-
   def cross_platform?
     release.app.cross_platform?
   end
@@ -40,7 +36,7 @@ class V2::ReleaseOverviewComponent < V2::BaseReleaseComponent
   def release_version(version)
     content_tag(:h1,
       version,
-      class: "heading-2 text-main dark:text-white")
+      class: "heading-2 text-main dark:text-white font-normal")
   end
 
   def android_release_version

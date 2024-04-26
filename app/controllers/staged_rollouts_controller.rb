@@ -17,6 +17,11 @@ class StagedRolloutsController < SignedInApplicationController
   end
 
   def pause
+    unless @staged_rollout.may_pause?
+      redirect_back fallback_location: root_path, flash: {error: "Rollout cannot be paused at this stage."}
+      return
+    end
+
     @staged_rollout.pause_release!
 
     if @staged_rollout.paused?
@@ -27,6 +32,11 @@ class StagedRolloutsController < SignedInApplicationController
   end
 
   def resume
+    unless @staged_rollout.may_resume?
+      redirect_back fallback_location: root_path, flash: {error: "Rollout cannot be resumed at this stage."}
+      return
+    end
+
     @staged_rollout.resume_release!
 
     if @staged_rollout.started?
@@ -37,6 +47,11 @@ class StagedRolloutsController < SignedInApplicationController
   end
 
   def halt
+    unless @staged_rollout.may_halt?
+      redirect_back fallback_location: root_path, flash: {error: "Rollout cannot be halted at this stage."}
+      return
+    end
+
     @staged_rollout.halt_release!
 
     if @staged_rollout.stopped?

@@ -81,7 +81,12 @@ Rails.application.routes.draw do
         resources :release_health_rules, path: :rules
       end
 
-      resources :releases, only: %i[show create destroy index], shallow: true do
+      resources :releases, only: %i[show create destroy index update], shallow: true do
+        member do
+          get :overview
+          get :change_queue
+        end
+
         resources :commits, only: [], shallow: false do
           member do
             post :apply

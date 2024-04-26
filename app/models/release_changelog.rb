@@ -11,6 +11,7 @@
 #
 class ReleaseChangelog < ApplicationRecord
   has_paper_trail
+  include Commitable
 
   belongs_to :release
 
@@ -18,14 +19,8 @@ class ReleaseChangelog < ApplicationRecord
     commits.map { NormalizedCommit.new(_1) }.sort_by(&:timestamp).reverse
   end
 
-  def commit_messages
-    commits.pluck("message")
-  end
-
-  def merge_commit_messages
-    commits
-      .filter { |c| c["parents"].size > 1 }
-      .pluck("message")
+  def commit_messages(first_parent_only = false)
+    ReleaseChangelog.commit_log(normalized_commits.sort_by(&:timestamp).reverse, first_parent_only).map(&:message)
   end
 
   def unique_authors
@@ -85,6 +80,14 @@ class ReleaseChangelog < ApplicationRecord
     def truncated_message = commit["message"]&.truncate(70)
 
     def applied_at = nil
+
+    def parents = commit["parents"]
+
+    def message = commit["message"]
+
+    def team = nil # FIXME: stub
+
+    def train = nil # FIXME: stub
 
     private
 

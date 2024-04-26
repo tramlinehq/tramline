@@ -1,0 +1,95 @@
+<%= render V2::ReleaseComponent.new(@release,
+                                    title: @train.name,
+                                    turbo_frame: dom_id(@app, :edit_org),
+                                    tab_config: @tab_configuration) do |container| %>
+  <% container.with_back_button %>
+  <% container.with_tab do %>
+    <% release_component = V2::BaseReleaseComponent.new(@release) %>
+    <div class="flex flex-col gap-3">
+      <div class="grid grid-cols-3 justify-between items-start mt-4">
+
+        <div class="col-span-2 flex justify-start">
+          <div class="flex gap-y-1 gap-x-2">
+            <%= render V2::HorizontalDataSetComponent.new(separator: :dashed, bg_color: true) do |component| %>
+              <% component.with_data_set(title: "Started").with_content(release_component.start_time) %>
+              <% component.with_data_set(title: "Released").with_content(release_component.end_time) %>
+              <% component.with_data_set(title: "Duration").with_content(release_component.duration) %>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="col-span-1 flex justify-end">
+          <div class="flex flex-col border-default box-padding gap-y-3">
+            <div class="flex flex-row items-center justify-between">
+              <div class="flex items-center justify-start gap-x-4">
+                <%= user_avatar(@release.release_pilot.full_name, size: 44) %>
+
+                <div class="flex flex-col space-y-2">
+                  <h5 class="heading-5-sc">Release Pilot</h5>
+                  <span class="text-sm text-secondary">
+                    <%= @release.release_pilot.full_name %>
+                    <span class="text-xs text-secondary-50"><%= @release.release_pilot.email %></span>
+                  </span>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 min-w-80">
+        <div class="flex flex-col border-default box-padding gap-y-2 max-h-96">
+          <div class="flex items-center justify-between pb-2 border-default-b">
+            <h5 class="heading-5-sc">Changes since last release</h5>
+            <span class="text-xs text-secondary-50">Diff from <%= render V2::BadgeComponent.new(@release.release_changelog.from_ref) %></span>
+          </div>
+
+          <div class="overflow-y-scroll overflow-x-hidden">
+            <%= render V2::CommitListComponent.new do |cl| %>
+              <% @release.release_changelog&.normalized_commits.each do |commit| %>
+                <% cl.with_commit(commit) %>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="col-span-1 flex flex-col border-default box-padding gap-y-2 max-h-96">
+          <div class="flex items-center justify-between pb-2 border-default-b">
+            <h3 class="heading-5-sc">Internal Notes</h3>
+
+            <%= render V2::ModalComponent.new(title: "Edit Internal Notes", dismissable: false) do |modal| %>
+              <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none).with_icon("v2/pencil.svg", size: :sm) %>
+              <% modal.with_body do %>
+                <%= form_with(model: [@release], method: :put, builder: EnhancedFormHelper::AuthzForm) do |form| %>
+                  <div data-controller="text-editor" data-text-editor-view-mode-value="false" class="mb-4">
+                    <div data-text-editor-target="editor"></div>
+                    <%= form.textarea :internal_notes, { class: "hidden", data: { text_editor_target: "editorReplica" } } %>
+                  </div>
+
+                  <%= form.authz_submit "Save", "v2/archive.svg" %>
+                <% end %>
+              <% end %>
+            <% end %>
+          </div>
+
+          <div data-controller="text-editor"
+               data-text-editor-view-mode-value="true"
+               data-text-editor-view-content-value="<%= @release.internal_notes %>"
+               class="overflow-y-scroll overflow-x-hidden">
+            <div class="ql-editor p-0" data-text-editor-target="viewContents" contenteditable="false"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%= render V2::SectionComponent.new(style: :titled, title: "Analysis") do %>
+      <% devops_report = @release.train.devops_report %>
+      <div class="grid grid-cols-3 my-3 gap-3">
+        <%= render ChartComponent.new(devops_report[:mobile_devops][:frequency]) %>
+        <%= render ChartComponent.new(devops_report[:mobile_devops][:duration]) %>
+        <%= render ChartComponent.new(devops_report[:mobile_devops][:hotfixes]) %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

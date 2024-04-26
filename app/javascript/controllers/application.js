@@ -1,4 +1,4 @@
-import { Application } from '@hotwired/stimulus'
+import { Application } from "@hotwired/stimulus";
 import * as Sentry from "@sentry/browser";
 
 const application = Application.start()

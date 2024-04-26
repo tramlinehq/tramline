@@ -9,6 +9,7 @@
 #  backmerge_failure       :boolean          default(FALSE)
 #  commit_hash             :string           not null, indexed => [release_id]
 #  message                 :string
+#  parents                 :jsonb
 #  timestamp               :datetime         not null
 #  url                     :string
 #  created_at              :datetime         not null
@@ -20,6 +21,7 @@
 #
 class Commit < ApplicationRecord
   include Passportable
+  include Commitable
 
   self.implicit_order_column = :timestamp
 
@@ -40,6 +42,10 @@ class Commit < ApplicationRecord
   after_create_commit -> { Releases::BackmergeCommitJob.perform_later(id) }, if: -> { release.release_changes? }
 
   delegate :release_platform_runs, :notify!, :train, :platform, to: :release
+
+  def self.commit_messages(first_parent_only = false)
+    Commit.commit_log(all.reorder("timestamp DESC"), first_parent_only).map(&:message)
+  end
 
   def self.count_by_team(org)
     return unless org.teams.exists?
