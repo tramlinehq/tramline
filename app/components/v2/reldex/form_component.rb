@@ -1,9 +1,11 @@
-class V2::ReldexFormComponent < V2::BaseReldexComponent
+class V2::Reldex::FormComponent < V2::Reldex::BaseComponent
   def initialize(release_index)
     @release_index = release_index
   end
 
   attr_reader :release_index
+  delegate :train, to: :release_index
+  delegate :app, to: :train
 
   def components
     release_index.components.order(weight: :desc)

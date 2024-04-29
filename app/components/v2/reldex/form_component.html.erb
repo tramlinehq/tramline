@@ -1,34 +1,9 @@
-<%= render V2::FormComponent.new(model: [release_index.train.app, release_index.train, release_index]) do |f| %>
+<%= render V2::FormComponent.new(model: [app, train, release_index]) do |f| %>
   <% f.with_section(heading: "Basic") do |section| %>
     <% section.with_description do %>
       <div class="flex flex-col gap-2">
         <div>Configure the acceptable range for the release score.</div>
-        <%= render V2::TableComponent.new(columns: ["Value", "Outcome"], size: :compact) do |table| %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              ≥ Acceptable Max
-            <% end %>
-            <% row.with_cell(style: bg_color(:excellent)) do %>
-              Excellent
-            <% end %>
-          <% end %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              Within Acceptable Range
-            <% end %>
-            <% row.with_cell(style: bg_color(:acceptable)) do %>
-              Acceptable
-            <% end %>
-          <% end %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              ≤ Acceptable Min
-            <% end %>
-            <% row.with_cell(style: bg_color(:mediocre)) do %>
-              Mediocre
-            <% end %>
-          <% end %>
-        <% end %>
+        <%= render V2::Reldex::CalculationTableComponent.new(tolerable_min: "Acceptable Min", tolerable_max: "Acceptable Max") %>
       </div>
     <% end %>
 
@@ -42,9 +17,6 @@
       <div class="flex flex-col gap-2">
         <div>Key components of the reldex score. Weightage for a component can be set to 0 to denote no contribution to
           the overall release score.
-        </div>
-        <div>
-          <%= render partial: "release_indices/computation" %>
         </div>
         <%= render V2::TableComponent.new(columns: ["Value", "Score (unweighted)"], size: :compact) do |table| %>
           <% table.with_row do |row| %>
@@ -72,6 +44,7 @@
             <% end %>
           <% end %>
         <% end %>
+        <%= render partial: "release_indices/computation" %>
       </div>
     <% end %>
 

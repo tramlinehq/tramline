@@ -203,7 +203,7 @@
               <% if reldex_defined? %>
                 <% row.with_cell do %>
                   <% if (reldex = release_component.release_summary&.fetch(:reldex, nil)) %>
-                    <%= render V2::ReldexStatusComponent.new(release:, reldex_score: reldex) %>
+                    <%= render V2::Reldex::StatusComponent.new(release:, reldex_score: reldex) %>
                   <% else %>
                     –
                   <% end %>

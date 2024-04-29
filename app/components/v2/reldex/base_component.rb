@@ -1,4 +1,4 @@
-class V2::BaseReldexComponent < V2::BaseComponent
+class V2::Reldex::BaseComponent < V2::BaseComponent
   COLORS = {
     dark: {
       excellent: "#14532d",

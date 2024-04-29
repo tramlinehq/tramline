@@ -29,7 +29,7 @@ class ReleaseIndex < ApplicationRecord
     Score.compute(self, **args)
   end
 
-  GRADES = [:great, :acceptable, :mediocre]
+  GRADES = [:excellent, :acceptable, :mediocre]
 
   class Score
     def self.compute(release_index, **args)
@@ -63,12 +63,12 @@ class ReleaseIndex < ApplicationRecord
     end
 
     def compute_grade
-      if @value < tolerable_range.begin
+      if @value <= tolerable_range.begin
         GRADES[2]
-      elsif tolerable_range.cover?(@value)
-        GRADES[1]
-      else
+      elsif @value >= tolerable_range.end
         GRADES[0]
+      else
+        GRADES[1]
       end
     end
 

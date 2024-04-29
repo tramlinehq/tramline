@@ -1,4 +1,4 @@
-class V2::ReldexStatusComponent < V2::BaseReldexComponent
+class V2::Reldex::StatusComponent < V2::Reldex::BaseComponent
   def initialize(release:, reldex_score:)
     raise ArgumentError, "reldex score is not a Score object" unless reldex_score.instance_of?(::ReleaseIndex::Score)
     @release = release

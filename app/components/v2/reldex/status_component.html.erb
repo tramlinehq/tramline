@@ -1,4 +1,4 @@
-<div class="inline-flex items-center font-medium text-xs px-1.5 py-0.5 rounded-md tracking-wide border border-main-200 dark:border-main-600 gap-x-1.5 <%= grade_bg_color %>">
+<div class="inline-flex items-center heading-5 box-padding-sm border-default-md gap-x-1.5 <%= grade_bg_color %>">
   <span class="<%= grade_color %> uppercase"><%= grade %></span>
   <%= render V2::ModalComponent.new(title: "Reldex for #{release_version}",
                                     size: :sm,
@@ -9,7 +9,7 @@
     <% button.with_tooltip("Open release score details", placement: "top") %>
     <% modal.with_body do %>
       <div class="flex items-center gap-x-2">
-        <div class="text-lg border-default px-1.5 py-0.5">
+        <div class="text-lg border-default box-padding-sm">
           <math>
             <mrow>
               <mi><%= final_score %></mi>
@@ -18,38 +18,13 @@
             </mrow>
           </math>
         </div>
-        <div class="inline-flex items-end font-medium text-lg px-1.5 py-0.5 rounded-md tracking-wide border-default <%= grade_color %> <%= grade_bg_color %> gap-x-1.5 uppercase">
+        <div class="font-medium text-lg tracking-wide uppercase box-padding-sm border-default-md <%= grade_color %> <%= grade_bg_color %>">
           <%= grade %>
         </div>
       </div>
 
       <%= render V2::SectionComponent.new(style: :titled, title: "Reldex tolerance", size: :compact) do %>
-        <%= render V2::TableComponent.new(columns: ["", "grade"], size: :compact) do |table| %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              reldex ≥ <%= tolerable_min %>
-            <% end %>
-            <% row.with_cell(style: "bg-green-100 dark:bg-green-900") do %>
-              Excellent
-            <% end %>
-          <% end %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              <%= tolerable_min %> < reldex < <%= tolerable_max %>
-            <% end %>
-            <% row.with_cell(style: "bg-sky-100 dark:bg-sky-900") do %>
-              Acceptable
-            <% end %>
-          <% end %>
-          <% table.with_row do |row| %>
-            <% row.with_cell do %>
-              reldex ≤ <%= tolerable_min %>
-            <% end %>
-            <% row.with_cell(style: "bg-rose-100 dark:bg-rose-900") do %>
-              Mediocre
-            <% end %>
-          <% end %>
-        <% end %>
+        <%= render V2::Reldex::CalculationTableComponent.new(tolerable_min:, tolerable_max:) %>
       <% end %>
 
       <%= render V2::SectionComponent.new(style: :titled, title: "Score breakdown", size: :compact) do %>
@@ -71,12 +46,7 @@
       <% end %>
 
       <div class="text-secondary font-normal flex flex-col gap-2 whitespace-normal">
-        <div>
-          †
-          Reldex or Release Process Index, is a quantitative metric that measures the
-          efficacy of a mobile release process.
-        </div>
-        <div><%= render partial: "release_indices/computation" %></div>
+        <%= render partial: "release_indices/computation" %>
       </div>
     <% end %>
   <% end %>
