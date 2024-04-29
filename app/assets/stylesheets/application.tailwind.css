@@ -5,9 +5,9 @@
 
 @layer base {
   :root {
-    --color-excellent: theme("colors.excellent.300");
-    --color-acceptable: theme("colors.acceptable.300");
-    --color-mediocre: theme("colors.mediocre.300");
+    --color-reldex-excellent: theme("colors.reldexExcellent.300");
+    --color-reldex-acceptable: theme("colors.reldexAcceptable.300");
+    --color-reldex-mediocre: theme("colors.reldexMediocre.300");
   }
 }
 

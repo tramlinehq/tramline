@@ -41,13 +41,13 @@ module.exports = {
         },
         backgroundDark: "rgb(31 41 55/1)",
         backgroundLight: "rgb(251 252 252/1)",
-        excellent: {
+        reldexExcellent: {
           ...colors.emerald
         },
-        acceptable: {
+        reldexAcceptable: {
           ...colors.blue
         },
-        mediocre: {
+        reldexMediocre: {
           ...colors.red
         },
       },
