@@ -149,12 +149,12 @@ en:
           stability_duration: "Stability Duration"
           stability_changes: "Stability Changes"
         description:
-          hotfixes: "These are the fixes that are done after the release has reached all the users.\n\nAny bug encountered during the staged rollout will impact 100% of the users."
-          rollout_fixes: "These are the fixes that are done while the staged rollout of the release is in progress.\n\nAny bug encountered during the staged rollout will impact a percentage of users."
-          rollout_duration: "If the rollout is paused or halted during the release, it affects the overall cadence of the release process for the team."
-          duration: "The time from release start (code freeze) to 100% rollout of the release."
-          stability_duration: "The number of days it takes to stabilize the build before submitting it to the stores for review.\n\nAny delays here usually mean untested code, bugs, general productivity, and cadence drop in the release process."
-          stability_changes: "The number of fixes required to stabilize the build for release.\n\nThis is related to the above duration but also independently measured since a higher number of changes show an increase in back and forth between development and testing."
+          hotfixes: "These are the fixes that are done after the release has reached all the users."
+          rollout_fixes: "These are the fixes that are done while the staged rollout of the release is in progress."
+          rollout_duration: "The number of days between rollout start and 100% rollout of the release."
+          duration: "The number of days from release start (code freeze) to 100% rollout of the release."
+          stability_duration: "The number of days it takes to stabilize the build before submitting it to the stores for review."
+          stability_changes: "The number of commits it took to stabilize the build for release."
     attributes:
       integration:
         categories:
@@ -378,7 +378,7 @@ en:
       reldex:
         title: "Reldex"
         scope: "Last 10 releases"
-        help_text: "Reldex or Release Process Index, is a quantitative metric that measures the efficacy of a mobile release process.\n\nInspired from Apdex, it aggregates various components of the release process into a single score between 0 and 1."
+        help_text: "Reldex or Release Process Index, is a quantitative metric that measures the efficacy of a mobile release process.\n\nIt aggregates various components of the release process into a single score between 0 and 1."
     operational_efficiency:
       contributors:
         title: "Contributors"
