@@ -29,7 +29,7 @@ class V2::Reldex::StatusComponent < V2::Reldex::BaseComponent
 
   def component_raw_value(component)
     unit = (component.release_index_component.tolerable_unit == "number") ? nil : component.release_index_component.tolerable_unit.pluralize
-    builder = component.input_value.to_s
+    builder = number_to_human(component.input_value, precision: 2, strip_insignificant_zeros: true)
     builder += " #{unit}" if unit
     builder
   end
