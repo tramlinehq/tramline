@@ -52,7 +52,7 @@
             <% component.with_data_set(title: "Released").with_content(end_time) %>
             <% component.with_data_set(title: "Duration").with_content(duration) %>
             <% component.with_data_set(title: "Stability Commits").with_content(commit_count) %>
-            <% if release_summary&.fetch(:reldex, nil) %>
+            <% if current_user.reldex_enabled? && release_summary&.fetch(:reldex, nil) %>
               <% component.with_data_set(title: "Reldex") do %>
                 <%= render V2::Reldex::StatusComponent.new(release:, reldex_score: release_summary[:reldex]) %>
               <% end %>

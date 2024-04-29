@@ -148,7 +148,7 @@
           <div class="col-span-2">
             <%= render ChartComponent.new(devops_report[:mobile_devops][:time_in_phases]) %>
           </div>
-          <% if devops_report[:mobile_devops][:reldex_scores].present? %>
+          <% if current_user.reldex_enabled? && devops_report[:mobile_devops][:reldex_scores].present? %>
             <div class="col-span-2">
               <%= render ChartComponent.new(devops_report[:mobile_devops][:reldex_scores]) %>
             </div>
