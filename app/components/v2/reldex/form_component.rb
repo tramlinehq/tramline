@@ -40,4 +40,8 @@ class V2::Reldex::FormComponent < V2::Reldex::BaseComponent
                                       within_range: slider_color(:acceptable),
                                       above_range: slider_color(:excellent)}})
   end
+
+  def error_message_classes
+    ["text-red-600", "dark:text-red-400"]
+  end
 end

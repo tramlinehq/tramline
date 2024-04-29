@@ -48,7 +48,7 @@
       </div>
     <% end %>
 
-    <section data-controller="domain--release-index">
+    <section data-controller="domain--release-index" data-domain--release-index-error-classes-value="<%= error_message_classes %>">
       <div class="grid grid-cols-1 items-center divide-default">
         <div class="px-1 py-2 grid grid-cols-6 gap-x-10 uppercase text-secondary dark:text-white text-xs font-medium items-center">
           <div class="col-span-2">Component</div>

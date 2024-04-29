@@ -1,7 +1,13 @@
 import {Controller} from "@hotwired/stimulus";
 
+const errorMessage = "Total weight must be 100%"
+
 export default class extends Controller {
   static targets = ["weight", "total", "errorMessage"]
+
+  static values = {
+    errorClasses: Array
+  }
 
   connect() {
     this.computeTotal()
@@ -13,11 +19,16 @@ export default class extends Controller {
       totalWeight += parseInt(weight.value)
     })
     this.totalTarget.textContent = totalWeight + "%"
+    let errorClasses = this.errorClassesValue
     if (totalWeight !== 100) {
-      this.totalTarget.classList.add("text-red-600", "dark:text-red-400")
-      this.errorMessageTarget.textContent = "Total weight must be 100%"
+      errorClasses.forEach((errorClass) => {
+        this.totalTarget.classList.add(errorClass)
+      })
+      this.errorMessageTarget.textContent = errorMessage
     } else {
-      this.totalTarget.classList.remove("text-red-600", "dark:text-red-400")
+      errorClasses.forEach((errorClass) => {
+        this.totalTarget.classList.remove(errorClass)
+      })
       this.errorMessageTarget.textContent = ""
     }
   }
