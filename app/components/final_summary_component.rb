@@ -3,7 +3,7 @@ class FinalSummaryComponent < ViewComponent::Base
   include LinkHelper
   attr_reader :release
 
-  delegate :current_organization, to: :helpers
+  delegate :current_organization, :current_user, to: :helpers
   delegate :team_colors, to: :current_organization
 
   def initialize(release:)
@@ -42,6 +42,14 @@ class FinalSummaryComponent < ViewComponent::Base
 
   def step_summary_by_platform
     summary[:steps_summary].all.sort_by(&:platform).group_by(&:platform)
+  end
+
+  def reldex
+    summary[:reldex]
+  end
+
+  def reldex?
+    current_user.reldex_enabled? && reldex.present?
   end
 
   def staged_rollouts(store_version)

@@ -84,6 +84,15 @@
                 <dt class="mb-2 text-xl font-extrabold"><%= time_format overall.finished_at %></dt>
                 <dd class="text-main-500">Finished</dd>
               </div>
+
+              <% if reldex? %>
+                <div class="flex flex-col items-center justify-center">
+                  <dt class="mb-3">
+                    <%= render V2::Reldex::StatusComponent.new(release:, reldex_score: reldex) %>
+                  </dt>
+                  <dd class="text-main-500">Reldex</dd>
+                </div>
+              <% end %>
             </dl>
           </div>
         </div>
