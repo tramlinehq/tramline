@@ -1,4 +1,4 @@
-class ChartComponent < ViewComponent::Base
+class ChartComponent < V2::BaseComponent
   include AssetsHelper
   using RefinedHash
   CHART_TYPES = %w[area line stacked-bar polar-area]
@@ -137,15 +137,15 @@ class ChartComponent < ViewComponent::Base
       {
         y: a[:y].is_a?(Range) ? a[:y].begin : a[:y],
         y2: a[:y].is_a?(Range) ? a[:y].end : nil,
-        borderColor: a[:color],
-        fillColor: a[:color],
+        borderColor: resolve_color(a[:color]),
+        fillColor: resolve_color(a[:color]),
         label: {
           textAnchor: "start",
           position: "left",
           offsetX: 7,
           offsetY: 17,
           style: {
-            background: a[:color]
+            background: resolve_color(a[:color])
           },
           text: a[:text]
         }

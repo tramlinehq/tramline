@@ -1,17 +1,4 @@
 class V2::Reldex::BaseComponent < V2::BaseComponent
-  COLORS = {
-    dark: {
-      excellent: "var(--color-reldex-excellent)",
-      acceptable: "var(--color-reldex-acceptable)",
-      mediocre: "var(--color-reldex-mediocre)"
-    },
-    light: {
-      excellent: "var(--color-reldex-excellent)",
-      acceptable: "var(--color-reldex-acceptable)",
-      mediocre: "var(--color-reldex-mediocre)"
-    }
-  }
-
   def text_color(grade)
     case grade
     when :excellent
@@ -38,7 +25,5 @@ class V2::Reldex::BaseComponent < V2::BaseComponent
     end
   end
 
-  def slider_color(grade, theme = :light)
-    COLORS[theme][grade]
-  end
+  def slider_color(grade) = resolve_color(grade)
 end
