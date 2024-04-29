@@ -288,7 +288,7 @@ class DeploymentRun < ApplicationRecord
 
     # NOTE: closest timestamp for releases finished before the above passport was added
     return staged_rollout.created_at if staged_rollout
-    passports.where(reason: :released).last.event_timestamp
+    passports.where(reason: :released).last&.event_timestamp
   end
 
   def first?
