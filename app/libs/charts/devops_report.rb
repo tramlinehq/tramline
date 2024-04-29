@@ -65,43 +65,10 @@ class Charts::DevopsReport
           value_format: "number",
           name: "devops.reldex",
           height: "250",
-          annotations: {
-            yaxis: [
-              {
-                y: 0,
-                y2: train.release_index.tolerable_range.min,
-                borderColor: "#ef4444",
-                fillColor: "#fecdd3",
-                label: {
-                  textAnchor: "start",
-                  position: "left",
-                  offsetX: 7,
-                  offsetY: 18,
-                  borderColor: "#ef4444",
-                  style: {
-                    color: "#ef4444",
-                    background: "#fecdd3"
-                  },
-                  text: "Mediocre"
-                }
-              },
-              {
-                y: train.release_index.tolerable_range.max,
-                borderColor: "#22c55e",
-                label: {
-                  textAnchor: "start",
-                  position: "left",
-                  offsetX: 7,
-                  borderColor: "#22c55e",
-                  style: {
-                    color: "#22c55e",
-                    background: "#bbf7d0"
-                  },
-                  text: "Excellent"
-                }
-              }
-            ]
-          }
+          y_annotations: [
+            {y: 0..train.release_index.tolerable_range.min, text: "Mediocre", color: "var(--color-mediocre)"},
+            {y: train.release_index.tolerable_range.max, text: "Excellent", color: "var(--color-excellent)"}
+          ]
         }
       },
       operational_efficiency: {

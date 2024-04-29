@@ -34,6 +34,14 @@ class V2::Reldex::StatusComponent < V2::Reldex::BaseComponent
     builder
   end
 
+  def grade_bg_color
+    bg_color(grade)
+  end
+
+  def grade_color
+    text_color(grade)
+  end
+
   def component_grade_color(component)
     case component.range_value
     when 1

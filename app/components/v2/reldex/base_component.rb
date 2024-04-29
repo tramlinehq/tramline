@@ -1,38 +1,25 @@
 class V2::Reldex::BaseComponent < V2::BaseComponent
   COLORS = {
     dark: {
-      excellent: "#14532d",
-      acceptable: "#0c4a6e",
-      mediocre: "#881337"
+      excellent: "var(--color-excellent)",
+      acceptable: "var(--color-acceptable)",
+      mediocre: "var(--color-mediocre)"
     },
     light: {
-      excellent: "#bbf7d0",
-      acceptable: "#bae6fd",
-      mediocre: "#fecdd3"
+      excellent: "var(--color-excellent)",
+      acceptable: "var(--color-acceptable)",
+      mediocre: "var(--color-mediocre)"
     }
   }
 
-  def grade_color
+  def text_color(grade)
     case grade
-    when :great
-      "text-green-800 dark:text-green-300"
+    when :excellent
+      "text-excellent-800 dark:text-excellent-300"
     when :acceptable
-      "text-sky-800 dark:text-sky-300"
+      "text-acceptable-800 dark:text-acceptable-300"
     when :mediocre
-      "text-rose-800 dark:text-rose-300"
-    else
-      raise ArgumentError, "Invalid grade"
-    end
-  end
-
-  def grade_bg_color
-    case grade
-    when :great
-      "bg-green-100 dark:bg-green-800"
-    when :acceptable
-      "bg-sky-100 dark:bg-sky-800"
-    when :mediocre
-      "bg-rose-100 dark:bg-rose-800"
+      "text-mediocre-800 dark:text-mediocre-300"
     else
       raise ArgumentError, "Invalid grade"
     end
@@ -41,11 +28,11 @@ class V2::Reldex::BaseComponent < V2::BaseComponent
   def bg_color(grade)
     case grade
     when :excellent
-      "bg-green-100 dark:bg-green-900"
+      "bg-excellent-100 dark:bg-excellent-900"
     when :acceptable
-      "bg-sky-100 dark:bg-sky-900"
+      "bg-acceptable-100 dark:bg-acceptable-900"
     when :mediocre
-      "bg-rose-100 dark:bg-rose-900"
+      "bg-mediocre-100 dark:bg-mediocre-900"
     else
       raise ArgumentError, "Invalid grade"
     end

@@ -82,7 +82,7 @@ class ChartComponent < ViewComponent::Base
   end
 
   def annotations
-    (chart[:annotations] || {}).to_json
+    {yaxis: y_annotations}.to_json
   end
 
   def help_text
@@ -127,6 +127,31 @@ class ChartComponent < ViewComponent::Base
   def stacked_bar? = chart[:type] == "stacked-bar"
 
   def polar_area? = chart[:type] == "polar-area"
+
+  private
+
+  def y_annotations
+    return [] if chart[:y_annotations].blank?
+
+    chart[:y_annotations].map do |a|
+      {
+        y: a[:y].is_a?(Range) ? a[:y].begin : a[:y],
+        y2: a[:y].is_a?(Range) ? a[:y].end : nil,
+        borderColor: a[:color],
+        fillColor: a[:color],
+        label: {
+          textAnchor: "start",
+          position: "left",
+          offsetX: 7,
+          offsetY: 17,
+          style: {
+            background: a[:color]
+          },
+          text: a[:text]
+        }
+      }
+    end.compact
+  end
 
   # Input:
   # {
