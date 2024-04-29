@@ -148,11 +148,16 @@
           <div class="col-span-2">
             <%= render ChartComponent.new(devops_report[:mobile_devops][:time_in_phases]) %>
           </div>
+          <% if current_user.reldex_enabled? && devops_report[:mobile_devops][:reldex_scores].present? %>
+            <div class="col-span-2">
+              <%= render ChartComponent.new(devops_report[:mobile_devops][:reldex_scores]) %>
+            </div>
+          <% end %>
         </div>
       <% end %>
 
       <%= render V2::SectionComponent.new(style: :titled, title: "Operational Efficiency") do %>
-        <div class="grid grid-cols-4 my-3 gap-3">
+        <div class="grid grid-cols-4 gap-x-2 my-3 gap-y-3">
           <%= render ChartComponent.new(devops_report[:operational_efficiency][:contributors]) %>
           <%= render ChartComponent.new(devops_report[:operational_efficiency][:stability_contributors]) %>
           <div><!-- to maintain grid height --></div>
@@ -170,7 +175,7 @@
 
     <%= render V2::SectionComponent.new(style: :titled, title: "Previous Releases") do %>
       <% if previous_releases.exists? %>
-        <%= render V2::TableComponent.new(columns: ["", "release", "dates", "duration", ""]) do |table| %>
+        <%= render V2::TableComponent.new(columns: release_table_columns, size: :default) do |table| %>
           <% previous_releases.each do |release| %>
             <% release_component = release_component(release) %>
 
@@ -192,11 +197,21 @@
               <% end %>
 
               <% row.with_cell do %>
-                <div><%= release_component.interval %></div>
+                <%= render V2::BadgeComponent.new(release_component.branch) %>
+              <% end %>
+
+              <% if reldex_defined? %>
+                <% row.with_cell do %>
+                  <% if (reldex = release_component.release_summary&.fetch(:reldex, nil)) %>
+                    <%= render V2::Reldex::StatusComponent.new(release:, reldex_score: reldex) %>
+                  <% else %>
+                    –
+                  <% end %>
+                <% end %>
               <% end %>
 
               <% row.with_cell do %>
-                <div><%= release_component.duration %></div>
+                <div><%= release_component.interval %></div>
               <% end %>
 
               <% row.with_cell(style: "text-right w-2") do %>

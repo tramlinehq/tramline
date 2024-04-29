@@ -1,0 +1,26 @@
+<%= render V2::TableComponent.new(columns: ["", "grade"], size: :compact) do |table| %>
+  <% table.with_row do |row| %>
+    <% row.with_cell do %>
+      reldex ≥ <%= tolerable_max %>
+    <% end %>
+    <% row.with_cell(style: bg_color(:excellent)) do %>
+      Excellent
+    <% end %>
+  <% end %>
+  <% table.with_row do |row| %>
+    <% row.with_cell do %>
+      <%= tolerable_min %> < reldex < <%= tolerable_max %>
+    <% end %>
+    <% row.with_cell(style: bg_color(:acceptable)) do %>
+      Acceptable
+    <% end %>
+  <% end %>
+  <% table.with_row do |row| %>
+    <% row.with_cell do %>
+      reldex ≤ <%= tolerable_min %>
+    <% end %>
+    <% row.with_cell(style: bg_color(:mediocre)) do %>
+      Mediocre
+    <% end %>
+  <% end %>
+<% end %>

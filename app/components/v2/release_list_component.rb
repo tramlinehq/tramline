@@ -99,6 +99,18 @@ class V2::ReleaseListComponent < V2::BaseComponent
     end
   end
 
+  def reldex_defined?
+    current_user.reldex_enabled? && train.release_index.present?
+  end
+
+  def release_table_columns
+    if reldex_defined?
+      ["", "release", "branch", "reldex", "dates", ""]
+    else
+      ["", "release", "branch", "dates", ""]
+    end
+  end
+
   private
 
   def start_release_text(major: false)

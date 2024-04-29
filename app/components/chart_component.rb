@@ -1,4 +1,4 @@
-class ChartComponent < ViewComponent::Base
+class ChartComponent < V2::BaseComponent
   include AssetsHelper
   using RefinedHash
   CHART_TYPES = %w[area line stacked-bar polar-area]
@@ -40,6 +40,10 @@ class ChartComponent < ViewComponent::Base
     series_raw.blank? || series_raw.keys.size < 1
   end
 
+  def height
+    chart[:height] || "100%"
+  end
+
   # input:
   # {"team-a": 1,
   #  "team-b": 10}
@@ -75,6 +79,10 @@ class ChartComponent < ViewComponent::Base
 
   def chart_scope
     chart[:scope] || I18n.t("charts.#{chart[:name]}.scope")
+  end
+
+  def annotations
+    {yaxis: y_annotations}.to_json
   end
 
   def help_text
@@ -119,6 +127,31 @@ class ChartComponent < ViewComponent::Base
   def stacked_bar? = chart[:type] == "stacked-bar"
 
   def polar_area? = chart[:type] == "polar-area"
+
+  private
+
+  def y_annotations
+    return [] if chart[:y_annotations].blank?
+
+    chart[:y_annotations].map do |a|
+      {
+        y: a[:y].is_a?(Range) ? a[:y].begin : a[:y],
+        y2: a[:y].is_a?(Range) ? a[:y].end : nil,
+        borderColor: resolve_color(a[:color]),
+        fillColor: resolve_color(a[:color]),
+        label: {
+          textAnchor: "start",
+          position: "left",
+          offsetX: 7,
+          offsetY: 17,
+          style: {
+            background: resolve_color(a[:color])
+          },
+          text: a[:text]
+        }
+      }
+    end.compact
+  end
 
   # Input:
   # {

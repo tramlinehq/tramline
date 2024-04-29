@@ -1,0 +1,35 @@
+<div class="flex flex-col gap-5"
+     data-controller="range-slider"
+     data-range-slider-below-range-color-value="<%= below_range_color %>"
+     data-range-slider-mid-range-color-value="<%= within_range_color %>"
+     data-range-slider-above-range-color-value="<%= above_range_color %>">
+  <div class="relative flex items-center">
+    <%= form.range_field from_method,
+                         in: allowed_range,
+                         step: step,
+                         id: "fromSlider",
+                         data: { range_slider_target: "fromSlider", action: "change->range-slider#controlFromSlider" } %>
+    <%= form.range_field to_method,
+                         in: allowed_range,
+                         step: step,
+                         data: { range_slider_target: "toSlider", action: "change->range-slider#controlToSlider" } %>
+  </div>
+  <div class="flex flex-row justify-between gap-x-20">
+    <div class="flex items-center gap-2">
+      <%= form.label_only(from_method, "Min", type: :base) %>
+      <%= form.number_field_without_label from_method,
+                                          compact: true,
+                                          in: allowed_range,
+                                          step: step,
+                                          data: { range_slider_target: "fromInput", action: "change->range-slider#controlFromInput" } %>
+    </div>
+    <div class="flex items-center gap-2 justify-end">
+      <%= form.label_only(to_method, "Max", type: :base) %>
+      <%= form.number_field_without_label to_method,
+                                          compact: true,
+                                          in: allowed_range,
+                                          step: step,
+                                          data: { range_slider_target: "toInput", action: "change->range-slider#controlToInput" } %>
+    </div>
+  </div>
+</div>

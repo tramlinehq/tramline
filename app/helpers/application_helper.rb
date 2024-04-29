@@ -19,6 +19,14 @@ module ApplicationHelper
     neutral: %w[bg-slate-500]
   }
 
+  def resolve_color(color)
+    if color.to_sym.in?(%i[excellent acceptable mediocre])
+      "var(--color-reldex-#{color})"
+    else
+      color
+    end
+  end
+
   def write_only(&block)
     return concat(content_tag(:div, capture(&block), class: "hidden")) unless writer?
     yield(block)

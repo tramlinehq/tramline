@@ -56,7 +56,19 @@ class Charts::DevopsReport
           stacked: true,
           type: "stacked-bar",
           value_format: "time",
-          name: "devops.time_in_phases"
+          name: "devops.time_in_phases",
+          height: "250"
+        },
+        reldex_scores: {
+          data: reldex_scores,
+          type: "line",
+          value_format: "number",
+          name: "devops.reldex",
+          height: "250",
+          y_annotations: [
+            {y: 0..train.release_index.tolerable_range.min, text: "Mediocre", color: "mediocre"},
+            {y: train.release_index.tolerable_range.max, text: "Excellent", color: "excellent"}
+          ]
         }
       },
       operational_efficiency: {
@@ -81,7 +93,8 @@ class Charts::DevopsReport
           value_format: "number",
           name: "operational_efficiency.team_stability_contributors",
           colors: team_colors,
-          show_y_axis: true
+          show_y_axis: true,
+          height: "250"
         },
         team_contributors: {
           data: team_contributors,
@@ -90,7 +103,8 @@ class Charts::DevopsReport
           value_format: "number",
           name: "operational_efficiency.team_contributors",
           colors: team_colors,
-          show_y_axis: true
+          show_y_axis: true,
+          height: "250"
         }
       }
     }
@@ -112,6 +126,15 @@ class Charts::DevopsReport
       .group_by_period(period, :completed_at, last: last, current: true, format:)
       .count
       .transform_values { {releases: _1} }
+  end
+
+  memoize def reldex_scores(last: 10)
+    return if train.release_index.blank?
+
+    finished_releases(last)
+      .group_by(&:release_version)
+      .sort_by { |v, _| v.to_semverish }.to_h
+      .transform_values { {reldex: _1.first.index_score&.value} }
   end
 
   memoize def release_stability_contributors(last: LAST_RELEASES)

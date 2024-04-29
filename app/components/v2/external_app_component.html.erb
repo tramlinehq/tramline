@@ -1,5 +1,5 @@
 <% if external_apps? %>
-  <ul class="mb-2 divide-y divide-main-200 dark:divide-main-700">
+  <ul class="mb-2 divide-default">
     <% latest_external_apps.each do |platform, external_app| %>
       <% if external_app %>
         <% channels(external_app).each do |channel| %>

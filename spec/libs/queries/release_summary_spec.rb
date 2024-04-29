@@ -16,7 +16,7 @@ describe Queries::ReleaseSummary, type: :model do
         create_deployment_run_tree(:android,
           :released,
           deployment_traits: [:with_production_channel],
-          release_traits: [:with_no_platform_runs],
+          release_traits: [:with_no_platform_runs, :finished],
           step_traits: [:release],
           step_run_traits: [:success]) => { step:, release:, step_run:, deployment_run: }
         deployment_run.event_stamp_now!(reason: :release_started, kind: :notice, data: deployment_run.send(:stamp_data))
@@ -48,7 +48,7 @@ describe Queries::ReleaseSummary, type: :model do
       create_deployment_run_tree(:android,
         :released,
         deployment_traits: [:with_production_channel],
-        release_traits: [:with_no_platform_runs],
+        release_traits: [:with_no_platform_runs, :finished],
         step_traits: [:release],
         step_run_traits: [:success]) => { app:, step:, release:, step_run:, deployment_run: }
       app.update!(organization: org)
@@ -58,6 +58,25 @@ describe Queries::ReleaseSummary, type: :model do
       actual = described_class.all(release.id)
       expect(actual[:overall].attributes["version"]).to eq(release.release_version)
       expect(actual[:team_stability_commits]).to eq({"Unknown" => stability_commits.size, team.name => 0})
+    end
+
+    it "returns reldex when release index exists" do
+      create_deployment_run_tree(:android,
+        :released,
+        deployment_traits: [:with_production_channel],
+        release_traits: [:with_no_platform_runs, :finished],
+        step_traits: [:release],
+        step_run_traits: [:success]) => { step:, train:, release:, step_run:, deployment_run: }
+
+      deployment_run.event_stamp_now!(reason: :release_started, kind: :notice, data: deployment_run.send(:stamp_data))
+      described_class.warm(release.id)
+      actual = described_class.all(release.id)
+
+      score = actual[:reldex]
+      expect(score.grade).to eq(:excellent)
+      expect(score.value).to eq(1)
+      expect(score.release_index.id).to eq(train.release_index.id)
+      expect(score.components.map(&:value)).to match_array([0.05, 0.15, 0.15, 0.15, 0.2, 0.3])
     end
   end
 end

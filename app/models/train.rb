@@ -59,6 +59,7 @@ class Train < ApplicationRecord
   has_many :deployments, through: :steps
   has_many :scheduled_releases, dependent: :destroy
   has_many :notification_settings, inverse_of: :train, dependent: :destroy
+  has_one :release_index, dependent: :destroy
 
   scope :sequential, -> { reorder("trains.created_at ASC") }
   scope :running, -> { includes(:releases).where(releases: {status: Release.statuses[:on_track]}) }
@@ -104,6 +105,7 @@ class Train < ApplicationRecord
   before_create :set_default_status
   after_create :create_release_platforms
   after_create :create_default_notification_settings
+  after_create :create_release_index
   after_update :schedule_release!, if: -> { kickoff_at.present? && kickoff_at_previously_was.blank? }
   after_update :create_default_notification_settings, if: -> { notification_channel.present? && notification_channel_previously_was.blank? }
 

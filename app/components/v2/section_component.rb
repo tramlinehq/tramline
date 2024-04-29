@@ -51,6 +51,6 @@ class V2::SectionComponent < V2::BaseComponent
   end
 
   def heading_size
-    default? ? "heading-2" : "heading-3"
+    default? ? "heading-2" : "heading-4"
   end
 end

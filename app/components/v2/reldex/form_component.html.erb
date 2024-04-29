@@ -1,0 +1,113 @@
+<%= render V2::FormComponent.new(model: [app, train, release_index]) do |f| %>
+  <% f.with_section(heading: "Basic") do |section| %>
+    <% section.with_description do %>
+      <div class="flex flex-col gap-2">
+        <div>Configure the acceptable range for the release score.</div>
+        <%= render V2::Reldex::CalculationTableComponent.new(tolerable_min: "Acceptable Min", tolerable_max: "Acceptable Max") %>
+      </div>
+    <% end %>
+
+    <div class="my-4">
+      <%= render V2::RangeSliderComponent.new(form: section.F, **reldex_form_params) %>
+    </div>
+  <% end %>
+
+  <% f.with_section(heading: "Breakdown") do |section| %>
+    <% section.with_description do %>
+      <div class="flex flex-col gap-2">
+        <div>Key components of the reldex score. Weightage for a component can be set to 0 to denote no contribution to
+          the overall release score.
+        </div>
+        <%= render V2::TableComponent.new(columns: ["Value", "Score (unweighted)"], size: :compact) do |table| %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              ≤ Acceptable Min
+            <% end %>
+            <% row.with_cell(style: bg_color(:excellent)) do %>
+              1
+            <% end %>
+          <% end %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              Within Acceptable Range
+            <% end %>
+            <% row.with_cell(style: bg_color(:acceptable)) do %>
+              0.5
+            <% end %>
+          <% end %>
+          <% table.with_row do |row| %>
+            <% row.with_cell do %>
+              ≥ Acceptable Max
+            <% end %>
+            <% row.with_cell(style: bg_color(:mediocre)) do %>
+              0
+            <% end %>
+          <% end %>
+        <% end %>
+        <%= render partial: "release_indices/computation" %>
+      </div>
+    <% end %>
+
+    <section data-controller="domain--release-index" data-domain--release-index-error-classes-value="<%= error_message_classes %>">
+      <div class="grid grid-cols-1 items-center divide-default">
+        <div class="px-1 py-2 grid grid-cols-6 gap-x-10 uppercase text-secondary dark:text-white text-xs font-medium items-center">
+          <div class="col-span-2">Component</div>
+          <div class="col-span-1">Weight (%)</div>
+          <div class="col-span-3">Acceptable Range</div>
+        </div>
+        <% components.each do |component| %>
+          <div class="" data-controller="domain--release-index-component">
+            <div class="px-1 py-3 grid grid-cols-6 items-center gap-x-10 text-sm">
+              <% section.F.fields_for :release_index_components, component do |component_fields| %>
+                <div class="col-span-2">
+                  <div class="flex items-center gap-1.5">
+                    <%= component_fields.hidden_field :id, value: component.id %>
+                    <%= component.display_attr(:name) %>
+                    <%= render V2::ButtonComponent.new(scheme: :naked_icon, type: :action, size: :none) do |button| %>
+                      <% button.with_icon("v2/info.svg", size: :base) %>
+                      <% button.with_tooltip(nil, placement: "top", type: :detailed) do |tooltip| %>
+                        <% tooltip.with_detailed_text do %>
+                          <div class="flex flex-col gap-2">
+                            <%= simple_format component.description %>
+                          </div>
+                        <% end %>
+                      <% end %>
+                    <% end %>
+                    <div hidden data-domain--release-index-component-target="inactive">
+                      <%= render V2::BadgeComponent.new("Excluded") %>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-span-1">
+                  <%= component_fields.number_field_without_label :weight_percentage,
+                                                                  compact: true,
+                                                                  step: 5, in: 0..100,
+                                                                  data: { domain__release_index_target: "weight",
+                                                                          domain__release_index_component_target: "weight",
+                                                                          action: "domain--release-index#computeTotal domain--release-index-component#markActionable" } %>
+                </div>
+                <div class="col-span-3">
+                  <div class="mt-3">
+                    <%= render V2::RangeSliderComponent.new(form: component_fields, **tolerable_range_config(component.name)) %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+        <div class="px-1 py-2 grid grid-cols-6 gap-x-10 text-secondary dark:text-white text-xs items-center">
+          <div class="col-span-2 uppercase font-medium">Total</div>
+          <div class="col-span-1">
+            <div data-domain--release-index-target="total"></div>
+          </div>
+          <div class="col-span-3">
+            <div class="text-red-600 dark:text-red-400" data-domain--release-index-target="errorMessage"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  <% end %>
+  <% f.with_action do %>
+    <%= f.F.authz_submit "Save", "v2/archive.svg" %>
+  <% end %>
+<% end %>

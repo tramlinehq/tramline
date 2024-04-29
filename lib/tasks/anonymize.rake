@@ -284,7 +284,7 @@ namespace :anonymize do
       end
     end
 
-    app.releases.each do |release|
+    app.releases.finished.each do |release|
       Queries::ReleaseSummary.warm(release.id)
     end
     train = app.trains.reload.find(train_id)

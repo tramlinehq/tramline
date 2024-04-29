@@ -1,5 +1,14 @@
 require "rails_helper"
 
+PERFECT_SCORE_COMPONENTS = {
+  hotfixes: {input: 0, range_value: 1, value: 0.3},
+  rollout_fixes: {input: 0, range_value: 1, value: 0.2},
+  rollout_duration: {input: 5, range_value: 1, value: 0.15},
+  duration: {input: 6, range_value: 1, value: 0.05},
+  stability_duration: {input: 1, range_value: 1, value: 0.15},
+  stability_changes: {input: 5, range_value: 1, value: 0.15}
+}
+
 describe Release do
   it "has a valid factory" do
     expect(create(:release)).to be_valid
@@ -443,6 +452,100 @@ describe Release do
     it "returns nothing if no fixes are made" do
       expect(release.all_commits).to exist
       expect(release.stability_commits).to be_none
+    end
+  end
+
+  describe "#all_hotfixes" do
+    it "returns all hotfixes for the release" do
+      release = create(:release)
+      hotfixes = create_list(:release, 3, :hotfix, hotfixed_from: release)
+
+      expect(release.all_hotfixes).to contain_exactly(*hotfixes)
+    end
+
+    it "returns hotfixes of hotfixes" do
+      release = create(:release)
+      hotfix = create(:release, :hotfix, hotfixed_from: release)
+      hotfix_hotfix = create(:release, :hotfix, hotfixed_from: hotfix)
+
+      expect(release.all_hotfixes).to contain_exactly(hotfix, hotfix_hotfix)
+    end
+  end
+
+  describe "#index_score" do
+    it "returns nil for a hotfix" do
+      hotfix = create(:release, :hotfix)
+
+      expect(hotfix.index_score).to be_nil
+    end
+
+    it "returns nil for an unfinished release" do
+      ongoing_release = create(:release, :on_track)
+      stopped_release = create(:release, :stopped)
+
+      expect(ongoing_release.index_score).to be_nil
+      expect(stopped_release.index_score).to be_nil
+    end
+
+    [
+      [PERFECT_SCORE_COMPONENTS, 1.0],
+      [PERFECT_SCORE_COMPONENTS.merge(stability_changes: {input: 11, range_value: 0.5, value: 0.075}), 0.925],
+      [PERFECT_SCORE_COMPONENTS.merge(
+        duration: {input: 15, range_value: 0.5, value: 0.025},
+        rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
+        stability_changes: {input: 11, range_value: 0.5, value: 0.075}
+      ), 0.825],
+      [PERFECT_SCORE_COMPONENTS.merge(
+        hotfixes: {input: 1, range_value: 0.5, value: 0.15},
+        duration: {input: 15, range_value: 0.5, value: 0.025},
+        rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
+        stability_changes: {input: 11, range_value: 0.5, value: 0.075}
+      ), 0.675],
+      [PERFECT_SCORE_COMPONENTS.merge(
+        hotfixes: {input: 1, range_value: 0.5, value: 0.15},
+        rollout_fixes: {input: 2, range_value: 0, value: 0},
+        duration: {input: 15, range_value: 0.5, value: 0.025},
+        rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
+        stability_changes: {input: 11, range_value: 0.5, value: 0.075}
+      ), 0.475]
+    ].each do |components, final_score|
+      it "returns the index score for a finished release" do
+        create_deployment_tree(:android, :with_staged_rollout, step_traits: [:release]) => { step:, deployment:, train: }
+
+        travel_to(components[:duration][:input].days.ago)
+        release = create(:release, :on_track, :with_no_platform_runs, train:)
+        release_platform_run = create(:release_platform_run, release:)
+        create_list(:commit, components[:stability_changes][:input] + 1, release:)
+        travel_back
+
+        travel_to((components[:rollout_duration][:input] - 2).days.ago)
+        submitted_step_run = create(:step_run, :deployment_started, release_platform_run:, step:)
+        create(:deployment_run, :rollout_started, step_run: submitted_step_run, deployment:)
+        travel_back
+
+        travel_to(components[:rollout_duration][:input].days.ago)
+        step_runs = create_list(:step_run, components[:rollout_fixes][:input], :deployment_started, release_platform_run:, step:)
+        step_runs.each do |step_run|
+          create(:deployment_run, :rollout_started, step_run:, deployment:)
+        end
+        step_run = create(:step_run, :deployment_started, release_platform_run:)
+        deployment_run = create(:deployment_run, :rollout_started, step_run:, deployment:)
+        travel_back
+
+        deployment_run.complete!
+        release.update! completed_at: Time.current, status: :finished
+        create_list(:release, components[:hotfixes][:input], :hotfix, hotfixed_from: release)
+
+        expected_range_values = components.transform_values { |v| v[:range_value] }
+        expected_values = components.transform_values { |v| v[:value] }
+
+        score = release.index_score
+
+        expect(score).to be_a(ReleaseIndex::Score)
+        expect(score.components.map { |c| [c.release_index_component.name.to_sym, c.range_value] }.to_h).to eq(expected_range_values)
+        expect(score.components.map { |c| [c.release_index_component.name.to_sym, c.value] }.to_h).to eq(expected_values)
+        expect(score.value).to eq(final_score)
+      end
     end
   end
 end

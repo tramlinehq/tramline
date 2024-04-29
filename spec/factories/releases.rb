@@ -25,6 +25,7 @@ FactoryBot.define do
 
     trait :finished do
       status { "finished" }
+      completed_at { Time.current }
     end
 
     trait :partially_finished do

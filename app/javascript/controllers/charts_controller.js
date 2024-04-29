@@ -12,8 +12,10 @@ export default class extends Controller {
     type: String,
     format: {type: String, default: "number"},
     series: Array,
+    annotations: Object,
     showXAxis: {type: Boolean, default: true},
     showYAxis: {type: Boolean, default: false},
+    height: {type: String, default: "100%"},
   }
 
   initialize() {
@@ -55,7 +57,7 @@ export default class extends Controller {
 
     return {
       chart: {
-        height: "100%",
+        height: this.heightValue,
         maxWidth: "100%",
         width: "100%",
         type: "area",
@@ -129,7 +131,7 @@ export default class extends Controller {
       },
       yaxis: {
         show: false,
-      },
+      }
     }
   }
 
@@ -138,7 +140,7 @@ export default class extends Controller {
 
     return {
       chart: {
-        height: "100%",
+        height: this.heightValue,
         maxWidth: "100%",
         type: "line",
         fontFamily: "Inter, sans-serif",
@@ -206,6 +208,7 @@ export default class extends Controller {
       yaxis: {
         show: this.showYAxisValue,
       },
+      annotations: this.annotationsValue
     }
   }
 
@@ -217,8 +220,8 @@ export default class extends Controller {
       chart: {
         type: "bar",
         stacked: true,
-        height: "250",
         fontFamily: "Inter, sans-serif",
+        height: this.heightValue,
         toolbar: {
           show: false,
         },
@@ -230,9 +233,6 @@ export default class extends Controller {
         },
       },
       tooltip: {
-        style: {
-          fontFamily: "Inter, sans-serif",
-        },
         y: {
           formatter(val) {
             if (self.__isTimeFormat()) {
@@ -268,7 +268,7 @@ export default class extends Controller {
       dataLabels: {
         enabled: true,
         style: {
-          fontSize: '10px',
+          fontSize: "10px",
         },
         formatter(val, {w, seriesIndex, dataPointIndex}) {
           const yVal = w.config.series[seriesIndex].data[dataPointIndex].y
@@ -282,13 +282,13 @@ export default class extends Controller {
       },
       legend: {
         show: true,
+        fontSize: "11px"
       },
       xaxis: {
         show: true,
         labels: {
           show: true,
           style: {
-            fontFamily: "Inter, sans-serif",
             cssClass: 'text-xs font-normal fill-gray-500'
           }
         },
@@ -316,12 +316,8 @@ export default class extends Controller {
       colors: series["colors"],
       labels: series["labels"],
       chart: {
-        type: "polarArea"
-      },
-      tooltip: {
-        style: {
-          fontFamily: "Inter, sans-serif",
-        }
+        type: "polarArea",
+        fontFamily: "Inter, sans-serif",
       },
       stroke: {
         show: true,

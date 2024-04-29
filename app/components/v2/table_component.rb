@@ -1,21 +1,47 @@
 # frozen_string_literal: true
 
 class V2::TableComponent < V2::BaseComponent
-  renders_one :heading
-  renders_many :rows, ->(style: "") { RowComponent.new(style: style) }
+  SIZES = %i[default compact].freeze
 
-  def initialize(columns:)
+  renders_one :heading
+  renders_many :rows, ->(style: "") { RowComponent.new(style: style, size: @size) }
+
+  def initialize(columns:, size: :default)
+    raise ArgumentError, "Invalid size: #{size}" unless SIZES.include?(size)
+
     @columns = columns
+    @size = size
   end
 
   attr_reader :columns
 
+  def default?
+    @size == :default
+  end
+
+  def compact?
+    @size == :compact
+  end
+
+  def padding_x
+    default? ? "px-4" : "px-2"
+  end
+
+  def padding_b
+    default? ? "pb-3" : "pb-1.5"
+  end
+
+  def text_size
+    default? ? "text-sm" : "text-xs"
+  end
+
   class RowComponent < V2::BaseComponent
-    renders_many :cells, ->(style: "", wrap: false) { CellComponent.new(style:, wrap:) }
+    renders_many :cells, ->(style: "", wrap: false) { CellComponent.new(style:, wrap:, size: @size) }
     ROW_STYLE = "border-default-b"
 
-    def initialize(style: "")
+    def initialize(size:, style: "")
       @style = style
+      @size = size
     end
 
     def call
@@ -27,15 +53,25 @@ class V2::TableComponent < V2::BaseComponent
     end
 
     class CellComponent < V2::BaseComponent
-      CELL_STYLE = "px-4 py-2"
+      DEFAULT_CELL_STYLE = "px-4 py-2"
+      COMPACT_CELL_STYLE = "px-2 py-1"
 
-      def initialize(style: "", wrap: false)
+      def initialize(size:, style: "", wrap: false)
         @style = style
         @wrap = wrap
+        @size = size
       end
 
       def call
-        content_tag :td, content, {class: CELL_STYLE + " #{@style} #{wrap_style}"}
+        content_tag :td, content, {class: cell_style + " #{@style} #{wrap_style}"}
+      end
+
+      def cell_style
+        default? ? DEFAULT_CELL_STYLE : COMPACT_CELL_STYLE
+      end
+
+      def default?
+        @size == :default
       end
 
       def wrap_style

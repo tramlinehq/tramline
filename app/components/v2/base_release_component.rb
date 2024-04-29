@@ -64,12 +64,20 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     result
   end
 
+  memoize def release_summary
+    Queries::ReleaseSummary.all(@release.id)
+  end
+
   def commit_count
     [@release.applied_commits.size, 1].max - 1
   end
 
   memoize def release_version
     @release.release_version
+  end
+
+  memoize def branch
+    @release.branch_name
   end
 
   memoize def interval

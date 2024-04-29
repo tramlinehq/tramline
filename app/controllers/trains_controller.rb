@@ -93,7 +93,8 @@ class TrainsController < SignedInApplicationController
       [1, "General", edit_app_train_path(@app, @train), "v2/cog.svg"],
       [2, "Steps", steps_app_train_path(@app, @train), "v2/route.svg"],
       [3, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"],
-      ([4, "Release Health", rules_app_train_path(@app, @train), "v2/heart_pulse.svg"] if current_user.release_monitoring?)
+      ([4, "Release Health", rules_app_train_path(@app, @train), "v2/heart_pulse.svg"] if current_user.release_monitoring?),
+      ([5, "Reldex Settings", edit_app_train_release_index_path(@app, @train), "v2/ruler.svg"] if current_user.reldex_enabled?)
     ].compact
   end
 

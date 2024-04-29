@@ -183,7 +183,8 @@ class Queries::ReleaseSummary
       store_versions: StoreVersions.from_release(release),
       pull_requests: release.pull_requests.automatic,
       team_stability_commits: release.stability_commits.count_by_team(release.organization),
-      team_release_commits: release.release_changelog&.commits_by_team
+      team_release_commits: release.release_changelog&.commits_by_team,
+      reldex: release.index_score
     }
   end
 

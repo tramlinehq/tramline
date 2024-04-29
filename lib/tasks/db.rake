@@ -86,6 +86,8 @@ def nuke_train(train)
   end
   train.releases&.delete_all
   train.scheduled_releases&.delete_all
+  train.release_index&.components&.delete_all
+  train.release_index&.delete
   train.release_platforms.each do |release_platform|
     train.steps.each do |step|
       step.all_deployments.delete_all

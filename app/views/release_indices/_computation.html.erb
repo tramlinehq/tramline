@@ -1,0 +1,49 @@
+<div class="flex flex-col gap-2">
+  <div>
+    †
+    Reldex or Release Process Index, is a quantitative metric that measures the
+    efficacy of a mobile release process.
+  </div>
+  <div>
+    Inspired from Apdex, it aggregates various components of the release process into a single score between 0 and
+    1.
+  </div>
+  <math>
+    <mrow>
+      <mi>reldex</mi>
+      <mo>=</mo>
+    </mrow>
+    <mrow>
+      <munderover>
+        <mo>∑</mo>
+        <mrow>
+          <mi>n</mi>
+          <mo>=</mo>
+          <mn>1</mn>
+        </mrow>
+        <mrow>
+          <mo>6</mo>
+        </mrow>
+      </munderover>
+    </mrow>
+    <mrow>
+      <mo>(</mo>
+      <mrow>
+        <msub>
+          <mi>component_score</mi>
+          <mn>n</mn>
+        </msub>
+        <mo>×</mo>
+        <msub>
+          <mi>component_weight</mi>
+          <mn>n</mn>
+        </msub>
+      </mrow>
+      <mo>)</mo>
+    </mrow>
+  </math>
+  <div>
+    Each component receives a score of 1, 0.5, or 0 based on its acceptable range. These scores are combined to
+    determine the reldex that is then graded under <em>excellent</em>, <em>acceptable</em> and <em>mediocre</em>.
+  </div>
+</div>

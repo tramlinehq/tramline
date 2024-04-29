@@ -1,5 +1,4 @@
 class V2::ModalComponent < V2::BaseComponent
-  BASE_OPTS = {html_options: {data: {action: "click->dialog#open"}}}.freeze
   SIZE_TO_WIDTH = {
     xxs: "max-w-xs",
     xs: "max-w-sm",
@@ -13,15 +12,16 @@ class V2::ModalComponent < V2::BaseComponent
 
   renders_one :button, ->(**args) do
     args = args.merge(authz: @authz) # trickle down the auth setting to the button
-    V2::ButtonComponent.new(**BASE_OPTS.deep_merge(**args))
+    V2::ButtonComponent.new(**button_attrs.deep_merge(**args))
   end
 
   renders_one :body
 
-  def initialize(title:, subtitle: nil, size: :default, authz: true, dismissable: true)
+  def initialize(title:, type: :dialog, subtitle: nil, size: :default, authz: true, dismissable: true)
     raise ArgumentError, "Invalid size" unless SIZE_TO_WIDTH.key?(size.to_sym)
 
     @title = title
+    @type = type
     @subtitle = subtitle
     @size = size
     @authz = authz
@@ -33,8 +33,18 @@ class V2::ModalComponent < V2::BaseComponent
   def reveal_data_attrs
     if disabled?
       {}
-    else
+    elsif dialog?
       {class: "inline-flex items-center", data: {controller: "dialog", dialog_dismissable_value: dismissable}}
+    elsif drawer?
+      {class: "inline-flex items-center", data: {controller: "reveal", reveal_away_value: dismissable, reveal_target_selector_value: "[data-drawer-reveal]"}}
+    end
+  end
+
+  def button_attrs
+    if dialog?
+      {html_options: {data: {action: "click->dialog#open"}}}
+    elsif drawer?
+      {html_options: {data: {action: "click->reveal#show"}}}
     end
   end
 
@@ -48,5 +58,13 @@ class V2::ModalComponent < V2::BaseComponent
     else
       ""
     end
+  end
+
+  def dialog?
+    @type == :dialog
+  end
+
+  def drawer?
+    @type == :drawer
   end
 end
