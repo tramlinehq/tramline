@@ -73,7 +73,7 @@ class ReleaseChangelog < ApplicationRecord
 
     def timestamp
       time = commit["author_timestamp"] || commit["timestamp"]
-      Time.parse(time) if time
+      Time.zone.parse(time) if time
     end
 
     def commit_hash = commit["sha"] || commit["commit_hash"]
