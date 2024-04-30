@@ -65,6 +65,7 @@ class Charts::DevopsReport
           value_format: "number",
           name: "devops.reldex",
           height: "250",
+          show_y_axis: true,
           y_annotations: [
             {y: 0..train.release_index.tolerable_range.min, text: "Mediocre", color: "mediocre"},
             {y: train.release_index.tolerable_range.max, text: "Excellent", color: "excellent"}
