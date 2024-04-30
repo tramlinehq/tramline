@@ -4,14 +4,14 @@ require "faker"
 namespace :anonymize do
   desc 'Anonymize release train data from source db into local db;
         Example: rake "anonymize:release_train[ueno-staging-cross-platform,e735400a-3337-4699-95e2-c32b76ead7f3]"'
-  task :release_train, %i[app_slug train_id] => [:destructive, :environment] do |_, args|
+  task :release_train, %i[internal_app_slug external_train_id] => [:destructive, :environment] do |_, args|
     DataAnon::Utils::Logging.logger.level = Logger::INFO
 
-    app_slug = args[:app_slug].to_s
+    app_slug = args[:internal_app_slug].to_s
     app = App.find_by slug: app_slug
     abort "App not found!" unless app
 
-    train_id = args[:train_id].to_s
+    train_id = args[:external_train_id].to_s
     abort "Train ID not found!" if train_id.blank?
     puts "Train with id #{train_id} will be copied to #{app.name}!" if train_id.present?
 
@@ -164,7 +164,7 @@ namespace :anonymize do
         continue { |index, record| Release.exists?(record["release_id"]) }
 
         primary_key "id"
-        whitelist "release_platform_id", "timestamp", "release_platform_run_id", "release_id", "build_queue_id", "backmerge_failure"
+        whitelist "release_platform_id", "timestamp", "release_platform_run_id", "release_id", "build_queue_id", "backmerge_failure", "parents"
         whitelist_timestamps
         anonymize("commit_hash") { |field| SecureRandom.uuid.split("-").join }
         anonymize("message") { |field| Faker::Lorem.paragraph_by_chars(number: field.value.size) }
