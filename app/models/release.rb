@@ -36,6 +36,20 @@ class Release < ApplicationRecord
   self.ignored_columns += ["release_version"]
 
   TERMINAL_STATES = [:finished, :stopped, :stopped_after_partial_finish]
+  DEFAULT_INTERNAL_NOTES = {
+    "ops" => [
+      {"insert" => "Write your internal notes, tasks lists, description, pretty much anything really."},
+      {"attributes" => {"align" => "center"}, "insert" => "\n\n"},
+      {"insert" => "Anything interesting about this release you want to remember?"},
+      {"attributes" => {"align" => "center"}, "insert" => "\n"},
+      {"insert" => "Just "},
+      {"attributes" => {"bold" => true}, "insert" => "dump"},
+      {"insert" => " it here."},
+      {"attributes" => {"align" => "center"}, "insert" => "\n\n"},
+      {"insert" => "You can use lists, styles and emojis and a whole bunch more! ⚡️✈️🌈"},
+      {"attributes" => {"align" => "center"}, "insert" => "\n"}
+    ]
+  }
 
   belongs_to :train
   belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :hotfixed_releases
@@ -132,6 +146,7 @@ class Release < ApplicationRecord
   end
 
   before_create :set_version
+  before_create :set_internal_notes
   after_create :create_platform_runs
   after_create :create_active_build_queue, if: -> { train.build_queue_enabled? }
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
@@ -492,6 +507,10 @@ class Release < ApplicationRecord
     else
       (train.ongoing_release.presence || train.hotfix_release.presence || train).next_version(major_only: has_major_bump)
     end
+  end
+
+  def set_internal_notes
+    self.internal_notes = DEFAULT_INTERNAL_NOTES.to_json
   end
 
   def previous_release
