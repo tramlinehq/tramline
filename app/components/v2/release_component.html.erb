@@ -8,12 +8,12 @@
   </div>
 <% end %>
 
-<div class="grid grid-cols-10">
+<div class="grid grid-cols-10 bg-backgroundLight-50">
   <div class="col-span-2 flex flex-col pl-6 py-3.5 pb-16 border-t border-default-b border-default-l rounded-tl-lg rounded-bl-lg shadow-default">
     <div class="flex flex-col space-y-2 pr-4">
       <div class="flex flex-row gap-x-2 justify-end items-baseline">
-        <span class="heading-1 text-main dark:text-white">16.67</span>
-        <span class="text-sm text-secondary-50">iOS</span>
+        <span class="text-sm text-secondary-50"><%= @release.app.display_attr(:platform) %></span>
+        <span class="heading-1 text-main dark:text-white"><%= @release.release_version %></span>
       </div>
 
       <div class="flex flex-row justify-end">
@@ -25,9 +25,16 @@
       </div>
 
       <%= render V2::SmartTextBoxComponent.new(@release.release_branch,
-                                                   clipboard: true,
-                                                   clipboard_tooltip: "Copy release branch",
-                                                   size: :compact) %>
+                                               clipboard: true,
+                                               clipboard_tooltip: "Copy release branch",
+                                               size: :compact) %>
+
+      <% if @release.tag_name.present? %>
+        <%= render V2::SmartTextBoxComponent.new(@release.tag_name,
+                                                 clipboard: true,
+                                                 clipboard_tooltip: "Copy final release tag",
+                                                 size: :compact) %>
+      <% end %>
 
       <div class="flex flex-row justify-end gap-x-1">
         <%= render V2::StatusIndicatorPillComponent.new(text: "Rollout", status: :success) %>
@@ -38,7 +45,7 @@
     <div class="flex flex-col mt-16 space-y-8">
       <% sorted_sections.each do |section_name, sorted_configs| %>
         <div>
-          <div class="flex flex-row justify-end text-secondary-50 heading-5 uppercase pr-4">
+          <div class="flex flex-row justify-end heading-5-sc pr-4">
             <%= section_name %>
           </div>
 
@@ -46,7 +53,6 @@
             <% sorted_configs.each do |(_position, name, path, icon)| %>
               <div class="flex gap-x-2 items-center w-full">
                 <div class="w-6 h-5 <%= status %> rounded-full border border-white dark:border-gray-900 dark:bg-gray-700"></div>
-
 
                 <a href="<%= path %>" class="flex flex-row items-center justify-between pr-4 w-full rounded-sm hover:text-gray-900 hover:bg-gray-100 <%= active_style(path) %>" aria-current="page">
                   <li class="text-sm font-normal px-2 py-1.5 dark:bg-gray-200">
@@ -65,14 +71,7 @@
 
   <div class="col-span-8 bg-white">
     <% tabs.each do |tab| %>
-      <% component = V2::EnhancedTurboFrameComponent.new(frame, classes: "with-turbo-frame-loader h-full") %>
-      <% component.with_loading_indicator %>
-      <%= render component do %>
-        <div class="w-full h-full box-padding border-default-t border-default-r border-default-b rounded-br-lg rounded-tr-lg shadow-default">
-          <h1 class="heading-1">Overview</h1>
-          <%= tab %>
-        </div>
-      <% end %>
+      <%= tab %>
     <% end %>
   </div>
 </div>

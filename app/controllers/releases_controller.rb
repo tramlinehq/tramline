@@ -60,7 +60,7 @@ class ReleasesController < SignedInApplicationController
       {
         "kickoff" => [
           [1, "Overview", overview_release_path(@release), "v2/gauge.svg"],
-          [2, "Change queue", change_queue_release_path(@release), "v2/list_end.svg"]
+          [2, "Changeset tracking", change_queue_release_path(@release), "v2/list_end.svg"]
         ],
 
         "stability" => [
@@ -93,7 +93,7 @@ class ReleasesController < SignedInApplicationController
       {
         "kickoff" => [
           [1, "Overview", overview_release_path(@release), "v2/gauge.svg"],
-          [2, "Change queue", change_queue_release_path(@release), "v2/list_end.svg"]
+          [2, "Changeset tracking", change_queue_release_path(@release), "v2/list_end.svg"]
         ],
 
         "stability" => [

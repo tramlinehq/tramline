@@ -1,0 +1,10 @@
+<% component = V2::EnhancedTurboFrameComponent.new(frame, classes: "with-turbo-frame-loader h-full") %>
+<% component.with_loading_indicator %>
+<%= render component do %>
+  <div class="w-full h-full box-padding border-default-t border-default-r border-default-b rounded-br-lg rounded-tr-lg shadow-default">
+    <h1 class="heading-1"><%= title %></h1>
+    <article class="mt-4">
+      <%= content %>
+    </article>
+  </div>
+<% end %>

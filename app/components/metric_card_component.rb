@@ -1,5 +1,6 @@
 class MetricCardComponent < V2::BaseComponent
   TEXT_SIZE = {
+    xs: "text-base",
     sm: "text-base",
     base: "text-xl"
   }

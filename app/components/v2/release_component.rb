@@ -1,13 +1,12 @@
 class V2::ReleaseComponent < ViewComponent::Base
   renders_one :back_button, V2::BackButtonComponent
-  renders_many :tabs
   renders_many :sub_actions
+  renders_many :tabs, ->(**args) { V2::LiveRelease::StepComponent.new(frame: @frame, **args) }
 
   SELECTED_TAB_STYLE = "active text-main bg-white border-l-3"
 
   def initialize(release, title:, turbo_frame:, tab_config: [], error_resource: nil)
     raise ArgumentError, "tab_config must be a Hash" unless tab_config.is_a?(Hash)
-    # raise ArgumentError, "tab_config must be an array of arrays" unless tab_config.all? { _1.length == 4 }
 
     @release = release
     @title = title

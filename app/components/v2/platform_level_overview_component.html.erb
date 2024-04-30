@@ -1,0 +1,42 @@
+<div class="grid <%= grid_size %> justify-between gap-x-3 gap-y-3">
+  <% if cross_platform? %>
+    <% platform_runs.each do |run| %>
+        <span class="text-xl text-secondary-50/50 border-b border-main-300/30 py-1 justify-self-start pl-0.5 pr-1.5">
+          <%= run.display_attr(:platform) %>
+        </span>
+    <% end %>
+  <% end %>
+
+  <% platform_runs.each do |run| %>
+    <div class="grid gap-y-2 items-end content-end">
+      <% store_releases = run.store_submitted_releases %>
+      <% store_releases.each_with_index do |store_release, index| %>
+        <%= render V2::BuildInfoComponent.new(store_release, index:, all_releases: store_releases, show_ci_info:) %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% platform_runs.each do |run| %>
+    <div>
+      <% summary = step_summary(run.platform) %>
+      <%= render V2::HorizontalDataSetComponent.new do |component| %>
+        <% component.with_data_set(title: "Time in review phase").with_content(summary[:review][:duration]) %>
+        <% component.with_data_set(title: "Review builds").with_content(summary[:review][:builds_created_count]) %>
+        <% component.with_data_set(title: "Time in release phase").with_content(summary[:release][:duration]) %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% platform_runs.each do |run| %>
+    <div>
+      <% if run.store_submitted_releases.first.present? %>
+        <%= render ReleaseMonitoringComponent.new(
+          deployment_run: run.store_submitted_releases.first,
+          metrics: [:stability, :adoption_rate, :staged_rollout],
+          show_version_info: false,
+          size: size,
+          num_events: 1) %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

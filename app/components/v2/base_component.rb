@@ -4,6 +4,7 @@ class V2::BaseComponent < ViewComponent::Base
   include AssetsHelper
 
   delegate :billing?, :billing_link, :current_user, :current_organization, :default_app, :new_app, :default_timezones, to: :helpers
+  delegate :team_colors, to: :current_organization
 
   def writer?
     helpers&.writer?

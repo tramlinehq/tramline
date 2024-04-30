@@ -10,15 +10,6 @@ class V2::ReleaseOverviewComponent < V2::BaseReleaseComponent
     current_user.release_monitoring? && release.show_health? && release.unhealthy?
   end
 
-  def cross_platform?
-    release.app.cross_platform?
-  end
-
-  def platform_runs
-    @platform_runs ||=
-      release.release_platform_runs.includes(step_runs: {deployment_runs: [:staged_rollout]})
-  end
-
   def vcs_icon
     "integrations/logo_#{release.train.vcs_provider}.png"
   end
@@ -45,10 +36,5 @@ class V2::ReleaseOverviewComponent < V2::BaseReleaseComponent
 
   def ios_release_version
     release.release_platform_runs.find { |r| r.platform == "ios" }.release_version
-  end
-
-  def grid_size
-    return "grid-cols-2" if release.release_platform_runs.size > 1
-    "grid-cols-1 w-2/3"
   end
 end

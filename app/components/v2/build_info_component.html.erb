@@ -1,16 +1,18 @@
 <% if @deployment_run %>
   <div class="flex items-center justify-between">
-    <div class="flex items-center justify-stretch gap-x-1.5">
+    <div class="flex items-center justify-start gap-x-1.5">
       <%= render V2::BadgeComponent.new do |badge| %>
         <% badge.with_icon(deployment_logo) %>
         <% badge.with_link(build_info, external_link) %>
       <% end %>
 
-      <%= inline_svg("v2/connect_line.svg", classname: "w-5 h-5 inline-flex") %>
+      <% if show_ci_info %>
+        <%= inline_svg("v2/connect_line.svg", classname: "w-5 h-5 inline-flex") %>
 
-      <%= render V2::BadgeComponent.new do |badge| %>
-        <% badge.with_icon(build_logo) %>
-        <% badge.with_link(ci_info, ci_link) %>
+        <%= render V2::BadgeComponent.new do |badge| %>
+          <% badge.with_icon(build_logo) %>
+          <% badge.with_link(ci_info, ci_link) %>
+        <% end %>
       <% end %>
 
       <%= render V2::StatusIndicatorPillComponent.new(**status) %>

@@ -42,6 +42,10 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     @release.train.automatic?
   end
 
+  def backmerges?
+    @release.continuous_backmerge?
+  end
+
   def step_summary(platform)
     @step_summary ||= Queries::ReleaseSummary::StepsSummary.from_release(@release).all
     platform_steps = @step_summary.select { |step| step.platform_raw == platform }

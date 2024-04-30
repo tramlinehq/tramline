@@ -1,5 +1,6 @@
 class ProgressCardComponent < ViewComponent::Base
   TEXT_SIZE = {
+    xs: "text-base",
     sm: "text-base",
     base: "text-xl"
   }

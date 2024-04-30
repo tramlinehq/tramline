@@ -1,0 +1,86 @@
+<div class="grid grid-cols-1 justify-between items-start bottom-separator-space-default">
+  <div class="col-span-1 flex justify-between">
+    <div class="flex gap-y-1 gap-x-2">
+      <%= render V2::HorizontalDataSetComponent.new(separator: :dashed, bg_color: true) do |component| %>
+        <% component.with_data_set(title: "Release Pilot") do %>
+          <div class="flex items-center gap-x-2 justify-between">
+            <%= release_pilot_avatar %>
+            <span class="text-sm text-secondary"><%= release.release_pilot.full_name %></span>
+            <span class="text-xs text-secondary-50"><%= release.release_pilot.email %></span>
+          </div>
+        <% end %>
+
+        <% component.with_data_set(title: "Started").with_content(start_time) %>
+        <% component.with_data_set(title: "Released").with_content(end_time) %>
+        <% component.with_data_set(title: "Duration").with_content(duration) %>
+
+        <% if final? %>
+          <% component.with_data_set(title: "Stability commits").with_content(overall_summary.commits_count) %>
+          <% if backmerges? %>
+            <% component.with_data_set(title: "Backmerges").with_content(backmerge_summary) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-3 gap-3 bottom-separator-space-default">
+  <% if final? %>
+    <%= render ChartComponent.new(team_release_chart) %>
+    <%= render ChartComponent.new(team_stability_chart) %>
+  <% else %>
+    <%= render ChartComponent.new(build_stability_chart) %>
+  <% end %>
+</div>
+
+<div class="bottom-separator-space-default">
+  <%= render V2::PlatformLevelOverviewComponent.new(release, size: :xs) %>
+</div>
+
+<div class="grid grid-cols-2 gap-3 min-w-80">
+  <div class="flex flex-col border-default box-padding gap-y-2 max-h-96">
+    <div class="flex items-center justify-between pb-2 border-default-b">
+      <h5 class="heading-5-sc">Changes since last release</h5>
+      <span class="text-xs text-secondary-50">
+          Diff from <%= render V2::BadgeComponent.new(@release.release_changelog.from_ref) %>
+        </span>
+    </div>
+
+    <div class="overflow-y-scroll overflow-x-hidden">
+      <%= render V2::CommitListComponent.new do |cl| %>
+        <% commits_since_last.each do |commit| %>
+          <% cl.with_commit(commit) %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="col-span-1 flex flex-col border-default box-padding gap-y-2 max-h-96">
+    <div class="flex items-center justify-between pb-2 border-default-b">
+      <h3 class="heading-5-sc">Internal Notes</h3>
+
+      <%= render V2::ModalComponent.new(title: "Edit Internal Notes", dismissable: false) do |modal| %>
+        <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none)
+                .with_icon("v2/pencil.svg", size: :sm) %>
+        <% modal.with_body do %>
+          <%= form_with(model: [@release], method: :put, builder: EnhancedFormHelper::AuthzForm) do |form| %>
+            <div data-controller="text-editor" data-text-editor-view-mode-value="false" class="mb-4">
+              <div data-text-editor-target="editor"></div>
+              <%= form.textarea :internal_notes, { class: "hidden", data: { text_editor_target: "editorReplica" } } %>
+            </div>
+
+            <%= form.authz_submit "Save", "v2/archive.svg" %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div data-controller="text-editor"
+         data-text-editor-view-mode-value="true"
+         data-text-editor-view-content-value="<%= internal_notes %>"
+         class="overflow-y-scroll overflow-x-hidden">
+      <div class="ql-editor p-0" data-text-editor-target="viewContents" contenteditable="false"></div>
+    </div>
+  </div>
+</div>

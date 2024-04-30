@@ -18,14 +18,16 @@ class V2::BuildInfoComponent < V2::BaseComponent
     failed_with_action_required: {text: "Needs manual submission", status: :failure}
   }
 
-  def initialize(deployment_run, index:, all_releases:)
+  def initialize(deployment_run, index:, all_releases:, show_ci_info: true)
     @deployment_run = deployment_run
     @staged_rollout = deployment_run.staged_rollout
     @step_run = deployment_run.step_run
     @index = index
     @all_releases = all_releases
+    @show_ci_info = show_ci_info
   end
 
+  attr_reader :show_ci_info
   delegate :step, :release_platform_run, to: :@step_run
   delegate :deployment, :external_link, to: :@deployment_run
 
