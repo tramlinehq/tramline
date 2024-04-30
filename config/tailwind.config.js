@@ -39,8 +39,6 @@ module.exports = {
           ...colors.gray,
           DEFAULT: "#1f2937"
         },
-        backgroundDark: "rgb(31 41 55/1)",
-        backgroundLight: "rgb(251 252 252/1)",
         reldexExcellent: {
           ...colors.emerald
         },
@@ -50,6 +48,11 @@ module.exports = {
         reldexMediocre: {
           ...colors.red
         },
+        backgroundLight: {
+          "50": "hsl(0, 0%, 97.9%)",
+          DEFAULT: "rgb(251 252 252/1)"
+        },
+        backgroundDark: "rgb(31 41 55/1)",
       },
       boxShadow: {
         DEFAULT: '0 1px 3px 0 rgba(0, 0, 0, 0.01), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
