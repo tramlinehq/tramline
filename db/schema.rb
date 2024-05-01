@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_04_24_163419) do
+ActiveRecord::Schema[7.0].define(version: 2024_05_01_105000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -246,7 +246,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_04_24_163419) do
   end
 
   create_table "github_integrations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "installation_id"
+    t.string "installation_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

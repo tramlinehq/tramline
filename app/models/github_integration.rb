@@ -5,7 +5,7 @@
 #  id              :uuid             not null, primary key
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  installation_id :string
+#  installation_id :string           not null
 #
 class GithubIntegration < ApplicationRecord
   has_paper_trail
@@ -15,6 +15,8 @@ class GithubIntegration < ApplicationRecord
   include Displayable
   include Rails.application.routes.url_helpers
   using RefinedHash
+
+  validates :installation_id, presence: true
 
   delegate :code_repository_name, :code_repo_namespace, :code_repo_name_only, to: :app_config
   delegate :app, to: :integration
