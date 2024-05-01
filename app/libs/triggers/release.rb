@@ -73,7 +73,8 @@ class Triggers::Release
       hotfixed_from: hotfix_from,
       new_hotfix_branch: new_hotfix_branch,
       hotfix_platform: (hotfix_platform if hotfix?),
-      custom_version: custom_version
+      custom_version: custom_version,
+      release_pilot_id: Current.user&.id
     )
   end
 
