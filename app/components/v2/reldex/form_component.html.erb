@@ -63,9 +63,8 @@
                   <div class="flex items-center gap-1.5">
                     <%= component_fields.hidden_field :id, value: component.id %>
                     <%= component.display_attr(:name) %>
-                    <%= render V2::ButtonComponent.new(scheme: :naked_icon, type: :action, size: :none) do |button| %>
-                      <% button.with_icon("v2/info.svg", size: :base) %>
-                      <% button.with_tooltip(nil, placement: "top", type: :detailed) do |tooltip| %>
+                    <%= render V2::IconComponent.new("v2/info.svg", size: :base, classes: "text-secondary") do |icon| %>
+                      <% icon.with_tooltip(nil, placement: "top", type: :detailed) do |tooltip| %>
                         <% tooltip.with_detailed_text do %>
                           <div class="flex flex-col gap-2">
                             <%= simple_format component.description %>

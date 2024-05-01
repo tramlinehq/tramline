@@ -1,5 +1,8 @@
 <div class="inline-flex items-center box-padding-sm border-default-md gap-x-1.5 <%= grade_bg_color %>">
-  <span class="heading-5 <%= grade_color %> uppercase"><%= grade %></span>
+  <div class="heading-5 <%= grade_color %> uppercase flex gap-x-1.5">
+    <div><%= final_score %></div>
+    <div class="border-l border-main-300 dark:border-main-600 pl-1.5"><%= grade %></div>
+  </div>
   <%= render V2::ModalComponent.new(title: "Reldex for #{release_version}",
                                     size: :sm,
                                     type: :drawer,
