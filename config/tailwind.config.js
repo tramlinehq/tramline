@@ -49,7 +49,8 @@ module.exports = {
           ...colors.red
         },
         backgroundLight: {
-          "50": "hsl(0, 0%, 97.9%)",
+          "50": "hsl(0, 0%, 97.8%)",
+          "100": "hsl(0, 0%, 96.5%)",
           DEFAULT: "rgb(251 252 252/1)"
         },
         backgroundDark: "rgb(31 41 55/1)",

@@ -100,18 +100,19 @@ module ReleasesHelper
     status_badge(status, styles)
   end
 
-  def pull_request_badge(pull_request)
-    style =
-      case pull_request.state.to_sym
-      when :open
-        :success
-      when :closed
-        :ongoing
-      else
-        :neutral
-      end
+  def pull_request_status(pull_request)
+    case pull_request.state.to_sym
+    when :open
+      :success
+    when :closed
+      :ongoing
+    else
+      :neutral
+    end
+  end
 
-    status_badge(pull_request.state, style)
+  def pull_request_badge(pull_request)
+    status_badge(pull_request.state, pull_request_status(pull_request))
   end
 
   def stop_release_warning(release)

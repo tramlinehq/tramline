@@ -16,6 +16,12 @@
         <span class="heading-1 text-main dark:text-white"><%= @release.release_version %></span>
       </div>
 
+      <% if (reldex = release_summary&.fetch(:reldex, nil)) %>
+        <div class="flex flex-row justify-end">
+          <%= render V2::Reldex::StatusComponent.new(release:, reldex_score: reldex) %>
+        </div>
+      <% end %>
+
       <div class="flex flex-row justify-end">
         <%=
           badge = V2::BadgeComponent.new("humanoid-slug-42")

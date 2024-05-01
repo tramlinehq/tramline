@@ -71,4 +71,8 @@ class V2::LiveRelease::OverviewComponent < V2::BaseReleaseComponent
   def final?
     @summary.present?
   end
+
+  def changelog_present?
+    @release.release_changelog.present?
+  end
 end

@@ -2,9 +2,11 @@
 <% component.with_loading_indicator %>
 <%= render component do %>
   <div class="w-full h-full box-padding border-default-t border-default-r border-default-b rounded-br-lg rounded-tr-lg shadow-default">
-    <h1 class="heading-1"><%= title %></h1>
-    <article class="mt-4">
+    <% if control_content %>
       <%= content %>
-    </article>
+    <% else %>
+      <h2 class="heading-2"><%= title %></h2>
+      <article class="top-separator-space-default"><%= content %></article>
+    <% end %>
   </div>
 <% end %>

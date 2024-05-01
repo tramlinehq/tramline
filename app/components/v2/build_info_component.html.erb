@@ -26,11 +26,8 @@
           <% button.with_icon("v2/diff.svg", size: :lg) %>
           <% button.with_tooltip("Changes since last submission", placement: "top") %>
           <% modal.with_body do %>
-            <%= render V2::CommitListComponent.new do |cl| %>
-              <% commits_since_last_release.each do |commit| %>
-                <% cl.with_commit(commit) %>
-              <% end %>
-            <% end %>
+            <%= render partial: "shared/divide_collection",
+                       locals: { collection: render(V2::CommitComponent.with_collection(commits_since_last_release)) } %>
           <% end %>
         <% end %>
       <% end %>

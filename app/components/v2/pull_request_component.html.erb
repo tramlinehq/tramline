@@ -1,0 +1,41 @@
+<div class="py-2 px-3 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm">
+  <div class="flex text-sm items-center justify-between space-x-4">
+    <div class="flex flex-col gap-y-1.5">
+      <%= render(V2::ButtonComponent.new(scheme: :link,
+                                         label: pr.title.truncate(80),
+                                         options: pr.url,
+                                         type: :link_external,
+                                         size: :none,
+                                         authz: false,
+                                         html_options: { class: "inline-flex items-center text-main dark:bg-main dark:text-main-200 border-none shadow-none hover:underline" })) %>
+
+      <div class="flex flex-row gap-x-1.5 items-center">
+        <%= render V2::IconComponent.new("integrations/logo_#{pr.source}.png", size: :md) %>
+
+        <div class="text-xs text-neutral-500 dark:text-white">
+          <% if pr.base_ref == pr.head_ref %>
+            <%= pr.head_ref %>
+          <% else %>
+            <%= pr.base_ref %> ← <%= pr.head_ref %>
+          <% end %>
+
+          <% if pr.commit.present? %>
+            <%= " • " %>
+            <%= pr.commit.author_name || pr.commit.author_login %>
+          <% end %>
+        </div>
+      </div>
+
+      <div>
+        <% pr.labels&.each do |label| %>
+          <%= render V2::BadgeComponent.new(label["name"]) %>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="flex flex-row gap-x-2 items-center">
+      <%= render V2::BadgeComponent.new("##{pr.number}") %>
+      <%= render V2::StatusIndicatorPillComponent.new(text: state, status:) %>
+    </div>
+  </div>
+</div>

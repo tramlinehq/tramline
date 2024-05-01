@@ -66,6 +66,10 @@
     @apply mb-7;
   }
 
+  .top-separator-space-default {
+    @apply mt-7;
+  }
+
   .box-padding {
     @apply px-4 py-3.5;
   }

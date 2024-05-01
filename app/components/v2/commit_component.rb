@@ -1,5 +1,7 @@
 class V2::CommitComponent < V2::BaseComponent
-  def initialize(commit, avatar: true)
+  include ReleasesHelper
+
+  def initialize(commit:, avatar: true)
     @commit = commit
     @avatar = avatar
   end
@@ -20,7 +22,7 @@ class V2::CommitComponent < V2::BaseComponent
   end
 
   def ci_cd_provider
-    commit.train&.ci_cd_provider
+    @commit.train&.ci_cd_provider
   end
 
   def show_avatar?
@@ -29,5 +31,9 @@ class V2::CommitComponent < V2::BaseComponent
 
   def show_numbering?
     @numbering
+  end
+
+  def pull_request
+    @commit.pull_request
   end
 end

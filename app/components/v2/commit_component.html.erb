@@ -1,24 +1,25 @@
-<div class="flex text-sm items-center justify-between space-x-4">
-  <div class="flex flex-col gap-y-1">
-    <%= render(V2::ButtonComponent.new(scheme: :link,
-                                       label: message.truncate(80),
-                                       options: url,
-                                       type: :link_external,
-                                       size: :none,
-                                       authz: false,
-                                       html_options: { class: "inline-flex items-center text-main dark:bg-main dark:text-main-200 border-none shadow-none hover:underline" })) %>
-    <div class="flex flex-row gap-x-1.5 items-center">
-      <% if show_avatar? %>
-        <%= render V2::ButtonComponent.new(scheme: :link,
-                                           options: author_link,
-                                           type: :link_external,
-                                           size: :none,
-                                           authz: false) do |button| %>
-          <% button.with_icon(user_avatar(author_name, limit: 2, size: 24), raw_svg: true, size: :xl) %>
+<div class="py-2 px-3 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm">
+  <div class="flex text-sm items-center justify-between space-x-4">
+    <div class="flex flex-col gap-y-1">
+      <%= render(V2::ButtonComponent.new(scheme: :link,
+                                         label: message.truncate(80),
+                                         options: url,
+                                         type: :link_external,
+                                         size: :none,
+                                         authz: false,
+                                         html_options: { class: "inline-flex items-center text-main dark:bg-main dark:text-main-200 border-none shadow-none hover:underline" })) %>
+      <div class="flex flex-row gap-x-1.5 items-center">
+        <% if show_avatar? %>
+          <%= render V2::ButtonComponent.new(scheme: :link,
+                                             options: author_link,
+                                             type: :link_external,
+                                             size: :none,
+                                             authz: false) do |button| %>
+            <% button.with_icon(user_avatar(author_name, limit: 2, size: 24), raw_svg: true, size: :xl) %>
+          <% end %>
         <% end %>
-      <% end %>
 
-      <span class="text-xs text-neutral-500 dark:text-white">
+        <span class="text-xs text-neutral-500 dark:text-white">
         <span class="font-semibold">
           <%= render(V2::ButtonComponent.new(scheme: :link,
                                              label: author_info,
@@ -28,21 +29,34 @@
                                              authz: false)) %>
         </span>
         committed on <%= time_format(timestamp, only_day: true) %></span>
+      </div>
     </div>
-  </div>
 
-  <div class="flex flex-row gap-x-2 items-center">
-    <div>
-      <%= render V2::BadgeComponent.new do |badge| %>
-        <% if ci_cd_provider.present? %>
-          <% badge.with_icon("integrations/logo_#{commit.train.ci_cd_provider}.png") %>
+    <div class="flex flex-row gap-x-2 items-center">
+      <div>
+        <%= render V2::BadgeComponent.new do |badge| %>
+          <% if ci_cd_provider.present? %>
+            <% badge.with_icon("integrations/logo_#{commit.train.ci_cd_provider}.png") %>
+          <% end %>
+
+          <% badge.with_link(short_sha, url) %>
         <% end %>
-        <% badge.with_link(short_sha, url) %>
+      </div>
+
+      <% if pull_request.present? %>
+        <%= render V2::BadgeComponent.new do |badge| %>
+          <% badge.with_icon("v2/git_pull_request.svg") %>
+          <% badge.with_link("##{pull_request.number}", pull_request.url) %>
+        <% end %>
+      <% end %>
+
+      <% if commit.backmerge_failure? %>
+        <%= status_badge("backmerge failed", :inert) %>
+      <% end %>
+
+      <% if team.present? %>
+        <%= render V2::TeamPillComponent.new(team) if current_organization.teams_supported? %>
       <% end %>
     </div>
-
-    <% if team.present? %>
-      <%= render V2::TeamPillComponent.new(team) if current_organization.teams_supported? %>
-    <% end %>
   </div>
 </div>

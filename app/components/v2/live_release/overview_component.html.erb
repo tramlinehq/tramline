@@ -34,32 +34,26 @@
   <% end %>
 </div>
 
-<div class="bottom-separator-space-default">
-  <%= render V2::PlatformLevelOverviewComponent.new(release, size: :xs) %>
-</div>
-
-<div class="grid grid-cols-2 gap-3 min-w-80">
-  <div class="flex flex-col border-default box-padding gap-y-2 max-h-96">
-    <div class="flex items-center justify-between pb-2 border-default-b">
-      <h5 class="heading-5-sc">Changes since last release</h5>
-      <span class="text-xs text-secondary-50">
+<div class="grid grid-cols-2 gap-3 min-w-80 bottom-separator-space-default">
+  <% if changelog_present? %>
+    <div class="flex flex-col border-default box-padding gap-y-2 max-h-96">
+      <div class="flex items-center justify-between pb-2 border-default-b">
+        <h5 class="heading-5-sc">Changes since last release</h5>
+        <span class="text-xs text-secondary-50">
           Diff from <%= render V2::BadgeComponent.new(@release.release_changelog.from_ref) %>
         </span>
-    </div>
+      </div>
 
-    <div class="overflow-y-scroll overflow-x-hidden">
-      <%= render V2::CommitListComponent.new do |cl| %>
-        <% commits_since_last.each do |commit| %>
-          <% cl.with_commit(commit) %>
-        <% end %>
-      <% end %>
+      <div class="overflow-y-scroll overflow-x-hidden">
+        <%= render partial: "shared/divide_collection",
+                   locals: { collection: render(V2::CommitComponent.with_collection(commits_since_last)) } %>
+      </div>
     </div>
-  </div>
+  <% end %>
 
   <div class="col-span-1 flex flex-col border-default box-padding gap-y-2 max-h-96">
     <div class="flex items-center justify-between pb-2 border-default-b">
       <h3 class="heading-5-sc">Internal Notes</h3>
-
       <%= render V2::ModalComponent.new(title: "Edit Internal Notes", dismissable: false) do |modal| %>
         <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none)
                 .with_icon("v2/pencil.svg", size: :sm) %>
@@ -84,3 +78,5 @@
     </div>
   </div>
 </div>
+
+<%= render V2::PlatformLevelOverviewComponent.new(release, size: :xs) %>

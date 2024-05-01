@@ -1,4 +1,4 @@
-class V2::ReleaseComponent < ViewComponent::Base
+class V2::LiveRelease::ContainerComponent < V2::BaseReleaseComponent
   renders_one :back_button, V2::BackButtonComponent
   renders_many :sub_actions
   renders_many :tabs, ->(**args) { V2::LiveRelease::StepComponent.new(frame: @frame, **args) }
@@ -13,6 +13,7 @@ class V2::ReleaseComponent < ViewComponent::Base
     @tab_config = tab_config
     @turbo_frame = turbo_frame
     @error_resource = error_resource
+    super(@release)
   end
 
   attr_reader :title, :tab_config, :error_resource, :release
@@ -21,7 +22,7 @@ class V2::ReleaseComponent < ViewComponent::Base
 
   def sorted_sections
     tab_config.to_h do |s, configs|
-      [s, configs.sort_by { _1[0] }]
+      [s, configs.sort_by(&:first)]
     end
   end
 
