@@ -92,6 +92,10 @@ class ReleaseChangelog < ApplicationRecord
 
     def train = nil # FIXME: stub
 
+    def pull_request = nil
+
+    def backmerge_failure? = nil
+
     private
 
     attr_reader :commit

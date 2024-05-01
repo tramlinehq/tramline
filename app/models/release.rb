@@ -230,7 +230,7 @@ class Release < ApplicationRecord
   end
 
   def mid_release_prs
-    pull_requests.mid_release
+    pull_requests.mid_release.order(Arel.sql("CASE WHEN state = 'open' THEN 1 ELSE 2 END"))
   end
 
   def duration

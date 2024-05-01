@@ -1,0 +1,31 @@
+<div data-controller="tabs"
+     data-tabs-inactive-tab-class="inline-block px-3 pt-1.5 pb-3 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+     data-tabs-active-tab-class="inline-block px-3 pt-1.5 pb-3 text-blue-600 bg-gray-100 rounded-t-lg active dark:bg-gray-800 dark:text-blue-500 shadow-sm shadow-t-2 shadow-r-2 shadow-l-2 shadow-spread-2"
+     data-tabs-index-value="0">
+  <div class="flex flex-initial items-start justify-start">
+    <% if title.present? %>
+      <h2 class="heading-2 w-fit border-default-b pb-3 pr-6"><%= title %></h2>
+    <% end %>
+
+    <ul class="flex flex-grow text-sm text-center text-secondary border-default-b dark:text-gray-400">
+      <% tab_headings.each do |tab| %>
+        <li class="me-2">
+          <button data-action="click->tabs#change"
+                  type="button"
+                  data-tabs-target="tab"
+                  aria-controls="overall-tab"
+                  aria-selected="<%= tab[:selected] %>"
+                  class="inline-block px-2.5 pt-1.5 pb-3.5 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300">
+            <%= tab[:name] %>
+          </button>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+
+  <% tabs.each do |tab| %>
+    <div class="hidden top-separator-space-default" data-tabs-target="panel">
+      <%= tab %>
+    </div>
+  <% end %>
+</div>

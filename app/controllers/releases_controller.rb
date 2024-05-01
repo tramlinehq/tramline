@@ -54,7 +54,6 @@ class ReleasesController < SignedInApplicationController
   def overview # the new live release page
     @train = @release.train
     @app = @train.app
-    set_commits
     set_pull_requests
     @tab_configuration =
       {
@@ -87,7 +86,6 @@ class ReleasesController < SignedInApplicationController
   def change_queue
     @train = @release.train
     @app = @train.app
-    set_commits
     set_pull_requests
     @tab_configuration =
       {
