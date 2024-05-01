@@ -8,7 +8,7 @@ class V2::Reldex::StatusComponent < V2::Reldex::BaseComponent
   delegate :release_version, to: :@release
 
   def final_score
-    number_to_human(@reldex_score.value, precision: 2, strip_insignificant_zeros: true)
+    "%.2f" % @reldex_score.value
   end
 
   def grade
