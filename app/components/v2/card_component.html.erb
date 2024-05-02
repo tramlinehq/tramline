@@ -1,0 +1,24 @@
+<%= content_tag(:div, card_params) do %>
+  <div class="flex items-center justify-between pb-2 border-default-b">
+    <div class="flex items-center justify-start">
+      <% if fold? %>
+        <%= render V2::ButtonComponent.new(
+          scheme: :naked_icon,
+          type: :action,
+          html_options: fold_button_params,
+          size: :none) do |b|
+          b.with_icon("v2/unfold_vertical.svg", size: :sm)
+          b.with_tooltip("Fold / unfold", placement: "top")
+        end %>
+      <% end %>
+
+      <h5 class="heading-5-sc"><%= title %></h5>
+    </div>
+
+    <%= actions %>
+  </div>
+
+  <%= content_tag(:div, fold_target_params) do %>
+    <%= content %>
+  <% end %>
+<% end %>
