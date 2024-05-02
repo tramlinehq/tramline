@@ -35,7 +35,7 @@ class V2::Reldex::FormComponent < V2::Reldex::BaseComponent
 
   def reldex_form_params
     base_form_config.merge({allowed_range: 0..1,
-                             step: "0.1",
+                             step: "0.05",
                              colors: {below_range: slider_color(:mediocre),
                                       within_range: slider_color(:acceptable),
                                       above_range: slider_color(:excellent)}})

@@ -80,7 +80,8 @@
                 <div class="col-span-1">
                   <%= component_fields.number_field_without_label :weight_percentage,
                                                                   compact: true,
-                                                                  step: 5, in: 0..100,
+                                                                  step: 1,
+                                                                  in: 0..100,
                                                                   data: { domain__release_index_target: "weight",
                                                                           domain__release_index_component_target: "weight",
                                                                           action: "domain--release-index#computeTotal domain--release-index-component#markActionable" } %>
