@@ -3,7 +3,8 @@ class ReleasesController < SignedInApplicationController
   include Filterable
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
-  before_action :set_release, only: [:show, :overview, :change_queue, :timeline, :destroy, :update]
+  before_action :set_release, only: %i[show overview change_queue timeline destroy update store_submissions]
+  before_action :set_tab_configuration, only: %i[overview change_queue store_submissions]
 
   def index
     @train = @app.trains.friendly.find(params[:train_id])
@@ -55,64 +56,17 @@ class ReleasesController < SignedInApplicationController
     @train = @release.train
     @app = @train.app
     set_pull_requests
-    @tab_configuration =
-      {
-        "kickoff" => [
-          [1, "Overview", overview_release_path(@release), "v2/gauge.svg"],
-          [2, "Changeset tracking", change_queue_release_path(@release), "v2/list_end.svg"]
-        ],
-
-        "stability" => [
-          [2, "Internal builds", root_path, "v2/drill.svg"],
-          [2, "Regression testing", root_path, "v2/tablet_smartphone.svg"],
-          [3, "Release candidate", root_path, "v2/gallery_horizontal_end.svg"],
-          [4, "Beta soak", root_path, "v2/alarm_clock.svg"]
-        ],
-
-        "metadata" => [
-          [2, "Notes", root_path, "v2/text.svg"],
-          [2, "Screenshots", root_path, "v2/wand.svg"]
-        ],
-
-        "release" => [
-          [2, "Approvals", root_path, "v2/list_checks.svg"],
-          [2, "App submission", root_path, "v2/mail.svg"],
-          [3, "Store review", root_path, "v2/mail_search.svg"],
-          [4, "Rollout to users", root_path, "v2/rocket.svg"]
-        ]
-      }
   end
 
   def change_queue
     @train = @release.train
     @app = @train.app
     set_pull_requests
-    @tab_configuration =
-      {
-        "kickoff" => [
-          [1, "Overview", overview_release_path(@release), "v2/gauge.svg"],
-          [2, "Changeset tracking", change_queue_release_path(@release), "v2/list_end.svg"]
-        ],
+  end
 
-        "stability" => [
-          [2, "Internal builds", root_path, "v2/drill.svg"],
-          [2, "Regression testing", root_path, "v2/tablet_smartphone.svg"],
-          [3, "Release candidate", root_path, "v2/gallery_horizontal_end.svg"],
-          [4, "Beta soak", root_path, "v2/alarm_clock.svg"]
-        ],
-
-        "metadata" => [
-          [2, "Notes", root_path, "v2/text.svg"],
-          [2, "Screenshots", root_path, "v2/wand.svg"]
-        ],
-
-        "release" => [
-          [2, "Approvals", root_path, "v2/list_checks.svg"],
-          [2, "App submission", root_path, "v2/mail.svg"],
-          [3, "Store review", root_path, "v2/mail_search.svg"],
-          [4, "Rollout to users", root_path, "v2/rocket.svg"]
-        ]
-      }
+  def store_submissions
+    @train = @release.train
+    @app = @train.app
   end
 
   def live_release
@@ -191,6 +145,35 @@ class ReleasesController < SignedInApplicationController
   end
 
   private
+
+  def set_tab_configuration
+    @tab_configuration =
+      {
+        "kickoff" => [
+          [1, "Overview", overview_release_path(@release), "v2/gauge.svg"],
+          [2, "Changeset tracking", change_queue_release_path(@release), "v2/list_end.svg"]
+        ],
+
+        "stability" => [
+          [2, "Internal builds", root_path, "v2/drill.svg"],
+          [2, "Regression testing", root_path, "v2/tablet_smartphone.svg"],
+          [3, "Release candidate", root_path, "v2/gallery_horizontal_end.svg"],
+          [4, "Beta soak", root_path, "v2/alarm_clock.svg"]
+        ],
+
+        "metadata" => [
+          [2, "Notes", root_path, "v2/text.svg"],
+          [2, "Screenshots", root_path, "v2/wand.svg"]
+        ],
+
+        "release" => [
+          [2, "Approvals", root_path, "v2/list_checks.svg"],
+          [2, "App submission", store_submissions_release_path(@release), "v2/mail.svg"],
+          [3, "Store review", root_path, "v2/mail_search.svg"],
+          [4, "Rollout to users", root_path, "v2/rocket.svg"]
+        ]
+      }
+  end
 
   def post_release_params
     params.require(:release).permit(:force_finalize)

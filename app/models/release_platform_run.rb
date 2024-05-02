@@ -36,6 +36,9 @@ class ReleasePlatformRun < ApplicationRecord
   belongs_to :release
   has_one :release_metadata, dependent: :destroy, inverse_of: :release_platform_run
   has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
+  has_many :builds, dependent: :destroy, inverse_of: :release_platform_run
+  has_many :play_store_submissions, dependent: :destroy
+  has_many :app_store_submissions, dependent: :destroy
   has_many :external_builds, through: :step_runs
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
@@ -80,7 +83,17 @@ class ReleasePlatformRun < ApplicationRecord
 
   delegate :versioning_strategy, to: :release
   delegate :all_commits, :original_release_version, :hotfix?, to: :release
-  delegate :steps, :train, :app, :platform, to: :release_platform
+  delegate :steps, :train, :app, :platform, :store_provider, :android?, :ios?, to: :release_platform
+
+  def store_submissions
+    if android?
+      play_store_submissions
+    elsif ios?
+      app_store_submissions
+    else
+      raise ArgumentError, "Unknown platform: #{platform}"
+    end
+  end
 
   def check_release_health
     deployment_runs.each(&:check_release_health)

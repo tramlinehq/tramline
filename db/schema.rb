@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_05_01_105000) do
+ActiveRecord::Schema[7.0].define(version: 2024_05_01_155017) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -114,6 +114,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_01_105000) do
     t.datetime "updated_at", null: false
     t.datetime "generated_at", precision: nil
     t.datetime "uploaded_at", precision: nil
+    t.uuid "build_id"
+    t.index ["build_id"], name: "index_build_artifacts_on_build_id"
     t.index ["step_run_id"], name: "index_build_artifacts_on_step_run_id"
   end
 
@@ -126,6 +128,18 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_01_105000) do
     t.datetime "updated_at", null: false
     t.index ["is_active"], name: "index_build_queues_on_is_active"
     t.index ["release_id"], name: "index_build_queues_on_release_id"
+  end
+
+  create_table "builds", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_platform_run_id", null: false
+    t.uuid "commit_id", null: false
+    t.string "version_name"
+    t.string "build_number"
+    t.datetime "generated_at", precision: nil
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["commit_id"], name: "index_builds_on_commit_id"
+    t.index ["release_platform_run_id"], name: "index_builds_on_release_platform_run_id"
   end
 
   create_table "commit_listeners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -627,6 +641,25 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_01_105000) do
     t.index ["step_number", "release_platform_id"], name: "index_steps_on_step_number_and_release_platform_id", unique: true
   end
 
+  create_table "store_submissions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_platform_run_id", null: false
+    t.uuid "build_id"
+    t.string "status", null: false
+    t.string "name"
+    t.string "type", null: false
+    t.string "failure_reason"
+    t.datetime "prepared_at", precision: nil
+    t.datetime "submitted_at", precision: nil
+    t.datetime "rejected_at", precision: nil
+    t.datetime "approved_at", precision: nil
+    t.string "store_link"
+    t.string "store_status"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["build_id"], name: "index_store_submissions_on_build_id"
+    t.index ["release_platform_run_id"], name: "index_store_submissions_on_release_platform_run_id"
+  end
+
   create_table "teams", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "organization_id", null: false
     t.string "name", null: false
@@ -720,6 +753,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_01_105000) do
   add_foreign_key "apps", "organizations"
   add_foreign_key "build_artifacts", "step_runs"
   add_foreign_key "build_queues", "releases"
+  add_foreign_key "builds", "commits"
+  add_foreign_key "builds", "release_platform_runs"
   add_foreign_key "commit_listeners", "release_platforms"
   add_foreign_key "commits", "build_queues"
   add_foreign_key "commits", "release_platform_runs"
@@ -758,6 +793,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_01_105000) do
   add_foreign_key "step_runs", "release_platform_runs"
   add_foreign_key "step_runs", "steps"
   add_foreign_key "steps", "release_platforms"
+  add_foreign_key "store_submissions", "builds"
+  add_foreign_key "store_submissions", "release_platform_runs"
   add_foreign_key "teams", "organizations"
   add_foreign_key "trains", "apps"
 end

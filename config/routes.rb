@@ -85,6 +85,7 @@ Rails.application.routes.draw do
         member do
           get :overview
           get :change_queue
+          get :store_submissions
         end
 
         resources :commits, only: [], shallow: false do

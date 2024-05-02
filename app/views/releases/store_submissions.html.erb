@@ -1,0 +1,9 @@
+<%= render V2::ReleaseComponent.new(@release,
+                                    title: @train.name,
+                                    turbo_frame: dom_id(@app, :edit_org),
+                                    tab_config: @tab_configuration) do |container| %>
+  <% container.with_back_button %>
+  <% container.with_tab(title: "App Submission") do %>
+    APP SUBMISSION COMPONENT GOES HERE
+  <% end %>
+<% end %>
