@@ -13,10 +13,4 @@ class V2::LiveRelease::ChangeQueueComponent < V2::BaseComponent
   attr_reader :release, :build_queue, :applied_commits, :change_queue_commits, :mid_release_prs, :open_backmerge_prs
 
   def change_queue_commits_count = change_queue_commits.size
-
-  def change_queue_message
-    msg = "#{change_queue_commits.size} commit(s) in the queue."
-    msg += " These will be applied in #{time_in_words(build_queue.scheduled_at)} or after #{build_queue.build_queue_size} commits." if change_queue_commits_count > 0
-    msg
-  end
 end

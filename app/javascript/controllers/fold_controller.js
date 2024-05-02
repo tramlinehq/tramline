@@ -8,13 +8,17 @@ export default class extends Controller {
   }
 
   connect() {
-    this.foldableTarget.classList.add(this.collapsedValue);
+    if (this.hasFoldableTarget) {
+      this.foldableTarget.classList.add(this.collapsedValue);
+    }
   }
 
   toggle(event) {
     event.preventDefault();
 
-    this.foldableTarget.classList.toggle(this.expandedValue);
-    this.foldableTarget.classList.toggle(this.collapsedValue);
+    if (this.hasFoldableTarget) {
+      this.foldableTarget.classList.toggle(this.expandedValue);
+      this.foldableTarget.classList.toggle(this.collapsedValue);
+    }
   }
 }

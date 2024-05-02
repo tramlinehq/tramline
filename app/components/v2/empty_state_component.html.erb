@@ -12,10 +12,17 @@
     <%= image_tag(banner_image, width: 400, alt: "emptiness", class: "rounded-sm") %>
   </div>
 <% elsif subdued? %>
-  <div class="text-center px-4 mt-12">
+  <div class="text-center px-4 mt-12 opacity-80">
     <%= render V2::IconComponent.new(banner_image, size: :xl) %>
     <h2 class="text-lg font-semibold text-main dark:text-white"><%= title %></h2>
     <div class="my-2 text-sm text-neutral-500">
+      <%= text %>
+    </div>
+  </div>
+<% elsif tiny? %>
+  <div class="flex items-center justify-start gap-x-2">
+    <%= render V2::IconComponent.new(banner_image, size: :md) %>
+    <div class="text-xs text-secondary">
       <%= text %>
     </div>
   </div>

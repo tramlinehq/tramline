@@ -1,8 +1,20 @@
-<%= render V2::CardComponent.new(title: "Ongoing work", fold: true, separator: true, classes: "bottom-separator-space-default") do %>
-  <%= render partial: "shared/divide_collection", locals: { collection: render(V2::PullRequestComponent.with_collection(mid_release_prs)) } %>
+<%= render V2::CardComponent.new(title: "Ongoing work",
+                                 fold: true,
+                                 separator: true,
+                                 classes: "bottom-separator-space-default",
+                                 emptiness: mid_release_prs.empty?) do |card| %>
+  <% card.with_empty_state(text: "There are no more pull requests targeting your release branch.",
+                           banner_image: "v2/check.svg") %>
+
+  <%= render partial: "shared/divide_collection",
+             locals: { collection: render(V2::PullRequestComponent.with_collection(mid_release_prs)) } %>
 <% end %>
 
-<%= render V2::CardComponent.new(title: "Change queue", fold: true, separator: true, classes: "bottom-separator-space-default") do |card| %>
+<%= render V2::CardComponent.new(title: "Change queue",
+                                 fold: true,
+                                 separator: true,
+                                 classes: "bottom-separator-space-default",
+                                 emptiness: change_queue_commits_count.zero?) do |card| %>
   <% card.with_actions do %>
     <% if change_queue_commits.present? %>
       <%= render V2::ButtonComponent.new(
@@ -18,23 +30,36 @@
     <% end %>
   <% end %>
 
-  <div class="flex flex-col w-full">
-    <div class="text-sm text-slate-400">
-      <%= change_queue_message %>
-    </div>
+  <% card.with_empty_state(text: "The commit queue is empty.",
+                           banner_image: "arrow_down_wide_narrow.svg") %>
+
+  <div class="text-sm text-secondary">
+    <%= change_queue_commits.size %> commit(s) in the queue. These will be applied
+    in <%= time_in_words(build_queue.scheduled_at) %> or after <%= build_queue.build_queue_size %> commits.
   </div>
 
-  <% if change_queue_commits.present? %>
-    <%= render partial: "shared/divide_collection", locals: { collection: render(V2::CommitComponent.with_collection(change_queue_commits)) } %>
-  <% end %>
+  <%= render partial: "shared/divide_collection",
+             locals: { collection: render(V2::CommitComponent.with_collection(change_queue_commits)) } %>
 <% end %>
 
-<%= render V2::CardComponent.new(title: "Applied commits", fold: true, separator: true, classes: "bottom-separator-space-default") do %>
+<%= render V2::CardComponent.new(title: "Applied commits",
+                                 fold: true,
+                                 separator: true,
+                                 classes: "bottom-separator-space-default") do %>
   <% if applied_commits.present? %>
-    <%= render partial: "shared/divide_collection", locals: { collection: render(V2::CommitComponent.with_collection(applied_commits)) } %>
+    <%= render partial: "shared/divide_collection",
+               locals: { collection: render(V2::CommitComponent.with_collection(applied_commits)) } %>
   <% end %>
 <% end %>
 
-<%= render V2::CardComponent.new(title: "Pending backmerges", fold: true, separator: true, classes: "bottom-separator-space-default") do %>
-  <%= render partial: "shared/divide_collection", locals: { collection: render(V2::PullRequestComponent.with_collection(open_backmerge_prs)) } %>
+<%= render V2::CardComponent.new(title: "Pending backmerges",
+                                 fold: true,
+                                 separator: true,
+                                 classes: "bottom-separator-space-default",
+                                 emptiness: open_backmerge_prs.empty?) do |card| %>
+  <% card.with_empty_state(text: "All backmerge pull requests have been merged.",
+                           banner_image: "v2/check.svg") %>
+
+  <%= render partial: "shared/divide_collection",
+             locals: { collection: render(V2::PullRequestComponent.with_collection(open_backmerge_prs)) } %>
 <% end %>

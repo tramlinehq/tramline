@@ -1,5 +1,5 @@
 class V2::EmptyStateComponent < V2::BaseComponent
-  TYPES = [:giant, :subdued]
+  TYPES = [:giant, :subdued, :tiny]
 
   def initialize(text:, banner_image:, title: "", type: :giant)
     raise ArgumentError, "Invalid type: #{type}" unless TYPES.include?(type)
@@ -19,5 +19,9 @@ class V2::EmptyStateComponent < V2::BaseComponent
 
   def subdued?
     @type == :subdued
+  end
+
+  def tiny?
+    @type == :tiny
   end
 end

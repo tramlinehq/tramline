@@ -1,23 +1,31 @@
 class V2::CardComponent < ViewComponent::Base
   renders_one :actions
+  renders_one :empty_state, ->(**args) {
+    empty_state_params = {type: :tiny}.merge(**args)
+    V2::EmptyStateComponent.new(**empty_state_params)
+  }
+
   SIZE = {
     xs: "max-h-80",
-    sm: "max-h-96",
+    base: "max-h-96",
     full: "max-h-full"
   }
 
-  def initialize(title:, fold: false, separator: true, classes: nil, size: :sm)
+  def initialize(title:, subtitle: nil, fold: false, separator: true, classes: nil, size: :base, emptiness: false)
     @title = title
+    @subtitle = subtitle
     @fold = fold
     @separator = separator
     @classes = classes
     @size = SIZE[size]
+    @emptiness = emptiness
   end
 
-  attr_reader :title
+  attr_reader :title, :subtitle, :emptiness
 
   def card_params
-    params = {class: "flex flex-col border-default box-padding gap-y-2 #{@classes} #{@size}"}
+    size_class = fold? ? "" : @size
+    params = {class: "flex flex-col card-default #{y_gap} #{@classes} #{size_class}"}
     params[:data] = fold_params if fold?
     params
   end
@@ -35,8 +43,18 @@ class V2::CardComponent < ViewComponent::Base
 
   def fold_button_params
     params = {class: "me-2"}
-    params[:data] =  {action: "click->fold#toggle"} if fold?
+    params[:data] = {action: "click->fold#toggle"} if fold?
     params
+  end
+
+  def separator_style
+    return "border-default-b pb-2" if separator?
+    ""
+  end
+
+  def y_gap
+    return "gap-y-3.5" if separator?
+    "gap-y-4"
   end
 
   def fold? = @fold
@@ -45,4 +63,3 @@ class V2::CardComponent < ViewComponent::Base
 
   def full? = @size == SIZE[:full]
 end
-
