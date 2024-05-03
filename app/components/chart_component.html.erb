@@ -1,28 +1,22 @@
 <% if chart.present? %>
-  <% if insufficient? %>
-    <div class="flex flex-col w-full card-default gap-y-6">
-      <div class="flex justify-between items-start mb-4">
-        <h3 class="flex heading-4 gap-x-1"><%= title %></h3>
+  <%= render V2::CardComponent.new(title: title,
+                                   subtitle: chart_scope,
+                                   fold: false,
+                                   separator: false,
+                                   classes: "w-full",
+                                   size: :full,
+                                   emptiness: insufficient?) do |card| %>
+    <% card.with_actions do %>
+      <% if help_text.present? %>
         <div class="flex"><%= render corner_icon %></div>
-      </div>
+      <% end %>
+    <% end %>
 
-      <div class="flex justify-center items-center opacity-50">
-        <%= render V2::EmptyStateComponent.new(text: "Waiting for more data", banner_image: "v2/clock.svg", type: :subdued) %>
-      </div>
-    </div>
-  <% else %>
-    <div class="w-full card-default">
-      <div class="flex justify-between items-start mb-4">
-        <div>
-          <h3 class="flex heading-5-sc gap-x-1"><%= title %></h3>
-          <p class="text-xs font-normal text-secondary-50"><%= chart_scope %></p>
-        </div>
+    <% card.with_empty_state(text: "Waiting for more data",
+                             banner_image: "v2/clock.svg",
+                             type: :subdued) %>
 
-        <% if help_text.present? %>
-          <div class="flex"><%= render corner_icon %></div>
-        <% end %>
-      </div>
-
+    <% unless insufficient? %>
       <% if area? %>
         <div data-controller="charts"
              data-charts-type-value="area"
@@ -70,6 +64,6 @@
           <div data-charts-target="chart"></div>
         </div>
       <% end %>
-    </div>
+    <% end %>
   <% end %>
 <% end %>

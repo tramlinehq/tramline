@@ -3,7 +3,8 @@
                                                    turbo_frame: dom_id(@app, :edit_org),
                                                    tab_config: @tab_configuration) do |container| %>
   <% container.with_back_button %>
-  <% container.with_tab(title: "Changeset tracking", control_content: true) do %>
-    <%= render V2::LiveRelease::ChangeQueueComponent.new(@release, title: "Changeset tracking") %>
+  <% container.with_tab(title: "Changeset tracking") do %>
+    <%= render V2::LiveRelease::ChangeQueueComponent.new(@release) %>
   <% end %>
 <% end %>
+

@@ -2,7 +2,7 @@
   <div class="col-span-1 flex justify-between">
     <div class="flex gap-y-1 gap-x-2">
       <%= render V2::HorizontalDataSetComponent.new(separator: :dashed, bg_color: true) do |component| %>
-        <% component.with_data_set(title: "Release Pilot") do %>
+        <% component.with_data_set(title: "Release Captain") do %>
           <div class="flex items-center gap-x-2 justify-between">
             <%= release_pilot_avatar %>
             <span class="text-sm text-secondary"><%= release.release_pilot.full_name %></span>
@@ -36,24 +36,19 @@
 
 <div class="grid grid-cols-2 gap-3 min-w-80 bottom-separator-space-default">
   <% if changelog_present? %>
-    <div class="flex flex-col border-default box-padding gap-y-2 max-h-96">
-      <div class="flex items-center justify-between pb-2 border-default-b">
-        <h5 class="heading-5-sc">Changes since last release</h5>
+    <%= render V2::CardComponent.new(title: "Changes since last release", fold: false, separator: true) do |card| %>
+      <% card.with_actions do %>
         <span class="text-xs text-secondary-50">
           Diff from <%= render V2::BadgeComponent.new(@release.release_changelog.from_ref) %>
         </span>
-      </div>
+      <% end %>
 
-      <div class="overflow-y-scroll overflow-x-hidden">
-        <%= render partial: "shared/divide_collection",
-                   locals: { collection: render(V2::CommitComponent.with_collection(commits_since_last)) } %>
-      </div>
-    </div>
+      <%= render partial: "shared/divide_collection", locals: { collection: render(V2::CommitComponent.with_collection(commits_since_last)) } %>
+    <% end %>
   <% end %>
 
-  <div class="col-span-1 flex flex-col border-default box-padding gap-y-2 max-h-96">
-    <div class="flex items-center justify-between pb-2 border-default-b">
-      <h3 class="heading-5-sc">Internal Notes</h3>
+  <%= render V2::CardComponent.new(title: "Captain's Log", fold: false, separator: true, classes: "col-span-1") do |card| %>
+    <% card.with_actions do %>
       <%= render V2::ModalComponent.new(title: "Edit Internal Notes", dismissable: false) do |modal| %>
         <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none)
                 .with_icon("v2/pencil.svg", size: :sm) %>
@@ -68,7 +63,7 @@
           <% end %>
         <% end %>
       <% end %>
-    </div>
+    <% end %>
 
     <div data-controller="text-editor"
          data-text-editor-view-mode-value="true"
@@ -76,7 +71,7 @@
          class="overflow-y-scroll overflow-x-hidden">
       <div class="ql-editor p-0" data-text-editor-target="viewContents" contenteditable="false"></div>
     </div>
-  </div>
+  <% end %>
 </div>
 
 <%= render V2::PlatformLevelOverviewComponent.new(release, size: :xs) %>

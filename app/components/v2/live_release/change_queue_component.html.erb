@@ -1,105 +1,65 @@
-<% simple_tabs = V2::SimpleTabComponent.new(title:, groups: ["Commits", "Pull requests"]) %>
-<% simple_tabs.with_tab do %>
-  <div class="bottom-separator-space-default">
-    <div class="flex flex-col border-default box-padding gap-y-2 max-h-96">
-      <div class="flex items-center justify-between pb-2 border-default-b">
-        <h5 class="heading-5-sc">Change queue</h5>
-        <% if change_queue_commits.present? %>
-          <%= render V2::ButtonComponent.new(
-            scheme: :default,
-            options: apply_release_build_queue_path(release, build_queue),
-            type: :button,
-            size: :xxs,
-            disabled: !release.committable?,
-            label: "Apply commits",
-            html_options: { data: { turbo_confirm: "This will trigger steps for the HEAD of the queue, are you sure?" } }) do |b|
-            b.with_icon("arrow_down_wide_narrow.svg", size: :sm)
-          end %>
-        <% end %>
-      </div>
+<%= render V2::CardComponent.new(title: "Ongoing work",
+                                 fold: true,
+                                 separator: true,
+                                 classes: "bottom-separator-space-default",
+                                 emptiness: mid_release_prs.empty?) do |card| %>
+  <% card.with_empty_state(text: "There are no more pull requests targeting your release branch.",
+                           banner_image: "v2/check.svg") %>
 
-      <div class="flex flex-col w-full">
-        <div class="text-sm text-slate-400">
-          <%= change_queue_message %>
-        </div>
-      </div>
+  <%= render partial: "shared/divide_collection",
+             locals: { collection: render(V2::PullRequestComponent.with_collection(mid_release_prs)) } %>
+<% end %>
 
-      <% if change_queue_commits.present? %>
-        <%= render partial: "shared/divide_collection",
-                   locals: { collection: render(V2::CommitComponent.with_collection(change_queue_commits)) } %>
-      <% end %>
-    </div>
+<%= render V2::CardComponent.new(title: "Change queue",
+                                 fold: true,
+                                 separator: true,
+                                 classes: "bottom-separator-space-default",
+                                 emptiness: change_queue_commits_count.zero?) do |card| %>
+  <% card.with_actions do %>
+    <% if change_queue_commits.present? %>
+      <%= render V2::ButtonComponent.new(
+        scheme: :default,
+        options: apply_release_build_queue_path(release, build_queue),
+        type: :button,
+        size: :xxs,
+        disabled: !release.committable?,
+        label: "Apply commits",
+        html_options: { data: { turbo_confirm: "This will accept the commits in the queue, are you sure?" } }) do |b|
+        b.with_icon("arrow_down_wide_narrow.svg", size: :sm)
+      end %>
+    <% end %>
+  <% end %>
+
+  <% card.with_empty_state(text: "The commit queue is empty.",
+                           banner_image: "arrow_down_wide_narrow.svg") %>
+
+  <div class="text-sm text-secondary">
+    <%= change_queue_commits.size %> commit(s) in the queue. These will be applied
+    in <%= time_in_words(build_queue.scheduled_at) %> or after <%= build_queue.build_queue_size %> commits.
   </div>
 
-  <% if applied_commits.present? %>
-    <div class="flex flex-col border-default box-padding gap-y-2"
-         data-controller="fold"
-         data-fold-collapsed-value="max-h-96"
-         data-fold-expanded-value="max-h-fit">
-      <div class="flex items-center justify-start pb-2 border-default-b">
-        <%= render V2::ButtonComponent.new(
-          scheme: :naked_icon,
-          type: :action,
-          html_options: { data: { action: "click->fold#toggle" } },
-          size: :xxs) do |b|
-          b.with_icon("v2/unfold_vertical.svg", size: :sm)
-          b.with_tooltip("Fold / unfold", placement: "top")
-        end %>
-        <h5 class="heading-5-sc">Applied commits</h5>
-      </div>
+  <%= render partial: "shared/divide_collection",
+             locals: { collection: render(V2::CommitComponent.with_collection(change_queue_commits)) } %>
+<% end %>
 
-      <div class="overflow-y-scroll" data-fold-target="foldable">
-        <%= render partial: "shared/divide_collection",
-                   locals: { collection: render(V2::CommitComponent.with_collection(applied_commits)) } %>
-      </div>
-    </div>
+<%= render V2::CardComponent.new(title: "Applied commits",
+                                 fold: true,
+                                 separator: true,
+                                 classes: "bottom-separator-space-default") do %>
+  <% if applied_commits.present? %>
+    <%= render partial: "shared/divide_collection",
+               locals: { collection: render(V2::CommitComponent.with_collection(applied_commits)) } %>
   <% end %>
 <% end %>
 
-<% simple_tabs.with_tab do %>
-  <div class="flex flex-col border-default box-padding gap-y-2 bottom-separator-space-default"
-       data-controller="fold"
-       data-fold-collapsed-value="max-h-96"
-       data-fold-expanded-value="max-h-fit">
-    <div class="flex items-center justify-start pb-2 border-default-b">
-      <%= render V2::ButtonComponent.new(
-        scheme: :naked_icon,
-        type: :action,
-        html_options: { data: { action: "click->fold#toggle" } },
-        size: :xxs) do |b|
-        b.with_icon("v2/unfold_vertical.svg", size: :sm)
-        b.with_tooltip("Fold / unfold", placement: "top")
-      end %>
-      <h5 class="heading-5-sc">Pending backmerges</h5>
-    </div>
+<%= render V2::CardComponent.new(title: "Pending backmerges",
+                                 fold: true,
+                                 separator: true,
+                                 classes: "bottom-separator-space-default",
+                                 emptiness: open_backmerge_prs.empty?) do |card| %>
+  <% card.with_empty_state(text: "All backmerge pull requests have been merged.",
+                           banner_image: "v2/check.svg") %>
 
-    <div class="overflow-y-scroll" data-fold-target="foldable">
-      <%= render partial: "shared/divide_collection",
-                 locals: { collection: render(V2::PullRequestComponent.with_collection(open_backmerge_prs)) } %>
-    </div>
-  </div>
-
-  <div class="flex flex-col border-default box-padding gap-y-2"
-       data-controller="fold"
-       data-fold-collapsed-value="max-h-96"
-       data-fold-expanded-value="max-h-fit">
-    <div class="flex items-center justify-start pb-2 border-default-b">
-      <%= render V2::ButtonComponent.new(
-        scheme: :naked_icon,
-        type: :action,
-        html_options: { data: { action: "click->fold#toggle" } },
-        size: :xxs) do |b|
-        b.with_icon("v2/unfold_vertical.svg", size: :sm)
-        b.with_tooltip("Fold / unfold", placement: "top")
-      end %>
-      <h5 class="heading-5-sc">Ongoing work</h5>
-    </div>
-
-    <div class="divide-default overflow-y-scroll" data-fold-target="foldable">
-      <%= render partial: "shared/divide_collection",
-                 locals: { collection: render(V2::PullRequestComponent.with_collection(mid_release_prs)) } %>
-    </div>
-  </div>
+  <%= render partial: "shared/divide_collection",
+             locals: { collection: render(V2::PullRequestComponent.with_collection(open_backmerge_prs)) } %>
 <% end %>
-
-<%= render simple_tabs %>
