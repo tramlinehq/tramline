@@ -98,6 +98,15 @@ Rails.application.routes.draw do
           resource :release_metadatum, only: %i[edit update], path: :metadata
         end
 
+        resources :platforms, shallow: false, only: [] do
+          resources :store_submissions, only: [:create, :update], path: :submissions do
+            member do
+              patch :submit_for_review
+              patch :prepare
+            end
+          end
+        end
+
         resources :build_queues, only: [], shallow: false do
           member do
             post :apply

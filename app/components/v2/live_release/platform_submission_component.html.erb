@@ -1,0 +1,96 @@
+<% content_for :error_resource do %>
+  <%= render V2::ErrorComponent.new(submission) %>
+<% end %>
+
+<div class="flex flex-col gap-4">
+  <div class="flex justify-between">
+        <span class="text-xl text-secondary-50/50 border-b border-main-300/30 py-1 justify-self-start pl-0.5 pr-1.5">
+          <%= release_platform_run.display_attr(:platform) %>
+        </span>
+    <div class="flex gap-1.5">
+    </div>
+  </div>
+
+  <% if available_builds.present? && !submission.change_allowed? %>
+    <%= render V2::AlertComponent.new(type: :notice, title: "A new build is available for submission", dismissible: false) %>
+    <%= render V2::ButtonComponent.new(
+      scheme: :default,
+      type: :button,
+      size: :xxs,
+      label: "Start a new submission",
+      options: release_platform_store_submissions_path(release, release_platform_run.platform, submission.id),
+      turbo: false,
+      html_options: { method: :post, data: { turbo_method: :put, turbo_confirm: "Are you sure about that?" } }
+    ) %>
+  <% elsif build.nil? %>
+    <%= render V2::AlertComponent.new(kind: :banner, title: "No build available", dismissible: false) do %>
+      No build is available for this platform. Please build a release candidate to continue.
+    <% end %>
+  <% end %>
+
+
+  <% if build.present? %>
+    <%= render V2::CardComponent.new(title: "Settings", fold: false, separator: false) do |card| %>
+      <% card.with_actions do %>
+        <div class="flex items-center gap-x-1.5">
+          <% if submission.change_allowed? && available_builds.present? %>
+            <%= render V2::ModalComponent.new(title: "Available builds", subtitle: "Choose a build to send for submission to the store") do |modal| %>
+              <% button = modal.with_button(label: "Change build", scheme: :light, type: :action, size: :xxs) %>
+              <% button.with_icon("v2/pencil.svg") %>
+              <% modal.with_body do %>
+                <%= form_with(model: [release, release_platform_run, submission],
+                              scope: :store_submission,
+                              url: release_platform_store_submission_path(release, release_platform_run.platform, submission),
+                              builder: EnhancedFormHelper::AuthzForm) do |form| %>
+                  <div class="flex flex-col items-start gap-4">
+                    <%= form.labeled_select :build_id, "Select a build", options_for_select(all_builds.map { |b| [build_display_info(b), b.id] }, submission.build_id) %>
+                    <%= form.authz_submit "Save", "v2/archive.svg" %>
+                  </div>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+          <% if action.present? %>
+            <%= render V2::ButtonComponent.new(**action) { |b| b.with_icon("v2/clipboard_list.svg") } %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <div class="flex flex-col gap-1.5 text-secondary text-xs">
+        <%= render V2::LiveRelease::BuildComponent.new(submission.build) %>
+
+        <div class="flex flex-row gap-x-1">
+          <span class="heading-5">Release:</span>
+          <span>Manual</span>
+        </div>
+        <div class="flex flex-row gap-x-1">
+          <span class="heading-5">Staged Rollout:</span>
+          <span>Enabled</span>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%= render V2::CardComponent.new(title: "App Review Information", fold: false, separator: false) do |card| %>
+    <% card.with_actions do %>
+      <%= render V2::ModalComponent.new(title: "Available builds", subtitle: "Choose a build to send for submission to the store") do |modal| %>
+        <% button = modal.with_button(scheme: :light, type: :action, size: :xxs) %>
+        <% button.with_icon("v2/pencil.svg") %>
+        <% modal.with_body do %>
+          EDIT REVIEW INFORMATION
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <div class="flex flex-col gap-1.5 text-secondary text-xs">
+      <div class="flex flex-row gap-x-1">
+        <span class="heading-5">Contact:</span>
+        <span>Akshay Gupta</span>
+      </div>
+      <div class="flex flex-row gap-x-1">
+        <span class="heading-5">Sign-in required:</span>
+        <span>No</span>
+      </div>
+    </div>
+  <% end %>
+</div>

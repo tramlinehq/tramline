@@ -33,6 +33,9 @@ class AppStoreSubmission < StoreSubmission
     failed: "failed"
   }
 
+  IMMUTABLE_STATES = %w[approved submitted_for_review]
+  CHANGEABLE_STATES = STATES.values - IMMUTABLE_STATES
+
   STAMPABLE_REASONS = %w[
     prepare_release_failed
     inflight_release_replaced
@@ -114,8 +117,16 @@ class AppStoreSubmission < StoreSubmission
     end
   end
 
+  def change_allowed?
+    status.in? CHANGEABLE_STATES
+  end
+
+  def reviewable? = true
+
   # FIXME
   def staged_rollout? = true
+
+  def integration_type = :app_store
 
   def prepare_for_release!(force: false)
     result = provider.prepare_release(build_number, version_name, staged_rollout?, release_metadata, force)

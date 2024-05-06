@@ -79,6 +79,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   after_create :set_default_release_metadata
+  after_create :create_store_submission
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
   delegate :versioning_strategy, to: :release
@@ -93,6 +94,24 @@ class ReleasePlatformRun < ApplicationRecord
     else
       raise ArgumentError, "Unknown platform: #{platform}"
     end
+  end
+
+  def active_store_submission
+    store_submissions.last
+  end
+
+  def create_store_submission
+    if android?
+      play_store_submissions.create!
+    elsif ios?
+      app_store_submissions.create!
+    else
+      raise ArgumentError, "Unknown platform: #{platform}"
+    end
+  end
+
+  def latest_build?(build)
+    builds.reorder("generated_at DESC").first == build
   end
 
   def check_release_health

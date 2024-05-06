@@ -57,7 +57,7 @@ class PlayStoreSubmission < StoreSubmission
     event :start_prepare,
       guard: :startable?,
       after_commit: -> { StoreSubmissions::PlayStore::PrepareForReleaseJob.perform_later(id) } do
-      transitions from: :created, to: :preparing
+      transitions from: [:created, :prepared, :failed], to: :preparing
     end
 
     event :finish_prepare do
@@ -78,6 +78,16 @@ class PlayStoreSubmission < StoreSubmission
       transitions from: [:preparing, :prepared, :failed_with_action_required], to: :failed_with_action_required
     end
   end
+
+  def change_allowed?
+    true
+  end
+
+  def reviewable?
+    false
+  end
+
+  def integration_type = :google_play_store
 
   def prepare_for_release!
     return unless startable?

@@ -16,6 +16,20 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     ReleasesHelper::SHOW_RELEASE_STATUS.fetch(@release.status.to_sym)
   end
 
+  def platform_runs
+    @platform_runs ||=
+      @release.release_platform_runs.includes(step_runs: {deployment_runs: [:staged_rollout]})
+  end
+
+  def cross_platform?
+    @release.app.cross_platform?
+  end
+
+  def grid_size
+    return "grid-cols-2" if platform_runs.size > 1
+    "grid-cols-1"
+  end
+
   def hotfix_badge
     if @release.hotfix?
       hotfixed_from = @release.hotfixed_from

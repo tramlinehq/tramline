@@ -27,7 +27,7 @@ class StoreSubmission < ApplicationRecord
   belongs_to :release_platform_run
   belongs_to :build, optional: true
 
-  delegate :release_metadata, :train, to: :release_platform_run
+  delegate :release_metadata, :train, :release, to: :release_platform_run
   delegate :notify!, to: :train
   delegate :version_name, :build_number, to: :build
 
