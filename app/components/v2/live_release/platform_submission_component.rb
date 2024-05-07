@@ -11,6 +11,22 @@ class V2::LiveRelease::PlatformSubmissionComponent < V2::BaseComponent
   delegate :build, :release_platform_run, to: :submission
   delegate :release, to: :release_platform_run
 
+  STATUS = {
+    created: {text: "Ready", status: :inert},
+    preparing: {text: "Preparing", status: :ongoing},
+    prepared: {text: "Ready for review", status: :ongoing},
+    failed_prepare: {text: "Failed to prepare", status: :inert},
+    submitted_for_review: {text: "Submitted for review", status: :inert},
+    review_failed: {text: "Review rejected", status: :failure},
+    approved: {text: "Review approved", status: :ongoing},
+    failed: {text: "Failed", status: :failure},
+    failed_with_action_required: {text: "Needs manual submission", status: :failure}
+  }
+
+  def status
+    STATUS[submission.status.to_sym] || {text: submission.status.humanize, status: :neutral}
+  end
+
   def commits_since_last
     changes&.normalized_commits
   end
@@ -20,7 +36,11 @@ class V2::LiveRelease::PlatformSubmissionComponent < V2::BaseComponent
   end
 
   memoize def available_builds
-    all_builds.where.not(id: submission.build&.id)
+    all_builds.where.not(id: build&.id)
+  end
+
+  memoize def newer_builds
+    all_builds.where("generated_at > ?", build.generated_at).where.not(id: build&.id)
   end
 
   memoize def all_builds

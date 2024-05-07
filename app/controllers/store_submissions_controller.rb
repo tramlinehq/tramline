@@ -24,7 +24,7 @@ class StoreSubmissionsController < SignedInApplicationController
   end
 
   def submit_for_review
-    @submission.submit_for_review!
+    @submission.submit!
 
     if @submission.failed?
       redirect_back fallback_location: root_path, flash: {error: t(".submit_for_review.failure", errors: @submission.display_attr(:failure_reason))}

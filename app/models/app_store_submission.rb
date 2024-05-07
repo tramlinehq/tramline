@@ -81,7 +81,7 @@ class AppStoreSubmission < StoreSubmission
     event :start_prepare,
       guard: :startable?,
       after_commit: ->(args = {force: false}) { StoreSubmissions::AppStore::PrepareForReleaseJob.perform_async(id, args.fetch(:force)) } do
-      transitions from: [:created, :failed_prepare, :prepared, :failed], to: :preparing
+      transitions from: [:created, :failed_prepare, :prepared, :failed, :review_failed], to: :preparing
     end
 
     event :finish_prepare do
@@ -121,7 +121,9 @@ class AppStoreSubmission < StoreSubmission
     status.in? CHANGEABLE_STATES
   end
 
-  def reviewable? = true
+  def deployment_channel = AppStoreIntegration::PROD_CHANNEL
+
+  def reviewable? = prepared?
 
   # FIXME
   def staged_rollout? = true
@@ -145,6 +147,10 @@ class AppStoreSubmission < StoreSubmission
       fail!(reason: :invalid_release)
       return
     end
+
+    release_info = result.value!
+    self.store_status = release_info.status
+    save!
 
     finish_prepare!
     event_stamp!(reason: :inflight_release_replaced, kind: :notice, data: stamp_data) if force

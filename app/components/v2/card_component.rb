@@ -37,7 +37,7 @@ class V2::CardComponent < ViewComponent::Base
   def fold_target_params
     params = {}
     params[:data] = {fold_target: "foldable"} if fold?
-    params[:class] = "overflow-y-scroll" if fold? || !full?
+    params[:class] = "overflow-y-scroll" if fold?
     params
   end
 

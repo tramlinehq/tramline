@@ -11,26 +11,8 @@
     </div>
   </div>
 
-  <% if available_builds.present? && !submission.change_allowed? %>
-    <%= render V2::AlertComponent.new(type: :notice, title: "A new build is available for submission", dismissible: false) %>
-    <%= render V2::ButtonComponent.new(
-      scheme: :default,
-      type: :button,
-      size: :xxs,
-      label: "Start a new submission",
-      options: release_platform_store_submissions_path(release, release_platform_run.platform, submission.id),
-      turbo: false,
-      html_options: { method: :post, data: { turbo_method: :put, turbo_confirm: "Are you sure about that?" } }
-    ) %>
-  <% elsif build.nil? %>
-    <%= render V2::AlertComponent.new(kind: :banner, title: "No build available", dismissible: false) do %>
-      No build is available for this platform. Please build a release candidate to continue.
-    <% end %>
-  <% end %>
-
-
   <% if build.present? %>
-    <%= render V2::CardComponent.new(title: "Settings", fold: false, separator: false) do |card| %>
+    <%= render V2::CardComponent.new(title: "Store Submission", fold: false, separator: false) do |card| %>
       <% card.with_actions do %>
         <div class="flex items-center gap-x-1.5">
           <% if submission.change_allowed? && available_builds.present? %>
@@ -57,18 +39,37 @@
         </div>
       <% end %>
 
-      <div class="flex flex-col gap-1.5 text-secondary text-xs">
+      <div class="flex flex-col gap-4 text-secondary text-xs">
         <%= render V2::LiveRelease::BuildComponent.new(submission.build) %>
 
-        <div class="flex flex-row gap-x-1">
-          <span class="heading-5">Release:</span>
-          <span>Manual</span>
+        <div class="flex flex-row justify-between gap-2">
+          <%= render V2::StatusIndicatorPillComponent.new(**status) %>
+          <% if submission.store_status.present? %>
+            <%= render V2::StatusIndicatorPillComponent.new(text: submission.store_status.humanize, status: :neutral) %>
+          <% end %>
         </div>
-        <div class="flex flex-row gap-x-1">
-          <span class="heading-5">Staged Rollout:</span>
-          <span>Enabled</span>
-        </div>
+
+        <% if submission.change_allowed? && newer_builds.present? %>
+          <%= render V2::AlertComponent.new(type: :notice, title: "A new build #{newer_builds.last.display_name} is available. Change build to update the submission.", dismissible: true) %>
+        <% end %>
       </div>
+    <% end %>
+  <% end %>
+
+  <% if newer_builds.present? && !submission.change_allowed? %>
+    <%= render V2::AlertComponent.new(type: :notice, title: "A new build #{newer_builds.last.display_name} is available for submission", dismissible: false) %>
+    <%= render V2::ButtonComponent.new(
+      scheme: :default,
+      type: :button,
+      size: :xxs,
+      label: "Start a new submission",
+      options: release_platform_store_submissions_path(release, release_platform_run.platform, submission.id),
+      turbo: false,
+      html_options: { method: :post, data: { turbo_method: :put, turbo_confirm: "Are you sure about that?" } }
+    ) %>
+  <% elsif build.nil? %>
+    <%= render V2::AlertComponent.new(kind: :banner, title: "No build available", dismissible: false) do %>
+      No build is available for this platform. Please build a release candidate to continue.
     <% end %>
   <% end %>
 

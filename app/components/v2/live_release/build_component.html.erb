@@ -15,8 +15,6 @@
         <% badge.with_link(ci_info, ci_link) %>
       <% end %>
 
-      <%= render V2::StatusIndicatorPillComponent.new(**status) %>
-
       <% if previous_build.present? %>
         <%= render V2::ModalComponent.new(title: "Changes since last submission",
                                           subtitle: diff_between,

@@ -3,18 +3,6 @@
 class V2::LiveRelease::BuildComponent < V2::BaseComponent
   include Memery
 
-  STATUS = {
-    created: {text: "Ready", status: :inert},
-    preparing: {text: "Preparing", status: :ongoing},
-    prepared: {text: "Ready for review", status: :ongoing},
-    failed_prepare: {text: "Failed to prepare", status: :inert},
-    submitted_for_review: {text: "Submitted for review", status: :inert},
-    review_failed: {text: "Review rejected", status: :failure},
-    approved: {text: "Review approved", status: :ongoing},
-    failed: {text: "Failed", status: :failure},
-    failed_with_action_required: {text: "Needs manual submission", status: :failure}
-  }
-
   def initialize(build, previous_build: nil)
     @build = build
     @previous_build = previous_build
@@ -58,10 +46,6 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
 
   def store_logo
     "integrations/logo_#{store_submission.integration_type}.png"
-  end
-
-  def status
-    STATUS[store_submission.status.to_sym] || {text: "Unknown", status: :neutral}
   end
 
   def last_activity_at

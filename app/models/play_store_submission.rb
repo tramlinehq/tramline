@@ -79,20 +79,18 @@ class PlayStoreSubmission < StoreSubmission
     end
   end
 
-  def change_allowed?
-    true
-  end
+  def deployment_channel = {id: :production, name: "production", is_production: true}
 
-  def reviewable?
-    false
-  end
+  def change_allowed? = true
+
+  def reviewable? = false
 
   def integration_type = :google_play_store
 
   def prepare_for_release!
     return unless startable?
 
-    result = provider.create_draft_release("production", build_number, version_name, release_notes)
+    result = provider.create_draft_release(deployment_channel[:id].to_s, build_number, version_name, release_notes)
 
     if result.ok?
       finish_prepare!
