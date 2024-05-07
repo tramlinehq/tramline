@@ -128,10 +128,10 @@ class AppStoreSubmission < StoreSubmission
 
   def reviewable? = prepared?
 
+  def requires_review? = true
+
   # FIXME
   def staged_rollout? = true
-
-  def integration_type = :app_store
 
   def prepare_for_release!(force: false)
     result = provider.prepare_release(build_number, version_name, staged_rollout?, release_metadata, force)
@@ -151,10 +151,7 @@ class AppStoreSubmission < StoreSubmission
       return
     end
 
-    release_info = result.value!
-    self.store_status = release_info.status
-    save!
-
+    update_store_info!(result.value!)
     finish_prepare!
     event_stamp!(reason: :inflight_release_replaced, kind: :notice, data: stamp_data) if force
   end
@@ -188,9 +185,7 @@ class AppStoreSubmission < StoreSubmission
       raise ExternalReleaseNotInTerminalState, "Retrying in some time..."
     end
 
-    release_info = result.value!
-    self.store_status = release_info.status
-    save!
+    update_store_info!(result.value!)
 
     if release_info.success?
       approved!
@@ -212,15 +207,18 @@ class AppStoreSubmission < StoreSubmission
       return fail_with_error(result.error)
     end
 
-    release_info = result.value!
-    self.store_status = release_info.status
-    save!
-
+    update_store_info!(result.value!)
     cancel!
   end
 
   # FIXME: update store version details when release metadata changes or build is updated
   def update_store_version
     # update whats new, build
+  end
+
+  def update_store_info!(release_info)
+    self.store_status = release_info.attributes[:status]
+    self.store_link = release_info.attributes[:external_link]
+    save!
   end
 end

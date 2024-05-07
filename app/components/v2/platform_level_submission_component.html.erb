@@ -1,4 +1,4 @@
-<div class="grid <%= grid_size %> justify-between gap-x-3 gap-y-3">
+<div class="grid <%= grid_size %> justify-between gap-3">
   <% platform_runs.each do |run| %>
     <%= render V2::LiveRelease::PlatformSubmissionComponent.new(run.active_store_submission) %>
   <% end %>

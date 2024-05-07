@@ -368,10 +368,6 @@ class AppStoreIntegration < ApplicationRecord
       end
     end
 
-    def status
-      release_info[:status]
-    end
-
     def success?
       release_info[:status].in?(
         [

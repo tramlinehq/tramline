@@ -30,6 +30,7 @@ class StoreSubmission < ApplicationRecord
   delegate :release_metadata, :train, :release, to: :release_platform_run
   delegate :notify!, to: :train
   delegate :version_name, :build_number, to: :build
+  delegate :project_link, :public_icon_img, to: :provider
 
   def attach_build!(build)
     self.build = build
@@ -42,6 +43,10 @@ class StoreSubmission < ApplicationRecord
 
   def provider
     release_platform_run.store_provider
+  end
+
+  def external_link
+    store_link || project_link
   end
 
   protected
@@ -91,7 +96,15 @@ class StoreSubmission < ApplicationRecord
       .notification_params
       .merge(
         {
-          project_link: store_link
+          is_staged_rollout_deployment: staged_rollout?,
+          is_production_channel: true,
+          is_play_store_production: is_a?(PlayStoreSubmission),
+          is_app_store_production: is_a?(AppStoreSubmission),
+          deployment_channel_type: provider.to_s.titleize,
+          deployment_channel:,
+          deployment_channel_asset_link: public_icon_img,
+          requires_review: requires_review?,
+          project_link: external_link
         }
       )
   end

@@ -4,7 +4,7 @@
       <% if submission? %>
         <%= render V2::BadgeComponent.new do |badge| %>
           <% badge.with_icon(store_logo) %>
-          <% badge.with_link(build_info, store_link) %>
+          <% badge.with_link(build_info, external_link) %>
         <% end %>
       <% end %>
 
@@ -31,7 +31,7 @@
       <% end %>
     </div>
 
-    <%= render V2::TooltipComponent.new("Originally created on #{build.generated_at}", placement: "top") do |tooltip| %>
+    <%= render V2::TooltipComponent.new("Originally created on #{time_format build.generated_at}", placement: "top") do |tooltip| %>
       <% tooltip.with_body do %>
         <div class="flex items-center">
           <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2 text-secondary") %>

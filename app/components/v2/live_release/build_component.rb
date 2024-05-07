@@ -11,7 +11,7 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
 
   attr_reader :show_ci_info, :build, :previous_build
   delegate :release_platform_run, :store_submission, :commit, to: :build
-  delegate :store_link, to: :store_submission, allow_nil: true
+  delegate :external_link, to: :store_submission, allow_nil: true
 
   def build_info
     build.display_name
@@ -45,7 +45,7 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
   end
 
   def store_logo
-    "integrations/logo_#{store_submission.integration_type}.png"
+    "integrations/logo_#{store_submission.provider}.png"
   end
 
   def last_activity_at

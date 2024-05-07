@@ -8,7 +8,7 @@ class V2::LiveRelease::PlatformSubmissionComponent < V2::BaseComponent
   end
 
   attr_reader :submission
-  delegate :build, :release_platform_run, to: :submission
+  delegate :build, :release_platform_run, :external_link, to: :submission
   delegate :release, to: :release_platform_run
 
   STATUS = {
@@ -21,15 +21,27 @@ class V2::LiveRelease::PlatformSubmissionComponent < V2::BaseComponent
     approved: {text: "Review approved", status: :ongoing},
     failed: {text: "Failed", status: :failure},
     failed_with_action_required: {text: "Needs manual submission", status: :failure},
-    cancelled: {text: "Review cancelled", status: :inert}
+    cancelled: {text: "Removed from review", status: :inert}
   }
 
   def status
     STATUS[submission.status.to_sym] || {text: submission.status.humanize, status: :neutral}
   end
 
+  def store_status
+    submission.store_status&.humanize || "Unknown"
+  end
+
+  def store_icon
+    "integrations/logo_#{submission.provider}.png"
+  end
+
   def commits_since_last
     changes&.normalized_commits
+  end
+
+  def previous_submission
+    release_platform_run.store_submissions.where.not(id: submission.id).reorder("created_at DESC").first
   end
 
   memoize def changes
