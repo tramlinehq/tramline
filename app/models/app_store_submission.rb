@@ -30,10 +30,11 @@ class AppStoreSubmission < StoreSubmission
     submitted_for_review: "submitted_for_review",
     review_failed: "review_failed",
     approved: "approved",
-    failed: "failed"
+    failed: "failed",
+    cancelled: "cancelled"
   }
 
-  IMMUTABLE_STATES = %w[approved submitted_for_review]
+  IMMUTABLE_STATES = %w[approved]
   CHANGEABLE_STATES = STATES.values - IMMUTABLE_STATES
 
   STAMPABLE_REASONS = %w[
@@ -81,7 +82,7 @@ class AppStoreSubmission < StoreSubmission
     event :start_prepare,
       guard: :startable?,
       after_commit: ->(args = {force: false}) { StoreSubmissions::AppStore::PrepareForReleaseJob.perform_async(id, args.fetch(:force)) } do
-      transitions from: [:created, :failed_prepare, :prepared, :failed, :review_failed], to: :preparing
+      transitions from: [:created, :failed_prepare, :prepared, :failed, :review_failed, :cancelled], to: :preparing
     end
 
     event :finish_prepare do
@@ -108,18 +109,20 @@ class AppStoreSubmission < StoreSubmission
       transitions from: :submitted_for_review, to: :approved
     end
 
-    event :fail, before: :set_reason do
-      transitions to: :failed
-    end
-
     event :cancel do
       transitions from: :submitted_for_review, to: :cancelled
+    end
+
+    event :fail, before: :set_reason do
+      transitions to: :failed
     end
   end
 
   def change_allowed?
     status.in? CHANGEABLE_STATES
   end
+
+  def cancellable? = submitted_for_review?
 
   def deployment_channel = AppStoreIntegration::PROD_CHANNEL
 
@@ -191,8 +194,8 @@ class AppStoreSubmission < StoreSubmission
 
     if release_info.success?
       approved!
-    elsif release_info.failed?
-      fail!(reason: :developer_rejected)
+    elsif release_info.review_cancelled?
+      cancel!
     elsif release_info.waiting_for_review? && review_failed?
       # A failed review was re-submitted or responded to outside Tramline
       submit_for_review!(resubmission: true)
@@ -202,8 +205,18 @@ class AppStoreSubmission < StoreSubmission
     end
   end
 
-  def developer_reject!
-    fail!(reason: :developer_rejected)
+  def remove_from_review!
+    result = provider.remove_from_review(build_number, version_name)
+
+    unless result.ok?
+      return fail_with_error(result.error)
+    end
+
+    release_info = result.value!
+    self.store_status = release_info.status
+    save!
+
+    cancel!
   end
 
   # FIXME: update store version details when release metadata changes or build is updated

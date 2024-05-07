@@ -85,6 +85,8 @@ class PlayStoreSubmission < StoreSubmission
 
   def reviewable? = false
 
+  def cancellable? = false
+
   def integration_type = :google_play_store
 
   def prepare_for_release!

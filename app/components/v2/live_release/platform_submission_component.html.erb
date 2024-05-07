@@ -15,7 +15,7 @@
     <%= render V2::CardComponent.new(title: "Store Submission", fold: false, separator: false) do |card| %>
       <% card.with_actions do %>
         <div class="flex items-center gap-x-1.5">
-          <% if submission.change_allowed? && available_builds.present? %>
+          <% if changeable? %>
             <%= render V2::ModalComponent.new(title: "Available builds", subtitle: "Choose a build to send for submission to the store") do |modal| %>
               <% button = modal.with_button(label: "Change build", scheme: :light, type: :action, size: :xxs) %>
               <% button.with_icon("v2/pencil.svg") %>

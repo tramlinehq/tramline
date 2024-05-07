@@ -103,6 +103,7 @@ Rails.application.routes.draw do
             member do
               patch :submit_for_review
               patch :prepare
+              patch :cancel
             end
           end
         end

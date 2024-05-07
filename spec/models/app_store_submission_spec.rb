@@ -229,7 +229,7 @@ describe AppStoreSubmission do
     let(:in_progress_release_info) { AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "IN_REVIEW")) }
     let(:success_release_info) { AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "PENDING_DEVELOPER_RELEASE")) }
     let(:rejected_release_info) { AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "REJECTED")) }
-    let(:failure_release_info) { AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "DEVELOPER_REJECTED")) }
+    let(:cancelled_release_info) { AppStoreIntegration::AppStoreReleaseInfo.new(base_release_info.merge(status: "DEVELOPER_REJECTED")) }
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
@@ -279,20 +279,12 @@ describe AppStoreSubmission do
       expect(submission.reload.submitted_for_review?).to be(true)
     end
 
-    it "marks the submission as failed when failure" do
-      allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { failure_release_info })
+    it "marks the submission as cancelled when review is cancelled" do
+      allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { cancelled_release_info })
 
       submission.update_external_release
 
-      expect(submission.reload.failed?).to be(true)
-    end
-
-    it "adds the failure reason as developer rejected when failure" do
-      allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { failure_release_info })
-
-      submission.update_external_release
-
-      expect(submission.reload.failure_reason).to eq("developer_rejected")
+      expect(submission.reload.cancelled?).to be(true)
     end
 
     it "raises error to re-poll when find build fails" do

@@ -3,7 +3,7 @@ class StoreSubmissionsController < SignedInApplicationController
   before_action :set_release
   before_action :set_release_platform
   before_action :set_release_platform_run
-  before_action :set_store_submission, only: [:update, :prepare, :submit_for_review]
+  before_action :set_store_submission, only: [:update, :prepare, :submit_for_review, :cancel]
   before_action :ensure_reviewable, only: [:submit_for_review]
   before_action :ensure_preparable, only: [:prepare]
 
@@ -30,6 +30,16 @@ class StoreSubmissionsController < SignedInApplicationController
       redirect_back fallback_location: root_path, flash: {error: t(".submit_for_review.failure", errors: @submission.display_attr(:failure_reason))}
     else
       redirect_back fallback_location: root_path, notice: t(".submit_for_review.success")
+    end
+  end
+
+  def cancel
+    @submission.remove_from_review!
+
+    if @submission.failed?
+      redirect_back fallback_location: root_path, flash: {error: t(".cancel.failure", errors: @submission.display_attr(:failure_reason))}
+    else
+      redirect_back fallback_location: root_path, notice: t(".cancel.success")
     end
   end
 

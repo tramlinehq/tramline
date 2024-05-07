@@ -23,6 +23,10 @@ en:
       success: "The release has been submitted for review!"
       failure: "Failed to submit for review due to %{errors}"
       unreviewable: "This release can not be submitted for review."
+    cancel:
+      success: "The release has been removed from review!"
+      failure: "Failed to remove from review due to %{errors}"
+      uncanceleable: "This release submission can not be removed from review."
     update:
       success: "The submission has been updated successfully."
       failure: "Failed to update submission due to %{errors}"

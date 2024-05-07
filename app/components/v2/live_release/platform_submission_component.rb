@@ -20,7 +20,8 @@ class V2::LiveRelease::PlatformSubmissionComponent < V2::BaseComponent
     review_failed: {text: "Review rejected", status: :failure},
     approved: {text: "Review approved", status: :ongoing},
     failed: {text: "Failed", status: :failure},
-    failed_with_action_required: {text: "Needs manual submission", status: :failure}
+    failed_with_action_required: {text: "Needs manual submission", status: :failure},
+    cancelled: {text: "Review cancelled", status: :inert}
   }
 
   def status
@@ -54,6 +55,10 @@ class V2::LiveRelease::PlatformSubmissionComponent < V2::BaseComponent
     builder
   end
 
+  def changeable?
+    submission.change_allowed? && !submission.cancellable? && available_builds.present?
+  end
+
   def action
     return unless submission.startable?
 
@@ -75,6 +80,15 @@ class V2::LiveRelease::PlatformSubmissionComponent < V2::BaseComponent
        options: submit_for_review_release_platform_store_submission_path(release, release_platform_run.platform, submission.id),
        turbo: false,
        html_options: {method: :patch, data: {turbo_method: :patch, turbo_confirm: "Are you sure about that?"}}}
+    elsif submission.cancellable?
+      {scheme: :danger,
+       type: :button,
+       size: :xxs,
+       label: "Cancel submission",
+       options: cancel_release_platform_store_submission_path(release, release_platform_run.platform, submission.id),
+       turbo: false,
+       html_options: {method: :patch,
+                      data: {turbo_method: :patch, turbo_confirm: "Are you sure about that?"}}}
     end
   end
 end

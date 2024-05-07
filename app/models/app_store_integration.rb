@@ -182,6 +182,10 @@ class AppStoreIntegration < ApplicationRecord
     GitHub::Result.new { installation.submit_release(build_number, version) }
   end
 
+  def remove_from_review(build_number, version)
+    GitHub::Result.new { release_info(installation.remove_from_review(build_number, version, RELEASE_TRANSFORMATIONS)) }
+  end
+
   def start_release(build_number)
     GitHub::Result.new { installation.start_release(build_number) }
   end
@@ -395,6 +399,15 @@ class AppStoreIntegration < ApplicationRecord
       )
     end
 
+    def review_cancelled?
+      release_info[:status].in?(
+        [
+          DEVELOPER_REJECTED
+        ]
+      )
+    end
+
+    # TODO: deprecate this
     def failed?
       release_info[:status].in?(
         [
