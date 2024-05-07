@@ -62,6 +62,10 @@
     letter-spacing: -0.01em;
   }
 
+  .shadow-default {
+    @apply shadow-sm;
+  }
+
   .bottom-separator-space-default {
     @apply mb-7;
   }

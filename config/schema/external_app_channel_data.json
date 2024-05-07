@@ -11,7 +11,10 @@
         "type": "string"
       },
       "releases": {
-        "type": ["array", "null"],
+        "type": [
+          "array",
+          "null"
+        ],
         "items": {
           "type": "object",
           "required": [
@@ -27,16 +30,66 @@
               "type": "string"
             },
             "build_number": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "release_date": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "id": {
-              "type": ["string", "null"]
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "user_fraction": {
-              "type": ["number", "null"]
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "localizations": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "object",
+                "required": [
+                  "language"
+                ],
+                "properties": {
+                  "language": {
+                    "type": "string"
+                  },
+                  "whats_new": {
+                    "type": ["string", "null"]
+                  },
+                  "text": {
+                    "type": ["string", "null"]
+                  },
+                  "support_url": {
+                    "type": ["string", "null"]
+                  },
+                  "marketing_url": {
+                    "type": ["string", "null"]
+                  },
+                  "keywords": {
+                    "type": ["string", "null"]
+                  },
+                  "promo_text": {
+                    "type": ["string", "null"]
+                  },
+                  "description": {
+                    "type": ["string", "null"]
+                  }
+                }
+              }
             }
           }
         }

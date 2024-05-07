@@ -65,7 +65,12 @@ class AppStoreIntegration < ApplicationRecord
         status: :status,
         build_number: :build_number,
         id: :id,
-        release_date: :release_date
+        release_date: :release_date,
+        localizations: { localizations: { language: :language,
+                                          whats_new: :whats_new,
+                                          promo_text: :promotional_text,
+                                          keywords: :keywords,
+                                          description: :description } }
       }
     }
   }

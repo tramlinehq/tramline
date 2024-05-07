@@ -1,0 +1,16 @@
+<%= render V2::LiveRelease::ContainerComponent.new(@release,
+                                                   title: @train.name,
+                                                   turbo_frame: dom_id(@app, :edit_org),
+                                                   tab_config: @tab_configuration) do |container| %>
+  <% container.with_back_button %>
+  <% container.with_tab(title: "Metadata",
+                        subtitle: "Edit the metadata for your release. You can view and edit all this by visiting App Store Connect.") do %>
+    <% content_tag(:div, id: @stream_id) do %>
+      <%= render V2::LiveRelease::MetadataComponent.new(@release,
+                                                        @active_languages,
+                                                        @language,
+                                                        ios_metadata: @ios_metadata,
+                                                        android_metadata: @android_metadata) %>
+    <% end %>
+  <% end %>
+<% end %>

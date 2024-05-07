@@ -464,6 +464,15 @@ class Release < ApplicationRecord
     Release.find_by_sql [query, {id: id}]
   end
 
+  def active_languages
+    release_platform_runs
+      .map(&:release_metadata)
+      .flatten
+      .map(&:locale)
+      .map { |locale_tag| AppStores::Localizable.supported_store_language(locale_tag) }
+      .uniq
+  end
+
   private
 
   def base_tag_name

@@ -26,7 +26,7 @@
 
     <main class="mb-20 2xl:mb-0">
       <%= yield :sticky_top_message %>
-      <div class="p-10 w-full max-w-8xl mx-auto">
+      <div class="container mx-auto py-10">
         <%= render V2::FlashComponent.new(flash) %>
         <%= yield :error_resource %>
         <%= yield %>

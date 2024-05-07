@@ -114,4 +114,8 @@ class ReleasePlatform < ApplicationRecord
       .build_channel
       .where(providable_type: Integration::ALLOWED_INTEGRATIONS_FOR_APP[platform][:build_channel])
   end
+
+  def active_locales
+    app.latest_external_apps[platform.to_sym]&.active_locales
+  end
 end
