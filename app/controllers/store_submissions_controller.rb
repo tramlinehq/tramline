@@ -16,7 +16,7 @@ class StoreSubmissionsController < SignedInApplicationController
     redirect_back fallback_location: root_path, notice: t(".update.invalid_build") unless build
 
     if @submission.attach_build!(build)
-      @submission.start_prepare!
+      @submission.start_prepare!(force: submission_update_params[:force])
       redirect_back fallback_location: root_path, notice: t(".update.success")
     else
       redirect_back fallback_location: root_path, flash: {error: t(".update.failure", errors: @submission.display_attr(:failure_reason))}
@@ -46,7 +46,7 @@ class StoreSubmissionsController < SignedInApplicationController
   end
 
   def submission_update_params
-    params.require(:store_submission).permit(:build_id)
+    params.require(:store_submission).permit(:build_id, :force)
   end
 
   def ensure_reviewable

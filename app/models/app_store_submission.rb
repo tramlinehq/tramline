@@ -81,7 +81,7 @@ class AppStoreSubmission < StoreSubmission
     event :start_prepare,
       guard: :startable?,
       after_commit: ->(args = {force: false}) { StoreSubmissions::AppStore::PrepareForReleaseJob.perform_async(id, args.fetch(:force)) } do
-      transitions from: [:created, :failed_prepare], to: :preparing
+      transitions from: [:created, :failed_prepare, :prepared, :failed], to: :preparing
     end
 
     event :finish_prepare do

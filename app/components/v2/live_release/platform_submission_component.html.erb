@@ -43,6 +43,7 @@
                               url: release_platform_store_submission_path(release, release_platform_run.platform, submission),
                               builder: EnhancedFormHelper::AuthzForm) do |form| %>
                   <div class="flex flex-col items-start gap-4">
+                    <%= form.hidden_field :force, value: true %>
                     <%= form.labeled_select :build_id, "Select a build", options_for_select(all_builds.map { |b| [build_display_info(b), b.id] }, submission.build_id) %>
                     <%= form.authz_submit "Save", "v2/archive.svg" %>
                   </div>
