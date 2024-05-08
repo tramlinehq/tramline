@@ -75,7 +75,12 @@ module Installations
         resource: "release",
         code: "attachment_upload_in_progress",
         decorated_reason: :attachment_upload_in_progress
-      }
+      },
+      {
+        resource: "localization",
+        code: "not_found",
+        decorated_reason: :localization_not_found
+      },
     ]
 
     def self.reasons

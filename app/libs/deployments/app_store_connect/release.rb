@@ -73,7 +73,7 @@ module Deployments
         :app_store_integration?,
         :app_store?,
         :staged_rollout_config,
-        :release_metadata,
+        :release_metadatum,
         :internal_channel?,
         :deployment_notes,
         to: :run
@@ -107,7 +107,7 @@ module Deployments
       def prepare_for_release!(force: false)
         return unless app_store_release?
 
-        result = provider.prepare_release(build_number, release_version, staged_rollout?, release_metadata, force)
+        result = provider.prepare_release(build_number, release_version, staged_rollout?, release_metadatum, force)
 
         unless result.ok?
           case result.error.reason

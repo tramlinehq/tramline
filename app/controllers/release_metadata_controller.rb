@@ -11,13 +11,13 @@ class ReleaseMetadataController < SignedInApplicationController
   before_action :set_live_release_tab_configuration, only: %i[edit_all update_all]
 
   def edit
-    @release_metadata = @release_platform_run.release_metadata
+    @release_metadatum = @release_platform_run.release_metadatum
   end
 
   def update
-    @release_metadata = ReleaseMetadata.find_or_initialize_by(release_platform_run: @release_platform_run)
+    @release_metadatum = ReleaseMetadata.find(params[:id])
 
-    if @release_metadata.update(release_metadata_params)
+    if @release_metadatum.update(release_metadata_params)
       redirect_to release_path(@release), notice: "Release metadata was successfully updated."
     else
       render :edit, status: :unprocessable_entity

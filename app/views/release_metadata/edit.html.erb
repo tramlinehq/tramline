@@ -4,11 +4,11 @@
   <% container.with_back_button(to: "the release", path: release_path(@release)) %>
   <% container.with_body do %>
     <% content_for :error_resource do %>
-      <%= render V2::ErrorComponent.new(@release_metadata) %>
+      <%= render V2::ErrorComponent.new(@release_metadatum) %>
     <% end %>
 
-    <%= render V2::FormComponent.new(model: @release_metadata,
-                                     url: release_release_platform_release_metadatum_path(@release, release_platform),
+    <%= render V2::FormComponent.new(model: @release_metadatum,
+                                     url: release_release_platform_release_metadatum_path(@release, release_platform, @release_metadatum),
                                      method: :patch) do |f| %>
       <% f.with_section(heading: "Release Notes") do |section| %>
         <% section.with_description do %>

@@ -97,7 +97,7 @@ Rails.application.routes.draw do
         patch :update, to: "release_metadata#update_all", path: :metadata, as: :metadata_update
 
         resources :release_platforms, shallow: false, only: [] do
-          resources :release_metadatum, only: %i[edit update], path: :metadata
+          resources :release_metadata, only: %i[edit update]
         end
 
         resources :build_queues, only: [], shallow: false do

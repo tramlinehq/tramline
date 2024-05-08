@@ -1,4 +1,4 @@
-<% release_metadata = release_platform_run.release_metadata.first %>
+<% release_metadatum = release_platform_run.release_metadatum %>
 <% release_platform = release_platform_run.release_platform %>
 <% release = release_platform_run.release %>
 
@@ -7,17 +7,17 @@
     <%= render partial: "shared/live_release/section_title", locals: {heading: "#{release_platform.display_attr(:platform)} Metadata", subheading: nil} %>
     <%= authz_link_to (release_platform_run.metadata_editable? ? :neutral : :disabled),
                       "Edit",
-                      edit_release_release_platform_release_metadatum_path(release, release_platform) %>
+                      edit_release_release_platform_release_metadatum_path(release, release_platform, release_metadatum) %>
   </div>
 
   <%= render MetaTableComponent.new do |mt| %>
     <% mt.with_description("Release Notes") do %>
-      <p class="whitespace-pre-wrap"><%= release_metadata.release_notes %></p>
+      <p class="whitespace-pre-wrap"><%= release_metadatum.release_notes %></p>
     <% end %>
 
     <% unless release_platform.android? %>
       <% mt.with_description("Promotional Text") do %>
-        <p class="whitespace-pre-wrap"><%= release_metadata.promo_text %></p>
+        <p class="whitespace-pre-wrap"><%= release_metadatum.promo_text %></p>
       <% end %>
     <% end %>
   <% end %>

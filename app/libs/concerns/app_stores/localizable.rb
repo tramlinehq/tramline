@@ -12,7 +12,7 @@ module AppStores::Localizable
   end
 
   def supported_locale_tag?(locale_tag)
-    supported_locale_language?(store_language(locale_tag))
+    supported_locale_language?(supported_store_language(locale_tag))
   end
 
   def supported_locale_tag(language, platform)

@@ -98,6 +98,10 @@ class ReleasePlatformRun < ApplicationRecord
     deployment_runs.each(&:check_release_health)
   end
 
+  def release_metadatum
+    release_metadata.where(locale: ReleaseMetadata::DEFAULT_LOCALE).sole
+  end
+
   def show_health?
     deployment_runs.any?(&:show_health?)
   end
@@ -109,8 +113,9 @@ class ReleasePlatformRun < ApplicationRecord
   def set_default_release_metadata
     data = (active_locales.presence || [ReleaseMetadata::DEFAULT_LOCALE]).map do |locale|
       {
-        locale: locale,
-        release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES
+        locale:,
+        release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES,
+        release_id:
       }
     end
 
@@ -381,7 +386,7 @@ class ReleasePlatformRun < ApplicationRecord
       {
         release_version: release_version,
         app_platform: release_platform.platform,
-        release_notes: release_metadata&.release_notes
+        release_notes: release_metadatum&.release_notes
       }
     )
   end
