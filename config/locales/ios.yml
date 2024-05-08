@@ -1,0 +1,40 @@
+ios:
+  English (United States): en-US
+  English (Australia): en-AU
+  English (Canada): en-CA
+  English (United Kingdom): en-GB
+  Arabic: ar
+  Catalan: ca
+  Chinese (Simplified): zh-Hans
+  Chinese (Traditional): zh-Hant
+  Croatian: hr
+  Czech: cs
+  Danish: da
+  Dutch: nl
+  Finnish: fi
+  French: fr
+  French (Canada): fr-CA
+  German: de
+  Greek: el
+  Hebrew: he
+  Hindi: hi
+  Hungarian: hu
+  Indonesian: id
+  Italian: it
+  Japanese: ja
+  Korean: ko
+  Malay: ms
+  Norwegian: 'no'
+  Polish: pl
+  Portuguese (Brazil): pt-BR
+  Portuguese (Portugal): pt-PT
+  Romanian: ro
+  Russian: ru
+  Slovak: sk
+  Spanish (Mexico): es-MX
+  Spanish (Spain): es-ES
+  Swedish: sv
+  Thai: th
+  Turkish: tr
+  Ukrainian: uk
+  Vietnamese: vi

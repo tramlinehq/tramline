@@ -142,6 +142,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     name: :track,
     releases: {
       releases: {
+        localizations: {release_notes: {language: :language, text: :text}},
         version_string: :name,
         status: :status,
         build_number: [:version_codes, 0],

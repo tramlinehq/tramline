@@ -136,8 +136,8 @@ describe Deployments::AppStoreConnect::Release do
       it "prepares the release" do
         described_class.prepare_for_release!(run)
 
-        release_metadata = run.release_platform_run.release_metadata
-        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, false, release_metadata, false).once
+        release_metadatum = run.release_platform_run.release_metadatum
+        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, false, release_metadatum, false).once
       end
 
       it "marks the deployment run as prepared release" do
@@ -150,15 +150,15 @@ describe Deployments::AppStoreConnect::Release do
         run = create_deployment_run_tree(:ios, :preparing_release, deployment_traits: [:with_phased_release], step_traits: [:release])[:deployment_run]
         described_class.prepare_for_release!(run)
 
-        release_metadata = run.release_platform_run.release_metadata
-        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, true, release_metadata, false).once
+        release_metadatum = run.release_platform_run.release_metadatum
+        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, true, release_metadatum, false).once
       end
 
       it "prepares the release with force" do
         described_class.prepare_for_release!(run, force: true)
 
-        release_metadata = run.release_platform_run.release_metadata
-        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, false, release_metadata, true).once
+        release_metadatum = run.release_platform_run.release_metadatum
+        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, false, release_metadatum, true).once
       end
     end
 

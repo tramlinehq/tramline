@@ -10,9 +10,9 @@ describe ReleasePlatformRun do
     subject(:run) { create(:release_platform_run) }
 
     it "creates the release metadata with default locale" do
-      expect(run.release_metadata).to be_present
-      expect(run.release_metadata.locale).to eq(ReleaseMetadata::DEFAULT_LOCALE)
-      expect(run.release_metadata.release_notes).to eq(ReleaseMetadata::DEFAULT_RELEASE_NOTES)
+      expect(run.release_metadatum).to be_present
+      expect(run.release_metadatum.locale).to eq(ReleaseMetadata::DEFAULT_LOCALE)
+      expect(run.release_metadatum.release_notes).to eq(ReleaseMetadata::DEFAULT_RELEASE_NOTES)
     end
   end
 
