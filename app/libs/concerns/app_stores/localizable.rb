@@ -23,8 +23,6 @@ module AppStores::Localizable
       ANDROID_LOCALES[language]
     when "ios"
       IOS_LOCALES[language]
-    else
-      nil
     end
   end
 

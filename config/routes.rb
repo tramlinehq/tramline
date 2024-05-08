@@ -15,13 +15,13 @@ Rails.application.routes.draw do
   end
 
   devise_for :users,
-             controllers: {
-               registrations: "authentication/registrations",
-               sessions: "authentication/sessions",
-               confirmations: "authentication/confirmations",
-               passwords: "authentication/passwords"
-             },
-             class_name: "Accounts::User"
+    controllers: {
+      registrations: "authentication/registrations",
+      sessions: "authentication/sessions",
+      confirmations: "authentication/confirmations",
+      passwords: "authentication/passwords"
+    },
+    class_name: "Accounts::User"
 
   devise_scope :user do
     unauthenticated :user do
@@ -158,37 +158,37 @@ Rails.application.routes.draw do
         get :connect, to: "integrations#connect", as: :connect
 
         resource :google_play_store, only: [:create],
-                 controller: "integrations/google_play_store",
-                 as: :google_play_store_integration
+          controller: "integrations/google_play_store",
+          as: :google_play_store_integration
 
         resource :bitrise, only: [:create],
-                 controller: "integrations/bitrise",
-                 as: :bitrise_integration
+          controller: "integrations/bitrise",
+          as: :bitrise_integration
 
         resource :bugsnag, only: [:create],
-                 controller: "integrations/bugsnag",
-                 as: :bugsnag_integration
+          controller: "integrations/bugsnag",
+          as: :bugsnag_integration
 
         resource :app_store, only: [:create],
-                 controller: "integrations/app_store",
-                 as: :appstore_integration
+          controller: "integrations/app_store",
+          as: :appstore_integration
 
         resource :google_firebase, only: [:create],
-                 controller: "integrations/google_firebase",
-                 as: :google_firebase_integration
+          controller: "integrations/google_firebase",
+          as: :google_firebase_integration
       end
 
       resources :slack, only: [],
-                controller: "integrations/slack",
-                as: :slack_integration do
+        controller: "integrations/slack",
+        as: :slack_integration do
         member do
           post :refresh_channels
         end
       end
 
       resources :google_firebase, only: [],
-                controller: "integrations/google_firebase",
-                as: :google_firebase_integration do
+        controller: "integrations/google_firebase",
+        as: :google_firebase_integration do
         member do
           post :refresh_channels
         end
@@ -202,12 +202,12 @@ Rails.application.routes.draw do
     resource :settings, only: [:index]
   end
 
-  namespace :api, defaults: { format: "json" } do
+  namespace :api, defaults: {format: "json"} do
     namespace :v1, path: "v1" do
       get "ping", to: "pings#show"
       get "releases/*release_id", to: "releases#show"
       get "apps/*app_id", to: "apps#show"
-      patch "apps/:app_id/builds/:version_name/:version_code/external_metadata", to: "builds#external_metadata", constraints: { version_name: VERSION_NAME_REGEX }
+      patch "apps/:app_id/builds/:version_name/:version_code/external_metadata", to: "builds#external_metadata", constraints: {version_name: VERSION_NAME_REGEX}
     end
   end
 
@@ -228,5 +228,5 @@ Rails.application.routes.draw do
   get "/rails/active_storage/blobs/redirect/:signed_id/*filename", to: "authorized_blob_redirect#show", as: "blob_redirect"
   match "/", via: %i[post put patch delete], to: "application#raise_not_found", format: false
   match "*unmatched_route", via: :all, to: "application#raise_not_found", format: false,
-        constraints: lambda { |req| req.path.exclude? "rails/active_storage" }
+    constraints: lambda { |req| req.path.exclude? "rails/active_storage" }
 end

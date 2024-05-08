@@ -83,13 +83,13 @@ class ReleasePlatformRun < ApplicationRecord
   delegate :steps, :train, :app, :platform, :active_locales, :ios?, :android?, to: :release_platform
 
   def self.ios_metadata_for(language)
-    locale_tag = AppStores::Localizable::supported_locale_tag(language, :ios)
+    locale_tag = AppStores::Localizable.supported_locale_tag(language, :ios)
     platform_run = all.find(&:ios?)
     platform_run&.release_metadata&.find_by(locale: locale_tag)
   end
 
   def self.android_metadata_for(language)
-    locale_tag = AppStores::Localizable::supported_locale_tag(language, :android)
+    locale_tag = AppStores::Localizable.supported_locale_tag(language, :android)
     platform_run = all.find(&:android?)
     platform_run&.release_metadata&.find_by(locale: locale_tag)
   end

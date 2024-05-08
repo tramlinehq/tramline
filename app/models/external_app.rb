@@ -19,7 +19,7 @@ class ExternalApp < ApplicationRecord
   validates :channel_data, presence: true, json: {message: ->(errors) { errors }, schema: CHANNEL_DATA_SCHEMA}
 
   def active_locales
-    channel_data.reduce(Set.new) do |acc, datum|
+    channel_data.each_with_object(Set.new) do |datum, acc|
       datum["releases"]&.each do |release|
         release["localizations"]&.each do |localization|
           locale_tag = localization["language"]
@@ -27,7 +27,6 @@ class ExternalApp < ApplicationRecord
           acc << locale_tag
         end
       end
-      acc
     end.to_a
   end
 end

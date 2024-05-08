@@ -27,10 +27,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
   after_create_commit :refresh_external_app
 
   CHANNELS = [
-    { id: :production, name: "production", is_production: true },
-    { id: :beta, name: "open testing", is_production: false },
-    { id: :alpha, name: "closed testing", is_production: false },
-    { id: :internal, name: "internal testing", is_production: false }
+    {id: :production, name: "production", is_production: true},
+    {id: :beta, name: "open testing", is_production: false},
+    {id: :alpha, name: "closed testing", is_production: false},
+    {id: :internal, name: "internal testing", is_production: false}
   ]
 
   DEVELOPER_URL_TEMPLATE =
@@ -142,7 +142,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     name: :track,
     releases: {
       releases: {
-        localizations: { release_notes: { language: :language, text: :text } },
+        localizations: {release_notes: {language: :language, text: :text}},
         version_string: :name,
         status: :status,
         build_number: [:version_codes, 0],

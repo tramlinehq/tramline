@@ -24,11 +24,11 @@ class ReleaseMetadata < ApplicationRecord
   DEFAULT_RELEASE_NOTES = "The latest version contains bug fixes and performance improvements."
 
   validates :release_notes,
-            format: {with: PLAINTEXT_REGEX, message: :no_special_characters, multiline: true},
-            length: {maximum: NOTES_MAX_LENGTH}
+    format: {with: PLAINTEXT_REGEX, message: :no_special_characters, multiline: true},
+    length: {maximum: NOTES_MAX_LENGTH}
   validates :promo_text,
-            format: {with: PLAINTEXT_REGEX, message: :no_special_characters, allow_blank: true, multiline: true},
-            length: {maximum: 170}
+    format: {with: PLAINTEXT_REGEX, message: :no_special_characters, allow_blank: true, multiline: true},
+    length: {maximum: 170}
 
   def self.find_by_id_and_language(id, language, platform)
     locale_tag = AppStores::Localizable.supported_locale_tag(language, platform)

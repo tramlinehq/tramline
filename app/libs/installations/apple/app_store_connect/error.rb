@@ -80,7 +80,7 @@ module Installations
         resource: "localization",
         code: "not_found",
         decorated_reason: :localization_not_found
-      },
+      }
     ]
 
     def self.reasons
