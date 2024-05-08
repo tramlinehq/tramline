@@ -473,6 +473,14 @@ class Release < ApplicationRecord
       .uniq
   end
 
+  def ios_release_platform_run
+    release_platform_runs.find(&:ios?)
+  end
+
+  def android_release_platform_run
+    release_platform_runs.find(&:android?)
+  end
+
   private
 
   def base_tag_name

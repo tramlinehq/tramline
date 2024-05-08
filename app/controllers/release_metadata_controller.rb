@@ -29,9 +29,8 @@ class ReleaseMetadataController < SignedInApplicationController
     @language = params[:language] || @active_languages.first
     @stream_id = "release-metadata"
 
-    release_platform_runs = @release.release_platform_runs
-    @ios_metadata = release_platform_runs.ios_metadata_for(@language)
-    @android_metadata = release_platform_runs.android_metadata_for(@language)
+    @ios_metadata = @release.ios_release_platform_run&.metadata_for(@language)
+    @android_metadata = @release.android_release_platform_run&.metadata_for(@language)
 
     respond_to do |format|
       format.html
