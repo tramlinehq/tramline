@@ -38,7 +38,7 @@ module Deployments
         :build_number,
         :release_version,
         :staged_rollout?,
-        :release_metadata,
+        :release_metadatum,
         :google_play_store_integration?,
         :staged_rollout_config,
         :production_channel?,
@@ -170,7 +170,7 @@ module Deployments
         return [] if deployment_notes.blank?
 
         [{
-          language: release_metadata.locale,
+          language: release_metadatum.locale,
           text: deployment_notes
         }]
       end

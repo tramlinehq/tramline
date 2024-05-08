@@ -33,6 +33,7 @@ Rails/SkipsModelValidations:
     - app/models/external_build.rb # intentional use of upsert
     - app/models/train.rb # intentional use of upsert all
     - app/models/notification_setting.rb # intentional use of upsert all
+    - app/models/release_platform_run.rb # intentional use of insert all
 
 Rails/TransactionExitStatement:
   Enabled: false # intentional use of return inside transactions

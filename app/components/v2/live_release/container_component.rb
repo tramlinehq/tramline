@@ -1,6 +1,5 @@
 class V2::LiveRelease::ContainerComponent < V2::BaseReleaseComponent
   renders_one :back_button, V2::BackButtonComponent
-  renders_many :sub_actions
   renders_many :tabs, ->(**args) { V2::LiveRelease::StepComponent.new(frame: @frame, **args) }
 
   SELECTED_TAB_STYLE = "active text-main bg-white border-l-3"

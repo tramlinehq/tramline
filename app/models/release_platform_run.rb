@@ -34,7 +34,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   belongs_to :release_platform
   belongs_to :release
-  has_one :release_metadata, dependent: :destroy, inverse_of: :release_platform_run
+  has_many :release_metadata, class_name: "ReleaseMetadata", dependent: :destroy, inverse_of: :release_platform_run
   has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
   has_many :builds, dependent: :destroy, inverse_of: :release_platform_run
   has_many :play_store_submissions, dependent: :destroy
@@ -84,7 +84,19 @@ class ReleasePlatformRun < ApplicationRecord
 
   delegate :versioning_strategy, to: :release
   delegate :all_commits, :original_release_version, :hotfix?, to: :release
-  delegate :steps, :train, :app, :platform, :store_provider, :android?, :ios?, to: :release_platform
+  delegate :steps, :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, to: :release_platform
+
+  def self.ios_metadata_for(language)
+    locale_tag = AppStores::Localizable.supported_locale_tag(language, :ios)
+    platform_run = all.find(&:ios?)
+    platform_run&.release_metadata&.find_by(locale: locale_tag)
+  end
+
+  def self.android_metadata_for(language)
+    locale_tag = AppStores::Localizable.supported_locale_tag(language, :android)
+    platform_run = all.find(&:android?)
+    platform_run&.release_metadata&.find_by(locale: locale_tag)
+  end
 
   def store_submissions
     if android?
@@ -118,6 +130,10 @@ class ReleasePlatformRun < ApplicationRecord
     deployment_runs.each(&:check_release_health)
   end
 
+  def release_metadatum
+    release_metadata.where(locale: ReleaseMetadata::DEFAULT_LOCALE).sole
+  end
+
   def show_health?
     deployment_runs.any?(&:show_health?)
   end
@@ -127,9 +143,15 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def set_default_release_metadata
-    create_release_metadata!(locale: ReleaseMetadata::DEFAULT_LOCALE,
-      release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES,
-      release:)
+    data = (active_locales.presence || [ReleaseMetadata::DEFAULT_LOCALE]).map do |locale|
+      {
+        locale:,
+        release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES,
+        release_id:
+      }
+    end
+
+    release_metadata.insert_all(data)
   end
 
   def finish_release
@@ -396,7 +418,7 @@ class ReleasePlatformRun < ApplicationRecord
       {
         release_version: release_version,
         app_platform: release_platform.platform,
-        release_notes: release_metadata&.release_notes
+        release_notes: release_metadatum&.release_notes
       }
     )
   end

@@ -22,7 +22,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
       .completed
       .where.not(id: last_completed_release)
       .order(completed_at: :desc, scheduled_at: :desc)
-      .limit(10)
+      .limit(15)
   end
 
   memoize def last_completed_release

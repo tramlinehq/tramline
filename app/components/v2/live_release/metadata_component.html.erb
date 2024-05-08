@@ -1,0 +1,82 @@
+<%= render V2::FormComponent.new(url: update_metadata_path, method: :patch, free_form: true) do |f| %>
+  <div>
+    <div class="flex flex-col gap-y-2 mb-6">
+      <%= render V2::ButtonComponent.new(label: "Metadata requirements",
+                                         scheme: :link,
+                                         type: :link_external,
+                                         options: "/",
+                                         html_options: { class: "-ml-2 text-sm" },
+                                         authz: false,
+                                         size: :xxs,
+                                         arrow: :none) do |b|
+        b.with_icon("v2/archive.svg", size: :sm)
+      end %>
+
+      <div class="flex flex-row gap-x-2 justify-between">
+        <div data-controller="stream-effect"
+             data-stream-effect-url-value="<%= edit_metadata_url %>"
+             data-stream-effect-param-value="language">
+          <%= select_tag :language,
+                         options_for_select(active_languages, language),
+                         disabled: true,
+                         class: EnhancedFormHelper::AuthzForm::SELECT_CLASSES,
+                         data: { action: "change->stream-effect#fetch", stream_effect_target: "dispatch" } %>
+        </div>
+
+        <div class="flex flex-row justify-end gap-x-2">
+          <div>
+            <%= render V2::ButtonComponent.new(
+              scheme: :light,
+              options: root_path,
+              type: :button,
+              size: :xxs,
+              label: "Copy to all locales",
+              html_options: { data: { turbo_confirm: "This will accept the commits in the queue, are you sure?" } }) do |b|
+              b.with_icon("v2/square_stack.svg", size: :sm)
+            end %>
+          </div>
+
+          <div>
+            <%= f.F.authz_submit "Save current locale", "v2/archive.svg", size: :xxs %>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-secondary text-xs">Now editing — <span class="underline"><%= language %></span></div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-x-6">
+      <div class="flex flex-col gap-y-3">
+        <span class="text-xl text-secondary-50/50 border-b border-main-300/30 py-1 justify-self-start pl-0.5 pr-1.5">
+          Android
+        </span>
+
+        <% if android_metadata %>
+          <% f.F.fields_for :android, android_metadata do |aF| %>
+            <div class="flex flex-col gap-y-4">
+              <%= aF.hidden_field :id %>
+              <div><%= aF.labeled_textarea :release_notes, "Release Notes" %></div>
+            </div>
+          <% end %>
+        <% else %>
+          Doesn't exist. Please contact support.
+        <% end %>
+      </div>
+
+      <div class="flex flex-col gap-y-3">
+        <span class="text-xl text-secondary-50/50 border-b border-main-300/30 py-1 justify-self-start pl-0.5 pr-1.5">
+          iOS
+        </span>
+
+        <% f.F.fields_for :ios, ios_metadata do |iosF| %>
+          <div class="flex flex-col gap-y-4">
+            <%= iosF.hidden_field :id %>
+            <div><%= iosF.labeled_textarea :release_notes, "What's New?" %></div>
+            <div><%= iosF.labeled_textarea :promo_text, "Promo Text" %></div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+

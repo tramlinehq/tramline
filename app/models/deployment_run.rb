@@ -62,7 +62,7 @@ class DeploymentRun < ApplicationRecord
     :internal_channel?,
     to: :deployment
   delegate :train, :app, to: :release
-  delegate :release_version, :release_metadata, :platform, to: :release_platform_run
+  delegate :release_version, :release_metadatum, :platform, to: :release_platform_run
   delegate :release_health_rules, to: :release_platform
 
   STAMPABLE_REASONS = %w[
@@ -217,7 +217,7 @@ class DeploymentRun < ApplicationRecord
 
   def deployment_notes
     return step_run.build_notes.truncate(ReleaseMetadata::NOTES_MAX_LENGTH) if build_notes?
-    release_metadata.release_notes if release_notes?
+    release_metadatum.release_notes if release_notes?
   end
 
   def healthy?
