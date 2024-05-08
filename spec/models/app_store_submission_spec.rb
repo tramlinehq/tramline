@@ -34,6 +34,8 @@ describe AppStoreSubmission do
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:public_icon_img)
+      allow(providable_dbl).to receive(:project_link)
     end
 
     context "when successful" do
@@ -46,8 +48,8 @@ describe AppStoreSubmission do
       it "prepares the release" do
         submission.prepare_for_release!
 
-        release_metadata = submission.release_platform_run.release_metadata
-        expect(providable_dbl).to have_received(:prepare_release).with(build.build_number, build.version_name, true, release_metadata, false).once
+        release_metadatum = submission.release_platform_run.release_metadatum
+        expect(providable_dbl).to have_received(:prepare_release).with(build.build_number, build.version_name, true, release_metadatum, false).once
       end
 
       it "marks the submission as prepared" do
@@ -60,8 +62,8 @@ describe AppStoreSubmission do
       it "prepares the release with force" do
         submission.prepare_for_release!(force: true)
 
-        release_metadata = submission.release_platform_run.release_metadata
-        expect(providable_dbl).to have_received(:prepare_release).with(build.build_number, build.version_name, true, release_metadata, true).once
+        release_metadatum = submission.release_platform_run.release_metadatum
+        expect(providable_dbl).to have_received(:prepare_release).with(build.build_number, build.version_name, true, release_metadatum, true).once
       end
     end
 
@@ -159,6 +161,8 @@ describe AppStoreSubmission do
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:public_icon_img)
+      allow(providable_dbl).to receive(:project_link)
     end
 
     context "when successful" do
@@ -233,6 +237,8 @@ describe AppStoreSubmission do
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:public_icon_img)
+      allow(providable_dbl).to receive(:project_link)
     end
 
     it "finds release" do

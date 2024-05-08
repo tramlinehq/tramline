@@ -134,7 +134,7 @@ class AppStoreSubmission < StoreSubmission
   def staged_rollout? = true
 
   def prepare_for_release!(force: false)
-    result = provider.prepare_release(build_number, version_name, staged_rollout?, release_metadata, force)
+    result = provider.prepare_release(build_number, version_name, staged_rollout?, release_metadatum, force)
 
     unless result.ok?
       case result.error.reason
@@ -185,7 +185,8 @@ class AppStoreSubmission < StoreSubmission
       raise ExternalReleaseNotInTerminalState, "Retrying in some time..."
     end
 
-    update_store_info!(result.value!)
+    release_info = result.value!
+    update_store_info!(release_info)
 
     if release_info.success?
       approved!

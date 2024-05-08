@@ -12,6 +12,7 @@ describe PlayStoreSubmission do
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:public_icon_img)
     end
 
     it "creates draft release" do

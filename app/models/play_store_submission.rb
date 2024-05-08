@@ -105,8 +105,8 @@ class PlayStoreSubmission < StoreSubmission
 
   def release_notes
     [{
-      language: release_metadata.locale,
-      text: release_metadata.release_notes
+      language: release_metadatum.locale,
+      text: release_metadatum.release_notes
     }]
   end
 end
