@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class V2::LiveRelease::PlatformSubmissionComponent < V2::BaseComponent
+class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
   include Memery
 
   def initialize(submission)
@@ -49,10 +49,12 @@ class V2::LiveRelease::PlatformSubmissionComponent < V2::BaseComponent
   end
 
   memoize def available_builds
-    all_builds.where.not(id: build&.id)
+    return all_builds unless build
+    all_builds.where.not(id: build.id)
   end
 
   memoize def newer_builds
+    return all_builds unless build
     all_builds.where("generated_at > ?", build.generated_at).where.not(id: build&.id)
   end
 

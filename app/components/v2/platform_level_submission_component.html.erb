@@ -6,6 +6,6 @@
   <% end %>
 
   <% platform_runs.each do |run| %>
-    <%= render V2::LiveRelease::PlatformSubmissionComponent.new(run.active_store_submission) %>
+    <%= render V2::LiveRelease::SubmissionComponent.new(run.active_store_submission) %>
   <% end %>
 </div>
