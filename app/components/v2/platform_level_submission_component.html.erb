@@ -1,5 +1,11 @@
 <div class="grid <%= grid_size %> justify-between gap-3">
   <% platform_runs.each do |run| %>
+    <span class="text-xl text-secondary-50/50 border-b border-main-300/30 py-1 justify-self-start pl-0.5 pr-1.5">
+      <%= run.display_attr(:platform) %>
+    </span>
+  <% end %>
+
+  <% platform_runs.each do |run| %>
     <%= render V2::LiveRelease::PlatformSubmissionComponent.new(run.active_store_submission) %>
   <% end %>
 </div>
