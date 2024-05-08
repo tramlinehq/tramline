@@ -3,6 +3,8 @@
 # Table name: release_metadata
 #
 #  id                      :uuid             not null, primary key
+#  description             :text
+#  keywords                :string           default([]), is an Array
 #  locale                  :string           not null, indexed => [release_platform_run_id]
 #  promo_text              :text
 #  release_notes           :text
