@@ -80,7 +80,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   delegate :versioning_strategy, to: :release
   delegate :all_commits, :original_release_version, :hotfix?, to: :release
-  delegate :steps, :train, :app, :platform, :active_locales, :ios?, :android?, to: :release_platform
+  delegate :steps, :train, :app, :platform, :active_locales, :ios?, :android?, :default_locale, to: :release_platform
 
   def metadata_for(language)
     locale_tag = AppStores::Localizable.supported_locale_tag(language, :ios)
@@ -104,15 +104,19 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def set_default_release_metadata
-    data = (active_locales.presence || [ReleaseMetadata::DEFAULT_LOCALE]).map do |locale|
-      {
-        locale:,
-        release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES,
-        release_id:
-      }
+    base = {
+      release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES,
+      release_id:
+    }
+
+    if active_locales.present?
+      data = active_locales.map { |locale| base.merge(locale.to_h) }
+      release_metadata.insert_all!(data)
+      return
     end
 
-    release_metadata.insert_all(data)
+    locale = default_locale || ReleaseMetadata::DEFAULT_LOCALE
+    release_metadata.create!(base.merge(locale: locale, default_locale: true))
   end
 
   def finish_release

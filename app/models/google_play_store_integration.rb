@@ -145,11 +145,24 @@ class GooglePlayStoreIntegration < ApplicationRecord
         localizations: {release_notes: {language: :language, text: :text}},
         version_string: :name,
         status: :status,
-        build_number: [:version_codes, 0],
-        user_fraction: :user_fraction
+        user_fraction: :user_fraction,
+        build_number: [:version_codes, 0]
       }
     }
   }
+
+  APP_TRANSFORMS = {
+    default_locale: :default_language,
+    contact_website: :contact_website,
+    contact_email: :contact_email,
+    contact_phone: :contact_phone
+  }
+
+  def find_app
+    @find_app ||= installation.app_details(APP_TRANSFORMS)
+  rescue Installations::Google::PlayDeveloper::Error => ex
+    elog(ex)
+  end
 
   def channel_data
     @channel_data ||= installation.list_tracks(CHANNEL_DATA_TRANSFORMATIONS)

@@ -21,10 +21,8 @@ class App < ApplicationRecord
   include Displayable
   extend FriendlyId
 
-  GOOGLE_PLAY_STORE_URL_TEMPLATE =
-    Addressable::Template.new("https://play.google.com/store/apps/details{?query*}")
-  APP_STORE_URL_TEMPLATE =
-    Addressable::Template.new("https://apps.apple.com/app/ueno/id{id}")
+  GOOGLE_PLAY_STORE_URL_TEMPLATE = Addressable::Template.new("https://play.google.com/store/apps/details{?query*}")
+  APP_STORE_URL_TEMPLATE = Addressable::Template.new("https://apps.apple.com/app/ueno/id{id}")
   PUBLIC_ANDROID_ICON = "https://storage.googleapis.com/tramline-public-assets/default_android.png"
   PUBLIC_IOS_ICON = "https://storage.googleapis.com/tramline-public-assets/default_ios.png"
 
@@ -202,25 +200,16 @@ class App < ApplicationRecord
         }
       }
 
-    instructions = if cross_platform?
-      [train_setup, ios_steps_setup, android_steps_setup]
-    elsif android?
-      [train_setup, android_steps_setup]
-    else
-      [train_setup, ios_steps_setup]
-    end
+    instructions =
+      if cross_platform?
+        [train_setup, ios_steps_setup, android_steps_setup]
+      elsif android?
+        [train_setup, android_steps_setup]
+      else
+        [train_setup, ios_steps_setup]
+      end
 
     instructions.flatten.reduce(:merge)
-  end
-
-  # FIXME: this is probably quite inefficient for a lot of apps/trains
-  def high_level_overview
-    trains.only_with_runs.index_with do |train|
-      {
-        in_review: train.ongoing_release,
-        last_released: train.releases.released.order("completed_at DESC").first
-      }
-    end
   end
 
   def set_external_details(external_id)
@@ -235,20 +224,26 @@ class App < ApplicationRecord
     return unless has_store_integration?
 
     if cross_platform?
+      update_external_app(:ios, ios_store_provider)
       update_external_app(:android, android_store_provider)
+    elsif ios?
       update_external_app(:ios, ios_store_provider)
     elsif android?
       update_external_app(:android, android_store_provider)
     else
-      update_external_app(:ios, ios_store_provider)
+      raise ArgumentError, "invalid platform"
     end
   end
 
   def update_external_app(platform, provider)
+    app_data = provider&.find_app
     external_app_data = provider&.channel_data
 
     if external_app_data && latest_external_app&.channel_data != external_app_data
-      external_apps.create!(channel_data: external_app_data, fetched_at: Time.current, platform:)
+      external_apps.create!(channel_data: external_app_data,
+        fetched_at: Time.current,
+        platform:,
+        default_locale: app_data&.dig(:default_locale))
     end
   end
 

@@ -3,6 +3,7 @@
 # Table name: release_metadata
 #
 #  id                      :uuid             not null, primary key
+#  default_locale          :boolean          default(FALSE)
 #  description             :text
 #  keywords                :string           default([]), is an Array
 #  locale                  :string           not null, indexed => [release_platform_run_id]
@@ -31,6 +32,7 @@ class ReleaseMetadata < ApplicationRecord
   validates :promo_text,
     format: {with: PLAINTEXT_REGEX, message: :no_special_characters, allow_blank: true, multiline: true},
     length: {maximum: 170}
+  validates :locale, uniqueness: {scope: :release_platform_run_id}
 
   def self.find_by_id_and_language(id, language, platform)
     locale_tag = AppStores::Localizable.supported_locale_tag(language, platform)

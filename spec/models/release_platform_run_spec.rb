@@ -7,12 +7,26 @@ describe ReleasePlatformRun do
   end
 
   describe ".create" do
-    subject(:run) { create(:release_platform_run) }
-
     it "creates the release metadata with default locale" do
+      run = create(:release_platform_run)
       expect(run.release_metadatum).to be_present
       expect(run.release_metadatum.locale).to eq(ReleaseMetadata::DEFAULT_LOCALE)
       expect(run.release_metadatum.release_notes).to eq(ReleaseMetadata::DEFAULT_RELEASE_NOTES)
+    end
+
+    it "creates the release metadata with active_locales" do
+      app = create(:app, :android)
+      train = create(:train, app:)
+      create(:external_app, :android, app:)
+      release = create(:release, train: train)
+      release_platform = create(:release_platform, train:)
+      run = create(:release_platform_run, release:, release_platform:)
+
+      expect(run.release_metadatum).to be_present
+      expect(run.release_metadatum.locale).to eq("en-US")
+      expect(run.release_metadatum.release_notes).to eq("This latest version includes bugfixes for the android platform.")
+      expect(run.release_metadata.size).to eq(2)
+      expect(run.release_metadata.pluck(:locale)).to match_array(["en-US", "en-GB"])
     end
   end
 

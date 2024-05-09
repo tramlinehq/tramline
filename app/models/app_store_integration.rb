@@ -54,7 +54,8 @@ class AppStoreIntegration < ApplicationRecord
   APP_TRANSFORMATIONS = {
     id: :id,
     name: :name,
-    bundle_id: :bundle_id
+    bundle_id: :bundle_id,
+    default_locale: :primary_locale
   }
 
   CHANNEL_DATA_TRANSFORMATIONS = {
