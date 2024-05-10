@@ -59,7 +59,9 @@
   <% end %>
 
   <% if newer_builds.present? && !submission.change_allowed? %>
-    <%= render V2::AlertComponent.new(type: :notice, title: "A new build #{newer_builds.last.display_name} is available for submission", dismissible: false) %>
+    <div class="mt-4">
+      <%= render V2::AlertComponent.new(type: :notice, title: "A new build #{newer_builds.last.display_name} is available for submission", dismissible: false) %>
+    </div>
     <%= render V2::ButtonComponent.new(
       scheme: :default,
       type: :button,

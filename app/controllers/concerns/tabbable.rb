@@ -20,7 +20,7 @@ module Tabbable
 
       "release" => [
         [2, "Approvals", root_path, "v2/list_checks.svg"],
-        [2, "App submission", root_path, "v2/mail.svg"],
+        [2, "App submission", store_submissions_release_path(@release), "v2/mail.svg"],
         [3, "Store review", root_path, "v2/mail_search.svg"],
         [4, "Rollout to users", root_path, "v2/rocket.svg"]
       ]

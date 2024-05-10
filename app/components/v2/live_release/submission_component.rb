@@ -29,7 +29,7 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
   end
 
   def store_status
-    submission.store_status&.humanize || "Unknown"
+    submission.store_status&.humanize || "N/A"
   end
 
   def store_icon
