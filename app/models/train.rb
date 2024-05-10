@@ -2,35 +2,36 @@
 #
 # Table name: trains
 #
-#  id                       :uuid             not null, primary key
-#  backmerge_strategy       :string           default("on_finalize"), not null
-#  branching_strategy       :string           not null
-#  build_queue_enabled      :boolean          default(FALSE)
-#  build_queue_size         :integer
-#  build_queue_wait_time    :interval
-#  compact_build_notes      :boolean          default(FALSE)
-#  description              :string
-#  kickoff_at               :datetime
-#  manual_release           :boolean          default(FALSE)
-#  name                     :string           not null
-#  notification_channel     :jsonb
-#  release_backmerge_branch :string
-#  release_branch           :string
-#  repeat_duration          :interval
-#  slug                     :string
-#  status                   :string           not null
-#  tag_all_store_releases   :boolean          default(FALSE)
-#  tag_platform_releases    :boolean          default(FALSE)
-#  tag_releases             :boolean          default(TRUE)
-#  tag_suffix               :string
-#  version_current          :string
-#  version_seeded_with      :string
-#  versioning_strategy      :string           default("semver")
-#  working_branch           :string
-#  created_at               :datetime         not null
-#  updated_at               :datetime         not null
-#  app_id                   :uuid             not null, indexed
-#  vcs_webhook_id           :string
+#  id                                 :uuid             not null, primary key
+#  backmerge_strategy                 :string           default("on_finalize"), not null
+#  branching_strategy                 :string           not null
+#  build_queue_enabled                :boolean          default(FALSE)
+#  build_queue_size                   :integer
+#  build_queue_wait_time              :interval
+#  compact_build_notes                :boolean          default(FALSE)
+#  description                        :string
+#  kickoff_at                         :datetime
+#  manual_release                     :boolean          default(FALSE)
+#  name                               :string           not null
+#  notification_channel               :jsonb
+#  release_backmerge_branch           :string
+#  release_branch                     :string
+#  repeat_duration                    :interval
+#  slug                               :string
+#  status                             :string           not null
+#  stop_automatic_releases_on_failure :boolean          default(FALSE), not null
+#  tag_all_store_releases             :boolean          default(FALSE)
+#  tag_platform_releases              :boolean          default(FALSE)
+#  tag_releases                       :boolean          default(TRUE)
+#  tag_suffix                         :string
+#  version_current                    :string
+#  version_seeded_with                :string
+#  versioning_strategy                :string           default("semver")
+#  working_branch                     :string
+#  created_at                         :datetime         not null
+#  updated_at                         :datetime         not null
+#  app_id                             :uuid             not null, indexed
+#  vcs_webhook_id                     :string
 #
 class Train < ApplicationRecord
   has_paper_trail

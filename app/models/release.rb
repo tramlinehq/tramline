@@ -36,6 +36,7 @@ class Release < ApplicationRecord
   self.ignored_columns += ["release_version"]
 
   TERMINAL_STATES = [:finished, :stopped, :stopped_after_partial_finish]
+  FAILED_STATES = [:post_release_failed]
   DEFAULT_INTERNAL_NOTES = {
     "ops" => [
       {"insert" => "Write your internal notes, tasks lists, description, pretty much anything really."},
@@ -479,6 +480,10 @@ class Release < ApplicationRecord
 
   def android_release_platform_run
     release_platform_runs.find(&:android?)
+  end
+
+  def failure_anywhere?
+    FAILED_STATES.include?(status) || step_runs.failed.exists? || deployment_runs.failed.exists?
   end
 
   private
