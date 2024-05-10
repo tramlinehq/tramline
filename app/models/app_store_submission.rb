@@ -23,6 +23,7 @@ class AppStoreSubmission < StoreSubmission
   using RefinedString
 
   STATES = STATES.merge(
+    submitting_for_review: "submitting_for_review",
     submitted_for_review: "submitted_for_review",
     approved: "approved",
     cancelled: "cancelled"
@@ -88,9 +89,13 @@ class AppStoreSubmission < StoreSubmission
       transitions from: :preparing, to: :failed_prepare
     end
 
+    event :start_submission, after_commit: -> { StoreSubmission::AppStore::SubmitForReviewJob.perform_async(id) } do
+      transitions from: :prepared, to: :submitting_for_review
+    end
+
     event :submit_for_review, after_commit: ->(args = {resubmission: false}) { after_submission(args.fetch(:resubmission)) } do
       after { set_submitted_at! }
-      transitions from: [:prepared, :review_failed], to: :submitted_for_review
+      transitions from: [:review_failed, :submitting_for_review], to: :submitted_for_review
     end
 
     event :reject do
@@ -103,8 +108,12 @@ class AppStoreSubmission < StoreSubmission
       transitions from: :submitted_for_review, to: :approved
     end
 
+    event :start_cancellation, after_commit: -> { StoreSubmissions::AppStore::RemoveFromReviewJob.perform_async(id) } do
+      transitions from: :submitted_for_review, to: :cancelling
+    end
+
     event :cancel do
-      transitions from: :submitted_for_review, to: :cancelled
+      transitions from: [:submitted_for_review, :cancelling], to: :cancelled
     end
 
     event :fail, before: :set_reason do

@@ -16,6 +16,10 @@ FactoryBot.define do
       prepared_at { Time.current }
     end
 
+    trait :submitting_for_review do
+      status { "submitting_for_review" }
+    end
+
     trait :submitted_for_review do
       status { "submitted_for_review" }
       submitted_at { Time.current }

@@ -149,7 +149,7 @@ describe AppStoreSubmission do
 
   describe ".submit!" do
     let(:build) { create(:build) }
-    let(:submission) { create(:app_store_submission, :prepared, build:) }
+    let(:submission) { create(:app_store_submission, :submitting_for_review, build:) }
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
 
     before do

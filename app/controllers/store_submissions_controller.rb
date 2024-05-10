@@ -5,6 +5,7 @@ class StoreSubmissionsController < SignedInApplicationController
   before_action :set_release_platform_run
   before_action :set_store_submission, only: [:update, :prepare, :submit_for_review, :cancel]
   before_action :ensure_reviewable, only: [:submit_for_review]
+  before_action :ensure_cancellable, only: [:cancel]
   before_action :ensure_preparable, only: [:prepare]
 
   def create
@@ -33,7 +34,7 @@ class StoreSubmissionsController < SignedInApplicationController
   end
 
   def submit_for_review
-    @submission.submit!
+    @submission.start_submission!
 
     if @submission.failed?
       redirect_back fallback_location: root_path, flash: {error: t(".submit_for_review.failure", errors: @submission.display_attr(:failure_reason))}
@@ -43,7 +44,7 @@ class StoreSubmissionsController < SignedInApplicationController
   end
 
   def cancel
-    @submission.remove_from_review!
+    @submission.start_cancellation!
 
     if @submission.failed?
       redirect_back fallback_location: root_path, flash: {error: t(".cancel.failure", errors: @submission.display_attr(:failure_reason))}
@@ -62,6 +63,12 @@ class StoreSubmissionsController < SignedInApplicationController
 
   def submission_params
     params.require(:store_submission).permit(:build_id, :force)
+  end
+
+  def ensure_cancellable
+    unless @submission.cancelable?
+      redirect_back fallback_location: root_path, flash: {error: t(".cancel.uncanceleable")}
+    end
   end
 
   def ensure_reviewable
