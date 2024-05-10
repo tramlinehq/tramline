@@ -36,7 +36,7 @@
 
 <div class="grid grid-cols-2 gap-3 min-w-80 bottom-separator-space-default">
   <% if changelog_present? %>
-    <%= render V2::CardComponent.new(title: "Changes since last release", fold: false, separator: true) do |card| %>
+    <%= render V2::CardComponent.new(title: "Changes since last release", separator: true) do |card| %>
       <% card.with_actions do %>
         <span class="text-xs text-secondary-50">
           Diff from <%= render V2::BadgeComponent.new(@release.release_changelog.from_ref) %>
