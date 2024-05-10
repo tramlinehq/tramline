@@ -3,6 +3,26 @@
 <% end %>
 
 <div class="flex flex-col">
+  <% if new_submission_allowed? %>
+    <div class="mt-4">
+      <%= render V2::AlertComponent.new(type: :notice, title: "A new build #{newer_builds.last.display_name} is available for submission", dismissible: false) %>
+    </div>
+    <%= render V2::ModalComponent.new(title: "Available builds", subtitle: "Choose a build to send for submission to the store") do |modal| %>
+      <% modal.with_button(label: "Start a new submission", scheme: :light, type: :action, size: :xxs) %>
+      <% modal.with_body do %>
+        <%= render V2::FormComponent.new(model: [release, release_platform_run, release_platform_run.store_submissions.new],
+                                         scope: :store_submission,
+                                         url: release_platform_store_submissions_path(release, release_platform_run.platform),
+                                         free_form: true) do |form| %>
+          <%= form.F.labeled_select :build_id, "Select a build", options_for_select(all_builds.map { |b| [build_display_info(b), b.id] }, all_builds.first) %>
+          <% form.with_action do %>
+            <%= form.F.authz_submit "Create submission", "v2/archive.svg" %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
   <% if build.present? %>
     <% if prompt_change? %>
       <%= render V2::AlertComponent.new(type: :notice, title: "A new build #{newer_builds.last.display_name} is available. Change build to update the submission.", dismissible: true) %>
@@ -56,27 +76,7 @@
         <% end %>
       </div>
     <% end %>
-  <% end %>
-
-  <% if new_submission_allowed? %>
-    <div class="mt-4">
-      <%= render V2::AlertComponent.new(type: :notice, title: "A new build #{newer_builds.last.display_name} is available for submission", dismissible: false) %>
-    </div>
-    <%= render V2::ModalComponent.new(title: "Available builds", subtitle: "Choose a build to send for submission to the store") do |modal| %>
-      <% button = modal.with_button(label: "Start a new submission", scheme: :light, type: :action, size: :xxs) %>
-      <% modal.with_body do %>
-        <%= render V2::FormComponent.new(model: [release, release_platform_run, release_platform_run.store_submissions.new],
-                                         scope: :store_submission,
-                                         url: release_platform_store_submissions_path(release, release_platform_run.platform),
-                                         free_form: true) do |form| %>
-          <%= form.F.labeled_select :build_id, "Select a build", options_for_select(all_builds.map { |b| [build_display_info(b), b.id] }, all_builds.first) %>
-          <% form.with_action do %>
-            <%= form.F.authz_submit "Create submission", "v2/archive.svg" %>
-          <% end %>
-        <% end %>
-      <% end %>
-    <% end %>
-  <% elsif build.nil? %>
+  <% else %>
     <%= render V2::AlertComponent.new(kind: :banner, title: "No build available", dismissible: false) do %>
       No build is available for this platform. Please build a release candidate to continue.
     <% end %>
