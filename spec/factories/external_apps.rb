@@ -87,5 +87,5 @@ ANDROID_CHANNEL_DATA = [
         "version_string" => "1.10.0"
       }
     ]
-  },
+  }
 ]
