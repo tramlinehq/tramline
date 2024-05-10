@@ -112,6 +112,11 @@ class ReleasePlatformRun < ApplicationRecord
     store_submissions.last
   end
 
+  def previous_store_submissions
+    return unless store_submissions.size > 1
+    store_submissions.where.not(id: active_store_submission.id)
+  end
+
   def create_store_submission
     if android?
       play_store_submissions.create!

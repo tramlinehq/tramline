@@ -3,11 +3,12 @@
 class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
   include Memery
 
-  def initialize(submission)
+  def initialize(submission, inactive: false)
     @submission = submission
+    @inactive = inactive
   end
 
-  attr_reader :submission
+  attr_reader :submission, :inactive
   delegate :build, :release_platform_run, :external_link, to: :submission
   delegate :release, to: :release_platform_run
 
@@ -41,7 +42,10 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
   end
 
   def previous_submission
-    release_platform_run.store_submissions.where.not(id: submission.id).reorder("created_at DESC").first
+    release_platform_run
+      .store_submissions
+      .where("created_at < ?", submission.created_at)
+      .reorder("created_at DESC").first
   end
 
   memoize def changes
@@ -69,8 +73,20 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
     builder
   end
 
+  def active?
+    !inactive
+  end
+
   def changeable?
-    submission.change_allowed? && !submission.cancellable? && available_builds.present?
+    active? && submission.change_allowed? && available_builds.present?
+  end
+
+  def prompt_change?
+    active? && submission.change_allowed? && newer_builds.present?
+  end
+
+  def new_submission_allowed?
+    active? && newer_builds.present? && !submission.change_allowed?
   end
 
   def action

@@ -6,6 +6,15 @@
   <% end %>
 
   <% platform_runs.each do |run| %>
-    <%= render V2::LiveRelease::SubmissionComponent.new(run.active_store_submission) %>
+    <div class="grid grid-cols-1">
+      <%= render V2::LiveRelease::SubmissionComponent.new(run.active_store_submission) %>
+      <% if run.previous_store_submissions.present? %>
+        <%= render V2::SectionComponent.new(style: :titled, title: "Previous submissions", size: :compact) do %>
+          <% run.previous_store_submissions.each do |sub| %>
+            <%= render V2::LiveRelease::SubmissionComponent.new(sub, inactive: true) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
   <% end %>
 </div>

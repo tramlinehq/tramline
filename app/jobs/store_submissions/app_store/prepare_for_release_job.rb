@@ -18,8 +18,8 @@ class StoreSubmissions::AppStore::PrepareForReleaseJob
     submission.fail_with_error(ex)
   end
 
-  def perform(submission_id, force = false)
+  def perform(submission_id)
     submission = AppStoreSubmission.find(submission_id)
-    submission.prepare_for_release!(force:)
+    submission.prepare_for_release!
   end
 end

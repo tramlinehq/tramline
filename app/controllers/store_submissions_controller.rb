@@ -8,15 +8,24 @@ class StoreSubmissionsController < SignedInApplicationController
   before_action :ensure_preparable, only: [:prepare]
 
   def create
+    build = @release_platform_run.builds.find_by(id: submission_params[:build_id])
+
+    redirect_back fallback_location: root_path, notice: t(".create.invalid_build") unless build
+
+    submission = @release_platform_run.store_submissions.new
+    submission.attach_build!(build)
+    submission.save!
+
+    redirect_back fallback_location: root_path, notice: t(".create.success")
   end
 
   def update
-    build = @release_platform_run.builds.find_by(id: submission_update_params[:build_id])
+    build = @release_platform_run.builds.find_by(id: submission_params[:build_id])
 
     redirect_back fallback_location: root_path, notice: t(".update.invalid_build") unless build
 
     if @submission.attach_build!(build)
-      @submission.start_prepare!(force: submission_update_params[:force])
+      @submission.start_prepare!(force: true)
       redirect_back fallback_location: root_path, notice: t(".update.success")
     else
       redirect_back fallback_location: root_path, flash: {error: t(".update.failure", errors: @submission.display_attr(:failure_reason))}
@@ -44,7 +53,7 @@ class StoreSubmissionsController < SignedInApplicationController
   end
 
   def prepare
-    @submission.start_prepare!(force: submission_params[:force])
+    @submission.start_prepare!(force: true)
 
     redirect_back fallback_location: root_path, notice: t(".prepare.success")
   end
@@ -52,10 +61,6 @@ class StoreSubmissionsController < SignedInApplicationController
   private
 
   def submission_params
-    params.require(:store_submission).permit(:force)
-  end
-
-  def submission_update_params
     params.require(:store_submission).permit(:build_id, :force)
   end
 

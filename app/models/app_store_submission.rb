@@ -34,12 +34,11 @@ class AppStoreSubmission < StoreSubmission
     cancelled: "cancelled"
   }
 
-  IMMUTABLE_STATES = %w[approved]
+  IMMUTABLE_STATES = %w[approved submitted_for_review]
   CHANGEABLE_STATES = STATES.values - IMMUTABLE_STATES
 
   STAMPABLE_REASONS = %w[
     prepare_release_failed
-    inflight_release_replaced
     submitted_for_review
     resubmitted_for_review
     review_approved
@@ -81,7 +80,7 @@ class AppStoreSubmission < StoreSubmission
 
     event :start_prepare,
       guard: :startable?,
-      after_commit: ->(args = {force: false}) { StoreSubmissions::AppStore::PrepareForReleaseJob.perform_async(id, args.fetch(:force)) } do
+      after_commit: -> { StoreSubmissions::AppStore::PrepareForReleaseJob.perform_async(id) } do
       transitions from: [:created, :failed_prepare, :prepared, :failed, :review_failed, :cancelled], to: :preparing
     end
 
@@ -133,8 +132,8 @@ class AppStoreSubmission < StoreSubmission
   # FIXME
   def staged_rollout? = true
 
-  def prepare_for_release!(force: false)
-    result = provider.prepare_release(build_number, version_name, staged_rollout?, release_metadatum, force)
+  def prepare_for_release!
+    result = provider.prepare_release(build_number, version_name, staged_rollout?, release_metadatum, true)
 
     unless result.ok?
       case result.error.reason
@@ -153,7 +152,6 @@ class AppStoreSubmission < StoreSubmission
 
     update_store_info!(result.value!)
     finish_prepare!
-    event_stamp!(reason: :inflight_release_replaced, kind: :notice, data: stamp_data) if force
   end
 
   def submit!
