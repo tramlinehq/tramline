@@ -415,6 +415,14 @@ class Train < ApplicationRecord
     release_platforms.any?(&:has_production_deployment?)
   end
 
+  def stop_failed_ongoing_release!
+    return unless ongoing_release.present?
+    return unless ongoing_release.failure_anywhere?
+    return unless stop_automatic_release_on_failure?
+
+    ongoing_release.stop!
+  end
+
   private
 
   def train_link
