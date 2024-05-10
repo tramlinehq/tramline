@@ -416,7 +416,7 @@ class Train < ApplicationRecord
   end
 
   def stop_failed_ongoing_release!
-    return unless ongoing_release.present?
+    return if ongoing_release.blank?
     return unless ongoing_release.failure_anywhere?
     return unless stop_automatic_release_on_failure?
 
