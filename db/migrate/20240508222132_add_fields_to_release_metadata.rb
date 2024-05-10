@@ -1,7 +1,9 @@
 class AddFieldsToReleaseMetadata < ActiveRecord::Migration[7.0]
   def change
-    add_column :release_metadata, :description, :text
-    add_column :release_metadata, :keywords, :string, array: true, default: []
-    add_column :release_metadata, :default_locale, :boolean, default: false
+    change_table :release_metadata do |t|
+      t.text :description
+      t.string :keywords, array: true, default: []
+      t.boolean :default_locale, default: false
+    end
   end
 end
