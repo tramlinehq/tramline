@@ -6,7 +6,9 @@
       <%= content %>
     <% else %>
       <h2 class="heading-2"><%= title %></h2>
-      <div class="text-sm text-secondary"><%= subtitle %></div>
+      <% if subtitle.present? %>
+        <div class="text-sm text-secondary"><%= subtitle %></div>
+      <% end %>
       <article class="top-separator-space-default"><%= content %></article>
     <% end %>
   </div>

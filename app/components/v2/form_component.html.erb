@@ -2,9 +2,11 @@
   <% set_form(form) %>
   <% if free_form? %>
     <%= content %>
-    <div class="flex justify-end mt-6">
-      <%= action %>
-    </div>
+    <% if action? %>
+      <div class="flex justify-end mt-6">
+        <%= action %>
+      </div>
+    <% end %>
   <% else %>
     <div class="grid space-y-10">
       <% sections.each do |section| %>

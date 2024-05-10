@@ -44,8 +44,8 @@ class ReleasePlatform < ApplicationRecord
 
   validate :ready?, on: :create
 
-  delegate :ready?, to: :app
   delegate :integrations, to: :train
+  delegate :ready?, :default_locale, to: :app
 
   def self.allowed_platforms
     {
@@ -117,5 +117,9 @@ class ReleasePlatform < ApplicationRecord
 
   def active_locales
     app.latest_external_apps[platform.to_sym]&.active_locales
+  end
+
+  def default_locale
+    app.latest_external_apps[platform.to_sym]&.default_locale
   end
 end

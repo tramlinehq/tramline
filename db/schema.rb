@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_05_01_155017) do
+ActiveRecord::Schema[7.0].define(version: 2024_05_09_182925) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -215,6 +215,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_01_155017) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "platform"
+    t.string "default_locale"
     t.index ["app_id"], name: "index_external_apps_on_app_id"
     t.index ["fetched_at"], name: "index_external_apps_on_fetched_at"
   end
@@ -487,6 +488,9 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_01_155017) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "release_id"
+    t.text "description"
+    t.string "keywords", default: [], array: true
+    t.boolean "default_locale", default: false
     t.index ["release_platform_run_id", "locale"], name: "index_release_metadata_on_release_platform_run_id_and_locale", unique: true
     t.index ["release_platform_run_id"], name: "index_release_metadata_on_release_platform_run_id"
   end

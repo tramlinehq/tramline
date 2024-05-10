@@ -6,7 +6,6 @@ class RefreshExternalAppJob < ApplicationJob
   def perform(app_id)
     app = App.find(app_id)
     return unless app
-
     app.create_external!
   end
 end

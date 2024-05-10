@@ -23,6 +23,16 @@ module Installations
       set_client
     end
 
+    def app_details(transforms)
+      execute do
+        edit = client.insert_edit(package_name)
+        client.get_edit_detail(package_name, edit.id)
+          &.to_h
+          &.then { |details| Installations::Response::Keys.transform([details], transforms) }
+          &.first
+      end
+    end
+
     def upload(apk_path, skip_review: nil)
       execute do
         edit = client.insert_edit(package_name)
