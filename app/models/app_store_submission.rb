@@ -22,18 +22,13 @@ class AppStoreSubmission < StoreSubmission
   using RefinedArray
   using RefinedString
 
-  STATES = {
-    created: "created",
-    preparing: "preparing",
-    prepared: "prepared",
-    failed_prepare: "failed_prepare",
+  STATES = STATES.merge(
     submitted_for_review: "submitted_for_review",
-    review_failed: "review_failed",
     approved: "approved",
-    failed: "failed",
     cancelled: "cancelled"
-  }
+  )
 
+  FINAL_STATES = %w[approved]
   IMMUTABLE_STATES = %w[approved submitted_for_review]
   CHANGEABLE_STATES = STATES.values - IMMUTABLE_STATES
 
@@ -48,7 +43,7 @@ class AppStoreSubmission < StoreSubmission
   RETRYABLE_FAILURE_REASONS = [:attachment_upload_in_progress]
 
   PreparedVersionNotFoundError = Class.new(StandardError)
-  ExternalReleaseNotInTerminalState = Class.new(StandardError)
+  SubmissionNotInTerminalState = Class.new(StandardError)
 
   enum status: STATES
 
@@ -84,7 +79,7 @@ class AppStoreSubmission < StoreSubmission
       transitions from: [:created, :failed_prepare, :prepared, :failed, :review_failed, :cancelled], to: :preparing
     end
 
-    event :finish_prepare do
+    event :finish_prepare, after_commit: -> { StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id) } do
       after { set_prepared_at! }
       transitions from: :preparing, to: :prepared
     end
@@ -119,6 +114,10 @@ class AppStoreSubmission < StoreSubmission
 
   def change_allowed?
     status.in? CHANGEABLE_STATES
+  end
+
+  def locked?
+    status.in? FINAL_STATES
   end
 
   def cancellable? = submitted_for_review?
@@ -172,15 +171,16 @@ class AppStoreSubmission < StoreSubmission
     else
       event_stamp!(reason: :submitted_for_review, kind: :notice, data: stamp_data)
     end
-    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id)
   end
 
   def update_external_release
+    return if locked?
+
     result = provider.find_release(build_number)
 
     unless result.ok?
       elog(result.error)
-      raise ExternalReleaseNotInTerminalState, "Retrying in some time..."
+      raise SubmissionNotInTerminalState, "Retrying in some time..."
     end
 
     release_info = result.value!
@@ -188,15 +188,17 @@ class AppStoreSubmission < StoreSubmission
 
     if release_info.success?
       approved!
+      return
     elsif release_info.review_cancelled?
-      cancel!
+      cancel! unless cancelled?
     elsif release_info.waiting_for_review? && review_failed?
       # A failed review was re-submitted or responded to outside Tramline
       submit_for_review!(resubmission: true)
-    else
-      reject! if release_info.review_failed? && !review_failed?
-      raise ExternalReleaseNotInTerminalState, "Retrying in some time..."
+    elsif release_info.review_failed? && !review_failed?
+      reject!
     end
+
+    raise SubmissionNotInTerminalState, "Retrying in some time..."
   end
 
   def remove_from_review!

@@ -22,14 +22,9 @@ class PlayStoreSubmission < StoreSubmission
   using RefinedArray
   using RefinedString
 
-  STATES = {
-    created: "created",
-    preparing: "preparing",
-    prepared: "prepared",
-    rejected: "rejected",
-    failed: "failed",
+  STATES = STATES.merge(
     failed_with_action_required: "failed_with_action_required"
-  }
+  )
 
   enum failure_reason: {
     unknown_failure: "unknown_failure"
@@ -82,6 +77,9 @@ class PlayStoreSubmission < StoreSubmission
   def deployment_channel = {id: :production, name: "production", is_production: true}
 
   def change_allowed? = true
+
+  # TODO: This should be false once rollout starts
+  def locked? = false
 
   def reviewable? = false
 

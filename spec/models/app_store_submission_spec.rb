@@ -238,7 +238,7 @@ describe AppStoreSubmission do
       allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { initial_release_info })
 
       expect { submission.update_external_release }
-        .to raise_error(AppStoreSubmission::ExternalReleaseNotInTerminalState)
+        .to raise_error(AppStoreSubmission::SubmissionNotInTerminalState)
 
       expect(providable_dbl).to have_received(:find_release).with(build.build_number).once
     end
@@ -247,7 +247,7 @@ describe AppStoreSubmission do
       allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { in_progress_release_info })
 
       expect { submission.update_external_release }
-        .to raise_error(AppStoreSubmission::ExternalReleaseNotInTerminalState)
+        .to raise_error(AppStoreSubmission::SubmissionNotInTerminalState)
 
       expect(submission.reload.store_status).to eq("IN_REVIEW")
     end
@@ -264,7 +264,7 @@ describe AppStoreSubmission do
       allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { rejected_release_info })
 
       expect { submission.update_external_release }
-        .to raise_error(AppStoreSubmission::ExternalReleaseNotInTerminalState)
+        .to raise_error(AppStoreSubmission::SubmissionNotInTerminalState)
 
       expect(submission.reload.review_failed?).to be(true)
     end
@@ -273,7 +273,8 @@ describe AppStoreSubmission do
       submission.reject!
       allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { in_progress_release_info })
 
-      submission.update_external_release
+      expect { submission.update_external_release }
+        .to raise_error(AppStoreSubmission::SubmissionNotInTerminalState)
 
       expect(submission.reload.submitted_for_review?).to be(true)
     end
@@ -281,7 +282,8 @@ describe AppStoreSubmission do
     it "marks the submission as cancelled when review is cancelled" do
       allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { cancelled_release_info })
 
-      submission.update_external_release
+      expect { submission.update_external_release }
+        .to raise_error(AppStoreSubmission::SubmissionNotInTerminalState)
 
       expect(submission.reload.cancelled?).to be(true)
     end
@@ -291,7 +293,7 @@ describe AppStoreSubmission do
       allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { raise(error) })
 
       expect { submission.update_external_release }
-        .to raise_error(AppStoreSubmission::ExternalReleaseNotInTerminalState)
+        .to raise_error(AppStoreSubmission::SubmissionNotInTerminalState)
 
       expect(submission.reload.failed?).to be(false)
     end

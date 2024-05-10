@@ -32,6 +32,16 @@ class StoreSubmission < ApplicationRecord
   delegate :version_name, :build_number, to: :build
   delegate :project_link, :public_icon_img, to: :provider
 
+  STATES = {
+    created: "created",
+    preparing: "preparing",
+    prepared: "prepared",
+    failed_prepare: "failed_prepare",
+    review_failed: "review_failed",
+    approved: "approved",
+    failed: "failed"
+  }
+
   def attach_build!(build)
     self.build = build
     save!

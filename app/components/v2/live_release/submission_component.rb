@@ -86,7 +86,7 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
   end
 
   def new_submission_allowed?
-    active? && newer_builds.present? && !submission.change_allowed?
+    active? && submission.locked? && newer_builds.present?
   end
 
   def action
