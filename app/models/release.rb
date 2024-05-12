@@ -186,7 +186,7 @@ class Release < ApplicationRecord
     rollout_duration = ActiveSupport::Duration.build(completed_at - rollout_started_at).in_days if rollout_started_at.present?
     stability_duration = ActiveSupport::Duration.build(submitted_at - scheduled_at).in_days if submitted_at.present?
     days_since_last_release = ActiveSupport::Duration.build(completed_at - previous_release&.completed_at).in_days if previous_release.present?
-    rollout_changes = all_commits.between_commits(first_store_version.step_run.commit, all_commits.last).size if first_store_version.present?
+    rollout_changes = all_commits.between_commits(first_store_version.step_run.commit, all_commits.last).size if rollout_fixes > 0
 
     params = {
       hotfixes: all_hotfixes.size,
@@ -540,7 +540,16 @@ class Release < ApplicationRecord
   end
 
   def previous_release
-    train.releases.where(status: "finished").reorder(completed_at: :desc).first
+    base_conditions = train.releases
+      .where(status: "finished")
+      .where.not(id: id)
+      .reorder(completed_at: :desc)
+
+    return base_conditions.first if completed_at.blank?
+
+    base_conditions
+      .where("completed_at < ?", completed_at)
+      .first
   end
 
   def on_start!
