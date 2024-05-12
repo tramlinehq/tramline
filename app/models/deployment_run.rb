@@ -203,6 +203,10 @@ class DeploymentRun < ApplicationRecord
     where(status: STORE_SUBMISSION_STATES).includes([:staged_rollout, {step_run: [:commit], deployment: [:integration]}]).select(&:production_channel?)
   end
 
+  def failure?
+    status.in?(FAILED_STATES)
+  end
+
   def check_release_health
     return unless latest_health_data&.fresh?
     latest_health_data.check_release_health

@@ -483,7 +483,7 @@ class Release < ApplicationRecord
   end
 
   def failure_anywhere?
-    FAILED_STATES.include?(status) || step_runs.failed.exists? || deployment_runs.failed.exists?
+    status.to_sym.in?(FAILED_STATES) || release_platform_runs.any?(&:failure?)
   end
 
   private

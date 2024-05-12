@@ -190,6 +190,10 @@ class StepRun < ApplicationRecord
   scope :failed, -> { where(status: FAILED_STATES) }
   scope :sequential, -> { order("step_runs.scheduled_at ASC") }
 
+  def failure?
+    status.in?(FAILED_STATES) || last_deployment_run&.failure?
+  end
+
   def basic_build_version
     build_version.split("-").first
   end

@@ -103,6 +103,10 @@ class ReleasePlatformRun < ApplicationRecord
     latest_store_release&.unhealthy?
   end
 
+  def failure?
+    step_runs.last&.failure?
+  end
+
   def set_default_release_metadata
     base = {
       release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES,
