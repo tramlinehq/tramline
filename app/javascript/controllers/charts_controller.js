@@ -131,6 +131,12 @@ export default class extends Controller {
       },
       yaxis: {
         show: false,
+      },
+      markers: {
+        size: 3,
+        hover: {
+          sizeOffset: 2
+        }
       }
     }
   }
@@ -187,7 +193,7 @@ export default class extends Controller {
         curve: 'smooth'
       },
       xaxis: {
-        tickPlacement: 'between',
+        tickPlacement: 'on',
         labels: {
           show: this.showXAxisValue,
           style: {
@@ -208,7 +214,13 @@ export default class extends Controller {
       yaxis: {
         show: this.showYAxisValue,
       },
-      annotations: this.annotationsValue
+      annotations: this.annotationsValue,
+      markers: {
+        size: 3,
+        hover: {
+          sizeOffset: 2
+        }
+      }
     }
   }
 
