@@ -23,7 +23,9 @@ class ReleaseIndexComponent < ApplicationRecord
     rollout_duration: {default_weight: 0.15, default_tolerance: 7..10, tolerance_unit: :day},
     duration: {default_weight: 0.05, default_tolerance: 14..17, tolerance_unit: :day},
     stability_duration: {default_weight: 0.15, default_tolerance: 7..10, tolerance_unit: :day},
-    stability_changes: {default_weight: 0.15, default_tolerance: 10..20, tolerance_unit: :number}
+    stability_changes: {default_weight: 0.15, default_tolerance: 10..20, tolerance_unit: :number},
+    rollout_changes: {default_weight: 0, default_tolerance: 1..5, tolerance_unit: :number},
+    days_since_last_release: {default_weight: 0, default_tolerance: 10..15, tolerance_unit: :day}
   }
 
   DEFAULT_COMPONENTS.each do |component, details|
@@ -70,10 +72,12 @@ class ReleaseIndexComponent < ApplicationRecord
     end
 
     def range_value
-      if @input_value <= tolerable_range.begin; then 1
-      elsif tolerable_range.cover?(@input_value); then 0.5
-      else
+      if @input_value <= tolerable_range.begin
+        1
+      elsif @input_value >= tolerable_range.end
         0
+      else
+        0.5
       end
     end
 

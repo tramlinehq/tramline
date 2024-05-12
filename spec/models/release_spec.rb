@@ -496,18 +496,18 @@ describe Release do
         stability_changes: {input: 11, range_value: 0.5, value: 0.075}
       ), 0.825],
       [PERFECT_SCORE_COMPONENTS.merge(
-        hotfixes: {input: 1, range_value: 0.5, value: 0.15},
+        hotfixes: {input: 1, range_value: 0, value: 0},
         duration: {input: 15, range_value: 0.5, value: 0.025},
         rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
         stability_changes: {input: 11, range_value: 0.5, value: 0.075}
-      ), 0.675],
+      ), 0.525],
       [PERFECT_SCORE_COMPONENTS.merge(
-        hotfixes: {input: 1, range_value: 0.5, value: 0.15},
+        hotfixes: {input: 1, range_value: 0, value: 0},
         rollout_fixes: {input: 2, range_value: 0, value: 0},
         duration: {input: 15, range_value: 0.5, value: 0.025},
         rollout_duration: {input: 9, range_value: 0.5, value: 0.075},
         stability_changes: {input: 11, range_value: 0.5, value: 0.075}
-      ), 0.475]
+      ), 0.325]
     ].each do |components, final_score|
       it "returns the index score for a finished release" do
         create_deployment_tree(:android, :with_staged_rollout, step_traits: [:release]) => { step:, deployment:, train: }
