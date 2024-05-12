@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_05_09_182925) do
+ActiveRecord::Schema[7.0].define(version: 2024_05_10_191210) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -660,6 +660,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_09_182925) do
     t.string "store_status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "store_release"
     t.index ["build_id"], name: "index_store_submissions_on_build_id"
     t.index ["release_platform_run_id"], name: "index_store_submissions_on_release_platform_run_id"
   end

@@ -10,6 +10,7 @@
 #  rejected_at             :datetime
 #  status                  :string           not null
 #  store_link              :string
+#  store_release           :jsonb
 #  store_status            :string
 #  submitted_at            :datetime
 #  type                    :string           not null
@@ -227,6 +228,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def update_store_info!(release_info)
+    self.store_release = release_info.attributes
     self.store_status = release_info.attributes[:status]
     self.store_link = release_info.attributes[:external_link]
     save!

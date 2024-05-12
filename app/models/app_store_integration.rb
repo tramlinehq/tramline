@@ -83,7 +83,12 @@ class AppStoreIntegration < ApplicationRecord
     name: :version_name,
     added_at: :added_at,
     phased_release_day: [:phased_release, :current_day_number],
-    phased_release_status: [:phased_release, :phased_release_state]
+    phased_release_status: [:phased_release, :phased_release_state],
+    localizations: {localizations: {language: :language,
+                                    whats_new: :whats_new,
+                                    promo_text: :promotional_text,
+                                    keywords: :keywords,
+                                    description: :description}}
   }
 
   PROD_CHANNEL = {id: :app_store, name: "App Store (production)", is_production: true}.with_indifferent_access

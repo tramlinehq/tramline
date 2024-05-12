@@ -10,6 +10,7 @@
 #  rejected_at             :datetime
 #  status                  :string           not null
 #  store_link              :string
+#  store_release           :jsonb
 #  store_status            :string
 #  submitted_at            :datetime
 #  type                    :string           not null
