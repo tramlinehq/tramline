@@ -37,6 +37,12 @@
             <span class="text-sm text-rose-700" data-domain--release-schedule-help-target="errOutput"></span>
             <span class="text-sm" data-domain--release-schedule-help-target="output"></span>
           </div>
+          <div class="col-span-3">
+            <%= render V2::Form::SwitchComponent.new(form:,
+                                                     field_name: :stop_automatic_releases_on_failure,
+                                                     on_label: "Automatically stop release on failure enabled",
+                                                     off_label: "Automatically stop release on failure disabled") %>
+          </div>
         </div>
       <% end %>
     <% end %>
