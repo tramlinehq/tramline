@@ -121,6 +121,7 @@ class TrainsController < SignedInApplicationController
       :build_queue_wait_time_unit,
       :build_queue_wait_time_value,
       :release_schedule_enabled,
+      :stop_automatic_releases_on_failure,
       :continuous_backmerge_enabled,
       :manual_release,
       :compact_build_notes,
@@ -157,6 +158,7 @@ class TrainsController < SignedInApplicationController
       :repeat_duration_value,
       :repeat_duration_unit,
       :release_schedule_enabled,
+      :stop_automatic_releases_on_failure,
       :continuous_backmerge_enabled,
       :manual_release,
       :compact_build_notes,
@@ -216,7 +218,7 @@ class TrainsController < SignedInApplicationController
   end
 
   def release_schedule_config_params
-    [:release_schedule_enabled, :kickoff_at, :repeat_duration_value, :repeat_duration_unit]
+    [:release_schedule_enabled, :kickoff_at, :repeat_duration_value, :repeat_duration_unit, :stop_automatic_releases_on_failure]
   end
 
   def release_schedule_config(config_params)
@@ -224,7 +226,8 @@ class TrainsController < SignedInApplicationController
 
     {
       repeat_duration: parsed_duration(config_params[:repeat_duration_value], config_params[:repeat_duration_unit]),
-      kickoff_at: config_params[:kickoff_at]&.time_in_utc
+      kickoff_at: config_params[:kickoff_at]&.time_in_utc,
+      stop_automatic_releases_on_failure: config_params[:stop_automatic_releases_on_failure]
     }
   end
 

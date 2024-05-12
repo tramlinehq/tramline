@@ -98,6 +98,7 @@ class DeploymentRun < ApplicationRecord
 
   READY_STATES = [STATES[:rollout_started], STATES[:ready_to_release], STATES[:released]]
   STORE_SUBMISSION_STATES = READY_STATES + [STATES[:submitted_for_review], STATES[:review_failed]]
+  FAILED_STATES = [STATES[:failed], STATES[:failed_prepare_release], STATES[:failed_with_action_required]]
 
   enum status: STATES
   enum failure_reason: {
@@ -186,6 +187,7 @@ class DeploymentRun < ApplicationRecord
   scope :for_ids, ->(ids) { includes(deployment: :integration).where(id: ids) }
   scope :matching_runs_for, ->(integration) { includes(:deployment).where(deployments: {integration: integration}) }
   scope :has_begun, -> { where.not(status: :created) }
+  scope :failed, -> { where(status: FAILED_STATES) }
   scope :not_failed, -> { where.not(status: [:failed, :failed_prepare_release]) }
   scope :ready, -> { where(status: READY_STATES) }
 
@@ -199,6 +201,10 @@ class DeploymentRun < ApplicationRecord
 
   def self.reached_submission
     where(status: STORE_SUBMISSION_STATES).includes([:staged_rollout, {step_run: [:commit], deployment: [:integration]}]).select(&:production_channel?)
+  end
+
+  def failure?
+    status.in?(FAILED_STATES)
   end
 
   def check_release_health

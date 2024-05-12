@@ -548,4 +548,65 @@ describe Release do
       end
     end
   end
+
+  describe "#failure_anywhere?" do
+    it "returns true if post release has failed" do
+      release = create(:release, :post_release_failed)
+
+      expect(release.failure_anywhere?).to be(true)
+    end
+
+    it "returns false if no failure" do
+      release = create(:release, :on_track)
+
+      expect(release.failure_anywhere?).to be(false)
+    end
+
+    context "when failure in a release platform run" do
+      let(:factory_tree) { create_cross_platform_deployment_tree(nil) }
+      let(:release) { create(:release, :on_track, :with_no_platform_runs, train: factory_tree[:train]) }
+      let(:android_release_platform) { factory_tree.dig(:android, :release_platform) }
+      let(:ios_release_platform) { factory_tree.dig(:ios, :release_platform) }
+      let(:android_step) { factory_tree.dig(:android, :step) }
+      let(:ios_step) { factory_tree.dig(:ios, :step) }
+      let(:android_release_platform_run) { create(:release_platform_run, :on_track, release:, release_platform: android_release_platform) }
+      let(:ios_release_platform_run) { create(:release_platform_run, :on_track, release:, release_platform: ios_release_platform) }
+
+      it "returns false if an old step run has failed" do
+        _old_step_run = create(:step_run, :deployment_failed, release_platform_run: android_release_platform_run, step: android_step)
+        _new_step_run = create(:step_run, :deployment_started, release_platform_run: android_release_platform_run, step: android_step)
+
+        expect(release.failure_anywhere?).to be(false)
+      end
+
+      it "returns true if the latest step run has failed" do
+        _old_step_run = create(:step_run, :deployment_failed, release_platform_run: android_release_platform_run, step: android_step)
+        _new_step_run = create(:step_run, :ci_workflow_failed, release_platform_run: android_release_platform_run, step: android_step)
+
+        expect(release.failure_anywhere?).to be(true)
+      end
+
+      it "returns false if a penultimate deployment run for the last step has failed" do
+        step_run = create(:step_run, :deployment_started, release_platform_run: android_release_platform_run, step: android_step)
+        _old_deployment_run = create(:deployment_run, :failed, step_run: step_run)
+        _new_deployment_run = create(:deployment_run, :rollout_started, step_run: step_run)
+
+        expect(release.failure_anywhere?).to be(false)
+      end
+
+      it "returns true if the last deployment run for the last step has failed" do
+        step_run = create(:step_run, :deployment_started, release_platform_run: android_release_platform_run, step: android_step)
+        _old_deployment_run = create(:deployment_run, :released, step_run: step_run)
+        _new_deployment_run = create(:deployment_run, :failed, step_run: step_run)
+
+        expect(release.failure_anywhere?).to be(true)
+      end
+
+      it "returns true if either of the release platform run have failures" do
+        _ios_step_run = create(:step_run, :ci_workflow_failed, release_platform_run: ios_release_platform_run, step: ios_step)
+
+        expect(release.failure_anywhere?).to be(true)
+      end
+    end
+  end
 end

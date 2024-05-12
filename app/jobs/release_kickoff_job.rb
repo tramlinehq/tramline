@@ -8,6 +8,7 @@ class ReleaseKickoffJob < ApplicationJob
     return if scheduled_release.blank?
     return unless scheduled_release.train.active?
 
+    scheduled_release.train.stop_failed_ongoing_release!
     response = Triggers::Release.call(scheduled_release.train, automatic: true)
 
     if response.success?

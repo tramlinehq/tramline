@@ -69,3 +69,16 @@ def create_deployment_tree(platform = :android, *traits, train_traits: [], step_
   deployment = create(:deployment, *traits, integration: train.build_channel_integrations.first, step: step)
   {app:, train:, release_platform:, step:, deployment:}
 end
+
+def create_cross_platform_deployment_tree(*traits, train_traits: [], step_traits: [])
+  app = create(:app, :cross_platform)
+  train = create(:train, *train_traits, app:)
+  data = {app:, train:}
+  %i[android ios].each do |platform|
+    release_platform = create(:release_platform, train:, platform:)
+    step = create(:step, :with_deployment, *step_traits, release_platform: release_platform, integration: app.ci_cd_provider.integration)
+    deployment = create(:deployment, *traits, integration: train.build_channel_integrations.first, step: step)
+    data[platform] = {release_platform:, step:, deployment:}
+  end
+  data
+end

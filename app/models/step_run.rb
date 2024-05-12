@@ -187,7 +187,12 @@ class StepRun < ApplicationRecord
   delegate :download_url, to: :build_artifact
   delegate :ci_cd_provider, :workflow_id, :workflow_name, :step_number, :build_artifact_name_pattern, :has_uploadables?, :has_findables?, :name, :app_variant, to: :step
   scope :not_failed, -> { where.not(status: FAILED_STATES) }
+  scope :failed, -> { where(status: FAILED_STATES) }
   scope :sequential, -> { order("step_runs.scheduled_at ASC") }
+
+  def failure?
+    status.in?(FAILED_STATES) || last_deployment_run&.failure?
+  end
 
   def basic_build_version
     build_version.split("-").first
