@@ -187,7 +187,12 @@ class Release < ApplicationRecord
     rollout_duration = ActiveSupport::Duration.build(completed_at - rollout_started_at).in_days if rollout_started_at.present?
     stability_duration = ActiveSupport::Duration.build(submitted_at - scheduled_at).in_days if submitted_at.present?
     days_since_last_release = ActiveSupport::Duration.build(completed_at - previous_release&.completed_at).in_days if previous_release.present?
-    rollout_changes = all_commits.between_commits(first_store_version.step_run.commit, all_commits.last).size if rollout_fixes > 0
+
+    if rollout_fixes > 0
+      base_commit = first_store_version.step_run.commit
+      head_commit = all_commits.reorder(timestamp: :desc).first
+      rollout_changes = all_commits.between_commits(base_commit, head_commit).size
+    end
 
     params = {
       hotfixes: all_hotfixes.size,
