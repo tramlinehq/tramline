@@ -72,7 +72,7 @@ def nuke_train(train)
       end
       prun.step_runs&.delete_all
       prun.passports&.delete_all
-      prun.release_metadata&.delete
+      prun.release_metadata&.delete_all
     end
     run.pull_requests&.delete_all
     run.release_platform_runs&.delete_all
@@ -89,10 +89,10 @@ def nuke_train(train)
   train.release_index&.components&.delete_all
   train.release_index&.delete
   train.release_platforms.each do |release_platform|
-    train.steps.each do |step|
+    release_platform.all_steps.each do |step|
       step.all_deployments.delete_all
     end
-    release_platform.steps&.delete_all
+    release_platform.all_steps&.delete_all
     sql = "delete from commit_listeners where release_platform_id = '#{release_platform.id}'"
     ActiveRecord::Base.connection.execute(sql)
   end
