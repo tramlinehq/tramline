@@ -76,6 +76,12 @@ class App < ApplicationRecord
     }.invert
   end
 
+  def has_recent_activity?
+    return true if created_at > 3.months.ago
+    return false if releases.none?
+    releases.first.scheduled_at > 3.months.ago
+  end
+
   def deploy_action_enabled?
     Flipper.enabled?(:deploy_action_enabled, self)
   end
