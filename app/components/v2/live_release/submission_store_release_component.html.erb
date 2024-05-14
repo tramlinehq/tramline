@@ -25,8 +25,8 @@
       <% component.with_tab do %>
         <div class="flex flex-col gap-3 text-xs">
           <% localization.except("language").each do |key, val| %>
-            <div class="flex flex-col gap-1">
-              <span class="font-medium <%= EnhancedFormHelper::AuthzForm::BASE_LABEL_CLASSES %>"><%= key.humanize %></span>
+            <div>
+              <span class="<%= EnhancedFormHelper::AuthzForm::LABEL_CLASSES %>"><%= key.humanize %></span>
               <p class="text-secondary whitespace-pre-wrap leading-tight card-default"><%= val %></p>
             </div>
           <% end %>
