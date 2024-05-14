@@ -129,7 +129,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def release_metadatum
-    release_metadata.where(locale: ReleaseMetadata::DEFAULT_LOCALES).sole
+    release_metadata.where(locale: ReleaseMetadata::DEFAULT_LOCALES).first
   end
 
   def show_health?

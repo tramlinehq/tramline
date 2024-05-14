@@ -7,7 +7,7 @@ class StoreSubmissions::AppStore::UpdateExternalReleaseJob
   sidekiq_options retry: 2000
 
   sidekiq_retry_in do |count, ex|
-    if ex.is_a?(SubmissionNotInTerminalState)
+    if ex.is_a?(AppStoreSubmission::SubmissionNotInTerminalState)
       backoff_in(attempt: count, period: :minutes, type: :static, factor: 5).to_i
     else
       elog(ex)
@@ -16,7 +16,7 @@ class StoreSubmissions::AppStore::UpdateExternalReleaseJob
   end
 
   def perform(submission_id)
-    submission = StoreSubmission.find(submission_id)
+    submission = AppStoreSubmission.find(submission_id)
     submission.update_external_release
   end
 end

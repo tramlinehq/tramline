@@ -228,7 +228,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def update_store_info!(release_info)
-    self.store_release = release_info.attributes
+    self.store_release = release_info.release_info
     self.store_status = release_info.attributes[:status]
     self.store_link = release_info.attributes[:external_link]
     save!

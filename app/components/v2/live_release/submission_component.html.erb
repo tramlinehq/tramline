@@ -28,7 +28,7 @@
       <%= render V2::AlertComponent.new(type: :notice, title: "A new build #{newer_builds.last.display_name} is available. Change build to update the submission.", dismissible: true) %>
     <% end %>
 
-    <%= render V2::CardComponent.new(title: "Store Submission", fold: false, separator: false) do |card| %>
+    <%= render V2::CardComponent.new(title: "Store Submission", size: :full, separator: false) do |card| %>
       <% card.with_actions do %>
         <div class="flex items-center gap-x-1.5">
           <% if changeable? %>
@@ -52,6 +52,22 @@
           <% end %>
           <% if action.present? %>
             <%= render V2::ButtonComponent.new(**action) { |b| b.with_icon("v2/clipboard_list.svg") } %>
+          <% end %>
+          <% if submission.reviewable? %>
+            <%= render V2::ModalComponent.new(title: "Submission Preview", subtitle: "Review all the details before submitting for review", dismissable: false, size: :xxl) do |modal| %>
+              <% modal.with_button(label: "Submit for review", scheme: :light, type: :action, size: :xxs) %>
+              <% modal.with_body do %>
+                <div class="flex flex-col gap-6">
+                  <%= render V2::LiveRelease::SubmissionStoreReleaseComponent.new(store_release: submission.store_release, submission:) %>
+                  <%= render V2::ButtonComponent.new(scheme: :default,
+                                                     type: :button,
+                                                     label: "Submit for review",
+                                                     options: submit_for_review_release_platform_store_submission_path(release, release_platform_run.platform, submission.id),
+                                                     turbo: false,
+                                                     html_options: { method: :patch, data: { turbo_method: :patch } }) %>
+                </div>
+              <% end %>
+            <% end %>
           <% end %>
         </div>
       <% end %>

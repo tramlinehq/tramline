@@ -127,7 +127,7 @@ class V2::ButtonComponent < V2::BaseComponent
   def button_component
     return button_tag(@options, @html_options) { render(icon) } if icon_only?
 
-    classname = icon? ? "ml-1.5" : "ml-1"
+    classname = icon? ? "ml-1.5" : ""
     classname += " group-disabled:hidden" unless disabled?
 
     button_tag(@options, @html_options) do

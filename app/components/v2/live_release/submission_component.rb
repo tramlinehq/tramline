@@ -95,25 +95,15 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
     if submission.created?
       {scheme: :default,
        type: :button,
-       size: :xxs,
        label: "Prepare for review",
        options: prepare_release_platform_store_submission_path(release, release_platform_run.platform, submission.id),
        turbo: false,
        html_options: {method: :patch,
                       params: {store_submission: {force: false}},
                       data: {turbo_method: :patch, turbo_confirm: "Are you sure about that?"}}}
-    elsif submission.reviewable?
-      {scheme: :default,
-       type: :button,
-       size: :xxs,
-       label: "Submit for review",
-       options: submit_for_review_release_platform_store_submission_path(release, release_platform_run.platform, submission.id),
-       turbo: false,
-       html_options: {method: :patch, data: {turbo_method: :patch, turbo_confirm: "Are you sure about that?"}}}
     elsif submission.cancellable?
       {scheme: :danger,
        type: :button,
-       size: :xxs,
        label: "Cancel submission",
        options: cancel_release_platform_store_submission_path(release, release_platform_run.platform, submission.id),
        turbo: false,

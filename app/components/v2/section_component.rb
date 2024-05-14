@@ -35,7 +35,7 @@ class V2::SectionComponent < V2::BaseComponent
     when :default
       "mt-6"
     when :compact
-      "mt-2"
+      "mt-4"
     when :micro
       "mt-2"
     else
