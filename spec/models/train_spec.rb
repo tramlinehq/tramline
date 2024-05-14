@@ -204,4 +204,42 @@ describe Train do
       expect(train.reload.hotfixable?).to be(true)
     end
   end
+
+  describe "#stop_failed_ongoing_release!" do
+    it "does nothing if teh train is not automatic" do
+      train = create(:train, :active, stop_automatic_releases_on_failure: true)
+      release = create(:release, :post_release_failed, train:)
+
+      train.stop_failed_ongoing_release!
+
+      expect(release.reload.stopped?).to be(false)
+    end
+
+    it "does nothing if the ongoing release is not in failed state" do
+      train = create(:train, :active, :with_schedule, stop_automatic_releases_on_failure: true)
+      release = create(:release, :on_track, train:)
+
+      train.stop_failed_ongoing_release!
+
+      expect(release.reload.stopped?).to be(false)
+    end
+
+    it "does nothing if the flag to stop release is not enabled" do
+      train = create(:train, :active, :with_schedule, stop_automatic_releases_on_failure: false)
+      release = create(:release, :post_release_failed, train:)
+
+      train.stop_failed_ongoing_release!
+
+      expect(release.reload.stopped?).to be(false)
+    end
+
+    it "stops the ongoing release which is in failed state" do
+      train = create(:train, :active, :with_schedule, stop_automatic_releases_on_failure: true)
+      release = create(:release, :post_release_failed, train:)
+
+      train.stop_failed_ongoing_release!
+
+      expect(release.reload.stopped?).to be(true)
+    end
+  end
 end

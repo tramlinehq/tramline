@@ -74,15 +74,14 @@ class Commit < ApplicationRecord
     return none if head_commit.nil?
     return none if base_commit.nil? && head_commit.nil?
 
-    base_condition = where(release_id: (base_commit || head_commit).release.id)
-      .order(created_at: :desc)
+    base_condition = where(release_id: (base_commit || head_commit).release.id).reorder(timestamp: :desc)
 
     if base_commit
       base_condition
-        .where("created_at > ? AND created_at <= ?", base_commit.created_at, head_commit.created_at)
+        .where("timestamp > ? AND timestamp <= ?", base_commit.timestamp, head_commit.timestamp)
     else
       base_condition
-        .where("created_at <= ?", head_commit.created_at)
+        .where("timestamp <= ?", head_commit.timestamp)
     end
   end
 

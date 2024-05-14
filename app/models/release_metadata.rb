@@ -22,7 +22,8 @@ class ReleaseMetadata < ApplicationRecord
 
   NOTES_MAX_LENGTH = 4000
   PLAINTEXT_REGEX = /\A[₹!@#$%^&*()_+\-=\[\]{};':"\\|`,.\/?\s\p{Alnum}\p{P}\p{Zs}\p{Emoji_Presentation}]+\z/
-  DEFAULT_LOCALE = "en-US"
+  DEFAULT_LOCALES = ["en-US", "en-GB"]
+  DEFAULT_LOCALE = DEFAULT_LOCALES.first
   DEFAULT_LANGUAGE = "English (United States)"
   DEFAULT_RELEASE_NOTES = "The latest version contains bug fixes and performance improvements."
 

@@ -703,6 +703,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_10_191210) do
     t.boolean "tag_releases", default: true
     t.string "tag_suffix"
     t.string "versioning_strategy", default: "semver"
+    t.boolean "stop_automatic_releases_on_failure", default: false, null: false
     t.index ["app_id"], name: "index_trains_on_app_id"
   end
 

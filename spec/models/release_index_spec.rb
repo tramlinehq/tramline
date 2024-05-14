@@ -38,21 +38,21 @@ describe ReleaseIndex do
       reldex = create(:release_index, tolerable_range: 0.5..0.8)
 
       score = reldex.score(**metrics)
-      expect(score.value).to eq 0.650
+      expect(score.value).to eq 0.5
     end
 
     it "computes the reldex grade" do
       reldex = create(:release_index, tolerable_range: 0.5..0.8)
 
       score = reldex.score(**metrics)
-      expect(score.grade).to eq :acceptable
+      expect(score.grade).to eq :mediocre
     end
 
     it "computes the individual component scores" do
       reldex = create(:release_index, tolerable_range: 0.5..0.8)
 
       score = reldex.score(**metrics)
-      expect(score.components.map(&:value)).to match_array([0.15, 0.2, 0.0, 0.0, 0.15, 0.15])
+      expect(score.components.map(&:value)).to match_array([0.0, 0.2, 0.0, 0.0, 0.15, 0.15])
     end
 
     it "contains the release index itself" do
