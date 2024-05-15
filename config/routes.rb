@@ -85,6 +85,7 @@ Rails.application.routes.draw do
         member do
           get :overview
           get :change_queue
+          get :store_submissions
         end
 
         resources :commits, only: [], shallow: false do
@@ -98,6 +99,16 @@ Rails.application.routes.draw do
 
         resources :release_platforms, shallow: false, only: [] do
           resources :release_metadata, only: %i[edit update]
+        end
+
+        resources :platforms, shallow: false, only: [] do
+          resources :store_submissions, only: [:create, :update], path: :submissions do
+            member do
+              patch :submit_for_review
+              patch :prepare
+              patch :cancel
+            end
+          end
         end
 
         resources :build_queues, only: [], shallow: false do

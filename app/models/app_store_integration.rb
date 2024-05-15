@@ -83,7 +83,12 @@ class AppStoreIntegration < ApplicationRecord
     name: :version_name,
     added_at: :added_at,
     phased_release_day: [:phased_release, :current_day_number],
-    phased_release_status: [:phased_release, :phased_release_state]
+    phased_release_status: [:phased_release, :phased_release_state],
+    localizations: {localizations: {language: :language,
+                                    whats_new: :whats_new,
+                                    promo_text: :promotional_text,
+                                    keywords: :keywords,
+                                    description: :description}}
   }
 
   PROD_CHANNEL = {id: :app_store, name: "App Store (production)", is_production: true}.with_indifferent_access
@@ -187,6 +192,10 @@ class AppStoreIntegration < ApplicationRecord
 
   def submit_release(build_number, version)
     GitHub::Result.new { installation.submit_release(build_number, version) }
+  end
+
+  def remove_from_review(build_number, version)
+    GitHub::Result.new { release_info(installation.remove_from_review(build_number, version, RELEASE_TRANSFORMATIONS)) }
   end
 
   def start_release(build_number)
@@ -342,7 +351,7 @@ class AppStoreIntegration < ApplicationRecord
     WAITING_FOR_REVIEW = "WAITING_FOR_REVIEW"
 
     def attributes
-      release_info.except(:phased_release_day, :phased_release_status)
+      release_info.except(:phased_release_day, :phased_release_status, :localizations)
     end
 
     def phased_release_stage
@@ -398,6 +407,15 @@ class AppStoreIntegration < ApplicationRecord
       )
     end
 
+    def review_cancelled?
+      release_info[:status].in?(
+        [
+          DEVELOPER_REJECTED
+        ]
+      )
+    end
+
+    # TODO: deprecate this
     def failed?
       release_info[:status].in?(
         [

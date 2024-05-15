@@ -83,6 +83,7 @@ module Deployments
         Deployments::AppStoreConnect::TestFlightReleaseJob.perform_later(run.id) if test_flight_release?
       end
 
+      # NOTE: likely moves to internal/beta step
       def to_test_flight!
         return unless test_flight_release?
 
@@ -100,10 +101,12 @@ module Deployments
         run.submit_for_review!
       end
 
+      # NOTE: likely moves to internal/beta step
       def update_build_notes!
         provider.update_release_notes(build_number, deployment_notes)
       end
 
+      # NOTE: moves to store submission
       def prepare_for_release!(force: false)
         return unless app_store_release?
 
@@ -130,6 +133,7 @@ module Deployments
         run.event_stamp!(reason: :inflight_release_replaced, kind: :notice, data: {version: release_version}) if force
       end
 
+      # NOTE: moves to store submission
       def submit_for_review!
         return unless app_store_release?
 
@@ -143,6 +147,7 @@ module Deployments
         run.submit_for_review!
       end
 
+      # NOTE: moves to store submission
       def update_external_release
         return unless run.step_run.active? && app_store_integration?
 
@@ -170,6 +175,7 @@ module Deployments
         end
       end
 
+      # NOTE: likely moves to rollout step
       def start_release!
         return unless app_store_release?
 
@@ -187,6 +193,7 @@ module Deployments
         Deployments::AppStoreConnect::FindLiveReleaseJob.perform_async(run.id)
       end
 
+      # NOTE: likely moves to rollout step
       def track_live_release_status
         return unless app_store_release?
 
@@ -212,6 +219,7 @@ module Deployments
         raise ReleaseNotFullyLive, "Retrying in some time..."
       end
 
+      # NOTE: likely moves to rollout step
       def complete_phased_release!
         return unless app_store_release?
 
@@ -226,6 +234,7 @@ module Deployments
         result
       end
 
+      # NOTE: likely moves to rollout step
       def pause_phased_release!
         return unless app_store_release?
 
@@ -243,6 +252,7 @@ module Deployments
         result
       end
 
+      # NOTE: likely moves to rollout step
       def resume_phased_release!
         return unless app_store_release?
 
@@ -260,6 +270,7 @@ module Deployments
         result
       end
 
+      # NOTE: likely moves to rollout step
       def halt_phased_release!
         return unless app_store_release?
 
@@ -268,6 +279,7 @@ module Deployments
 
       private
 
+      # NOTE: likely moves to internal/beta step
       def internal_release!
         result = find_release
         unless result.ok?

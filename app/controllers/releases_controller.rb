@@ -4,8 +4,8 @@ class ReleasesController < SignedInApplicationController
   include Tabbable
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
-  before_action :set_release, only: [:show, :overview, :change_queue, :timeline, :destroy, :update]
-  before_action :set_live_release_tab_configuration, only: %i[overview change_queue]
+  before_action :set_release, only: [:show, :overview, :change_queue, :timeline, :destroy, :update, :store_submissions]
+  before_action :set_live_release_tab_configuration, only: %i[overview change_queue store_submissions]
 
   def index
     @train = @app.trains.friendly.find(params[:train_id])
@@ -63,6 +63,11 @@ class ReleasesController < SignedInApplicationController
     @train = @release.train
     @app = @train.app
     set_pull_requests
+  end
+
+  def store_submissions
+    @train = @release.train
+    @app = @train.app
   end
 
   def live_release

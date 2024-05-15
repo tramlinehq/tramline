@@ -15,6 +15,26 @@ en:
     update:
       success: "Release Index config was successfully updated."
       failure: "Failed to update config: %{errors}"
+  store_submissions:
+    prepare:
+      success: "The new release has begun preparing."
+      unstartable: "This release can not be prepared for submission."
+    submit_for_review:
+      success: "The release has been submitted for review!"
+      failure: "Failed to submit for review due to %{errors}"
+      unreviewable: "This release can not be submitted for review."
+    cancel:
+      success: "The release has been removed from review!"
+      failure: "Failed to remove from review due to %{errors}"
+      uncanceleable: "This release submission can not be removed from review."
+    update:
+      success: "The submission has been updated successfully."
+      failure: "Failed to update submission due to %{errors}"
+      invalid_build: "The build is not valid for this submission."
+    create:
+      success: "The submission has been created successfully."
+      failure: "Failed to create submission due to %{errors}"
+      invalid_build: "The build is not valid to start a submission."
   activerecord:
     models:
       slack_integration: "Slack"

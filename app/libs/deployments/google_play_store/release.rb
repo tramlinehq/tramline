@@ -50,6 +50,7 @@ module Deployments
         Deployments::GooglePlayStore::Upload.perform_later(run.id)
       end
 
+      # NOTE: likely moves to internal/beta step
       def upload!
         return unless google_play_store_integration?
 
@@ -67,6 +68,7 @@ module Deployments
         end
       end
 
+      # NOTE: likely moves to rollout step
       def start_release!
         return unless google_play_store_integration?
 
@@ -80,6 +82,7 @@ module Deployments
         end
       end
 
+      # NOTE: likely moves to rollout step
       def halt_release!
         return unless google_play_store_integration?
         return unless run.rollout_started?
@@ -92,6 +95,7 @@ module Deployments
         )
       end
 
+      # NOTE: likely moves to rollout step
       def release_to_all!
         return unless google_play_store_integration?
 
@@ -107,6 +111,7 @@ module Deployments
         result
       end
 
+      # NOTE: likely moves to rollout step
       def release_with(rollout_value:)
         return unless google_play_store_integration?
 
@@ -124,6 +129,7 @@ module Deployments
 
       private
 
+      # NOTE: likely moves to rollout step
       def fully_release!(skip_release: false)
         return run.complete! if skip_release
 
@@ -142,6 +148,7 @@ module Deployments
         end
       end
 
+      # NOTE: moves to submission step
       def create_draft_release!(skip_release: false)
         return run.create_staged_rollout!(config: staged_rollout_config) if skip_release
 

@@ -1,6 +1,6 @@
 class V2::SectionComponent < V2::BaseComponent
   STYLES = %i[boxed titled].freeze
-  SIZES = %i[default compact].freeze
+  SIZES = %i[default compact micro].freeze
 
   renders_one :sidenote
 
@@ -30,27 +30,55 @@ class V2::SectionComponent < V2::BaseComponent
     @style == :titled
   end
 
-  def default?
-    @size == :default
-  end
-
-  def compact?
-    @size == :compact
-  end
-
   def content_gap
-    default? ? "mt-6" : "mt-2"
+    case @size
+    when :default
+      "mt-6"
+    when :compact
+      "mt-4"
+    when :micro
+      "mt-2"
+    else
+      raise ArgumentError, "Invalid size: #{@size}"
+    end
   end
 
   def section_margin
-    default? ? "my-10" : "my-6"
+    case @size
+    when :default
+      "my-10"
+    when :compact
+      "my-6"
+    when :micro
+      "mt-1"
+    else
+      raise ArgumentError, "Invalid size: #{@size}"
+    end
   end
 
   def separator_gap
-    default? ? "gap-x-5" : "gap-x-3"
+    case @size
+    when :default
+      "gap-x-5"
+    when :compact
+      "gap-x-3"
+    when :micro
+      "gap-x-1.5"
+    else
+      raise ArgumentError, "Invalid size: #{@size}"
+    end
   end
 
   def heading_size
-    default? ? "heading-2" : "heading-4"
+    case @size
+    when :default
+      "heading-2"
+    when :compact
+      "heading-4"
+    when :micro
+      "heading-5"
+    else
+      raise ArgumentError, "Invalid size: #{@size}"
+    end
   end
 end

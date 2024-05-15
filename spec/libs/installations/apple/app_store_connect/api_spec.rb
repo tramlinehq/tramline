@@ -38,7 +38,14 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
         name: "1.8.0",
         added_at: "2023-02-26T03:02:46-08:00",
         phased_release_day: 1,
-        phased_release_status: "ACTIVE"
+        phased_release_status: "ACTIVE",
+        localizations: [{
+          description: "The true Yamanote line aural aesthetic.",
+          language: "en-US",
+          keywords: "japanese, aural, subway",
+          promo_text: nil,
+          whats_new: "We now have the total distance covered by each station across the line!"
+        }]
       }.with_indifferent_access
 
       result = described_class.new(bundle_id, key_id, issuer_id, key).find_release(build_number, AppStoreIntegration::RELEASE_TRANSFORMATIONS)
@@ -70,7 +77,14 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
         name: "1.8.0",
         added_at: "2023-02-26T03:02:46-08:00",
         phased_release_day: 1,
-        phased_release_status: "ACTIVE"
+        phased_release_status: "ACTIVE",
+        localizations: [{
+          description: "The true Yamanote line aural aesthetic.",
+          language: "en-US",
+          keywords: "japanese, aural, subway",
+          promo_text: nil,
+          whats_new: "We now have the total distance covered by each station across the line!"
+        }]
       }.with_indifferent_access
 
       result = described_class.new(bundle_id, key_id, issuer_id, key).find_live_release(AppStoreIntegration::RELEASE_TRANSFORMATIONS)
@@ -116,7 +130,14 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
         name: "1.8.0",
         added_at: "2023-02-26T03:02:46-08:00",
         phased_release_day: 1,
-        phased_release_status: "ACTIVE"
+        phased_release_status: "ACTIVE",
+        localizations: [{
+          description: "The true Yamanote line aural aesthetic.",
+          language: "en-US",
+          keywords: "japanese, aural, subway",
+          promo_text: nil,
+          whats_new: "We now have the total distance covered by each station across the line!"
+        }]
       }.with_indifferent_access
 
       request = stub_request(:post, url).to_return(body: payload)
@@ -214,7 +235,14 @@ describe Installations::Apple::AppStoreConnect::Api, type: :integration do
         name: "1.8.0",
         added_at: "2023-02-26T03:02:46-08:00",
         phased_release_day: 4,
-        phased_release_status: "COMPLETE"
+        phased_release_status: "COMPLETE",
+        localizations: [{
+          description: "The true Yamanote line aural aesthetic.",
+          language: "en-US",
+          keywords: "japanese, aural, subway",
+          promo_text: nil,
+          whats_new: "We now have the total distance covered by each station across the line!"
+        }]
       }.with_indifferent_access
 
       expect(result).to eq(expected_release)

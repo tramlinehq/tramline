@@ -36,6 +36,9 @@ class ReleasePlatformRun < ApplicationRecord
   belongs_to :release
   has_many :release_metadata, class_name: "ReleaseMetadata", dependent: :destroy, inverse_of: :release_platform_run
   has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
+  has_many :builds, dependent: :destroy, inverse_of: :release_platform_run
+  has_many :play_store_submissions, dependent: :destroy
+  has_many :app_store_submissions, dependent: :destroy
   has_many :external_builds, through: :step_runs
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
@@ -76,15 +79,48 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   after_create :set_default_release_metadata
+  after_create :create_store_submission, if: -> { organization.product_v2? }
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
-  delegate :versioning_strategy, to: :release
-  delegate :all_commits, :original_release_version, :hotfix?, to: :release
-  delegate :steps, :train, :app, :platform, :active_locales, :ios?, :android?, :default_locale, to: :release_platform
+  delegate :all_commits, :original_release_version, :hotfix?, :versioning_strategy, :organization, to: :release
+  delegate :steps, :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, :default_locale, to: :release_platform
 
   def metadata_for(language)
     locale_tag = AppStores::Localizable.supported_locale_tag(language, :ios)
     release_metadata&.find_by(locale: locale_tag)
+  end
+
+  def store_submissions
+    if android?
+      play_store_submissions
+    elsif ios?
+      app_store_submissions
+    else
+      raise ArgumentError, "Unknown platform: #{platform}"
+    end
+  end
+
+  def active_store_submission
+    store_submissions.last
+  end
+
+  def previous_store_submissions
+    return unless store_submissions.size > 1
+    store_submissions.where.not(id: active_store_submission.id)
+  end
+
+  def create_store_submission
+    if android?
+      play_store_submissions.create!
+    elsif ios?
+      app_store_submissions.create!
+    else
+      raise ArgumentError, "Unknown platform: #{platform}"
+    end
+  end
+
+  def latest_build?(build)
+    builds.reorder("generated_at DESC").first == build
   end
 
   def check_release_health

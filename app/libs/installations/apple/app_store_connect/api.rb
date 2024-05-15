@@ -19,6 +19,7 @@ module Installations
     APP_CURRENT_STATUS = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/current_status"
     PREPARE_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/prepare"
     SUBMIT_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/submit"
+    CANCEL_SUBMISSION_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/cancel_submission"
     START_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/start"
     FIND_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release"
     FIND_LIVE_RELEASE_URL = Addressable::Template.new "#{ENV["APPLELINK_URL"]}/apple/connect/v1/apps/{bundle_id}/release/live"
@@ -97,6 +98,12 @@ module Installations
 
     def submit_release(build_number, version, transforms = {})
       execute(:patch, SUBMIT_RELEASE_URL.expand(bundle_id:).to_s, {json: {build_number:, version:}})
+    end
+
+    def remove_from_review(build_number, version, transforms = {})
+      execute(:patch, CANCEL_SUBMISSION_URL.expand(bundle_id:).to_s, {json: {build_number:, version:}})
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def start_release(build_number, transforms = {})
