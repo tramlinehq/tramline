@@ -157,7 +157,7 @@
       <% end %>
 
       <%= render V2::SectionComponent.new(style: :titled, title: "Operational Efficiency") do %>
-        <div class="grid grid-cols-4 gap-x-2 my-3 gap-y-3">
+        <div class="grid grid-cols-4 my-3 gap-3">
           <%= render ChartComponent.new(devops_report[:operational_efficiency][:contributors]) %>
           <%= render ChartComponent.new(devops_report[:operational_efficiency][:stability_contributors]) %>
           <div><!-- to maintain grid height --></div>
