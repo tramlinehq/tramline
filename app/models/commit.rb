@@ -67,15 +67,21 @@ class Commit < ApplicationRecord
     return none if head_step_run.nil?
     return none if base_step_run.nil? && head_step_run.nil?
 
-    base_condition = where(release_id: (base_step_run || head_step_run).release.id)
-      .order(created_at: :desc)
+    between_commits(base_step_run&.commit, head_step_run.commit)
+  end
 
-    if base_step_run
+  def self.between_commits(base_commit, head_commit)
+    return none if head_commit.nil?
+    return none if base_commit.nil? && head_commit.nil?
+
+    base_condition = where(release_id: (base_commit || head_commit).release.id).reorder(timestamp: :desc)
+
+    if base_commit
       base_condition
-        .where("created_at > ? AND created_at <= ?", base_step_run.commit.created_at, head_step_run.commit.created_at)
+        .where("timestamp > ? AND timestamp <= ?", base_commit.timestamp, head_commit.timestamp)
     else
       base_condition
-        .where("created_at <= ?", head_step_run.commit.created_at)
+        .where("timestamp <= ?", head_commit.timestamp)
     end
   end
 

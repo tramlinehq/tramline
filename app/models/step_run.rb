@@ -187,7 +187,12 @@ class StepRun < ApplicationRecord
   delegate :download_url, to: :build_artifact
   delegate :ci_cd_provider, :workflow_id, :workflow_name, :step_number, :build_artifact_name_pattern, :has_uploadables?, :has_findables?, :name, :app_variant, to: :step
   scope :not_failed, -> { where.not(status: FAILED_STATES) }
+  scope :failed, -> { where(status: FAILED_STATES) }
   scope :sequential, -> { order("step_runs.scheduled_at ASC") }
+
+  def failure?
+    status.in?(FAILED_STATES) || last_deployment_run&.failure?
+  end
 
   def basic_build_version
     build_version.split("-").first
@@ -309,6 +314,9 @@ class StepRun < ApplicationRecord
 
   def trigger_deployment(deployment = first_deployment)
     Triggers::Deployment.call(step_run: self, deployment: deployment)
+
+    # TODO: This is temporary, to connect old stability to new build
+    create_and_attach_build_to_submission if organization.product_v2?
   end
 
   def resume_deployments
@@ -403,6 +411,24 @@ class StepRun < ApplicationRecord
   end
 
   private
+
+  def create_and_attach_build_to_submission
+    if deployment.first? && step.release?
+      build = release_platform_run.builds.create(
+        generated_at: build_artifact&.generated_at || Time.current,
+        build_number: build_number,
+        version_name: release_version,
+        artifact: build_artifact,
+        commit:
+      )
+
+      store_submission = release_platform_run.active_store_submission
+
+      if store_submission.present? && store_submission.build.blank?
+        store_submission.attach_build!(build)
+      end
+    end
+  end
 
   def previous_step_run
     release_platform_run

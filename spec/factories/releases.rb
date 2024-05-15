@@ -23,6 +23,10 @@ FactoryBot.define do
       status { "post_release_started" }
     end
 
+    trait :post_release_failed do
+      status { "post_release_failed" }
+    end
+
     trait :finished do
       status { "finished" }
       completed_at { Time.current }

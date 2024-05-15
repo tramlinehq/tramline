@@ -17,7 +17,9 @@ class V2::Reldex::FormComponent < V2::Reldex::BaseComponent
     rollout_duration: {allowed_range: 0..30, step: 1},
     duration: {allowed_range: 0..30, step: 1},
     stability_duration: {allowed_range: 0..20, step: 1},
-    stability_changes: {allowed_range: 0..50, step: 1}
+    stability_changes: {allowed_range: 0..50, step: 1},
+    rollout_changes: {allowed_range: 0..20, step: 1},
+    days_since_last_release: {allowed_range: 0..30, step: 1}
   }
 
   def base_form_config

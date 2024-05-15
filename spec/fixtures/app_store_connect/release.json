@@ -17,14 +17,13 @@
     "total_pause_duration": 0,
     "current_day_number": 1
   },
-  "details": {
-    "id": "ef59d099-6154-4ccb-826b-3ffe6005ed59",
+  "localizations": [{
     "description": "The true Yamanote line aural aesthetic.",
-    "locale": "en-US",
+    "language": "en-US",
     "keywords": "japanese, aural, subway",
     "marketing_url": null,
     "promotional_text": null,
     "support_url": "http://tramline.app",
     "whats_new": "We now have the total distance covered by each station across the line!"
-  }
+  }]
 }

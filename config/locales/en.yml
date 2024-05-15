@@ -15,6 +15,26 @@ en:
     update:
       success: "Release Index config was successfully updated."
       failure: "Failed to update config: %{errors}"
+  store_submissions:
+    prepare:
+      success: "The new release has begun preparing."
+      unstartable: "This release can not be prepared for submission."
+    submit_for_review:
+      success: "The release has been submitted for review!"
+      failure: "Failed to submit for review due to %{errors}"
+      unreviewable: "This release can not be submitted for review."
+    cancel:
+      success: "The release has been removed from review!"
+      failure: "Failed to remove from review due to %{errors}"
+      uncanceleable: "This release submission can not be removed from review."
+    update:
+      success: "The submission has been updated successfully."
+      failure: "Failed to update submission due to %{errors}"
+      invalid_build: "The build is not valid for this submission."
+    create:
+      success: "The submission has been created successfully."
+      failure: "Failed to create submission due to %{errors}"
+      invalid_build: "The build is not valid to start a submission."
   activerecord:
     models:
       slack_integration: "Slack"
@@ -148,6 +168,8 @@ en:
           duration: "Release Duration"
           stability_duration: "Stability Duration"
           stability_changes: "Stability Changes"
+          rollout_changes: "Rollout Changes"
+          days_since_last_release: "Days since last release"
         description:
           hotfixes: "These are the fixes that are done after the release has reached all the users."
           rollout_fixes: "These are the fixes that are done while the staged rollout of the release is in progress."
@@ -155,6 +177,8 @@ en:
           duration: "The number of days from release start (code freeze) to 100% rollout of the release."
           stability_duration: "The number of days it takes to stabilize the build before submitting it to the stores for review."
           stability_changes: "The number of commits it took to stabilize the build for release."
+          rollout_changes: "The number of commits that went into the patch fixes for the release."
+          days_since_last_release: "The number of days since the last release."
     attributes:
       integration:
         categories:

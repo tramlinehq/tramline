@@ -1,0 +1,47 @@
+<% if build %>
+  <div class="flex items-center justify-between">
+    <div class="flex items-center justify-start gap-x-1.5">
+      <% if submission? %>
+        <%= render V2::BadgeComponent.new do |badge| %>
+          <% badge.with_icon(store_logo) %>
+          <% badge.with_link(build_info, external_link) %>
+        <% end %>
+      <% end %>
+
+      <% unless show_build_only %>
+        <%= inline_svg("v2/connect_line.svg", classname: "w-5 h-5 inline-flex") %>
+
+        <%= render V2::BadgeComponent.new do |badge| %>
+          <% badge.with_icon(build_logo) %>
+          <% badge.with_link(ci_info, ci_link) %>
+        <% end %>
+
+        <% if previous_build.present? %>
+          <%= render V2::ModalComponent.new(title: "Changes since last submission",
+                                            subtitle: diff_between,
+                                            size: :xl_3,
+                                            authz: false) do |modal| %>
+            <% button = modal.with_button(scheme: :naked_icon, type: :action, size: :none) %>
+            <% button.with_icon("v2/diff.svg", size: :lg) %>
+            <% button.with_tooltip("Changes since last build", placement: "top") %>
+            <% modal.with_body do %>
+              <%= render partial: "shared/divide_collection",
+                         locals: { collection: render(V2::CommitComponent.with_collection(commits_since_last_release)) } %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <% unless show_build_only %>
+      <%= render V2::TooltipComponent.new("Originally created on #{time_format build.generated_at}", placement: "top") do |tooltip| %>
+        <% tooltip.with_body do %>
+          <div class="flex items-center">
+            <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2 text-secondary") %>
+            <span class="text-secondary font-normal text-sm"><%= last_activity_at %></span>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

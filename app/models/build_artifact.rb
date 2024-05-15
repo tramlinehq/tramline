@@ -7,6 +7,7 @@
 #  uploaded_at  :datetime
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
+#  build_id     :uuid             indexed
 #  step_run_id  :uuid             not null, indexed
 #
 require "zip"
@@ -15,6 +16,7 @@ class BuildArtifact < ApplicationRecord
   include Rails.application.routes.url_helpers
 
   belongs_to :step_run, inverse_of: :build_artifact
+  belongs_to :build, optional: true, inverse_of: :artifact
   has_one_attached :file
 
   delegate :create_and_upload!, to: ActiveStorage::Blob
