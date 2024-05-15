@@ -41,6 +41,10 @@ class Accounts::Organization < ApplicationRecord
     Flipper.enabled?(:demo_mode, self)
   end
 
+  def product_v2?
+    Flipper.enabled?(:product_v2, self)
+  end
+
   def build_notes_in_workflow?
     Flipper.enabled?(:build_notes_in_workflow, self)
   end

@@ -6,7 +6,7 @@ class StoreSubmissions::AppStore::PrepareForReleaseJob
   sidekiq_options retry: 3
 
   sidekiq_retry_in do |count, ex|
-    if ex.is_a?(PreparedVersionNotFoundError)
+    if ex.is_a?(AppStoreSubmission::PreparedVersionNotFoundError)
       backoff_in(attempt: count, period: :minutes, type: :static, factor: 1).to_i
     else
       :kill

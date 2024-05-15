@@ -79,11 +79,10 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   after_create :set_default_release_metadata
-  after_create :create_store_submission
+  after_create :create_store_submission, if: -> { organization.product_v2? }
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
-  delegate :versioning_strategy, to: :release
-  delegate :all_commits, :original_release_version, :hotfix?, to: :release
+  delegate :all_commits, :original_release_version, :hotfix?, :versioning_strategy, :organization, to: :release
   delegate :steps, :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, :default_locale, to: :release_platform
 
   def metadata_for(language)

@@ -316,7 +316,7 @@ class StepRun < ApplicationRecord
     Triggers::Deployment.call(step_run: self, deployment: deployment)
 
     # TODO: This is temporary, to connect old stability to new build
-    # create_and_attach_build_to_submission
+    create_and_attach_build_to_submission if organization.product_v2?
   end
 
   def resume_deployments
