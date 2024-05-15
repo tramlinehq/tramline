@@ -80,7 +80,7 @@ ANDROID_CHANNEL_DATA = [
         "localizations" => [
           {
             "text" => "• Update README.md\n• new RC build\n• new and improved RC",
-            "language" => "en-GB"
+            "language" => "en-AU"
           }
         ],
         "user_fraction" => nil,
