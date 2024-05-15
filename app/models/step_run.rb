@@ -316,21 +316,7 @@ class StepRun < ApplicationRecord
     Triggers::Deployment.call(step_run: self, deployment: deployment)
 
     # TODO: This is temporary, to connect old stability to new build
-    if deployment.first? && step.release?
-      build = release_platform_run.builds.create(
-        generated_at: build_artifact&.generated_at || Time.current,
-        build_number: build_number,
-        version_name: release_version,
-        artifact: build_artifact,
-        commit:
-      )
-
-      store_submission = release_platform_run.active_store_submission
-
-      if store_submission.present? && store_submission.build.blank?
-        store_submission.attach_build!(build)
-      end
-    end
+    # create_and_attach_build_to_submission
   end
 
   def resume_deployments
@@ -425,6 +411,24 @@ class StepRun < ApplicationRecord
   end
 
   private
+
+  def create_and_attach_build_to_submission
+    if deployment.first? && step.release?
+      build = release_platform_run.builds.create(
+        generated_at: build_artifact&.generated_at || Time.current,
+        build_number: build_number,
+        version_name: release_version,
+        artifact: build_artifact,
+        commit:
+      )
+
+      store_submission = release_platform_run.active_store_submission
+
+      if store_submission.present? && store_submission.build.blank?
+        store_submission.attach_build!(build)
+      end
+    end
+  end
 
   def previous_step_run
     release_platform_run

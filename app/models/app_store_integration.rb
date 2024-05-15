@@ -351,7 +351,7 @@ class AppStoreIntegration < ApplicationRecord
     WAITING_FOR_REVIEW = "WAITING_FOR_REVIEW"
 
     def attributes
-      release_info.except(:phased_release_day, :phased_release_status)
+      release_info.except(:phased_release_day, :phased_release_status, :localizations)
     end
 
     def phased_release_stage
