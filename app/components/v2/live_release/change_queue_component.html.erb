@@ -34,8 +34,8 @@
                            banner_image: "arrow_down_wide_narrow.svg") %>
 
   <div class="text-sm text-secondary">
-    <%= change_queue_commits.size %> commit(s) in the queue. These will be applied
-    in <%= time_in_words(build_queue.scheduled_at) %> or after <%= build_queue.build_queue_size %> commits.
+    <%= change_queue_commits_count %> commit(s) in the queue. These will be applied
+    in <%= time_in_words(build_queue&.scheduled_at) %> or after <%= build_queue&.build_queue_size %> commits.
   </div>
 
   <%= render partial: "shared/divide_collection",
