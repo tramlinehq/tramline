@@ -1,64 +1,85 @@
-<div class="flex flex-col section-gap-default">
-  <%= render V2::CardComponent.new(title: "Rollout Status", separator: false, fixed_height: "80") do |card| %>
-    <% card.with_actions do %>
-      <%= render V2::ButtonComponent.new(label: "Increase rollout", scheme: :default, type: :action, size: :xxs) %>
-    <% end %>
-
-    <div class="flex flex-col justify-between gap-1 h-full">
-      <div class="grid grid-cols-12">
-        <div class="col-span-5 flex flex-col gap-2">
-          <div class="flex items-baseline gap-2">
-            <%= render V2::IconComponent.new("integrations/logo_google_play_store.png", size: :xl) %>
-            <div class="text-3xl font-bold">5%</div>
-            <div class="text-sm text-secondary-50">of users</div>
-          </div>
-
-          <div class="flex gap-1 flex-wrap">
-            <%= render V2::StatusIndicatorPillComponent.new(text: "Completed", status: :success) %>
-            <div class="text-sm text-secondary-50">at 3rd stage</div>
-          </div>
-
-          <div class="flex flex-wrap gap-y-2 text-secondary text-sm">
-            <p>Start the rollout to initiate your staged rollout sequence.</p>
-          </div>
-        </div>
-
-        <div class="col-span-7 justify-self-end self-end flex flex-col gap-2">
-          <% [[4, :default], [8, :default], [15, :default], [16, :inert], [23, :inert], [42, :inert], [90, :inert], [100, :inert]].take(rand(1..10)).each_with_index do |(percent, st), idx| %>
-            <div class="flex flex-row justify-between gap-1 items-center flex-initial flex-wrap">
-              <%= render V2::ProgressBarComponent.new(percent: percent, label: true, status: st) %>
-              <% if st == :default %>
-                <%= render V2::IconComponent.new("v2/check.svg", size: :sm, classes: "text-green-600") %>
-              <% end %>
-            </div>
+<div class="flex flex-col item-gap-default">
+  <%= render V2::LiveRelease::BuildComponent.new(release_platform_run.builds.last, show_build_only: true) %>
+  <div class="flex flex-col section-gap-default">
+    <%= render V2::CardComponent.new(title: "Rollout Status", separator: false, fixed_height: "80") do |card| %>
+      <% card.with_actions do %>
+        <div class="flex flex-row gap-2">
+          <%= render V2::ModalComponent.new(title: "Rollout timeline",
+                                            size: :xs,
+                                            type: :drawer,
+                                            authz: false) do |modal| %>
+            <% button = modal.with_button(scheme: :supporting,
+                                          size: :xxs,
+                                          type: :action,
+                                          label: "Timeline") %>
+            <% button.with_icon("v2/activity.svg", size: :base) %>
+            <% button.with_tooltip("See recent rollout activity", placement: "top") %>
+            <% modal.with_body do %>
+              <div class="pl-3"><%= render TimelineComponent.new(events:) %></div>
+            <% end %>
           <% end %>
-        </div>
-      </div>
-
-      <%= render V2::SectionComponent.new(title: "More actions", style: :titled, size: :micro) do %>
-        <div class="flex justify-between items-center">
-          <div class="flex flex-row gap-2">
-            <%= render V2::ButtonComponent.new(label: "Halt rollout", scheme: :danger, type: :action, size: :xxs) %>
-            <%= render V2::ButtonComponent.new(label: "Release to all", scheme: :light, type: :action, size: :xxs) %>
-          </div>
-          <%= render V2::ButtonComponent.new(label: "Store dashboard ↗",
-                                             scheme: :link,
-                                             type: :link_external,
-                                             options: "https://play.google.com/store/apps/details?id=com.example.app",
-                                             html_options: { class: "text-sm" },
-                                             authz: false,
-                                             size: :none) do |b|
-            b.with_icon("integrations/logo_google_play_store.png", size: :md)
-          end %>
+          <%= render V2::ButtonComponent.new(label: "Increase rollout", scheme: :default, type: :action, size: :xxs) %>
         </div>
       <% end %>
-    </div>
-  <% end %>
 
-  <%= render ReleaseMonitoringComponent.new(
-    deployment_run: release_platform_run.store_submitted_releases.first,
-    metrics: [:stability, :adoption_rate, :adoption_chart, :errors],
-    show_version_info: false,
-    size: monitoring_size,
-    num_events: 1) %>
+      <div class="flex flex-col justify-between gap-1 h-full">
+        <div class="grid grid-cols-12">
+          <div class="col-span-5 flex flex-col gap-2">
+            <div class="flex items-baseline gap-2">
+              <%= render V2::IconComponent.new("integrations/logo_google_play_store.png", size: :xl) %>
+              <div class="text-3xl font-bold">5%</div>
+              <div class="text-sm text-secondary-50">of users</div>
+            </div>
+
+            <div class="flex gap-1 flex-wrap">
+              <%= render V2::StatusIndicatorPillComponent.new(text: "Completed", status: :success) %>
+              <div class="text-sm text-secondary-50">at 3rd stage</div>
+            </div>
+
+            <div class="flex flex-wrap gap-y-2 text-secondary text-sm">
+              <p>Start the rollout to initiate your staged rollout sequence.</p>
+            </div>
+          </div>
+
+          <div class="col-span-7 justify-self-end self-end flex flex-col gap-2">
+            <% [[4, :default], [8, :default], [15, :default], [16, :inert], [23, :inert], [42, :inert], [90, :inert], [100, :inert]].take(rand(1..10)).each_with_index do |(percent, st), idx| %>
+              <div class="flex flex-row justify-between gap-1 items-center flex-initial flex-wrap">
+                <%= render V2::ProgressBarComponent.new(percent: percent, label: true, status: st) %>
+                <% if st == :default %>
+                  <%= render V2::IconComponent.new("v2/check.svg", size: :sm, classes: "text-green-600") %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <%= render V2::SectionComponent.new(title: "More actions", style: :titled, size: :micro) do %>
+          <div class="flex justify-between items-center">
+            <div class="flex flex-row gap-2">
+              <%= render V2::ButtonComponent.new(label: "Halt rollout", scheme: :danger, type: :action, size: :xxs) %>
+              <%= render V2::ButtonComponent.new(label: "Release to all", scheme: :light, type: :action, size: :xxs) %>
+            </div>
+            <div class="flex flex-row gap-2">
+              <%= render V2::ButtonComponent.new(label: "Store dashboard ↗",
+                                                 scheme: :link,
+                                                 type: :link_external,
+                                                 options: "https://play.google.com/store/apps/details?id=com.example.app",
+                                                 html_options: { class: "text-sm" },
+                                                 authz: false,
+                                                 size: :none) do |b|
+                b.with_icon("integrations/logo_google_play_store.png", size: :md)
+              end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%= render ReleaseMonitoringComponent.new(
+      deployment_run: release_platform_run.store_submitted_releases.first,
+      metrics: [:stability, :adoption_rate, :adoption_chart, :errors],
+      show_version_info: false,
+      size: monitoring_size,
+      num_events: 1) %>
+  </div>
 </div>
