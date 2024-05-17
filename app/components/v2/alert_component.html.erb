@@ -3,9 +3,12 @@
     <div data-alert-target="alert"
          class="flex <%= size %> items-center p-2.5 mb-4 text-sm rounded-lg <%= style %> justify-between"
          role="alert">
-      <div class="flex justify-start gap-x-3 items-center">
-        <%= render V2::IconComponent.new("v2/info.svg", size: :md, classes: "flex-shrink-0 w-4 h-4") %>
-        <div class="mr-6"><%= title %></div>
+      <div class="flex justify-start gap-x-2 items-center">
+        <%= render V2::IconComponent.new("v2/info.svg", size: :md) %>
+        <div class="mr-6 flex items-center">
+          <span class="font-semibold"><%= type.to_s.humanize %>:&nbsp;</span>
+          <%= title %>
+        </div>
       </div>
 
       <% if dismissible %>

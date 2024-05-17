@@ -25,11 +25,6 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     @release.app.cross_platform?
   end
 
-  def grid_size
-    return "grid-cols-2" if platform_runs.size > 1
-    "grid-cols-1"
-  end
-
   def hotfix_badge
     if @release.hotfix?
       hotfixed_from = @release.hotfixed_from

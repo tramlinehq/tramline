@@ -1,11 +1,5 @@
 class MetricCardComponent < V2::BaseComponent
-  TEXT_SIZE = {
-    xs: "text-base",
-    sm: "text-base",
-    base: "text-xl"
-  }
-
-  def initialize(name:, values:, provider: nil, external_url: nil, size: :base)
+  def initialize(name:, values:, provider: nil, external_url: nil, size: nil)
     @name = name
     @values = values
     @provider = provider
@@ -54,9 +48,5 @@ class MetricCardComponent < V2::BaseComponent
 
   def grid_size
     display_values.size
-  end
-
-  def text_size
-    TEXT_SIZE[@size]
   end
 end

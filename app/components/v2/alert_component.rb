@@ -1,16 +1,18 @@
 class V2::AlertComponent < V2::BaseComponent
   COLORS = {
-    notice: "text-blue-800 bg-blue-50 dark:bg-main-800 dark:text-blue-400",
+    notice: "text-blue-900 bg-blue-50 dark:bg-main-800 dark:text-blue-400",
     error: "text-red-800 bg-red-50 dark:bg-main-800 dark:text-red-400",
     alert: "text-red-800 bg-red-50 dark:bg-main-800 dark:text-red-400",
-    success: "text-green-800 bg-green-50 dark:bg-main-800 dark:text-green-400"
+    success: "text-green-800 bg-green-50 dark:bg-main-800 dark:text-green-400",
+    info: "text-main-800 bg-main-50 dark:bg-main-800 dark:text-main-400"
   }
 
   STYLES = {
-    notice: "border-t-4 border-blue-300 dark:border-blue-800 " + COLORS[:notice],
-    error: "border-t-4 border-red-300 dark:border-red-800 " + COLORS[:error],
-    alert: "border-t-4 border-red-300 dark:border-red-800 " + COLORS[:alert],
-    success: "border-t-4 border-green-300 dark:border-green-800 " + COLORS[:success]
+    notice: "border border-blue-300 dark:border-blue-800 " + COLORS[:notice],
+    error: "border border-red-300 dark:border-red-800 " + COLORS[:error],
+    alert: "border border-red-300 dark:border-red-800 " + COLORS[:alert],
+    success: "border border-green-300 dark:border-green-800 " + COLORS[:success],
+    info: "border border-main-300 dark:border-main-800 " + COLORS[:info]
   }
 
   SIZES = {
@@ -30,7 +32,7 @@ class V2::AlertComponent < V2::BaseComponent
     raise ArgumentError, "Invalid type" unless COLORS.key?(type.to_sym)
     raise ArgumentError, "Invalid size" unless SIZES.key?(size.to_sym)
     raise ArgumentError, "Invalid kind" unless KINDS.include?(kind.to_sym)
-    raise ArgumentError, "Info is supplied only with more_info type" if kind == :alert && info.present?
+    raise ArgumentError, "Info is supplied only with banner type" if kind == :alert && info.present?
     raise ArgumentError, "Only banners can be fullscreen" if full_screen && kind != :banner
 
     @type = type.to_sym
@@ -42,7 +44,7 @@ class V2::AlertComponent < V2::BaseComponent
     @full_screen = full_screen
   end
 
-  attr_reader :title, :dismissible, :info, :full_screen
+  attr_reader :title, :dismissible, :info, :full_screen, :type
 
   def size
     SIZES[@size]

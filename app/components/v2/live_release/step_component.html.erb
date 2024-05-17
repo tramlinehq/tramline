@@ -1,7 +1,7 @@
 <% component = V2::EnhancedTurboFrameComponent.new(frame, classes: "with-turbo-frame-loader h-full") %>
 <% component.with_loading_indicator %>
 <%= render component do %>
-  <div class="w-full h-full box-padding border-default-t border-default-r border-default-b rounded-br-lg rounded-tr-lg shadow-default">
+  <div class="w-full h-full box-padding border-default-t border-default-r border-default-b rounded-br-lg rounded-tr-lg">
     <% if control_content %>
       <%= content %>
     <% else %>
@@ -9,7 +9,7 @@
       <% if subtitle.present? %>
         <div class="text-sm text-secondary"><%= subtitle %></div>
       <% end %>
-      <article class="top-separator-space-default"><%= content %></article>
+      <div class="top-separator-space-default"><%= content %></div>
     <% end %>
   </div>
 <% end %>

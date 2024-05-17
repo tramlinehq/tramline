@@ -185,9 +185,6 @@ export default class extends Controller {
         },
       },
       series: series,
-      legend: {
-        show: false
-      },
       stroke: {
         width: 3,
         curve: 'smooth'

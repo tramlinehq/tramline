@@ -1,13 +1,13 @@
 <% if label %>
   <%= render V2::TooltipComponent.new(perc, placement: "top") do |tooltip| %>
     <% tooltip.with_body do %>
-      <div class="w-full bg-main-200 rounded-sm h-2.5 dark:bg-main-700">
-        <div title="<%= perc %>" class="bg-blue-600 h-2.5 rounded-sm dark:bg-blue-500" style="<%= fill %>"></div>
+      <div class="w-56 max-w-full bg-main-200 rounded-sm h-2.5 dark:bg-main-700">
+        <div title="<%= perc %>" class="h-2.5 rounded-sm <%= color %>" style="<%= fill %>"></div>
       </div>
     <% end %>
   <% end %>
 <% else %>
   <div class="w-full bg-main-200 rounded-sm h-2.5 dark:bg-main-700">
-    <div title="<%= perc %>" class="bg-blue-600 h-2.5 rounded-sm dark:bg-blue-500" style="<%= fill %>"></div>
+    <div title="<%= perc %>" class="h-2.5 rounded-sm <%= color %>" style="<%= fill %>"></div>
   </div>
 <% end %>

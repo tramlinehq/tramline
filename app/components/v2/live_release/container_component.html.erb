@@ -9,7 +9,7 @@
 <% end %>
 
 <div class="grid grid-cols-10 bg-backgroundLight-50">
-  <div class="col-span-2 flex flex-col pl-6 py-3.5 pb-16 border-t border-default-b border-default-l rounded-tl-lg rounded-bl-lg shadow-default">
+  <div class="col-span-2 flex flex-col pl-6 py-3.5 pb-16 border-t border-default-b border-default-l rounded-tl-lg rounded-bl-lg">
     <div class="flex flex-col space-y-2 pr-4">
       <div class="flex flex-row gap-x-2 justify-end items-baseline">
         <span class="text-sm text-secondary-50"><%= @release.app.display_attr(:platform) %></span>
@@ -75,11 +75,11 @@
     </div>
   </div>
 
-  <div class="col-span-8 bg-white">
+  <article class="col-span-8 bg-white">
     <% tabs.each do |tab| %>
       <%= tab %>
     <% end %>
-  </div>
+  </article>
 </div>
 
 

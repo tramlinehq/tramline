@@ -37,7 +37,7 @@ class V2::SectionComponent < V2::BaseComponent
     when :compact
       "mt-4"
     when :micro
-      "mt-2"
+      "mt-3"
     else
       raise ArgumentError, "Invalid size: #{@size}"
     end
@@ -50,7 +50,7 @@ class V2::SectionComponent < V2::BaseComponent
     when :compact
       "my-6"
     when :micro
-      "mt-1"
+      "mt-3"
     else
       raise ArgumentError, "Invalid size: #{@size}"
     end
@@ -60,9 +60,7 @@ class V2::SectionComponent < V2::BaseComponent
     case @size
     when :default
       "gap-x-5"
-    when :compact
-      "gap-x-3"
-    when :micro
+    when :compact, :micro
       "gap-x-1.5"
     else
       raise ArgumentError, "Invalid size: #{@size}"

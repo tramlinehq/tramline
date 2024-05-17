@@ -23,7 +23,7 @@
   <%= render V2::SimpleTabComponent.new(groups: languages) do |component| %>
     <% localizations.each do |localization| %>
       <% component.with_tab do %>
-        <div class="flex flex-col gap-3 text-xs">
+        <div class="flex flex-col item-gap-default text-xs">
           <% localization.except("language").each do |key, val| %>
             <div>
               <span class="<%= EnhancedFormHelper::AuthzForm::LABEL_CLASSES %>"><%= key.humanize %></span>

@@ -55,7 +55,7 @@
   }
 
   .tracking-wideish {
-    letter-spacing: 0.02em;
+    letter-spacing: 0.035em;
   }
 
   .tracking-neat {
@@ -72,6 +72,14 @@
 
   .top-separator-space-default {
     @apply mt-7;
+  }
+
+  .section-gap-default {
+    @apply gap-7;
+  }
+
+  .item-gap-default {
+    @apply gap-3;
   }
 
   .box-padding {

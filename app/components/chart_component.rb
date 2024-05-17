@@ -41,7 +41,7 @@ class ChartComponent < V2::BaseComponent
   end
 
   def height
-    chart[:height] || "100%"
+    chart[:height] || "110%"
   end
 
   # input:

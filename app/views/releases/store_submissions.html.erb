@@ -4,6 +4,20 @@
                                                    tab_config: @tab_configuration) do |container| %>
   <% container.with_back_button %>
   <% container.with_tab(title: "App Submission") do %>
-    <%= render V2::PlatformLevelSubmissionComponent.new(@release) %>
+    <%= render V2::PlatformViewComponent.new(@release) do |component| %>
+      <% component.platform_runs.each do |run| %>
+        <div class="grid grid-cols-1">
+          <%= render V2::LiveRelease::SubmissionComponent.new(run.active_store_submission) %>
+
+          <% if run.previous_store_submissions.present? %>
+            <%= render V2::SectionComponent.new(style: :titled, title: "Previous submissions", size: :compact) do %>
+              <% run.previous_store_submissions.each do |sub| %>
+                <%= render V2::LiveRelease::SubmissionComponent.new(sub, inactive: true) %>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
   <% end %>
 <% end %>
