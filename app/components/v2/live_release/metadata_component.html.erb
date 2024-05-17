@@ -61,13 +61,12 @@
       <div class="text-secondary text-xs">
         † The languages in this list are the locales set for your app or the ones that have been recently used.
       </div>
-      <div class="text-secondary text-xs">Now editing — <span class="font-semibold tracking-wide"><%= language %></span></div>
+      <div class="text-secondary text-xs">
+        Now editing — <span class="font-semibold tracking-wide"><%= language %></span>
+      </div>
     </div>
 
-    <div class="grid grid-cols-2 justify-between gap-x-3 gap-y-3">
-      <span class="text-xl text-secondary-50/50 border-b border-main-300/30 py-1 justify-self-start pl-0.5 pr-1.5">Android</span>
-      <span class="text-xl text-secondary-50/50 border-b border-main-300/30 py-1 justify-self-start pl-0.5 pr-1.5">iOS</span>
-
+    <%= render V2::PlatformViewComponent.new(@release) do |component| %>
       <% if android_metadata %>
         <% f.F.fields_for :android, android_metadata do |aF| %>
           <div class="flex flex-col gap-y-4">
@@ -75,7 +74,7 @@
             <div><%= aF.labeled_textarea :release_notes, "Release Notes" %></div>
           </div>
         <% end %>
-      <% else %>
+      <% elsif component.cross_platform? %>
         <div class="flex flex-col gap-y-4">
           <%= render no_locale_set %>
         </div>
@@ -91,10 +90,12 @@
             <div><%= iosF.labeled_textarea :description, "Description" %></div>
           </div>
         <% end %>
-      <% else %>
-        <%= render no_locale_set %>
+      <% elsif component.cross_platform? %>
+        <div class="flex flex-col gap-y-4">
+          <%= render no_locale_set %>
+        </div>
       <% end %>
-    </div>
+    <% end %>
   </div>
 <% end %>
 

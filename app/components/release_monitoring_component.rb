@@ -1,12 +1,11 @@
 class ReleaseMonitoringComponent < V2::BaseComponent
   METRICS = [:staged_rollout, :adoption_rate, :adoption_chart, :errors, :stability]
-
   SIZES = {
-    xs: {cols: 2},
-    sm: {cols: 3}
+    compact: {cols: 2},
+    default: {cols: 3}
   }
 
-  def initialize(deployment_run:, metrics: METRICS, show_version_info: true, size: :sm, num_events: 3)
+  def initialize(deployment_run:, metrics: METRICS, show_version_info: true, size: :default, num_events: 3)
     raise ArgumentError, "metrics must be one of #{METRICS}" unless (metrics - METRICS).empty?
 
     @deployment_run = deployment_run

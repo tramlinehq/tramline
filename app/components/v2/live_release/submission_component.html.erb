@@ -5,7 +5,7 @@
 <div class="flex flex-col">
   <% if new_submission_allowed? %>
     <div class="mt-4">
-      <%= render V2::AlertComponent.new(type: :notice, title: "A new build #{newer_builds.last.display_name} is available for submission", dismissible: false) %>
+      <%= render V2::AlertComponent.new(type: :info, title: "A new build #{newer_builds.last.display_name} is available for submission", dismissible: false) %>
     </div>
     <%= render V2::ModalComponent.new(title: "Available builds", subtitle: "Choose a build to send for submission to the store") do |modal| %>
       <% modal.with_button(label: "Start a new submission", scheme: :light, type: :action, size: :xxs) %>
@@ -25,7 +25,7 @@
 
   <% if build.present? %>
     <% if prompt_change? %>
-      <%= render V2::AlertComponent.new(type: :notice, title: "A new build #{newer_builds.last.display_name} is available. Change build to update the submission.", dismissible: true) %>
+      <%= render V2::AlertComponent.new(type: :info, title: "A new build #{newer_builds.last.display_name} is available. Change build to update the submission.", dismissible: true) %>
     <% end %>
 
     <%= render V2::CardComponent.new(title: "Store Submission", size: :full, separator: false) do |card| %>
@@ -72,7 +72,7 @@
         </div>
       <% end %>
 
-      <div class="flex flex-col gap-3 text-secondary text-xs">
+      <div class="flex flex-col item-gap-default text-secondary text-xs">
         <div class="justify-start"><%= render V2::StatusIndicatorPillComponent.new(**status) %></div>
 
         <%= render V2::LiveRelease::BuildComponent.new(submission.build, previous_build: previous_submission&.build) %>
@@ -84,6 +84,7 @@
                                                scheme: :link,
                                                type: :link_external,
                                                options: external_link,
+                                               html_options: { class: "text-sm"},
                                                authz: false,
                                                size: :none) do |b|
               b.with_icon(store_icon, size: :md)
@@ -93,8 +94,10 @@
       </div>
     <% end %>
   <% else %>
-    <%= render V2::AlertComponent.new(kind: :banner, title: "No build available", dismissible: false) do %>
-      No build is available for this platform. Please build a release candidate to continue.
-    <% end %>
+    <%= render V2::EmptyStateComponent.new(
+      title: "No build available",
+      text: "Please build a release candidate to continue",
+      banner_image: "v2/drill.svg",
+      type: :subdued) %>
   <% end %>
 </div>

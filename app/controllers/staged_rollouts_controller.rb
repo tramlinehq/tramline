@@ -11,6 +11,7 @@ class StagedRolloutsController < SignedInApplicationController
   before_action :set_live_release_tab_configuration, only: %i[edit_all]
 
   def edit_all
+    @app = @release.app
   end
 
   def increase

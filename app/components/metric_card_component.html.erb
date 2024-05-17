@@ -6,7 +6,7 @@
       <div class="flex flex-col py-1 first:px-0 px-3 gap-y-1">
         <div class="text-xs text-secondary-50 uppercase"><%= key %></div>
         <% if health_defined?(val) %>
-          <div class="<%= text_size %> <%= metric_color(val[:is_healthy]) %>">
+          <div class="text-base <%= metric_color(val[:is_healthy]) %>">
             <%= render V2::TooltipComponent.new(nil, placement: "top", type: :detailed) do |tooltip| %>
               <% tooltip.with_detailed_text do %>
                 <div class="flex flex-col gap-2 items-start">
@@ -21,7 +21,7 @@
             <% end %>
           </div>
         <% else %>
-          <div class="<%= text_size %> text-main dark:text-white">
+          <div class="text-base text-main dark:text-white">
             <%= val[:value] %>
           </div>
         <% end %>

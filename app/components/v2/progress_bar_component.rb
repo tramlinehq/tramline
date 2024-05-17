@@ -1,7 +1,8 @@
-class V2::ProgressBarComponent < ViewComponent::Base
-  def initialize(percent:, label: false)
+class V2::ProgressBarComponent < V2::BaseComponent
+  def initialize(percent:, label: false, status: :default)
     @percent = percent
     @label = label
+    @status = status
   end
 
   attr_reader :label
@@ -12,5 +13,9 @@ class V2::ProgressBarComponent < ViewComponent::Base
 
   def perc
     "#{@percent}%"
+  end
+
+  def color
+    PROGRESS_BAR_COLOR_PALETTE[@status]
   end
 end

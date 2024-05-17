@@ -1,18 +1,21 @@
 class V2::PlatformLevelOverviewComponent < V2::BaseReleaseComponent
-  def initialize(release, size: :sm)
+  SIZES = %i[default compact].freeze
+
+  def initialize(release, size: :default, occupy: true)
+    raise ArgumentError, "Invalid size: #{size}" unless SIZES.include?(size)
     @release = release
     @size = size
+    @occupy = occupy
     super(@release)
   end
 
-  attr_reader :size
+  attr_reader :release, :occupy, :size
 
   def show_ci_info
-    @size != :xs
+    @size != :compact
   end
 
-  def grid_size
-    return "grid-cols-2" if platform_runs.size > 1
-    "grid-cols-1 w-2/3"
+  def monitoring_size
+    cross_platform? ? size : :default
   end
 end

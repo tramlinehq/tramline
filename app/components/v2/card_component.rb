@@ -11,7 +11,7 @@ class V2::CardComponent < ViewComponent::Base
     full: "max-h-full"
   }
 
-  def initialize(title:, subtitle: nil, fold: false, separator: true, classes: nil, size: :base, emptiness: false)
+  def initialize(title:, subtitle: nil, fold: false, separator: true, classes: nil, size: :base, emptiness: false, fixed_height: nil)
     @title = title
     @subtitle = subtitle
     @fold = fold
@@ -19,13 +19,14 @@ class V2::CardComponent < ViewComponent::Base
     @classes = classes
     @size = SIZE[size]
     @emptiness = emptiness
+    @fixed_height = "h-#{fixed_height}" if fixed_height
   end
 
   attr_reader :title, :subtitle, :emptiness
 
   def card_params
     size_class = fold? ? "" : @size
-    params = {class: "flex flex-col card-default #{y_gap} #{@classes} #{size_class}"}
+    params = {class: "flex flex-col card-default #{y_gap} #{@classes} #{size_class} #{@fixed_height}"}
     params[:data] = fold_params if fold?
     params
   end
@@ -37,7 +38,8 @@ class V2::CardComponent < ViewComponent::Base
   def fold_target_params
     params = {}
     params[:data] = {fold_target: "foldable"} if fold?
-    params[:class] = "overflow-y-scroll" if fold? || !full?
+    params[:class] = "overflow-y-scroll " if fold? || !full?
+    params[:class] += "h-full" if fixed_height?
     params
   end
 
@@ -54,7 +56,7 @@ class V2::CardComponent < ViewComponent::Base
 
   def y_gap
     return "gap-y-3.5" if separator?
-    "gap-y-4"
+    "gap-y-5"
   end
 
   def fold? = @fold
@@ -62,4 +64,6 @@ class V2::CardComponent < ViewComponent::Base
   def separator? = @separator
 
   def full? = @size == SIZE[:full]
+
+  def fixed_height? = @fixed_height.present?
 end

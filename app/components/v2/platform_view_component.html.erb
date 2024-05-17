@@ -1,0 +1,11 @@
+<div class="grid <%= grid_size %> justify-between item-gap-default">
+  <% if cross_platform? %>
+    <% platform_runs.each do |run| %>
+    <span class="text-xl text-secondary-50/50 border-b border-main-300/30 py-1 justify-self-start pl-0.5 pr-1.5">
+      <%= run.display_attr(:platform) %>
+    </span>
+    <% end %>
+  <% end %>
+
+  <%= content %>
+</div>

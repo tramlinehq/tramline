@@ -4,5 +4,10 @@
                                                    tab_config: @tab_configuration) do |container| %>
   <% container.with_back_button %>
   <% container.with_tab(title: "Rollout to users") do %>
+    <%= render V2::PlatformViewComponent.new(@release) do |component| %>
+      <% component.platform_runs.each do |run| %>
+        <%= render V2::LiveRelease::RolloutComponent.new(run) %>
+      <% end %>
+    <% end %>
   <% end %>
 <% end %>

@@ -1,7 +1,7 @@
 <%= content_tag(:div, card_params) do %>
   <div class="flex flex-col">
     <div class="flex flex-row items-center justify-between <%= separator_style %>">
-      <div class="flex justify-start">
+      <div class="flex items-center">
         <% if fold? && !emptiness %>
           <%= render V2::ButtonComponent.new(
             scheme: :naked_icon,

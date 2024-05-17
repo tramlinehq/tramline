@@ -3,7 +3,7 @@
     <div class="text-slate-500 text-md mb-2"><%= build_identifier %></div>
   <% end %>
 
-  <div class="grid <%= grid_cols %> gap-3 text-xs">
+  <div class="grid <%= grid_cols %> item-gap-default text-xs">
     <% if :staged_rollout.in? metrics %>
       <% if staged_rollout.nil? %>
         <%= render StatCardComponent.new("Staged Rollout",

@@ -1,10 +1,10 @@
-<div class="inline-flex items-center"
+<div class="w-fit"
      data-controller="popup"
      data-popup-target-selector-value="[data-tooltip-popup]"
      data-popup-away-value="true"
      data-popup-offset-value="<%= offset %>"
      data-popup-placement-value="<%= placement %>">
-  <div class="w-full <%= "cursor-help" if cursor %> inline-flex items-center" data-action="mouseover->popup#show mouseleave->popup#hide" data-popup-target="element">
+  <div class="<%= "cursor-help" if cursor %>" data-action="mouseover->popup#show mouseleave->popup#hide" data-popup-target="element">
     <%= body %>
     <% if simple? %>
       <div class="<%= TOOLTIP_CLASSES %>" role="tooltip" hidden data-tooltip-popup="true">

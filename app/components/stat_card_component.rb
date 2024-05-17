@@ -2,17 +2,17 @@ class StatCardComponent < V2::BaseComponent
   renders_one :icon, V2::IconComponent
   TYPES = [:empty, :stat]
   EMPTY_STAT_TEXT_SIZE = {
-    sm: "text-base",
-    base: "text-lg"
+    compact: "text-base",
+    default: "text-lg"
   }
 
-  def initialize(name, size: :base, type: :stat, external_url: nil, external_url_title: nil, empty_stat_help_text: nil)
+  def initialize(name, size: :default, type: :stat, external_url: nil, external_url_title: nil, empty_stat_help_text: nil)
     raise ArgumentError, "type must be one of #{TYPES}" unless TYPES.include?(type)
     raise ArgumentError, "you must provide a url text if external_url is supplied" if type == :stat && external_url.present? && external_url_title.blank?
     raise ArugmentError, "you must provide a help text if type is empty" if type == :empty && empty_stat_help_text.blank?
 
     @name = name
-    @size = size
+    @size = size || :default
     @type = type
     @external_url = external_url
     @external_url_title = external_url_title

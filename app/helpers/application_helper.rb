@@ -19,6 +19,11 @@ module ApplicationHelper
     neutral: %w[bg-slate-500]
   }
 
+  PROGRESS_BAR_COLOR_PALETTE = {
+    default: "bg-blue-600 dark:bg-blue-500",
+    inert: "bg-main-400 dark:bg-main-200"
+  }
+
   def resolve_color(color)
     if color.to_sym.in?(%i[excellent acceptable mediocre])
       "var(--color-reldex-#{color})"
