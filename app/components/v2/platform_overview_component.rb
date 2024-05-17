@@ -1,4 +1,4 @@
-class V2::PlatformLevelOverviewComponent < V2::BaseReleaseComponent
+class V2::PlatformOverviewComponent < V2::BaseReleaseComponent
   SIZES = %i[default compact].freeze
 
   def initialize(release, size: :default, occupy: true)
