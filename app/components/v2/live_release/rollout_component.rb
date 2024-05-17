@@ -16,23 +16,23 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
       description: "The staged rollout for this release has been increased to 50%",
       type: :success
     },
-     {
-       timestamp: time_format(2.day.ago, with_year: false),
-       title: "Rollout increase",
-       description: "The staged rollout for this release has been increased to 20%",
-       type: :success
-     },
-     {
-       timestamp: time_format(3.day.ago, with_year: false),
-       title: "Rollout increase",
-       description: "The staged rollout for this release has been increased to 10%",
-       type: :success
-     },
-     {
-       timestamp: time_format(4.day.ago, with_year: false),
-       title: "Rollout increase",
-       description: "The staged rollout for this release has been increased to 1%",
-       type: :success
-     }]
+      {
+        timestamp: time_format(2.days.ago, with_year: false),
+        title: "Rollout increase",
+        description: "The staged rollout for this release has been increased to 20%",
+        type: :success
+      },
+      {
+        timestamp: time_format(3.days.ago, with_year: false),
+        title: "Rollout increase",
+        description: "The staged rollout for this release has been increased to 10%",
+        type: :success
+      },
+      {
+        timestamp: time_format(4.days.ago, with_year: false),
+        title: "Rollout increase",
+        description: "The staged rollout for this release has been increased to 1%",
+        type: :success
+      }]
   end
 end

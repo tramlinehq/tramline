@@ -6,6 +6,7 @@
           <%= render V2::ButtonComponent.new(
             scheme: :naked_icon,
             type: :action,
+            authz: false,
             html_options: fold_button_params,
             size: :none) do |b|
             b.with_icon("v2/unfold_vertical.svg", size: :sm)
