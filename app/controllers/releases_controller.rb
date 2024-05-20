@@ -4,8 +4,8 @@ class ReleasesController < SignedInApplicationController
   include Tabbable
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
-  before_action :set_release, only: %i[show destroy update timeline overview change_queue store_submissions internal_builds]
-  before_action :set_live_release_tab_configuration, only: %i[overview change_queue store_submissions internal_builds]
+  before_action :set_release, only: %i[show destroy update timeline overview change_queue store_submissions internal_builds regression_testing]
+  before_action :set_live_release_tab_configuration, only: %i[overview change_queue store_submissions internal_builds regression_testing]
 
   def index
     @train = @app.trains.friendly.find(params[:train_id])
@@ -66,6 +66,11 @@ class ReleasesController < SignedInApplicationController
   end
 
   def internal_builds
+    @train = @release.train
+    @app = @train.app
+  end
+
+  def regression_testing
     @train = @release.train
     @app = @train.app
   end
