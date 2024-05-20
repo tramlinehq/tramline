@@ -1,0 +1,47 @@
+<div class="flex flex-col section-gap-default">
+
+  <%= render V2::CardComponent.new(title: "Currently building", size: :full, separator: false) do |card| %>
+
+    <div class="flex justify-between">
+    <%= render V2::BadgeComponent.new do |badge| %>
+      <% badge.with_icon("integrations/logo_#{latest_step_run.ci_cd_provider}.png") %>
+      <% badge.with_link(latest_step_run.commit.short_sha, latest_step_run.ci_link) %>
+    <% end %>
+
+    <%= render V2::StatusIndicatorPillComponent.new(text: latest_step_run.status.humanize, status: :inert) %>
+    </div>
+  <% end %>
+
+  <%= render V2::CardComponent.new(title: "Last build", size: :full, separator: false) do |card| %>
+    <div class="flex justify-between">
+    <%= render V2::BadgeComponent.new do |badge| %>
+      <% badge.with_icon("integrations/logo_#{latest_step_run.ci_cd_provider}.png") %>
+      <% badge.with_link(latest_step_run.commit.short_sha, latest_step_run.ci_link) %>
+    <% end %>
+    <%= render V2::StatusIndicatorPillComponent.new(text: latest_step_run.status.humanize, status: :inert) %>
+    </div>
+  <% end %>
+
+  <%= render V2::SectionComponent.new(title: "Older builds", style: :titled, size: :compact) do %>
+    <%= render V2::TableComponent.new(columns: ["Build", "Last activity", "Status"], size: :default) do |table| %>
+      <% previous_step_runs.each do |step_run| %>
+        <% table.with_row do |row| %>
+          <% row.with_cell do %>
+            <%= render V2::BadgeComponent.new do |badge| %>
+              <% badge.with_icon("integrations/logo_#{step_run.ci_cd_provider}.png") %>
+              <% badge.with_link(step_run.commit.short_sha, step_run.ci_link) %>
+            <% end %>
+          <% end %>
+
+          <% row.with_cell do %>
+            <%= step_run.updated_at.strftime("%b %d, %Y %H:%M") %>
+          <% end %>
+
+          <% row.with_cell do %>
+            <%= render V2::StatusIndicatorPillComponent.new(text: step_run.status.humanize, status: :inert) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>
