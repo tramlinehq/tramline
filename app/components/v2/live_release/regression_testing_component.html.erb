@@ -1,0 +1,66 @@
+<div class="flex flex-col section-gap-default">
+  <div class="flex flex-col item-gap-default">
+    <%= render V2::AlertComponent.new(type: :info, title: "A new build #239 is available. Switch to a newer build under test.", dismissible: false) %>
+
+    <div class="flex flex-col item-gap-default justify-start items-start">
+      <div class="font-medium text-lg tracking-wide uppercase box-padding-sm border-default-md text-amber-600 bg-amber-100">
+        Testing in progress
+      </div>
+    </div>
+
+    <%= render V2::CardComponent.new(title: "Status", size: :full, separator: false) do |card| %>
+      <% card.with_actions do %>
+        <%= render V2::ModalComponent.new(title: "Available builds", subtitle: "Choose a build to send for submission to the store") do |modal| %>
+          <% button = modal.with_button(label: "Switch build under test", scheme: :light, type: :action, size: :xxs) %>
+          <% button.with_icon("v2/pencil.svg") %>
+          <% modal.with_body do %>
+            <%= render V2::FormComponent.new(model: [release, release_platform_run],
+                                             scope: :store_submission,
+                                             url: root_path,
+                                             free_form: true) do |form| %>
+              <%= form.F.hidden_field :force, value: true %>
+              <%= form.F.labeled_select :build_id, "Select a build", options_for_select([], 1) %>
+
+              <% form.with_action do %>
+                <%= form.F.authz_submit "Save", "v2/archive.svg" %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <div class="flex flex-col item-gap-default">
+        <%= render V2::LiveRelease::BuildComponent.new(Build.first, show_build_only: true) %>
+
+        <div class="text-secondary text-xs">
+          Pick the current testing status of the selected build.
+        </div>
+
+        <div class="flex justify-center items-center">
+          <%= select_tag :language,
+                         options_for_select(["#238 — Testing in progress", "#238 — Rejected", "#238 — Approved"], "16.81"),
+                         disabled: false,
+                         class: EnhancedFormHelper::AuthzForm::SELECT_CLASSES %>
+        </div>
+
+        <div class="pl-3"><%= render TimelineComponent.new(events:) %></div>
+      </div>
+    <% end %>
+  </div>
+
+  <%= render V2::SectionComponent.new(title: "Past tests", style: :titled, size: :compact) do %>
+    <%= render V2::TableComponent.new(columns: ["Build", "Status"], size: :default) do |table| %>
+      <% [1, 2, 3, 4, 5].take(rand(1..3)).each do |rollout| %>
+        <% table.with_row do |row| %>
+          <% row.with_cell do %>
+            <%= render V2::LiveRelease::BuildComponent.new(Build.first, show_build_only: true) %>
+          <% end %>
+
+          <% row.with_cell do %>
+            <%= render V2::StatusIndicatorPillComponent.new(text: "Passed", status: :success) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>
