@@ -245,6 +245,10 @@ class StepRun < ApplicationRecord
     startable_deployment?(deployment) && (last_deployment_run&.released? || release_platform_run.patch_fix? || release.hotfix?)
   end
 
+  def deployment_start_blocked?(deployment)
+    release.upcoming? && deployment.production_channel?
+  end
+
   def last_deployment_run
     deployment_runs.last
   end

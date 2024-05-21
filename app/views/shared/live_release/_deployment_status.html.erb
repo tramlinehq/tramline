@@ -1,10 +1,24 @@
 <% if step_run.present? %>
-  <% if step_run.manually_startable_deployment?(deployment) %>
-    <%= authz_button_to :blue,
-                        "Start this deployment",
-                        start_release_step_run_deployment_path(platform_run, step_run, deployment),
-                        { class: 'mt-2 btn-xs' } %>
+  <% if step_run.deployment_start_blocked?(deployment) %>
+    <div class="flex flex-col mb-1">
+      <%= authz_button_to :disabled,
+                          "Start this deployment",
+                          start_release_step_run_deployment_path(platform_run, step_run, deployment),
+                          { class: 'mt-2 btn-xs' } %>
+      <div class="text-sm mt-2 font-normal text-gray-500 bg-gray-50 p-2 rounded-sm border border-gray-200">
+        You cannot start this release step until the <%= blocked_step_release_link(step_run.release) %> is
+        finished.
+      </div>
+    </div>
+  <% else %>
+    <% if step_run.manually_startable_deployment?(deployment) %>
+      <%= authz_button_to :blue,
+                          "Start this deployment",
+                          start_release_step_run_deployment_path(platform_run, step_run, deployment),
+                          { class: 'mt-2 btn-xs' } %>
+    <% end %>
   <% end %>
+
 
   <% deployment_run = step_run.last_run_for(deployment) %>
 
