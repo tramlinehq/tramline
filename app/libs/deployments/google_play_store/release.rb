@@ -43,6 +43,7 @@ module Deployments
         :staged_rollout_config,
         :production_channel?,
         :deployment_notes,
+        :one_percent_beta_release?,
         to: :run
 
       def kickoff!
@@ -133,11 +134,12 @@ module Deployments
       def fully_release!(skip_release: false)
         return run.complete! if skip_release
 
+        rollout_value = one_percent_beta_release? ? BigDecimal("1") : Deployment::FULL_ROLLOUT_VALUE
         result = provider.rollout_release(
           deployment_channel,
           build_number,
           release_version,
-          Deployment::FULL_ROLLOUT_VALUE,
+          rollout_value,
           release_notes
         )
 

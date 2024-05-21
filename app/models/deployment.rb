@@ -151,6 +151,10 @@ class Deployment < ApplicationRecord
     new_step.deployments << new_deployment
   end
 
+  def one_percent_beta_release?
+    train.one_percent_beta_release? && google_play_store_integration? && deployment_channel == "beta"
+  end
+
   private
 
   def set_default_prod_notes_config
