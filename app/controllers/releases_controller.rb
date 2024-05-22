@@ -128,7 +128,7 @@ class ReleasesController < SignedInApplicationController
   # TODO: This action can be deprecated once there are no more releases with pending manual finalize
   # Since finalize as of https://github.com/tramlinehq/tramline/pull/440 is automatic
   def post_release
-    @release = Release.find(params[:id])
+    @release = Release.friendly.find(params[:id])
 
     if @release.ready_to_be_finalized?
       @release.force_finalize = post_release_params[:force_finalize]
@@ -140,7 +140,7 @@ class ReleasesController < SignedInApplicationController
   end
 
   def finish_release
-    @release = Release.find(params[:id])
+    @release = Release.friendly.find(params[:id])
 
     if @release.partially_finished?
       @release.finish_after_partial_finish!
@@ -171,7 +171,7 @@ class ReleasesController < SignedInApplicationController
       Release
         .joins(train: :app)
         .where(apps: {organization: current_organization})
-        .find(params[:id])
+        .friendly.find(params[:id])
   end
 
   def set_pull_requests

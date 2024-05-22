@@ -14,6 +14,10 @@ describe Release do
     expect(create(:release)).to be_valid
   end
 
+  it "generates unique slugs" do
+    expect(create_list(:release, 5).map(&:slug).uniq.size).to eq(5)
+  end
+
   describe "#set_version" do
     {
       "1.2.3" => {major: "2.0.0", minor: "1.3.0"},

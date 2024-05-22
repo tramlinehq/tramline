@@ -97,10 +97,9 @@ Rails.application.routes.draw do
           end
         end
 
+        get :edit, to: "staged_rollouts#edit_all", path: :rollout, as: :staged_rollout_edit
         get :edit, to: "release_metadata#edit_all", path: :metadata, as: :metadata_edit
         patch :update, to: "release_metadata#update_all", path: :metadata, as: :metadata_update
-
-        get :edit, to: "staged_rollouts#edit_all", path: :rollout, as: :staged_rollout_edit
 
         resources :release_platforms, shallow: false, only: [] do
           resources :release_metadata, only: %i[edit update]

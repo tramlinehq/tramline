@@ -33,7 +33,7 @@
           <%= render V2::ButtonComponent.new(
             scheme: :supporting,
             label: "Go to release",
-            options: release_path(release.id),
+            options: release_path(release),
             size: :sm,
             html_options: { class: "-mr-2" },
             authz: false,

@@ -24,7 +24,7 @@
 
       <div class="flex flex-row justify-end">
         <%=
-          badge = V2::BadgeComponent.new("humanoid-slug-42")
+          badge = V2::BadgeComponent.new(human_slug)
           badge.with_icon("v2/robot.svg")
           render badge
         %>
@@ -81,5 +81,3 @@
     <% end %>
   </article>
 </div>
-
-

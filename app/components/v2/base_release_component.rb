@@ -16,6 +16,10 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     ReleasesHelper::SHOW_RELEASE_STATUS.fetch(@release.status.to_sym)
   end
 
+  memoize def human_slug
+    @release.slug
+  end
+
   def platform_runs
     @platform_runs ||=
       @release.release_platform_runs.includes(step_runs: {deployment_runs: [:staged_rollout]})

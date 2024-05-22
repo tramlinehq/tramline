@@ -12,6 +12,7 @@
 #  original_release_version :string
 #  release_type             :string           not null
 #  scheduled_at             :datetime
+#  slug                     :string
 #  status                   :string           not null
 #  stopped_at               :datetime
 #  tag_name                 :string
@@ -22,6 +23,7 @@
 #
 class Release < ApplicationRecord
   has_paper_trail
+  extend FriendlyId
   include AASM
   include Passportable
   include Taggable
@@ -156,6 +158,7 @@ class Release < ApplicationRecord
   after_create_commit -> { RefreshReportsJob.perform_later(hotfixed_from.id) }, if: -> { hotfix? && hotfixed_from.present? }
 
   attr_accessor :has_major_bump, :force_finalize, :hotfix_platform, :custom_version
+  friendly_id :human_slug, use: :slugged
 
   delegate :versioning_strategy, to: :train
   delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
@@ -166,6 +169,11 @@ class Release < ApplicationRecord
   end
 
   def self.for_branch(branch_name) = find_by(branch_name:)
+
+  def human_slug
+    date = scheduled_at.strftime("%Y-%m-%d")
+    %W[#{date}-#{Haikunator.haikunate(0)} #{date}-#{Haikunator.haikunate(1)} #{date}-#{Haikunator.haikunate(10)}]
+  end
 
   def index_score
     return if hotfix?
