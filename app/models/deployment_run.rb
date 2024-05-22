@@ -60,6 +60,7 @@ class DeploymentRun < ApplicationRecord
     :production_channel?,
     :release_platform,
     :internal_channel?,
+    :one_percent_beta_release?,
     to: :deployment
   delegate :train, :app, to: :release
   delegate :release_version, :release_metadatum, :platform, to: :release_platform_run
@@ -460,6 +461,7 @@ class DeploymentRun < ApplicationRecord
   def rollout_percentage
     return unless store?
     return staged_rollout.last_rollout_percentage if staged_rollout?
+    return BigDecimal("1") if one_percent_beta_release?
     initial_rollout_percentage || Deployment::FULL_ROLLOUT_VALUE if deployment.controllable_rollout?
   end
 

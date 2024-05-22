@@ -134,6 +134,10 @@ class Train < ApplicationRecord
     first&.release_platforms&.android&.first&.steps&.release&.any?
   end
 
+  def one_percent_beta_release?
+    Flipper.enabled?(:one_percent_beta_release, self)
+  end
+
   def version_ahead?(release)
     version_current.to_semverish >= release.release_version.to_semverish
   end
@@ -313,8 +317,8 @@ class Train < ApplicationRecord
   def upcoming_release_startable?
     manually_startable? &&
       release_platforms.any?(&:has_production_deployment?) &&
-      release_platforms.all?(&:has_review_steps?) &&
       ongoing_release.present? &&
+      (release_platforms.all?(&:has_review_steps?) || ongoing_release.production_release_happened?) &&
       upcoming_release.blank?
   end
 
