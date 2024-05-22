@@ -317,8 +317,8 @@ class Train < ApplicationRecord
   def upcoming_release_startable?
     manually_startable? &&
       release_platforms.any?(&:has_production_deployment?) &&
-      release_platforms.all?(&:has_review_steps?) &&
       ongoing_release.present? &&
+      (release_platforms.all?(&:has_review_steps?) || ongoing_release.production_release_happened?) &&
       upcoming_release.blank?
   end
 

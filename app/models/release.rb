@@ -218,6 +218,10 @@ class Release < ApplicationRecord
     false
   end
 
+  def production_release_happened?
+    release_platform_runs.all?(&:production_release_happened?)
+  end
+
   def finish_after_partial_finish!
     with_lock do
       return unless partially_finished?
