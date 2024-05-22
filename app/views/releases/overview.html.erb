@@ -3,7 +3,7 @@
                                                    turbo_frame: dom_id(@release, :live_release),
                                                    tab_config: @tab_configuration) do |container| %>
   <% container.with_back_button %>
-  <% container.with_tab(title: "Overview") do %>
+  <% container.with_tab(title: "Overview", icon: @tab_configuration.dig(:kickoff, :overview, :icon)) do %>
     <%= render V2::LiveRelease::OverviewComponent.new(@release) %>
   <% end %>
 <% end %>

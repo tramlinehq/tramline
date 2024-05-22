@@ -51,6 +51,7 @@ module Tabbable
     sections[:metadata][:screenshots][:icon] = "v2/wand.svg"
     sections[:metadata][:screenshots][:position] = 8
     sections[:metadata][:screenshots][:status] = step_statuses[:screenshots]
+    sections[:metadata][:screenshots][:unavailable] = true
 
     sections[:release] = {
       approvals: Release::SECTIONS[:approvals],
@@ -61,6 +62,7 @@ module Tabbable
     sections[:release][:approvals][:icon] = "v2/list_checks.svg"
     sections[:release][:approvals][:position] = 9
     sections[:release][:approvals][:status] = step_statuses[:approvals]
+    sections[:release][:approvals][:unavailable] = true
     sections[:release][:app_submission][:path] = store_submissions_release_path(@release)
     sections[:release][:app_submission][:icon] = "v2/mail.svg"
     sections[:release][:app_submission][:position] = 10

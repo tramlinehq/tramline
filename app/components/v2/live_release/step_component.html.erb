@@ -5,7 +5,10 @@
     <% if control_content %>
       <%= content %>
     <% else %>
-      <h2 class="heading-2"><%= title %></h2>
+      <div class="flex gap-2 items-center">
+        <%= render V2::IconComponent.new(icon, size: :lg) %>
+        <h2 class="heading-2"><%= title %></h2>
+      </div>
       <% if subtitle.present? %>
         <div class="text-sm text-secondary"><%= subtitle %></div>
       <% end %>

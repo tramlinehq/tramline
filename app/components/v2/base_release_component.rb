@@ -11,6 +11,13 @@ class V2::BaseReleaseComponent < V2::BaseComponent
 
   delegate :release_branch, :tag_name, to: :release
 
+  def stop_release_warning
+    message = ""
+    message += "You have finished release to one of the platforms. " if @release.partially_finished?
+    message += "You have unmerged commits in this release branch. " if @release.all_commits.size > 1
+    message + "Are you sure you want to stop the release?"
+  end
+
   memoize def status
     return ReleasesHelper::SHOW_RELEASE_STATUS.fetch(:upcoming) if @release.upcoming?
     ReleasesHelper::SHOW_RELEASE_STATUS.fetch(@release.status.to_sym)

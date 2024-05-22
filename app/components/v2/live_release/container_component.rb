@@ -29,8 +29,7 @@ class V2::LiveRelease::ContainerComponent < V2::BaseReleaseComponent
     case status
     when :success then "bg-green-500"
     when :ongoing then "bg-amber-500"
-    when :blocked then "bg-gray-400"
-    when :none then "bg-main-50"
+    when :none then "bg-backgroundLight-50"
     else
       raise ArgumentError, "Invalid status: #{status}"
     end
@@ -38,5 +37,25 @@ class V2::LiveRelease::ContainerComponent < V2::BaseReleaseComponent
 
   def active_style(tab_path)
     SELECTED_TAB_STYLE if current_page?(tab_path)
+  end
+
+  def coming_soon(config)
+    return unless config[:unavailable]
+
+    render V2::IconComponent.new("v2/construction.svg", size: :md) do |icon|
+      icon.with_tooltip("This feature is coming soon!", placement: "top", cursor: false)
+    end
+  end
+
+  def status_icon(config)
+    if config[:status] == :blocked
+      render V2::IconComponent.new("v2/circle_x.svg", size: :md)
+    else
+      content_tag(:div, nil, class: "w-4 h-3.5 #{status_color(config[:status])} rounded-full border-2 border-main-500 dark:border-gray-900 dark:bg-gray-700")
+    end
+  end
+
+  def sidebar_title_tag(config)
+    config[:unavailable] ? :div : :a
   end
 end

@@ -19,8 +19,8 @@ class Computations::Release::StepStatuses
       release_candidate: release_candidate_status,
       soak_period: soak_period_status,
       notes: notes_status,
-      screenshots: notes_status,
-      approvals: approval_status,
+      screenshots: STATUS[:none],
+      approvals: STATUS[:none],
       app_submission: app_submission_status,
       rollout_to_users: rollout_to_users_status
     }
