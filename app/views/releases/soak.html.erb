@@ -1,0 +1,9 @@
+<%= render V2::LiveRelease::ContainerComponent.new(@release,
+                                                   title: @train.name,
+                                                   turbo_frame: dom_id(@release, :live_release),
+                                                   tab_config: @tab_configuration) do |container| %>
+  <% container.with_back_button %>
+  <% container.with_tab(title: "Soak Period") do %>
+    <%= render V2::LiveRelease::SoakComponent.new(@release) %>
+  <% end %>
+<% end %>

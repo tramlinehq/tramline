@@ -10,7 +10,7 @@ module Tabbable
         [2, "Internal builds", internal_builds_release_path(@release), "v2/drill.svg"],
         [2, "Regression testing", regression_testing_release_path(@release), "v2/tablet_smartphone.svg"],
         [3, "Release candidate", root_path, "v2/gallery_horizontal_end.svg"],
-        [4, "Soak", root_path, "v2/alarm_clock.svg"]
+        [4, "Soak period", soak_release_path(@release), "v2/alarm_clock.svg"]
       ],
 
       "metadata" => [
