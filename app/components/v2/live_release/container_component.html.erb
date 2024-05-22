@@ -23,10 +23,7 @@
       <% end %>
 
       <div class="flex flex-row justify-end">
-        <%=
-          badge = V2::BadgeComponent.new(human_slug)
-          render badge
-        %>
+        <%= render V2::BadgeComponent.new(human_slug) %>
       </div>
 
       <%= render V2::SmartTextBoxComponent.new(@release.release_branch,
@@ -55,13 +52,14 @@
           </div>
 
           <ul class="text-sm font-medium text-gray-500 dark:text-gray-400 mt-2">
-            <% sorted_configs.each do |(_position, name, path, icon)| %>
+            <% sorted_configs.each do |_, config| %>
+              <% config => {title:, path:, icon:, status:} %>
               <div class="flex gap-x-2 items-center w-full">
-                <div class="w-6 h-5 <%= status %> rounded-full border border-white dark:border-gray-900 dark:bg-gray-700"></div>
+                <div class="w-6 h-5 <%= status_color(status) %> rounded-full border-2 border-main-600 dark:border-gray-900 dark:bg-gray-700"></div>
 
                 <a href="<%= path %>" class="flex flex-row items-center justify-between pr-4 w-full rounded-sm hover:text-gray-900 hover:bg-gray-100 <%= active_style(path) %>" aria-current="page">
                   <li class="text-sm font-normal px-2 py-1.5 dark:bg-gray-200">
-                    <%= name %>
+                    <%= title %>
                   </li>
 
                   <%= render V2::IconComponent.new(icon, size: :md) %>

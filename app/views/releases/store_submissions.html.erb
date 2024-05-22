@@ -11,7 +11,7 @@
             <%= render V2::LiveRelease::SubmissionComponent.new(run.active_store_submission) %>
           <% else %>
             <%= render V2::EmptyStateComponent.new(
-              title: "Submission cannot be started",
+              title: "Not ready to be submitted",
               text: "Please wait for a Release Candidate to be available to start a submission.",
               banner_image: "v2/mail.svg",
               type: :subdued) %>

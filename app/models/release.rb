@@ -53,6 +53,49 @@ class Release < ApplicationRecord
       {"attributes" => {"align" => "center"}, "insert" => "\n"}
     ]
   }
+  STAMPABLE_REASONS = %w[
+    created
+    release_branch_created
+    kickoff_pr_succeeded
+    version_changed
+    finalizing
+    pre_release_pr_not_creatable
+    pull_request_not_mergeable
+    post_release_pr_succeeded
+    backmerge_pr_created
+    pr_merged
+    backmerge_failure
+    vcs_release_created
+    finalize_failed
+    stopped
+    finished
+  ]
+  # TODO: deprecate this
+  STAMPABLE_REASONS.concat(["status_changed"])
+  STATES = {
+    created: "created",
+    on_track: "on_track",
+    post_release: "post_release",
+    post_release_started: "post_release_started",
+    post_release_failed: "post_release_failed",
+    stopped: "stopped",
+    finished: "finished",
+    partially_finished: "partially_finished",
+    stopped_after_partial_finish: "stopped_after_partial_finish"
+  }
+  SECTIONS = {
+    overview: {title: "Overview"},
+    changeset_tracking: {title: "Changeset tracking"},
+    internal_builds: {title: "Internal builds"},
+    regression_testing: {title: "Regression testing"},
+    release_candidate: {title: "Release candidate"},
+    soak_period: {title: "Soak period"},
+    notes: {title: "Notes"},
+    screenshots: {title: "Screenshots"},
+    approvals: {title: "Approvals"},
+    app_submission: {title: "App submission"},
+    rollout_to_users: {title: "Rollout to users"}
+  }
 
   belongs_to :train
   belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :hotfixed_releases
@@ -73,39 +116,6 @@ class Release < ApplicationRecord
   scope :pending_release, -> { where.not(status: TERMINAL_STATES) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   scope :sequential, -> { order("releases.scheduled_at DESC") }
-
-  STAMPABLE_REASONS = %w[
-    created
-    release_branch_created
-    kickoff_pr_succeeded
-    version_changed
-    finalizing
-    pre_release_pr_not_creatable
-    pull_request_not_mergeable
-    post_release_pr_succeeded
-    backmerge_pr_created
-    pr_merged
-    backmerge_failure
-    vcs_release_created
-    finalize_failed
-    stopped
-    finished
-  ]
-
-  # TODO: deprecate this
-  STAMPABLE_REASONS.concat(["status_changed"])
-
-  STATES = {
-    created: "created",
-    on_track: "on_track",
-    post_release: "post_release",
-    post_release_started: "post_release_started",
-    post_release_failed: "post_release_failed",
-    stopped: "stopped",
-    finished: "finished",
-    partially_finished: "partially_finished",
-    stopped_after_partial_finish: "stopped_after_partial_finish"
-  }
 
   enum status: STATES
   enum release_type: {
@@ -180,7 +190,10 @@ class Release < ApplicationRecord
     return unless finished?
 
     train.release_index&.score(**Computations::Release::ReldexParameters.call(self))
+  end
 
+  def step_statuses
+    Computations::Release::StepStatuses.call(self)
   end
 
   def unhealthy?
@@ -478,6 +491,19 @@ class Release < ApplicationRecord
     status.to_sym.in?(FAILED_STATES) || release_platform_runs.any?(&:failure?)
   end
 
+  def previous_release
+    base_conditions = train.releases
+      .where(status: "finished")
+      .where.not(id: id)
+      .reorder(completed_at: :desc)
+
+    return base_conditions.first if completed_at.blank?
+
+    base_conditions
+      .where("completed_at < ?", completed_at)
+      .first
+  end
+
   private
 
   def base_tag_name
@@ -526,19 +552,6 @@ class Release < ApplicationRecord
 
   def set_internal_notes
     self.internal_notes = DEFAULT_INTERNAL_NOTES.to_json
-  end
-
-  def previous_release
-    base_conditions = train.releases
-      .where(status: "finished")
-      .where.not(id: id)
-      .reorder(completed_at: :desc)
-
-    return base_conditions.first if completed_at.blank?
-
-    base_conditions
-      .where("completed_at < ?", completed_at)
-      .first
   end
 
   def on_start!

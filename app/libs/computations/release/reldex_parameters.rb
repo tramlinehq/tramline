@@ -1,4 +1,4 @@
-class Services::ComputeReldexParameters
+class Computations::Release::ReldexParameters
   def self.call(release)
     new(release).call
   end

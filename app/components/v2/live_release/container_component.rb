@@ -21,12 +21,19 @@ class V2::LiveRelease::ContainerComponent < V2::BaseReleaseComponent
 
   def sorted_sections
     tab_config.to_h do |s, configs|
-      [s, configs.sort_by(&:first)]
+      [s, configs.sort_by { |_, c| c[:position] }]
     end
   end
 
-  def status
-    "bg-#{["green", "amber"].sample}-200 text-green-800"
+  def status_color(status)
+    case status
+    when :success then "bg-green-500"
+    when :ongoing then "bg-amber-500"
+    when :blocked then "bg-gray-400"
+    when :none then "bg-main-50"
+    else
+      raise ArgumentError, "Invalid status: #{status}"
+    end
   end
 
   def active_style(tab_path)
