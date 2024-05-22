@@ -3,13 +3,14 @@
 class V2::LiveRelease::BuildComponent < V2::BaseComponent
   include Memery
 
-  def initialize(build, previous_build: nil, show_build_only: false)
+  def initialize(build, previous_build: nil, show_number: false, show_build_only: false)
     @build = build
+    @show_number = show_number
     @previous_build = previous_build
     @show_build_only = show_build_only
   end
 
-  attr_reader :build, :previous_build, :show_build_only
+  attr_reader :build, :previous_build, :show_build_only, :show_number
   delegate :release_platform_run, :store_submission, :commit, to: :build
   delegate :external_link, to: :store_submission, allow_nil: true
 
@@ -50,5 +51,9 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
 
   def last_activity_at
     ago_in_words(store_submission&.updated_at || build.updated_at)
+  end
+
+  def number
+    "##{rand(50..998)}"
   end
 end

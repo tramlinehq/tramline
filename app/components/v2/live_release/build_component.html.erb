@@ -1,6 +1,10 @@
 <% if build %>
   <div class="flex items-center justify-between">
     <div class="flex items-center justify-start gap-x-1.5">
+      <% if show_number %>
+        <%= render V2::BadgeComponent.new(number) %>
+      <% end %>
+
       <% if submission? %>
         <%= render V2::BadgeComponent.new do |badge| %>
           <% badge.with_icon(store_logo) %>

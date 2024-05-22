@@ -24,6 +24,5 @@ class V2::LiveRelease::RegressionTestingComponent < V2::BaseComponent
        description: "Build #237 was approved by Sagar Neeraj",
        type: :success
      },]
-
   end
 end
