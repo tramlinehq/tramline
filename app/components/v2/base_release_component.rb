@@ -11,6 +11,14 @@ class V2::BaseReleaseComponent < V2::BaseComponent
 
   delegate :release_branch, :tag_name, to: :release
 
+  memoize def release_pilot_name
+    @release.release_pilot&.full_name || "Tramline"
+  end
+
+  def release_pilot_avatar
+    user_avatar(release_pilot_name, size: 22)
+  end
+
   def stop_release_warning
     message = ""
     message += "You have finished release to one of the platforms. " if @release.partially_finished?
@@ -36,10 +44,12 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     @release.app.cross_platform?
   end
 
+  memoize def hotfixed_from
+    @release.hotfixed_from
+  end
+
   def hotfix_badge
     if @release.hotfix?
-      hotfixed_from = @release.hotfixed_from
-
       badge = V2::BadgeComponent.new
       badge.with_icon("band_aid.svg")
       badge.with_link("Hotfixed from #{hotfixed_from.release_version}", hotfixed_from.live_release_link)

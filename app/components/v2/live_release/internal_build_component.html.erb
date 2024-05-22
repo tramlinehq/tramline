@@ -29,7 +29,6 @@
   </div>
 
   <% unless compact? %>
-    <%#= render V2::SectionComponent.new(style: :titled, title: "Commit", size: :micro) do %>
     <div class="border-default-t pt-2">
       <%= render V2::CommitComponent.new(commit: step_run.commit, detailed: false) %>
     </div>

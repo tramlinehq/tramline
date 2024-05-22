@@ -11,22 +11,32 @@
 <div class="grid grid-cols-10 bg-backgroundLight-50">
   <div class="col-span-2 flex flex-col pl-6 py-3.5 border-t border-default-b border-default-l rounded-tl-lg rounded-bl-lg justify-between">
     <div>
-      <div class="flex flex-col gap-2 pr-4">
-        <div class="flex flex-row gap-x-2 justify-end items-baseline">
+      <div class="flex flex-col gap-1 pr-4">
+        <% if @release.hotfix? %>
+          <span class="self-end text-xs font-medium px-2 py-0.5 rounded-md bg-main-500 text-main-100 tracking-wideish uppercase">Hotfix</span>
+        <% end %>
+        <div class="flex flex-row gap-2 justify-end items-baseline">
           <span class="text-sm text-secondary-50"><%= @release.app.display_attr(:platform) %></span>
           <span class="heading-1 text-main dark:text-white"><%= @release.release_version %></span>
         </div>
+      </div>
 
+      <div class="flex flex-col gap-2 pr-4 mt-10">
         <% if (reldex = release_summary&.fetch(:reldex, nil)) %>
           <div class="flex flex-row justify-end">
             <%= render V2::Reldex::StatusComponent.new(release:, reldex_score: reldex) %>
           </div>
         <% end %>
 
-        <div class="flex flex-row justify-end">
-          <%= render V2::BadgeComponent.new(human_slug) %>
-        </div>
+        <div class="flex flex-col gap-2 items-end">
+          <%= render V2::StatusIndicatorPillComponent.new(text: status.first, status: status.second) %>
+          <%= render(scheduled_badge) if automatic? %>
 
+          <div class="flex gap-1 items-center">
+            <%= render V2::StatusIndicatorPillComponent.new(text: "Staged 10%", status: :ongoing) %>
+            <%= render V2::StatusIndicatorPillComponent.new(text: "Phased 5%", status: :ongoing) %>
+          </div>
+        </div>
         <%= render V2::SmartTextBoxComponent.new(@release.release_branch,
                                                  clipboard: true,
                                                  clipboard_tooltip: "Copy release branch",
@@ -38,11 +48,6 @@
                                                    clipboard_tooltip: "Copy final release tag",
                                                    size: :compact) %>
         <% end %>
-
-        <div class="flex flex-row justify-end gap-x-1">
-          <%= render V2::StatusIndicatorPillComponent.new(text: "Running", status: :ongoing) %>
-          <%= render V2::StatusIndicatorPillComponent.new(text: "Phased 5%", status: :inert) %>
-        </div>
       </div>
       <div class="flex flex-col mt-10 gap-8">
         <% sorted_sections.each do |section_name, sorted_configs| %>

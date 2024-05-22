@@ -8,10 +8,6 @@ class V2::LiveRelease::OverviewComponent < V2::BaseReleaseComponent
   attr_reader :release
   delegate :internal_notes, to: :release
 
-  def release_pilot_avatar
-    user_avatar(@release.release_pilot.full_name, size: 22)
-  end
-
   def commits_since_last
     @release.release_changelog&.normalized_commits
   end

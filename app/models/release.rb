@@ -406,7 +406,7 @@ class Release < ApplicationRecord
 
   def live_release_link
     return if Rails.env.test?
-    release_url(id, link_params)
+    release_url(self, link_params)
   end
 
   def notification_params

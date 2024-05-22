@@ -1,25 +1,33 @@
 <div class="flex flex-col section-gap-default">
   <div class="flex">
     <%= render V2::HorizontalDataSetComponent.new(separator: :dashed, bg_color: true) do |component| %>
-    <% component.with_data_set(title: "Release Captain") do %>
-      <div class="flex items-center gap-x-2 justify-between">
-        <%= release_pilot_avatar %>
-        <span class="text-sm text-secondary"><%= release.release_pilot.full_name %></span>
-        <span class="text-xs text-secondary-50"><%= release.release_pilot.email %></span>
-      </div>
-    <% end %>
+      <% component.with_data_set(title: "Release Captain") do %>
+        <div class="flex items-center gap-x-2 justify-between">
+          <%= release_pilot_avatar %>
+          <span class="text-sm text-secondary"><%= release_pilot_name %></span>
+        </div>
+      <% end %>
+      <% if @release.hotfix? %>
+        <% component.with_data_set(title: "Hotfix from") do %>
+          <%= render V2::ButtonComponent.new(scheme: :link,
+                                             label: hotfixed_from.release_version,
+                                             options: hotfixed_from.live_release_link,
+                                             type: :link_external,
+                                             size: :none,
+                                             authz: false) %>
+        <% end %>
+      <% end %>
+      <% component.with_data_set(title: "Started").with_content(start_time) %>
+      <% component.with_data_set(title: "Released").with_content(end_time) %>
+      <% component.with_data_set(title: "Duration").with_content(duration) %>
 
-    <% component.with_data_set(title: "Started").with_content(start_time) %>
-    <% component.with_data_set(title: "Released").with_content(end_time) %>
-    <% component.with_data_set(title: "Duration").with_content(duration) %>
-
-    <% if final? %>
-      <% component.with_data_set(title: "Stability commits").with_content(overall_summary.commits_count) %>
-      <% if backmerges? %>
-        <% component.with_data_set(title: "Backmerges").with_content(backmerge_summary) %>
+      <% if final? %>
+        <% component.with_data_set(title: "Stability commits").with_content(overall_summary.commits_count) %>
+        <% if backmerges? %>
+          <% component.with_data_set(title: "Backmerges").with_content(backmerge_summary) %>
+        <% end %>
       <% end %>
     <% end %>
-  <% end %>
   </div>
 
   <div class="grid grid-cols-3 item-gap-default">
