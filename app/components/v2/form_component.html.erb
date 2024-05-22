@@ -14,13 +14,15 @@
       <% end %>
 
       <% if advanced_sections.any? %>
-        <%= render V2::AccordionComponent.new(title: "Advanced Settings") do %>
-          <section class="grid space-y-8 mt-10">
-            <% advanced_sections.each do |adv_section| %>
-              <%= adv_section %>
-            <% end %>
-          </section>
-        <% end %>
+        <div class="mt-16">
+          <%= render V2::AccordionComponent.new(title: "Advanced Settings") do %>
+            <section class="grid space-y-8 mt-10">
+              <% advanced_sections.each do |adv_section| %>
+                <%= adv_section %>
+              <% end %>
+            </section>
+          <% end %>
+        </div>
       <% end %>
 
       <div class="grid grid-cols-3 items-start xl:space-x-20 p-2">

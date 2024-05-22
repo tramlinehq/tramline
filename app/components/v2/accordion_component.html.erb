@@ -1,18 +1,22 @@
-<section data-controller="reveal" data-reveal-target-selector-value="[data-accordion-reveal]" class="flex flex-col mt-16">
+<section data-controller="reveal" data-reveal-target-selector-value="[data-accordion-reveal]" class="flex flex-col">
   <div class="flex flex-row items-center px-2 border-default-b pb-2">
-    <a class="group transform flex" data-action="reveal#toggle">
-      <div class="flex items-center -mx-3 gap-2 text-secondary focus:ring-4 focus:ring-main-200 dark:focus:ring-main dark:text-secondary-50">
-        <span data-accordion-reveal
-              <%= "hidden" unless auto_hide %>>
+    <a class="group transform flex w-full" data-action="reveal#toggle">
+      <div class="flex items-center w-full -mx-3 gap-2 text-secondary focus:ring-4 focus:ring-main-200 dark:focus:ring-main dark:text-secondary-50">
+        <span data-accordion-reveal <%= "hidden" unless auto_hide %>>
           <%= inline_svg("v2/plus.svg", classname: "w-4 h-4 fill-current") %>
         </span>
 
-        <span data-accordion-reveal
-              <%= "hidden" if auto_hide %>>
+        <span data-accordion-reveal <%= "hidden" if auto_hide %>>
           <%= inline_svg("v2/plus.svg", classname: "w-4 h-4 fill-current transform rotate-45") %>
         </span>
 
-        <span class="select-none"><%= title %></span>
+        <span class="select-none flex-grow">
+          <% if title %>
+            <%= title %>
+          <% else %>
+            <%= title_section %>
+          <% end %>
+        </span>
       </div>
     </a>
   </div>

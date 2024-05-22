@@ -1,47 +1,122 @@
-<div class="flex flex-col section-gap-default">
-
-  <%= render V2::CardComponent.new(title: "Currently building", size: :full, separator: false) do |card| %>
-
-    <div class="flex justify-between">
-    <%= render V2::BadgeComponent.new do |badge| %>
-      <% badge.with_icon("integrations/logo_#{latest_step_run.ci_cd_provider}.png") %>
-      <% badge.with_link(latest_step_run.commit.short_sha, latest_step_run.ci_link) %>
-    <% end %>
-
-    <%= render V2::StatusIndicatorPillComponent.new(text: latest_step_run.status.humanize, status: :inert) %>
-    </div>
-  <% end %>
-
-  <%= render V2::CardComponent.new(title: "Last build", size: :full, separator: false) do |card| %>
-    <div class="flex justify-between">
-    <%= render V2::BadgeComponent.new do |badge| %>
-      <% badge.with_icon("integrations/logo_#{latest_step_run.ci_cd_provider}.png") %>
-      <% badge.with_link(latest_step_run.commit.short_sha, latest_step_run.ci_link) %>
-    <% end %>
-    <%= render V2::StatusIndicatorPillComponent.new(text: latest_step_run.status.humanize, status: :inert) %>
-    </div>
-  <% end %>
-
-  <%= render V2::SectionComponent.new(title: "Older builds", style: :titled, size: :compact) do %>
-    <%= render V2::TableComponent.new(columns: ["Build", "Last activity", "Status"], size: :default) do |table| %>
-      <% previous_step_runs.each do |step_run| %>
-        <% table.with_row do |row| %>
-          <% row.with_cell do %>
-            <%= render V2::BadgeComponent.new do |badge| %>
-              <% badge.with_icon("integrations/logo_#{step_run.ci_cd_provider}.png") %>
-              <% badge.with_link(step_run.commit.short_sha, step_run.ci_link) %>
-            <% end %>
-          <% end %>
-
-          <% row.with_cell do %>
-            <%= step_run.updated_at.strftime("%b %d, %Y %H:%M") %>
-          <% end %>
-
-          <% row.with_cell do %>
-            <%= render V2::StatusIndicatorPillComponent.new(text: step_run.status.humanize, status: :inert) %>
-          <% end %>
+<% if review_step.present? %>
+  <div class="flex flex-col section-gap-default">
+    <div class="h-10 opacity-80">
+      <div class="flex gap-2 items-start">
+        <%= render V2::BadgeComponent.new(review_step.workflow_name) do |badge| %>
+          <% badge.with_icon("integrations/logo_#{review_step.ci_cd_provider}.png") %>
         <% end %>
+
+        <div class="flex flex-col gap-2">
+          <% review_step.deployments.each do |deployment| %>
+            <div class="flex gap-2 items-center">
+              <%= inline_svg("v2/connect_line.svg", classname: "w-5 h-5 inline-flex") %>
+              <%= render V2::BadgeComponent.new(deployment.deployment_channel_name) do |badge| %>
+                <% badge.with_icon("integrations/logo_#{deployment.integration&.providable || "external"}.png") %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!--    This should show up when there is a new un-applied commit-->
+    <% if false #rand(0..10).even? %>
+      <div class="flex flex-col">
+        <%= render V2::AlertComponent.new(type: :info, title: "A new commit has landed on the release branch. Apply now to generate a new internal build.", dismissible: false) %>
+        <%= render V2::ButtonComponent.new(scheme: :default,
+                                           type: :button,
+                                           label: "Create a new internal build",
+                                           options: start_release_step_run_path(release, review_step),
+                                           turbo: false,
+                                           html_options: { method: :post, data: { turbo_method: :post, turbo_confirm: "Are you sure?" } }) %>
+      </div>
+    <% end %>
+
+
+    <% if latest_step_run.present? %>
+      <%= render V2::CardComponent.new(title: "Current build", separator: true, size: :full) do |card| %>
+        <% card.with_actions do %>
+          <div class="flex items-center gap-1">
+            <%= render V2::ButtonComponent.new(label: "Download build",
+                                               scheme: :supporting,
+                                               type: :link_external,
+                                               options: latest_step_run.download_url || "google.com",
+                                               authz: false,
+                                               size: :xxs) do |b|
+              b.with_icon("v2/download.svg", size: :md)
+            end %>
+            <%= render V2::ModalComponent.new(title: "Changes since last build",
+                                              size: :xl_3,
+                                              authz: false) do |modal| %>
+              <% button = modal.with_button(label: "Changes since last build", type: :action, scheme: :supporting, size: :xxs) %>
+              <% button.with_icon("v2/diff.svg", size: :md) %>
+              <% button.with_tooltip("Changes since last build", placement: "top") %>
+              <% modal.with_body do %>
+                <%= render partial: "shared/divide_collection",
+                           locals: { collection: render(V2::CommitComponent.with_collection([])) } %>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+        <%= render V2::LiveRelease::InternalBuildComponent.new(step_run: latest_step_run, release_platform_run:) %>
       <% end %>
     <% end %>
-  <% end %>
-</div>
+
+    <% if previous_step_runs.present? %>
+      <%= render V2::SectionComponent.new(title: "Older builds", style: :titled, size: :compact) do %>
+        <div class="flex flex-col item-gap-default">
+          <% previous_step_runs.each do |step_run| %>
+            <%= render V2::AccordionComponent.new do |accordion| %>
+              <% accordion.with_title_section do %>
+                <div class="flex text-sm items-center justify-between">
+                  <div class="flex gap-2">
+                    <span><%= step_run.build_display_name %></span>
+                    <%= render V2::StatusIndicatorPillComponent.new(**step_status(step_run)) %>
+                  </div>
+                  <div class="flex items-center">
+                    <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2 text-secondary") %>
+                    <span class="text-secondary font-normal"><%= ago_in_words(step_run.created_at) %></span>
+                  </div>
+                </div>
+              <% end %>
+              <div class="py-3">
+                <%= render V2::CardComponent.new(title: "Build", separator: false, size: :full) do |card| %>
+                  <% card.with_actions do %>
+                    <div class="flex gap-2">
+                      <%= render V2::ButtonComponent.new(scheme: :naked_icon,
+                                                         type: :link_external,
+                                                         options: "google.com",
+                                                         authz: false,
+                                                         size: :none) do |b|
+                        b.with_icon("v2/download.svg", size: :md)
+                        b.with_tooltip("Download build", placement: "top")
+                      end %>
+                      <%= render V2::ModalComponent.new(title: "Changes since last build",
+                                                        size: :xl_3,
+                                                        authz: false) do |modal| %>
+                        <% button = modal.with_button(type: :action, scheme: :naked_icon, size: :none) %>
+                        <% button.with_icon("v2/diff.svg", size: :md) %>
+                        <% button.with_tooltip("Changes since last build", placement: "top") %>
+                        <% modal.with_body do %>
+                          <%= render partial: "shared/divide_collection",
+                                     locals: { collection: render(V2::CommitComponent.with_collection([])) } %>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  <% end %>
+                  <%= render V2::LiveRelease::InternalBuildComponent.new(step_run:, release_platform_run:, compact: true) %>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <%= render V2::EmptyStateComponent.new(
+    title: "No internal build step configured",
+    text: "Please configure an internal build step for the train to see the build status.",
+    banner_image: "v2/drill.svg",
+    type: :subdued) %>
+<% end %>

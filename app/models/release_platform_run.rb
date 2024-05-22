@@ -408,6 +408,7 @@ class ReleasePlatformRun < ApplicationRecord
   def previous_successful_run_before(step_run)
     step_runs
       .where(step: step_run.step)
+      .where("scheduled_at <= ?", step_run.scheduled_at)
       .where.not(id: step_run.id)
       .success
       .order(scheduled_at: :asc)

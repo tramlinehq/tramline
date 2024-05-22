@@ -1,9 +1,10 @@
 class V2::CommitComponent < V2::BaseComponent
   include ReleasesHelper
 
-  def initialize(commit:, avatar: true)
+  def initialize(commit:, avatar: true, detailed: true)
     @commit = commit
     @avatar = avatar
+    @detailed = detailed
   end
 
   attr_reader :commit
@@ -15,6 +16,10 @@ class V2::CommitComponent < V2::BaseComponent
 
   def author_info
     author_login || author_name
+  end
+
+  def detailed?
+    @detailed
   end
 
   def integration_provider_logo
@@ -35,5 +40,10 @@ class V2::CommitComponent < V2::BaseComponent
 
   def pull_request
     @commit.pull_request
+  end
+
+  def outer_classes
+    return "" unless detailed?
+    "py-2 px-3 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm"
   end
 end
