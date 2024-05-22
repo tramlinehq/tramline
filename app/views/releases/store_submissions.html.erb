@@ -7,7 +7,15 @@
     <%= render V2::PlatformViewComponent.new(@release) do |component| %>
       <% component.platform_runs.each do |run| %>
         <div class="grid grid-cols-1">
-          <%= render V2::LiveRelease::SubmissionComponent.new(run.active_store_submission) %>
+          <% if run.active_store_submission %>
+            <%= render V2::LiveRelease::SubmissionComponent.new(run.active_store_submission) %>
+          <% else %>
+            <%= render V2::EmptyStateComponent.new(
+              title: "Submission cannot be started",
+              text: "Please wait for a Release Candidate to be available to start a submission.",
+              banner_image: "v2/mail.svg",
+              type: :subdued) %>
+          <% end %>
 
           <% if run.previous_store_submissions.present? %>
             <%= render V2::SectionComponent.new(style: :titled, title: "Previous submissions", size: :compact) do %>
