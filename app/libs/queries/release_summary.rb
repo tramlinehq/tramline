@@ -24,6 +24,14 @@ class Queries::ReleaseSummary
     cache.fetch(cache_key)
   end
 
+  def team_stability_commits
+    cache.fetch(team_stability_commits_cache_key) { release.stability_commits.count_by_team(release.organization) }
+  end
+
+  def team_release_commits
+    cache.fetch(team_release_commits_cache_key) { release.release_changelog&.commits_by_team }
+  end
+
   class Queries::ReleaseSummary::Overall
     include ActiveModel::Model
     include ActiveModel::Attributes
@@ -182,17 +190,27 @@ class Queries::ReleaseSummary
       steps_summary: StepsSummary.from_release(release),
       store_versions: StoreVersions.from_release(release),
       pull_requests: release.pull_requests.automatic,
-      team_stability_commits: release.stability_commits.count_by_team(release.organization),
-      team_release_commits: release.release_changelog&.commits_by_team,
+      team_stability_commits: team_stability_commits,
+      team_release_commits: team_release_commits,
       reldex: release.index_score
     }
   end
 
   def thaw
     cache.delete(cache_key)
+    cache.delete(team_stability_commits_cache_key)
+    cache.delete(team_release_commits_cache_key)
   end
 
   def cache_key
     "release/#{release_id}/summary"
+  end
+
+  def team_stability_commits_cache_key
+    "release/#{release_id}/team_stability_commits"
+  end
+
+  def team_release_commits_cache_key
+    "release/#{release_id}/team_release_commits"
   end
 end
