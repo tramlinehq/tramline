@@ -1,14 +1,12 @@
-<% component = V2::EnhancedTurboFrameComponent.new(frame, classes: "#{loader_class} h-full") %>
-<% component.with_loading_indicator %>
-<%= render component do %>
-  <div class="w-full h-full box-padding border-default-t border-default-r border-default-b rounded-br-lg rounded-tr-lg">
-    <div class="flex gap-2 items-center">
-      <%= render V2::IconComponent.new(icon, size: :lg) %>
-      <h2 class="heading-2"><%= title %></h2>
-    </div>
-    <% if subtitle.present? %>
-      <div class="text-sm text-secondary"><%= subtitle %></div>
-    <% end %>
-    <div class="top-separator-space-default"><%= content %></div>
+<div class="w-full h-full box-padding border-default-t border-default-r border-default-b rounded-br-lg rounded-tr-lg">
+  <div class="flex gap-2 items-center">
+    <%= render V2::IconComponent.new(icon, size: :lg) %>
+    <h2 class="heading-2"><%= title %></h2>
   </div>
-<% end %>
+
+  <% if subtitle.present? %>
+    <div class="text-sm text-secondary"><%= subtitle %></div>
+  <% end %>
+
+  <div class="top-separator-space-default"><%= content %></div>
+</div>
