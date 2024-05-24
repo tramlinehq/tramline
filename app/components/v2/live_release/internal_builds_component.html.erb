@@ -20,7 +20,7 @@
     </div>
 
     <!--    This should show up when there is a new un-applied commit-->
-    <% if false #rand(0..10).even? %>
+    <% if rand(0..10).even? %>
       <div class="flex flex-col">
         <%= render V2::AlertComponent.new(type: :info, title: "A new commit has landed on the release branch. Apply now to generate a new internal build.", dismissible: false) %>
         <%= render V2::ButtonComponent.new(scheme: :default,
@@ -37,14 +37,16 @@
       <%= render V2::CardComponent.new(title: "Current build", separator: true, size: :full) do |card| %>
         <% card.with_actions do %>
           <div class="flex items-center gap-1">
-            <%= render V2::ButtonComponent.new(label: "Download build",
-                                               scheme: :supporting,
-                                               type: :link_external,
-                                               options: latest_step_run.download_url || "google.com",
-                                               authz: false,
-                                               size: :xxs) do |b|
-              b.with_icon("v2/download.svg", size: :md)
-            end %>
+            <% if latest_step_run.download_url %>
+              <%= render V2::ButtonComponent.new(label: "Download build",
+                                                 scheme: :supporting,
+                                                 type: :link_external,
+                                                 options: latest_step_run.download_url,
+                                                 authz: false,
+                                                 size: :xxs) do |b|
+                b.with_icon("v2/download.svg", size: :md)
+              end %>
+            <% end %>
             <%= render V2::ModalComponent.new(title: "Changes since last build",
                                               size: :xl_3,
                                               authz: false) do |modal| %>
@@ -53,7 +55,7 @@
               <% button.with_tooltip("Changes since last build", placement: "top") %>
               <% modal.with_body do %>
                 <%= render partial: "shared/divide_collection",
-                           locals: { collection: render(V2::CommitComponent.with_collection([])) } %>
+                           locals: { collection: render(V2::CommitComponent.with_collection(release.all_commits.sample(rand(1..5)))) } %>
               <% end %>
             <% end %>
           </div>
@@ -83,14 +85,16 @@
                 <%= render V2::CardComponent.new(title: "Build", separator: false, size: :full) do |card| %>
                   <% card.with_actions do %>
                     <div class="flex gap-2">
-                      <%= render V2::ButtonComponent.new(scheme: :naked_icon,
-                                                         type: :link_external,
-                                                         options: "google.com",
-                                                         authz: false,
-                                                         size: :none) do |b|
-                        b.with_icon("v2/download.svg", size: :md)
-                        b.with_tooltip("Download build", placement: "top")
-                      end %>
+                      <% if step_run.download_url %>
+                        <%= render V2::ButtonComponent.new(scheme: :naked_icon,
+                                                           type: :link_external,
+                                                           options: "google.com",
+                                                           authz: false,
+                                                           size: :none) do |b|
+                          b.with_icon("v2/download.svg", size: :md)
+                          b.with_tooltip("Download build", placement: "top")
+                        end %>
+                      <% end %>
                       <%= render V2::ModalComponent.new(title: "Changes since last build",
                                                         size: :xl_3,
                                                         authz: false) do |modal| %>
@@ -99,7 +103,7 @@
                         <% button.with_tooltip("Changes since last build", placement: "top") %>
                         <% modal.with_body do %>
                           <%= render partial: "shared/divide_collection",
-                                     locals: { collection: render(V2::CommitComponent.with_collection([])) } %>
+                                     locals: { collection: render(V2::CommitComponent.with_collection(release.all_commits.sample(rand(1..5)))) } %>
                         <% end %>
                       <% end %>
                     </div>

@@ -7,19 +7,39 @@
 </div>
 
 <div class="grid grid-cols-10 bg-backgroundLight-50">
-  <div class="col-span-2 flex flex-col pl-6 py-3.5 border-t border-default-b border-default-l rounded-tl-lg rounded-bl-lg justify-between">
+  <div class="col-span-2 flex flex-col pl-6 py-3.5 border-t border-default-b border-default-l rounded-tl-lg rounded-bl-lg justify-between pr-4">
     <div>
-      <div class="flex flex-col gap-1 pr-4">
+      <div class="flex flex-col gap-1 items-end">
         <% if @release.hotfix? %>
           <span class="self-end text-xs font-medium px-2 py-0.5 rounded-md bg-main-500 text-main-100 tracking-wideish uppercase">Hotfix</span>
         <% end %>
+
         <div class="flex flex-row gap-2 justify-end items-baseline">
-          <span class="text-sm text-secondary-50"><%= @release.app.display_attr(:platform) %></span>
+          <% if cross_platform? %>
+            <div class="flex items-center gap-1">
+              <%= render V2::IconComponent.new("v2/android.svg", size: :lg) %>
+              <%= render V2::IconComponent.new("v2/plus_fat.svg", size: :lg) %>
+              <%= render V2::IconComponent.new("v2/ios.svg", size: :lg) %>
+            </div>
+          <% else %>
+            <%= render V2::IconComponent.new("v2/#{release.platform}.svg", size: :lg) %>
+          <% end %>
           <span class="heading-1 text-main dark:text-white"><%= @release.release_version %></span>
         </div>
+
+        <%= render V2::ButtonComponent.new(
+          scheme: :link,
+          type: :link,
+          size: :none,
+          options: timeline_release_path(@release),
+          authz: false,
+          label: "Release activity",
+          html_options: { class: "text-sm" }) do |b|
+          b.with_icon("v2/activity.svg")
+        end %>
       </div>
 
-      <div class="flex flex-col gap-2 pr-4 mt-10">
+      <div class="flex flex-col gap-2 mt-8">
         <% if (reldex = release_summary&.fetch(:reldex, nil)) %>
           <div class="flex flex-row justify-end">
             <%= render V2::Reldex::StatusComponent.new(release:, reldex_score: reldex) %>
@@ -50,7 +70,7 @@
       <div class="flex flex-col mt-10 gap-8">
         <% sorted_sections.each do |section_name, sorted_configs| %>
           <div>
-            <div class="flex flex-row justify-end heading-5-sc pr-4">
+            <div class="flex flex-row justify-end heading-5-sc">
               <%= section_name %>
             </div>
 
@@ -60,7 +80,7 @@
                 <li class="flex items-center justify-center w-full gap-1.5">
                   <%= status_icon(config) %>
                   <%= content_tag(sidebar_title_tag(config),
-                                  class: "flex flex-row items-center justify-between pr-4 w-full rounded-sm hover:text-gray-900 hover:bg-gray-100 #{active_style(path)}",
+                                  class: "flex flex-row items-center justify-between w-full rounded-sm hover:text-gray-900 hover:bg-gray-100 #{active_style(path)}",
                                   href: path) do %>
                     <div class="flex gap-2 items-center pl-2">
                       <span class="text-sm font-normal py-1.5 dark:bg-gray-200"><%= title %></span>
@@ -77,28 +97,32 @@
       </div>
     </div>
 
-    <div class="self-end mt-10 flex flex-col gap-2 items-end pr-4">
-      <%= render V2::ButtonComponent.new(
-        scheme: :light,
-        type: :link,
-        size: :xxs,
-        options: finish_release_release_path(@release),
-        label: "Mark release as finished",
-        html_options: { method: :delete,
-                        data: { turbo_method: :post,
-                                turbo_confirm: "You have finished release to only one of the platforms. Are you sure you want to finish the release?" } }) do |b|
-        b.with_icon("v2/list_checks.svg")
-      end %>
-      <%= render V2::ButtonComponent.new(
-        scheme: :danger,
-        type: :button,
-        size: :xxs,
-        label: "Stop release",
-        options: release_path(@release),
-        turbo: false,
-        html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: stop_release_warning } }) do |b|
-        b.with_icon("v2/stop.svg")
-      end %>
+    <div class="self-end mt-10 flex flex-col gap-2 items-end">
+      <% if @release.partially_finished? %>
+        <%= render V2::ButtonComponent.new(
+          scheme: :light,
+          type: :link,
+          size: :xxs,
+          options: finish_release_release_path(@release),
+          label: "Mark release as finished",
+          html_options: { method: :delete,
+                          data: { turbo_method: :post,
+                                  turbo_confirm: "You have finished release to only one of the platforms. Are you sure you want to finish the release?" } }) do |b|
+          b.with_icon("v2/list_checks.svg")
+        end %>
+      <% end %>
+      <% if @release.stoppable? %>
+        <%= render V2::ButtonComponent.new(
+          scheme: :danger,
+          type: :button,
+          size: :xxs,
+          label: "Stop release",
+          options: release_path(@release),
+          turbo: false,
+          html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: stop_release_warning } }) do |b|
+          b.with_icon("v2/stop.svg")
+        end %>
+      <% end %>
     </div>
   </div>
 
