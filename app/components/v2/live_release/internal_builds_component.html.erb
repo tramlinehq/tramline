@@ -65,7 +65,7 @@
     <% end %>
 
     <% if previous_step_runs.present? %>
-      <%= render V2::SectionComponent.new(title: "Older builds", style: :titled, size: :compact) do %>
+      <%= render V2::SectionComponent.new(title: "Older builds (#{previous_step_runs.size})", style: :titled, size: :compact) do %>
         <div class="flex flex-col item-gap-default">
           <% previous_step_runs.each do |step_run| %>
             <%= render V2::AccordionComponent.new(push_down: true) do |accordion| %>

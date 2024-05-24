@@ -8,7 +8,7 @@ class V2::LiveRelease::OverviewComponent < V2::BaseReleaseComponent
   attr_reader :release
   delegate :internal_notes, to: :release
 
-  def commits_since_last
+  memoize def commits_since_last
     @release.release_changelog&.normalized_commits
   end
 
