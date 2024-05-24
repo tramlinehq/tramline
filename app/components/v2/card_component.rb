@@ -36,10 +36,11 @@ class V2::CardComponent < ViewComponent::Base
   end
 
   def fold_target_params
+    return unless fold?
     params = {}
-    params[:data] = {fold_target: "foldable"} if fold?
-    params[:class] = (fold? || base?) ? "overflow-y-auto " : ""
-    params[:class] += "h-full" if fixed_height?
+    params[:data] = {fold_target: "foldable"}
+    params[:class] = "overflow-y-auto " unless full?
+    params[:class] = "h-full" if fixed_height?
     params
   end
 
