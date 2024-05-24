@@ -12,7 +12,7 @@
 #  original_release_version :string
 #  release_type             :string           not null
 #  scheduled_at             :datetime
-#  slug                     :string
+#  slug                     :string           indexed
 #  status                   :string           not null
 #  stopped_at               :datetime
 #  tag_name                 :string

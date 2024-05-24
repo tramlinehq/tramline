@@ -1,0 +1,6 @@
+<%= render V2::LiveRelease::StepComponent.new(frame: dom_id(@release, :live_release),
+                                              title: "Changeset tracking",
+                                              loader: false,
+                                              icon: @tab_configuration.dig(:kickoff, :changeset_tracking, :icon)) do %>
+  <%= render V2::LiveRelease::ChangeQueueComponent.new(@release) %>
+<% end %>
