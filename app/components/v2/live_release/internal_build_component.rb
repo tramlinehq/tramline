@@ -48,7 +48,7 @@ class V2::LiveRelease::InternalBuildComponent < V2::BaseComponent
   end
 
   attr_reader :step_run, :release_platform_run
-  delegate :step, to: :step_run
+  delegate :step, :release, to: :step_run
 
   def compact?
     @compact
@@ -66,5 +66,19 @@ class V2::LiveRelease::InternalBuildComponent < V2::BaseComponent
 
   def deployment_status(deployment_run)
     DEPLOYMENT_STATUS[deployment_run.status.to_sym] || {text: deployment_run.status.humanize, status: :neutral}
+  end
+
+  def download_build
+    return if step_run.download_url.blank?
+
+    render V2::ButtonComponent.new(scheme: compact? ? :naked_icon : :supporting,
+      label: compact? ? nil : "Download build",
+      type: :link_external,
+      options: step_run.download_url,
+      authz: false,
+      size: :none) do |b|
+      b.with_icon("v2/download.svg", size: :md)
+      b.with_tooltip("Download build", placement: "top")
+    end
   end
 end

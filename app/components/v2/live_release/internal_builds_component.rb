@@ -1,4 +1,4 @@
-class V2::LiveRelease::InternalBuildsComponent < V2::BaseComponent
+class V2::LiveRelease::InternalBuildsComponent < V2::BaseReleaseComponent
   include Memery
 
   STEP_STATUS = {
@@ -22,39 +22,29 @@ class V2::LiveRelease::InternalBuildsComponent < V2::BaseComponent
     cancelled_before_start: {text: "Overwritten", status: :neutral}
   }
 
-  def initialize(release_platform_run)
-    @release_platform_run = release_platform_run
+  def initialize(release)
+    @release = release
+    super(@release)
   end
 
-  attr_reader :release_platform_run
-  delegate :release, to: :release_platform_run
+  attr_reader :release
 
-  memoize def latest_build
-    release_platform_run.builds.last
-  end
-
-  memoize def previous_builds
-    return unless release_platform_run.builds.size > 1
-    release_platform_run.builds.where.not(id: latest_build.id)
-  end
-
-  memoize def review_step
+  memoize def review_step(release_platform_run)
     release_platform_run.release_platform.steps.review.first
   end
 
-  memoize def step_runs
-    return [] unless review_step
-
-    release_platform_run.step_runs_for(review_step) || []
+  memoize def step_runs(release_platform_run)
+    return [] unless review_step(release_platform_run)
+    release_platform_run.step_runs_for(review_step(release_platform_run)) || []
   end
 
-  memoize def previous_step_runs
-    return unless step_runs.size > 1
-    step_runs.where.not(id: [latest_step_run&.id].compact)
+  memoize def previous_step_runs(release_platform_run)
+    return unless step_runs(release_platform_run).size > 1
+    step_runs(release_platform_run).where.not(id: [latest_step_run(release_platform_run)&.id].compact)
   end
 
-  memoize def latest_step_run
-    step_runs.last
+  memoize def latest_step_run(release_platform_run)
+    step_runs(release_platform_run).last
   end
 
   def step_status(step_run)

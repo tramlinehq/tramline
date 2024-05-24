@@ -3,12 +3,6 @@
                                                    tab_config: @tab_configuration) do |container| %>
   <% container.with_back_button %>
   <% container.with_tab(title: "Internal Builds", icon: @tab_configuration.dig(:stability, :internal_builds, :icon)) do %>
-    <%= render V2::PlatformViewComponent.new(@release) do |component| %>
-      <% component.platform_runs.each do |run| %>
-        <div class="grid grid-cols-1">
-          <%= render V2::LiveRelease::InternalBuildsComponent.new(run) %>
-        </div>
-      <% end %>
-    <% end %>
+    <%= render V2::LiveRelease::InternalBuildsComponent.new(@release) %>
   <% end %>
 <% end %>
