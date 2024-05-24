@@ -11,7 +11,7 @@ class V2::CardComponent < ViewComponent::Base
     full: "max-h-full"
   }
 
-  def initialize(title:, subtitle: nil, fold: false, separator: true, classes: nil, size: :base, emptiness: false, fixed_height: nil)
+  def initialize(title:, subtitle: nil, fold: false, separator: true, classes: nil, size: :full, emptiness: false, fixed_height: nil)
     @title = title
     @subtitle = subtitle
     @fold = fold
@@ -38,7 +38,7 @@ class V2::CardComponent < ViewComponent::Base
   def fold_target_params
     params = {}
     params[:data] = {fold_target: "foldable"} if fold?
-    params[:class] = "overflow-y-auto "
+    params[:class] = (fold? || base?) ? "overflow-y-auto " : ""
     params[:class] += "h-full" if fixed_height?
     params
   end
@@ -64,6 +64,8 @@ class V2::CardComponent < ViewComponent::Base
   def separator? = @separator
 
   def full? = @size == SIZE[:full]
+
+  def base? = @size == SIZE[:base]
 
   def fixed_height? = @fixed_height.present?
 end
