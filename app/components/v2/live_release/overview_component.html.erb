@@ -30,14 +30,7 @@
     <% end %>
   </div>
 
-  <div class="grid grid-cols-3 item-gap-default">
-    <% if final? %>
-      <%= render ChartComponent.new(team_release_chart) %>
-      <%= render ChartComponent.new(team_stability_chart) %>
-    <% else %>
-      <%= render ChartComponent.new(build_stability_chart) %>
-    <% end %>
-  </div>
+  <%= render V2::PlatformOverviewComponent.new(release, size: :compact, show_monitoring: false) %>
 
   <div class="grid grid-cols-2 item-gap-default min-w-80">
     <% if changelog_present? %>
@@ -79,5 +72,14 @@
     <% end %>
   </div>
 
-  <%= render V2::PlatformOverviewComponent.new(release, size: :compact) %>
+  <div class="grid grid-cols-3 item-gap-default">
+    <% if current_organization.teams.any? %>
+      <% if team_release_commits.present? %>
+        <%= render ChartComponent.new(team_release_chart) %>
+      <% end %>
+      <% if team_stability_commits.present? %>
+        <%= render ChartComponent.new(team_stability_chart) %>
+      <% end %>
+    <% end %>
+  </div>
 </div>
