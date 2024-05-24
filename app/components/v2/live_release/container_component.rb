@@ -1,5 +1,5 @@
 class V2::LiveRelease::ContainerComponent < V2::BaseReleaseComponent
-  renders_one :back_button, V2::BackButtonComponent
+  renders_one :back_button, -> { V2::BackButtonComponent.new(path: app_train_releases_path(release.app, release.train), to: "the train") }
   renders_many :tabs, V2::LiveRelease::StepComponent
 
   SELECTED_TAB_STYLE = "active text-main bg-white border-l-3"

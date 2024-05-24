@@ -9,7 +9,7 @@ class V2::LiveRelease::RegressionTestingComponent < V2::BaseComponent
   def events
     [{
       timestamp: time_format(1.day.ago, with_year: false),
-      description: "Build #239 was rejected by Derek O' Brien",
+      description: "Build #239 was rejected by Derek O'Brien",
       type: :error
     },
       {

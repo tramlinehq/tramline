@@ -2,11 +2,9 @@
   <%= render V2::ErrorComponent.new(error_resource) %>
 <% end %>
 
-<% if back_button %>
-  <div class="my-2 mb-4">
-    <%= back_button %>
-  </div>
-<% end %>
+<div class="my-2 mb-4">
+  <%= back_button %>
+</div>
 
 <div class="grid grid-cols-10 bg-backgroundLight-50">
   <div class="col-span-2 flex flex-col pl-6 py-3.5 border-t border-default-b border-default-l rounded-tl-lg rounded-bl-lg justify-between">

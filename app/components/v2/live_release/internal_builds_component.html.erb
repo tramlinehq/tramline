@@ -66,7 +66,7 @@
       <%= render V2::SectionComponent.new(title: "Older builds", style: :titled, size: :compact) do %>
         <div class="flex flex-col item-gap-default">
           <% previous_step_runs.each do |step_run| %>
-            <%= render V2::AccordionComponent.new do |accordion| %>
+            <%= render V2::AccordionComponent.new(push_down: true) do |accordion| %>
               <% accordion.with_title_section do %>
                 <div class="flex text-sm items-center justify-between">
                   <div class="flex gap-2">
