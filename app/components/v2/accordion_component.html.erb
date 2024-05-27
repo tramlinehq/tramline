@@ -20,14 +20,14 @@
       </div>
     </a>
     <% if push_down %>
-      <div hidden data-accordion-reveal>
+      <div <%= "hidden" if auto_hide %> data-accordion-reveal>
         <%= content %>
       </div>
     <% end %>
   </div>
 
   <% unless push_down %>
-    <div hidden data-accordion-reveal>
+    <div <%= "hidden" if auto_hide %> data-accordion-reveal>
       <%= content %>
     </div>
   <% end %>
