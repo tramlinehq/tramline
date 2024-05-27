@@ -15,9 +15,6 @@
   <% end %>
   <div class="flex flex-col item-gap-default justify-between h-full">
     <div class="flex flex-col item-gap-default items-start">
-      <% unless compact? %>
-        <%= render V2::StatusIndicatorPillComponent.new(**step_status) %>
-      <% end %>
       <div class="flex justify-between w-full items-center">
         <div class="flex gap-2 items-start">
           <div class="flex items-center gap-1">

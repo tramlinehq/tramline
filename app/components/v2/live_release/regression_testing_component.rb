@@ -23,4 +23,12 @@ class V2::LiveRelease::RegressionTestingComponent < V2::BaseComponent
         type: :success
       }]
   end
+
+  def testing_status
+    [
+      {text: "In progress", status: :ongoing},
+      {text: "Rejected", status: :failure},
+      {text: "Approved", status: :success}
+    ].sample
+  end
 end

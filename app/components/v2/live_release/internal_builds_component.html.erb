@@ -22,20 +22,30 @@
 
   <% component.runs do |release_platform_run| %>
     <% if latest_step_run(release_platform_run).present? %>
-      <%= render V2::LiveRelease::InternalBuildComponent.new(step_run: latest_step_run(release_platform_run), release_platform_run:) %>
+      <div class="self-start">
+        <%= render V2::StatusIndicatorPillComponent.new(**step_status(latest_step_run(release_platform_run)), pill: false) %>
+      </div>
     <% end %>
   <% end %>
 
   <% component.runs do |release_platform_run| %>
-    <%= render V2::SectionComponent.new(title: "Build stats", style: :titled, size: :compact) do %>
-      <% if step_runs(release_platform_run).any? { |sr| sr.external_build.present? } %>
-        <%= render BuildHealthComponent.new(step: review_step(release_platform_run), release_platform_run:, show_title: false) %>
-      <% else %>
-        <%= render V2::EmptyStateComponent.new(
-          title: "No stats for this platform",
-          text: "Please send build metadata to Tramline to see the build stats.",
-          banner_image: "v2/drill.svg",
-          type: :subdued) %>
+    <% if latest_step_run(release_platform_run).present? %>
+      <%= render V2::LiveRelease::InternalBuildComponent.new(step_run: latest_step_run(release_platform_run), release_platform_run:) %>
+    <% end %>
+  <% end %>
+
+  <% if component.platform_runs.any? { |sr| sr.external_builds.exists? } %>
+    <% component.runs do |release_platform_run| %>
+      <%= render V2::SectionComponent.new(title: "Build stats", style: :titled, size: :compact) do %>
+        <% if step_runs(release_platform_run).any? { |sr| sr.external_build.present? } %>
+          <%= render BuildHealthComponent.new(step: review_step(release_platform_run), release_platform_run:, show_title: false) %>
+        <% else %>
+          <%= render V2::EmptyStateComponent.new(
+            title: "No stats for this platform",
+            text: "Please send build metadata to Tramline to see the build stats.",
+            banner_image: "v2/drill.svg",
+            type: :subdued) %>
+        <% end %>
       <% end %>
     <% end %>
   <% end %>

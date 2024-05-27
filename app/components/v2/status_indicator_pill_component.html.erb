@@ -4,8 +4,8 @@
     <span style="<%= text_style %>"><%= text %></span>
   </span>
 <% else %>
-  <span class="inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-md <%= background %> tracking-wideish">
-    <span class="w-2 h-2 me-2 rounded-full <%= pill %>"></span>
+  <span class="<%= badge_style %>">
+    <% if pill? %><span class="w-2 h-2 me-2 rounded-full <%= pill %>"></span><% end %>
     <%= text %>
   </span>
 <% end %>
