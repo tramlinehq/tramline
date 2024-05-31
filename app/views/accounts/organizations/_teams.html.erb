@@ -72,7 +72,7 @@
           <%= member.full_name %>
         <% end %>
         <% row.with_cell do %>
-          <%= render V2::StatusIndicatorPillComponent.new(text: "Active", status: :success) %>
+          <%= render V2::BadgeComponent.new(text: "Active", status: :success) %>
         <% end %>
         <% row.with_cell do %>
           <div class="font-medium text-slate-800">
@@ -103,7 +103,7 @@
           -
         <% end %>
         <% row.with_cell do %>
-          <%= render V2::StatusIndicatorPillComponent.new(text: "Invited", status: :neutral) %>
+          <%= render V2::BadgeComponent.new(text: "Invited", status: :neutral) %>
         <% end %>
         <% row.with_cell do %>
           <div class="font-medium text-slate-800">

@@ -47,13 +47,14 @@
         <% end %>
 
         <div class="flex flex-col gap-2 items-end">
-          <%= render V2::StatusIndicatorPillComponent.new(text: status.first, status: status.second) %>
+          <%= render V2::BadgeComponent.new(text: status.first, status: status.second) %>
           <%= render(scheduled_badge) if automatic? %>
-
-          <div class="flex gap-1 items-center">
-            <%= render V2::StatusIndicatorPillComponent.new(text: "Staged 10%", status: :ongoing) %>
-            <%= render V2::StatusIndicatorPillComponent.new(text: "Phased 5%", status: :ongoing) %>
-          </div>
+          <%= render V2::BadgeComponent.new(text: "99.9% rollout", status: :ongoing) do |status| %>
+            <%= status.with_icon("v2/android.svg", size: :sm) %>
+          <% end %>
+          <%= render V2::BadgeComponent.new(text: "50% rollout", status: :ongoing) do |status| %>
+            <%= status.with_icon("v2/ios.svg", size: :sm) %>
+          <% end %>
         </div>
         <%= render V2::SmartTextBoxComponent.new(@release.release_branch,
                                                  clipboard: true,

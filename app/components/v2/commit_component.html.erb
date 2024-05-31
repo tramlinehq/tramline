@@ -35,7 +35,7 @@
     <% if detailed? %>
       <div class="flex flex-row gap-x-2 items-center">
         <div>
-          <%= render V2::BadgeComponent.new do |badge| %>
+          <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
             <% if ci_cd_provider.present? %>
               <% badge.with_icon("integrations/logo_#{commit.train.ci_cd_provider}.png") %>
             <% end %>
@@ -45,7 +45,7 @@
         </div>
 
         <% if pull_request.present? %>
-          <%= render V2::BadgeComponent.new do |badge| %>
+          <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
             <% badge.with_icon("v2/git_pull_request.svg") %>
             <% badge.with_link("##{pull_request.number}", pull_request.url) %>
           <% end %>

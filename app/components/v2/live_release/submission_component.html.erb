@@ -73,13 +73,13 @@
       <% end %>
 
       <div class="flex flex-col item-gap-default text-secondary text-xs">
-        <div class="justify-start"><%= render V2::StatusIndicatorPillComponent.new(**status) %></div>
+        <div class="justify-start"><%= render V2::BadgeComponent.new(**status) %></div>
 
         <%= render V2::LiveRelease::BuildComponent.new(submission.build, previous_build: previous_submission&.build) %>
 
         <%= render V2::SectionComponent.new(style: :titled, title: "Store status", size: :micro) do %>
           <div class="flex justify-between items-center">
-            <%= render V2::StatusIndicatorPillComponent.new(text: store_status, status: :neutral) %>
+            <%= render V2::BadgeComponent.new(text: store_status, status: :neutral) %>
             <%= render V2::ButtonComponent.new(label: "Store dashboard ↗",
                                                scheme: :link,
                                                type: :link_external,

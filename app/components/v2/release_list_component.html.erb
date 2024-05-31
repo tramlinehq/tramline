@@ -182,7 +182,7 @@
             <% table.with_row do |row| %>
               <% row.with_cell(style: "") do %>
                 <div class="flex space-x-2">
-                  <%= render V2::StatusIndicatorPillComponent.new(text: release_component.status[0], status: release_component.status[1]) %>
+                  <%= render V2::BadgeComponent.new(text: release_component.status[0], status: release_component.status[1]) %>
                   <%= render(release_component.hotfix_badge) unless release_component.hotfix_badge.nil? %>
                   <%= render(release_component.scheduled_badge) if release_component.automatic? %>
                 </div>
@@ -190,14 +190,14 @@
 
               <% row.with_cell(style: "font-medium") do %>
                 <% if release.completed_at %>
-                  <%= render V2::BadgeComponent.new(release_component.release_version) %>
+                  <%= render V2::BadgeComponent.new(text: release_component.release_version, kind: :badge) %>
                 <% else %>
-                  <%= render V2::BadgeComponent.new(version_in_progress(release_component.release_version)) %>
+                  <%= render V2::BadgeComponent.new(text: version_in_progress(release_component.release_version), kind: :badge) %>
                 <% end %>
               <% end %>
 
               <% row.with_cell do %>
-                <%= render V2::BadgeComponent.new(release_component.branch) %>
+                <%= render V2::BadgeComponent.new(text: release_component.branch, kind: :badge) %>
               <% end %>
 
               <% if reldex_defined? %>

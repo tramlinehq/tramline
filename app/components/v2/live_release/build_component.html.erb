@@ -2,11 +2,11 @@
   <div class="flex items-center justify-between">
     <div class="flex items-center justify-start gap-x-1.5">
       <% if show_number %>
-        <%= render V2::BadgeComponent.new(number) %>
+        <%= render V2::BadgeComponent.new(text: number, kind: :badge) %>
       <% end %>
 
       <% if submission? %>
-        <%= render V2::BadgeComponent.new do |badge| %>
+        <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
           <% badge.with_icon(store_logo) %>
           <% badge.with_link(build_info, external_link) %>
         <% end %>
@@ -15,7 +15,7 @@
       <% unless show_build_only %>
         <%= inline_svg("v2/connect_line.svg", classname: "w-5 h-5 inline-flex") %>
 
-        <%= render V2::BadgeComponent.new do |badge| %>
+        <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
           <% badge.with_icon(build_logo) %>
           <% badge.with_link(ci_info, ci_link) %>
         <% end %>

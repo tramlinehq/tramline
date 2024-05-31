@@ -19,7 +19,7 @@
 
         <% if connected? %>
           <div class="flex justify-between w-full items-baseline">
-            <%= render V2::StatusIndicatorPillComponent.new(text: "Connected", status: :success) %>
+            <%= render V2::BadgeComponent.new(text: "Connected", status: :success) %>
             <% if ci_cd? %>
               <%= render V2::ButtonComponent.new(
                 scheme: :danger,
@@ -54,4 +54,3 @@
     </footer>
   </div>
 </div>
-

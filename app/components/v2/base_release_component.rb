@@ -50,7 +50,7 @@ class V2::BaseReleaseComponent < V2::BaseComponent
 
   def hotfix_badge
     if @release.hotfix?
-      badge = V2::BadgeComponent.new
+      badge = V2::BadgeComponent.new(kind: :badge)
       badge.with_icon("band_aid.svg")
       badge.with_link("Hotfixed from #{hotfixed_from.release_version}", hotfixed_from.live_release_link)
       badge
@@ -59,10 +59,10 @@ class V2::BaseReleaseComponent < V2::BaseComponent
 
   def scheduled_badge
     if @release.is_automatic?
-      badge = V2::BadgeComponent.new("Automatic")
+      badge = V2::BadgeComponent.new(text: "Automatic", kind: :badge)
       badge.with_icon("v2/robot.svg")
     else
-      badge = V2::BadgeComponent.new("Manual")
+      badge = V2::BadgeComponent.new(text: "Manual", kind: :badge)
       badge.with_icon("v2/person_standing.svg")
     end
     badge

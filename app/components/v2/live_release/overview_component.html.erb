@@ -36,8 +36,8 @@
     <% if changelog_present? %>
       <%= render V2::CardComponent.new(title: "Changes since last release (#{commits_since_last.size})", separator: true, size: :base) do |card| %>
         <% card.with_actions do %>
-        <span class="text-xs text-secondary-50">
-          Diff from <%= render V2::BadgeComponent.new(@release.release_changelog.from_ref) %>
+        <span class="text-xs text-secondary-50 items-center flex gap-1">
+          Diff from <%= render V2::BadgeComponent.new(text: @release.release_changelog.from_ref, kind: :badge) %>
         </span>
         <% end %>
 

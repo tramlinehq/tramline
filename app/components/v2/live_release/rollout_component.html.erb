@@ -32,7 +32,7 @@
             </div>
 
             <div class="flex gap-1 flex-wrap">
-              <%= render V2::StatusIndicatorPillComponent.new(text: "Completed", status: :success) %>
+              <%= render V2::BadgeComponent.new(text: "Completed", status: :success) %>
               <div class="text-sm text-secondary-50">at 3rd stage</div>
             </div>
 
@@ -98,7 +98,7 @@
           <% end %>
 
           <% row.with_cell do %>
-            <%= render V2::StatusIndicatorPillComponent.new(text: "Halted", status: :inert) %>
+            <%= render V2::BadgeComponent.new(text: "Halted", status: :inert) %>
           <% end %>
 
           <% row.with_cell do %>

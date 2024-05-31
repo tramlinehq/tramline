@@ -18,7 +18,7 @@
       <div class="flex justify-between w-full items-center">
         <div class="flex gap-2 items-start">
           <div class="flex items-center gap-1">
-            <%= render V2::BadgeComponent.new do |badge| %>
+            <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
               <% badge.with_icon("integrations/logo_#{step_run.ci_cd_provider}.png") %>
               <% badge.with_link(step_run.commit.short_sha, step_run.ci_link) %>
             <% end %>
@@ -28,11 +28,11 @@
             <% step_run.deployment_runs.each do |deployment_run| %>
               <div class="flex gap-2 items-center">
                 <%= inline_svg("v2/connect_line.svg", classname: "w-5 h-5 inline-flex") %>
-                <%= render V2::BadgeComponent.new do |badge| %>
+                <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
                   <% badge.with_icon("integrations/logo_#{deployment_run.deployment.integration_type}.png") %>
                   <% badge.with_link(step_run.build_display_name, deployment_run.external_link) %>
                 <% end %>
-                <%= render V2::StatusIndicatorPillComponent.new(**deployment_status(deployment_run)) %>
+                <%= render V2::BadgeComponent.new(**deployment_status(deployment_run)) %>
               </div>
             <% end %>
           </div>

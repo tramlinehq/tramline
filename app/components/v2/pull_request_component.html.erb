@@ -28,14 +28,14 @@
 
       <div>
         <% pr.labels&.each do |label| %>
-          <%= render V2::BadgeComponent.new(label["name"]) %>
+          <%= render V2::BadgeComponent.new(text: label["name"], kind: :badge) %>
         <% end %>
       </div>
     </div>
 
     <div class="flex flex-row gap-x-2 items-center">
-      <%= render V2::BadgeComponent.new("##{pr.number}") %>
-      <%= render V2::StatusIndicatorPillComponent.new(text: state, status:) %>
+      <%= render V2::BadgeComponent.new(text: "##{pr.number}", kind: :badge) %>
+      <%= render V2::BadgeComponent.new(text: state, status:) %>
     </div>
   </div>
 </div>

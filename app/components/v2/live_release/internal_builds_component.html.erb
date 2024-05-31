@@ -2,7 +2,7 @@
   <% component.runs do |release_platform_run| %>
     <div class="opacity-80">
       <div class="flex gap-2 items-start">
-        <%= render V2::BadgeComponent.new(review_step(release_platform_run).workflow_name) do |badge| %>
+        <%= render V2::BadgeComponent.new(text: review_step(release_platform_run).workflow_name, kind: :badge) do |badge| %>
           <% badge.with_icon("integrations/logo_#{review_step(release_platform_run).ci_cd_provider}.png") %>
         <% end %>
 
@@ -10,7 +10,7 @@
           <% review_step(release_platform_run).deployments.each do |deployment| %>
             <div class="flex gap-2 items-center">
               <%= inline_svg("v2/connect_line.svg", classname: "w-5 h-5 inline-flex") %>
-              <%= render V2::BadgeComponent.new(deployment.deployment_channel_name) do |badge| %>
+              <%= render V2::BadgeComponent.new(text: deployment.deployment_channel_name, kind: :badge) do |badge| %>
                 <% badge.with_icon("integrations/logo_#{deployment.integration&.providable || "external"}.png") %>
               <% end %>
             </div>
@@ -23,7 +23,7 @@
   <% component.runs do |release_platform_run| %>
     <% if latest_step_run(release_platform_run).present? %>
       <div class="self-start">
-        <%= render V2::StatusIndicatorPillComponent.new(**step_status(latest_step_run(release_platform_run)), pill: false) %>
+        <%= render V2::BadgeComponent.new(**step_status(latest_step_run(release_platform_run)), kind: :status) %>
       </div>
     <% end %>
   <% end %>
@@ -60,7 +60,7 @@
                 <div class="flex text-sm items-center justify-between">
                   <div class="flex gap-2">
                     <span><%= step_run.build_display_name %></span>
-                    <%= render V2::StatusIndicatorPillComponent.new(**step_status(step_run)) %>
+                    <%= render V2::BadgeComponent.new(**step_status(step_run)) %>
                   </div>
 
                   <div class="flex items-center">

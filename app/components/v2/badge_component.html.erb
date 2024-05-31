@@ -1,8 +1,18 @@
-<span class="bg-main-100 text-main dark:text-white text-xs font-medium inline-flex items-center px-1.5 py-0.5 rounded-md dark:bg-main-700 dark:text-secondary-50 border border-main-200 dark:border-main-600 gap-x-1.5">
-  <%= icon if icon? %>
-  <% if link? %>
-    <%= link %>
-  <% else %>
-    <%= text %>
-  <% end %>
-</span>
+<% if color.present? %>
+  <span class="inline-flex items-center" style="<%= background_style %>">
+    <span class="w-2 h-2 me-2 rounded-full" style="<%= pill_style %>"></span>
+    <span style="<%= text_style %>"><%= text %></span>
+  </span>
+<% else %>
+  <span class="inline-flex items-center <%= badge_style %>">
+    <span class="inline-flex">
+      <% if pill? %><span class="me-2 w-2 h-2 rounded-full <%= pill %>"></span><% end %>
+      <% if icon? %><span class="me-1 inline-flex"><%= icon %></span><% end %>
+    </span>
+    <% if link? %>
+      <%= link %>
+    <% else %>
+      <%= text %>
+    <% end %>
+  </span>
+<% end %>
