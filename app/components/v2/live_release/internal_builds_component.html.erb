@@ -1,23 +1,31 @@
 <%= render V2::PlatformViewComponent.new(@release) do |component| %>
   <% component.runs do |release_platform_run| %>
-    <div class="opacity-80">
-      <div class="flex gap-2 items-start">
-        <%= render V2::BadgeComponent.new(text: review_step(release_platform_run).workflow_name, kind: :badge) do |badge| %>
-          <% badge.with_icon("integrations/logo_#{review_step(release_platform_run).ci_cd_provider}.png") %>
-        <% end %>
-
-        <div class="flex flex-col gap-2">
-          <% review_step(release_platform_run).deployments.each do |deployment| %>
-            <div class="flex gap-2 items-center">
-              <%= inline_svg("v2/connect_line.svg", classname: "w-5 h-5 inline-flex") %>
-              <%= render V2::BadgeComponent.new(text: deployment.deployment_channel_name, kind: :badge) do |badge| %>
-                <% badge.with_icon("integrations/logo_#{deployment.integration&.providable || "external"}.png") %>
-              <% end %>
-            </div>
+    <% if review_step(release_platform_run).present? %>
+      <div class="opacity-80">
+        <div class="flex gap-2 items-start">
+          <%= render V2::BadgeComponent.new(text: review_step(release_platform_run).workflow_name, kind: :badge) do |badge| %>
+            <% badge.with_icon("integrations/logo_#{review_step(release_platform_run).ci_cd_provider}.png") %>
           <% end %>
+
+          <div class="flex flex-col gap-2">
+            <% review_step(release_platform_run).deployments.each do |deployment| %>
+              <div class="flex gap-2 items-center">
+                <%= inline_svg("v2/connect_line.svg", classname: "w-5 h-5 inline-flex") %>
+                <%= render V2::BadgeComponent.new(text: deployment.deployment_channel_name, kind: :badge) do |badge| %>
+                  <% badge.with_icon("integrations/logo_#{deployment.integration&.providable || "external"}.png") %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
         </div>
       </div>
-    </div>
+    <% else %>
+      <%= render V2::EmptyStateComponent.new(
+        title: "No internal build step configured",
+        text: "Please configure an internal build step for the train to see the build status.",
+        banner_image: "v2/drill.svg",
+        type: :subdued) %>
+    <% end %>
   <% end %>
 
   <% component.runs do |release_platform_run| %>
