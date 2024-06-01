@@ -157,7 +157,7 @@ class Charts::DevopsReport
     finished_releases(last)
       .group_by(&:release_version)
       .sort_by { |v, _| v.to_semverish }.to_h
-      .transform_values { |releases| releases[0].stability_commits.count_by_team(organization) }
+      .transform_values { |releases| release_summary(releases[0]).team_stability_commits }
       .compact_blank
   end
 
@@ -165,7 +165,7 @@ class Charts::DevopsReport
     finished_releases(last)
       .group_by(&:release_version)
       .sort_by { |v, _| v.to_semverish }.to_h
-      .transform_values { |releases| releases[0].release_changelog&.commits_by_team }
+      .transform_values { |releases| release_summary(releases[0]).team_release_commits }
       .compact_blank
   end
 
@@ -243,6 +243,10 @@ class Charts::DevopsReport
 
     return releases if hotfix
     releases.release
+  end
+
+  memoize def release_summary(release)
+    Queries::ReleaseSummary.new(release.id)
   end
 
   def cache_key
