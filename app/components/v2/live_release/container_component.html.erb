@@ -11,7 +11,7 @@
     <div>
       <div class="flex flex-col gap-1 items-end">
         <% if @release.hotfix? %>
-          <span class="self-end text-xs font-medium px-2 py-0.5 rounded-md bg-main-500 text-main-100 tracking-wideish uppercase">Hotfix</span>
+          <span class="self-end"><%= render V2::BadgeComponent.new(text: "Hotfix", kind: :featured) %></span>
         <% end %>
 
         <div class="flex flex-row gap-2 justify-end items-baseline">
@@ -49,11 +49,12 @@
         <div class="flex flex-col gap-2 items-end">
           <%= render V2::BadgeComponent.new(text: status.first, status: status.second) %>
           <%= render(scheduled_badge) if automatic? %>
-          <%= render V2::BadgeComponent.new(text: "99.9% rollout", status: :ongoing) do |status| %>
-            <%= status.with_icon("v2/android.svg", size: :sm) %>
-          <% end %>
-          <%= render V2::BadgeComponent.new(text: "50% rollout", status: :ongoing) do |status| %>
-            <%= status.with_icon("v2/ios.svg", size: :sm) %>
+          <% platform_runs.each do |platform_run| %>
+            <% if staged_rollout_status(platform_run) %>
+              <%= render V2::BadgeComponent.new(**staged_rollout_status(platform_run)) do |status| %>
+                <%= status.with_icon("v2/#{platform_run.platform}.svg", size: :sm) %>
+              <% end %>
+            <% end %>
           <% end %>
         </div>
         <%= render V2::SmartTextBoxComponent.new(@release.release_branch,

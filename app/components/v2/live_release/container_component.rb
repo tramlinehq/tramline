@@ -55,4 +55,23 @@ class V2::LiveRelease::ContainerComponent < V2::BaseReleaseComponent
   def sidebar_title_tag(config)
     config[:unavailable] ? :div : :a
   end
+
+  memoize def staged_rollout_status(platform_run)
+    latest_store_release = platform_run.store_releases.first
+    return unless latest_store_release&.staged_rollout?
+
+    staged_rollout = latest_store_release.staged_rollout
+    return if staged_rollout.blank?
+
+    percentage = ""
+
+    if staged_rollout.last_rollout_percentage.present?
+      formatter = (staged_rollout.last_rollout_percentage % 1 == 0) ? "%.0f" : "%.02f"
+      percentage = formatter % staged_rollout.last_rollout_percentage
+    end
+
+    status = (staged_rollout.completed? || staged_rollout.fully_released?) ? :success : :ongoing
+
+    {text: "#{percentage}% rollout", status:}
+  end
 end
