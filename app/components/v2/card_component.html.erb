@@ -28,12 +28,8 @@
   <% if emptiness %>
     <%= empty_state %>
   <% else %>
-    <% if fold_target_params.blank? %>
+    <%= content_tag(:div, main_content_params) do %>
       <%= content %>
-    <% else %>
-      <%= content_tag(:div, fold_target_params) do %>
-        <%= content %>
-      <% end %>
     <% end %>
   <% end %>
 <% end %>

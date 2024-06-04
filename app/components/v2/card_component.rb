@@ -35,12 +35,11 @@ class V2::CardComponent < ViewComponent::Base
     {controller: "fold", fold_expanded_value: "max-h-fit", fold_collapsed_value: @size}
   end
 
-  def fold_target_params
-    return unless fold?
+  def main_content_params
     params = {}
-    params[:data] = {fold_target: "foldable"}
-    params[:class] = "overflow-y-auto " unless full?
-    params[:class] = "h-full" if fixed_height?
+    params[:data] = {fold_target: "foldable"} if fold?
+    params[:class] = "h-full "
+    params[:class] += "overflow-y-auto" unless full?
     params
   end
 
