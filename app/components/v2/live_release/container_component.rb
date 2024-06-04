@@ -4,6 +4,13 @@ class V2::LiveRelease::ContainerComponent < V2::BaseReleaseComponent
 
   SELECTED_TAB_STYLE = "active text-main bg-white border-l-3"
 
+  TAB_STATUS_ICON = {
+    none: {icon: "v2/circle.svg", classes: STATUS_COLOR_PALETTE[:neutral].join(" ") + " !bg-backgroundLight-50"},
+    blocked: {icon: "v2/circle_x.svg", classes: STATUS_COLOR_PALETTE[:inert].join(" ")},
+    ongoing: {icon: "v2/circle_dashed.svg", classes: STATUS_COLOR_PALETTE[:ongoing].join(" ")},
+    success: {icon: "v2/circle_check_big.svg", classes: STATUS_COLOR_PALETTE[:success].join(" ")}
+  }
+
   def initialize(release, title:, tab_config: [], error_resource: nil)
     raise ArgumentError, "tab_config must be a Hash" unless tab_config.is_a?(Hash)
 
@@ -22,16 +29,6 @@ class V2::LiveRelease::ContainerComponent < V2::BaseReleaseComponent
     end
   end
 
-  def status_color(status)
-    case status
-    when :success then "bg-green-500"
-    when :ongoing then "bg-amber-500"
-    when :none then "bg-backgroundLight-50"
-    else
-      raise ArgumentError, "Invalid status: #{status}"
-    end
-  end
-
   def active_style(tab_path)
     SELECTED_TAB_STYLE if current_page?(tab_path)
   end
@@ -45,11 +42,8 @@ class V2::LiveRelease::ContainerComponent < V2::BaseReleaseComponent
   end
 
   def status_icon(config)
-    if config[:status] == :blocked
-      render V2::IconComponent.new("v2/circle_x.svg", size: :md)
-    else
-      content_tag(:div, nil, class: "w-4 h-3.5 #{status_color(config[:status])} rounded-full border-2 border-main-500 dark:border-gray-900 dark:bg-gray-700")
-    end
+    TAB_STATUS_ICON[config[:status]] => {icon:, classes:}
+    render V2::IconComponent.new(icon, size: :md, classes:)
   end
 
   def sidebar_title_tag(config)
