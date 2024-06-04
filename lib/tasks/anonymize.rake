@@ -124,8 +124,10 @@ namespace :anonymize do
 
         primary_key "id"
         whitelist "train_id", "branch_name", "status", "original_release_version", "release_version", "scheduled_at",
-          "completed_at", "stopped_at", "is_automatic", "tag_name", "release_type", "hotfixed_from", "new_hotfix_branch"
+          "completed_at", "stopped_at", "is_automatic", "tag_name", "release_type", "hotfixed_from", "new_hotfix_branch", "internal_notes"
         whitelist_timestamps
+
+        anonymize("release_pilot_id").using FieldStrategy::SelectFromList.new(user_ids)
       end
 
       table "build_queues" do

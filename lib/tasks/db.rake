@@ -73,6 +73,8 @@ def nuke_train(train)
       prun.step_runs&.delete_all
       prun.passports&.delete_all
       prun.release_metadata&.delete_all
+      prun.store_submissions&.delete_all
+      prun.builds&.delete_all
     end
     run.pull_requests&.delete_all
     run.release_platform_runs&.delete_all
