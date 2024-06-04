@@ -30,7 +30,7 @@ module Tabbable
     sections[:stability][:regression_testing][:icon] = "v2/tablet_smartphone.svg"
     sections[:stability][:regression_testing][:position] = 4
     sections[:stability][:regression_testing][:status] = step_statuses[:regression_testing]
-    sections[:stability][:release_candidate][:path] = root_path
+    sections[:stability][:release_candidate][:path] = release_candidates_release_path(@release)
     sections[:stability][:release_candidate][:icon] = "v2/gallery_horizontal_end.svg"
     sections[:stability][:release_candidate][:position] = 5
     sections[:stability][:release_candidate][:status] = step_statuses[:release_candidate]

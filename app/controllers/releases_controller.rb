@@ -4,8 +4,9 @@ class ReleasesController < SignedInApplicationController
   include Tabbable
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
-  before_action :set_release, only: %i[show destroy update timeline overview change_queue store_submissions internal_builds regression_testing soak]
-  before_action :set_live_release_tab_configuration, only: %i[overview change_queue store_submissions internal_builds regression_testing soak]
+  before_action :set_release, only: %i[show destroy update timeline overview change_queue store_submissions internal_builds regression_testing release_candidates soak]
+  before_action :set_live_release_tab_configuration, only: %i[overview change_queue store_submissions internal_builds regression_testing release_candidates soak]
+  before_action :set_train_and_app, only: [:show, :update, :overview, :change_queue, :store_submissions, :internal_builds, :regression_testing, :release_candidates, :soak]
 
   def index
     @train = @app.trains.friendly.find(params[:train_id])
@@ -14,8 +15,6 @@ class ReleasesController < SignedInApplicationController
   def show
     redirect_to overview_release_path(@release) and return if current_organization.demo?
 
-    @train = @release.train
-    @app = @train.app
     set_commits
     set_pull_requests
     render :show
@@ -44,9 +43,6 @@ class ReleasesController < SignedInApplicationController
   end
 
   def update
-    @train = @release.train
-    @app = @train.app
-
     if @release.update(update_release_params)
       redirect_to edit_app_train_path(@app, @train), notice: "Release was updated"
     else
@@ -55,35 +51,26 @@ class ReleasesController < SignedInApplicationController
   end
 
   def overview
-    @train = @release.train
-    @app = @train.app
     set_pull_requests
   end
 
   def change_queue
-    @train = @release.train
-    @app = @train.app
     set_pull_requests
   end
 
   def internal_builds
-    @train = @release.train
-    @app = @train.app
   end
 
   def regression_testing
-    @train = @release.train
-    @app = @train.app
+  end
+
+  def release_candidates
   end
 
   def store_submissions
-    @train = @release.train
-    @app = @train.app
   end
 
   def soak
-    @train = @release.train
-    @app = @train.app
   end
 
   def live_release
@@ -121,8 +108,6 @@ class ReleasesController < SignedInApplicationController
 
   def destroy
     @release.stop!
-    @train = @release.train
-    @app = @train.app
     redirect_to train_path, notice: "The release was stopped."
   end
 
@@ -162,6 +147,11 @@ class ReleasesController < SignedInApplicationController
   end
 
   private
+
+  def set_train_and_app
+    @train = @release.train
+    @app = @train.app
+  end
 
   def post_release_params
     params.require(:release).permit(:force_finalize)

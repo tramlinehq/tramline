@@ -38,7 +38,7 @@
 
   <% component.runs do |release_platform_run| %>
     <% if latest_step_run(release_platform_run).present? %>
-      <%= render V2::LiveRelease::InternalBuildComponent.new(step_run: latest_step_run(release_platform_run), release_platform_run:) %>
+      <%= render V2::LiveRelease::DeprecatedBuildComponent.new(step_run: latest_step_run(release_platform_run), release_platform_run:) %>
     <% end %>
   <% end %>
 
@@ -79,7 +79,7 @@
               <% end %>
 
               <div class="my-3">
-                <%= render V2::LiveRelease::InternalBuildComponent.new(step_run:, release_platform_run:, compact: true) %>
+                <%= render V2::LiveRelease::DeprecatedBuildComponent.new(step_run:, release_platform_run:, compact: true) %>
               </div>
             <% end %>
           <% end %>

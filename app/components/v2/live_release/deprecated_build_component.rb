@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class V2::LiveRelease::InternalBuildComponent < V2::BaseComponent
+class V2::LiveRelease::DeprecatedBuildComponent < V2::BaseComponent
   include Memery
 
   DEPLOYMENT_STATUS = {

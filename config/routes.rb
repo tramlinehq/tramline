@@ -88,6 +88,7 @@ Rails.application.routes.draw do
           get :store_submissions
           get :internal_builds
           get :regression_testing
+          get :release_candidates
           get :soak
         end
 
