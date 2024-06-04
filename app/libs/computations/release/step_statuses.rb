@@ -38,11 +38,13 @@ class Computations::Release::StepStatuses
   end
 
   def release_candidate_status
+    return STATUS[:none] if @release.release_platform_runs.all? { |rp| rp.step_runs_for(rp.release_platform.release_step).blank? }
     return STATUS[:ongoing] if @release.release_platform_runs.any? { |rp| rp.step_runs.any? { |sr| sr.step.release? && sr.active? && !sr.production_release_submitted? } }
     STATUS[:success]
   end
 
   def soak_period_status
+    return STATUS[:blocked] if release_candidate_status == STATUS[:none]
     return STATUS[:ongoing] if @release.release_platform_runs.any? { |rp| rp.step_runs.any? { |sr| sr.step.release? && sr.deployment_started? && !sr.production_release_submitted? } }
     STATUS[:success]
   end
@@ -64,6 +66,7 @@ class Computations::Release::StepStatuses
   end
 
   def rollout_to_users_status
+    return STATUS[:blocked] if app_submission_status == STATUS[:blocked]
     return STATUS[:ongoing] unless @release.production_release_happened?
     return STATUS[:blocked] unless production_release_submitted?
     STATUS[:success]
