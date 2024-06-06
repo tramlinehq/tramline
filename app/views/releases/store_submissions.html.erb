@@ -18,9 +18,11 @@
 
           <% if run.previous_store_submissions.present? %>
             <%= render V2::SectionComponent.new(style: :titled, title: "Previous submissions", size: :compact) do %>
-              <% run.previous_store_submissions.each do |sub| %>
-                <%= render V2::LiveRelease::SubmissionComponent.new(sub, inactive: true) %>
-              <% end %>
+              <div class="flex flex-col item-gap-default">
+                <% run.previous_store_submissions.each do |sub| %>
+                  <%= render V2::LiveRelease::SubmissionComponent.new(sub, inactive: true) %>
+                <% end %>
+              </div>
             <% end %>
           <% end %>
         </div>
