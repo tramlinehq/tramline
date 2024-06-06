@@ -294,7 +294,7 @@ namespace :anonymize do
       end
 
       table "release_health_metrics" do
-        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) }
+        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) && !ReleaseHealthMetric.exists?(record["id"]) }
         primary_key "id"
         whitelist "deployment_run_id", "sessions", "sessions_in_last_day", "sessions_with_errors", "daily_users",
           "daily_users_with_errors", "errors_count", "new_errors_count", "fetched_at", "total_sessions_in_last_day", "external_release_id"
@@ -305,6 +305,7 @@ namespace :anonymize do
         continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) }
         continue { |index, record| ReleaseHealthRule.exists?(record["release_health_rule_id"]) }
         continue { |index, record| ReleaseHealthMetric.exists?(record["release_health_metric_id"]) }
+        continue { |index, record| !ReleaseHealthEvent.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "deployment_run_id", "release_health_rule_id", "release_health_metric_id", "health_status", "action_triggered", "notification_triggered", "event_timestamp"
@@ -312,7 +313,7 @@ namespace :anonymize do
       end
 
       table "passports" do
-        continue { |index, record| record["stampable_type"].constantize.exists?(record["stampable_id"]) }
+        continue { |index, record| record["stampable_type"].constantize.exists?(record["stampable_id"]) && !Passport.exists?(record["id"]) }
 
         primary_key "id"
         whitelist "stampable_type", "stampable_id", "reason", "kind", "message", "metadata", "author_id",
