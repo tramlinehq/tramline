@@ -22,7 +22,11 @@
          class="flex justify-center items-center border-default box-padding">
       <div class="flex flex-col item-gap-default items-center">
         <div class="text-md text-secondary">Time remaining</div>
-        <div class="text-4xl" data-countdown-target="output">24:00:00</div>
+        <% if success? %>
+          <div class="text-2xl">Soak period has ended</div>
+        <% else %>
+          <div class="text-4xl" data-countdown-target="output">24:00:00</div>
+        <% end %>
       </div>
     </div>
 
