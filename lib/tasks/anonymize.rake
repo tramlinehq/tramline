@@ -50,6 +50,22 @@ namespace :anonymize do
         anonymize("working_branch") { |field| Faker::Hacker.noun }
       end
 
+      table "release_indices" do
+        continue { |index, record| Train.exists?(record["train_id"]) }
+
+        primary_key "id"
+        whitelist "tolerable_range", "train_id"
+        whitelist_timestamps
+      end
+
+      table "release_index_components" do
+        continue { |index, record| ReleaseIndex.exists?(record["release_index_id"]) }
+
+        primary_key "id"
+        whitelist "name", "weight", "tolerable_range", "tolerable_unit", "release_index_id"
+        whitelist_timestamps
+      end
+
       table "notification_settings" do
         continue { |index, record| Train.exists?(record["train_id"]) }
 
@@ -71,11 +87,28 @@ namespace :anonymize do
         anonymize("app_id") { |field| app.id }
       end
 
+      table "release_health_rules" do
+        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) }
+
+        primary_key "id"
+        whitelist "is_halting", "release_platform_id", "discarded_at"
+        whitelist_timestamps
+        anonymize("name") { |_| (Faker::Hacker.noun + " Rule").titleize }
+      end
+
+      table "rule_expressions" do
+        continue { |index, record| ReleaseHealthRule.exists?(record["release_health_rule_id"]) }
+
+        primary_key "id"
+        whitelist "comparator", "metric", "threshold_value", "type", "release_health_rule_id"
+        whitelist_timestamps
+      end
+
       table "steps" do
         continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) }
 
         primary_key "id"
-        whitelist "release_platform_id", "status", "step_number", "slug", "release_suffix", "kind", "auto_deploy", "app_variant_id"
+        whitelist "release_platform_id", "status", "step_number", "slug", "release_suffix", "kind", "auto_deploy", "app_variant_id", "discarded_at"
         whitelist_timestamps
         anonymize("ci_cd_channel") do |field|
           {"id" => "dummy", "name" => "CI Workflow #{Faker::JapaneseMedia::StudioGhibli.character}"}
@@ -94,14 +127,19 @@ namespace :anonymize do
         whitelist "step_id", "build_artifact_channel", "deployment_number", "staged_rollout_config", "is_staged_rollout", "discarded_at"
         whitelist_timestamps
         anonymize("build_artifact_channel") do |field|
-          val = field.value
-          val["name"] = Faker::TvShows::TwinPeaks.location if val["is_production"] != true
-          val
+          step = Step.find(field.ar_record.step_id)
+          if step.kind == "release"
+            field.value
+          else
+            val = field.value
+            val["name"] = Faker::TvShows::TwinPeaks.location
+            val
+          end
         end
         anonymize("integration_id") do |field|
           step = Step.find(field.ar_record.step_id)
           release_platform = ReleasePlatform.find(step.release_platform_id)
-          if release_platform.platform == "android" && field.ar_record.build_artifact_channel["is_production"] == true
+          if release_platform.platform == "android" && step.kind == "release"
             play_store_integration.id
           elsif release_platform.platform == "ios"
             app_store_integration.id
@@ -151,7 +189,7 @@ namespace :anonymize do
             field.value.map do |commit|
               {"sha" => SecureRandom.uuid.split("-").join,
                "url" => "https://github.com/tramlinehq/ueno/commit/6149361ed3f70f5315b613e9e19ed699e3785700",
-               "message" => Faker::Company.bs,
+               "message" => Faker::Lorem.paragraph_by_chars(number: commit["message"].size),
                "parents" => [{"sha" => "dummy"}],
                "author_url" => "https://github.com/tramlinehq",
                "author_name" => Faker::Name.name,
@@ -260,6 +298,16 @@ namespace :anonymize do
         primary_key "id"
         whitelist "deployment_run_id", "sessions", "sessions_in_last_day", "sessions_with_errors", "daily_users",
           "daily_users_with_errors", "errors_count", "new_errors_count", "fetched_at", "total_sessions_in_last_day", "external_release_id"
+        whitelist_timestamps
+      end
+
+      table "release_health_events" do
+        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) }
+        continue { |index, record| ReleaseHealthRule.exists?(record["release_health_rule_id"]) }
+        continue { |index, record| ReleaseHealthMetric.exists?(record["release_health_metric_id"]) }
+
+        primary_key "id"
+        whitelist "deployment_run_id", "release_health_rule_id", "release_health_metric_id", "health_status", "action_triggered", "notification_triggered", "event_timestamp"
         whitelist_timestamps
       end
 

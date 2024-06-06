@@ -62,6 +62,7 @@ def nuke_train(train)
           drun.staged_rollout&.delete
           drun.staged_rollout&.passports&.delete_all
           drun.external_release&.delete
+          drun.release_health_events&.delete_all
           drun.release_health_metrics&.delete_all
           drun.passports&.delete_all
         end
@@ -90,7 +91,14 @@ def nuke_train(train)
   train.scheduled_releases&.delete_all
   train.release_index&.components&.delete_all
   train.release_index&.delete
+  train.release_index&.release_index_components&.delete_all
+  train.release_index&.delete
   train.release_platforms.each do |release_platform|
+    release_platform.release_health_rules.each do |rule|
+      rule.trigger_rule_expressions&.delete_all
+      rule.filter_rule_expressions&.delete_all
+    end
+    release_platform.release_health_rules&.delete_all
     release_platform.all_steps.each do |step|
       step.all_deployments.delete_all
     end
