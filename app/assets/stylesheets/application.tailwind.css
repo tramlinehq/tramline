@@ -198,6 +198,22 @@ turbo-frame.with-turbo-frame-loader[busy] > *:not(.turbo-frame-loader) {
   left: -4px;
 }
 
+.ql-editor {
+  @apply text-sm !important;
+}
+
+.ql-size-large {
+  @apply text-lg !important;
+}
+
+.ql-size-small {
+  @apply text-xs !important;
+}
+
+.ql-size-huge {
+  @apply text-xl !important;
+}
+
 .ql-toolbar.ql-snow {
   @apply border-0;
   @apply border-default-b border-default-t rounded-tl-lg border-default-r rounded-tr-lg border-default-l !important;
