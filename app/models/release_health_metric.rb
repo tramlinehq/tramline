@@ -35,7 +35,7 @@ class ReleaseHealthMetric < ApplicationRecord
   }.with_indifferent_access
 
   def fresh?
-    fetched_at > 3.hours.ago
+    fetched_at > 30.days.ago
   end
 
   def user_stability
