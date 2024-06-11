@@ -1,5 +1,6 @@
 class V2::CommitComponent < V2::BaseComponent
   include ReleasesHelper
+  OUTER_CLASSES = "py-2 px-3 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm"
 
   def initialize(commit:, avatar: true, detailed: true)
     @commit = commit
@@ -18,10 +19,6 @@ class V2::CommitComponent < V2::BaseComponent
     author_login || author_name
   end
 
-  def detailed?
-    @detailed
-  end
-
   def integration_provider_logo
     "integrations/logo_#{ci_cd_provider}.png"
   end
@@ -30,13 +27,11 @@ class V2::CommitComponent < V2::BaseComponent
     @commit.train&.ci_cd_provider
   end
 
-  def show_avatar?
-    @avatar
-  end
+  def detailed? = @detailed
 
-  def show_numbering?
-    @numbering
-  end
+  def show_avatar? = @avatar
+
+  def show_numbering? = @numbering
 
   def pull_request
     @commit.pull_request
@@ -44,6 +39,6 @@ class V2::CommitComponent < V2::BaseComponent
 
   def outer_classes
     return "" unless detailed?
-    "py-2 px-3 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm"
+    OUTER_CLASSES
   end
 end
