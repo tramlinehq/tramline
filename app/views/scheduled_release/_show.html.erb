@@ -11,7 +11,7 @@
 
     <div class="flex justify-between">
       <% if status.present? %>
-        <%= render V2::StatusIndicatorPillComponent.new(**status) %>
+        <%= render V2::BadgeComponent.new(**status) %>
       <% end %>
       <div class="flex ml-auto text-sm text-secondary tracking-tight"><%= footer %></div>
     </div>

@@ -33,7 +33,7 @@
         scheme: :light,
         type: :link,
         size: :xxs,
-        options: finish_release_release_path(@release.id),
+        options: finish_release_release_path(@release),
         label: "Mark release as finished",
         html_options: { method: :delete,
                         data: { turbo_method: :post,
@@ -50,7 +50,7 @@
         type: :button,
         size: :xxs,
         label: "Stop release",
-        options: release_path(@release.id),
+        options: release_path(@release),
         turbo: false,
         html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: stop_release_warning(@release) } }) do |b|
         b.with_icon("v2/stop.svg")

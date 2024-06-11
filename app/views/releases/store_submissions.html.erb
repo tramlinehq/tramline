@@ -1,19 +1,28 @@
 <%= render V2::LiveRelease::ContainerComponent.new(@release,
                                                    title: @train.name,
-                                                   turbo_frame: dom_id(@release, :live_release),
                                                    tab_config: @tab_configuration) do |container| %>
   <% container.with_back_button %>
-  <% container.with_tab(title: "App Submission") do %>
+  <% container.with_tab(title: "App Submission", icon: @tab_configuration.dig(:release, :app_submission, :icon)) do %>
     <%= render V2::PlatformViewComponent.new(@release) do |component| %>
       <% component.platform_runs.each do |run| %>
         <div class="grid grid-cols-1">
-          <%= render V2::LiveRelease::SubmissionComponent.new(run.active_store_submission) %>
+          <% if run.active_store_submission %>
+            <%= render V2::LiveRelease::SubmissionComponent.new(run.active_store_submission) %>
+          <% else %>
+            <%= render V2::EmptyStateComponent.new(
+              title: "Not ready to be submitted",
+              text: "Please wait for a Release Candidate to be available to start a submission.",
+              banner_image: "v2/mail.svg",
+              type: :subdued) %>
+          <% end %>
 
           <% if run.previous_store_submissions.present? %>
             <%= render V2::SectionComponent.new(style: :titled, title: "Previous submissions", size: :compact) do %>
-              <% run.previous_store_submissions.each do |sub| %>
-                <%= render V2::LiveRelease::SubmissionComponent.new(sub, inactive: true) %>
-              <% end %>
+              <div class="flex flex-col item-gap-default">
+                <% run.previous_store_submissions.each do |sub| %>
+                  <%= render V2::LiveRelease::SubmissionComponent.new(sub, inactive: true) %>
+                <% end %>
+              </div>
             <% end %>
           <% end %>
         </div>

@@ -2,75 +2,128 @@
   <%= render V2::ErrorComponent.new(error_resource) %>
 <% end %>
 
-<% if back_button %>
-  <div class="my-2 mb-4">
-    <%= back_button %>
-  </div>
-<% end %>
+<div class="my-2 mb-4">
+  <%= back_button %>
+</div>
 
 <div class="grid grid-cols-10 bg-backgroundLight-50">
-  <div class="col-span-2 flex flex-col pl-6 py-3.5 pb-16 border-t border-default-b border-default-l rounded-tl-lg rounded-bl-lg">
-    <div class="flex flex-col space-y-2 pr-4">
-      <div class="flex flex-row gap-x-2 justify-end items-baseline">
-        <span class="text-sm text-secondary-50"><%= @release.app.display_attr(:platform) %></span>
-        <span class="heading-1 text-main dark:text-white"><%= @release.release_version %></span>
-      </div>
+  <div class="col-span-2 flex flex-col pl-6 py-3.5 border-t border-default-b border-default-l rounded-tl-lg rounded-bl-lg justify-between">
+    <div>
+      <div class="flex flex-col gap-1 items-end pr-4">
+        <% if @release.hotfix? %>
+          <span class="self-end"><%= render V2::BadgeComponent.new(text: "Hotfix", kind: :featured) %></span>
+        <% end %>
 
-      <% if (reldex = release_summary&.fetch(:reldex, nil)) %>
-        <div class="flex flex-row justify-end">
-          <%= render V2::Reldex::StatusComponent.new(release:, reldex_score: reldex) %>
+        <div class="flex flex-row gap-2 justify-end items-baseline">
+          <% if cross_platform? %>
+            <div class="flex items-center gap-1">
+              <%= render V2::IconComponent.new("v2/android.svg", size: :lg) %>
+              <%= render V2::IconComponent.new("v2/plus_fat.svg", size: :lg) %>
+              <%= render V2::IconComponent.new("v2/ios.svg", size: :lg) %>
+            </div>
+          <% else %>
+            <%= render V2::IconComponent.new("v2/#{release.platform}.svg", size: :lg) %>
+          <% end %>
+          <span class="heading-1 text-main dark:text-white"><%= @release.release_version %></span>
         </div>
-      <% end %>
 
-      <div class="flex flex-row justify-end">
-        <%=
-          badge = V2::BadgeComponent.new("humanoid-slug-42")
-          badge.with_icon("v2/robot.svg")
-          render badge
-        %>
+        <%= render V2::ButtonComponent.new(
+          scheme: :link,
+          type: :link,
+          size: :none,
+          options: timeline_release_path(@release),
+          authz: false,
+          label: "Release activity",
+          html_options: { class: "text-sm" }) do |b|
+          b.with_icon("v2/activity.svg")
+        end %>
       </div>
 
-      <%= render V2::SmartTextBoxComponent.new(@release.release_branch,
-                                               clipboard: true,
-                                               clipboard_tooltip: "Copy release branch",
-                                               size: :compact) %>
+      <div class="flex flex-col gap-2 mt-8 pr-4">
+        <% if (reldex = release_summary&.fetch(:reldex, nil)) %>
+          <div class="flex flex-row justify-end">
+            <%= render V2::Reldex::StatusComponent.new(release:, reldex_score: reldex) %>
+          </div>
+        <% end %>
 
-      <% if @release.tag_name.present? %>
-        <%= render V2::SmartTextBoxComponent.new(@release.tag_name,
+        <div class="flex flex-col gap-2 items-end">
+          <%= render V2::BadgeComponent.new(text: status.first, status: status.second) %>
+          <%= render(scheduled_badge) if automatic? %>
+          <% platform_runs.each do |platform_run| %>
+            <% if staged_rollout_status(platform_run) %>
+              <%= render V2::BadgeComponent.new(**staged_rollout_status(platform_run)) do |status| %>
+                <%= status.with_icon("v2/#{platform_run.platform}.svg", size: :sm) %>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+        <%= render V2::SmartTextBoxComponent.new(@release.release_branch,
                                                  clipboard: true,
-                                                 clipboard_tooltip: "Copy final release tag",
+                                                 clipboard_tooltip: "Copy release branch",
                                                  size: :compact) %>
-      <% end %>
 
-      <div class="flex flex-row justify-end gap-x-1">
-        <%= render V2::StatusIndicatorPillComponent.new(text: "Rollout", status: :success) %>
-        <%= render V2::StatusIndicatorPillComponent.new(text: "Phased 5%", status: :inert) %>
+        <% if @release.tag_name.present? %>
+          <%= render V2::SmartTextBoxComponent.new(@release.tag_name,
+                                                   clipboard: true,
+                                                   clipboard_tooltip: "Copy final release tag",
+                                                   size: :compact) %>
+        <% end %>
+      </div>
+      <div class="flex flex-col mt-10 gap-8">
+        <% sorted_sections.each do |section_name, sorted_configs| %>
+          <div>
+            <div class="flex flex-row justify-end heading-5-sc pr-4">
+              <%= section_name %>
+            </div>
+
+            <ul class="text-gray-500 dark:text-gray-400 mt-2">
+              <% sorted_configs.each do |_, config| %>
+                <% config => { title:, path:, icon: } %>
+                <li class="flex items-center justify-center w-full gap-1.5">
+                  <%= status_icon(config) %>
+                  <%= content_tag(sidebar_title_tag(config),
+                                  class: "flex flex-row items-center justify-between w-full rounded-sm hover:text-gray-900 hover:bg-gray-100 #{active_style(path)} pr-4",
+                                  href: path) do %>
+                    <div class="flex gap-2 items-center pl-2">
+                      <span class="text-sm font-normal py-1.5 dark:bg-gray-200"><%= title %></span>
+                      <%= coming_soon(config) %>
+                    </div>
+
+                    <%= render V2::IconComponent.new(icon, size: :md) %>
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
       </div>
     </div>
 
-    <div class="flex flex-col mt-16 space-y-8">
-      <% sorted_sections.each do |section_name, sorted_configs| %>
-        <div>
-          <div class="flex flex-row justify-end heading-5-sc pr-4">
-            <%= section_name %>
-          </div>
-
-          <ul class="text-sm font-medium text-gray-500 dark:text-gray-400 mt-2">
-            <% sorted_configs.each do |(_position, name, path, icon)| %>
-              <div class="flex gap-x-2 items-center w-full">
-                <div class="w-6 h-5 <%= status %> rounded-full border border-white dark:border-gray-900 dark:bg-gray-700"></div>
-
-                <a href="<%= path %>" class="flex flex-row items-center justify-between pr-4 w-full rounded-sm hover:text-gray-900 hover:bg-gray-100 <%= active_style(path) %>" aria-current="page">
-                  <li class="text-sm font-normal px-2 py-1.5 dark:bg-gray-200">
-                    <%= name %>
-                  </li>
-
-                  <%= render V2::IconComponent.new(icon, size: :md) %>
-                </a>
-              </div>
-            <% end %>
-          </ul>
-        </div>
+    <div class="self-end mt-10 flex flex-col gap-2 items-end pr-4">
+      <% if @release.partially_finished? %>
+        <%= render V2::ButtonComponent.new(
+          scheme: :light,
+          type: :link,
+          size: :xxs,
+          options: finish_release_release_path(@release),
+          label: "Mark release as finished",
+          html_options: { method: :delete,
+                          data: { turbo_method: :post,
+                                  turbo_confirm: "You have finished release to only one of the platforms. Are you sure you want to finish the release?" } }) do |b|
+          b.with_icon("v2/list_checks.svg")
+        end %>
+      <% end %>
+      <% if @release.stoppable? %>
+        <%= render V2::ButtonComponent.new(
+          scheme: :danger,
+          type: :button,
+          size: :xxs,
+          label: "Stop release",
+          options: release_path(@release),
+          turbo: false,
+          html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: stop_release_warning } }) do |b|
+          b.with_icon("v2/stop.svg")
+        end %>
       <% end %>
     </div>
   </div>
@@ -81,5 +134,3 @@
     <% end %>
   </article>
 </div>
-
-

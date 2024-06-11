@@ -12,6 +12,7 @@
 #  original_release_version :string
 #  release_type             :string           not null
 #  scheduled_at             :datetime
+#  slug                     :string           indexed
 #  status                   :string           not null
 #  stopped_at               :datetime
 #  tag_name                 :string
@@ -22,6 +23,7 @@
 #
 class Release < ApplicationRecord
   has_paper_trail
+  extend FriendlyId
   include AASM
   include Passportable
   include Taggable
@@ -51,6 +53,49 @@ class Release < ApplicationRecord
       {"attributes" => {"align" => "center"}, "insert" => "\n"}
     ]
   }
+  STAMPABLE_REASONS = %w[
+    created
+    release_branch_created
+    kickoff_pr_succeeded
+    version_changed
+    finalizing
+    pre_release_pr_not_creatable
+    pull_request_not_mergeable
+    post_release_pr_succeeded
+    backmerge_pr_created
+    pr_merged
+    backmerge_failure
+    vcs_release_created
+    finalize_failed
+    stopped
+    finished
+  ]
+  # TODO: deprecate this
+  STAMPABLE_REASONS.concat(["status_changed"])
+  STATES = {
+    created: "created",
+    on_track: "on_track",
+    post_release: "post_release",
+    post_release_started: "post_release_started",
+    post_release_failed: "post_release_failed",
+    stopped: "stopped",
+    finished: "finished",
+    partially_finished: "partially_finished",
+    stopped_after_partial_finish: "stopped_after_partial_finish"
+  }
+  SECTIONS = {
+    overview: {title: "Overview"},
+    changeset_tracking: {title: "Changeset tracking"},
+    internal_builds: {title: "Internal builds"},
+    regression_testing: {title: "Regression testing"},
+    release_candidate: {title: "Release candidate"},
+    soak_period: {title: "Soak period"},
+    notes: {title: "Notes"},
+    screenshots: {title: "Screenshots"},
+    approvals: {title: "Approvals"},
+    app_submission: {title: "App submission"},
+    rollout_to_users: {title: "Rollout to users"}
+  }
 
   belongs_to :train
   belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :hotfixed_releases
@@ -71,39 +116,6 @@ class Release < ApplicationRecord
   scope :pending_release, -> { where.not(status: TERMINAL_STATES) }
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   scope :sequential, -> { order("releases.scheduled_at DESC") }
-
-  STAMPABLE_REASONS = %w[
-    created
-    release_branch_created
-    kickoff_pr_succeeded
-    version_changed
-    finalizing
-    pre_release_pr_not_creatable
-    pull_request_not_mergeable
-    post_release_pr_succeeded
-    backmerge_pr_created
-    pr_merged
-    backmerge_failure
-    vcs_release_created
-    finalize_failed
-    stopped
-    finished
-  ]
-
-  # TODO: deprecate this
-  STAMPABLE_REASONS.concat(["status_changed"])
-
-  STATES = {
-    created: "created",
-    on_track: "on_track",
-    post_release: "post_release",
-    post_release_started: "post_release_started",
-    post_release_failed: "post_release_failed",
-    stopped: "stopped",
-    finished: "finished",
-    partially_finished: "partially_finished",
-    stopped_after_partial_finish: "stopped_after_partial_finish"
-  }
 
   enum status: STATES
   enum release_type: {
@@ -156,6 +168,7 @@ class Release < ApplicationRecord
   after_create_commit -> { RefreshReportsJob.perform_later(hotfixed_from.id) }, if: -> { hotfix? && hotfixed_from.present? }
 
   attr_accessor :has_major_bump, :force_finalize, :hotfix_platform, :custom_version
+  friendly_id :human_slug, use: :slugged
 
   delegate :versioning_strategy, to: :train
   delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
@@ -167,45 +180,20 @@ class Release < ApplicationRecord
 
   def self.for_branch(branch_name) = find_by(branch_name:)
 
+  def human_slug
+    date = scheduled_at.strftime("%Y-%m-%d")
+    %W[#{date}-#{Haikunator.haikunate(0)} #{date}-#{Haikunator.haikunate(1)} #{date}-#{Haikunator.haikunate(10)}]
+  end
+
   def index_score
     return if hotfix?
     return unless finished?
 
-    rollout_duration = 0
-    stability_duration = 0
-    rollout_fixes = 0
-    rollout_changes = 0
-    days_since_last_release = 0
+    train.release_index&.score(**Computations::Release::ReldexParameters.call(self))
+  end
 
-    submitted_at = deployment_runs.map(&:submitted_at).compact.min
-    rollout_started_at = deployment_runs.map(&:release_started_at).compact.min
-    platform_store_versions = deployment_runs.reached_production.group_by(&:platform)
-    max_store_versions = platform_store_versions.transform_values(&:size).values.max
-    first_store_version = platform_store_versions.values.flatten.min_by(&:created_at)
-
-    rollout_fixes = max_store_versions - 1 if max_store_versions.present?
-    rollout_duration = ActiveSupport::Duration.build(completed_at - rollout_started_at).in_days if rollout_started_at.present?
-    stability_duration = ActiveSupport::Duration.build(submitted_at - scheduled_at).in_days if submitted_at.present?
-    days_since_last_release = ActiveSupport::Duration.build(completed_at - previous_release&.completed_at).in_days if previous_release.present?
-
-    if rollout_fixes > 0
-      base_commit = first_store_version.step_run.commit
-      head_commit = all_commits.reorder(timestamp: :desc).first
-      rollout_changes = all_commits.between_commits(base_commit, head_commit).size
-    end
-
-    params = {
-      hotfixes: all_hotfixes.size,
-      rollout_fixes:,
-      rollout_duration:,
-      duration: duration.in_days,
-      stability_duration:,
-      stability_changes: stability_commits.count,
-      days_since_last_release:,
-      rollout_changes:
-    }
-
-    train.release_index&.score(**params)
+  def step_statuses
+    Computations::Release::StepStatuses.call(self)
   end
 
   def unhealthy?
@@ -418,7 +406,7 @@ class Release < ApplicationRecord
 
   def live_release_link
     return if Rails.env.test?
-    release_url(id, link_params)
+    release_url(self, link_params)
   end
 
   def notification_params
@@ -503,6 +491,19 @@ class Release < ApplicationRecord
     status.to_sym.in?(FAILED_STATES) || release_platform_runs.any?(&:failure?)
   end
 
+  def previous_release
+    base_conditions = train.releases
+      .where(status: "finished")
+      .where.not(id: id)
+      .reorder(completed_at: :desc)
+
+    return base_conditions.first if completed_at.blank?
+
+    base_conditions
+      .where("completed_at < ?", completed_at)
+      .first
+  end
+
   private
 
   def base_tag_name
@@ -551,19 +552,6 @@ class Release < ApplicationRecord
 
   def set_internal_notes
     self.internal_notes = DEFAULT_INTERNAL_NOTES.to_json
-  end
-
-  def previous_release
-    base_conditions = train.releases
-      .where(status: "finished")
-      .where.not(id: id)
-      .reorder(completed_at: :desc)
-
-    return base_conditions.first if completed_at.blank?
-
-    base_conditions
-      .where("completed_at < ?", completed_at)
-      .first
   end
 
   def on_start!

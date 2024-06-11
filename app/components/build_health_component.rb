@@ -1,10 +1,11 @@
 class BuildHealthComponent < ViewComponent::Base
-  attr_reader :release_platform_run, :step
+  attr_reader :release_platform_run, :step, :show_title
   delegate :current_user, to: :helpers
 
-  def initialize(step:, release_platform_run:)
+  def initialize(step:, release_platform_run:, show_title: true)
     @step = step
     @release_platform_run = release_platform_run
+    @show_title = show_title
   end
 
   def step_runs

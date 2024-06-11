@@ -11,9 +11,28 @@ class V2::BaseReleaseComponent < V2::BaseComponent
 
   delegate :release_branch, :tag_name, to: :release
 
+  memoize def release_pilot_name
+    @release.release_pilot&.full_name || "Tramline"
+  end
+
+  def release_pilot_avatar
+    user_avatar(release_pilot_name, size: 22)
+  end
+
+  def stop_release_warning
+    message = ""
+    message += "You have finished release to one of the platforms. " if @release.partially_finished?
+    message += "You have unmerged commits in this release branch. " if @release.all_commits.size > 1
+    message + "Are you sure you want to stop the release?"
+  end
+
   memoize def status
     return ReleasesHelper::SHOW_RELEASE_STATUS.fetch(:upcoming) if @release.upcoming?
     ReleasesHelper::SHOW_RELEASE_STATUS.fetch(@release.status.to_sym)
+  end
+
+  def human_slug
+    @release.slug
   end
 
   def platform_runs
@@ -25,11 +44,13 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     @release.app.cross_platform?
   end
 
+  memoize def hotfixed_from
+    @release.hotfixed_from
+  end
+
   def hotfix_badge
     if @release.hotfix?
-      hotfixed_from = @release.hotfixed_from
-
-      badge = V2::BadgeComponent.new
+      badge = V2::BadgeComponent.new(kind: :badge)
       badge.with_icon("band_aid.svg")
       badge.with_link("Hotfixed from #{hotfixed_from.release_version}", hotfixed_from.live_release_link)
       badge
@@ -38,10 +59,10 @@ class V2::BaseReleaseComponent < V2::BaseComponent
 
   def scheduled_badge
     if @release.is_automatic?
-      badge = V2::BadgeComponent.new("Automatic")
+      badge = V2::BadgeComponent.new(text: "Automatic", kind: :badge)
       badge.with_icon("v2/robot.svg")
     else
-      badge = V2::BadgeComponent.new("Manual")
+      badge = V2::BadgeComponent.new(text: "Manual", kind: :badge)
       badge.with_icon("v2/person_standing.svg")
     end
     badge
@@ -89,24 +110,24 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     @release.release_version
   end
 
-  memoize def branch
+  def branch
     @release.branch_name
   end
 
-  memoize def interval
+  def interval
     return start_time unless @release.end_time
     "#{start_time} — #{end_time}"
   end
 
-  memoize def start_time
+  def start_time
     time_format @release.scheduled_at, with_time: false, with_year: true, dash_empty: true
   end
 
-  memoize def end_time
+  def end_time
     time_format @release.end_time, with_time: false, with_year: true, dash_empty: true
   end
 
-  memoize def duration
+  def duration
     return distance_of_time_in_words(@release.scheduled_at, @release.end_time) if @release.end_time
     distance_of_time_in_words(@release.scheduled_at, Time.current)
   end

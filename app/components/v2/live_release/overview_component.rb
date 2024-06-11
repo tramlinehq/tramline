@@ -8,20 +8,18 @@ class V2::LiveRelease::OverviewComponent < V2::BaseReleaseComponent
   attr_reader :release
   delegate :internal_notes, to: :release
 
-  def release_pilot_avatar
-    user_avatar(@release.release_pilot.full_name, size: 22)
-  end
-
-  def commits_since_last
+  memoize def commits_since_last
     @release.release_changelog&.normalized_commits
   end
 
-  def team_stability_commits
-    @summary[:team_stability_commits]
+  memoize def team_stability_commits
+    return @summary[:team_stability_commits] if @summary.present?
+    @release.stability_commits.count_by_team(current_organization)
   end
 
-  def team_release_commits
-    @summary[:team_release_commits]
+  memoize def team_release_commits
+    return @summary[:team_release_commits] if @summary.present?
+    @release.release_changelog&.commits_by_team
   end
 
   def overall_summary
@@ -30,18 +28,6 @@ class V2::LiveRelease::OverviewComponent < V2::BaseReleaseComponent
 
   def backmerge_summary
     "#{overall_summary.backmerge_pr_count} merged, #{overall_summary.backmerge_failure_count} failed"
-  end
-
-  def build_stability_chart
-    {
-      data: @release.stability_commits.count_by_team(current_organization).reject { |_, value| value.zero? },
-      colors: current_organization.team_colors,
-      type: "polar-area",
-      value_format: "number",
-      name: "team.build_stability",
-      show_x_axis: false,
-      show_y_axis: false
-    }
   end
 
   def team_stability_chart

@@ -19,16 +19,18 @@
     </div>
   <% end %>
 
-  <% platform_component.platform_runs.each do |run| %>
-    <div>
-      <% if run.store_submitted_releases.first.present? %>
-        <%= render ReleaseMonitoringComponent.new(
-          deployment_run: run.store_submitted_releases.first,
-          metrics: [:stability, :adoption_rate, :staged_rollout],
-          show_version_info: false,
-          size: monitoring_size,
-          num_events: 1) %>
-      <% end %>
-    </div>
+  <% if show_monitoring %>
+    <% platform_component.platform_runs.each do |run| %>
+      <div>
+        <% if run.store_submitted_releases.first.present? %>
+          <%= render ReleaseMonitoringComponent.new(
+            deployment_run: run.store_submitted_releases.first,
+            metrics: [:stability, :adoption_rate, :staged_rollout],
+            show_version_info: false,
+            size: monitoring_size,
+            num_events: 1) %>
+        <% end %>
+      </div>
+    <% end %>
   <% end %>
 <% end %>

@@ -21,9 +21,9 @@
             <%= release_version(release.release_version) %>
           <% end %>
 
-          <%= render V2::StatusIndicatorPillComponent.new(text: status.first, status: status.second) %>
+          <%= render V2::BadgeComponent.new(text: status.first, status: status.second) %>
           <% if show_release_unhealthy? %>
-            <%= render V2::StatusIndicatorPillComponent.new(text: "Release is unhealthy", status: :failure) %>
+            <%= render V2::BadgeComponent.new(text: "Release is unhealthy", status: :failure) %>
           <% end %>
           <%= render(hotfix_badge) unless hotfix_badge.nil? %>
           <%= render(scheduled_badge) if automatic? %>
@@ -33,7 +33,7 @@
           <%= render V2::ButtonComponent.new(
             scheme: :supporting,
             label: "Go to release",
-            options: release_path(release.id),
+            options: release_path(release),
             size: :sm,
             html_options: { class: "-mr-2" },
             authz: false,

@@ -184,7 +184,7 @@ class StepRun < ApplicationRecord
   delegate :app, :unzip_artifact?, :notify!, to: :train
   delegate :organization, to: :app
   delegate :commit_hash, to: :commit
-  delegate :download_url, to: :build_artifact
+  delegate :download_url, to: :build_artifact, allow_nil: true
   delegate :ci_cd_provider, :workflow_id, :workflow_name, :step_number, :build_artifact_name_pattern, :has_uploadables?, :has_findables?, :name, :app_variant, to: :step
   scope :not_failed, -> { where.not(status: FAILED_STATES) }
   scope :failed, -> { where(status: FAILED_STATES) }

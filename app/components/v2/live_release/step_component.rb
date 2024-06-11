@@ -1,12 +1,11 @@
 class V2::LiveRelease::StepComponent < ViewComponent::Base
   renders_many :sub_actions
 
-  def initialize(title:, frame:, control_content: false, subtitle: nil)
+  def initialize(title:, icon:, subtitle: nil)
     @title = title
     @subtitle = subtitle
-    @frame = frame
-    @control_content = control_content
+    @icon = icon
   end
 
-  attr_reader :frame, :title, :control_content, :subtitle
+  attr_reader :title, :subtitle, :icon
 end

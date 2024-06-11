@@ -1,0 +1,38 @@
+<%= render V2::CardComponent.new(title: "Active Release Candidate", size: :full, separator: true) do |card| %>
+  <% card.with_actions do %>
+    <div class="flex justify-end gap-1">
+      <%= render V2::ButtonComponent.new(label: "Extend soak", scheme: :light, type: :action, size: :xxs) %>
+      <%= render V2::ButtonComponent.new(label: "End soak", scheme: :danger, type: :action, size: :xxs) %>
+    </div>
+  <% end %>
+
+  <div class="flex flex-col section-gap-default">
+    <%= render V2::PlatformViewComponent.new(@release) do |component| %>
+      <% component.platform_runs.each do |run| %>
+        <div class="grid grid-cols-1">
+          <div class="flex flex-col item-gap-default">
+            <%= render V2::LiveRelease::BuildComponent.new(Build.first, show_number: true, show_build_only: true) %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+
+    <div data-controller="countdown"
+         data-countdown-hours-value="2.34"
+         class="flex justify-center items-center border-default box-padding">
+      <div class="flex flex-col item-gap-default items-center">
+        <div class="text-md text-secondary">Time remaining</div>
+        <% if success? %>
+          <div class="text-2xl">Soak period has ended</div>
+        <% else %>
+          <div class="text-4xl" data-countdown-target="output">24:00:00</div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="flex flex-col text-secondary text-xs">
+      <div>† Soak starts as soon as an active Release Candidate is available.</div>
+      <div>‡ App submission will be enabled once your configured 23-hour soak period ends.</div>
+    </div>
+  </div>
+<% end %>

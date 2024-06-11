@@ -69,7 +69,7 @@ class ReleaseMetadataController < SignedInApplicationController
   end
 
   def set_release
-    @release = Release.find(params[:release_id])
+    @release = Release.friendly.find(params[:release_id])
   end
 
   def set_release_platform

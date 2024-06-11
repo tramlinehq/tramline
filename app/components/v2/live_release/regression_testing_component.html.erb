@@ -3,14 +3,12 @@
     <%= render V2::AlertComponent.new(type: :info, title: "A new build #239 is available. Switch to a newer build under test.", dismissible: false) %>
 
     <div class="flex flex-col item-gap-default justify-start items-start">
-      <div class="font-medium text-lg tracking-wide uppercase box-padding-sm border-default-md text-amber-600 bg-amber-100">
-        Testing in progress
-      </div>
+      <%= render V2::BadgeComponent.new(**testing_status, kind: :status) %>
     </div>
 
     <%= render V2::CardComponent.new(title: "Status", size: :full, separator: false) do |card| %>
       <% card.with_actions do %>
-        <%= render V2::ModalComponent.new(title: "Available builds", subtitle: "Choose a build to send for submission to the store") do |modal| %>
+        <%= render V2::ModalComponent.new(title: "Available builds", subtitle: "Choose a build to test for regressions") do |modal| %>
           <% button = modal.with_button(label: "Switch build under test", scheme: :light, type: :action, size: :xxs) %>
           <% button.with_icon("v2/pencil.svg") %>
           <% modal.with_body do %>
@@ -30,7 +28,7 @@
       <% end %>
 
       <div class="flex flex-col item-gap-default">
-        <%= render V2::LiveRelease::BuildComponent.new(Build.first, show_build_only: true) %>
+        <%= render V2::LiveRelease::BuildComponent.new(Build.first, show_number: true, show_build_only: true) %>
 
         <div class="text-secondary text-xs">
           Pick the current testing status of the selected build.
@@ -48,16 +46,21 @@
     <% end %>
   </div>
 
-  <%= render V2::SectionComponent.new(title: "Past tests", style: :titled, size: :compact) do %>
-    <%= render V2::TableComponent.new(columns: ["Build", "Status"], size: :default) do |table| %>
-      <% [1, 2, 3, 4, 5].take(rand(1..3)).each do |rollout| %>
+  <% size = rand(1..5) %>
+  <%= render V2::SectionComponent.new(title: "Past tests (#{size})", style: :titled, size: :compact) do %>
+    <%= render V2::TableComponent.new(columns: ["Build", "Status", "Last Updated"], size: :default) do |table| %>
+      <% [1, 2, 3, 4, 5].take(size).each do |rollout| %>
         <% table.with_row do |row| %>
           <% row.with_cell do %>
-            <%= render V2::LiveRelease::BuildComponent.new(Build.first, show_build_only: true) %>
+            <%= render V2::LiveRelease::BuildComponent.new(Build.first, show_number: true, show_build_only: true) %>
           <% end %>
 
           <% row.with_cell do %>
-            <%= render V2::StatusIndicatorPillComponent.new(text: "Passed", status: :success) %>
+            <%= render V2::BadgeComponent.new(text: "Passed", status: :success) %>
+          <% end %>
+
+          <% row.with_cell do %>
+            2 days ago
           <% end %>
         <% end %>
       <% end %>

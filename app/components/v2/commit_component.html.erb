@@ -1,4 +1,4 @@
-<div class="py-2 px-3 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm">
+<div class="<%= outer_classes %>">
   <div class="flex text-sm items-center justify-between space-x-4">
     <div class="flex flex-col gap-y-1">
       <%= render(V2::ButtonComponent.new(scheme: :link,
@@ -32,31 +32,33 @@
       </div>
     </div>
 
-    <div class="flex flex-row gap-x-2 items-center">
-      <div>
-        <%= render V2::BadgeComponent.new do |badge| %>
-          <% if ci_cd_provider.present? %>
-            <% badge.with_icon("integrations/logo_#{commit.train.ci_cd_provider}.png") %>
-          <% end %>
+    <% if detailed? %>
+      <div class="flex flex-row gap-x-2 items-center">
+        <div>
+          <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
+            <% if ci_cd_provider.present? %>
+              <% badge.with_icon("integrations/logo_#{commit.train.ci_cd_provider}.png") %>
+            <% end %>
 
-          <% badge.with_link(short_sha, url) %>
+            <% badge.with_link(short_sha, url) %>
+          <% end %>
+        </div>
+
+        <% if pull_request.present? %>
+          <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
+            <% badge.with_icon("v2/git_pull_request.svg") %>
+            <% badge.with_link("##{pull_request.number}", pull_request.url) %>
+          <% end %>
+        <% end %>
+
+        <% if commit.backmerge_failure? %>
+          <%= status_badge("backmerge failed", :inert) %>
+        <% end %>
+
+        <% if team.present? %>
+          <%= render V2::TeamPillComponent.new(team) if current_organization.teams_supported? %>
         <% end %>
       </div>
-
-      <% if pull_request.present? %>
-        <%= render V2::BadgeComponent.new do |badge| %>
-          <% badge.with_icon("v2/git_pull_request.svg") %>
-          <% badge.with_link("##{pull_request.number}", pull_request.url) %>
-        <% end %>
-      <% end %>
-
-      <% if commit.backmerge_failure? %>
-        <%= status_badge("backmerge failed", :inert) %>
-      <% end %>
-
-      <% if team.present? %>
-        <%= render V2::TeamPillComponent.new(team) if current_organization.teams_supported? %>
-      <% end %>
-    </div>
+    <% end %>
   </div>
 </div>

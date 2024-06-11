@@ -1,9 +1,11 @@
 class V2::CommitComponent < V2::BaseComponent
   include ReleasesHelper
+  OUTER_CLASSES = "py-2 px-3 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm"
 
-  def initialize(commit:, avatar: true)
+  def initialize(commit:, avatar: true, detailed: true)
     @commit = commit
     @avatar = avatar
+    @detailed = detailed
   end
 
   attr_reader :commit
@@ -25,15 +27,18 @@ class V2::CommitComponent < V2::BaseComponent
     @commit.train&.ci_cd_provider
   end
 
-  def show_avatar?
-    @avatar
-  end
+  def detailed? = @detailed
 
-  def show_numbering?
-    @numbering
-  end
+  def show_avatar? = @avatar
+
+  def show_numbering? = @numbering
 
   def pull_request
     @commit.pull_request
+  end
+
+  def outer_classes
+    return "" unless detailed?
+    OUTER_CLASSES
   end
 end

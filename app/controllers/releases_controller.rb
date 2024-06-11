@@ -4,19 +4,19 @@ class ReleasesController < SignedInApplicationController
   include Tabbable
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
-  before_action :set_release, only: %i[show destroy update timeline overview change_queue store_submissions internal_builds regression_testing]
-  before_action :set_live_release_tab_configuration, only: %i[overview change_queue store_submissions internal_builds regression_testing]
+  before_action :set_release, only: %i[show destroy update timeline overview change_queue store_submissions internal_builds regression_testing release_candidates soak]
+  before_action :set_live_release_tab_configuration, only: %i[overview change_queue store_submissions internal_builds regression_testing release_candidates soak]
+  before_action :set_train_and_app, only: [:show, :update, :overview, :change_queue, :store_submissions, :internal_builds, :regression_testing, :release_candidates, :soak]
 
   def index
     @train = @app.trains.friendly.find(params[:train_id])
   end
 
   def show
-    @train = @release.train
-    @app = @train.app
+    redirect_to overview_release_path(@release) and return if current_organization.demo?
+
     set_commits
     set_pull_requests
-
     render :show
   end
 
@@ -43,9 +43,6 @@ class ReleasesController < SignedInApplicationController
   end
 
   def update
-    @train = @release.train
-    @app = @train.app
-
     if @release.update(update_release_params)
       redirect_to edit_app_train_path(@app, @train), notice: "Release was updated"
     else
@@ -54,30 +51,26 @@ class ReleasesController < SignedInApplicationController
   end
 
   def overview
-    @train = @release.train
-    @app = @train.app
     set_pull_requests
   end
 
   def change_queue
-    @train = @release.train
-    @app = @train.app
     set_pull_requests
   end
 
   def internal_builds
-    @train = @release.train
-    @app = @train.app
   end
 
   def regression_testing
-    @train = @release.train
-    @app = @train.app
+  end
+
+  def release_candidates
   end
 
   def store_submissions
-    @train = @release.train
-    @app = @train.app
+  end
+
+  def soak
   end
 
   def live_release
@@ -115,15 +108,13 @@ class ReleasesController < SignedInApplicationController
 
   def destroy
     @release.stop!
-    @train = @release.train
-    @app = @train.app
     redirect_to train_path, notice: "The release was stopped."
   end
 
   # TODO: This action can be deprecated once there are no more releases with pending manual finalize
   # Since finalize as of https://github.com/tramlinehq/tramline/pull/440 is automatic
   def post_release
-    @release = Release.find(params[:id])
+    @release = Release.friendly.find(params[:id])
 
     if @release.ready_to_be_finalized?
       @release.force_finalize = post_release_params[:force_finalize]
@@ -135,7 +126,7 @@ class ReleasesController < SignedInApplicationController
   end
 
   def finish_release
-    @release = Release.find(params[:id])
+    @release = Release.friendly.find(params[:id])
 
     if @release.partially_finished?
       @release.finish_after_partial_finish!
@@ -157,6 +148,11 @@ class ReleasesController < SignedInApplicationController
 
   private
 
+  def set_train_and_app
+    @train = @release.train
+    @app = @train.app
+  end
+
   def post_release_params
     params.require(:release).permit(:force_finalize)
   end
@@ -166,7 +162,7 @@ class ReleasesController < SignedInApplicationController
       Release
         .joins(train: :app)
         .where(apps: {organization: current_organization})
-        .find(params[:id])
+        .friendly.find(params[:id])
   end
 
   def set_pull_requests

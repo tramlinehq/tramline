@@ -118,7 +118,7 @@ class NotificationSettingsComponent < ViewComponent::Base
     end
 
     def status_pill
-      V2::StatusIndicatorPillComponent.new(text: status_text, status: status_type)
+      V2::BadgeComponent.new(text: status_text, status: status_type)
     end
 
     def default_channels

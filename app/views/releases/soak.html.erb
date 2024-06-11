@@ -1,0 +1,8 @@
+<%= render V2::LiveRelease::ContainerComponent.new(@release,
+                                                   title: @train.name,
+                                                   tab_config: @tab_configuration) do |container| %>
+  <% container.with_back_button %>
+  <% container.with_tab(title: "Soak Period", icon: @tab_configuration.dig(:stability, :soak_period, :icon)) do %>
+    <%= render V2::LiveRelease::SoakComponent.new(@release, status: @tab_configuration.dig(:stability, :soak_period, :status)) %>
+  <% end %>
+<% end %>

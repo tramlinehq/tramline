@@ -108,6 +108,6 @@ class StagedRolloutsController < SignedInApplicationController
   end
 
   def set_release
-    @release = Release.find_by(id: params[:release_id])
+    @release = Release.friendly.find(params[:release_id])
   end
 end

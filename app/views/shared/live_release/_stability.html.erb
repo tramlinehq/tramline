@@ -111,7 +111,9 @@
 
       <div data-reveal hidden>
         <% release.release_platform.active_steps_for(release.release).each do |step| %>
-          <%= render BuildHealthComponent.new(step:, release_platform_run: release) %>
+          <div class="mt-4">
+            <%= render BuildHealthComponent.new(step:, release_platform_run: release) %>
+          </div>
         <% end %>
       </div>
     </article>
