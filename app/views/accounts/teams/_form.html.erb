@@ -3,10 +3,12 @@
     <% section.with_description do %>
       <div>Choose a color for your team.</div>
     <% end %>
+
     <div><%= section.F.labeled_text_field :name, "Team Name", required: true %></div>
+
     <div>
       <%= section.F.label_only :color, "Color" %>
-      <%= section.F.color_field :color %>
+      <%= section.F.color_field :color, class: "block" %>
     </div>
   <% end %>
 

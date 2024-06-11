@@ -24,7 +24,7 @@
             <div class="p-3 rounded-full" style="background-color: <%= team.color %>"></div>
           </div>
         <% end %>
-        <% row.with_cell do %>
+        <% row.with_cell(wrap: true) do %>
           <div class="flex gap-x-2 justify-end">
             <%= render V2::ModalComponent.new(title: "Edit team") do |modal| %>
               <% modal.with_button(scheme: :light,
