@@ -20,7 +20,9 @@ namespace :anonymize do
     play_store_integration = app.integrations.build_channel.find(&:google_play_store_integration?)
     firebase_integration = app.integrations.build_channel.find(&:google_firebase_integration?)
 
-    abort "App integrations not set up!" if app_store_integration.blank? || play_store_integration.blank? || firebase_integration.blank?
+    abort "App integrations not set up!" if app_store_integration.blank? && (app.cross_platform? || app.ios?)
+    abort "App integrations not set up!" if play_store_integration.blank? && (app.cross_platform? || app.android?)
+    abort "App integrations not set up!" if firebase_integration.blank? && app.android?
 
     ActiveRecord::Base.transaction do
       app.trains.each do |train|
