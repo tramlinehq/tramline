@@ -82,6 +82,10 @@ class Accounts::User < ApplicationRecord
     end
 
     new_organization = user.organizations.first
+    unless new_organization
+      user.errors.add(:org_not_found, "invalid request")
+      return user
+    end
     new_membership = user.memberships.first
     new_organization.status = Accounts::Organization.statuses[:active]
     new_organization.created_by = user.email

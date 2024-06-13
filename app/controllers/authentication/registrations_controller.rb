@@ -66,7 +66,7 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
     else
       clean_up_passwords(user)
       set_minimum_password_length
-      respond_with(user, location: after_sign_up_path_for(user))
+      render :new, status: :unprocessable_entity
     end
   end
 
