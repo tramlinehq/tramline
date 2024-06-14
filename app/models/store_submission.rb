@@ -43,6 +43,8 @@ class StoreSubmission < ApplicationRecord
     failed: "failed"
   }
 
+  def deployment_channel = provider.class::PROD_CHANNEL
+
   def attach_build!(build)
     self.build = build
     save!

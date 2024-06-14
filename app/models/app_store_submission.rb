@@ -132,8 +132,6 @@ class AppStoreSubmission < StoreSubmission
 
   def cancellable? = submitted_for_review?
 
-  def deployment_channel = AppStoreIntegration::PROD_CHANNEL
-
   def reviewable? = prepared?
 
   def requires_review? = true

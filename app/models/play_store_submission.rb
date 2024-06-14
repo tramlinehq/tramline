@@ -50,8 +50,7 @@ class PlayStoreSubmission < StoreSubmission
     state :created, initial: true
     state(*STATES.keys)
 
-    event :start_prepare,
-      guard: :startable?,
+    event :start_prepare, guard: :startable?,
       after_commit: -> { StoreSubmissions::PlayStore::PrepareForReleaseJob.perform_later(id) } do
       transitions from: [:created, :prepared, :failed], to: :preparing
     end
@@ -74,8 +73,6 @@ class PlayStoreSubmission < StoreSubmission
       transitions from: [:preparing, :prepared, :failed_with_action_required], to: :failed_with_action_required
     end
   end
-
-  def deployment_channel = {id: :production, name: "production", is_production: true}
 
   def change_allowed? = true
 

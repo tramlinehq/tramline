@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_05_22_112429) do
+ActiveRecord::Schema[7.0].define(version: 2024_06_13_195545) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -647,6 +647,20 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_22_112429) do
     t.index ["step_number", "release_platform_id"], name: "index_steps_on_step_number_and_release_platform_id", unique: true
   end
 
+  create_table "store_rollouts", force: :cascade do |t|
+    t.uuid "release_platform_run_id", null: false
+    t.uuid "build_id", null: false
+    t.string "type", null: false
+    t.string "status", null: false
+    t.jsonb "release_channel", null: false
+    t.integer "current_stage", limit: 2
+    t.decimal "config", precision: 8, scale: 5, default: [], null: false, array: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["build_id"], name: "index_store_rollouts_on_build_id"
+    t.index ["release_platform_run_id"], name: "index_store_rollouts_on_release_platform_run_id"
+  end
+
   create_table "store_submissions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_run_id", null: false
     t.uuid "build_id"
@@ -801,6 +815,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_05_22_112429) do
   add_foreign_key "step_runs", "release_platform_runs"
   add_foreign_key "step_runs", "steps"
   add_foreign_key "steps", "release_platforms"
+  add_foreign_key "store_rollouts", "builds"
+  add_foreign_key "store_rollouts", "release_platform_runs"
   add_foreign_key "store_submissions", "builds"
   add_foreign_key "store_submissions", "release_platform_runs"
   add_foreign_key "teams", "organizations"

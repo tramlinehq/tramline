@@ -19,13 +19,15 @@ class Build < ApplicationRecord
   belongs_to :release_platform_run
   belongs_to :commit
   has_one :artifact, class_name: "BuildArtifact", dependent: :nullify, inverse_of: :build
-  has_one :play_store_submission, dependent: :nullify, inverse_of: :build
   has_one :app_store_submission, dependent: :nullify, inverse_of: :build
+  has_one :play_store_submission, dependent: :nullify, inverse_of: :build
+
+  delegate :android?, :ios?, to: :release_platform_run
 
   def store_submission
-    if release_platform_run.android?
+    if android?
       play_store_submission
-    elsif release_platform_run.ios?
+    elsif ios?
       app_store_submission
     else
       raise ArgumentError, "Unknown platform"
