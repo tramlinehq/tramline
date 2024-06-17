@@ -16,7 +16,7 @@
 class AppStoreRollout < StoreRollout
   STATES = STATES.merge(paused: "paused")
 
-  aasm safe_state_machine_params do
+  aasm safe_state_machine_params(with_lock: false) do
     state :created, initial: true
     state(*STATES.keys)
 
@@ -71,7 +71,7 @@ class AppStoreRollout < StoreRollout
       if result.ok?
         create_or_update_external_release(result.value!)
         rollout_fully!
-        # notify!("Staged rollout was accelerated to a full rollout!", :staged_rollout_fully_released, notification_params)
+        notify!("Staged rollout was accelerated to a full rollout!", :staged_rollout_fully_released, notification_params)
       else
         elog(result.error)
         # run.fail_with_error(result.error)
@@ -103,7 +103,7 @@ class AppStoreRollout < StoreRollout
         update_rollout(result.value!)
         unless completed?
           start!
-          # notify!("Staged rollout was resumed!", :staged_rollout_resumed, notification_params)
+          notify!("Staged rollout was resumed!", :staged_rollout_resumed, notification_params)
         end
       else
         elog(result.error)

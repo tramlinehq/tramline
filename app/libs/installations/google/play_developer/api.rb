@@ -119,6 +119,7 @@ module Installations
     attr_writer :track_name, :version_code, :release_version, :rollout_percentage
 
     def truncated_release_notes(release_notes)
+      return [] if release_notes.blank?
       release_notes.map do |rn|
         rn[:text] = rn[:text].truncate(NOTES_MAX_LENGTH)
         rn
@@ -135,8 +136,10 @@ module Installations
 
     def active_release
       rollout_status = @rollout_percentage.eql?(100) ? RELEASE_STATUS[:completed] : RELEASE_STATUS[:in_progress]
-      params = release_params.merge(status: rollout_status, release_notes: @release_notes)
+      params = release_params.merge(status: rollout_status)
+      params[:release_notes] = @release_notes if @release_notes.present?
       params[:user_fraction] = user_fraction if @rollout_percentage && user_fraction < 1.0
+      Rails.logger.debug params
       ANDROID_PUBLISHER::TrackRelease.new(**params)
     end
 
@@ -155,7 +158,7 @@ module Installations
     end
 
     def release_params
-      {name: @release_version, version_codes: [@version_code]}
+      { name: @release_version, version_codes: [@version_code] }
     end
 
     def execute

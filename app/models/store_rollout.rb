@@ -20,7 +20,7 @@ class StoreRollout < ApplicationRecord
   include Displayable
 
   belongs_to :release_platform_run
-  belongs_to :store_submission
+  belongs_to :build
 
   STAMPABLE_REASONS = %w[
     started
@@ -45,14 +45,29 @@ class StoreRollout < ApplicationRecord
   enum status: STATES
 
   delegate :version_name, :build_number, to: :build
+  delegate :train, to: :release_platform_run
+  delegate :notify!, to: :train
+
+  protected
 
   def provider
     release_platform_run.store_provider
   end
 
+  def finished?
+    next_rollout_percentage.nil?
+  end
+
   def next_rollout_percentage
     return config.first if created?
     config[current_stage.succ]
+  end
+
+  def last_rollout_percentage
+    return Deployment::FULL_ROLLOUT_VALUE if fully_released?
+    return if created? || current_stage.nil?
+    return config.last if finished?
+    config[current_stage]
   end
 
   def next_stage
@@ -67,11 +82,15 @@ class StoreRollout < ApplicationRecord
     if may_start?
       start!
     else
-      # event_stamp!(reason: :increased, kind: :notice, data: stamp_data)
+      event_stamp!(reason: :increased, kind: :notice, data: {})
     end
 
-    return complete! if finish_rollout && next_rollout_percentage.nil?
-    # notify!("Staged rollout was updated!", :staged_rollout_updated, notification_params)
+    return complete! if finish_rollout && finished?
+    notify!("Staged rollout was updated!", :staged_rollout_updated, notification_params)
+  end
+
+  def notification_params
+    {}
   end
 end
 
