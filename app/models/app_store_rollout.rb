@@ -12,15 +12,17 @@
 #  updated_at              :datetime         not null
 #  build_id                :uuid             not null, indexed
 #  release_platform_run_id :uuid             not null, indexed
+#  store_submission_id     :uuid             indexed
 #
 class AppStoreRollout < StoreRollout
+  ReleaseNotFullyLive = Class.new(StandardError)
   STATES = STATES.merge(paused: "paused")
 
   aasm safe_state_machine_params(with_lock: false) do
     state :created, initial: true
     state(*STATES.keys)
 
-    event :start do
+    event :start, after_commit: -> { StoreRollouts::AppStore::FindLiveReleaseJob.perform_async(id) } do
       transitions from: :created, to: :started
       transitions from: :paused, to: :started
       transitions from: :failed, to: :started
@@ -43,10 +45,26 @@ class AppStoreRollout < StoreRollout
       after { "bubble up" }
       transitions from: [:failed, :started], to: :fully_released
     end
+  end
 
-    event :fail do
-      transitions from: [:started, :failed, :created], to: :failed
+  def track_live_release_status
+    return if terminal?
+
+    result = provider.find_live_release
+    unless result.ok?
+      elog(result.error)
+      raise ReleaseNotFullyLive, "Retrying in some time..."
     end
+
+    release_info = result.value!
+    if release_info.live?(build_number)
+      return complete! unless staged_rollout?
+      with_lock { update_rollout(release_info) }
+      notify!("Phased release was updated!", :staged_rollout_updated, notification_params)
+      return if release_info.phased_release_complete?
+    end
+
+    raise ReleaseNotFullyLive, "Retrying in some time..."
   end
 
   def halt_release!
@@ -56,57 +74,60 @@ class AppStoreRollout < StoreRollout
       result = provider.halt_phased_release
       if result.ok?
         halt!
-        notify!("Release was halted!", :staged_rollout_halted, notification_params)
+        notify!("Phased release was halted!", :staged_rollout_halted, notification_params)
       else
         elog(result.error)
+        errors.add(:base, result.error)
       end
     end
   end
 
   def fully_release!
-    return if created? || completed? || stopped?
-
     with_lock do
+      return unless may_rollout_fully?
+
       result = provider.complete_phased_release
       if result.ok?
-        create_or_update_external_release(result.value!)
+        update_store_info!(result.value!)
         rollout_fully!
-        notify!("Staged rollout was accelerated to a full rollout!", :staged_rollout_fully_released, notification_params)
+        notify!("Phased release was accelerated to a full rollout!", :staged_rollout_fully_released, notification_params)
       else
         elog(result.error)
-        # run.fail_with_error(result.error)
+        errors.add(:base, result.error)
       end
     end
   end
 
   def pause_release!
-    return unless started?
-
     with_lock do
+      return unless may_pause?
+
       result = provider.pause_phased_release
       if result.ok?
         update_rollout(result.value!)
         pause!
+        notify!("Phased release was paused!", :staged_rollout_paused, notification_params)
       else
         elog(result.error)
+        errors.add(:base, result.error)
       end
     end
   end
 
   def resume_release!
-    # return unless (paused? && deployment_run.automatic_rollout?) || (stopped? && deployment_run.controllable_rollout?)
-
     with_lock do
       return unless may_start?
+
       result = provider.resume_phased_release
       if result.ok?
         update_rollout(result.value!)
         unless completed?
           start!
-          notify!("Staged rollout was resumed!", :staged_rollout_resumed, notification_params)
+          notify!("Phased release was resumed!", :staged_rollout_resumed, notification_params)
         end
       else
         elog(result.error)
+        errors.add(:base, result.error)
       end
     end
   end
@@ -114,11 +135,7 @@ class AppStoreRollout < StoreRollout
   private
 
   def update_rollout(release_info)
-    create_or_update_external_release(release_info)
+    update_store_info!(release_info)
     update_stage(release_info.phased_release_stage, finish_rollout: release_info.phased_release_complete?)
-  end
-
-  def create_or_update_external_release(release_info)
-    # (run.external_release || run.build_external_release).update(release_info.attributes)
   end
 end

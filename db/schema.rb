@@ -650,6 +650,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_13_195545) do
   create_table "store_rollouts", force: :cascade do |t|
     t.uuid "release_platform_run_id", null: false
     t.uuid "build_id", null: false
+    t.uuid "store_submission_id"
     t.string "type", null: false
     t.string "status", null: false
     t.jsonb "release_channel", null: false
@@ -659,6 +660,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_13_195545) do
     t.datetime "updated_at", null: false
     t.index ["build_id"], name: "index_store_rollouts_on_build_id"
     t.index ["release_platform_run_id"], name: "index_store_rollouts_on_release_platform_run_id"
+    t.index ["store_submission_id"], name: "index_store_rollouts_on_store_submission_id"
   end
 
   create_table "store_submissions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -817,6 +819,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_13_195545) do
   add_foreign_key "steps", "release_platforms"
   add_foreign_key "store_rollouts", "builds"
   add_foreign_key "store_rollouts", "release_platform_runs"
+  add_foreign_key "store_rollouts", "store_submissions"
   add_foreign_key "store_submissions", "builds"
   add_foreign_key "store_submissions", "release_platform_runs"
   add_foreign_key "teams", "organizations"

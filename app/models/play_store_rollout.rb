@@ -12,6 +12,7 @@
 #  updated_at              :datetime         not null
 #  build_id                :uuid             not null, indexed
 #  release_platform_run_id :uuid             not null, indexed
+#  store_submission_id     :uuid             indexed
 #
 class PlayStoreRollout < StoreRollout
   aasm safe_state_machine_params(with_lock: false) do
@@ -35,10 +36,6 @@ class PlayStoreRollout < StoreRollout
     event :rollout_fully do
       transitions from: :started, to: :fully_released
     end
-
-    event :fail do
-      transitions from: [:started, :failed, :created], to: :failed
-    end
   end
 
   def move_to_next_stage!
@@ -48,9 +45,10 @@ class PlayStoreRollout < StoreRollout
       result = rollout(next_rollout_percentage)
       if result.ok?
         update_stage(next_stage, finish_rollout: true)
+        notify!("Staged rollout was updated!", :staged_rollout_updated, notification_params)
       else
-        fail!
         elog(result.error)
+        errors.add(:base, result.error)
       end
     end
   end
@@ -66,6 +64,7 @@ class PlayStoreRollout < StoreRollout
         notify!("Staged rollout was accelerated to a full rollout!", :staged_rollout_fully_released, notification_params)
       else
         elog(result.error)
+        errors.add(:base, result.error)
       end
     end
   end
@@ -80,6 +79,7 @@ class PlayStoreRollout < StoreRollout
         notify!("Release was halted!", :staged_rollout_halted, notification_params)
       else
         elog(result.error)
+        errors.add(:base, result.error)
       end
     end
   end
@@ -94,6 +94,7 @@ class PlayStoreRollout < StoreRollout
         notify!("Release was resumed!", :staged_rollout_resumed, notification_params)
       else
         elog(result.error)
+        errors.add(:base, result.error)
       end
     end
   end
