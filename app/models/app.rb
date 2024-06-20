@@ -136,10 +136,6 @@ class App < ApplicationRecord
     end
   end
 
-  def send_notifications?
-    notifications_set_up? && config.notification_channel.present?
-  end
-
   def notifications_set_up?
     notification_provider.present?
   end
