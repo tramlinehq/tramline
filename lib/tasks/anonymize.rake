@@ -4,12 +4,16 @@ require "faker"
 namespace :anonymize do
   desc 'Anonymize release train data from source db into local db;
         Example: rake "anonymize:release_train[ueno-staging-cross-platform,e735400a-3337-4699-95e2-c32b76ead7f3]"'
-  task :release_train, %i[internal_app_slug external_train_id] => [:destructive, :environment] do |_, args|
+  task :release_train, %i[internal_app_slug external_train_id platform] => [:destructive, :environment] do |_, args|
     DataAnon::Utils::Logging.logger.level = Logger::INFO
 
     app_slug = args[:internal_app_slug].to_s
     app = App.find_by slug: app_slug
     abort "App not found!" unless app
+
+    platform = args[:platform].to_s
+    abort "Platform not found!" if platform.blank?
+    abort "Invalid platform" unless %w[ios android cross_platform].include?(platform)
 
     train_id = args[:external_train_id].to_s
     abort "Train ID not found!" if train_id.blank?
@@ -80,7 +84,7 @@ namespace :anonymize do
       end
 
       table "release_platforms" do
-        continue { |index, record| Train.exists?(record["train_id"]) }
+        continue { |index, record| record["platform"] == platform && Train.exists?(record["train_id"]) }
 
         primary_key "id"
         whitelist "status", "name", "version_seeded_with", "version_current", "slug", "working_branch", "branching_strategy",
@@ -229,7 +233,7 @@ namespace :anonymize do
       end
 
       table "release_platform_runs" do
-        continue { |index, record| Release.exists?(record["release_id"]) }
+        continue { |index, record| ReleasePlatform.exists?(record["release_platform_id"]) && Release.exists?(record["release_id"]) }
 
         primary_key "id"
         whitelist "release_platform_id", "code_name", "scheduled_at", "commit_sha", "status", "branch_name",
@@ -239,8 +243,7 @@ namespace :anonymize do
       end
 
       table "release_metadata" do
-        continue { |index, record| Release.exists?(record["release_id"]) }
-        continue { |index, record| ReleasePlatformRun.exists?(record["release_platform_run_id"]) }
+        continue { |index, record| Release.exists?(record["release_id"]) && ReleasePlatformRun.exists?(record["release_platform_run_id"]) }
 
         primary_key "id"
         whitelist "release_platform_run_id", "locale", "created_at", "updated_at", "release_id"
@@ -250,8 +253,7 @@ namespace :anonymize do
       end
 
       table "step_runs" do
-        continue { |index, record| ReleasePlatformRun.exists?(record["release_platform_run_id"]) }
-        continue { |index, record| Step.exists?(record["step_id"]) }
+        continue { |index, record| Step.exists?(record["step_id"]) && ReleasePlatformRun.exists?(record["release_platform_run_id"]) }
 
         primary_key "id"
         whitelist "step_id", "release_platform_run_id", "scheduled_at", "status", "commit_id", "build_version",
@@ -270,8 +272,7 @@ namespace :anonymize do
       end
 
       table "deployment_runs" do
-        continue { |index, record| StepRun.exists?(record["step_run_id"]) }
-        continue { |index, record| Deployment.exists?(record["deployment_id"]) }
+        continue { |index, record| Deployment.exists?(record["deployment_id"]) && StepRun.exists?(record["step_run_id"]) }
 
         primary_key "id"
         whitelist "deployment_id", "step_run_id", "scheduled_at", "status", "initial_rollout_percentage", "failure_reason"
@@ -304,10 +305,9 @@ namespace :anonymize do
       end
 
       table "release_health_events" do
-        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) }
-        continue { |index, record| ReleaseHealthRule.exists?(record["release_health_rule_id"]) }
-        continue { |index, record| ReleaseHealthMetric.exists?(record["release_health_metric_id"]) }
-        continue { |index, record| !ReleaseHealthEvent.exists?(record["id"]) }
+        continue do |index, record|
+          DeploymentRun.exists?(record["deployment_run_id"]) && ReleaseHealthRule.exists?(record["release_health_rule_id"]) && ReleaseHealthMetric.exists?(record["release_health_metric_id"]) && !ReleaseHealthEvent.exists?(record["id"])
+        end
 
         primary_key "id"
         whitelist "deployment_run_id", "release_health_rule_id", "release_health_metric_id", "health_status", "action_triggered", "notification_triggered", "event_timestamp"

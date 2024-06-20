@@ -94,11 +94,11 @@ def nuke_train(train)
   train.release_index&.release_index_components&.delete_all
   train.release_index&.delete
   train.release_platforms.each do |release_platform|
-    release_platform.release_health_rules.each do |rule|
+    release_platform.all_release_health_rules.each do |rule|
       rule.trigger_rule_expressions&.delete_all
       rule.filter_rule_expressions&.delete_all
     end
-    release_platform.release_health_rules&.delete_all
+    release_platform.all_release_health_rules&.delete_all
     release_platform.all_steps.each do |step|
       step.all_deployments.delete_all
     end
