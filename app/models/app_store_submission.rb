@@ -90,7 +90,7 @@ class AppStoreSubmission < StoreSubmission
       transitions from: :preparing, to: :failed_prepare
     end
 
-    event :start_submission, after_commit: -> { StoreSubmission::AppStore::SubmitForReviewJob.perform_async(id) } do
+    event :start_submission, after_commit: -> { StoreSubmissions::AppStore::SubmitForReviewJob.perform_async(id) } do
       transitions from: :prepared, to: :submitting_for_review
     end
 
