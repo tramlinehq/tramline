@@ -158,7 +158,7 @@ module Installations
     end
 
     def release_params
-      { name: @release_version, version_codes: [@version_code] }
+      {name: @release_version, version_codes: [@version_code]}
     end
 
     def execute

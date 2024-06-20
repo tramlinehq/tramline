@@ -416,6 +416,7 @@ class StepRun < ApplicationRecord
 
   private
 
+  # orchestrator
   def create_and_attach_build_to_submission
     build = release_platform_run.builds.create(
       generated_at: build_artifact&.generated_at || Time.current,

@@ -13,7 +13,7 @@ class ReleasesController < SignedInApplicationController
   end
 
   def show
-    redirect_to overview_release_path(@release) and return if current_organization.demo?
+    # redirect_to overview_release_path(@release) and return if current_organization.demo?
 
     set_commits
     set_pull_requests

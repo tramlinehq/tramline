@@ -39,6 +39,8 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :builds, dependent: :destroy, inverse_of: :release_platform_run
   has_many :play_store_submissions, dependent: :destroy
   has_many :app_store_submissions, dependent: :destroy
+  has_many :play_store_rollouts, dependent: :destroy
+  has_many :app_store_rollouts, dependent: :destroy
   has_many :external_builds, through: :step_runs
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
@@ -100,6 +102,16 @@ class ReleasePlatformRun < ApplicationRecord
     end
   end
 
+  def store_rollouts
+    if android?
+      play_store_rollouts
+    elsif ios?
+      app_store_rollouts
+    else
+      raise ArgumentError, "Unknown platform: #{platform}"
+    end
+  end
+
   def active_store_submission
     store_submissions.last
   end
@@ -109,11 +121,37 @@ class ReleasePlatformRun < ApplicationRecord
     store_submissions.where.not(id: active_store_submission.id)
   end
 
+  # orchestrator
   def create_store_submission
     if android?
       play_store_submissions.create!
     elsif ios?
       app_store_submissions.create!
+    else
+      raise ArgumentError, "Unknown platform: #{platform}"
+    end
+  end
+
+  # orchestrator
+  def create_rollout_for_submission(submission)
+    return if submission.build.blank?
+    return unless submission.locked?
+
+    if android?
+      play_store_rollouts.create!(store_submission: submission, build: submission.build)
+    elsif ios?
+      app_store_rollouts.create!(store_submission: submission, build: submission.build)
+    else
+      raise ArgumentError, "Unknown platform: #{platform}"
+    end
+  end
+
+  # orchestrator
+  def create_rollout_for_build(build)
+    if android?
+      play_store_rollouts.create!(build:)
+    elsif ios?
+      app_store_rollouts.create!(build:)
     else
       raise ArgumentError, "Unknown platform: #{platform}"
     end
