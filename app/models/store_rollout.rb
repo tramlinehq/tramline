@@ -48,14 +48,18 @@ class StoreRollout < ApplicationRecord
 
   protected
 
-  # FIXME - get this configuration from train settings
-  def staged_rollout? = true
+  def staged_rollout? = true # FIXME - get this configuration from train settings
 
   def provider = release_platform_run.store_provider
 
   def terminal? = completed? || fully_released?
 
   def reached_last_stage? = next_rollout_percentage.nil?
+
+  def stage
+    return 0 if created?
+    (current_stage || 0).succ
+  end
 
   def next_rollout_percentage
     return config.first if created?
@@ -81,14 +85,27 @@ class StoreRollout < ApplicationRecord
     if may_start?
       start!
     else
-      event_stamp!(reason: :increased, kind: :notice, data: {})
+      event_stamp!(reason: :increased, kind: :notice, data: stamp_data)
     end
 
     complete! if finish_rollout && reached_last_stage?
   end
 
   def notification_params
-    {}
+    store_submission.notification_params.merge(stamp_data)
+  end
+
+  def stamp_data
+    data = {
+      current_stage: stage,
+      is_fully_released: fully_released?
+    }
+
+    if current_stage.present?
+      data[:rollout_percentage] = "%.2f" % config[current_stage]
+    end
+
+    data
   end
 end
 
@@ -97,17 +114,3 @@ end
 # - handle previous staged rollout value in the next rollout
 # - handle rollouts for non-prod
 # - external release in play store?
-
-# [Pre-production phase]
-# store submission + store rollout
-# firebase submission
-# email, slack etc.
-#
-# [beta release]
-# store submission + store rollout
-# firebase submission
-# email, slack etc.
-#
-# [production phase]
-# approvals
-# store submission + store rollout (play_store+app_store)
