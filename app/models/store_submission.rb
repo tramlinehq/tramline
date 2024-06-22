@@ -18,6 +18,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_id                :uuid             indexed
+#  pre_prod_release_id     :uuid             indexed
 #  production_release_id   :bigint           indexed
 #  release_platform_run_id :uuid             not null, indexed
 #
@@ -30,7 +31,7 @@ class StoreSubmission < ApplicationRecord
   has_one :store_rollout
   belongs_to :release_platform_run
   belongs_to :production_release, optional: true
-  belongs_to :pre_production_release, optional: true
+  belongs_to :pre_prod_releases, optional: true
 
   delegate :release_metadatum, :train, :release, to: :release_platform_run
   delegate :notify!, to: :train
@@ -50,7 +51,7 @@ class StoreSubmission < ApplicationRecord
   }
 
   def build
-    production_release&.build # || pre_production_release&.build
+    pre_production_release&.build || production_release&.build
   end
 
   def attach_build!(build)
@@ -68,6 +69,24 @@ class StoreSubmission < ApplicationRecord
 
   def external_link
     store_link || project_link
+  end
+
+  def notification_params
+    release_platform_run
+      .notification_params
+      .merge(
+        {
+          is_staged_rollout_deployment: staged_rollout?,
+          is_production_channel: true,
+          is_app_store_production: is_a?(AppStoreSubmission),
+          is_play_store_production: is_a?(PlayStoreSubmission),
+          deployment_channel:,
+          deployment_channel_asset_link: public_icon_img,
+          deployment_channel_type: provider.to_s.titleize,
+          project_link: external_link,
+          requires_review: requires_review?,
+        }
+      )
   end
 
   protected
@@ -110,24 +129,6 @@ class StoreSubmission < ApplicationRecord
       version: version_name,
       build_number: build_number
     }
-  end
-
-  def notification_params
-    release_platform_run
-      .notification_params
-      .merge(
-        {
-          is_staged_rollout_deployment: staged_rollout?,
-          is_production_channel: true,
-          is_play_store_production: is_a?(PlayStoreSubmission),
-          is_app_store_production: is_a?(AppStoreSubmission),
-          deployment_channel_type: provider.to_s.titleize,
-          deployment_channel:,
-          deployment_channel_asset_link: public_icon_img,
-          requires_review: requires_review?,
-          project_link: external_link
-        }
-      )
   end
 
   def only_one_release_present

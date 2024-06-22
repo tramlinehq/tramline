@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_06_22_001828) do
+ActiveRecord::Schema[7.0].define(version: 2024_06_22_010123) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -392,7 +392,9 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_22_001828) do
     t.uuid "build_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "release_platform_run_id", null: false
     t.index ["build_id"], name: "index_production_releases_on_build_id"
+    t.index ["release_platform_run_id"], name: "index_production_releases_on_release_platform_run_id"
   end
 
   create_table "pull_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -699,9 +701,12 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_22_001828) do
     t.jsonb "store_release"
     t.bigint "production_release_id"
     t.jsonb "deployment_channel"
+    t.uuid "pre_prod_release_id"
     t.index ["build_id"], name: "index_store_submissions_on_build_id"
+    t.index ["pre_prod_release_id"], name: "index_store_submissions_on_pre_prod_release_id"
     t.index ["production_release_id"], name: "index_store_submissions_on_production_release_id"
     t.index ["release_platform_run_id"], name: "index_store_submissions_on_release_platform_run_id"
+    t.check_constraint "production_release_id IS NOT NULL AND pre_prod_release_id IS NULL OR production_release_id IS NULL AND pre_prod_release_id IS NOT NULL", name: "only_one_release_present"
   end
 
   create_table "teams", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -830,6 +835,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_22_001828) do
   add_foreign_key "pre_prod_releases", "builds"
   add_foreign_key "pre_prod_releases", "release_platform_runs"
   add_foreign_key "production_releases", "builds"
+  add_foreign_key "production_releases", "release_platform_runs"
   add_foreign_key "pull_requests", "release_platform_runs"
   add_foreign_key "release_changelogs", "releases"
   add_foreign_key "release_health_events", "deployment_runs"
@@ -855,6 +861,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_22_001828) do
   add_foreign_key "store_rollouts", "release_platform_runs"
   add_foreign_key "store_rollouts", "store_submissions"
   add_foreign_key "store_submissions", "builds"
+  add_foreign_key "store_submissions", "pre_prod_releases"
   add_foreign_key "store_submissions", "production_releases"
   add_foreign_key "store_submissions", "release_platform_runs"
   add_foreign_key "teams", "organizations"

@@ -18,5 +18,4 @@ class PreProdRelease < ApplicationRecord
   belongs_to :release_platform_run
   belongs_to :build, optional: true
   has_one :workflow_run, dependent: :destroy
-
 end
