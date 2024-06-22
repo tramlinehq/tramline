@@ -388,6 +388,13 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_22_001828) do
     t.index ["release_platform_run_id"], name: "index_pre_prod_releases_on_release_platform_run_id"
   end
 
+  create_table "production_releases", force: :cascade do |t|
+    t.uuid "build_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["build_id"], name: "index_production_releases_on_build_id"
+  end
+
   create_table "pull_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_run_id"
     t.bigint "number", null: false
@@ -665,7 +672,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_22_001828) do
     t.uuid "store_submission_id"
     t.string "type", null: false
     t.string "status", null: false
-    t.jsonb "release_channel", null: false
     t.integer "current_stage", limit: 2
     t.decimal "config", precision: 8, scale: 5, default: [], null: false, array: true
     t.datetime "created_at", null: false
@@ -691,7 +697,10 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_22_001828) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "store_release"
+    t.bigint "production_release_id"
+    t.jsonb "deployment_channel"
     t.index ["build_id"], name: "index_store_submissions_on_build_id"
+    t.index ["production_release_id"], name: "index_store_submissions_on_production_release_id"
     t.index ["release_platform_run_id"], name: "index_store_submissions_on_release_platform_run_id"
   end
 
@@ -820,6 +829,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_22_001828) do
   add_foreign_key "notification_settings", "trains"
   add_foreign_key "pre_prod_releases", "builds"
   add_foreign_key "pre_prod_releases", "release_platform_runs"
+  add_foreign_key "production_releases", "builds"
   add_foreign_key "pull_requests", "release_platform_runs"
   add_foreign_key "release_changelogs", "releases"
   add_foreign_key "release_health_events", "deployment_runs"
@@ -845,6 +855,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_22_001828) do
   add_foreign_key "store_rollouts", "release_platform_runs"
   add_foreign_key "store_rollouts", "store_submissions"
   add_foreign_key "store_submissions", "builds"
+  add_foreign_key "store_submissions", "production_releases"
   add_foreign_key "store_submissions", "release_platform_runs"
   add_foreign_key "teams", "organizations"
   add_foreign_key "trains", "apps"

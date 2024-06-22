@@ -5,7 +5,6 @@
 #  id                      :bigint           not null, primary key
 #  config                  :decimal(8, 5)    default([]), not null, is an Array
 #  current_stage           :integer
-#  release_channel         :jsonb            not null
 #  status                  :string           not null
 #  type                    :string           not null
 #  created_at              :datetime         not null

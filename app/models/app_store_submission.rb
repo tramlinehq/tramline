@@ -4,6 +4,7 @@
 #
 #  id                      :uuid             not null, primary key
 #  approved_at             :datetime
+#  deployment_channel      :jsonb
 #  failure_reason          :string
 #  name                    :string
 #  prepared_at             :datetime
@@ -17,23 +18,23 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_id                :uuid             indexed
+#  production_release_id   :bigint           indexed
 #  release_platform_run_id :uuid             not null, indexed
 #
 class AppStoreSubmission < StoreSubmission
   using RefinedArray
   using RefinedString
 
+  RETRYABLE_FAILURE_REASONS = [:attachment_upload_in_progress]
   STATES = STATES.merge(
     submitting_for_review: "submitting_for_review",
     submitted_for_review: "submitted_for_review",
     approved: "approved",
     cancelled: "cancelled"
   )
-
   FINAL_STATES = %w[approved]
   IMMUTABLE_STATES = %w[approved submitted_for_review]
   CHANGEABLE_STATES = STATES.values - IMMUTABLE_STATES
-
   STAMPABLE_REASONS = %w[
     prepare_release_failed
     submitted_for_review
@@ -42,13 +43,10 @@ class AppStoreSubmission < StoreSubmission
     review_failed
   ]
 
-  RETRYABLE_FAILURE_REASONS = [:attachment_upload_in_progress]
-
   PreparedVersionNotFoundError = Class.new(StandardError)
   SubmissionNotInTerminalState = Class.new(StandardError)
 
   enum status: STATES
-
   enum failure_reason: {
     developer_rejected: "developer_rejected",
     invalid_release: "invalid_release",
@@ -70,7 +68,6 @@ class AppStoreSubmission < StoreSubmission
   #
   # Things that will happen after Store Submission
   # 1. Rollout (phased or otherwise)
-
   aasm safe_state_machine_params do
     state :created, initial: true
     state(*STATES.keys)
@@ -81,20 +78,25 @@ class AppStoreSubmission < StoreSubmission
       transitions from: [:created, :failed_prepare, :prepared, :failed, :review_failed, :cancelled], to: :preparing
     end
 
-    event :finish_prepare, after_commit: -> { StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id) } do
+    event :finish_prepare,
+      after_commit: -> { StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id) } do
       after { set_prepared_at! }
       transitions from: :preparing, to: :prepared
     end
 
-    event :fail_prepare, before: :set_reason, after_commit: -> { event_stamp!(reason: :prepare_release_failed, kind: :error, data: stamp_data) } do
+    event :fail_prepare,
+      before: :set_reason,
+      after_commit: -> { event_stamp!(reason: :prepare_release_failed, kind: :error, data: stamp_data) } do
       transitions from: :preparing, to: :failed_prepare
     end
 
-    event :start_submission, after_commit: -> { StoreSubmissions::AppStore::SubmitForReviewJob.perform_async(id) } do
+    event :start_submission,
+      after_commit: -> { StoreSubmissions::AppStore::SubmitForReviewJob.perform_async(id) } do
       transitions from: :prepared, to: :submitting_for_review
     end
 
-    event :submit_for_review, after_commit: ->(args = {resubmission: false}) { after_submission(args.fetch(:resubmission)) } do
+    event :submit_for_review,
+      after_commit: ->(args = {resubmission: false}) { after_submission(args.fetch(:resubmission)) } do
       after { set_submitted_at! }
       transitions from: [:review_failed, :submitting_for_review], to: :submitted_for_review
     end
@@ -109,7 +111,8 @@ class AppStoreSubmission < StoreSubmission
       transitions from: :submitted_for_review, to: :approved
     end
 
-    event :start_cancellation, after_commit: -> { StoreSubmissions::AppStore::RemoveFromReviewJob.perform_async(id) } do
+    event :start_cancellation,
+      after_commit: -> { StoreSubmissions::AppStore::RemoveFromReviewJob.perform_async(id) } do
       transitions from: :submitted_for_review, to: :cancelling
     end
 
@@ -174,6 +177,7 @@ class AppStoreSubmission < StoreSubmission
 
   def after_submission(resubmission = false)
     notify!("Submitted for review!", :submit_for_review, notification_params.merge(resubmission:))
+
     if resubmission
       event_stamp!(reason: :resubmitted_for_review, kind: :notice, data: stamp_data)
     else

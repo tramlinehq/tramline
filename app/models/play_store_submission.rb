@@ -4,6 +4,7 @@
 #
 #  id                      :uuid             not null, primary key
 #  approved_at             :datetime
+#  deployment_channel      :jsonb
 #  failure_reason          :string
 #  name                    :string
 #  prepared_at             :datetime
@@ -17,6 +18,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_id                :uuid             indexed
+#  production_release_id   :bigint           indexed
 #  release_platform_run_id :uuid             not null, indexed
 #
 class PlayStoreSubmission < StoreSubmission
@@ -30,7 +32,6 @@ class PlayStoreSubmission < StoreSubmission
   enum failure_reason: {
     unknown_failure: "unknown_failure"
   }.merge(Installations::Google::PlayDeveloper::Error.reasons.zip_map_self)
-
   enum status: STATES
 
   # Things that have happened before Store Submission
@@ -45,7 +46,6 @@ class PlayStoreSubmission < StoreSubmission
   #
   # Things that will happen after Store Submission
   # 1. Rollout (staged or otherwise)
-
   aasm safe_state_machine_params do
     state :created, initial: true
     state(*STATES.keys)
@@ -91,7 +91,6 @@ class PlayStoreSubmission < StoreSubmission
     return unless startable?
 
     result = provider.create_draft_release(deployment_channel[:id].to_s, build_number, version_name, release_notes)
-
     if result.ok?
       finish_prepare!
     else

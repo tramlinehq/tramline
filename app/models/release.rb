@@ -96,6 +96,7 @@ class Release < ApplicationRecord
     app_submission: {title: "App submission"},
     rollout_to_users: {title: "Rollout to users"}
   }
+  FULL_ROLLOUT_VALUE = BigDecimal("100")
 
   belongs_to :train
   belongs_to :hotfixed_from, class_name: "Release", optional: true, foreign_key: "hotfixed_from", inverse_of: :hotfixed_releases

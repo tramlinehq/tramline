@@ -4,6 +4,7 @@
 #
 #  id                      :uuid             not null, primary key
 #  approved_at             :datetime
+#  deployment_channel      :jsonb
 #  failure_reason          :string
 #  name                    :string
 #  prepared_at             :datetime
@@ -17,6 +18,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_id                :uuid             indexed
+#  production_release_id   :bigint           indexed
 #  release_platform_run_id :uuid             not null, indexed
 #
 class StoreSubmission < ApplicationRecord
@@ -25,13 +27,17 @@ class StoreSubmission < ApplicationRecord
   include Loggable
   include Displayable
 
+  has_one :store_rollout
   belongs_to :release_platform_run
-  belongs_to :build, optional: true
+  belongs_to :production_release, optional: true
+  belongs_to :pre_production_release, optional: true
 
   delegate :release_metadatum, :train, :release, to: :release_platform_run
   delegate :notify!, to: :train
   delegate :version_name, :build_number, to: :build
   delegate :project_link, :public_icon_img, to: :provider
+
+  validates :only_one_release_present
 
   STATES = {
     created: "created",
@@ -43,7 +49,9 @@ class StoreSubmission < ApplicationRecord
     failed: "failed"
   }
 
-  def deployment_channel = provider.class::PROD_CHANNEL
+  def build
+    production_release&.build # || pre_production_release&.build
+  end
 
   def attach_build!(build)
     self.build = build
@@ -120,5 +128,13 @@ class StoreSubmission < ApplicationRecord
           project_link: external_link
         }
       )
+  end
+
+  def only_one_release_present
+    if production_release.present? && pre_production_release.present?
+      errors.add(:base, "Only one release can be present at a time")
+    elsif production_release.blank? && pre_production_release.blank?
+      errors.add(:base, "At least one release should be present")
+    end
   end
 end

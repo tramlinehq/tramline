@@ -5,7 +5,6 @@
 #  id                      :bigint           not null, primary key
 #  config                  :decimal(8, 5)    default([]), not null, is an Array
 #  current_stage           :integer
-#  release_channel         :jsonb            not null
 #  status                  :string           not null
 #  type                    :string           not null
 #  created_at              :datetime         not null
@@ -57,7 +56,7 @@ class PlayStoreRollout < StoreRollout
     with_lock do
       return unless may_rollout_fully?
 
-      rollout_value = Deployment::FULL_ROLLOUT_VALUE
+      rollout_value = Release::FULL_ROLLOUT_VALUE
       result = rollout(rollout_value)
       if result.ok?
         rollout_fully!
@@ -73,7 +72,7 @@ class PlayStoreRollout < StoreRollout
     with_lock do
       return unless may_halt?
 
-      result = provider.halt_release(release_channel, build_number, version_name, last_rollout_percentage)
+      result = provider.halt_release(deployment_channel, build_number, version_name, last_rollout_percentage)
       if result.ok?
         halt!
         notify!("Release was halted!", :staged_rollout_halted, notification_params)
@@ -102,6 +101,6 @@ class PlayStoreRollout < StoreRollout
   private
 
   def rollout(value)
-    provider.rollout_release(release_channel, build_number, version_name, value, nil)
+    provider.rollout_release(deployment_channel, build_number, version_name, value, nil)
   end
 end

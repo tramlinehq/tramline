@@ -5,7 +5,6 @@
 #  id                      :bigint           not null, primary key
 #  config                  :decimal(8, 5)    default([]), not null, is an Array
 #  current_stage           :integer
-#  release_channel         :jsonb            not null
 #  status                  :string           not null
 #  type                    :string           not null
 #  created_at              :datetime         not null
@@ -21,8 +20,7 @@ class StoreRollout < ApplicationRecord
   include Displayable
 
   belongs_to :release_platform_run
-  belongs_to :store_submission, optional: true
-  belongs_to :build
+  belongs_to :store_submission
 
   STAMPABLE_REASONS = %w[
     started
@@ -33,7 +31,6 @@ class StoreRollout < ApplicationRecord
     halted
     fully_released
   ]
-
   STATES = {
     created: "created",
     started: "started",
@@ -44,7 +41,7 @@ class StoreRollout < ApplicationRecord
 
   enum status: STATES
 
-  delegate :update_store_info!, to: :store_submission, allow_nil: true
+  delegate :update_store_info!, :build, :deployment_channel, to: :store_submission
   delegate :version_name, :build_number, to: :build
   delegate :train, to: :release_platform_run
   delegate :notify!, to: :train
@@ -66,7 +63,7 @@ class StoreRollout < ApplicationRecord
   end
 
   def last_rollout_percentage
-    return Deployment::FULL_ROLLOUT_VALUE if fully_released?
+    return Release::FULL_ROLLOUT_VALUE if fully_released?
     return if created? || current_stage.nil?
     return config.last if reached_last_stage?
     config[current_stage]
@@ -100,3 +97,17 @@ end
 # - handle previous staged rollout value in the next rollout
 # - handle rollouts for non-prod
 # - external release in play store?
+
+# [Pre-production phase]
+# store submission + store rollout
+# firebase submission
+# email, slack etc.
+#
+# [beta release]
+# store submission + store rollout
+# firebase submission
+# email, slack etc.
+#
+# [production phase]
+# approvals
+# store submission + store rollout (play_store+app_store)
