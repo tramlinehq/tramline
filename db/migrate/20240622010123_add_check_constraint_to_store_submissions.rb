@@ -7,9 +7,9 @@ class AddCheckConstraintToStoreSubmissions < ActiveRecord::Migration[7.0]
     end
 
     add_check_constraint :store_submissions,
-                         "production_release_id IS NOT NULL AND pre_prod_release_id IS NULL OR production_release_id IS NULL AND pre_prod_release_id IS NOT NULL",
-                         name: "only_one_release_present",
-                          validate: false
+      "production_release_id IS NOT NULL AND pre_prod_release_id IS NULL OR production_release_id IS NULL AND pre_prod_release_id IS NOT NULL",
+      name: "only_one_release_present",
+      validate: false
 
     # validate_check_constraint :store_submissions, name: "only_one_release_present"
 

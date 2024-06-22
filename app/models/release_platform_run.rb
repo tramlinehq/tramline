@@ -39,6 +39,7 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :builds, dependent: :destroy, inverse_of: :release_platform_run
   has_many :play_store_submissions, dependent: :destroy
   has_many :app_store_submissions, dependent: :destroy
+  has_many :production_releases, dependent: :destroy
   has_many :play_store_rollouts, dependent: :destroy
   has_many :app_store_rollouts, dependent: :destroy
   has_many :external_builds, through: :step_runs
@@ -81,7 +82,6 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   after_create :set_default_release_metadata
-  after_create :create_store_submission, if: -> { organization.product_v2? }
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
   delegate :all_commits, :original_release_version, :hotfix?, :versioning_strategy, :organization, to: :release
@@ -119,42 +119,6 @@ class ReleasePlatformRun < ApplicationRecord
   def previous_store_submissions
     return unless store_submissions.size > 1
     store_submissions.where.not(id: active_store_submission.id)
-  end
-
-  # orchestrator
-  def create_store_submission
-    if android?
-      play_store_submissions.create!
-    elsif ios?
-      app_store_submissions.create!
-    else
-      raise ArgumentError, "Unknown platform: #{platform}"
-    end
-  end
-
-  # orchestrator
-  def create_rollout_for_submission(submission)
-    return if submission.build.blank?
-    return unless submission.locked?
-
-    if android?
-      play_store_rollouts.create!(store_submission: submission, build: submission.build)
-    elsif ios?
-      app_store_rollouts.create!(store_submission: submission, build: submission.build)
-    else
-      raise ArgumentError, "Unknown platform: #{platform}"
-    end
-  end
-
-  # orchestrator
-  def create_rollout_for_build(build)
-    if android?
-      play_store_rollouts.create!(build:)
-    elsif ios?
-      app_store_rollouts.create!(build:)
-    else
-      raise ArgumentError, "Unknown platform: #{platform}"
-    end
   end
 
   def latest_build?(build)

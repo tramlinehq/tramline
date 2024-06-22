@@ -18,6 +18,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_id                :uuid             indexed
+#  pre_prod_release_id     :uuid             indexed
 #  production_release_id   :bigint           indexed
 #  release_platform_run_id :uuid             not null, indexed
 #

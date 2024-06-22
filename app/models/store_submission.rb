@@ -30,15 +30,15 @@ class StoreSubmission < ApplicationRecord
 
   has_one :store_rollout
   belongs_to :release_platform_run
+  belongs_to :pre_prod_release, optional: true
   belongs_to :production_release, optional: true
-  belongs_to :pre_prod_releases, optional: true
 
   delegate :release_metadatum, :train, :release, to: :release_platform_run
   delegate :notify!, to: :train
-  delegate :version_name, :build_number, to: :build
   delegate :project_link, :public_icon_img, to: :provider
+  delegate :version_name, :build_number, to: :build
 
-  validates :only_one_release_present
+  validate :only_one_release_present
 
   STATES = {
     created: "created",
@@ -50,9 +50,7 @@ class StoreSubmission < ApplicationRecord
     failed: "failed"
   }
 
-  def build
-    pre_production_release&.build || production_release&.build
-  end
+  def build = pre_prod_release&.build || production_release&.build
 
   def attach_build!(build)
     self.build = build
@@ -84,7 +82,7 @@ class StoreSubmission < ApplicationRecord
           deployment_channel_asset_link: public_icon_img,
           deployment_channel_type: provider.to_s.titleize,
           project_link: external_link,
-          requires_review: requires_review?,
+          requires_review: requires_review?
         }
       )
   end
@@ -132,9 +130,9 @@ class StoreSubmission < ApplicationRecord
   end
 
   def only_one_release_present
-    if production_release.present? && pre_production_release.present?
+    if production_release.present? && pre_prod_release.present?
       errors.add(:base, "Only one release can be present at a time")
-    elsif production_release.blank? && pre_production_release.blank?
+    elsif production_release.blank? && pre_prod_release.blank?
       errors.add(:base, "At least one release should be present")
     end
   end
