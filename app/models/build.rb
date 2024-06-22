@@ -10,6 +10,7 @@
 #  updated_at              :datetime         not null
 #  commit_id               :uuid             not null, indexed
 #  release_platform_run_id :uuid             not null, indexed
+#  workflow_run_id         :uuid             indexed
 #
 class Build < ApplicationRecord
   has_paper_trail

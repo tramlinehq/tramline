@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_06_13_195545) do
+ActiveRecord::Schema[7.0].define(version: 2024_06_22_001828) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -138,8 +138,10 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_13_195545) do
     t.datetime "generated_at", precision: nil
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "workflow_run_id"
     t.index ["commit_id"], name: "index_builds_on_commit_id"
     t.index ["release_platform_run_id"], name: "index_builds_on_release_platform_run_id"
+    t.index ["workflow_run_id"], name: "index_builds_on_workflow_run_id"
   end
 
   create_table "commit_listeners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -374,6 +376,16 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_13_195545) do
     t.index ["kind"], name: "index_passports_on_kind"
     t.index ["reason"], name: "index_passports_on_reason"
     t.index ["stampable_type", "stampable_id"], name: "index_passports_on_stampable"
+  end
+
+  create_table "pre_prod_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_platform_run_id", null: false
+    t.uuid "build_id"
+    t.string "type", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["build_id"], name: "index_pre_prod_releases_on_build_id"
+    t.index ["release_platform_run_id"], name: "index_pre_prod_releases_on_release_platform_run_id"
   end
 
   create_table "pull_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -770,6 +782,15 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_13_195545) do
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
   end
 
+  create_table "workflow_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_platform_run_id", null: false
+    t.uuid "pre_prod_release_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["pre_prod_release_id"], name: "index_workflow_runs_on_pre_prod_release_id"
+    t.index ["release_platform_run_id"], name: "index_workflow_runs_on_release_platform_run_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "app_configs", "apps"
@@ -779,6 +800,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_13_195545) do
   add_foreign_key "build_queues", "releases"
   add_foreign_key "builds", "commits"
   add_foreign_key "builds", "release_platform_runs"
+  add_foreign_key "builds", "workflow_runs"
   add_foreign_key "commit_listeners", "release_platforms"
   add_foreign_key "commits", "build_queues"
   add_foreign_key "commits", "release_platform_runs"
@@ -796,6 +818,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_13_195545) do
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "notification_settings", "trains"
+  add_foreign_key "pre_prod_releases", "builds"
+  add_foreign_key "pre_prod_releases", "release_platform_runs"
   add_foreign_key "pull_requests", "release_platform_runs"
   add_foreign_key "release_changelogs", "releases"
   add_foreign_key "release_health_events", "deployment_runs"
@@ -824,4 +848,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_13_195545) do
   add_foreign_key "store_submissions", "release_platform_runs"
   add_foreign_key "teams", "organizations"
   add_foreign_key "trains", "apps"
+  add_foreign_key "workflow_runs", "pre_prod_releases"
+  add_foreign_key "workflow_runs", "release_platform_runs"
 end
