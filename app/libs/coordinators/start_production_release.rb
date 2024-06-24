@@ -1,12 +1,11 @@
 class Coordinators::StartProductionRelease
-  def self.call(release_platform_run, build)
-    return unless release_platform_run.organization.product_v2?
-    new(release_platform_run, build).call
+  def self.call(build)
+    new(build).call
   end
 
-  def initialize(release_platform_run, build)
-    @release_platform_run = release_platform_run
+  def initialize(build)
     @build = build
+    @release_platform_run = build.release_platform_run
   end
 
   attr_reader :release_platform_run, :build
