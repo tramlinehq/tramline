@@ -69,7 +69,7 @@ module Installations
             .concat(firebase_client
                       .list_project_android_apps(project_name, page_size: 20)
                       &.apps
-                      &.map { |app| app.to_h.merge(platform: "android") })
+                      &.map { |app| app.to_h.merge(platform: "android") } || [])
         end
 
         t2 = Thread.new do
@@ -77,7 +77,7 @@ module Installations
             .concat(firebase_client
                       .list_project_ios_apps(project_name, page_size: 20)
                       &.apps
-                      &.map { |app| app.to_h.merge(platform: "ios") })
+                      &.map { |app| app.to_h.merge(platform: "ios") } || [])
         end
 
         [t1, t2].each(&:join)
