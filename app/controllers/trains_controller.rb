@@ -129,7 +129,8 @@ class TrainsController < SignedInApplicationController
       :tag_platform_releases,
       :notifications_enabled,
       :tag_releases,
-      :tag_suffix
+      :tag_suffix,
+      :patch_version_bump_only
     )
   end
 
@@ -166,7 +167,8 @@ class TrainsController < SignedInApplicationController
       :tag_platform_releases,
       :notifications_enabled,
       :tag_releases,
-      :tag_suffix
+      :tag_suffix,
+      :patch_version_bump_only
     )
   end
 

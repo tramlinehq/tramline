@@ -3,6 +3,7 @@ module Versionable
 
   def next_version(major_only: false, patch_only: false)
     raise ArgumentError, "both major and patch cannot be true" if major_only && patch_only
+    patch_only = true if patch_version_bump_only && !major_only
     version = version_current.to_semverish
     version_current.ver_bump(bump_term(version, major_only:, patch_only:), strategy: versioning_strategy)
   end

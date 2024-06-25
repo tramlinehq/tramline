@@ -128,6 +128,32 @@ describe Release do
         end
       end
     end
+
+    context "when train has patch_version_bump_only" do
+      {
+        "1.2.3" => {major: "2.0.0", minor: "1.2.4"},
+        "1.2" => {major: "2.0", minor: "1.3"}
+      }.each do |ver, expect|
+        it "minor bump: sets the original_release_version to next version of the train with patch bump only for proper" do
+          train = create(:train, version_seeded_with: ver, patch_version_bump_only: true)
+          run = build(:release, original_release_version: nil, train:)
+
+          expect(run.original_release_version).to be_nil
+          run.save!
+          expect(run.original_release_version).to eq(expect[:minor])
+        end
+
+        it "major bump: sets the original_release_version to next version of the train with major bump" do
+          train = create(:train, version_seeded_with: ver, patch_version_bump_only: true)
+          run = build(:release, original_release_version: nil, train:)
+          run.has_major_bump = true
+
+          expect(run.original_release_version).to be_nil
+          run.save!
+          expect(run.original_release_version).to eq(expect[:major])
+        end
+      end
+    end
   end
 
   describe ".create" do
