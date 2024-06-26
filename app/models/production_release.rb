@@ -56,7 +56,7 @@ class ProductionRelease < ApplicationRecord
     finished? && completed_at < RELEASE_MONITORING_PERIOD_IN_DAYS.days.ago
   end
 
-  def monitoring_provider = app.monitoring_provider
+  delegate :monitoring_provider, to: :app
 end
 
 # TODO:

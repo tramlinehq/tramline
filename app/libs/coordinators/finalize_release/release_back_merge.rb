@@ -44,7 +44,7 @@ class Coordinators::FinalizeRelease::ReleaseBackMerge
 
   def stamp_pr_success
     release.reload.pull_requests.post_release.each do |pr|
-      release.event_stamp!(reason: :post_release_pr_succeeded, kind: :success, data: { url: pr.url, number: pr.number })
+      release.event_stamp!(reason: :post_release_pr_succeeded, kind: :success, data: {url: pr.url, number: pr.number})
     end
   end
 
