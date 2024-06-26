@@ -258,7 +258,7 @@ class WorkflowRun < ApplicationRecord
       workflow_run: self,
       release_platform_run:,
       sequence_number: release_platform_run.next_build_sequence_number,
-      generated_at: artifact[:generated_at],
+      generated_at: artifact[:generated_at] || finished_at,
       size_in_bytes: artifact[:size_in_bytes],
       external_name: artifact[:name],
       external_id: artifact[:id]

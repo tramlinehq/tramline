@@ -44,6 +44,13 @@ class BitriseIntegration < ApplicationRecord
     id: :slug
   }
 
+  ARTIFACTS_TRANSFORMATIONS = {
+    id: :slug,
+    name: :title,
+    size_in_bytes: :file_size_bytes,
+    archive_download_url: :expiring_download_url
+  }
+
   validate :correct_key, on: :create
   validates :access_token, presence: true
 
@@ -129,6 +136,16 @@ class BitriseIntegration < ApplicationRecord
   def get_artifact(artifact_url, _)
     raise Integration::NoBuildArtifactAvailable if artifact_url.blank?
     Artifacts::Stream.new(installation.artifact_io_stream(artifact_url))
+  end
+
+  def get_artifact_v2(artifact_url, _)
+    raise Integration::NoBuildArtifactAvailable if artifact_url.blank?
+
+    artifact = installation.artifact(artifact_url)
+    raise Integration::NoBuildArtifactAvailable if artifact.blank?
+
+    stream = installation.download_artifact(artifact[:archive_download_url])
+    {artifact:, stream: Artifacts::Stream.new(stream)}
   end
 
   def unzip_artifact?
