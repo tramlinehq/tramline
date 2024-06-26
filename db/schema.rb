@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_06_22_010123) do
+ActiveRecord::Schema[7.0].define(version: 2024_06_26_004007) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -678,6 +678,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_22_010123) do
     t.decimal "config", precision: 8, scale: 5, default: [], null: false, array: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "completed_at"
     t.index ["build_id"], name: "index_store_rollouts_on_build_id"
     t.index ["release_platform_run_id"], name: "index_store_rollouts_on_release_platform_run_id"
     t.index ["store_submission_id"], name: "index_store_rollouts_on_store_submission_id"

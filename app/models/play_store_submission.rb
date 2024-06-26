@@ -29,6 +29,7 @@ class PlayStoreSubmission < StoreSubmission
   STATES = STATES.merge(
     failed_with_action_required: "failed_with_action_required"
   )
+  FINAL_STATES = %w[approved]
 
   enum failure_reason: {
     unknown_failure: "unknown_failure"
@@ -51,8 +52,7 @@ class PlayStoreSubmission < StoreSubmission
     state :created, initial: true
     state(*STATES.keys)
 
-    event :start_prepare, guard: :startable?,
-      after_commit: -> { StoreSubmissions::PlayStore::PrepareForReleaseJob.perform_later(id) } do
+    event :start_prepare, guard: :startable?, after: :on_start_prepare! do
       transitions from: [:created, :prepared, :failed], to: :preparing
     end
 
@@ -66,19 +66,18 @@ class PlayStoreSubmission < StoreSubmission
       transitions from: :prepared, to: :review_failed
     end
 
-    event :fail, before: :set_reason do
+    event :fail, before: :set_failure_reason do
       transitions to: :failed
     end
 
-    event :fail_with_sync_option, before: :set_reason do
+    event :fail_with_sync_option, before: :set_failure_reason do
       transitions from: [:preparing, :prepared, :failed_with_action_required], to: :failed_with_action_required
     end
   end
 
   def change_allowed? = true
 
-  # TODO: This should be false once rollout starts
-  def locked? = false
+  def locked? = false # TODO: This should be false once rollout starts
 
   def reviewable? = false
 
@@ -87,6 +86,10 @@ class PlayStoreSubmission < StoreSubmission
   def cancellable? = false
 
   def integration_type = :google_play_store
+
+  def on_start_prepare!
+    StoreSubmissions::PlayStore::PrepareForReleaseJob.perform_later(id)
+  end
 
   def prepare_for_release!
     return unless startable?

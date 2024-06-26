@@ -3,6 +3,7 @@
 # Table name: store_rollouts
 #
 #  id                      :bigint           not null, primary key
+#  completed_at            :datetime
 #  config                  :decimal(8, 5)    default([]), not null, is an Array
 #  current_stage           :integer
 #  status                  :string           not null
@@ -21,7 +22,7 @@ class AppStoreRollout < StoreRollout
     state :created, initial: true
     state(*STATES.keys)
 
-    event :start, after_commit: -> { StoreRollouts::AppStore::FindLiveReleaseJob.perform_async(id) } do
+    event :start, after_commit: :on_start! do
       transitions from: :created, to: :started
       transitions from: :paused, to: :started
       transitions from: :failed, to: :started
@@ -35,13 +36,13 @@ class AppStoreRollout < StoreRollout
       transitions from: [:started, :paused, :failed], to: :halted
     end
 
-    event :complete do
-      after { "bubble up" }
+    event :complete, after_commit: :on_complete! do
+      after { set_completed_at! }
       transitions from: [:failed, :started, :paused], to: :completed
     end
 
-    event :rollout_fully do
-      after { "bubble up" }
+    event :rollout_fully, after_commit: :on_complete! do
+      after { set_completed_at! }
       transitions from: [:failed, :started], to: :fully_released
     end
   end
@@ -132,6 +133,11 @@ class AppStoreRollout < StoreRollout
   end
 
   private
+
+  def on_start!
+    production_release.rollout_started!
+    StoreRollouts::AppStore::FindLiveReleaseJob.perform_async(id)
+  end
 
   def update_rollout(release_info)
     update_store_info!(release_info)

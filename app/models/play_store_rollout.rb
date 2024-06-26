@@ -3,6 +3,7 @@
 # Table name: store_rollouts
 #
 #  id                      :bigint           not null, primary key
+#  completed_at            :datetime
 #  config                  :decimal(8, 5)    default([]), not null, is an Array
 #  current_stage           :integer
 #  status                  :string           not null
@@ -18,7 +19,7 @@ class PlayStoreRollout < StoreRollout
     state :created, initial: true
     state(*STATES.keys)
 
-    event :start do
+    event :start, after_commit: :on_start! do
       transitions from: :created, to: :started
       transitions from: :halted, to: :started
       transitions from: :failed, to: :started
@@ -28,11 +29,13 @@ class PlayStoreRollout < StoreRollout
       transitions from: [:started, :failed], to: :halted
     end
 
-    event :complete do
+    event :complete, after_commit: :on_complete! do
+      after { set_completed_at! }
       transitions from: :started, to: :completed
     end
 
-    event :rollout_fully do
+    event :rollout_fully, after_commit: :on_complete! do
+      after { set_completed_at! }
       transitions from: :started, to: :fully_released
     end
   end
@@ -102,5 +105,9 @@ class PlayStoreRollout < StoreRollout
 
   def rollout(value)
     provider.rollout_release(deployment_channel, build_number, version_name, value, nil)
+  end
+
+  def on_start!
+    production_release.rollout_started!
   end
 end

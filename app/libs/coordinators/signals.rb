@@ -39,52 +39,35 @@
 # • This does not replace internal state machines of other sub-models.
 # • It currently does not have any state of its own.
 module Coordinators::Signals
-  def self.start_release!(release)
-    return unless release_platform_run.organization.product_v2?
+  def start_release!(release)
     # PreRelease.call(release)
     # NewRelease.call(release)
   end
 
-  def self.new_commit_landed!(release)
-    return unless release_platform_run.organization.product_v2?
-    WebhookProcessors::PushJob.perform_later(release.id, head_commit, rest_commits)
+  def new_commit_has_landed!(release)
     # check if patchfix/hotfix etc
     # check if we need to trigger rc
     # StartPrepareForRelease.call(release)
   end
 
-  def self.build_available_for_regression_testing!(build)
-    return unless release_platform_run.organization.product_v2?
+  def build_is_available_for_regression_testing!(build)
     # StartRegressionTesting.call(build)
   end
 
-  def self.regression_testing_approved!(build)
-    return unless release_platform_run.organization.product_v2?
+  def regression_testing_is_approved!(build)
     # StartBetaRelease.call(build)
   end
 
-  def self.beta_release_available!(build)
-    return unless release_platform_run.organization.product_v2?
+  def beta_release_is_available!(build)
     # start soak, or
-    # StartProductionRelease.call(build)
+    StartProductionRelease.call(build)
   end
 
-  def self.production_release_complete!(submission)
-    return unless release_platform_run.organization.product_v2?
-    # WrapUpRelease.call(build)
+  def production_release_is_complete!(release_platform_run)
+    FinishProductionRelease.call(release_platform_run)
   end
 
-  def self.release_complete!(release)
-    return unless release_platform_run.organization.product_v2?
-    # WrapUpRelease.call(build)
+  def entire_release_is_complete!(release_id, force_finalize = false)
+    V2::FinalizeReleaseJob.perform_later(release_id, force_finalize)
   end
 end
-
-# Coordinators::Signals.start_release!(release)
-# Coordinators::Signals.new_commit_landed!(release)
-# Coordinators::Signals.build_available_for_regression_testing!(build)
-# Coordinators::Signals.regression_testing_approved!(build)
-# Coordinators::Signals.beta_release_available!(build)
-# Coordinators::Signals.production_release_complete!(submission)
-# Coordinators::Signals.release_complete!(release)
-

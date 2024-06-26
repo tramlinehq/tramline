@@ -73,31 +73,24 @@ class AppStoreSubmission < StoreSubmission
     state :created, initial: true
     state(*STATES.keys)
 
-    event :start_prepare,
-      guard: :startable?,
-      after_commit: -> { StoreSubmissions::AppStore::PrepareForReleaseJob.perform_async(id) } do
+    event :start_prepare, guard: :startable?, after_commit: :on_start_prepare! do
       transitions from: [:created, :failed_prepare, :prepared, :failed, :review_failed, :cancelled], to: :preparing
     end
 
-    event :finish_prepare,
-      after_commit: -> { StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id) } do
+    event :finish_prepare, after_commit: :on_finish_prepare! do
       after { set_prepared_at! }
       transitions from: :preparing, to: :prepared
     end
 
-    event :fail_prepare,
-      before: :set_reason,
-      after_commit: -> { event_stamp!(reason: :prepare_release_failed, kind: :error, data: stamp_data) } do
+    event :fail_prepare, before: :set_failure_reason, after_commit: :on_fail_prepare! do
       transitions from: :preparing, to: :failed_prepare
     end
 
-    event :start_submission,
-      after_commit: -> { StoreSubmissions::AppStore::SubmitForReviewJob.perform_async(id) } do
+    event :start_submission, after_commit: :on_start_submission! do
       transitions from: :prepared, to: :submitting_for_review
     end
 
-    event :submit_for_review,
-      after_commit: ->(args = {resubmission: false}) { after_submission(args.fetch(:resubmission)) } do
+    event :submit_for_review, after_commit: :on_submit_for_review! do
       after { set_submitted_at! }
       transitions from: [:review_failed, :submitting_for_review], to: :submitted_for_review
     end
@@ -112,8 +105,7 @@ class AppStoreSubmission < StoreSubmission
       transitions from: :submitted_for_review, to: :approved
     end
 
-    event :start_cancellation,
-      after_commit: -> { StoreSubmissions::AppStore::RemoveFromReviewJob.perform_async(id) } do
+    event :start_cancellation, after_commit: :on_start_cancellation! do
       transitions from: :submitted_for_review, to: :cancelling
     end
 
@@ -121,7 +113,7 @@ class AppStoreSubmission < StoreSubmission
       transitions from: [:submitted_for_review, :cancelling], to: :cancelled
     end
 
-    event :fail, before: :set_reason do
+    event :fail, before: :set_failure_reason do
       transitions to: :failed
     end
   end
@@ -140,8 +132,11 @@ class AppStoreSubmission < StoreSubmission
 
   def requires_review? = true
 
-  # FIXME
-  def staged_rollout? = true
+  def staged_rollout? = true # FIXME - get this configuration from train settings
+
+  def on_start_prepare!
+    StoreSubmissions::AppStore::PrepareForReleaseJob.perform_async(id)
+  end
 
   def prepare_for_release!
     result = provider.prepare_release(build_number, version_name, staged_rollout?, release_metadatum, true)
@@ -165,6 +160,10 @@ class AppStoreSubmission < StoreSubmission
     finish_prepare!
   end
 
+  def on_start_submission!
+    StoreSubmissions::AppStore::SubmitForReviewJob.perform_async(id)
+  end
+
   def submit!
     result = provider.submit_release(build_number, version_name)
 
@@ -176,14 +175,17 @@ class AppStoreSubmission < StoreSubmission
     submit_for_review!
   end
 
-  def after_submission(resubmission = false)
+  def on_submit_for_review!(args = {resubmission: false})
+    resubmission = args.fetch(:resubmission)
     notify!("Submitted for review!", :submit_for_review, notification_params.merge(resubmission:))
 
-    if resubmission
-      event_stamp!(reason: :resubmitted_for_review, kind: :notice, data: stamp_data)
-    else
-      event_stamp!(reason: :submitted_for_review, kind: :notice, data: stamp_data)
-    end
+    stamp_params = {kind: :notice, data: stamp_data}
+    stamp_params[:reason] = resubmission ? :resubmitted_for_review : :submitted_for_review
+    event_stamp!(**stamp_params)
+  end
+
+  def on_finish_prepare!
+    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id)
   end
 
   def update_external_release
@@ -214,6 +216,10 @@ class AppStoreSubmission < StoreSubmission
     raise SubmissionNotInTerminalState, "Retrying in some time..."
   end
 
+  def on_start_cancellation!
+    StoreSubmissions::AppStore::RemoveFromReviewJob.perform_async(id)
+  end
+
   def remove_from_review!
     result = provider.remove_from_review(build_number, version_name)
 
@@ -235,5 +241,9 @@ class AppStoreSubmission < StoreSubmission
     self.store_status = release_info.attributes[:status]
     self.store_link = release_info.attributes[:external_link]
     save!
+  end
+
+  def on_fail_prepare!
+    event_stamp!(reason: :prepare_release_failed, kind: :error, data: stamp_data)
   end
 end

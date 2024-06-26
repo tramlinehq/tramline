@@ -69,9 +69,14 @@ class ReleasePlatformRun < ApplicationRecord
       transitions from: [:created, :on_track], to: :on_track
     end
 
-    event :stop, after_commit: -> { event_stamp!(reason: :stopped, kind: :notice, data: {version: release_version}) } do
+    event :stop, after_commit: :on_stop! do
       before { self.stopped_at = Time.current }
       transitions from: [:created, :on_track], to: :stopped
+    end
+
+    event :finish_v2, after_commit: :on_finish_v2! do
+      before { self.completed_at = Time.current }
+      transitions from: :on_track, to: :finished
     end
 
     event :finish, after_commit: :on_finish! do
@@ -350,6 +355,15 @@ class ReleasePlatformRun < ApplicationRecord
     ReleasePlatformRuns::CreateTagJob.perform_later(id) if train.tag_platform_at_release_end?
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     app.refresh_external_app
+  end
+
+  def on_finish_v2!
+    ReleasePlatformRuns::CreateTagJob.perform_later(@release_platform_run.id) if train.tag_platform_at_release_end?
+    event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
+  end
+
+  def on_stop!
+    event_stamp!(reason: :stopped, kind: :notice, data: {version: release_version})
   end
 
   # recursively attempt to create a release tag until a unique one gets created

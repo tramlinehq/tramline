@@ -34,8 +34,8 @@ class StoreSubmission < ApplicationRecord
   belongs_to :production_release, optional: true
 
   delegate :release_metadatum, :train, :release, to: :release_platform_run
-  delegate :notify!, to: :train
   delegate :project_link, :public_icon_img, to: :provider
+  delegate :notify!, to: :train
   delegate :version_name, :build_number, to: :build
 
   validate :only_one_release_present
@@ -52,17 +52,19 @@ class StoreSubmission < ApplicationRecord
 
   def build = pre_prod_release&.build || production_release&.build
 
+  # FIXME: remove in favor of attaching build during creation
   def attach_build!(build)
     self.build = build
     save!
   end
 
+  # FIXME: will be startable as soon as it is created
   def startable?
     build.present?
   end
 
-  def provider
-    release_platform_run.store_provider
+  def finished?
+    status.in? FINAL_STATES
   end
 
   def external_link
@@ -102,7 +104,7 @@ class StoreSubmission < ApplicationRecord
     end
   end
 
-  def set_reason(args = nil)
+  def set_failure_reason(args = nil)
     self.failure_reason = args&.fetch(:reason, :unknown_failure)
   end
 
@@ -136,4 +138,6 @@ class StoreSubmission < ApplicationRecord
       errors.add(:base, "At least one release should be present")
     end
   end
+
+  def provider = release_platform_run.store_provider
 end

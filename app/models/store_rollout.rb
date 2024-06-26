@@ -3,6 +3,7 @@
 # Table name: store_rollouts
 #
 #  id                      :bigint           not null, primary key
+#  completed_at            :datetime
 #  config                  :decimal(8, 5)    default([]), not null, is an Array
 #  current_stage           :integer
 #  status                  :string           not null
@@ -19,8 +20,8 @@ class StoreRollout < ApplicationRecord
   include Loggable
   include Displayable
 
-  belongs_to :release_platform_run
   belongs_to :store_submission
+  belongs_to :release_platform_run
 
   STAMPABLE_REASONS = %w[
     started
@@ -52,7 +53,7 @@ class StoreRollout < ApplicationRecord
 
   def provider = release_platform_run.store_provider
 
-  def terminal? = completed? || fully_released?
+  def finished? = completed? || fully_released?
 
   def reached_last_stage? = next_rollout_percentage.nil?
 
@@ -106,6 +107,14 @@ class StoreRollout < ApplicationRecord
     end
 
     data
+  end
+
+  def on_complete!
+    production_release.rollout_complete!
+  end
+
+  def set_completed_at!
+    update! completed_at: Time.current
   end
 end
 
