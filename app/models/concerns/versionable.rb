@@ -8,6 +8,7 @@ module Versionable
   end
 
   def next_to_next_version(major_only: false, patch_only: false)
+    version = version_current.to_semverish
     next_version(major_only: major_only, patch_only: patch_only)
       .ver_bump(bump_term(version, major_only:, patch_only:), strategy: versioning_strategy)
   end
@@ -15,6 +16,7 @@ module Versionable
   private
 
   def bump_term(version, major_only: false, patch_only: false)
+    patch_only = true if patch_version_bump_only && !major_only
     if patch_only && version.proper?
       :patch
     else

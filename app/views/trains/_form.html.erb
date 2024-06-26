@@ -245,6 +245,18 @@
       <% end %>
     <% end %>
 
+    <%= f.with_advanced_section(heading: "Patch Version Change Only") do |section| %>
+      <% section.with_description do %>
+        By default, minor version of the app is bumped up between each successful release of the train.
+        You can override this behavior to bump up the patch version only.
+      <% end %>
+
+      <%= render V2::Form::SwitchComponent.new(form: section.F,
+                                               field_name: :patch_version_bump_only,
+                                               on_label: "Only patch version will change between releases",
+                                               off_label: "Minor version will change between releases (default)") %>
+    <% end %>
+
     <% f.with_action do %>
       <%= f.F.authz_submit (train.persisted? ? "Update Train" : "Create Train"), (train.persisted? ? "v2/archive.svg" : "plus.svg"), disabled: @edit_not_allowed %>
     <% end %>
