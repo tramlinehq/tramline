@@ -44,7 +44,7 @@ class ReleasePlatform < ApplicationRecord
 
   validate :ready?, on: :create
 
-  delegate :integrations, to: :train
+  delegate :integrations, :ci_cd_provider, to: :train
   delegate :ready?, :default_locale, to: :app
 
   def self.allowed_platforms

@@ -1,8 +1,8 @@
 class WorkflowProcessors::Bitrise::WorkflowRun
-  def initialize(integration, workflow_run, step_run)
+  def initialize(integration, workflow_run, build_artifact_name_pattern)
     @integration = integration
     @workflow_run = workflow_run
-    @step_run = step_run
+    @build_artifact_name_pattern = build_artifact_name_pattern
   end
 
   def in_progress?
@@ -22,7 +22,15 @@ class WorkflowProcessors::Bitrise::WorkflowRun
   end
 
   def artifacts_url
-    @integration.artifact_url(workflow_run[:slug], @step_run.build_artifact_name_pattern)
+    @integration.artifact_url(workflow_run[:slug], @build_artifact_name_pattern)
+  end
+
+  def started_at
+    workflow_run[:triggered_at]
+  end
+
+  def finished_at
+    workflow_run[:finished_at]
   end
 
   private

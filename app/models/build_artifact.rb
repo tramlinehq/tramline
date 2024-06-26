@@ -15,7 +15,7 @@ require "zip"
 class BuildArtifact < ApplicationRecord
   include Rails.application.routes.url_helpers
 
-  belongs_to :step_run, inverse_of: :build_artifact
+  belongs_to :step_run, optional: true, inverse_of: :build_artifact
   belongs_to :build, optional: true, inverse_of: :artifact
   has_one_attached :file
 
@@ -62,7 +62,7 @@ class BuildArtifact < ApplicationRecord
   end
 
   def app
-    step_run.release_platform.app
+    (step_run || build).release_platform_run.app
   end
 
   delegate :organization, to: :step_run

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_06_26_004007) do
+ActiveRecord::Schema[7.0].define(version: 2024_06_26_183626) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -139,6 +139,11 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_26_004007) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "workflow_run_id"
+    t.string "external_id"
+    t.string "external_name"
+    t.integer "size_in_bytes"
+    t.integer "sequence_number"
+    t.string "slack_file_id"
     t.index ["commit_id"], name: "index_builds_on_commit_id"
     t.index ["release_platform_run_id"], name: "index_builds_on_release_platform_run_id"
     t.index ["workflow_run_id"], name: "index_builds_on_workflow_run_id"
@@ -800,6 +805,15 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_26_004007) do
   create_table "workflow_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_run_id", null: false
     t.uuid "pre_prod_release_id", null: false
+    t.string "status", null: false
+    t.jsonb "workflow_config"
+    t.string "build_number"
+    t.string "external_id"
+    t.string "external_url"
+    t.string "external_number"
+    t.string "artifacts_url"
+    t.datetime "started_at"
+    t.datetime "finished_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["pre_prod_release_id"], name: "index_workflow_runs_on_pre_prod_release_id"

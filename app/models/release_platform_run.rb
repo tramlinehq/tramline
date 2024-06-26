@@ -90,7 +90,7 @@ class ReleasePlatformRun < ApplicationRecord
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
   delegate :all_commits, :original_release_version, :hotfix?, :versioning_strategy, :organization, to: :release
-  delegate :steps, :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, :default_locale, to: :release_platform
+  delegate :steps, :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, :default_locale, :ci_cd_provider, to: :release_platform
 
   def metadata_for(language)
     locale_tag = AppStores::Localizable.supported_locale_tag(language, :ios)
@@ -128,6 +128,10 @@ class ReleasePlatformRun < ApplicationRecord
 
   def latest_build?(build)
     builds.reorder("generated_at DESC").first == build
+  end
+
+  def next_build_sequence_number
+    builds.maximum(:sequence_number).to_i.succ
   end
 
   def check_release_health

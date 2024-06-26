@@ -387,11 +387,12 @@ module Installations
       Down::Http.download(url)
     end
 
-    def artifacts(artifacts_url)
+    def artifacts(artifacts_url, transforms)
       HTTP
         .auth("Bearer #{@client.access_token}")
         .get(artifacts_url)
-        .then { |resp| JSON.parse(resp.to_s)["artifacts"] }
+        .then { |resp| JSON.parse(resp.to_s) }
+        .then { |parsed_resp| Installations::Response::Keys.transform(parsed_resp["artifacts"], transforms) }
     end
 
     def execute
