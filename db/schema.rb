@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_06_26_183626) do
+ActiveRecord::Schema[7.0].define(version: 2024_06_26_192038) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -675,7 +675,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_26_183626) do
 
   create_table "store_rollouts", force: :cascade do |t|
     t.uuid "release_platform_run_id", null: false
-    t.uuid "build_id", null: false
     t.uuid "store_submission_id"
     t.string "type", null: false
     t.string "status", null: false
@@ -684,7 +683,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_26_183626) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "completed_at"
-    t.index ["build_id"], name: "index_store_rollouts_on_build_id"
     t.index ["release_platform_run_id"], name: "index_store_rollouts_on_release_platform_run_id"
     t.index ["store_submission_id"], name: "index_store_rollouts_on_store_submission_id"
   end
@@ -872,7 +870,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_26_183626) do
   add_foreign_key "step_runs", "release_platform_runs"
   add_foreign_key "step_runs", "steps"
   add_foreign_key "steps", "release_platforms"
-  add_foreign_key "store_rollouts", "builds"
   add_foreign_key "store_rollouts", "release_platform_runs"
   add_foreign_key "store_rollouts", "store_submissions"
   add_foreign_key "store_submissions", "builds"

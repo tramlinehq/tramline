@@ -1,6 +1,6 @@
 module Coordinatable
   extend Coordinators::Signals
-  after_commit :dispatch_signal, on: :save
+  # after_commit :dispatch_signal, on: :save
 
   def dispatch_signal
     raise ArgumentError, "No `coordinatable_states` in your model!" unless respond_to?(:coordinatable_states)

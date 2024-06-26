@@ -10,7 +10,6 @@
 #  type                    :string           not null
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
-#  build_id                :uuid             not null, indexed
 #  release_platform_run_id :uuid             not null, indexed
 #  store_submission_id     :uuid             indexed
 #
@@ -43,6 +42,7 @@ class StoreRollout < ApplicationRecord
   enum status: STATES
 
   delegate :update_store_info!, :build, :deployment_channel, to: :store_submission
+  delegate :production_release, :pre_prod_release, to: :store_submission, allow_nil: true
   delegate :version_name, :build_number, to: :build
   delegate :train, to: :release_platform_run
   delegate :notify!, to: :train

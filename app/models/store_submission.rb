@@ -63,10 +63,6 @@ class StoreSubmission < ApplicationRecord
     build.present?
   end
 
-  def finished?
-    status.in? FINAL_STATES
-  end
-
   def external_link
     store_link || project_link
   end

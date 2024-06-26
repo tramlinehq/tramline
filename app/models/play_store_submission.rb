@@ -29,7 +29,7 @@ class PlayStoreSubmission < StoreSubmission
   STATES = STATES.merge(
     failed_with_action_required: "failed_with_action_required"
   )
-  FINAL_STATES = %w[approved]
+  FINAL_STATES = %w[prepared]
 
   enum failure_reason: {
     unknown_failure: "unknown_failure"
@@ -84,6 +84,10 @@ class PlayStoreSubmission < StoreSubmission
   def requires_review? = false
 
   def cancellable? = false
+
+  def finished?
+    status.in? FINAL_STATES
+  end
 
   def integration_type = :google_play_store
 

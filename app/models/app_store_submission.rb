@@ -126,6 +126,10 @@ class AppStoreSubmission < StoreSubmission
     status.in? FINAL_STATES
   end
 
+  def finished?
+    status.in? FINAL_STATES
+  end
+
   def cancellable? = submitted_for_review?
 
   def reviewable? = prepared?

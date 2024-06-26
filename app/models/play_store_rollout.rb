@@ -10,7 +10,6 @@
 #  type                    :string           not null
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
-#  build_id                :uuid             not null, indexed
 #  release_platform_run_id :uuid             not null, indexed
 #  store_submission_id     :uuid             indexed
 #
