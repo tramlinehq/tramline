@@ -50,6 +50,10 @@ module Coordinators::Signals
     # StartPrepareForRelease.call(release)
   end
 
+  def workflow_run_finished!(workflow_run, triggering_release)
+    V2::CreateBuildJob.perform_later(workflow_run.id, triggering_release.id)
+  end
+
   def build_is_available_for_regression_testing!(build)
     # StartRegressionTesting.call(build)
   end

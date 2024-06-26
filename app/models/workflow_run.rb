@@ -23,14 +23,13 @@ class WorkflowRun < ApplicationRecord
   include Passportable
 
   belongs_to :release_platform_run
-  belongs_to :pre_prod_release
+  belongs_to :triggering_release, class_name: "PreProdRelease", foreign_key: "pre_prod_release_id", inverse_of: :workflow_run
   belongs_to :commit
   has_one :build, dependent: :destroy
 
   delegate :organization, :app, :ci_cd_provider, :train, :release_version, :release_branch, to: :release_platform_run
   delegate :notify!, to: :train
   delegate :commit_hash, to: :commit
-  delegate :has_findables?, :has_uploadables?, :store_provider, to: :pre_prod_release
 
   STAMPABLE_REASONS = %w[
     ci_triggered
@@ -39,10 +38,6 @@ class WorkflowRun < ApplicationRecord
     ci_finished
     ci_workflow_failed
     ci_workflow_halted
-    build_available
-    build_unavailable
-    build_not_found_in_store
-    build_found_in_store
   ]
 
   STATES = {
@@ -52,11 +47,7 @@ class WorkflowRun < ApplicationRecord
     started: "started",
     failed: "failed",
     halted: "halted",
-    build_ready: "build_ready",
-    build_found_in_store: "build_found_in_store",
-    build_not_found_in_store: "build_not_found_in_store",
-    build_unavailable: "build_unavailable",
-    build_available: "build_available",
+    finished: "finished",
     cancelled: "cancelled",
     cancelling: "cancelling",
     cancelled_before_start: "cancelled_before_start"
@@ -64,23 +55,22 @@ class WorkflowRun < ApplicationRecord
 
   NOT_STARTED = [:created]
   IN_PROGRESS = [:triggered, :started]
-  TERMINAL_STATES = [:build_found_in_store, :build_not_found_in_store, :build_unavailable, :build_available]
-  WORKFLOW_IMMUTABLE = STATES.keys - TERMINAL_STATES - WORKFLOW_IN_PROGRESS - WORKFLOW_NOT_STARTED
+  TERMINAL_STATES = [:finished]
+  WORKFLOW_IMMUTABLE = STATES.keys - TERMINAL_STATES - IN_PROGRESS - NOT_STARTED
 
   aasm safe_state_machine_params do
-    state :created, initial: true, after_commit: :trigger
+    state :created, initial: true, after_commit: :after_created
     state(*STATES.keys)
 
     event :trigger, after_commit: :after_trigger do
-      before :trigger_workflow_run
       transitions from: :created, to: :triggered
     end
 
-    event :start, after_commit: -> { WorkflowProcessors::WorkflowRunJob.perform_later(id) } do
+    event :start, after_commit: :after_start do
       transitions from: :triggered, to: :started
     end
 
-    event(:unavailable, after_commit: -> { notify_on_failure!("Could not find the CI workflow!") }) do
+    event(:unavailable, after_commit: :after_unavailable) do
       transitions from: [:created, :triggered], to: :unavailable
     end
 
@@ -92,32 +82,16 @@ class WorkflowRun < ApplicationRecord
       transitions from: :started, to: :halted
     end
 
-    event(:retry, after_commit: :after_retrigger_ci) do
-      before :retry_workflow_run
-      transitions from: [:failed, :halted], to: :started
-    end
+    # event(:retry, after_commit: :after_retrigger_ci) do
+    #   before :retry_workflow_run
+    #   transitions from: [:failed, :halted], to: :started
+    # end
 
     event(:finish, after_commit: :after_finish) do
-      transitions from: :started, to: :build_ready
+      transitions from: :started, to: :finished
     end
 
-    event(:build_found, before: :create_build_without_artifact!, after_commit: :after_build_create) do
-      transitions from: :build_ready, to: :build_available
-    end
-
-    event(:upload_artifact, before: :create_build_with_artifact!, after_commit: :after_build_create) do
-      transitions from: :build_ready, to: :build_available
-    end
-
-    event(:build_not_found, after_commit: :after_build_not_found) do
-      transitions from: :build_ready, to: :build_not_found_in_store
-    end
-
-    event(:build_upload_failed, after_commit: :after_build_upload_failed) do
-      transitions from: :build_ready, to: :build_unavailable
-    end
-
-    event(:cancel, after_commit: -> { WorkflowRuns::CancelJob.perform_later(id) }) do
+    event(:cancel, after_commit: :after_cancel) do
       transitions from: WORKFLOW_IN_PROGRESS, to: :cancelling
       transitions from: WORKFLOW_NOT_STARTED, to: :cancelled_before_start
       transitions from: :cancelling, to: :cancelled # TODO: check this
@@ -130,7 +104,7 @@ class WorkflowRun < ApplicationRecord
 
   def find_and_update_external
     return if workflow_found?
-    find_external_run.then { |wr| update_ci_metadata!(wr) }
+    find_external_run.then { |wr| update_external_metadata!(wr) }
   end
 
   def get_external_run
@@ -155,17 +129,19 @@ class WorkflowRun < ApplicationRecord
   end
 
   def add_metadata!(artifacts_url:, started_at:, finished_at:)
-    update!(artifacts_url:, started_at:, finished_at:, external_number: number)
+    update!(artifacts_url:, started_at:, finished_at:)
   end
 
   private
 
-  def trigger_workflow_run(retrigger: false)
+  def trigger_external_run!(retrigger: false)
     update_build_number! unless retrigger
 
     ci_cd_provider
       .trigger_workflow_run!(workflow_id, release_branch, workflow_inputs, commit_hash)
-      .then { |wr| update_ci_metadata!(wr) }
+      .then { |wr| update_external_metadata!(wr) }
+
+    trigger!
   end
 
   def update_build_number!
@@ -188,8 +164,9 @@ class WorkflowRun < ApplicationRecord
     "TODO: add these"
   end
 
-  def update_ci_metadata!(workflow_run)
+  def update_external_metadata!(workflow_run)
     return if workflow_run.try(:[], :ci_ref).blank?
+
     update!(
       external_id: workflow_run[:ci_ref],
       external_link: workflow_run[:ci_link],
@@ -201,11 +178,26 @@ class WorkflowRun < ApplicationRecord
     ci_cd_provider.find_workflow_run(workflow_id, release_branch, commit_hash)
   end
 
+  def after_created
+    WorkflowRuns::TriggerJob.perform_later(id)
+  end
+
   def after_trigger
-    WorkflowRuns::FindJob.perform_async(id)
     event_stamp!(reason: :ci_triggered, kind: :notice, data: stamp_data)
     notify!("Step has been triggered!", :step_started, notification_params)
     # FIXME Releases::CancelStepRun.perform_later(previous_step_run.id) if previous_step_run&.may_cancel?
+
+    return start! if workflow_found? && workflow_run.may_start?
+    WorkflowRuns::FindJob.perform_async(id)
+  end
+
+  def after_start
+    WorkflowRuns::PollRunStatusJob.perform_later(id)
+  end
+
+  def after_unavailable
+    # FIXME: notify unavailable
+    # notify_on_failure!("Could not find the CI workflow!")
   end
 
   def after_fail
@@ -220,61 +212,11 @@ class WorkflowRun < ApplicationRecord
 
   def after_finish
     event_stamp!(reason: :ci_finished, kind: :success, data: stamp_data)
-
-    return WorkflowRuns::FindBuildJob.perform_async(id) if has_findables?
-    WorkflowRuns::UploadArtifactJob.perform_async(id) if has_uploadables?
+    Coordinators::Signals.workflow_run_finished!(self, triggering_release)
   end
 
-  def after_build_not_found
-    event_stamp!(reason: :build_not_found_in_store, kind: :error, data: stamp_data)
-    # FIXME: notify build not found
-  end
-
-  def after_build_upload_failed
-    event_stamp!(reason: :build_unavailable, kind: :error, data: stamp_data)
-    # FIXME: notify build upload failed
-  end
-
-  def get_build_artifact
-    ci_cd_provider.get_artifact_v2(artifacts_url, build_artifact_name_pattern)
-  end
-
-  def create_build_without_artifact!
-    return if build.present?
-
-    create_build!(
-      release_platform_run:,
-      sequence_number: release_platform_run.next_build_sequence_number,
-      generated_at: finished_at
-    )
-  end
-
-  def create_build_with_artifact!
-    return if build.present?
-    return if artifacts_url.blank?
-
-    get_build_artifact => { artifact:, stream: }
-    build = Build.new(
-      workflow_run: self,
-      release_platform_run:,
-      sequence_number: release_platform_run.next_build_sequence_number,
-      generated_at: artifact[:generated_at] || finished_at,
-      size_in_bytes: artifact[:size_in_bytes],
-      external_name: artifact[:name],
-      external_id: artifact[:id]
-    )
-
-    stream.with_open do |artifact_stream|
-      build.build_artifact.save_file!(artifact_stream)
-      artifact_stream.file.rewind
-      build.slack_file_id = train.upload_file_for_notifications!(artifact_stream.file, build.build_artifact.get_filename)
-    end
-
-    build.save!
-  end
-
-  def after_build_create
-    pre_prod_release.attach_build!(build)
+  def after_cancel
+    WorkflowRuns::CancelJob.perform_later(id)
   end
 
   def stamp_data
