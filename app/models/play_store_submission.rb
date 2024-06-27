@@ -98,7 +98,7 @@ class PlayStoreSubmission < StoreSubmission
   def prepare_for_release!
     return unless startable?
 
-    result = provider.create_draft_release(deployment_channel[:id].to_s, build_number, version_name, release_notes)
+    result = provider.create_draft_release(deployment_channel_id, build_number, version_name, release_notes)
     if result.ok?
       finish_prepare!
     else
@@ -111,5 +111,9 @@ class PlayStoreSubmission < StoreSubmission
       language: release_metadatum.locale,
       text: release_metadatum.release_notes
     }]
+  end
+
+  def deployment_channel_id
+    deployment_channel["id"].to_s
   end
 end

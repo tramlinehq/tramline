@@ -1,13 +1,17 @@
 FactoryBot.define do
   factory :app_store_submission do
     release_platform_run { association :release_platform_run }
+    pre_prod_release { association :pre_prod_release }
+    production_release { nil }
     status { "created" }
 
     trait :pre_prod_release do
       pre_prod_release { association :pre_prod_release }
+      production_release { nil }
     end
 
     trait :prod_release do
+      pre_prod_release { nil }
       production_release { association :production_release }
     end
 
@@ -46,10 +50,6 @@ FactoryBot.define do
     trait :failed do
       status { "failed" }
       failure_reason { "unknown_failure" }
-    end
-
-    trait :with_build do
-      build { association :build }
     end
   end
 end
