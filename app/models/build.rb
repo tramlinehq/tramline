@@ -6,7 +6,7 @@
 #  build_number            :string
 #  external_name           :string
 #  generated_at            :datetime
-#  sequence_number         :integer
+#  sequence_number         :integer          default(0), not null, indexed
 #  size_in_bytes           :integer
 #  version_name            :string
 #  created_at              :datetime         not null

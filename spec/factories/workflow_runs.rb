@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :workflow_run do
     association :commit
-    association :triggering_release, factory: :internal_release
+    association :triggering_release, factory: :pre_prod_release
     release_platform_run { triggering_release.release_platform_run }
     workflow_config { {id: "123"} }
     status { "created" }

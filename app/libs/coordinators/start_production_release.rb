@@ -20,10 +20,11 @@ class Coordinators::StartProductionRelease
     end
   end
 
-  def create_submission(release)
+  def create_submission(parent_release)
     params = {
       release_platform_run: @release_platform_run,
-      production_release: release
+      parent_release:,
+      build: @build
     }
 
     return @release_platform_run.play_store_submissions.create!(params) if android?

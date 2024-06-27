@@ -6,7 +6,7 @@ describe AppStoreRollout do
   describe "#start!" do
     let(:release_platform_run) { create(:release_platform_run) }
     let(:production_release) { create(:production_release, release_platform_run:) }
-    let(:store_submission) { create(:app_store_submission, :prod_release, release_platform_run:, production_release:) }
+    let(:store_submission) { create(:app_store_submission, :prod_release, release_platform_run:, parent_release: production_release) }
     let(:rollout) { create(:store_rollout, :app_store, release_platform_run:, store_submission:) }
 
     it "informs the production release" do
@@ -36,7 +36,7 @@ describe AppStoreRollout do
     }
     let(:release_platform_run) { create(:release_platform_run) }
     let(:production_release) { create(:production_release, release_platform_run:) }
-    let(:store_submission) { create(:app_store_submission, :prod_release, release_platform_run:, production_release:) }
+    let(:store_submission) { create(:app_store_submission, :prod_release, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
 
     it "does nothing if the rollout hasn't started" do
@@ -105,7 +105,7 @@ describe AppStoreRollout do
     }
     let(:release_platform_run) { create(:release_platform_run) }
     let(:production_release) { create(:production_release, release_platform_run:) }
-    let(:store_submission) { create(:app_store_submission, :prod_release, release_platform_run:, production_release:) }
+    let(:store_submission) { create(:app_store_submission, :prod_release, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
 
     it "halts the rollout if started" do
@@ -155,7 +155,7 @@ describe AppStoreRollout do
     }
     let(:release_platform_run) { create(:release_platform_run) }
     let(:production_release) { create(:production_release, release_platform_run:) }
-    let(:store_submission) { create(:app_store_submission, :prod_release, release_platform_run:, production_release:) }
+    let(:store_submission) { create(:app_store_submission, :prod_release, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
 
     it "resumes the rollout if halted" do
@@ -192,7 +192,7 @@ describe AppStoreRollout do
     }
     let(:release_platform_run) { create(:release_platform_run) }
     let(:production_release) { create(:production_release, release_platform_run:) }
-    let(:store_submission) { create(:app_store_submission, :prod_release, release_platform_run:, production_release:) }
+    let(:store_submission) { create(:app_store_submission, :prod_release, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
 
     it "resumes the rollout if paused" do

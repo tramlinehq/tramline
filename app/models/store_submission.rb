@@ -4,22 +4,22 @@
 #
 #  id                      :uuid             not null, primary key
 #  approved_at             :datetime
-#  deployment_channel      :jsonb
 #  failure_reason          :string
 #  name                    :string
 #  parent_release_type     :string           not null, indexed => [parent_release_id]
 #  prepared_at             :datetime
 #  rejected_at             :datetime
-#  sequence_number         :integer          default(0), not null
+#  sequence_number         :integer          default(0), not null, indexed
 #  status                  :string           not null
 #  store_link              :string
 #  store_release           :jsonb
 #  store_status            :string
+#  submission_config       :jsonb
 #  submitted_at            :datetime
 #  type                    :string           not null
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
-#  build_id                :uuid             indexed
+#  build_id                :uuid             not null, indexed
 #  parent_release_id       :bigint           not null, indexed => [parent_release_type]
 #  release_platform_run_id :uuid             not null, indexed
 #
@@ -32,14 +32,13 @@ class StoreSubmission < ApplicationRecord
   has_one :store_rollout, dependent: :destroy
   belongs_to :release_platform_run
   belongs_to :parent_release, polymorphic: true
+  belongs_to :build
 
   delegate :release_metadatum, :train, :release, to: :release_platform_run
   delegate :project_link, :public_icon_img, to: :provider
   delegate :notify!, to: :train
   delegate :version_name, :build_number, to: :build
   delegate :staged_rollout?, to: :store_rollout
-
-  validate :only_one_release_present
 
   STATES = {
     created: "created",
@@ -51,14 +50,14 @@ class StoreSubmission < ApplicationRecord
     failed: "failed"
   }
 
-  def build = pre_prod_release&.build || production_release&.build
-
-  def parent_release = pre_prod_release || production_release
-
   # FIXME: remove in favor of attaching build during creation
   def attach_build!(build)
     self.build = build
     save!
+  end
+
+  def deployment_channel
+    submission_config
   end
 
   # FIXME: will be startable as soon as it is created
@@ -130,13 +129,5 @@ class StoreSubmission < ApplicationRecord
       version: version_name,
       build_number: build_number
     }
-  end
-
-  def only_one_release_present
-    if production_release.present? && pre_prod_release.present?
-      errors.add(:base, "Only one release can be present at a time")
-    elsif production_release.blank? && pre_prod_release.blank?
-      errors.add(:base, "At least one release should be present")
-    end
   end
 end

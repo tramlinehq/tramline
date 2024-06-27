@@ -5,24 +5,10 @@ describe AppStoreSubmission do
     expect(create(:app_store_submission)).to be_valid
   end
 
-  describe "#startable?" do
-    it "returns false if there is no build associated" do
-      pre_prod_release = create(:pre_prod_release, build: nil)
-      submission = create(:app_store_submission, pre_prod_release:)
-      expect(submission).not_to be_startable
-    end
-
-    it "returns true if there is a build associated" do
-      submission = create(:app_store_submission)
-      expect(submission).to be_startable
-    end
-  end
-
   describe ".prepare_for_release!" do
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
     let(:build) { create(:build) }
-    let(:pre_prod_release) { create(:pre_prod_release, build: build) }
-    let(:submission) { create(:app_store_submission, :preparing, pre_prod_release:) }
+    let(:submission) { create(:app_store_submission, :preparing, build: build) }
     let(:base_release_info) {
       {
         external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
@@ -151,8 +137,7 @@ describe AppStoreSubmission do
 
   describe ".submit!" do
     let(:build) { create(:build) }
-    let(:pre_prod_release) { create(:pre_prod_release, build: build) }
-    let(:submission) { create(:app_store_submission, :submitting_for_review, pre_prod_release:) }
+    let(:submission) { create(:app_store_submission, :submitting_for_review, build: build) }
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
 
     before do
@@ -213,8 +198,7 @@ describe AppStoreSubmission do
 
   describe ".update_external_release" do
     let(:build) { create(:build) }
-    let(:pre_prod_release) { create(:pre_prod_release, build: build) }
-    let(:submission) { create(:app_store_submission, :submitted_for_review, pre_prod_release:) }
+    let(:submission) { create(:app_store_submission, :submitted_for_review, build: build) }
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
     let(:base_release_info) {
       {

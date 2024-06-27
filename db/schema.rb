@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_06_27_192609) do
+ActiveRecord::Schema[7.0].define(version: 2024_06_27_212717) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -142,10 +142,11 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_27_192609) do
     t.string "external_id"
     t.string "external_name"
     t.integer "size_in_bytes"
-    t.integer "sequence_number"
+    t.integer "sequence_number", limit: 2, default: 0, null: false
     t.string "slack_file_id"
     t.index ["commit_id"], name: "index_builds_on_commit_id"
     t.index ["release_platform_run_id"], name: "index_builds_on_release_platform_run_id"
+    t.index ["sequence_number"], name: "index_builds_on_sequence_number"
     t.index ["workflow_run_id"], name: "index_builds_on_workflow_run_id"
   end
 
@@ -385,19 +386,18 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_27_192609) do
 
   create_table "pre_prod_releases", force: :cascade do |t|
     t.uuid "release_platform_run_id", null: false
-    t.uuid "build_id"
     t.string "type", null: false
+    t.string "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["build_id"], name: "index_pre_prod_releases_on_build_id"
     t.index ["release_platform_run_id"], name: "index_pre_prod_releases_on_release_platform_run_id"
   end
 
   create_table "production_releases", force: :cascade do |t|
+    t.uuid "release_platform_run_id", null: false
     t.uuid "build_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "release_platform_run_id", null: false
     t.index ["build_id"], name: "index_production_releases_on_build_id"
     t.index ["release_platform_run_id"], name: "index_production_releases_on_release_platform_run_id"
   end
@@ -678,18 +678,18 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_27_192609) do
     t.uuid "store_submission_id"
     t.string "type", null: false
     t.string "status", null: false
+    t.datetime "completed_at"
     t.integer "current_stage", limit: 2
     t.decimal "config", precision: 8, scale: 5, default: [], null: false, array: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.datetime "completed_at"
     t.index ["release_platform_run_id"], name: "index_store_rollouts_on_release_platform_run_id"
     t.index ["store_submission_id"], name: "index_store_rollouts_on_store_submission_id"
   end
 
   create_table "store_submissions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_run_id", null: false
-    t.uuid "build_id"
+    t.uuid "build_id", null: false
     t.string "status", null: false
     t.string "name"
     t.string "type", null: false
@@ -703,13 +703,14 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_27_192609) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "store_release"
-    t.jsonb "deployment_channel"
-    t.integer "sequence_number", limit: 2, default: 0, null: false
     t.string "parent_release_type", null: false
     t.bigint "parent_release_id", null: false
+    t.jsonb "submission_config"
+    t.integer "sequence_number", limit: 2, default: 0, null: false
     t.index ["build_id"], name: "index_store_submissions_on_build_id"
     t.index ["parent_release_type", "parent_release_id"], name: "index_store_submissions_on_parent_release"
     t.index ["release_platform_run_id"], name: "index_store_submissions_on_release_platform_run_id"
+    t.index ["sequence_number"], name: "index_store_submissions_on_sequence_number"
   end
 
   create_table "teams", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -846,7 +847,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_27_192609) do
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "notification_settings", "trains"
-  add_foreign_key "pre_prod_releases", "builds"
   add_foreign_key "pre_prod_releases", "release_platform_runs"
   add_foreign_key "production_releases", "builds"
   add_foreign_key "production_releases", "release_platform_runs"

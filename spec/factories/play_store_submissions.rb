@@ -1,19 +1,18 @@
 FactoryBot.define do
   factory :play_store_submission do
-    release_platform_run { association :release_platform_run }
-    pre_prod_release { association :pre_prod_release }
-    production_release { nil }
+    parent_release { association :pre_prod_release }
+    build { association :build, release_platform_run: parent_release.release_platform_run }
+    release_platform_run { parent_release.release_platform_run }
+
     status { "created" }
-    deployment_channel { {id: :production, name: "production"} }
+    submission_config { {id: :production, name: "production"} }
 
     trait :pre_prod_release do
-      pre_prod_release { association :pre_prod_release }
-      production_release { nil }
+      parent_release { association :pre_prod_release }
     end
 
     trait :prod_release do
-      pre_prod_release { nil }
-      production_release { association :production_release }
+      parent_release { association :production_release }
     end
 
     trait :preparing do
