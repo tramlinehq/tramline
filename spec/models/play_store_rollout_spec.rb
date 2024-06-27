@@ -5,7 +5,6 @@ require "rails_helper"
 describe PlayStoreRollout do
   describe "#start!" do
     let(:release_platform_run) { create(:release_platform_run) }
-    let(:build) { create(:build) }
     let(:production_release) { create(:production_release, release_platform_run:) }
     let(:store_submission) { create(:play_store_submission, :prod_release, release_platform_run:, production_release:) }
     let(:rollout) { create(:store_rollout, :play_store, release_platform_run:, store_submission:) }
@@ -19,7 +18,6 @@ describe PlayStoreRollout do
 
   describe "#move_to_next_stage!" do
     let(:release_platform_run) { create(:release_platform_run) }
-    let(:build) { create(:build) }
     let(:production_release) { create(:production_release, release_platform_run:) }
     let(:store_submission) { create(:play_store_submission, :prod_release, release_platform_run:, production_release:) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
@@ -90,7 +88,6 @@ describe PlayStoreRollout do
 
   describe "#release_fully!" do
     let(:release_platform_run) { create(:release_platform_run) }
-    let(:build) { create(:build) }
     let(:production_release) { create(:production_release, release_platform_run:) }
     let(:store_submission) { create(:play_store_submission, :prod_release, release_platform_run:, production_release:) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
@@ -147,7 +144,6 @@ describe PlayStoreRollout do
 
   describe "#halt_release!" do
     let(:release_platform_run) { create(:release_platform_run) }
-    let(:build) { create(:build) }
     let(:production_release) { create(:production_release, release_platform_run:) }
     let(:store_submission) { create(:play_store_submission, :prod_release, release_platform_run:, production_release:) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
@@ -185,7 +181,6 @@ describe PlayStoreRollout do
 
   describe "#resume_release!" do
     let(:release_platform_run) { create(:release_platform_run) }
-    let(:build) { create(:build) }
     let(:production_release) { create(:production_release, release_platform_run:) }
     let(:store_submission) { create(:play_store_submission, :prod_release, release_platform_run:, production_release:) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }

@@ -18,7 +18,6 @@ describe AppStoreRollout do
       )
     }
     let(:release_platform_run) { create(:release_platform_run) }
-    let(:build) { create(:build) }
     let(:production_release) { create(:production_release, release_platform_run:) }
     let(:store_submission) { create(:app_store_submission, :prod_release, release_platform_run:, production_release:) }
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
@@ -88,7 +87,6 @@ describe AppStoreRollout do
       )
     }
     let(:release_platform_run) { create(:release_platform_run) }
-    let(:build) { create(:build) }
     let(:production_release) { create(:production_release, release_platform_run:) }
     let(:store_submission) { create(:app_store_submission, :prod_release, release_platform_run:, production_release:) }
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
@@ -139,7 +137,6 @@ describe AppStoreRollout do
       )
     }
     let(:release_platform_run) { create(:release_platform_run) }
-    let(:build) { create(:build) }
     let(:production_release) { create(:production_release, release_platform_run:) }
     let(:store_submission) { create(:app_store_submission, :prod_release, release_platform_run:, production_release:) }
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
@@ -177,7 +174,6 @@ describe AppStoreRollout do
       )
     }
     let(:release_platform_run) { create(:release_platform_run) }
-    let(:build) { create(:build) }
     let(:production_release) { create(:production_release, release_platform_run:) }
     let(:store_submission) { create(:app_store_submission, :prod_release, release_platform_run:, production_release:) }
     let(:providable_dbl) { instance_double(AppStoreIntegration) }
