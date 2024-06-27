@@ -11,19 +11,6 @@ class Coordinators::FinishProductionRelease
 
   delegate :transaction, to: ActiveRecord::Base
 
-  # if external_release
-  #   now = Time.current
-  #   external_release.update(released_at: now, reviewed_at: external_release.reviewed_at.presence || now)
-  # end
-  #
-  # # event_stamp!(reason: :released, kind: :success, data: stamp_data)
-  # # return if external?
-  #
-  # train.notify_with_snippet!("Deployment was successful!",
-  #                            :deployment_finished,
-  #                            notification_params,
-  #                            step_run.build_notes,
-  #                            "Changes since the last release:")
   def call
     transaction do
       @release_platform_run.finish_v2!
@@ -31,6 +18,12 @@ class Coordinators::FinishProductionRelease
     end
 
     @app.refresh_external_app
+    # FIXME: notify properly
+    # train.notify_with_snippet!("Deployment was successful!",
+    #                            :deployment_finished,
+    #                            notification_params,
+    #                            step_run.build_notes,
+    #                            "Changes since the last release:")
   end
 
   def update_release!
