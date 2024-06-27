@@ -27,6 +27,11 @@ class AppStoreSubmission < StoreSubmission
   using RefinedArray
   using RefinedString
 
+  has_one :app_store_rollout,
+    foreign_key: :store_submission_id,
+    dependent: :destroy,
+    inverse_of: :app_store_submission
+
   RETRYABLE_FAILURE_REASONS = [:attachment_upload_in_progress]
   STATES = STATES.merge(
     submitting_for_review: "submitting_for_review",
@@ -101,7 +106,7 @@ class AppStoreSubmission < StoreSubmission
       transitions from: :submitted_for_review, to: :review_failed
     end
 
-    event :approve do
+    event :approve, after_commit: :on_approve! do
       after { set_approved_at! }
       transitions from: :submitted_for_review, to: :approved
     end
@@ -246,6 +251,10 @@ class AppStoreSubmission < StoreSubmission
     self.store_status = release_info.attributes[:status]
     self.store_link = release_info.attributes[:external_link]
     save!
+  end
+
+  def on_approve!
+    create_app_store_rollout!(release_platform_run:)
   end
 
   def on_fail_prepare!

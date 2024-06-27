@@ -27,6 +27,11 @@ class PlayStoreSubmission < StoreSubmission
   using RefinedArray
   using RefinedString
 
+  has_one :play_store_rollout,
+    foreign_key: :store_submission_id,
+    dependent: :destroy,
+    inverse_of: :play_store_submission
+
   STATES = STATES.merge(
     failed_with_action_required: "failed_with_action_required"
   )
@@ -57,7 +62,7 @@ class PlayStoreSubmission < StoreSubmission
       transitions from: [:created, :prepared, :failed], to: :preparing
     end
 
-    event :finish_prepare do
+    event :finish_prepare, after_commit: :on_prepare! do
       after { set_prepared_at! }
       transitions from: :preparing, to: :prepared
     end
@@ -116,5 +121,9 @@ class PlayStoreSubmission < StoreSubmission
 
   def deployment_channel_id
     deployment_channel["id"].to_s
+  end
+
+  def on_prepare!
+    create_play_store_rollout!(release_platform_run:)
   end
 end

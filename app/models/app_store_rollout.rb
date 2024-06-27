@@ -17,6 +17,9 @@ class AppStoreRollout < StoreRollout
   ReleaseNotFullyLive = Class.new(StandardError)
   STATES = STATES.merge(paused: "paused")
 
+  belongs_to :app_store_submission, foreign_key: :store_submission_id, inverse_of: :app_store_rollout
+  delegate :update_store_info!, to: :store_submission
+
   aasm safe_state_machine_params(with_lock: false) do
     state :created, initial: true
     state(*STATES.keys)
@@ -131,7 +134,7 @@ class AppStoreRollout < StoreRollout
   private
 
   def on_start!
-    production_release.rollout_started!
+    parent_release.rollout_started!
     StoreRollouts::AppStore::FindLiveReleaseJob.perform_async(id)
   end
 

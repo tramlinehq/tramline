@@ -42,8 +42,7 @@ class StoreRollout < ApplicationRecord
 
   enum status: STATES
 
-  delegate :production_release, :pre_prod_release, to: :store_submission, allow_nil: true
-  delegate :update_store_info!, :build, :deployment_channel, to: :store_submission
+  delegate :parent_release, :build, to: :store_submission
   delegate :version_name, :build_number, to: :build
   delegate :train, to: :release_platform_run
   delegate :notify!, to: :train
@@ -112,7 +111,7 @@ class StoreRollout < ApplicationRecord
   end
 
   def on_complete!
-    production_release.rollout_complete!
+    parent_release.rollout_complete!
   end
 
   def set_completed_at!

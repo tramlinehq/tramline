@@ -3,6 +3,23 @@
 require "rails_helper"
 
 describe AppStoreRollout do
+  describe "#start!" do
+    let(:release_platform_run) { create(:release_platform_run) }
+    let(:production_release) { create(:production_release, release_platform_run:) }
+    let(:store_submission) { create(:app_store_submission, :prod_release, release_platform_run:, production_release:) }
+    let(:rollout) { create(:store_rollout, :app_store, release_platform_run:, store_submission:) }
+
+    it "informs the production release" do
+      allow(production_release).to receive(:rollout_started!)
+      allow(StoreRollouts::AppStore::FindLiveReleaseJob).to receive(:perform_async)
+
+      rollout.start!
+
+      expect(production_release).to have_received(:rollout_started!)
+      expect(StoreRollouts::AppStore::FindLiveReleaseJob).to have_received(:perform_async).with(rollout.id).once
+    end
+  end
+
   describe "#release_fully!" do
     let(:release_info) {
       AppStoreIntegration::AppStoreReleaseInfo.new(
@@ -48,7 +65,7 @@ describe AppStoreRollout do
 
       rollout = create(:store_rollout, :started, :app_store, release_platform_run:, store_submission:)
       allow(rollout).to receive(:provider).and_return(providable_dbl)
-      allow(rollout).to receive(:production_release).and_return(production_release)
+      allow(rollout).to receive(:parent_release).and_return(production_release)
       allow(production_release).to receive(:rollout_complete!)
 
       rollout.release_fully!
@@ -62,12 +79,12 @@ describe AppStoreRollout do
 
       rollout = create(:store_rollout, :started, :app_store, release_platform_run:, store_submission:)
       allow(rollout).to receive(:provider).and_return(providable_dbl)
-      allow(rollout.production_release).to receive(:rollout_complete!)
-      allow(rollout).to receive(:production_release).and_return(production_release)
+      allow(rollout).to receive(:parent_release).and_return(production_release)
+      allow(production_release).to receive(:rollout_complete!)
 
       rollout.release_fully!
 
-      expect(rollout.production_release).not_to have_received(:rollout_complete!)
+      expect(production_release).not_to have_received(:rollout_complete!)
       expect(rollout.fully_released?).to be(false)
     end
   end

@@ -53,6 +53,8 @@ class StoreSubmission < ApplicationRecord
 
   def build = pre_prod_release&.build || production_release&.build
 
+  def parent_release = pre_prod_release || production_release
+
   # FIXME: remove in favor of attaching build during creation
   def attach_build!(build)
     self.build = build

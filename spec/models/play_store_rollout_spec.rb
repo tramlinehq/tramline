@@ -118,7 +118,7 @@ describe PlayStoreRollout do
 
       rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:)
       allow(rollout).to receive(:provider).and_return(providable_dbl)
-      allow(rollout).to receive(:production_release).and_return(production_release)
+      allow(rollout).to receive(:parent_release).and_return(production_release)
       allow(production_release).to receive(:rollout_complete!)
 
       rollout.release_fully!
@@ -132,12 +132,12 @@ describe PlayStoreRollout do
 
       rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:)
       allow(rollout).to receive(:provider).and_return(providable_dbl)
-      allow(rollout.production_release).to receive(:rollout_complete!)
-      allow(rollout).to receive(:production_release).and_return(production_release)
+      allow(rollout).to receive(:parent_release).and_return(production_release)
+      allow(production_release).to receive(:rollout_complete!)
 
       rollout.release_fully!
 
-      expect(rollout.production_release).not_to have_received(:rollout_complete!)
+      expect(production_release).not_to have_received(:rollout_complete!)
       expect(rollout.fully_released?).to be(false)
     end
   end

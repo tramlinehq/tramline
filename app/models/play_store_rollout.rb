@@ -14,6 +14,9 @@
 #  store_submission_id     :uuid             indexed
 #
 class PlayStoreRollout < StoreRollout
+  belongs_to :play_store_submission, foreign_key: :store_submission_id, inverse_of: :play_store_rollout
+  delegate :deployment_channel, to: :store_submission
+
   aasm safe_state_machine_params(with_lock: false) do
     state :created, initial: true
     state(*STATES.keys)
@@ -106,6 +109,6 @@ class PlayStoreRollout < StoreRollout
   end
 
   def on_start!
-    production_release.rollout_started!
+    parent_release.rollout_started!
   end
 end
