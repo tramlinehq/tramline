@@ -1,19 +1,11 @@
 # frozen_string_literal: true
 
-require 'rspec'
+require "rails_helper"
 
-RSpec.describe 'Coordinators::Signals' do
-  before do
-    # Do nothing
-  end
-
-  after do
-    # Do nothing
-  end
-
-  context 'when condition' do
-    it 'succeeds' do
-      pending 'Not implemented'
+describe Coordinators::Signals do
+  context "when condition" do
+    it "succeeds" do
+      pending "Not implemented"
     end
   end
 end
