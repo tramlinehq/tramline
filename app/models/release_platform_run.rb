@@ -2,23 +2,20 @@
 #
 # Table name: release_platform_runs
 #
-#  id                       :uuid             not null, primary key
-#  branch_name              :string
-#  code_name                :string           not null
-#  commit_sha               :string
-#  completed_at             :datetime
-#  in_store_resubmission    :boolean          default(FALSE)
-#  original_release_version :string
-#  release_version          :string
-#  scheduled_at             :datetime         not null
-#  status                   :string           not null
-#  stopped_at               :datetime
-#  tag_name                 :string
-#  created_at               :datetime         not null
-#  updated_at               :datetime         not null
-#  last_commit_id           :uuid             indexed
-#  release_id               :uuid
-#  release_platform_id      :uuid             not null, indexed
+#  id                    :uuid             not null, primary key
+#  code_name             :string           not null
+#  completed_at          :datetime
+#  in_store_resubmission :boolean          default(FALSE)
+#  release_version       :string
+#  scheduled_at          :datetime         not null
+#  status                :string           not null
+#  stopped_at            :datetime
+#  tag_name              :string
+#  created_at            :datetime         not null
+#  updated_at            :datetime         not null
+#  last_commit_id        :uuid             indexed
+#  release_id            :uuid
+#  release_platform_id   :uuid             not null, indexed
 #
 class ReleasePlatformRun < ApplicationRecord
   has_paper_trail
