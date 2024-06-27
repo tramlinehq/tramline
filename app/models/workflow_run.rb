@@ -85,6 +85,7 @@ class WorkflowRun < ApplicationRecord
       transitions from: :started, to: :halted
     end
 
+    # FIXME:
     # event(:retry, after_commit: :after_retrigger_ci) do
     #   before :retry_workflow_run
     #   transitions from: [:failed, :halted], to: :started
@@ -158,6 +159,7 @@ class WorkflowRun < ApplicationRecord
     data
   end
 
+  # NOTE: assuming workflow_config to be a json store {id: "123", artifact_name_pattern: "pattern", name: "Workflow Name"}
   def workflow_id
     workflow_config["id"]
   end
