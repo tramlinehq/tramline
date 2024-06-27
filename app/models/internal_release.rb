@@ -2,7 +2,7 @@
 #
 # Table name: pre_prod_releases
 #
-#  id                      :uuid             not null, primary key
+#  id                      :bigint           not null, primary key
 #  type                    :string           not null
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null

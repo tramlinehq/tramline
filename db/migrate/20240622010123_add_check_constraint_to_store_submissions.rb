@@ -2,7 +2,7 @@ class AddCheckConstraintToStoreSubmissions < ActiveRecord::Migration[7.0]
   def change
     safety_assured do
       change_table :store_submissions do |t|
-        t.belongs_to :pre_prod_release, null: true, index: true, foreign_key: true, type: :uuid
+        t.belongs_to :pre_prod_release, null: true, index: true, foreign_key: true
       end
     end
 

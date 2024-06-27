@@ -383,7 +383,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_26_192038) do
     t.index ["stampable_type", "stampable_id"], name: "index_passports_on_stampable"
   end
 
-  create_table "pre_prod_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "pre_prod_releases", force: :cascade do |t|
     t.uuid "release_platform_run_id", null: false
     t.uuid "build_id"
     t.string "type", null: false
@@ -705,7 +705,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_26_192038) do
     t.jsonb "store_release"
     t.bigint "production_release_id"
     t.jsonb "deployment_channel"
-    t.uuid "pre_prod_release_id"
+    t.bigint "pre_prod_release_id"
     t.index ["build_id"], name: "index_store_submissions_on_build_id"
     t.index ["pre_prod_release_id"], name: "index_store_submissions_on_pre_prod_release_id"
     t.index ["production_release_id"], name: "index_store_submissions_on_production_release_id"
@@ -802,7 +802,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_26_192038) do
 
   create_table "workflow_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_run_id", null: false
-    t.uuid "pre_prod_release_id", null: false
+    t.uuid "commit_id", null: false
+    t.bigint "pre_prod_release_id", null: false
     t.string "status", null: false
     t.jsonb "workflow_config"
     t.string "build_number"
@@ -814,6 +815,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_26_192038) do
     t.datetime "finished_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["commit_id"], name: "index_workflow_runs_on_commit_id"
     t.index ["pre_prod_release_id"], name: "index_workflow_runs_on_pre_prod_release_id"
     t.index ["release_platform_run_id"], name: "index_workflow_runs_on_release_platform_run_id"
   end
@@ -878,6 +880,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_26_192038) do
   add_foreign_key "store_submissions", "release_platform_runs"
   add_foreign_key "teams", "organizations"
   add_foreign_key "trains", "apps"
+  add_foreign_key "workflow_runs", "commits"
   add_foreign_key "workflow_runs", "pre_prod_releases"
   add_foreign_key "workflow_runs", "release_platform_runs"
 end

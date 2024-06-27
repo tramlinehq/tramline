@@ -29,7 +29,7 @@ class ReleasePlatformRun < ApplicationRecord
   include Displayable
   using RefinedString
 
-  # self.ignored_columns += %w[branch_name commit_sha original_release_version]
+  self.ignored_columns += %w[branch_name commit_sha original_release_version]
   self.implicit_order_column = :scheduled_at
 
   belongs_to :release_platform
@@ -89,7 +89,7 @@ class ReleasePlatformRun < ApplicationRecord
   after_create :set_default_release_metadata
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
-  delegate :all_commits, :original_release_version, :hotfix?, :versioning_strategy, :organization, to: :release
+  delegate :all_commits, :original_release_version, :hotfix?, :versioning_strategy, :organization, :release_branch, to: :release
   delegate :steps, :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, :default_locale, :ci_cd_provider, to: :release_platform
 
   def metadata_for(language)

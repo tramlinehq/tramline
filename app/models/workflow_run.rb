@@ -13,8 +13,9 @@
 #  workflow_config         :jsonb
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
+#  commit_id               :uuid             not null, indexed
 #  external_id             :string
-#  pre_prod_release_id     :uuid             not null, indexed
+#  pre_prod_release_id     :bigint           not null, indexed
 #  release_platform_run_id :uuid             not null, indexed
 #
 class WorkflowRun < ApplicationRecord
@@ -58,6 +59,8 @@ class WorkflowRun < ApplicationRecord
   TERMINAL_STATES = [:finished]
   WORKFLOW_IMMUTABLE = STATES.keys - TERMINAL_STATES - IN_PROGRESS - NOT_STARTED
 
+  enum status: STATES
+
   aasm safe_state_machine_params do
     state :created, initial: true, after_commit: :after_created
     state(*STATES.keys)
@@ -92,8 +95,8 @@ class WorkflowRun < ApplicationRecord
     end
 
     event(:cancel, after_commit: :after_cancel) do
-      transitions from: WORKFLOW_IN_PROGRESS, to: :cancelling
-      transitions from: WORKFLOW_NOT_STARTED, to: :cancelled_before_start
+      transitions from: IN_PROGRESS, to: :cancelling
+      transitions from: NOT_STARTED, to: :cancelled_before_start
       transitions from: :cancelling, to: :cancelled # TODO: check this
     end
   end
@@ -132,8 +135,6 @@ class WorkflowRun < ApplicationRecord
     update!(artifacts_url:, started_at:, finished_at:)
   end
 
-  private
-
   def trigger_external_run!(retrigger: false)
     update_build_number! unless retrigger
 
@@ -143,6 +144,8 @@ class WorkflowRun < ApplicationRecord
 
     trigger!
   end
+
+  private
 
   def update_build_number!
     build_number = train.fixed_build_number? ? app.build_number : app.bump_build_number!
@@ -169,7 +172,7 @@ class WorkflowRun < ApplicationRecord
 
     update!(
       external_id: workflow_run[:ci_ref],
-      external_link: workflow_run[:ci_link],
+      external_url: workflow_run[:ci_link],
       external_number: workflow_run[:number]
     )
   end
@@ -184,10 +187,11 @@ class WorkflowRun < ApplicationRecord
 
   def after_trigger
     event_stamp!(reason: :ci_triggered, kind: :notice, data: stamp_data)
-    notify!("Step has been triggered!", :step_started, notification_params)
+    # FIXME: notify triggered
+    # notify!("Step has been triggered!", :step_started, notification_params)
     # FIXME Releases::CancelStepRun.perform_later(previous_step_run.id) if previous_step_run&.may_cancel?
 
-    return start! if workflow_found? && workflow_run.may_start?
+    return start! if workflow_found? && may_start?
     WorkflowRuns::FindJob.perform_async(id)
   end
 
@@ -222,7 +226,7 @@ class WorkflowRun < ApplicationRecord
   def stamp_data
     {
       ref: external_id,
-      url: external_link,
+      url: external_url,
       version: build_number
     }
   end
