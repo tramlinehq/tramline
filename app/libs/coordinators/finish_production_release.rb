@@ -5,6 +5,7 @@ class Coordinators::FinishProductionRelease
 
   def initialize(release_platform_run)
     @release_platform_run = release_platform_run
+    @release = release_platform_run.release
     @app = release_platform_run.app
   end
 
@@ -33,7 +34,7 @@ class Coordinators::FinishProductionRelease
   end
 
   def update_release!
-    return release.start_post_release_phase! if release.ready_to_be_finalized?
-    release.partially_finish!
+    return @release.start_post_release_phase! if @release.ready_to_be_finalized?
+    @release.partially_finish!
   end
 end

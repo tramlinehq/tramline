@@ -28,7 +28,7 @@ class StoreSubmission < ApplicationRecord
   include Loggable
   include Displayable
 
-  has_one :store_rollout
+  has_one :store_rollout, dependent: :destroy
   belongs_to :release_platform_run
   belongs_to :pre_prod_release, optional: true
   belongs_to :production_release, optional: true
@@ -37,6 +37,7 @@ class StoreSubmission < ApplicationRecord
   delegate :project_link, :public_icon_img, to: :provider
   delegate :notify!, to: :train
   delegate :version_name, :build_number, to: :build
+  delegate :staged_rollout?, to: :store_rollout
 
   validate :only_one_release_present
 
@@ -87,6 +88,8 @@ class StoreSubmission < ApplicationRecord
 
   protected
 
+  def provider = release_platform_run.store_provider
+
   def fail_with_error(error)
     elog(error)
     if error.is_a?(Installations::Error)
@@ -134,6 +137,4 @@ class StoreSubmission < ApplicationRecord
       errors.add(:base, "At least one release should be present")
     end
   end
-
-  def provider = release_platform_run.store_provider
 end

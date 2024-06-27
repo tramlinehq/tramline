@@ -9,9 +9,8 @@
 #  release_platform_run_id :uuid             not null, indexed
 #
 class ProductionRelease < ApplicationRecord
-  include Coordinatable
   include Loggable
-
+  include Coordinatable
   RELEASE_MONITORING_PERIOD_IN_DAYS = 15
 
   belongs_to :release_platform_run
@@ -21,6 +20,7 @@ class ProductionRelease < ApplicationRecord
   has_many :release_health_metrics, dependent: :destroy, inverse_of: :production_release
 
   delegate :app, to: :release_platform_run
+  delegate :monitoring_provider, to: :app
   delegate :store_rollout, to: :store_submission
 
   def finished?
@@ -42,6 +42,10 @@ class ProductionRelease < ApplicationRecord
     Coordinators::Signals.production_release_is_complete!(release_platform_run)
   end
 
+  def beyond_monitoring_period?
+    finished? && completed_at < RELEASE_MONITORING_PERIOD_IN_DAYS.days.ago
+  end
+
   def fetch_health_data!
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
@@ -51,15 +55,9 @@ class ProductionRelease < ApplicationRecord
 
     release_health_metrics.create!(fetched_at: Time.current, **release_data)
   end
-
-  def beyond_monitoring_period?
-    finished? && completed_at < RELEASE_MONITORING_PERIOD_IN_DAYS.days.ago
-  end
-
-  delegate :monitoring_provider, to: :app
 end
 
 # TODO:
-# add released_at to store_rollout
-# add completed_at to production_release
+# rebase all migrations
+# ensure everything everywhere is bigint
 # fix notification for store rollout final thing to be more deployment run end types

@@ -34,6 +34,7 @@ class StoreRollout < ApplicationRecord
   STATES = {
     created: "created",
     started: "started",
+    paused: "paused",
     completed: "completed",
     halted: "halted",
     fully_released: "fully_released"
@@ -41,15 +42,17 @@ class StoreRollout < ApplicationRecord
 
   enum status: STATES
 
-  delegate :update_store_info!, :build, :deployment_channel, to: :store_submission
   delegate :production_release, :pre_prod_release, to: :store_submission, allow_nil: true
+  delegate :update_store_info!, :build, :deployment_channel, to: :store_submission
   delegate :version_name, :build_number, to: :build
   delegate :train, to: :release_platform_run
   delegate :notify!, to: :train
 
-  protected
-
   def staged_rollout? = true # FIXME - get this configuration from train settings
+
+  def errors? = errors.any?
+
+  protected
 
   def provider = release_platform_run.store_provider
 
@@ -82,7 +85,6 @@ class StoreRollout < ApplicationRecord
     return if stage == current_stage && !finish_rollout
 
     update!(current_stage: stage)
-
     if may_start?
       start!
     else

@@ -21,11 +21,10 @@ class PlayStoreRollout < StoreRollout
     event :start, after_commit: :on_start! do
       transitions from: :created, to: :started
       transitions from: :halted, to: :started
-      transitions from: :failed, to: :started
     end
 
     event :halt do
-      transitions from: [:started, :failed], to: :halted
+      transitions from: [:started], to: :halted
     end
 
     event :complete, after_commit: :on_complete! do
@@ -33,7 +32,7 @@ class PlayStoreRollout < StoreRollout
       transitions from: :started, to: :completed
     end
 
-    event :rollout_fully, after_commit: :on_complete! do
+    event :fully_release, after_commit: :on_complete! do
       after { set_completed_at! }
       transitions from: :started, to: :fully_released
     end
@@ -54,14 +53,14 @@ class PlayStoreRollout < StoreRollout
     end
   end
 
-  def rollout_fully
+  def release_fully!
     with_lock do
-      return unless may_rollout_fully?
+      return unless may_fully_release?
 
       rollout_value = Release::FULL_ROLLOUT_VALUE
       result = rollout(rollout_value)
       if result.ok?
-        rollout_fully!
+        fully_release!
         notify!("Staged rollout was accelerated to a full rollout!", :staged_rollout_fully_released, notification_params)
       else
         elog(result.error)

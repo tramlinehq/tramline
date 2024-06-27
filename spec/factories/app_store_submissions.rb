@@ -3,6 +3,14 @@ FactoryBot.define do
     release_platform_run { association :release_platform_run }
     status { "created" }
 
+    trait :pre_prod_release do
+      pre_prod_release { association :pre_prod_release }
+    end
+
+    trait :prod_release do
+      production_release { association :production_release }
+    end
+
     trait :created do
       status { "created" }
     end

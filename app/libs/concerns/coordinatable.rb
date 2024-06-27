@@ -1,5 +1,4 @@
 module Coordinatable
-  extend Coordinators::Signals
   # after_commit :dispatch_signal, on: :save
 
   def dispatch_signal

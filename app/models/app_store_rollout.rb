@@ -24,7 +24,6 @@ class AppStoreRollout < StoreRollout
     event :start, after_commit: :on_start! do
       transitions from: :created, to: :started
       transitions from: :paused, to: :started
-      transitions from: :failed, to: :started
     end
 
     event :pause do
@@ -32,17 +31,17 @@ class AppStoreRollout < StoreRollout
     end
 
     event :halt do
-      transitions from: [:started, :paused, :failed], to: :halted
+      transitions from: [:started, :paused], to: :halted
     end
 
     event :complete, after_commit: :on_complete! do
       after { set_completed_at! }
-      transitions from: [:failed, :started, :paused], to: :completed
+      transitions from: [:started, :paused], to: :completed
     end
 
-    event :rollout_fully, after_commit: :on_complete! do
+    event :fully_release, after_commit: :on_complete! do
       after { set_completed_at! }
-      transitions from: [:failed, :started], to: :fully_released
+      transitions from: :started, to: :fully_released
     end
   end
 
@@ -72,6 +71,7 @@ class AppStoreRollout < StoreRollout
 
       result = provider.halt_phased_release
       if result.ok?
+        update_store_info!(result.value!)
         halt!
         notify!("Phased release was halted!", :staged_rollout_halted, notification_params)
       else
@@ -81,14 +81,14 @@ class AppStoreRollout < StoreRollout
     end
   end
 
-  def fully_release!
+  def release_fully!
     with_lock do
-      return unless may_rollout_fully?
+      return unless may_fully_release?
 
       result = provider.complete_phased_release
       if result.ok?
         update_store_info!(result.value!)
-        rollout_fully!
+        fully_release!
         notify!("Phased release was accelerated to a full rollout!", :staged_rollout_fully_released, notification_params)
       else
         elog(result.error)
@@ -103,7 +103,7 @@ class AppStoreRollout < StoreRollout
 
       result = provider.pause_phased_release
       if result.ok?
-        update_rollout(result.value!)
+        update_store_info!(result.value!)
         pause!
         notify!("Phased release was paused!", :staged_rollout_paused, notification_params)
       else
@@ -120,10 +120,7 @@ class AppStoreRollout < StoreRollout
       result = provider.resume_phased_release
       if result.ok?
         update_rollout(result.value!)
-        unless completed?
-          start!
-          notify!("Phased release was resumed!", :staged_rollout_resumed, notification_params)
-        end
+        notify!("Phased release was resumed!", :staged_rollout_resumed, notification_params)
       else
         elog(result.error)
         errors.add(:base, result.error)
