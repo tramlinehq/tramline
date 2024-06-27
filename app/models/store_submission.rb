@@ -7,8 +7,10 @@
 #  deployment_channel      :jsonb
 #  failure_reason          :string
 #  name                    :string
+#  parent_release_type     :string           not null, indexed => [parent_release_id]
 #  prepared_at             :datetime
 #  rejected_at             :datetime
+#  sequence_number         :integer          default(0), not null
 #  status                  :string           not null
 #  store_link              :string
 #  store_release           :jsonb
@@ -18,8 +20,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_id                :uuid             indexed
-#  pre_prod_release_id     :bigint           indexed
-#  production_release_id   :bigint           indexed
+#  parent_release_id       :bigint           not null, indexed => [parent_release_type]
 #  release_platform_run_id :uuid             not null, indexed
 #
 class StoreSubmission < ApplicationRecord
@@ -30,8 +31,7 @@ class StoreSubmission < ApplicationRecord
 
   has_one :store_rollout, dependent: :destroy
   belongs_to :release_platform_run
-  belongs_to :pre_prod_release, optional: true
-  belongs_to :production_release, optional: true
+  belongs_to :parent_release, polymorphic: true
 
   delegate :release_metadatum, :train, :release, to: :release_platform_run
   delegate :project_link, :public_icon_img, to: :provider

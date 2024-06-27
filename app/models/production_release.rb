@@ -15,7 +15,7 @@ class ProductionRelease < ApplicationRecord
 
   belongs_to :release_platform_run
   belongs_to :build
-  has_one :store_submission, dependent: :destroy
+  has_one :store_submission, as: :parent_release, dependent: :destroy
   has_many :release_health_events, dependent: :destroy, inverse_of: :production_release
   has_many :release_health_metrics, dependent: :destroy, inverse_of: :production_release
 

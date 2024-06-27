@@ -18,7 +18,7 @@ class PreProdRelease < ApplicationRecord
   belongs_to :release_platform_run
   belongs_to :build, optional: true
   has_one :workflow_run, dependent: :destroy
-  has_many :store_submissions, dependent: :destroy
+  has_many :store_submissions, as: :parent_release, dependent: :destroy
 
   def attach_build!(build)
     update!(build: build)

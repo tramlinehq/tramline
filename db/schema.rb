@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_06_26_192038) do
+ActiveRecord::Schema[7.0].define(version: 2024_06_27_192609) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -703,14 +703,13 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_26_192038) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "store_release"
-    t.bigint "production_release_id"
     t.jsonb "deployment_channel"
-    t.bigint "pre_prod_release_id"
+    t.integer "sequence_number", limit: 2, default: 0, null: false
+    t.string "parent_release_type", null: false
+    t.bigint "parent_release_id", null: false
     t.index ["build_id"], name: "index_store_submissions_on_build_id"
-    t.index ["pre_prod_release_id"], name: "index_store_submissions_on_pre_prod_release_id"
-    t.index ["production_release_id"], name: "index_store_submissions_on_production_release_id"
+    t.index ["parent_release_type", "parent_release_id"], name: "index_store_submissions_on_parent_release"
     t.index ["release_platform_run_id"], name: "index_store_submissions_on_release_platform_run_id"
-    t.check_constraint "production_release_id IS NOT NULL AND pre_prod_release_id IS NULL OR production_release_id IS NULL AND pre_prod_release_id IS NOT NULL", name: "only_one_release_present"
   end
 
   create_table "teams", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -875,8 +874,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_26_192038) do
   add_foreign_key "store_rollouts", "release_platform_runs"
   add_foreign_key "store_rollouts", "store_submissions"
   add_foreign_key "store_submissions", "builds"
-  add_foreign_key "store_submissions", "pre_prod_releases"
-  add_foreign_key "store_submissions", "production_releases"
   add_foreign_key "store_submissions", "release_platform_runs"
   add_foreign_key "teams", "organizations"
   add_foreign_key "trains", "apps"
