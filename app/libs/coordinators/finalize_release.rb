@@ -19,19 +19,21 @@ class Coordinators::FinalizeRelease
   def call
     release.with_lock do
       return unless release.post_release_started?
+      release_version = release.release_version
+      open_pull_requests = release.pull_requests.automatic.open
 
-      if release.pull_requests.automatic.open.exists? || (release.unmerged_commits.exists? && !force_finalize)
+      if open_pull_requests.exists? || (release.unmerged_commits.exists? && !force_finalize)
         release.fail_post_release_phase!
       else
-        release.event_stamp!(reason: :finalizing, kind: :notice, data: {version: release.release_version})
+        release.event_stamp!(reason: :finalizing, kind: :notice, data: {version: release_version})
         result = POST_RELEASE_HANDLERS[train.branching_strategy].call(release)
-        release.reload
+        release.reload{}
 
         if result.ok?
           release.finish!
         else
           release.fail_post_release_phase!
-          release.event_stamp!(reason: :finalize_failed, kind: :error, data: {version: release.release_version})
+          release.event_stamp!(reason: :finalize_failed, kind: :error, data: {version: release_version})
           elog(result.error)
         end
       end
