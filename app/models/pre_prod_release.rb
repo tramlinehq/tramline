@@ -53,20 +53,20 @@ class PreProdRelease < ApplicationRecord
     Coordinators::Signals.build_is_available_for_regression_testing!(build)
   end
 
-  def build_upload_failed!
-    # TODO: Implement this
-  end
-
   private
 
   def trigger_submission!(config)
+    submission_class = config[:submission_type].constantize
+    auto_promote = config[:auto_promote]
+    auto_promote = release_config[:auto_promote] if auto_promote.nil?
     submission = submission_class.create!(
-      pre_prod_release: self,
+      parent_release: self,
+      release_platform_run:,
       build:,
       sequence_number: config[:number],
       submission_config: config.slice(:submission_config, :rollout_config)
     )
-    submission.trigger! if config[:auto_promote]
+    submission.trigger! if auto_promote
   end
 
   def release_config
