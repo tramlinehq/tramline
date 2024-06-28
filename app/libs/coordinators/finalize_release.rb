@@ -27,7 +27,7 @@ class Coordinators::FinalizeRelease
       else
         release.event_stamp!(reason: :finalizing, kind: :notice, data: {version: release_version})
         result = POST_RELEASE_HANDLERS[train.branching_strategy].call(release)
-        release.reload{}
+        release.reload
 
         if result.ok?
           release.finish!
