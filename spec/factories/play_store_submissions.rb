@@ -3,6 +3,7 @@ FactoryBot.define do
     parent_release { association :pre_prod_release }
     build { association :build, release_platform_run: parent_release.release_platform_run }
     release_platform_run { parent_release.release_platform_run }
+    sequence_number { 1 }
 
     status { "created" }
     submission_config { {id: :production, name: "production"} }

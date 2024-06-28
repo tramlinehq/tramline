@@ -3,6 +3,7 @@
 # Table name: pre_prod_releases
 #
 #  id                      :bigint           not null, primary key
+#  config                  :jsonb            not null
 #  status                  :string           not null
 #  type                    :string           not null
 #  created_at              :datetime         not null
@@ -37,7 +38,7 @@ class PreProdRelease < ApplicationRecord
   end
 
   def trigger_submissions!
-    trigger_submission!(release_config[:distributions].first)
+    trigger_submission!(config["distributions"].first)
   end
 
   def rollout_complete!(submission)
@@ -55,47 +56,31 @@ class PreProdRelease < ApplicationRecord
 
   private
 
-  def trigger_submission!(config)
-    submission_class = config[:submission_type].constantize
-    auto_promote = config[:auto_promote]
-    auto_promote = release_config[:auto_promote] if auto_promote.nil?
+  def trigger_submission!(dist_config)
+    submission_class = dist_config["submission_type"].constantize
+    auto_promote = dist_config["auto_promote"]
+    auto_promote = release_config["auto_promote"] if auto_promote.nil?
     submission = submission_class.create!(
       parent_release: self,
       release_platform_run:,
       build:,
-      sequence_number: config[:number],
-      submission_config: config.slice(:submission_config, :rollout_config)
+      sequence_number: dist_config["number"],
+      submission_config: dist_config.slice("submission_config", "rollout_config")
     )
     submission.trigger! if auto_promote
   end
 
-  def release_config
-    {auto_promote: true,
-     distributions: [
-       {number: 1,
-        submission_type: "PlayStoreSubmission",
-        submission_config: {id: :internal, name: "internal testing"},
-        rollout_config: [100],
-        auto_promote: true},
-       {number: 2,
-        submission_type: "PlayStoreSubmission",
-        submission_config: {id: :alpha, name: "closed testing"},
-        rollout_config: [10, 100],
-        auto_promote: true}
-     ]}
-  end
-
   def next_submission_config(submission)
     next_sequence_number = submission.sequence_number + 1
-    release_config[:distributions].find { |dist| dist[:number] == next_sequence_number }
+    config["distributions"].find { |dist| dist["number"] == next_sequence_number }
   end
 
   def submission_config(submission)
-    release_config[:distributions].find { |dist| dist[:number] == submission.sequence_number }
+    config["distributions"].find { |dist| dist["number"] == submission.sequence_number }
   end
 
   def rollout_needed?(submission)
-    submission_config(submission)[:rollout_config].present? && submission.rollout_supported?
+    submission_config(submission)["rollout_config"].present? && submission.rollout_supported?
   end
 
   # start a submission - there needs to be a common start function between submission classes

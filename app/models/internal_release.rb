@@ -3,6 +3,7 @@
 # Table name: pre_prod_releases
 #
 #  id                      :bigint           not null, primary key
+#  config                  :jsonb            not null
 #  status                  :string           not null
 #  type                    :string           not null
 #  created_at              :datetime         not null

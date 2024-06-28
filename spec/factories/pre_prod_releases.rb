@@ -3,5 +3,20 @@ FactoryBot.define do
     release_platform_run { association :release_platform_run }
     type { "InternalRelease" }
     status { "created" }
+    config {
+      {auto_promote: true,
+       distributions: [
+         {number: 1,
+          submission_type: "PlayStoreSubmission",
+          submission_config: {id: :internal, name: "internal testing"},
+          rollout_config: [100],
+          auto_promote: true},
+         {number: 2,
+          submission_type: "PlayStoreSubmission",
+          submission_config: {id: :alpha, name: "closed testing"},
+          rollout_config: [10, 100],
+          auto_promote: true}
+       ]}
+    }
   end
 end

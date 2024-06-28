@@ -3,6 +3,7 @@
 # Table name: production_releases
 #
 #  id                      :bigint           not null, primary key
+#  config                  :jsonb            not null
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_id                :uuid             not null, indexed
