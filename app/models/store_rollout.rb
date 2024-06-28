@@ -111,7 +111,7 @@ class StoreRollout < ApplicationRecord
   end
 
   def on_complete!
-    parent_release.rollout_complete!
+    parent_release.rollout_complete!(store_submission)
   end
 
   def set_completed_at!

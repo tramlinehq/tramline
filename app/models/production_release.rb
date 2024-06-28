@@ -38,7 +38,7 @@ class ProductionRelease < ApplicationRecord
     V2::FetchHealthMetricsJob.perform_later(id)
   end
 
-  def rollout_complete!
+  def rollout_complete!(_)
     Coordinators::Signals.production_release_is_complete!(release_platform_run)
   end
 

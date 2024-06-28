@@ -81,6 +81,8 @@ class PlayStoreSubmission < StoreSubmission
     end
   end
 
+  def trigger! = start_prepare!
+
   def change_allowed? = true
 
   def locked? = false # TODO: This should be false once rollout starts

@@ -124,6 +124,8 @@ class AppStoreSubmission < StoreSubmission
     end
   end
 
+  def trigger! = start_prepare!
+
   def change_allowed?
     status.in? CHANGEABLE_STATES
   end

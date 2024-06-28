@@ -50,12 +50,6 @@ class StoreSubmission < ApplicationRecord
     failed: "failed"
   }
 
-  # FIXME: remove in favor of attaching build during creation
-  def attach_build!(build)
-    self.build = build
-    save!
-  end
-
   def deployment_channel
     submission_config
   end
