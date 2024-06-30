@@ -33,8 +33,8 @@ class PreProdRelease < ApplicationRecord
     update!(status: STATES[:failed])
   end
 
-  def trigger_workflow!
-    create_workflow_run!(workflow: workflow)
+  def trigger_workflow!(workflow, commit)
+    create_workflow_run!(workflow_config: workflow, release_platform_run:, commit:).trigger!
   end
 
   def trigger_submissions!

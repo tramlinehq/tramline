@@ -1,25 +1,26 @@
 class Coordinators::CreateBuild
   include Loggable
 
-  def self.call(workflow_run, pre_prod_release)
-    new(workflow_run, pre_prod_release).call
+  def self.call(workflow_run)
+    new(workflow_run).call
   end
 
-  def initialize(workflow_run, pre_prod_release)
+  def initialize(workflow_run)
     @workflow_run = workflow_run
-    @pre_prod_release = pre_prod_release
   end
 
   def call
     Build.find_or_create_by!(
       workflow_run: @workflow_run,
-      release_platform_run: @pre_prod_release.release_platform_run,
-      commit: @workflow_run.commit
+      release_platform_run: @workflow_run.release_platform_run,
+      commit: @workflow_run.commit,
+      build_number: @workflow_run.build_number,
+      version_name: @workflow_run.release_version
     )
 
-    @pre_prod_release.trigger_submissions!
+    @workflow_run.triggering_release.trigger_submissions!
   rescue => ex
     elog(ex)
-    @pre_prod_release.fail!
+    @workflow_run.triggering_release.fail!
   end
 end

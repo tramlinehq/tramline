@@ -1,4 +1,4 @@
-class WorkflowRuns::CreateBuildJob < ApplicationJob
+class V2::CreateBuildJob < ApplicationJob
   include Loggable
 
   queue_as :high

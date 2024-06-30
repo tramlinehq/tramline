@@ -20,6 +20,7 @@
 class Build < ApplicationRecord
   has_paper_trail
   include AASM
+  include Loggable
   include Passportable
 
   belongs_to :release_platform_run
@@ -31,11 +32,13 @@ class Build < ApplicationRecord
   has_one :app_store_submission, dependent: :nullify, inverse_of: :build
   has_one :play_store_submission, dependent: :nullify, inverse_of: :build
 
-  delegate :android?, :ios?, :ci_cd_provider, to: :release_platform_run
+  delegate :android?, :ios?, :ci_cd_provider, :train, to: :release_platform_run
   delegate :artifacts_url, :build_artifact_name_pattern, to: :workflow_run
 
   before_create :set_sequence_number
   after_create :attach_artifact!
+
+  def build_version = version_name
 
   # TODO: Remove this, don't think this is how it should be referenced
   def store_submission
@@ -59,16 +62,18 @@ class Build < ApplicationRecord
   def attach_artifact!
     return if artifacts_url.blank?
 
-    get_build_artifact => { artifact:, stream: }
-    return if artifact.blank?
+    artifact_data = get_build_artifact
+    stream = artifact_data[:stream]
+    artifact_metadata = artifact_data[:artifact]
+    return if artifact_metadata.blank?
 
-    self.generated_at = artifact[:generated_at] || workflow_run.finished_at
-    self.size_in_bytes = artifact[:size_in_bytes]
-    self.external_name = artifact[:name]
-    self.external_id = artifact[:id]
+    self.generated_at = artifact_metadata[:generated_at] || workflow_run.finished_at
+    self.size_in_bytes = artifact_metadata[:size_in_bytes]
+    self.external_name = artifact_metadata[:name]
+    self.external_id = artifact_metadata[:id]
 
     stream.with_open do |artifact_stream|
-      build.build_artifact.save_file!(artifact_stream)
+      build_artifact.save_file!(artifact_stream)
       artifact_stream.file.rewind
       self.slack_file_id = train.upload_file_for_notifications!(artifact_stream.file, artifact.get_filename)
     end

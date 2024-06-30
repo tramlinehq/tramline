@@ -42,6 +42,7 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :external_builds, through: :step_runs
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
+  has_many :internal_releases, dependent: :destroy
   belongs_to :last_commit, class_name: "Commit", inverse_of: :release_platform_runs, optional: true
 
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }

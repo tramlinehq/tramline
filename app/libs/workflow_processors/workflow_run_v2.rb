@@ -25,7 +25,7 @@ class WorkflowProcessors::WorkflowRunV2
   end
 
   attr_reader :workflow_run
-  delegate :in_progress?, :successful?, :failed?, :halted?, :artifacts_url, to: :runner
+  delegate :in_progress?, :successful?, :failed?, :halted?, :artifacts_url, :started_at, :finished_at, to: :runner
   delegate :github_integration?, :bitrise_integration?, to: :integration
   delegate :build_artifact_name_pattern, to: :workflow_run
 

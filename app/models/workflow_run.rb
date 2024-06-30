@@ -58,11 +58,12 @@ class WorkflowRun < ApplicationRecord
   IN_PROGRESS = [:triggered, :started]
   TERMINAL_STATES = [:finished]
   WORKFLOW_IMMUTABLE = STATES.keys - TERMINAL_STATES - IN_PROGRESS - NOT_STARTED
+  FAILED_STATES = %w[failed halted unavailable cancelled cancelled_before_start cancelling]
 
   enum status: STATES
 
   aasm safe_state_machine_params do
-    state :created, initial: true, after_commit: :after_created
+    state :created, initial: true
     state(*STATES.keys)
 
     event :trigger, after_commit: :after_trigger do
@@ -102,8 +103,10 @@ class WorkflowRun < ApplicationRecord
     end
   end
 
+  after_create_commit -> { WorkflowRuns::TriggerJob.perform_later(id) }
+
   def active?
-    release_platform_run.on_track? && !cancelled? && !success? && !status.in?(FAILED_STATES)
+    release_platform_run.on_track? && FAILED_STATES.exclude?(status)
   end
 
   def find_and_update_external
@@ -181,10 +184,6 @@ class WorkflowRun < ApplicationRecord
 
   def find_external_run
     ci_cd_provider.find_workflow_run(workflow_id, release_branch, commit_hash)
-  end
-
-  def after_created
-    WorkflowRuns::TriggerJob.perform_later(id)
   end
 
   def after_trigger
