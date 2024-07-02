@@ -73,7 +73,6 @@ class TestFlightSubmission < StoreSubmission
 
   def trigger!
     return start_release! if build_present_in_store?
-
     StoreSubmissions::AppStore::FindBuildJob.perform_async(id)
   end
 

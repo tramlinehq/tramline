@@ -94,7 +94,6 @@ class PlayStoreSubmission < StoreSubmission
 
   def trigger!
     return start_prepare! if build_present_in_store?
-
     StoreSubmissions::PlayStore::UploadJob.perform_later(id)
   end
 

@@ -137,7 +137,6 @@ class AppStoreSubmission < StoreSubmission
 
   def trigger!
     return start_prepare! if build_present_in_store?
-
     StoreSubmissions::AppStore::FindBuildJob.perform_async(id)
   end
 
@@ -181,7 +180,6 @@ class AppStoreSubmission < StoreSubmission
   def on_submit_for_review!(args = {resubmission: false})
     resubmission = args.fetch(:resubmission)
     notify!("Submitted for review!", :submit_for_review, notification_params.merge(resubmission:))
-
     stamp_params = {kind: :notice, data: stamp_data}
     stamp_params[:reason] = resubmission ? :resubmitted_for_review : :submitted_for_review
     event_stamp!(**stamp_params)
