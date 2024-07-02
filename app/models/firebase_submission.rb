@@ -20,14 +20,9 @@ class FirebaseSubmission < StoreSubmission
       transitions from: [:created, :failed], to: :preparing
     end
 
-    event :finish_prepare do
+    event :finish do
       after { set_prepared_at! }
-      transitions from: :preparing, to: :prepared
-    end
-
-    event :prepare, guard: :startable? do
-      after { set_prepared_at! }
-      transitions from: [:created, :failed], to: :prepared
+      transitions to: :finished
     end
 
     event :fail, before: :set_failure_reason do
@@ -77,13 +72,13 @@ class FirebaseSubmission < StoreSubmission
   end
 
   def prepare_for_release!
-    return unless may_finish_prepare?
+    return unless may_finish?
 
     # FIXME: get deployment_channel from somewhere
-    deployment_channel = {}
+    deployment_channel = ["group-1-id", "group-2-id"]
     result = provider.release(run.external_release.external_id, deployment_channel)
     if result.ok?
-      finish_prepare!
+      finish!
     else
       fail_with_error(result.error)
     end
@@ -100,9 +95,6 @@ class FirebaseSubmission < StoreSubmission
     release_info = result.value!
     raise UploadNotComplete unless release_info.done?
 
-
-    # TODO: unsure about the transaction here
-    # start_prepare! will take a lock
     transaction do
       start_prepare!
       update_store_info!(release_info)
@@ -133,3 +125,7 @@ class FirebaseSubmission < StoreSubmission
     provider.find_build(build_number).present?
   end
 end
+
+# TODO:
+# - state transition checks in jobs
+#

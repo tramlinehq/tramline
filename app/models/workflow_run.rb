@@ -131,6 +131,10 @@ class WorkflowRun < ApplicationRecord
     workflow_config["artifact_name_pattern"]
   end
 
+  def workflow_name
+    workflow_config["name"]
+  end
+
   def find_build
     store_provider.find_build(build_number)
   end

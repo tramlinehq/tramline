@@ -17,6 +17,7 @@ class Coordinators::ProcessCommit
 
     return unless @commit.applicable?
 
+    # TODO: see if internal release is configured, if not, start beta release
     # TODO: change this to use the new have not started submission check
     @release.release_platform_runs.have_not_submitted_production.each do |run|
       trigger_internal_release_for(run)
@@ -34,43 +35,10 @@ class Coordinators::ProcessCommit
     release_platform_run.update!(last_commit: @commit)
 
     internal_release = release_platform_run.internal_releases.create!(
-      status: "created",
+      status: "created", # TODO: this should be a default for the column
       # FIXME: This is a temporary thing till we get actual config
-      config: release_platform_run.android? ? android_config : ios_config
+      config: release_platform_run.internal_release_config
     )
     internal_release.trigger_workflow!(release_platform_run.release_platform.choose_workflow, @commit)
-  end
-
-  def android_config
-    {
-      auto_promote: true,
-      distributions: [
-        {
-          number: 1,
-          submission_type: "PlayStoreSubmission",
-          submission_config: {id: :internal, name: "internal testing"},
-          rollout_config: {enabled: true, stages: [100]},
-          auto_promote: true
-        },
-        {
-          number: 2,
-          submission_type: "PlayStoreSubmission",
-          submission_config: {id: :alpha, name: "closed testing"},
-          rollout_config: {enabled: true, stages: [10, 100]},
-          auto_promote: true
-        }
-      ]
-    }
-  end
-
-  def ios_config
-    {
-      auto_promote: true,
-      distributions: [
-        {number: 1,
-         submission_type: "TestFlightSubmission",
-         submission_config: {id: :internal, name: "internal testing"}}
-      ]
-    }
   end
 end

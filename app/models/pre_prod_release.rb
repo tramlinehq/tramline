@@ -42,8 +42,8 @@ class PreProdRelease < ApplicationRecord
   end
 
   def rollout_complete!(submission)
-    if (config = next_submission_config(submission))
-      trigger_submission!(config)
+    if (next_config = next_submission_config(submission))
+      trigger_submission!(next_config)
     else
       finish!
     end
@@ -68,14 +68,6 @@ class PreProdRelease < ApplicationRecord
   def next_submission_config(submission)
     next_sequence_number = submission.sequence_number + 1
     config["distributions"].find { |dist| dist["number"] == next_sequence_number }
-  end
-
-  def submission_config(submission)
-    config["distributions"].find { |dist| dist["number"] == submission.sequence_number }
-  end
-
-  def rollout_needed?(submission)
-    submission_config(submission)["rollout_config"].present? && submission.rollout_supported?
   end
 
   # start a submission - there needs to be a common start function between submission classes

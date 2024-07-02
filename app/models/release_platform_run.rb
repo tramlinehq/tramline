@@ -43,6 +43,7 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
   has_many :internal_releases, dependent: :destroy
+  has_many :beta_releases, dependent: :destroy
   belongs_to :last_commit, class_name: "Commit", inverse_of: :release_platform_runs, optional: true
 
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
@@ -93,6 +94,51 @@ class ReleasePlatformRun < ApplicationRecord
   def metadata_for(language)
     locale_tag = AppStores::Localizable.supported_locale_tag(language, :ios)
     release_metadata&.find_by(locale: locale_tag)
+  end
+
+  def internal_release_config
+    if android?
+      android_config
+    elsif ios?
+      ios_config
+    else
+      raise ArgumentError, "Unknown platform: #{platform}"
+    end
+  end
+
+  # FIXME: temp hard coded config
+  def android_config
+    {
+      auto_promote: true,
+      distributions: [
+        {
+          number: 1,
+          submission_type: "PlayStoreSubmission",
+          submission_config: {id: :internal, name: "internal testing"},
+          notes: :no_notes,
+          rollout_config: {enabled: true, stages: [100]},
+          auto_promote: true
+        },
+        {
+          number: 2,
+          submission_type: "PlayStoreSubmission",
+          submission_config: {id: :alpha, name: "closed testing"},
+          rollout_config: {enabled: true, stages: [10, 100]},
+          auto_promote: true
+        }
+      ]
+    }.with_indifferent_access
+  end
+
+  def ios_config
+    {
+      auto_promote: true,
+      distributions: [
+        {number: 1,
+         submission_type: "TestFlightSubmission",
+         submission_config: {id: :internal, name: "internal testing"}}
+      ]
+    }.with_indifferent_access
   end
 
   def store_submissions

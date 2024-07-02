@@ -52,7 +52,7 @@ module Coordinators::Signals
     Coordinators::ProcessCommit.call(release, commit)
   end
 
-  def self.workflow_run_finished!(workflow_run)
+  def self.workflow_run_finished!(workflow_run) # TODO: pass id only
     V2::CreateBuildJob.perform_later(workflow_run.id)
   end
 
