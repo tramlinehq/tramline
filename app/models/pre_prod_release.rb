@@ -34,7 +34,7 @@ class PreProdRelease < ApplicationRecord
   end
 
   def trigger_workflow!(workflow, commit)
-    create_workflow_run!(workflow_config: workflow, release_platform_run:, commit:).trigger!
+    create_workflow_run!(workflow_config: workflow, release_platform_run:, commit:)
   end
 
   def trigger_submissions!

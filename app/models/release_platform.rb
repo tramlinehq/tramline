@@ -54,6 +54,11 @@ class ReleasePlatform < ApplicationRecord
     }.invert
   end
 
+  # FIXME - move this to the new configuration
+  def choose_workflow
+    release_step&.ci_cd_channel
+  end
+
   def active_steps_for(release)
     # no release
     return steps unless release

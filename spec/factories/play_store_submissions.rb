@@ -6,7 +6,10 @@ FactoryBot.define do
     sequence_number { 1 }
 
     status { "created" }
-    submission_config { {id: :production, name: "production"} }
+    submission_config {
+      {submission_config: {id: :production, name: "production"},
+       rollout_config: {enabled: true, stages: [1, 5, 10, 20, 50, 100]}}
+    }
 
     trait :pre_prod_release do
       parent_release { association :pre_prod_release }

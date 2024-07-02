@@ -26,7 +26,8 @@ class WebhookProcessors::Push
   delegate :train, to: :release
 
   def create_head_commit!
-    Commit.find_or_create_by!(commit_params(head_commit)).trigger!
+    # Commit.find_or_create_by!(commit_params(head_commit)).trigger!
+    Commit.find_or_create_by!(commit_params(head_commit))
   end
 
   def create_other_commits!

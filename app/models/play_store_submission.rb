@@ -32,9 +32,14 @@ class PlayStoreSubmission < StoreSubmission
     dependent: :destroy,
     inverse_of: :play_store_submission
 
-  STATES = STATES.merge(
+  STATES = {
+    created: "created",
+    preparing: "preparing",
+    prepared: "prepared",
+    review_failed: "review_failed",
+    failed: "failed",
     failed_with_action_required: "failed_with_action_required"
-  )
+  }
   FINAL_STATES = %w[prepared]
 
   enum failure_reason: {
@@ -42,18 +47,6 @@ class PlayStoreSubmission < StoreSubmission
   }.merge(Installations::Google::PlayDeveloper::Error.reasons.zip_map_self)
   enum status: STATES
 
-  # Things that have happened before Store Submission
-  # 1. Build has been created and uploaded to App Bundle Explorer
-  # 2. Build has sent for alpha and beta testing (optionally)
-  # 3. Beta soak has ended (if configured)
-  # 4. Release metadata has been updated
-  #
-  # Things that will happen during Store Submission
-  # 1. Prepare for release
-  # 4. Reject
-  #
-  # Things that will happen after Store Submission
-  # 1. Rollout (staged or otherwise)
   aasm safe_state_machine_params do
     state :created, initial: true
     state(*STATES.keys)
@@ -81,8 +74,6 @@ class PlayStoreSubmission < StoreSubmission
     end
   end
 
-  def trigger! = start_prepare!
-
   def change_allowed? = true
 
   def locked? = false # TODO: This should be false once rollout starts
@@ -99,8 +90,26 @@ class PlayStoreSubmission < StoreSubmission
 
   def integration_type = :google_play_store
 
-  def on_start_prepare!
-    StoreSubmissions::PlayStore::PrepareForReleaseJob.perform_later(id)
+  def trigger!
+    return start_prepare! if build_present_in_store?
+
+    StoreSubmissions::PlayStore::UploadJob.perform_later(id)
+  end
+
+  def upload_build!
+    with_lock do
+      return unless may_start_prepare?
+      return fail_with_error("Build not found") if build&.artifact.blank?
+
+      build.artifact.with_open do |file|
+        result = provider.upload(file)
+        if result.ok?
+          start_prepare!
+        else
+          fail_with_error(result.error)
+        end
+      end
+    end
   end
 
   def prepare_for_release!
@@ -114,6 +123,13 @@ class PlayStoreSubmission < StoreSubmission
     end
   end
 
+  private
+
+  def on_start_prepare!
+    StoreSubmissions::PlayStore::PrepareForReleaseJob.perform_later(id)
+  end
+
+  # TODO: implement build notes choice
   def release_notes
     [{
       language: release_metadatum.locale,
@@ -121,11 +137,16 @@ class PlayStoreSubmission < StoreSubmission
     }]
   end
 
-  def deployment_channel_id
-    deployment_channel["id"].to_s
+  def on_prepare!
+    create_play_store_rollout!(release_platform_run:, config: rollout_stages)
+    play_store_rollout.start! if auto_rollout?
   end
 
-  def on_prepare!
-    create_play_store_rollout!(release_platform_run:)
+  def build_present_in_store?
+    provider.find_build(build_number).present?
+  end
+
+  def rollout_stages
+    submission_config["rollout_config"]["stages"]
   end
 end

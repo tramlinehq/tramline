@@ -46,14 +46,14 @@ module Coordinators::Signals
     # NewRelease.call(release)
   end
 
-  def self.new_commit_has_landed!(release)
+  def self.new_commit_has_landed!(release, commit)
     # check if patchfix/hotfix etc
     # check if we need to trigger rc
-    # StartPrepareForRelease.call(release)
+    Coordinators::ProcessCommit.call(release, commit)
   end
 
-  def self.workflow_run_finished!(workflow_run, triggering_release)
-    V2::CreateBuildJob.perform_later(workflow_run.id, triggering_release.id)
+  def self.workflow_run_finished!(workflow_run)
+    V2::CreateBuildJob.perform_later(workflow_run.id)
   end
 
   def self.build_is_available_for_regression_testing!(build)

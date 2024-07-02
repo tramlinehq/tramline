@@ -34,24 +34,25 @@ class StoreSubmission < ApplicationRecord
   belongs_to :parent_release, polymorphic: true
   belongs_to :build
 
-  delegate :release_metadatum, :train, :release, to: :release_platform_run
-  delegate :project_link, :public_icon_img, to: :provider
+  delegate :release_metadatum, :train, :release, :app, to: :release_platform_run
+  delegate :project_link, :public_icon_img, to: :provider, allow_nil: true
   delegate :notify!, to: :train
   delegate :version_name, :build_number, to: :build
-  delegate :staged_rollout?, to: :store_rollout
-
-  STATES = {
-    created: "created",
-    preparing: "preparing",
-    prepared: "prepared",
-    failed_prepare: "failed_prepare",
-    review_failed: "review_failed",
-    approved: "approved",
-    failed: "failed"
-  }
 
   def deployment_channel
-    submission_config
+    submission_config["submission_config"]
+  end
+
+  def deployment_channel_id
+    deployment_channel["id"].to_s
+  end
+
+  def staged_rollout?
+    submission_config["rollout_config"]["enabled"]
+  end
+
+  def auto_rollout?
+    submission_config["auto_promote"]
   end
 
   # FIXME: will be startable as soon as it is created
@@ -83,12 +84,11 @@ class StoreSubmission < ApplicationRecord
 
   protected
 
-  def provider = release_platform_run.store_provider
-
   def fail_with_error(error)
     elog(error)
     if error.is_a?(Installations::Error)
       if error.reason == :app_review_rejected
+        # TODO: Implement this
         fail_with_sync_option!(reason: error.reason)
       else
         fail!(reason: error.reason)

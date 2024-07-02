@@ -6,6 +6,12 @@ describe PreProdRelease do
   describe "#trigger_submissions!" do
     let(:pre_prod_release) { create(:pre_prod_release) }
     let(:workflow_run) { create(:workflow_run, triggering_release: pre_prod_release) }
+    let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+
+    before do
+      allow_any_instance_of(PlayStoreSubmission).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:find_build).and_return(true)
+    end
 
     it "triggers the first submission" do
       build = create(:build, workflow_run:)
@@ -21,6 +27,12 @@ describe PreProdRelease do
     let(:workflow_run) { create(:workflow_run, triggering_release: pre_prod_release) }
     let(:build) { create(:build, workflow_run:) }
     let(:submission) { create(:play_store_submission, parent_release: pre_prod_release, build:, sequence_number: 1) }
+    let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+
+    before do
+      allow_any_instance_of(PlayStoreSubmission).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:find_build).and_return(true)
+    end
 
     it "triggers the next submission" do
       pre_prod_release.rollout_complete!(submission)

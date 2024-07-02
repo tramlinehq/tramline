@@ -33,12 +33,18 @@ class AppStoreSubmission < StoreSubmission
     inverse_of: :app_store_submission
 
   RETRYABLE_FAILURE_REASONS = [:attachment_upload_in_progress]
-  STATES = STATES.merge(
+  STATES = {
+    created: "created",
+    preparing: "preparing",
+    prepared: "prepared",
+    failed_prepare: "failed_prepare",
     submitting_for_review: "submitting_for_review",
     submitted_for_review: "submitted_for_review",
+    review_failed: "review_failed",
     approved: "approved",
+    failed: "failed",
     cancelled: "cancelled"
-  )
+  }
   FINAL_STATES = %w[approved]
   IMMUTABLE_STATES = %w[approved submitted_for_review]
   CHANGEABLE_STATES = STATES.values - IMMUTABLE_STATES
@@ -60,21 +66,6 @@ class AppStoreSubmission < StoreSubmission
     unknown_failure: "unknown_failure"
   }.merge(Installations::Apple::AppStoreConnect::Error.reasons.zip_map_self)
 
-  # Things that have happened before Store Submission
-  # 1. Build has been created and available in TestFlight
-  # 2. Build has sent for beta testing to external groups (optionally)
-  # 3. Beta soak has ended (if configured)
-  # 4. Release metadata has been updated
-  #
-  # Things that will happen during Store Submission
-  # 1. Prepare for release
-  # 2. Submit for review
-  # 3. Review
-  # 4. Approve/Reject
-  # 5. Cancel submission
-  #
-  # Things that will happen after Store Submission
-  # 1. Rollout (phased or otherwise)
   aasm safe_state_machine_params do
     state :created, initial: true
     state(*STATES.keys)
@@ -124,8 +115,6 @@ class AppStoreSubmission < StoreSubmission
     end
   end
 
-  def trigger! = start_prepare!
-
   def change_allowed?
     status.in? CHANGEABLE_STATES
   end
@@ -144,10 +133,10 @@ class AppStoreSubmission < StoreSubmission
 
   def requires_review? = true
 
-  def staged_rollout? = true # FIXME - get this configuration from train settings
+  def trigger!
+    return start_prepare! if build_present_in_store?
 
-  def on_start_prepare!
-    StoreSubmissions::AppStore::PrepareForReleaseJob.perform_async(id)
+    StoreSubmissions::AppStore::FindBuildJob.perform_async(id)
   end
 
   def prepare_for_release!
@@ -196,10 +185,6 @@ class AppStoreSubmission < StoreSubmission
     event_stamp!(**stamp_params)
   end
 
-  def on_finish_prepare!
-    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id)
-  end
-
   def update_external_release
     return if locked?
 
@@ -228,10 +213,6 @@ class AppStoreSubmission < StoreSubmission
     raise SubmissionNotInTerminalState, "Retrying in some time..."
   end
 
-  def on_start_cancellation!
-    StoreSubmissions::AppStore::RemoveFromReviewJob.perform_async(id)
-  end
-
   def remove_from_review!
     result = provider.remove_from_review(build_number, version_name)
 
@@ -241,6 +222,28 @@ class AppStoreSubmission < StoreSubmission
 
     update_store_info!(result.value!)
     cancel!
+  end
+
+  def find_build
+    provider.find_build(build_number)
+  end
+
+  private
+
+  def build_present_in_store?
+    provider.find_build(build_number).ok?
+  end
+
+  def on_start_prepare!
+    StoreSubmissions::AppStore::PrepareForReleaseJob.perform_async(id)
+  end
+
+  def on_finish_prepare!
+    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id)
+  end
+
+  def on_start_cancellation!
+    StoreSubmissions::AppStore::RemoveFromReviewJob.perform_async(id)
   end
 
   # FIXME: update store version details when release metadata changes or build is updated

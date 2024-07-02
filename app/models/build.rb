@@ -63,9 +63,10 @@ class Build < ApplicationRecord
     return if artifacts_url.blank?
 
     artifact_data = get_build_artifact
+    return if artifact_data.blank?
+
     stream = artifact_data[:stream]
     artifact_metadata = artifact_data[:artifact]
-    return if artifact_metadata.blank?
 
     self.generated_at = artifact_metadata[:generated_at] || workflow_run.finished_at
     self.size_in_bytes = artifact_metadata[:size_in_bytes]
@@ -91,5 +92,8 @@ class Build < ApplicationRecord
 
   def get_build_artifact
     ci_cd_provider.get_artifact_v2(artifacts_url, build_artifact_name_pattern)
+  rescue Installations::Errors::ArtifactsNotFound => e
+    elog(e)
+    nil
   end
 end

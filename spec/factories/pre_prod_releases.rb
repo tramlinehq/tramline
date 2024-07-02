@@ -9,12 +9,12 @@ FactoryBot.define do
          {number: 1,
           submission_type: "PlayStoreSubmission",
           submission_config: {id: :internal, name: "internal testing"},
-          rollout_config: [100],
+          rollout_config: {enabled: true, stages: [100]},
           auto_promote: true},
          {number: 2,
           submission_type: "PlayStoreSubmission",
           submission_config: {id: :alpha, name: "closed testing"},
-          rollout_config: [10, 100],
+          rollout_config: {enabled: true, stages: [10, 100]},
           auto_promote: true}
        ]}
     }

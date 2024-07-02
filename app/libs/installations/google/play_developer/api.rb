@@ -52,6 +52,16 @@ module Installations
       end
     end
 
+    def find_build(build_number)
+      execute do
+        edit = client.insert_edit(package_name)
+        client.list_edit_bundles(package_name, edit.id)
+          &.bundles
+          &.find { |b| b.version_code.to_s == build_number.to_s }
+          &.to_h
+      end
+    end
+
     def list_tracks(transforms)
       execute do
         edit = client.insert_edit(package_name)

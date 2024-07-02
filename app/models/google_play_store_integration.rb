@@ -195,6 +195,8 @@ class GooglePlayStoreIntegration < ApplicationRecord
     installation.find_latest_build_number
   end
 
+  delegate :find_build, to: :installation
+
   def deep_link(_, _)
     nil
   end
