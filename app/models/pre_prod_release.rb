@@ -49,11 +49,6 @@ class PreProdRelease < ApplicationRecord
     end
   end
 
-  def finish!
-    update!(status: STATES[:finished])
-    Coordinators::Signals.build_is_available_for_regression_testing!(build)
-  end
-
   private
 
   def trigger_submission!(dist_config)

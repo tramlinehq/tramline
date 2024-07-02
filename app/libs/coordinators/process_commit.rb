@@ -17,6 +17,7 @@ class Coordinators::ProcessCommit
 
     return unless @commit.applicable?
 
+    # TODO: change this to use the new have not started submission check
     @release.release_platform_runs.have_not_submitted_production.each do |run|
       trigger_internal_release_for(run)
     end
