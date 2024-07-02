@@ -7,41 +7,41 @@ class StoreRolloutsController < SignedInApplicationController
 
   def increase
     if Coordinators::Signals.increase_the_store_rollout!(@rollout).ok?
-      redirect_back fallback_location: root_path, notice: "Increased the rollout!"
+      redirect_back fallback_location: root_path, notice: t(".increase.success")
     else
-      redirect_back fallback_location: root_path, flash: {error: "Failed to increase the rollout. Please retry!"}
+      redirect_back fallback_location: root_path, flash: {error: t(".increase.failure")}
     end
   end
 
   def pause
     if Coordinators::Signals.pause_the_store_rollout!(@rollout).ok?
-      redirect_back fallback_location: root_path, notice: "Paused the rollout!"
+      redirect_back fallback_location: root_path, notice: t(".pause.success")
     else
-      redirect_back fallback_location: root_path, flash: {error: "Failed to pause the rollout. Please retry!"}
+      redirect_back fallback_location: root_path, flash: {error: t(".pause.failure")}
     end
   end
 
   def resume
     if Coordinators::Signals.resume_the_store_rollout!(@rollout).ok?
-      redirect_back fallback_location: root_path, notice: "Resumed the rollout!"
+      redirect_back fallback_location: root_path, notice: t(".resume.success")
     else
-      redirect_back fallback_location: root_path, flash: {error: "Failed to resume the rollout. Please retry!"}
+      redirect_back fallback_location: root_path, flash: {error: t(".resume.failure")}
     end
   end
 
   def halt
     if Coordinators::Signals.halt_the_store_rollout!(@rollout).ok?
-      redirect_back fallback_location: root_path, notice: "Halted the rollout!"
+      redirect_back fallback_location: root_path, notice: t(".halt.success")
     else
-      redirect_back fallback_location: root_path, flash: {error: "Failed to halt the rollout. Please retry!"}
+      redirect_back fallback_location: root_path, flash: {error: t(".halt.failure")}
     end
   end
 
   def fully_release
     if Coordinators::Signals.fully_release_the_store_rollout!(@rollout).ok?
-      redirect_back fallback_location: root_path, notice: "Fully released!"
+      redirect_back fallback_location: root_path, notice: t(".fully_release.success")
     else
-      redirect_back fallback_location: root_path, flash: {error: "Failed to fully release. Please retry!"}
+      redirect_back fallback_location: root_path, flash: {error: t(".fully_release.failure")}
     end
   end
 
