@@ -11,7 +11,7 @@
 #  release_platform_run_id :uuid             not null, indexed
 #
 class BetaRelease < PreProdRelease
-  def finish!
+  def finish!(build)
     update!(status: STATES[:finished])
     Coordinators::Signals.beta_release_is_available!(build)
   end

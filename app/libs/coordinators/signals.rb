@@ -61,7 +61,12 @@ module Coordinators::Signals
   end
 
   def self.regression_testing_is_approved!(build)
-    # StartBetaRelease.call(build)
+    Coordinators::CreateBetaRelease.call(build)
+  end
+
+  def self.beta_release_is_available!(build)
+    # start soak, or
+    Coordinators::StartProductionRelease.call(build)
   end
 
   def self.increase_the_store_rollout!(rollout)
@@ -97,16 +102,6 @@ module Coordinators::Signals
     rollout.release_fully!
     return Res.new { raise } if rollout.errors?
     Res.new { true }
-  end
-
-  def self.beta_release_is_complete!(build)
-    # start soak, or
-    Coordinators::StartProductionRelease.call(build)
-  end
-
-  def self.beta_release_is_available!(build)
-    # start soak, or
-    Coordinators::StartProductionRelease.call(build)
   end
 
   def self.production_release_is_complete!(release_platform_run)

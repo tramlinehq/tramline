@@ -18,7 +18,6 @@ class PreProdRelease < ApplicationRecord
 
   belongs_to :release_platform_run
   has_one :workflow_run, dependent: :destroy
-  has_one :build, through: :workflow_run
   has_many :store_submissions, as: :parent_release, dependent: :destroy
 
   STATES = {
@@ -37,21 +36,21 @@ class PreProdRelease < ApplicationRecord
     create_workflow_run!(workflow_config: workflow, release_platform_run:, commit:)
   end
 
-  def trigger_submissions!
-    trigger_submission!(config["distributions"].first)
+  def trigger_submissions!(build)
+    trigger_submission!(config["distributions"].first, build)
   end
 
   def rollout_complete!(submission)
     if (next_config = next_submission_config(submission))
-      trigger_submission!(next_config)
+      trigger_submission!(next_config, submission.build)
     else
-      finish!
+      finish!(submission.build)
     end
   end
 
   private
 
-  def trigger_submission!(dist_config)
+  def trigger_submission!(dist_config, build)
     submission_class = dist_config["submission_type"].constantize
     auto_promote = dist_config["auto_promote"]
     auto_promote = config["auto_promote"] if auto_promote.nil?

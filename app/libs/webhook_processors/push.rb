@@ -1,5 +1,6 @@
 class WebhookProcessors::Push
   include Loggable
+
   def self.process(release, head_commit, rest_commits)
     new(release, head_commit, rest_commits).process
   end
@@ -26,8 +27,12 @@ class WebhookProcessors::Push
   delegate :train, to: :release
 
   def create_head_commit!
-    # Commit.find_or_create_by!(commit_params(head_commit)).trigger!
-    Commit.find_or_create_by!(commit_params(head_commit))
+    if release.organization.product_v2?
+      commit = Commit.find_or_create_by!(commit_params(head_commit))
+      Coordinators::Signals.new_commit_has_landed!(release, commit)
+    else
+      Commit.find_or_create_by!(commit_params(head_commit)).trigger!
+    end
   end
 
   def create_other_commits!

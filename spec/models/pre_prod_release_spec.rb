@@ -4,7 +4,7 @@ require "rails_helper"
 
 describe PreProdRelease do
   describe "#trigger_submissions!" do
-    let(:pre_prod_release) { create(:pre_prod_release) }
+    let(:pre_prod_release) { create(:internal_release) }
     let(:workflow_run) { create(:workflow_run, triggering_release: pre_prod_release) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
@@ -15,7 +15,7 @@ describe PreProdRelease do
 
     it "triggers the first submission" do
       build = create(:build, workflow_run:)
-      pre_prod_release.trigger_submissions!
+      pre_prod_release.trigger_submissions!(build)
       expect(pre_prod_release.store_submissions.count).to eq(1)
       expect(pre_prod_release.store_submissions.sole.build).to eq(build)
       expect(pre_prod_release.store_submissions.sole.preparing?).to be true
@@ -23,7 +23,7 @@ describe PreProdRelease do
   end
 
   describe "#rollout_complete!" do
-    let(:pre_prod_release) { create(:pre_prod_release) }
+    let(:pre_prod_release) { create(:internal_release) }
     let(:workflow_run) { create(:workflow_run, triggering_release: pre_prod_release) }
     let(:build) { create(:build, workflow_run:) }
     let(:submission) { create(:play_store_submission, parent_release: pre_prod_release, build:, sequence_number: 1) }

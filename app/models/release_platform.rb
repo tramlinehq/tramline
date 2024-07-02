@@ -54,9 +54,15 @@ class ReleasePlatform < ApplicationRecord
     }.invert
   end
 
-  # FIXME - move this to the new configuration, add type of workflow to the config
+  # FIXME - move these to the new configuration, add type of workflow to the config
   def choose_workflow
-    release_step&.ci_cd_channel
+    steps.review.first&.ci_cd_channel || beta_workflow
+  end
+
+  def separate_workflow_for_beta? = has_review_steps?
+
+  def beta_workflow
+    release_step.ci_cd_channel
   end
 
   def active_steps_for(release)

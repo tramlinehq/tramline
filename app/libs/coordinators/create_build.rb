@@ -10,7 +10,7 @@ class Coordinators::CreateBuild
   end
 
   def call
-    Build.find_or_create_by!(
+    build = Build.find_or_create_by!(
       workflow_run: @workflow_run,
       release_platform_run: @workflow_run.release_platform_run,
       commit: @workflow_run.commit,
@@ -18,7 +18,7 @@ class Coordinators::CreateBuild
       version_name: @workflow_run.release_version
     )
 
-    @workflow_run.triggering_release.trigger_submissions!
+    @workflow_run.triggering_release.trigger_submissions!(build)
   rescue => ex
     elog(ex)
     @workflow_run.triggering_release.fail!
