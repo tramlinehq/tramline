@@ -74,6 +74,8 @@ class PlayStoreSubmission < StoreSubmission
     end
   end
 
+  def provider = app.android_store_provider
+
   def change_allowed? = true
 
   def locked? = false # TODO: This should be false once rollout starts

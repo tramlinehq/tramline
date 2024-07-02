@@ -24,21 +24,6 @@
 #  release_platform_run_id :uuid             not null, indexed
 #
 class TestFlightSubmission < StoreSubmission
-  # using RefinedArray
-  # using RefinedString
-  # include AASM
-  # include Passportable
-  # include Loggable
-
-  # belongs_to :release_platform_run
-  # belongs_to :parent_release, polymorphic: true
-  # belongs_to :build
-  #
-  # delegate :release_metadatum, :train, :release, to: :release_platform_run
-  # delegate :project_link, :public_icon_img, to: :provider
-  # delegate :notify!, to: :train
-  # delegate :version_name, :build_number, to: :build
-
   STATES = {
     created: "created",
     submitting_for_review: "submitting_for_review",
@@ -75,18 +60,15 @@ class TestFlightSubmission < StoreSubmission
     end
 
     event :finish, after_commit: :after_finish! do
+      after { set_approved_at! }
       transitions to: :finished
     end
   end
 
   def provider = app.ios_store_provider
 
-  # def test_group_id
-  #   submission_config["test_group"]["id"]
-  # end
-
   def internal_channel?
-    deployment_channel["internal"]
+    deployment_channel["is_internal"]
   end
 
   def trigger!
@@ -98,7 +80,7 @@ class TestFlightSubmission < StoreSubmission
   def start_release!
     update_build_notes!
 
-    return approve! if internal_channel?
+    return finish! if internal_channel?
 
     result = provider.release_to_testflight(deployment_channel_id, build_number)
 

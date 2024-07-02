@@ -59,7 +59,7 @@ class PreProdRelease < ApplicationRecord
   def trigger_submission!(dist_config)
     submission_class = dist_config["submission_type"].constantize
     auto_promote = dist_config["auto_promote"]
-    auto_promote = release_config["auto_promote"] if auto_promote.nil?
+    auto_promote = config["auto_promote"] if auto_promote.nil?
     submission = submission_class.create!(
       parent_release: self,
       release_platform_run:,

@@ -28,22 +28,48 @@ class Coordinators::ProcessCommit
 
   def trigger_internal_release_for(release_platform_run)
     return if @release.hotfix?
-    return if release_platform_run.android?
 
     train.fixed_build_number? ? release_platform_run.bump_version_for_fixed_build_number! : release_platform_run.bump_version!
     release_platform_run.update!(last_commit: @commit)
 
     internal_release = release_platform_run.internal_releases.create!(
       status: "created",
-      config: {auto_promote: true,
-               distributions: [
-                 {number: 1,
-                  submission_type: "TestFlightSubmission",
-                  submission_config: {id: :internal, name: "internal testing"},
-                  rollout_config: {enabled: true, stages: [100]},
-                  auto_promote: true}
-               ]}
+      # FIXME: This is a temporary thing till we get actual config
+      config: release_platform_run.android? ? android_config : ios_config
     )
     internal_release.trigger_workflow!(release_platform_run.release_platform.choose_workflow, @commit)
+  end
+
+  def android_config
+    {
+      auto_promote: true,
+      distributions: [
+        {
+          number: 1,
+          submission_type: "PlayStoreSubmission",
+          submission_config: {id: :internal, name: "internal testing"},
+          rollout_config: {enabled: true, stages: [100]},
+          auto_promote: true
+        },
+        {
+          number: 2,
+          submission_type: "PlayStoreSubmission",
+          submission_config: {id: :alpha, name: "closed testing"},
+          rollout_config: {enabled: true, stages: [10, 100]},
+          auto_promote: true
+        }
+      ]
+    }
+  end
+
+  def ios_config
+    {
+      auto_promote: true,
+      distributions: [
+        {number: 1,
+         submission_type: "TestFlightSubmission",
+         submission_config: {id: :internal, name: "internal testing"}}
+      ]
+    }
   end
 end

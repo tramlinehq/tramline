@@ -115,6 +115,8 @@ class AppStoreSubmission < StoreSubmission
     end
   end
 
+  def provider = app.ios_store_provider
+
   def change_allowed?
     status.in? CHANGEABLE_STATES
   end
@@ -228,6 +230,13 @@ class AppStoreSubmission < StoreSubmission
     provider.find_build(build_number)
   end
 
+  def update_store_info!(release_info)
+    self.store_release = release_info.release_info
+    self.store_status = release_info.attributes[:status]
+    self.store_link = release_info.attributes[:external_link]
+    save!
+  end
+
   private
 
   def build_present_in_store?
@@ -249,13 +258,6 @@ class AppStoreSubmission < StoreSubmission
   # FIXME: update store version details when release metadata changes or build is updated
   def update_store_version
     # update whats new, build
-  end
-
-  def update_store_info!(release_info)
-    self.store_release = release_info.release_info
-    self.store_status = release_info.attributes[:status]
-    self.store_link = release_info.attributes[:external_link]
-    save!
   end
 
   def on_approve!
