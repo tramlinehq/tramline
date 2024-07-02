@@ -39,6 +39,8 @@
 # • This does not replace internal state machines of other sub-models.
 # • It currently does not have any state of its own.
 module Coordinators::Signals
+  Res = GitHub::Result
+
   def self.start_release!(release)
     # PreRelease.call(release)
     # NewRelease.call(release)
@@ -60,6 +62,46 @@ module Coordinators::Signals
 
   def self.regression_testing_is_approved!(build)
     # StartBetaRelease.call(build)
+  end
+
+  def self.increase_the_store_rollout!(rollout)
+    return Res.new { raise } unless rollout.started?
+    rollout.move_to_next_stage!
+    return Res.new { raise } if rollout.errors?
+    Res.new { true }
+  end
+
+  def self.pause_the_store_rollout!(rollout)
+    return Res.new { raise } unless rollout.started?
+    rollout.pause_release!
+    return Res.new { raise } if rollout.errors?
+    Res.new { true }
+  end
+
+  def self.resume_the_store_rollout!(rollout)
+    return Res.new { raise } unless rollout.halted?
+    rollout.resume_release!
+    return Res.new { raise } if rollout.errors?
+    Res.new { true }
+  end
+
+  def self.halt_the_store_rollout!(rollout)
+    return Res.new { raise } unless rollout.started?
+    rollout.halt_release!
+    return Res.new { raise } if rollout.errors?
+    Res.new { true }
+  end
+
+  def self.fully_release_the_store_rollout!(rollout)
+    return Res.new { raise } unless rollout.started?
+    rollout.release_fully!
+    return Res.new { raise } if rollout.errors?
+    Res.new { true }
+  end
+
+  def self.beta_release_is_complete!(build)
+    # start soak, or
+    Coordinators::StartProductionRelease.call(build)
   end
 
   def self.beta_release_is_available!(build)

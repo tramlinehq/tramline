@@ -114,6 +114,16 @@ Rails.application.routes.draw do
               patch :cancel
             end
           end
+
+          resources :store_rollouts, only: [], path: :rollouts do
+            member do
+              patch :increase
+              patch :pause
+              patch :resume
+              patch :halt
+              patch :fully_release
+            end
+          end
         end
 
         resources :build_queues, only: [], shallow: false do

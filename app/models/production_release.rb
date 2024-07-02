@@ -59,6 +59,4 @@ class ProductionRelease < ApplicationRecord
 end
 
 # TODO:
-# rebase all migrations
-# ensure everything everywhere is bigint
 # fix notification for store rollout final thing to be more deployment run end types
