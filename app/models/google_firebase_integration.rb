@@ -132,9 +132,17 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   delegate :update_release_notes, to: :installation
 
-  def release(release_name, group)
+  def release(release_name, groups)
     GitHub::Result.new do
-      installation.send_to_group(release_name, group_name(group))
+      installation.send_to_group(release_name, group_names(groups))
+    end
+  end
+
+  def find_build_by_build_number(build_number, platform)
+    lookback_period = 2.weeks.ago.rfc3339
+    filters = ["createTime >= \"#{lookback_period}\""]
+    GitHub::Result.new do
+      ReleaseInfo.new(installation.find_build(firebase_app(platform), build_number, and_filters: filters))
     end
   end
 
@@ -198,8 +206,8 @@ class GoogleFirebaseIntegration < ApplicationRecord
     channels&.map { |channel| channel.slice(:id, :name) }
   end
 
-  def group_name(group)
-    group.split("/").last
+  def group_names(groups)
+    groups.map { |group| group.split("/").last }
   end
 
   def release_name(release)

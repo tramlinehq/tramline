@@ -7,8 +7,10 @@ FactoryBot.define do
 
     status { "created" }
     submission_config {
-      {submission_config: {id: :production, name: "production"},
-       rollout_config: {enabled: true}}
+      {
+        submission_config: {id: :production, name: "production"},
+        rollout_config: {enabled: true}
+      }
     }
 
     trait :created do

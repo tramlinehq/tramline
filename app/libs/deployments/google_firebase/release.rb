@@ -98,7 +98,7 @@ module Deployments
 
         return run.complete! if deployment_channel == GoogleFirebaseIntegration::EMPTY_CHANNEL[:id].to_s
 
-        result = provider.release(run.external_release.external_id, deployment_channel)
+        result = provider.release(run.external_release.external_id, [deployment_channel])
 
         unless result.ok?
           run.fail_with_error(result.error)

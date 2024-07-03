@@ -22,8 +22,7 @@
 #  build_id                :uuid             not null, indexed
 #  parent_release_id       :bigint           not null, indexed => [parent_release_type]
 #  release_platform_run_id :uuid             not null, indexed
-#
-class FirebaseSubmission < StoreSubmission
+class GoogleFirebaseSubmission < StoreSubmission
   STATES = {
     created: "created",
     preprocessing: "preprocessing",
@@ -34,6 +33,7 @@ class FirebaseSubmission < StoreSubmission
   }
   FINAL_STATES = %w[finished]
 
+  enum status: STATES
   aasm safe_state_machine_params do
     state :created, initial: true
     state(*STATES.keys)
@@ -80,7 +80,7 @@ class FirebaseSubmission < StoreSubmission
     return unless may_prepare?
 
     if build_present_in_store?
-      prepare_and_update!(nil) # FIXME: get the release_info from the above check
+      prepare_and_update!(@build)
       return
     end
 
@@ -161,7 +161,11 @@ class FirebaseSubmission < StoreSubmission
     save!
   end
 
+  def find_build
+    @build ||= provider.find_build_by_build_number(build_number, release_platform_run.platform)
+  end
+
   def build_present_in_store?
-    provider.find_build(build_number).ok?
+    find_build.ok?
   end
 end
