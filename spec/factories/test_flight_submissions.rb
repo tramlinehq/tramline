@@ -1,27 +1,18 @@
 FactoryBot.define do
-  factory :app_store_submission do
-    parent_release { association :production_release }
+  factory :test_flight_submission do
+    parent_release { association :internal_release }
     build { association :build, release_platform_run: parent_release.release_platform_run }
     release_platform_run { parent_release.release_platform_run }
     sequence_number { 1 }
 
     status { "created" }
     submission_config {
-      {submission_config: {id: :production, name: "production"},
-       rollout_config: {enabled: true}}
+      {submission_config: {id: "123", name: "External Testers", is_internal: false},
+       auto_promote: true}
     }
 
     trait :created do
       status { "created" }
-    end
-
-    trait :preparing do
-      status { "preparing" }
-    end
-
-    trait :prepared do
-      status { "prepared" }
-      prepared_at { Time.current }
     end
 
     trait :submitting_for_review do
@@ -38,8 +29,8 @@ FactoryBot.define do
       rejected_at { Time.current }
     end
 
-    trait :approved do
-      status { "approved" }
+    trait :finished do
+      status { "finished" }
       approved_at { Time.current }
     end
 

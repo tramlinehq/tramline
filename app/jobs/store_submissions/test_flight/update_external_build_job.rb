@@ -17,6 +17,9 @@ class StoreSubmissions::TestFlight::UpdateExternalBuildJob
 
   def perform(submission_id)
     submission = TestFlightSubmission.find(submission_id)
+    return unless submission.may_finish?
+
     submission.update_external_release
+    submission.finish!
   end
 end

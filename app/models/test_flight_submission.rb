@@ -46,13 +46,9 @@ class TestFlightSubmission < StoreSubmission
       transitions from: :created, to: :preprocessing
     end
 
-    event :start_submission, after_commit: :on_start_submission! do
-      transitions from: [:created, :preprocessing], to: :submitting_for_review
-    end
-
     event :submit_for_review, after_commit: :on_submit_for_review! do
       after { set_submitted_at! }
-      transitions from: [:review_failed, :submitting_for_review], to: :submitted_for_review
+      transitions from: [:created, :preprocessing], to: :submitted_for_review
     end
 
     event :reject do
@@ -66,7 +62,7 @@ class TestFlightSubmission < StoreSubmission
 
     event :finish, after_commit: :after_finish! do
       after { set_approved_at! }
-      transitions to: :finished
+      transitions from: [:created, :preprocessing, :submitted_for_review], to: :finished
     end
   end
 
@@ -80,13 +76,20 @@ class TestFlightSubmission < StoreSubmission
     return start_release! if build_present_in_store?
 
     preprocess!
-    StoreSubmissions::AppStore::FindBuildJob.perform_async(id)
+    StoreSubmissions::TestFlight::FindBuildJob.perform_async(id)
   end
 
   def start_release!
+    return unless may_submit_for_review?
+
     update_build_notes!
 
-    return finish! if internal_channel?
+    if internal_channel?
+      release_info = find_build.value!
+      update_store_info!(release_info)
+
+      return finish!
+    end
 
     result = provider.release_to_testflight(deployment_channel_id, build_number)
     return fail_with_error!(result.error) unless result.ok?
@@ -99,7 +102,7 @@ class TestFlightSubmission < StoreSubmission
   end
 
   def on_submit_for_review!
-    StoreSubmissions::TestFlight::UpdateExternalReleaseJob.perform_async(id)
+    StoreSubmissions::TestFlight::UpdateExternalBuildJob.perform_async(id)
     # notify!("Submitted for review!", :submit_for_review, notification_params)
     #
     # event_stamp!(kind: :notice, reason: :submitted_for_review, data: stamp_data)
@@ -117,12 +120,12 @@ class TestFlightSubmission < StoreSubmission
     update_store_info!(release_info)
 
     if release_info.success?
-      return finished!
+      finished!
     elsif release_info.review_failed?
       reject!
+    else
+      raise SubmissionNotInTerminalState, "Retrying in some time..."
     end
-
-    raise SubmissionNotInTerminalState, "Retrying in some time..."
   end
 
   def find_build
@@ -138,11 +141,11 @@ class TestFlightSubmission < StoreSubmission
   end
 
   def build_present_in_store?
-    provider.find_build(build_number).ok?
+    find_build.ok?
   end
 
   def update_store_info!(release_info)
-    self.store_release = release_info.release_info
+    self.store_release = release_info.build_info
     self.store_status = release_info.attributes[:status]
     self.store_link = release_info.attributes[:external_link]
     save!

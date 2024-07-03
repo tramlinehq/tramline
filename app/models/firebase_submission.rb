@@ -1,3 +1,28 @@
+# == Schema Information
+#
+# Table name: store_submissions
+#
+#  id                      :uuid             not null, primary key
+#  approved_at             :datetime
+#  failure_reason          :string
+#  name                    :string
+#  parent_release_type     :string           not null, indexed => [parent_release_id]
+#  prepared_at             :datetime
+#  rejected_at             :datetime
+#  sequence_number         :integer          default(0), not null, indexed
+#  status                  :string           not null
+#  store_link              :string
+#  store_release           :jsonb
+#  store_status            :string
+#  submission_config       :jsonb
+#  submitted_at            :datetime
+#  type                    :string           not null
+#  created_at              :datetime         not null
+#  updated_at              :datetime         not null
+#  build_id                :uuid             not null, indexed
+#  parent_release_id       :bigint           not null, indexed => [parent_release_type]
+#  release_platform_run_id :uuid             not null, indexed
+#
 class FirebaseSubmission < StoreSubmission
   STATES = {
     created: "created",
