@@ -40,7 +40,7 @@ class StepRun < ApplicationRecord
 
   validates :step_id, uniqueness: {scope: :commit_id}
 
-  after_commit -> { update(build_notes_raw: relevant_changes) }, on: :create
+  after_commit :populate_build_notes, on: :create
   # FIXME: solve this correctly, we rely on wait time to ensure steps are triggered in correct order
   after_commit -> { Releases::TriggerWorkflowRunJob.set(wait: BASE_WAIT_TIME * step_number).perform_later(id) }, on: :create
   after_commit -> { create_stamp!(data: stamp_data) }, on: :create
@@ -376,6 +376,7 @@ class StepRun < ApplicationRecord
       .map { |str| str&.strip }
       .flat_map { |line| train.compact_build_notes? ? line.split("\n").first : line.split("\n") }
       .map { |line| line.gsub(/\p{Emoji_Presentation}\s*/, "") }
+      .map { |line| line.gsub(/"/, "\\\"") }
       .reject { |line| line =~ /\AMerge|\ACo-authored-by|\A---------/ }
       .compact_blank
       .uniq
@@ -415,6 +416,11 @@ class StepRun < ApplicationRecord
   end
 
   private
+
+  def populate_build_notes
+    return if build_notes_raw.present?
+    update(build_notes_raw: relevant_changes)
+  end
 
   def create_and_attach_build_to_submission
     build = release_platform_run.builds.create(
