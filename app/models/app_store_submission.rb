@@ -35,6 +35,7 @@ class AppStoreSubmission < StoreSubmission
   RETRYABLE_FAILURE_REASONS = [:attachment_upload_in_progress]
   STATES = {
     created: "created",
+    preprocessing: "preprocessing",
     preparing: "preparing",
     prepared: "prepared",
     failed_prepare: "failed_prepare",
@@ -70,8 +71,12 @@ class AppStoreSubmission < StoreSubmission
     state :created, initial: true
     state(*STATES.keys)
 
-    event :start_prepare, guard: :startable?, after_commit: :on_start_prepare! do
-      transitions from: [:created, :failed_prepare, :prepared, :failed, :review_failed, :cancelled], to: :preparing
+    event :preprocess do
+      transitions from: :created, to: :preprocessing
+    end
+
+    event :start_prepare, after_commit: :on_start_prepare! do
+      transitions from: [:created, :preprocessing, :failed_prepare, :prepared, :failed, :review_failed, :cancelled], to: :preparing
     end
 
     event :finish_prepare, after_commit: :on_finish_prepare! do
@@ -137,6 +142,8 @@ class AppStoreSubmission < StoreSubmission
 
   def trigger!
     return start_prepare! if build_present_in_store?
+
+    preprocess!
     StoreSubmissions::AppStore::FindBuildJob.perform_async(id)
   end
 
@@ -225,7 +232,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def find_build
-    provider.find_build(build_number)
+    @build ||= provider.find_build(build_number)
   end
 
   def update_store_info!(release_info)
@@ -236,10 +243,6 @@ class AppStoreSubmission < StoreSubmission
   end
 
   private
-
-  def build_present_in_store?
-    provider.find_build(build_number).ok?
-  end
 
   def on_start_prepare!
     StoreSubmissions::AppStore::PrepareForReleaseJob.perform_async(id)
@@ -253,16 +256,20 @@ class AppStoreSubmission < StoreSubmission
     StoreSubmissions::AppStore::RemoveFromReviewJob.perform_async(id)
   end
 
-  # FIXME: update store version details when release metadata changes or build is updated
-  def update_store_version
-    # update whats new, build
-  end
-
   def on_approve!
     create_app_store_rollout!(release_platform_run:)
   end
 
   def on_fail_prepare!
     event_stamp!(reason: :prepare_release_failed, kind: :error, data: stamp_data)
+  end
+
+  def update_store_version
+    # FIXME: update store version details when release metadata changes or build is updated
+    # update whats new, build
+  end
+
+  def build_present_in_store?
+    find_build.ok?
   end
 end

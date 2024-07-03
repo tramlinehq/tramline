@@ -1,23 +1,24 @@
 class FirebaseSubmission < StoreSubmission
   STATES = {
     created: "created",
-    prepared: "prepared",
+    preprocessing: "preprocessing",
+    preparing: "preparing",
+    finished: "finished",
     failed: "failed",
     failed_with_action_required: "failed_with_action_required"
   }
-  FINAL_STATES = %w[prepared]
-
-  # created, and start uploading
-  # if already uploaded, start preparing to send to groups
-  # if not already uploaded, keep in created, start tracking uploading
-  # once, uploaded, start preparing
+  FINAL_STATES = %w[finished]
 
   aasm safe_state_machine_params do
     state :created, initial: true
     state(*STATES.keys)
 
-    event :start_prepare, guard: :startable?, after: :on_start_prepare! do
-      transitions from: [:created, :failed], to: :preparing
+    event :preprocess do
+      transitions from: :created, to: :preprocessing
+    end
+
+    event :prepare, after_commit: :on_prepare! do
+      transitions from: [:created, :preprocessing, :failed], to: :preparing
     end
 
     event :finish do
@@ -51,20 +52,27 @@ class FirebaseSubmission < StoreSubmission
   end
 
   def trigger!
-    return unless may_start_prepare?
-    return start_prepare! if build_present_in_store?
+    return unless may_prepare?
+
+    if build_present_in_store?
+      prepare_and_update!(nil) # FIXME: get the release_info from the above check
+      return
+    end
+
+    preprocess!
     StoreSubmissions::GoogleFirebase::UploadJob.perform_later(id)
   end
 
   def upload_build!
-    return unless may_start_prepare?
+    return unless may_prepare?
     return fail_with_error("Build not found") if build&.artifact.blank?
 
     result = nil
-    run.build_artifact.with_open do |file|
-      result = provider.upload(file, run.build_artifact.file.filename.to_s, platform:, variant: step_run.app_variant)
+    filename = build_artifact.file.filename.to_s
+    build_artifact.with_open do |file|
+      result = provider.upload(file, filename, platform:, variant: step_run.app_variant)
       unless result.ok?
-        run.fail_with_error(result.error)
+        fail_with_error(result.error)
       end
     end
 
@@ -75,8 +83,8 @@ class FirebaseSubmission < StoreSubmission
     return unless may_finish?
 
     # FIXME: get deployment_channel from somewhere
-    deployment_channel = ["group-1-id", "group-2-id"]
-    result = provider.release(run.external_release.external_id, deployment_channel)
+    deployment_channels = ["group-1-id", "group-2-id"]
+    result = provider.release(run.external_release.external_id, deployment_channels)
     if result.ok?
       finish!
     else
@@ -85,7 +93,7 @@ class FirebaseSubmission < StoreSubmission
   end
 
   def update_upload_status!(op_name)
-    return unless may_start_prepare?
+    return unless may_prepare?
     result = provider.get_upload_status(op_name)
     unless result.ok?
       fail_with_error(result.error)
@@ -95,11 +103,7 @@ class FirebaseSubmission < StoreSubmission
     release_info = result.value!
     raise UploadNotComplete unless release_info.done?
 
-    transaction do
-      start_prepare!
-      update_store_info!(release_info)
-    end
-
+    prepare_and_update!(release_info)
     StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_later(id, release_info.release)
   end
 
@@ -108,9 +112,20 @@ class FirebaseSubmission < StoreSubmission
     provider.update_release_notes(release_name, "NOTES")
   end
 
+  def send_notes?
+    false
+  end
+
   private
 
-  def on_start_prepare!
+  def prepare_and_update!(release_info)
+    transaction do
+      prepare!
+      update_store_info!(release_info)
+    end
+  end
+
+  def on_prepare!
     StoreSubmissions::GoogleFirebase::PrepareForReleaseJob.perform_later(id)
   end
 
@@ -122,10 +137,6 @@ class FirebaseSubmission < StoreSubmission
   end
 
   def build_present_in_store?
-    provider.find_build(build_number).present?
+    provider.find_build(build_number).ok?
   end
 end
-
-# TODO:
-# - state transition checks in jobs
-#

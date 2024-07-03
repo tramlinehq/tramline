@@ -34,6 +34,7 @@ class PlayStoreSubmission < StoreSubmission
 
   STATES = {
     created: "created",
+    preprocessing: "preprocessing",
     preparing: "preparing",
     prepared: "prepared",
     review_failed: "review_failed",
@@ -51,8 +52,12 @@ class PlayStoreSubmission < StoreSubmission
     state :created, initial: true
     state(*STATES.keys)
 
-    event :start_prepare, guard: :startable?, after: :on_start_prepare! do
-      transitions from: [:created, :prepared, :failed], to: :preparing
+    event :preprocess do
+      transitions from: :created, to: :preprocessing
+    end
+
+    event :start_prepare, after: :on_start_prepare! do
+      transitions from: [:created, :preprocessing, :prepared, :failed], to: :preparing
     end
 
     event :finish_prepare, after_commit: :on_prepare! do
@@ -94,6 +99,8 @@ class PlayStoreSubmission < StoreSubmission
 
   def trigger!
     return start_prepare! if build_present_in_store?
+
+    preprocess!
     StoreSubmissions::PlayStore::UploadJob.perform_later(id)
   end
 

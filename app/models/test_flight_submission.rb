@@ -26,6 +26,7 @@
 class TestFlightSubmission < StoreSubmission
   STATES = {
     created: "created",
+    preprocessing: "preprocessing",
     submitting_for_review: "submitting_for_review",
     submitted_for_review: "submitted_for_review",
     review_failed: "review_failed",
@@ -41,8 +42,12 @@ class TestFlightSubmission < StoreSubmission
     state :created, initial: true
     state(*STATES.keys)
 
+    event :preprocess do
+      transitions from: :created, to: :preprocessing
+    end
+
     event :start_submission, after_commit: :on_start_submission! do
-      transitions from: :prepared, to: :submitting_for_review
+      transitions from: [:created, :preprocessing], to: :submitting_for_review
     end
 
     event :submit_for_review, after_commit: :on_submit_for_review! do
@@ -73,6 +78,8 @@ class TestFlightSubmission < StoreSubmission
 
   def trigger!
     return start_release! if build_present_in_store?
+
+    preprocess!
     StoreSubmissions::AppStore::FindBuildJob.perform_async(id)
   end
 
@@ -82,7 +89,6 @@ class TestFlightSubmission < StoreSubmission
     return finish! if internal_channel?
 
     result = provider.release_to_testflight(deployment_channel_id, build_number)
-
     return fail_with_error!(result.error) unless result.ok?
 
     submit_for_review!

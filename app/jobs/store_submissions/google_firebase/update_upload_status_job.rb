@@ -16,6 +16,8 @@ class StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob
   end
 
   def perform(submission_id, op_name)
-    FirebaseSubmission.find(submission_id).update_upload_status!(op_name)
+    submission = FirebaseSubmission.find(submission_id)
+    return unless submission.may_prepare?
+    submission.update_upload_status!(op_name)
   end
 end
