@@ -23,6 +23,8 @@
 #  parent_release_id       :bigint           not null, indexed => [parent_release_type]
 #  release_platform_run_id :uuid             not null, indexed
 class GoogleFirebaseSubmission < StoreSubmission
+  UploadNotComplete = Class.new(StandardError)
+
   STATES = {
     created: "created",
     preprocessing: "preprocessing",
@@ -80,7 +82,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     return unless may_prepare?
 
     if build_present_in_store?
-      prepare_and_update!(@build)
+      prepare_and_update!(@build.value!)
       return
     end
 
@@ -93,28 +95,16 @@ class GoogleFirebaseSubmission < StoreSubmission
     return fail_with_error("Build not found") if build&.artifact.blank?
 
     result = nil
-    filename = build_artifact.file.filename.to_s
-    build_artifact.with_open do |file|
-      result = provider.upload(file, filename, platform:, variant: step_run.app_variant)
+    filename = build.artifact.file.filename.to_s
+    variant = nil # FIXME: attach it from the right place
+    build.artifact.with_open do |file|
+      result = provider.upload(file, filename, platform:, variant:)
       unless result.ok?
         fail_with_error(result.error)
       end
     end
 
-    StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob.perform_later(id, result.value!) if result&.ok?
-  end
-
-  def prepare_for_release!
-    return unless may_finish?
-
-    # FIXME: get deployment_channel from somewhere
-    deployment_channels = ["group-1-id", "group-2-id"]
-    result = provider.release(run.external_release.external_id, deployment_channels)
-    if result.ok?
-      finish!
-    else
-      fail_with_error(result.error)
-    end
+    StoreSubmissions::GoogleFirebase::UpdateUploadStatusJob.perform_async(id, result.value!) if result&.ok?
   end
 
   def update_upload_status!(op_name)
@@ -135,6 +125,19 @@ class GoogleFirebaseSubmission < StoreSubmission
   # FIXME: get notes from somewhere
   def update_build_notes!(release_name)
     provider.update_release_notes(release_name, "NOTES")
+  end
+
+  def prepare_for_release!
+    return unless may_finish?
+
+    # FIXME: get deployment_channel from somewhere
+    deployment_channels = ["group-1-id", "group-2-id"]
+    result = provider.release(external_id, deployment_channels)
+    if result.ok?
+      finish!
+    else
+      fail_with_error(result.error)
+    end
   end
 
   def send_notes?
@@ -168,4 +171,10 @@ class GoogleFirebaseSubmission < StoreSubmission
   def build_present_in_store?
     find_build.ok?
   end
+
+  def external_id
+    store_release["id"]
+  end
+
+  def provider = app.firebase_build_channel_provider
 end

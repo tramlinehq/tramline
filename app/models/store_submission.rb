@@ -34,7 +34,7 @@ class StoreSubmission < ApplicationRecord
   belongs_to :parent_release, polymorphic: true
   belongs_to :build
 
-  delegate :release_metadatum, :train, :release, :app, to: :release_platform_run
+  delegate :release_metadatum, :train, :release, :app, :platform, to: :release_platform_run
   delegate :project_link, :public_icon_img, to: :provider, allow_nil: true
   delegate :notify!, to: :train
   delegate :version_name, :build_number, to: :build

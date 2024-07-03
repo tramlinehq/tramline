@@ -6,5 +6,11 @@ FactoryBot.define do
     release_platform_run { workflow_run.release_platform_run }
     commit { workflow_run.commit }
     generated_at { Time.current }
+
+    trait :with_artifact do
+      after(:create) do |build|
+        create(:build_artifact, build: build)
+      end
+    end
   end
 end
