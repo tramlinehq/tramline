@@ -121,8 +121,6 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def prepare_for_release!
-    return unless startable?
-
     result = provider.create_draft_release(deployment_channel_id, build_number, version_name, release_notes)
     if result.ok?
       finish_prepare!

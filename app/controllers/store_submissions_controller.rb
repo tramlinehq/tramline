@@ -6,7 +6,6 @@ class StoreSubmissionsController < SignedInApplicationController
   before_action :set_store_submission, only: [:update, :prepare, :submit_for_review, :cancel]
   before_action :ensure_reviewable, only: [:submit_for_review]
   before_action :ensure_cancellable, only: [:cancel]
-  before_action :ensure_preparable, only: [:prepare]
 
   def create
     build = @release_platform_run.builds.find_by(id: submission_params[:build_id])
@@ -74,12 +73,6 @@ class StoreSubmissionsController < SignedInApplicationController
   def ensure_reviewable
     unless @submission.reviewable?
       redirect_back fallback_location: root_path, flash: {error: t(".submit_for_review.unreviewable")}
-    end
-  end
-
-  def ensure_preparable
-    unless @submission.startable?
-      redirect_back fallback_location: root_path, flash: {error: t(".prepare.unstartable")}
     end
   end
 

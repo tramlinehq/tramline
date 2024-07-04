@@ -98,45 +98,87 @@ class ReleasePlatformRun < ApplicationRecord
 
   def internal_release_config
     if android?
-      android_config
+      android_internal_config
     elsif ios?
-      ios_config
+      ios_internal_config
+    else
+      raise ArgumentError, "Unknown platform: #{platform}"
+    end
+  end
+
+  def beta_release_config
+    if android?
+      android_beta_config
+    elsif ios?
+      ios_beta_config
     else
       raise ArgumentError, "Unknown platform: #{platform}"
     end
   end
 
   # FIXME: temp hard coded config
-  def android_config
+  def android_internal_config
     {
       auto_promote: true,
       distributions: [
         {
           number: 1,
-          submission_type: "PlayStoreSubmission",
-          submission_config: {id: :internal, name: "internal testing"},
-          notes: :no_notes,
-          rollout_config: {enabled: true, stages: [100]},
-          auto_promote: true
-        },
-        {
-          number: 2,
-          submission_type: "PlayStoreSubmission",
-          submission_config: {id: :alpha, name: "closed testing"},
-          rollout_config: {enabled: true, stages: [10, 100]},
+          submission_type: "GoogleFirebaseSubmission",
+          submission_config: {id: "projects/946207521855/groups/internal-product-team",
+                              name: "Internal Product Team"},
           auto_promote: true
         }
       ]
     }.with_indifferent_access
   end
 
-  def ios_config
+  def android_beta_config
+    {
+      auto_promote: false,
+      distributions: [
+        {
+          number: 1,
+          submission_type: "PlayStoreSubmission",
+          submission_config: {id: :alpha, name: "closed testing"},
+          rollout_config: {enabled: false},
+          auto_promote: true
+        },
+        {
+          number: 2,
+          submission_type: "PlayStoreSubmission",
+          submission_config: {id: :beta, name: "open testing"},
+          rollout_config: {enabled: true, stages: [1, 10, 100]},
+          auto_promote: false
+        }
+      ]
+    }.with_indifferent_access
+  end
+
+  def ios_internal_config
     {
       auto_promote: true,
       distributions: [
-        {number: 1,
-         submission_type: "TestFlightSubmission",
-         submission_config: {id: :internal, name: "internal testing"}}
+        {
+          number: 1,
+          submission_type: "GoogleFirebaseSubmission",
+          submission_config: {id: "projects/946207521855/groups/internal-product-team",
+                              name: "Internal Product Team"},
+          auto_promote: true
+        }
+      ]
+    }.with_indifferent_access
+  end
+
+  def ios_beta_config
+    {
+      auto_promote: false,
+      distributions: [
+        {
+          number: 1,
+          submission_type: "TestFlightSubmission",
+          submission_config: {id: "88842956-c143-4692-8998-8d0e1297f59e", name: "tramliners", is_internal: true},
+          auto_promote: true
+        }
       ]
     }.with_indifferent_access
   end

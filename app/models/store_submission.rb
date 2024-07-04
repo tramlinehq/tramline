@@ -55,11 +55,6 @@ class StoreSubmission < ApplicationRecord
     submission_config["auto_promote"]
   end
 
-  # FIXME: will be startable as soon as it is created
-  def startable?
-    build.present?
-  end
-
   def external_link
     store_link || project_link
   end
