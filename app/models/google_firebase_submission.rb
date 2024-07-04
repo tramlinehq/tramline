@@ -72,8 +72,6 @@ class GoogleFirebaseSubmission < StoreSubmission
 
   def cancellable? = false
 
-  def integration_type = :google_firebase
-
   def finished?
     status.in? FINAL_STATES
   end
@@ -131,7 +129,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     return unless may_finish?
 
     # FIXME: get deployment_channel from somewhere
-    deployment_channels = ["group-1-id", "group-2-id"]
+    deployment_channels = [deployment_channel_id]
     result = provider.release(external_id, deployment_channels)
     if result.ok?
       finish!
@@ -141,7 +139,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   end
 
   def send_notes?
-    false
+    true
   end
 
   private
