@@ -4,6 +4,7 @@
 #
 #  id                      :uuid             not null, primary key
 #  approved_at             :datetime
+#  config                  :jsonb
 #  failure_reason          :string
 #  name                    :string
 #  parent_release_type     :string           not null, indexed => [parent_release_id]
@@ -14,7 +15,6 @@
 #  store_link              :string
 #  store_release           :jsonb
 #  store_status            :string
-#  submission_config       :jsonb
 #  submitted_at            :datetime
 #  type                    :string           not null
 #  created_at              :datetime         not null
@@ -144,15 +144,11 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def on_prepare!
-    create_play_store_rollout!(release_platform_run:, config: rollout_stages)
+    create_play_store_rollout!(release_platform_run:, config: conf.rollout_config.stages)
     play_store_rollout.start! if auto_rollout?
   end
 
   def build_present_in_store?
     provider.find_build(build_number).present?
-  end
-
-  def rollout_stages
-    submission_config["rollout_config"]["stages"]
   end
 end

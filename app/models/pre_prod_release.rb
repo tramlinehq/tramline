@@ -37,18 +37,14 @@ class PreProdRelease < ApplicationRecord
   end
 
   def trigger_submissions!(build)
-    first_submission = platform_config.submissions.first
-    trigger_submission!(first_submission, build)
+    first_submission_config = conf.submissions.first
+    trigger_submission!(first_submission_config, build)
   end
 
   def rollout_complete!(submission)
-    next_submission =
-      platform_config
-        .submissions
-        .fetch_by_number(submission.sequence_number + 1)
-
-    if next_submission
-      trigger_submission!(next_submission, submission.build)
+    next_submission_config = conf.submissions.fetch_by_number(submission.sequence_number + 1)
+    if next_submission_config
+      trigger_submission!(next_submission_config, submission.build)
     else
       finish!(submission.build)
     end
@@ -60,9 +56,7 @@ class PreProdRelease < ApplicationRecord
     submission_config.submission_type.create_and_trigger!(self, submission_config, build)
   end
 
-  def platform_config
-    ReleaseConfig::Platform.new(config)
-  end
+  def conf = ReleaseConfig::Platform.new(config)
 
   # start a submission - there needs to be a common start function between submission classes
   # wait for its completion - submission_completed! callback from submission

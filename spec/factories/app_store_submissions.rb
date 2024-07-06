@@ -6,7 +6,7 @@ FactoryBot.define do
     sequence_number { 1 }
 
     status { "created" }
-    submission_config {
+    config {
       {
         submission_config: {id: :production, name: "production"},
         rollout_config: {enabled: true}

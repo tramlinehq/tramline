@@ -4,6 +4,7 @@
 #
 #  id                      :uuid             not null, primary key
 #  approved_at             :datetime
+#  config                  :jsonb
 #  failure_reason          :string
 #  name                    :string
 #  parent_release_type     :string           not null, indexed => [parent_release_id]
@@ -14,7 +15,6 @@
 #  store_link              :string
 #  store_release           :jsonb
 #  store_status            :string
-#  submission_config       :jsonb
 #  submitted_at            :datetime
 #  type                    :string           not null
 #  created_at              :datetime         not null
@@ -40,31 +40,31 @@ class StoreSubmission < ApplicationRecord
   delegate :version_name, :build_number, to: :build
 
   def deployment_channel
-    config.submission_config
+    conf.submission_config
   end
 
   def deployment_channel_id
-    config.submission_config.id.to_s
+    conf.submission_config.id.to_s
   end
 
   def staged_rollout?
-    config.rollout_config.enabled
+    conf.rollout_config.enabled
   end
 
-  def auto_rollout? = config.auto_promote?
+  def auto_rollout? = conf.auto_promote?
 
   def external_link
     store_link || project_link
   end
 
-  def self.create_and_trigger!(parent_release, config, build)
-    auto_promote = config.auto_promote?
-    auto_promote = parent_release.config.auto_promote? if auto_promote.nil?
+  def self.create_and_trigger!(parent_release, submission_config, build)
+    auto_promote = submission_config.auto_promote?
+    auto_promote = parent_release.conf.auto_promote? if auto_promote.nil?
     release_platform_run = parent_release.release_platform_run
-    sequence_number = config.number
-    submission_config = config.to_h
+    sequence_number = submission_config.number
+    config = submission_config.to_h
 
-    submission = create!(parent_release:, release_platform_run:, build:, sequence_number:, submission_config:)
+    submission = create!(parent_release:, release_platform_run:, build:, sequence_number:, config:)
     submission.trigger! if auto_promote
   end
 
@@ -77,7 +77,7 @@ class StoreSubmission < ApplicationRecord
           is_production_channel: true,
           is_app_store_production: is_a?(AppStoreSubmission),
           is_play_store_production: is_a?(PlayStoreSubmission),
-          deployment_channel: config.submission_config,
+          deployment_channel: conf.submission_config,
           deployment_channel_asset_link: public_icon_img,
           deployment_channel_type: provider.to_s.titleize,
           project_link: external_link,
@@ -128,7 +128,5 @@ class StoreSubmission < ApplicationRecord
     }
   end
 
-  def config
-    ReleaseConfig::Platform::Submission.new(submission_config)
-  end
+  def conf = ReleaseConfig::Platform::Submission.new(config)
 end
