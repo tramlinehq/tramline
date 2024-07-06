@@ -34,11 +34,11 @@ module Installations
       end
     end
 
-    def update_release_notes(release, notes)
+    def update_release_notes(release_name, notes)
       execute do
-        release = FAD_PUBLISHER::GoogleFirebaseAppdistroV1Release.from_json(release.to_json)
+        release = FAD_PUBLISHER::GoogleFirebaseAppdistroV1Release.new(name: release_name)
         release.release_notes = FAD_PUBLISHER::GoogleFirebaseAppdistroV1ReleaseNotes.new(text: notes)
-        fad_client.patch_project_app_release(release.name, release)
+        fad_client.patch_project_app_release(release_name, release)
       end
     end
 
@@ -94,6 +94,7 @@ module Installations
           .list_project_app_releases(app_name(app_id), filter:)
           .then(&:releases)
           &.find { |release| release.build_version == build_number.to_s }
+          &.to_h
       end
     end
 

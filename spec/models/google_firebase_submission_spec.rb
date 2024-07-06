@@ -10,15 +10,15 @@ describe GoogleFirebaseSubmission do
     let(:providable_dbl) { instance_double(GoogleFirebaseIntegration) }
     let(:release_info) {
       {
-        response: {
-          result: "SUCCESS",
-          release: {
-            firebaseConsoleUri: Faker::Internet.url
-          }
-        }
+        build_version: "471280959",
+        create_time: "2024-07-05T23:51:56.539088Z",
+        display_version: "10.31.0",
+        firebase_console_uri: Faker::Internet.url,
+        name: Faker::String.random(length: 10),
+        release_notes: {text: "NOTES"}
       }
     }
-    let(:release_info_obj) { GoogleFirebaseIntegration::ReleaseInfo.new(release_info) }
+    let(:release_info_obj) { GoogleFirebaseIntegration::ReleaseInfo.new(release_info, GoogleFirebaseIntegration::BUILD_TRANSFORMATIONS) }
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
@@ -33,7 +33,7 @@ describe GoogleFirebaseSubmission do
       submission.reload
 
       expect(submission.preparing?).to be(true)
-      expect(submission.store_link).to eq(release_info[:response][:release][:firebaseConsoleUri])
+      expect(submission.store_link).to eq(release_info[:firebase_console_uri])
       expect(expected_job).to have_received(:perform_later).with(submission.id).once
     end
 
@@ -97,18 +97,19 @@ describe GoogleFirebaseSubmission do
     let(:release_platform_run) { build.release_platform_run }
     let(:submission) { create(:google_firebase_submission, :preprocessing, build:, release_platform_run:) }
     let(:providable_dbl) { instance_double(GoogleFirebaseIntegration) }
-    let(:release_info) {
+    let(:op_info) {
       {
         done: true,
         response: {
           result: "SUCCESS",
           release: {
+            name: Faker::String.random(length: 10),
             firebaseConsoleUri: Faker::Internet.url
           }
         }
       }
     }
-    let(:release_info_obj) { GoogleFirebaseIntegration::ReleaseInfo.new(release_info) }
+    let(:op_info_obj) { GoogleFirebaseIntegration::ReleaseOpInfo.new(op_info) }
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
@@ -116,15 +117,15 @@ describe GoogleFirebaseSubmission do
 
     it "prepares and updates the submission" do
       expected_job = StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob
-      allow(providable_dbl).to receive(:get_upload_status).and_return(GitHub::Result.new { release_info_obj })
+      allow(providable_dbl).to receive(:get_upload_status).and_return(GitHub::Result.new { op_info_obj })
       allow(expected_job).to receive(:perform_later)
 
       submission.update_upload_status!("op_name")
       submission.reload
 
       expect(submission.preparing?).to be(true)
-      expect(submission.store_link).to eq(release_info[:response][:release][:firebaseConsoleUri])
-      expect(expected_job).to have_received(:perform_later).with(submission.id, release_info_obj.release).once
+      expect(submission.store_link).to eq(op_info[:response][:release][:firebaseConsoleUri])
+      expect(expected_job).to have_received(:perform_later).with(submission.id, op_info[:response][:release][:name]).once
     end
 
     it "fails if upload check fails" do
@@ -149,7 +150,7 @@ describe GoogleFirebaseSubmission do
           }
         }
       }
-      release_info_obj = GoogleFirebaseIntegration::ReleaseInfo.new(release_info)
+      release_info_obj = GoogleFirebaseIntegration::ReleaseOpInfo.new(release_info)
       allow(providable_dbl).to receive(:get_upload_status).and_return(GitHub::Result.new { release_info_obj })
 
       expect {

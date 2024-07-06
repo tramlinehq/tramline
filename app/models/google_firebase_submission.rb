@@ -80,7 +80,9 @@ class GoogleFirebaseSubmission < StoreSubmission
     return unless may_prepare?
 
     if build_present_in_store?
-      prepare_and_update!(@build.value!)
+      release_info = @build.value!
+      prepare_and_update!(release_info)
+      StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_later(id, release_info.id)
       return
     end
 
@@ -113,11 +115,11 @@ class GoogleFirebaseSubmission < StoreSubmission
       return
     end
 
-    release_info = result.value!
-    raise UploadNotComplete unless release_info.done?
+    op_info = result.value!
+    raise UploadNotComplete unless op_info.done?
 
-    prepare_and_update!(release_info)
-    StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_later(id, release_info.release)
+    prepare_and_update!(op_info.release)
+    StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_later(id, op_info.release.id)
   end
 
   # FIXME: get notes from somewhere
@@ -158,7 +160,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   def update_store_info!(release_info)
     self.store_link = release_info.console_link
     self.store_status = release_info.status
-    self.store_release = release_info.release_info
+    self.store_release = release_info.release
     save!
   end
 
