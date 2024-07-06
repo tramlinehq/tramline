@@ -11,7 +11,7 @@ describe TestFlightSubmission do
       added_at: "2023-02-25T03:02:46-08:00"
     }
   }
-  let(:internal_release) { create(:internal_release, config: {distributions: [{id: "123", name: "Internal Testers", is_internal: true}]}) }
+  let(:internal_release) { create(:internal_release, config: {submissions: [{id: "123", name: "Internal Testers", is_internal: true}]}) }
   let(:provider_dbl) { instance_double(AppStoreIntegration) }
   let(:build_info) { AppStoreIntegration::TestFlightInfo.new(base_build_info.merge(status: "WAITING_FOR_BETA_REVIEW")) }
 
@@ -62,7 +62,13 @@ describe TestFlightSubmission do
       let(:test_flight_submission) {
         create(:test_flight_submission,
           parent_release: internal_release,
-          submission_config: {submission_config: {id: "123", name: "Internal Testers", is_internal: true}})
+          submission_config: {
+            submission_config: {
+              id: "123",
+              name: "Internal Testers",
+              is_internal: true
+            }
+          })
       }
 
       before do
@@ -72,13 +78,11 @@ describe TestFlightSubmission do
 
       it "updates the build notes" do
         test_flight_submission.start_release!
-
         expect(provider_dbl).to have_received(:update_release_notes)
       end
 
       it "finishes the release" do
         test_flight_submission.start_release!
-
         expect(test_flight_submission.finished?).to be true
       end
 

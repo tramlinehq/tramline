@@ -13,7 +13,7 @@ FactoryBot.define do
     }
 
     trait :with_store_release do
-      store_release { { "id" => 1 } }
+      store_release { {"id" => 1} }
     end
 
     trait :preprocessing do

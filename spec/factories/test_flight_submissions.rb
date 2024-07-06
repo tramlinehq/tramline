@@ -7,8 +7,14 @@ FactoryBot.define do
 
     status { "created" }
     submission_config {
-      {submission_config: {id: "123", name: "External Testers", is_internal: false},
-       auto_promote: true}
+      {
+        submission_config: {
+          id: "123",
+          name: "External Testers",
+          is_internal: false
+        },
+        auto_promote: true
+      }
     }
 
     trait :created do

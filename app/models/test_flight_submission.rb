@@ -69,7 +69,7 @@ class TestFlightSubmission < StoreSubmission
   def provider = app.ios_store_provider
 
   def internal_channel?
-    deployment_channel["is_internal"]
+    deployment_channel.is_internal
   end
 
   def trigger!
@@ -87,7 +87,6 @@ class TestFlightSubmission < StoreSubmission
     if internal_channel?
       release_info = find_build.value!
       update_store_info!(release_info)
-
       return finish!
     end
 

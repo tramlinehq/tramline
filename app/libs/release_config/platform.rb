@@ -1,59 +1,78 @@
-class ReleaseConfig::Platform < Struct.new(:platform_config)
-  def distributions?
-    distributions.present?
+class ReleaseConfig::Platform < Struct.new(:conf)
+  def submissions?
+    submissions.present?
   end
 
-  def distributions
-    Distributions.new(platform_config[:distributions])
+  def submissions
+    Submissions.new(value[:submissions])
   end
 
-  class Distributions < Struct.new(:distributions_config)
-    alias_method :value, :distributions_config
+  def value
+    conf.with_indifferent_access
+  end
 
+  class Submissions < Struct.new(:conf)
     def present?
-      distributions_config.present? && distributions_config.first.present?
+      value.present? && value.first.present?
     end
 
     def blank? = !present?
 
-    def first
-      Distribution.new(distributions_config.first, distributions_config)
+    def last = Submission.new(value.last, value)
+
+    def first = Submission.new(value.first, value)
+
+    def fetch_by_number(num)
+      found = value.find { |d| d[:number] == num }
+      found ? Submission.new(found, value) : nil
     end
 
-    def last
-      Distribution.new(distributions_config.last, distributions_config)
+    def value = conf
+  end
+
+  class Submission < Struct.new(:current, :all)
+    def next
+      return if all.blank?
+      next_submission = all.find { |d| d[:number] > number }
+      next_submission ? Submission.new(next_submission, all) : nil
     end
 
-    def find_by_number(num)
-      distributions_config.find do |distribution|
-        distribution[:number] == num
+    def number = value[:number]
+
+    def auto_promote? = value[:auto_promote]
+
+    def submission_type
+      value[:submission_type].constantize
+    end
+
+    def rollout_config
+      config = value[:rollout_config]
+
+      if config.is_a?(Array)
+        config
+      elsif config.is_a?(Hash)
+        OpenStruct.new(config)
+      else
+        raise ArgumentError, "Invalid rollout config"
       end
     end
 
-    class Distribution < Struct.new(:current_distribution_config, :all_distributions)
-      alias_method :value, :current_distribution_config
+    def submission_config
+      OpenStruct.new(value[:submission_config])
+    end
 
-      def next
-        return if all_distributions.blank?
+    def to_h
+      {
+        number:,
+        auto_promote: auto_promote?,
+        submission_type:,
+        rollout_config: rollout_config,
+        submission_config: submission_config.to_h
+      }
+    end
 
-        next_distribution = all_distributions.find do |distribution|
-          distribution[:number] > number
-        end
-
-        next_distribution ? Distribution.new(next_distribution) : nil
-      end
-
-      def number
-        current_distribution_config[:number]
-      end
-
-      def submission_type
-        current_distribution_config[:submission_type]
-      end
-
-      def auto_promote?
-        current_distribution_config[:auto_promote]
-      end
+    def value
+      current.with_indifferent_access
     end
   end
 end

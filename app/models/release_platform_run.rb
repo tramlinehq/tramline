@@ -120,13 +120,14 @@ class ReleasePlatformRun < ApplicationRecord
   def android_internal_config
     {
       auto_promote: true,
-      distributions: [
+      submissions: [
         {
           number: 1,
           submission_type: "GoogleFirebaseSubmission",
           submission_config: {id: "projects/946207521855/groups/internal-product-team",
                               name: "Internal Product Team"},
           auto_promote: true
+
         }
       ]
     }.with_indifferent_access
@@ -135,7 +136,7 @@ class ReleasePlatformRun < ApplicationRecord
   def android_beta_config
     {
       auto_promote: false,
-      distributions: [
+      submissions: [
         {
           number: 1,
           submission_type: "PlayStoreSubmission",
@@ -157,7 +158,7 @@ class ReleasePlatformRun < ApplicationRecord
   def ios_internal_config
     {
       auto_promote: true,
-      distributions: [
+      submissions: [
         {
           number: 1,
           submission_type: "GoogleFirebaseSubmission",
@@ -172,13 +173,10 @@ class ReleasePlatformRun < ApplicationRecord
   def ios_beta_config
     {
       auto_promote: false,
-      distributions: [
-        {
-          number: 1,
-          submission_type: "TestFlightSubmission",
-          submission_config: {id: "88842956-c143-4692-8998-8d0e1297f59e", name: "tramliners", is_internal: true},
-          auto_promote: true
-        }
+      submissions: [
+        {number: 1,
+         submission_type: "TestFlightSubmission",
+         submission_config: {id: :internal, name: "internal testing"}}
       ]
     }.with_indifferent_access
   end

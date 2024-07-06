@@ -49,7 +49,7 @@ describe PreProdRelease do
     context "when auto promote is disabled" do
       let(:config) {
         {auto_promote: true,
-         distributions: [
+         submissions: [
            {number: 1,
             submission_type: "PlayStoreSubmission",
             submission_config: {id: :internal, name: "internal testing"},

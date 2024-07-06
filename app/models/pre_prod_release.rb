@@ -37,12 +37,18 @@ class PreProdRelease < ApplicationRecord
   end
 
   def trigger_submissions!(build)
-    trigger_submission!(config["distributions"].first, build)
+    first_submission = platform_config.submissions.first
+    trigger_submission!(first_submission, build)
   end
 
   def rollout_complete!(submission)
-    if (next_config = next_submission_config(submission))
-      trigger_submission!(next_config, submission.build)
+    next_submission =
+      platform_config
+        .submissions
+        .fetch_by_number(submission.sequence_number + 1)
+
+    if next_submission
+      trigger_submission!(next_submission, submission.build)
     else
       finish!(submission.build)
     end
@@ -50,23 +56,12 @@ class PreProdRelease < ApplicationRecord
 
   private
 
-  def trigger_submission!(dist_config, build)
-    submission_class = dist_config["submission_type"].constantize
-    auto_promote = dist_config["auto_promote"]
-    auto_promote = config["auto_promote"] if auto_promote.nil?
-    submission = submission_class.create!(
-      parent_release: self,
-      release_platform_run:,
-      build:,
-      sequence_number: dist_config["number"],
-      submission_config: dist_config.slice("submission_config", "rollout_config")
-    )
-    submission.trigger! if auto_promote
+  def trigger_submission!(submission_config, build)
+    submission_config.submission_type.create_and_trigger!(self, submission_config, build)
   end
 
-  def next_submission_config(submission)
-    next_sequence_number = submission.sequence_number + 1
-    config["distributions"].find { |dist| dist["number"] == next_sequence_number }
+  def platform_config
+    ReleaseConfig::Platform.new(config)
   end
 
   # start a submission - there needs to be a common start function between submission classes

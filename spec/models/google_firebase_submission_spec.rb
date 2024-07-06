@@ -88,7 +88,7 @@ describe GoogleFirebaseSubmission do
 
       submission.upload_build!
       expect(submission.failed?).to be(true)
-      expect(expected_job).to_not have_received(:perform_async).with(submission.id, result)
+      expect(expected_job).not_to have_received(:perform_async).with(submission.id, result)
     end
   end
 
@@ -136,7 +136,7 @@ describe GoogleFirebaseSubmission do
       submission.reload
 
       expect(submission.failed?).to be(true)
-      expect(expected_job).to_not have_received(:perform_later)
+      expect(expected_job).not_to have_received(:perform_later)
     end
 
     it "throws up if upload is not complete" do

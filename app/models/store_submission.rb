@@ -40,23 +40,32 @@ class StoreSubmission < ApplicationRecord
   delegate :version_name, :build_number, to: :build
 
   def deployment_channel
-    submission_config["submission_config"]
+    config.submission_config
   end
 
   def deployment_channel_id
-    deployment_channel["id"].to_s
+    config.submission_config.id.to_s
   end
 
   def staged_rollout?
-    submission_config["rollout_config"]["enabled"]
+    config.rollout_config.enabled
   end
 
-  def auto_rollout?
-    submission_config["auto_promote"]
-  end
+  def auto_rollout? = config.auto_promote?
 
   def external_link
     store_link || project_link
+  end
+
+  def self.create_and_trigger!(parent_release, config, build)
+    auto_promote = config.auto_promote?
+    auto_promote = parent_release.config.auto_promote? if auto_promote.nil?
+    release_platform_run = parent_release.release_platform_run
+    sequence_number = config.number
+    submission_config = config.to_h
+
+    submission = create!(parent_release:, release_platform_run:, build:, sequence_number:, submission_config:)
+    submission.trigger! if auto_promote
   end
 
   def notification_params
@@ -68,7 +77,7 @@ class StoreSubmission < ApplicationRecord
           is_production_channel: true,
           is_app_store_production: is_a?(AppStoreSubmission),
           is_play_store_production: is_a?(PlayStoreSubmission),
-          deployment_channel:,
+          deployment_channel: config.submission_config,
           deployment_channel_asset_link: public_icon_img,
           deployment_channel_type: provider.to_s.titleize,
           project_link: external_link,
@@ -83,8 +92,7 @@ class StoreSubmission < ApplicationRecord
     elog(error)
     if error.is_a?(Installations::Error)
       if error.reason == :app_review_rejected
-        # TODO: Implement this
-        fail_with_sync_option!(reason: error.reason)
+        fail_with_sync_option!(reason: error.reason) # TODO: Implement this
       else
         fail!(reason: error.reason)
       end
@@ -118,5 +126,9 @@ class StoreSubmission < ApplicationRecord
       version: version_name,
       build_number: build_number
     }
+  end
+
+  def config
+    ReleaseConfig::Platform::Submission.new(submission_config)
   end
 end
