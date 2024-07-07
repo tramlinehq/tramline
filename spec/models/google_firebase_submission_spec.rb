@@ -1,6 +1,10 @@
 require "rails_helper"
 
 describe GoogleFirebaseSubmission do
+  before do
+    allow(Coordinators::Signals).to receive(:build_is_available_for_regression_testing!)
+  end
+
   it "has a valid factory" do
     expect(create(:google_firebase_submission)).to be_valid
   end
@@ -162,7 +166,19 @@ describe GoogleFirebaseSubmission do
   describe "#prepare_release!" do
     let(:build) { create(:build, :with_artifact) }
     let(:release_platform_run) { build.release_platform_run }
-    let(:submission) { create(:google_firebase_submission, :with_store_release, :preparing, build:, release_platform_run:) }
+    let(:internal_release) {
+      create(:internal_release, release_platform_run:, config: {
+        submissions: [
+          {number: 1,
+           submission_type: "GoogleFirebaseSubmission",
+           submission_config: {id: :internal, name: "internal testing"}}
+        ]
+      })
+    }
+    let(:submission) {
+      create(:google_firebase_submission, :with_store_release, :preparing,
+        build:, release_platform_run:, parent_release: internal_release)
+    }
     let(:providable_dbl) { instance_double(GoogleFirebaseIntegration) }
 
     before do

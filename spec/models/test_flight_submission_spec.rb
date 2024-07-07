@@ -17,6 +17,7 @@ describe TestFlightSubmission do
 
   before do
     allow_any_instance_of(described_class).to receive(:provider).and_return(provider_dbl)
+    allow(Coordinators::Signals).to receive(:build_is_available_for_regression_testing!)
   end
 
   it "has a valid factory" do
@@ -27,7 +28,7 @@ describe TestFlightSubmission do
     let(:test_flight_submission) {
       create(:test_flight_submission,
         parent_release: internal_release,
-        submission_config: {submission_config: {id: "123", name: "External Testers", is_internal: false}})
+        config: {submission_config: {id: "123", name: "External Testers", is_internal: false}})
     }
 
     before do
@@ -62,7 +63,7 @@ describe TestFlightSubmission do
       let(:test_flight_submission) {
         create(:test_flight_submission,
           parent_release: internal_release,
-          submission_config: {
+          config: {
             submission_config: {
               id: "123",
               name: "Internal Testers",
