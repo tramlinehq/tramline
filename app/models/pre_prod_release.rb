@@ -57,10 +57,10 @@ class PreProdRelease < ApplicationRecord
   end
 
   def conf = ReleaseConfig::Platform.new(config)
-
-  # start a submission - there needs to be a common start function between submission classes
-  # wait for its completion - submission_completed! callback from submission
-  # see if next submission is auto promotable (if undefined, use the top level auto promote config)
-  # start the next submission and repeat till there are no more submissions
-  # if there are no more submissions, mark the release as completed and send signal to coordinato
 end
+
+# start a submission - there needs to be a common start function between submission classes
+# wait for its completion - submission_completed! callback from submission
+# see if next submission is auto promotable (if undefined, use the top level auto promote config)
+# start the next submission and repeat till there are no more submissions
+# if there are no more submissions, mark the release as completed and send signal to coordinato

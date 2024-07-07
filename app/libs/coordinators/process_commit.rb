@@ -14,7 +14,6 @@ class Coordinators::ProcessCommit
 
   def call
     return @commit.add_to_build_queue! if @release.queue_commit?
-
     return unless @commit.applicable?
 
     # TODO: see if internal release is configured, if not, start beta release
