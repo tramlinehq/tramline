@@ -34,7 +34,6 @@ class Coordinators::ProcessCommit
     release_platform_run.update!(last_commit: @commit)
 
     internal_release = release_platform_run.internal_releases.create!(
-      status: "created", # TODO: this should be a default for the column
       # FIXME: This is a temporary thing till we get actual config
       config: release_platform_run.internal_release_config
     )

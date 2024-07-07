@@ -49,7 +49,7 @@ class GoogleFirebaseSubmission < StoreSubmission
       transitions from: [:created, :preprocessing, :failed], to: :preparing
     end
 
-    event :finish do
+    event :finish, after_commit: :on_finish! do
       after { set_prepared_at! }
       transitions to: :finished
     end
@@ -131,7 +131,6 @@ class GoogleFirebaseSubmission < StoreSubmission
   def prepare_for_release!
     return unless may_finish?
 
-    # FIXME: get deployment_channel from somewhere
     deployment_channels = [deployment_channel_id]
     result = provider.release(external_id, deployment_channels)
     if result.ok?
@@ -156,6 +155,11 @@ class GoogleFirebaseSubmission < StoreSubmission
 
   def on_prepare!
     StoreSubmissions::GoogleFirebase::PrepareForReleaseJob.perform_later(id)
+  end
+
+  def on_finish!
+    parent_release.rollout_complete!(self)
+    # notify!("Finished!", :finished, notification_params)
   end
 
   def update_store_info!(release_info)

@@ -57,11 +57,11 @@ module Coordinators::Signals
   end
 
   def self.build_is_available_for_regression_testing!(build)
-    # StartRegressionTesting.call(build)
+    Coordinators::CreateBetaRelease.call(build)
   end
 
   def self.regression_testing_is_approved!(build)
-    Coordinators::CreateBetaRelease.call(build)
+    # create beta release here once regression testing is added
   end
 
   def self.beta_release_is_available!(build)

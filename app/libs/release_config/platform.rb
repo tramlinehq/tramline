@@ -47,6 +47,7 @@ class ReleaseConfig::Platform < Struct.new(:conf)
 
     def rollout_config
       config = value[:rollout_config]
+      return unless config
 
       if config.is_a?(Array)
         config

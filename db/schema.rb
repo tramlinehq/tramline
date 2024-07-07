@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_07_06_012140) do
+ActiveRecord::Schema[7.0].define(version: 2024_07_07_015652) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -387,7 +387,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_06_012140) do
   create_table "pre_prod_releases", force: :cascade do |t|
     t.uuid "release_platform_run_id", null: false
     t.string "type", null: false
-    t.string "status", null: false
+    t.string "status", default: "created", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "config", default: {}, null: false

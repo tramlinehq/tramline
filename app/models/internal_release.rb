@@ -4,7 +4,7 @@
 #
 #  id                      :bigint           not null, primary key
 #  config                  :jsonb            not null
-#  status                  :string           not null
+#  status                  :string           default("created"), not null
 #  type                    :string           not null
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
