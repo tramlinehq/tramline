@@ -6,6 +6,7 @@
 #  completed_at            :datetime
 #  config                  :decimal(8, 5)    default([]), not null, is an Array
 #  current_stage           :integer
+#  is_staged_rollout       :boolean          default(FALSE)
 #  status                  :string           not null
 #  type                    :string           not null
 #  created_at              :datetime         not null
@@ -47,7 +48,7 @@ class StoreRollout < ApplicationRecord
   delegate :train, to: :release_platform_run
   delegate :notify!, to: :train
 
-  def staged_rollout? = true # FIXME - get this configuration from train settings
+  def staged_rollout? = is_staged_rollout
 
   def errors? = errors.any?
 

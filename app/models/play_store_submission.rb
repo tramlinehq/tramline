@@ -144,7 +144,11 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def on_prepare!
-    create_play_store_rollout!(release_platform_run:, config: conf.rollout_config.stages)
+    create_play_store_rollout!(
+      release_platform_run:,
+      config: conf.rollout_config.stages,
+      is_staged_rollout: staged_rollout?
+    )
     play_store_rollout.start! if auto_rollout?
   end
 

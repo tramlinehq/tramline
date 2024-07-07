@@ -6,6 +6,7 @@
 #  completed_at            :datetime
 #  config                  :decimal(8, 5)    default([]), not null, is an Array
 #  current_stage           :integer
+#  is_staged_rollout       :boolean          default(FALSE)
 #  status                  :string           not null
 #  type                    :string           not null
 #  created_at              :datetime         not null
@@ -109,6 +110,15 @@ class PlayStoreRollout < StoreRollout
   end
 
   def on_start!
+    unless staged_rollout?
+      result = rollout(Release::FULL_ROLLOUT_VALUE)
+      if result.ok?
+        complete!
+      else
+        elog(result.error)
+        errors.add(:base, result.error)
+      end
+    end
     parent_release.rollout_started!
   end
 end

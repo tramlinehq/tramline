@@ -6,6 +6,7 @@
 #  completed_at            :datetime
 #  config                  :decimal(8, 5)    default([]), not null, is an Array
 #  current_stage           :integer
+#  is_staged_rollout       :boolean          default(FALSE)
 #  status                  :string           not null
 #  type                    :string           not null
 #  created_at              :datetime         not null
