@@ -54,6 +54,6 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
   end
 
   def number
-    "##{rand(50..998)}"
+    "Build ##{rand(50..998)}"
   end
 end

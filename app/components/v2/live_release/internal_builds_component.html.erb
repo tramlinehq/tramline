@@ -1,24 +1,7 @@
 <%= render V2::PlatformViewComponent.new(@release) do |component| %>
   <% component.runs do |release_platform_run| %>
-    <% if review_step(release_platform_run).present? %>
-      <div class="opacity-80">
-        <div class="flex gap-2 items-start">
-          <%= render V2::BadgeComponent.new(text: review_step(release_platform_run).workflow_name, kind: :badge) do |badge| %>
-            <% badge.with_icon("integrations/logo_#{review_step(release_platform_run).ci_cd_provider}.png") %>
-          <% end %>
-
-          <div class="flex flex-col gap-2">
-            <% review_step(release_platform_run).deployments.each do |deployment| %>
-              <div class="flex gap-2 items-center">
-                <%= inline_svg("v2/connect_line.svg", classname: "w-5 h-5 inline-flex") %>
-                <%= render V2::BadgeComponent.new(text: deployment.deployment_channel_name, kind: :badge) do |badge| %>
-                  <% badge.with_icon("integrations/logo_#{deployment.integration&.providable || "external"}.png") %>
-                <% end %>
-              </div>
-            <% end %>
-          </div>
-        </div>
-      </div>
+    <% if true %>
+      <%= render V2::LiveRelease::SubmissionConfigComponent.new(StoreSubmission.first) %>
     <% else %>
       <%= render V2::EmptyStateComponent.new(
         title: "No internal build step configured",
@@ -27,6 +10,8 @@
         type: :subdued) %>
     <% end %>
   <% end %>
+
+
 
   <% component.runs do |release_platform_run| %>
     <% if latest_step_run(release_platform_run).present? %>
@@ -37,8 +22,68 @@
   <% end %>
 
   <% component.runs do |release_platform_run| %>
-    <% if latest_step_run(release_platform_run).present? %>
-      <%= render V2::LiveRelease::DeprecatedBuildComponent.new(step_run: latest_step_run(release_platform_run), release_platform_run:) %>
+    <%= render V2::CardComponent.new(title: "Current Build") do |card| %>
+      <% card.with_actions do %>
+        <%= render V2::ModalComponent.new(title: "Changes since last build", size: :xl_3, authz: false) do |modal| %>
+          <% button = modal.with_button(label: "Changes since last build", type: :action, scheme: :supporting, size: :xxs) %>
+          <% button.with_icon("v2/diff.svg", size: :md) %>
+          <% modal.with_body do %>
+            <%= render partial: "shared/divide_collection",
+                       locals: { collection: render(V2::CommitComponent.with_collection(Build.first.commit.release.all_commits.sample(rand(1..5)))) } %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <div class="flex flex-col section-gap-default">
+        <%= render V2::LiveRelease::BuildComponent.new(Build.first, show_number: true, show_build_only: false) %>
+
+        <div class="border-l-8 border-green-800 pr-2">
+          <div class="flex flex-col items-start gap-2 ml-4">
+            <%= render V2::BadgeComponent.new(text: "Internal Beta Team", kind: :badge) do |badge| %>
+              <% badge.with_icon("integrations/logo_firebase.png") %>
+            <% end %>
+
+            <%= render V2::HorizontalDataSetComponent.new do |component| %>
+              <% component.with_data_set(title: "External Status").with_content("In review") %>
+              <% component.with_data_set(title: "Released").with_content("One day ago") %>
+            <% end %>
+
+            <%= render V2::ButtonComponent.new(label: "Dashboard ↗",
+                                               scheme: :link,
+                                               type: :link_external,
+                                               options: "https://play.google.com/store/apps/details?id=com.example.app",
+                                               html_options: { class: "text-sm" },
+                                               authz: false,
+                                               size: :none) do |b|
+              b.with_icon("integrations/logo_google_play_store.png", size: :md)
+            end %>
+
+          </div>
+        </div>
+
+        <div class="border-l-8 border-red-800 pr-2">
+          <div class="flex flex-col items-start gap-2 ml-4">
+            <%= render V2::BadgeComponent.new(text: "Internal Beta Team", kind: :badge) do |badge| %>
+              <% badge.with_icon("integrations/logo_firebase.png") %>
+            <% end %>
+
+            <%= render V2::HorizontalDataSetComponent.new do |component| %>
+              <% component.with_data_set(title: "External Status").with_content("Failed review") %>
+              <% component.with_data_set(title: "Released").with_content("--") %>
+            <% end %>
+
+            <%= render V2::ButtonComponent.new(label: "Dashboard ↗",
+                                               scheme: :link,
+                                               type: :link_external,
+                                               options: "https://play.google.com/store/apps/details?id=com.example.app",
+                                               html_options: { class: "text-sm" },
+                                               authz: false,
+                                               size: :none) do |b|
+              b.with_icon("integrations/logo_google_play_store.png", size: :md)
+            end %>
+          </div>
+        </div>
+      </div>
     <% end %>
   <% end %>
 
@@ -50,7 +95,7 @@
         <% else %>
           <%= render V2::EmptyStateComponent.new(
             title: "No stats for this platform",
-            text: "Please send build metadata to Tramline to see the build stats.",
+            text: "Use the Tramline API to send build stats to get them plotted here.",
             banner_image: "v2/drill.svg",
             type: :subdued) %>
         <% end %>

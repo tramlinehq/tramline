@@ -37,8 +37,7 @@ class PreProdRelease < ApplicationRecord
   end
 
   def trigger_submissions!(build)
-    first_submission_config = conf.submissions.first
-    trigger_submission!(first_submission_config, build)
+    trigger_submission!(conf.submissions.first, build)
   end
 
   def rollout_complete!(submission)
@@ -58,7 +57,6 @@ class PreProdRelease < ApplicationRecord
 
   def conf = ReleaseConfig::Platform.new(config)
 end
-
 # start a submission - there needs to be a common start function between submission classes
 # wait for its completion - submission_completed! callback from submission
 # see if next submission is auto promotable (if undefined, use the top level auto promote config)
