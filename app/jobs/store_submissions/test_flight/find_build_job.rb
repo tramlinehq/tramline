@@ -24,7 +24,7 @@ class StoreSubmissions::TestFlight::FindBuildJob
 
   def perform(submission_id)
     submission = TestFlightSubmission.find(submission_id)
-    return unless submission.may_start_submission?
+    return unless submission.may_submit_for_review?
 
     submission.find_build
     submission.start_release!

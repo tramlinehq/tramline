@@ -40,6 +40,10 @@ class PreProdRelease < ApplicationRecord
     trigger_submission!(conf.submissions.first, build)
   end
 
+  def rollout_started!
+    # do something here, do we need to?
+  end
+
   def rollout_complete!(submission)
     next_submission_config = conf.submissions.fetch_by_number(submission.sequence_number + 1)
     if next_submission_config
@@ -49,13 +53,13 @@ class PreProdRelease < ApplicationRecord
     end
   end
 
+  def conf = ReleaseConfig::Platform.new(config)
+
   private
 
   def trigger_submission!(submission_config, build)
     submission_config.submission_type.create_and_trigger!(self, submission_config, build)
   end
-
-  def conf = ReleaseConfig::Platform.new(config)
 end
 # start a submission - there needs to be a common start function between submission classes
 # wait for its completion - submission_completed! callback from submission

@@ -56,6 +56,8 @@ class ProductionRelease < ApplicationRecord
 
     release_health_metrics.create!(fetched_at: Time.current, **release_data)
   end
+
+  def conf = ReleaseConfig::Platform.new(config)
 end
 
 # TODO:

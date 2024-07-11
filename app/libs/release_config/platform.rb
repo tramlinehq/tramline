@@ -3,6 +3,10 @@ class ReleaseConfig::Platform < Struct.new(:conf)
     submissions.present?
   end
 
+  def auto_promote?
+    value[:auto_promote]
+  end
+
   def submissions
     Submissions.new(value[:submissions])
   end
@@ -46,8 +50,7 @@ class ReleaseConfig::Platform < Struct.new(:conf)
     end
 
     def rollout_config
-      config = value[:rollout_config]
-      return unless config
+      config = value[:rollout_config].presence || {enabled: false, stages: []}
 
       if config.is_a?(Array)
         config
@@ -67,7 +70,7 @@ class ReleaseConfig::Platform < Struct.new(:conf)
         number:,
         auto_promote: auto_promote?,
         submission_type:,
-        rollout_config: rollout_config,
+        rollout_config: rollout_config.to_h,
         submission_config: submission_config.to_h
       }
     end

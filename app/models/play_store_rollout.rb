@@ -16,7 +16,7 @@
 #
 class PlayStoreRollout < StoreRollout
   belongs_to :play_store_submission, foreign_key: :store_submission_id, inverse_of: :play_store_rollout
-  delegate :deployment_channel, to: :store_submission
+  delegate :deployment_channel_id, to: :store_submission
 
   aasm safe_state_machine_params(with_lock: false) do
     state :created, initial: true
@@ -77,7 +77,7 @@ class PlayStoreRollout < StoreRollout
     with_lock do
       return unless may_halt?
 
-      result = provider.halt_release(deployment_channel, build_number, version_name, last_rollout_percentage)
+      result = provider.halt_release(deployment_channel_id, build_number, version_name, last_rollout_percentage)
       if result.ok?
         halt!
         notify!("Release was halted!", :staged_rollout_halted, notification_params)
@@ -106,19 +106,18 @@ class PlayStoreRollout < StoreRollout
   private
 
   def rollout(value)
-    provider.rollout_release(deployment_channel, build_number, version_name, value, nil)
+    provider.rollout_release(deployment_channel_id, build_number, version_name, value, nil)
   end
 
   def on_start!
-    unless staged_rollout?
-      result = rollout(Release::FULL_ROLLOUT_VALUE)
-      if result.ok?
-        complete!
-      else
-        elog(result.error)
-        errors.add(:base, result.error)
-      end
+    return parent_release.rollout_started! if staged_rollout?
+
+    result = rollout(Release::FULL_ROLLOUT_VALUE)
+    if result.ok?
+      complete!
+    else
+      elog(result.error)
+      errors.add(:base, result.error)
     end
-    parent_release.rollout_started!
   end
 end

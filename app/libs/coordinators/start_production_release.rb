@@ -15,19 +15,15 @@ class Coordinators::StartProductionRelease
     transaction do
       @release_platform_run
         .production_releases
-        .create!(build: @build)
+        .create!(build: @build, config: @release_platform_run.production_release_config)
         .then { create_submission(_1) }
     end
   end
 
   def create_submission(parent_release)
-    params = {
-      release_platform_run: @release_platform_run,
-      parent_release:,
-      build: @build
-    }
+    submission_config = parent_release.conf.submissions.first
 
-    return @release_platform_run.play_store_submissions.create!(params) if android?
-    @release_platform_run.app_store_submissions.create!(params) if ios?
+    return @release_platform_run.play_store_submissions.create_and_trigger!(parent_release, submission_config, @build) if android?
+    @release_platform_run.app_store_submissions.create_and_trigger!(parent_release, submission_config, @build) if ios?
   end
 end

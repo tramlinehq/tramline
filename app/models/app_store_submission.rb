@@ -193,6 +193,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def update_external_release
+    return unless release_platform_run.on_track?
     return if locked?
 
     result = provider.find_release(build_number)

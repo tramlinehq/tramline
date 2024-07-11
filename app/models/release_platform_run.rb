@@ -116,6 +116,16 @@ class ReleasePlatformRun < ApplicationRecord
     end
   end
 
+  def production_release_config
+    if android?
+      android_production_config
+    elsif ios?
+      ios_production_config
+    else
+      raise ArgumentError, "Unknown platform: #{platform}"
+    end
+  end
+
   # FIXME: temp hard coded config
   def android_internal_config
     {
@@ -155,6 +165,21 @@ class ReleasePlatformRun < ApplicationRecord
     }.with_indifferent_access
   end
 
+  def android_production_config
+    {
+      auto_promote: false,
+      submissions: [
+        {
+          number: 1,
+          submission_type: "PlayStoreSubmission",
+          submission_config: GooglePlayStoreIntegration::PROD_CHANNEL,
+          rollout_config: {enabled: true, stages: [1, 2, 10, 20, 50, 100]},
+          auto_promote: false
+        }
+      ]
+    }.with_indifferent_access
+  end
+
   def ios_internal_config
     {
       auto_promote: true,
@@ -176,7 +201,20 @@ class ReleasePlatformRun < ApplicationRecord
       submissions: [
         {number: 1,
          submission_type: "TestFlightSubmission",
-         submission_config: {id: :internal, name: "internal testing"}}
+         submission_config: {id: "88842956-c143-4692-8998-8d0e1297f59e", name: "tramliners", is_internal: true}}
+      ]
+    }.with_indifferent_access
+  end
+
+  def ios_production_config
+    {
+      auto_promote: false,
+      submissions: [
+        {number: 1,
+         submission_type: "AppStoreSubmission",
+         submission_config: AppStoreIntegration::PROD_CHANNEL,
+         rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
+         auto_promote: false}
       ]
     }.with_indifferent_access
   end
