@@ -37,8 +37,11 @@ Rails.application.routes.draw do
     end
   end
 
+
   namespace :authentication do
     resources :invite_confirmations, only: %i[new create]
+    get "sso", to: "single_sign_on#handle"
+    get "sso/login", to: "single_sign_on#login"
   end
 
   namespace :accounts do

@@ -80,6 +80,7 @@ gem "data-anonymization", require: false
 gem "faker"
 gem "json-schema", "~> 4.1"
 gem "color", "~> 1.8"
+gem "descope", "~> 1.0"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
