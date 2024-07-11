@@ -3,7 +3,13 @@
 
 /* new styles */
 
+
 @layer base {
+  @font-face {
+    font-family: "Geist";
+    src: url("/fonts/GeistVF.ttf");
+  }
+
   :root {
     --color-reldex-excellent: theme("colors.reldexExcellent.300");
     --color-reldex-acceptable: theme("colors.reldexAcceptable.300");
