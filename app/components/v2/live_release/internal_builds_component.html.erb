@@ -11,80 +11,8 @@
     <% end %>
   <% end %>
 
-
-
   <% component.runs do |release_platform_run| %>
-    <% if latest_step_run(release_platform_run).present? %>
-      <div class="self-start">
-        <%= render V2::BadgeComponent.new(**step_status(latest_step_run(release_platform_run)), kind: :status) %>
-      </div>
-    <% end %>
-  <% end %>
-
-  <% component.runs do |release_platform_run| %>
-    <%= render V2::CardComponent.new(title: "Current Build") do |card| %>
-      <% card.with_actions do %>
-        <%= render V2::ModalComponent.new(title: "Changes since last build", size: :xl_3, authz: false) do |modal| %>
-          <% button = modal.with_button(label: "Changes since last build", type: :action, scheme: :supporting, size: :xxs) %>
-          <% button.with_icon("v2/diff.svg", size: :md) %>
-          <% modal.with_body do %>
-            <%= render partial: "shared/divide_collection",
-                       locals: { collection: render(V2::CommitComponent.with_collection(Build.first.commit.release.all_commits.sample(rand(1..5)))) } %>
-          <% end %>
-        <% end %>
-      <% end %>
-
-      <div class="flex flex-col section-gap-default">
-        <%= render V2::LiveRelease::BuildComponent.new(Build.first, show_number: true, show_build_only: false) %>
-
-        <div class="border-l-8 border-green-800 pr-2">
-          <div class="flex flex-col items-start gap-2 ml-4">
-            <%= render V2::BadgeComponent.new(text: "Internal Beta Team", kind: :badge) do |badge| %>
-              <% badge.with_icon("integrations/logo_firebase.png") %>
-            <% end %>
-
-            <%= render V2::HorizontalDataSetComponent.new do |component| %>
-              <% component.with_data_set(title: "External Status").with_content("In review") %>
-              <% component.with_data_set(title: "Released").with_content("One day ago") %>
-            <% end %>
-
-            <%= render V2::ButtonComponent.new(label: "Dashboard ↗",
-                                               scheme: :link,
-                                               type: :link_external,
-                                               options: "https://play.google.com/store/apps/details?id=com.example.app",
-                                               html_options: { class: "text-sm" },
-                                               authz: false,
-                                               size: :none) do |b|
-              b.with_icon("integrations/logo_google_play_store.png", size: :md)
-            end %>
-
-          </div>
-        </div>
-
-        <div class="border-l-8 border-red-800 pr-2">
-          <div class="flex flex-col items-start gap-2 ml-4">
-            <%= render V2::BadgeComponent.new(text: "Internal Beta Team", kind: :badge) do |badge| %>
-              <% badge.with_icon("integrations/logo_firebase.png") %>
-            <% end %>
-
-            <%= render V2::HorizontalDataSetComponent.new do |component| %>
-              <% component.with_data_set(title: "External Status").with_content("Failed review") %>
-              <% component.with_data_set(title: "Released").with_content("--") %>
-            <% end %>
-
-            <%= render V2::ButtonComponent.new(label: "Dashboard ↗",
-                                               scheme: :link,
-                                               type: :link_external,
-                                               options: "https://play.google.com/store/apps/details?id=com.example.app",
-                                               html_options: { class: "text-sm" },
-                                               authz: false,
-                                               size: :none) do |b|
-              b.with_icon("integrations/logo_google_play_store.png", size: :md)
-            end %>
-          </div>
-        </div>
-      </div>
-    <% end %>
+    <%= render V2::LiveRelease::CurrentPreProdReleaseComponent.new(release_platform_run) %>
   <% end %>
 
   <% if component.platform_runs.any? { |sr| sr.external_builds.exists? } %>
@@ -124,7 +52,7 @@
               <% end %>
 
               <div class="my-3">
-                <%= render V2::LiveRelease::DeprecatedBuildComponent.new(step_run:, release_platform_run:, compact: true) %>
+                <%= render V2::LiveRelease::CurrentPreProdReleaseComponent.new(release_platform_run) %>
               </div>
             <% end %>
           <% end %>

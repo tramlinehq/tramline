@@ -1,0 +1,69 @@
+<div class="flex flex-col item-gap-default">
+  <div class="self-start">
+    <%= render V2::BadgeComponent.new(text: "Success", status: :success, kind: :status) %>
+  </div>
+
+  <%= render V2::CardComponent.new(title: "Current Build") do |card| %>
+    <% card.with_actions do %>
+      <%= render V2::ModalComponent.new(title: "Changes since last build", size: :xl_3, authz: false) do |modal| %>
+        <% button = modal.with_button(label: "Changes since last build", type: :action, scheme: :supporting, size: :xxs) %>
+        <% button.with_icon("v2/diff.svg", size: :md) %>
+        <% modal.with_body do %>
+          <%= render partial: "shared/divide_collection",
+                     locals: { collection: render(changed_commits) } %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <div class="flex flex-col section-gap-default">
+      <%= render V2::LiveRelease::BuildComponent.new(Build.first, show_number: true, show_build_only: false) %>
+
+      <div class="border-l-8 border-green-400 pr-2">
+        <div class="flex flex-col items-start gap-2 ml-4">
+          <%= render V2::BadgeComponent.new(text: "Internal Beta Team", kind: :badge) do |badge| %>
+            <% badge.with_icon("integrations/logo_firebase.png") %>
+          <% end %>
+
+          <%= render V2::HorizontalDataSetComponent.new do |component| %>
+            <% component.with_data_set(title: "Released").with_content("One day ago") %>
+            <% component.with_data_set(title: "External Status").with_content("In review") %>
+          <% end %>
+
+          <%= render V2::ButtonComponent.new(label: "Dashboard ↗",
+                                             scheme: :link,
+                                             type: :link_external,
+                                             options: "https://play.google.com/store/apps/details?id=com.example.app",
+                                             html_options: { class: "text-sm" },
+                                             authz: false,
+                                             size: :none) do |b|
+            b.with_icon("integrations/logo_google_play_store.png", size: :md)
+          end %>
+
+        </div>
+      </div>
+
+      <div class="border-l-8 border-red-400 pr-2">
+        <div class="flex flex-col items-start gap-2 ml-4">
+          <%= render V2::BadgeComponent.new(text: "Internal Beta Team", kind: :badge) do |badge| %>
+            <% badge.with_icon("integrations/logo_firebase.png") %>
+          <% end %>
+
+          <%= render V2::HorizontalDataSetComponent.new do |component| %>
+            <% component.with_data_set(title: "Released").with_content("--") %>
+            <% component.with_data_set(title: "External Status").with_content("Failed review") %>
+          <% end %>
+
+          <%= render V2::ButtonComponent.new(label: "Dashboard ↗",
+                                             scheme: :link,
+                                             type: :link_external,
+                                             options: "https://play.google.com/store/apps/details?id=com.example.app",
+                                             html_options: { class: "text-sm" },
+                                             authz: false,
+                                             size: :none) do |b|
+            b.with_icon("integrations/logo_google_play_store.png", size: :md)
+          end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

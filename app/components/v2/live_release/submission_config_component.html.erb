@@ -1,18 +1,19 @@
-<div class="relative flex flex-col items-start item-gap-default mb-7">
+<div class="relative flex flex-col items-start item-gap-default">
   <div class="absolute border-l border-dashed h-full border-main-300"></div>
 
   <div class="grid items-start">
     <div class="grid justify-self-start grid-flow-col items-center">
-      <div class="border-t mr-1 border-main-300 border-dashed w-10"></div>
+      <div class="border-t mr-1 border-main-300 border-dashed w-5"></div>
       <%= render V2::BadgeComponent.new(text: "CI Workflow name", kind: :badge) do |badge| %>
         <% badge.with_icon("integrations/logo_github.png") %>
       <% end %>
     </div>
   </div>
 
-  <div class="grid justify-between ml-2">
+  <div class="grid justify-between ml-5">
     <%= render V2::CardComponent.new(title: "Configuration summary", separator: false) do %>
       <div class="text-secondary text-xs">
+        <!-- we should generate a bulleted or a semi-tabular summary of the internal builds config -->
         <p>• The largest build artifact from the workflow is picked up.</p>
         <p>• Submissions will happen automatically when the build is available.</p>
       </div>
@@ -20,15 +21,19 @@
   </div>
 
   <div class="grid items-start item-gap-default">
+    <!-- loop over the deployments/submissions -->
     <div class="grid justify-self-start grid-flow-col items-center">
-      <div class="border-t mr-1 border-main-300 border-dashed w-10"></div>
+      <div class="border-t mr-1 border-main-300 border-dashed w-5"></div>
       <%= render V2::BadgeComponent.new(text: "Internal Beta Team", kind: :badge) do |badge| %>
         <% badge.with_icon("integrations/logo_firebase.png") %>
       <% end %>
     </div>
+
     <div class="grid justify-self-start grid-flow-col items-center">
-      <div class="border-t mr-1 border-main-300 border-dashed w-10"></div>
-      <%= render V2::BadgeComponent.new(text: "Internal Testing ¦ Open Testing ¦ Pratul's Testing", kind: :badge) do |badge| %>
+      <div class="border-t mr-1 border-main-300 border-dashed w-5"></div>
+
+      <!-- we can support multiple destinations for a submission type in the same badge -->
+      <%= render V2::BadgeComponent.new(text: "Internal Testing • Open Testing • Pratul's Testing", kind: :badge) do |badge| %>
         <% badge.with_icon("integrations/logo_google_play_store.png") %>
       <% end %>
     </div>

@@ -7,7 +7,7 @@
 @layer base {
   @font-face {
     font-family: "Geist";
-    src: url("/fonts/GeistVF.ttf");
+    src: url("/fonts/GeistVF.woff2");
   }
 
   :root {
