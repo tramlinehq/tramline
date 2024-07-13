@@ -2,6 +2,8 @@
 
 class BackfillReleaseSlugs < ActiveRecord::Migration[7.0]
   def up
+    return
+
     Release.transaction do
       Release.all.each do |release|
         next if release.slug.present?

@@ -6,10 +6,10 @@ describe AppsController do
     let(:new_app_slug) { "new-app-slug" }
     let(:app) { create(:app, :android, slug: old_app_slug) }
     let(:organization) { app.organization }
-    let(:user) { create(:user, :as_developer, confirmed_at: Time.zone.now, member_organization: organization) }
+    let(:user) { create(:user, :as_developer, member_organization: organization) }
 
     before do
-      sign_in user
+      sign_in user.email_authentication
     end
 
     it "returns success code" do

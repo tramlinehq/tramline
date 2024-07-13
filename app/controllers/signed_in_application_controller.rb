@@ -21,10 +21,11 @@ class SignedInApplicationController < ApplicationController
 
   protected
 
-  helper_method :demo_org?, :demo_train?, :subscribed_org?, :billing?, :billing_link
+  helper_method :demo_org?, :demo_train?, :subscribed_org?, :billing?, :billing_link, :logout_path
   PATH_PARAMS_UNDER_APP = [:id, :app_id, :integration_id, :train_id, :platform_id]
 
-  def home
+  def logout_path
+    destroy_email_authentication_session_path
   end
 
   def demo_org?

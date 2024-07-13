@@ -1,10 +1,9 @@
 class Authentication::SingleSignOnController < ApplicationController
-
   def handle
     code = params[:code]
     jwt_response = client.saml_exchange_token(code)
     session_token = jwt_response[Descope::Mixins::Common::SESSION_TOKEN_NAME].fetch("jwt")
-    refresh_token = jwt_response[Descope::Mixins::Common::REFRESH_SESSION_TOKEN_NAME].fetch('jwt')
+    refresh_token = jwt_response[Descope::Mixins::Common::REFRESH_SESSION_TOKEN_NAME].fetch("jwt")
 
     @jwt_response = client.validate_and_refresh_session(session_token:, refresh_token:)
     @user_id = @jwt_response["sub"]

@@ -5,12 +5,12 @@
 #  id                     :uuid             not null, primary key
 #  admin                  :boolean          default(FALSE)
 #  confirmation_sent_at   :datetime
-#  confirmation_token     :string           indexed
+#  confirmation_token     :string
 #  confirmed_at           :datetime
 #  current_sign_in_at     :datetime
 #  current_sign_in_ip     :string
-#  email                  :string           default(""), not null, indexed
-#  encrypted_password     :string           default(""), not null
+#  email                  :string           default("")
+#  encrypted_password     :string           default("")
 #  failed_attempts        :integer          default(0), not null
 #  full_name              :string           not null
 #  github_login           :string
@@ -20,11 +20,11 @@
 #  preferred_name         :string
 #  remember_created_at    :datetime
 #  reset_password_sent_at :datetime
-#  reset_password_token   :string           indexed
+#  reset_password_token   :string
 #  sign_in_count          :integer          default(0), not null
 #  slug                   :string           indexed
 #  unconfirmed_email      :string
-#  unlock_token           :string           indexed
+#  unlock_token           :string
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #  github_id              :string
@@ -33,14 +33,19 @@ class Accounts::User < ApplicationRecord
   extend FriendlyId
   has_paper_trail
 
-  devise :database_authenticatable, :registerable, :trackable, :lockable,
-    :recoverable, :confirmable, :timeoutable, :rememberable, :validatable
+  AUTHENTICATION_TYPES = {
+    sso_authentication: "SsoAuthentication",
+    email_authentication: "EmailAuthentication"
+  }.freeze
 
-  validates :password, password_strength: true, allow_nil: true
-  # this is in addition to devise's validatable
-  validates :email, presence: {message: :not_blank},
-    uniqueness: {case_sensitive: false, message: :already_taken},
-    length: {maximum: 105, message: :too_long}
+  # devise :database_authenticatable, :registerable, :trackable, :lockable,
+  #   :recoverable, :confirmable, :timeoutable, :rememberable
+  # validates :password, password_strength: true, allow_nil: true
+  # # this is in addition to devise's validatable
+  # validates :email, presence: {message: :not_blank},
+  #   uniqueness: {case_sensitive: false, message: :already_taken},
+  #   length: {maximum: 105, message: :too_long}
+
   validates :full_name, presence: {message: :not_blank}, length: {maximum: 70, message: :too_long}
   validates :preferred_name, length: {maximum: 70, message: :too_long}
 
@@ -51,59 +56,69 @@ class Accounts::User < ApplicationRecord
   has_many :invitations, class_name: "Invite", foreign_key: "recipient_id", inverse_of: :recipient, dependent: :destroy
   has_many :commits, foreign_key: "author_login", primary_key: "github_login", dependent: :nullify, inverse_of: :user
   has_many :releases, dependent: :nullify
+  has_one :user_authentication, dependent: :destroy, inverse_of: :user
+  has_one :sso_authentication,
+    dependent: :destroy,
+    through: :user_authentication,
+    source: :authenticatable,
+    source_type: "Accounts::SsoAuthentication"
+  has_one :email_authentication,
+    dependent: :destroy,
+    through: :user_authentication,
+    source: :authenticatable,
+    source_type: "Accounts::EmailAuthentication"
 
   friendly_id :full_name, use: :slugged
-
   auto_strip_attributes :full_name, :preferred_name, squish: true
 
   accepts_nested_attributes_for :organizations
   accepts_nested_attributes_for :memberships, allow_destroy: false
 
-  def self.valid_email_domain?(user)
-    return false if user.email.blank?
+  delegate :email, to: :email_authentication, allow_nil: true
+
+  def self.find_via_email(email)
+    joins(:email_authentication).find_by(email_authentication: {email: email})
+  end
+
+  def self.valid_email_domain?(email)
+    return false if email.blank?
+
     begin
       disallowed_domains = ENV["DISALLOWED_SIGN_UP_DOMAINS"].split(",")
-      parsed_email = Mail::Address.new(user.email)
+      parsed_email = Mail::Address.new(email)
       disallowed_domains.include?(parsed_email.domain)
     rescue
       false
     end
   end
 
-  def self.onboard(user)
-    if find_by(email: user.email)
-      user.errors.add(:account_exists, "you already have an account with tramline!")
-      return user
+  def self.onboard_via_email(email_auth)
+    if find_via_email(email_auth.email)
+      email_auth.errors.add(:account_exists, "you already have an account with tramline!")
+      return email_auth
     end
 
-    if valid_email_domain?(user)
-      user.errors.add(:email, :invalid_domain)
-      return
+    if valid_email_domain?(email_auth.email)
+      email_auth.errors.add(:email, :invalid_domain)
+      return email_auth
     end
 
-    new_organization = user.organizations.first
+    new_user = email_auth.user
+    new_organization = new_user.organizations.first
+
     unless new_organization
-      user.errors.add(:org_not_found, "invalid request")
-      return user
+      email_auth.errors.add(:org_not_found, "invalid request")
+      return email_auth
     end
-    new_membership = user.memberships.first
+
+    new_membership = new_user.memberships.first
     new_organization.status = Accounts::Organization.statuses[:active]
-    new_organization.created_by = user.email
+    new_organization.created_by = email_auth.email
     new_membership.role = Accounts::Membership.roles[:owner]
     new_membership.organization = new_organization
-    user.memberships << new_membership
-    user.save
-    user
-  end
-
-  def add!(invite)
-    return false unless valid?
-
-    transaction do
-      invite.mark_accepted!(self)
-      memberships.new(organization: invite.organization, role: invite.role)
-      save!
-    end
+    new_user.memberships << new_membership
+    email_auth.save
+    email_auth
   end
 
   def role_for(organization)

@@ -43,7 +43,7 @@ class Accounts::Invite < ApplicationRecord
   end
 
   def add_recipient
-    recipient = Accounts::User.find_by(email: email)
+    recipient = Accounts::User.find_via_email(email)
 
     if recipient
       self.recipient = recipient
@@ -51,7 +51,7 @@ class Accounts::Invite < ApplicationRecord
   end
 
   def user_already_in_organization
-    recipient = Accounts::User.find_by(email: email)
+    recipient = Accounts::User.find_via_email(email)
 
     if organization.users.find_by(id: recipient)
       errors.add(:recipient, "already exists in the organization!")
@@ -86,9 +86,9 @@ class Accounts::Invite < ApplicationRecord
     }
 
     if Rails.env.development?
-      new_user_registration_url(params.merge(port: ENV["PORT_NUM"]))
+      new_email_authentication_registration_url(params.merge(port: ENV["PORT_NUM"]))
     else
-      new_user_registration_url(params)
+      new_email_authentication_registration_url(params)
     end
   end
 

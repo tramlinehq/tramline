@@ -1,8 +1,8 @@
 FactoryBot.define do
   factory :user, class: "Accounts::User" do
     email { Faker::Internet.email }
-    password { "foo bar baz" }
     full_name { Faker::Name.name }
+    email_authentication { create(:email_authentication) }
 
     trait :as_developer do
       transient do

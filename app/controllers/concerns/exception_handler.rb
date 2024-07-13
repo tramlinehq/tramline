@@ -31,6 +31,7 @@ module ExceptionHandler
   end
 
   def internal_server_error(e)
+    Rails.logger.error e
     respond_with_error(500, e)
   end
 

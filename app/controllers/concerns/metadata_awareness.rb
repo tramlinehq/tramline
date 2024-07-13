@@ -15,4 +15,8 @@ module MetadataAwareness
         current_user&.organizations&.first
       end
   end
+
+  def current_user
+    current_email_authentication&.user
+  end
 end

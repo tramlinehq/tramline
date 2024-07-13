@@ -1,4 +1,4 @@
-class Authentication::InviteConfirmationsController < ApplicationController
+class Authentication::Email::InviteConfirmationsController < ApplicationController
   before_action :set_invite_token, only: [:new, :create]
   before_action :set_invite, only: [:new, :create]
   before_action :check_accepted_invitation, only: [:new]

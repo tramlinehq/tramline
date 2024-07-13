@@ -2,15 +2,21 @@
 #
 # Table name: organizations
 #
-#  id         :uuid             not null, primary key
-#  api_key    :string
-#  created_by :string           not null
-#  name       :string           not null
-#  slug       :string           indexed
-#  status     :string           not null, indexed
-#  subscribed :boolean          default(FALSE)
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
+#  id                     :uuid             not null, primary key
+#  api_key                :string
+#  created_by             :string           not null
+#  name                   :string           not null
+#  slug                   :string           indexed
+#  sso                    :boolean          default(FALSE)
+#  sso_configuration_link :string
+#  sso_domains            :string           default([]), is an Array
+#  sso_protocol           :string
+#  sso_tenant_name        :string
+#  status                 :string           not null, indexed
+#  subscribed             :boolean          default(FALSE)
+#  created_at             :datetime         not null
+#  updated_at             :datetime         not null
+#  sso_tenant_id          :string
 #
 class Accounts::Organization < ApplicationRecord
   extend FriendlyId

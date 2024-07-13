@@ -7,36 +7,36 @@ Rails.application.routes.draw do
   mount ActionCable.server => "/cable"
   mount Easymon::Engine => "/up"
 
-  authenticate :user, ->(u) { u.admin? || Rails.env.development? } do
+  authenticate :email_authentication, ->(u) { u.admin? || Rails.env.development? } do
     mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
     mount Flipper::UI.app(Flipper), at: "/flipper"
     mount Sidekiq::Web, at: "/sidekiq"
     mount PgHero::Engine, at: "/pghero"
   end
 
-  devise_for :users,
-    controllers: {
-      registrations: "authentication/registrations",
-      sessions: "authentication/sessions",
-      confirmations: "authentication/confirmations",
-      passwords: "authentication/passwords"
-    },
-    class_name: "Accounts::User"
-
-  devise_scope :user do
-    unauthenticated :user do
-      root "authentication/sessions#new"
+  devise_scope :email_authentication do
+    unauthenticated :email_authentication do
+      root "authentication/email/sessions#new"
     end
 
-    authenticated :user, ->(u) { u.admin? } do
-      root "admin/settings#index", as: :authenticated_admin_root
-    end
-
-    authenticated :user do
+    authenticated :email_authentication do
       root "apps#index", as: :authenticated_root
+    end
+
+    authenticated :email_authentication, ->(u) { u.admin? } do
+      root "admin/settings#index", as: :authenticated_admin_root
     end
   end
 
+  devise_for :email_authentication,
+    path: :email,
+    controllers: {
+      registrations: "authentication/email/registrations",
+      sessions: "authentication/email/sessions",
+      confirmations: "authentication/email/confirmations",
+      passwords: "authentication/email/passwords"
+    },
+    class_name: "Accounts::EmailAuthentication"
 
   namespace :authentication do
     resources :invite_confirmations, only: %i[new create]
@@ -226,7 +226,9 @@ Rails.application.routes.draw do
       get "ping", to: "pings#show"
       get "releases/*release_id", to: "releases#show"
       get "apps/*app_id", to: "apps#show"
-      patch "apps/:app_id/builds/:version_name/:version_code/external_metadata", to: "builds#external_metadata", constraints: {version_name: VERSION_NAME_REGEX}
+      patch "apps/:app_id/builds/:version_name/:version_code/external_metadata",
+        to: "builds#external_metadata",
+        constraints: {version_name: VERSION_NAME_REGEX}
     end
   end
 

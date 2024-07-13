@@ -206,7 +206,7 @@ en:
           attributes:
             bundle_identifier:
               same_as_parent: "Cannot be the same as the parent app"
-        accounts/user:
+        accounts/email_authentication:
           attributes:
             email:
               not_blank: "The email can't be blank"

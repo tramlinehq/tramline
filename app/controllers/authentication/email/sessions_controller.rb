@@ -1,4 +1,4 @@
-class Authentication::SessionsController < Devise::SessionsController
+class Authentication::Email::SessionsController < Devise::SessionsController
   include MetadataAwareness
 
   before_action :set_confirmed_email, only: [:new]
