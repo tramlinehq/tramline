@@ -1,4 +1,4 @@
-module ExceptionHandler
+module Exceptionable
   extend ActiveSupport::Concern
 
   included do

@@ -1,9 +1,16 @@
 class Authentication::Email::PasswordsController < Devise::PasswordsController
   EmailAuth = Accounts::EmailAuthentication
-  include ExceptionHandler
+  include Exceptionable
+  include Authenticatable
+
+  before_action :skip_authentication, only: [:new, :create]
   before_action :ensure_valid_token, only: [:edit]
 
+  def new = super
+
   def edit = super
+
+  def create = super
 
   private
 

@@ -38,14 +38,6 @@ class Accounts::User < ApplicationRecord
     email_authentication: "EmailAuthentication"
   }.freeze
 
-  # devise :database_authenticatable, :registerable, :trackable, :lockable,
-  #   :recoverable, :confirmable, :timeoutable, :rememberable
-  # validates :password, password_strength: true, allow_nil: true
-  # # this is in addition to devise's validatable
-  # validates :email, presence: {message: :not_blank},
-  #   uniqueness: {case_sensitive: false, message: :already_taken},
-  #   length: {maximum: 105, message: :too_long}
-
   validates :full_name, presence: {message: :not_blank}, length: {maximum: 70, message: :too_long}
   validates :preferred_name, length: {maximum: 70, message: :too_long}
 
@@ -78,6 +70,33 @@ class Accounts::User < ApplicationRecord
 
   def self.find_via_email(email)
     joins(:email_authentication).find_by(email_authentication: {email: email})
+  end
+
+  def self.find_via_sso_email(email)
+    joins(:sso_authentication).find_by(sso_authentication: {email: email})
+  end
+
+  def self.start_sign_in_via_sso(email)
+    return if valid_email_domain?(email)
+
+    parsed_email_domain = Mail::Address.new(email).domain
+    organization = Accounts::Organization.find_by_sso_domain(parsed_email_domain)
+    return unless organization
+
+    user = find_via_sso_email(email)
+    return unless user
+
+    tenant = organization.sso_tenant_id
+    Accounts::SsoAuthentication.start_sign_in(tenant) if user.organizations&.include?(organization)
+  end
+
+  def self.finish_sign_in_via_sso(code)
+    result = Accounts::SsoAuthentication.finish_sign_in(code)
+    return unless result.ok?
+    result.value! => { user_email: }
+    user = find_via_sso_email(user_email)
+    user.update(current_sign_in_at: Time.current, last_sign_in_at: user.current_sign_in_at)
+    result.value!
   end
 
   def self.valid_email_domain?(email)

@@ -43,6 +43,10 @@ class Accounts::Organization < ApplicationRecord
 
   scope :sequential, -> { reorder("organizations.created_at ASC") }
 
+  def self.find_by_sso_domain(domain)
+    where(sso: true).where(":domain = ANY (sso_domains)", domain:).first
+  end
+
   def demo?
     Flipper.enabled?(:demo_mode, self)
   end

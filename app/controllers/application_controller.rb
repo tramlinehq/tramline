@@ -1,7 +1,6 @@
 class ApplicationController < ActionController::Base
   using RefinedString
-  include MetadataAwareness
-  include ExceptionHandler if Rails.env.production? || ENV.fetch("GRACEFUL_ERROR_PAGES", "false").to_boolean
+  include Exceptionable if Rails.env.production? || ENV.fetch("GRACEFUL_ERROR_PAGES", "false").to_boolean
   layout -> { ensure_supported_layout("application") }
   before_action :store_user_location!, if: :storable_location?
   helper_method :writer?
@@ -14,6 +13,27 @@ class ApplicationController < ActionController::Base
 
   def writer?
     false
+  end
+
+  def device
+    @device ||= DeviceDetector.new(request.user_agent)
+  end
+
+  def current_organization
+    @current_organization ||=
+      if session[:active_organization]
+        begin
+          Accounts::Organization.friendly.find(session[:active_organization])
+        rescue ActiveRecord::RecordNotFound
+          current_user&.organizations&.first
+        end
+      else
+        current_user&.organizations&.first
+      end
+  end
+
+  def current_user
+    @current_user ||= (current_email_authentication&.user || @current_sso_user)
   end
 
   protected
@@ -46,20 +66,31 @@ class ApplicationController < ActionController::Base
   end
 
   # Its important that the location is NOT stored if:
-  # - The request method is not GET (non idempotent)
-  # - The request is handled by a Devise controller such as Devise::SessionsController as that could cause an
-  #    infinite redirect loop.
+  # - The request method is not GET (non idempotent).
+  # - The request is from Devise::SessionsController, could cause an infinite redirect loop.
   # - The request is an Ajax request as this can lead to very unexpected behaviour.
   # - The request is not a Turbo Frame request.
   def storable_location?
     request.get? &&
       is_navigational_format? &&
-      !devise_controller? &&
+      !authentication_controllers? &&
       !request.xhr? &&
       !turbo_frame_request?
   end
 
   def store_user_location!
     store_location_for(:user, request.fullpath)
+  end
+
+  def after_sign_in_path_for(_)
+    stored_location = stored_location_for(:user)
+    if stored_location&.include? new_authentication_invite_confirmation_path
+      return authenticated_root_path
+    end
+    stored_location || authenticated_root_path
+  end
+
+  def authentication_controllers?
+    devise_controller? || controller_name == "sessions"
   end
 end

@@ -1,6 +1,8 @@
 class Authentication::Email::RegistrationsController < Devise::RegistrationsController
-  include ExceptionHandler
+  include Exceptionable
+  include Authenticatable
 
+  before_action :skip_authentication, only: [:new, :create]
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :set_invite_token, only: [:new, :create]
   before_action :set_invite, only: [:new, :create]

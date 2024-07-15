@@ -7,6 +7,9 @@ Rails.application.routes.draw do
   mount ActionCable.server => "/cable"
   mount Easymon::Engine => "/up"
 
+  root "authentication/sessions#root"
+  get "/", to: "apps#index", as: :authenticated_root
+
   authenticate :email_authentication, ->(u) { u.admin? || Rails.env.development? } do
     mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
     mount Flipper::UI.app(Flipper), at: "/flipper"
@@ -15,14 +18,6 @@ Rails.application.routes.draw do
   end
 
   devise_scope :email_authentication do
-    unauthenticated :email_authentication do
-      root "authentication/email/sessions#new"
-    end
-
-    authenticated :email_authentication do
-      root "apps#index", as: :authenticated_root
-    end
-
     authenticated :email_authentication, ->(u) { u.admin? } do
       root "admin/settings#index", as: :authenticated_admin_root
     end
@@ -38,10 +33,17 @@ Rails.application.routes.draw do
     },
     class_name: "Accounts::EmailAuthentication"
 
+  scope module: :authentication do
+    namespace :sso do
+      get "handle_saml", to: "sessions#handle_saml"
+      get "sign_in", to: "sessions#new", as: :new_sso_session
+      post "sign_in", to: "sessions#create", as: :create_sso_session
+      get "sign_out", to: "sessions#destroy", as: :destroy_sso_session
+    end
+  end
+
   namespace :authentication do
     resources :invite_confirmations, only: %i[new create]
-    get "sso", to: "single_sign_on#handle"
-    get "sso/login", to: "single_sign_on#login"
   end
 
   namespace :accounts do
@@ -246,7 +248,8 @@ Rails.application.routes.draw do
     get :callback, controller: "integration_listeners/slack", as: :slack_callback
   end
 
-  get "/rails/active_storage/blobs/redirect/:signed_id/*filename", to: "authorized_blob_redirect#show", as: "blob_redirect"
+  get "/rails/active_storage/blobs/redirect/:signed_id/*filename",
+    to: "authorized_blob_redirect#show", as: "blob_redirect"
   match "/", via: %i[post put patch delete], to: "application#raise_not_found", format: false
   match "*unmatched_route", via: :all, to: "application#raise_not_found", format: false,
     constraints: lambda { |req| req.path.exclude? "rails/active_storage" }

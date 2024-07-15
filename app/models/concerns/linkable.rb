@@ -4,10 +4,10 @@ module Linkable
   class_methods do
     include Rails.application.routes.url_helpers
 
-    def link_params
+    def link_params(port: ENV["PORT_NUM"])
       if Rails.env.development?
         {
-          host: ENV["HOST_NAME"], protocol: "https", port: ENV["PORT_NUM"]
+          host: ENV["HOST_NAME"], protocol: "https", port:
         }
       else
         {

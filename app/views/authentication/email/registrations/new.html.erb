@@ -1,5 +1,5 @@
 <div class="max-w-md mx-auto px-4 py-8">
-  <%= render partial: "authentication/email/shared/header", locals: { heading: "Create a new account ✨", subtitle_text: nil } %>
+  <%= render partial: "authentication/email/shared/header", locals: { heading: "Sign up for Tramline ✨", subtitle_text: nil } %>
 
   <%= form_for(resource, as: resource_name, html: { 'data-turbo' => "false" }, builder: EnhancedFormHelper::BetterForm,
                url: registration_path(resource_name)) do |f| %>
