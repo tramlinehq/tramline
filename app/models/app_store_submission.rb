@@ -44,6 +44,7 @@ class AppStoreSubmission < StoreSubmission
     review_failed: "review_failed",
     approved: "approved",
     failed: "failed",
+    cancelling: "cancelling",
     cancelled: "cancelled"
   }
   FINAL_STATES = %w[approved]
@@ -119,6 +120,8 @@ class AppStoreSubmission < StoreSubmission
       transitions to: :failed
     end
   end
+
+  # after_commit :update_status
 
   def provider = app.ios_store_provider
 
@@ -273,4 +276,12 @@ class AppStoreSubmission < StoreSubmission
   def build_present_in_store?
     find_build.ok?
   end
+
+  # def update_status
+  #   broadcast_replace_to(
+  #     "submission_#{id}",
+  #     target: "submission_#{id}",
+  #     html: ApplicationController.render(V2::LiveRelease::SubmissionComponent.new(self))
+  #   )
+  # end
 end

@@ -8,6 +8,7 @@
 #  external_number         :string
 #  external_url            :string
 #  finished_at             :datetime
+#  kind                    :string           default("release_candidate"), not null
 #  started_at              :datetime
 #  status                  :string           not null
 #  workflow_config         :jsonb
@@ -41,6 +42,11 @@ class WorkflowRun < ApplicationRecord
     ci_workflow_halted
   ]
 
+  KINDS = {
+    release_candidate: "release_candidate",
+    internal: "internal"
+  }
+
   STATES = {
     created: "created",
     triggered: "triggered",
@@ -61,6 +67,7 @@ class WorkflowRun < ApplicationRecord
   FAILED_STATES = %w[failed halted unavailable cancelled cancelled_before_start cancelling]
 
   enum status: STATES
+  enum kind: KINDS
 
   aasm safe_state_machine_params do
     state :created, initial: true

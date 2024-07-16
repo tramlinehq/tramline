@@ -149,7 +149,7 @@ class PlayStoreSubmission < StoreSubmission
       config: conf.rollout_config.stages.presence || [],
       is_staged_rollout: staged_rollout?
     )
-    play_store_rollout.start! if auto_rollout?
+    play_store_rollout.start_release! if auto_rollout?
   end
 
   def build_present_in_store?

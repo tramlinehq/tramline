@@ -15,6 +15,8 @@
 #  store_submission_id     :uuid             indexed
 #
 class PlayStoreRollout < StoreRollout
+  include Passportable
+
   belongs_to :play_store_submission, foreign_key: :store_submission_id, inverse_of: :play_store_rollout
   delegate :deployment_channel_id, to: :store_submission
 
@@ -22,7 +24,7 @@ class PlayStoreRollout < StoreRollout
     state :created, initial: true
     state(*STATES.keys)
 
-    event :start, after_commit: :on_start! do
+    event :start do
       transitions from: :created, to: :started
       transitions from: :halted, to: :started
     end
@@ -33,12 +35,31 @@ class PlayStoreRollout < StoreRollout
 
     event :complete, after_commit: :on_complete! do
       after { set_completed_at! }
-      transitions from: :started, to: :completed
+      transitions from: [:started, :created], to: :completed
     end
 
     event :fully_release, after_commit: :on_complete! do
       after { set_completed_at! }
       transitions from: :started, to: :fully_released
+    end
+  end
+
+  def controllable_rollout? = true
+
+  def automatic_rollout? = false
+
+  def start_release!
+    if staged_rollout?
+      move_to_next_stage!
+      on_start! if started?
+    else
+      result = rollout(Release::FULL_ROLLOUT_VALUE)
+      if result.ok?
+        complete!
+      else
+        elog(result.error)
+        errors.add(:base, result.error)
+      end
     end
   end
 
@@ -107,17 +128,5 @@ class PlayStoreRollout < StoreRollout
 
   def rollout(value)
     provider.rollout_release(deployment_channel_id, build_number, version_name, value, nil)
-  end
-
-  def on_start!
-    return parent_release.rollout_started! if staged_rollout?
-
-    result = rollout(Release::FULL_ROLLOUT_VALUE)
-    if result.ok?
-      complete!
-    else
-      elog(result.error)
-      errors.add(:base, result.error)
-    end
   end
 end

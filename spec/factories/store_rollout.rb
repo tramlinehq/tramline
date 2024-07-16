@@ -2,6 +2,7 @@ FactoryBot.define do
   factory :store_rollout do
     config { [1, 100] }
     current_stage { nil }
+    is_staged_rollout { true }
     association :release_platform_run
     association :store_submission
 

@@ -69,6 +69,13 @@ module Coordinators::Signals
     Coordinators::StartProductionRelease.call(build)
   end
 
+  def self.start_the_store_rollout!(rollout)
+    return Res.new { raise } unless rollout.created?
+    rollout.start_release!
+    return Res.new { raise } if rollout.errors?
+    Res.new { true }
+  end
+
   def self.increase_the_store_rollout!(rollout)
     return Res.new { raise } unless rollout.started?
     rollout.move_to_next_stage!

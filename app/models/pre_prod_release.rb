@@ -33,7 +33,7 @@ class PreProdRelease < ApplicationRecord
   end
 
   def trigger_workflow!(workflow, commit)
-    create_workflow_run!(workflow_config: workflow, release_platform_run:, commit:)
+    create_workflow_run!(workflow_config: workflow, release_platform_run:, commit:, kind: workflow[:kind])
   end
 
   def trigger_submissions!(build)

@@ -1,5 +1,5 @@
 <div class="flex flex-col item-gap-default">
-  <%= render V2::LiveRelease::BuildComponent.new(release_platform_run.builds.last, show_build_only: true) %>
+  <%= render V2::LiveRelease::BuildComponent.new(build, show_build_only: true) %>
   <div class="flex flex-col section-gap-default">
     <%= render V2::CardComponent.new(title: "Rollout Status", separator: false, fixed_height: "80") do |card| %>
       <% card.with_actions do %>
@@ -18,7 +18,9 @@
               <div class="pl-3"><%= render TimelineComponent.new(events:) %></div>
             <% end %>
           <% end %>
-          <%= render V2::ButtonComponent.new(label: "Increase rollout", scheme: :default, type: :action, size: :xxs) %>
+          <% if action.present? %>
+            <%= render action %>
+          <% end %>
         </div>
       <% end %>
 
@@ -26,23 +28,23 @@
         <div class="grid grid-cols-12">
           <div class="col-span-5 flex flex-col gap-2">
             <div class="flex items-baseline gap-2">
-              <%= render V2::IconComponent.new("integrations/logo_google_play_store.png", size: :xl) %>
-              <div class="text-3xl font-bold">5%</div>
+              <%= render V2::IconComponent.new("integrations/logo_#{provider}.png", size: :xl) %>
+              <div class="text-3xl font-bold"><%= last_rollout_percentage %>%</div>
               <div class="text-sm text-secondary-50">of users</div>
             </div>
 
             <div class="flex gap-1 flex-wrap">
-              <%= render V2::BadgeComponent.new(text: "Completed", status: :success) %>
-              <div class="text-sm text-secondary-50">at 3rd stage</div>
+              <%= render V2::BadgeComponent.new(**status) %>
+              <div class="text-sm text-secondary-50"><%= stage_help %></div>
             </div>
 
             <div class="flex flex-wrap gap-y-2 text-secondary text-sm">
-              <p>Start the rollout to initiate your staged rollout sequence.</p>
+              <p><%= action_help %></p>
             </div>
           </div>
 
           <div class="col-span-7 justify-self-end self-end flex flex-col gap-2">
-            <% [[4, :default], [8, :default], [15, :default], [16, :inert], [23, :inert], [42, :inert], [90, :inert], [100, :inert]].take(rand(1..10)).each_with_index do |(percent, st), idx| %>
+            <% stages.each_with_index do |(percent, st), idx| %>
               <div class="flex flex-row justify-between gap-1 items-center flex-initial flex-wrap">
                 <%= render V2::ProgressBarComponent.new(percent: percent, label: true, status: st) %>
                 <% if st == :default %>
@@ -56,8 +58,9 @@
         <%= render V2::SectionComponent.new(title: "More actions", style: :titled, size: :micro) do %>
           <div class="flex justify-between items-center">
             <div class="flex flex-row gap-2">
-              <%= render V2::ButtonComponent.new(label: "Halt rollout", scheme: :danger, type: :action, size: :xxs) %>
-              <%= render V2::ButtonComponent.new(label: "Release to all", scheme: :light, type: :action, size: :xxs) %>
+              <% more_actions.each do |action| %>
+                <%= render action %>
+              <% end %>
             </div>
             <div class="flex flex-row gap-2">
               <%= render V2::ButtonComponent.new(label: "Store dashboard ↗",
@@ -84,28 +87,4 @@
         num_events: 1) %>
     <% end %>
   </div>
-
-  <%= render V2::SectionComponent.new(title: "Previous rollouts", style: :titled, size: :compact) do %>
-    <%= render V2::TableComponent.new(columns: ["Build", "Last activity", "Status", "%"], size: :default) do |table| %>
-      <% [1, 2, 3, 4, 5].take(rand(1..3)).each do |rollout| %>
-        <% table.with_row do |row| %>
-          <% row.with_cell do %>
-            <%= render V2::LiveRelease::BuildComponent.new(release_platform_run.builds.last, show_build_only: true) %>
-          <% end %>
-
-          <% row.with_cell do %>
-            2 days ago
-          <% end %>
-
-          <% row.with_cell do %>
-            <%= render V2::BadgeComponent.new(text: "Halted", status: :inert) %>
-          <% end %>
-
-          <% row.with_cell do %>
-            50%
-          <% end %>
-        <% end %>
-      <% end %>
-    <% end %>
-  <% end %>
 </div>

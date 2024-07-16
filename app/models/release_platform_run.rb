@@ -33,6 +33,8 @@ class ReleasePlatformRun < ApplicationRecord
   belongs_to :release
   has_many :release_metadata, class_name: "ReleaseMetadata", dependent: :destroy, inverse_of: :release_platform_run
   has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
+  has_many :internal_builds, -> { internal }, class_name: "Build", dependent: :destroy, inverse_of: :release_platform_run
+  has_many :rc_builds, -> { release_candidate }, class_name: "Build", dependent: :destroy, inverse_of: :release_platform_run
   has_many :builds, dependent: :destroy, inverse_of: :release_platform_run
   has_many :play_store_submissions, dependent: :destroy
   has_many :app_store_submissions, dependent: :destroy
@@ -44,6 +46,7 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :running_steps, through: :step_runs, source: :step
   has_many :internal_releases, dependent: :destroy
   has_many :beta_releases, dependent: :destroy
+  has_many :workflow_runs, dependent: :destroy
   belongs_to :last_commit, class_name: "Commit", inverse_of: :release_platform_runs, optional: true
 
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
@@ -219,16 +222,6 @@ class ReleasePlatformRun < ApplicationRecord
     }.with_indifferent_access
   end
 
-  def store_submissions
-    if android?
-      play_store_submissions
-    elsif ios?
-      app_store_submissions
-    else
-      raise ArgumentError, "Unknown platform: #{platform}"
-    end
-  end
-
   def store_rollouts
     if android?
       play_store_rollouts
@@ -240,16 +233,16 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def active_store_submission
-    store_submissions.last
+    production_releases.last&.store_submission
   end
 
   def previous_store_submissions
-    return unless store_submissions.size > 1
-    store_submissions.where.not(id: active_store_submission.id)
+    return unless production_releases.size > 1
+    production_releases.order(created_at: :desc).drop(1).map(&:store_submission)
   end
 
-  def latest_build?(build)
-    builds.reorder("generated_at DESC").first == build
+  def latest_rc_build?(build)
+    rc_builds.reorder("generated_at DESC").first == build
   end
 
   def next_build_sequence_number

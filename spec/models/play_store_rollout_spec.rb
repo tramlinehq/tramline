@@ -3,16 +3,41 @@
 require "rails_helper"
 
 describe PlayStoreRollout do
-  describe "#start!" do
+  describe "#start_release!" do
     let(:release_platform_run) { create(:release_platform_run) }
     let(:production_release) { create(:production_release, release_platform_run:) }
     let(:store_submission) { create(:play_store_submission, :prod_release, release_platform_run:, parent_release: production_release) }
-    let(:rollout) { create(:store_rollout, :play_store, release_platform_run:, store_submission:) }
+    let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+    let(:rollout) { create(:store_rollout, :play_store, :created, release_platform_run:, store_submission:) }
+
+    before do
+      allow(rollout).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+      allow(production_release).to receive(:rollout_started!)
+    end
+
+    it "starts the production release" do
+      rollout.start_release!
+      expect(rollout.started?).to be(true)
+    end
+
+    it "updates the current stage if the rollout is staged" do
+      rollout.start_release!
+      expect(rollout.current_stage).to eq(0)
+    end
 
     it "informs the production release" do
-      allow(production_release).to receive(:rollout_started!)
-      rollout.start!
+      rollout.start_release!
       expect(production_release).to have_received(:rollout_started!)
+    end
+
+    context "when the rollout is not staged" do
+      let(:rollout) { create(:store_rollout, :play_store, :created, release_platform_run:, store_submission:, is_staged_rollout: false) }
+
+      it "completes the rollout if not staged" do
+        rollout.start_release!
+        expect(rollout.completed?).to be(true)
+      end
     end
   end
 

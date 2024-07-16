@@ -43,9 +43,9 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
 
   def previous_submission
     release_platform_run
-      .store_submissions
-      .where("created_at < ?", submission.created_at)
-      .reorder("created_at DESC").first
+      .production_releases
+      .where("created_at < ?", submission.parent_release.created_at)
+      .reorder("created_at DESC").first&.store_submission
   end
 
   memoize def changes
@@ -63,13 +63,13 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
   end
 
   memoize def all_builds
-    release_platform_run.builds.reorder("generated_at DESC")
+    release_platform_run.rc_builds.reorder("generated_at DESC")
   end
 
   def build_display_info(b)
     builder = b.display_name
     return "#{builder} – Currently Selected" if b == build
-    builder += " – Latest" if release_platform_run.latest_build?(b)
+    builder += " – Latest" if release_platform_run.latest_rc_build?(b)
     builder
   end
 
@@ -94,7 +94,7 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
       {scheme: :default,
        type: :button,
        label: "Prepare for review",
-       options: prepare_release_platform_store_submission_path(release, release_platform_run.platform, submission.id),
+       options: prepare_release_path,
        turbo: false,
        html_options: {method: :patch,
                       params: {store_submission: {force: false}},
@@ -103,10 +103,32 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
       {scheme: :danger,
        type: :button,
        label: "Cancel submission",
-       options: cancel_release_platform_store_submission_path(release, release_platform_run.platform, submission.id),
+       options: cancel_path,
        turbo: false,
        html_options: {method: :patch,
                       data: {turbo_method: :patch, turbo_confirm: "Are you sure about that?"}}}
     end
+  end
+
+  def submit_for_review_path
+    return submit_for_review_app_store_submission_path(submission.id) if submission.is_a? AppStoreSubmission
+    raise "Unsupported submission type"
+  end
+
+  def update_path
+    return app_store_submission_path(submission.id) if submission.is_a? AppStoreSubmission
+    return play_store_submission_path(submission.id) if submission.is_a? PlayStoreSubmission
+    raise "Unsupported submission type"
+  end
+
+  def prepare_release_path
+    return prepare_app_store_submission_path(submission.id) if submission.is_a? AppStoreSubmission
+    return prepare_play_store_submission_path(submission.id) if submission.is_a? PlayStoreSubmission
+    raise "Unsupported submission type"
+  end
+
+  def cancel_path
+    return cancel_app_store_submission_path(submission.id) if submission.is_a? AppStoreSubmission
+    raise "Unsupported submission type"
   end
 end

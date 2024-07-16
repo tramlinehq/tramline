@@ -1,0 +1,32 @@
+<%= render V2::LiveRelease::ContainerComponent.new(@release,
+                                                   title: @release.train.name,
+                                                   tab_config: @tab_configuration) do |container| %>
+  <% container.with_back_button %>
+  <% container.with_tab(title: "Rollout to users", icon: @tab_configuration.dig(:release, :rollout_to_users, :icon)) do %>
+    <%= render V2::PlatformViewComponent.new(@release) do |component| %>
+      <% component.platform_runs.each do |run| %>
+        <div class="grid grid-cols-1">
+          <% if run.active_store_submission&.store_rollout %>
+            <%= render V2::LiveRelease::RolloutComponent.new(run.active_store_submission&.store_rollout) %>
+          <% else %>
+            <%= render V2::EmptyStateComponent.new(
+              title: "Not ready to roll out",
+              text: "Please wait for a submission to be approved to be rolled out.",
+              banner_image: "v2/mail.svg",
+              type: :subdued) %>
+          <% end %>
+
+          <% if run.previous_store_submissions&.any? { |sub| sub.store_rollout.present? } %>
+            <%= render V2::SectionComponent.new(title: "Previous rollouts", style: :titled, size: :compact) do %>
+              <%= render V2::TableComponent.new(columns: ["Build", "Last activity", "Status", "%"], size: :default) do |table| %>
+                <% run.previous_store_submissions.map(&:store_rollouts).compact.each do |rollout| %>
+                  <%= render V2::LiveRelease::RolloutComponent.new(rollout, compact: true) %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

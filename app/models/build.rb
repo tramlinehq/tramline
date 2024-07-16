@@ -32,8 +32,11 @@ class Build < ApplicationRecord
   has_one :app_store_submission, dependent: :nullify, inverse_of: :build
   has_one :play_store_submission, dependent: :nullify, inverse_of: :build
 
+  scope :internal, -> { joins(:workflow_run).where(workflow_run: {kind: WorkflowRun::KINDS[:internal]}) }
+  scope :release_candidate, -> { joins(:workflow_run).where(workflow_run: {kind: WorkflowRun::KINDS[:release_candidate]}) }
+
   delegate :android?, :ios?, :ci_cd_provider, :train, to: :release_platform_run
-  delegate :artifacts_url, :build_artifact_name_pattern, to: :workflow_run
+  delegate :artifacts_url, :build_artifact_name_pattern, :kind, to: :workflow_run
 
   before_create :set_sequence_number
   after_create :attach_artifact!

@@ -16,7 +16,6 @@
 #
 class StoreRollout < ApplicationRecord
   include AASM
-  include Passportable
   include Loggable
   include Displayable
 
@@ -52,8 +51,6 @@ class StoreRollout < ApplicationRecord
 
   def errors? = errors.any?
 
-  protected
-
   def provider = release_platform_run.store_provider
 
   def finished? = completed? || fully_released?
@@ -61,24 +58,25 @@ class StoreRollout < ApplicationRecord
   def reached_last_stage? = next_rollout_percentage.nil?
 
   def stage
-    return 0 if created?
     (current_stage || 0).succ
   end
 
   def next_rollout_percentage
     return config.first if created?
-    config[current_stage.succ]
+    config[next_stage]
   end
 
   def last_rollout_percentage
     return Release::FULL_ROLLOUT_VALUE if fully_released?
-    return if created? || current_stage.nil?
+    return 0 if created? || current_stage.nil?
     return config.last if reached_last_stage?
     config[current_stage]
   end
 
+  protected
+
   def next_stage
-    created? ? 0 : current_stage.succ
+    current_stage.blank? ? 0 : current_stage.succ
   end
 
   def update_stage(stage, finish_rollout: false)
@@ -109,6 +107,10 @@ class StoreRollout < ApplicationRecord
     end
 
     data
+  end
+
+  def on_start!
+    parent_release.rollout_started!
   end
 
   def on_complete!

@@ -57,6 +57,10 @@ class StoreSubmission < ApplicationRecord
     store_link || project_link
   end
 
+  def attach_build!(build)
+    update!(build:)
+  end
+
   def self.create_and_trigger!(parent_release, submission_config, build)
     auto_promote = submission_config.auto_promote?
     auto_promote = parent_release.conf.auto_promote? if auto_promote.nil?

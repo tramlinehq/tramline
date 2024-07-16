@@ -15,6 +15,8 @@
 #  store_submission_id     :uuid             indexed
 #
 class AppStoreRollout < StoreRollout
+  include Passportable
+
   ReleaseNotFullyLive = Class.new(StandardError)
   STATES = STATES.merge(paused: "paused")
 
@@ -47,6 +49,27 @@ class AppStoreRollout < StoreRollout
       after { set_completed_at! }
       transitions from: :started, to: :fully_released
     end
+  end
+
+  def controllable_rollout? = false
+
+  def automatic_rollout? = true
+
+  def start_release!
+    result = provider.start_release(build_number)
+
+    unless result.ok?
+      elog(result.error)
+      errors.add(:base, result.error)
+    end
+
+    if staged_rollout?
+      start!
+    else
+      complete!
+    end
+
+    StoreRollouts::AppStore::FindLiveReleaseJob.perform_async(id)
   end
 
   def track_live_release_status
@@ -133,11 +156,6 @@ class AppStoreRollout < StoreRollout
   end
 
   private
-
-  def on_start!
-    parent_release.rollout_started!
-    StoreRollouts::AppStore::FindLiveReleaseJob.perform_async(id)
-  end
 
   def update_rollout(release_info)
     update_store_info!(release_info)

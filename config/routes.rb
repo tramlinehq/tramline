@@ -98,7 +98,7 @@ Rails.application.routes.draw do
           end
         end
 
-        get :edit, to: "staged_rollouts#edit_all", path: :rollout, as: :staged_rollout_edit
+        get :edit, to: "store_rollouts#edit_all", path: :rollout, as: :staged_rollout_edit
         get :edit, to: "release_metadata#edit_all", path: :metadata, as: :metadata_edit
         patch :update, to: "release_metadata#update_all", path: :metadata, as: :metadata_update
 
@@ -106,17 +106,26 @@ Rails.application.routes.draw do
           resources :release_metadata, only: %i[edit update]
         end
 
-        resources :platforms, shallow: false, only: [] do
-          resources :store_submissions, only: [:create, :update], path: :submissions do
-            member do
-              patch :submit_for_review
-              patch :prepare
-              patch :cancel
-            end
+        resources :app_store_submissions, only: [:update], shallow: true do
+          member do
+            patch :submit_for_review
+            patch :prepare
+            patch :cancel
+            patch :remove_from_review
           end
+        end
 
+        resources :play_store_submissions, only: [:update], shallow: true do
+          member do
+            patch :prepare
+            patch :cancel
+          end
+        end
+
+        resources :platforms, shallow: false, only: [] do
           resources :store_rollouts, only: [], path: :rollouts do
             member do
+              patch :start
               patch :increase
               patch :pause
               patch :resume

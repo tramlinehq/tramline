@@ -3,17 +3,20 @@
 require "rails_helper"
 
 describe AppStoreRollout do
-  describe "#start!" do
+  describe "#start_release!" do
     let(:release_platform_run) { create(:release_platform_run) }
     let(:production_release) { create(:production_release, release_platform_run:) }
     let(:store_submission) { create(:app_store_submission, release_platform_run:, parent_release: production_release) }
+    let(:providable_dbl) { instance_double(AppStoreIntegration) }
     let(:rollout) { create(:store_rollout, :app_store, release_platform_run:, store_submission:) }
 
     it "informs the production release" do
+      allow(rollout).to receive(:provider).and_return(providable_dbl)
       allow(production_release).to receive(:rollout_started!)
+      allow(providable_dbl).to receive(:start_release).and_return(GitHub::Result.new { true })
       allow(StoreRollouts::AppStore::FindLiveReleaseJob).to receive(:perform_async)
 
-      rollout.start!
+      rollout.start_release!
 
       expect(production_release).to have_received(:rollout_started!)
       expect(StoreRollouts::AppStore::FindLiveReleaseJob).to have_received(:perform_async).with(rollout.id).once
