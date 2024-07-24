@@ -68,6 +68,8 @@ class TestFlightSubmission < StoreSubmission
 
   def provider = app.ios_store_provider
 
+  def rollout_needed? = false
+
   def internal_channel?
     deployment_channel.is_internal
   end

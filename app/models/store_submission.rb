@@ -43,6 +43,8 @@ class StoreSubmission < ApplicationRecord
     conf.submission_config
   end
 
+  delegate :name, to: :deployment_channel, prefix: true
+
   def deployment_channel_id
     conf.submission_config.id.to_s
   end

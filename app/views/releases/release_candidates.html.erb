@@ -3,6 +3,6 @@
                                                    tab_config: @tab_configuration) do |container| %>
   <% container.with_back_button %>
   <% container.with_tab(title: "Release Candidate", icon: @tab_configuration.dig(:stability, :release_candidate, :icon)) do %>
-    <%= render V2::LiveRelease::ReleaseCandidateComponent.new(@release) %>
+    <%= render V2::LiveRelease::ReleaseCandidatesComponent.new(@release) %>
   <% end %>
 <% end %>

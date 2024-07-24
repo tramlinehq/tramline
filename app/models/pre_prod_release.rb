@@ -19,6 +19,7 @@ class PreProdRelease < ApplicationRecord
   belongs_to :release_platform_run
   has_one :workflow_run, dependent: :destroy
   has_many :store_submissions, as: :parent_release, dependent: :destroy
+  has_one :build, through: :workflow_run
 
   STATES = {
     created: "created",

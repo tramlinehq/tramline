@@ -63,6 +63,10 @@ class GoogleFirebaseSubmission < StoreSubmission
     end
   end
 
+  def provider = app.firebase_build_channel_provider
+
+  def rollout_needed? = false
+
   def change_allowed? = true
 
   def locked? = false
@@ -180,6 +184,4 @@ class GoogleFirebaseSubmission < StoreSubmission
   def external_id
     store_release["id"]
   end
-
-  def provider = app.firebase_build_channel_provider
 end

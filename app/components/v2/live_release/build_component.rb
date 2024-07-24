@@ -3,16 +3,15 @@
 class V2::LiveRelease::BuildComponent < V2::BaseComponent
   include Memery
 
-  def initialize(build, previous_build: nil, show_number: false, show_build_only: false)
+  def initialize(build, show_number: false, show_build_only: false)
     @build = build
     @show_number = show_number
-    @previous_build = previous_build
     @show_build_only = show_build_only
   end
 
   attr_reader :build, :previous_build, :show_build_only, :show_number
-  delegate :release_platform_run, :store_submission, :commit, to: :build
-  delegate :external_link, to: :store_submission, allow_nil: true
+  delegate :release_platform_run, :store_submission, :commit, :version_name, :build_number, :artifact, :workflow_run, to: :build
+  delegate :external_url, to: :workflow_run
 
   def build_info
     build.display_name
@@ -55,5 +54,10 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
 
   def number
     "Build ##{rand(50..998)}"
+  end
+
+  def artifact_name
+    return "-" if artifact.blank?
+    artifact.get_filename
   end
 end

@@ -11,11 +11,16 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
 
   def initialize(store_rollout, compact: false)
     @store_rollout = store_rollout
+    @compact = compact
   end
 
   attr_reader :store_rollout
   delegate :release_platform_run, :build, :provider, :last_rollout_percentage, :stage, :automatic_rollout?, :controllable_rollout?, :id, to: :store_rollout
   delegate :platform, :release, to: :release_platform_run
+
+  def compact?
+    @compact
+  end
 
   def monitoring_size
     release_platform_run.app.cross_platform? ? :compact : :default
@@ -82,6 +87,7 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
   end
 
   def action
+    return if compact?
     return if store_rollout.completed? || store_rollout.fully_released? || store_rollout.halted?
 
     return action_button("Start rollout", start_release_platform_store_rollout_path(release, platform, id)) if store_rollout.created?
@@ -107,5 +113,10 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
 
   def action_button(label, path, method: :patch, scheme: :default, size: :xxs)
     V2::ButtonComponent.new(label:, options: path, scheme:, size: size, html_options: {method:, data: {turbo_method: method, turbo_confirm: "Are you sure?"}})
+  end
+
+  def card_height
+    return "60" if compact?
+    "80"
   end
 end

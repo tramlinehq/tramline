@@ -3,6 +3,6 @@
                                                    tab_config: @tab_configuration) do |container| %>
   <% container.with_back_button %>
   <% container.with_tab(title: "Internal Builds", icon: @tab_configuration.dig(:stability, :internal_builds, :icon)) do %>
-    <%= render V2::LiveRelease::InternalBuildsComponent.new(@release) %>
+    <%= render V2::LiveRelease::InternalReleasesComponent.new(@release) %>
   <% end %>
 <% end %>

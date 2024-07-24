@@ -1,0 +1,66 @@
+<%= render V2::PlatformViewComponent.new(@release) do |component| %>
+  <% component.runs do |release_platform_run| %>
+    <% if configured?(release_platform_run) %>
+      <%= render V2::LiveRelease::SubmissionConfigComponent.new(configuration(release_platform_run), release_platform_run:) %>
+    <% else %>
+      <%= render V2::EmptyStateComponent.new(
+        title: "No internal build step configured",
+        text: "Please configure an internal build step for the train to see the build status.",
+        banner_image: "v2/drill.svg",
+        type: :subdued) %>
+    <% end %>
+  <% end %>
+
+  <% component.runs do |release_platform_run| %>
+    <% latest_release = latest_beta_release(release_platform_run) %>
+    <% if latest_release.build.present? %>
+      <%= render V2::LiveRelease::CurrentPreProdReleaseComponent.new(latest_release) %>
+    <% end %>
+  <% end %>
+
+  <% if component.platform_runs.any? { |sr| sr.external_builds.exists? } %>
+    <% component.runs do |release_platform_run| %>
+      <%= render V2::SectionComponent.new(title: "Build stats", style: :titled, size: :compact) do %>
+        <% if release_platform_run.internal_builds.any? { |build| build.metadata.present? } %>
+          <div>TODO: Show build health here</div>
+        <% else %>
+          <%= render V2::EmptyStateComponent.new(
+            title: "No stats for this platform",
+            text: "Please send build metadata to Tramline to see the build stats.",
+            banner_image: "v2/drill.svg",
+            type: :subdued) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% component.runs do |release_platform_run| %>
+    <% if previous_beta_releases(release_platform_run).present? %>
+      <%= render V2::SectionComponent.new(title: "Older builds (#{previous_beta_releases(release_platform_run).size})", style: :titled, size: :compact) do %>
+        <div class="flex flex-col item-gap-default">
+          <% previous_beta_releases(release_platform_run).each do |beta_release| %>
+            <%= render V2::AccordionComponent.new(push_down: true) do |accordion| %>
+              <% accordion.with_title_section do %>
+                <div class="flex text-sm items-center justify-between">
+                  <div class="flex gap-2">
+                    <span><%= beta_release.build.display_name %></span>
+                    <%= render V2::BadgeComponent.new(**status(beta_release)) %>
+                  </div>
+
+                  <div class="flex items-center">
+                    <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2 text-secondary") %>
+                    <span class="text-secondary font-normal"><%= ago_in_words(beta_release.created_at) %></span>
+                  </div>
+                </div>
+              <% end %>
+
+              <div class="my-3">
+                <%= render V2::LiveRelease::BuildComponent.new(beta_release.build, show_build_only: false) %>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

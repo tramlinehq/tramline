@@ -125,6 +125,8 @@ class AppStoreSubmission < StoreSubmission
 
   def provider = app.ios_store_provider
 
+  def rollout_needed? = true
+
   def change_allowed?
     status.in? CHANGEABLE_STATES
   end

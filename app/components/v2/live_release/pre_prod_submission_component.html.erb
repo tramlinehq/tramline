@@ -1,0 +1,28 @@
+<div class="border-l-8 pr-2 flex justify-between items-center <%= status_border %>">
+  <div class="flex flex-col items-start gap-2 ml-4">
+    <%= render V2::BadgeComponent.new(text: submission.deployment_channel_name, kind: :badge) do |badge| %>
+      <% badge.with_icon("integrations/logo_#{submission.provider}.png") %>
+    <% end %>
+
+    <%= render V2::HorizontalDataSetComponent.new do |component| %>
+      <% component.with_data_set(title: "Released").with_content(released_at) %>
+      <% component.with_data_set(title: "External Status").with_content(submission.store_status&.humanize || "–") %>
+    <% end %>
+
+    <%= render V2::ButtonComponent.new(label: "Dashboard ↗",
+                                       scheme: :link,
+                                       type: :link_external,
+                                       options: submission.store_link,
+                                       html_options: { class: "text-sm" },
+                                       authz: false,
+                                       size: :none) do |b|
+      b.with_icon("integrations/logo_#{submission.provider}.png", size: :md)
+    end %>
+
+  </div>
+  <div>
+    <% if submission.created? %>
+      <%= render V2::ButtonComponent.new(label: "Start release", scheme: :default, type: :action, size: :xxs) %>
+    <% end %>
+  </div>
+</div>
