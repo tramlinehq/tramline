@@ -8,7 +8,6 @@ class Authentication::Sso::SessionsController < ApplicationController
 
   def new
     set_invite
-    @invite_email = @invite.email if @invite.present?
     @resource = Accounts::SsoAuthentication.new
   end
 
@@ -20,14 +19,14 @@ class Authentication::Sso::SessionsController < ApplicationController
     end
   end
 
-  def handle_saml
+  def saml_redeem
     if saml_callback_code.blank?
       redirect_to root_path
       return
     end
 
-    if (result = Accounts::User.finish_sign_in_via_sso(saml_callback_code))
-      set_sso_jwt_in_session(result)
+    if (auth_data = Accounts::User.finish_sign_in_via_sso(saml_callback_code))
+      set_sso_jwt_in_session(auth_data)
       redirect_to after_sign_in_path_for(:user), notice: t("devise.sessions.signed_in")
       return
     end

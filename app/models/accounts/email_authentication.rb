@@ -45,12 +45,7 @@ class Accounts::EmailAuthentication < ApplicationRecord
   end
 
   def add(invite)
-    return false unless valid?
-
-    transaction do
-      user.memberships.new(organization: invite.organization, role: invite.role)
-      save!
-      invite.mark_accepted!(user)
-    end
+    user.memberships.new(organization: invite.organization, role: invite.role)
+    invite.mark_accepted(user) if save
   end
 end

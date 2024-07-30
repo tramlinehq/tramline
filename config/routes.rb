@@ -35,7 +35,7 @@ Rails.application.routes.draw do
 
   scope module: :authentication do
     namespace :sso do
-      get "handle_saml", to: "sessions#handle_saml"
+      get "saml/redeem", to: "sessions#saml_redeem"
       get "sign_in", to: "sessions#new", as: :new_sso_session
       post "sign_in", to: "sessions#create", as: :create_sso_session
       get "sign_out", to: "sessions#destroy", as: :destroy_sso_session

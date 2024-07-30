@@ -35,12 +35,18 @@ class Accounts::SsoAuthentication < ApplicationRecord
       refresh = jwt[Descope::Mixins::Common::REFRESH_SESSION_TOKEN_NAME]
       session_token = session&.fetch("jwt", nil)
       refresh_token = refresh&.fetch("jwt", nil)
-      user_email = session&.fetch("email", nil) || refresh&.fetch("email", nil)
-      user_name = session&.fetch("name", nil) || refresh&.fetch("name", nil)
+      user_email = session&.fetch("email", nil)
+      first_name = session&.fetch("first_name", nil)
+      last_name = session&.fetch("last_name", nil)
+      full_name = [first_name, last_name].join(" ").squish.presence || user_email
+      preferred_name = session&.fetch("name", nil) || first_name
+      login_id = session&.fetch("sub", nil)
 
       params[:session_token] = session_token
       params[:user_email] = user_email
-      params[:user_name] = user_name
+      params[:user_full_name] = full_name
+      params[:user_preferred_name] = preferred_name
+      params[:login_id] = login_id
       params[:refresh_token] = refresh_token if refresh_token.present?
       params
     end
@@ -51,18 +57,13 @@ class Accounts::SsoAuthentication < ApplicationRecord
 
     def redirect_url
       return if Rails.env.test?
-      sso_handle_saml_url(link_params(port: nil))
+      sso_saml_redeem_url(link_params(port: nil))
     end
   end
 
-  def add(invite, user_name)
-    return false unless valid?
-
-    transaction do
-      build_user(full_name: user_name)
-      user.memberships.new(organization: invite.organization, role: invite.role)
-      save!
-      invite.mark_accepted!(user)
-    end
+  def add(invite, full_name, preferred_name)
+    build_user(full_name:, preferred_name:)
+    user.memberships.new(organization: invite.organization, role: invite.role)
+    invite.mark_accepted(user) if save
   end
 end

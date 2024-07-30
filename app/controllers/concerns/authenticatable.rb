@@ -22,10 +22,11 @@ module Authenticatable
     result = Accounts::SsoAuthentication.validate_or_refresh_session(st, rt)
 
     if result.ok?
-      result.value! => { user_email: }
+      auth_data = result.value!
+      auth_data => { user_email: }
       if (user = Accounts::User.find_via_sso_email(user_email))
         @current_sso_user = user
-        set_sso_jwt_in_session(result.value!)
+        set_sso_jwt_in_session(auth_data)
       end
     else
       clear_sso_jwt_in_session

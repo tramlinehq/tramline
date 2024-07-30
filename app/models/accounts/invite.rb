@@ -90,8 +90,8 @@ class Accounts::Invite < ApplicationRecord
     end
   end
 
-  def mark_accepted!(recipient)
-    update!(accepted_at: Time.zone.now, recipient: recipient)
+  def mark_accepted(recipient)
+    update(accepted_at: Time.zone.now, recipient: recipient)
   end
 
   def accept_only_once

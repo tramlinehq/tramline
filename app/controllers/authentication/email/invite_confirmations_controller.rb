@@ -19,11 +19,11 @@ class Authentication::Email::InviteConfirmationsController < ApplicationControll
   end
 
   def create
-    @invite.recipient.add!(@invite) if @token.present?
-    flash[:notice] = t("invitation.flash.accepted")
-    redirect_to new_user_session_path
-  rescue ActiveRecord::RecordInvalid
-    redirect_to new_user_session_path, notice: t("invitation.flash.failed")
+    if @invite && Accounts::User.add_via_email(@invite)
+      redirect_to new_user_session_path, notice: t("invitation.flash.accepted")
+    else
+      redirect_to new_user_session_path, flash: {error: t("invitation.flash.failed")}
+    end
   end
 
   private

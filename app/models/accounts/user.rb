@@ -70,93 +70,105 @@ class Accounts::User < ApplicationRecord
     (email_authentication || sso_authentication).email
   end
 
-  def self.find_via_email(email)
-    joins(:email_authentication).find_by(email_authentication: {email: email})
-  end
-
-  def self.find_via_sso_email(email)
-    joins(:sso_authentication).find_by(sso_authentication: {email: email})
-  end
-
-  def self.start_sign_in_via_sso(email)
-    return if valid_email_domain?(email)
-
-    parsed_email_domain = Mail::Address.new(email).domain
-    organization = Accounts::Organization.find_by_sso_domain(parsed_email_domain)
-    return unless organization
-
-    user = find_via_sso_email(email)
-    invite = organization.invites.find_by(email: email)
-    return unless user || invite
-
-    tenant = organization.sso_tenant_id
-    if user&.organizations&.include?(organization) || invite.organization == organization
-      Accounts::SsoAuthentication.start_sign_in(tenant)
-    end
-  end
-
-  def self.finish_sign_in_via_sso(code)
-    result = Accounts::SsoAuthentication.finish_sign_in(code)
-    return unless result.ok?
-
-    result.value! => { user_email:, user_name: }
-
-    parsed_email_domain = Mail::Address.new(user_email).domain
-    organization = Accounts::Organization.find_by_sso_domain(parsed_email_domain)
-    return unless organization
-
-    user = find_via_sso_email(user_email)
-    if user
-      user.update(current_sign_in_at: Time.current, last_sign_in_at: user.current_sign_in_at)
-    else
-      invite = organization.invites.find_by(email: user_email)
-      return unless invite
-      sso_auth = Accounts::SsoAuthentication.new(email: user_email, login_id: "dummy")
-      sso_auth.add(invite, user_name)
+  class << self
+    def find_via_email(email)
+      joins(:email_authentication).find_by(email_authentication: {email: email})
     end
 
-    result.value!
-  end
+    def valid_signup_domain?(email)
+      return false if email.blank?
 
-  def self.valid_email_domain?(email)
-    return false if email.blank?
-
-    begin
-      disallowed_domains = ENV["DISALLOWED_SIGN_UP_DOMAINS"].split(",")
+      disallowed_domains = ENV["DISALLOWED_SIGN_UP_DOMAINS"]&.split(",")
       parsed_email = Mail::Address.new(email)
-      disallowed_domains.include?(parsed_email.domain)
-    rescue
+      disallowed_domains&.exclude?(parsed_email.domain)
+    end
+
+    def find_via_sso_email(email)
+      joins(:sso_authentication).find_by(sso_authentication: {email: email})
+    end
+
+    def valid_sso_email?(email, organization)
+      user = find_via_sso_email(email)
+      return user.organizations.include?(organization) if user
+
+      invite = organization.invites.find_by(email: email)
+      return invite.organization == organization if invite
+
       false
     end
-  end
 
-  def self.onboard_via_email(email_auth)
-    if find_via_email(email_auth.email)
-      email_auth.errors.add(:account_exists, "you already have an account with tramline!")
-      return email_auth
+    def find_or_create_via_sso(email, organization, full_name:, preferred_name:, login_id:)
+      existing_user = find_via_sso_email(email)
+      return existing_user if existing_user
+
+      invite = organization.invites.find_by(email:)
+      return unless invite
+
+      sso_auth = Accounts::SsoAuthentication.new(email:, login_id:)
+      sso_auth.add(invite, full_name, preferred_name)
+      sso_auth.reload.user if sso_auth.valid?
     end
 
-    if valid_email_domain?(email_auth.email)
-      email_auth.errors.add(:email, :invalid_domain)
-      return email_auth
+    def start_sign_in_via_sso(email)
+      parsed_email_domain = Mail::Address.new(email).domain
+      organization = Accounts::Organization.find_by_sso_domain(parsed_email_domain)
+      return unless organization
+
+      Accounts::SsoAuthentication.start_sign_in(organization.sso_tenant_id) if valid_sso_email?(email, organization)
     end
 
-    new_user = email_auth.user
-    new_organization = new_user.organizations.first
+    def finish_sign_in_via_sso(code)
+      result = Accounts::SsoAuthentication.finish_sign_in(code)
+      return unless result.ok?
 
-    unless new_organization
-      email_auth.errors.add(:org_not_found, "invalid request")
-      return email_auth
+      auth_data = result.value!
+      auth_data => { user_email:, user_full_name:, login_id:, user_preferred_name: }
+
+      parsed_email_domain = Mail::Address.new(user_email).domain
+      organization = Accounts::Organization.find_by_sso_domain(parsed_email_domain)
+      return unless organization
+
+      user = find_or_create_via_sso(user_email, organization, full_name: user_full_name, preferred_name: user_preferred_name, login_id:)
+      return unless user
+      user.update(current_sign_in_at: Time.current, last_sign_in_at: user.current_sign_in_at)
+
+      auth_data
     end
 
-    new_membership = new_user.memberships.first
-    new_organization.status = Accounts::Organization.statuses[:active]
-    new_organization.created_by = email_auth.email
-    new_membership.role = Accounts::Membership.roles[:owner]
-    new_membership.organization = new_organization
-    new_user.memberships << new_membership
-    email_auth.save
-    email_auth
+    def onboard_via_email(email_auth)
+      if find_via_email(email_auth.email)
+        email_auth.errors.add(:account_exists, "you already have an account with tramline!") # FIXME: add error properly
+        return email_auth
+      end
+
+      unless valid_signup_domain?(email_auth.email)
+        email_auth.errors.add(:email, :invalid_domain)
+        return email_auth
+      end
+
+      new_user = email_auth.user
+      new_organization = new_user.organizations.first
+
+      unless new_organization
+        email_auth.errors.add(:org_not_found, "invalid request") # FIXME: add error properly
+        return email_auth
+      end
+
+      new_membership = new_user.memberships.first
+      new_organization.status = Accounts::Organization.statuses[:active]
+      new_organization.created_by = email_auth.email
+      new_membership.role = Accounts::Membership.roles[:owner]
+      new_membership.organization = new_organization
+      new_user.memberships << new_membership
+      email_auth.save
+      email_auth
+    end
+
+    def add_via_email(invite)
+      user = invite.recipient
+      return unless user&.email_authentication
+      user.email_authentication.add(invite)
+    end
   end
 
   def role_for(organization)
@@ -208,23 +220,4 @@ class Accounts::User < ApplicationRecord
   def access_for(organization)
     memberships.find_by(organization: organization)
   end
-
-  # now:
-  # owner create an invite
-  # - if exists: send an invite confirm link
-  # - not exist: sign up with invite token
-  #
-  # user accepts the invite
-  # - if exists: mark invite accept, create membership for org
-  # - not exist: sign up with invite token, create membership, create user
-
-  # with sso:
-  # owner create an invite
-  # - if exists: login via sso with token
-  # - not exist: login via sso with token
-  #
-  # user clicks accepts the invite
-  # - if token exists:
-  #   - if user exists: create sso auth and login
-  #   - not exist:
 end
