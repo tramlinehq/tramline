@@ -218,6 +218,7 @@ en:
             role:
               cannot_invite_owner: "You cannot invite a new owner"
             email:
+              delivery_failed: "Failed to deliver an invite email to %{email}! Please try again or contact support if the issue persists."
               not_blank: "The email can't be blank"
               too_long: "The email is too long (maximum is 105 characters)"
               invalid_format: "Enter a valid email format"
@@ -316,11 +317,17 @@ en:
       accepted: "Invitation was accepted. Please sign in to continue."
       already_accepted: "Invitation was already accepted!"
       failed: "Failed to accept your invitation. Please contact support!"
+
     invite_mailer:
       existing_user:
         subject: "%{sender} invited you to join the %{org} team on Tramline"
         someone_invited_you: "You have been invited to join the <b>%{org}</b> team owned by <b>%{sender_email}</b> on Tramline as a %{role}. To get started, accept the invite below:"
         accept: "Accept invitation"
+        ignore: "If you don't want to accept this invite or feel it is in error, please contact %{sender_email}."
+      sso_user:
+        subject: "%{sender} invited you to join the %{org} team on Tramline"
+        someone_invited_you: "You have been invited to join the <b>%{org}</b> team owned by <b>%{sender_email}</b> on Tramline as a %{role}. To get started, accept the invite below:"
+        accept: "Login via SSO"
         ignore: "If you don't want to accept this invite or feel it is in error, please contact %{sender_email}."
       new_user:
         subject: "%{sender} invited you to join the %{org} team on Tramline"

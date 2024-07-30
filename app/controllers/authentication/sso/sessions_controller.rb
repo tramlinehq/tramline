@@ -7,6 +7,8 @@ class Authentication::Sso::SessionsController < ApplicationController
   after_action :track_login, only: [:create]
 
   def new
+    set_invite
+    @invite_email = @invite.email if @invite.present?
     @resource = Accounts::SsoAuthentication.new
   end
 
@@ -25,7 +27,7 @@ class Authentication::Sso::SessionsController < ApplicationController
     end
 
     if (result = Accounts::User.finish_sign_in_via_sso(saml_callback_code))
-      set_sso_jwt_in_session(**result)
+      set_sso_jwt_in_session(result)
       redirect_to after_sign_in_path_for(:user), notice: t("devise.sessions.signed_in")
       return
     end
@@ -46,6 +48,11 @@ class Authentication::Sso::SessionsController < ApplicationController
 
   def saml_callback_code
     params[:code]
+  end
+
+  def set_invite
+    invite_token = params[:invite_token]
+    @invite = Accounts::Invite.find_by(token: invite_token) if invite_token.present?
   end
 
   def after_sign_in_path_for(resource)

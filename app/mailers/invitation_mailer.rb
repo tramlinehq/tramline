@@ -18,4 +18,14 @@ class InvitationMailer < ApplicationMailer
       subject: I18n.t("invitation.invite_mailer.new_user.subject", sender: @invite.sender.full_name, org: @invite.organization.name)
     )
   end
+
+  def sso_user(invite)
+    @invite = invite
+    @user_login_url = @invite.sso_login_url
+
+    mail(
+      to: @invite.email,
+      subject: I18n.t("invitation.invite_mailer.new_user.subject", sender: @invite.sender.full_name, org: @invite.organization.name)
+    )
+  end
 end

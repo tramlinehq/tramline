@@ -47,6 +47,10 @@ class Accounts::Organization < ApplicationRecord
     where(sso: true).where(":domain = ANY (sso_domains)", domain:).first
   end
 
+  def valid_sso_domain?(email)
+    sso_domains.include?(Mail::Address.new(email).domain)
+  end
+
   def demo?
     Flipper.enabled?(:demo_mode, self)
   end

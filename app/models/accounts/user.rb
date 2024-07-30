@@ -66,7 +66,9 @@ class Accounts::User < ApplicationRecord
   accepts_nested_attributes_for :organizations
   accepts_nested_attributes_for :memberships, allow_destroy: false
 
-  delegate :email, to: :email_authentication, allow_nil: true
+  def email
+    (email_authentication || sso_authentication).email
+  end
 
   def self.find_via_email(email)
     joins(:email_authentication).find_by(email_authentication: {email: email})
@@ -84,18 +86,35 @@ class Accounts::User < ApplicationRecord
     return unless organization
 
     user = find_via_sso_email(email)
-    return unless user
+    invite = organization.invites.find_by(email: email)
+    return unless user || invite
 
     tenant = organization.sso_tenant_id
-    Accounts::SsoAuthentication.start_sign_in(tenant) if user.organizations&.include?(organization)
+    if user&.organizations&.include?(organization) || invite.organization == organization
+      Accounts::SsoAuthentication.start_sign_in(tenant)
+    end
   end
 
   def self.finish_sign_in_via_sso(code)
     result = Accounts::SsoAuthentication.finish_sign_in(code)
     return unless result.ok?
-    result.value! => { user_email: }
+
+    result.value! => { user_email:, user_name: }
+
+    parsed_email_domain = Mail::Address.new(user_email).domain
+    organization = Accounts::Organization.find_by_sso_domain(parsed_email_domain)
+    return unless organization
+
     user = find_via_sso_email(user_email)
-    user.update(current_sign_in_at: Time.current, last_sign_in_at: user.current_sign_in_at)
+    if user
+      user.update(current_sign_in_at: Time.current, last_sign_in_at: user.current_sign_in_at)
+    else
+      invite = organization.invites.find_by(email: user_email)
+      return unless invite
+      sso_auth = Accounts::SsoAuthentication.new(email: user_email, login_id: "dummy")
+      sso_auth.add(invite, user_name)
+    end
+
     result.value!
   end
 
@@ -189,4 +208,23 @@ class Accounts::User < ApplicationRecord
   def access_for(organization)
     memberships.find_by(organization: organization)
   end
+
+  # now:
+  # owner create an invite
+  # - if exists: send an invite confirm link
+  # - not exist: sign up with invite token
+  #
+  # user accepts the invite
+  # - if exists: mark invite accept, create membership for org
+  # - not exist: sign up with invite token, create membership, create user
+
+  # with sso:
+  # owner create an invite
+  # - if exists: login via sso with token
+  # - not exist: login via sso with token
+  #
+  # user clicks accepts the invite
+  # - if token exists:
+  #   - if user exists: create sso auth and login
+  #   - not exist:
 end

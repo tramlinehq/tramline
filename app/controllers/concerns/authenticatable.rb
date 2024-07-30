@@ -21,14 +21,14 @@ module Authenticatable
     st, rt = session[SSO_JWT_SESSION_KEY], session[SSO_JWT_REFRESH_KEY]
     result = Accounts::SsoAuthentication.validate_or_refresh_session(st, rt)
 
-    # TODO: path where user has externally logged out, log them out of here as well
-
     if result.ok?
       result.value! => { user_email: }
       if (user = Accounts::User.find_via_sso_email(user_email))
         @current_sso_user = user
-        set_sso_jwt_in_session(**result.value!)
+        set_sso_jwt_in_session(result.value!)
       end
+    else
+      clear_sso_jwt_in_session
     end
   end
 
@@ -37,10 +37,10 @@ module Authenticatable
       session[SSO_JWT_USER_ID_KEY].present?
   end
 
-  def set_sso_jwt_in_session(session_token:, refresh_token:, user_email:)
-    session[SSO_JWT_SESSION_KEY] = session_token
-    session[SSO_JWT_REFRESH_KEY] = refresh_token
-    session[SSO_JWT_USER_ID_KEY] = user_email
+  def set_sso_jwt_in_session(params)
+    session[SSO_JWT_SESSION_KEY] = params[:session_token]
+    session[SSO_JWT_USER_ID_KEY] = params[:user_email]
+    session[SSO_JWT_REFRESH_KEY] = params[:refresh_token] if params[:refresh_token].present?
   end
 
   def clear_sso_jwt_in_session
