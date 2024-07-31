@@ -95,6 +95,8 @@ class Accounts::User < ApplicationRecord
       return false if email.blank?
 
       disallowed_domains = ENV["DISALLOWED_SIGN_UP_DOMAINS"]&.split(",")
+      return true if disallowed_domains.blank?
+
       parsed_email = Mail::Address.new(email)
       disallowed_domains&.exclude?(parsed_email.domain)
     end
