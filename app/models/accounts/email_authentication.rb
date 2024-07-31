@@ -44,7 +44,12 @@ class Accounts::EmailAuthentication < ApplicationRecord
     user.organizations.first
   end
 
+  def unique_authn_id
+    email
+  end
+
   def add(invite)
+    user.unique_authn_id = unique_authn_id
     user.memberships.new(organization: invite.organization, role: invite.role)
     invite.mark_accepted(user) if save
   end

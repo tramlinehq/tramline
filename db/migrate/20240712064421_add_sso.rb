@@ -18,14 +18,14 @@ class AddSso < ActiveRecord::Migration[7.0]
     end
 
     create_table :sso_authentications, id: :uuid do |t|
-      t.string :login_id, null: false
+      t.string :login_id, null: true
       t.string :email, null: false, default: ""
       t.datetime :logout_time
       t.datetime :sso_created_time
       t.timestamps null: false
     end
     add_index :sso_authentications, :email, unique: true
-    add_index :sso_authentications, :login_id, unique: true
+    add_index :sso_authentications, :login_id, unique: true, where: "login_id IS NOT NULL"
 
     create_table :email_authentications, id: :uuid do |t|
       ## Database authenticatable
@@ -70,5 +70,6 @@ class AddSso < ActiveRecord::Migration[7.0]
     remove_index :users, :confirmation_token, unique: true
     remove_index :users, :reset_password_token, unique: true
     remove_index :users, :unlock_token, unique: true
+    add_column :users, :unique_authn_id, :string, null: false, default: "", unique: true
   end
 end

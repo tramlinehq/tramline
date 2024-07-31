@@ -8,13 +8,18 @@
 #  sso_created_time :datetime
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
-#  login_id         :string           not null, indexed
+#  login_id         :string           indexed
 #
 class Accounts::SsoAuthentication < ApplicationRecord
   include Linkable
 
   has_one :user_authentication, as: :authenticatable, dependent: :destroy
   has_one :user, through: :user_authentication
+
+  validates :email, presence: {message: :not_blank},
+    uniqueness: {case_sensitive: false, message: :already_taken},
+    length: {maximum: 105, message: :too_long}
+  validates :login_id, uniqueness: {allow_nil: true, case_sensitive: false, message: :already_taken}
 
   class << self
     def start_sign_in(tenant)
@@ -61,8 +66,12 @@ class Accounts::SsoAuthentication < ApplicationRecord
     end
   end
 
+  def unique_authn_id
+    email
+  end
+
   def add(invite, full_name, preferred_name)
-    build_user(full_name:, preferred_name:)
+    build_user(full_name:, preferred_name:, unique_authn_id:)
     user.memberships.new(organization: invite.organization, role: invite.role)
     invite.mark_accepted(user) if save
   end

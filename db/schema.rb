@@ -623,14 +623,14 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_12_064421) do
   end
 
   create_table "sso_authentications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "login_id", null: false
+    t.string "login_id"
     t.string "email", default: "", null: false
     t.datetime "logout_time"
     t.datetime "sso_created_time"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_sso_authentications_on_email", unique: true
-    t.index ["login_id"], name: "index_sso_authentications_on_login_id", unique: true
+    t.index ["login_id"], name: "index_sso_authentications_on_login_id", unique: true, where: "(login_id IS NOT NULL)"
   end
 
   create_table "staged_rollouts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -789,6 +789,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_12_064421) do
     t.datetime "updated_at", null: false
     t.string "github_login"
     t.string "github_id"
+    t.string "unique_authn_id", default: "", null: false
     t.index ["slug"], name: "index_users_on_slug", unique: true
   end
 

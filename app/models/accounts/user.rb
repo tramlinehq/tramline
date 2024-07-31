@@ -28,6 +28,7 @@
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #  github_id              :string
+#  unique_authn_id        :string           default(""), not null
 #
 class Accounts::User < ApplicationRecord
   extend FriendlyId
@@ -38,8 +39,11 @@ class Accounts::User < ApplicationRecord
     email_authentication: "EmailAuthentication"
   }.freeze
 
-  validates :full_name, presence: {message: :not_blank}, length: {maximum: 70, message: :too_long}
-  validates :preferred_name, length: {maximum: 70, message: :too_long}
+  self.ignored_columns += %w[confirmation_sent_at confirmation_token confirmed_at current_sign_in_at current_sign_in_ip email encrypted_password failed_attempts last_sign_in_at last_sign_in_ip locked_at remember_created_at reset_password_sent_at reset_password_token sign_in_count unconfirmed_email unlock_token]
+
+  validates :full_name, presence: { message: :not_blank }, length: { maximum: 70, message: :too_long }
+  validates :preferred_name, length: { maximum: 70, message: :too_long }
+  validates :unique_authn_id, uniqueness: { message: :already_taken, case_sensitive: false }
 
   has_many :memberships, dependent: :delete_all, inverse_of: :user
   has_many :organizations, -> { where(status: :active).sequential }, through: :memberships
@@ -48,17 +52,17 @@ class Accounts::User < ApplicationRecord
   has_many :invitations, class_name: "Invite", foreign_key: "recipient_id", inverse_of: :recipient, dependent: :destroy
   has_many :commits, foreign_key: "author_login", primary_key: "github_login", dependent: :nullify, inverse_of: :user
   has_many :releases, dependent: :nullify
-  has_one :user_authentication, dependent: :destroy, inverse_of: :user
-  has_one :sso_authentication,
-    dependent: :destroy,
-    through: :user_authentication,
-    source: :authenticatable,
-    source_type: "Accounts::SsoAuthentication"
-  has_one :email_authentication,
-    dependent: :destroy,
-    through: :user_authentication,
-    source: :authenticatable,
-    source_type: "Accounts::EmailAuthentication"
+  has_many :user_authentications, dependent: :destroy, inverse_of: :user
+  has_many :sso_authentications,
+           dependent: :destroy,
+           through: :user_authentications,
+           source: :authenticatable,
+           source_type: "Accounts::SsoAuthentication"
+  has_many :email_authentications,
+           dependent: :destroy,
+           through: :user_authentications,
+           source: :authenticatable,
+           source_type: "Accounts::EmailAuthentication"
 
   friendly_id :full_name, use: :slugged
   auto_strip_attributes :full_name, :preferred_name, squish: true
@@ -66,13 +70,25 @@ class Accounts::User < ApplicationRecord
   accepts_nested_attributes_for :organizations
   accepts_nested_attributes_for :memberships, allow_destroy: false
 
+  def email_authentication
+    email_authentications.first
+  end
+
+  def sso_authentication
+    sso_authentications.first
+  end
+
   def email
     (email_authentication || sso_authentication).email
   end
 
   class << self
     def find_via_email(email)
-      joins(:email_authentication).find_by(email_authentication: {email: email})
+      joins(:email_authentications).find_by(email_authentications: { email: email })
+    end
+
+    def find_via_sso_email(email)
+      joins(:sso_authentications).find_by(sso_authentications: { email: email })
     end
 
     def valid_signup_domain?(email)
@@ -81,10 +97,6 @@ class Accounts::User < ApplicationRecord
       disallowed_domains = ENV["DISALLOWED_SIGN_UP_DOMAINS"]&.split(",")
       parsed_email = Mail::Address.new(email)
       disallowed_domains&.exclude?(parsed_email.domain)
-    end
-
-    def find_via_sso_email(email)
-      joins(:sso_authentication).find_by(sso_authentication: {email: email})
     end
 
     def valid_sso_email?(email, organization)
@@ -160,6 +172,7 @@ class Accounts::User < ApplicationRecord
       new_membership.role = Accounts::Membership.roles[:owner]
       new_membership.organization = new_organization
       new_user.memberships << new_membership
+      new_user.unique_authn_id = email_auth.unique_authn_id
       email_auth.save
       email_auth
     end

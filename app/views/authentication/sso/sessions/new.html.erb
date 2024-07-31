@@ -11,10 +11,10 @@
         <%= f.email_field :email,
                           placeholder: "Your company email",
                           autofocus: true,
-                          readonly: @invite.email.present?,
+                          readonly: @invite&.email.present?,
                           autocomplete: "email",
                           class: "form-input w-full",
-                          value: @invite.email %>
+                          value: @invite&.email %>
       </div>
 
       <%= f.submit "Single Sign-on / SAML", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white w-full" %>

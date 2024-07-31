@@ -206,13 +206,25 @@ en:
           attributes:
             bundle_identifier:
               same_as_parent: "Cannot be the same as the parent app"
+        accounts/user:
+          attributes:
+            unique_authn_id:
+              already_taken: "This email has already been taken. Please use a different email or contact support!"
         accounts/email_authentication:
           attributes:
             email:
               not_blank: "The email can't be blank"
-              already_taken: "This email has already been taken"
+              already_taken: "This email has already been taken. Please use a different email or contact support!"
               too_long: "The email is too long (maximum is 105 characters)"
               invalid_domain: "This email domain is invite-only. Please use a different address or contact support!"
+        accounts/sso_authentication:
+          attributes:
+            email:
+              not_blank: "The email can't be blank"
+              already_taken: "This email has already been taken. Please use a different email or contact support!"
+              too_long: "The email is too long (maximum is 105 characters)"
+            login_id:
+              already_taken: "This login ID has already been taken"
         accounts/invite:
           attributes:
             role:
