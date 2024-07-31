@@ -18,6 +18,8 @@
 class Accounts::SsoAuthentication < ApplicationRecord
   include Linkable
 
+  class AuthException < StandardError; end
+
   has_one :user_authentication, as: :authenticatable, dependent: :destroy
   has_one :user, through: :user_authentication
 
@@ -27,8 +29,13 @@ class Accounts::SsoAuthentication < ApplicationRecord
   validates :login_id, uniqueness: {allow_nil: true, case_sensitive: false, message: :already_taken}
 
   class << self
+    include Loggable
+
     def start_sign_in(tenant)
       client.saml_sign_in(tenant: tenant, redirect_url:)
+    rescue Descope::AuthException => e
+      elog(e)
+      raise AuthException, "Error starting SSO login: #{e.message}"
     end
 
     def finish_sign_in(code)

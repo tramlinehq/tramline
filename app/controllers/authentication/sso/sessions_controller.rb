@@ -17,6 +17,8 @@ class Authentication::Sso::SessionsController < ApplicationController
     else
       redirect_to sso_new_sso_session_path, flash: {error: "No Single Sign-On account found!"}
     end
+  rescue Accounts::SsoAuthentication::AuthException
+    redirect_to sso_new_sso_session_path, flash: {error: "Failed to start Single Sign-On login! Please contact support if the issue persists."}
   end
 
   def saml_redeem
