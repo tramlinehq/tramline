@@ -19,6 +19,10 @@ class ApplicationController < ActionController::Base
     @device ||= DeviceDetector.new(request.user_agent)
   end
 
+  def authenticated_root_path
+    apps_path
+  end
+
   def current_organization
     @current_organization ||=
       if session[:active_organization]
@@ -83,10 +87,13 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_in_path_for(_)
+    return authenticated_admin_root_path if current_user.admin?
+
     stored_location = stored_location_for(:user)
     if stored_location&.include? new_authentication_invite_confirmation_path
       return authenticated_root_path
     end
+
     stored_location || authenticated_root_path
   end
 

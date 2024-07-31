@@ -2,7 +2,7 @@ import {Controller} from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["button", "source", "success"]
-  
+
   connect() {
     if (!this.hasButtonTarget) return
     this.hidden = this.sourceTarget.type === "password"

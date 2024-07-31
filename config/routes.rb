@@ -8,19 +8,13 @@ Rails.application.routes.draw do
   mount Easymon::Engine => "/up"
 
   root "authentication/sessions#root"
-  get "/", to: "apps#index", as: :authenticated_root
+  get "/admin", to: "admin/settings#index", as: :authenticated_admin_root
 
   authenticate :email_authentication, ->(u) { u.admin? || Rails.env.development? } do
     mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
     mount Flipper::UI.app(Flipper), at: "/flipper"
     mount Sidekiq::Web, at: "/sidekiq"
     mount PgHero::Engine, at: "/pghero"
-  end
-
-  devise_scope :email_authentication do
-    authenticated :email_authentication, ->(u) { u.admin? } do
-      root "admin/settings#index", as: :authenticated_admin_root
-    end
   end
 
   devise_for :email_authentication,
