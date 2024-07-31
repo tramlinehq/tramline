@@ -25,7 +25,7 @@ class Authentication::Sso::SessionsController < ApplicationController
       return
     end
 
-    if (auth_data = Accounts::User.finish_sign_in_via_sso(saml_callback_code))
+    if (auth_data = Accounts::User.finish_sign_in_via_sso(saml_callback_code, request.remote_ip))
       set_sso_jwt_in_session(auth_data)
       redirect_to after_sign_in_path_for(:user), notice: t("devise.sessions.signed_in")
       return

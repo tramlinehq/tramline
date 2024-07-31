@@ -39,11 +39,11 @@ class Accounts::User < ApplicationRecord
     email_authentication: "EmailAuthentication"
   }.freeze
 
-  self.ignored_columns += %w[confirmation_sent_at confirmation_token confirmed_at current_sign_in_at current_sign_in_ip email encrypted_password failed_attempts last_sign_in_at last_sign_in_ip locked_at remember_created_at reset_password_sent_at reset_password_token sign_in_count unconfirmed_email unlock_token]
+  # self.ignored_columns += %w[confirmation_sent_at confirmation_token confirmed_at current_sign_in_at current_sign_in_ip email encrypted_password failed_attempts last_sign_in_at last_sign_in_ip locked_at remember_created_at reset_password_sent_at reset_password_token sign_in_count unconfirmed_email unlock_token]
 
-  validates :full_name, presence: { message: :not_blank }, length: { maximum: 70, message: :too_long }
-  validates :preferred_name, length: { maximum: 70, message: :too_long }
-  validates :unique_authn_id, uniqueness: { message: :already_taken, case_sensitive: false }
+  validates :full_name, presence: {message: :not_blank}, length: {maximum: 70, message: :too_long}
+  validates :preferred_name, length: {maximum: 70, message: :too_long}
+  validates :unique_authn_id, uniqueness: {message: :already_taken, case_sensitive: false}
 
   has_many :memberships, dependent: :delete_all, inverse_of: :user
   has_many :organizations, -> { where(status: :active).sequential }, through: :memberships
@@ -54,15 +54,15 @@ class Accounts::User < ApplicationRecord
   has_many :releases, dependent: :nullify
   has_many :user_authentications, dependent: :destroy, inverse_of: :user
   has_many :sso_authentications,
-           dependent: :destroy,
-           through: :user_authentications,
-           source: :authenticatable,
-           source_type: "Accounts::SsoAuthentication"
+    dependent: :destroy,
+    through: :user_authentications,
+    source: :authenticatable,
+    source_type: "Accounts::SsoAuthentication"
   has_many :email_authentications,
-           dependent: :destroy,
-           through: :user_authentications,
-           source: :authenticatable,
-           source_type: "Accounts::EmailAuthentication"
+    dependent: :destroy,
+    through: :user_authentications,
+    source: :authenticatable,
+    source_type: "Accounts::EmailAuthentication"
 
   friendly_id :full_name, use: :slugged
   auto_strip_attributes :full_name, :preferred_name, squish: true
@@ -84,11 +84,11 @@ class Accounts::User < ApplicationRecord
 
   class << self
     def find_via_email(email)
-      joins(:email_authentications).find_by(email_authentications: { email: email })
+      joins(:email_authentications).find_by(email_authentications: {email: email})
     end
 
     def find_via_sso_email(email)
-      joins(:sso_authentications).find_by(sso_authentications: { email: email })
+      joins(:sso_authentications).find_by(sso_authentications: {email: email})
     end
 
     def valid_signup_domain?(email)
@@ -129,7 +129,7 @@ class Accounts::User < ApplicationRecord
       Accounts::SsoAuthentication.start_sign_in(organization.sso_tenant_id) if valid_sso_email?(email, organization)
     end
 
-    def finish_sign_in_via_sso(code)
+    def finish_sign_in_via_sso(code, remote_ip)
       result = Accounts::SsoAuthentication.finish_sign_in(code)
       return unless result.ok?
 
@@ -142,7 +142,7 @@ class Accounts::User < ApplicationRecord
 
       user = find_or_create_via_sso(user_email, organization, full_name: user_full_name, preferred_name: user_preferred_name, login_id:)
       return unless user
-      user.update(current_sign_in_at: Time.current, last_sign_in_at: user.current_sign_in_at)
+      user.sso_authentication.track_login(remote_ip)
 
       auth_data
     end

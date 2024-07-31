@@ -2,13 +2,18 @@
 #
 # Table name: sso_authentications
 #
-#  id               :uuid             not null, primary key
-#  email            :string           default(""), not null, indexed
-#  logout_time      :datetime
-#  sso_created_time :datetime
-#  created_at       :datetime         not null
-#  updated_at       :datetime         not null
-#  login_id         :string           indexed
+#  id                 :uuid             not null, primary key
+#  current_sign_in_at :datetime
+#  current_sign_in_ip :string
+#  email              :string           default(""), not null, indexed
+#  last_sign_in_at    :datetime
+#  last_sign_in_ip    :string
+#  logout_time        :datetime
+#  sign_in_count      :integer          default(0), not null
+#  sso_created_time   :datetime
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  login_id           :string           indexed
 #
 class Accounts::SsoAuthentication < ApplicationRecord
   include Linkable
@@ -74,5 +79,19 @@ class Accounts::SsoAuthentication < ApplicationRecord
     build_user(full_name:, preferred_name:, unique_authn_id:)
     user.memberships.new(organization: invite.organization, role: invite.role)
     invite.mark_accepted(user) if save
+  end
+
+  def track_login(remote_ip)
+    old_current, new_current = current_sign_in_at, Time.current
+    self.last_sign_in_at = old_current || new_current
+    self.current_sign_in_at = new_current
+
+    old_current, new_current = current_sign_in_ip, remote_ip
+    self.last_sign_in_ip = old_current || new_current
+    self.current_sign_in_ip = new_current
+
+    self.sign_in_count ||= 0
+    self.sign_in_count += 1
+    save
   end
 end

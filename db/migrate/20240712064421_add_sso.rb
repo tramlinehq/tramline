@@ -23,6 +23,13 @@ class AddSso < ActiveRecord::Migration[7.0]
       t.datetime :logout_time
       t.datetime :sso_created_time
       t.timestamps null: false
+
+      # Trackable
+      t.integer :sign_in_count, default: 0, null: false
+      t.datetime :current_sign_in_at
+      t.datetime :last_sign_in_at
+      t.string :current_sign_in_ip
+      t.string :last_sign_in_ip
     end
     add_index :sso_authentications, :email, unique: true
     add_index :sso_authentications, :login_id, unique: true, where: "login_id IS NOT NULL"

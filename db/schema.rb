@@ -629,6 +629,11 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_12_064421) do
     t.datetime "sso_created_time"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "sign_in_count", default: 0, null: false
+    t.datetime "current_sign_in_at"
+    t.datetime "last_sign_in_at"
+    t.string "current_sign_in_ip"
+    t.string "last_sign_in_ip"
     t.index ["email"], name: "index_sso_authentications_on_email", unique: true
     t.index ["login_id"], name: "index_sso_authentications_on_login_id", unique: true, where: "(login_id IS NOT NULL)"
   end
