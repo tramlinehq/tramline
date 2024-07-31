@@ -10,7 +10,6 @@ namespace :sso do
     tenant_name = args[:tenant_name].to_s
     domains = args[:domains].to_s.split(",")
     configuration_link = args[:configuration_link].to_s
-
     abort "Tenant ID is required!" if tenant_id.blank?
     abort "Tenant Name is required!" if tenant_name.blank?
     abort "Domains are required!" if domains.blank?
