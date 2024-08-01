@@ -18,9 +18,6 @@ application.register("sortable", Sortable)
 import NestedForm from "stimulus-rails-nested-form"
 application.register("nested-form", NestedForm)
 
-import PasswordVisibility from "stimulus-password-visibility"
-application.register("password-visibility", PasswordVisibility)
-
 import { Confetti } from "stimulus-confetti"
 application.register("confetti", Confetti)
 

@@ -1,0 +1,32 @@
+<div class="max-w-lg mx-auto px-4 py-8">
+  <%= render partial: "authentication/email/shared/header",
+             locals: { heading: "Single Sign-On / SAML ✨",
+                       subtitle_text: "Sign in to Tramline using your organization's identity provider",
+                       resource: @resource } %>
+
+  <%= form_for(@resource, as: :sso_authentication, html: { 'data-turbo' => "false" }, url: sso_create_sso_session_url) do |f| %>
+    <div class="space-y-6">
+      <div>
+        <%= f.label :email, class: "block text-sm font-medium mb-1" %>
+        <%= f.email_field :email,
+                          placeholder: "Your company email",
+                          autofocus: true,
+                          readonly: @invite&.email.present?,
+                          autocomplete: "email",
+                          class: "form-input w-full",
+                          value: @invite&.email %>
+      </div>
+
+      <%= f.submit "Single Sign-on / SAML", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white w-full" %>
+
+      <div class="mr-1">
+        <div class="text-sm">
+          Or, <%= link_to "Sign In", new_email_authentication_session_path,
+                      class: "font-medium text-indigo-500 hover:text-indigo-600" %> using email and password
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <%= render partial: "authentication/email/shared/footer" %>
+</div>

@@ -7,33 +7,32 @@ Rails.application.routes.draw do
   mount ActionCable.server => "/cable"
   mount Easymon::Engine => "/up"
 
-  authenticate :user, ->(u) { u.admin? || Rails.env.development? } do
+  root "authentication/sessions#root"
+  get "/admin", to: "admin/settings#index", as: :authenticated_admin_root
+
+  authenticate :email_authentication, ->(u) { u.admin? || Rails.env.development? } do
     mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
     mount Flipper::UI.app(Flipper), at: "/flipper"
     mount Sidekiq::Web, at: "/sidekiq"
     mount PgHero::Engine, at: "/pghero"
   end
 
-  devise_for :users,
+  devise_for :email_authentication,
+    path: :email,
     controllers: {
-      registrations: "authentication/registrations",
-      sessions: "authentication/sessions",
-      confirmations: "authentication/confirmations",
-      passwords: "authentication/passwords"
+      registrations: "authentication/email/registrations",
+      sessions: "authentication/email/sessions",
+      confirmations: "authentication/email/confirmations",
+      passwords: "authentication/email/passwords"
     },
-    class_name: "Accounts::User"
+    class_name: "Accounts::EmailAuthentication"
 
-  devise_scope :user do
-    unauthenticated :user do
-      root "authentication/sessions#new"
-    end
-
-    authenticated :user, ->(u) { u.admin? } do
-      root "admin/settings#index", as: :authenticated_admin_root
-    end
-
-    authenticated :user do
-      root "apps#index", as: :authenticated_root
+  scope module: :authentication do
+    namespace :sso do
+      get "saml/redeem", to: "sessions#saml_redeem"
+      get "sign_in", to: "sessions#new", as: :new_sso_session
+      post "sign_in", to: "sessions#create", as: :create_sso_session
+      get "sign_out", to: "sessions#destroy", as: :destroy_sso_session
     end
   end
 
@@ -223,7 +222,9 @@ Rails.application.routes.draw do
       get "ping", to: "pings#show"
       get "releases/*release_id", to: "releases#show"
       get "apps/*app_id", to: "apps#show"
-      patch "apps/:app_id/builds/:version_name/:version_code/external_metadata", to: "builds#external_metadata", constraints: {version_name: VERSION_NAME_REGEX}
+      patch "apps/:app_id/builds/:version_name/:version_code/external_metadata",
+        to: "builds#external_metadata",
+        constraints: {version_name: VERSION_NAME_REGEX}
     end
   end
 
@@ -241,7 +242,8 @@ Rails.application.routes.draw do
     get :callback, controller: "integration_listeners/slack", as: :slack_callback
   end
 
-  get "/rails/active_storage/blobs/redirect/:signed_id/*filename", to: "authorized_blob_redirect#show", as: "blob_redirect"
+  get "/rails/active_storage/blobs/redirect/:signed_id/*filename",
+    to: "authorized_blob_redirect#show", as: "blob_redirect"
   match "/", via: %i[post put patch delete], to: "application#raise_not_found", format: false
   match "*unmatched_route", via: :all, to: "application#raise_not_found", format: false,
     constraints: lambda { |req| req.path.exclude? "rails/active_storage" }

@@ -9,28 +9,18 @@
 
 class Accounts::InvitationsController < SignedInApplicationController
   before_action :require_write_access!, only: %i[create]
+  before_action :set_organization
 
   def create
     @invite = Accounts::Invite.new(invite_params)
     @invite.sender = current_user
 
-    if @invite.save
-      begin
-        if @invite.recipient.present?
-          InvitationMailer.existing_user(@invite).deliver
-        else
-          InvitationMailer.new_user(@invite).deliver
-        end
-      rescue Postmark::ApiInputError
-        flash[:error] = "Sorry, there was a delivery error while sending the invite!"
-        redirect_to accounts_organization_teams_path(current_organization)
-      end
-
+    if @invite.make
       redirect_to accounts_organization_teams_path(current_organization),
         notice: "Sent an invite to #{@invite.email}!"
     else
       redirect_to accounts_organization_teams_path(current_organization),
-        notice: "Failed to send an invite to #{@invite.email}!"
+        flash: {error: @invite.errors.full_messages.to_sentence}
     end
   end
 
@@ -38,5 +28,9 @@ class Accounts::InvitationsController < SignedInApplicationController
 
   def invite_params
     params.require(:accounts_invite).permit(:email, :organization_id, :role)
+  end
+
+  def set_organization
+    @organization = Accounts::Organization.find(invite_params[:organization_id])
   end
 end

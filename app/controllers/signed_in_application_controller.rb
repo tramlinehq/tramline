@@ -1,30 +1,43 @@
 class SignedInApplicationController < ApplicationController
+  include Authenticatable
   DEFAULT_TIMEZONE = "Asia/Kolkata"
-  include MetadataAwareness
+  DEFAULT_TIMEZONE_LIST_REGEX = /Asia\/Kolkata/
+  PATH_PARAMS_UNDER_APP = [:id, :app_id, :integration_id, :train_id, :platform_id]
 
+  layout -> { ensure_supported_layout("signed_in_application") }
+
+  before_action :authenticate_sso_request!, if: :sso_authentication_signed_in?
   before_action :turbo_frame_request_variant
   before_action :set_currents
   before_action :set_paper_trail_whodunnit
   before_action :set_sentry_context, if: -> { Rails.env.production? }
-  before_action :require_login, unless: :devise_controller?
+  before_action :require_login, unless: :authentication_controllers?
   before_action :track_behaviour
   before_action :set_app
-  helper_method :current_organization
-  helper_method :current_user
-  helper_method :default_app
-  helper_method :new_app
-  helper_method :writer?
-  helper_method :default_timezones
-  layout -> { ensure_supported_layout("signed_in_application") }
+
+  helper_method :current_organization,
+    :current_user,
+    :default_app,
+    :new_app,
+    :writer?,
+    :default_timezones,
+    :demo_org?,
+    :demo_train?,
+    :subscribed_org?,
+    :billing?,
+    :billing_link,
+    :logout_path
 
   rescue_from NotAuthorizedError, with: :user_not_authorized
 
   protected
 
-  helper_method :demo_org?, :demo_train?, :subscribed_org?, :billing?, :billing_link
-  PATH_PARAMS_UNDER_APP = [:id, :app_id, :integration_id, :train_id, :platform_id]
-
-  def home
+  def logout_path
+    if sso_authentication_signed_in?
+      sso_destroy_sso_session_path
+    else
+      destroy_email_authentication_session_path
+    end
   end
 
   def demo_org?
@@ -80,7 +93,8 @@ class SignedInApplicationController < ApplicationController
   end
 
   def set_sentry_context
-    Sentry.set_user(id: current_user.id, username: current_user.full_name, email: current_user.email) if current_user
+    return unless current_user
+    Sentry.set_user(id: current_user.id, username: current_user.full_name, email: current_user.email)
   end
 
   def set_currents
@@ -105,7 +119,10 @@ class SignedInApplicationController < ApplicationController
 
     redirect_config = Rails.application.config.x.app_redirect
     new_app_id = redirect_config[app_id]
-    redirect_to url_for(params.permit(*PATH_PARAMS_UNDER_APP).merge(app_id_key => new_app_id)) and return if new_app_id.present?
+    if new_app_id.present?
+      redirect_to url_for(params.permit(*PATH_PARAMS_UNDER_APP).merge(app_id_key => new_app_id))
+      return
+    end
 
     @app = current_organization.apps.friendly.find(app_id)
   end
@@ -123,8 +140,6 @@ class SignedInApplicationController < ApplicationController
   def new_app
     current_organization.apps.new
   end
-
-  DEFAULT_TIMEZONE_LIST_REGEX = /Asia\/Kolkata/
 
   def default_timezones
     ActiveSupport::TimeZone.all.select { |tz| tz.match?(DEFAULT_TIMEZONE_LIST_REGEX) }

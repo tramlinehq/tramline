@@ -2,15 +2,21 @@
 #
 # Table name: organizations
 #
-#  id         :uuid             not null, primary key
-#  api_key    :string
-#  created_by :string           not null
-#  name       :string           not null
-#  slug       :string           indexed
-#  status     :string           not null, indexed
-#  subscribed :boolean          default(FALSE)
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
+#  id                     :uuid             not null, primary key
+#  api_key                :string
+#  created_by             :string           not null
+#  name                   :string           not null
+#  slug                   :string           indexed
+#  sso                    :boolean          default(FALSE)
+#  sso_configuration_link :string
+#  sso_domains            :string           default([]), is an Array
+#  sso_protocol           :string
+#  sso_tenant_name        :string
+#  status                 :string           not null, indexed
+#  subscribed             :boolean          default(FALSE)
+#  created_at             :datetime         not null
+#  updated_at             :datetime         not null
+#  sso_tenant_id          :string
 #
 class Accounts::Organization < ApplicationRecord
   extend FriendlyId
@@ -36,6 +42,14 @@ class Accounts::Organization < ApplicationRecord
   auto_strip_attributes :name, squish: true
 
   scope :sequential, -> { reorder("organizations.created_at ASC") }
+
+  def self.find_by_sso_domain(domain)
+    where(sso: true).where(":domain = ANY (sso_domains)", domain:).first
+  end
+
+  def valid_sso_domain?(email)
+    sso_domains.include?(Mail::Address.new(email).domain)
+  end
 
   def demo?
     Flipper.enabled?(:demo_mode, self)
