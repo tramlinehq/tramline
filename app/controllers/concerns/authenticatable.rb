@@ -4,19 +4,13 @@ module Authenticatable
   SSO_JWT_USER_ID_KEY = :sso_user_id
 
   def skip_authentication
-    if login_by_sso?
-      authenticate_sso_request!
-      redirect_to after_sign_in_path_for(:user) if current_user
-      return
-    end
-
-    if email_authentication_signed_in?
+    if sso_authentication_signed_in? || email_authentication_signed_in?
       redirect_to after_sign_in_path_for(:user)
     end
   end
 
   def authenticate_sso_request!
-    return unless login_by_sso?
+    return unless sso_authentication_signed_in?
 
     st, rt = session[SSO_JWT_SESSION_KEY], session[SSO_JWT_REFRESH_KEY]
     result = Accounts::SsoAuthentication.validate_or_refresh_session(st, rt)
@@ -33,7 +27,7 @@ module Authenticatable
     end
   end
 
-  def login_by_sso?
+  def sso_authentication_signed_in?
     (session[SSO_JWT_SESSION_KEY].present? || session[SSO_JWT_REFRESH_KEY].present?) &&
       session[SSO_JWT_USER_ID_KEY].present?
   end

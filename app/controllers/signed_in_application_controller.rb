@@ -6,7 +6,7 @@ class SignedInApplicationController < ApplicationController
 
   layout -> { ensure_supported_layout("signed_in_application") }
 
-  before_action :authenticate_sso_request!, if: :login_by_sso?
+  before_action :authenticate_sso_request!, if: :sso_authentication_signed_in?
   before_action :turbo_frame_request_variant
   before_action :set_currents
   before_action :set_paper_trail_whodunnit
@@ -33,7 +33,7 @@ class SignedInApplicationController < ApplicationController
   protected
 
   def logout_path
-    if login_by_sso?
+    if sso_authentication_signed_in?
       sso_destroy_sso_session_path
     else
       destroy_email_authentication_session_path

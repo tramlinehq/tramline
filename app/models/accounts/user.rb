@@ -117,6 +117,7 @@ class Accounts::User < ApplicationRecord
     end
 
     def start_sign_in_via_sso(email)
+      email = email.downcase
       parsed_email_domain = Mail::Address.new(email).domain
       organization = Accounts::Organization.find_by_sso_domain(parsed_email_domain)
       return unless organization

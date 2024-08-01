@@ -87,7 +87,7 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_in_path_for(_)
-    return authenticated_admin_root_path if current_user.admin?
+    return authenticated_admin_root_path if current_user&.admin?
 
     stored_location = stored_location_for(:user)
     if stored_location&.include? new_authentication_invite_confirmation_path

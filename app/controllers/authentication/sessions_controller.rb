@@ -1,6 +1,6 @@
 class Authentication::SessionsController < ApplicationController
   include Authenticatable
-  before_action :authenticate_sso_request!, if: :login_by_sso?
+  before_action :authenticate_sso_request!, if: :sso_authentication_signed_in?
 
   def root
     if current_user
