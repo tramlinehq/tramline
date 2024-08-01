@@ -27,10 +27,10 @@ class MigrateUsersToEmailAuth < ActiveRecord::Migration[7.0]
         created_at: user_attrs["created_at"]
       }
 
-      email_auth = user.build_email_authentication(params)
+      email_auth = Accounts::EmailAuthentication.new(**params)
       email_auth.update_attribute(:encrypted_password, user_attrs["encrypted_password"])
-      user.email_authentication = email_auth
-      user.save!
+      email_auth.user = user
+      email_auth.save!
     end
   end
 
