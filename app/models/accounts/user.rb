@@ -73,9 +73,7 @@ class Accounts::User < ApplicationRecord
     sso_authentications.first
   end
 
-  def email
-    (email_authentication || sso_authentication).email
-  end
+  def email = unique_authn_id
 
   class << self
     def find_via_email(email)
