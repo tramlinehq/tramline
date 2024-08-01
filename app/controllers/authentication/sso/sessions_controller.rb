@@ -42,6 +42,7 @@ class Authentication::Sso::SessionsController < ApplicationController
   end
 
   def destroy
+    logout_sso
     clear_sso_jwt_in_session
     redirect_to sso_new_sso_session_path, notice: t("devise.sessions.signed_out")
   end

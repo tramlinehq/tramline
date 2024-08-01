@@ -38,6 +38,11 @@ module Authenticatable
     session[SSO_JWT_REFRESH_KEY] = params[:refresh_token] if params[:refresh_token].present?
   end
 
+  def logout_sso
+    rt = session[SSO_JWT_REFRESH_KEY]
+    Accounts::SsoAuthentication.logout(rt) if rt.present?
+  end
+
   def clear_sso_jwt_in_session
     session[SSO_JWT_SESSION_KEY] = nil
     session[SSO_JWT_REFRESH_KEY] = nil

@@ -42,6 +42,10 @@ class Accounts::SsoAuthentication < ApplicationRecord
       GitHub::Result.new { parse_jwt(client.saml_exchange_token(code)) }
     end
 
+    def logout(refresh_token)
+      client.sign_out(refresh_token)
+    end
+
     def validate_or_refresh_session(session_token, refresh_token)
       GitHub::Result.new { parse_jwt(client.validate_and_refresh_session(session_token:, refresh_token:)) }
     end
