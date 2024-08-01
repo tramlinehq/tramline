@@ -30,7 +30,8 @@ class MigrateUsersToEmailAuth < ActiveRecord::Migration[7.0]
       email_auth = Accounts::EmailAuthentication.new(**params)
       email_auth.update_attribute(:encrypted_password, user_attrs["encrypted_password"])
       email_auth.user = user
-      email_auth.save!
+      email_auth.skip_confirmation_notification!
+      email_auth.save!(validate: false)
     end
   end
 
