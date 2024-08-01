@@ -4,10 +4,10 @@ module Linkable
   class_methods do
     include Rails.application.routes.url_helpers
 
-    def link_params(port: ENV["PORT_NUM"])
+    def link_params
       if Rails.env.development?
         {
-          host: ENV["HOST_NAME"], protocol: "https", port:
+          host: ENV["HOST_NAME"], protocol: "https", port: ENV["PORT_NUM"]
         }
       else
         {
@@ -15,10 +15,20 @@ module Linkable
         }
       end
     end
+
+    def tunneled_link_params
+      if Rails.env.development?
+        {
+          host: ENV["TUNNELED_HOST_NAME"], protocol: "https"
+        }
+      else
+        link_params
+      end
+    end
   end
 
   included do
     include Rails.application.routes.url_helpers
-    delegate :link_params, to: self
+    delegate :link_params, :tunneled_link_params, to: self
   end
 end

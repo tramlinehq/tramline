@@ -74,7 +74,7 @@ class Accounts::SsoAuthentication < ApplicationRecord
 
     def redirect_url
       return if Rails.env.test?
-      sso_saml_redeem_url(link_params(port: nil))
+      sso_saml_redeem_url(tunneled_link_params)
     end
   end
 

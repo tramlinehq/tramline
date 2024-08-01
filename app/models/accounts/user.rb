@@ -34,11 +34,6 @@ class Accounts::User < ApplicationRecord
   extend FriendlyId
   has_paper_trail
 
-  AUTHENTICATION_TYPES = {
-    sso_authentication: "SsoAuthentication",
-    email_authentication: "EmailAuthentication"
-  }.freeze
-
   # self.ignored_columns += %w[confirmation_sent_at confirmation_token confirmed_at current_sign_in_at current_sign_in_ip email encrypted_password failed_attempts last_sign_in_at last_sign_in_ip locked_at remember_created_at reset_password_sent_at reset_password_token sign_in_count unconfirmed_email unlock_token]
 
   validates :full_name, presence: {message: :not_blank}, length: {maximum: 70, message: :too_long}

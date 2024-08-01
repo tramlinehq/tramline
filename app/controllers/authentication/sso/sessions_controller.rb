@@ -23,7 +23,7 @@ class Authentication::Sso::SessionsController < ApplicationController
       redirect_to sso_new_sso_session_path, flash: {error: t(".no_account")}
     end
   rescue Accounts::SsoAuthentication::AuthException
-    redirect_to sso_new_sso_session_path, flash: {error: "Failed to start Single Sign-On login! Please contact support if the issue persists."}
+    redirect_to sso_new_sso_session_path, flash: {error: t(".failure")}
   end
 
   def saml_redeem
@@ -59,10 +59,6 @@ class Authentication::Sso::SessionsController < ApplicationController
   def set_invite
     invite_token = params[:invite_token]
     @invite = Accounts::Invite.find_by(token: invite_token) if invite_token.present?
-  end
-
-  def after_sign_in_path_for(resource)
-    stored_location_for(resource) || root_path
   end
 
   def prepare_intercom_shutdown

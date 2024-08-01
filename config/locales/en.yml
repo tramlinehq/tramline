@@ -41,6 +41,7 @@ en:
         create:
             no_account: "No Single Sign-On account found."
             connect_failure: "Failed to connect to the Single Sign-On provider."
+            failure: "Failed to login via Single Sign-On! Please contact support if the issue persists."
         saml_redeem:
             failure: "Failed to accept the response from SSO provider."
   activerecord:
