@@ -13,9 +13,14 @@ class Authentication::Sso::SessionsController < ApplicationController
 
   def create
     if (result = Accounts::User.start_sign_in_via_sso(sso_authentication_params[:email]))
-      redirect_to result["url"], allow_other_host: true
+      redirect_url = result["url"]
+      if redirect_url&.match?(URI::DEFAULT_PARSER.make_regexp)
+        redirect_to URI.parse(redirect_url).to_s, allow_other_host: true
+      else
+        redirect_to sso_new_sso_session_path, flash: {error: t(".connect_failure")}
+      end
     else
-      redirect_to sso_new_sso_session_path, flash: {error: "No Single Sign-On account found!"}
+      redirect_to sso_new_sso_session_path, flash: {error: t(".no_account")}
     end
   rescue Accounts::SsoAuthentication::AuthException
     redirect_to sso_new_sso_session_path, flash: {error: "Failed to start Single Sign-On login! Please contact support if the issue persists."}
@@ -33,7 +38,7 @@ class Authentication::Sso::SessionsController < ApplicationController
       return
     end
 
-    redirect_to sso_new_sso_session_path, flash: {error: "Single Sign-On login failed!"}
+    redirect_to sso_new_sso_session_path, flash: {error: t(".failure")}
   end
 
   def destroy
