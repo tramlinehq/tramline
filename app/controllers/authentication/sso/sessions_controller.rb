@@ -4,7 +4,6 @@ class Authentication::Sso::SessionsController < ApplicationController
   before_action :skip_authentication, only: [:new, :create]
   after_action :prepare_intercom_shutdown, only: [:destroy]
   after_action :intercom_shutdown, only: [:new]
-  after_action :track_login, only: [:create]
 
   def new
     set_invite
@@ -34,6 +33,8 @@ class Authentication::Sso::SessionsController < ApplicationController
 
     if (auth_data = Accounts::User.finish_sign_in_via_sso(saml_callback_code, request.remote_ip))
       set_sso_jwt_in_session(auth_data)
+      authenticate_sso_request!
+      track_login
       redirect_to after_sign_in_path_for(:user), notice: t("devise.sessions.signed_in")
       return
     end
@@ -71,6 +72,6 @@ class Authentication::Sso::SessionsController < ApplicationController
   end
 
   def track_login
-    SiteAnalytics.track(current_user, current_organization, device, "Login")
+    SiteAnalytics.track(current_user, current_organization, device, "SSO Login")
   end
 end

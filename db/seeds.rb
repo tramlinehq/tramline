@@ -12,11 +12,11 @@ admin_user = lambda do
   email_authentication = Accounts::EmailAuthentication.find_or_initialize_by(email: ADMIN_EMAIL)
   admin = true
 
-  unless email_authentication.persisted?
+  if email_authentication.persisted?
+    user = email_authentication.user
+  else
     user = Accounts::User.find_or_create_by!(full_name: ADMIN_FULL_NAME, preferred_name: ADMIN_PREFERRED_NAME, admin:, unique_authn_id: ADMIN_EMAIL)
     email_authentication.update!(password: ADMIN_PASSWORD, confirmed_at: DateTime.now, user:)
-  else
-    user = email_authentication.user
   end
 
   puts "Added/updated admin user."
@@ -32,12 +32,12 @@ OWNER_PASSWORD = "why aroma enclose startup"
 owner_user = lambda do
   email_authentication = Accounts::EmailAuthentication.find_or_initialize_by(email: OWNER_EMAIL)
 
-  unless email_authentication.persisted?
+  if email_authentication.persisted?
+    user = email_authentication.user
+  else
     user = Accounts::User.find_or_create_by!(full_name: OWNER_FULL_NAME, preferred_name: OWNER_PREFERRED_NAME, unique_authn_id: OWNER_EMAIL)
     email_authentication.update!(password: OWNER_PASSWORD, confirmed_at: DateTime.now, user:)
     email_authentication.reload
-  else
-    user = email_authentication.user
   end
 
   organization = Accounts::Organization.find_or_create_by!(
@@ -65,12 +65,12 @@ DEVELOPER_PASSWORD = "why aroma enclose startup"
 developer_user = lambda do
   email_authentication = Accounts::EmailAuthentication.find_or_initialize_by(email: DEVELOPER_EMAIL)
 
-  unless email_authentication.persisted?
+  if email_authentication.persisted?
+    user = email_authentication.user
+  else
     user = Accounts::User.find_or_create_by!(full_name: DEVELOPER_FULL_NAME, preferred_name: DEVELOPER_PREFERRED_NAME, unique_authn_id: DEVELOPER_EMAIL)
     email_authentication.update!(password: DEVELOPER_PASSWORD, confirmed_at: DateTime.now, user:)
     email_authentication.reload
-  else
-    user = email_authentication.user
   end
 
   organization = Accounts::Organization.find_or_create_by!(

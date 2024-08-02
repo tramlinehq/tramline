@@ -33,7 +33,7 @@ class Accounts::SsoAuthentication < ApplicationRecord
 
     def start_sign_in(tenant)
       client.saml_sign_in(tenant: tenant, redirect_url:)
-    rescue Descope::AuthException => e
+    rescue Descope::AuthException, Descope::AccessDenied => e
       elog(e)
       raise AuthException, "Error starting SSO login: #{e.message}"
     end
