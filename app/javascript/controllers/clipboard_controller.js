@@ -28,7 +28,6 @@ export default class extends Controller {
     }
 
     this.buttonTarget.innerHTML = this.successTarget.innerHTML
-
     this.timeout = setTimeout(() => {
       this.buttonTarget.innerHTML = this.originalContent
     }, this.successDurationValue)

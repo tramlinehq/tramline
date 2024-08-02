@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_07_13_085645) do
+ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -209,11 +209,37 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_13_085645) do
     t.datetime "discarded_at"
     t.boolean "send_build_notes"
     t.string "notes", default: "no_notes", null: false
-    t.index ["build_artifact_channel", "integration_id", "step_id"], name: "idx_deployments_on_build_artifact_chan_and_integration_and_step", unique: true
+    t.index ["build_artifact_channel", "integration_id", "step_id"], name: "idx_kept_deployments_on_artifact_chan_and_integration_and_step", unique: true, where: "(discarded_at IS NULL)"
     t.index ["deployment_number", "step_id"], name: "index_deployments_on_deployment_number_and_step_id", unique: true
     t.index ["discarded_at"], name: "index_deployments_on_discarded_at"
     t.index ["integration_id"], name: "index_deployments_on_integration_id"
     t.index ["step_id"], name: "index_deployments_on_step_id"
+  end
+
+  create_table "email_authentications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "email", default: "", null: false
+    t.string "encrypted_password", default: "", null: false
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.integer "sign_in_count", default: 0, null: false
+    t.datetime "current_sign_in_at"
+    t.datetime "last_sign_in_at"
+    t.string "current_sign_in_ip"
+    t.string "last_sign_in_ip"
+    t.string "confirmation_token"
+    t.datetime "confirmed_at"
+    t.datetime "confirmation_sent_at"
+    t.string "unconfirmed_email"
+    t.integer "failed_attempts", default: 0, null: false
+    t.string "unlock_token"
+    t.datetime "locked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["confirmation_token"], name: "index_email_authentications_on_confirmation_token", unique: true
+    t.index ["email"], name: "index_email_authentications_on_email", unique: true
+    t.index ["reset_password_token"], name: "index_email_authentications_on_reset_password_token", unique: true
+    t.index ["unlock_token"], name: "index_email_authentications_on_unlock_token", unique: true
   end
 
   create_table "external_apps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -361,6 +387,12 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_13_085645) do
     t.datetime "updated_at", null: false
     t.boolean "subscribed", default: false
     t.string "api_key"
+    t.boolean "sso", default: false
+    t.string "sso_tenant_id"
+    t.string "sso_tenant_name"
+    t.string "sso_domains", default: [], array: true
+    t.string "sso_protocol"
+    t.string "sso_configuration_link"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
     t.index ["status"], name: "index_organizations_on_status"
   end
@@ -618,6 +650,22 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_13_085645) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "sso_authentications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "login_id"
+    t.string "email", default: "", null: false
+    t.datetime "logout_time"
+    t.datetime "sso_created_time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "sign_in_count", default: 0, null: false
+    t.datetime "current_sign_in_at"
+    t.datetime "last_sign_in_at"
+    t.string "current_sign_in_ip"
+    t.string "last_sign_in_ip"
+    t.index ["email"], name: "index_sso_authentications_on_email", unique: true
+    t.index ["login_id"], name: "index_sso_authentications_on_login_id", unique: true, where: "(login_id IS NOT NULL)"
+  end
+
   create_table "staged_rollouts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "deployment_run_id", null: false
     t.decimal "config", precision: 8, scale: 5, default: [], array: true
@@ -755,7 +803,18 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_13_085645) do
     t.string "tag_suffix"
     t.string "versioning_strategy", default: "semver"
     t.boolean "stop_automatic_releases_on_failure", default: false, null: false
+    t.boolean "patch_version_bump_only", default: false, null: false
     t.index ["app_id"], name: "index_trains_on_app_id"
+  end
+
+  create_table "user_authentications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "authenticatable_type", null: false
+    t.uuid "authenticatable_id", null: false
+    t.uuid "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["authenticatable_type", "authenticatable_id"], name: "index_user_authentications_on_authenticatable"
+    t.index ["user_id"], name: "index_user_authentications_on_user_id"
   end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -763,8 +822,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_13_085645) do
     t.string "preferred_name"
     t.string "slug"
     t.boolean "admin", default: false
-    t.string "email", default: "", null: false
-    t.string "encrypted_password", default: "", null: false
+    t.string "email", default: ""
+    t.string "encrypted_password", default: ""
     t.string "reset_password_token"
     t.datetime "reset_password_sent_at"
     t.datetime "remember_created_at"
@@ -784,11 +843,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_13_085645) do
     t.datetime "updated_at", null: false
     t.string "github_login"
     t.string "github_id"
-    t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
-    t.index ["email"], name: "index_users_on_email", unique: true
-    t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.string "unique_authn_id", default: "", null: false
     t.index ["slug"], name: "index_users_on_slug", unique: true
-    t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
 
   create_table "versions", force: :cascade do |t|
@@ -884,4 +940,5 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_13_085645) do
   add_foreign_key "workflow_runs", "commits"
   add_foreign_key "workflow_runs", "pre_prod_releases"
   add_foreign_key "workflow_runs", "release_platform_runs"
+  add_foreign_key "user_authentications", "users"
 end

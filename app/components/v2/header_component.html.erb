@@ -169,7 +169,7 @@
           <% end %>
 
           <% dropdown.with_item_group(list_style: "text-secondary dark:text-secondary-50") do |group| %>
-            <% group.with_item(link: { path: destroy_user_session_path, "data-turbo": false }) do %>
+            <% group.with_item(link: { path: logout_path, "data-turbo": false }) do %>
               Sign out
             <% end %>
           <% end %>

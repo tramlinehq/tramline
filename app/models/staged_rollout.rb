@@ -26,6 +26,7 @@ class StagedRollout < ApplicationRecord
     started
     paused
     failed
+    failed_before_any_rollout
     resumed
     increased
     completed

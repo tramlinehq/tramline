@@ -1,4 +1,4 @@
-class Authentication::ConfirmationsController < Devise::ConfirmationsController
+class Authentication::Email::ConfirmationsController < Devise::ConfirmationsController
   def show
     self.resource = resource_class.confirm_by_token(params[:confirmation_token])
 
@@ -6,7 +6,7 @@ class Authentication::ConfirmationsController < Devise::ConfirmationsController
 
     if resource.errors.empty?
       set_flash_message!(:notice, :confirmed)
-      SiteAnalytics.track(resource, resource.organizations.first, DeviceDetector.new(request.user_agent), "Email Confirmation")
+      SiteAnalytics.track(resource, resource.organization, DeviceDetector.new(request.user_agent), "Email Confirmation")
     elsif resource.confirmed?
       set_flash_message!(:notice, :already_confirmed)
     else
@@ -22,7 +22,7 @@ class Authentication::ConfirmationsController < Devise::ConfirmationsController
     if signed_in?(resource_name)
       signed_in_root_path(resource)
     else
-      new_user_session_path(confirmed_email: resource&.email)
+      new_email_authentication_session_path(confirmed_email: resource&.email)
     end
   end
 end

@@ -6,6 +6,18 @@ module Installations
       {
         status: "PERMISSION_DENIED",
         code: 403,
+        message_matcher: /The Android App Bundle was not signed. Please sign the bundle using jarsigner/,
+        decorated_reason: :unsigned_bundle
+      },
+      {
+        status: "PERMISSION_DENIED",
+        code: 403,
+        message_matcher: /You must let us know whether your app uses any exact alarm permissions/,
+        decorated_reason: :exact_alarm_permission_required
+      },
+      {
+        status: "PERMISSION_DENIED",
+        code: 403,
         message_matcher: /APK specifies a version code that has already been used/,
         decorated_reason: :build_exists_in_build_channel
       },
@@ -155,7 +167,7 @@ module Installations
     end
 
     def log
-      logger.error(api_error)
+      logger.error(api_error, {error_message: error_message, status: status, code: code})
     end
   end
 end

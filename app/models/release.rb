@@ -171,7 +171,7 @@ class Release < ApplicationRecord
   attr_accessor :has_major_bump, :force_finalize, :hotfix_platform, :custom_version
   friendly_id :human_slug, use: :slugged
 
-  delegate :versioning_strategy, to: :train
+  delegate :versioning_strategy, :patch_version_bump_only, to: :train
   delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
   delegate :platform, :organization, to: :app
 

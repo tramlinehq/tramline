@@ -1,20 +1,21 @@
-class Authentication::RegistrationsController < Devise::RegistrationsController
-  include ExceptionHandler
+class Authentication::Email::RegistrationsController < Devise::RegistrationsController
+  include Exceptionable
+  include Authenticatable
 
+  before_action :skip_authentication, only: [:new, :create]
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :set_invite_token, only: [:new, :create]
   before_action :set_invite, only: [:new, :create]
-  alias_method :user, :resource
-  helper_method :user
 
   def new
     if @token.present?
       flash[:notice] = t("invitation.flash.signup_before", org: @invite.organization.name)
     end
 
-    super do |usr|
-      @organization = usr.organizations.build
-      @user.email = @invite&.email
+    super do |email_auth|
+      @user = email_auth.build_user
+      @organization = @user.organizations.build
+      @email_authentication.email = @invite&.email
     end
   end
 
@@ -32,41 +33,41 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
         render :new, status: :unprocessable_entity and return
       end
 
-      user.add!(@invite)
+      resource.add(@invite)
     else
       build_resource(sign_up_params)
-      Accounts::User.onboard(user)
+      Accounts::User.onboard_via_email(resource)
     end
 
-    finish_sign_up
+    finish_signing_up
     identify_team
   end
 
   protected
 
   def after_sign_in_path_for(resource)
-    if request.path == new_user_registration_path && params["invite_token"].present?
-      flash[:alert] = t("invitation.flash.already_signed_in.new_user", email: current_user.email)
+    if request.path == new_email_authentication_registration_path && params["invite_token"].present?
+      flash[:alert] = t("invitation.flash.already_signed_in.new_user", email: current_email_authentication.email)
     end
 
     super
   end
 
-  def finish_sign_up
-    if user.persisted?
-      if user.active_for_authentication?
+  def finish_signing_up
+    if resource.persisted?
+      if resource.active_for_authentication?
         set_flash_message!(:notice, :signed_up)
-        sign_up(resource_name, user)
-        respond_with(user, location: after_sign_up_path_for(user))
+        sign_up(resource_name, resource)
+        respond_with(resource, location: after_sign_up_path_for(resource))
       else
-        set_flash_message!(:notice, :"signed_up_but_#{user.inactive_message}")
+        set_flash_message!(:notice, :"signed_up_but_#{resource.inactive_message}")
         expire_data_after_sign_in!
-        respond_with(user, location: after_inactive_sign_up_path_for(user))
+        respond_with(resource, location: after_inactive_sign_up_path_for(resource))
       end
     else
-      clean_up_passwords(user)
+      clean_up_passwords(resource)
       set_minimum_password_length
-      respond_with(user, location: after_sign_up_path_for(user))
+      render :new, status: :unprocessable_entity
     end
   end
 
@@ -81,12 +82,14 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up) do |u|
       u.permit(
-        :full_name,
-        :preferred_name,
         :email,
         :password,
         :password_confirmation,
-        organizations_attributes: [:name]
+        user_attributes: [
+          :full_name,
+          :preferred_name,
+          organizations_attributes: [:name]
+        ]
       )
     end
   end
@@ -100,8 +103,10 @@ class Authentication::RegistrationsController < Devise::RegistrationsController
   end
 
   def identify_team
-    return unless user.persisted?
-    SiteAnalytics.identify_and_group(user, user.organizations.first)
-    SiteAnalytics.track(user, user.organizations.first, DeviceDetector.new(request.user_agent), "Signup")
+    return unless resource.persisted?
+
+    tracking_org = resource.organization
+    SiteAnalytics.identify_and_group(resource, tracking_org)
+    SiteAnalytics.track(resource, tracking_org, DeviceDetector.new(request.user_agent), "Signup")
   end
 end

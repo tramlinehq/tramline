@@ -19,10 +19,10 @@ class V2::LiveRelease::PreProdSubmissionComponent < V2::BaseComponent
 
   def released_at
     released_at = if submission.store_rollout.present?
-                    submission.store_rollout.completed_at
-                  else
-                    submission.approved_at || submission.prepared_at
-                  end
+      submission.store_rollout.completed_at
+    else
+      submission.approved_at || submission.prepared_at
+    end
     ago_in_words(released_at)
   end
 end

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class V2::LiveRelease::ReleaseCandidatesComponent < V2::BaseReleaseComponent
-
   def initialize(release)
     @release = release
     super(@release)
@@ -34,6 +33,6 @@ class V2::LiveRelease::ReleaseCandidatesComponent < V2::BaseReleaseComponent
   end
 
   def submission_status(submission)
-    SUBMISSION_STATUS[submission.status.to_sym] || { text: submission.status.humanize, status: :neutral }
+    SUBMISSION_STATUS[submission.status.to_sym] || {text: submission.status.humanize, status: :neutral}
   end
 end

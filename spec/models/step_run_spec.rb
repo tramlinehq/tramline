@@ -602,4 +602,17 @@ describe StepRun do
       expect(step_run.reload.cancelling?).to be(true)
     end
   end
+
+  describe "#build_notes" do
+    let(:build_notes_raw) {
+      ["A string without double quotes",
+        "A changelog with \"double quotes (some stuff inside a bracket in side the quotes)\" (#123)"]
+    }
+    let(:step_run) { create(:step_run, :build_available, build_number: "1", build_notes_raw:) }
+
+    it "escapes built in double quotes from the raw build notes" do
+      expected = "• A string without double quotes\n• A changelog with \\\"double quotes (some stuff inside a bracket in side the quotes)\\\" (#123)"
+      expect(step_run.build_notes).to eq(expected)
+    end
+  end
 end

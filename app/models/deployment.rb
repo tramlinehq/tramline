@@ -29,7 +29,7 @@ class Deployment < ApplicationRecord
   enum notes: {build_notes: "build_notes", release_notes: "release_notes", no_notes: "no_notes"}
 
   validates :deployment_number, presence: true
-  validates :build_artifact_channel, uniqueness: {scope: [:integration_id, :step_id]}
+  validates :build_artifact_channel, uniqueness: {scope: [:integration_id, :step_id], conditions: -> { kept }}
   validate :staged_rollout_is_allowed
   validate :correct_staged_rollout_config, if: :staged_rollout?, on: :create
   validate :non_prod_build_channel, if: -> { step.review? }

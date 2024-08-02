@@ -14,6 +14,7 @@
 #  sender_id       :uuid             not null, indexed
 #
 class Accounts::Invite < ApplicationRecord
+  include Loggable
   include Roleable
   include Rails.application.routes.url_helpers
 
@@ -24,6 +25,7 @@ class Accounts::Invite < ApplicationRecord
   validate :user_already_in_organization, on: :create
   validate :user_already_invited, on: :create
   validate :accept_only_once, on: :mark_accepted!
+  validate :allow_only_approved_domains_for_sso, on: :create, if: -> { organization.sso? }
   validates :role, inclusion: {in: roles.slice("developer", "viewer").keys, message: :cannot_invite_owner}
   validates :email, presence: {message: :not_blank},
     length: {maximum: 105, message: :too_long},
@@ -42,8 +44,32 @@ class Accounts::Invite < ApplicationRecord
     self.token = Digest::SHA1.hexdigest([organization_id, Time.zone.now, rand].join)
   end
 
+  def make
+    result = GitHub::Result.new do
+      transaction do
+        return unless save
+
+        if organization.sso?
+          InvitationMailer.sso_user(self).deliver
+        elsif recipient.present?
+          InvitationMailer.existing_user(self).deliver
+        else
+          InvitationMailer.new_user(self).deliver
+        end
+      end
+    end
+
+    unless result.ok?
+      elog(result.error)
+      errors.add(:email, :delivery_failed, email: email)
+      return false
+    end
+
+    true
+  end
+
   def add_recipient
-    recipient = Accounts::User.find_by(email: email)
+    recipient = Accounts::User.find_via_email(email)
 
     if recipient
       self.recipient = recipient
@@ -51,7 +77,7 @@ class Accounts::Invite < ApplicationRecord
   end
 
   def user_already_in_organization
-    recipient = Accounts::User.find_by(email: email)
+    recipient = Accounts::User.find_via_email(email)
 
     if organization.users.find_by(id: recipient)
       errors.add(:recipient, "already exists in the organization!")
@@ -64,8 +90,8 @@ class Accounts::Invite < ApplicationRecord
     end
   end
 
-  def mark_accepted!(recipient)
-    update!(accepted_at: Time.zone.now, recipient: recipient)
+  def mark_accepted(recipient)
+    update(accepted_at: Time.zone.now, recipient: recipient)
   end
 
   def accept_only_once
@@ -74,8 +100,28 @@ class Accounts::Invite < ApplicationRecord
     end
   end
 
+  def allow_only_approved_domains_for_sso
+    unless organization.valid_sso_domain?(email)
+      errors.add(:email, "domain is not allowed for Single Sign-On!")
+    end
+  end
+
   def accepted?
     accepted_at.present?
+  end
+
+  def sso_login_url
+    params = {
+      host: ENV["HOST_NAME"],
+      protocol: "https",
+      invite_token: token
+    }
+
+    if Rails.env.development?
+      sso_new_sso_session_url(params.merge(port: ENV["PORT_NUM"]))
+    else
+      sso_new_sso_session_url(params)
+    end
   end
 
   def registration_url
@@ -86,9 +132,9 @@ class Accounts::Invite < ApplicationRecord
     }
 
     if Rails.env.development?
-      new_user_registration_url(params.merge(port: ENV["PORT_NUM"]))
+      new_email_authentication_registration_url(params.merge(port: ENV["PORT_NUM"]))
     else
-      new_user_registration_url(params)
+      new_email_authentication_registration_url(params)
     end
   end
 
