@@ -143,5 +143,23 @@ describe Accounts::User do
       expect(created_sso_auth.email).to eq(email)
       expect(created_sso_auth.user).to eq(invite.reload.recipient)
     end
+
+    it "creates memberships for the user when the invited user exists elsewhere" do
+      original_organization = create(:organization)
+      original_user = create(:user, unique_authn_id: email)
+      create(:email_authentication, email:, user: original_user)
+      create(:membership, organization: original_organization, user: original_user)
+      new_organization = create(:organization, :with_sso, sso_domains: ["tramline.app"])
+      invite = create(:invite, email:, organization: new_organization)
+
+      expect { described_class.finish_sign_in_via_sso("code", ip) }.to change(Accounts::SsoAuthentication, :count).by(1)
+      original_user.reload
+      invite.reload
+
+      created_sso_auth = Accounts::SsoAuthentication.first
+      expect(created_sso_auth.user).to eq(original_user)
+      expect(original_user.organizations).to include(new_organization)
+      expect(invite.accepted?).to be true
+    end
   end
 end

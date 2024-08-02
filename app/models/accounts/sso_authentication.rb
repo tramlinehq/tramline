@@ -28,6 +28,8 @@ class Accounts::SsoAuthentication < ApplicationRecord
     length: {maximum: 105, message: :too_long}
   validates :login_id, uniqueness: {allow_nil: true, case_sensitive: false, message: :already_taken}
 
+  accepts_nested_attributes_for :user
+
   class << self
     include Loggable
 
@@ -87,7 +89,10 @@ class Accounts::SsoAuthentication < ApplicationRecord
   end
 
   def add(invite, full_name, preferred_name)
-    build_user(full_name:, preferred_name:, unique_authn_id:)
+    self.user = Accounts::User.find_or_initialize_by(unique_authn_id:) do |user|
+      user.full_name = full_name
+      user.preferred_name = preferred_name
+    end
     user.memberships.new(organization: invite.organization, role: invite.role)
     invite.mark_accepted(user) if save
   end
