@@ -91,14 +91,14 @@ class Accounts::User < ApplicationRecord
       return true if disallowed_domains.blank?
 
       parsed_email = Mail::Address.new(email)
-      disallowed_domains&.exclude?(parsed_email.domain)
+      disallowed_domains.exclude?(parsed_email.domain)
     end
 
     def valid_sso_email?(email, organization)
       user = find_via_sso_email(email)
       return user.organizations.include?(organization) if user
 
-      invite = organization.invites.find_by(email: email)
+      invite = organization.pending_invites.find_by(email: email)
       return invite.organization == organization if invite
 
       false
@@ -108,7 +108,7 @@ class Accounts::User < ApplicationRecord
       existing_user = find_via_sso_email(email)
       return existing_user if existing_user
 
-      invite = organization.invites.find_by(email:)
+      invite = organization.pending_invites.find_by(email:)
       return unless invite
 
       sso_auth = Accounts::SsoAuthentication.new(email:, login_id:)

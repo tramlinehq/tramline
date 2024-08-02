@@ -72,6 +72,6 @@ class Authentication::Sso::SessionsController < ApplicationController
   end
 
   def track_login
-    SiteAnalytics.track(current_user, current_organization, device, "SSO Login")
+    SiteAnalytics.track(current_user, current_organization, device, "Login", {sso: true})
   end
 end

@@ -44,14 +44,12 @@ module SiteAnalytics
       elog(e)
     end
 
-    def track(user, organization, device, event)
+    def track(user, organization, device, event, properties = {})
       return if user.blank? || organization.blank?
       ANALYTICS.track(
         user_id: user.id,
         event: event.titleize,
-        properties: {
-          browser: device&.name
-        },
+        properties: properties.merge(browser: device&.name),
         context: {
           groupId: organization.id
         }

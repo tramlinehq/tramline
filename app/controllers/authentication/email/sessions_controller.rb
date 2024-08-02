@@ -34,6 +34,6 @@ class Authentication::Email::SessionsController < Devise::SessionsController
   end
 
   def track_login
-    SiteAnalytics.track(current_user, current_organization, device, "Login")
+    SiteAnalytics.track(current_user, current_organization, device, "Login", {email: true})
   end
 end

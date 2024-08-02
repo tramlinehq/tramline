@@ -12,9 +12,7 @@ admin_user = lambda do
   email_authentication = Accounts::EmailAuthentication.find_or_initialize_by(email: ADMIN_EMAIL)
   admin = true
 
-  if email_authentication.persisted?
-    user = email_authentication.user
-  else
+  unless email_authentication.persisted?
     user = Accounts::User.find_or_create_by!(full_name: ADMIN_FULL_NAME, preferred_name: ADMIN_PREFERRED_NAME, admin:, unique_authn_id: ADMIN_EMAIL)
     email_authentication.update!(password: ADMIN_PASSWORD, confirmed_at: DateTime.now, user:)
   end
