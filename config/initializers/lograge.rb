@@ -26,7 +26,7 @@ Rails.application.configure do
   config.lograge.custom_payload do |controller|
     {
       host: controller.request.host,
-      user_id: controller.current_user.try(:id)
+      user_id: controller.try(:current_user).try(:id)
     }
   end
   # config.lograge.ignore_actions = ["IntegrationListeners::GithubController#events"]
