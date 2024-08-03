@@ -464,7 +464,7 @@ GEM
       netrc (~> 0.8)
     retriable (3.1.2)
     retryable (3.0.5)
-    rexml (3.3.2)
+    rexml (3.3.4)
       strscan
     rgeo (2.4.0)
     rgeo-geojson (2.1.1)
