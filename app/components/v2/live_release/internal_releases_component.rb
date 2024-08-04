@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class V2::LiveRelease::InternalReleasesComponent < V2::BaseReleaseComponent
+class V2::LiveRelease::InternalReleasesComponent < V2::BaseComponent
   include Memery
 
   SUBMISSION_STATUS = {
@@ -21,7 +21,11 @@ class V2::LiveRelease::InternalReleasesComponent < V2::BaseReleaseComponent
   end
 
   memoize def configuration(release_platform_run)
-    ReleaseConfig::Platform.new(release_platform_run.internal_release_config) if release_platform_run.internal_release_config.present?
+    release_platform_run.conf.internal_release
+  end
+
+  memoize def internal_workflow_config(release_platform_run)
+    release_platform_run.conf.workflows.pick_internal_workflow
   end
 
   memoize def internal_releases(release_platform_run)

@@ -14,7 +14,8 @@ class V2::LiveRelease::PreProdSubmissionComponent < V2::BaseComponent
 
   def status_border
     return "border-red-400" if submission.failed?
-    "border-green-400"
+    return "border-green-400" if submission.finished?
+    "border-gray-400"
   end
 
   def released_at

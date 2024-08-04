@@ -26,6 +26,6 @@ class WorkflowRuns::FindJob
   def perform(workflow_run_id)
     workflow_run = WorkflowRun.find(workflow_run_id)
     workflow_run.find_and_update_external
-    workflow_run.start! if workflow_run.may_start?
+    workflow_run.found! if workflow_run.may_found?
   end
 end

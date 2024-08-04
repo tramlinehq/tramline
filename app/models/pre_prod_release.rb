@@ -5,9 +5,12 @@
 #  id                      :bigint           not null, primary key
 #  config                  :jsonb            not null
 #  status                  :string           default("created"), not null
+#  tester_notes            :text
 #  type                    :string           not null
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
+#  commit_id               :uuid             indexed
+#  previous_id             :bigint           indexed
 #  release_platform_run_id :uuid             not null, indexed
 #
 class PreProdRelease < ApplicationRecord
@@ -17,24 +20,40 @@ class PreProdRelease < ApplicationRecord
   include Displayable
 
   belongs_to :release_platform_run
+  belongs_to :previous, class_name: "PreProdRelease", inverse_of: :next, optional: true
+  belongs_to :commit
+  has_one :next, class_name: "PreProdRelease", inverse_of: :previous, dependent: :nullify
   has_one :workflow_run, dependent: :destroy
   has_many :store_submissions, as: :parent_release, dependent: :destroy
   has_one :build, through: :workflow_run
 
+  before_create :set_default_tester_notes
+  after_create_commit -> { previous&.mark_as_stale! }
+
+  delegate :release, :train, to: :release_platform_run
+
   STATES = {
     created: "created",
     failed: "failed",
+    stale: "stale",
     finished: "finished"
   }
 
   enum status: STATES
+
+  def mark_as_stale!
+    return if finished?
+
+    update!(status: STATES[:stale])
+    workflow_run.cancel! if workflow_run&.may_cancel?
+  end
 
   def fail!
     update!(status: STATES[:failed])
   end
 
   def trigger_workflow!(workflow, commit)
-    create_workflow_run!(workflow_config: workflow, release_platform_run:, commit:, kind: workflow[:kind])
+    WorkflowRun.create_and_trigger!(workflow, self, commit, release_platform_run, auto_promote: conf.auto_promote?)
   end
 
   def trigger_submissions!(build)
@@ -54,7 +73,36 @@ class PreProdRelease < ApplicationRecord
     end
   end
 
-  def conf = ReleaseConfig::Platform.new(config)
+  def conf = ReleaseConfig::Platform::ReleaseStep.new(config)
+
+  def changes_since_previous
+    changes_since_last_release = release.release_changelog&.commit_messages(true)
+    last_successful_run = previous_successful
+    changes_since_last_run = release.all_commits.between_commits(last_successful_run&.commit, commit).commit_messages(true)
+
+    return changes_since_last_run if last_successful_run.present?
+    (changes_since_last_run || []) + (changes_since_last_release || [])
+  end
+
+  # NOTES: This logic should simplify once we allow users to edit the tester notes
+  def set_default_tester_notes
+    self.tester_notes = changes_since_previous
+      .map { |str| str&.strip }
+      .flat_map { |line| train.compact_build_notes? ? line.split("\n").first : line.split("\n") }
+      .map { |line| line.gsub(/\p{Emoji_Presentation}\s*/, "") }
+      .map { |line| line.gsub(/"/, "\\\"") }
+      .reject { |line| line =~ /\AMerge|\ACo-authored-by|\A---------/ }
+      .compact_blank
+      .uniq
+      .map { |str| "• #{str}" }
+      .join("\n").presence || "Nothing new"
+  end
+
+  def previous_successful
+    return if previous.blank?
+    return previous if previous.finished?
+    previous.previous_successful
+  end
 
   private
 
@@ -62,6 +110,7 @@ class PreProdRelease < ApplicationRecord
     submission_config.submission_type.create_and_trigger!(self, submission_config, build)
   end
 end
+
 # start a submission - there needs to be a common start function between submission classes
 # wait for its completion - submission_completed! callback from submission
 # see if next submission is auto promotable (if undefined, use the top level auto promote config)

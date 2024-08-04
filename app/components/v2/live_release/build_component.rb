@@ -10,7 +10,7 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
   end
 
   attr_reader :build, :previous_build, :show_build_only, :show_number
-  delegate :release_platform_run, :store_submission, :commit, :version_name, :build_number, :artifact, :workflow_run, to: :build
+  delegate :release_platform_run, :commit, :version_name, :artifact, :workflow_run, to: :build
   delegate :external_url, to: :workflow_run
 
   def build_info
@@ -40,20 +40,16 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
     "#{previous_build.display_name} → #{build.display_name}"
   end
 
-  def submission?
-    store_submission.present?
-  end
-
-  def store_logo
-    "integrations/logo_#{store_submission.provider}.png"
-  end
-
   def last_activity_at
-    ago_in_words(store_submission&.updated_at || build.updated_at)
+    ago_in_words(build.updated_at)
   end
 
   def number
-    "Build ##{rand(50..998)}"
+    "Build ##{build.sequence_number}"
+  end
+
+  def build_number
+    build.build_number || "-"
   end
 
   def artifact_name

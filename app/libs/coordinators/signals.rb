@@ -46,6 +46,7 @@ module Coordinators::Signals
     # NewRelease.call(release)
   end
 
+  # TODO: push processing should be done in a signal
   def self.new_commit_has_landed!(release, commit)
     # check if patchfix/hotfix etc
     # check if we need to trigger rc
@@ -53,7 +54,7 @@ module Coordinators::Signals
   end
 
   def self.workflow_run_finished!(workflow_run) # TODO: pass id only
-    V2::CreateBuildJob.perform_later(workflow_run.id)
+    V2::TriggerSubmissionsJob.perform_later(workflow_run.id)
   end
 
   def self.build_is_available_for_regression_testing!(build)

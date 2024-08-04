@@ -4,7 +4,6 @@
 #
 #  id                      :uuid             not null, primary key
 #  artifacts_url           :string
-#  build_number            :string
 #  external_number         :string
 #  external_url            :string
 #  finished_at             :datetime
@@ -24,12 +23,15 @@ class WorkflowRun < ApplicationRecord
   include AASM
   include Passportable
 
+  # TODO: remove this
+  self.ignored_columns += %w[build_number]
+
   belongs_to :release_platform_run
   belongs_to :triggering_release, class_name: "PreProdRelease", foreign_key: "pre_prod_release_id", inverse_of: :workflow_run
   belongs_to :commit
   has_one :build, dependent: :destroy
 
-  delegate :organization, :app, :ci_cd_provider, :train, :release_version, :release_branch, to: :release_platform_run
+  delegate :organization, :app, :ci_cd_provider, :train, :release_version, :release_branch, :release, to: :release_platform_run
   delegate :notify!, to: :train
   delegate :commit_hash, to: :commit
 
@@ -49,6 +51,7 @@ class WorkflowRun < ApplicationRecord
 
   STATES = {
     created: "created",
+    triggering: "triggering",
     triggered: "triggered",
     unavailable: "unavailable",
     started: "started",
@@ -61,7 +64,7 @@ class WorkflowRun < ApplicationRecord
   }
 
   NOT_STARTED = [:created]
-  IN_PROGRESS = [:triggered, :started]
+  IN_PROGRESS = [:triggering, :triggered, :started]
   TERMINAL_STATES = [:finished]
   WORKFLOW_IMMUTABLE = STATES.keys - TERMINAL_STATES - IN_PROGRESS - NOT_STARTED
   FAILED_STATES = %w[failed halted unavailable cancelled cancelled_before_start cancelling]
@@ -73,11 +76,15 @@ class WorkflowRun < ApplicationRecord
     state :created, initial: true
     state(*STATES.keys)
 
-    event :trigger, after_commit: :after_trigger do
-      transitions from: :created, to: :triggered
+    event :initiate_trigger, after_commit: :after_initiate_trigger do
+      transitions from: :created, to: :triggering
     end
 
-    event :start, after_commit: :after_start do
+    event :complete_trigger, after_commit: :after_trigger do
+      transitions from: :triggering, to: :triggered
+    end
+
+    event :found, after_commit: :after_found do
       transitions from: :triggered, to: :started
     end
 
@@ -93,11 +100,9 @@ class WorkflowRun < ApplicationRecord
       transitions from: :started, to: :halted
     end
 
-    # FIXME:
-    # event(:retry, after_commit: :after_retrigger_ci) do
-    #   before :retry_workflow_run
-    #   transitions from: [:failed, :halted], to: :started
-    # end
+    event(:retry, after_commit: :after_retry) do
+      transitions from: [:failed, :halted], to: :triggering
+    end
 
     event(:finish, after_commit: :after_finish) do
       transitions from: :started, to: :finished
@@ -106,11 +111,19 @@ class WorkflowRun < ApplicationRecord
     event(:cancel, after_commit: :after_cancel) do
       transitions from: IN_PROGRESS, to: :cancelling
       transitions from: NOT_STARTED, to: :cancelled_before_start
-      transitions from: :cancelling, to: :cancelled # TODO: check this
+      transitions from: :cancelling, to: :cancelled
     end
   end
 
-  after_create_commit -> { WorkflowRuns::TriggerJob.perform_later(id) }
+  def self.create_and_trigger!(workflow, triggering_release, commit, release_platform_run, auto_promote: false)
+    workflow_run = create!(workflow_config: workflow.conf,
+      triggering_release:,
+      release_platform_run:,
+      commit:,
+      kind: workflow.kind)
+    workflow_run.create_build!(version_name: workflow_run.release_version, release_platform_run:, commit:)
+    initiate_trigger! if auto_promote
+  end
 
   def active?
     release_platform_run.on_track? && FAILED_STATES.exclude?(status)
@@ -138,49 +151,50 @@ class WorkflowRun < ApplicationRecord
     workflow_config["artifact_name_pattern"]
   end
 
-  def workflow_name
-    workflow_config["name"]
-  end
-
   def find_build
-    store_provider.find_build(build_number)
+    store_provider.find_build(build.build_number)
   end
 
   def add_metadata!(artifacts_url:, started_at:, finished_at:)
     update!(artifacts_url:, started_at:, finished_at:)
   end
 
-  def trigger_external_run!(retrigger: false)
-    update_build_number! unless retrigger
+  def trigger!(retrigger: false)
+    if retrigger
+      retrigger_external_run!
+    else
+      update_build_number!
+      trigger_external_run!
+    end
 
-    ci_cd_provider
-      .trigger_workflow_run!(workflow_id, release_branch, workflow_inputs, commit_hash)
-      .then { |wr| update_external_metadata!(wr) }
+    complete_trigger!
+  end
 
-    trigger!
+  def retrigger_external_run!
+    if ci_cd_provider.workflow_retriable?
+      ci_cd_provider.retry_workflow_run!(external_id)
+    else
+      trigger_external_run!
+    end
   end
 
   private
 
+  def trigger_external_run!
+    ci_cd_provider
+      .trigger_workflow_run!(conf.id, release_branch, workflow_inputs, commit_hash)
+      .then { |wr| update_external_metadata!(wr) }
+  end
+
   def update_build_number!
-    build_number = train.fixed_build_number? ? app.build_number : app.bump_build_number!
-    update!(build_number:)
+    new_build_number = train.fixed_build_number? ? app.build_number : app.bump_build_number!
+    build.update!(build_number: new_build_number)
   end
 
   def workflow_inputs
-    data = {version_code: build_number, build_version: release_version}
-    data[:build_notes] = build_notes if organization.build_notes_in_workflow?
+    data = {version_code: build.build_number, build_version: release_version}
+    data[:build_notes] = triggering_release.tester_notes if organization.build_notes_in_workflow? # TODO: deprecate this feature flag
     data
-  end
-
-  # NOTE: assuming workflow_config to be a json store {id: "123", artifact_name_pattern: "pattern", name: "Workflow Name"}
-  def workflow_id
-    workflow_config["id"]
-  end
-
-  # FIXME: this is a temporary solution to get the build notes
-  def build_notes
-    "TODO: add these"
   end
 
   def update_external_metadata!(workflow_run)
@@ -194,21 +208,28 @@ class WorkflowRun < ApplicationRecord
   end
 
   def find_external_run
-    ci_cd_provider.find_workflow_run(workflow_id, release_branch, commit_hash)
+    ci_cd_provider.find_workflow_run(conf.id, release_branch, commit_hash)
+  end
+
+  def after_initiate_trigger
+    WorkflowRuns::TriggerJob.perform_later(id)
   end
 
   def after_trigger
     event_stamp!(reason: :ci_triggered, kind: :notice, data: stamp_data)
     # FIXME: notify triggered
     # notify!("Step has been triggered!", :step_started, notification_params)
-    # FIXME Releases::CancelStepRun.perform_later(previous_step_run.id) if previous_step_run&.may_cancel?
 
-    return start! if workflow_found? && may_start?
+    return found! if workflow_found? && may_found?
     WorkflowRuns::FindJob.perform_async(id)
   end
 
-  def after_start
+  def after_found
     WorkflowRuns::PollRunStatusJob.perform_later(id)
+  end
+
+  def after_retry
+    WorkflowRuns::TriggerJob.perform_later(id, retrigger: true)
   end
 
   def after_unavailable
@@ -239,7 +260,9 @@ class WorkflowRun < ApplicationRecord
     {
       ref: external_id,
       url: external_url,
-      version: build_number
+      version: build.build_number
     }
   end
+
+  def conf = ReleaseConfig::Platform::Workflow.new(workflow_config, kind)
 end

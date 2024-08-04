@@ -1,7 +1,7 @@
 <%= render V2::PlatformViewComponent.new(@release) do |component| %>
   <% component.runs do |release_platform_run| %>
     <% if configured?(release_platform_run) %>
-      <%= render V2::LiveRelease::SubmissionConfigComponent.new(configuration(release_platform_run), release_platform_run:) %>
+      <%= render V2::LiveRelease::SubmissionConfigComponent.new(configuration(release_platform_run), internal_workflow_config(release_platform_run), release_platform_run:) %>
     <% else %>
       <%= render V2::EmptyStateComponent.new(
         title: "No internal build step configured",
@@ -13,7 +13,7 @@
 
   <% component.runs do |release_platform_run| %>
     <% latest_release = latest_internal_release(release_platform_run) %>
-    <% if latest_release.build.present? %>
+    <% if latest_release.present? %>
       <%= render V2::LiveRelease::CurrentPreProdReleaseComponent.new(latest_release) %>
     <% end %>
   <% end %>
@@ -44,7 +44,7 @@
                 <div class="flex text-sm items-center justify-between">
                   <div class="flex gap-2">
                     <span><%= internal_release.build.display_name %></span>
-                    <%= render V2::BadgeComponent.new(**status(internal_release)) %>
+                    <%= render V2::BadgeComponent.new(text: internal_release.status.humanize, kind: :badge) %>
                   </div>
 
                   <div class="flex items-center">

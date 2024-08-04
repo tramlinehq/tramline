@@ -13,7 +13,11 @@ class V2::LiveRelease::ReleaseCandidatesComponent < V2::BaseReleaseComponent
   end
 
   memoize def configuration(release_platform_run)
-    ReleaseConfig::Platform.new(release_platform_run.beta_release_config) if release_platform_run.beta_release_config.present?
+    release_platform_run.conf.beta_release
+  end
+
+  def workflow_config(release_platform_run)
+    release_platform_run.conf.workflows.release_candidate_workflow
   end
 
   memoize def beta_releases(release_platform_run)

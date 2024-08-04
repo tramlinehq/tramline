@@ -15,6 +15,8 @@
             <% badge.with_link(ci_info, ci_link) %>
           <% end %>
         <% end %>
+
+        <%= render V2::BadgeComponent.new(text: build.workflow_run.status.humanize, status: :neutral) %>
       </div>
 
       <% unless show_build_only %>

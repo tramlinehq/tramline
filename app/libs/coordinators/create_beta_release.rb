@@ -14,10 +14,14 @@ class Coordinators::CreateBetaRelease
 
   def call
     transaction do
-      beta_release = release_platform_run.beta_releases.create!(config: release_platform_run.beta_release_config)
+      beta_release = release_platform_run.beta_releases.create!(
+        config: release_platform_run.conf.beta_release,
+        commit: build.commit,
+        previous: release_platform_run.latest_beta_release
+      )
 
-      if release_platform.separate_workflow_for_beta?
-        beta_release.trigger_workflow!(release_platform.beta_workflow, build.commit)
+      if release_platform_run.conf.workflows.separate_rc_workflow?
+        beta_release.trigger_workflow!(release_platform_run.conf.workflows.release_candidate_workflow, build.commit)
       else
         beta_release.trigger_submissions!(build)
       end

@@ -10,7 +10,6 @@ class WorkflowRuns::CancelJob < ApplicationJob
     return unless workflow_run.cancelling?
     raise WorkflowRunNotFound unless workflow_run.workflow_found?
 
-    Rails.logger.debug { "Cancelling workflow for workflow run - #{workflow_run_id}" }
     workflow_run.cancel_workflow!
     workflow_run.cancel!
   end

@@ -34,9 +34,10 @@ class Coordinators::ProcessCommit
     release_platform_run.update!(last_commit: @commit)
 
     internal_release = release_platform_run.internal_releases.create!(
-      # FIXME: This is a temporary thing till we get actual config
-      config: release_platform_run.internal_release_config
+      config: release_platform_run.conf.internal_release,
+      commit: @commit,
+      previous: release_platform_run.latest_internal_release
     )
-    internal_release.trigger_workflow!(release_platform_run.release_platform.choose_workflow, @commit)
+    internal_release.trigger_workflow!(release_platform_run.conf.workflows.pick_internal_workflow, @commit)
   end
 end

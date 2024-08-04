@@ -39,20 +39,6 @@ class Build < ApplicationRecord
   delegate :artifacts_url, :build_artifact_name_pattern, :kind, to: :workflow_run
 
   before_create :set_sequence_number
-  after_create :attach_artifact!
-
-  def build_version = version_name
-
-  # TODO: Remove this, don't think this is how it should be referenced
-  def store_submission
-    if android?
-      play_store_submission
-    elsif ios?
-      app_store_submission
-    else
-      raise ArgumentError, "Unknown platform"
-    end
-  end
 
   def display_name
     "#{version_name} (#{build_number})"

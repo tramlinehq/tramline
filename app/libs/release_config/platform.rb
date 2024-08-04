@@ -1,18 +1,40 @@
 class ReleaseConfig::Platform < Struct.new(:conf)
-  def submissions?
-    submissions.present?
-  end
-
-  def auto_promote?
-    value[:auto_promote]
-  end
-
-  def submissions
-    Submissions.new(value[:submissions])
-  end
-
   def value
     conf.with_indifferent_access
+  end
+
+  def internal_release
+    ReleaseStep.new(value[:internal_release]) if value[:internal_release].present?
+  end
+
+  def beta_release
+    ReleaseStep.new(value[:beta_release])
+  end
+
+  def production_release
+    ReleaseStep.new(value[:production_release])
+  end
+
+  def workflows
+    Workflows.new(value[:workflows])
+  end
+
+  class ReleaseStep < Struct.new(:conf)
+    def submissions?
+      submissions.present?
+    end
+
+    def auto_promote?
+      value[:auto_promote]
+    end
+
+    def submissions
+      Submissions.new(value[:submissions])
+    end
+
+    def value
+      conf.with_indifferent_access
+    end
   end
 
   class Submissions < Struct.new(:conf)
@@ -77,6 +99,46 @@ class ReleaseConfig::Platform < Struct.new(:conf)
 
     def value
       current.with_indifferent_access
+    end
+  end
+
+  class Workflows < Struct.new(:conf)
+    def internal_workflow
+      Workflow.new(value[:internal], :internal) if value[:internal].present?
+    end
+
+    def release_candidate_workflow
+      Workflow.new(value[:release_candidate], :release_candidate)
+    end
+
+    def separate_rc_workflow?
+      internal_workflow.present?
+    end
+
+    def pick_internal_workflow
+      internal_workflow || release_candidate_workflow
+    end
+
+    def value
+      conf.with_indifferent_access
+    end
+  end
+
+  class Workflow < Struct.new(:conf, :kind)
+    def name
+      value[:name]
+    end
+
+    def id
+      value[:id]
+    end
+
+    def artifact_name_pattern
+      value[:artifact_name]
+    end
+
+    def value
+      conf.with_indifferent_access
     end
   end
 end

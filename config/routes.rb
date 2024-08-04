@@ -105,6 +105,13 @@ Rails.application.routes.draw do
           resources :release_metadata, only: %i[edit update]
         end
 
+        resources :workflow_runs, shallow: true, only: [] do
+          member do
+            patch :trigger
+            patch :retry
+          end
+        end
+
         resources :app_store_submissions, only: [:update], shallow: true do
           member do
             patch :submit_for_review

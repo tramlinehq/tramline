@@ -7,6 +7,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_id                :uuid             not null, indexed
+#  previous_id             :bigint           indexed
 #  release_platform_run_id :uuid             not null, indexed
 #
 class ProductionRelease < ApplicationRecord
@@ -16,6 +17,8 @@ class ProductionRelease < ApplicationRecord
 
   belongs_to :release_platform_run
   belongs_to :build
+  belongs_to :previous, class_name: "ProductionRelease", inverse_of: :next, optional: true
+  has_one :next, class_name: "ProductionRelease", inverse_of: :previous, dependent: :nullify
   has_one :store_submission, as: :parent_release, dependent: :destroy
   has_many :release_health_events, dependent: :destroy, inverse_of: :production_release
   has_many :release_health_metrics, dependent: :destroy, inverse_of: :production_release
@@ -57,7 +60,7 @@ class ProductionRelease < ApplicationRecord
     release_health_metrics.create!(fetched_at: Time.current, **release_data)
   end
 
-  def conf = ReleaseConfig::Platform.new(config)
+  def conf = ReleaseConfig::Platform::ReleaseStep.new(config)
 end
 
 # TODO:

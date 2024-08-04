@@ -22,4 +22,12 @@ class V2::LiveRelease::CurrentPreProdReleaseComponent < V2::BaseComponent
   def status
     (STATUS[pre_prod_release.status.to_sym] || {text: pre_prod_release.status.humanize, status: :neutral}).merge(kind: :status)
   end
+
+  def triggerable?
+    workflow_run&.created?
+  end
+
+  def retriggerable?
+    workflow_run&.may_retry?
+  end
 end
