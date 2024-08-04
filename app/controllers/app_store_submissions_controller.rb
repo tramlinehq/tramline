@@ -1,4 +1,6 @@
-class AppStoreSubmissionsController < StoreSubmissionsController
+class AppStoreSubmissionsController < SignedInApplicationController
+  include StoreSubmittable
+  before_action :require_write_access!
   before_action :set_app_store_submission
   before_action :set_release_platform_run
   before_action :ensure_reviewable, only: [:submit_for_review]

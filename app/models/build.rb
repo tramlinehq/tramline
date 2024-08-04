@@ -40,6 +40,8 @@ class Build < ApplicationRecord
 
   before_create :set_sequence_number
 
+  def build_version = version_name
+
   def display_name
     "#{version_name} (#{build_number})"
   end

@@ -53,7 +53,7 @@ class StoreSubmission < ApplicationRecord
     conf.rollout_config.enabled
   end
 
-  def auto_rollout? = conf.auto_promote?
+  def auto_rollout? = !parent_release.production?
 
   def external_link
     store_link || project_link

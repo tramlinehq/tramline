@@ -116,7 +116,7 @@ class WorkflowRun < ApplicationRecord
   end
 
   def self.create_and_trigger!(workflow, triggering_release, commit, release_platform_run, auto_promote: false)
-    workflow_run = create!(workflow_config: workflow.conf,
+    workflow_run = create!(workflow_config: workflow.value,
       triggering_release:,
       release_platform_run:,
       commit:,

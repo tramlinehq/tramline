@@ -1,9 +1,6 @@
-class StoreSubmissionsController < SignedInApplicationController
-  before_action :require_write_access!
-
+module StoreSubmittable
   def update
     build = @release_platform_run.rc_builds.find_by(id: submission_params[:build_id])
-
     redirect_back fallback_location: root_path, notice: t(".update.invalid_build") unless build
 
     if @submission.attach_build!(build)
@@ -16,7 +13,6 @@ class StoreSubmissionsController < SignedInApplicationController
 
   def prepare
     @submission.start_prepare!
-
     redirect_back fallback_location: root_path, notice: t(".prepare.success")
   end
 

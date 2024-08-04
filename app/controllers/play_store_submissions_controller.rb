@@ -1,4 +1,6 @@
-class PlayStoreSubmissionsController < StoreSubmissionsController
+class PlayStoreSubmissionsController < SignedInApplicationController
+  include StoreSubmittable
+  before_action :require_write_access!
   before_action :set_play_store_submission
   before_action :set_release_platform_run
 

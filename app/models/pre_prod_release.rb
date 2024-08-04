@@ -41,6 +41,8 @@ class PreProdRelease < ApplicationRecord
 
   enum status: STATES
 
+  def production? = false
+
   def mark_as_stale!
     return if finished?
 
@@ -74,6 +76,15 @@ class PreProdRelease < ApplicationRecord
   end
 
   def conf = ReleaseConfig::Platform::ReleaseStep.new(config)
+
+  def commits_since_previous
+    changes_since_last_release = release.release_changelog&.normalized_commits
+    last_successful_run = previous_successful
+    changes_since_last_run = release.all_commits.between_commits(last_successful_run&.commit, commit)
+
+    return changes_since_last_run if last_successful_run.present?
+    (changes_since_last_run || []) + (changes_since_last_release || [])
+  end
 
   def changes_since_previous
     changes_since_last_release = release.release_changelog&.commit_messages(true)

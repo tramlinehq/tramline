@@ -472,3 +472,6 @@ en:
         title: "Release stability fixes"
         scope: "Last 6 releases. Commits after release start per team."
         help_text: "These are the changes made to the release branch after the release has started by members in these respective teams.\n\nThis is a good indicator of how much the team is involved in the release stability."
+  submissions:
+    trigger:
+      success: "Started the submission!"

@@ -3,7 +3,7 @@ class WorkflowRunsController < SignedInApplicationController
 
   def trigger
     @workflow_run.initiate_trigger!
-    redirect_to internal_builds_path, notice: t(".trigger.success")
+    redirect_back fallback_location: internal_builds_path, notice: t(".trigger.success")
   end
 
   def retry

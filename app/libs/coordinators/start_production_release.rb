@@ -15,7 +15,7 @@ class Coordinators::StartProductionRelease
     transaction do
       @release_platform_run
         .production_releases
-        .create!(build: @build, config: @release_platform_run.conf.production_release, previous: @release_platform_run.latest_production_release)
+        .create!(build: @build, config: @release_platform_run.conf.production_release.value, previous: @release_platform_run.latest_production_release)
         .then { create_submission(_1) }
     end
   end

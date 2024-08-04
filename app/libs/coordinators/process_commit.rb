@@ -34,7 +34,7 @@ class Coordinators::ProcessCommit
     release_platform_run.update!(last_commit: @commit)
 
     internal_release = release_platform_run.internal_releases.create!(
-      config: release_platform_run.conf.internal_release,
+      config: release_platform_run.conf.internal_release.value,
       commit: @commit,
       previous: release_platform_run.latest_internal_release
     )

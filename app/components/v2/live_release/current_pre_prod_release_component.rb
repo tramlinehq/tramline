@@ -16,7 +16,7 @@ class V2::LiveRelease::CurrentPreProdReleaseComponent < V2::BaseComponent
   delegate :build, to: :workflow_run
 
   def changed_commits
-    V2::CommitComponent.with_collection(Build.first.commit.release.all_commits.sample(rand(1..5)))
+    V2::CommitComponent.with_collection(pre_prod_release.commits_since_previous)
   end
 
   def status

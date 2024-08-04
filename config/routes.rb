@@ -105,29 +105,6 @@ Rails.application.routes.draw do
           resources :release_metadata, only: %i[edit update]
         end
 
-        resources :workflow_runs, shallow: true, only: [] do
-          member do
-            patch :trigger
-            patch :retry
-          end
-        end
-
-        resources :app_store_submissions, only: [:update], shallow: true do
-          member do
-            patch :submit_for_review
-            patch :prepare
-            patch :cancel
-            patch :remove_from_review
-          end
-        end
-
-        resources :play_store_submissions, only: [:update], shallow: true do
-          member do
-            patch :prepare
-            patch :cancel
-          end
-        end
-
         resources :platforms, shallow: false, only: [] do
           resources :store_rollouts, only: [], path: :rollouts do
             member do
@@ -238,6 +215,46 @@ Rails.application.routes.draw do
 
     get "/integrations/build_artifact_channels", to: "integrations#build_artifact_channels"
   end
+
+  resources :release_platform_runs, path: :runs, as: :runs, only: [] do
+    resources :pre_prod_releases, path: :pre_prod, as: :pre_prod, only: [] do
+      member do
+        post :create_beta, path: :beta
+        post :create_internal, path: :internal
+      end
+    end
+  end
+
+  resources :app_store_submissions, only: [:update] do
+    member do
+      patch :submit_for_review
+      patch :prepare
+      patch :cancel
+      patch :remove_from_review
+    end
+  end
+
+  resources :play_store_submissions, only: [:update] do
+    member do
+      patch :prepare
+      patch :cancel
+    end
+  end
+
+  resources :workflow_runs, only: [] do
+    member do
+      patch :retry
+      patch :trigger
+    end
+  end
+
+  resources :submissions, only: [] do
+    member do
+      patch :retry
+      patch :trigger
+    end
+  end
+
 
   namespace :admin do
     resource :settings, only: [:index]

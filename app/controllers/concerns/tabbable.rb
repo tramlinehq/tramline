@@ -30,6 +30,7 @@ module Tabbable
     sections[:stability][:regression_testing][:icon] = "v2/tablet_smartphone.svg"
     sections[:stability][:regression_testing][:position] = 4
     sections[:stability][:regression_testing][:status] = step_statuses[:regression_testing]
+    sections[:stability][:regression_testing][:unavailable] = true
     sections[:stability][:release_candidate][:path] = release_candidates_release_path(@release)
     sections[:stability][:release_candidate][:icon] = "v2/gallery_horizontal_end.svg"
     sections[:stability][:release_candidate][:position] = 5
@@ -38,6 +39,7 @@ module Tabbable
     sections[:stability][:soak_period][:icon] = "v2/alarm_clock.svg"
     sections[:stability][:soak_period][:position] = 6
     sections[:stability][:soak_period][:status] = step_statuses[:soak_period]
+    sections[:stability][:soak_period][:unavailable] = true
 
     sections[:metadata] = {
       notes: Release::SECTIONS[:notes],

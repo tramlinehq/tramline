@@ -61,6 +61,8 @@ class ProductionRelease < ApplicationRecord
   end
 
   def conf = ReleaseConfig::Platform::ReleaseStep.new(config)
+
+  def production? = true
 end
 
 # TODO:

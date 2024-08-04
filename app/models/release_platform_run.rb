@@ -160,11 +160,11 @@ class ReleasePlatformRun < ApplicationRecord
   def android_config
     {
       workflows: {
-        internal: {
-          name: "Android Debug APK",
-          id: "85899119",
-          artifact_name_pattern: "pattern"
-        },
+        # internal: {
+        #   name: "Android Debug APK",
+        #   id: "85899119",
+        #   artifact_name_pattern: "pattern"
+        # },
         release_candidate: {
           name: "Android Play Store Release Build AAB",
           id: "85899120",
@@ -174,12 +174,19 @@ class ReleasePlatformRun < ApplicationRecord
       internal_release: {
         auto_promote: false,
         submissions: [
+          # {
+          #   number: 1,
+          #   submission_type: "GoogleFirebaseSubmission",
+          #   submission_config: {id: "projects/946207521855/groups/internal-product-team",
+          #                       name: "Internal Product Team"},
+          #   auto_promote: false
+          # },
           {
             number: 1,
-            submission_type: "GoogleFirebaseSubmission",
-            submission_config: {id: "projects/946207521855/groups/internal-product-team",
-                                name: "Internal Product Team"},
-            auto_promote: false
+            submission_type: "PlayStoreSubmission",
+            submission_config: {id: :internal, name: "internal testing"},
+            rollout_config: {enabled: false},
+            auto_promote: true
           }
         ]
       },
@@ -197,7 +204,7 @@ class ReleasePlatformRun < ApplicationRecord
             number: 2,
             submission_type: "PlayStoreSubmission",
             submission_config: {id: :beta, name: "open testing"},
-            rollout_config: {enabled: true, stages: [1, 10, 100]},
+            rollout_config: {enabled: false},
             auto_promote: false
           }
         ]
