@@ -24,10 +24,6 @@ class V2::LiveRelease::ReleaseCandidatesComponent < V2::BaseReleaseComponent
     release_platform_run.beta_releases.order(created_at: :desc)
   end
 
-  def previous_beta_release(release_platform_run)
-    beta_releases(release_platform_run).drop(1).first
-  end
-
   def latest_beta_release(release_platform_run)
     beta_releases(release_platform_run).first
   end

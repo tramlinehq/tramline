@@ -475,3 +475,7 @@ en:
   submissions:
     trigger:
       success: "Started the submission!"
+  pre_prod_release:
+    create_beta:
+      success: "Kicked off the beta release!"
+      failure: "Failed to start the beta release"

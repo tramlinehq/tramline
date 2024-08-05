@@ -3,6 +3,7 @@ module Commitable
 
   class_methods do
     def commit_log(commits, first_parent_only = false)
+      return if commits.empty?
       return commits unless first_parent_only
       return commits if commits.any? { |c| c.parents.blank? }
 

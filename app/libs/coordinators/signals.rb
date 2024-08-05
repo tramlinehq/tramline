@@ -65,9 +65,8 @@ module Coordinators::Signals
     # create beta release here once regression testing is added
   end
 
-  def self.start_beta_release!(release_platform_run, build_id)
-    Coordinators::CreateBetaRelease.call(release_platform_run, build_id)
-    # start beta release
+  def self.start_beta_release!(release_platform_run, build_id, commit_id)
+    Res.new { Coordinators::CreateBetaRelease.call(release_platform_run, build_id, commit_id) }
   end
 
   def self.beta_release_is_available!(build)

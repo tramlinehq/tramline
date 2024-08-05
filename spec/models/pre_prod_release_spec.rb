@@ -15,7 +15,7 @@ describe PreProdRelease do
 
     it "triggers the first submission" do
       build = create(:build, workflow_run:)
-      pre_prod_release.trigger_submissions!(build)
+      pre_prod_release.trigger_submissions!
       expect(pre_prod_release.store_submissions.count).to eq(1)
       expect(pre_prod_release.store_submissions.sole.build).to eq(build)
       expect(pre_prod_release.store_submissions.sole.preparing?).to be true

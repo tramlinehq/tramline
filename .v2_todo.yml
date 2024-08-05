@@ -3,8 +3,8 @@ models_to_delete:
   - app/models/step_run.rb
   - app/models/deployment.rb
   - app/models/deployment_run.rb
+  - app/models/staged_rollout.rb
 poros_to_migrate:
   - libs/charts/devops_report.rb to queries/devops.rb
   - libs/triggers/pre_release to coordinators/pre_release
   - libs/triggers/post_release to coordinators/post_release
-

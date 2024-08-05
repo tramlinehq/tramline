@@ -9,11 +9,13 @@ describe PlayStoreRollout do
     let(:store_submission) { create(:play_store_submission, :prod_release, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
     let(:rollout) { create(:store_rollout, :play_store, :created, release_platform_run:, store_submission:) }
+    let(:prod_double) { instance_double(ProductionRelease) }
 
     before do
       allow(rollout).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
-      allow(production_release).to receive(:rollout_started!)
+      allow(prod_double).to receive(:rollout_started!)
+      allow(rollout).to receive(:parent_release).and_return(prod_double)
     end
 
     it "starts the production release" do
@@ -28,7 +30,7 @@ describe PlayStoreRollout do
 
     it "informs the production release" do
       rollout.start_release!
-      expect(production_release).to have_received(:rollout_started!)
+      expect(prod_double).to have_received(:rollout_started!)
     end
 
     context "when the rollout is not staged" do

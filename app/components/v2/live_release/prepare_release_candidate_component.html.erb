@@ -1,0 +1,35 @@
+<%= render V2::CardComponent.new(title: title) do |card| %>
+  <% if carryover_build? %>
+    <% card.with_actions do %>
+      <div class="flex flex-row gap-2">
+        <%= render V2::ButtonComponent.new(label: "Start Beta submissions",
+                                           scheme: :default,
+                                           type: :button,
+                                           options: create_release_candidate_path,
+                                           size: :xxs,
+                                           turbo: false,
+                                           html_options: confirmation_opts) %>
+      </div>
+    <% end %>
+
+    <div class="flex flex-col section-gap-default">
+      <%= render V2::LiveRelease::BuildComponent.new(build, show_number: true, show_build_only: false) %>
+    </div>
+  <% else %>
+    <% card.with_actions do %>
+      <div class="flex flex-row gap-2">
+        <%= render V2::ButtonComponent.new(label: "Create Release Candidate",
+                                           scheme: :default,
+                                           type: :button,
+                                           options: create_release_candidate_path,
+                                           size: :xxs,
+                                           turbo: false,
+                                           html_options: confirmation_opts) %>
+      </div>
+    <% end %>
+
+    <div class="flex flex-col section-gap-default">
+      <%= render V2::CommitComponent.new(commit:, detailed: false) %>
+    </div>
+  <% end %>
+<% end %>

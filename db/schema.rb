@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_08_04_110757) do
+ActiveRecord::Schema[7.0].define(version: 2024_08_05_110457) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -426,7 +426,9 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_04_110757) do
     t.bigint "previous_id"
     t.uuid "commit_id"
     t.text "tester_notes"
+    t.bigint "parent_internal_release_id"
     t.index ["commit_id"], name: "index_pre_prod_releases_on_commit_id"
+    t.index ["parent_internal_release_id"], name: "index_pre_prod_releases_on_parent_internal_release_id"
     t.index ["previous_id"], name: "index_pre_prod_releases_on_previous_id"
     t.index ["release_platform_run_id"], name: "index_pre_prod_releases_on_release_platform_run_id"
   end
@@ -915,6 +917,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_04_110757) do
   add_foreign_key "memberships", "users"
   add_foreign_key "notification_settings", "trains"
   add_foreign_key "pre_prod_releases", "commits"
+  add_foreign_key "pre_prod_releases", "pre_prod_releases", column: "parent_internal_release_id"
   add_foreign_key "pre_prod_releases", "pre_prod_releases", column: "previous_id"
   add_foreign_key "pre_prod_releases", "release_platform_runs"
   add_foreign_key "production_releases", "builds"

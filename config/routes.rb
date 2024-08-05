@@ -217,12 +217,8 @@ Rails.application.routes.draw do
   end
 
   resources :release_platform_runs, path: :runs, as: :runs, only: [] do
-    resources :pre_prod_releases, path: :pre_prod, as: :pre_prod, only: [] do
-      member do
-        post :create_beta, path: :beta
-        post :create_internal, path: :internal
-      end
-    end
+    post :pre_prod_beta, to: "pre_prod_releases#create_beta"
+    post :pre_prod_internal, to: "pre_prod_releases#create_internal"
   end
 
   resources :app_store_submissions, only: [:update] do
@@ -254,7 +250,6 @@ Rails.application.routes.draw do
       patch :trigger
     end
   end
-
 
   namespace :admin do
     resource :settings, only: [:index]

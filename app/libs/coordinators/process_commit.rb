@@ -38,6 +38,6 @@ class Coordinators::ProcessCommit
       commit: @commit,
       previous: release_platform_run.latest_internal_release
     )
-    internal_release.trigger_workflow!(release_platform_run.conf.workflows.pick_internal_workflow, @commit)
+    internal_release.trigger_workflow!(release_platform_run.conf.workflows.pick_internal_workflow, auto_promote: internal_release.conf.auto_promote?)
   end
 end

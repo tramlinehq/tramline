@@ -27,7 +27,7 @@ class WorkflowRun < ApplicationRecord
   self.ignored_columns += %w[build_number]
 
   belongs_to :release_platform_run
-  belongs_to :triggering_release, class_name: "PreProdRelease", foreign_key: "pre_prod_release_id", inverse_of: :workflow_run
+  belongs_to :triggering_release, class_name: "PreProdRelease", foreign_key: "pre_prod_release_id", inverse_of: :triggered_workflow_run
   belongs_to :commit
   has_one :build, dependent: :destroy
 
@@ -122,7 +122,7 @@ class WorkflowRun < ApplicationRecord
       commit:,
       kind: workflow.kind)
     workflow_run.create_build!(version_name: workflow_run.release_version, release_platform_run:, commit:)
-    initiate_trigger! if auto_promote
+    workflow_run.initiate_trigger! if auto_promote
   end
 
   def active?

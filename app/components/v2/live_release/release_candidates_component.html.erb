@@ -12,9 +12,11 @@
   <% end %>
 
   <% component.runs do |release_platform_run| %>
-    <% latest_release = latest_beta_release(release_platform_run) %>
-    <% if latest_release.present? %>
-      <%= render V2::LiveRelease::CurrentPreProdReleaseComponent.new(latest_release) %>
+    <% beta_release = latest_beta_release(release_platform_run) %>
+    <% if beta_release.present? %>
+      <%= render V2::LiveRelease::CurrentPreProdReleaseComponent.new(beta_release) %>
+    <% else %>
+      <%= render V2::LiveRelease::PrepareReleaseCandidateComponent.new(release_platform_run) %>
     <% end %>
   <% end %>
 

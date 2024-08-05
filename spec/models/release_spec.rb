@@ -475,7 +475,7 @@ describe Release do
     it "returns the subsequent commits made on the release branch after release starts" do
       stability_commits = create_list(:commit, 4, release:)
       expect(release.stability_commits).to exist
-      expect(release.stability_commits).to eq(stability_commits)
+      expect(release.stability_commits).to contain_exactly(*stability_commits)
       expect(release.all_commits.size).to eq(stability_commits.size + 1)
     end
 

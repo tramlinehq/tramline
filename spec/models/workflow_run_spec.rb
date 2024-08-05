@@ -7,12 +7,12 @@ describe WorkflowRun do
     expect(create(:workflow_run)).to be_valid
   end
 
-  describe "#trigger_external_run!" do
+  describe "#trigger!" do
     let(:ci_ref) { Faker::Lorem.word }
     let(:ci_link) { Faker::Internet.url }
     let(:number) { Faker::Number.number(digits: 3).to_s }
     let(:api_double) { instance_double(Installations::Google::PlayDeveloper::Api) }
-    let(:workflow_run) { create(:workflow_run) }
+    let(:workflow_run) { create(:workflow_run, :triggering) }
 
     before do
       allow_any_instance_of(GithubIntegration).to receive(:trigger_workflow_run!)
@@ -26,7 +26,7 @@ describe WorkflowRun do
       end
 
       it "transitions state to triggered" do
-        workflow_run.trigger_external_run!
+        workflow_run.trigger!
 
         expect(workflow_run.triggered?).to be(true)
       end
@@ -34,7 +34,7 @@ describe WorkflowRun do
       it "triggers find workflow run" do
         allow(WorkflowRuns::FindJob).to receive(:perform_async)
 
-        workflow_run.trigger_external_run!
+        workflow_run.trigger!
 
         expect(WorkflowRuns::FindJob).to have_received(:perform_async).with(workflow_run.id).once
       end
@@ -46,13 +46,13 @@ describe WorkflowRun do
       end
 
       it "transitions state to started" do
-        workflow_run.trigger_external_run!
+        workflow_run.trigger!
 
         expect(workflow_run.started?).to be(true)
       end
 
       it "updates external metadata" do
-        workflow_run.trigger_external_run!
+        workflow_run.trigger!
         workflow_run.reload
 
         expect(workflow_run.external_id).to eq(ci_ref)
@@ -66,7 +66,7 @@ describe WorkflowRun do
       name = workflow_run.class.name
       allow(PassportJob).to receive(:perform_later)
 
-      workflow_run.trigger_external_run!
+      workflow_run.trigger!
 
       expect(PassportJob).to have_received(:perform_later).with(id, name, hash_including(reason: :ci_triggered)).once
     end
@@ -74,9 +74,9 @@ describe WorkflowRun do
     it "updates build number" do
       allow(Releases::FindWorkflowRun).to receive(:perform_async)
 
-      expect(workflow_run.build_number).to be_nil
-      workflow_run.trigger_external_run!
-      expect(workflow_run.build_number).not_to be_empty
+      expect(workflow_run.build.build_number).to be_nil
+      workflow_run.trigger!
+      expect(workflow_run.build.build_number).not_to be_empty
     end
   end
 end

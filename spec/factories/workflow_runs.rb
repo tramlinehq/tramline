@@ -6,6 +6,14 @@ FactoryBot.define do
     workflow_config { {id: "123"} }
     status { "created" }
 
+    after(:create) do |run|
+      create(:build, version_name: run.release_version, release_platform_run: run.release_platform_run, workflow_run: run, build_number: nil)
+    end
+
+    trait :triggering do
+      status { "triggering" }
+    end
+
     trait :triggered do
       status { "triggered" }
     end

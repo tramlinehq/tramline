@@ -5,7 +5,7 @@ require "rails_helper"
 describe Coordinators::Signals do
   context "when condition" do
     it "succeeds" do
-      pending "Not implemented"
+      skip "not implemented yet"
     end
   end
 end

@@ -2,16 +2,17 @@
 #
 # Table name: pre_prod_releases
 #
-#  id                      :bigint           not null, primary key
-#  config                  :jsonb            not null
-#  status                  :string           default("created"), not null
-#  tester_notes            :text
-#  type                    :string           not null
-#  created_at              :datetime         not null
-#  updated_at              :datetime         not null
-#  commit_id               :uuid             indexed
-#  previous_id             :bigint           indexed
-#  release_platform_run_id :uuid             not null, indexed
+#  id                         :bigint           not null, primary key
+#  config                     :jsonb            not null
+#  status                     :string           default("created"), not null
+#  tester_notes               :text
+#  type                       :string           not null
+#  created_at                 :datetime         not null
+#  updated_at                 :datetime         not null
+#  commit_id                  :uuid             indexed
+#  parent_internal_release_id :bigint           indexed
+#  previous_id                :bigint           indexed
+#  release_platform_run_id    :uuid             not null, indexed
 #
 class PreProdRelease < ApplicationRecord
   include AASM
@@ -23,9 +24,8 @@ class PreProdRelease < ApplicationRecord
   belongs_to :previous, class_name: "PreProdRelease", inverse_of: :next, optional: true
   belongs_to :commit
   has_one :next, class_name: "PreProdRelease", inverse_of: :previous, dependent: :nullify
-  has_one :workflow_run, dependent: :destroy
+  has_one :triggered_workflow_run, class_name: "WorkflowRun", dependent: :destroy, inverse_of: :triggering_release
   has_many :store_submissions, as: :parent_release, dependent: :destroy
-  has_one :build, through: :workflow_run
 
   before_create :set_default_tester_notes
   after_create_commit -> { previous&.mark_as_stale! }
@@ -41,6 +41,14 @@ class PreProdRelease < ApplicationRecord
 
   enum status: STATES
 
+  def workflow_run
+    triggered_workflow_run || parent_internal_release&.workflow_run
+  end
+
+  def build
+    workflow_run&.build
+  end
+
   def production? = false
 
   def mark_as_stale!
@@ -54,11 +62,11 @@ class PreProdRelease < ApplicationRecord
     update!(status: STATES[:failed])
   end
 
-  def trigger_workflow!(workflow, commit)
-    WorkflowRun.create_and_trigger!(workflow, self, commit, release_platform_run, auto_promote: conf.auto_promote?)
+  def trigger_workflow!(workflow, auto_promote: false)
+    WorkflowRun.create_and_trigger!(workflow, self, commit, release_platform_run, auto_promote:)
   end
 
-  def trigger_submissions!(build)
+  def trigger_submissions!
     trigger_submission!(conf.submissions.first, build)
   end
 
@@ -83,13 +91,17 @@ class PreProdRelease < ApplicationRecord
     changes_since_last_run = release.all_commits.between_commits(last_successful_run&.commit, commit)
 
     return changes_since_last_run if last_successful_run.present?
+    return (changes_since_last_release || []) if previous.blank?
     (changes_since_last_run || []) + (changes_since_last_release || [])
   end
 
   def changes_since_previous
     changes_since_last_release = release.release_changelog&.commit_messages(true)
     last_successful_run = previous_successful
-    changes_since_last_run = release.all_commits.between_commits(last_successful_run&.commit, commit).commit_messages(true)
+    changes_since_last_run = release
+      .all_commits
+      .between_commits(last_successful_run&.commit, commit)
+      &.commit_messages(true)
 
     return changes_since_last_run if last_successful_run.present?
     (changes_since_last_run || []) + (changes_since_last_release || [])

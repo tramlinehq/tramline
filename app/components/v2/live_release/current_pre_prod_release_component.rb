@@ -12,8 +12,7 @@ class V2::LiveRelease::CurrentPreProdReleaseComponent < V2::BaseComponent
   end
 
   attr_reader :pre_prod_release
-  delegate :release_platform_run, :store_submissions, :workflow_run, to: :pre_prod_release
-  delegate :build, to: :workflow_run
+  delegate :release_platform_run, :store_submissions, :workflow_run, :build, to: :pre_prod_release
 
   def changed_commits
     V2::CommitComponent.with_collection(pre_prod_release.commits_since_previous)
