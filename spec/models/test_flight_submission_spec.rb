@@ -17,7 +17,7 @@ describe TestFlightSubmission do
 
   before do
     allow_any_instance_of(described_class).to receive(:provider).and_return(provider_dbl)
-    allow(Coordinators::Signals).to receive(:build_is_available_for_regression_testing!)
+    allow(Coordinators::Signals).to receive(:internal_release_finished!)
   end
 
   it "has a valid factory" do

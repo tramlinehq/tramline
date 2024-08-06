@@ -249,7 +249,7 @@ class WorkflowRun < ApplicationRecord
 
   def after_finish
     event_stamp!(reason: :ci_finished, kind: :success, data: stamp_data)
-    Coordinators::Signals.workflow_run_finished!(self)
+    Coordinators::Signals.workflow_run_finished!(id)
   end
 
   def after_cancel

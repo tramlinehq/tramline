@@ -15,8 +15,10 @@
 #  release_platform_run_id    :uuid             not null, indexed
 #
 class InternalRelease < PreProdRelease
-  def finish!(build)
-    update!(status: STATES[:finished])
-    Coordinators::Signals.build_is_available_for_regression_testing!(build)
+  def finish!
+    with_lock do
+      update!(status: STATES[:finished])
+      Coordinators::Signals.internal_release_finished!(build)
+    end
   end
 end

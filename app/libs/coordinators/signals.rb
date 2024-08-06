@@ -53,12 +53,15 @@ module Coordinators::Signals
     Coordinators::ProcessCommit.call(release, commit)
   end
 
-  def self.workflow_run_finished!(workflow_run) # TODO: pass id only
-    V2::TriggerSubmissionsJob.perform_later(workflow_run.id)
+  def self.workflow_run_finished!(workflow_run_id)
+    V2::TriggerSubmissionsJob.perform_later(workflow_run_id)
   end
 
-  def self.build_is_available_for_regression_testing!(build)
-    # Coordinators::CreateBetaRelease.call(build)
+  def self.internal_release_finished!(build)
+    release_platform_run = build.release_platform_run
+    unless release_platform_run.conf.beta_submissions?
+      start_beta_release!(release_platform_run, build.id, nil)
+    end
   end
 
   def self.regression_testing_is_approved!(build)

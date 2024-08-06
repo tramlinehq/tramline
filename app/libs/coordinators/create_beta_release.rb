@@ -6,6 +6,7 @@ class Coordinators::CreateBetaRelease
   def initialize(release_platform_run, build_id, commit_id)
     raise ArgumentError, "Only expects one of build or commit" if build_id.present? && commit_id.present?
     raise ArgumentError, "At least expects one of build or commit" if build_id.blank? && commit_id.blank?
+    raise ArgumentError, "Beta release is blocked" unless release_platform_run.ready_for_beta_release?
 
     @release_platform_run = release_platform_run
     @build = release_platform_run.builds.find(build_id) if build_id.present?
@@ -34,7 +35,7 @@ class Coordinators::CreateBetaRelease
   private
 
   def carryover_build?
-    @build.present? && @commit.blank? && !workflows_config.separate_rc_workflow?
+    @build.present? && !workflows_config.separate_rc_workflow?
   end
 
   def previous
@@ -46,7 +47,7 @@ class Coordinators::CreateBetaRelease
   end
 
   def rc_workflow_config
-    workflows_config.release_candidate_workflow.value
+    workflows_config.release_candidate_workflow
   end
 
   def workflows_config

@@ -8,10 +8,6 @@ class V2::LiveRelease::ReleaseCandidatesComponent < V2::BaseReleaseComponent
 
   attr_reader :release
 
-  def configured?(release_platform_run)
-    configuration(release_platform_run).present?
-  end
-
   memoize def configuration(release_platform_run)
     release_platform_run.conf.beta_release
   end

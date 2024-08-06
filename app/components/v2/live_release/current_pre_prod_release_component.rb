@@ -32,10 +32,6 @@ class V2::LiveRelease::CurrentPreProdReleaseComponent < V2::BaseComponent
     workflow_run&.may_retry?
   end
 
-  def beta?
-    @pre_prod_release.is_a?(BetaRelease)
-  end
-
   memoize def latest_internal_release
     release_platform_run.latest_internal_release(finished: true)
   end
@@ -45,7 +41,6 @@ class V2::LiveRelease::CurrentPreProdReleaseComponent < V2::BaseComponent
   end
 
   def rc_params
-    return unless beta?
     if pre_prod_release.carried_over?
       {build_id: latest_internal_release.build.id}
     else

@@ -1,35 +1,49 @@
-<%= render V2::CardComponent.new(title: title) do |card| %>
-  <% if carryover_build? %>
-    <% card.with_actions do %>
-      <div class="flex flex-row gap-2">
-        <%= render V2::ButtonComponent.new(label: "Start Beta submissions",
-                                           scheme: :default,
-                                           type: :button,
-                                           options: create_release_candidate_path,
-                                           size: :xxs,
-                                           turbo: false,
-                                           html_options: confirmation_opts) %>
+<% unless ready_for_beta_release? %>
+  <%= render V2::EmptyStateComponent.new(
+    title: "Not ready to start beta releases",
+    text: "Please wait for internal builds to be available before starting.",
+    banner_image: "v2/drill.svg",
+    type: :subdued) %>
+<% end %>
+
+<% if ready_for_beta_release? %>
+  <%= render V2::CardComponent.new(title: title) do |card| %>
+    <% if carryover_build? %>
+      <% card.with_actions do %>
+        <% if @release_platform_run.conf.beta_submissions? %>
+          <div class="flex flex-row gap-2">
+            <%= render V2::ButtonComponent.new(label: "Start Beta submissions",
+                                               scheme: :default,
+                                               type: :button,
+                                               options: create_release_candidate_path,
+                                               size: :xxs,
+                                               turbo: false,
+                                               html_options: confirmation_opts) %>
+          </div>
+        <% end %>
+      <% end %>
+
+      <div class="flex flex-col section-gap-default">
+        <%= render V2::LiveRelease::BuildComponent.new(build, show_number: true, show_build_only: false) %>
       </div>
     <% end %>
 
-    <div class="flex flex-col section-gap-default">
-      <%= render V2::LiveRelease::BuildComponent.new(build, show_number: true, show_build_only: false) %>
-    </div>
-  <% else %>
-    <% card.with_actions do %>
-      <div class="flex flex-row gap-2">
-        <%= render V2::ButtonComponent.new(label: "Create Release Candidate",
-                                           scheme: :default,
-                                           type: :button,
-                                           options: create_release_candidate_path,
-                                           size: :xxs,
-                                           turbo: false,
-                                           html_options: confirmation_opts) %>
+    <% if create_new_rc? %>
+      <% card.with_actions do %>
+        <div class="flex flex-row gap-2">
+          <%= render V2::ButtonComponent.new(label: "Create Release Candidate",
+                                             scheme: :default,
+                                             type: :button,
+                                             options: create_release_candidate_path,
+                                             size: :xxs,
+                                             turbo: false,
+                                             html_options: confirmation_opts) %>
+        </div>
+      <% end %>
+
+      <div class="flex flex-col section-gap-default">
+        <%= render V2::CommitComponent.new(commit:, detailed: false) %>
       </div>
     <% end %>
-
-    <div class="flex flex-col section-gap-default">
-      <%= render V2::CommitComponent.new(commit:, detailed: false) %>
-    </div>
   <% end %>
 <% end %>

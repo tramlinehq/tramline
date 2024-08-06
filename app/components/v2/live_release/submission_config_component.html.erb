@@ -21,8 +21,8 @@
   </div>
 
   <div class="grid items-start item-gap-default">
-    <% submission = release_config.submissions.first %>
-    <% while submission.present? do  %>
+    <% submission = release_config&.submissions&.first %>
+    <% while submission.present? do %>
       <!-- loop over the deployments/submissions -->
       <div class="grid justify-self-start grid-flow-col items-center">
         <div class="border-t mr-1 border-main-300 border-dashed w-5"></div>

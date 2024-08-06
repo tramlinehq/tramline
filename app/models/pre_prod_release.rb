@@ -54,10 +54,12 @@ class PreProdRelease < ApplicationRecord
   def production? = false
 
   def mark_as_stale!
-    return if finished?
+    with_lock do
+      return if finished?
 
-    update!(status: STATES[:stale])
-    workflow_run.cancel! if workflow_run&.may_cancel?
+      update!(status: STATES[:stale])
+      workflow_run.cancel! if workflow_run&.may_cancel?
+    end
   end
 
   def fail!
@@ -69,7 +71,8 @@ class PreProdRelease < ApplicationRecord
   end
 
   def trigger_submissions!
-    trigger_submission!(conf.submissions.first, build)
+    return finish! if conf.submissions.blank?
+    trigger_submission!(conf.submissions.first)
   end
 
   def rollout_started!
@@ -79,9 +82,9 @@ class PreProdRelease < ApplicationRecord
   def rollout_complete!(submission)
     next_submission_config = conf.submissions.fetch_by_number(submission.sequence_number + 1)
     if next_submission_config
-      trigger_submission!(next_submission_config, submission.build)
+      trigger_submission!(next_submission_config)
     else
-      finish!(submission.build)
+      finish!
     end
   end
 
@@ -93,8 +96,9 @@ class PreProdRelease < ApplicationRecord
     changes_since_last_run = release.all_commits.between_commits(last_successful_run&.commit, commit)
 
     return changes_since_last_run if last_successful_run.present?
+
     return (changes_since_last_release || []) if previous.blank?
-    (changes_since_last_run || []) + (changes_since_last_release || [])
+    ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq { |c| c.commit_hash }
   end
 
   def changes_since_previous
@@ -106,7 +110,8 @@ class PreProdRelease < ApplicationRecord
       &.commit_messages(true)
 
     return changes_since_last_run if last_successful_run.present?
-    (changes_since_last_run || []) + (changes_since_last_release || [])
+    return (changes_since_last_release || []) if previous.blank?
+    ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq
   end
 
   # NOTES: This logic should simplify once we allow users to edit the tester notes
@@ -129,9 +134,21 @@ class PreProdRelease < ApplicationRecord
     previous.previous_successful
   end
 
+  def new_build_available?
+    false
+  end
+
+  def carried_over?
+    false
+  end
+
+  def new_commit_available?
+    false
+  end
+
   private
 
-  def trigger_submission!(submission_config, build)
+  def trigger_submission!(submission_config)
     submission_config.submission_type.create_and_trigger!(self, submission_config, build)
   end
 end

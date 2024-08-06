@@ -17,9 +17,11 @@
 class BetaRelease < PreProdRelease
   belongs_to :parent_internal_release, class_name: "InternalRelease", optional: true
 
-  def finish!(build)
-    update!(status: STATES[:finished])
-    Coordinators::Signals.beta_release_is_available!(build)
+  def finish!
+    with_lock do
+      update!(status: STATES[:finished])
+      Coordinators::Signals.beta_release_is_available!(build)
+    end
   end
 
   def new_build_available?

@@ -2,7 +2,7 @@ require "rails_helper"
 
 describe GoogleFirebaseSubmission do
   before do
-    allow(Coordinators::Signals).to receive(:build_is_available_for_regression_testing!)
+    allow(Coordinators::Signals).to receive(:internal_release_finished!)
   end
 
   it "has a valid factory" do

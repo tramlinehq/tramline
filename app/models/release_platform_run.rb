@@ -224,6 +224,11 @@ class ReleasePlatformRun < ApplicationRecord
     }
   end
 
+  def ready_for_beta_release?
+    return true if conf.only_beta_release?
+    latest_internal_release(finished: true).present?
+  end
+
   def latest_internal_release(finished: false)
     (finished ? internal_releases.finished : internal_releases).order(created_at: :desc).first
   end

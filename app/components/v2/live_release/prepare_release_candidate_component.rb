@@ -7,21 +7,26 @@ class V2::LiveRelease::PrepareReleaseCandidateComponent < V2::BaseComponent
   end
 
   delegate :build, to: :@latest_internal_release, allow_nil: true
+  delegate :ready_for_beta_release?, to: :@release_platform_run
 
   def title
     if carryover_build?
-      "Latest Internal Build"
+      "Active Release Candidate"
     else
       "Latest Change"
     end
   end
 
   def commit
-    @latest_internal_release.build.commit || @release_platform_run.last_commit
+    @release_platform_run.last_commit
   end
 
   def carryover_build?
-    @latest_internal_release.present? && !@release_platform_run.conf.workflows.separate_rc_workflow?
+    ready_for_beta_release? && !@release_platform_run.conf.workflows.separate_rc_workflow? && @latest_internal_release.present?
+  end
+
+  def create_new_rc?
+    ready_for_beta_release? && @release_platform_run.conf.workflows.separate_rc_workflow? && commit.present?
   end
 
   def confirmation_opts

@@ -4,7 +4,19 @@ class ReleaseConfig::Platform < Struct.new(:conf)
   end
 
   def internal_release
-    ReleaseStep.new(value[:internal_release]) if value[:internal_release].present?
+    ReleaseStep.new(value[:internal_release]) if internal_release?
+  end
+
+  def internal_release?
+    value[:internal_release].present?
+  end
+
+  def only_beta_release?
+    !internal_release?
+  end
+
+  def beta_submissions?
+    beta_release.submissions?
   end
 
   def beta_release
@@ -44,9 +56,13 @@ class ReleaseConfig::Platform < Struct.new(:conf)
 
     def blank? = !present?
 
-    def last = Submission.new(value.last, value)
+    def last
+      Submission.new(value.last, value) if present?
+    end
 
-    def first = Submission.new(value.first, value)
+    def first
+      Submission.new(value.first, value) if present?
+    end
 
     def fetch_by_number(num)
       found = value.find { |d| d[:number] == num }

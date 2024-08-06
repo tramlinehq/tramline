@@ -1,14 +1,6 @@
 <%= render V2::PlatformViewComponent.new(@release) do |component| %>
   <% component.runs do |release_platform_run| %>
-    <% if configured?(release_platform_run) %>
-      <%= render V2::LiveRelease::SubmissionConfigComponent.new(configuration(release_platform_run), workflow_config(release_platform_run), release_platform_run:) %>
-    <% else %>
-      <%= render V2::EmptyStateComponent.new(
-        title: "No internal build step configured",
-        text: "Please configure an internal build step for the train to see the build status.",
-        banner_image: "v2/drill.svg",
-        type: :subdued) %>
-    <% end %>
+    <%= render V2::LiveRelease::SubmissionConfigComponent.new(configuration(release_platform_run), workflow_config(release_platform_run), release_platform_run:) %>
   <% end %>
 
   <% component.runs do |release_platform_run| %>
