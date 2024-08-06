@@ -21,4 +21,18 @@ class BetaRelease < PreProdRelease
     update!(status: STATES[:finished])
     Coordinators::Signals.beta_release_is_available!(build)
   end
+
+  def new_build_available?
+    return unless carried_over?
+    release_platform_run.latest_internal_release(finished: true) != parent_internal_release
+  end
+
+  def carried_over?
+    parent_internal_release.present?
+  end
+
+  def new_commit_available?
+    return if carried_over?
+    release_platform_run.last_commit != commit
+  end
 end

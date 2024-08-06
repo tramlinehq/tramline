@@ -146,6 +146,7 @@ class AppStoreSubmission < StoreSubmission
   def requires_review? = true
 
   def trigger!
+    return unless parent_release.active?
     return start_prepare! if build_present_in_store?
 
     preprocess!

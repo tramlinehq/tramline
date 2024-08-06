@@ -3,13 +3,16 @@
 class V2::LiveRelease::BuildComponent < V2::BaseComponent
   include Memery
 
-  def initialize(build, show_number: false, show_build_only: false)
+  def initialize(build, show_number: false, show_build_only: false, show_metadata: true, show_ci: true, show_activity: true, show_commit: true)
     @build = build
     @show_number = show_number
-    @show_build_only = show_build_only
+    @show_metadata = show_metadata
+    @show_ci = show_ci
+    @show_activity = show_activity
+    @show_commit = show_commit
   end
 
-  attr_reader :build, :previous_build, :show_build_only, :show_number
+  attr_reader :build, :previous_build, :show_build_only, :show_number, :show_metadata, :show_ci, :show_activity, :show_commit
   delegate :release_platform_run, :commit, :version_name, :artifact, :workflow_run, to: :build
   delegate :external_url, to: :workflow_run
 

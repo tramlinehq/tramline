@@ -1,6 +1,6 @@
 <div class="flex flex-col section-gap-default">
   <div class="flex flex-col item-gap-default">
-    <%= render V2::AlertComponent.new(type: :info, title: "A new build #239 is available. Switch to a newer build under test.", dismissible: false) %>
+    <%= render V2::AlertComponent.new(type: :info, title: "A new build #239 is available. Switch to a newer build under test.") %>
 
     <div class="flex flex-col item-gap-default justify-start items-start">
       <%= render V2::BadgeComponent.new(**testing_status, kind: :status) %>

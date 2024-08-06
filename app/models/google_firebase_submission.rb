@@ -82,6 +82,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   end
 
   def trigger!
+    return unless parent_release.active?
     return unless may_prepare?
 
     if build_present_in_store?

@@ -160,11 +160,11 @@ class ReleasePlatformRun < ApplicationRecord
   def android_config
     {
       workflows: {
-        # internal: {
-        #   name: "Android Debug APK",
-        #   id: "85899119",
-        #   artifact_name_pattern: "pattern"
-        # },
+        internal: {
+          name: "Android Debug APK",
+          id: "85899119",
+          artifact_name_pattern: "pattern"
+        },
         release_candidate: {
           name: "Android Play Store Release Build AAB",
           id: "85899120",
@@ -172,7 +172,7 @@ class ReleasePlatformRun < ApplicationRecord
         }
       },
       internal_release: {
-        auto_promote: false,
+        auto_promote: true,
         submissions: [
           # {
           #   number: 1,
@@ -224,12 +224,12 @@ class ReleasePlatformRun < ApplicationRecord
     }
   end
 
-  def latest_internal_release
-    internal_releases.order(created_at: :desc).first
+  def latest_internal_release(finished: false)
+    (finished ? internal_releases.finished : internal_releases).order(created_at: :desc).first
   end
 
-  def latest_beta_release
-    beta_releases.order(created_at: :desc).first
+  def latest_beta_release(finished: false)
+    (finished ? beta_releases.finished : beta_releases).order(created_at: :desc).first
   end
 
   def latest_production_release

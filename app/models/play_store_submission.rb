@@ -100,6 +100,7 @@ class PlayStoreSubmission < StoreSubmission
   def integration_type = :google_play_store
 
   def trigger!
+    return unless parent_release.active?
     return start_prepare! if build_present_in_store?
 
     preprocess!

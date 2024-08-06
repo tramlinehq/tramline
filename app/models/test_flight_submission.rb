@@ -75,6 +75,7 @@ class TestFlightSubmission < StoreSubmission
   end
 
   def trigger!
+    return unless parent_release.active?
     return start_release! if build_present_in_store?
 
     preprocess!

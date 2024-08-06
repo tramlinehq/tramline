@@ -41,6 +41,8 @@ class PreProdRelease < ApplicationRecord
 
   enum status: STATES
 
+  def active? = created?
+
   def workflow_run
     triggered_workflow_run || parent_internal_release&.workflow_run
   end

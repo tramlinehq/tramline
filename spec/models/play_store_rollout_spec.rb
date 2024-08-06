@@ -15,6 +15,7 @@ describe PlayStoreRollout do
       allow(rollout).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
       allow(prod_double).to receive(:rollout_started!)
+      allow(prod_double).to receive(:rollout_complete!)
       allow(rollout).to receive(:parent_release).and_return(prod_double)
     end
 
@@ -39,6 +40,7 @@ describe PlayStoreRollout do
       it "completes the rollout if not staged" do
         rollout.start_release!
         expect(rollout.completed?).to be(true)
+        expect(prod_double).to have_received(:rollout_complete!)
       end
     end
   end

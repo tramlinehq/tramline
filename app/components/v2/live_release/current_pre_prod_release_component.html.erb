@@ -1,4 +1,44 @@
 <div class="flex flex-col item-gap-default">
+  <% if beta? && pre_prod_release.new_build_available? %>
+    <%= render V2::AlertComponent.new(size: :md, kind: :announcement, type: :announce, title: "New Internal Build is available") do |ann| %>
+      <% ann.with_announcement_action(label: "Start Beta submissions",
+                                      scheme: :default,
+                                      type: :button,
+                                      options: run_pre_prod_beta_path(release_platform_run),
+                                      size: :xxs,
+                                      turbo: false,
+                                      html_options: {
+                                        method: :post,
+                                        params: {pre_prod_release: rc_params},
+                                        data: {turbo_method: :post, turbo_confirm: "Are you sure?"}
+                                      }) %>
+      <div class="flex flex-col gap-2">
+        <%= render V2::LiveRelease::BuildComponent.new(latest_internal_release.build, show_number: true, show_metadata: false, show_ci: true, show_activity: false, show_commit: false) %>
+        <span class="text-sm">Please start the beta release process for the new build.</span>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if beta? && pre_prod_release.new_commit_available? %>
+    <%= render V2::AlertComponent.new(size: :md, kind: :announcement, type: :announce, title: "New Internal Build is available") do |ann| %>
+      <% ann.with_announcement_action(label: "Start Beta submissions",
+                                      scheme: :default,
+                                      type: :button,
+                                      options: run_pre_prod_beta_path(release_platform_run),
+                                      size: :xxs,
+                                      turbo: false,
+                                      html_options: {
+                                        method: :post,
+                                        params: {pre_prod_release: rc_params},
+                                        data: {turbo_method: :post, turbo_confirm: "Are you sure?"}
+                                      }) %>
+      <div class="flex flex-col gap-2">
+        <%= render V2::CommitComponent.new(commit: latest_commit, detailed: false) %>
+        <span class="text-sm">Please create a Release Candidate for the new commit.</span>
+      </div>
+    <% end %>
+  <% end %>
+
   <div class="self-start">
     <%= render V2::BadgeComponent.new(**status) %>
   </div>

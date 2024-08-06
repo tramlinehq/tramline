@@ -27,6 +27,8 @@ class ProductionRelease < ApplicationRecord
   delegate :monitoring_provider, to: :app
   delegate :store_rollout, to: :store_submission
 
+  def active? = !finished?
+
   def finished?
     store_submission.finished? && store_rollout.finished?
   end

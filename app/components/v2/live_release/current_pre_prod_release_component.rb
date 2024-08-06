@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class V2::LiveRelease::CurrentPreProdReleaseComponent < V2::BaseComponent
+  include Memery
+
   STATUS = {
     created: {text: "Ongoing", status: :routine},
     failed: {text: "Failed", status: :failure},
@@ -28,5 +30,26 @@ class V2::LiveRelease::CurrentPreProdReleaseComponent < V2::BaseComponent
 
   def retriggerable?
     workflow_run&.may_retry?
+  end
+
+  def beta?
+    @pre_prod_release.is_a?(BetaRelease)
+  end
+
+  memoize def latest_internal_release
+    release_platform_run.latest_internal_release(finished: true)
+  end
+
+  memoize def latest_commit
+    release_platform_run.last_commit
+  end
+
+  def rc_params
+    return unless beta?
+    if pre_prod_release.carried_over?
+      {build_id: latest_internal_release.build.id}
+    else
+      {commit_id: latest_commit.id}
+    end
   end
 end

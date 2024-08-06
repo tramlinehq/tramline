@@ -16,7 +16,7 @@ class ReleaseChangelog < ApplicationRecord
   belongs_to :release
 
   def normalized_commits
-    commits.map { NormalizedCommit.new(_1) }.sort_by(&:timestamp).reverse
+    commits.map { NormalizedCommit.new(_1, train: release.train) }.sort_by(&:timestamp).reverse
   end
 
   def commit_messages(first_parent_only = false)
@@ -57,8 +57,9 @@ class ReleaseChangelog < ApplicationRecord
   private
 
   class NormalizedCommit
-    def initialize(commit)
+    def initialize(commit, train: nil)
       @commit = commit
+      @train = train
     end
 
     def author_name = commit["author_name"]
@@ -90,7 +91,7 @@ class ReleaseChangelog < ApplicationRecord
 
     def team = nil # FIXME: stub
 
-    def train = nil # FIXME: stub
+    attr_reader :train
 
     def pull_request = nil
 
