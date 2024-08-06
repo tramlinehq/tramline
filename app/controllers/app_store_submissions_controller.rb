@@ -3,6 +3,7 @@ class AppStoreSubmissionsController < SignedInApplicationController
   before_action :require_write_access!
   before_action :set_app_store_submission
   before_action :set_release_platform_run
+  before_action :ensure_actionable
   before_action :ensure_reviewable, only: [:submit_for_review]
   before_action :ensure_cancellable, only: [:cancel]
 
@@ -24,12 +25,6 @@ class AppStoreSubmissionsController < SignedInApplicationController
     else
       redirect_back fallback_location: root_path, notice: t(".cancel.success")
     end
-  end
-
-  def prepare
-    @submission.start_prepare!(force: true)
-
-    redirect_back fallback_location: root_path, notice: t(".prepare.success")
   end
 
   private

@@ -90,6 +90,7 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
   end
 
   def action
+    return unless active?
     if submission.created?
       {scheme: :default,
        type: :button,

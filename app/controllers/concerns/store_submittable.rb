@@ -25,4 +25,10 @@ module StoreSubmittable
   def set_release_platform_run
     @release_platform_run = @submission.release_platform_run
   end
+
+  def ensure_actionable
+    unless @submission.active_release?
+      redirect_back fallback_location: root_path, flash: {error: t(".prepare.submission_not_active")}
+    end
+  end
 end

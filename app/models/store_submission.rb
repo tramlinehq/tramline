@@ -92,6 +92,10 @@ class StoreSubmission < ApplicationRecord
       )
   end
 
+  def active_release?
+    parent_release.active?
+  end
+
   protected
 
   def fail_with_error(error)

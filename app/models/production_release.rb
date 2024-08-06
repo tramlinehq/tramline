@@ -4,6 +4,7 @@
 #
 #  id                      :bigint           not null, primary key
 #  config                  :jsonb            not null
+#  status                  :string           default("created"), not null
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_id                :uuid             not null, indexed
@@ -27,11 +28,17 @@ class ProductionRelease < ApplicationRecord
   delegate :monitoring_provider, to: :app
   delegate :store_rollout, to: :store_submission
 
-  def active? = !finished?
+  after_create_commit -> { previous&.mark_as_stale! }
 
-  def finished?
-    store_submission.finished? && store_rollout.finished?
-  end
+  STATES = {
+    created: "created",
+    stale: "stale",
+    finished: "finished"
+  }
+
+  enum status: STATES
+
+  def active? = created?
 
   def completed_at
     store_rollout.completed_at if finished?
@@ -44,8 +51,18 @@ class ProductionRelease < ApplicationRecord
     V2::FetchHealthMetricsJob.perform_later(id)
   end
 
+  def mark_as_stale!
+    with_lock do
+      return if finished?
+      update!(status: STATES[:stale])
+    end
+  end
+
   def rollout_complete!(_)
-    Coordinators::Signals.production_release_is_complete!(release_platform_run)
+    with_lock do
+      update!(status: STATES[:finished])
+      Coordinators::Signals.production_release_is_complete!(release_platform_run)
+    end
   end
 
   def beyond_monitoring_period?
