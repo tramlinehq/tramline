@@ -59,7 +59,7 @@ module Coordinators::Signals
 
   def self.internal_release_finished!(build)
     release_platform_run = build.release_platform_run
-    unless release_platform_run.conf.beta_submissions?
+    if release_platform_run.conf.auto_start_beta_release?
       start_beta_release!(release_platform_run, build.id, nil)
     end
   end
