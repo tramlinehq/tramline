@@ -1,1 +1,13 @@
+<% if current_user.pending_profile?(current_organization) %>
+  <% content_for :sticky_top_message do %>
+    <%= render V2::AlertComponent.new(kind: :banner,
+                                      type: :notice,
+                                      title: "Incomplete user profile",
+                                      dismissible: false,
+                                      info: { label: "Complete profile", link: "/accounts/user/edit" }) do %>
+      You haven't completed your profile yet. Add a GitHub Login ID and select the team you belong to.
+    <% end %>
+  <% end %>
+<% end %>
+
 <%= render V2::ReleaseListComponent.new(train: @train) %>

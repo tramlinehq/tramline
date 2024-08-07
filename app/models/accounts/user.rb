@@ -218,6 +218,11 @@ class Accounts::User < ApplicationRecord
     access_for(build.organization).present?
   end
 
+  def pending_profile?(organization)
+    return false if organization.teams.none?
+    github_login.blank? || team_for(organization).blank?
+  end
+
   protected
 
   def confirmation_required?
