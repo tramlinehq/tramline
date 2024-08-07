@@ -1,10 +1,12 @@
-class V2::LiveRelease::SubmissionStoreReleaseComponent < V2::BaseComponent
-  def initialize(store_release:, submission:)
-    @store_release = store_release
+# frozen_string_literal: true
+
+class V2::LiveRelease::PreviewSubmissionComponent < V2::BaseComponent
+  def initialize(submission)
     @submission = submission
   end
 
-  attr_reader :store_release, :submission
+  attr_reader :submission
+  delegate :store_release, to: :submission
 
   def localizations
     store_release["localizations"]

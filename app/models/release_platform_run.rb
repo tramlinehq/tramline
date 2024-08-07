@@ -33,8 +33,8 @@ class ReleasePlatformRun < ApplicationRecord
   belongs_to :release
   has_many :release_metadata, class_name: "ReleaseMetadata", dependent: :destroy, inverse_of: :release_platform_run
   has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
-  has_many :internal_builds, -> { internal }, class_name: "Build", dependent: :destroy, inverse_of: :release_platform_run
-  has_many :rc_builds, -> { release_candidate }, class_name: "Build", dependent: :destroy, inverse_of: :release_platform_run
+  has_many :internal_builds, -> { internal.ready }, class_name: "Build", dependent: :destroy, inverse_of: :release_platform_run
+  has_many :rc_builds, -> { release_candidate.ready.reorder("generated_at DESC") }, class_name: "Build", dependent: :destroy, inverse_of: :release_platform_run
   has_many :builds, dependent: :destroy, inverse_of: :release_platform_run
   has_many :play_store_submissions, dependent: :destroy
   has_many :app_store_submissions, dependent: :destroy
@@ -241,6 +241,7 @@ class ReleasePlatformRun < ApplicationRecord
     production_releases.order(created_at: :desc).first
   end
 
+  # TODO: remove this
   def store_rollouts
     if android?
       play_store_rollouts
@@ -251,10 +252,6 @@ class ReleasePlatformRun < ApplicationRecord
     end
   end
 
-  def active_store_submission
-    production_releases.last&.store_submission
-  end
-
   def previous_store_submissions
     return unless production_releases.size > 1
     production_releases.order(created_at: :desc).drop(1).map(&:store_submission)
@@ -262,6 +259,11 @@ class ReleasePlatformRun < ApplicationRecord
 
   def latest_rc_build?(build)
     rc_builds.reorder("generated_at DESC").first == build
+  end
+
+  def available_rc_builds(build, only_new: false)
+    return rc_builds.where.not(id: build.id) unless only_new
+    rc_builds.where("generated_at > ?", build.generated_at).where.not(id: build.id)
   end
 
   def next_build_sequence_number

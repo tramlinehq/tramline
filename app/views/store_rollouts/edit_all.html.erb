@@ -6,8 +6,8 @@
     <%= render V2::PlatformViewComponent.new(@release) do |component| %>
       <% component.platform_runs.each do |run| %>
         <div class="grid grid-cols-1">
-          <% if run.active_store_submission&.store_rollout %>
-            <%= render V2::LiveRelease::RolloutComponent.new(run.active_store_submission&.store_rollout) %>
+          <% if run.latest_production_release&.store_rollout %>
+            <%= render V2::LiveRelease::RolloutComponent.new(run.latest_production_release.store_rollout) %>
           <% else %>
             <%= render V2::EmptyStateComponent.new(
               title: "Not ready to roll out",

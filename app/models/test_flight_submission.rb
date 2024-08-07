@@ -66,9 +66,15 @@ class TestFlightSubmission < StoreSubmission
     end
   end
 
-  def provider = app.ios_store_provider
+  def change_allowed? = raise NotImplementedError
 
-  def rollout_needed? = false
+  def cancellable? = raise NotImplementedError
+
+  def locked? = raise NotImplementedError
+
+  def reviewable? = raise NotImplementedError
+
+  def requires_review? = raise NotImplementedError
 
   def internal_channel?
     deployment_channel.is_internal
@@ -134,10 +140,13 @@ class TestFlightSubmission < StoreSubmission
     @build ||= provider.find_build(build_number)
   end
 
+  def provider = app.ios_store_provider
+
   private
 
   # TODO: Implement this
   def deployment_notes
+    parent_release.tester_notes.truncate(ReleaseMetadata::NOTES_MAX_LENGTH)
     # return step_run.build_notes.truncate(ReleaseMetadata::NOTES_MAX_LENGTH) if build_notes?
     # release_metadatum.release_notes if release_notes?
   end

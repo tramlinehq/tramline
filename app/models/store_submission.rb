@@ -59,7 +59,7 @@ class StoreSubmission < ApplicationRecord
     store_link || project_link
   end
 
-  def attach_build!(build)
+  def attach_build(build)
     update!(build:)
   end
 

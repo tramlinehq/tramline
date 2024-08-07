@@ -53,6 +53,8 @@ class StoreRollout < ApplicationRecord
 
   def provider = release_platform_run.store_provider
 
+  def started? = !created?
+
   def finished? = completed? || fully_released?
 
   def reached_last_stage? = next_rollout_percentage.nil?

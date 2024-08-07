@@ -42,6 +42,7 @@ class PlayStoreSubmission < StoreSubmission
     failed_with_action_required: "failed_with_action_required"
   }
   FINAL_STATES = %w[prepared]
+  CHANGEABLE_STATES = %w[created preprocessing failed]
 
   enum failure_reason: {
     unknown_failure: "unknown_failure"
@@ -65,6 +66,7 @@ class PlayStoreSubmission < StoreSubmission
       transitions from: :preparing, to: :prepared
     end
 
+    # TODO: This is currently not used, should be hooked up as an action from the user
     event :reject do
       after { set_rejected_at! }
       transitions from: :prepared, to: :review_failed
@@ -79,25 +81,17 @@ class PlayStoreSubmission < StoreSubmission
     end
   end
 
-  def provider = app.android_store_provider
+  def change_allowed? = CHANGEABLE_STATES.include?(status) && !locked? && active_release?
 
-  def rollout_needed? = true
+  def cancellable? = false
 
-  def change_allowed? = true
+  def finished? = FINAL_STATES.include?(status)
 
-  def locked? = false # TODO: This should be false once rollout starts
+  def locked? = play_store_rollout&.started?
 
   def reviewable? = false
 
   def requires_review? = false
-
-  def cancellable? = false
-
-  def finished?
-    status.in? FINAL_STATES
-  end
-
-  def integration_type = :google_play_store
 
   def trigger!
     return unless parent_release.active?
@@ -131,6 +125,8 @@ class PlayStoreSubmission < StoreSubmission
       fail_with_error(result.error)
     end
   end
+
+  def provider = app.android_store_provider
 
   private
 

@@ -63,23 +63,17 @@ class GoogleFirebaseSubmission < StoreSubmission
     end
   end
 
-  def provider = app.firebase_build_channel_provider
+  def change_allowed? = raise NotImplementedError
 
-  def rollout_needed? = false
+  def locked? = raise NotImplementedError
 
-  def change_allowed? = true
+  def reviewable? = raise NotImplementedError
 
-  def locked? = false
+  def requires_review? = raise NotImplementedError
 
-  def reviewable? = false
+  def cancellable? = raise NotImplementedError
 
-  def requires_review? = false
-
-  def cancellable? = false
-
-  def finished?
-    status.in? FINAL_STATES
-  end
+  def finished? = status.in? FINAL_STATES
 
   def trigger!
     return unless parent_release.active?
@@ -148,6 +142,8 @@ class GoogleFirebaseSubmission < StoreSubmission
   def send_notes?
     true
   end
+
+  def provider = app.firebase_build_channel_provider
 
   private
 

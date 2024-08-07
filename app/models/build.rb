@@ -35,6 +35,8 @@ class Build < ApplicationRecord
   scope :internal, -> { joins(:workflow_run).where(workflow_run: {kind: WorkflowRun::KINDS[:internal]}) }
   scope :release_candidate, -> { joins(:workflow_run).where(workflow_run: {kind: WorkflowRun::KINDS[:release_candidate]}) }
 
+  scope :ready, -> { where.not(generated_at: nil) }
+
   delegate :android?, :ios?, :ci_cd_provider, :train, to: :release_platform_run
   delegate :artifacts_url, :build_artifact_name_pattern, :kind, to: :workflow_run
 
@@ -54,7 +56,10 @@ class Build < ApplicationRecord
     return if artifacts_url.blank?
 
     artifact_data = get_build_artifact
-    return if artifact_data.blank?
+
+    if artifact_data.blank?
+      return update!(generated_at: workflow_run.finished_at)
+    end
 
     stream = artifact_data[:stream]
     artifact_metadata = artifact_data[:artifact]

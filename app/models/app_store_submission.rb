@@ -48,7 +48,7 @@ class AppStoreSubmission < StoreSubmission
     cancelled: "cancelled"
   }
   FINAL_STATES = %w[approved]
-  IMMUTABLE_STATES = %w[approved submitted_for_review]
+  IMMUTABLE_STATES = %w[preparing approved submitting_for_review submitted_for_review cancelling]
   CHANGEABLE_STATES = STATES.values - IMMUTABLE_STATES
   STAMPABLE_REASONS = %w[
     prepare_release_failed
@@ -73,7 +73,7 @@ class AppStoreSubmission < StoreSubmission
     state(*STATES.keys)
 
     event :preprocess do
-      transitions from: :created, to: :preprocessing
+      transitions from: [:created, :preprocessing, :failed_prepare, :prepared, :failed, :review_failed, :cancelled], to: :preprocessing
     end
 
     event :start_prepare, after_commit: :on_start_prepare! do
@@ -112,7 +112,7 @@ class AppStoreSubmission < StoreSubmission
       transitions from: :submitted_for_review, to: :cancelling
     end
 
-    event :cancel do
+    event :cancel, after_commit: :on_cancel! do
       transitions from: [:submitted_for_review, :cancelling], to: :cancelled
     end
 
@@ -121,32 +121,22 @@ class AppStoreSubmission < StoreSubmission
     end
   end
 
-  # after_commit :update_status
+  after_create_commit :poll_external_status
 
-  def provider = app.ios_store_provider
+  def change_allowed? = CHANGEABLE_STATES.include?(status) && active_release?
 
-  def rollout_needed? = true
+  def cancellable? = submitted_for_review? && active_release?
 
-  def change_allowed?
-    status.in? CHANGEABLE_STATES
-  end
+  def finished? = FINAL_STATES.include?(status)
 
-  def locked?
-    status.in? FINAL_STATES
-  end
-
-  def finished?
-    status.in? FINAL_STATES
-  end
-
-  def cancellable? = submitted_for_review?
+  def locked? = finished?
 
   def reviewable? = prepared?
 
   def requires_review? = true
 
   def trigger!
-    return unless parent_release.active?
+    return unless active_release?
     return start_prepare! if build_present_in_store?
 
     preprocess!
@@ -196,10 +186,11 @@ class AppStoreSubmission < StoreSubmission
     stamp_params = {kind: :notice, data: stamp_data}
     stamp_params[:reason] = resubmission ? :resubmitted_for_review : :submitted_for_review
     event_stamp!(**stamp_params)
+    update_external_status
   end
 
   def update_external_release
-    return unless release_platform_run.on_track?
+    return unless active_release?
     return if locked?
 
     result = provider.find_release(build_number)
@@ -238,6 +229,14 @@ class AppStoreSubmission < StoreSubmission
     cancel!
   end
 
+  def attach_build(build)
+    return unless change_allowed?
+
+    update(build:)
+    trigger! unless created?
+    true
+  end
+
   def find_build
     @build ||= provider.find_build(build_number)
   end
@@ -249,18 +248,28 @@ class AppStoreSubmission < StoreSubmission
     save!
   end
 
+  def provider = app.ios_store_provider
+
   private
+
+  def poll_external_status
+    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_later(id, can_retry: true)
+  end
+
+  def update_external_status
+    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_later(id, can_retry: false)
+  end
 
   def on_start_prepare!
     StoreSubmissions::AppStore::PrepareForReleaseJob.perform_async(id)
   end
 
-  def on_finish_prepare!
-    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_async(id)
-  end
-
   def on_start_cancellation!
     StoreSubmissions::AppStore::RemoveFromReviewJob.perform_async(id)
+  end
+
+  def on_cancel!
+    StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_later(id, can_retry: false)
   end
 
   def on_approve!
@@ -279,12 +288,4 @@ class AppStoreSubmission < StoreSubmission
   def build_present_in_store?
     find_build.ok?
   end
-
-  # def update_status
-  #   broadcast_replace_to(
-  #     "submission_#{id}",
-  #     target: "submission_#{id}",
-  #     html: ApplicationController.render(V2::LiveRelease::SubmissionComponent.new(self))
-  #   )
-  # end
 end

@@ -8,8 +8,8 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
     @inactive = inactive
   end
 
-  attr_reader :submission, :inactive
-  delegate :build, :release_platform_run, :external_link, to: :submission
+  attr_reader :submission
+  delegate :active_release?, :release_platform_run, :external_link, to: :submission
   delegate :release, to: :release_platform_run
 
   STATUS = {
@@ -37,60 +37,50 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
     "integrations/logo_#{submission.provider}.png"
   end
 
-  def commits_since_last
-    changes&.normalized_commits
-  end
-
-  def previous_submission
-    release_platform_run
-      .production_releases
-      .where("created_at < ?", submission.parent_release.created_at)
-      .reorder("created_at DESC").first&.store_submission
-  end
-
-  memoize def changes
-    submission.release.release_changelog
-  end
-
   memoize def available_builds
-    return all_builds unless build
-    all_builds.where.not(id: build.id)
+    release_platform_run.available_rc_builds(current_build)
   end
 
   memoize def newer_builds
-    return all_builds unless build
-    all_builds.where("generated_at > ?", build.generated_at).where.not(id: build&.id)
+    release_platform_run.available_rc_builds(current_build, only_new: true)
   end
 
-  memoize def all_builds
-    release_platform_run.rc_builds.reorder("generated_at DESC")
+  def all_builds
+    available_builds + [current_build]
   end
 
   def build_display_info(b)
     builder = b.display_name
-    return "#{builder} – Currently Selected" if b == build
+    return "#{builder} – Currently Selected" if b == current_build
     builder += " – Latest" if release_platform_run.latest_rc_build?(b)
     builder
   end
 
-  def active?
-    !inactive
-  end
-
   def changeable?
-    active? && submission.change_allowed? && available_builds.present?
+    submission.change_allowed? && available_builds.present?
   end
 
   def prompt_change?
-    active? && submission.change_allowed? && newer_builds.present?
+    submission.change_allowed? && newer_builds.present?
+  end
+
+  def change_build_prompt
+    return if newer_builds.blank?
+
+    if submission.change_allowed?
+      render(V2::AlertComponent.new(type: :info, title: "A new build #{newer_builds.last.display_name} is available. Change build to update the submission.", dismissible: true))
+    elsif submission.cancellable?
+      render(V2::AlertComponent.new(type: :info, title: "A new build #{newer_builds.last.display_name} is available. Cancel submission and restart.", dismissible: true))
+    end
   end
 
   def new_submission_allowed?
-    active? && submission.locked? && newer_builds.present?
+    active_release? && submission.locked? && newer_builds.present?
   end
 
   def action
-    return unless active?
+    return unless active_release?
+
     if submission.created?
       {scheme: :default,
        type: :button,
@@ -131,5 +121,13 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
   def cancel_path
     return cancel_app_store_submission_path(submission.id) if submission.is_a? AppStoreSubmission
     raise "Unsupported submission type"
+  end
+
+  def current_build
+    submission.build
+  end
+
+  def build_opts
+    options_for_select(all_builds.map { |b| [build_display_info(b), b.id] }, current_build.id)
   end
 end

@@ -6,8 +6,8 @@
     <%= render V2::PlatformViewComponent.new(@release) do |component| %>
       <% component.platform_runs.each do |run| %>
         <div class="grid grid-cols-1">
-          <% if run.active_store_submission %>
-            <%= render V2::LiveRelease::SubmissionComponent.new(run.active_store_submission) %>
+          <% if run.latest_production_release.present? %>
+            <%= render V2::LiveRelease::SubmissionComponent.new(run.latest_production_release.store_submission) %>
           <% else %>
             <%= render V2::EmptyStateComponent.new(
               title: "Not ready to be submitted",

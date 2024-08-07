@@ -3,8 +3,7 @@ module StoreSubmittable
     build = @release_platform_run.rc_builds.find_by(id: submission_params[:build_id])
     redirect_back fallback_location: root_path, notice: t(".update.invalid_build") unless build
 
-    if @submission.attach_build!(build)
-      @submission.start_prepare!
+    if @submission.attach_build(build)
       redirect_back fallback_location: root_path, notice: t(".update.success")
     else
       redirect_back fallback_location: root_path, flash: {error: t(".update.failure", errors: @submission.display_attr(:failure_reason))}
