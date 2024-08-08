@@ -56,6 +56,7 @@ class AppStoreRollout < StoreRollout
   def automatic_rollout? = true
 
   def start_release!
+    return mock_start_app_store_rollout! if sandbox_mode?
     result = provider.start_release(build_number)
 
     unless result.ok?

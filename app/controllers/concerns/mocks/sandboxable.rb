@@ -8,6 +8,12 @@ module Mocks::Sandboxable
     redirect_back fallback_location: root_path, notice: t(".trigger.success")
   end
 
+  def mock_update_production_build(build_id)
+    ensure_sandboxable
+    @submission.mock_update_production_build!(build_id)
+    redirect_back fallback_location: root_path, notice: t(".update.success")
+  end
+
   def mock_prepare_for_store
     ensure_sandboxable
     @submission.mock_prepare_for_release_for_app_store!
@@ -18,6 +24,12 @@ module Mocks::Sandboxable
     ensure_sandboxable
     @submission.mock_submit_for_review_for_app_store!
     redirect_back fallback_location: root_path, notice: t(".submit_for_review.success")
+  end
+
+  def mock_cancel_review_for_app_store
+    ensure_sandboxable
+    @submission.mock_cancel_review_for_app_store!
+    redirect_back fallback_location: root_path
   end
 
   def mock_approve_for_app_store

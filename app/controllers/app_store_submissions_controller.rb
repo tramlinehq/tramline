@@ -18,6 +18,8 @@ class AppStoreSubmissionsController < SignedInApplicationController
   end
 
   def cancel
+    return mock_cancel_review_for_app_store if sandbox_mode?
+
     if (result = Coordinators::Signals.cancel_production_review!(@submission)).ok?
       redirect_back fallback_location: root_path, notice: t(".cancel.success")
     else

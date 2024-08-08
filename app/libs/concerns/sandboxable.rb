@@ -74,6 +74,11 @@ module Sandboxable
     complete!
   end
 
+  def mock_start_app_store_rollout!
+    return unless sandbox_mode?
+    update_rollout(mocked_store_info("READY_FOR_SALE", "ACTIVE", 2))
+  end
+
   def mock_find_build_in_testflight
     return unless sandbox_mode?
     true
@@ -95,6 +100,12 @@ module Sandboxable
     end
   end
 
+  def mock_update_production_build!(build_id)
+    return unless sandbox_mode?
+    update!(build_id:)
+    mock_prepare_for_release_for_app_store! unless created?
+  end
+
   def mock_prepare_for_release_for_app_store!
     return unless sandbox_mode?
     update_store_info!(mocked_store_info("PREPARE_FOR_SUBMISSION", "INACTIVE"))
@@ -107,6 +118,12 @@ module Sandboxable
     update_store_info!(mocked_store_info("IN_REVIEW", "INACTIVE"))
     update!(status: "submitting_for_review")
     submit_for_review!
+  end
+
+  def mock_cancel_review_for_app_store!
+    return unless sandbox_mode?
+    update_store_info!(mocked_store_info("DEVELOPER_REJECTED", "INACTIVE"))
+    cancel!
   end
 
   def mock_approve_for_app_store!
@@ -123,7 +140,7 @@ module Sandboxable
 
   private
 
-  def mocked_store_info(status, phased_release_status)
+  def mocked_store_info(status, phased_release_status, phased_release_day = 0)
     AppStoreIntegration::AppStoreReleaseInfo.new(
       {
         external_id: Faker::Number.number(digits: 8).to_s,
@@ -131,7 +148,7 @@ module Sandboxable
         build_number: build.build_number,
         name: build.version_name,
         added_at: Time.current,
-        phased_release_day: 0,
+        phased_release_day:,
         phased_release_status:,
         localizations: [{language: "en",
                          whats_new: Faker::Lorem.paragraph,
