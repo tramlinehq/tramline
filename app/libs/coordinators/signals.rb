@@ -74,7 +74,11 @@ module Coordinators::Signals
 
   def self.beta_release_is_available!(build)
     # start soak, or
-    Coordinators::StartProductionRelease.call(build)
+    Coordinators::StartProductionRelease.call(build.release_platform_run, build.id)
+  end
+
+  def self.start_new_production_release!(release_platform_run, build_id)
+    Res.new { Coordinators::StartProductionRelease.call(release_platform_run, build_id, override: true) }
   end
 
   def self.start_the_store_rollout!(rollout)

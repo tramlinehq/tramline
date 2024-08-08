@@ -4,22 +4,25 @@
 
 <div class="flex flex-col">
   <% if new_submission_allowed? %>
-    <div class="mt-4">
-      <%= render V2::AlertComponent.new(type: :info, title: "A new build #{newer_builds.last.display_name} is available for submission", dismissible: false) %>
-    </div>
-    <%= render V2::ModalComponent.new(title: "Available builds", subtitle: "Choose a build to send for submission to the store") do |modal| %>
+    <%= render V2::AlertComponent.new(size: :md, kind: :announcement, type: :announce, title: "New RC Build is available") do |ann| %>
+      <% modal = ann.with_announcement_modal(title: "Available builds", subtitle: "Choose a build to send for submission to the store") %>
       <% modal.with_button(label: "Start a new submission", scheme: :light, type: :action, size: :xxs) %>
       <% modal.with_body do %>
-        <%= render V2::FormComponent.new(model: [release, release_platform_run, release_platform_run.store_submissions.new],
-                                         scope: :store_submission,
-                                         url: release_platform_store_submissions_path(release, release_platform_run.platform),
-                                         free_form: true) do |form| %>
+        <% render V2::FormComponent.new(model: [release, release_platform_run, release_platform_run.production_releases.new],
+                                        scope: :production_release,
+                                        url: run_production_path(release_platform_run),
+                                        free_form: true) do |form| %>
           <%= form.F.labeled_select :build_id, "Select a build", options_for_select(all_builds.map { |b| [build_display_info(b), b.id] }, all_builds.first) %>
           <% form.with_action do %>
             <%= form.F.authz_submit "Create submission", "v2/archive.svg" %>
           <% end %>
         <% end %>
       <% end %>
+
+      <div class="flex flex-col gap-2">
+        <%= render V2::LiveRelease::BuildComponent.new(newer_builds.first, show_number: true, show_metadata: false, show_ci: true, show_activity: false, show_commit: false) %>
+        <span class="text-sm">A new build is available for submission</span>
+      </div>
     <% end %>
   <% end %>
 

@@ -28,8 +28,6 @@ class ProductionRelease < ApplicationRecord
   delegate :monitoring_provider, to: :app
   delegate :store_rollout, to: :store_submission
 
-  after_create_commit -> { previous&.mark_as_stale! }
-
   STATES = {
     created: "created",
     stale: "stale",
@@ -44,6 +42,13 @@ class ProductionRelease < ApplicationRecord
     store_rollout.completed_at if finished?
   end
 
+  def trigger_submission!
+    return finish! if conf.submissions.blank?
+
+    submission_config = conf.submissions.first
+    submission_config.submission_type.create_and_trigger!(self, submission_config, build)
+  end
+
   def rollout_started!
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
@@ -52,10 +57,8 @@ class ProductionRelease < ApplicationRecord
   end
 
   def mark_as_stale!
-    with_lock do
-      return if finished?
-      update!(status: STATES[:stale])
-    end
+    return if finished?
+    update!(status: STATES[:stale])
   end
 
   def rollout_complete!(_)

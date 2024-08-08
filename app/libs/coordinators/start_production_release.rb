@@ -1,37 +1,39 @@
 class Coordinators::StartProductionRelease
-  def self.call(build)
-    new(build).call
+  def self.call(release_platform_run, build_id, override: false)
+    new(release_platform_run, build_id, override:).call
   end
 
-  def initialize(build)
-    @build = build
-    @release_platform_run = build.release_platform_run
+  def initialize(release_platform_run, build_id, override: false)
+    @release_platform_run = release_platform_run
+    @build = @release_platform_run.rc_builds.find(build_id)
+    @override = override
   end
 
-  delegate :android?, :ios?, to: :@release_platform_run
   delegate :transaction, to: ActiveRecord::Base
 
   def call
-    transaction do
-      return if previous&.active?
+    @release_platform_run.with_lock do
+      return unless @release_platform_run.on_track?
+      return if previous&.active? && !@override
+
+      if @override
+        previous&.mark_as_stale!
+      end
 
       @release_platform_run
         .production_releases
-        .create!(build: @build, config: @release_platform_run.conf.production_release.value, previous:)
-        .then { create_submission(_1) }
+        .create!(build: @build, config:, previous:)
+        .trigger_submission!
     end
-  end
-
-  def create_submission(parent_release)
-    submission_config = parent_release.conf.submissions.first
-
-    return @release_platform_run.play_store_submissions.create_and_trigger!(parent_release, submission_config, @build) if android?
-    @release_platform_run.app_store_submissions.create_and_trigger!(parent_release, submission_config, @build) if ios?
   end
 
   private
 
   def previous
     @release_platform_run.latest_production_release
+  end
+
+  def config
+    @release_platform_run.conf.production_release.value
   end
 end

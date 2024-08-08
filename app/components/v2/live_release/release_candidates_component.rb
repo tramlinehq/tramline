@@ -16,16 +16,12 @@ class V2::LiveRelease::ReleaseCandidatesComponent < V2::BaseReleaseComponent
     release_platform_run.conf.workflows.release_candidate_workflow
   end
 
-  memoize def beta_releases(release_platform_run)
-    release_platform_run.beta_releases.order(created_at: :desc)
-  end
-
   def latest_beta_release(release_platform_run)
-    beta_releases(release_platform_run).first
+    release_platform_run.latest_beta_release
   end
 
   def previous_beta_releases(release_platform_run)
-    beta_releases(release_platform_run).drop(1)
+    release_platform_run.older_beta_releases
   end
 
   def submission_status(submission)

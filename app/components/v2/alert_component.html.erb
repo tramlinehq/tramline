@@ -73,8 +73,12 @@
       <div><%= content %></div>
 
       <div class="flex mt-4 gap-x-2">
-        <% announcement_actions.each do |action| %>
+        <% announcement_buttons.each do |action| %>
           <%= render action %>
+        <% end %>
+
+        <% announcement_modals.each do |modal| %>
+          <%= render modal %>
         <% end %>
       </div>
     </div>

@@ -1,7 +1,7 @@
 <div class="flex flex-col item-gap-default">
   <% if pre_prod_release.new_build_available? %>
     <%= render V2::AlertComponent.new(size: :md, kind: :announcement, type: :announce, title: "New Internal Build is available") do |ann| %>
-      <% ann.with_announcement_action(label: "Start Beta submissions",
+      <% ann.with_announcement_button(label: "Start Beta submissions",
                                       scheme: :default,
                                       type: :button,
                                       options: run_pre_prod_beta_path(release_platform_run),
@@ -21,7 +21,7 @@
 
   <% if pre_prod_release.new_commit_available? %>
     <%= render V2::AlertComponent.new(size: :md, kind: :announcement, type: :announce, title: "New changes on the release branch") do |ann| %>
-      <% ann.with_announcement_action(label: "Start Beta submissions",
+      <% ann.with_announcement_button(label: "Start Beta submissions",
                                       scheme: :default,
                                       type: :button,
                                       options: run_pre_prod_beta_path(release_platform_run),

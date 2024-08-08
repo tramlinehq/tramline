@@ -38,7 +38,8 @@ class V2::AlertComponent < V2::BaseComponent
   KINDS = [:alert, :banner, :announcement]
 
   renders_one :banner_action, V2::ButtonComponent
-  renders_many :announcement_actions, V2::ButtonComponent
+  renders_many :announcement_modals, V2::ModalComponent
+  renders_many :announcement_buttons, V2::ButtonComponent
 
   def initialize(kind: :alert, type: :notice, title: "Alert", size: :base, dismissible: false, info: nil, full_screen: nil)
     full_screen = full_screen.nil? ? (kind == :banner) : full_screen

@@ -5,9 +5,18 @@ FactoryBot.define do
     release_platform_run { triggering_release.release_platform_run }
     workflow_config { {id: "123"} }
     status { "created" }
+    kind { WorkflowRun::KINDS[:internal] }
 
     after(:create) do |run|
       create(:build, version_name: run.release_version, release_platform_run: run.release_platform_run, workflow_run: run, build_number: nil)
+    end
+
+    trait :rc do
+      kind { WorkflowRun::KINDS[:release_candidate] }
+    end
+
+    trait :internal do
+      kind { WorkflowRun::KINDS[:internal] }
     end
 
     trait :triggering do

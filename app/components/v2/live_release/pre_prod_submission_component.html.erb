@@ -25,7 +25,7 @@
   </div>
 
   <div>
-    <% if submission.created? %>
+    <% if submission.triggerable? %>
       <%= render V2::ButtonComponent.new(label: "Start release",
                                          scheme: :default,
                                          type: :button,

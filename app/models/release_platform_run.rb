@@ -228,6 +228,18 @@ class ReleasePlatformRun < ApplicationRecord
     production_releases.order(created_at: :desc).first
   end
 
+  def older_internal_releases
+    internal_releases.order(created_at: :desc).offset(1)
+  end
+
+  def older_beta_releases
+    beta_releases.order(created_at: :desc).offset(1)
+  end
+
+  def older_production_releases
+    production_releases.order(created_at: :desc).offset(1)
+  end
+
   # TODO: remove this
   def store_rollouts
     if android?
@@ -245,7 +257,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def latest_rc_build?(build)
-    rc_builds.reorder("generated_at DESC").first == build
+    rc_builds.first == build
   end
 
   def available_rc_builds(build, only_new: false)

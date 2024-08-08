@@ -80,7 +80,7 @@ class AppStoreSubmission < StoreSubmission
       transitions from: [:created, :preprocessing, :failed_prepare, :prepared, :failed, :review_failed, :cancelled], to: :preparing
     end
 
-    event :finish_prepare, after_commit: :update_external_status do
+    event :finish_prepare do
       after { set_prepared_at! }
       transitions from: :preparing, to: :prepared
     end
@@ -273,7 +273,11 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def on_approve!
-    create_app_store_rollout!(release_platform_run:)
+    create_app_store_rollout!(
+      release_platform_run:,
+      config: staged_rollout? ? conf.rollout_config.stages : [],
+      is_staged_rollout: staged_rollout?
+    )
   end
 
   def on_fail_prepare!

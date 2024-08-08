@@ -16,12 +16,10 @@
               type: :subdued) %>
           <% end %>
 
-          <% if run.previous_store_submissions&.any? { |sub| sub.store_rollout.present? } %>
+          <% if run.older_production_releases&.any? { |sub| sub.store_rollout.present? } %>
             <%= render V2::SectionComponent.new(title: "Previous rollouts", style: :titled, size: :compact) do %>
-              <%= render V2::TableComponent.new(columns: ["Build", "Last activity", "Status", "%"], size: :default) do |table| %>
-                <% run.previous_store_submissions.map(&:store_rollout).compact.each do |rollout| %>
-                  <%= render V2::LiveRelease::RolloutComponent.new(rollout, compact: true) %>
-                <% end %>
+              <% run.older_production_releases.map(&:store_rollout).compact.each do |rollout| %>
+                <%= render V2::LiveRelease::RolloutComponent.new(rollout, compact: true) %>
               <% end %>
             <% end %>
           <% end %>

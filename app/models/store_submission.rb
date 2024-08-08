@@ -45,6 +45,10 @@ class StoreSubmission < ApplicationRecord
 
   delegate :name, to: :deployment_channel, prefix: true
 
+  def triggerable?
+    created? && active_release?
+  end
+
   def deployment_channel_id
     conf.submission_config.id.to_s
   end

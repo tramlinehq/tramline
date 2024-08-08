@@ -219,6 +219,7 @@ Rails.application.routes.draw do
   resources :release_platform_runs, path: :runs, as: :runs, only: [] do
     post :pre_prod_beta, to: "pre_prod_releases#create_beta"
     post :pre_prod_internal, to: "pre_prod_releases#create_internal"
+    post :production, to: "production_releases#create"
   end
 
   resources :app_store_submissions, only: [:update] do
