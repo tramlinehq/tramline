@@ -113,29 +113,14 @@ class ReleasePlatformRun < ApplicationRecord
   def ios_config
     {
       workflows: {
-        internal: {
-          name: "Some workflow",
-          id: "123",
-          artifact_name_pattern: "pattern"
-        },
+        internal: nil,
         release_candidate: {
-          name: "Some workflow",
-          id: "123",
-          artifact_name_pattern: "pattern"
+          name: "iOS Fastlane Release",
+          id: "54289532",
+          artifact_name_pattern: nil
         }
       },
-      internal_release: {
-        auto_promote: true,
-        submissions: [
-          {
-            number: 1,
-            submission_type: "GoogleFirebaseSubmission",
-            submission_config: {id: "projects/946207521855/groups/internal-product-team",
-                                name: "Internal Product Team"},
-            auto_promote: true
-          }
-        ]
-      },
+      internal_release: nil,
       beta_release: {
         auto_promote: false,
         submissions: [
@@ -171,43 +156,45 @@ class ReleasePlatformRun < ApplicationRecord
           artifact_name_pattern: "pattern"
         }
       },
-      internal_release: {
-        auto_promote: true,
-        submissions: [
-          # {
-          #   number: 1,
-          #   submission_type: "GoogleFirebaseSubmission",
-          #   submission_config: {id: "projects/946207521855/groups/internal-product-team",
-          #                       name: "Internal Product Team"},
-          #   auto_promote: false
-          # },
-          {
-            number: 1,
-            submission_type: "PlayStoreSubmission",
-            submission_config: {id: :internal, name: "internal testing"},
-            rollout_config: {enabled: false},
-            auto_promote: true
-          }
-        ]
-      },
+      internal_release: # nil,
+        {
+          auto_promote: true,
+          submissions: [
+            {
+              number: 1,
+              submission_type: "GoogleFirebaseSubmission",
+              submission_config: {id: "projects/946207521855/groups/internal-product-team",
+                                  name: "Internal Product Team"},
+              auto_promote: true
+            }
+            # {
+            #   number: 1,
+            #   submission_type: "PlayStoreSubmission",
+            #   submission_config: {id: :internal, name: "internal testing"},
+            #   rollout_config: {enabled: false},
+            #   auto_promote: true
+            # }
+          ]
+        },
       beta_release: {
         auto_promote: false,
-        submissions: [
-          {
-            number: 1,
-            submission_type: "PlayStoreSubmission",
-            submission_config: {id: :alpha, name: "closed testing"},
-            rollout_config: {enabled: false},
-            auto_promote: true
-          },
-          {
-            number: 2,
-            submission_type: "PlayStoreSubmission",
-            submission_config: {id: :beta, name: "open testing"},
-            rollout_config: {enabled: false},
-            auto_promote: false
-          }
-        ]
+        submissions:
+          [
+            {
+              number: 1,
+              submission_type: "PlayStoreSubmission",
+              submission_config: {id: :alpha, name: "closed testing"},
+              rollout_config: {enabled: false},
+              auto_promote: true
+            },
+            {
+              number: 1,
+              submission_type: "PlayStoreSubmission",
+              submission_config: {id: :beta, name: "open testing"},
+              rollout_config: {enabled: false},
+              auto_promote: false
+            }
+          ]
       },
       production_release: {
         auto_promote: false,
