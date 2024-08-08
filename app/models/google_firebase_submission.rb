@@ -24,6 +24,8 @@
 #  release_platform_run_id :uuid             not null, indexed
 #
 class GoogleFirebaseSubmission < StoreSubmission
+  include Sandboxable
+
   UploadNotComplete = Class.new(StandardError)
 
   STATES = {
@@ -68,6 +70,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   def trigger!
     return unless parent_release.active?
     return unless may_prepare?
+    return mock_upload_to_firebase if sandbox_mode?
 
     if build_present_in_store?
       release_info = @build.value!
@@ -119,6 +122,7 @@ class GoogleFirebaseSubmission < StoreSubmission
 
   def prepare_for_release!
     return unless may_finish?
+    return mock_finish_firebase_release if sandbox_mode?
 
     deployment_channels = [deployment_channel_id]
     result = provider.release(external_id, deployment_channels)

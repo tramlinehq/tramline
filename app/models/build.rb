@@ -22,6 +22,7 @@ class Build < ApplicationRecord
   include AASM
   include Loggable
   include Passportable
+  include Sandboxable
 
   belongs_to :release_platform_run
   belongs_to :commit
@@ -53,6 +54,7 @@ class Build < ApplicationRecord
   end
 
   def attach_artifact!
+    return mock_attach_artifact if sandbox_mode?
     return if artifacts_url.blank?
 
     artifact_data = get_build_artifact

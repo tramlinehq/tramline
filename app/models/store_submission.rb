@@ -28,6 +28,7 @@ class StoreSubmission < ApplicationRecord
   include Passportable
   include Loggable
   include Displayable
+  include Sandboxable
 
   has_one :store_rollout, dependent: :destroy
   belongs_to :release_platform_run

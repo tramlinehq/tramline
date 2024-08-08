@@ -15,6 +15,7 @@
 #  store_submission_id     :uuid             indexed
 #
 class PlayStoreRollout < StoreRollout
+  include Sandboxable
   include Passportable
 
   belongs_to :play_store_submission, foreign_key: :store_submission_id, inverse_of: :play_store_rollout
@@ -49,6 +50,8 @@ class PlayStoreRollout < StoreRollout
   def automatic_rollout? = false
 
   def start_release!
+    return mock_finish_play_store_rollout! if sandbox_mode?
+
     if staged_rollout?
       move_to_next_stage!
       on_start! if started?

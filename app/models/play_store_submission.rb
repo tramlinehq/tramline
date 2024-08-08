@@ -126,6 +126,8 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def prepare_for_release!
+    return mock_prepare_for_release_for_play_store! if sandbox_mode?
+
     result = provider.create_draft_release(deployment_channel_id, build_number, version_name, release_notes)
     if result.ok?
       finish_prepare!
@@ -160,6 +162,8 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def build_present_in_store?
+    return mock_build_present_in_play_store? if sandbox_mode?
+
     provider.find_build(build_number).present?
   end
 end

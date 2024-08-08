@@ -101,6 +101,27 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
     end
   end
 
+  def mock_actions
+    return unless active_release? && submission.submitted_for_review?
+
+    content_tag(:div, class: "flex items-center gap-0.5") do
+      concat(render(V2::ButtonComponent.new(scheme: :mock,
+        type: :button,
+        label: "Mock approve",
+        options: mock_approve_for_app_store_path(submission.id),
+        turbo: false,
+        html_options: {method: :patch,
+                       data: {turbo_method: :patch, turbo_confirm: "Are you sure about that?"}})))
+      concat(render(V2::ButtonComponent.new(scheme: :mock,
+        type: :button,
+        label: "Mock reject",
+        options: mock_reject_for_app_store_path(submission.id),
+        turbo: false,
+        html_options: {method: :patch,
+                       data: {turbo_method: :patch, turbo_confirm: "Are you sure about that?"}})))
+    end
+  end
+
   def submit_for_review_path
     return submit_for_review_app_store_submission_path(submission.id) if submission.is_a? AppStoreSubmission
     raise "Unsupported submission type"

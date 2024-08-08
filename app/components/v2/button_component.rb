@@ -38,6 +38,9 @@ class V2::ButtonComponent < V2::BaseComponent
     list_item: {
       class: "flex items-center rounded justify-between block px-4 py-1.5 hover:bg-main-100 dark:hover:bg-main-600 dark:hover:text-white"
     },
+    mock: {
+      class: "#{BASE_OPTS} shadow-default text-lime-800 bg-lime-100 border border-lime-300 focus:outline-none enabled:hover:bg-lime-800 enabled:hover:text-white enabled:hover:border-main-200 focus:ring-4 focus:ring-lime-200 font-medium rounded-lg dark:bg-lime dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"
+    },
     none: {class: ""}
   }
   DISABLED_STYLE = "opacity-40 disabled cursor-not-allowed outline-none focus:outline-none focus:ring-0"

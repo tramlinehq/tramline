@@ -22,6 +22,7 @@ class WorkflowRun < ApplicationRecord
   has_paper_trail
   include AASM
   include Passportable
+  include Sandboxable
 
   # TODO: remove this
   self.ignored_columns += %w[build_number]
@@ -135,6 +136,7 @@ class WorkflowRun < ApplicationRecord
   end
 
   def get_external_run
+    return mock_finished_external_run if sandbox_mode?
     ci_cd_provider.get_workflow_run(external_id)
   end
 
@@ -160,6 +162,8 @@ class WorkflowRun < ApplicationRecord
   end
 
   def trigger!(retrigger: false)
+    return mock_ci_trigger if sandbox_mode?
+
     if retrigger
       retrigger_external_run!
     else
@@ -208,6 +212,8 @@ class WorkflowRun < ApplicationRecord
   end
 
   def find_external_run
+    return mock_external_run if sandbox_mode?
+
     ci_cd_provider.find_workflow_run(conf.id, release_branch, commit_hash)
   end
 

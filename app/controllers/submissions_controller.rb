@@ -1,9 +1,13 @@
 class SubmissionsController < SignedInApplicationController
+  include Mocks::Sandboxable
+
   before_action :require_write_access!
   before_action :set_submission
   before_action :ensure_triggerable, only: [:trigger]
 
   def trigger
+    return mock_trigger_submission if sandbox_mode?
+
     if (result = Coordinators::Signals.trigger_submission!(@submission)).ok?
       redirect_back fallback_location: fallback_path, notice: t(".trigger.success")
     else

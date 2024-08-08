@@ -1,4 +1,5 @@
 module StoreSubmittable
+  include Mocks::Sandboxable
 
   def update
     if (result = Coordinators::Signals.update_production_build!(@submission, build_id)).ok?
@@ -9,6 +10,8 @@ module StoreSubmittable
   end
 
   def prepare
+    return mock_prepare_for_store if sandbox_mode?
+
     if (result = Coordinators::Signals.prepare_production_submission!(@submission)).ok?
       redirect_back fallback_location: root_path, notice: t(".prepare.success")
     else

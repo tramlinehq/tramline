@@ -49,9 +49,13 @@
             <% end %>
           <% end %>
         <% end %>
+
+        <%= mock_actions %>
+
         <% if action.present? %>
           <%= render V2::ButtonComponent.new(**action) { |b| b.with_icon("v2/clipboard_list.svg") } %>
         <% end %>
+
         <% if submission.reviewable? %>
           <%= render V2::ModalComponent.new(title: "Submission Preview", subtitle: "Review all the details before submitting for review", dismissable: false, size: :xxl) do |modal| %>
             <% modal.with_button(label: "Preview & submit for review", scheme: :default, type: :action, size: :xxs) %>

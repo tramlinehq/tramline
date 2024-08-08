@@ -8,6 +8,7 @@ class AppStoreSubmissionsController < SignedInApplicationController
   before_action :ensure_cancellable, only: [:cancel]
 
   def submit_for_review
+    return mock_submit_for_review_for_app_store if sandbox_mode?
 
     if (result = Coordinators::Signals.start_production_review!(@submission)).ok?
       redirect_back fallback_location: root_path, notice: t(".submit_for_review.success")
