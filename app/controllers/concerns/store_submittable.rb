@@ -30,7 +30,7 @@ module StoreSubmittable
   end
 
   def ensure_actionable
-    unless @submission.active_release?
+    unless @submission.actionable?
       redirect_back fallback_location: root_path, flash: {error: t(".prepare.submission_not_active")}
     end
   end

@@ -101,7 +101,7 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
     when :started
       [action_button("Halt rollout", halt_release_platform_store_rollout_path(release, platform, id), scheme: :danger),
         action_button("Release to all", fully_release_release_platform_store_rollout_path(release, platform, id), scheme: :light),
-        (action_button("Pause rollout", pause_release_platform_store_rollout_path(release, platform, id), scheme: :warning) if automatic_rollout?)].compact
+        (action_button("Pause rollout", pause_release_platform_store_rollout_path(release, platform, id), scheme: :danger) if automatic_rollout?)].compact
     when :paused
       [action_button("Resume rollout", resume_release_platform_store_rollout_path(release, platform, id), scheme: :light)]
     when :halted

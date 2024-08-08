@@ -71,14 +71,14 @@ module Coordinators::Signals
 
   def self.start_workflow_run!(workflow_run)
     Res.new do
-      raise unless workflow_run.triggering_release.active?
+      raise unless workflow_run.triggering_release.actionable?
       workflow_run.initiate!
     end
   end
 
   def self.retry_workflow_run!(workflow_run)
     Res.new do
-      raise unless workflow_run.triggering_release.active?
+      raise unless workflow_run.triggering_release.actionable?
       workflow_run.retry!
     end
   end
@@ -104,7 +104,7 @@ module Coordinators::Signals
 
   def self.trigger_submission!(submission)
     Res.new do
-      raise unless submission.active_release?
+      raise unless submission.actionable?
       submission.trigger!
     end
   end
@@ -113,13 +113,13 @@ module Coordinators::Signals
     # TODO: retry a submission
   end
 
-  def self.beta_release_is_available!(build)
+  def self.beta_release_is_finished!(build)
     # start soak, or
     Coordinators::StartProductionRelease.call(build.release_platform_run, build.id)
   end
 
   def self.start_new_production_release!(release_platform_run, build_id)
-    Res.new { Coordinators::StartProductionRelease.call(release_platform_run, build_id, override: true) }
+    Res.new { Coordinators::StartProductionRelease.call(release_platform_run, build_id) }
   end
 
   def self.update_production_build!(submission, build_id)
@@ -128,21 +128,21 @@ module Coordinators::Signals
 
   def self.prepare_production_submission!(submission)
     Res.new do
-      raise unless submission.active_release?
+      raise unless submission.editable?
       submission.start_prepare!
     end
   end
 
   def self.start_production_review!(submission)
     Res.new do
-      raise unless submission.active_release?
+      raise unless submission.editable?
       submission.start_submission!
     end
   end
 
-  def self.cancel_production_submission!(submission)
+  def self.cancel_production_review!(submission)
     Res.new do
-      raise unless submission.active_release?
+      raise unless submission.editable?
       submission.start_cancellation!
     end
   end

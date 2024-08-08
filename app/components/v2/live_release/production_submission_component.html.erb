@@ -3,7 +3,7 @@
 <% end %>
 
 <div class="flex flex-col">
-  <% if new_submission_allowed? %>
+  <% if @new_submission_prompt %>
     <%= render V2::AlertComponent.new(size: :md, kind: :announcement, type: :announce, title: "New RC Build is available") do |ann| %>
       <% modal = ann.with_announcement_modal(title: "Available builds", subtitle: "Choose a build to send for submission to the store") %>
       <% modal.with_button(label: "Start a new submission", scheme: :light, type: :action, size: :xxs) %>
@@ -26,7 +26,13 @@
     <% end %>
   <% end %>
 
-  <%= change_build_prompt %>
+  <% if @cancel_prompt %>
+    <%= render V2::AlertComponent.new(type: :info, title: "A new build #{newer_builds.first.display_name} is available. Cancel submission and change the build.", dismissible: true) %>
+  <% end %>
+
+  <% if @change_build_prompt %>
+    <%= render V2::AlertComponent.new(type: :info, title: "A new build #{newer_builds.first.display_name} is available. Change build to update the submission.", dismissible: true) %>
+  <% end %>
 
   <%= render V2::CardComponent.new(title: "Store Submission", size: :full, separator: false) do |card| %>
     <% card.with_actions do %>

@@ -229,15 +229,15 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def older_internal_releases
-    internal_releases.order(created_at: :desc).offset(1)
+    internal_releases.stale.order(created_at: :desc)
   end
 
   def older_beta_releases
-    beta_releases.order(created_at: :desc).offset(1)
+    beta_releases.stale.order(created_at: :desc)
   end
 
   def older_production_releases
-    production_releases.order(created_at: :desc).offset(1)
+    production_releases.stale.order(created_at: :desc)
   end
 
   # TODO: remove this
@@ -249,11 +249,6 @@ class ReleasePlatformRun < ApplicationRecord
     else
       raise ArgumentError, "Unknown platform: #{platform}"
     end
-  end
-
-  def previous_store_submissions
-    return unless production_releases.size > 1
-    production_releases.order(created_at: :desc).drop(1).map(&:store_submission)
   end
 
   def latest_rc_build?(build)

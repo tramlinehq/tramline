@@ -6,9 +6,26 @@
     <%= render V2::PlatformViewComponent.new(@release) do |component| %>
       <% component.platform_runs.each do |run| %>
         <div class="grid grid-cols-1">
-          <% if run.latest_production_release.present? %>
-            <%= render V2::LiveRelease::SubmissionComponent.new(run.latest_production_release.store_submission) %>
-          <% else %>
+
+          <% if run.production_releases.inflight.any? %>
+            <% run.production_releases.inflight.each do |prod_release| %>
+              <%= render V2::LiveRelease::ProductionSubmissionComponent.new(prod_release.store_submission) %>
+            <% end %>
+          <% end %>
+
+          <% if run.production_releases.active.any? %>
+            <% run.production_releases.active.map(&:store_rollout).compact.each do |prod_release| %>
+              <%= render V2::LiveRelease::ProductionSubmissionComponent.new(prod_release.store_submission) %>
+            <% end %>
+          <% end %>
+
+          <% if run.production_releases.finished.any? %>
+            <% run.production_releases.finished.map(&:store_rollout).compact.each do |prod_release| %>
+              <%= render V2::LiveRelease::ProductionSubmissionComponent.new(prod_release.store_submission) %>
+            <% end %>
+          <% end %>
+
+          <% if run.production_releases.none? %>
             <%= render V2::EmptyStateComponent.new(
               title: "Not ready to be submitted",
               text: "Please wait for a Release Candidate to be available to start a submission.",
@@ -16,11 +33,11 @@
               type: :subdued) %>
           <% end %>
 
-          <% if run.previous_store_submissions.present? %>
+          <% if run.older_production_releases.present? %>
             <%= render V2::SectionComponent.new(style: :titled, title: "Previous submissions", size: :compact) do %>
               <div class="flex flex-col item-gap-default">
-                <% run.previous_store_submissions.each do |sub| %>
-                  <%= render V2::LiveRelease::SubmissionComponent.new(sub, inactive: true) %>
+                <% run.older_production_releases.each do |prod_release| %>
+                  <%= render V2::LiveRelease::ProductionSubmissionComponent.new(prod_release.store_submission, inactive: true) %>
                 <% end %>
               </div>
             <% end %>

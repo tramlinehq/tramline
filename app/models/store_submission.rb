@@ -39,6 +39,7 @@ class StoreSubmission < ApplicationRecord
   delegate :project_link, :public_icon_img, to: :provider, allow_nil: true
   delegate :notify!, to: :train
   delegate :version_name, :build_number, to: :build
+  delegate :actionable?, to: :parent_release
 
   def deployment_channel
     conf.submission_config
@@ -47,7 +48,11 @@ class StoreSubmission < ApplicationRecord
   delegate :name, to: :deployment_channel, prefix: true
 
   def triggerable?
-    created? && active_release?
+    created? && actionable?
+  end
+
+  def editable?
+    parent_release.production? && parent_release.inflight?
   end
 
   def deployment_channel_id
@@ -64,9 +69,7 @@ class StoreSubmission < ApplicationRecord
     store_link || project_link
   end
 
-  def change_allowed? = raise NotImplementedError
-
-  def locked? = raise NotImplementedError
+  def change_build? = raise NotImplementedError
 
   def reviewable? = raise NotImplementedError
 
@@ -89,10 +92,6 @@ class StoreSubmission < ApplicationRecord
 
   def notification_params
     {}
-  end
-
-  def active_release?
-    parent_release.active?
   end
 
   protected

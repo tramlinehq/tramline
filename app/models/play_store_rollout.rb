@@ -15,7 +15,6 @@
 #  store_submission_id     :uuid             indexed
 #
 class PlayStoreRollout < StoreRollout
-  include Sandboxable
   include Passportable
 
   belongs_to :play_store_submission, foreign_key: :store_submission_id, inverse_of: :play_store_rollout

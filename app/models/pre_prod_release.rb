@@ -41,7 +41,7 @@ class PreProdRelease < ApplicationRecord
 
   enum status: STATES
 
-  def active? = created?
+  def actionable? = created?
 
   def workflow_run
     triggered_workflow_run || parent_internal_release&.workflow_run
@@ -71,6 +71,7 @@ class PreProdRelease < ApplicationRecord
   end
 
   def trigger_submissions!
+    return unless actionable?
     return finish! if conf.submissions.blank?
     trigger_submission!(conf.submissions.first)
   end

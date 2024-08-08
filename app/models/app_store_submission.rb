@@ -50,6 +50,7 @@ class AppStoreSubmission < StoreSubmission
   FINAL_STATES = %w[approved]
   IMMUTABLE_STATES = %w[preparing approved submitting_for_review submitted_for_review cancelling]
   CHANGEABLE_STATES = STATES.values - IMMUTABLE_STATES
+  CANCELABLE_STATES = %w[submitted_for_review approved]
   STAMPABLE_REASONS = %w[
     prepare_release_failed
     submitted_for_review
@@ -73,11 +74,11 @@ class AppStoreSubmission < StoreSubmission
     state(*STATES.keys)
 
     event :preprocess do
-      transitions from: [:created, :preprocessing, :failed_prepare, :prepared, :failed, :review_failed, :cancelled], to: :preprocessing
+      transitions to: :preprocessing
     end
 
     event :start_prepare, after_commit: :on_start_prepare! do
-      transitions from: [:created, :preprocessing, :failed_prepare, :prepared, :failed, :review_failed, :cancelled], to: :preparing
+      transitions to: :preparing
     end
 
     event :finish_prepare do
@@ -109,11 +110,11 @@ class AppStoreSubmission < StoreSubmission
     end
 
     event :start_cancellation, after_commit: :on_start_cancellation! do
-      transitions from: :submitted_for_review, to: :cancelling
+      transitions from: [:submitted_for_review, :approved], to: :cancelling
     end
 
     event :cancel, after_commit: :on_cancel! do
-      transitions from: [:submitted_for_review, :cancelling], to: :cancelled
+      transitions from: [:submitted_for_review, :approved, :cancelling], to: :cancelled
     end
 
     event :fail, before: :set_failure_reason do
@@ -123,22 +124,27 @@ class AppStoreSubmission < StoreSubmission
 
   after_create_commit :poll_external_status
 
-  def change_allowed? = CHANGEABLE_STATES.include?(status) && active_release?
+  def change_build? = CHANGEABLE_STATES.include?(status) && editable?
 
-  def cancellable? = submitted_for_review? && active_release?
+  def cancellable? = CANCELABLE_STATES.include?(status) && editable?
 
   def finished? = FINAL_STATES.include?(status)
 
-  def locked? = finished?
-
-  def reviewable? = prepared?
+  def reviewable? = prepared? && editable?
 
   def trigger!
-    return unless active_release?
+    return unless actionable?
     return start_prepare! if build_present_in_store?
 
     preprocess!
     StoreSubmissions::AppStore::FindBuildJob.perform_async(id)
+  end
+
+  def retrigger!
+    return unless created?
+
+    reset_store_info!
+    trigger!
   end
 
   def prepare_for_release!
@@ -188,8 +194,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def update_external_release
-    return unless active_release?
-    return if locked?
+    return unless editable?
 
     result = provider.find_release(build_number)
 
@@ -228,11 +233,8 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def attach_build(build)
-    return unless change_allowed?
-
+    return unless change_build?
     update(build:)
-    trigger! unless created?
-    true
   end
 
   def find_build
@@ -249,6 +251,13 @@ class AppStoreSubmission < StoreSubmission
   def provider = app.ios_store_provider
 
   private
+
+  def reset_store_info!
+    self.store_release = nil
+    self.store_status = nil
+    self.store_link = nil
+    save!
+  end
 
   def poll_external_status
     StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_later(id, can_retry: true)

@@ -68,7 +68,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   def finished? = status.in? FINAL_STATES
 
   def trigger!
-    return unless parent_release.active?
+    return unless actionable?
     return unless may_prepare?
     return mock_upload_to_firebase if sandbox_mode?
 

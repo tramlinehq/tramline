@@ -81,20 +81,18 @@ class PlayStoreSubmission < StoreSubmission
     end
   end
 
-  def change_allowed? = CHANGEABLE_STATES.include?(status) && !locked? && active_release?
+  def change_build? = CHANGEABLE_STATES.include?(status) && editable?
 
   def cancellable? = false
 
   def finished? = FINAL_STATES.include?(status)
-
-  def locked? = play_store_rollout&.started?
 
   def reviewable? = false
 
   def requires_review? = false
 
   def trigger!
-    return unless parent_release.active?
+    return unless actionable?
     return start_prepare! if build_present_in_store?
 
     preprocess!
@@ -118,7 +116,7 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def attach_build(build)
-    return unless change_allowed?
+    return unless change_build?
 
     update(build:)
     trigger! unless created?

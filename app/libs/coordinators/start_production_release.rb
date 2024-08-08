@@ -1,12 +1,11 @@
 class Coordinators::StartProductionRelease
-  def self.call(release_platform_run, build_id, override: false)
-    new(release_platform_run, build_id, override:).call
+  def self.call(release_platform_run, build_id)
+    new(release_platform_run, build_id).call
   end
 
-  def initialize(release_platform_run, build_id, override: false)
+  def initialize(release_platform_run, build_id)
     @release_platform_run = release_platform_run
     @build = @release_platform_run.rc_builds.find(build_id)
-    @override = override
   end
 
   delegate :transaction, to: ActiveRecord::Base
@@ -14,15 +13,11 @@ class Coordinators::StartProductionRelease
   def call
     @release_platform_run.with_lock do
       return unless @release_platform_run.on_track?
-      return if previous&.active? && !@override
-
-      if @override
-        previous&.mark_as_stale!
-      end
+      return if previous&.inflight?
 
       @release_platform_run
         .production_releases
-        .create!(build: @build, config:, previous:)
+        .create!(build: @build, config:, previous:, status: ProductionRelease::STATES[:inflight])
         .trigger_submission!
     end
   end

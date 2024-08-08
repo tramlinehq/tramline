@@ -29,14 +29,17 @@ class ProductionRelease < ApplicationRecord
   delegate :store_rollout, to: :store_submission
 
   STATES = {
-    created: "created",
+    inflight: "inflight",
+    active: "active",
     stale: "stale",
     finished: "finished"
   }
 
   enum status: STATES
 
-  def active? = created?
+  def actionable?
+    inflight? || active?
+  end
 
   def completed_at
     store_rollout.completed_at if finished?
@@ -50,9 +53,12 @@ class ProductionRelease < ApplicationRecord
   end
 
   def rollout_started!
+    return unless inflight?
+    previous&.mark_as_stale!
+    update!(status: STATES[:active])
+
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
-
     V2::FetchHealthMetricsJob.perform_later(id)
   end
 

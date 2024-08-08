@@ -1,15 +1,18 @@
 # frozen_string_literal: true
 
-class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
+class V2::LiveRelease::ProductionSubmissionComponent < V2::BaseComponent
   include Memery
 
   def initialize(submission, inactive: false)
     @submission = submission
     @inactive = inactive
+    @change_build_prompt = false
+    @cancel_prompt = false
+    @new_submission_prompt = false
   end
 
   attr_reader :submission
-  delegate :active_release?, :release_platform_run, :external_link, to: :submission
+  delegate :actionable?, :release_platform_run, :external_link, to: :submission
   delegate :release, to: :release_platform_run
 
   STATUS = {
@@ -24,6 +27,11 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
     failed_with_action_required: {text: "Needs manual submission", status: :failure},
     cancelled: {text: "Removed from review", status: :inert}
   }
+
+  def before_render
+    compute_prompts
+    super
+  end
 
   def status
     STATUS[submission.status.to_sym] || {text: submission.status.humanize, status: :neutral}
@@ -57,29 +65,23 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
   end
 
   def changeable?
-    submission.change_allowed? && available_builds.present?
+    submission.change_build? && available_builds.present?
   end
 
-  def prompt_change?
-    submission.change_allowed? && newer_builds.present?
-  end
-
-  def change_build_prompt
+  def compute_prompts
     return if newer_builds.blank?
 
-    if submission.change_allowed?
-      render(V2::AlertComponent.new(type: :info, title: "A new build #{newer_builds.last.display_name} is available. Change build to update the submission.", dismissible: true))
+    if submission.change_build?
+      @change_build_prompt = true
     elsif submission.cancellable?
-      render(V2::AlertComponent.new(type: :info, title: "A new build #{newer_builds.last.display_name} is available. Cancel submission and restart.", dismissible: true))
+      @cancel_prompt = true
+    elsif !@inactive
+      @new_submission_prompt = true
     end
   end
 
-  def new_submission_allowed?
-    active_release? && submission.locked? && newer_builds.present?
-  end
-
   def action
-    return unless active_release?
+    return unless actionable?
 
     if submission.created?
       {scheme: :default,
@@ -102,7 +104,7 @@ class V2::LiveRelease::SubmissionComponent < V2::BaseComponent
   end
 
   def mock_actions
-    return unless active_release? && submission.submitted_for_review?
+    return unless actionable? && submission.submitted_for_review?
 
     content_tag(:div, class: "flex items-center gap-0.5") do
       concat(render(V2::ButtonComponent.new(scheme: :mock,

@@ -71,7 +71,7 @@ class TestFlightSubmission < StoreSubmission
   end
 
   def trigger!
-    return unless parent_release.active?
+    return unless actionable?
     return mock_start_release_in_testflight if sandbox_mode?
     return start_release! if build_present_in_store?
 
