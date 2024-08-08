@@ -80,7 +80,7 @@ class AppStoreSubmission < StoreSubmission
       transitions from: [:created, :preprocessing, :failed_prepare, :prepared, :failed, :review_failed, :cancelled], to: :preparing
     end
 
-    event :finish_prepare, after_commit: :on_finish_prepare! do
+    event :finish_prepare, after_commit: :update_external_status do
       after { set_prepared_at! }
       transitions from: :preparing, to: :prepared
     end

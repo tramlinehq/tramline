@@ -11,7 +11,14 @@ describe TestFlightSubmission do
       added_at: "2023-02-25T03:02:46-08:00"
     }
   }
-  let(:internal_release) { create(:internal_release, config: {submissions: [{id: "123", name: "Internal Testers", is_internal: true}]}) }
+  let(:workflow_run) { create(:workflow_run, :finished) }
+  let(:internal_release) {
+    create(:internal_release,
+      config: {submissions: [{id: "123", name: "Internal Testers", is_internal: true}]},
+      triggered_workflow_run: workflow_run,
+      release_platform_run: workflow_run.release_platform_run,
+      commit: workflow_run.commit)
+  }
   let(:provider_dbl) { instance_double(AppStoreIntegration) }
   let(:build_info) { AppStoreIntegration::TestFlightInfo.new(base_build_info.merge(status: "WAITING_FOR_BETA_REVIEW")) }
 

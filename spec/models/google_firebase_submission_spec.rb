@@ -164,16 +164,21 @@ describe GoogleFirebaseSubmission do
   end
 
   describe "#prepare_release!" do
-    let(:build) { create(:build, :with_artifact) }
+    let(:workflow_run) { create(:workflow_run, :finished) }
+    let(:build) { create(:build, :with_artifact, workflow_run:, commit: workflow_run.commit) }
     let(:release_platform_run) { build.release_platform_run }
     let(:internal_release) {
-      create(:internal_release, release_platform_run:, config: {
-        submissions: [
-          {number: 1,
-           submission_type: "GoogleFirebaseSubmission",
-           submission_config: {id: :internal, name: "internal testing"}}
-        ]
-      })
+      create(:internal_release,
+        release_platform_run:,
+        commit: workflow_run.commit,
+        triggered_workflow_run: workflow_run,
+        config: {
+          submissions: [
+            {number: 1,
+             submission_type: "GoogleFirebaseSubmission",
+             submission_config: {id: :internal, name: "internal testing"}}
+          ]
+        })
     }
     let(:submission) {
       create(:google_firebase_submission, :with_store_release, :preparing,
