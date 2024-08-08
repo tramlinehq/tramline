@@ -117,6 +117,14 @@ class PlayStoreSubmission < StoreSubmission
     end
   end
 
+  def attach_build(build)
+    return unless change_allowed?
+
+    update(build:)
+    trigger! unless created?
+    true
+  end
+
   def prepare_for_release!
     result = provider.create_draft_release(deployment_channel_id, build_number, version_name, release_notes)
     if result.ok?

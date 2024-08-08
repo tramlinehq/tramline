@@ -8,22 +8,19 @@ class AppStoreSubmissionsController < SignedInApplicationController
   before_action :ensure_cancellable, only: [:cancel]
 
   def submit_for_review
-    @submission.start_submission!
 
-    if @submission.failed?
-      redirect_back fallback_location: root_path, flash: {error: t(".submit_for_review.failure", errors: @submission.display_attr(:failure_reason))}
-    else
+    if (result = Coordinators::Signals.start_production_review!(@submission)).ok?
       redirect_back fallback_location: root_path, notice: t(".submit_for_review.success")
+    else
+      redirect_back fallback_location: root_path, flash: {error: t(".submit_for_review.failure", errors: result.error.message)}
     end
   end
 
   def cancel
-    @submission.start_cancellation!
-
-    if @submission.failed?
-      redirect_back fallback_location: root_path, flash: {error: t(".cancel.failure", errors: @submission.display_attr(:failure_reason))}
-    else
+    if (result = Coordinators::Signals.cancel_production_submission!(@submission)).ok?
       redirect_back fallback_location: root_path, notice: t(".cancel.success")
+    else
+      redirect_back fallback_location: root_path, flash: {error: t(".cancel.failure", errors: result.error.message)}
     end
   end
 

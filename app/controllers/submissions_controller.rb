@@ -4,8 +4,11 @@ class SubmissionsController < SignedInApplicationController
   before_action :ensure_triggerable, only: [:trigger]
 
   def trigger
-    @submission.trigger!
-    redirect_back fallback_location: fallback_path, notice: t(".trigger.success")
+    if (result = Coordinators::Signals.trigger_submission!(@submission)).ok?
+      redirect_back fallback_location: fallback_path, notice: t(".trigger.success")
+    else
+      redirect_back fallback_location: fallback_path, flash: {error: t(".trigger.failure", errors: result.error.message)}
+    end
   end
 
   def retry

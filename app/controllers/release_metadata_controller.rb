@@ -38,6 +38,7 @@ class ReleaseMetadataController < SignedInApplicationController
     end
   end
 
+  # TODO: this is broken for a single-platform release
   def update_all
     language = params.require(:language)
     ios = params.require(:ios).permit(:id, :release_notes, :promo_text)

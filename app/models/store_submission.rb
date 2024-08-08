@@ -63,8 +63,16 @@ class StoreSubmission < ApplicationRecord
     store_link || project_link
   end
 
-  def attach_build(build)
-    update!(build:)
+  def change_allowed? = raise NotImplementedError
+
+  def locked? = raise NotImplementedError
+
+  def reviewable? = raise NotImplementedError
+
+  def cancellable? = raise NotImplementedError
+
+  def attach_build(_build)
+    raise NotImplementedError
   end
 
   def self.create_and_trigger!(parent_release, submission_config, build)
@@ -79,21 +87,7 @@ class StoreSubmission < ApplicationRecord
   end
 
   def notification_params
-    release_platform_run
-      .notification_params
-      .merge(
-        {
-          is_staged_rollout_deployment: staged_rollout?,
-          is_production_channel: true,
-          is_app_store_production: is_a?(AppStoreSubmission),
-          is_play_store_production: is_a?(PlayStoreSubmission),
-          deployment_channel: conf.submission_config,
-          deployment_channel_asset_link: public_icon_img,
-          deployment_channel_type: provider.to_s.titleize,
-          project_link: external_link,
-          requires_review: requires_review?
-        }
-      )
+    {}
   end
 
   def active_release?

@@ -76,11 +76,11 @@ class WorkflowRun < ApplicationRecord
     state :created, initial: true
     state(*STATES.keys)
 
-    event :initiate_trigger, after_commit: :after_initiate_trigger do
+    event :initiate, after_commit: :after_initiate do
       transitions from: :created, to: :triggering
     end
 
-    event :complete_trigger, after_commit: :after_trigger do
+    event :initiated, after_commit: :after_initiation do
       transitions from: :triggering, to: :triggered
     end
 
@@ -88,27 +88,27 @@ class WorkflowRun < ApplicationRecord
       transitions from: :triggered, to: :started
     end
 
-    event(:unavailable, after_commit: :after_unavailable) do
+    event :unavailable, after_commit: :after_unavailable do
       transitions from: [:created, :triggered], to: :unavailable
     end
 
-    event(:fail, after_commit: :after_fail) do
+    event :fail, after_commit: :after_fail do
       transitions from: :started, to: :failed
     end
 
-    event(:halt, after_commit: :after_halt) do
+    event :halt, after_commit: :after_halt do
       transitions from: :started, to: :halted
     end
 
-    event(:retry, after_commit: :after_retry) do
+    event :retry, after_commit: :after_retry do
       transitions from: [:failed, :halted], to: :triggering
     end
 
-    event(:finish, after_commit: :after_finish) do
+    event :finish, after_commit: :after_finish do
       transitions from: :started, to: :finished
     end
 
-    event(:cancel, after_commit: :after_cancel) do
+    event :cancel, after_commit: :after_cancel do
       transitions from: IN_PROGRESS, to: :cancelling
       transitions from: NOT_STARTED, to: :cancelled_before_start
       transitions from: :cancelling, to: :cancelled
@@ -122,7 +122,7 @@ class WorkflowRun < ApplicationRecord
       commit:,
       kind: workflow.kind)
     workflow_run.create_build!(version_name: workflow_run.release_version, release_platform_run:, commit:)
-    workflow_run.initiate_trigger! if auto_promote
+    workflow_run.initiate! if auto_promote
   end
 
   def active?
@@ -167,7 +167,7 @@ class WorkflowRun < ApplicationRecord
       trigger_external_run!
     end
 
-    complete_trigger!
+    initiated!
   end
 
   def retrigger_external_run!
@@ -211,11 +211,11 @@ class WorkflowRun < ApplicationRecord
     ci_cd_provider.find_workflow_run(conf.id, release_branch, commit_hash)
   end
 
-  def after_initiate_trigger
+  def after_initiate
     WorkflowRuns::TriggerJob.perform_later(id)
   end
 
-  def after_trigger
+  def after_initiation
     event_stamp!(reason: :ci_triggered, kind: :notice, data: stamp_data)
     # FIXME: notify triggered
     # notify!("Step has been triggered!", :step_started, notification_params)

@@ -133,8 +133,6 @@ class AppStoreSubmission < StoreSubmission
 
   def reviewable? = prepared?
 
-  def requires_review? = true
-
   def trigger!
     return unless active_release?
     return start_prepare! if build_present_in_store?

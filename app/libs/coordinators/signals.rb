@@ -41,9 +41,21 @@
 module Coordinators::Signals
   Res = GitHub::Result
 
+  # TODO: fixes:
+  # rollout change allowance
+  # start release
+  # push processing
+  # finalize fixing
+  # metadata
+
   def self.start_release!(release)
+    # TODO: trigger a release
     # PreRelease.call(release)
     # NewRelease.call(release)
+  end
+
+  def self.apply_build_queue!(release, build_queue)
+    # TODO: apply a build queue to a release
   end
 
   # TODO: push processing should be done in a signal
@@ -51,6 +63,24 @@ module Coordinators::Signals
     # check if patchfix/hotfix etc
     # check if we need to trigger rc
     Coordinators::ProcessCommit.call(release, commit)
+  end
+
+  def self.save_metadata!(release, metadata)
+    # TODO: save metadata
+  end
+
+  def self.start_workflow_run!(workflow_run)
+    Res.new do
+      raise unless workflow_run.triggering_release.active?
+      workflow_run.initiate!
+    end
+  end
+
+  def self.retry_workflow_run!(workflow_run)
+    Res.new do
+      raise unless workflow_run.triggering_release.active?
+      workflow_run.retry!
+    end
   end
 
   def self.workflow_run_finished!(workflow_run_id)
@@ -72,6 +102,17 @@ module Coordinators::Signals
     Res.new { Coordinators::CreateBetaRelease.call(release_platform_run, build_id, commit_id) }
   end
 
+  def self.trigger_submission!(submission)
+    Res.new do
+      raise unless submission.active_release?
+      submission.trigger!
+    end
+  end
+
+  def self.retry_submission!(submission)
+    # TODO: retry a submission
+  end
+
   def self.beta_release_is_available!(build)
     # start soak, or
     Coordinators::StartProductionRelease.call(build.release_platform_run, build.id)
@@ -79,6 +120,31 @@ module Coordinators::Signals
 
   def self.start_new_production_release!(release_platform_run, build_id)
     Res.new { Coordinators::StartProductionRelease.call(release_platform_run, build_id, override: true) }
+  end
+
+  def self.update_production_build!(submission, build_id)
+    Res.new { Coordinators::UpdateBuildOnProduction.call(submission, build_id) }
+  end
+
+  def self.prepare_production_submission!(submission)
+    Res.new do
+      raise unless submission.active_release?
+      submission.start_prepare!
+    end
+  end
+
+  def self.start_production_review!(submission)
+    Res.new do
+      raise unless submission.active_release?
+      submission.start_submission!
+    end
+  end
+
+  def self.cancel_production_submission!(submission)
+    Res.new do
+      raise unless submission.active_release?
+      submission.start_cancellation!
+    end
   end
 
   def self.start_the_store_rollout!(rollout)

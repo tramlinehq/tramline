@@ -66,16 +66,6 @@ class TestFlightSubmission < StoreSubmission
     end
   end
 
-  def change_allowed? = raise NotImplementedError
-
-  def cancellable? = raise NotImplementedError
-
-  def locked? = raise NotImplementedError
-
-  def reviewable? = raise NotImplementedError
-
-  def requires_review? = raise NotImplementedError
-
   def internal_channel?
     deployment_channel.is_internal
   end

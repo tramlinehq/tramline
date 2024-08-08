@@ -2,15 +2,19 @@ class WorkflowRunsController < SignedInApplicationController
   before_action :set_workflow_run, only: [:trigger, :retry]
 
   def trigger
-    @workflow_run.initiate_trigger!
-    redirect_back fallback_location: internal_builds_path, notice: t(".trigger.success")
+    if (result = Coordinators::Signals.start_workflow_run!(@workflow_run)).ok?
+      redirect_back fallback_location: internal_builds_path, notice: t(".trigger.success")
+    else
+      redirect_back fallback_location: internal_builds_path, flash: {error: t(".trigger.failure", errors: result.error.message)}
+    end
   end
 
   def retry
-    @workflow_run.retry!
-    redirect_back fallback_location: internal_builds_path, notice: t(".retry.success")
-  rescue
-    redirect_back fallback_location: internal_builds_path, flash: {error: t(".retry.error")}
+    if (result = Coordinators::Signals.retry_workflow_run!(@workflow_run)).ok?
+      redirect_back fallback_location: internal_builds_path, notice: t(".retry.success")
+    else
+      redirect_back fallback_location: internal_builds_path, flash: {error: t(".retry.failure", errors: result.error.message)}
+    end
   end
 
   private

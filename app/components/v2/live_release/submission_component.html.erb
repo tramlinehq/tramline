@@ -40,7 +40,6 @@
                                                scope: :store_submission,
                                                url: update_path,
                                                free_form: true) do |form| %>
-                <%= form.F.hidden_field :force, value: true %>
                 <%= form.F.labeled_select :build_id, "Select a build", build_opts %>
 
                 <% form.with_action do %>

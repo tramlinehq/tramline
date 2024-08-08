@@ -63,16 +63,6 @@ class GoogleFirebaseSubmission < StoreSubmission
     end
   end
 
-  def change_allowed? = raise NotImplementedError
-
-  def locked? = raise NotImplementedError
-
-  def reviewable? = raise NotImplementedError
-
-  def requires_review? = raise NotImplementedError
-
-  def cancellable? = raise NotImplementedError
-
   def finished? = status.in? FINAL_STATES
 
   def trigger!
