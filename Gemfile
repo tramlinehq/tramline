@@ -47,7 +47,7 @@ gem "faraday-retry", "~> 2.0"
 gem "rubyzip", "~> 2.3"
 gem "requestjs-rails", "~> 0.0.9"
 gem "groupdate", "~> 6.1"
-gem "pghero", "~> 3.1"
+# gem "pghero", "~> 3.1"
 gem "aasm", "~> 5.3"
 gem "after_commit_everywhere", "~> 1.2"
 gem "retryable", "~> 3.0"
@@ -96,6 +96,8 @@ group :development, :test do
   gem "rubocop-rspec", require: false
   gem "rubocop-performance", require: false
   gem "stateoscope"
+  gem "sorbet-static-and-runtime"
+  gem "tapioca", require: false
 end
 
 group :development do
