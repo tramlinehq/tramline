@@ -4,7 +4,7 @@ class StoreSubmissions::TestFlight::UpdateBuildNotesJob < ApplicationJob
   def perform(submission_id)
     submission = TestFlightSubmission.find(submission_id)
     return unless submission
-    # TODO return unless submission.send_notes?
+    # TODO: [V2] return unless submission.send_notes?
 
     submission.update_build_notes!
   end

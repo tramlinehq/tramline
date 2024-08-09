@@ -109,7 +109,7 @@ class ReleasePlatformRun < ApplicationRecord
     end
   end
 
-  # FIXME: temp hard coded config
+  # TODO: [V2] temp hard coded config
   def ios_config
     {
       workflows: {
@@ -240,7 +240,7 @@ class ReleasePlatformRun < ApplicationRecord
     production_releases.stale.order(created_at: :desc)
   end
 
-  # TODO: remove this
+  # TODO: [V2] remove this
   def store_rollouts
     if android?
       play_store_rollouts

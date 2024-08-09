@@ -93,5 +93,5 @@ class ProductionRelease < ApplicationRecord
   def production? = true
 end
 
-# TODO:
+# TODO: [V2]
 # fix notification for store rollout final thing to be more deployment run end types

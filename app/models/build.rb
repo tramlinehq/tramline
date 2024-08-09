@@ -29,13 +29,8 @@ class Build < ApplicationRecord
   belongs_to :workflow_run
   has_one :artifact, class_name: "BuildArtifact", dependent: :nullify, inverse_of: :build
 
-  # TODO: Remove this, don't think this is how it should be referenced
-  has_one :app_store_submission, dependent: :nullify, inverse_of: :build
-  has_one :play_store_submission, dependent: :nullify, inverse_of: :build
-
   scope :internal, -> { joins(:workflow_run).where(workflow_run: {kind: WorkflowRun::KINDS[:internal]}) }
   scope :release_candidate, -> { joins(:workflow_run).where(workflow_run: {kind: WorkflowRun::KINDS[:release_candidate]}) }
-
   scope :ready, -> { where.not(generated_at: nil) }
 
   delegate :android?, :ios?, :ci_cd_provider, :train, to: :release_platform_run
@@ -78,7 +73,7 @@ class Build < ApplicationRecord
     end
 
     save!
-    # FIXME notify on create
+    # TODO: [V2] notify on create
     # notify!("A new build is available!", :build_available, notification_params, slack_file_id, display_name) if slack_file_id
   end
 

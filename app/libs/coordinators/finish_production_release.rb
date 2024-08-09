@@ -18,7 +18,7 @@ class Coordinators::FinishProductionRelease
     end
 
     @app.refresh_external_app
-    # FIXME: notify properly
+    # TODO: [V2] notify properly
     # train.notify_with_snippet!("Deployment was successful!",
     #                            :deployment_finished,
     #                            notification_params,

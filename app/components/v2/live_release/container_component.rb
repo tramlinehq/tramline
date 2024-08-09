@@ -50,7 +50,7 @@ class V2::LiveRelease::ContainerComponent < V2::BaseReleaseComponent
     config[:unavailable] ? :div : :a
   end
 
-  # FIXME: use the new rollout domain object
+  # TODO: [V2] use the new rollout domain object
   memoize def staged_rollout_status(platform_run)
     latest_store_release = platform_run.store_releases.first
     return unless latest_store_release&.staged_rollout?

@@ -24,7 +24,7 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
     commit.short_sha
   end
 
-  # FIXME
+  # TODO: [V2] fix this
   def ci_link
     commit.url
   end

@@ -24,7 +24,7 @@ class WorkflowRun < ApplicationRecord
   include Passportable
   include Sandboxable
 
-  # TODO: remove this
+  # TODO: [V2] remove this
   self.ignored_columns += %w[build_number]
 
   belongs_to :release_platform_run
@@ -223,7 +223,7 @@ class WorkflowRun < ApplicationRecord
 
   def after_initiation
     event_stamp!(reason: :ci_triggered, kind: :notice, data: stamp_data)
-    # FIXME: notify triggered
+    # TODO: [V2] notify triggered
     # notify!("Step has been triggered!", :step_started, notification_params)
 
     return found! if workflow_found? && may_found?
@@ -239,18 +239,18 @@ class WorkflowRun < ApplicationRecord
   end
 
   def after_unavailable
-    # FIXME: notify unavailable
+    # TODO: [V2] notify unavailable
     # notify_on_failure!("Could not find the CI workflow!")
   end
 
   def after_fail
     event_stamp!(reason: :ci_workflow_failed, kind: :error, data: stamp_data)
-    # FIXME: notify failure
+    # TODO: [V2] notify failure
   end
 
   def after_halt
     event_stamp!(reason: :ci_workflow_halted, kind: :error, data: stamp_data)
-    # FIXME: notify halt
+    # TODO: [V2] notify halt
   end
 
   def after_finish

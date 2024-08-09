@@ -66,7 +66,7 @@ class PlayStoreSubmission < StoreSubmission
       transitions from: :preparing, to: :prepared
     end
 
-    # TODO: This is currently not used, should be hooked up as an action from the user
+    # TODO: [V2] This is currently not used, should be hooked up as an action from the user
     event :reject do
       after { set_rejected_at! }
       transitions from: :prepared, to: :review_failed

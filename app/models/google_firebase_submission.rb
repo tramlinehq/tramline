@@ -115,7 +115,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_later(id, op_info.release.id)
   end
 
-  # FIXME: get notes from somewhere
+  # TODO: [V2] get notes from somewhere
   def update_build_notes!(release_name)
     provider.update_release_notes(release_name, "NOTES")
   end

@@ -57,7 +57,7 @@ module Commitable
 
     def message = commit["message"]
 
-    def team = nil # FIXME: stub
+    def team = nil # TODO: [V2] stub
 
     def pull_request = nil
 

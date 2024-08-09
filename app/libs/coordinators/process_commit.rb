@@ -16,7 +16,7 @@ class Coordinators::ProcessCommit
     return @commit.add_to_build_queue! if @release.queue_commit?
     return unless @commit.applicable?
 
-    # TODO: change this to use the new have not started submission check
+    # TODO: [V2] change this to use the new have not started submission check
     @release.release_platform_runs.have_not_submitted_production.each do |run|
       trigger_release_for(run)
     end

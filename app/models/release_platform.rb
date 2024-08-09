@@ -55,17 +55,6 @@ class ReleasePlatform < ApplicationRecord
     }.invert
   end
 
-  # FIXME - move these to the new configuration, add type of workflow to the config
-  def choose_workflow
-    steps.review.first&.ci_cd_channel&.merge(kind: "internal") || beta_workflow
-  end
-
-  def separate_workflow_for_beta? = has_review_steps?
-
-  def beta_workflow
-    release_step.ci_cd_channel.merge(kind: "release_candidate")
-  end
-
   def active_steps_for(release)
     # no release
     return steps unless release

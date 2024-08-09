@@ -41,7 +41,7 @@
 module Coordinators::Signals
   Res = GitHub::Result
 
-  # TODO: fixes:
+  # TODO: [V2] fixes:
   # rollout change allowance
   # start release
   # push processing
@@ -49,16 +49,16 @@ module Coordinators::Signals
   # metadata
 
   def self.start_release!(release)
-    # TODO: trigger a release
+    # TODO: [V2] trigger a release
     # PreRelease.call(release)
     # NewRelease.call(release)
   end
 
   def self.apply_build_queue!(release, build_queue)
-    # TODO: apply a build queue to a release
+    # TODO: [V2] apply a build queue to a release
   end
 
-  # TODO: push processing should be done in a signal
+  # TODO: [V2] push processing should be done in a signal
   def self.new_commit_has_landed!(release, commit)
     # check if patchfix/hotfix etc
     # check if we need to trigger rc
@@ -66,7 +66,7 @@ module Coordinators::Signals
   end
 
   def self.save_metadata!(release, metadata)
-    # TODO: save metadata
+    # TODO: [V2] save metadata
   end
 
   def self.start_workflow_run!(workflow_run)

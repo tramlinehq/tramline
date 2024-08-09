@@ -292,7 +292,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def update_store_version
-    # FIXME: update store version details when release metadata changes or build is updated
+    # TODO: [V2] update store version details when release metadata changes or build is updated
     # update whats new, build
   end
 

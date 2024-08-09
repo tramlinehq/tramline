@@ -22,7 +22,7 @@
     <% component.runs do |release_platform_run| %>
       <%= render V2::SectionComponent.new(title: "Build stats", style: :titled, size: :compact) do %>
         <% if release_platform_run.internal_builds.any? { |build| build.metadata.present? } %>
-          <div>TODO: Show build health here</div>
+          <div>TODO: [V2] Show build health here</div>
         <% else %>
           <%= render V2::EmptyStateComponent.new(
             title: "No stats for this platform",
