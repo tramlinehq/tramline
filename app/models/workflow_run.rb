@@ -24,9 +24,6 @@ class WorkflowRun < ApplicationRecord
   include Passportable
   include Sandboxable
 
-  # TODO: [V2] remove this
-  self.ignored_columns += %w[build_number]
-
   belongs_to :release_platform_run
   belongs_to :triggering_release, class_name: "PreProdRelease", foreign_key: "pre_prod_release_id", inverse_of: :triggered_workflow_run
   belongs_to :commit

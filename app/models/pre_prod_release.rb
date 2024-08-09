@@ -27,6 +27,8 @@ class PreProdRelease < ApplicationRecord
   has_one :triggered_workflow_run, class_name: "WorkflowRun", dependent: :destroy, inverse_of: :triggering_release
   has_many :store_submissions, as: :parent_release, dependent: :destroy
 
+  scope :inactive, -> { where(status: INACTIVE) }
+
   before_create :set_default_tester_notes
   after_create_commit -> { previous&.mark_as_stale! }
 
@@ -38,6 +40,7 @@ class PreProdRelease < ApplicationRecord
     stale: "stale",
     finished: "finished"
   }
+  INACTIVE = STATES.values - ["created"]
 
   enum status: STATES
 

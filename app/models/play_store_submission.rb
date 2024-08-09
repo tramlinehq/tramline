@@ -42,7 +42,7 @@ class PlayStoreSubmission < StoreSubmission
     failed_with_action_required: "failed_with_action_required"
   }
   FINAL_STATES = %w[prepared]
-  CHANGEABLE_STATES = %w[created preprocessing failed]
+  CHANGEABLE_STATES = %w[created preprocessing failed prepared]
 
   enum failure_reason: {
     unknown_failure: "unknown_failure"
@@ -85,7 +85,7 @@ class PlayStoreSubmission < StoreSubmission
 
   def cancellable? = false
 
-  def finished? = FINAL_STATES.include?(status)
+  def finished? = FINAL_STATES.include?(status) # TODO: [V2] can we use another proxy and remove this method. is currently used in view only.
 
   def reviewable? = false
 
@@ -117,10 +117,14 @@ class PlayStoreSubmission < StoreSubmission
 
   def attach_build(build)
     return unless change_build?
-
     update(build:)
-    trigger! unless created?
-    true
+  end
+
+  def retrigger!
+    return unless created?
+
+    # reset_store_info! # TODO: [V2] implement this
+    trigger!
   end
 
   def prepare_for_release!

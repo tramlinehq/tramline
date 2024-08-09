@@ -6,25 +6,19 @@
     <%= render V2::PlatformViewComponent.new(@release) do |component| %>
       <% component.platform_runs.each do |run| %>
         <div class="grid grid-cols-1">
-          <% if run.production_releases.inflight.any? %>
-            <% run.production_releases.inflight.map(&:store_rollout).compact.each do |rollout| %>
-              <%= render V2::LiveRelease::RolloutComponent.new(rollout) %>
-            <% end %>
+          <% if run.inflight_store_rollout.present? %>
+            <%= render V2::LiveRelease::RolloutComponent.new(run.inflight_store_rollout) %>
           <% end %>
 
-          <% if run.production_releases.active.any? %>
-            <% run.production_releases.active.map(&:store_rollout).compact.each do |rollout| %>
-              <%= render V2::LiveRelease::RolloutComponent.new(rollout) %>
-            <% end %>
+          <% if run.active_store_rollout.present? %>
+            <%= render V2::LiveRelease::RolloutComponent.new(run.active_store_rollout) %>
           <% end %>
 
-          <% if run.production_releases.finished.any? %>
-            <% run.production_releases.finished.map(&:store_rollout).compact.each do |rollout| %>
-              <%= render V2::LiveRelease::RolloutComponent.new(rollout) %>
-            <% end %>
+          <% if run.finished_store_rollout.present? %>
+            <%= render V2::LiveRelease::RolloutComponent.new(run.finished_store_rollout) %>
           <% end %>
 
-          <% if run.production_releases.flat_map(&:store_rollout).compact.blank? %>
+          <% if run.production_releases.map(&:store_rollout).compact.blank? %>
             <%= render V2::EmptyStateComponent.new(
               title: "Not ready to roll out",
               text: "Please wait for a submission to be approved to be rolled out.",

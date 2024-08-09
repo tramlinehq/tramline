@@ -39,6 +39,9 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :play_store_submissions, dependent: :destroy
   has_many :app_store_submissions, dependent: :destroy
   has_many :production_releases, dependent: :destroy
+  has_one :inflight_production_release, -> { inflight }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
+  has_one :active_production_release, -> { active }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
+  has_one :finished_production_release, -> { finished }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
   has_many :play_store_rollouts, dependent: :destroy
   has_many :app_store_rollouts, dependent: :destroy
   has_many :external_builds, through: :step_runs
@@ -229,15 +232,27 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def older_internal_releases
-    internal_releases.stale.order(created_at: :desc)
+    internal_releases.inactive.order(created_at: :desc)
   end
 
   def older_beta_releases
-    beta_releases.stale.order(created_at: :desc)
+    beta_releases.inactive.order(created_at: :desc)
   end
 
   def older_production_releases
     production_releases.stale.order(created_at: :desc)
+  end
+
+  def inflight_store_rollout
+    inflight_production_release&.store_rollout
+  end
+
+  def active_store_rollout
+    active_production_release&.store_rollout
+  end
+
+  def finished_store_rollout
+    finished_production_release&.store_rollout
   end
 
   # TODO: [V2] remove this

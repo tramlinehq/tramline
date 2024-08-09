@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_08_06_155121) do
+ActiveRecord::Schema[7.0].define(version: 2024_08_09_060735) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -141,7 +141,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_06_155121) do
     t.uuid "workflow_run_id"
     t.string "external_id"
     t.string "external_name"
-    t.integer "size_in_bytes"
+    t.bigint "size_in_bytes"
     t.integer "sequence_number", limit: 2, default: 0, null: false
     t.string "slack_file_id"
     t.index ["commit_id"], name: "index_builds_on_commit_id"
@@ -440,9 +440,12 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_06_155121) do
     t.datetime "updated_at", null: false
     t.jsonb "config", default: {}, null: false
     t.bigint "previous_id"
-    t.string "status", default: "created", null: false
+    t.string "status", default: "inflight", null: false
     t.index ["build_id"], name: "index_production_releases_on_build_id"
     t.index ["previous_id"], name: "index_production_releases_on_previous_id"
+    t.index ["release_platform_run_id", "status"], name: "index_unique_active_production_release", unique: true, where: "((status)::text = 'active'::text)"
+    t.index ["release_platform_run_id", "status"], name: "index_unique_finished_production_release", unique: true, where: "((status)::text = 'finished'::text)"
+    t.index ["release_platform_run_id", "status"], name: "index_unique_inflight_production_release", unique: true, where: "((status)::text = 'inflight'::text)"
     t.index ["release_platform_run_id"], name: "index_production_releases_on_release_platform_run_id"
   end
 
@@ -875,7 +878,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_06_155121) do
     t.bigint "pre_prod_release_id", null: false
     t.string "status", null: false
     t.jsonb "workflow_config"
-    t.string "build_number"
     t.string "external_id"
     t.string "external_url"
     t.string "external_number"

@@ -7,7 +7,7 @@
 #  external_name           :string
 #  generated_at            :datetime
 #  sequence_number         :integer          default(0), not null, indexed
-#  size_in_bytes           :integer
+#  size_in_bytes           :bigint
 #  version_name            :string
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null

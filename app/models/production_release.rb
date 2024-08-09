@@ -4,12 +4,12 @@
 #
 #  id                      :bigint           not null, primary key
 #  config                  :jsonb            not null
-#  status                  :string           default("created"), not null
+#  status                  :string           default("inflight"), not null, indexed => [release_platform_run_id], indexed => [release_platform_run_id], indexed => [release_platform_run_id]
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_id                :uuid             not null, indexed
 #  previous_id             :bigint           indexed
-#  release_platform_run_id :uuid             not null, indexed
+#  release_platform_run_id :uuid             not null, indexed, indexed => [status], indexed => [status], indexed => [status]
 #
 class ProductionRelease < ApplicationRecord
   include Loggable

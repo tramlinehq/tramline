@@ -7,22 +7,16 @@
       <% component.platform_runs.each do |run| %>
         <div class="grid grid-cols-1">
 
-          <% if run.production_releases.inflight.any? %>
-            <% run.production_releases.inflight.each do |prod_release| %>
-              <%= render V2::LiveRelease::ProductionSubmissionComponent.new(prod_release.store_submission) %>
-            <% end %>
+          <% if run.inflight_production_release.present? %>
+              <%= render V2::LiveRelease::ProductionSubmissionComponent.new(run.inflight_production_release.store_submission) %>
           <% end %>
 
-          <% if run.production_releases.active.any? %>
-            <% run.production_releases.active.map(&:store_rollout).compact.each do |prod_release| %>
-              <%= render V2::LiveRelease::ProductionSubmissionComponent.new(prod_release.store_submission) %>
-            <% end %>
+          <% if run.active_production_release.present? %>
+            <%= render V2::LiveRelease::ProductionSubmissionComponent.new(run.active_production_release.store_submission, inactive: run.inflight_production_release.present?) %>
           <% end %>
 
-          <% if run.production_releases.finished.any? %>
-            <% run.production_releases.finished.map(&:store_rollout).compact.each do |prod_release| %>
-              <%= render V2::LiveRelease::ProductionSubmissionComponent.new(prod_release.store_submission) %>
-            <% end %>
+          <% if run.finished_production_release.present? %>
+            <%= render V2::LiveRelease::ProductionSubmissionComponent.new(run.finished_production_release.store_submission, inactive: true) %>
           <% end %>
 
           <% if run.production_releases.none? %>
