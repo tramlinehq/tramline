@@ -65,7 +65,8 @@ describe Installations::Github::Api, type: :integration do
 
       expected = {
         ci_ref: 30433642,
-        ci_link: "https://github.com/octo-org/octo-repo/actions/runs/30433642"
+        ci_link: "https://github.com/octo-org/octo-repo/actions/runs/30433642",
+        number: 562
       }
       expect(result).to match(expected)
     end

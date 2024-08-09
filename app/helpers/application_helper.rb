@@ -168,4 +168,7 @@ module ApplicationHelper
   def safe_simple_format(text)
     simple_format(h(text))
   end
+
+  def comment
+  end
 end

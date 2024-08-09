@@ -27,18 +27,18 @@ module Installations
       end
     end
 
-    def send_to_group(release, group)
+    def send_to_group(release, groups)
       execute do
-        distro_request = FAD_PUBLISHER::GoogleFirebaseAppdistroV1DistributeReleaseRequest.new(group_aliases: [group])
+        distro_request = FAD_PUBLISHER::GoogleFirebaseAppdistroV1DistributeReleaseRequest.new(group_aliases: groups)
         fad_client.distribute_project_app_release(release, distro_request)
       end
     end
 
-    def update_release_notes(release, notes)
+    def update_release_notes(release_name, notes)
       execute do
-        release = FAD_PUBLISHER::GoogleFirebaseAppdistroV1Release.from_json(release.to_json)
+        release = FAD_PUBLISHER::GoogleFirebaseAppdistroV1Release.new(name: release_name)
         release.release_notes = FAD_PUBLISHER::GoogleFirebaseAppdistroV1ReleaseNotes.new(text: notes)
-        fad_client.patch_project_app_release(release.name, release)
+        fad_client.patch_project_app_release(release_name, release)
       end
     end
 
@@ -83,6 +83,18 @@ module Installations
         [t1, t2].each(&:join)
         apps = android_apps + ios_apps
         Installations::Response::Keys.transform(apps, transforms)
+      end
+    end
+
+    def find_build(app_id, build_number, and_filters: nil)
+      execute do
+        filter = and_filters&.join(" AND ")
+
+        fad_client
+          .list_project_app_releases(app_name(app_id), filter:)
+          .then(&:releases)
+          &.find { |release| release.build_version == build_number.to_s }
+          &.to_h
       end
     end
 

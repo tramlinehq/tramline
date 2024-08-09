@@ -35,6 +35,28 @@ en:
       success: "The submission has been created successfully."
       failure: "Failed to create submission due to %{errors}"
       invalid_build: "The build is not valid to start a submission."
+  store_rollouts:
+    increase:
+      success: "Increased the rollout!"
+      failure: "Failed to increase the rollout. Please retry!"
+    pause:
+      success: "Paused the rollout!"
+      failure: "Failed to pause the rollout. Please retry!"
+    resume:
+      success: "Resumed the rollout!"
+      failure: "Failed to resume the rollout. Please retry!"
+    halt:
+      success: "Halted the rollout!"
+      failure: "Failed to halt the rollout. Please retry!"
+    fully_release:
+      success: "Fully released the rollout!"
+      failure: "Failed to fully release the rollout. Please retry!"
+  workflow_runs:
+    trigger:
+      success: "Triggered workflow run."
+    retry:
+      success: "CI workflow retried!"
+      error: "Failed to retry the CI workflow! Contact support if the issue persists."
   authentication:
     sso:
       sessions:
@@ -450,3 +472,10 @@ en:
         title: "Release stability fixes"
         scope: "Last 6 releases. Commits after release start per team."
         help_text: "These are the changes made to the release branch after the release has started by members in these respective teams.\n\nThis is a good indicator of how much the team is involved in the release stability."
+  submissions:
+    trigger:
+      success: "Started the submission!"
+  pre_prod_release:
+    create_beta:
+      success: "Kicked off the beta release!"
+      failure: "Failed to start the beta release"

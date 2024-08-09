@@ -1,5 +1,5 @@
 <% content_for :sticky_top_message do %>
-  <%= render V2::AlertComponent.new(kind: :banner, type: :notice, title: "Need help?", dismissible: false, info: { label: "Read docs", link: "https://docs.tramline.app" }) do %>
+  <%= render V2::AlertComponent.new(kind: :banner, type: :notice, title: "Need help?", info: { label: "Read docs", link: "https://docs.tramline.app" }) do %>
     Contact us via the chat in the bottom right corner and we'll help you get setup with your release process.
   <% end %>
 <% end %>

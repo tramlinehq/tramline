@@ -97,7 +97,7 @@ Rails.application.routes.draw do
           end
         end
 
-        get :edit, to: "staged_rollouts#edit_all", path: :rollout, as: :staged_rollout_edit
+        get :edit, to: "store_rollouts#edit_all", path: :rollout, as: :staged_rollout_edit
         get :edit, to: "release_metadata#edit_all", path: :metadata, as: :metadata_edit
         patch :update, to: "release_metadata#update_all", path: :metadata, as: :metadata_update
 
@@ -106,11 +106,14 @@ Rails.application.routes.draw do
         end
 
         resources :platforms, shallow: false, only: [] do
-          resources :store_submissions, only: [:create, :update], path: :submissions do
+          resources :store_rollouts, only: [], path: :rollouts do
             member do
-              patch :submit_for_review
-              patch :prepare
-              patch :cancel
+              patch :start
+              patch :increase
+              patch :pause
+              patch :resume
+              patch :halt
+              patch :fully_release
             end
           end
         end
@@ -211,6 +214,47 @@ Rails.application.routes.draw do
     end
 
     get "/integrations/build_artifact_channels", to: "integrations#build_artifact_channels"
+  end
+
+  resources :release_platform_runs, path: :runs, as: :runs, only: [] do
+    post :pre_prod_beta, to: "pre_prod_releases#create_beta"
+    post :pre_prod_internal, to: "pre_prod_releases#create_internal"
+    post :production, to: "production_releases#create"
+  end
+
+  resources :app_store_submissions, only: [:update] do
+    member do
+      patch :submit_for_review
+      patch :prepare
+      patch :cancel
+      patch :remove_from_review
+    end
+  end
+
+  if Rails.env.development?
+    patch "/app_store_submissions/:id/mock_reject", to: "app_store_submissions#mock_reject_for_app_store", as: :mock_reject_for_app_store
+    patch "/app_store_submissions/:id/mock_approve", to: "app_store_submissions#mock_approve_for_app_store", as: :mock_approve_for_app_store
+  end
+
+  resources :play_store_submissions, only: [:update] do
+    member do
+      patch :prepare
+      patch :cancel
+    end
+  end
+
+  resources :workflow_runs, only: [] do
+    member do
+      patch :retry
+      patch :trigger
+    end
+  end
+
+  resources :submissions, only: [] do
+    member do
+      patch :retry
+      patch :trigger
+    end
   end
 
   namespace :admin do

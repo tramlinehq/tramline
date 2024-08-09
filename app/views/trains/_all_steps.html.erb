@@ -1,5 +1,5 @@
 <% if @edit_not_allowed %>
-  <%= render V2::AlertComponent.new(kind: :banner, type: :notice, title: "Steps not editable", dismissible: false, full_screen: false) do %>
+  <%= render V2::AlertComponent.new(kind: :banner, type: :notice, title: "Steps not editable", full_screen: false) do %>
     The steps can not be edited while there are active releases. Please stop or finish the releases to make changes.
   <% end %>
 <% end %>

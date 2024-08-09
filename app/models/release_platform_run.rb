@@ -2,23 +2,20 @@
 #
 # Table name: release_platform_runs
 #
-#  id                       :uuid             not null, primary key
-#  branch_name              :string
-#  code_name                :string           not null
-#  commit_sha               :string
-#  completed_at             :datetime
-#  in_store_resubmission    :boolean          default(FALSE)
-#  original_release_version :string
-#  release_version          :string
-#  scheduled_at             :datetime         not null
-#  status                   :string           not null
-#  stopped_at               :datetime
-#  tag_name                 :string
-#  created_at               :datetime         not null
-#  updated_at               :datetime         not null
-#  last_commit_id           :uuid             indexed
-#  release_id               :uuid
-#  release_platform_id      :uuid             not null, indexed
+#  id                    :uuid             not null, primary key
+#  code_name             :string           not null
+#  completed_at          :datetime
+#  in_store_resubmission :boolean          default(FALSE)
+#  release_version       :string
+#  scheduled_at          :datetime         not null
+#  status                :string           not null
+#  stopped_at            :datetime
+#  tag_name              :string
+#  created_at            :datetime         not null
+#  updated_at            :datetime         not null
+#  last_commit_id        :uuid             indexed
+#  release_id            :uuid
+#  release_platform_id   :uuid             not null, indexed
 #
 class ReleasePlatformRun < ApplicationRecord
   has_paper_trail
@@ -29,19 +26,27 @@ class ReleasePlatformRun < ApplicationRecord
   include Displayable
   using RefinedString
 
-  # self.ignored_columns += %w[branch_name commit_sha original_release_version]
+  self.ignored_columns += %w[branch_name commit_sha original_release_version]
   self.implicit_order_column = :scheduled_at
 
   belongs_to :release_platform
   belongs_to :release
   has_many :release_metadata, class_name: "ReleaseMetadata", dependent: :destroy, inverse_of: :release_platform_run
   has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
+  has_many :internal_builds, -> { internal.ready }, class_name: "Build", dependent: :destroy, inverse_of: :release_platform_run
+  has_many :rc_builds, -> { release_candidate.ready.reorder("generated_at DESC") }, class_name: "Build", dependent: :destroy, inverse_of: :release_platform_run
   has_many :builds, dependent: :destroy, inverse_of: :release_platform_run
   has_many :play_store_submissions, dependent: :destroy
   has_many :app_store_submissions, dependent: :destroy
+  has_many :production_releases, dependent: :destroy
+  has_many :play_store_rollouts, dependent: :destroy
+  has_many :app_store_rollouts, dependent: :destroy
   has_many :external_builds, through: :step_runs
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
+  has_many :internal_releases, dependent: :destroy
+  has_many :beta_releases, dependent: :destroy
+  has_many :workflow_runs, dependent: :destroy
   belongs_to :last_commit, class_name: "Commit", inverse_of: :release_platform_runs, optional: true
 
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
@@ -66,9 +71,14 @@ class ReleasePlatformRun < ApplicationRecord
       transitions from: [:created, :on_track], to: :on_track
     end
 
-    event :stop, after_commit: -> { event_stamp!(reason: :stopped, kind: :notice, data: {version: release_version}) } do
+    event :stop, after_commit: :on_stop! do
       before { self.stopped_at = Time.current }
       transitions from: [:created, :on_track], to: :stopped
+    end
+
+    event :finish_v2, after_commit: :on_finish_v2! do
+      before { self.completed_at = Time.current }
+      transitions from: :on_track, to: :finished
     end
 
     event :finish, after_commit: :on_finish! do
@@ -79,48 +89,179 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   after_create :set_default_release_metadata
-  after_create :create_store_submission, if: -> { organization.product_v2? }
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
-  delegate :all_commits, :original_release_version, :hotfix?, :versioning_strategy, :organization, to: :release
-  delegate :steps, :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, :default_locale, to: :release_platform
+  delegate :all_commits, :original_release_version, :hotfix?, :versioning_strategy, :organization, :release_branch, to: :release
+  delegate :steps, :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, :default_locale, :ci_cd_provider, to: :release_platform
 
   def metadata_for(language)
     locale_tag = AppStores::Localizable.supported_locale_tag(language, :ios)
     release_metadata&.find_by(locale: locale_tag)
   end
 
-  def store_submissions
+  def conf
     if android?
-      play_store_submissions
+      ReleaseConfig::Platform.new(android_config)
     elsif ios?
-      app_store_submissions
+      ReleaseConfig::Platform.new(ios_config)
     else
       raise ArgumentError, "Unknown platform: #{platform}"
     end
   end
 
-  def active_store_submission
-    store_submissions.last
+  # TODO: [V2] temp hard coded config
+  def ios_config
+    {
+      workflows: {
+        internal: nil,
+        release_candidate: {
+          name: "iOS Fastlane Release",
+          id: "54289532",
+          artifact_name_pattern: nil
+        }
+      },
+      internal_release: nil,
+      beta_release: {
+        auto_promote: false,
+        submissions: [
+          {number: 1,
+           submission_type: "TestFlightSubmission",
+           submission_config: {id: "88842956-c143-4692-8998-8d0e1297f59e", name: "tramliners", is_internal: true}}
+        ]
+      },
+      production_release: {
+        auto_promote: false,
+        submissions: [
+          {number: 1,
+           submission_type: "AppStoreSubmission",
+           submission_config: AppStoreIntegration::PROD_CHANNEL,
+           rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
+           auto_promote: false}
+        ]
+      }
+    }
   end
 
-  def previous_store_submissions
-    return unless store_submissions.size > 1
-    store_submissions.where.not(id: active_store_submission.id)
+  def android_config
+    {
+      workflows: {
+        internal: {
+          name: "Android Debug APK",
+          id: "85899119",
+          artifact_name_pattern: "pattern"
+        },
+        release_candidate: {
+          name: "Android Play Store Release Build AAB",
+          id: "85899120",
+          artifact_name_pattern: "pattern"
+        }
+      },
+      internal_release: # nil,
+        {
+          auto_promote: true,
+          submissions: [
+            {
+              number: 1,
+              submission_type: "GoogleFirebaseSubmission",
+              submission_config: {id: "projects/946207521855/groups/internal-product-team",
+                                  name: "Internal Product Team"},
+              auto_promote: true
+            }
+            # {
+            #   number: 1,
+            #   submission_type: "PlayStoreSubmission",
+            #   submission_config: {id: :internal, name: "internal testing"},
+            #   rollout_config: {enabled: false},
+            #   auto_promote: true
+            # }
+          ]
+        },
+      beta_release: {
+        auto_promote: false,
+        submissions:
+          [
+            {
+              number: 1,
+              submission_type: "PlayStoreSubmission",
+              submission_config: {id: :alpha, name: "closed testing"},
+              rollout_config: {enabled: false},
+              auto_promote: true
+            },
+            {
+              number: 1,
+              submission_type: "PlayStoreSubmission",
+              submission_config: {id: :beta, name: "open testing"},
+              rollout_config: {enabled: false},
+              auto_promote: false
+            }
+          ]
+      },
+      production_release: {
+        auto_promote: false,
+        submissions: [
+          {
+            number: 1,
+            submission_type: "PlayStoreSubmission",
+            submission_config: GooglePlayStoreIntegration::PROD_CHANNEL,
+            rollout_config: {enabled: true, stages: [1, 2, 10, 20, 50, 100]},
+            auto_promote: false
+          }
+        ]
+      }
+    }
   end
 
-  def create_store_submission
+  def ready_for_beta_release?
+    return true if conf.only_beta_release?
+    latest_internal_release(finished: true).present?
+  end
+
+  def latest_internal_release(finished: false)
+    (finished ? internal_releases.finished : internal_releases).order(created_at: :desc).first
+  end
+
+  def latest_beta_release(finished: false)
+    (finished ? beta_releases.finished : beta_releases).order(created_at: :desc).first
+  end
+
+  def latest_production_release
+    production_releases.order(created_at: :desc).first
+  end
+
+  def older_internal_releases
+    internal_releases.stale.order(created_at: :desc)
+  end
+
+  def older_beta_releases
+    beta_releases.stale.order(created_at: :desc)
+  end
+
+  def older_production_releases
+    production_releases.stale.order(created_at: :desc)
+  end
+
+  # TODO: [V2] remove this
+  def store_rollouts
     if android?
-      play_store_submissions.create!
+      play_store_rollouts
     elsif ios?
-      app_store_submissions.create!
+      app_store_rollouts
     else
       raise ArgumentError, "Unknown platform: #{platform}"
     end
   end
 
-  def latest_build?(build)
-    builds.reorder("generated_at DESC").first == build
+  def latest_rc_build?(build)
+    rc_builds.first == build
+  end
+
+  def available_rc_builds(build, only_new: false)
+    return rc_builds.where.not(id: build.id) unless only_new
+    rc_builds.where("generated_at > ?", build.generated_at).where.not(id: build.id)
+  end
+
+  def next_build_sequence_number
+    builds.maximum(:sequence_number).to_i.succ
   end
 
   def check_release_health
@@ -348,6 +489,15 @@ class ReleasePlatformRun < ApplicationRecord
     ReleasePlatformRuns::CreateTagJob.perform_later(id) if train.tag_platform_at_release_end?
     event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
     app.refresh_external_app
+  end
+
+  def on_finish_v2!
+    ReleasePlatformRuns::CreateTagJob.perform_later(@release_platform_run.id) if train.tag_platform_at_release_end?
+    event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
+  end
+
+  def on_stop!
+    event_stamp!(reason: :stopped, kind: :notice, data: {version: release_version})
   end
 
   # recursively attempt to create a release tag until a unique one gets created

@@ -23,6 +23,14 @@ class WorkflowProcessors::Github::WorkflowRun
     workflow_run[:artifacts_url]
   end
 
+  def started_at
+    workflow_run[:run_started_at]
+  end
+
+  def finished_at
+    workflow_run[:updated_at]
+  end
+
   private
 
   attr_reader :workflow_run

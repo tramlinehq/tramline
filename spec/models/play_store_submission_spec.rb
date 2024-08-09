@@ -7,7 +7,8 @@ describe PlayStoreSubmission do
 
   describe ".start_release!" do
     let(:build) { create(:build) }
-    let(:submission) { create(:play_store_submission, :preparing, build:) }
+    let(:pre_prod_release) { create(:pre_prod_release) }
+    let(:submission) { create(:play_store_submission, :preparing, parent_release: pre_prod_release, build:) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
     before do

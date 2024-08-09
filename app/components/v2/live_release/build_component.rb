@@ -3,16 +3,18 @@
 class V2::LiveRelease::BuildComponent < V2::BaseComponent
   include Memery
 
-  def initialize(build, previous_build: nil, show_number: false, show_build_only: false)
+  def initialize(build, show_number: false, show_build_only: false, show_metadata: true, show_ci: true, show_activity: true, show_commit: true)
     @build = build
     @show_number = show_number
-    @previous_build = previous_build
-    @show_build_only = show_build_only
+    @show_metadata = show_metadata
+    @show_ci = show_ci
+    @show_activity = show_activity
+    @show_commit = show_commit
   end
 
-  attr_reader :build, :previous_build, :show_build_only, :show_number
-  delegate :release_platform_run, :store_submission, :commit, to: :build
-  delegate :external_link, to: :store_submission, allow_nil: true
+  attr_reader :build, :previous_build, :show_build_only, :show_number, :show_metadata, :show_ci, :show_activity, :show_commit
+  delegate :release_platform_run, :commit, :version_name, :artifact, :workflow_run, to: :build
+  delegate :external_url, to: :workflow_run
 
   def build_info
     build.display_name
@@ -22,7 +24,7 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
     commit.short_sha
   end
 
-  # FIXME
+  # TODO: [V2] fix this
   def ci_link
     commit.url
   end
@@ -41,19 +43,20 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
     "#{previous_build.display_name} → #{build.display_name}"
   end
 
-  def submission?
-    store_submission.present?
-  end
-
-  def store_logo
-    "integrations/logo_#{store_submission.provider}.png"
-  end
-
   def last_activity_at
-    ago_in_words(store_submission&.updated_at || build.updated_at)
+    ago_in_words(build.updated_at)
   end
 
   def number
-    "##{rand(50..998)}"
+    "Build ##{build.sequence_number}"
+  end
+
+  def build_number
+    build.build_number || "-"
+  end
+
+  def artifact_name
+    return "-" if artifact.blank?
+    artifact.get_filename
   end
 end

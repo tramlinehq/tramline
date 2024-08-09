@@ -101,7 +101,8 @@ describe Installations::Bitrise::Api, type: :integration do
 
       expected = {
         ci_ref: "d40e1f6c-e3a0-4c37-bbb0-1fa22ecdc8c5",
-        ci_link: "https://app.bitrise.io/build/d40e1f6c-e3a0-4c37-bbb0-1fa22ecdc8c5"
+        ci_link: "https://app.bitrise.io/build/d40e1f6c-e3a0-4c37-bbb0-1fa22ecdc8c5",
+        number: 102
       }
       expect(result).to match(expected)
     end
