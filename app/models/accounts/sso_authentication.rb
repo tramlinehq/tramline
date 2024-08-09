@@ -88,13 +88,13 @@ class Accounts::SsoAuthentication < ApplicationRecord
     email
   end
 
-  def add(invite, full_name, preferred_name)
+  def add(organization, full_name, preferred_name, invite = nil)
     self.user = Accounts::User.find_or_initialize_by(unique_authn_id:) do |user|
       user.full_name = full_name
       user.preferred_name = preferred_name
     end
-    user.memberships.new(organization: invite.organization, role: invite.role)
-    invite.mark_accepted(user) if save
+    user.memberships.new(organization:, role: invite&.role || Accounts::Membership.roles[:viewer])
+    invite.mark_accepted(user) if save && invite.present?
   end
 
   def track_login(remote_ip)

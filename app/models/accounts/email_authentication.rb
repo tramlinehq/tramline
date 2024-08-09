@@ -40,6 +40,19 @@ class Accounts::EmailAuthentication < ApplicationRecord
 
   accepts_nested_attributes_for :user
 
+  def active_for_authentication?
+    super && email_auth_allowed?
+  end
+
+  def inactive_message
+    email_auth_allowed? ? super : :only_sso_allowed
+  end
+
+  def email_auth_allowed?
+    parsed_email_domain = Mail::Address.new(email).domain
+    Accounts::Organization.find_by_sso_domain(parsed_email_domain).blank?
+  end
+
   def organization
     user.organizations.first
   end

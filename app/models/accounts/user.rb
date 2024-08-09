@@ -2,39 +2,22 @@
 #
 # Table name: users
 #
-#  id                     :uuid             not null, primary key
-#  admin                  :boolean          default(FALSE)
-#  confirmation_sent_at   :datetime
-#  confirmation_token     :string
-#  confirmed_at           :datetime
-#  current_sign_in_at     :datetime
-#  current_sign_in_ip     :string
-#  email                  :string           default("")
-#  encrypted_password     :string           default("")
-#  failed_attempts        :integer          default(0), not null
-#  full_name              :string           not null
-#  github_login           :string
-#  last_sign_in_at        :datetime
-#  last_sign_in_ip        :string
-#  locked_at              :datetime
-#  preferred_name         :string
-#  remember_created_at    :datetime
-#  reset_password_sent_at :datetime
-#  reset_password_token   :string
-#  sign_in_count          :integer          default(0), not null
-#  slug                   :string           indexed
-#  unconfirmed_email      :string
-#  unlock_token           :string
-#  created_at             :datetime         not null
-#  updated_at             :datetime         not null
-#  github_id              :string
-#  unique_authn_id        :string           default(""), not null
+#  id              :uuid             not null, primary key
+#  admin           :boolean          default(FALSE)
+#  full_name       :string           not null
+#  github_login    :string
+#  preferred_name  :string
+#  slug            :string           indexed
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#  github_id       :string
+#  unique_authn_id :string           default(""), not null
 #
 class Accounts::User < ApplicationRecord
   extend FriendlyId
   has_paper_trail
 
-  # self.ignored_columns += %w[confirmation_sent_at confirmation_token confirmed_at current_sign_in_at current_sign_in_ip email encrypted_password failed_attempts last_sign_in_at last_sign_in_ip locked_at remember_created_at reset_password_sent_at reset_password_token sign_in_count unconfirmed_email unlock_token]
+  self.ignored_columns += %w[confirmation_sent_at confirmation_token confirmed_at current_sign_in_at current_sign_in_ip email encrypted_password failed_attempts last_sign_in_at last_sign_in_ip locked_at remember_created_at reset_password_sent_at reset_password_token sign_in_count unconfirmed_email unlock_token]
 
   validates :full_name, presence: {message: :not_blank}, length: {maximum: 70, message: :too_long}
   validates :preferred_name, length: {maximum: 70, message: :too_long}
@@ -94,25 +77,13 @@ class Accounts::User < ApplicationRecord
       disallowed_domains.exclude?(parsed_email.domain)
     end
 
-    def valid_sso_email?(email, organization)
-      user = find_via_sso_email(email)
-      return user.organizations.include?(organization) if user
-
-      invite = organization.pending_invites.find_by(email: email)
-      return invite.organization == organization if invite
-
-      false
-    end
-
     def find_or_create_via_sso(email, organization, full_name:, preferred_name:, login_id:)
       existing_user = find_via_sso_email(email)
       return existing_user if existing_user
 
       invite = organization.pending_invites.find_by(email:)
-      return unless invite
-
       sso_auth = Accounts::SsoAuthentication.new(email:, login_id:)
-      sso_auth.add(invite, full_name, preferred_name)
+      sso_auth.add(organization, full_name, preferred_name, invite)
       sso_auth.reload.user if sso_auth.valid?
     end
 
@@ -122,7 +93,7 @@ class Accounts::User < ApplicationRecord
       organization = Accounts::Organization.find_by_sso_domain(parsed_email_domain)
       return unless organization
 
-      Accounts::SsoAuthentication.start_sign_in(organization.sso_tenant_id) if valid_sso_email?(email, organization)
+      Accounts::SsoAuthentication.start_sign_in(organization.sso_tenant_id)
     end
 
     def finish_sign_in_via_sso(code, remote_ip)
