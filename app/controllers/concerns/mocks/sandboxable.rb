@@ -16,7 +16,7 @@ module Mocks::Sandboxable
 
   def mock_prepare_for_store
     ensure_sandboxable
-    @submission.mock_prepare_for_release_for_app_store!
+    @submission.mock_prepare_for_release!
     redirect_back fallback_location: root_path, notice: t(".prepare.success")
   end
 

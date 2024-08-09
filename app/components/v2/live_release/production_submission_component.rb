@@ -104,7 +104,7 @@ class V2::LiveRelease::ProductionSubmissionComponent < V2::BaseComponent
   end
 
   def mock_actions
-    return unless actionable? && submission.submitted_for_review?
+    return unless actionable? && submission.respond_to?(:submitted_for_review?) && submission.submitted_for_review?
 
     content_tag(:div, class: "flex items-center gap-0.5") do
       concat(render(V2::ButtonComponent.new(scheme: :mock,

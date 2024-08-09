@@ -49,7 +49,7 @@ class PlayStoreRollout < StoreRollout
   def automatic_rollout? = false
 
   def start_release!
-    return mock_finish_play_store_rollout! if sandbox_mode?
+    return mock_start_play_store_rollout! if sandbox_mode?
 
     if staged_rollout?
       move_to_next_stage!

@@ -65,13 +65,14 @@ module Sandboxable
 
   def mock_prepare_for_release_for_play_store!
     return unless sandbox_mode?
-
+    update!(status: "preparing") unless preparing?
     finish_prepare!
   end
 
-  def mock_finish_play_store_rollout!
+  def mock_start_play_store_rollout!
     return unless sandbox_mode?
-    complete!
+    update_stage(1)
+    on_start!
   end
 
   def mock_start_app_store_rollout!
@@ -103,7 +104,25 @@ module Sandboxable
   def mock_update_production_build!(build_id)
     return unless sandbox_mode?
     update!(build_id:)
-    mock_prepare_for_release_for_app_store! unless created?
+    return unless created?
+
+    case type
+    when "AppStoreSubmission"
+      mock_prepare_for_release_for_app_store!
+    when "PlayStoreSubmission"
+      mock_prepare_for_release_for_play_store!
+    end
+  end
+
+  def mock_prepare_for_release!
+    return unless sandbox_mode?
+
+    case type
+    when "AppStoreSubmission"
+      mock_prepare_for_release_for_app_store!
+    when "PlayStoreSubmission"
+      mock_prepare_for_release_for_play_store!
+    end
   end
 
   def mock_prepare_for_release_for_app_store!
