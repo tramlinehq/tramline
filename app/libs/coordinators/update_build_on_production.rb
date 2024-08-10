@@ -10,16 +10,19 @@ class Coordinators::UpdateBuildOnProduction
   end
 
   def call
-    return unless @production_release.production?
-    return unless @production_release.inflight?
+    return unless production_release.production?
+    return unless production_release.inflight?
 
-    @production_release.with_lock do
-      return unless @production_release.inflight?
+    with_lock do
+      return unless production_release.inflight?
 
-      if @submission.attach_build(@build)
-        @production_release.update!(build: @build)
-        @submission.retrigger!
+      if submission.attach_build(build)
+        production_release.update!(build:)
+        submission.retrigger!
       end
     end
   end
+
+  attr_reader :submission, :production_release, :build
+  delegate :with_lock, to: :production_release
 end

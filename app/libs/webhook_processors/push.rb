@@ -15,23 +15,34 @@ class WebhookProcessors::Push
     release.with_lock do
       return unless release.committable?
       release.close_pre_release_prs
-      release.start!
+
+      if release.created?
+        release.start!
+        release.release_platform_runs.each(&:start!)
+      end
+
       create_other_commits!
       create_head_commit!
+    end
+
+    # TODO: [V2] move this to trigger release
+    if release.all_commits.size.eql?(1)
+      release.notify!("New release has commenced!", :release_started, release.notification_params)
     end
   end
 
   private
 
-  attr_reader :release, :head_commit, :rest_commits
   delegate :train, to: :release
+  attr_reader :release, :head_commit, :rest_commits
 
   def create_head_commit!
-    if release.organization.product_v2?
-      commit = Commit.find_or_create_by!(commit_params(head_commit))
+    commit = Commit.find_or_create_by!(commit_params(head_commit))
+
+    if train.product_v2?
       Coordinators::Signals.new_commit_has_landed!(release, commit)
     else
-      Commit.find_or_create_by!(commit_params(head_commit)).trigger!
+      commit.trigger!
     end
   end
 

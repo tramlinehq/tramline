@@ -13,7 +13,7 @@ class ReleasesController < SignedInApplicationController
   end
 
   def show
-    redirect_to overview_release_path(@release) and return if current_organization.product_v2?
+    redirect_to overview_release_path(@release) and return if @train.product_v2?
 
     set_commits
     set_pull_requests
@@ -117,8 +117,7 @@ class ReleasesController < SignedInApplicationController
     @release = Release.friendly.find(params[:id])
 
     if @release.ready_to_be_finalized?
-      @release.force_finalize = post_release_params[:force_finalize]
-      @release.start_post_release_phase!
+      Action.complete_release!(@release)
       redirect_back fallback_location: root_path, notice: "Performing post-release steps."
     else
       redirect_back fallback_location: root_path, notice: "Train is still running."

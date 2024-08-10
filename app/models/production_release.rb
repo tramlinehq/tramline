@@ -34,8 +34,21 @@ class ProductionRelease < ApplicationRecord
     stale: "stale",
     finished: "finished"
   }
+  INITIAL_STATE = STATES[:inflight]
 
   enum status: STATES
+
+  def mark_as_stale!
+    return if finished?
+    update!(status: STATES[:stale])
+  end
+
+  def rollout_complete!(_)
+    with_lock do
+      update!(status: STATES[:finished])
+      Coordinators::Signals.production_release_is_complete!(release_platform_run)
+    end
+  end
 
   def actionable?
     inflight? || active?
@@ -60,18 +73,6 @@ class ProductionRelease < ApplicationRecord
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
     V2::FetchHealthMetricsJob.perform_later(id)
-  end
-
-  def mark_as_stale!
-    return if finished?
-    update!(status: STATES[:stale])
-  end
-
-  def rollout_complete!(_)
-    with_lock do
-      update!(status: STATES[:finished])
-      Coordinators::Signals.production_release_is_complete!(release_platform_run)
-    end
   end
 
   def beyond_monitoring_period?

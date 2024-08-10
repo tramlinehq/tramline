@@ -139,6 +139,10 @@ class Train < ApplicationRecord
     Flipper.enabled?(:one_percent_beta_release, self)
   end
 
+  def product_v2?
+    Flipper.enabled?(:product_v2, self)
+  end
+
   def version_ahead?(release)
     version_current.to_semverish >= release.release_version.to_semverish
   end
@@ -355,7 +359,7 @@ class Train < ApplicationRecord
     branching_strategy == "almost_trunk"
   end
 
-  def create_release!(branch_name, tag_name)
+  def create_vcs_release!(branch_name, tag_name)
     return false unless active?
     vcs_provider.create_release!(tag_name, branch_name)
   end

@@ -44,6 +44,17 @@ class PreProdRelease < ApplicationRecord
 
   enum status: STATES
 
+  def mark_as_stale!
+    with_lock do
+      return if finished?
+      update!(status: STATES[:stale])
+    end
+  end
+
+  def fail!
+    update!(status: STATES[:failed])
+  end
+
   def actionable? = created?
 
   def workflow_run
@@ -55,23 +66,6 @@ class PreProdRelease < ApplicationRecord
   end
 
   def production? = false
-
-  def mark_as_stale!
-    with_lock do
-      return if finished?
-
-      update!(status: STATES[:stale])
-      workflow_run.cancel! if workflow_run&.may_cancel?
-    end
-  end
-
-  def fail!
-    update!(status: STATES[:failed])
-  end
-
-  def trigger_workflow!(workflow, auto_promote: false)
-    WorkflowRun.create_and_trigger!(workflow, self, commit, release_platform_run, auto_promote:)
-  end
 
   def trigger_submissions!
     return unless actionable?
@@ -138,17 +132,11 @@ class PreProdRelease < ApplicationRecord
     previous.previous_successful
   end
 
-  def new_build_available?
-    false
-  end
+  def new_build_available? = false
 
-  def carried_over?
-    false
-  end
+  def carried_over? = false
 
-  def new_commit_available?
-    false
-  end
+  def new_commit_available? = false
 
   private
 

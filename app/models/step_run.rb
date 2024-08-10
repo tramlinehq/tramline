@@ -511,6 +511,6 @@ class StepRun < ApplicationRecord
   end
 
   def finalize_release
-    release_platform_run.finish! if release_platform_run.finalizable?
+    Coordinators::FinishPlatformRun.call(release_platform_run) if release_platform_run.finalizable?
   end
 end

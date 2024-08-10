@@ -66,36 +66,34 @@ class ReleasePlatformRun < ApplicationRecord
 
   enum status: STATES
 
-  aasm safe_state_machine_params do
-    state :created, initial: true
-    state(*STATES.keys)
-
-    event :start do
-      transitions from: [:created, :on_track], to: :on_track
-    end
-
-    event :stop, after_commit: :on_stop! do
-      before { self.stopped_at = Time.current }
-      transitions from: [:created, :on_track], to: :stopped
-    end
-
-    event :finish_v2, after_commit: :on_finish_v2! do
-      before { self.completed_at = Time.current }
-      transitions from: :on_track, to: :finished
-    end
-
-    event :finish, after_commit: :on_finish! do
-      before { self.completed_at = Time.current }
-      after { finish_release }
-      transitions from: :on_track, to: :finished
-    end
-  end
-
   after_create :set_default_release_metadata
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
   delegate :all_commits, :original_release_version, :hotfix?, :versioning_strategy, :organization, :release_branch, to: :release
   delegate :steps, :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, :default_locale, :ci_cd_provider, to: :release_platform
+
+  def start!
+    with_lock do
+      return unless created?
+      update!(status: STATES[:on_track])
+    end
+  end
+
+  def stop!
+    with_lock do
+      return if finished?
+      update!(status: STATES[:stopped], stopped_at: Time.current)
+    end
+
+    event_stamp!(reason: :stopped, kind: :notice, data: {version: release_version})
+  end
+
+  def finish!
+    with_lock do
+      return unless on_track?
+      update!(status: STATES[:finished], completed_at: Time.current)
+    end
+  end
 
   def metadata_for(language)
     locale_tag = AppStores::Localizable.supported_locale_tag(language, :ios)
@@ -219,28 +217,16 @@ class ReleasePlatformRun < ApplicationRecord
     latest_internal_release(finished: true).present?
   end
 
-  def latest_internal_release(finished: false)
-    (finished ? internal_releases.finished : internal_releases).order(created_at: :desc).first
-  end
-
   def latest_beta_release(finished: false)
     (finished ? beta_releases.finished : beta_releases).order(created_at: :desc).first
   end
 
+  def latest_internal_release(finished: false)
+    (finished ? internal_releases.finished : internal_releases).order(created_at: :desc).first
+  end
+
   def latest_production_release
     production_releases.order(created_at: :desc).first
-  end
-
-  def older_internal_releases
-    internal_releases.inactive.order(created_at: :desc)
-  end
-
-  def older_beta_releases
-    beta_releases.inactive.order(created_at: :desc)
-  end
-
-  def older_production_releases
-    production_releases.stale.order(created_at: :desc)
   end
 
   def inflight_store_rollout
@@ -253,6 +239,18 @@ class ReleasePlatformRun < ApplicationRecord
 
   def finished_store_rollout
     finished_production_release&.store_rollout
+  end
+
+  def older_internal_releases
+    internal_releases.inactive.order(created_at: :desc)
+  end
+
+  def older_beta_releases
+    beta_releases.inactive.order(created_at: :desc)
+  end
+
+  def older_production_releases
+    production_releases.stale.order(created_at: :desc)
   end
 
   # TODO: [V2] remove this
@@ -313,14 +311,6 @@ class ReleasePlatformRun < ApplicationRecord
 
     locale = default_locale || ReleaseMetadata::DEFAULT_LOCALE
     release_metadata.create!(base.merge(locale: locale, default_locale: true))
-  end
-
-  def finish_release
-    if release.ready_to_be_finalized?
-      release.start_post_release_phase!
-    else
-      release.partially_finish!
-    end
   end
 
   def correct_version!
@@ -452,7 +442,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def finalizable?
-    may_finish? && finished_steps?
+    on_track? && finished_steps?
   end
 
   def next_step
@@ -498,21 +488,6 @@ class ReleasePlatformRun < ApplicationRecord
 
   def tag_url
     train.vcs_provider&.tag_url(app.config&.code_repository_name, tag_name)
-  end
-
-  def on_finish!
-    ReleasePlatformRuns::CreateTagJob.perform_later(id) if train.tag_platform_at_release_end?
-    event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
-    app.refresh_external_app
-  end
-
-  def on_finish_v2!
-    ReleasePlatformRuns::CreateTagJob.perform_later(@release_platform_run.id) if train.tag_platform_at_release_end?
-    event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
-  end
-
-  def on_stop!
-    event_stamp!(reason: :stopped, kind: :notice, data: {version: release_version})
   end
 
   # recursively attempt to create a release tag until a unique one gets created

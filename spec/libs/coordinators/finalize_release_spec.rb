@@ -1,11 +1,11 @@
 require "rails_helper"
 
-describe Triggers::PostRelease do
+describe Coordinators::FinalizeRelease do
   describe ".call" do
     [
-      %w[almost_trunk Triggers::PostRelease::AlmostTrunk],
-      %w[release_backmerge Triggers::PostRelease::ReleaseBackMerge],
-      %w[parallel_working Triggers::PostRelease::ParallelBranches]
+      %w[almost_trunk Coordinators::FinalizeRelease::AlmostTrunk],
+      %w[release_backmerge Coordinators::FinalizeRelease::ReleaseBackMerge],
+      %w[parallel_working Coordinators::FinalizeRelease::ParallelBranches]
     ].each do |branching_strategy, post_release_class|
       context "Given branching strategy – #{branching_strategy}" do
         let(:train) { create(:train, "with_#{branching_strategy}".to_sym) }
@@ -29,6 +29,16 @@ describe Triggers::PostRelease do
           expect(release.reload.post_release_failed?).to be(true)
         end
       end
+    end
+
+    it "updates the train version" do
+      train = create(:train, version_seeded_with: "9.59.3")
+      run = create(:release, :post_release_started, train:)
+
+      described_class.call(run)
+      train.reload
+
+      expect(train.version_current).to eq("9.60.0")
     end
   end
 end

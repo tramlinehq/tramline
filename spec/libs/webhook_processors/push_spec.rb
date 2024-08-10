@@ -144,7 +144,7 @@ describe WebhookProcessors::Push do
         create_deployment_tree(:android, step_traits: [:release], train_traits: [:with_build_queue])
       }
       let(:train) { factory_tree[:train] }
-      let(:release) { create(:release, :on_track, train:) }
+      let(:release) { create(:release, :created, train:) }
 
       before do
         train.update!(build_queue_size: queue_size)

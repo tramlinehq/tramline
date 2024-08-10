@@ -586,47 +586,6 @@ describe ReleasePlatformRun do
     end
   end
 
-  describe "#on_finish!" do
-    it "schedules a platform-specific tag job if cross-platform app" do
-      app = create(:app, :cross_platform)
-      train = create(:train, app:, tag_platform_releases: true)
-      release = create(:release, train:)
-      release_platform = create(:release_platform, train:)
-      release_platform_run = create(:release_platform_run, :on_track, release:, release_platform:)
-      allow(ReleasePlatformRuns::CreateTagJob).to receive(:perform_later)
-
-      release_platform_run.finish!
-
-      expect(ReleasePlatformRuns::CreateTagJob).to have_received(:perform_later).with(release_platform_run.id).once
-    end
-
-    it "does not schedule a platform-specific tag job if cross-platform app tagging all store releases" do
-      app = create(:app, :cross_platform)
-      train = create(:train, app:, tag_platform_releases: true, tag_all_store_releases: true)
-      release = create(:release, train:)
-      release_platform = create(:release_platform, train:)
-      release_platform_run = create(:release_platform_run, :on_track, release:, release_platform:)
-      allow(ReleasePlatformRuns::CreateTagJob).to receive(:perform_later)
-
-      release_platform_run.finish!
-
-      expect(ReleasePlatformRuns::CreateTagJob).not_to have_received(:perform_later).with(release_platform_run.id)
-    end
-
-    it "does not schedule a platform-specific tag job for single-platform apps" do
-      app = create(:app, :android)
-      train = create(:train, app:)
-      release = create(:release, train:)
-      release_platform = create(:release_platform, train:)
-      release_platform_run = create(:release_platform_run, :on_track, release:, release_platform:)
-      allow(ReleasePlatformRuns::CreateTagJob).to receive(:perform_later)
-
-      release_platform_run.finish!
-
-      expect(ReleasePlatformRuns::CreateTagJob).not_to have_received(:perform_later).with(release_platform_run.id)
-    end
-  end
-
   describe "#create_tag!" do
     let(:release_platform) { create(:release_platform) }
     let(:step) { create(:step, release_platform:) }

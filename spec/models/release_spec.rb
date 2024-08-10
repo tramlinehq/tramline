@@ -226,7 +226,7 @@ describe Release do
     end
   end
 
-  describe "#create_release!" do
+  describe "#create_vcs_release!" do
     let(:train) { create(:train, :active) }
     let(:release_platform) { create(:release_platform, train:) }
     let(:step) { create(:step, release_platform:) }
@@ -238,7 +238,7 @@ describe Release do
       commit = create(:commit, :without_trigger, release:)
       create(:step_run, release_platform_run:, commit:)
 
-      release.create_release!
+      release.create_vcs_release!
       expect(release.tag_name).to eq("v1.2.3")
     end
 
@@ -247,7 +247,7 @@ describe Release do
       commit = create(:commit, :without_trigger, release:)
       create(:step_run, release_platform_run:, commit:)
 
-      release.create_release!
+      release.create_vcs_release!
       expect(release.tag_name).to eq("v1.2.3-#{commit.short_sha}")
     end
 
@@ -259,7 +259,7 @@ describe Release do
         commit = create(:commit, :without_trigger, release:)
         create(:step_run, release_platform_run:, commit:)
 
-        release.create_release!
+        release.create_vcs_release!
         expect(release.tag_name).to eq("v1.2.3-#{commit.short_sha}-#{now}")
       end
     end
@@ -273,7 +273,7 @@ describe Release do
         commit = create(:commit, :without_trigger, release:)
         create(:step_run, release_platform_run:, commit:)
 
-        release.create_release!
+        release.create_vcs_release!
         expect(release.tag_name).to eq("v1.2.3-#{suffix}")
       end
 
@@ -282,7 +282,7 @@ describe Release do
         commit = create(:commit, :without_trigger, release:)
         create(:step_run, release_platform_run:, commit:)
 
-        release.create_release!
+        release.create_vcs_release!
         expect(release.tag_name).to eq("v1.2.3-#{suffix}-#{commit.short_sha}")
       end
 
@@ -294,7 +294,7 @@ describe Release do
           commit = create(:commit, :without_trigger, release:)
           create(:step_run, release_platform_run:, commit:)
 
-          release.create_release!
+          release.create_vcs_release!
           expect(release.tag_name).to eq("v1.2.3-#{suffix}-#{commit.short_sha}-#{now}")
         end
       end
@@ -308,44 +308,10 @@ describe Release do
         commit = create(:commit, :without_trigger, release:)
         create(:step_run, release_platform_run:, commit:)
 
-        release.create_release!
+        release.create_vcs_release!
         expect_any_instance_of(GithubIntegration).not_to receive(:create_release!)
         expect(release.tag_name).to be_nil
       end
-    end
-  end
-
-  describe "#stop!" do
-    it "updates the train version if partially finished" do
-      train = create(:train, version_seeded_with: "9.59.3")
-      run = create(:release, :partially_finished, train:)
-
-      run.stop!
-      train.reload
-
-      expect(train.version_current).to eq("9.60.0")
-    end
-
-    it "does not update the train version if properly stopped" do
-      train = create(:train, version_seeded_with: "9.59.3")
-      run = create(:release, :post_release_started, train:)
-
-      run.stop!
-      train.reload
-
-      expect(train.version_current).to eq("9.59.3")
-    end
-  end
-
-  describe "#finish!" do
-    it "updates the train version" do
-      train = create(:train, version_seeded_with: "9.59.3")
-      run = create(:release, :post_release_started, train:)
-
-      run.finish!
-      train.reload
-
-      expect(train.version_current).to eq("9.60.0")
     end
   end
 

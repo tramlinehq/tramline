@@ -37,8 +37,6 @@ class Release < ApplicationRecord
   self.implicit_order_column = :scheduled_at
   self.ignored_columns += ["release_version"]
 
-  TERMINAL_STATES = [:finished, :stopped, :stopped_after_partial_finish]
-  FAILED_STATES = [:post_release_failed]
   DEFAULT_INTERNAL_NOTES = {
     "ops" => [
       {"insert" => "Write your internal notes, tasks lists, description, pretty much anything really."},
@@ -83,6 +81,9 @@ class Release < ApplicationRecord
     partially_finished: "partially_finished",
     stopped_after_partial_finish: "stopped_after_partial_finish"
   }
+  FAILED_STATES = %w[post_release_failed]
+  FINALIZE_STATES = %w[on_track post_release_failed partially_finished]
+  TERMINAL_STATES = %w[stopped stopped_after_partial_finish finished]
   SECTIONS = {
     overview: {title: "Overview"},
     changeset_tracking: {title: "Changeset tracking"},
@@ -94,7 +95,8 @@ class Release < ApplicationRecord
     screenshots: {title: "Screenshots"},
     approvals: {title: "Approvals"},
     app_submission: {title: "App submission"},
-    rollout_to_users: {title: "Rollout to users"}
+    rollout_to_users: {title: "Rollout to users"},
+    wrap_up: {title: "Release summary"}
   }
   FULL_ROLLOUT_VALUE = BigDecimal("100")
 
@@ -124,18 +126,16 @@ class Release < ApplicationRecord
     release: "release"
   }
 
-  aasm safe_state_machine_params do
+  aasm safe_state_machine_params(with_lock: false) do
     state :created, initial: true
     state(*STATES.keys)
 
-    event :start, after_commit: :on_start! do
-      after { start_release_platform_runs! }
-      transitions from: [:created, :on_track], to: :on_track
-      transitions from: [:partially_finished], to: :partially_finished
+    event :start do
+      transitions from: :created, to: :on_track
     end
 
-    event :start_post_release_phase, after_commit: -> { Releases::PostReleaseJob.perform_later(id, force_finalize) } do
-      transitions from: [:on_track, :post_release_failed, :partially_finished], to: :post_release_started, guard: :ready_to_be_finalized?
+    event :start_post_release_phase do
+      transitions from: [:on_track, :post_release_failed, :partially_finished], to: :post_release_started
     end
 
     event :fail_post_release_phase do
@@ -146,14 +146,13 @@ class Release < ApplicationRecord
       transitions from: :on_track, to: :partially_finished
     end
 
-    event :stop, after_commit: :on_stop! do
+    event :stop do
       before { self.stopped_at = Time.current }
-      after { stop_runs }
       transitions from: :partially_finished, to: :stopped_after_partial_finish
       transitions from: [:created, :on_track, :post_release_started, :post_release_failed], to: :stopped
     end
 
-    event :finish, after_commit: :on_finish! do
+    event :finish do
       before { self.completed_at = Time.current }
       transitions from: :post_release_started, to: :finished
     end
@@ -161,14 +160,16 @@ class Release < ApplicationRecord
 
   before_create :set_version
   before_create :set_internal_notes
-  after_create :create_platform_runs
+  after_create :create_platform_runs!
   after_create :create_active_build_queue, if: -> { train.build_queue_enabled? }
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
   after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
+
+  # TODO: [V2] move this out to signals
   after_create_commit -> { RefreshReportsJob.perform_later(hotfixed_from.id) }, if: -> { hotfix? && hotfixed_from.present? }
 
-  attr_accessor :has_major_bump, :force_finalize, :hotfix_platform, :custom_version
+  attr_accessor :has_major_bump, :hotfix_platform, :custom_version
   friendly_id :human_slug, use: :slugged
 
   delegate :versioning_strategy, :patch_version_bump_only, to: :train
@@ -211,6 +212,7 @@ class Release < ApplicationRecord
     release_platform_runs.all?(&:production_release_happened?)
   end
 
+  # TODO: [V2] move this out to signals
   def finish_after_partial_finish!
     with_lock do
       return unless partially_finished?
@@ -283,7 +285,7 @@ class Release < ApplicationRecord
   end
 
   def active?
-    !status.to_sym.in?(TERMINAL_STATES)
+    TERMINAL_STATES.exclude?(status)
   end
 
   def queue_commit?
@@ -292,10 +294,6 @@ class Release < ApplicationRecord
 
   def release_changes?
     all_commits.size > 1
-  end
-
-  def stoppable?
-    may_stop?
   end
 
   def end_time
@@ -340,14 +338,14 @@ class Release < ApplicationRecord
 
   # recursively attempt to create a release until a unique one gets created
   # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
-  def create_release!(input_tag_name = base_tag_name)
+  def create_vcs_release!(input_tag_name = base_tag_name)
     return unless train.tag_releases?
     return if tag_name.present?
-    train.create_release!(release_branch, input_tag_name)
+    train.create_vcs_release!(release_branch, input_tag_name)
     update!(tag_name: input_tag_name)
     event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: vcs_provider.display, tag: tag_name})
   rescue Installations::Errors::TagReferenceAlreadyExists, Installations::Errors::TaggedReleaseAlreadyExists
-    create_release!(unique_tag_name(input_tag_name))
+    create_vcs_release!(unique_tag_name(input_tag_name))
   end
 
   def branch_url
@@ -489,7 +487,7 @@ class Release < ApplicationRecord
   end
 
   def failure_anywhere?
-    status.to_sym.in?(FAILED_STATES) || release_platform_runs.any?(&:failure?)
+    FAILED_STATES.include?(status) || release_platform_runs.any?(&:failure?)
   end
 
   def previous_release
@@ -505,6 +503,10 @@ class Release < ApplicationRecord
       .first
   end
 
+  def update_train_version!
+    train.update!(version_current: release_version)
+  end
+
   private
 
   def base_tag_name
@@ -514,27 +516,16 @@ class Release < ApplicationRecord
     tag
   end
 
-  def create_platform_runs
+  def create_platform_runs!
     release_platforms.each do |release_platform|
       next if hotfix? && hotfix_platform.present? && hotfix_platform != release_platform.platform
       release_platform_runs.create!(
+        status: ReleasePlatformRun::STATES[:created],
         code_name: Haikunator.haikunate(100),
         scheduled_at:,
         release_version: original_release_version,
         release_platform: release_platform
       )
-    end
-  end
-
-  def start_release_platform_runs!
-    release_platform_runs.each do |run|
-      run.start! unless run.finished?
-    end
-  end
-
-  def stop_runs
-    release_platform_runs.each do |run|
-      run.stop! if run.may_stop?
     end
   end
 
@@ -544,35 +535,15 @@ class Release < ApplicationRecord
       return
     end
 
-    self.original_release_version = if hotfix?
-      train.hotfix_from&.next_version(patch_only: hotfix?)
-    else
-      (train.ongoing_release.presence || train.hotfix_release.presence || train).next_version(major_only: has_major_bump)
-    end
+    self.original_release_version =
+      if hotfix?
+        train.hotfix_from&.next_version(patch_only: hotfix?)
+      else
+        (train.ongoing_release.presence || train.hotfix_release.presence || train).next_version(major_only: has_major_bump)
+      end
   end
 
   def set_internal_notes
     self.internal_notes = DEFAULT_INTERNAL_NOTES.to_json
-  end
-
-  def on_start!
-    notify!("New release has commenced!", :release_started, notification_params) if all_commits.size.eql?(1)
-  end
-
-  def on_stop!
-    update_train_version if stopped_after_partial_finish?
-    event_stamp!(reason: :stopped, kind: :notice, data: {version: release_version})
-    notify!("Release has stopped!", :release_stopped, notification_params)
-  end
-
-  def on_finish!
-    update_train_version
-    event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
-    notify!("Release has finished!", :release_ended, notification_params.merge(finalize_phase_metadata))
-    RefreshReportsJob.perform_later(id)
-  end
-
-  def update_train_version
-    train.update!(version_current: release_version)
   end
 end

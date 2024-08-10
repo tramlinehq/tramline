@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-describe Coordinators::Signals do
+describe Coordinators do
   context "when condition" do
     it "succeeds" do
       skip "not implemented yet"

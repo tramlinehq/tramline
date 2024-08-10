@@ -113,7 +113,7 @@
           b.with_icon("v2/list_checks.svg")
         end %>
       <% end %>
-      <% if @release.stoppable? %>
+      <% if @release.active? %>
         <%= render V2::ButtonComponent.new(
           scheme: :danger,
           type: :button,

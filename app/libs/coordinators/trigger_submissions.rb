@@ -10,10 +10,12 @@ class Coordinators::TriggerSubmissions
   end
 
   def call
-    @workflow_run.build.attach_artifact!
-    @workflow_run.triggering_release.trigger_submissions!
+    workflow_run.build.attach_artifact!
+    workflow_run.triggering_release.trigger_submissions!
   rescue => ex
     elog(ex)
-    @workflow_run.triggering_release.fail!
+    workflow_run.triggering_release.fail!
   end
+
+  attr_reader :workflow_run
 end

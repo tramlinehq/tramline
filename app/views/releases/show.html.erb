@@ -43,7 +43,7 @@
     <% end %>
   <% end %>
 
-  <% if @release.stoppable? %>
+  <% if @release.active? %>
     <% container.with_action do %>
       <%= render V2::ButtonComponent.new(
         scheme: :danger,

@@ -46,7 +46,7 @@ class Coordinators::FinalizeRelease::AlmostTrunk
   end
 
   def create_tag
-    GitHub::Result.new { release.create_release! }
+    GitHub::Result.new { release.create_vcs_release! }
   end
 
   def pr_title

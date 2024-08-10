@@ -74,42 +74,43 @@ class WorkflowRun < ApplicationRecord
     state :created, initial: true
     state(*STATES.keys)
 
-    event :initiate, after_commit: :after_initiate do
+    event :initiate, after_commit: :on_initiate do
       transitions from: :created, to: :triggering
     end
 
-    event :initiated, after_commit: :after_initiation do
+    event :initiated, after_commit: :on_initiation! do
       transitions from: :triggering, to: :triggered
     end
 
-    event :found, after_commit: :after_found do
+    event :found, after_commit: :on_found! do
       transitions from: :triggered, to: :started
     end
 
-    event :unavailable, after_commit: :after_unavailable do
+    event :unavailable, after_commit: :on_unavailable! do
       transitions from: [:created, :triggered], to: :unavailable
     end
 
-    event :fail, after_commit: :after_fail do
+    event :fail, after_commit: :on_fail! do
       transitions from: :started, to: :failed
     end
 
-    event :halt, after_commit: :after_halt do
+    event :halt, after_commit: :on_halt! do
       transitions from: :started, to: :halted
     end
 
-    event :retry, after_commit: :after_retry do
+    event :retry, after_commit: :on_retry! do
       transitions from: [:failed, :halted], to: :triggering
     end
 
-    event :finish, after_commit: :after_finish do
+    event :finish, after_commit: :on_finish! do
       transitions from: :started, to: :finished
     end
 
-    event :cancel, after_commit: :after_cancel do
+    event :cancel, after_commit: :on_cancel! do
       transitions from: IN_PROGRESS, to: :cancelling
       transitions from: NOT_STARTED, to: :cancelled_before_start
       transitions from: :cancelling, to: :cancelled
+      transitions from: :finished, to: :finished
     end
   end
 
@@ -141,7 +142,7 @@ class WorkflowRun < ApplicationRecord
     external_id.present?
   end
 
-  def cancel_workflow!
+  def cancel_external_workflow!
     return unless workflow_found?
     ci_cd_provider.cancel_workflow_run!(external_id)
   end
@@ -194,7 +195,7 @@ class WorkflowRun < ApplicationRecord
 
   def workflow_inputs
     data = {version_code: build.build_number, build_version: release_version}
-    data[:build_notes] = triggering_release.tester_notes if organization.build_notes_in_workflow? # TODO: deprecate this feature flag
+    data[:build_notes] = triggering_release.tester_notes if organization.build_notes_in_workflow? # TODO: [v2] deprecate this feature flag
     data
   end
 
@@ -214,11 +215,11 @@ class WorkflowRun < ApplicationRecord
     ci_cd_provider.find_workflow_run(conf.id, release_branch, commit_hash)
   end
 
-  def after_initiate
+  def on_initiate!
     WorkflowRuns::TriggerJob.perform_later(id)
   end
 
-  def after_initiation
+  def on_initiation!
     event_stamp!(reason: :ci_triggered, kind: :notice, data: stamp_data)
     # TODO: [V2] notify triggered
     # notify!("Step has been triggered!", :step_started, notification_params)
@@ -227,35 +228,36 @@ class WorkflowRun < ApplicationRecord
     WorkflowRuns::FindJob.perform_async(id)
   end
 
-  def after_found
+  def on_found!
     WorkflowRuns::PollRunStatusJob.perform_later(id)
   end
 
-  def after_retry
+  def on_retry!
     WorkflowRuns::TriggerJob.perform_later(id, retrigger: true)
   end
 
-  def after_unavailable
+  def on_unavailable!
     # TODO: [V2] notify unavailable
     # notify_on_failure!("Could not find the CI workflow!")
   end
 
-  def after_fail
+  def on_fail!
     event_stamp!(reason: :ci_workflow_failed, kind: :error, data: stamp_data)
     # TODO: [V2] notify failure
   end
 
-  def after_halt
+  def on_halt!
     event_stamp!(reason: :ci_workflow_halted, kind: :error, data: stamp_data)
     # TODO: [V2] notify halt
   end
 
-  def after_finish
+  def on_finish!
     event_stamp!(reason: :ci_finished, kind: :success, data: stamp_data)
     Coordinators::Signals.workflow_run_finished!(id)
   end
 
-  def after_cancel
+  def on_cancel!
+    return unless cancelling?
     WorkflowRuns::CancelJob.perform_later(id)
   end
 

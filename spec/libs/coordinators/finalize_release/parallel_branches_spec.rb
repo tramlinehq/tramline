@@ -1,6 +1,6 @@
 require "rails_helper"
 
-describe Triggers::PostRelease::ParallelBranches do
+describe Coordinators::FinalizeRelease::ParallelBranches do
   let(:release) { create(:release_platform_run, branch_name: "production") }
 
   it ".call" do
