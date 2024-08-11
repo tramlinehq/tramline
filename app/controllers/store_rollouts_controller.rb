@@ -15,7 +15,7 @@ class StoreRolloutsController < SignedInApplicationController
   end
 
   def start
-    if Coordinators::Signals.start_the_store_rollout!(@store_rollout).ok?
+    if Action.start_the_store_rollout!(@store_rollout).ok?
       redirect_back fallback_location: root_path, notice: t(".start.success")
     else
       redirect_back fallback_location: root_path, flash: {error: t(".start.failure")}
@@ -23,7 +23,7 @@ class StoreRolloutsController < SignedInApplicationController
   end
 
   def increase
-    if Coordinators::Signals.increase_the_store_rollout!(@store_rollout).ok?
+    if Action.increase_the_store_rollout!(@store_rollout).ok?
       redirect_back fallback_location: root_path, notice: t(".increase.success")
     else
       redirect_back fallback_location: root_path, flash: {error: t(".increase.failure")}
@@ -31,7 +31,7 @@ class StoreRolloutsController < SignedInApplicationController
   end
 
   def pause
-    if Coordinators::Signals.pause_the_store_rollout!(@store_rollout).ok?
+    if Action.pause_the_store_rollout!(@store_rollout).ok?
       redirect_back fallback_location: root_path, notice: t(".pause.success")
     else
       redirect_back fallback_location: root_path, flash: {error: t(".pause.failure")}
@@ -39,7 +39,7 @@ class StoreRolloutsController < SignedInApplicationController
   end
 
   def resume
-    if Coordinators::Signals.resume_the_store_rollout!(@store_rollout).ok?
+    if Action.resume_the_store_rollout!(@store_rollout).ok?
       redirect_back fallback_location: root_path, notice: t(".resume.success")
     else
       redirect_back fallback_location: root_path, flash: {error: t(".resume.failure")}
@@ -47,7 +47,7 @@ class StoreRolloutsController < SignedInApplicationController
   end
 
   def halt
-    if Coordinators::Signals.halt_the_store_rollout!(@store_rollout).ok?
+    if Action.halt_the_store_rollout!(@store_rollout).ok?
       redirect_back fallback_location: root_path, notice: t(".halt.success")
     else
       redirect_back fallback_location: root_path, flash: {error: t(".halt.failure")}
@@ -55,7 +55,7 @@ class StoreRolloutsController < SignedInApplicationController
   end
 
   def fully_release
-    if Coordinators::Signals.fully_release_the_store_rollout!(@store_rollout).ok?
+    if Action.fully_release_the_store_rollout!(@store_rollout).ok?
       redirect_back fallback_location: root_path, notice: t(".fully_release.success")
     else
       redirect_back fallback_location: root_path, flash: {error: t(".fully_release.failure")}

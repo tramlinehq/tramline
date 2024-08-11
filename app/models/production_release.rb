@@ -13,7 +13,6 @@
 #
 class ProductionRelease < ApplicationRecord
   include Loggable
-  include Coordinatable
   RELEASE_MONITORING_PERIOD_IN_DAYS = 15
 
   belongs_to :release_platform_run
@@ -46,7 +45,7 @@ class ProductionRelease < ApplicationRecord
   def rollout_complete!(_)
     with_lock do
       update!(status: STATES[:finished])
-      Coordinators::Signals.production_release_is_complete!(release_platform_run)
+      Signal.production_release_is_complete!(release_platform_run)
     end
   end
 

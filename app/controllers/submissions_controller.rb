@@ -8,7 +8,7 @@ class SubmissionsController < SignedInApplicationController
   def trigger
     return mock_trigger_submission if sandbox_mode?
 
-    if (result = Coordinators::Signals.trigger_submission!(@submission)).ok?
+    if (result = Action.trigger_submission!(@submission)).ok?
       redirect_back fallback_location: fallback_path, notice: t(".trigger.success")
     else
       redirect_back fallback_location: fallback_path, flash: {error: t(".trigger.failure", errors: result.error.message)}

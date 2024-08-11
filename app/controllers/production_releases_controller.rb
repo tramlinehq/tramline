@@ -5,7 +5,7 @@ class ProductionReleasesController < SignedInApplicationController
   def create
     build_id = default_params[:build_id]
 
-    result = Coordinators::Signals.start_new_production_release!(@release_platform_run, build_id)
+    result = Action.start_new_production_release!(@release_platform_run, build_id)
     if result.ok?
       redirect_back fallback_location: root_path, notice: t(".success")
     else

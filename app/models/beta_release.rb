@@ -20,7 +20,7 @@ class BetaRelease < PreProdRelease
   def finish!
     with_lock do
       update!(status: STATES[:finished])
-      Coordinators::Signals.beta_release_is_finished!(build)
+      Signal.beta_release_is_finished!(build)
     end
   end
 

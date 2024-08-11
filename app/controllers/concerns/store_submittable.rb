@@ -4,7 +4,7 @@ module StoreSubmittable
   def update
     return mock_update_production_build(build_id) if sandbox_mode?
 
-    if (result = Coordinators::Signals.update_production_build!(@submission, build_id)).ok?
+    if (result = Action.update_production_build!(@submission, build_id)).ok?
       redirect_back fallback_location: root_path, notice: t(".update.success")
     else
       redirect_back fallback_location: root_path, flash: {error: t(".update.failure", errors: result.error.message)}
@@ -14,7 +14,7 @@ module StoreSubmittable
   def prepare
     return mock_prepare_for_store if sandbox_mode?
 
-    if (result = Coordinators::Signals.prepare_production_submission!(@submission)).ok?
+    if (result = Action.prepare_production_submission!(@submission)).ok?
       redirect_back fallback_location: root_path, notice: t(".prepare.success")
     else
       redirect_back fallback_location: root_path, flash: {error: t(".prepare.failure", errors: result.error.message)}

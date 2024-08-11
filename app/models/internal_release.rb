@@ -18,7 +18,7 @@ class InternalRelease < PreProdRelease
   def finish!
     with_lock do
       update!(status: STATES[:finished])
-      Coordinators::Signals.internal_release_finished!(build)
+      Signal.internal_release_finished!(build)
     end
   end
 end
