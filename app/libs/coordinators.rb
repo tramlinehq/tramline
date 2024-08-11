@@ -45,11 +45,12 @@ module Coordinators
   # metadata
 
   module Signals
-    # TODO: [V2] push processing should be done in a signal
-    def self.new_commit_has_landed!(release, commit)
-      # check if patchfix/hotfix etc
-      # check if we need to trigger rc
-      Coordinators::ProcessCommit.call(release, commit)
+    def self.commits_have_landed!(release, head_commit, rest_commits)
+      Coordinators::ProcessCommits.call(release, head_commit, rest_commits)
+    end
+
+    def self.build_queue_can_be_applied!(build_queue)
+      Coordinators::ApplyBuildQueue.call(build_queue)
     end
 
     def self.workflow_run_finished!(workflow_run_id)
@@ -86,8 +87,16 @@ module Coordinators
       # NewRelease.call(release)
     end
 
-    def self.apply_build_queue!(release, build_queue)
-      # TODO: [V2] apply a build queue to a release
+    def self.process_push_webhook!(release, push_params)
+      Res.new { Coordinators::Webhooks::Push.process(release, push_params) }
+    end
+
+    def self.process_pull_request_webhook!(release, push_params)
+      Res.new { Coordinators::Webhooks::PullRequest.process(release, push_params) }
+    end
+
+    def self.apply_build_queue!(build_queue)
+      Res.new { Coordinators::ApplyBuildQueue.call(build_queue) }
     end
 
     def self.save_metadata!(release, metadata)

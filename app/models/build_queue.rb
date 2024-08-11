@@ -23,7 +23,7 @@ class BuildQueue < ApplicationRecord
   def apply!
     head_commit&.trigger_step_runs
     update!(applied_at: Time.current, is_active: false)
-    release.create_active_build_queue
+    release.create_build_queue!
   end
 
   def add_commit!(commit, can_apply: true)
@@ -31,11 +31,17 @@ class BuildQueue < ApplicationRecord
     apply! if commits.size >= build_queue_size && can_apply
   end
 
+  def add_commit_v2!(commit, can_apply: true)
+    commits << commit
+
+    if commits.size >= build_queue_size && can_apply
+      Signal.build_queue_can_be_applied!(self)
+    end
+  end
+
   def schedule_kickoff!
     BuildQueueApplicationJob.set(wait_until: scheduled_at).perform_later(id)
   end
-
-  private
 
   def head_commit = commits.last
 end

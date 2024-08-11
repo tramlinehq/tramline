@@ -26,13 +26,25 @@ class IntegrationListeners::GithubController < IntegrationListenerController
   end
 
   def handle_push
-    response = WebhookHandlers::Push.process(train, push_params)
+    response =
+      if train.product_v2?
+        Action.process_push_webhook!(train, push_params)
+      else
+        WebhookHandlers::Push.process(train, push_params)
+      end
+
     Rails.logger.debug response.body
     head response.status
   end
 
   def handle_pull_request
-    response = WebhookHandlers::PullRequest.process(train, pull_request_params)
+    response =
+      if train.product_v2?
+        Action.process_pull_request_webhook!(train, pull_request_params)
+      else
+        WebhookHandlers::PullRequest.process(train, pull_request_params)
+      end
+
     Rails.logger.debug response.body
     head response.status
   end

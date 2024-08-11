@@ -1,6 +1,7 @@
-class WebhookProcessors::ClosePullRequestJob < ApplicationJob
+class Webhooks::ClosePullRequestJob < ApplicationJob
   queue_as :high
 
+  # TODO: retry finalize release if a post-release PR is closed
   def perform(train_id, pr_attributes)
     head_ref = pr_attributes[:head_ref]
     number = pr_attributes[:number]

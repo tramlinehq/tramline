@@ -161,7 +161,7 @@ class Release < ApplicationRecord
   before_create :set_version
   before_create :set_internal_notes
   after_create :create_platform_runs!
-  after_create :create_active_build_queue, if: -> { train.build_queue_enabled? }
+  after_create :create_build_queue!, if: -> { train.build_queue_enabled? }
   after_commit -> { Releases::PreReleaseJob.perform_later(id) }, on: :create
   after_commit -> { Releases::FetchCommitLogJob.perform_later(id) }, on: :create
   after_commit -> { create_stamp!(data: {version: original_release_version}) }, on: :create
@@ -172,7 +172,7 @@ class Release < ApplicationRecord
   attr_accessor :has_major_bump, :hotfix_platform, :custom_version
   friendly_id :human_slug, use: :slugged
 
-  delegate :versioning_strategy, :patch_version_bump_only, to: :train
+  delegate :versioning_strategy, :patch_version_bump_only, :product_v2?, to: :train
   delegate :app, :vcs_provider, :release_platforms, :notify!, :continuous_backmerge?, to: :train
   delegate :platform, :organization, to: :app
 
@@ -271,8 +271,8 @@ class Release < ApplicationRecord
     release_version.to_semverish >= platform_run.release_version.to_semverish
   end
 
-  def create_active_build_queue
-    build_queues.create(scheduled_at: (Time.current + train.build_queue_wait_time), is_active: true)
+  def create_build_queue!
+    build_queues.create!(scheduled_at: (Time.current + train.build_queue_wait_time), is_active: true)
   end
 
   def applied_commits

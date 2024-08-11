@@ -5,11 +5,15 @@ class BuildQueuesController < SignedInApplicationController
   before_action :set_build_queue, only: %i[apply]
 
   def apply
-    @release.with_lock do
-      locked_release_error and return unless @release.committable?
-      already_triggered_error and return unless @build_queue.is_active?
+    if @release.train.product_v2?
+      Action.apply_build_queue!(@build_queue)
+    else
+      @release.with_lock do
+        locked_release_error and return unless @release.committable?
+        already_triggered_error and return unless @build_queue.is_active?
 
-      @build_queue.apply!
+        @build_queue.apply!
+      end
     end
 
     redirect_to current_release_path, notice: "Build queue has been applied and emptied."

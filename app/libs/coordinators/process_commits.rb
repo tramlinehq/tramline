@@ -1,8 +1,8 @@
-class WebhookProcessors::Push
+class Coordinators::ProcessCommits
   include Loggable
 
-  def self.process(release, head_commit, rest_commits)
-    new(release, head_commit, rest_commits).process
+  def self.call(release, head_commit, rest_commits)
+    new(release, head_commit, rest_commits).call
   end
 
   def initialize(release, head_commit, rest_commits = [])
@@ -11,7 +11,7 @@ class WebhookProcessors::Push
     @rest_commits = rest_commits
   end
 
-  def process
+  def call
     release.with_lock do
       return unless release.committable?
       release.close_pre_release_prs
@@ -33,15 +33,25 @@ class WebhookProcessors::Push
 
   private
 
-  delegate :train, to: :release
-  attr_reader :release, :head_commit, :rest_commits
-
   def create_head_commit!
-    Commit.find_or_create_by!(commit_params(head_commit)).trigger!
+    commit = Commit.find_or_create_by!(commit_params(head_commit))
+    if release.queue_commit?
+      queue_commit!(commit)
+    else
+      Coordinators::ApplyCommit.call(release, commit)
+    end
   end
 
   def create_other_commits!
-    rest_commits.each { Commit.find_or_create_by!(commit_params(_1)).add_to_build_queue!(is_head_commit: false) }
+    rest_commits.each do |rest_commit|
+      commit = Commit.find_or_create_by!(commit_params(rest_commit))
+      queue_commit!(commit, can_apply: false)
+    end
+  end
+
+  def queue_commit!(commit, can_apply: true)
+    return unless release.queue_commit?
+    release.active_build_queue.add_commit_v2!(commit, can_apply:)
   end
 
   def commit_params(attributes)
@@ -61,4 +71,7 @@ class WebhookProcessors::Push
     elog(e)
     @commit_log = []
   end
+
+  delegate :train, to: :release
+  attr_reader :release, :head_commit, :rest_commits
 end

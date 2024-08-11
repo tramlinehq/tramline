@@ -1,4 +1,4 @@
-class Coordinators::ProcessCommit
+class Coordinators::ApplyCommit
   include Loggable
 
   def self.call(release, commit)
@@ -11,7 +11,6 @@ class Coordinators::ProcessCommit
   end
 
   def call
-    return commit.add_to_build_queue! if release.queue_commit?
     return unless commit.applicable?
 
     # TODO: [V2] change this to use the new have not started submission check
