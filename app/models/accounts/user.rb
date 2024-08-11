@@ -90,7 +90,7 @@ class Accounts::User < ApplicationRecord
     def start_sign_in_via_sso(email)
       email = email.downcase
       parsed_email_domain = Mail::Address.new(email).domain
-      organization = Accounts::Organization.find_by_sso_domain(parsed_email_domain)
+      organization = Accounts::Organization.find_sso_org_by_domain(parsed_email_domain)
       return unless organization
 
       Accounts::SsoAuthentication.start_sign_in(organization.sso_tenant_id)
@@ -104,7 +104,7 @@ class Accounts::User < ApplicationRecord
       auth_data => { user_email:, user_full_name:, login_id:, user_preferred_name: }
 
       parsed_email_domain = Mail::Address.new(user_email).domain
-      organization = Accounts::Organization.find_by_sso_domain(parsed_email_domain)
+      organization = Accounts::Organization.find_sso_org_by_domain(parsed_email_domain)
       return unless organization
 
       user = find_or_create_via_sso(user_email, organization, full_name: user_full_name, preferred_name: user_preferred_name, login_id:)

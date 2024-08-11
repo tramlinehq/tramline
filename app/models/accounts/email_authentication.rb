@@ -50,7 +50,10 @@ class Accounts::EmailAuthentication < ApplicationRecord
 
   def email_auth_allowed?
     parsed_email_domain = Mail::Address.new(email).domain
-    Accounts::Organization.find_by_sso_domain(parsed_email_domain).blank?
+    sso_org = Accounts::Organization.find_sso_org_by_domain(parsed_email_domain)
+
+    return true if sso_org.blank?
+    sso_org.allow_email_auth_for_sso?
   end
 
   def organization
