@@ -7,7 +7,7 @@ class PreProdReleasesController < SignedInApplicationController
     build_id = default_params[:build_id]
     commit_id = default_params[:commit_id]
 
-    result = Coordinators::Signals.start_beta_release!(@release_platform_run, build_id, commit_id)
+    result = Action.start_beta_release!(@release_platform_run, build_id, commit_id)
     if result.ok?
       redirect_back fallback_location: root_path, notice: t(".success")
     else

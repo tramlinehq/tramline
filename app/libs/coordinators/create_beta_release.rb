@@ -31,7 +31,7 @@ class Coordinators::CreateBetaRelease
         WorkflowRun.create_and_trigger!(rc_workflow_config, beta_release, commit, release_platform_run, auto_promote:)
       end
 
-      previous&.workflow_run&.cancel!
+      beta_release.previous&.workflow_run&.cancel!
     end
   end
 

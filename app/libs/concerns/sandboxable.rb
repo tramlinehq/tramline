@@ -5,6 +5,7 @@ module Sandboxable
 
   def mock_ci_trigger
     return unless sandbox_mode?
+    update!(external_id: Faker::Number.number(digits: 8).to_s)
     build.update!(build_number: Faker::Number.number(digits: 4))
     initiated!
   end
@@ -73,6 +74,11 @@ module Sandboxable
     return unless sandbox_mode?
     update_stage(1)
     on_start!
+  end
+
+  def mock_complete_play_store_rollout!
+    return unless sandbox_mode?
+    complete!
   end
 
   def mock_start_app_store_rollout!

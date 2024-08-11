@@ -74,7 +74,7 @@ class WorkflowRun < ApplicationRecord
     state :created, initial: true
     state(*STATES.keys)
 
-    event :initiate, after_commit: :on_initiate do
+    event :initiate, after_commit: :on_initiate! do
       transitions from: :created, to: :triggering
     end
 

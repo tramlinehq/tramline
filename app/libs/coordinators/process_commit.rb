@@ -29,7 +29,7 @@ class Coordinators::ProcessCommit
     run.update!(last_commit: commit)
 
     if run.conf.internal_release?
-      Coordinators::CreateInternalRelease.call(run, commit.id)
+      Coordinators::CreateInternalRelease.call(run, commit)
     else
       Coordinators::CreateBetaRelease.call(run, nil, commit.id)
     end
