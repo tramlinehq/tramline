@@ -2,7 +2,7 @@ class Authentication::Email::RegistrationsController < Devise::RegistrationsCont
   include Exceptionable
   include Authenticatable
 
-  invisible_captcha only: [:create], on_spam: :act_as_spam
+  invisible_captcha only: [:create], on_spam: :act_as_spam, on_timestamp_spam: :act_as_spam
   before_action :skip_authentication, only: [:new, :create]
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :set_invite_token, only: [:new, :create]
