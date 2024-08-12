@@ -70,11 +70,13 @@ class Accounts::User < ApplicationRecord
     def valid_signup_domain?(email)
       return false if email.blank?
 
+      parsed_email = Mail::Address.new(email)
+      domain = parsed_email.domain
+      return false if Accounts::Organization.find_sso_org_by_domain(domain)
+
       disallowed_domains = ENV["DISALLOWED_SIGN_UP_DOMAINS"]&.split(",")
       return true if disallowed_domains.blank?
-
-      parsed_email = Mail::Address.new(email)
-      disallowed_domains.exclude?(parsed_email.domain)
+      disallowed_domains.exclude?(domain)
     end
 
     def find_or_create_via_sso(email, organization, full_name:, preferred_name:, login_id:)

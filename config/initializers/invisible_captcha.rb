@@ -1,5 +1,5 @@
 InvisibleCaptcha.setup do |config|
-  config.visual_honeypots = Rails.env.development? ? true : false
+  config.visual_honeypots = Rails.env.development?
 end
 
 ActiveSupport::Notifications.subscribe("invisible_captcha.spam_detected") do |*args, data|
