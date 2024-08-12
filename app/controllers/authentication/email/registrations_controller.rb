@@ -2,6 +2,7 @@ class Authentication::Email::RegistrationsController < Devise::RegistrationsCont
   include Exceptionable
   include Authenticatable
 
+  invisible_captcha only: [:create], on_spam: :act_as_spam
   before_action :skip_authentication, only: [:new, :create]
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :set_invite_token, only: [:new, :create]
@@ -108,5 +109,9 @@ class Authentication::Email::RegistrationsController < Devise::RegistrationsCont
     tracking_org = resource.organization
     SiteAnalytics.identify_and_group(resource, tracking_org)
     SiteAnalytics.track(resource, tracking_org, DeviceDetector.new(request.user_agent), "Signup")
+  end
+
+  def act_as_spam
+    redirect_to email_authentication_session_path
   end
 end
