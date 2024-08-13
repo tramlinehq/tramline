@@ -21,7 +21,13 @@
         <% end %>
         <% row.with_cell do %>
           <div class="flex items-center justify-start">
-            <div class="p-3 rounded-full" style="background-color: <%= team.color %>"></div>
+            <%= content_tag :style, nonce: content_security_policy_nonce do %>
+              .team-color-<%= team.id %> {
+                background-color: <%= team.color %>;
+              }
+            <% end %>
+
+            <div class="team-color-<%=team.id %> p-3 rounded-full"></div>
           </div>
         <% end %>
         <% row.with_cell(wrap: true) do %>
