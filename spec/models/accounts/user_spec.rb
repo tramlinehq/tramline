@@ -113,53 +113,81 @@ describe Accounts::User do
       expect(described_class.finish_sign_in_via_sso("code", ip).nil?).to be true
     end
 
-    it "returns nil if the user is not found" do
-      create(:organization, :with_sso, sso_domains: ["tramline.app"])
-      expect(described_class.finish_sign_in_via_sso("code", "").nil?).to be true
+    context "when users exists in the organization" do
+      it "updates the sso tracking details if user exists" do
+        organization = create(:organization, :with_sso, sso_domains: ["tramline.app"])
+        sso_auth = create(:sso_authentication, email:)
+        user = create(:user)
+        create(:membership, organization: organization, user:)
+        user.sso_authentications << sso_auth
+
+        actual_result = described_class.finish_sign_in_via_sso("code", ip)
+
+        expect(sso_auth.reload.sign_in_count).to eq(1)
+        expect(sso_auth.reload.current_sign_in_at).not_to be_nil
+        expect(sso_auth.reload.current_sign_in_ip).to eq(ip)
+        expect(actual_result).to eq(valid_sso_result.value!)
+      end
     end
 
-    it "updates the sso tracking details if user exists" do
-      organization = create(:organization, :with_sso, sso_domains: ["tramline.app"])
-      sso_auth = create(:sso_authentication, email:)
-      user = create(:user)
-      create(:membership, organization: organization, user:)
-      user.sso_authentications << sso_auth
+    context "when invite exists in the organization" do
+      it "creates the user with sso auth if invite exists" do
+        organization = create(:organization, :with_sso, sso_domains: ["tramline.app"])
+        invite = create(:invite, email:, organization:)
 
-      actual_result = described_class.finish_sign_in_via_sso("code", ip)
+        expect { described_class.finish_sign_in_via_sso("code", ip) }.to change(Accounts::SsoAuthentication, :count).by(1)
 
-      expect(sso_auth.reload.sign_in_count).to eq(1)
-      expect(sso_auth.reload.current_sign_in_at).not_to be_nil
-      expect(sso_auth.reload.current_sign_in_ip).to eq(ip)
-      expect(actual_result).to eq(valid_sso_result.value!)
+        created_sso_auth = Accounts::SsoAuthentication.first
+        expect(created_sso_auth.email).to eq(email)
+        expect(created_sso_auth.user).to eq(invite.reload.recipient)
+      end
+
+      it "creates memberships for the user when the invited user exists elsewhere" do
+        original_organization = create(:organization)
+        original_user = create(:user, unique_authn_id: email)
+        create(:email_authentication, email:, user: original_user)
+        create(:membership, organization: original_organization, user: original_user)
+        new_organization = create(:organization, :with_sso, sso_domains: ["tramline.app"])
+        invite = create(:invite, email:, organization: new_organization)
+
+        expect { described_class.finish_sign_in_via_sso("code", ip) }.to change(Accounts::SsoAuthentication, :count).by(1)
+        original_user.reload
+        invite.reload
+
+        created_sso_auth = Accounts::SsoAuthentication.first
+        expect(created_sso_auth.user).to eq(original_user)
+        expect(original_user.organizations).to include(new_organization)
+        expect(invite.accepted?).to be true
+      end
     end
 
-    it "creates the user with sso auth if invite exists" do
-      organization = create(:organization, :with_sso, sso_domains: ["tramline.app"])
-      invite = create(:invite, email:, organization:)
+    context "when user and invite do not exist" do
+      it "creates the user with viewer role if invite doesn't exist" do
+        organization = create(:organization, :with_sso, sso_domains: ["tramline.app"])
+        expect { described_class.finish_sign_in_via_sso("code", ip) }.to change(Accounts::SsoAuthentication, :count).by(1)
 
-      expect { described_class.finish_sign_in_via_sso("code", ip) }.to change(Accounts::SsoAuthentication, :count).by(1)
-
-      created_sso_auth = Accounts::SsoAuthentication.first
-      expect(created_sso_auth.email).to eq(email)
-      expect(created_sso_auth.user).to eq(invite.reload.recipient)
+        created_sso_auth = Accounts::SsoAuthentication.first
+        created_user = created_sso_auth.user
+        expect(created_user.organizations).to contain_exactly(organization)
+        expect(created_user.role_for(organization)).to eq(Accounts::Membership.roles[:viewer])
+      end
     end
 
-    it "creates memberships for the user when the invited user exists elsewhere" do
-      original_organization = create(:organization)
-      original_user = create(:user, unique_authn_id: email)
-      create(:email_authentication, email:, user: original_user)
-      create(:membership, organization: original_organization, user: original_user)
-      new_organization = create(:organization, :with_sso, sso_domains: ["tramline.app"])
-      invite = create(:invite, email:, organization: new_organization)
+    context "when user exists in another organization" do
+      it "creates memberships for the user for the organization" do
+        original_organization = create(:organization)
+        original_user = create(:user, unique_authn_id: email)
+        create(:email_authentication, email:, user: original_user)
+        create(:membership, organization: original_organization, user: original_user)
+        new_organization = create(:organization, :with_sso, sso_domains: ["tramline.app"])
 
-      expect { described_class.finish_sign_in_via_sso("code", ip) }.to change(Accounts::SsoAuthentication, :count).by(1)
-      original_user.reload
-      invite.reload
+        expect { described_class.finish_sign_in_via_sso("code", ip) }.to change(Accounts::SsoAuthentication, :count).by(1)
+        original_user.reload
 
-      created_sso_auth = Accounts::SsoAuthentication.first
-      expect(created_sso_auth.user).to eq(original_user)
-      expect(original_user.organizations).to include(new_organization)
-      expect(invite.accepted?).to be true
+        created_sso_auth = Accounts::SsoAuthentication.first
+        expect(created_sso_auth.user).to eq(original_user)
+        expect(original_user.organizations).to include(new_organization)
+      end
     end
   end
 end

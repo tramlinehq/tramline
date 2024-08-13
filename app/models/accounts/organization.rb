@@ -43,12 +43,16 @@ class Accounts::Organization < ApplicationRecord
 
   scope :sequential, -> { reorder("organizations.created_at ASC") }
 
-  def self.find_by_sso_domain(domain)
+  def self.find_sso_org_by_domain(domain)
     where(sso: true).where(":domain = ANY (sso_domains)", domain:).first
   end
 
   def valid_sso_domain?(email)
     sso_domains.include?(Mail::Address.new(email).domain)
+  end
+
+  def allow_email_auth_for_sso?
+    Flipper.enabled?(:allow_email_auth_for_sso, self)
   end
 
   def demo?

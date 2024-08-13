@@ -2,6 +2,7 @@ class Authentication::Email::RegistrationsController < Devise::RegistrationsCont
   include Exceptionable
   include Authenticatable
 
+  invisible_captcha only: [:create], on_spam: :act_as_spam, on_timestamp_spam: :act_as_spam
   before_action :skip_authentication, only: [:new, :create]
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :set_invite_token, only: [:new, :create]
@@ -82,7 +83,7 @@ class Authentication::Email::RegistrationsController < Devise::RegistrationsCont
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up) do |u|
       u.permit(
-        :email,
+        :sign_up_email,
         :password,
         :password_confirmation,
         user_attributes: [
@@ -95,11 +96,11 @@ class Authentication::Email::RegistrationsController < Devise::RegistrationsCont
   end
 
   def sign_up_params_for_invites
-    sign_up_params.except(:organizations_attributes)
+    sign_up_params.except(:organizations_attributes, :sign_up_email).merge(email: sign_up_email)
   end
 
   def sign_up_email
-    sign_up_params[:email].downcase
+    sign_up_params[:sign_up_email].downcase
   end
 
   def identify_team
@@ -108,5 +109,9 @@ class Authentication::Email::RegistrationsController < Devise::RegistrationsCont
     tracking_org = resource.organization
     SiteAnalytics.identify_and_group(resource, tracking_org)
     SiteAnalytics.track(resource, tracking_org, DeviceDetector.new(request.user_agent), "Signup")
+  end
+
+  def act_as_spam
+    redirect_to email_authentication_session_path
   end
 end

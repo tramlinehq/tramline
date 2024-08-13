@@ -23,8 +23,8 @@
       <% end %>
 
       <div>
-        <%= f.mandatory_label :email, class: "block text-sm font-medium mb-1" %>
-        <%= f.email_field :email, required: true, autocomplete: "email",
+        <%= f.mandatory_label :sign_up_email, class: "block text-sm font-medium mb-1" %>
+        <%= f.email_field :sign_up_email, required: true, autocomplete: "email",
                           class: "form-input w-full", readonly: @invite.present? %>
       </div>
 
@@ -66,6 +66,8 @@
           <%= password_toggle_button(styles: "mr-3") %>
         </div>
       </div>
+
+      <%= invisible_captcha nonce: true %>
 
       <div>
         <%= f.submit "Sign up", class: "btn bg-indigo-500 hover:bg-indigo-600 text-white w-full" %>
