@@ -87,11 +87,11 @@ module Coordinators
       # NewRelease.call(release)
     end
 
-    def self.process_push_webhook!(release, push_params)
+    def self.process_push_webhook(release, push_params)
       Res.new { Coordinators::Webhooks::Push.process(release, push_params) }
     end
 
-    def self.process_pull_request_webhook!(release, push_params)
+    def self.process_pull_request_webhook(release, push_params)
       Res.new { Coordinators::Webhooks::PullRequest.process(release, push_params) }
     end
 

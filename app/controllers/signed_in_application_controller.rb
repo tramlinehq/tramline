@@ -1,5 +1,6 @@
 class SignedInApplicationController < ApplicationController
   include Authenticatable
+  include SiteHttp
   DEFAULT_TIMEZONE = "Asia/Kolkata"
   DEFAULT_TIMEZONE_LIST_REGEX = /Asia\/Kolkata/
   PATH_PARAMS_UNDER_APP = [:id, :app_id, :integration_id, :train_id, :platform_id]
