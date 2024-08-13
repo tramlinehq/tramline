@@ -40,6 +40,14 @@ class Accounts::EmailAuthentication < ApplicationRecord
 
   accepts_nested_attributes_for :user
 
+  def sign_up_email=(email)
+    self.email = email
+  end
+
+  def sign_up_email
+    email
+  end
+
   def active_for_authentication?
     super && email_auth_allowed?
   end

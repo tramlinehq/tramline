@@ -5,6 +5,7 @@
 # Be sure to restart your server when you modify this file.
 module ParameterFiltering
   ALLOWED_ATTRIBUTES = %w[
+    sign_up_email
     action
     controller
     created_at

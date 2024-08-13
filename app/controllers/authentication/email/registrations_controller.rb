@@ -83,7 +83,7 @@ class Authentication::Email::RegistrationsController < Devise::RegistrationsCont
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up) do |u|
       u.permit(
-        :email,
+        :sign_up_email,
         :password,
         :password_confirmation,
         user_attributes: [
@@ -96,11 +96,11 @@ class Authentication::Email::RegistrationsController < Devise::RegistrationsCont
   end
 
   def sign_up_params_for_invites
-    sign_up_params.except(:organizations_attributes)
+    sign_up_params.except(:organizations_attributes, :sign_up_email).merge(email: sign_up_email)
   end
 
   def sign_up_email
-    sign_up_params[:email].downcase
+    sign_up_params[:sign_up_email].downcase
   end
 
   def identify_team

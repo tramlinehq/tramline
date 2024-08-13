@@ -23,8 +23,8 @@
       <% end %>
 
       <div>
-        <%= f.mandatory_label :email, class: "block text-sm font-medium mb-1" %>
-        <%= f.email_field :email, required: true, autocomplete: "email",
+        <%= f.mandatory_label :sign_up_email, class: "block text-sm font-medium mb-1" %>
+        <%= f.email_field :sign_up_email, required: true, autocomplete: "email",
                           class: "form-input w-full", readonly: @invite.present? %>
       </div>
 
