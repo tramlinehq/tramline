@@ -44,6 +44,10 @@
       <% modal.with_button(label: "Prepare new release", scheme: :default, type: :action, size: :xxs, disabled: !release_startable?)
               .with_icon("play.svg", size: :md) %>
       <% modal.with_body do %>
+        <div class="mb-6">
+          <%= render V2::EmptyStateComponent.new(text: branch_help, banner_image: "v2/git_branch.svg", type: :tiny) %>
+        </div>
+
         <%= render V2::FormComponent.new(model: [app, train, train.releases.new], url: app_train_releases_path(app, train), free_form: true) do |form| %>
           <div data-controller="reveal">
             <%= render V2::OptionCardsComponent.new(form: form.F, options: release_options) %>

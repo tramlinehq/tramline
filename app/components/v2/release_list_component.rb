@@ -74,6 +74,12 @@ class V2::ReleaseListComponent < V2::BaseComponent
     ]
   end
 
+  def branch_help
+    new_branch = Time.current.strftime(train.release_branch_name_fmt(hotfix: false))
+    working_branch = train.working_branch
+    "Release branch #{new_branch} will be automatically cut from #{working_branch}."
+  end
+
   def ios_enabled?
     app.cross_platform? || app.ios?
   end
