@@ -1,4 +1,5 @@
 module StoreSubmittable
+  Action = Coordinators::Actions
   include Mocks::Sandboxable
 
   def update

@@ -63,8 +63,7 @@ class WorkflowRun < ApplicationRecord
 
   NOT_STARTED = [:created]
   IN_PROGRESS = [:triggering, :triggered, :started]
-  TERMINAL_STATES = [:finished]
-  WORKFLOW_IMMUTABLE = STATES.keys - TERMINAL_STATES - IN_PROGRESS - NOT_STARTED
+  WORKFLOW_IMMUTABLE = %w[unavailable failed halted finished cancelled cancelling cancelled_before_start]
   FAILED_STATES = %w[failed halted unavailable cancelled cancelled_before_start cancelling]
 
   enum status: STATES
@@ -110,7 +109,6 @@ class WorkflowRun < ApplicationRecord
       transitions from: IN_PROGRESS, to: :cancelling
       transitions from: NOT_STARTED, to: :cancelled_before_start
       transitions from: :cancelling, to: :cancelled
-      transitions from: :finished, to: :finished
     end
   end
 
@@ -140,6 +138,12 @@ class WorkflowRun < ApplicationRecord
 
   def workflow_found?
     external_id.present?
+  end
+
+  def cancel_workflow!
+    return if WORKFLOW_IMMUTABLE.include?(status)
+
+    cancel!
   end
 
   def cancel_external_workflow!
