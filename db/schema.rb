@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_08_09_060735) do
+ActiveRecord::Schema[7.0].define(version: 2024_08_14_192003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -416,31 +416,31 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_09_060735) do
     t.index ["stampable_type", "stampable_id"], name: "index_passports_on_stampable"
   end
 
-  create_table "pre_prod_releases", force: :cascade do |t|
+  create_table "pre_prod_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_run_id", null: false
+    t.uuid "commit_id", null: false
+    t.uuid "previous_id"
+    t.uuid "parent_internal_release_id"
     t.string "type", null: false
     t.string "status", default: "created", null: false
+    t.jsonb "config", default: {}, null: false
+    t.text "tester_notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.jsonb "config", default: {}, null: false
-    t.bigint "previous_id"
-    t.uuid "commit_id"
-    t.text "tester_notes"
-    t.bigint "parent_internal_release_id"
     t.index ["commit_id"], name: "index_pre_prod_releases_on_commit_id"
     t.index ["parent_internal_release_id"], name: "index_pre_prod_releases_on_parent_internal_release_id"
     t.index ["previous_id"], name: "index_pre_prod_releases_on_previous_id"
     t.index ["release_platform_run_id"], name: "index_pre_prod_releases_on_release_platform_run_id"
   end
 
-  create_table "production_releases", force: :cascade do |t|
+  create_table "production_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_run_id", null: false
     t.uuid "build_id", null: false
+    t.uuid "previous_id"
+    t.jsonb "config", default: {}, null: false
+    t.string "status", default: "inflight", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.jsonb "config", default: {}, null: false
-    t.bigint "previous_id"
-    t.string "status", default: "inflight", null: false
     t.index ["build_id"], name: "index_production_releases_on_build_id"
     t.index ["previous_id"], name: "index_production_releases_on_previous_id"
     t.index ["release_platform_run_id", "status"], name: "index_unique_active_production_release", unique: true, where: "((status)::text = 'active'::text)"
@@ -736,7 +736,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_09_060735) do
     t.index ["step_number", "release_platform_id"], name: "index_steps_on_step_number_and_release_platform_id", unique: true
   end
 
-  create_table "store_rollouts", force: :cascade do |t|
+  create_table "store_rollouts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_run_id", null: false
     t.uuid "store_submission_id"
     t.string "type", null: false
@@ -744,9 +744,9 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_09_060735) do
     t.datetime "completed_at"
     t.integer "current_stage", limit: 2
     t.decimal "config", precision: 8, scale: 5, default: [], null: false, array: true
+    t.boolean "is_staged_rollout", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "is_staged_rollout", default: false
     t.index ["release_platform_run_id"], name: "index_store_rollouts_on_release_platform_run_id"
     t.index ["store_submission_id"], name: "index_store_rollouts_on_store_submission_id"
   end
@@ -768,8 +768,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_09_060735) do
     t.datetime "updated_at", null: false
     t.jsonb "store_release"
     t.string "parent_release_type", null: false
-    t.bigint "parent_release_id", null: false
-    t.jsonb "config"
+    t.uuid "parent_release_id", null: false
+    t.jsonb "config", null: false
     t.integer "sequence_number", limit: 2, default: 0, null: false
     t.index ["build_id"], name: "index_store_submissions_on_build_id"
     t.index ["parent_release_type", "parent_release_id"], name: "index_store_submissions_on_parent_release"
@@ -875,8 +875,9 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_09_060735) do
   create_table "workflow_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_run_id", null: false
     t.uuid "commit_id", null: false
-    t.bigint "pre_prod_release_id", null: false
+    t.uuid "pre_prod_release_id", null: false
     t.string "status", null: false
+    t.string "kind", default: "release_candidate", null: false
     t.jsonb "workflow_config"
     t.string "external_id"
     t.string "external_url"
@@ -886,7 +887,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_09_060735) do
     t.datetime "finished_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "kind", default: "release_candidate", null: false
     t.index ["commit_id"], name: "index_workflow_runs_on_commit_id"
     t.index ["pre_prod_release_id"], name: "index_workflow_runs_on_pre_prod_release_id"
     t.index ["release_platform_run_id"], name: "index_workflow_runs_on_release_platform_run_id"

@@ -4,7 +4,7 @@
 #
 #  id                      :uuid             not null, primary key
 #  approved_at             :datetime
-#  config                  :jsonb
+#  config                  :jsonb            not null
 #  failure_reason          :string
 #  name                    :string
 #  parent_release_type     :string           not null, indexed => [parent_release_id]
@@ -20,7 +20,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_id                :uuid             not null, indexed
-#  parent_release_id       :bigint           not null, indexed => [parent_release_type]
+#  parent_release_id       :uuid             not null, indexed => [parent_release_type]
 #  release_platform_run_id :uuid             not null, indexed
 #
 class GoogleFirebaseSubmission < StoreSubmission

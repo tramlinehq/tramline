@@ -2,7 +2,7 @@
 #
 # Table name: store_rollouts
 #
-#  id                      :bigint           not null, primary key
+#  id                      :uuid             not null, primary key
 #  completed_at            :datetime
 #  config                  :decimal(8, 5)    default([]), not null, is an Array
 #  current_stage           :integer

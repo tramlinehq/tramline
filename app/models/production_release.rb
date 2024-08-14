@@ -2,13 +2,13 @@
 #
 # Table name: production_releases
 #
-#  id                      :bigint           not null, primary key
+#  id                      :uuid             not null, primary key
 #  config                  :jsonb            not null
 #  status                  :string           default("inflight"), not null, indexed => [release_platform_run_id], indexed => [release_platform_run_id], indexed => [release_platform_run_id]
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_id                :uuid             not null, indexed
-#  previous_id             :bigint           indexed
+#  previous_id             :uuid             indexed
 #  release_platform_run_id :uuid             not null, indexed, indexed => [status], indexed => [status], indexed => [status]
 #
 class ProductionRelease < ApplicationRecord

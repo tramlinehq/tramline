@@ -15,7 +15,7 @@
 #  updated_at              :datetime         not null
 #  commit_id               :uuid             not null, indexed
 #  external_id             :string
-#  pre_prod_release_id     :bigint           not null, indexed
+#  pre_prod_release_id     :uuid             not null, indexed
 #  release_platform_run_id :uuid             not null, indexed
 #
 class WorkflowRun < ApplicationRecord
