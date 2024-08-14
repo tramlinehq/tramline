@@ -133,12 +133,22 @@ class PlayStoreSubmission < StoreSubmission
     result = provider.create_draft_release(deployment_channel_id, build_number, version_name, release_notes)
     if result.ok?
       finish_prepare!
+      update_store_info!
     else
       fail_with_error(result.error)
     end
   end
 
   def provider = app.android_store_provider
+
+  def update_store_info!
+    store_data = provider.find_build_in_track(deployment_channel_id, build_number)
+    return unless store_data
+    self.store_release = store_data
+    self.store_status = store_data[:status]
+    self.store_link = provider.project_link
+    save!
+  end
 
   private
 

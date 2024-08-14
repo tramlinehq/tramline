@@ -201,6 +201,10 @@ class GooglePlayStoreIntegration < ApplicationRecord
     nil
   end
 
+  def find_build_in_track(channel, build_number)
+    installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS).dig(:releases)&.find { |r| r[:build_number] == build_number.to_s }
+  end
+
   private
 
   def execute_with_retry
