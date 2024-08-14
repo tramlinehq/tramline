@@ -31,7 +31,7 @@ Rails.application.config.content_security_policy do |policy|
   policy.worker_src(:self, :https, :blob)
   policy.connect_src(:self, *connect_src_uris)
   policy.child_src(:self, *connect_src_uris)
-  policy.report_uri(csp_reporting_uri.to_s)
+  policy.report_uri(csp_reporting_uri.to_s) if csp_reporting_uri.present?
 end
 
 Rails.application.config.content_security_policy_nonce_generator = ->(request) { Base64.strict_encode64(request.session.id.to_s) }
