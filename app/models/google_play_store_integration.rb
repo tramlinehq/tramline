@@ -32,6 +32,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
     {id: :alpha, name: "closed testing", is_production: false},
     {id: :internal, name: "internal testing", is_production: false}
   ]
+  PUBLIC_CHANNELS = %w[production beta alpha]
 
   DEVELOPER_URL_TEMPLATE =
     Addressable::Template.new("https://play.google.com/console/u/0/developers/{project_id}")

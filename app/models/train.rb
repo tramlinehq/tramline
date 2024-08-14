@@ -420,6 +420,12 @@ class Train < ApplicationRecord
     release_platforms.any?(&:has_production_deployment?)
   end
 
+  def has_restricted_public_channels?
+    return false if app.ios?
+
+    deployments.any? { |d| GooglePlayStoreIntegration::PUBLIC_CHANNELS.include?(d.deployment_channel) }
+  end
+
   def stop_failed_ongoing_release!
     return unless automatic?
     return unless stop_automatic_releases_on_failure?
