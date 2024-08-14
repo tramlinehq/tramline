@@ -33,18 +33,6 @@
   <%= render V2::PlatformOverviewComponent.new(release, size: :compact, show_monitoring: false) %>
 
   <div class="grid grid-cols-2 item-gap-default min-w-80">
-    <% if changelog_present? %>
-      <%= render V2::CardComponent.new(title: "Changes since last release (#{commits_since_last.size})", separator: true, size: :base) do |card| %>
-        <% card.with_actions do %>
-        <span class="text-xs text-secondary-50 items-center flex gap-1">
-          Diff from <%= render V2::BadgeComponent.new(text: @release.release_changelog.from_ref, kind: :badge) %>
-        </span>
-        <% end %>
-
-        <%= render partial: "shared/divide_collection", locals: { collection: render(V2::CommitComponent.with_collection(commits_since_last)) } %>
-      <% end %>
-    <% end %>
-
     <%= render V2::CardComponent.new(title: "Captain's Log", fold: false, separator: true) do |card| %>
       <% card.with_actions do %>
         <%= render V2::ModalComponent.new(title: "Edit Internal Notes", dismissable: false) do |modal| %>

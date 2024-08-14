@@ -3,9 +3,8 @@ class StoreRolloutsController < SignedInApplicationController
 
   before_action :require_write_access!
   before_action :set_release
-  before_action :set_release_platform
-  before_action :set_release_platform_run
   before_action :set_store_rollout, only: %i[start increase pause resume halt fully_release]
+  before_action :ensure_moveable, only: %i[start increase pause resume halt fully_release]
   before_action :ensure_user_controlled_rollout, only: [:increase, :halt]
   before_action :ensure_automatic_rollout, only: [:pause]
   before_action :set_live_release_tab_configuration, only: %i[edit_all]
@@ -68,16 +67,8 @@ class StoreRolloutsController < SignedInApplicationController
     @release = Release.friendly.find(params[:release_id])
   end
 
-  def set_release_platform
-    @release_platform = @release.release_platforms.friendly.find_by(platform: params[:platform_id])
-  end
-
-  def set_release_platform_run
-    @release_platform_run = @release.release_platform_runs.find_by(release_platform: @release_platform)
-  end
-
   def set_store_rollout
-    @store_rollout = @release_platform_run.store_rollouts.find(params[:id])
+    @store_rollout = @release.store_rollouts.find(params[:id])
   end
 
   def ensure_user_controlled_rollout
@@ -88,6 +79,12 @@ class StoreRolloutsController < SignedInApplicationController
 
   def ensure_automatic_rollout
     unless @store_rollout.automatic_rollout?
+      redirect_back fallback_location: root_path, flash: {error: "The user cannot perform this action!"}
+    end
+  end
+
+  def ensure_moveable
+    if @store_rollout.stale?
       redirect_back fallback_location: root_path, flash: {error: "The user cannot perform this action!"}
     end
   end

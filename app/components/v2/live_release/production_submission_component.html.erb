@@ -12,33 +12,51 @@
                                         scope: :production_release,
                                         url: run_production_path(release_platform_run),
                                         free_form: true) do |form| %>
-          <%= form.F.labeled_select :build_id, "Select a build", options_for_select(all_builds.map { |b| [build_display_info(b), b.id] }, all_builds.first) %>
+          <%= form.F.labeled_select :build_id, "Select a build", build_opts %>
           <% form.with_action do %>
-            <%= form.F.authz_submit "Create submission", "v2/archive.svg" %>
+            <%= form.F.authz_submit "Create submission", "v2/mail.svg" %>
           <% end %>
         <% end %>
       <% end %>
 
       <div class="flex flex-col gap-2">
-        <%= render V2::LiveRelease::BuildComponent.new(newer_builds.first, show_number: true, show_metadata: false, show_ci: true, show_activity: false, show_commit: false) %>
-        <span class="text-sm">A new build is available for submission</span>
+        <%= render V2::LiveRelease::BuildComponent.new(
+          newer_builds.first,
+          show_number: true,
+          show_metadata: false,
+          show_ci: true,
+          show_activity: false,
+          show_commit: false) %>
+
+        <span class="text-sm">
+          You can start a fresh submission from the newly prepared release candidate.
+        </span>
       </div>
     <% end %>
   <% end %>
 
   <% if @cancel_prompt %>
-    <%= render V2::AlertComponent.new(type: :info, title: "A new build #{newer_builds.first.display_name} is available. Cancel submission and change the build.", dismissible: true) %>
+    <%= render V2::AlertComponent.new(
+      type: :info,
+      title: "A new build #{newer_builds.first.display_name} is available. Cancel submission and change the build.",
+      dismissible: true) %>
   <% end %>
 
   <% if @change_build_prompt %>
-    <%= render V2::AlertComponent.new(type: :info, title: "A new build #{newer_builds.first.display_name} is available. Change build to update the submission.", dismissible: true) %>
+    <%= render V2::AlertComponent.new(
+      type: :info,
+      title: "A new build #{newer_builds.first.display_name} is available. Change build to update the submission.",
+      dismissible: true) %>
   <% end %>
 
-  <%= render V2::CardComponent.new(title: "Store Submission", size: :full, separator: false) do |card| %>
+  <%= render V2::CardComponent.new(title: @title, size: :full, separator: false) do |card| %>
     <% card.with_actions do %>
       <div class="flex items-center gap-x-1.5">
         <% if changeable? %>
-          <%= render V2::ModalComponent.new(title: "Available builds", subtitle: "Choose a build to send for submission to the store") do |modal| %>
+          <%= render V2::ModalComponent.new(
+            title: "Available builds",
+            subtitle: "Choose a build to send for submission to the store") do |modal| %>
+
             <% button = modal.with_button(label: "Change build", scheme: :light, type: :action, size: :xxs) %>
             <% button.with_icon("v2/pencil.svg") %>
             <% modal.with_body do %>
@@ -46,10 +64,10 @@
                                                scope: :store_submission,
                                                url: update_path,
                                                free_form: true) do |form| %>
-                <%= form.F.labeled_select :build_id, "Select a build", build_opts %>
+                <%= form.F.labeled_select :build_id, "Select a build", build_opts(default: current_build) %>
 
                 <% form.with_action do %>
-                  <%= form.F.authz_submit "Save", "v2/archive.svg" %>
+                  <%= form.F.authz_submit "Change", "v2/mail.svg" %>
                 <% end %>
               <% end %>
             <% end %>
@@ -63,7 +81,11 @@
         <% end %>
 
         <% if submission.reviewable? %>
-          <%= render V2::ModalComponent.new(title: "Submission Preview", subtitle: "Review all the details before submitting for review", dismissable: false, size: :xxl) do |modal| %>
+          <%= render V2::ModalComponent.new(
+            title: "Submission Preview",
+            subtitle: "Review all the details before submitting for review",
+            dismissable: false, size: :xxl) do |modal| %>
+
             <% modal.with_button(label: "Preview & submit for review", scheme: :default, type: :action, size: :xxs) %>
             <% modal.with_body do %>
               <div class="flex flex-col gap-6">
@@ -82,10 +104,12 @@
     <% end %>
 
     <div class="flex flex-col item-gap-default text-secondary text-xs">
-      <div class="justify-start"><%= render V2::BadgeComponent.new(**status) %></div>
+      <div class="flex flex-row gap-2 items-center">
+        <%= render V2::IconComponent.new("integrations/logo_#{provider}.png", size: :xl) %>
+        <div class="justify-start"><%= render V2::BadgeComponent.new(**status) %></div>
+      </div>
 
       <%= render V2::LiveRelease::BuildComponent.new(current_build, show_number: true) %>
-
       <%= render V2::SectionComponent.new(style: :titled, title: "Store status", size: :micro) do %>
         <div class="flex justify-between items-center">
           <%= render V2::BadgeComponent.new(text: store_status, status: :neutral) %>

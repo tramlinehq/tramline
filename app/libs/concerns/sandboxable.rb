@@ -72,7 +72,7 @@ module Sandboxable
 
   def mock_start_play_store_rollout!
     return unless sandbox_mode?
-    update_stage(1)
+    update_stage(4, finish_rollout: false)
     on_start!
   end
 

@@ -30,7 +30,7 @@
 
   <% component.runs do |release_platform_run| %>
     <% if previous_beta_releases(release_platform_run).present? %>
-      <%= render V2::SectionComponent.new(title: "Older builds (#{previous_beta_releases(release_platform_run).size})", style: :titled, size: :compact) do %>
+      <%= render V2::SectionComponent.new(title: "Other builds (#{previous_beta_releases(release_platform_run).size})", style: :titled, size: :compact) do %>
         <div class="flex flex-col item-gap-default">
           <% previous_beta_releases(release_platform_run).each do |beta_release| %>
             <%= render V2::AccordionComponent.new(push_down: true) do |accordion| %>

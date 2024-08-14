@@ -8,10 +8,6 @@ class V2::LiveRelease::OverviewComponent < V2::BaseReleaseComponent
   attr_reader :release
   delegate :internal_notes, to: :release
 
-  memoize def commits_since_last
-    @release.release_changelog&.normalized_commits
-  end
-
   memoize def team_stability_commits
     return @summary[:team_stability_commits] if @summary.present?
     @release.stability_commits.count_by_team(current_organization)
@@ -56,9 +52,5 @@ class V2::LiveRelease::OverviewComponent < V2::BaseReleaseComponent
 
   def final?
     @summary.present?
-  end
-
-  def changelog_present?
-    @release.release_changelog.present?
   end
 end

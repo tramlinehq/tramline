@@ -1,6 +1,6 @@
 <%= content_tag(:div, card_params) do %>
   <div class="flex flex-col">
-    <div class="flex flex-row items-center justify-between <%= separator_style %>">
+    <div class="flex flex-row items-center justify-between">
       <div class="flex items-center">
         <% if fold? && !emptiness %>
           <%= render V2::ButtonComponent.new(
@@ -20,7 +20,15 @@
       <%= actions %>
     </div>
 
-    <% if subtitle.present? %>
+    <% if separator? && subtitle.present? %>
+      <span class="text-xs font-normal text-secondary-50"><%= subtitle %></span>
+    <% end %>
+
+    <% if separator? %>
+      <div class="<%= separator_style %>"></div>
+    <% end %>
+
+    <% if !separator? && subtitle.present? %>
       <span class="text-xs font-normal text-secondary-50"><%= subtitle %></span>
     <% end %>
   </div>

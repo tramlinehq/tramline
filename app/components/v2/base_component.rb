@@ -10,6 +10,7 @@ class V2::BaseComponent < ViewComponent::Base
     :default_app,
     :new_app,
     :default_timezones,
+    :content_security_policy_nonce,
     :logout_path, to: :helpers
   delegate :team_colors, to: :current_organization
 

@@ -9,7 +9,7 @@
         <% end %>
 
         <% if show_ci %>
-          <%= render V2::IconComponent.new("v2/slash.svg", size: :xs) %>
+          <%= render V2::IconComponent.new("v2/slash.svg", size: :sm) %>
           <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
             <% badge.with_icon(build_logo) %>
             <% badge.with_link(ci_info, ci_link) %>

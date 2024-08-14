@@ -162,6 +162,7 @@ module Coordinators
     end
 
     def self.start_the_store_rollout!(rollout)
+      return Res.new { raise } if rollout.stale?
       return Res.new { raise } unless rollout.created?
       rollout.start_release!
       return Res.new { raise } if rollout.errors?
@@ -169,6 +170,7 @@ module Coordinators
     end
 
     def self.increase_the_store_rollout!(rollout)
+      return Res.new { raise } if rollout.stale?
       return Res.new { raise } unless rollout.started?
       rollout.move_to_next_stage!
       return Res.new { raise } if rollout.errors?
@@ -176,6 +178,7 @@ module Coordinators
     end
 
     def self.pause_the_store_rollout!(rollout)
+      return Res.new { raise } if rollout.stale?
       return Res.new { raise } unless rollout.started?
       rollout.pause_release!
       return Res.new { raise } if rollout.errors?
@@ -183,6 +186,7 @@ module Coordinators
     end
 
     def self.resume_the_store_rollout!(rollout)
+      return Res.new { raise } if rollout.stale?
       return Res.new { raise } unless rollout.halted?
       rollout.resume_release!
       return Res.new { raise } if rollout.errors?
@@ -190,6 +194,7 @@ module Coordinators
     end
 
     def self.halt_the_store_rollout!(rollout)
+      return Res.new { raise } if rollout.stale?
       return Res.new { raise } unless rollout.started?
       rollout.halt_release!
       return Res.new { raise } if rollout.errors?
@@ -197,6 +202,7 @@ module Coordinators
     end
 
     def self.fully_release_the_store_rollout!(rollout)
+      return Res.new { raise } if rollout.stale?
       return Res.new { raise } unless rollout.started?
       rollout.release_fully!
       return Res.new { raise } if rollout.errors?

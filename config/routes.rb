@@ -83,12 +83,23 @@ Rails.application.routes.draw do
       resources :releases, only: %i[show create destroy index update], shallow: true do
         member do
           get :overview
-          get :change_queue
+          get :changeset_tracking
           get :store_submissions
           get :internal_builds
           get :regression_testing
           get :release_candidates
           get :soak
+        end
+
+        resources :store_rollouts, only: [], shallow: false, path: :rollouts do
+          member do
+            patch :start
+            patch :increase
+            patch :pause
+            patch :resume
+            patch :halt
+            patch :fully_release
+          end
         end
 
         resources :commits, only: [], shallow: false do
@@ -103,19 +114,6 @@ Rails.application.routes.draw do
 
         resources :release_platforms, shallow: false, only: [] do
           resources :release_metadata, only: %i[edit update]
-        end
-
-        resources :platforms, shallow: false, only: [] do
-          resources :store_rollouts, only: [], path: :rollouts do
-            member do
-              patch :start
-              patch :increase
-              patch :pause
-              patch :resume
-              patch :halt
-              patch :fully_release
-            end
-          end
         end
 
         resources :build_queues, only: [], shallow: false do

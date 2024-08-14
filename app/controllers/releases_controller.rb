@@ -4,9 +4,9 @@ class ReleasesController < SignedInApplicationController
   include Tabbable
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
-  before_action :set_release, only: %i[show destroy update timeline overview change_queue store_submissions internal_builds regression_testing release_candidates soak]
-  before_action :set_live_release_tab_configuration, only: %i[overview change_queue store_submissions internal_builds regression_testing release_candidates soak]
-  before_action :set_train_and_app, only: [:show, :update, :destroy, :overview, :change_queue, :store_submissions, :internal_builds, :regression_testing, :release_candidates, :soak]
+  before_action :set_release, only: %i[show destroy update timeline overview changeset_tracking store_submissions internal_builds regression_testing release_candidates soak]
+  before_action :set_live_release_tab_configuration, only: %i[overview changeset_tracking store_submissions internal_builds regression_testing release_candidates soak]
+  before_action :set_train_and_app, only: [:show, :update, :destroy, :overview, :changeset_tracking, :store_submissions, :internal_builds, :regression_testing, :release_candidates, :soak]
 
   def index
     @train = @app.trains.friendly.find(params[:train_id])
@@ -54,7 +54,7 @@ class ReleasesController < SignedInApplicationController
     set_pull_requests
   end
 
-  def change_queue
+  def changeset_tracking
     set_pull_requests
   end
 

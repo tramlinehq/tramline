@@ -3,16 +3,17 @@
 class V2::LiveRelease::ProductionSubmissionComponent < V2::BaseComponent
   include Memery
 
-  def initialize(submission, inactive: false)
+  def initialize(submission, inactive: false, title: "Store Submission")
     @submission = submission
     @inactive = inactive
     @change_build_prompt = false
     @cancel_prompt = false
     @new_submission_prompt = false
+    @title = title
   end
 
   attr_reader :submission
-  delegate :actionable?, :release_platform_run, :external_link, to: :submission
+  delegate :actionable?, :release_platform_run, :external_link, :provider, to: :submission
   delegate :release, to: :release_platform_run
 
   STATUS = {
@@ -54,7 +55,7 @@ class V2::LiveRelease::ProductionSubmissionComponent < V2::BaseComponent
   end
 
   def all_builds
-    available_builds + [current_build]
+    newer_builds + [current_build]
   end
 
   def build_display_info(b)
@@ -91,7 +92,7 @@ class V2::LiveRelease::ProductionSubmissionComponent < V2::BaseComponent
        turbo: false,
        html_options: {method: :patch,
                       params: {store_submission: {force: false}},
-                      data: {turbo_method: :patch, turbo_confirm: "Are you sure about that?"}}}
+                      data: {turbo_method: :patch, turbo_confirm: "You are about to prepare the submission for review.\nAre you sure?"}}}
     elsif submission.cancellable?
       {scheme: :danger,
        type: :button,
@@ -99,7 +100,7 @@ class V2::LiveRelease::ProductionSubmissionComponent < V2::BaseComponent
        options: cancel_path,
        turbo: false,
        html_options: {method: :patch,
-                      data: {turbo_method: :patch, turbo_confirm: "Are you sure about that?"}}}
+                      data: {turbo_method: :patch, turbo_confirm: "You are about to cancel the submission.\nAre you sure?"}}}
     end
   end
 
@@ -150,7 +151,7 @@ class V2::LiveRelease::ProductionSubmissionComponent < V2::BaseComponent
     submission.build
   end
 
-  def build_opts
-    options_for_select(all_builds.map { |b| [build_display_info(b), b.id] }, current_build.id)
+  def build_opts(default: nil)
+    options_for_select(all_builds.map { |b| [build_display_info(b), b.id] }, default.presence || all_builds.first)
   end
 end

@@ -11,7 +11,7 @@ module Tabbable
     sections[:kickoff][:overview][:icon] = "v2/gauge.svg"
     sections[:kickoff][:overview][:position] = 1
     sections[:kickoff][:overview][:status] = step_statuses[:overview]
-    sections[:kickoff][:changeset_tracking][:path] = change_queue_release_path(@release)
+    sections[:kickoff][:changeset_tracking][:path] = changeset_tracking_release_path(@release)
     sections[:kickoff][:changeset_tracking][:icon] = "v2/list_end.svg"
     sections[:kickoff][:changeset_tracking][:position] = 2
     sections[:kickoff][:changeset_tracking][:status] = step_statuses[:changeset_tracking]

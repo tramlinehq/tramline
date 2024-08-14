@@ -42,8 +42,7 @@ class ReleasePlatformRun < ApplicationRecord
   has_one :inflight_production_release, -> { inflight }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
   has_one :active_production_release, -> { active }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
   has_one :finished_production_release, -> { finished }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
-  has_many :play_store_rollouts, dependent: :destroy
-  has_many :app_store_rollouts, dependent: :destroy
+  has_many :store_rollouts, dependent: :destroy
   has_many :external_builds, through: :step_runs
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
@@ -241,27 +240,20 @@ class ReleasePlatformRun < ApplicationRecord
     finished_production_release&.store_rollout
   end
 
-  def older_internal_releases
-    internal_releases.inactive.order(created_at: :desc)
+  def older_beta_releases
+    beta_releases.inactive.order(created_at: :desc).offset(1)
   end
 
-  def older_beta_releases
-    beta_releases.inactive.order(created_at: :desc)
+  def older_internal_releases
+    internal_releases.inactive.order(created_at: :desc).offset(1)
   end
 
   def older_production_releases
     production_releases.stale.order(created_at: :desc)
   end
 
-  # TODO: [V2] remove this
-  def store_rollouts
-    if android?
-      play_store_rollouts
-    elsif ios?
-      app_store_rollouts
-    else
-      raise ArgumentError, "Unknown platform: #{platform}"
-    end
+  def older_production_store_rollouts
+    older_production_releases.includes(store_submission: :store_rollout).map(&:store_rollout).compact
   end
 
   def latest_rc_build?(build)
