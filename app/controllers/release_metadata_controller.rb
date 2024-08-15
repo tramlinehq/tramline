@@ -8,7 +8,6 @@ class ReleaseMetadataController < SignedInApplicationController
   before_action :set_train, only: %i[edit update edit_all update_all]
   before_action :set_app_from_train, only: %i[edit update edit_all update_all]
   before_action :ensure_editable, only: %i[edit update]
-  before_action :set_live_release_tab_configuration, only: %i[edit_all update_all]
 
   def edit
     @release_metadatum = @release_platform_run.release_metadatum

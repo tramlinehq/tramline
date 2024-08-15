@@ -2,15 +2,13 @@ class StoreRolloutsController < SignedInApplicationController
   include Tabbable
 
   before_action :require_write_access!
-  before_action :set_release
   before_action :set_store_rollout, only: %i[start increase pause resume halt fully_release]
   before_action :ensure_moveable, only: %i[start increase pause resume halt fully_release]
   before_action :ensure_user_controlled_rollout, only: [:increase, :halt]
   before_action :ensure_automatic_rollout, only: [:pause]
-  before_action :set_live_release_tab_configuration, only: %i[edit_all]
 
   def edit_all
-    @app = @release.app
+    @release = Release.friendly.find(params[:release_id])
   end
 
   def start
@@ -63,12 +61,8 @@ class StoreRolloutsController < SignedInApplicationController
 
   private
 
-  def set_release
-    @release = Release.friendly.find(params[:release_id])
-  end
-
   def set_store_rollout
-    @store_rollout = @release.store_rollouts.find(params[:id])
+    @store_rollout = StoreRollout.find(params[:id])
   end
 
   def ensure_user_controlled_rollout

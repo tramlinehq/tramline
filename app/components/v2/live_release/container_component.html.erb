@@ -47,7 +47,7 @@
         <% end %>
 
         <div class="flex flex-col gap-2 items-end">
-          <%= render V2::BadgeComponent.new(text: status.first, status: status.second) %>
+          <%= render V2::BadgeComponent.new(text: overall_status.first, status: overall_status.second) %>
           <%= render(scheduled_badge) if automatic? %>
           <% platform_runs.each do |platform_run| %>
             <% if staged_rollout_status(platform_run) %>

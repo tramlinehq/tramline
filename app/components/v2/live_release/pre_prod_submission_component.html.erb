@@ -2,15 +2,15 @@
   <div class="flex flex-col items-start gap-2 ml-4">
     <div class="flex flex-row items-center item-gap-default">
       <%= render V2::BadgeComponent.new(text: submission.deployment_channel_name, kind: :badge) do |badge| %>
-        <% badge.with_icon("integrations/logo_#{submission.provider}.png") %>
+        <% badge.with_icon(submission_logo) %>
       <% end %>
 
-      <%= render V2::BadgeComponent.new(text: submission.status.humanize, status: :neutral) %>
+      <%= render V2::BadgeComponent.new(text: status, status: :neutral) %>
     </div>
 
     <%= render V2::HorizontalDataSetComponent.new do |component| %>
-      <% component.with_data_set(title: "Released").with_content(released_at) %>
-      <% component.with_data_set(title: "External Status").with_content(submission.store_status&.humanize || "–") %>
+      <% component.with_data_set(title: "Released").with_content(released_ago) %>
+      <% component.with_data_set(title: "External Status").with_content(external_status) %>
     <% end %>
 
     <%= render V2::ButtonComponent.new(label: "Dashboard ↗",
@@ -20,7 +20,7 @@
                                        html_options: { class: "text-sm" },
                                        authz: false,
                                        size: :none) do |b|
-      b.with_icon("integrations/logo_#{submission.provider}.png", size: :md)
+      b.with_icon(submission_logo, size: :md)
     end %>
   </div>
 
@@ -30,7 +30,7 @@
                                          scheme: :default,
                                          type: :button,
                                          options: trigger_submission_path(submission),
-                                         html_options: { method: :patch, data: { turbo_method: :patch, turbo_confirm: "Are you sure?" } },
+                                         html_options: html_opts(:patch, "Are you sure?"),
                                          size: :xxs) %>
     <% end %>
   </div>

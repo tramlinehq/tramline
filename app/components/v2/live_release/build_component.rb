@@ -16,6 +16,10 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
   delegate :release_platform_run, :commit, :version_name, :artifact, :workflow_run, to: :build
   delegate :external_url, to: :workflow_run
 
+  def badge_data?
+    show_number || show_ci || show_activity
+  end
+
   def build_info
     build.display_name
   end
@@ -52,11 +56,15 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
   end
 
   def build_number
-    build.build_number || "-"
+    build.build_number || NOT_AVAILABLE
   end
 
   def artifact_name
-    return "-" if artifact.blank?
+    return NOT_AVAILABLE if artifact.blank?
     artifact.get_filename
+  end
+
+  def created_tooltip
+    "Originally created on #{time_format(build.generated_at)}"
   end
 end

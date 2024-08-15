@@ -37,6 +37,7 @@ class ProductionRelease < ApplicationRecord
     finished: "finished"
   }
   INITIAL_STATE = STATES[:inflight]
+  ACTIONABLE_STATES = [STATES[:inflight], STATES[:active]]
 
   enum status: STATES
 
@@ -54,7 +55,7 @@ class ProductionRelease < ApplicationRecord
   end
 
   def actionable?
-    inflight? || active?
+    ACTIONABLE_STATES.include?(status)
   end
 
   def completed_at

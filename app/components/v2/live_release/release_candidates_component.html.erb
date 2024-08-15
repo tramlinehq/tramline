@@ -16,7 +16,8 @@
     <% component.runs do |release_platform_run| %>
       <%= render V2::SectionComponent.new(title: "Build stats", style: :titled, size: :compact) do %>
         <% if release_platform_run.internal_builds.any? { |build| build.metadata.present? } %>
-          <div>TODO: [V2] Show build health here</div>
+          <div>
+            <% "TODO: [V2] Show build health here" %></div>
         <% else %>
           <%= render V2::EmptyStateComponent.new(
             title: "No stats for this platform",
@@ -29,10 +30,11 @@
   <% end %>
 
   <% component.runs do |release_platform_run| %>
-    <% if previous_beta_releases(release_platform_run).present? %>
-      <%= render V2::SectionComponent.new(title: "Other builds (#{previous_beta_releases(release_platform_run).size})", style: :titled, size: :compact) do %>
+    <% previous_betas = previous_beta_releases(release_platform_run) %>
+    <% if previous_betas.present? %>
+      <%= render V2::SectionComponent.new(title: "Other builds (#{previous_betas.size})", style: :titled, size: :compact) do %>
         <div class="flex flex-col item-gap-default">
-          <% previous_beta_releases(release_platform_run).each do |beta_release| %>
+          <% previous_betas.each do |beta_release| %>
             <%= render V2::AccordionComponent.new(push_down: true) do |accordion| %>
               <% accordion.with_title_section do %>
                 <div class="flex text-sm items-center justify-between">
@@ -49,7 +51,13 @@
               <% end %>
 
               <div class="my-3">
-                <%= render V2::LiveRelease::BuildComponent.new(beta_release.build, show_build_only: false) %>
+                <%= render V2::LiveRelease::BuildComponent.new(
+                  beta_release.build,
+                  show_number: true,
+                  show_metadata: true,
+                  show_ci: true,
+                  show_activity: false,
+                  show_commit: true) %>
               </div>
             <% end %>
           <% end %>

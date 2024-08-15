@@ -8,7 +8,6 @@ class StagedRolloutsController < SignedInApplicationController
   before_action :ensure_controlled_rolloutable, only: [:increase, :halt]
   before_action :ensure_rolloutable, only: [:fully_release, :resume]
   before_action :ensure_auto_rolloutable, only: [:pause]
-  before_action :set_live_release_tab_configuration, only: %i[edit_all]
 
   def edit_all
     @app = @release.app

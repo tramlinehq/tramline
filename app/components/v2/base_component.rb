@@ -3,6 +3,8 @@ class V2::BaseComponent < ViewComponent::Base
   include LinkHelper
   include AssetsHelper
 
+  NOT_AVAILABLE = "⃠"
+
   delegate :billing?,
     :billing_link,
     :current_user,
@@ -25,4 +27,8 @@ class V2::BaseComponent < ViewComponent::Base
   end
 
   def disabled? = @disabled
+
+  def html_opts(method, message, params: {})
+    {method:, params:, data: {turbo_method: method, turbo_confirm: message}}
+  end
 end

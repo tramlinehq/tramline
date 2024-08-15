@@ -1,8 +1,6 @@
-<%= render V2::LiveRelease::ContainerComponent.new(@release,
-                                                   title: @train.name,
-                                                   tab_config: @tab_configuration) do |container| %>
+<%= render V2::LiveRelease::ContainerComponent.new(@release, title: @train.name) do |container| %>
   <% container.with_back_button %>
-  <% container.with_tab(title: "Regression Testing", icon: @tab_configuration.dig(:stability, :regression_testing, :icon)) do %>
+  <% container.with_tab(title: "Regression Testing", icon: live_release_tab_configuration.dig(:stability, :regression_testing, :icon)) do %>
     <%= render V2::PlatformViewComponent.new(@release) do |component| %>
       <% component.platform_runs.each do |run| %>
         <div class="grid grid-cols-1">

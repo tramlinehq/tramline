@@ -1,18 +1,16 @@
-<%= render V2::LiveRelease::ContainerComponent.new(@release,
-                                                   title: @train.name,
-                                                   tab_config: @tab_configuration) do |container| %>
+<%= render V2::LiveRelease::ContainerComponent.new(@release, title: @release.train.name) do |container| %>
   <% container.with_back_button %>
-  <% container.with_tab(title: "App Submission", icon: @tab_configuration.dig(:release, :app_submission, :icon)) do %>
+  <% container.with_tab(title: "App Submission", icon: live_release_tab_configuration.dig(:release, :app_submission, :icon)) do %>
     <%= render V2::PlatformViewComponent.new(@release) do |component| %>
       <% component.platform_runs.each do |run| %>
         <div class="grid grid-cols-1 section-gap-default">
 
-          <% if run.inflight_production_release.present? %>
-              <%= render V2::LiveRelease::ProductionSubmissionComponent.new(run.inflight_production_release.store_submission, title: "In-flight Submission") %>
-          <% end %>
-
           <% if run.active_production_release.present? %>
             <%= render V2::LiveRelease::ProductionSubmissionComponent.new(run.active_production_release.store_submission, inactive: run.inflight_production_release.present?, title: "Active Submission") %>
+          <% end %>
+
+          <% if run.inflight_production_release.present? %>
+            <%= render V2::LiveRelease::ProductionSubmissionComponent.new(run.inflight_production_release.store_submission, title: "In-flight Submission") %>
           <% end %>
 
           <% if run.finished_production_release.present? %>

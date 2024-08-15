@@ -84,22 +84,10 @@ Rails.application.routes.draw do
         member do
           get :overview
           get :changeset_tracking
-          get :store_submissions
           get :internal_builds
           get :regression_testing
           get :release_candidates
           get :soak
-        end
-
-        resources :store_rollouts, only: [], shallow: false, path: :rollouts do
-          member do
-            patch :start
-            patch :increase
-            patch :pause
-            patch :resume
-            patch :halt
-            patch :fully_release
-          end
         end
 
         resources :commits, only: [], shallow: false do
@@ -108,6 +96,7 @@ Rails.application.routes.draw do
           end
         end
 
+        get :edit, to: "store_submissions#edit_all", path: :store_submission, as: :store_submission_edit
         get :edit, to: "store_rollouts#edit_all", path: :rollout, as: :staged_rollout_edit
         get :edit, to: "release_metadata#edit_all", path: :metadata, as: :metadata_edit
         patch :update, to: "release_metadata#update_all", path: :metadata, as: :metadata_update
@@ -220,8 +209,21 @@ Rails.application.routes.draw do
     post :production, to: "production_releases#create"
   end
 
-  resources :app_store_submissions, only: [:update] do
+  resources :store_rollouts, only: [], shallow: false, path: :rollouts do
     member do
+      patch :start
+      patch :increase
+      patch :pause
+      patch :resume
+      patch :halt
+      patch :fully_release
+    end
+  end
+
+  resources :store_submissions, only: [:update], shallow: false, path: :store_submissions do
+    member do
+      patch :retry
+      patch :trigger
       patch :submit_for_review
       patch :prepare
       patch :cancel
@@ -230,25 +232,11 @@ Rails.application.routes.draw do
   end
 
   if Rails.env.development?
-    patch "/app_store_submissions/:id/mock_reject", to: "app_store_submissions#mock_reject_for_app_store", as: :mock_reject_for_app_store
-    patch "/app_store_submissions/:id/mock_approve", to: "app_store_submissions#mock_approve_for_app_store", as: :mock_approve_for_app_store
-  end
-
-  resources :play_store_submissions, only: [:update] do
-    member do
-      patch :prepare
-      patch :cancel
-    end
+    patch "/store_submissions/:id/mock_reject", to: "app_store_submissions#mock_reject_for_app_store", as: :mock_reject_for_app_store
+    patch "/store_submissions/:id/mock_approve", to: "app_store_submissions#mock_approve_for_app_store", as: :mock_approve_for_app_store
   end
 
   resources :workflow_runs, only: [] do
-    member do
-      patch :retry
-      patch :trigger
-    end
-  end
-
-  resources :submissions, only: [] do
     member do
       patch :retry
       patch :trigger

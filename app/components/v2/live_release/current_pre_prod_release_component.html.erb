@@ -7,11 +7,7 @@
                                       options: run_pre_prod_beta_path(release_platform_run),
                                       size: :xxs,
                                       turbo: false,
-                                      html_options: {
-                                        method: :post,
-                                        params: {pre_prod_release: rc_params},
-                                        data: {turbo_method: :post, turbo_confirm: "Are you sure?"}
-                                      }) %>
+                                      html_options: html_opts(:post, "Are you sure?", params: {pre_prod_release: rc_params})) %>
       <div class="flex flex-col gap-2">
         <%= render V2::LiveRelease::BuildComponent.new(
           latest_internal_release.build,
@@ -33,11 +29,7 @@
                                       options: run_pre_prod_beta_path(release_platform_run),
                                       size: :xxs,
                                       turbo: false,
-                                      html_options: {
-                                        method: :post,
-                                        params: {pre_prod_release: rc_params},
-                                        data: {turbo_method: :post, turbo_confirm: "Are you sure you want to start the beta release?"}
-                                      }) %>
+                                      html_options: html_opts(:post, "Are you sure you want to start the beta release?", params: {pre_prod_release: rc_params})) %>
       <div class="flex flex-col gap-2">
         <%= render V2::CommitComponent.new(commit: latest_commit, detailed: false) %>
         <span class="text-sm">You can continue to release your existing Release Candidate, or replace it with the new change.</span>
@@ -68,7 +60,7 @@
                                              scheme: :default,
                                              options: trigger_workflow_run_path(workflow_run),
                                              size: :xxs,
-                                             html_options: { method: :patch, data: { turbo_method: :patch, turbo_confirm: "Are you sure?" } }) %>
+                                             html_options: html_opts(:patch, "Are you sure?")) %>
         <% end %>
 
         <% if retriggerable? %>
@@ -76,7 +68,7 @@
                                              scheme: :default,
                                              options: retry_workflow_run_path(workflow_run),
                                              size: :xxs,
-                                             html_options: { method: :patch, data: { turbo_method: :patch, turbo_confirm: "Are you sure?" } }) %>
+                                             html_options: html_opts(:patch, "Are you sure?")) %>
         <% end %>
       </div>
     <% end %>

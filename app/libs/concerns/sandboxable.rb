@@ -113,6 +113,7 @@ module Sandboxable
   def mock_update_production_build!(build_id)
     return unless sandbox_mode?
     update!(build_id:)
+    parent_release.update!(build_id:)
     return unless created?
 
     case type

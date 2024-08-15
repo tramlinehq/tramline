@@ -11,20 +11,22 @@ class V2::LiveRelease::ContainerComponent < V2::BaseReleaseComponent
     success: {icon: "v2/circle_check_big.svg", classes: STATUS_COLOR_PALETTE[:success].join(" ")}
   }
 
-  def initialize(release, title:, tab_config: [], error_resource: nil)
-    raise ArgumentError, "tab_config must be a Hash" unless tab_config.is_a?(Hash)
-
+  def initialize(release, title:, error_resource: nil)
     @release = release
     @title = title
-    @tab_config = tab_config
     @error_resource = error_resource
     super(@release)
   end
 
-  attr_reader :title, :tab_config, :error_resource, :release
+  attr_reader :title, :error_resource, :release
+  delegate :live_release_tab_configuration, :current_overall_status, to: :helpers
+
+  def overall_status
+    ReleasesHelper::SHOW_RELEASE_PHASE.fetch(current_overall_status.to_sym)
+  end
 
   def sorted_sections
-    tab_config.to_h do |s, configs|
+    live_release_tab_configuration.to_h do |s, configs|
       [s, configs.sort_by { |_, c| c[:position] }]
     end
   end

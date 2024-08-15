@@ -37,14 +37,14 @@ class ReleasePlatformRun < ApplicationRecord
   has_many :builds, dependent: :destroy, inverse_of: :release_platform_run
   has_many :internal_builds, -> { internal.ready }, class_name: "Build", dependent: :destroy, inverse_of: :release_platform_run
   has_many :rc_builds, -> { release_candidate.ready.reorder("generated_at DESC") }, class_name: "Build", dependent: :destroy, inverse_of: :release_platform_run
+  has_many :pre_prod_releases, dependent: :destroy
   has_many :internal_releases, dependent: :destroy
   has_many :beta_releases, dependent: :destroy
-  has_many :pre_prod_releases, dependent: :destroy
+  has_many :store_submissions, dependent: :destroy
   has_many :production_releases, dependent: :destroy
   has_one :inflight_production_release, -> { inflight }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
   has_one :active_production_release, -> { active }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
   has_one :finished_production_release, -> { finished }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
-  has_many :store_submissions, dependent: :destroy
   has_many :store_rollouts, dependent: :destroy
 
   # NOTE: deprecated after v2
@@ -262,9 +262,16 @@ class ReleasePlatformRun < ApplicationRecord
     rc_builds.first == build
   end
 
-  def available_rc_builds(build, only_new: false)
-    return rc_builds.where.not(id: build.id) unless only_new
-    rc_builds.where("generated_at > ?", build.generated_at).where.not(id: build.id)
+  def available_rc_builds(after: nil)
+    builds = rc_builds
+      .left_joins(:production_releases)
+      .where(production_releases: {build_id: nil})
+
+    if after
+      builds.where("generated_at > ?", after.generated_at).where.not(id: after.id)
+    else
+      builds
+    end
   end
 
   def next_build_sequence_number

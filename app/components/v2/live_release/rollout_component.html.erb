@@ -1,6 +1,6 @@
 <div class="flex flex-col item-gap-default">
   <div class="flex flex-col section-gap-default">
-    <%= render V2::CardComponent.new(title: @title, separator: false, fixed_height: card_height, border_style:) do |card| %>
+    <%= render V2::CardComponent.new(title: @title, separator: inactive?, fixed_height: card_height, border_style:) do |card| %>
       <% card.with_actions do %>
         <%= render V2::ModalComponent.new(title: "Rollout timeline",
                                           size: :xs,
@@ -32,7 +32,7 @@
                 build,
                 show_number: true,
                 show_metadata: false,
-                show_ci: true,
+                show_ci: false,
                 show_activity: false,
                 show_commit: false) %>
 
@@ -53,7 +53,6 @@
             <% end %>
 
             <% if inactive? %>
-
               <div class="flex items-baseline gap-2">
                 <%= render V2::IconComponent.new("integrations/logo_#{provider}.png", size: :xl) %>
                 <div class="text-3xl font-bold"><%= last_rollout_percentage %>%</div>
@@ -64,7 +63,7 @@
                 build,
                 show_number: true,
                 show_metadata: false,
-                show_ci: true,
+                show_ci: false,
                 show_activity: false,
                 show_commit: false) %>
             <% end %>
@@ -96,7 +95,7 @@
                 <%= render V2::ButtonComponent.new(label: "Store dashboard ↗",
                                                    scheme: :link,
                                                    type: :link_external,
-                                                   options: "https://play.google.com/store/apps/details?id=com.example.app",
+                                                   options: store_dashboard_link,
                                                    html_options: { class: "text-sm" },
                                                    authz: false,
                                                    size: :none) do |b|

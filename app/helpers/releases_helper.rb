@@ -15,6 +15,13 @@ module ReleasesHelper
     stopped_after_partial_finish: ["Stopped & Partially Finished", :inert]
   }
 
+  SHOW_RELEASE_PHASE = {
+    kickoff: ["Kickoff", :inert],
+    stabilization: ["Stabilizing the release", :routine],
+    review: ["Under store review", :ongoing],
+    rollout: ["Rolling out to users", :ongoing]
+  }
+
   def release_status_badge(status)
     status, styles = SHOW_RELEASE_STATUS.fetch(status.to_sym)
     status_badge(status, styles)

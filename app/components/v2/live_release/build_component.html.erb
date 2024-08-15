@@ -1,41 +1,43 @@
 <% if build %>
   <div class="flex flex-col item-gap-default">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center justify-start gap-x-1.5">
-        <% if show_number %>
-          <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
-            <% badge.with_link(number, external_url) %>
+    <% if badge_data? %>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center justify-start gap-x-1.5">
+          <% if show_number %>
+            <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
+              <% badge.with_link(number, external_url) %>
+            <% end %>
           <% end %>
-        <% end %>
 
-        <% if show_ci %>
-          <%= render V2::IconComponent.new("v2/slash.svg", size: :sm) %>
-          <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
-            <% badge.with_icon(build_logo) %>
-            <% badge.with_link(ci_info, ci_link) %>
+          <% if show_ci %>
+            <%= render V2::IconComponent.new("v2/slash.svg", size: :sm) %>
+            <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
+              <% badge.with_icon(build_logo) %>
+              <% badge.with_link(ci_info, ci_link) %>
+            <% end %>
           <% end %>
-        <% end %>
 
-        <% unless show_metadata %>
-          <%= render V2::BadgeComponent.new(text: build.display_name, kind: :badge) %>
-        <% end %>
+          <% unless show_metadata %>
+            <%= render V2::BadgeComponent.new(text: build.display_name, kind: :badge) %>
+          <% end %>
+
+          <% if show_activity %>
+            <%= render V2::BadgeComponent.new(text: build.workflow_run.status.humanize, status: :neutral) %>
+          <% end %>
+        </div>
 
         <% if show_activity %>
-          <%= render V2::BadgeComponent.new(text: build.workflow_run.status.humanize, status: :neutral) %>
-        <% end %>
-      </div>
-
-      <% if show_activity %>
-        <%= render V2::TooltipComponent.new("Originally created on #{time_format build.generated_at}", placement: "top") do |tooltip| %>
-          <% tooltip.with_body do %>
-            <div class="flex items-center">
-              <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2 text-secondary") %>
-              <span class="text-secondary font-normal text-sm"><%= last_activity_at %></span>
-            </div>
+          <%= render V2::TooltipComponent.new(created_tooltip, placement: "top") do |tooltip| %>
+            <% tooltip.with_body do %>
+              <div class="flex items-center">
+                <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2 text-secondary") %>
+                <span class="text-secondary font-normal text-sm"><%= last_activity_at %></span>
+              </div>
+            <% end %>
           <% end %>
         <% end %>
-      <% end %>
-    </div>
+      </div>
+    <% end %>
 
     <% if show_metadata %>
       <%= render V2::HorizontalDataSetComponent.new do |component| %>
@@ -49,7 +51,7 @@
                                                size: :none,
                                                authz: false) %>
           <% else %>
-            –
+            <%= NOT_AVAILABLE %>
           <% end %>
         <% end %>
         <% component.with_data_set(title: "Version String").with_content(version_name) %>

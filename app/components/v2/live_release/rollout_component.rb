@@ -9,9 +9,8 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
     paused: {text: "Paused phased release", status: :ongoing}
   }
 
-  def initialize(store_rollout, compact: false, inactive: false, title: "Rollout Status")
+  def initialize(store_rollout, inactive: false, title: "Rollout Status")
     @store_rollout = store_rollout
-    @compact = compact
     @title = title
     @inactive = inactive
   end
@@ -25,8 +24,6 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
     :controllable_rollout?,
     :automatic_rollout?, :id, to: :store_rollout
   delegate :release, to: :release_platform_run
-
-  def compact? = @compact
 
   def upcoming? = store_rollout.created?
 
@@ -106,9 +103,9 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
       return V2::ButtonComponent.new(
         label: "Start rollout",
         scheme: :light,
-        options: start_release_store_rollout_path(release, id),
+        options: start_store_rollout_path(id),
         size: :xxs,
-        html_options: patch_html_opts
+        html_options: html_opts(:patch, "Are you sure?")
       )
     end
 
@@ -116,9 +113,9 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
       V2::ButtonComponent.new(
         label: "Increase rollout",
         scheme: :default,
-        options: increase_release_store_rollout_path(release, id),
+        options: increase_store_rollout_path(id),
         size: :xxs,
-        html_options: patch_html_opts
+        html_options: html_opts(:patch, "Are you sure?")
       )
     end
   end
@@ -128,17 +125,17 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
       started: [
         {
           text: "Halt rollout",
-          path: halt_release_store_rollout_path(release, id),
+          path: halt_store_rollout_path(id),
           scheme: :danger
         },
         {
           text: "Release to all",
-          path: fully_release_release_store_rollout_path(release, id),
+          path: fully_release_store_rollout_path(id),
           scheme: :light
         },
         {
           text: "Pause rollout",
-          path: pause_release_store_rollout_path(release, id),
+          path: pause_store_rollout_path(id),
           scheme: :danger,
           disabled: !automatic_rollout?
         }
@@ -146,14 +143,14 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
       paused: [
         {
           text: "Resume rollout",
-          path: resume_release_store_rollout_path(release, id),
+          path: resume_store_rollout_path(id),
           scheme: :light
         }
       ],
       halted: [
         {
           text: "Resume rollout",
-          path: resume_release_store_rollout_path(release, id),
+          path: resume_store_rollout_path(id),
           scheme: :light
         }
       ]
@@ -166,7 +163,7 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
         options: action[:path],
         disabled: action[:disabled],
         size: :xxs,
-        html_options: patch_html_opts
+        html_options: html_opts(:patch, "Are you sure?")
       )
     end&.compact || []
   end
@@ -174,8 +171,6 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
   def card_height
     if active?
       "80"
-    elsif compact?
-      "60"
     else
       "60"
     end
@@ -185,7 +180,7 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
     :dashed if upcoming?
   end
 
-  def patch_html_opts
-    {method: :patch, data: {turbo_method: :patch, turbo_confirm: "Are you sure?"}}
+  def store_dashboard_link
+    "https://play.google.com/store/apps/details?id=com.example.app"
   end
 end

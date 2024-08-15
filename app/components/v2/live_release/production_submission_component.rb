@@ -13,7 +13,7 @@ class V2::LiveRelease::ProductionSubmissionComponent < V2::BaseComponent
   end
 
   attr_reader :submission
-  delegate :actionable?, :release_platform_run, :external_link, :provider, to: :submission
+  delegate :id, :inflight?, :actionable?, :release_platform_run, :external_link, :provider, to: :submission
   delegate :release, to: :release_platform_run
 
   STATUS = {
@@ -28,6 +28,10 @@ class V2::LiveRelease::ProductionSubmissionComponent < V2::BaseComponent
     failed_with_action_required: {text: "Needs manual submission", status: :failure},
     cancelled: {text: "Removed from review", status: :inert}
   }
+
+  def inflight? = submission.parent_release.inflight?
+
+  def inactive? = @inactive
 
   def before_render
     compute_prompts
@@ -47,15 +51,15 @@ class V2::LiveRelease::ProductionSubmissionComponent < V2::BaseComponent
   end
 
   memoize def available_builds
-    release_platform_run.available_rc_builds(current_build)
+    release_platform_run.available_rc_builds
   end
 
   memoize def newer_builds
-    release_platform_run.available_rc_builds(current_build, only_new: true)
+    release_platform_run.available_rc_builds(after: current_build)
   end
 
   def all_builds
-    newer_builds + [current_build]
+    available_builds + [current_build]
   end
 
   def build_display_info(b)
@@ -85,25 +89,37 @@ class V2::LiveRelease::ProductionSubmissionComponent < V2::BaseComponent
     return unless actionable?
 
     if submission.created?
+      message = "You are about to prepare the submission for review.\nAre you sure?"
       {scheme: :default,
        type: :button,
        label: "Prepare for review",
-       options: prepare_release_path,
+       options: prepare_store_submission_path(id),
        turbo: false,
-       html_options: {method: :patch,
-                      params: {store_submission: {force: false}},
-                      data: {turbo_method: :patch, turbo_confirm: "You are about to prepare the submission for review.\nAre you sure?"}}}
+       html_options: html_opts(:patch, message, params: {store_submission: {force: false}})}
     elsif submission.cancellable?
+      message = "You are about to cancel the submission.\nAre you sure?"
       {scheme: :danger,
        type: :button,
        label: "Cancel submission",
-       options: cancel_path,
+       options: cancel_store_submission_path(id),
        turbo: false,
-       html_options: {method: :patch,
-                      data: {turbo_method: :patch, turbo_confirm: "You are about to cancel the submission.\nAre you sure?"}}}
+       html_options: html_opts(:patch, message)}
     end
   end
 
+  def current_build
+    submission.build
+  end
+
+  def build_opts(default: nil)
+    options_for_select(all_builds.map { |b| [build_display_info(b), b.id] }, default.presence || all_builds.first)
+  end
+
+  def border_style
+    :dashed if inflight?
+  end
+
+  # ============== Sandbox actions ==============
   def mock_actions
     return unless actionable? && submission.respond_to?(:submitted_for_review?) && submission.submitted_for_review?
 
@@ -113,45 +129,13 @@ class V2::LiveRelease::ProductionSubmissionComponent < V2::BaseComponent
         label: "Mock approve",
         options: mock_approve_for_app_store_path(submission.id),
         turbo: false,
-        html_options: {method: :patch,
-                       data: {turbo_method: :patch, turbo_confirm: "Are you sure about that?"}})))
+        html_options: html_opts(:patch, "Are you sure about that?"))))
       concat(render(V2::ButtonComponent.new(scheme: :mock,
         type: :button,
         label: "Mock reject",
         options: mock_reject_for_app_store_path(submission.id),
         turbo: false,
-        html_options: {method: :patch,
-                       data: {turbo_method: :patch, turbo_confirm: "Are you sure about that?"}})))
+        html_options: html_opts(:patch, "Are you sure about that?"))))
     end
-  end
-
-  def submit_for_review_path
-    return submit_for_review_app_store_submission_path(submission.id) if submission.is_a? AppStoreSubmission
-    raise "Unsupported submission type"
-  end
-
-  def update_path
-    return app_store_submission_path(submission.id) if submission.is_a? AppStoreSubmission
-    return play_store_submission_path(submission.id) if submission.is_a? PlayStoreSubmission
-    raise "Unsupported submission type"
-  end
-
-  def prepare_release_path
-    return prepare_app_store_submission_path(submission.id) if submission.is_a? AppStoreSubmission
-    return prepare_play_store_submission_path(submission.id) if submission.is_a? PlayStoreSubmission
-    raise "Unsupported submission type"
-  end
-
-  def cancel_path
-    return cancel_app_store_submission_path(submission.id) if submission.is_a? AppStoreSubmission
-    raise "Unsupported submission type"
-  end
-
-  def current_build
-    submission.build
-  end
-
-  def build_opts(default: nil)
-    options_for_select(all_builds.map { |b| [build_display_info(b), b.id] }, default.presence || all_builds.first)
   end
 end
