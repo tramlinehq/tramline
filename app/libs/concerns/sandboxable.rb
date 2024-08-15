@@ -73,17 +73,20 @@ module Sandboxable
   def mock_start_play_store_rollout!
     return unless sandbox_mode?
     update_stage(4, finish_rollout: false)
+    event_stamp!(reason: :started, kind: :notice, data: stamp_data)
     on_start!
   end
 
   def mock_complete_play_store_rollout!
     return unless sandbox_mode?
     complete!
+    event_stamp!(reason: :completed, kind: :success, data: stamp_data)
   end
 
   def mock_start_app_store_rollout!
     return unless sandbox_mode?
     update_rollout(mocked_store_info("READY_FOR_SALE", "ACTIVE", 2))
+    event_stamp!(reason: :started, kind: :notice, data: stamp_data)
   end
 
   def mock_find_build_in_testflight

@@ -147,6 +147,7 @@ class PlayStoreSubmission < StoreSubmission
   def provider = app.android_store_provider
 
   def update_external_status
+    return if sandbox_mode?
     StoreSubmissions::PlayStore::UpdateExternalReleaseJob.perform_later(id)
   end
 
