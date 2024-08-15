@@ -163,7 +163,7 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
       V2::ButtonComponent.new(
         label: action[:text],
         scheme: action[:scheme],
-        options: action[:options],
+        options: action[:path],
         disabled: action[:disabled],
         size: :xxs,
         html_options: patch_html_opts

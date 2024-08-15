@@ -14,7 +14,7 @@ describe PlayStoreSubmission do
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:public_icon_img)
-      allow(providable_dbl).to receive(:find_build_in_track).and_return(nil)
+      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_later)
     end
 
     it "creates draft release" do
@@ -40,6 +40,12 @@ describe PlayStoreSubmission do
       error = Google::Apis::ClientError.new("Error", body: error_body.to_json)
       allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new { raise Installations::Google::PlayDeveloper::Error.new(error) })
       expect { submission.prepare_for_release! }.to change(submission, :failed_with_action_required?)
+    end
+
+    it "updates the external release status" do
+      allow(providable_dbl).to receive(:create_draft_release).and_return(GitHub::Result.new)
+      submission.prepare_for_release!
+      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_later).with(submission.id)
     end
   end
 end

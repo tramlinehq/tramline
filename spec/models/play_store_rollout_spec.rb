@@ -17,6 +17,7 @@ describe PlayStoreRollout do
       allow(prod_double).to receive(:rollout_started!)
       allow(prod_double).to receive(:rollout_complete!)
       allow(rollout).to receive(:parent_release).and_return(prod_double)
+      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_later)
     end
 
     it "starts the production release" do
@@ -51,6 +52,10 @@ describe PlayStoreRollout do
     let(:store_submission) { create(:play_store_submission, :prod_release, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
+    before do
+      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_later)
+    end
+
     it "completes the rollout if no more stages left" do
       rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:, config: [1, 80, 100], current_stage: 1)
       allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
@@ -67,6 +72,24 @@ describe PlayStoreRollout do
 
       rollout.move_to_next_stage!
       expect(rollout.started?).to be(true)
+    end
+
+    it "updates the external release if the rollout was started" do
+      rollout = create(:store_rollout, :created, :play_store, release_platform_run:, store_submission:, config: [1, 80, 100])
+      allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+      allow(rollout).to receive(:provider).and_return(providable_dbl)
+
+      rollout.move_to_next_stage!
+      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_later).with(store_submission.id)
+    end
+
+    it "does not update the external release if the rollout was already started" do
+      rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:, config: [1, 80, 100])
+      allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+      allow(rollout).to receive(:provider).and_return(providable_dbl)
+
+      rollout.move_to_next_stage!
+      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).not_to have_received(:perform_later)
     end
 
     it "promotes the deployment run with the next stage percentage" do
@@ -121,6 +144,10 @@ describe PlayStoreRollout do
     let(:store_submission) { create(:play_store_submission, :prod_release, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
+    before do
+      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_later)
+    end
+
     it "does nothing if the rollout hasn't started" do
       rollout = create(:store_rollout, :created, :play_store, release_platform_run:, store_submission:)
       rollout.release_fully!
@@ -169,6 +196,18 @@ describe PlayStoreRollout do
       expect(production_release).not_to have_received(:rollout_complete!)
       expect(rollout.fully_released?).to be(false)
     end
+
+    it "updates the submission external release" do
+      rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:)
+      allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+      allow(rollout).to receive(:provider).and_return(providable_dbl)
+      allow(rollout).to receive(:parent_release).and_return(production_release)
+      allow(production_release).to receive(:rollout_complete!)
+
+      rollout.release_fully!
+
+      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_later).with(store_submission.id)
+    end
   end
 
   describe "#halt_release!" do
@@ -176,6 +215,10 @@ describe PlayStoreRollout do
     let(:production_release) { create(:production_release, release_platform_run:) }
     let(:store_submission) { create(:play_store_submission, :prod_release, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+
+    before do
+      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_later)
+    end
 
     it "halts the rollout if started" do
       rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:)
@@ -206,6 +249,16 @@ describe PlayStoreRollout do
 
       expect(rollout.halted?).to be(false)
     end
+
+    it "updates the submission external release" do
+      rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:)
+      allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
+      allow(rollout).to receive(:provider).and_return(providable_dbl)
+
+      rollout.halt_release!
+
+      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_later).with(store_submission.id)
+    end
   end
 
   describe "#resume_release!" do
@@ -213,6 +266,10 @@ describe PlayStoreRollout do
     let(:production_release) { create(:production_release, release_platform_run:) }
     let(:store_submission) { create(:play_store_submission, :prod_release, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
+
+    before do
+      allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_later)
+    end
 
     it "resumes the rollout if halted" do
       rollout = create(:store_rollout, :halted, :play_store, release_platform_run:, store_submission:, config: [1, 80], current_stage: 0)
@@ -229,6 +286,16 @@ describe PlayStoreRollout do
       rollout.resume_release!
       expect(rollout.halted?).to be(true)
       expect(rollout.errors?).to be(true)
+    end
+
+    it "updates the submission external release" do
+      rollout = create(:store_rollout, :halted, :play_store, release_platform_run:, store_submission:)
+      allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+      allow(rollout).to receive(:provider).and_return(providable_dbl)
+
+      rollout.resume_release!
+
+      expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_later).with(store_submission.id)
     end
   end
 end

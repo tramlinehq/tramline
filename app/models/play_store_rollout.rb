@@ -18,18 +18,18 @@ class PlayStoreRollout < StoreRollout
   include Passportable
 
   belongs_to :play_store_submission, foreign_key: :store_submission_id, inverse_of: :play_store_rollout
-  delegate :deployment_channel_id, to: :store_submission
+  delegate :deployment_channel_id, :update_external_status, to: :store_submission
 
   aasm safe_state_machine_params(with_lock: false) do
     state :created, initial: true
     state(*STATES.keys)
 
-    event :start do
+    event :start, after_commit: :on_start! do
       transitions from: :created, to: :started
       transitions from: :halted, to: :started
     end
 
-    event :halt do
+    event :halt, after_commit: :on_halt! do
       transitions from: [:started], to: :halted
     end
 
@@ -52,7 +52,6 @@ class PlayStoreRollout < StoreRollout
     if staged_rollout?
       return mock_start_play_store_rollout! if sandbox_mode?
       move_to_next_stage!
-      on_start! if started?
     else
       return mock_complete_play_store_rollout! if sandbox_mode?
       result = rollout(Release::FULL_ROLLOUT_VALUE)
@@ -130,5 +129,19 @@ class PlayStoreRollout < StoreRollout
 
   def rollout(value)
     provider.rollout_release(deployment_channel_id, build_number, version_name, value, nil)
+  end
+
+  def on_start!
+    update_external_status
+    super
+  end
+
+  def on_complete!
+    update_external_status
+    super
+  end
+
+  def on_halt!
+    update_external_status
   end
 end

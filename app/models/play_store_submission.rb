@@ -133,13 +133,17 @@ class PlayStoreSubmission < StoreSubmission
     result = provider.create_draft_release(deployment_channel_id, build_number, version_name, release_notes)
     if result.ok?
       finish_prepare!
-      update_store_info!
+      update_external_status
     else
       fail_with_error(result.error)
     end
   end
 
   def provider = app.android_store_provider
+
+  def update_external_status
+    StoreSubmissions::PlayStore::UpdateExternalReleaseJob.perform_later(id)
+  end
 
   def update_store_info!
     store_data = provider.find_build_in_track(deployment_channel_id, build_number)
