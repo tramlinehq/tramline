@@ -58,7 +58,7 @@ class StoreRollout < ApplicationRecord
 
   def reached_last_stage? = next_rollout_percentage.nil?
 
-  def stale? = parent_release.stale?
+  delegate :stale?, to: :parent_release
 
   def stage
     (current_stage || 0).succ

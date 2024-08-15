@@ -1,12 +1,12 @@
 class V2::LiveRelease::RolloutComponent < V2::BaseComponent
   STATUS = {
-    created: { text: "Ready", status: :routine },
-    started: { text: "Active", status: :ongoing },
-    failed: { text: "Failed", status: :failure },
-    completed: { text: "Completed", status: :success },
-    halted: { text: "Halted", status: :inert },
-    fully_released: { text: "Released to all users", status: :success },
-    paused: { text: "Paused phased release", status: :ongoing }
+    created: {text: "Ready", status: :routine},
+    started: {text: "Active", status: :ongoing},
+    failed: {text: "Failed", status: :failure},
+    completed: {text: "Completed", status: :success},
+    halted: {text: "Halted", status: :inert},
+    fully_released: {text: "Released to all users", status: :success},
+    paused: {text: "Paused phased release", status: :ongoing}
   }
 
   def initialize(store_rollout, compact: false, inactive: false, title: "Rollout Status")
@@ -18,12 +18,12 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
 
   attr_reader :store_rollout
   delegate :release_platform_run,
-           :build,
-           :provider,
-           :last_rollout_percentage,
-           :stage,
-           :controllable_rollout?,
-           :automatic_rollout?, :id, to: :store_rollout
+    :build,
+    :provider,
+    :last_rollout_percentage,
+    :stage,
+    :controllable_rollout?,
+    :automatic_rollout?, :id, to: :store_rollout
   delegate :release, to: :release_platform_run
 
   def compact? = @compact
@@ -40,33 +40,33 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
 
   def events
     [{
-       timestamp: time_format(1.day.ago, with_year: false),
-       title: "Rollout increase",
-       description: "The staged rollout for this release has been increased to 50%",
-       type: :success
-     },
-     {
-       timestamp: time_format(2.days.ago, with_year: false),
-       title: "Rollout increase",
-       description: "The staged rollout for this release has been increased to 20%",
-       type: :success
-     },
-     {
-       timestamp: time_format(3.days.ago, with_year: false),
-       title: "Rollout increase",
-       description: "The staged rollout for this release has been increased to 10%",
-       type: :success
-     },
-     {
-       timestamp: time_format(4.days.ago, with_year: false),
-       title: "Rollout increase",
-       description: "The staged rollout for this release has been increased to 1%",
-       type: :success
-     }]
+      timestamp: time_format(1.day.ago, with_year: false),
+      title: "Rollout increase",
+      description: "The staged rollout for this release has been increased to 50%",
+      type: :success
+    },
+      {
+        timestamp: time_format(2.days.ago, with_year: false),
+        title: "Rollout increase",
+        description: "The staged rollout for this release has been increased to 20%",
+        type: :success
+      },
+      {
+        timestamp: time_format(3.days.ago, with_year: false),
+        title: "Rollout increase",
+        description: "The staged rollout for this release has been increased to 10%",
+        type: :success
+      },
+      {
+        timestamp: time_format(4.days.ago, with_year: false),
+        title: "Rollout increase",
+        description: "The staged rollout for this release has been increased to 1%",
+        type: :success
+      }]
   end
 
   def status
-    STATUS[store_rollout.status.to_sym] || { text: store_rollout.status.humanize, status: :neutral }
+    STATUS[store_rollout.status.to_sym] || {text: store_rollout.status.humanize, status: :neutral}
   end
 
   def stage_help
@@ -186,6 +186,6 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
   end
 
   def patch_html_opts
-    { method: :patch, data: { turbo_method: :patch, turbo_confirm: "Are you sure?" } }
+    {method: :patch, data: {turbo_method: :patch, turbo_confirm: "Are you sure?"}}
   end
 end
