@@ -61,16 +61,6 @@ describe WorkflowRun do
       end
     end
 
-    it "stamps an event" do
-      id = workflow_run.id
-      name = workflow_run.class.name
-      allow(PassportJob).to receive(:perform_later)
-
-      workflow_run.trigger!
-
-      expect(PassportJob).to have_received(:perform_later).with(id, name, hash_including(reason: :ci_triggered)).once
-    end
-
     it "updates build number" do
       allow(Releases::FindWorkflowRun).to receive(:perform_async)
 

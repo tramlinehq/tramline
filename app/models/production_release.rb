@@ -13,6 +13,7 @@
 #
 class ProductionRelease < ApplicationRecord
   include Loggable
+  include Passportable
   RELEASE_MONITORING_PERIOD_IN_DAYS = 15
 
   belongs_to :release_platform_run
@@ -26,6 +27,8 @@ class ProductionRelease < ApplicationRecord
   delegate :app, to: :release_platform_run
   delegate :monitoring_provider, to: :app
   delegate :store_rollout, to: :store_submission
+
+  STAMPABLE_REASONS = %w[created active finished]
 
   STATES = {
     inflight: "inflight",
@@ -45,6 +48,7 @@ class ProductionRelease < ApplicationRecord
   def rollout_complete!(_)
     with_lock do
       update!(status: STATES[:finished])
+      event_stamp!(reason: :finished, kind: :notice, data: stamp_data)
       Signal.production_release_is_complete!(release_platform_run)
     end
   end
@@ -91,6 +95,13 @@ class ProductionRelease < ApplicationRecord
   def conf = ReleaseConfig::Platform::ReleaseStep.new(config)
 
   def production? = true
+
+  def stamp_data
+    {
+      build_number: build.build_number,
+      version: build.version_name
+    }
+  end
 end
 
 # TODO: [V2]

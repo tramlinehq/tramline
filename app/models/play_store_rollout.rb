@@ -18,7 +18,15 @@ class PlayStoreRollout < StoreRollout
   include Passportable
 
   belongs_to :play_store_submission, foreign_key: :store_submission_id, inverse_of: :play_store_rollout
-  delegate :deployment_channel_id, :update_external_status, to: :store_submission
+  delegate :deployment_channel_id, :deployment_channel, :update_external_status, to: :store_submission
+
+  STAMPABLE_REASONS = %w[
+    started
+    updated
+    halted
+    completed
+    fully_released
+  ]
 
   aasm safe_state_machine_params(with_lock: false) do
     state :created, initial: true
@@ -57,6 +65,7 @@ class PlayStoreRollout < StoreRollout
       result = rollout(Release::FULL_ROLLOUT_VALUE)
       if result.ok?
         complete!
+        event_stamp!(reason: :completed, kind: :success, data: stamp_data)
       else
         elog(result.error)
         errors.add(:base, result.error)
@@ -87,6 +96,7 @@ class PlayStoreRollout < StoreRollout
       result = rollout(rollout_value)
       if result.ok?
         fully_release!
+        event_stamp!(reason: :fully_released, kind: :success, data: stamp_data)
         notify!("Staged rollout was accelerated to a full rollout!", :staged_rollout_fully_released, notification_params)
       else
         elog(result.error)
@@ -102,7 +112,6 @@ class PlayStoreRollout < StoreRollout
       result = provider.halt_release(deployment_channel_id, build_number, version_name, last_rollout_percentage)
       if result.ok?
         halt!
-        notify!("Release was halted!", :staged_rollout_halted, notification_params)
       else
         elog(result.error)
         errors.add(:base, result.error)
@@ -117,6 +126,7 @@ class PlayStoreRollout < StoreRollout
       result = rollout(last_rollout_percentage)
       if result.ok?
         start!
+        event_stamp!(reason: :resumed, kind: :notice, data: stamp_data)
         notify!("Release was resumed!", :staged_rollout_resumed, notification_params)
       else
         elog(result.error)
@@ -143,5 +153,11 @@ class PlayStoreRollout < StoreRollout
 
   def on_halt!
     update_external_status
+    event_stamp!(reason: :halted, kind: :error, data: stamp_data)
+    notify!("Release was halted!", :staged_rollout_halted, notification_params)
+  end
+
+  def stamp_data
+    super.merge(track: deployment_channel.name.humanize)
   end
 end

@@ -56,7 +56,8 @@ class AppStoreSubmission < StoreSubmission
     submitted_for_review
     resubmitted_for_review
     review_approved
-    review_failed
+    review_rejected
+    cancelled
   ]
 
   PreparedVersionNotFoundError = Class.new(StandardError)
@@ -99,7 +100,7 @@ class AppStoreSubmission < StoreSubmission
       transitions from: [:review_failed, :submitting_for_review], to: :submitted_for_review
     end
 
-    event :reject do
+    event :reject, after_commit: :on_reject! do
       after { set_rejected_at! }
       transitions from: :submitted_for_review, to: :review_failed
     end
@@ -184,15 +185,6 @@ class AppStoreSubmission < StoreSubmission
     submit_for_review!
   end
 
-  def on_submit_for_review!(args = {resubmission: false})
-    resubmission = args.fetch(:resubmission)
-    notify!("Submitted for review!", :submit_for_review, notification_params.merge(resubmission:))
-    stamp_params = {kind: :notice, data: stamp_data}
-    stamp_params[:reason] = resubmission ? :resubmitted_for_review : :submitted_for_review
-    event_stamp!(**stamp_params)
-    update_external_status
-  end
-
   def update_external_release
     return unless editable?
 
@@ -271,15 +263,30 @@ class AppStoreSubmission < StoreSubmission
     StoreSubmissions::AppStore::PrepareForReleaseJob.perform_async(id)
   end
 
+  def on_submit_for_review!(args = {resubmission: false})
+    resubmission = args.fetch(:resubmission)
+    notify!("Submitted for review!", :submit_for_review, notification_params.merge(resubmission:))
+    stamp_params = {kind: :notice, data: stamp_data}
+    stamp_params[:reason] = resubmission ? :resubmitted_for_review : :submitted_for_review
+    event_stamp!(**stamp_params)
+    update_external_status
+  end
+
   def on_start_cancellation!
     StoreSubmissions::AppStore::RemoveFromReviewJob.perform_async(id)
   end
 
   def on_cancel!
+    event_stamp!(reason: :cancelled, kind: :error, data: stamp_data)
     StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_later(id, can_retry: false)
   end
 
+  def on_reject!
+    event_stamp!(reason: :review_rejected, kind: :error, data: stamp_data)
+  end
+
   def on_approve!
+    event_stamp!(reason: :review_approved, kind: :success, data: stamp_data)
     create_app_store_rollout!(
       release_platform_run:,
       config: staged_rollout? ? conf.rollout_config.stages : [],

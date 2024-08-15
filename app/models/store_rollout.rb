@@ -76,6 +76,10 @@ class StoreRollout < ApplicationRecord
     config[current_stage]
   end
 
+  def latest_events(n = 3)
+    passports.order(created_at: :desc).limit(n)
+  end
+
   protected
 
   def next_stage
@@ -88,11 +92,15 @@ class StoreRollout < ApplicationRecord
     update!(current_stage: stage)
     if may_start?
       start!
+      event_stamp!(reason: :started, kind: :notice, data: stamp_data)
     else
-      event_stamp!(reason: :increased, kind: :notice, data: stamp_data)
+      event_stamp!(reason: :updated, kind: :notice, data: stamp_data)
     end
 
-    complete! if finish_rollout && reached_last_stage?
+    if finish_rollout && reached_last_stage?
+      complete!
+      event_stamp!(reason: :completed, kind: :success, data: stamp_data)
+    end
   end
 
   def notification_params
@@ -102,12 +110,16 @@ class StoreRollout < ApplicationRecord
   def stamp_data
     data = {
       current_stage: stage,
-      is_fully_released: fully_released?
+      version: version_name,
+      build_number: build_number
     }
 
-    if current_stage.present?
-      data[:rollout_percentage] = "%.2f" % config[current_stage]
-    end
+    data[:rollout_percentage] =
+      if is_staged_rollout? && current_stage.present?
+        "%.2f" % config[current_stage]
+      else
+        "100"
+      end
 
     data
   end
@@ -124,6 +136,7 @@ class StoreRollout < ApplicationRecord
     update! completed_at: Time.current
   end
 end
+
 # TODO: [V2]
 # - handle managed publishing
 # - handle previous staged rollout value in the next rollout

@@ -28,6 +28,12 @@ class GoogleFirebaseSubmission < StoreSubmission
 
   UploadNotComplete = Class.new(StandardError)
 
+  STAMPABLE_REASONS = %w[
+    triggered
+    finished
+    failed
+  ]
+
   STATES = {
     created: "created",
     preprocessing: "preprocessing",
@@ -56,12 +62,8 @@ class GoogleFirebaseSubmission < StoreSubmission
       transitions to: :finished
     end
 
-    event :fail, before: :set_failure_reason do
+    event :fail, before: :set_failure_reason, after_commit: :on_fail! do
       transitions to: :failed
-    end
-
-    event :fail_with_sync_option, before: :set_failure_reason do
-      transitions from: [:prepared, :failed_with_action_required], to: :failed_with_action_required
     end
   end
 
@@ -70,6 +72,8 @@ class GoogleFirebaseSubmission < StoreSubmission
   def trigger!
     return unless actionable?
     return unless may_prepare?
+
+    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
     return mock_upload_to_firebase if sandbox_mode?
 
     if build_present_in_store?
@@ -153,8 +157,13 @@ class GoogleFirebaseSubmission < StoreSubmission
   end
 
   def on_finish!
+    event_stamp!(reason: :finished, kind: :success, data: stamp_data)
     parent_release.rollout_complete!(self)
     # notify!("Finished!", :finished, notification_params)
+  end
+
+  def on_fail!
+    event_stamp!(reason: :failed, kind: :error, data: stamp_data)
   end
 
   def update_store_info!(release_info)
@@ -174,5 +183,9 @@ class GoogleFirebaseSubmission < StoreSubmission
 
   def external_id
     store_release["id"]
+  end
+
+  def stamp_data
+    super.merge(channels: deployment_channel.name)
   end
 end

@@ -16,9 +16,9 @@
 #
 class PreProdRelease < ApplicationRecord
   include AASM
-  include Passportable
   include Loggable
   include Displayable
+  include Passportable
 
   belongs_to :release_platform_run
   belongs_to :previous, class_name: "PreProdRelease", inverse_of: :next, optional: true
@@ -31,6 +31,7 @@ class PreProdRelease < ApplicationRecord
 
   before_create :set_default_tester_notes
   after_create_commit -> { previous&.mark_as_stale! }
+  after_create_commit -> { create_stamp!(data: stamp_data) }
 
   delegate :release, :train, to: :release_platform_run
 
@@ -138,15 +139,16 @@ class PreProdRelease < ApplicationRecord
 
   def new_commit_available? = false
 
+  def stamp_data
+    {
+      commit_sha: commit.short_sha,
+      commit_url: commit.url
+    }
+  end
+
   private
 
   def trigger_submission!(submission_config)
     submission_config.submission_type.create_and_trigger!(self, submission_config, build)
   end
 end
-
-# start a submission - there needs to be a common start function between submission classes
-# wait for its completion - submission_completed! callback from submission
-# see if next submission is auto promotable (if undefined, use the top level auto promote config)
-# start the next submission and repeat till there are no more submissions
-# if there are no more submissions, mark the release as completed and send signal to coordinato

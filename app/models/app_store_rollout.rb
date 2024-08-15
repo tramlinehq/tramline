@@ -19,6 +19,15 @@ class AppStoreRollout < StoreRollout
 
   ReleaseNotFullyLive = Class.new(StandardError)
   STATES = STATES.merge(paused: "paused")
+  STAMPABLE_REASONS = %w[
+    started
+    updated
+    paused
+    resumed
+    halted
+    completed
+    fully_released
+  ]
 
   belongs_to :app_store_submission, foreign_key: :store_submission_id, inverse_of: :app_store_rollout
   delegate :update_store_info!, to: :store_submission
@@ -66,8 +75,10 @@ class AppStoreRollout < StoreRollout
 
     if staged_rollout?
       start!
+      event_stamp!(reason: :started, kind: :notice, data: stamp_data)
     else
       complete!
+      event_stamp!(reason: :completed, kind: :success, data: stamp_data)
     end
 
     StoreRollouts::AppStore::FindLiveReleaseJob.perform_async(id)
@@ -84,7 +95,10 @@ class AppStoreRollout < StoreRollout
 
     release_info = result.value!
     if release_info.live?(build_number)
-      return complete! unless staged_rollout?
+      unless staged_rollout?
+        event_stamp!(reason: :completed, kind: :success, data: stamp_data)
+        return complete!
+      end
       with_lock { update_rollout(release_info) }
       notify!("Phased release was updated!", :staged_rollout_updated, notification_params)
       return if release_info.phased_release_complete?
@@ -101,6 +115,7 @@ class AppStoreRollout < StoreRollout
       if result.ok?
         update_store_info!(result.value!)
         halt!
+        event_stamp!(reason: :halted, kind: :notice, data: stamp_data)
         notify!("Phased release was halted!", :staged_rollout_halted, notification_params)
       else
         elog(result.error)
@@ -117,6 +132,7 @@ class AppStoreRollout < StoreRollout
       if result.ok?
         update_store_info!(result.value!)
         fully_release!
+        event_stamp!(reason: :fully_released, kind: :success, data: stamp_data)
         notify!("Phased release was accelerated to a full rollout!", :staged_rollout_fully_released, notification_params)
       else
         elog(result.error)
@@ -133,6 +149,7 @@ class AppStoreRollout < StoreRollout
       if result.ok?
         update_store_info!(result.value!)
         pause!
+        event_stamp!(reason: :paused, kind: :error, data: stamp_data)
         notify!("Phased release was paused!", :staged_rollout_paused, notification_params)
       else
         elog(result.error)
@@ -148,6 +165,7 @@ class AppStoreRollout < StoreRollout
       result = provider.resume_phased_release
       if result.ok?
         update_rollout(result.value!)
+        event_stamp!(reason: :resumed, kind: :notice, data: stamp_data)
         notify!("Phased release was resumed!", :staged_rollout_resumed, notification_params)
       else
         elog(result.error)

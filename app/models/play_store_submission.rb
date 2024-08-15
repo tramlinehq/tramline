@@ -32,6 +32,11 @@ class PlayStoreSubmission < StoreSubmission
     dependent: :destroy,
     inverse_of: :play_store_submission
 
+  STAMPABLE_REASONS = %w[
+    prepared
+    review_rejected
+  ]
+
   STATES = {
     created: "created",
     preprocessing: "preprocessing",
@@ -169,6 +174,7 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def on_prepare!
+    event_stamp!(reason: :prepared, kind: :notice, data: stamp_data)
     create_play_store_rollout!(
       release_platform_run:,
       config: conf.rollout_config.stages.presence || [],
@@ -181,5 +187,9 @@ class PlayStoreSubmission < StoreSubmission
     return mock_build_present_in_play_store? if sandbox_mode?
 
     provider.find_build(build_number).present?
+  end
+
+  def stamp_data
+    super.merge(track: deployment_channel.name.humanize)
   end
 end

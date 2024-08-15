@@ -31,25 +31,27 @@ class ReleasePlatformRun < ApplicationRecord
 
   belongs_to :release_platform
   belongs_to :release
+  belongs_to :last_commit, class_name: "Commit", inverse_of: :release_platform_runs, optional: true
   has_many :release_metadata, class_name: "ReleaseMetadata", dependent: :destroy, inverse_of: :release_platform_run
-  has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
+  has_many :workflow_runs, dependent: :destroy
+  has_many :builds, dependent: :destroy, inverse_of: :release_platform_run
   has_many :internal_builds, -> { internal.ready }, class_name: "Build", dependent: :destroy, inverse_of: :release_platform_run
   has_many :rc_builds, -> { release_candidate.ready.reorder("generated_at DESC") }, class_name: "Build", dependent: :destroy, inverse_of: :release_platform_run
-  has_many :builds, dependent: :destroy, inverse_of: :release_platform_run
-  has_many :play_store_submissions, dependent: :destroy
-  has_many :app_store_submissions, dependent: :destroy
+  has_many :internal_releases, dependent: :destroy
+  has_many :beta_releases, dependent: :destroy
+  has_many :pre_prod_releases, dependent: :destroy
   has_many :production_releases, dependent: :destroy
   has_one :inflight_production_release, -> { inflight }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
   has_one :active_production_release, -> { active }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
   has_one :finished_production_release, -> { finished }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
+  has_many :store_submissions, dependent: :destroy
   has_many :store_rollouts, dependent: :destroy
+
+  # NOTE: deprecated after v2
+  has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
   has_many :external_builds, through: :step_runs
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
-  has_many :internal_releases, dependent: :destroy
-  has_many :beta_releases, dependent: :destroy
-  has_many :workflow_runs, dependent: :destroy
-  belongs_to :last_commit, class_name: "Commit", inverse_of: :release_platform_runs, optional: true
 
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
   scope :have_not_submitted_production, -> { on_track.reject(&:production_release_submitted?) }
@@ -188,7 +190,7 @@ class ReleasePlatformRun < ApplicationRecord
               auto_promote: true
             },
             {
-              number: 1,
+              number: 2,
               submission_type: "PlayStoreSubmission",
               submission_config: {id: :beta, name: "open testing"},
               rollout_config: {enabled: false},

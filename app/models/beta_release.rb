@@ -17,9 +17,12 @@
 class BetaRelease < PreProdRelease
   belongs_to :parent_internal_release, class_name: "InternalRelease", optional: true
 
+  STAMPABLE_REASONS = %w[created finished failed]
+
   def finish!
     with_lock do
       update!(status: STATES[:finished])
+      event_stamp!(reason: :finished, kind: :success, data: stamp_data)
       Signal.beta_release_is_finished!(build)
     end
   end

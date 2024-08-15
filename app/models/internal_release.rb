@@ -15,9 +15,12 @@
 #  release_platform_run_id    :uuid             not null, indexed
 #
 class InternalRelease < PreProdRelease
+  STAMPABLE_REASONS = %w[created finished failed]
+
   def finish!
     with_lock do
       update!(status: STATES[:finished])
+      event_stamp!(reason: :finished, kind: :success, data: stamp_data)
       Signal.internal_release_finished!(build)
     end
   end

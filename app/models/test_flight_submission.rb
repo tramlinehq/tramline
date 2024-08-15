@@ -24,6 +24,13 @@
 #  release_platform_run_id :uuid             not null, indexed
 #
 class TestFlightSubmission < StoreSubmission
+  STAMPABLE_REASONS = %w[
+    triggered
+    submitted_for_review
+    review_rejected
+    finished
+    failed
+  ]
   STATES = {
     created: "created",
     preprocessing: "preprocessing",
@@ -51,16 +58,16 @@ class TestFlightSubmission < StoreSubmission
       transitions from: [:created, :preprocessing], to: :submitted_for_review
     end
 
-    event :reject do
+    event :reject, after_commit: :on_reject! do
       after { set_rejected_at! }
       transitions from: :submitted_for_review, to: :review_failed
     end
 
-    event :fail, before: :set_failure_reason do
+    event :fail, before: :set_failure_reason, after_commit: :on_fail! do
       transitions to: :failed
     end
 
-    event :finish, after_commit: :after_finish! do
+    event :finish, after_commit: :on_finish! do
       after { set_approved_at! }
       transitions from: [:created, :preprocessing, :submitted_for_review], to: :finished
     end
@@ -72,6 +79,8 @@ class TestFlightSubmission < StoreSubmission
 
   def trigger!
     return unless actionable?
+
+    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
     return mock_start_release_in_testflight if sandbox_mode?
     return start_release! if build_present_in_store?
 
@@ -101,10 +110,9 @@ class TestFlightSubmission < StoreSubmission
   end
 
   def on_submit_for_review!
+    event_stamp!(reason: :submitted_for_review, kind: :notice, data: stamp_data)
     StoreSubmissions::TestFlight::UpdateExternalBuildJob.perform_async(id)
     # notify!("Submitted for review!", :submit_for_review, notification_params)
-    #
-    # event_stamp!(kind: :notice, reason: :submitted_for_review, data: stamp_data)
   end
 
   def update_external_release
@@ -153,8 +161,21 @@ class TestFlightSubmission < StoreSubmission
     save!
   end
 
-  def after_finish!
+  def on_reject!
+    event_stamp!(reason: :review_rejected, kind: :error, data: stamp_data)
+  end
+
+  def on_fail!
+    event_stamp!(reason: :failed, kind: :error, data: stamp_data)
+  end
+
+  def on_finish!
+    event_stamp!(reason: :finished, kind: :success, data: stamp_data)
     parent_release.rollout_complete!(self)
     # notify!("Finished!", :finished, notification_params)
+  end
+
+  def stamp_data
+    super.merge(channels: deployment_channel.name)
   end
 end

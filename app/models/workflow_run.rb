@@ -34,12 +34,12 @@ class WorkflowRun < ApplicationRecord
   delegate :commit_hash, to: :commit
 
   STAMPABLE_REASONS = %w[
-    ci_triggered
-    ci_retriggered
-    ci_workflow_unavailable
-    ci_finished
-    ci_workflow_failed
-    ci_workflow_halted
+    triggered
+    retried
+    unavailable
+    failed
+    halted
+    finished
   ]
 
   KINDS = {
@@ -221,10 +221,10 @@ class WorkflowRun < ApplicationRecord
 
   def on_initiate!
     WorkflowRuns::TriggerJob.perform_later(id)
+    event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
   end
 
   def on_initiation!
-    event_stamp!(reason: :ci_triggered, kind: :notice, data: stamp_data)
     # TODO: [V2] notify triggered
     # notify!("Step has been triggered!", :step_started, notification_params)
 
@@ -238,25 +238,27 @@ class WorkflowRun < ApplicationRecord
 
   def on_retry!
     WorkflowRuns::TriggerJob.perform_later(id, retrigger: true)
+    event_stamp!(reason: :retried, kind: :notice, data: stamp_data)
   end
 
   def on_unavailable!
+    event_stamp!(reason: :unavailable, kind: :error, data: stamp_data)
     # TODO: [V2] notify unavailable
     # notify_on_failure!("Could not find the CI workflow!")
   end
 
   def on_fail!
-    event_stamp!(reason: :ci_workflow_failed, kind: :error, data: stamp_data)
+    event_stamp!(reason: :failed, kind: :error, data: stamp_data)
     # TODO: [V2] notify failure
   end
 
   def on_halt!
-    event_stamp!(reason: :ci_workflow_halted, kind: :error, data: stamp_data)
+    event_stamp!(reason: :halted, kind: :error, data: stamp_data)
     # TODO: [V2] notify halt
   end
 
   def on_finish!
-    event_stamp!(reason: :ci_finished, kind: :success, data: stamp_data)
+    event_stamp!(reason: :finished, kind: :success, data: stamp_data)
     Signal.workflow_run_finished!(id)
   end
 
@@ -267,9 +269,13 @@ class WorkflowRun < ApplicationRecord
 
   def stamp_data
     {
-      ref: external_id,
+      kind: kind.humanize,
+      commit_sha: commit.short_sha,
+      commit_url: commit.url,
+      ref: external_number,
       url: external_url,
-      version: build.build_number
+      version_name: release_version,
+      build_number: build&.build_number
     }
   end
 
