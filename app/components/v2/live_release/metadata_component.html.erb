@@ -1,4 +1,4 @@
-<%= render V2::FormComponent.new(url: update_metadata_path, method: :patch, free_form: true) do |f| %>
+<%= render V2::FormComponent.new(url: update_metadata_path, method: :patch, data: { turbo: false }, free_form: true) do |f| %>
   <div>
     <div class="flex flex-col gap-y-2 mb-6">
       <div class="flex gap-x-4">
@@ -43,7 +43,7 @@
             <%= render V2::ButtonComponent.new(
               scheme: :light,
               options: root_path,
-              type: :button,
+              type: :link,
               disabled: true,
               size: :xxs,
               label: "Copy to all locales",
