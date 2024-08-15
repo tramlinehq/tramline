@@ -19,6 +19,7 @@ class Accounts::SsoAuthentication < ApplicationRecord
   include Linkable
 
   class AuthException < StandardError; end
+
   UNINVITED_USER_ROLE = Accounts::Membership.roles[:viewer]
 
   has_one :user_authentication, as: :authenticatable, dependent: :destroy
@@ -95,7 +96,10 @@ class Accounts::SsoAuthentication < ApplicationRecord
       user.preferred_name = preferred_name
     end
     user.memberships.new(organization:, role: invite&.role || UNINVITED_USER_ROLE)
-    invite.mark_accepted(user) if save && invite.present?
+    if save
+      invite.mark_accepted(user) if invite.present?
+      track_new_user(organization)
+    end
   end
 
   def track_login(remote_ip)
@@ -110,5 +114,9 @@ class Accounts::SsoAuthentication < ApplicationRecord
     self.sign_in_count ||= 0
     self.sign_in_count += 1
     save
+  end
+
+  def track_new_user(organization)
+    SiteAnalytics.identify_and_group(user, organization)
   end
 end

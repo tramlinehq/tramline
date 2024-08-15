@@ -26,13 +26,14 @@ Rails.application.config.content_security_policy do |policy|
   policy.font_src(:self, :https, :data)
   policy.img_src(:self, :https, :data)
   policy.object_src(:none)
-  policy.script_src(:self, :https, :unsafe_inline, :unsafe_eval)
+  policy.script_src(:self, :https, :unsafe_eval)
   policy.style_src(:self, :https, :unsafe_inline)
   policy.worker_src(:self, :https, :blob)
   policy.connect_src(:self, *connect_src_uris)
-  policy.report_uri(csp_reporting_uri.to_s)
+  policy.child_src(:self, *connect_src_uris)
+  policy.report_uri(csp_reporting_uri.to_s) if csp_reporting_uri.present?
 end
 
 Rails.application.config.content_security_policy_nonce_generator = ->(request) { Base64.strict_encode64(request.session.id.to_s) }
-Rails.application.config.content_security_policy_nonce_directives = %w[style-src script-src]
+Rails.application.config.content_security_policy_nonce_directives = %w[script-src]
 Rails.application.config.content_security_policy_report_only = report_only

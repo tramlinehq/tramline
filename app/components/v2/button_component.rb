@@ -98,7 +98,7 @@ class V2::ButtonComponent < V2::BaseComponent
   def link_to_component
     classname = ""
     classname = "ml-1.5" if icon? && !icon_only?
-    @options = "javascript:void(0);" if disabled?
+    @options = "#" if disabled?
 
     _link_to(link_external?, @options, @html_options) do
       concat(icon) if icon?
