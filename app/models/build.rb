@@ -36,6 +36,7 @@ class Build < ApplicationRecord
 
   delegate :android?, :ios?, :ci_cd_provider, :train, to: :release_platform_run
   delegate :artifacts_url, :build_artifact_name_pattern, :kind, to: :workflow_run
+  delegate :notify!, to: :train
 
   before_create :set_sequence_number
 
@@ -74,8 +75,13 @@ class Build < ApplicationRecord
     end
 
     save!
-    # TODO: [V2] notify on create
-    # notify!("A new build is available!", :build_available, notification_params, slack_file_id, display_name) if slack_file_id
+    notify!("A new build is available!", :build_available_v2, notification_params, slack_file_id, display_name)
+  end
+
+  def notification_params
+    workflow_run.notification_params.merge(
+      artifact_present: has_artifact?
+    )
   end
 
   private

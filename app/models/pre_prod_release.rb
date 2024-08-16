@@ -34,6 +34,7 @@ class PreProdRelease < ApplicationRecord
   after_create_commit -> { create_stamp!(data: stamp_data) }
 
   delegate :release, :train, to: :release_platform_run
+  delegate :notify!, to: :train
 
   STATES = {
     created: "created",
@@ -144,6 +145,16 @@ class PreProdRelease < ApplicationRecord
       commit_sha: commit.short_sha,
       commit_url: commit.url
     }
+  end
+
+  def notification_params
+    release_platform_run.notification_params.merge(
+      commit_sha: commit.short_sha,
+      commit_url: commit.url,
+      build_number: build.build_number,
+      release_version: release.release_version,
+      submission_channels: store_submissions.map { |s| "#{s.provider.display} - #{s.deployment_channel_name}" }.join(", ")
+    )
   end
 
   private

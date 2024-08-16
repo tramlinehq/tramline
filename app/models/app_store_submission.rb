@@ -242,6 +242,12 @@ class AppStoreSubmission < StoreSubmission
 
   def provider = app.ios_store_provider
 
+  def notification_params
+    super.merge(
+      requires_review: false
+    )
+  end
+
   private
 
   def reset_store_info!

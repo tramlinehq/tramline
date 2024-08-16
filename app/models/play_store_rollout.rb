@@ -80,7 +80,6 @@ class PlayStoreRollout < StoreRollout
       result = rollout(next_rollout_percentage)
       if result.ok?
         update_stage(next_stage, finish_rollout: true)
-        notify!("Staged rollout was updated!", :staged_rollout_updated, notification_params)
       else
         elog(result.error)
         errors.add(:base, result.error)
@@ -97,7 +96,6 @@ class PlayStoreRollout < StoreRollout
       if result.ok?
         fully_release!
         event_stamp!(reason: :fully_released, kind: :success, data: stamp_data)
-        notify!("Staged rollout was accelerated to a full rollout!", :staged_rollout_fully_released, notification_params)
       else
         elog(result.error)
         errors.add(:base, result.error)
@@ -127,7 +125,7 @@ class PlayStoreRollout < StoreRollout
       if result.ok?
         start!
         event_stamp!(reason: :resumed, kind: :notice, data: stamp_data)
-        notify!("Release was resumed!", :staged_rollout_resumed, notification_params)
+        notify!("Rollout was resumed", :production_rollout_resumed, notification_params)
       else
         elog(result.error)
         errors.add(:base, result.error)
@@ -154,7 +152,7 @@ class PlayStoreRollout < StoreRollout
   def on_halt!
     update_external_status
     event_stamp!(reason: :halted, kind: :error, data: stamp_data)
-    notify!("Release was halted!", :staged_rollout_halted, notification_params)
+    notify!("Rollout has been halted", :production_rollout_halted, notification_params)
   end
 
   def stamp_data

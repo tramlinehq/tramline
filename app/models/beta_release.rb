@@ -19,6 +19,11 @@ class BetaRelease < PreProdRelease
 
   STAMPABLE_REASONS = %w[created finished failed]
 
+  def rollout_complete!(submission)
+    notify!("Beta release finished", :beta_submission_finished, submission.notification_params)
+    super
+  end
+
   def finish!
     with_lock do
       update!(status: STATES[:finished])

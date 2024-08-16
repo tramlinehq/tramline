@@ -160,6 +160,12 @@ class PlayStoreSubmission < StoreSubmission
     save!
   end
 
+  def notification_params
+    super.merge(
+      requires_review: false
+    )
+  end
+
   private
 
   def on_start_prepare!

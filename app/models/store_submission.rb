@@ -91,7 +91,9 @@ class StoreSubmission < ApplicationRecord
   end
 
   def notification_params
-    {}
+    parent_release.notification_params.merge(
+      submission_channel: "#{provider.display} - #{deployment_channel_name}"
+    )
   end
 
   protected

@@ -1,0 +1,31 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "The production release *<%= @release_version %> (<%= @build_number %>)* has been submitted for review"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        <% if @requires_review %>
+        {
+          "type": "mrkdwn",
+          "text": "<%= google_managed_publishing_text %>"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<%= google_unmanaged_publishing_text %>"
+        },
+        <% else %>
+        {
+          "type": "mrkdwn",
+          "text": "<%= apple_publishing_text %>"
+        }
+        <% end %>
+      ]
+    }
+  ]
+}

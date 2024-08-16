@@ -184,6 +184,15 @@ class WorkflowRun < ApplicationRecord
     end
   end
 
+  def notification_params
+    triggering_release.notification_params.merge(
+      workflow_name: conf.name,
+      commit_sha: commit.short_sha,
+      commit_url: commit.url,
+      workflow_kind: internal? ? "internal" : "RC"
+    )
+  end
+
   private
 
   def trigger_external_run!
@@ -225,9 +234,6 @@ class WorkflowRun < ApplicationRecord
   end
 
   def on_initiation!
-    # TODO: [V2] notify triggered
-    # notify!("Step has been triggered!", :step_started, notification_params)
-
     return found! if workflow_found? && may_found?
     WorkflowRuns::FindJob.perform_async(id)
   end
@@ -243,18 +249,17 @@ class WorkflowRun < ApplicationRecord
 
   def on_unavailable!
     event_stamp!(reason: :unavailable, kind: :error, data: stamp_data)
-    # TODO: [V2] notify unavailable
-    # notify_on_failure!("Could not find the CI workflow!")
+    notify!("Could not find the workflow run!", :workflow_run_unavailable, notification_params)
   end
 
   def on_fail!
     event_stamp!(reason: :failed, kind: :error, data: stamp_data)
-    # TODO: [V2] notify failure
+    notify!("The workflow run has failed!", :workflow_run_failed, notification_params)
   end
 
   def on_halt!
     event_stamp!(reason: :halted, kind: :error, data: stamp_data)
-    # TODO: [V2] notify halt
+    notify!("The workflow run has been halted!", :workflow_run_halted, notification_params)
   end
 
   def on_finish!

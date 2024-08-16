@@ -100,7 +100,6 @@ class AppStoreRollout < StoreRollout
         return complete!
       end
       with_lock { update_rollout(release_info) }
-      notify!("Phased release was updated!", :staged_rollout_updated, notification_params)
       return if release_info.phased_release_complete?
     end
 
@@ -116,7 +115,7 @@ class AppStoreRollout < StoreRollout
         update_store_info!(result.value!)
         halt!
         event_stamp!(reason: :halted, kind: :notice, data: stamp_data)
-        notify!("Phased release was halted!", :staged_rollout_halted, notification_params)
+        notify!("Rollout has been halted", :production_rollout_halted, notification_params)
       else
         elog(result.error)
         errors.add(:base, result.error)
@@ -133,7 +132,6 @@ class AppStoreRollout < StoreRollout
         update_store_info!(result.value!)
         fully_release!
         event_stamp!(reason: :fully_released, kind: :success, data: stamp_data)
-        notify!("Phased release was accelerated to a full rollout!", :staged_rollout_fully_released, notification_params)
       else
         elog(result.error)
         errors.add(:base, result.error)
@@ -150,7 +148,7 @@ class AppStoreRollout < StoreRollout
         update_store_info!(result.value!)
         pause!
         event_stamp!(reason: :paused, kind: :error, data: stamp_data)
-        notify!("Phased release was paused!", :staged_rollout_paused, notification_params)
+        notify!("Rollout has been paused", :production_rollout_paused, notification_params)
       else
         elog(result.error)
         errors.add(:base, result.error)
@@ -166,7 +164,7 @@ class AppStoreRollout < StoreRollout
       if result.ok?
         update_rollout(result.value!)
         event_stamp!(reason: :resumed, kind: :notice, data: stamp_data)
-        notify!("Phased release was resumed!", :staged_rollout_resumed, notification_params)
+        notify!("Rollout has been resumed", :production_rollout_resumed, notification_params)
       else
         elog(result.error)
         errors.add(:base, result.error)

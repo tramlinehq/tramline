@@ -2,6 +2,8 @@
 
 class MigrateUsersToEmailAuth < ActiveRecord::Migration[7.0]
   def up
+    return
+
     Accounts::User.all.each do |user|
       next if user.email_authentication.present?
       user_attrs = user.attributes

@@ -1,0 +1,22 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": ":female-construction-worker: A new <%= @workflow_kind %> build *<%= @release_version %> (<%= @build_number %>)* is now available!"
+      }
+    }
+    <% if @artifact_present %>
+    ,{
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "Additionally, a direct download of the build artifact will become available in this message thread."
+        }
+      ]
+    }
+    <% end %>
+  ]
+}

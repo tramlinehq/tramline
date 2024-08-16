@@ -1,0 +1,20 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "A new production submission *<%= @release_version %> (<%= @build_number %>)* is getting prepared for review"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "- Changes since the last release to the channel are sent in the message thread."
+        }
+      ]
+    }
+  ]
+}

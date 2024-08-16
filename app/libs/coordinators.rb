@@ -144,6 +144,7 @@ module Coordinators
       Res.new do
         raise unless submission.editable?
         submission.start_prepare!
+        submission.notify!("Production submission started", :production_submission_started, submission.notification_params)
       end
     end
 
@@ -151,6 +152,7 @@ module Coordinators
       Res.new do
         raise unless submission.editable?
         submission.start_submission!
+        submission.notify!("Production submission submitted for review", :production_submission_in_review, submission.notification_params)
       end
     end
 
@@ -158,6 +160,7 @@ module Coordinators
       Res.new do
         raise unless submission.editable?
         submission.start_cancellation!
+        submission.notify!("Production submission cancelled", :production_submission_cancelled, submission.notification_params)
       end
     end
 

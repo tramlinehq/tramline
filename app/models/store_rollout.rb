@@ -23,6 +23,9 @@ class StoreRollout < ApplicationRecord
   belongs_to :store_submission
   belongs_to :release_platform_run
 
+  delegate :train, to: :release_platform_run
+  delegate :notify!, to: :train
+
   STAMPABLE_REASONS = %w[
     started
     paused
@@ -80,6 +83,10 @@ class StoreRollout < ApplicationRecord
     passports.order(created_at: :desc).limit(n)
   end
 
+  def notification_params
+    store_submission.notification_params.merge(stamp_data)
+  end
+
   protected
 
   def next_stage
@@ -95,16 +102,13 @@ class StoreRollout < ApplicationRecord
       event_stamp!(reason: :started, kind: :notice, data: stamp_data)
     else
       event_stamp!(reason: :updated, kind: :notice, data: stamp_data)
+      notify!("Rollout has been updated", :production_rollout_updated, notification_params)
     end
 
     if finish_rollout && reached_last_stage?
       complete!
       event_stamp!(reason: :completed, kind: :success, data: stamp_data)
     end
-  end
-
-  def notification_params
-    store_submission.notification_params.merge(stamp_data)
   end
 
   def stamp_data

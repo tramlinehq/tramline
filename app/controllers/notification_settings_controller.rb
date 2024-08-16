@@ -8,7 +8,13 @@ class NotificationSettingsController < SignedInApplicationController
   around_action :set_time_zone
 
   def index
-    @notification_settings = @train.notification_settings if @train.send_notifications?
+    if @train.send_notifications?
+      @notification_settings = if @train.product_v2?
+        @train.notification_settings.where(kind: NotificationSetting.kinds.values - NotificationSetting::DEPRECATED_KINDS.values)
+      else
+        @train.notification_settings.where(kind: NotificationSetting.kinds.values - NotificationSetting::V2_KINDS.values)
+      end
+    end
     set_tab_configuration
   end
 

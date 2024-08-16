@@ -24,9 +24,10 @@ class ProductionRelease < ApplicationRecord
   has_many :release_health_events, dependent: :destroy, inverse_of: :production_release
   has_many :release_health_metrics, dependent: :destroy, inverse_of: :production_release
 
-  delegate :app, to: :release_platform_run
+  delegate :app, :train, to: :release_platform_run
   delegate :monitoring_provider, to: :app
   delegate :store_rollout, to: :store_submission
+  delegate :notify!, to: :train
 
   STAMPABLE_REASONS = %w[created active finished]
 
@@ -73,6 +74,7 @@ class ProductionRelease < ApplicationRecord
     return unless inflight?
     previous&.mark_as_stale!
     update!(status: STATES[:active])
+    notify!("Production release was started!", :production_rollout_started, store_rollout.notification_params)
 
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
@@ -103,7 +105,11 @@ class ProductionRelease < ApplicationRecord
       version: build.version_name
     }
   end
-end
 
-# TODO: [V2]
-# fix notification for store rollout final thing to be more deployment run end types
+  def notification_params
+    release_platform_run.notification_params.merge(
+      build_number: build.build_number,
+      release_version: build.version_name
+    )
+  end
+end
