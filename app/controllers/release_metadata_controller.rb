@@ -53,24 +53,19 @@ class ReleaseMetadataController < SignedInApplicationController
     ios_metadata = ReleaseMetadata.find_by_id_and_language(ios_id, language, :ios)
     android_metadata = ReleaseMetadata.find_by_id_and_language(android_id, language, :android)
 
-    if update_all_platforms(android_metadata, android_params, ios_metadata, ios_params)
+    begin
+      ReleaseMetadata.transaction do
+        android_metadata.update(android_params) if android_id.present?
+        ios_metadata.update(ios_params) if ios_id.present?
+      end
+
       redirect_to release_metadata_edit_path(@release), notice: "Release metadata was successfully updated."
-    else
+    rescue ActiveRecord::RecordInvalid
       render :edit_all, status: :unprocessable_entity
     end
   end
 
   private
-
-  def update_all_platforms(android_metadata, android_params, ios_metadata, ios_params)
-    ReleaseMetadata.transaction do
-      android_metadata.update(android_params) if android_params.present?
-      ios_metadata.update(ios_params) if ios_params.present?
-      true
-    end
-  rescue ActiveRecord::RecordInvalid
-    false
-  end
 
   def release_metadata_params
     params.require(:release_metadata).permit(:release_notes, :promo_text)
