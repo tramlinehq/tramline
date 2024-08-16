@@ -10,7 +10,7 @@ class WorkflowRuns::CancelJob < ApplicationJob
     return unless workflow_run.cancelling?
     raise WorkflowRunNotFound unless workflow_run.workflow_found?
 
-    workflow_run.cancel_external_workflow
+    workflow_run.cancel_external_workflow!
     workflow_run.cancel!
   end
 end

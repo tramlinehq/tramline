@@ -84,6 +84,7 @@ class Release < ApplicationRecord
   FAILED_STATES = %w[post_release_failed]
   FINALIZE_STATES = %w[on_track post_release_failed partially_finished]
   TERMINAL_STATES = %w[stopped stopped_after_partial_finish finished]
+  POST_RELEASE_STATES = %w[post_release_started post_release_failed]
   SECTIONS = {
     overview: {title: "Overview"},
     changeset_tracking: {title: "Changeset tracking"},
@@ -95,8 +96,7 @@ class Release < ApplicationRecord
     screenshots: {title: "Screenshots"},
     approvals: {title: "Approvals"},
     app_submission: {title: "App submission"},
-    rollout_to_users: {title: "Rollout to users"},
-    wrap_up: {title: "Release summary"}
+    rollout_to_users: {title: "Release"}
   }
   FULL_ROLLOUT_VALUE = BigDecimal("100")
 
@@ -115,6 +115,7 @@ class Release < ApplicationRecord
   has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
   has_many :hotfixed_releases, class_name: "Release", inverse_of: :hotfixed_from, dependent: :destroy
   has_many :store_rollouts, through: :release_platform_runs
+  has_many :production_store_rollouts, -> { production }, through: :release_platform_runs
   has_many :store_submissions, through: :release_platform_runs
 
   scope :completed, -> { where(status: TERMINAL_STATES) }

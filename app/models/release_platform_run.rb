@@ -46,6 +46,7 @@ class ReleasePlatformRun < ApplicationRecord
   has_one :active_production_release, -> { active }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
   has_one :finished_production_release, -> { finished }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
   has_many :store_rollouts, dependent: :destroy
+  has_many :production_store_rollouts, -> { production }, class_name: "StoreRollout", dependent: :destroy, inverse_of: :release_platform_run
 
   # NOTE: deprecated after v2
   has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
@@ -147,37 +148,38 @@ class ReleasePlatformRun < ApplicationRecord
   def android_config
     {
       workflows: {
-        internal: {
-          name: "Android Debug APK",
-          id: "85899119",
-          artifact_name_pattern: "pattern"
-        },
+        internal: nil,
+        #           {
+        #           name: "Android Debug APK",
+        #           id: "85899119",
+        #           artifact_name_pattern: "pattern"
+        #         },
         release_candidate: {
           name: "Android Play Store Release Build AAB",
           id: "85899120",
           artifact_name_pattern: "pattern"
         }
       },
-      internal_release: # nil,
-        {
-          auto_promote: true,
-          submissions: [
-            {
-              number: 1,
-              submission_type: "GoogleFirebaseSubmission",
-              submission_config: {id: "projects/946207521855/groups/internal-product-team",
-                                  name: "Internal Product Team"},
-              auto_promote: true
-            }
-            # {
-            #   number: 1,
-            #   submission_type: "PlayStoreSubmission",
-            #   submission_config: {id: :internal, name: "internal testing"},
-            #   rollout_config: {enabled: false},
-            #   auto_promote: true
-            # }
-          ]
-        },
+      internal_release: nil,
+      #         {
+      #           auto_promote: true,
+      #           submissions: [
+      #             {
+      #               number: 1,
+      #               submission_type: "GoogleFirebaseSubmission",
+      #               submission_config: {id: "projects/946207521855/groups/internal-product-team",
+      #                                   name: "Internal Product Team"},
+      #               auto_promote: true
+      #             }
+      #             # {
+      #             #   number: 1,
+      #             #   submission_type: "PlayStoreSubmission",
+      #             #   submission_config: {id: :internal, name: "internal testing"},
+      #             #   rollout_config: {enabled: false},
+      #             #   auto_promote: true
+      #             # }
+      #           ]
+      #         },
       beta_release: {
         auto_promote: false,
         submissions:
@@ -243,11 +245,11 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def older_beta_releases
-    beta_releases.inactive.order(created_at: :desc).offset(1)
+    beta_releases.order(created_at: :desc).offset(1)
   end
 
   def older_internal_releases
-    internal_releases.inactive.order(created_at: :desc).offset(1)
+    internal_releases.order(created_at: :desc).offset(1)
   end
 
   def older_production_releases

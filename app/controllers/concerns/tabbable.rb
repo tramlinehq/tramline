@@ -65,8 +65,7 @@ module Tabbable
     sections[:release] = {
       approvals: Release::SECTIONS[:approvals],
       app_submission: Release::SECTIONS[:app_submission],
-      rollout_to_users: Release::SECTIONS[:rollout_to_users],
-      wrap_up: Release::SECTIONS[:wrap_up]
+      rollout_to_users: Release::SECTIONS[:rollout_to_users]
     }
     sections[:release][:approvals][:path] = root_path
     sections[:release][:approvals][:icon] = "v2/list_checks.svg"
@@ -81,10 +80,6 @@ module Tabbable
     sections[:release][:rollout_to_users][:icon] = "v2/rocket.svg"
     sections[:release][:rollout_to_users][:position] = 11
     sections[:release][:rollout_to_users][:status] = statuses[:rollout_to_users]
-    sections[:release][:wrap_up][:path] = release_staged_rollout_edit_path(@release)
-    sections[:release][:wrap_up][:icon] = "v2/notebook_text.svg"
-    sections[:release][:wrap_up][:position] = 12
-    sections[:release][:wrap_up][:status] = statuses[:rollout_to_users]
 
     sections
   end

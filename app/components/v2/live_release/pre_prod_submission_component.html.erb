@@ -29,7 +29,7 @@
       <%= render V2::ButtonComponent.new(label: "Start release",
                                          scheme: :default,
                                          type: :button,
-                                         options: trigger_submission_path(submission),
+                                         options: trigger_store_submission_path(submission),
                                          html_options: html_opts(:patch, "Are you sure?"),
                                          size: :xxs) %>
     <% end %>

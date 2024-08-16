@@ -47,7 +47,20 @@
         <% end %>
 
         <div class="flex flex-col gap-2 items-end">
-          <%= render V2::BadgeComponent.new(text: overall_status.first, status: overall_status.second) %>
+          <div class="flex flex-row gap-2 items-center">
+            <% if release.finished? %>
+              <div class="cursor-pointer text-2xl"
+                   data-controller="confetti"
+                   data-action="click->confetti#spray"
+                   data-confetti-animation-value="stars"
+                   data-confetti-follow-value=false
+                   data-confetti-duration-value="2">
+                <%= render V2::IconComponent.new("v2/party_popper.svg", size: :md) %>
+              </div>
+            <% end %>
+            <%= render V2::BadgeComponent.new(text: overall_status.first, status: overall_status.second) %>
+          </div>
+
           <%= render(scheduled_badge) if automatic? %>
           <% platform_runs.each do |platform_run| %>
             <% if staged_rollout_status(platform_run) %>

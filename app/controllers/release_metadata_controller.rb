@@ -94,7 +94,7 @@ class ReleaseMetadataController < SignedInApplicationController
   def ensure_editable
     unless @release_platform_run.metadata_editable?
       redirect_back fallback_location: release_path(@release),
-                    flash: { error: "Cannot update the release metadata once the production release has begun." }
+        flash: {error: "Cannot update the release metadata once the production release has begun."}
     end
   end
 end

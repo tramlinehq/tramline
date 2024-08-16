@@ -5,7 +5,7 @@ class ReleasesController < SignedInApplicationController
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
   before_action :set_release, only: %i[show destroy update timeline overview changeset_tracking internal_builds regression_testing release_candidates soak]
-  before_action :set_train_and_app, only: %i[show destroy update timeeline overview changeset_tracking internal_builds regression_testing release_candidates soak]
+  before_action :set_train_and_app, only: %i[show destroy update timeline overview changeset_tracking internal_builds regression_testing release_candidates soak]
 
   def index
     @train = @app.trains.friendly.find(params[:train_id])

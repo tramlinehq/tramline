@@ -16,6 +16,8 @@ module ReleasesHelper
   }
 
   SHOW_RELEASE_PHASE = {
+    completed: ["Complete", :success],
+    finishing: ["Finishing up", :success],
     kickoff: ["Kickoff", :inert],
     stabilization: ["Stabilizing the release", :routine],
     review: ["Under store review", :ongoing],

@@ -51,6 +51,8 @@ class StoreRollout < ApplicationRecord
   delegate :train, to: :release_platform_run
   delegate :notify!, to: :train
 
+  scope :production, -> { joins(store_submission: :production_release) }
+
   def staged_rollout? = is_staged_rollout
 
   def errors? = errors.any?

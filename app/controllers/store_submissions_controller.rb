@@ -11,6 +11,7 @@ class StoreSubmissionsController < SignedInApplicationController
 
   def edit_all
     @release = Release.friendly.find(params[:release_id])
+    @app = @release.app
   end
 
   def trigger

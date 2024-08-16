@@ -1,4 +1,4 @@
-<div class="py-2 px-3 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm">
+<div class="py-2 px-3 <%= style %> hover:first:rounded-sm hover:last:rounded-sm">
   <div class="flex text-sm items-center justify-between space-x-4">
     <div class="flex flex-col gap-y-1.5">
       <%= render(V2::ButtonComponent.new(scheme: :link,
@@ -33,7 +33,7 @@
       </div>
     </div>
 
-    <div class="flex flex-row gap-x-2 items-center">
+    <div class="flex flex-row gap-x-2 items-center pl-4">
       <%= render V2::BadgeComponent.new(text: "##{pr.number}", kind: :badge) %>
       <%= render V2::BadgeComponent.new(text: state, status:) %>
     </div>

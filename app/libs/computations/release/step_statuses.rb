@@ -1,7 +1,7 @@
 class Computations::Release::StepStatuses
   using RefinedArray
   STATUS = [:blocked, :ongoing, :success, :none].zip_map_self
-  PHASES = [:kickoff, :stabilization, :review, :rollout].zip_map_self
+  PHASES = [:completed, :kickoff, :stabilization, :review, :rollout, :finishing].zip_map_self
 
   def self.call(release)
     new(release).call
@@ -42,8 +42,8 @@ class Computations::Release::StepStatuses
   end
 
   def release_candidate_status
-    return STATUS[:none] if @release.release_platform_runs.all? { |rp| rp.rc_builds.none? }
-    return STATUS[:ongoing] if @release.release_platform_runs.any? { |rp| rp.rc_builds.exists? }
+    return STATUS[:none] if @release.release_platform_runs.all? { |rp| rp.latest_beta_release.blank? }
+    return STATUS[:ongoing] if @release.release_platform_runs.any? { |rp| rp.latest_beta_release.actionable? }
     STATUS[:success]
   end
 
@@ -59,14 +59,17 @@ class Computations::Release::StepStatuses
   end
 
   def rollout_to_users_status
-    return STATUS[:blocked] if @release.release_platform_runs.all? { |rp| rp.store_rollouts.none? }
+    return STATUS[:blocked] if @release.release_platform_runs.all? { |rp| rp.production_store_rollouts.none? }
     return STATUS[:ongoing] if @release.release_platform_runs.any? { |rp| rp.active_store_rollout&.present? }
+    return STATUS[:ongoing] if @release.release_platform_runs.any? { |rp| rp.inflight_store_rollout&.present? }
     STATUS[:success]
   end
 
   def current_overall_status
-    return PHASES[:rollout] if @release.release_platform_runs.any? { |rp| rp.store_rollouts.exists? }
-    return PHASES[:review] if @release.release_platform_runs.any? { |rp| rp.production_releases.exists? }
+    return PHASES[:completed] if @release.finished?
+    return PHASES[:finishing] if Release::POST_RELEASE_STATES.include?(@release.status)
+    return PHASES[:rollout] if @release.release_platform_runs.any? { |rp| rp.production_store_rollouts.exists? }
+    return PHASES[:review] if @release.release_platform_runs.any? { |rp| rp.active_production_release.present? }
     return PHASES[:stabilization] if @release.release_platform_runs.any? { |rp| rp.pre_prod_releases.exists? }
     PHASES[:kickoff]
   end
