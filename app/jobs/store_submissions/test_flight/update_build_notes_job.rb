@@ -1,3 +1,4 @@
+# TODO: [V2] remove this job
 class StoreSubmissions::TestFlight::UpdateBuildNotesJob < ApplicationJob
   queue_as :high
 

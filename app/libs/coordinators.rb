@@ -152,7 +152,6 @@ module Coordinators
       Res.new do
         raise unless submission.editable?
         submission.start_submission!
-        submission.notify!("Production submission submitted for review", :production_submission_in_review, submission.notification_params)
       end
     end
 

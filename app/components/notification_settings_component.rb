@@ -36,6 +36,7 @@ class NotificationSettingsComponent < ViewComponent::Base
     production_submission_approved: {icon: "v2/clipboard_check.svg", description: "A production submission was approved by the store"},
     production_submission_rejected: {icon: "v2/alert_circle.svg", description: "A production submission was rejected by the store"},
     production_submission_failed: {icon: "v2/alert_circle.svg", description: "A production submission failed"},
+    production_submission_cancelled: {icon: "v2/alert_circle.svg", description: "A production submission was cancelled"},
     production_rollout_started: {icon: "v2/play.svg", description: "A production rollout started"},
     production_rollout_paused: {icon: "v2/pause.svg", description: "A production rollout was paused"},
     production_rollout_resumed: {icon: "v2/play.svg", description: "A production rollout was resumed"},

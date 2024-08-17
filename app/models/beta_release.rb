@@ -20,7 +20,13 @@ class BetaRelease < PreProdRelease
   STAMPABLE_REASONS = %w[created finished failed]
 
   def rollout_complete!(submission)
-    notify!("Beta release finished", :beta_submission_finished, submission.notification_params)
+    notify_with_snippet!(
+      "Beta release finished",
+      :beta_submission_finished,
+      submission.notification_params,
+      tester_notes,
+      "Changes since last release"
+    )
     super
   end
 

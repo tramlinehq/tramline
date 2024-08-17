@@ -57,7 +57,9 @@ class Build < ApplicationRecord
     artifact_data = get_build_artifact
 
     if artifact_data.blank?
-      return update!(generated_at: workflow_run.finished_at)
+      update!(generated_at: workflow_run.finished_at)
+      notify!("A new build is available!", :build_available_v2, notification_params)
+      return
     end
 
     stream = artifact_data[:stream]

@@ -271,7 +271,7 @@ class AppStoreSubmission < StoreSubmission
 
   def on_submit_for_review!(args = {resubmission: false})
     resubmission = args.fetch(:resubmission)
-    notify!("Submitted for review!", :submit_for_review, notification_params.merge(resubmission:))
+    notify!("Production submission submitted for review", :production_submission_in_review, notification_params.merge(resubmission:))
     stamp_params = {kind: :notice, data: stamp_data}
     stamp_params[:reason] = resubmission ? :resubmitted_for_review : :submitted_for_review
     event_stamp!(**stamp_params)

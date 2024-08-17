@@ -21,7 +21,13 @@ class InternalRelease < PreProdRelease
     with_lock do
       update!(status: STATES[:finished])
       event_stamp!(reason: :finished, kind: :success, data: stamp_data)
-      notify!("Internal release has been finished!", :internal_release_finished, notification_params)
+      notify_with_snippet!(
+        "Internal release has been finished!",
+        :internal_release_finished,
+        notification_params,
+        tester_notes,
+        "Tester notes:"
+      )
       Signal.internal_release_finished!(build)
     end
   end

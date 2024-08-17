@@ -115,6 +115,7 @@ en:
           production_submission_approved: "Production submission approved"
           production_submission_rejected: "Production submission rejected"
           production_submission_failed: "Production submission failed"
+          production_submission_cancelled: "Production submission cancelled"
           production_rollout_started: "Production rollout started"
           production_rollout_paused: "Production rollout paused"
           production_rollout_resumed: "Production rollout resumed"
