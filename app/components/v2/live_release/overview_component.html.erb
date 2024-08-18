@@ -22,7 +22,7 @@
       <% component.with_data_set(title: "Duration").with_content(duration) %>
 
       <% if final? %>
-        <% component.with_data_set(title: "Stability commits").with_content(overall_summary.commits_count) %>
+        <% component.with_data_set(title: "Stability changes").with_content(commit_count) %>
         <% if backmerges? %>
           <% component.with_data_set(title: "Backmerges").with_content(backmerge_summary) %>
         <% end %>

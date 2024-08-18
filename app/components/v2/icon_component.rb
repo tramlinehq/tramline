@@ -59,7 +59,7 @@ class V2::IconComponent < V2::BaseComponent
 
   def render_component
     if internal? && raw_svg?
-      content_tag(:div, icon, class: classname)
+      content_tag(:span, icon, class: classname)
     elsif internal? && svg_file?
       inline_svg(icon, classname: classname)
     else

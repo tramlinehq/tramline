@@ -16,8 +16,7 @@
     <% component.runs do |release_platform_run| %>
       <%= render V2::SectionComponent.new(title: "Build stats", style: :titled, size: :compact) do %>
         <% if release_platform_run.internal_builds.any? { |build| build.metadata.present? } %>
-          <div>
-            <% "TODO: [V2] Show build health here" %></div>
+          <div><% "TODO: [V2] Show build health here" %></div>
         <% else %>
           <%= render V2::EmptyStateComponent.new(
             title: "No stats for this platform",
@@ -35,31 +34,7 @@
       <%= render V2::SectionComponent.new(title: "Other builds (#{previous_betas.size})", style: :titled, size: :compact) do %>
         <div class="flex flex-col item-gap-default">
           <% previous_betas.each do |beta_release| %>
-            <%= render V2::AccordionComponent.new(push_down: true) do |accordion| %>
-              <% accordion.with_title_section do %>
-                <div class="flex text-sm items-center justify-between">
-                  <div class="flex gap-2">
-                    <span><%= beta_release.build.display_name %></span>
-                    <%= render V2::BadgeComponent.new(text: beta_release.status.humanize, status: :neutral) %>
-                  </div>
-
-                  <div class="flex items-center">
-                    <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2 text-secondary") %>
-                    <span class="text-secondary font-normal"><%= ago_in_words(beta_release.created_at) %></span>
-                  </div>
-                </div>
-              <% end %>
-
-              <div class="my-3">
-                <%= render V2::LiveRelease::BuildComponent.new(
-                  beta_release.build,
-                  show_number: true,
-                  show_metadata: true,
-                  show_ci: true,
-                  show_activity: false,
-                  show_commit: true) %>
-              </div>
-            <% end %>
+            <%= render V2::LiveRelease::InactivePreProdReleaseComponent.new(beta_release) %>
           <% end %>
         </div>
       <% end %>

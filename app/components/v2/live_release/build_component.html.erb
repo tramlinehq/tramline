@@ -6,20 +6,24 @@
           <% if show_number %>
             <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
               <% badge.with_link(number, external_url) %>
+              <% badge.with_icon("tramline.svg") %>
             <% end %>
           <% end %>
 
           <% if show_ci %>
-            <%= render V2::IconComponent.new("v2/slash.svg", size: :sm) %>
+            <% if show_number %>
+              <%= render V2::IconComponent.new("v2/slash.svg", size: :sm) %>
+            <% end %>
+
             <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
               <% badge.with_icon(build_logo) %>
               <% badge.with_link(ci_info, ci_link) %>
             <% end %>
           <% end %>
 
-          <% unless show_metadata %>
-            <%= render V2::BadgeComponent.new(text: build.display_name, kind: :badge) %>
-          <% end %>
+          <%# unless show_metadata %>
+          <%#= render V2::BadgeComponent.new(text: build.display_name, kind: :badge) %>
+          <%# end %>
 
           <% if show_activity %>
             <%= render V2::BadgeComponent.new(text: build.workflow_run.status.humanize, status: :neutral) %>

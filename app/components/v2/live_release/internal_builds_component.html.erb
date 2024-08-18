@@ -39,25 +39,7 @@
       <%= render V2::SectionComponent.new(title: "Other builds (#{previous_internal_releases(release_platform_run).size})", style: :titled, size: :compact) do %>
         <div class="flex flex-col item-gap-default">
           <% previous_internal_releases(release_platform_run).each do |internal_release| %>
-            <%= render V2::AccordionComponent.new(push_down: true) do |accordion| %>
-              <% accordion.with_title_section do %>
-                <div class="flex text-sm items-center justify-between">
-                  <div class="flex gap-2">
-                    <span><%= internal_release.build.display_name %></span>
-                    <%= render V2::BadgeComponent.new(text: internal_release.status.humanize, kind: :badge) %>
-                  </div>
-
-                  <div class="flex items-center">
-                    <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2 text-secondary") %>
-                    <span class="text-secondary font-normal"><%= ago_in_words(internal_release.created_at) %></span>
-                  </div>
-                </div>
-              <% end %>
-
-              <div class="my-3">
-                <%= render V2::LiveRelease::BuildComponent.new(internal_release.build, show_build_only: false) %>
-              </div>
-            <% end %>
+            <%= render V2::LiveRelease::InactivePreProdReleaseComponent.new(internal_release) %>
           <% end %>
         </div>
       <% end %>
