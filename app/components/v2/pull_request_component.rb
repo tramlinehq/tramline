@@ -23,9 +23,9 @@ class V2::PullRequestComponent < ViewComponent::Base
 
   def style
     if simple
-      "border-default"
+      "border-default rounded-sm"
     else
-      "hover:bg-main-100 hover:border-main-100"
+      "hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm"
     end
   end
 end

@@ -24,7 +24,11 @@ class V2::LiveRelease::FinalizeComponent < V2::BaseComponent
   end
 
   def strikethrough?
-    finished? || post_release_failed? || post_release_started?
+    post_release_started? || post_release_failed? || finished?
+  end
+
+  def open_prs?
+    post_release_failed? && (open_backmerge_prs? || open_post_release_prs?)
   end
 
   memoize def unmerged_changes
@@ -57,10 +61,6 @@ class V2::LiveRelease::FinalizeComponent < V2::BaseComponent
 
   def closed_post_release_prs
     release.post_release_prs.closed
-  end
-
-  def completable?
-    post_release_failed? && !open_backmerge_prs? && !open_post_release_prs?
   end
 
   def title
