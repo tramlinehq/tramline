@@ -39,46 +39,48 @@
       <p class="<%= strikethrough %>">
         ◦ Refresh all the DevOps dashboards and reports <%= checked %>
       </p>
+    </div>
 
-      <div class="flex flex-col items-start item-gap-default mt-1.5">
-        <% if post_release_failed? %>
-          <% if open_backmerge_prs? %>
-            <%= render V2::AlertComponent.new(type: :error, title: "We couldn't finish this release, please manually merge/close the backmerge PRs and retry.") %>
-            <h3 class="heading-5">Backmerge Pull Requests</h3>
-            <%= render(V2::PullRequestComponent.with_collection(open_backmerge_prs, simple: true)) %>
-          <% elsif open_post_release_prs? %>
-            <%= render V2::AlertComponent.new(type: :error, title: "We couldn't automatically finish the release, please manually merge/close the PR and retry.") %>
-            <h3 class="heading-5">Post-release Pull Request</h3>
-            <%= render(V2::PullRequestComponent.with_collection(open_post_release_prs, simple: true)) %>
-          <% end %>
+    <% if closed_post_release_prs.present? %>
+      <div class="flex flex-col items-start item-gap-default mt-4">
+        <h3 class="heading-5">Closed PRs</h3>
+        <%= render(V2::PullRequestComponent.with_collection(closed_post_release_prs, simple: true)) %>
+      </div>
+    <% end %>
 
-          <% if unmerged_changes? %>
-            <h3 class="heading-5">Unmerged Changes</h3>
-
-            <div class="text-sm text-secondary">
-              <p>There are <%= unmerged_changes.size %> commit(s) that were not automatically merged by
-                Tramline. You can find the current diff between the
-                branches <%= link_to_external "here", release.compare_url, class: "underline" %>.</p>
-              <p>Please ensure that these changes have been manually merged back on
-                <code><%= release.train.working_branch %></code> before wrapping up this release.</p>
-            </div>
-
-            <% unless open_prs? %>
-              <%= render V2::ButtonComponent.new(
-                scheme: :danger,
-                options: post_release_release_path(release),
-                type: :button,
-                size: :xxs,
-                label: "I understand, complete the release") %>
-            <% end %>
-          <% end %>
+    <% if post_release_failed? %>
+      <div class="flex flex-col items-start item-gap-default mt-4">
+        <% if open_backmerge_prs? %>
+          <%= render V2::AlertComponent.new(type: :error, title: "We couldn't finish this release, please manually merge/close the backmerge PRs and retry.") %>
+          <h3 class="heading-5">Backmerge Pull Requests</h3>
+          <%= render(V2::PullRequestComponent.with_collection(open_backmerge_prs, simple: true)) %>
+        <% elsif open_post_release_prs? %>
+          <%= render V2::AlertComponent.new(type: :error, title: "We couldn't automatically finish the release, please manually merge/close the PR and retry.") %>
+          <h3 class="heading-5">Post-release Pull Request</h3>
+          <%= render(V2::PullRequestComponent.with_collection(open_post_release_prs, simple: true)) %>
         <% end %>
 
-        <% if closed_post_release_prs.present? %>
-          <h3 class="heading-5">Closed PRs</h3>
-          <%= render(V2::PullRequestComponent.with_collection(closed_post_release_prs, simple: true)) %>
+        <% if unmerged_changes? %>
+          <h3 class="heading-5">Unmerged Changes</h3>
+
+          <div class="text-sm text-secondary">
+            <p>There are <%= unmerged_changes.size %> commit(s) that were not automatically merged by
+              Tramline. You can find the current diff between the
+              branches <%= link_to_external "here", release.compare_url, class: "underline" %>.</p>
+            <p>Please ensure that these changes have been manually merged back on
+              <code><%= release.train.working_branch %></code> before wrapping up this release.</p>
+          </div>
+
+          <% unless open_prs? %>
+            <%= render V2::ButtonComponent.new(
+              scheme: :danger,
+              options: post_release_release_path(release),
+              type: :button,
+              size: :xxs,
+              label: "I understand, complete the release") %>
+          <% end %>
         <% end %>
       </div>
-    </div>
+    <% end %>
   <% end %>
 <% end %>
