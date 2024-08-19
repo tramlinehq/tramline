@@ -7,7 +7,7 @@
                                       options: run_pre_prod_beta_path(release_platform_run),
                                       size: :xxs,
                                       turbo: false,
-                                      html_options: html_opts(:post, "Are you sure?", params: {pre_prod_release: rc_params})) %>
+                                      html_options: html_opts(:post, "Are you sure?", params: { pre_prod_release: rc_params })) %>
       <div class="flex flex-col gap-2">
         <%= render V2::LiveRelease::BuildComponent.new(
           latest_internal_release.build,
@@ -29,7 +29,7 @@
                                       options: run_pre_prod_beta_path(release_platform_run),
                                       size: :xxs,
                                       turbo: false,
-                                      html_options: html_opts(:post, "Are you sure you want to start the beta release?", params: {pre_prod_release: rc_params})) %>
+                                      html_options: html_opts(:post, "Are you sure you want to start the beta release?", params: { pre_prod_release: rc_params })) %>
       <div class="flex flex-col gap-2">
         <%= render V2::CommitComponent.new(commit: latest_commit, detailed: false) %>
         <span class="text-sm">You can continue to release your existing Release Candidate, or replace it with the new change.</span>
@@ -42,35 +42,38 @@
   </div>
 
   <%= render V2::CardComponent.new(title: "Current Build") do |card| %>
-    <% card.with_actions do %>
-      <div class="flex flex-row gap-2">
-        <% if build.present? %>
-          <%= render V2::ModalComponent.new(title: "Changes since last build", size: :xl_3, authz: false) do |modal| %>
-            <% button = modal.with_button(label: "Changes since last build", type: :action, scheme: :supporting, size: :xxs) %>
-            <% button.with_icon("v2/diff.svg", size: :md) %>
-            <% modal.with_body do %>
-              <%= render partial: "shared/divide_collection",
-                         locals: { collection: render(changed_commits) } %>
-            <% end %>
+    <% if build.present? %>
+      <% card.with_action do %>
+        <%= render V2::ModalComponent.new(title: "Changes since last build", size: :xl_3, authz: false) do |modal| %>
+          <% button = modal.with_button(label: "Changes since last build", type: :action, scheme: :supporting, size: :xxs) %>
+          <% button.with_icon("v2/diff.svg", size: :md) %>
+          <% modal.with_body do %>
+            <%= render partial: "shared/divide_collection",
+                       locals: { collection: render(changed_commits) } %>
           <% end %>
         <% end %>
+      <% end %>
+    <% end %>
 
-        <% if triggerable? %>
-          <%= render V2::ButtonComponent.new(label: "Create build",
-                                             scheme: :default,
-                                             options: trigger_workflow_run_path(workflow_run),
-                                             size: :xxs,
-                                             html_options: html_opts(:patch, "Are you sure?")) %>
-        <% end %>
+    <% if triggerable? %>
+      <% card.with_action do %>
+        <%= render V2::ButtonComponent.new(label: "Create build",
+                                           scheme: :default,
+                                           options: trigger_workflow_run_path(workflow_run),
+                                           size: :xxs,
+                                           html_options: html_opts(:patch, "Are you sure?")) %>
+      <% end %>
+    <% end %>
 
-        <% if retriggerable? %>
-          <%= render V2::ButtonComponent.new(label: "Retrigger build",
-                                             scheme: :default,
-                                             options: retry_workflow_run_path(workflow_run),
-                                             size: :xxs,
-                                             html_options: html_opts(:patch, "Are you sure?")) %>
-        <% end %>
-      </div>
+    <% if retriggerable? %>
+      <% card.with_action do %>
+
+        <%= render V2::ButtonComponent.new(label: "Retrigger build",
+                                           scheme: :default,
+                                           options: retry_workflow_run_path(workflow_run),
+                                           size: :xxs,
+                                           html_options: html_opts(:patch, "Are you sure?")) %>
+      <% end %>
     <% end %>
 
     <div class="flex flex-col section-gap-default">
@@ -79,7 +82,7 @@
       <% end %>
 
       <% store_submissions.each do |submission| %>
-        <%= render V2::LiveRelease::PreProdSubmissionComponent.new(submission) %>
+        <%= render V2::LiveRelease::PreProdRelease::SubmissionComponent.new(submission) %>
       <% end %>
     </div>
   <% end %>

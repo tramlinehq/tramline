@@ -6,7 +6,7 @@
   <% component.runs do |release_platform_run| %>
     <% beta_release = latest_beta_release(release_platform_run) %>
     <% if beta_release.present? %>
-      <%= render V2::LiveRelease::CurrentPreProdReleaseComponent.new(beta_release) %>
+      <%= render V2::LiveRelease::PreProdRelease::CurrentReleaseComponent.new(beta_release) %>
     <% else %>
       <%= render V2::LiveRelease::PrepareReleaseCandidateComponent.new(release_platform_run) %>
     <% end %>
@@ -34,7 +34,7 @@
       <%= render V2::SectionComponent.new(title: "Other builds (#{previous_betas.size})", style: :titled, size: :compact) do %>
         <div class="flex flex-col item-gap-default">
           <% previous_betas.each do |beta_release| %>
-            <%= render V2::LiveRelease::InactivePreProdReleaseComponent.new(beta_release) %>
+            <%= render V2::LiveRelease::PreProdRelease::PreviousReleaseComponent.new(beta_release) %>
           <% end %>
         </div>
       <% end %>

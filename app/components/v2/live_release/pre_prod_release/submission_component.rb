@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class V2::LiveRelease::PreProdSubmissionComponent < V2::BaseComponent
+class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
   include Memery
 
   def initialize(submission, inactive: false)

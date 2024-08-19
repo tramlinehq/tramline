@@ -1,4 +1,4 @@
-class V2::LiveRelease::RolloutComponent < V2::BaseComponent
+class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
   STATUS = {
     created: {text: "Ready", status: :routine},
     started: {text: "Active", status: :ongoing},
@@ -9,10 +9,10 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
     paused: {text: "Paused phased release", status: :ongoing}
   }
 
-  def initialize(store_rollout, inactive: false, title: "Rollout Status")
+  # TODO: [V2] Add new monitoring component here
+  def initialize(store_rollout, title: "Rollout Status")
     @store_rollout = store_rollout
     @title = title
-    @inactive = inactive
   end
 
   attr_reader :store_rollout
@@ -26,10 +26,6 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
   delegate :release, to: :release_platform_run
 
   def upcoming? = store_rollout.created?
-
-  def inactive? = @inactive
-
-  def active? = !upcoming? && !inactive?
 
   def monitoring_size
     release_platform_run.app.cross_platform? ? :compact : :default
@@ -96,7 +92,6 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
   end
 
   def action
-    return if inactive?
     return if store_rollout.completed? || store_rollout.fully_released? || store_rollout.halted?
 
     if store_rollout.created?
@@ -169,10 +164,10 @@ class V2::LiveRelease::RolloutComponent < V2::BaseComponent
   end
 
   def card_height
-    if active?
-      "80"
-    else
+    if upcoming?
       "60"
+    else
+      "80"
     end
   end
 

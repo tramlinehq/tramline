@@ -14,16 +14,16 @@
         <%= render V2::PlatformViewComponent.new(@release) do |component| %>
           <% component.platform_runs.each do |run| %>
             <div class="grid grid-cols-1 section-gap-default">
-              <% if run.active_store_rollout.present? %>
-                <%= render V2::LiveRelease::RolloutComponent.new(run.active_store_rollout, title: "Active rollout") %>
+              <% if run.inflight_store_rollout.present? %>
+                <%= render V2::LiveRelease::ProdRelease::RolloutComponent.new(run.inflight_store_rollout, title: "Upcoming rollout") %>
               <% end %>
 
-              <% if run.inflight_store_rollout.present? %>
-                <%= render V2::LiveRelease::RolloutComponent.new(run.inflight_store_rollout, title: "Upcoming rollout") %>
+              <% if run.active_store_rollout.present? %>
+                <%= render V2::LiveRelease::ProdRelease::RolloutComponent.new(run.active_store_rollout, title: "Active rollout") %>
               <% end %>
 
               <% if run.finished_store_rollout.present? %>
-                <%= render V2::LiveRelease::RolloutComponent.new(run.finished_store_rollout) %>
+                <%= render V2::LiveRelease::ProdRelease::RolloutComponent.new(run.finished_store_rollout) %>
               <% end %>
 
               <% older_rollouts = run.older_production_store_rollouts %>
@@ -31,25 +31,7 @@
                 <%= render V2::SectionComponent.new(title: "Attempted rollouts", style: :titled, size: :compact) do %>
                   <div class="flex flex-col item-gap-default">
                     <% older_rollouts.each do |rollout| %>
-                      <%= render V2::AccordionComponent.new do |accordion| %>
-                        <% accordion.with_title_section do %>
-                          <div class="flex text-sm items-center justify-between">
-                            <div class="flex gap-2">
-                              <span><%= rollout.build.display_name %></span>
-                              <%= render V2::BadgeComponent.new(text: "Superseded", status: :neutral) %>
-                            </div>
-
-                            <div class="flex items-center">
-                              <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2 text-secondary") %>
-                              <span class="text-secondary font-normal"><%= ago_in_words(rollout.updated_at) %></span>
-                            </div>
-                          </div>
-                        <% end %>
-
-                        <div class="my-3">
-                          <%= render V2::LiveRelease::RolloutComponent.new(rollout, title: "Summary", inactive: true) %>
-                        </div>
-                      <% end %>
+                      <%= render V2::LiveRelease::ProdRelease::PreviousRolloutComponent.new(rollout) %>
                     <% end %>
                   </div>
                 <% end %>

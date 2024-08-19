@@ -1,7 +1,7 @@
 <div class="flex flex-col item-gap-default">
   <div class="flex flex-col section-gap-default">
-    <%= render V2::CardComponent.new(title: @title, separator: inactive?, fixed_height: card_height, border_style:) do |card| %>
-      <% card.with_actions do %>
+    <%= render V2::CardComponent.new(title: @title, separator: false, fixed_height: card_height, border_style:) do |card| %>
+      <% card.with_action do %>
         <%= render V2::ModalComponent.new(title: "Rollout timeline",
                                           size: :xs,
                                           type: :drawer,
@@ -19,7 +19,7 @@
       <% end %>
 
       <% if action.present? %>
-        <% card.with_actions do %>
+        <% card.with_action do %>
           <%= render action %>
         <% end %>
       <% end %>
@@ -27,63 +27,43 @@
       <div class="flex flex-col justify-between gap-1 h-full">
         <div class="grid grid-cols-12">
           <div class="col-span-5 flex flex-col gap-2">
-            <% if active? || upcoming? %>
-              <%= render V2::LiveRelease::BuildComponent.new(
-                build,
-                show_number: true,
-                show_metadata: false,
-                show_ci: false,
-                show_activity: false,
-                show_commit: false) %>
+            <%= render V2::LiveRelease::BuildComponent.new(
+              build,
+              show_number: true,
+              show_metadata: false,
+              show_ci: false,
+              show_activity: false,
+              show_commit: false) %>
 
-              <div class="flex items-baseline gap-2">
-                <%= render V2::IconComponent.new("integrations/logo_#{provider}.png", size: :xl) %>
-                <div class="text-3xl font-bold"><%= last_rollout_percentage %>%</div>
-                <div class="text-sm text-secondary-50">of users</div>
-              </div>
+            <div class="flex items-baseline gap-2">
+              <%= render V2::IconComponent.new("integrations/logo_#{provider}.png", size: :xl) %>
+              <div class="text-3xl font-bold"><%= last_rollout_percentage %>%</div>
+              <div class="text-sm text-secondary-50">of users</div>
+            </div>
 
-              <div class="flex gap-1 flex-wrap">
-                <%= render V2::BadgeComponent.new(**status) %>
-                <div class="text-sm text-secondary-50"><%= stage_help %></div>
-              </div>
+            <div class="flex gap-1 flex-wrap">
+              <%= render V2::BadgeComponent.new(**status) %>
+              <div class="text-sm text-secondary-50"><%= stage_help %></div>
+            </div>
 
-              <div class="flex flex-wrap gap-y-2 text-secondary text-sm">
-                <p><%= action_help %></p>
-              </div>
-            <% end %>
-
-            <% if inactive? %>
-              <div class="flex items-baseline gap-2">
-                <%= render V2::IconComponent.new("integrations/logo_#{provider}.png", size: :xl) %>
-                <div class="text-3xl font-bold"><%= last_rollout_percentage %>%</div>
-                <div class="text-sm text-secondary-50">of users</div>
-              </div>
-
-              <%= render V2::LiveRelease::BuildComponent.new(
-                build,
-                show_number: true,
-                show_metadata: false,
-                show_ci: false,
-                show_activity: false,
-                show_commit: false) %>
-            <% end %>
+            <div class="flex flex-wrap gap-y-2 text-secondary text-sm">
+              <p><%= action_help %></p>
+            </div>
           </div>
 
-          <% unless inactive? %>
-            <div class="col-span-7 justify-self-end self-end flex flex-col gap-2">
-              <% stages.each_with_index do |(percent, st), _idx| %>
-                <div class="flex flex-row justify-between gap-1 items-center flex-initial flex-wrap">
-                  <%= render V2::ProgressBarComponent.new(percent: percent, label: true, status: st) %>
-                  <% if st == :default %>
-                    <%= render V2::IconComponent.new("v2/check.svg", size: :sm, classes: "text-green-600") %>
-                  <% end %>
-                </div>
-              <% end %>
-            </div>
-          <% end %>
+          <div class="col-span-7 justify-self-end self-end flex flex-col gap-2">
+            <% stages.each_with_index do |(percent, st), _idx| %>
+              <div class="flex flex-row justify-between gap-1 items-center flex-initial flex-wrap">
+                <%= render V2::ProgressBarComponent.new(percent: percent, label: true, status: st) %>
+                <% if st == :default %>
+                  <%= render V2::IconComponent.new("v2/check.svg", size: :sm, classes: "text-green-600") %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
         </div>
 
-        <% if active? %>
+        <% unless upcoming? %>
           <%= render V2::SectionComponent.new(title: "More actions", style: :titled, size: :micro) do %>
             <div class="flex justify-between items-center">
               <div class="flex flex-row gap-2">
@@ -108,13 +88,6 @@
       </div>
     <% end %>
 
-    <% if release_platform_run.store_submitted_releases.present? %>
-      <%= render ReleaseMonitoringComponent.new(
-        deployment_run: release_platform_run.store_submitted_releases.first,
-        metrics: [:stability, :adoption_rate, :adoption_chart, :errors],
-        show_version_info: false,
-        size: monitoring_size,
-        num_events: 1) %>
-    <% end %>
+    <!-- TODO: [V2] Add new monitoring component here -->
   </div>
 </div>

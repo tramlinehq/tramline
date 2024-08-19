@@ -5,16 +5,16 @@
       <% component.platform_runs.each do |run| %>
         <div class="grid grid-cols-1 section-gap-default">
 
-          <% if run.active_production_release.present? %>
-            <%= render V2::LiveRelease::ProductionSubmissionComponent.new(run.active_production_release.store_submission, inactive: run.inflight_production_release.present?, title: "Active Submission") %>
+          <% if run.inflight_production_release.present? %>
+            <%= render V2::LiveRelease::ProdRelease::SubmissionComponent.new(run.inflight_production_release.store_submission, title: "In-flight Submission") %>
           <% end %>
 
-          <% if run.inflight_production_release.present? %>
-            <%= render V2::LiveRelease::ProductionSubmissionComponent.new(run.inflight_production_release.store_submission, title: "In-flight Submission") %>
+          <% if run.active_production_release.present? %>
+            <%= render V2::LiveRelease::ProdRelease::SubmissionComponent.new(run.active_production_release.store_submission, inactive: run.inflight_production_release.present?, title: "Active Submission") %>
           <% end %>
 
           <% if run.finished_production_release.present? %>
-            <%= render V2::LiveRelease::ProductionSubmissionComponent.new(run.finished_production_release.store_submission, inactive: true, title: "Completed Submission") %>
+            <%= render V2::LiveRelease::ProdRelease::SubmissionComponent.new(run.finished_production_release.store_submission, inactive: true, title: "Completed Submission") %>
           <% end %>
 
           <% if run.production_releases.none? %>
@@ -30,25 +30,7 @@
             <%= render V2::SectionComponent.new(style: :titled, title: "Previous submissions", size: :compact) do %>
               <div class="flex flex-col item-gap-default">
                 <% older_releases.each do |prod_release| %>
-                  <%= render V2::AccordionComponent.new do |accordion| %>
-                    <% accordion.with_title_section do %>
-                      <div class="flex text-sm items-center justify-between">
-                        <div class="flex gap-2">
-                          <span><%= prod_release.build.display_name %></span>
-                          <%= render V2::BadgeComponent.new(text: "Superseded", status: :neutral) %>
-                        </div>
-
-                        <div class="flex items-center">
-                          <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2 text-secondary") %>
-                          <span class="text-secondary font-normal"><%= ago_in_words(prod_release.updated_at) %></span>
-                        </div>
-                      </div>
-                    <% end %>
-
-                    <div class="my-3">
-                      <%= render V2::LiveRelease::ProductionSubmissionComponent.new(prod_release.store_submission, inactive: true) %>
-                    </div>
-                  <% end %>
+                  <%= render V2::LiveRelease::ProdRelease::PreviousSubmissionComponent.new(prod_release.store_submission) %>
                 <% end %>
               </div>
             <% end %>

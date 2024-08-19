@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class V2::LiveRelease::CurrentPreProdReleaseComponent < V2::BaseComponent
+class V2::LiveRelease::PreProdRelease::CurrentReleaseComponent < V2::BaseComponent
   include Memery
 
   STATUS = {

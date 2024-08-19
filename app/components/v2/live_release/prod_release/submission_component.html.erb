@@ -2,7 +2,7 @@
   <%= render V2::ErrorComponent.new(submission) %>
 <% end %>
 
-<div class="flex flex-col">
+<div class="flex flex-col item-gap-default">
   <% if @new_submission_prompt %>
     <%= render V2::AlertComponent.new(size: :md, kind: :announcement, type: :announce, title: "New RC Build is available") do |ann| %>
       <% modal = ann.with_announcement_modal(title: "Available builds", subtitle: "Choose a build to send for submission to the store") %>
@@ -50,57 +50,61 @@
   <% end %>
 
   <%= render V2::CardComponent.new(title: @title, size: :full, separator: false, border_style:) do |card| %>
-    <% card.with_actions do %>
-      <div class="flex items-center gap-x-1.5">
-        <% if changeable? %>
-          <%= render V2::ModalComponent.new(
-            title: "Available builds",
-            subtitle: "Choose a build to send for submission to the store") do |modal| %>
+    <% card.with_action do %>
+      <% if changeable? %>
+        <%= render V2::ModalComponent.new(
+          title: "Available builds",
+          subtitle: "Choose a build to send for submission to the store") do |modal| %>
 
-            <% button = modal.with_button(label: "Change build", scheme: :light, type: :action, size: :xxs) %>
-            <% button.with_icon("v2/pencil.svg") %>
-            <% modal.with_body do %>
-              <%= render V2::FormComponent.new(model: [release, release_platform_run, submission],
-                                               scope: :store_submission,
-                                               url: store_submission_path(id),
-                                               free_form: true) do |form| %>
-                <%= form.F.labeled_select :build_id, "Select a build", build_opts(default: current_build) %>
+          <% button = modal.with_button(label: "Change build", scheme: :light, type: :action, size: :xxs) %>
+          <% button.with_icon("v2/pencil.svg") %>
+          <% modal.with_body do %>
+            <%= render V2::FormComponent.new(model: [release, release_platform_run, submission],
+                                             scope: :store_submission,
+                                             url: store_submission_path(id),
+                                             free_form: true) do |form| %>
+              <%= form.F.labeled_select :build_id, "Select a build", build_opts(default: current_build) %>
 
-                <% form.with_action do %>
-                  <%= form.F.authz_submit "Change", "v2/mail.svg" %>
-                <% end %>
+              <% form.with_action do %>
+                <%= form.F.authz_submit "Change", "v2/mail.svg" %>
               <% end %>
             <% end %>
           <% end %>
         <% end %>
+      <% end %>
+    <% end %>
 
-        <%= mock_actions %>
+    <% card.with_action do %>
+      <%= mock_actions %>
+    <% end %>
 
-        <% if action.present? %>
-          <%= render V2::ButtonComponent.new(**action) { |b| b.with_icon("v2/clipboard_list.svg") } %>
-        <% end %>
+    <% card.with_action do %>
+      <% if action.present? %>
+        <%= render V2::ButtonComponent.new(**action) { |b| b.with_icon("v2/clipboard_list.svg") } %>
+      <% end %>
+    <% end %>
 
-        <% if submission.reviewable? %>
-          <%= render V2::ModalComponent.new(
-            title: "Submission Preview",
-            subtitle: "Review all the details before submitting for review",
-            dismissable: false, size: :xxl) do |modal| %>
+    <% card.with_action do %>
+      <% if submission.reviewable? %>
+        <%= render V2::ModalComponent.new(
+          title: "Submission Preview",
+          subtitle: "Review all the details before submitting for review",
+          dismissable: false, size: :xxl) do |modal| %>
 
-            <% modal.with_button(label: "Preview & submit for review", scheme: :default, type: :action, size: :xxs) %>
-            <% modal.with_body do %>
-              <div class="flex flex-col gap-6">
-                <%= render V2::LiveRelease::PreviewSubmissionComponent.new(submission) %>
-                <%= render V2::ButtonComponent.new(scheme: :default,
-                                                   type: :button,
-                                                   label: "Submit for review",
-                                                   options: submit_for_review_store_submission_path(id),
-                                                   turbo: false,
-                                                   html_options: { method: :patch, data: { turbo_method: :patch } }) %>
-              </div>
-            <% end %>
+          <% modal.with_button(label: "Preview & submit for review", scheme: :default, type: :action, size: :xxs) %>
+          <% modal.with_body do %>
+            <div class="flex flex-col gap-6">
+              <%= render V2::LiveRelease::PreviewSubmissionComponent.new(submission) %>
+              <%= render V2::ButtonComponent.new(scheme: :default,
+                                                 type: :button,
+                                                 label: "Submit for review",
+                                                 options: submit_for_review_store_submission_path(id),
+                                                 turbo: false,
+                                                 html_options: { method: :patch, data: { turbo_method: :patch } }) %>
+            </div>
           <% end %>
         <% end %>
-      </div>
+      <% end %>
     <% end %>
 
     <div class="flex flex-col item-gap-default text-secondary text-xs">
