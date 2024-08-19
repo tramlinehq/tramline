@@ -11,7 +11,6 @@
       <div class="flex flex-col gap-2">
         <%= render V2::LiveRelease::BuildComponent.new(
           latest_internal_release.build,
-          show_number: true,
           show_metadata: false,
           show_ci: true,
           show_activity: false,
@@ -78,7 +77,7 @@
 
     <div class="flex flex-col section-gap-default">
       <% if build.present? %>
-        <%= render V2::LiveRelease::BuildComponent.new(build, show_number: true, show_build_only: false) %>
+        <%= render V2::LiveRelease::BuildComponent.new(build) %>
       <% end %>
 
       <% store_submissions.each do |submission| %>

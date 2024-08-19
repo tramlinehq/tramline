@@ -10,7 +10,7 @@
       <% component.platform_runs.each do |run| %>
         <div class="grid grid-cols-1">
           <div class="flex flex-col item-gap-default">
-            <%= render V2::LiveRelease::BuildComponent.new(Build.first, show_number: true, show_build_only: true) %>
+            <%= render V2::LiveRelease::BuildComponent.new(Build.first) %>
           </div>
         </div>
       <% end %>

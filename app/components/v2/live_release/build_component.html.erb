@@ -11,19 +11,15 @@
           <% end %>
 
           <% if show_ci %>
-            <% if show_number %>
-              <%= render V2::IconComponent.new("v2/slash.svg", size: :sm) %>
-            <% end %>
-
             <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
               <% badge.with_icon(build_logo) %>
-              <% badge.with_link(ci_info, ci_link) %>
+              <% badge.with_link(ci_info, external_url) %>
             <% end %>
           <% end %>
 
-          <%# unless show_metadata %>
-          <%#= render V2::BadgeComponent.new(text: build.display_name, kind: :badge) %>
-          <%# end %>
+          <% if show_compact_metadata %>
+            <%= render V2::BadgeComponent.new(text: build.display_name, kind: :badge) %>
+          <% end %>
 
           <% if show_activity %>
             <%= render V2::BadgeComponent.new(text: build.workflow_run.status.humanize, status: :neutral) %>

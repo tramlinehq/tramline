@@ -1,7 +1,7 @@
 <div class="flex flex-row justify-between items-center px-1">
   <div class="flex flex-col gap-1">
     <span class="text-xs text-secondary">Chosen build to submit</span>
-    <%= render V2::LiveRelease::BuildComponent.new(submission.build, show_build_only: true, show_commit: false, show_activity: false, show_number: true, show_metadata: false) %>
+    <%= render V2::LiveRelease::BuildComponent.new(submission.build, show_commit: false, show_activity: false, show_metadata: false, show_compact_metadata: true) %>
   </div>
 
   <div class="flex flex-col gap-1">

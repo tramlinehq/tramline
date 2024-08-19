@@ -4,10 +4,10 @@
       <div class="flex gap-2">
         <%= render V2::LiveRelease::BuildComponent.new(
           store_rollout.build,
-          show_number: true,
           show_metadata: false,
           show_ci: false,
           show_activity: false,
+          show_compact_metadata: true,
           show_commit: false) %>
 
         <%= render V2::BadgeComponent.new(text: "Superseded", status: :neutral) %>

@@ -22,7 +22,6 @@
       <div class="flex flex-col gap-2">
         <%= render V2::LiveRelease::BuildComponent.new(
           newer_builds.first,
-          show_number: true,
           show_metadata: false,
           show_ci: false,
           show_activity: false,
@@ -112,7 +111,6 @@
         <%= render V2::IconComponent.new("integrations/logo_#{provider}.png", size: :xl) %>
         <div class="justify-start"><%= render V2::BadgeComponent.new(**status) %></div>
         <%= render V2::LiveRelease::BuildComponent.new(current_build,
-                                                       show_number: true,
                                                        show_metadata: false,
                                                        show_ci: false,
                                                        show_activity: false,
