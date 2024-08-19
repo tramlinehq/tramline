@@ -13,20 +13,25 @@ class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
   delegate :release, to: :release_platform_run
 
   def status_border
-    return "border-red-400" if submission.failed?
-    return "border-green-400" if submission.finished?
-    "border-gray-400"
+    return STATUS_BORDER_COLOR_PALETTE[:failure] if submission.failed?
+    return STATUS_BORDER_COLOR_PALETTE[:success] if submission.finished?
+    STATUS_BORDER_COLOR_PALETTE[:neutral]
   end
 
-  def released_ago
-    released_at =
-      if submission.store_rollout.present?
-        submission.store_rollout.completed_at
-      else
-        submission.approved_at || submission.prepared_at
-      end
+  def last_activity_at
+    ago_in_words(last_activity_ts)
+  end
 
-    ago_in_words(released_at)
+  def last_activity_ts
+    if submission.store_rollout.present?
+      submission.store_rollout.completed_at
+    else
+      submission.approved_at || submission.prepared_at || submission.created_at
+    end
+  end
+
+  def last_activity_tooltip
+    "Last activity at #{time_format(last_activity_ts)}"
   end
 
   def external_status
@@ -39,5 +44,9 @@ class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
 
   def submission_logo
     "integrations/logo_#{submission.provider}.png"
+  end
+
+  def submission_logo_bw
+    "v2/logo_#{submission.provider}_bw.svg"
   end
 end

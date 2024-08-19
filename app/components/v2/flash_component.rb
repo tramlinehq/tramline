@@ -6,7 +6,7 @@ class V2::FlashComponent < V2::BaseComponent
   def call
     return if @flash.blank?
 
-    content_tag(:div) do
+    content_tag(:div, class: "mb-3") do
       @flash.select { |_, msg| msg.is_a?(String) }.each do |type, title|
         concat render(V2::AlertComponent.new(type:, title:, dismissible: true))
       end

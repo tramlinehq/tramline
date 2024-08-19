@@ -42,8 +42,8 @@ class Computations::Release::StepStatuses
   end
 
   def release_candidate_status
-    return STATUS[:none] if @release.release_platform_runs.all? { |rp| rp.latest_beta_release.blank? }
-    return STATUS[:ongoing] if @release.release_platform_runs.any? { |rp| rp.latest_beta_release.actionable? }
+    return STATUS[:none] if @release.release_platform_runs.all? { |rp| rp.latest_beta_release&.blank? }
+    return STATUS[:ongoing] if @release.release_platform_runs.any? { |rp| rp.latest_beta_release&.actionable? }
     STATUS[:success]
   end
 

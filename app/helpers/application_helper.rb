@@ -10,6 +10,12 @@ module ApplicationHelper
     inert: %w[bg-amber-100 text-amber-800]
   }
 
+  STATUS_BORDER_COLOR_PALETTE = {
+    success: "border-green-700",
+    failure: "border-red-700",
+    neutral: "border-slate-200"
+  }
+
   PILL_STATUS_COLOR_PALETTE = {
     success: %w[bg-green-500],
     failure: %w[bg-red-500],
