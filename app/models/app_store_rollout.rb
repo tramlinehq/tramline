@@ -85,7 +85,7 @@ class AppStoreRollout < StoreRollout
   end
 
   def track_live_release_status
-    return if terminal?
+    return if completed? || fully_released?
 
     result = provider.find_live_release
     unless result.ok?

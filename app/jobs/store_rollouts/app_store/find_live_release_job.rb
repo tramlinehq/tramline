@@ -17,7 +17,6 @@ class StoreRollouts::AppStore::FindLiveReleaseJob
 
   def perform(rollout_id)
     rollout = AppStoreRollout.find(rollout_id)
-    return if rollout.terminal?
     rollout.track_live_release_status
   end
 end
