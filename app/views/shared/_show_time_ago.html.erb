@@ -1,4 +1,4 @@
-<%= render V2::TooltipComponent.new(tooltip_text, placement: "top") do |tooltip| %>
+<%= render V2::TooltipComponent.new(tooltip_text, placement: local_assigns.fetch(:tooltip_placement, "top")) do |tooltip| %>
   <% tooltip.with_body do %>
     <div class="flex items-center gap-2 text-secondary">
       <%= render V2::IconComponent.new("v2/dotted_line.svg", size: :base) %>

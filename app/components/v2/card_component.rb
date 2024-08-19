@@ -13,7 +13,8 @@ class V2::CardComponent < ViewComponent::Base
 
   BORDER_STYLES = [:solid, :dotted, :dashed, :double]
 
-  def initialize(title:, subtitle: nil, fold: false, separator: true, classes: nil, size: :full, emptiness: false, fixed_height: nil, border_style: nil)
+  def initialize(title:, subtitle: nil, fold: false, separator: true, size: :full, emptiness: false, fixed_height: nil, border_style: nil, custom_box_style: nil)
+    raise "Cannot pass both custom_box_style and border_style" if custom_box_style.present? && border_style.present?
     border_style ||= :solid
     raise "Invalid border style: #{border_style}" unless BORDER_STYLES.include?(border_style)
 
@@ -21,20 +22,25 @@ class V2::CardComponent < ViewComponent::Base
     @subtitle = subtitle
     @fold = fold
     @separator = separator
-    @classes = classes
     @size = SIZE[size]
     @emptiness = emptiness
     @fixed_height = "h-#{fixed_height}" if fixed_height
     @border_style = border_style
+    @custom_box_style = custom_box_style
   end
 
   attr_reader :title, :subtitle, :emptiness
 
   def card_params
     size_class = fold? ? "" : @size
-    params = {class: "flex flex-col border-#{@border_style} card-default #{y_gap} #{@classes} #{size_class} #{@fixed_height}"}
+    params = {class: "flex flex-col #{box_style} #{y_gap} #{size_class} #{@fixed_height}"}
     params[:data] = fold_params if fold?
     params
+  end
+
+  def box_style
+    return @custom_box_style if @custom_box_style.present?
+    "border-#{@border_style} card-default"
   end
 
   def fold_params

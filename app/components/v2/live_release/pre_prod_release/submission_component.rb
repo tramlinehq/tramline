@@ -2,6 +2,7 @@
 
 class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
   include Memery
+  CUSTOM_BOX_STYLE = "border-l-8 rounded-lg %s border-default-t border-default-b border-default-r box-padding rounded-r-lg"
 
   def initialize(submission, inactive: false)
     @submission = submission
@@ -16,6 +17,10 @@ class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
     return STATUS_BORDER_COLOR_PALETTE[:failure] if submission.failed?
     return STATUS_BORDER_COLOR_PALETTE[:success] if submission.finished?
     STATUS_BORDER_COLOR_PALETTE[:neutral]
+  end
+
+  def custom_box_style
+    CUSTOM_BOX_STYLE % status_border
   end
 
   def last_activity_at

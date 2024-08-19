@@ -97,19 +97,19 @@
   }
 
   .border-default-t {
-    @apply border-t border-main-200 dark:border-main-600;
+    @apply border-t border-t-main-200 dark:border-t-main-600;
   }
 
   .border-default-r {
-    @apply border-r border-main-200 dark:border-main-600;
+    @apply border-r border-r-main-200 dark:border-r-main-600;
   }
 
   .border-default-b {
-    @apply border-b border-main-200 dark:border-main-600;
+    @apply border-b border-b-main-200 dark:border-b-main-600;
   }
 
   .border-default-l {
-    @apply border-l border-main-200 dark:border-main-600;
+    @apply border-l border-l-main-200 dark:border-l-main-600;
   }
 
   .border-default {

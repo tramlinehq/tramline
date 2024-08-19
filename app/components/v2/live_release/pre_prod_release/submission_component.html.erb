@@ -1,42 +1,58 @@
-<div class="border-l-8 rounded-lg flex justify-between items-center <%= status_border %>">
-  <div class="border-default-t border-default-l border-default-b border-default-r box-padding rounded-r-lg w-full">
-    <div class="flex flex-col gap-2 w-full">
-      <div class="flex justify-between items-center">
-        <div class="flex items-center gap-2">
-          <%= render V2::IconComponent.new(submission_logo, size: :xl) %>
-          <%= render V2::BadgeComponent.new(text: submission.deployment_channel_name, kind: :badge) %>
-          <%= render V2::BadgeComponent.new(text: status, status: :neutral) %>
-        </div>
+<%= render V2::CardComponent.new(title: "submission", separator: false, custom_box_style:) do |card| %>
+  <% card.with_action do %>
+    <% if submission.triggerable? %>
+      <%= render V2::ButtonComponent.new(label: "Send to #{submission.provider.display}",
+                                         scheme: :default,
+                                         type: :button,
+                                         options: trigger_store_submission_path(submission),
+                                         html_options: html_opts(:patch, "Are you sure?"),
+                                         size: :xxs) do |b| %>
+        <% b.with_icon(submission_logo_bw, size: :md) %>
+      <% end %>
+    <% end %>
+  <% end %>
 
-        <%= render partial: "shared/show_time_ago", locals: { tooltip_text: last_activity_tooltip, last_activity_at: } %>
+  <div class="flex flex-col gap-2">
+    <div class="flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <%= render V2::IconComponent.new(submission_logo, size: :xl) %>
+        <%= render V2::BadgeComponent.new(text: submission.deployment_channel_name, kind: :badge) %>
+        <%= render V2::BadgeComponent.new(text: status, status: :neutral) %>
       </div>
 
-      <%= render V2::HorizontalDataSetComponent.new do |component| %>
-        <% component.with_data_set(title: "External Status").with_content(external_status) %>
-        <% component.with_data_set(title: "Tracks").with_content("#{["Test 1", "Tester 2"].join(', ')}") %>
+      <%= render partial: "shared/show_time_ago", locals: { tooltip_text: last_activity_tooltip, tooltip_placement: "bottom", last_activity_at: } %>
+    </div>
+
+    <div class="flex justify-between items-end">
+      <% if submission.triggerable? %>
+        <%= render V2::ButtonComponent.new(label: "Start submission",
+                                           scheme: :default,
+                                           type: :button,
+                                           options: trigger_store_submission_path(submission),
+                                           html_options: html_opts(:patch, "Are you sure?"),
+                                           size: :xxs) do |b| %>
+          <% b.with_icon(submission_logo_bw, size: :md) %>
+        <% end %>
       <% end %>
+    </div>
 
-      <div class="flex justify-between items-end">
-        <%= render V2::ButtonComponent.new(label: "Dashboard ↗",
-                                           scheme: :link,
-                                           type: :link_external,
-                                           options: submission.store_link,
-                                           html_options: { class: "text-xs" },
-                                           authz: false,
-                                           size: :none) %>
-
-        <% if submission.triggerable? %>
-          <%= render V2::ButtonComponent.new(label: "Submit",
-                                             scheme: :default,
-                                             type: :button,
-                                             options: trigger_store_submission_path(submission),
-                                             html_options: html_opts(:patch, "Are you sure?"),
-                                             size: :xxs) do |b| %>
-            <% b.with_icon(submission_logo_bw, size: :md) %>
+    <%= render V2::SectionComponent.new(title: "External info", style: :titled, size: :micro) do %>
+      <div class="flex justify-between items-center">
+        <%= render V2::HorizontalDataSetComponent.new do |component| %>
+          <% component.with_data_set(title: "Status").with_content(external_status) %>
+          <% component.with_data_set(title: "Tester groups").with_content(NOT_AVAILABLE) %>
+          <% component.with_data_set(title: "Dashboard") do %>
+            <%= render V2::ButtonComponent.new(scheme: :naked_icon,
+                                               type: :link_external,
+                                               options: submission.store_link,
+                                               html_options: { class: "text-xs" },
+                                               authz: false,
+                                               size: :none) do |b| %>
+              <% b.with_icon("v2/external_link.svg", size: :md) %>
+            <% end %>
           <% end %>
         <% end %>
       </div>
-    </div>
+    <% end %>
   </div>
-
-</div>
+<% end %>
