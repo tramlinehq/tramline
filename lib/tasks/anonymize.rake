@@ -2,8 +2,8 @@ require "data-anonymization"
 require "faker"
 
 namespace :anonymize do
-  desc 'Anonymize release train data from source db into local db;
-        Example: rake "anonymize:release_train[ueno-staging-cross-platform,e735400a-3337-4699-95e2-c32b76ead7f3]"'
+  desc 'Anonymize release train data from source db into local db
+        Example: rake "anonymize:release_train[ueno-staging-cross-platform,e735400a-3337-4699-95e2-c32b76ead7f3,ios]"'
   task :release_train, %i[internal_app_slug external_train_id platform] => [:destructive, :environment] do |_, args|
     DataAnon::Utils::Logging.logger.level = Logger::INFO
 
@@ -84,7 +84,7 @@ namespace :anonymize do
       end
 
       table "release_platforms" do
-        continue { |index, record| record["platform"] == platform && Train.exists?(record["train_id"]) }
+        continue { |index, record| record["platform"] == platform || platform == "cross_platform" && Train.exists?(record["train_id"]) }
 
         primary_key "id"
         whitelist "status", "name", "version_seeded_with", "version_current", "slug", "working_branch", "branching_strategy",
@@ -296,24 +296,6 @@ namespace :anonymize do
         whitelist_timestamps
       end
 
-      table "release_health_metrics" do
-        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) && !ReleaseHealthMetric.exists?(record["id"]) }
-        primary_key "id"
-        whitelist "deployment_run_id", "sessions", "sessions_in_last_day", "sessions_with_errors", "daily_users",
-          "daily_users_with_errors", "errors_count", "new_errors_count", "fetched_at", "total_sessions_in_last_day", "external_release_id"
-        whitelist_timestamps
-      end
-
-      table "release_health_events" do
-        continue do |index, record|
-          DeploymentRun.exists?(record["deployment_run_id"]) && ReleaseHealthRule.exists?(record["release_health_rule_id"]) && ReleaseHealthMetric.exists?(record["release_health_metric_id"]) && !ReleaseHealthEvent.exists?(record["id"])
-        end
-
-        primary_key "id"
-        whitelist "deployment_run_id", "release_health_rule_id", "release_health_metric_id", "health_status", "action_triggered", "notification_triggered", "event_timestamp"
-        whitelist_timestamps
-      end
-
       table "passports" do
         continue { |index, record| record["stampable_type"].constantize.exists?(record["stampable_id"]) && !Passport.exists?(record["id"]) }
 
@@ -342,6 +324,50 @@ namespace :anonymize do
     end
     train = app.trains.reload.find(train_id)
     Charts::DevopsReport.warm(train)
+  end
+
+  desc 'Anonymize release health metric data from source db into local db
+        Example: rake "anonymize:release_health_metrics[ueno-staging-cross-platform,e735400a-3337-4699-95e2-c32b76ead7f3]"'
+  task :release_health_metrics, %i[internal_app_slug external_train_id] => [:destructive, :environment] do |_, args|
+    DataAnon::Utils::Logging.logger.level = Logger::INFO
+
+    app_slug = args[:internal_app_slug].to_s
+    app = App.find_by slug: app_slug
+    abort "App not found!" unless app
+
+    train_id = args[:external_train_id].to_s
+    abort "Train ID not found!" if train_id.blank?
+    puts "Train with id #{train_id} will be copied to #{app.name}!" if train_id.present?
+
+    train = app.trains.find(train_id)
+    abort "Train not found!" unless train
+
+    database "TramlineDatabase" do
+      strategy DataAnon::Strategy::Whitelist
+      source_db source_db_config
+      destination_db destination_db_config
+
+      table "release_health_metrics" do
+        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) && !ReleaseHealthMetric.exists?(record["id"]) }
+        primary_key "id"
+        whitelist "deployment_run_id", "sessions", "sessions_in_last_day", "sessions_with_errors", "daily_users",
+          "daily_users_with_errors", "errors_count", "new_errors_count", "fetched_at", "total_sessions_in_last_day", "external_release_id"
+        whitelist_timestamps
+      end
+
+      table "release_health_events" do
+        continue do |index, record|
+          DeploymentRun.exists?(record["deployment_run_id"]) &&
+            ReleaseHealthRule.exists?(record["release_health_rule_id"]) &&
+            ReleaseHealthMetric.exists?(record["release_health_metric_id"]) &&
+            !ReleaseHealthEvent.exists?(record["id"])
+        end
+
+        primary_key "id"
+        whitelist "deployment_run_id", "release_health_rule_id", "release_health_metric_id", "health_status", "action_triggered", "notification_triggered", "event_timestamp"
+        whitelist_timestamps
+      end
+    end
   end
 
   def source_db_config
