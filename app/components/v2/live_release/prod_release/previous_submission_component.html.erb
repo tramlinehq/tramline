@@ -1,0 +1,42 @@
+<%= render V2::AccordionComponent.new(push_down: false, acts_as_list: true) do |accordion| %>
+  <% accordion.with_title_section do %>
+    <div class="flex text-sm items-center justify-between">
+      <div class="flex gap-2">
+        <%= render V2::LiveRelease::BuildComponent.new(
+          submission.build,
+          show_number: true,
+          show_metadata: false,
+          show_ci: false,
+          show_activity: false,
+          show_commit: false) %>
+
+        <%= render V2::BadgeComponent.new(text: "Superseded", status: :neutral) %>
+      </div>
+
+      <div class="flex items-center">
+        <%= inline_svg("v2/dotted_line.svg", classname: "w-4 h-4 inline-flex mx-2 text-secondary") %>
+        <span class="text-secondary font-normal"><%= ago_in_words(submission.updated_at) %></span>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="flex flex-row items-center justify-between">
+    <div class="flex items-center gap-2 text-center text-secondary">
+      <%= render V2::IconComponent.new("integrations/logo_#{provider}.png", size: :xl) %>
+      <div class="justify-start"><%= render V2::BadgeComponent.new(**status) %></div>
+    </div>
+
+    <div class="flex items-center gap-2 text-center">
+      <%= render V2::BadgeComponent.new(text: store_status, status: :neutral) %>
+      <%= render V2::ButtonComponent.new(label: "Store dashboard ↗",
+                                         scheme: :link,
+                                         type: :link_external,
+                                         options: external_link,
+                                         html_options: { class: "text-sm" },
+                                         authz: false,
+                                         size: :none) do |b|
+        b.with_icon(store_icon, size: :md)
+      end %>
+    </div>
+  </div>
+<% end %>

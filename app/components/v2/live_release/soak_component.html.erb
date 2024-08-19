@@ -1,11 +1,10 @@
 <%= render V2::CardComponent.new(title: "Active Release Candidate", size: :full, separator: true) do |card| %>
-  <% card.with_actions do %>
-    <div class="flex justify-end gap-1">
-      <%= render V2::ButtonComponent.new(label: "Extend soak", scheme: :light, type: :action, size: :xxs) %>
-      <%= render V2::ButtonComponent.new(label: "End soak", scheme: :danger, type: :action, size: :xxs) %>
-    </div>
+  <% card.with_action do %>
+    <%= render V2::ButtonComponent.new(label: "End soak", scheme: :danger, type: :action, size: :xxs) %>
   <% end %>
-
+  <% card.with_action do %>
+    <%= render V2::ButtonComponent.new(label: "Extend soak", scheme: :light, type: :action, size: :xxs) %>
+  <% end %>
   <div class="flex flex-col section-gap-default">
     <%= render V2::PlatformViewComponent.new(@release) do |component| %>
       <% component.platform_runs.each do |run| %>

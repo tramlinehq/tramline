@@ -7,7 +7,7 @@
     </div>
 
     <%= render V2::CardComponent.new(title: "Status", size: :full, separator: false) do |card| %>
-      <% card.with_actions do %>
+      <% card.with_action do %>
         <%= render V2::ModalComponent.new(title: "Available builds", subtitle: "Choose a build to test for regressions") do |modal| %>
           <% button = modal.with_button(label: "Switch build under test", scheme: :light, type: :action, size: :xxs) %>
           <% button.with_icon("v2/pencil.svg") %>

@@ -1,6 +1,7 @@
 <%= render V2::CardComponent.new(title: title, subtitle: subtitle, separator: true) do |card| %>
-  <% card.with_actions do %>
-    <% if open_prs? %>
+
+  <% if open_prs? %>
+    <% card.with_action do %>
       <%= render V2::ButtonComponent.new(
         scheme: :default,
         options: post_release_release_path(release),
@@ -10,8 +11,10 @@
         b.with_icon("v2/repeat.svg", size: :sm)
       end %>
     <% end %>
+  <% end %>
 
-    <% if post_release_started? %>
+  <% if post_release_started? %>
+    <% card.with_action do %>
       <%= render V2::ButtonComponent.new(
         scheme: :default,
         options: "javascript:window.location.reload();",

@@ -9,17 +9,15 @@
 <% if ready_for_beta_release? %>
   <%= render V2::CardComponent.new(title: title) do |card| %>
     <% if carryover_build? %>
-      <% card.with_actions do %>
-        <% if release_platform_run.conf.beta_submissions? %>
-          <div class="flex flex-row gap-2">
-            <%= render V2::ButtonComponent.new(label: "Start beta release",
-                                               scheme: :default,
-                                               type: :button,
-                                               options: create_release_candidate_path,
-                                               size: :xxs,
-                                               turbo: false,
-                                               html_options: confirmation_opts) %>
-          </div>
+      <% if release_platform_run.conf.beta_submissions? %>
+        <% card.with_action do %>
+          <%= render V2::ButtonComponent.new(label: "Start beta release",
+                                             scheme: :default,
+                                             type: :button,
+                                             options: create_release_candidate_path,
+                                             size: :xxs,
+                                             turbo: false,
+                                             html_options: confirmation_opts) %>
         <% end %>
       <% end %>
 
@@ -29,16 +27,15 @@
     <% end %>
 
     <% if create_new_rc? %>
-      <% card.with_actions do %>
-        <div class="flex flex-row gap-2">
-          <%= render V2::ButtonComponent.new(label: "Create Release Candidate",
-                                             scheme: :default,
-                                             type: :button,
-                                             options: create_release_candidate_path,
-                                             size: :xxs,
-                                             turbo: false,
-                                             html_options: confirmation_opts) %>
-        </div>
+      <% card.with_action do %>
+        <%= render V2::ButtonComponent.new(label: "Create Release Candidate",
+                                           scheme: :default,
+                                           type: :button,
+                                           options: create_release_candidate_path,
+                                           size: :xxs,
+                                           turbo: false,
+                                           html_options: confirmation_opts) %>
+
       <% end %>
 
       <div class="flex flex-col section-gap-default">

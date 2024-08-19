@@ -34,7 +34,7 @@
 
   <div class="grid grid-cols-2 item-gap-default min-w-80">
     <%= render V2::CardComponent.new(title: "Captain's Log", fold: false, separator: true) do |card| %>
-      <% card.with_actions do %>
+      <% card.with_action do %>
         <%= render V2::ModalComponent.new(title: "Edit Internal Notes", dismissable: false) do |modal| %>
           <% modal.with_button(scheme: :light, type: :action, size: :xxs, arrow: :none)
                   .with_icon("v2/pencil.svg", size: :sm) %>

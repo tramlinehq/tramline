@@ -1,5 +1,5 @@
 class V2::CardComponent < ViewComponent::Base
-  renders_one :actions
+  renders_many :actions
   renders_one :empty_state, ->(**args) {
     empty_state_params = {type: :tiny}.merge(**args)
     V2::EmptyStateComponent.new(**empty_state_params)

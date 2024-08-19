@@ -17,7 +17,11 @@
         <h5 class="flex heading-5-sc"><%= title %></h5>
       </div>
 
-      <%= actions %>
+      <div class="flex flex-row gap-2">
+        <% actions.each do |action| %>
+          <%= action %>
+        <% end %>
+      </div>
     </div>
 
     <% if separator? && subtitle.present? %>
