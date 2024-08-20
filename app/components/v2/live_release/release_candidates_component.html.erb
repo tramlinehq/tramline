@@ -1,18 +1,16 @@
 <%= render V2::PlatformViewComponent.new(@release) do |component| %>
-  <div class="flex flex-col section-gap-default">
-    <% component.runs do |release_platform_run| %>
-      <%= render V2::LiveRelease::SubmissionConfigComponent.new(configuration(release_platform_run), workflow_config(release_platform_run), release_platform_run:) %>
-    <% end %>
+  <% component.runs do |release_platform_run| %>
+    <%= render V2::LiveRelease::SubmissionConfigComponent.new(configuration(release_platform_run), workflow_config(release_platform_run), release_platform_run:) %>
+  <% end %>
 
-    <% component.runs do |release_platform_run| %>
-      <% beta_release = latest_beta_release(release_platform_run) %>
-      <% if beta_release.present? %>
-        <%= render V2::LiveRelease::PreProdRelease::CurrentReleaseComponent.new(beta_release) %>
-      <% else %>
-        <%= render V2::LiveRelease::PrepareReleaseCandidateComponent.new(release_platform_run) %>
-      <% end %>
+  <% component.runs do |release_platform_run| %>
+    <% beta_release = latest_beta_release(release_platform_run) %>
+    <% if beta_release.present? %>
+      <%= render V2::LiveRelease::PreProdRelease::CurrentReleaseComponent.new(beta_release) %>
+    <% else %>
+      <%= render V2::LiveRelease::PrepareReleaseCandidateComponent.new(release_platform_run) %>
     <% end %>
-  </div>
+  <% end %>
 
   <% if component.platform_runs.any? { |sr| sr.external_builds.exists? } %>
     <% component.runs do |release_platform_run| %>

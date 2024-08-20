@@ -42,6 +42,8 @@ class Build < ApplicationRecord
 
   def build_version = version_name
 
+  def metadata = nil
+
   def display_name
     "#{version_name} (#{build_number})"
   end
