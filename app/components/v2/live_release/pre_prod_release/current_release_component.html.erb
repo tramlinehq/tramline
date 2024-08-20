@@ -43,14 +43,11 @@
   <%= render V2::CardComponent.new(title: "Current Build") do |card| %>
     <% if build.present? %>
       <% card.with_action do %>
-        <%= render V2::ModalComponent.new(title: "Changes since last build", size: :xl_3, authz: false) do |modal| %>
-          <% button = modal.with_button(label: "Changes since last build", type: :action, scheme: :supporting, size: :xxs) %>
-          <% button.with_icon("v2/diff.svg", size: :md) %>
-          <% modal.with_body do %>
-            <%= render partial: "shared/divide_collection",
-                       locals: { collection: render(changed_commits) } %>
-          <% end %>
-        <% end %>
+        <%= render partial: "shared/changes_since_last_modal",
+                   locals: { title: "Changes since last build",
+                             button_scheme: :supporting,
+                             subtitle: nil,
+                             commits: changed_commits } %>
       <% end %>
     <% end %>
 

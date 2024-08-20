@@ -30,6 +30,10 @@ module ApplicationHelper
     inert: "bg-main-400 dark:bg-main-200"
   }
 
+  def status_picker(picker, status)
+    picker[status.to_sym] || {text: status.humanize, status: :neutral}
+  end
+
   def resolve_color(color)
     if color.to_sym.in?(%i[excellent acceptable mediocre])
       "var(--color-reldex-#{color})"

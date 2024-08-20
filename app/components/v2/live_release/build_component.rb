@@ -52,7 +52,7 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
   end
 
   def workflow_status
-    make_status(WORKFLOW_STATUS, build.workflow_run.status)
+    status_picker(WORKFLOW_STATUS, build.workflow_run.status)
   end
 
   def number

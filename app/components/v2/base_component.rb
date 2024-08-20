@@ -31,8 +31,4 @@ class V2::BaseComponent < ViewComponent::Base
   def html_opts(method, message, params: {})
     {method:, params:, data: {turbo_method: method, turbo_confirm: message}}
   end
-
-  def make_status(picker, status)
-    picker[status.to_sym] || {text: status.humanize, status: :neutral}
-  end
 end

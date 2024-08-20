@@ -1,0 +1,15 @@
+<%= render V2::ModalComponent.new(title:, subtitle:, size: :xl_3, authz: false) do |modal| %>
+  <% if button_scheme == :naked_icon %>
+    <% button = modal.with_button(scheme: :naked_icon, type: :action, size: :none) %>
+    <% button.with_tooltip(title, placement: "top") %>
+  <% else %>
+    <% button = modal.with_button(label: title, scheme: :supporting, type: :action, size: :xxs) %>
+  <% end %>
+
+  <% button.with_icon("v2/diff.svg", size: :lg) %>
+
+  <% modal.with_body do %>
+    <%= render partial: "shared/divide_collection",
+               locals: { collection: render(V2::CommitComponent.with_collection(commits)) } %>
+  <% end %>
+<% end %>

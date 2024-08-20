@@ -1,0 +1,38 @@
+<% prod_rollouts.each do |prod_rollout| %>
+  <% rollout = StoreRolloutPresenter.new(prod_rollout, view_context) %>
+
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-1.5 text-center text-secondary">
+      <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
+        <% badge.with_icon(rollout.store_icon) %>
+        <% badge.with_link(rollout.build.display_name, rollout.external_link) %>
+      <% end %>
+
+      <% if show_build %>
+        <%= render V2::IconComponent.new("v2/connect_line.svg", size: :xl) %>
+
+        <%= render V2::LiveRelease::BuildComponent.new(
+          rollout.build,
+          show_number: false,
+          show_metadata: false,
+          show_ci: true,
+          show_activity: false,
+          show_commit: false) %>
+      <% end %>
+
+      <%= render V2::BadgeComponent.new(**rollout.full_rollout_status) %>
+
+      <% if rollout.parent_release.previous.present? %>
+        <%= render partial: "shared/changes_since_last_modal",
+                   locals: { title: "Changes since last submission",
+                             button_scheme: :naked_icon,
+                             subtitle: "hi2u",
+                             commits: rollout.parent_release.commits_since_previous } %>
+      <% end %>
+    </div>
+
+    <%= render partial: "shared/show_time_ago",
+               locals: { tooltip_text: rollout.last_activity_tooltip,
+                         last_activity_at: rollout.last_activity_at } %>
+  </div>
+<% end %>

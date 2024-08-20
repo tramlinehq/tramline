@@ -1,31 +1,23 @@
 class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
-  STATUS = {
-    created: {text: "Ready", status: :routine},
-    started: {text: "Active", status: :ongoing},
-    failed: {text: "Failed", status: :failure},
-    completed: {text: "Completed", status: :success},
-    halted: {text: "Halted", status: :inert},
-    fully_released: {text: "Released to all users", status: :success},
-    paused: {text: "Paused phased release", status: :ongoing}
-  }
-
   # TODO: [V2] Add new monitoring component here
   def initialize(store_rollout, title: "Rollout Status")
-    @store_rollout = store_rollout
+    @store_rollout = ::StoreRolloutPresenter.new(store_rollout, self)
     @title = title
   end
 
   attr_reader :store_rollout
   delegate :release_platform_run,
+    :upcoming?,
+    :decorated_status,
+    :store_icon,
     :build,
     :provider,
     :last_rollout_percentage,
     :stage,
     :controllable_rollout?,
+    :external_link,
     :automatic_rollout?, :id, to: :store_rollout
   delegate :release, to: :release_platform_run
-
-  def upcoming? = store_rollout.created?
 
   def monitoring_size
     release_platform_run.app.cross_platform? ? :compact : :default
@@ -56,10 +48,6 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
         description: "The staged rollout for this release has been increased to 1%",
         type: :success
       }]
-  end
-
-  def status
-    make_status(STATUS, store_rollout.status)
   end
 
   def stage_help
@@ -173,9 +161,5 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
 
   def border_style
     :dashed if upcoming?
-  end
-
-  def store_dashboard_link
-    "https://play.google.com/store/apps/details?id=com.example.app"
   end
 end

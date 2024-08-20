@@ -42,7 +42,7 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
 
   def status
     return STATUS[:finished] if submission.finished?
-    make_status(STATUS, submission.status).merge(kind: :status)
+    status_picker(STATUS, submission.status).merge(kind: :status)
   end
 
   def store_status

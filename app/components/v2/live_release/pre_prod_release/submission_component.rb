@@ -55,7 +55,7 @@ class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
 
   def status
     return STATUS[:finished] if submission.finished?
-    make_status(STATUS, submission.status)
+    status_picker(STATUS, submission.status)
   end
 
   def external_status

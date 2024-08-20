@@ -21,7 +21,7 @@
 
   <div class="flex flex-col gap-3">
     <div class="flex flex-row items-center justify-between">
-      <div class="flex items-center gap-2 text-center text-secondary">
+      <div class="flex items-center gap-1.5 text-center text-secondary">
         <%= render V2::LiveRelease::BuildComponent.new(
           pre_prod_release.build,
           show_number: false,
@@ -48,15 +48,12 @@
           <% end %>
         </div>
       </div>
-      <%= render V2::ModalComponent.new(title: "Changes since last build", size: :xl_3, authz: false) do |modal| %>
-        <% button = modal.with_button(type: :action, scheme: :naked_icon, size: :none) %>
-        <% button.with_icon("v2/diff.svg", size: :md) %>
-        <% button.with_tooltip("Changes since last build") %>
-        <% modal.with_body do %>
-          <%= render partial: "shared/divide_collection",
-                     locals: { collection: render(changed_commits) } %>
-        <% end %>
-      <% end %>
+
+      <%= render partial: "shared/changes_since_last_modal",
+                 locals: { title: "Changes since last build",
+                           button_scheme: :naked_icon,
+                           subtitle: nil,
+                           commits: changed_commits } %>
     </div>
 
     <%= render V2::LiveRelease::BuildComponent.new(

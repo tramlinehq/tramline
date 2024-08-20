@@ -24,10 +24,11 @@ class ProductionRelease < ApplicationRecord
   has_many :release_health_events, dependent: :destroy, inverse_of: :production_release
   has_many :release_health_metrics, dependent: :destroy, inverse_of: :production_release
 
-  delegate :app, :train, to: :release_platform_run
+  delegate :app, :train, :release, to: :release_platform_run
   delegate :monitoring_provider, to: :app
   delegate :store_rollout, to: :store_submission
   delegate :notify!, to: :train
+  delegate :commit, to: :build
 
   STAMPABLE_REASONS = %w[created active finished]
 
@@ -118,5 +119,16 @@ class ProductionRelease < ApplicationRecord
       build_number: build.build_number,
       release_version: build.version_name
     )
+  end
+
+  def commits_since_previous
+    changes_since_last_release = release.release_changelog&.normalized_commits
+    last_successful_run = previous
+    changes_since_last_run = release.all_commits.between_commits(last_successful_run&.commit, commit)
+
+    return changes_since_last_run if last_successful_run.present?
+
+    return (changes_since_last_release || []) if previous.blank?
+    ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq { |c| c.commit_hash }
   end
 end

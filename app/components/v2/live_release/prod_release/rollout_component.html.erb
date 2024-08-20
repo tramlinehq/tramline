@@ -42,7 +42,7 @@
             </div>
 
             <div class="flex gap-1 flex-wrap">
-              <%= render V2::BadgeComponent.new(**status) %>
+              <%= render V2::BadgeComponent.new(**decorated_status) %>
               <div class="text-sm text-secondary-50"><%= stage_help %></div>
             </div>
 
@@ -75,11 +75,11 @@
                 <%= render V2::ButtonComponent.new(label: "Store dashboard ↗",
                                                    scheme: :link,
                                                    type: :link_external,
-                                                   options: store_dashboard_link,
+                                                   options: external_link,
                                                    html_options: { class: "text-sm" },
                                                    authz: false,
                                                    size: :none) do |b|
-                  b.with_icon("integrations/logo_google_play_store.png", size: :md)
+                  b.with_icon(store_icon, size: :md)
                 end %>
               </div>
             </div>

@@ -21,12 +21,12 @@
   <% end %>
 
   <div class="flex flex-row items-center justify-between">
-    <div class="flex items-center gap-2 text-center text-secondary">
+    <div class="flex items-center gap-1.5 text-center text-secondary">
       <%= render V2::IconComponent.new("integrations/logo_#{provider}.png", size: :xl) %>
-      <div class="justify-start"><%= render V2::BadgeComponent.new(**status) %></div>
+      <%= render V2::BadgeComponent.new(**status) %>
     </div>
 
-    <div class="flex items-center gap-2 text-center">
+    <div class="flex items-center gap-1.5 text-center">
       <%= render V2::BadgeComponent.new(text: store_status, status: :neutral) %>
       <%= render V2::ButtonComponent.new(label: "Store dashboard ↗",
                                          scheme: :link,
