@@ -12,5 +12,9 @@ FactoryBot.define do
         create(:build_artifact, build: build)
       end
     end
+
+    trait :rc do
+      association :workflow_run, :rc
+    end
   end
 end

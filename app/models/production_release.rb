@@ -43,6 +43,7 @@ class ProductionRelease < ApplicationRecord
   enum status: STATES
 
   def version_bump_required?
+    return false unless release_platform_run.latest_rc_build?(build)
     return true if active?
     return true if store_submission.version_bump_required? && store_submission.finished?
     false
