@@ -10,6 +10,7 @@ class Coordinators::CreateInternalRelease
 
   def call
     transaction do
+      release_platform_run.correct_version!
       internal_release = release_platform_run.internal_releases.create!(config:, previous:, commit:)
       auto_promote = internal_release.conf.auto_promote?
       WorkflowRun.create_and_trigger!(workflow_config, internal_release, commit, release_platform_run, auto_promote:)

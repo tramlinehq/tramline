@@ -28,6 +28,7 @@ class Coordinators::CreateBetaRelease
         beta_release.commit = commit
         beta_release.save!
         auto_promote = true
+        release_platform_run.correct_version!
         WorkflowRun.create_and_trigger!(rc_workflow_config, beta_release, commit, release_platform_run, auto_promote:)
       end
 
