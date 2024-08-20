@@ -107,14 +107,16 @@
     <% end %>
 
     <div class="flex flex-col item-gap-default text-secondary text-xs">
+      <%= render V2::LiveRelease::BuildComponent.new(current_build,
+                                                     show_metadata: false,
+                                                     show_ci: false,
+                                                     show_activity: false,
+                                                     show_commit: false,
+                                                     show_compact_metadata: true) %>
+
       <div class="flex flex-row gap-2 items-center">
-        <%= render V2::IconComponent.new("integrations/logo_#{provider}.png", size: :xl) %>
-        <div class="justify-start"><%= render V2::BadgeComponent.new(**status) %></div>
-        <%= render V2::LiveRelease::BuildComponent.new(current_build,
-                                                       show_metadata: false,
-                                                       show_ci: false,
-                                                       show_activity: false,
-                                                       show_commit: false) %>
+        <%= render V2::IconComponent.new(store_icon, size: :xl) %>
+        <%= render V2::BadgeComponent.new(**status) %>
       </div>
 
       <%= render V2::LiveRelease::BuildComponent.new(current_build,
@@ -123,18 +125,22 @@
                                                      show_ci: false,
                                                      show_activity: false,
                                                      show_commit: true) %>
-      <%= render V2::SectionComponent.new(style: :titled, title: "Store info", size: :micro) do %>
-        <div class="flex justify-between items-center">
-          <%= render V2::BadgeComponent.new(text: store_status, status: :neutral) %>
-          <%= render V2::ButtonComponent.new(label: "Store dashboard ↗",
-                                             scheme: :link,
-                                             type: :link_external,
-                                             options: external_link,
-                                             html_options: { class: "text-sm" },
-                                             authz: false,
-                                             size: :none) do |b|
-            b.with_icon(store_icon, size: :md)
-          end %>
+
+      <%= render V2::SectionComponent.new(style: :titled, title: "External info", size: :micro) do %>
+        <div class="flex">
+          <%= render V2::HorizontalDataSetComponent.new do |component| %>
+            <% component.with_data_set(title: "Status").with_content(store_status) %>
+            <% component.with_data_set(title: "Dashboard") do %>
+              <%= render V2::ButtonComponent.new(scheme: :naked_icon,
+                                                 type: :link_external,
+                                                 options: external_link,
+                                                 html_options: { class: "text-xs" },
+                                                 authz: false,
+                                                 size: :none) do |b| %>
+                <% b.with_icon("v2/external_link.svg", size: :md) %>
+              <% end %>
+            <% end %>
+          <% end %>
         </div>
       <% end %>
     </div>

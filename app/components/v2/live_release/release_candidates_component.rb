@@ -23,8 +23,4 @@ class V2::LiveRelease::ReleaseCandidatesComponent < V2::BaseReleaseComponent
   def previous_beta_releases(release_platform_run)
     release_platform_run.older_beta_releases
   end
-
-  def submission_status(submission)
-    SUBMISSION_STATUS[submission.status.to_sym] || {text: submission.status.humanize, status: :neutral}
-  end
 end

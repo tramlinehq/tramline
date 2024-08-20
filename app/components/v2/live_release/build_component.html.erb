@@ -22,7 +22,7 @@
           <% end %>
 
           <% if show_activity %>
-            <%= render V2::BadgeComponent.new(text: build.workflow_run.status.humanize, status: :neutral) %>
+            <%= render V2::BadgeComponent.new(**workflow_status) %>
           <% end %>
         </div>
 
@@ -35,7 +35,6 @@
     <% if show_metadata %>
       <%= render V2::HorizontalDataSetComponent.new do |component| %>
         <% component.with_data_set(title: "Artifact") do %>
-
           <% if artifact.present? %>
             <%= render V2::ButtonComponent.new(scheme: :link,
                                                label: artifact.get_filename,

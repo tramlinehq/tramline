@@ -3,6 +3,18 @@
 class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
   include Memery
   CUSTOM_BOX_STYLE = "border-l-8 rounded-lg %s border-default-t border-default-b border-default-r box-padding rounded-r-lg"
+  STATUS = {
+    created: {text: "Ready", status: :inert},
+    preparing: {text: "Preparing", status: :ongoing},
+    prepared: {text: "Ready for review", status: :ongoing},
+    failed_prepare: {text: "Failed to prepare", status: :inert},
+    submitted_for_review: {text: "Submitted for review", status: :inert},
+    review_failed: {text: "Review rejected", status: :failure},
+    approved: {text: "Review approved", status: :ongoing},
+    failed: {text: "Failed", status: :failure},
+    failed_with_action_required: {text: "Needs manual submission", status: :failure},
+    cancelled: {text: "Removed from review", status: :inert}
+  }
 
   def initialize(submission, inactive: false)
     @submission = submission
@@ -39,19 +51,19 @@ class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
     "Last activity at #{time_format(last_activity_ts)}"
   end
 
+  def status
+    make_status(STATUS, submission.status)
+  end
+
   def external_status
     submission.store_status&.humanize || NOT_AVAILABLE
   end
 
-  def status
-    submission.status.humanize
+  def submission_logo_bw
+    "v2/logo_#{submission.provider}_bw.svg"
   end
 
   def submission_logo
     "integrations/logo_#{submission.provider}.png"
-  end
-
-  def submission_logo_bw
-    "v2/logo_#{submission.provider}_bw.svg"
   end
 end

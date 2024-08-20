@@ -4,9 +4,9 @@ class V2::LiveRelease::PreProdRelease::CurrentReleaseComponent < V2::BaseCompone
   include Memery
 
   STATUS = {
-    created: {text: "Ongoing", status: :routine},
+    created: {text: "In progress", status: :routine},
     failed: {text: "Failed", status: :failure},
-    finished: {text: "Finished", status: :success}
+    finished: {text: "Success", status: :success}
   }
 
   def initialize(pre_prod_release)
@@ -21,7 +21,7 @@ class V2::LiveRelease::PreProdRelease::CurrentReleaseComponent < V2::BaseCompone
   end
 
   def status
-    (STATUS[pre_prod_release.status.to_sym] || {text: pre_prod_release.status.humanize, status: :neutral}).merge(kind: :status)
+    make_status(STATUS, pre_prod_release.status).merge(kind: :status)
   end
 
   def triggerable?

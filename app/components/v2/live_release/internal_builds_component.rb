@@ -35,8 +35,4 @@ class V2::LiveRelease::InternalBuildsComponent < V2::BaseComponent
   def previous_internal_releases(release_platform_run)
     release_platform_run.older_internal_releases
   end
-
-  def submission_status(submission)
-    SUBMISSION_STATUS[submission.status.to_sym] || {text: submission.status.humanize, status: :neutral}
-  end
 end

@@ -59,7 +59,7 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
   end
 
   def status
-    STATUS[store_rollout.status.to_sym] || {text: store_rollout.status.humanize, status: :neutral}
+    make_status(STATUS, store_rollout.status)
   end
 
   def stage_help

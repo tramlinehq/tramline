@@ -5,6 +5,27 @@ class V2::BaseReleaseComponent < V2::BaseComponent
   using RefinedHash
   using RefinedInteger
 
+  RELEASE_PHASE = {
+    completed: ["Complete", :success],
+    finishing: ["Finishing up", :success],
+    kickoff: ["Kickoff", :routine],
+    stabilization: ["Stabilizing the release", :routine],
+    review: ["Under store review", :ongoing],
+    rollout: ["Rolling out to users", :inert]
+  }
+  RELEASE_STATUS = {
+    finished: ["Completed", :success],
+    stopped: ["Stopped", :inert],
+    created: ["Running", :ongoing],
+    on_track: ["Running", :ongoing],
+    upcoming: ["Upcoming", :inert],
+    post_release: ["Finalizing", :neutral],
+    post_release_started: ["Finalizing", :neutral],
+    post_release_failed: ["Finalizing", :neutral],
+    partially_finished: ["Partially Finished", :ongoing],
+    stopped_after_partial_finish: ["Stopped & Partially Finished", :inert]
+  }
+
   def initialize(release)
     @release = release
   end
@@ -26,9 +47,10 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     message + "Are you sure you want to stop the release?"
   end
 
+  # TODO: [V2] I don't think this is being used in the v2 stuff, consider removing - kit
   memoize def status
-    return ReleasesHelper::SHOW_RELEASE_STATUS.fetch(:upcoming) if @release.upcoming?
-    ReleasesHelper::SHOW_RELEASE_STATUS.fetch(@release.status.to_sym)
+    return RELEASE_STATUS.fetch(:upcoming) if @release.upcoming?
+    RELEASE_STATUS.fetch(@release.status.to_sym)
   end
 
   def human_slug

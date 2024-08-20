@@ -1,22 +1,24 @@
 <%= render V2::PlatformViewComponent.new(@release) do |component| %>
-  <% component.runs do |release_platform_run| %>
-    <% if configured?(release_platform_run) %>
-      <%= render V2::LiveRelease::SubmissionConfigComponent.new(configuration(release_platform_run), internal_workflow_config(release_platform_run), release_platform_run:) %>
-    <% else %>
-      <%= render V2::EmptyStateComponent.new(
-        title: "No internal build step configured",
-        text: "Please configure an internal build step for the train to see the build status.",
-        banner_image: "v2/drill.svg",
-        type: :subdued) %>
+  <div class="flex flex-col section-gap-default">
+    <% component.runs do |release_platform_run| %>
+      <% if configured?(release_platform_run) %>
+        <%= render V2::LiveRelease::SubmissionConfigComponent.new(configuration(release_platform_run), internal_workflow_config(release_platform_run), release_platform_run:) %>
+      <% else %>
+        <%= render V2::EmptyStateComponent.new(
+          title: "No internal build step configured",
+          text: "Please configure an internal build step for the train to see the build status.",
+          banner_image: "v2/drill.svg",
+          type: :subdued) %>
+      <% end %>
     <% end %>
-  <% end %>
 
-  <% component.runs do |release_platform_run| %>
-    <% latest_release = latest_internal_release(release_platform_run) %>
-    <% if latest_release.present? %>
-      <%= render V2::LiveRelease::PreProdRelease::CurrentReleaseComponent.new(latest_release) %>
+    <% component.runs do |release_platform_run| %>
+      <% latest_release = latest_internal_release(release_platform_run) %>
+      <% if latest_release.present? %>
+        <%= render V2::LiveRelease::PreProdRelease::CurrentReleaseComponent.new(latest_release) %>
+      <% end %>
     <% end %>
-  <% end %>
+  </div>
 
   <% if component.platform_runs.any? { |sr| sr.external_builds.exists? } %>
     <% component.runs do |release_platform_run| %>

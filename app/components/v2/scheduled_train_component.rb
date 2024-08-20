@@ -32,7 +32,7 @@ class V2::ScheduledTrainComponent < V2::BaseComponent
   end
 
   def release_status(release)
-    status = ReleasesHelper::SHOW_RELEASE_STATUS.fetch(release.status.to_sym)
+    status = V2::BaseReleaseComponent::RELEASE_STATUS.fetch(release.status.to_sym)
     {text: status.first, status: status.last}
   end
 

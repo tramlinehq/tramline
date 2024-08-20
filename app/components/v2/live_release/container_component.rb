@@ -3,7 +3,6 @@ class V2::LiveRelease::ContainerComponent < V2::BaseReleaseComponent
   renders_many :tabs, V2::LiveRelease::StepComponent
 
   SELECTED_TAB_STYLE = "active text-main bg-white border-l-3"
-
   TAB_STATUS_ICON = {
     none: {icon: "v2/circle.svg", classes: STATUS_COLOR_PALETTE[:neutral].join(" ") + " !bg-backgroundLight-50"},
     blocked: {icon: "v2/circle_x.svg", classes: STATUS_COLOR_PALETTE[:inert].join(" ")},
@@ -22,7 +21,7 @@ class V2::LiveRelease::ContainerComponent < V2::BaseReleaseComponent
   delegate :live_release_tab_configuration, :current_overall_status, to: :helpers
 
   def overall_status
-    ReleasesHelper::SHOW_RELEASE_PHASE.fetch(current_overall_status.to_sym)
+    RELEASE_PHASE.fetch(current_overall_status.to_sym)
   end
 
   def sorted_sections

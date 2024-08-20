@@ -36,41 +36,41 @@ class Computations::Release::StepStatuses
   end
 
   def internal_builds_status
-    return STATUS[:none] if @release.release_platform_runs.all? { |rp| rp.internal_builds.none? }
+    return STATUS[:none] if all_platforms? { |rp| rp.internal_builds.none? }
     return STATUS[:ongoing] if new_change?
     STATUS[:success]
   end
 
   def release_candidate_status
-    return STATUS[:none] if @release.release_platform_runs.all? { |rp| rp.latest_beta_release&.blank? }
-    return STATUS[:ongoing] if @release.release_platform_runs.any? { |rp| rp.latest_beta_release&.actionable? }
+    return STATUS[:none] if all_platforms? { |rp| rp.latest_beta_release&.blank? }
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_beta_release&.actionable? }
     STATUS[:success]
   end
 
   def notes_status
-    return STATUS[:ongoing] unless @release.finished?
+    return STATUS[:ongoing] unless finished?
     STATUS[:success]
   end
 
   def app_submission_status
-    return STATUS[:blocked] if @release.release_platform_runs.all? { |rp| rp.production_releases.none? }
-    return STATUS[:ongoing] if @release.release_platform_runs.any? { |rp| rp.inflight_production_release.present? }
+    return STATUS[:blocked] if all_platforms? { |rp| rp.production_releases.none? }
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.inflight_production_release.present? }
     STATUS[:success]
   end
 
   def rollout_to_users_status
-    return STATUS[:blocked] if @release.release_platform_runs.all? { |rp| rp.production_store_rollouts.none? }
-    return STATUS[:ongoing] if @release.release_platform_runs.any? { |rp| rp.active_store_rollout&.present? }
-    return STATUS[:ongoing] if @release.release_platform_runs.any? { |rp| rp.inflight_store_rollout&.present? }
+    return STATUS[:blocked] if all_platforms? { |rp| rp.production_store_rollouts.none? }
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.active_store_rollout&.present? }
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.inflight_store_rollout&.present? }
     STATUS[:success]
   end
 
   def current_overall_status
-    return PHASES[:completed] if @release.finished?
-    return PHASES[:finishing] if Release::POST_RELEASE_STATES.include?(@release.status)
-    return PHASES[:rollout] if @release.release_platform_runs.any? { |rp| rp.production_store_rollouts.exists? }
-    return PHASES[:review] if @release.release_platform_runs.any? { |rp| rp.active_production_release.present? }
-    return PHASES[:stabilization] if @release.release_platform_runs.any? { |rp| rp.pre_prod_releases.exists? }
+    return PHASES[:completed] if finished?
+    return PHASES[:finishing] if Release::POST_RELEASE_STATES.include?(status)
+    return PHASES[:rollout] if any_platforms? { |rp| rp.production_store_rollouts.exists? }
+    return PHASES[:review] if any_platforms? { |rp| rp.active_production_release.present? }
+    return PHASES[:stabilization] if any_platforms? { |rp| rp.pre_prod_releases.exists? }
     PHASES[:kickoff]
   end
 
@@ -79,4 +79,18 @@ class Computations::Release::StepStatuses
   def new_change?
     @release.applied_commits != @release.all_commits
   end
+
+  def any_platforms?
+    @release.release_platform_runs.any? do |rp|
+      yield(rp)
+    end
+  end
+
+  def all_platforms?
+    @release.release_platform_runs.all? do |rp|
+      yield(rp)
+    end
+  end
+
+  delegate :finished?, :status, to: :@release
 end

@@ -3,6 +3,20 @@
 class V2::LiveRelease::BuildComponent < V2::BaseComponent
   include Memery
 
+  WORKFLOW_STATUS = {
+    created: {text: "Waiting", status: :inert},
+    triggering: {text: "Preparing workflow", status: :ongoing},
+    triggered: {text: "Workflow started", status: :ongoing},
+    unavailable: {text: "Build unavailable", status: :failure},
+    started: {text: "Workflow running", status: :ongoing},
+    failed: {text: "Workflow failed", status: :failure},
+    halted: {text: "Workflow halted", status: :failure},
+    finished: {text: "Workflow finished", status: :success},
+    cancelled: {text: "Workflow cancelled", status: :inert},
+    cancelling: {text: "Cancelling the workflow", status: :ongoing},
+    cancelled_before_start: {text: "Workflow cancelled", status: :inert}
+  }
+
   def initialize(build, show_number: true, show_metadata: true, show_ci: true, show_activity: true, show_commit: true, show_compact_metadata: false)
     @build = build
     @show_number = show_number
@@ -35,6 +49,10 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
 
   def last_activity_at
     ago_in_words(build.updated_at)
+  end
+
+  def workflow_status
+    make_status(WORKFLOW_STATUS, build.workflow_run.status)
   end
 
   def number

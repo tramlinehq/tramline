@@ -24,7 +24,7 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
     submitted_for_review: {text: "Submitted for review", status: :inert},
     review_failed: {text: "Review rejected", status: :failure},
     approved: {text: "Review approved", status: :ongoing},
-    failed: {text: "Failed", status: :failure},
+    failed: {text: "Submission failed", status: :failure},
     failed_with_action_required: {text: "Needs manual submission", status: :failure},
     cancelled: {text: "Removed from review", status: :inert}
   }
@@ -39,11 +39,11 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
   end
 
   def status
-    STATUS[submission.status.to_sym] || {text: submission.status.humanize, status: :neutral}
+    make_status(STATUS, submission.status).merge(kind: :status)
   end
 
   def store_status
-    submission.store_status&.humanize || "N/A"
+    submission.store_status&.humanize || NOT_AVAILABLE
   end
 
   def store_icon
