@@ -216,6 +216,10 @@ class Release < ApplicationRecord
     release_platform_runs.all?(&:production_release_happened?)
   end
 
+  def production_release_active?
+    release_platform_runs.all?(&:production_release_active?)
+  end
+
   # TODO: [V2] move this out to signals
   def finish_after_partial_finish!
     with_lock do

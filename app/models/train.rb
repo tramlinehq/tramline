@@ -320,11 +320,18 @@ class Train < ApplicationRecord
   end
 
   def upcoming_release_startable?
-    manually_startable? &&
-      release_platforms.any?(&:has_production_deployment?) &&
-      ongoing_release.present? &&
-      (release_platforms.all?(&:has_review_steps?) || ongoing_release.production_release_happened?) &&
-      upcoming_release.blank?
+    if product_v2?
+      manually_startable? &&
+        ongoing_release.present? &&
+        ongoing_release.production_release_active? &&
+        upcoming_release.blank?
+    else
+      manually_startable? &&
+        release_platforms.any?(&:has_production_deployment?) &&
+        ongoing_release.present? &&
+        (release_platforms.all?(&:has_review_steps?) || ongoing_release.production_release_happened?) &&
+        upcoming_release.blank?
+    end
   end
 
   def continuous_backmerge?

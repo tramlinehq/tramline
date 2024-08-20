@@ -220,6 +220,10 @@ class ReleasePlatformRun < ApplicationRecord
     latest_internal_release(finished: true).present?
   end
 
+  def production_release_active?
+    production_releases.active.exists?
+  end
+
   def latest_beta_release(finished: false)
     (finished ? beta_releases.finished : beta_releases).order(created_at: :desc).first
   end
