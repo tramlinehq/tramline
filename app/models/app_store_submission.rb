@@ -129,7 +129,7 @@ class AppStoreSubmission < StoreSubmission
 
   def cancellable? = CANCELABLE_STATES.include?(status) && editable?
 
-  def finished? = FINAL_STATES.include?(status)
+  def finished? = FINAL_STATES.include?(status) && store_rollout.finished?
 
   def reviewable? = prepared? && editable?
 

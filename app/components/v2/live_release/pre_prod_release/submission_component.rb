@@ -4,16 +4,18 @@ class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
   include Memery
   CUSTOM_BOX_STYLE = "border-l-8 rounded-lg %s border-default-t border-default-b border-default-r box-padding rounded-r-lg"
   STATUS = {
-    created: {text: "Ready", status: :inert},
-    preparing: {text: "Preparing", status: :ongoing},
-    prepared: {text: "Ready for review", status: :ongoing},
-    failed_prepare: {text: "Failed to prepare", status: :inert},
+    created: {text: "Not started", status: :inert},
+    preprocessing: {text: "Processing", status: :ongoing},
+    preparing: {text: "Processing", status: :ongoing},
+    prepared: {text: "Submitted", status: :ongoing},
+    failed_prepare: {text: "Failed to submit", status: :inert},
     submitted_for_review: {text: "Submitted for review", status: :inert},
     review_failed: {text: "Review rejected", status: :failure},
     approved: {text: "Review approved", status: :ongoing},
     failed: {text: "Failed", status: :failure},
     failed_with_action_required: {text: "Needs manual submission", status: :failure},
-    cancelled: {text: "Removed from review", status: :inert}
+    cancelled: {text: "Removed from review", status: :inert},
+    finished: {text: "Submitted", status: :success}
   }
 
   def initialize(submission, inactive: false)
@@ -52,6 +54,7 @@ class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
   end
 
   def status
+    return STATUS[:finished] if submission.finished?
     make_status(STATUS, submission.status)
   end
 

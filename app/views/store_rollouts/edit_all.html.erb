@@ -14,17 +14,19 @@
         <%= render V2::PlatformViewComponent.new(@release) do |component| %>
           <% component.platform_runs.each do |run| %>
             <div class="grid grid-cols-1 section-gap-default">
-              <% if run.inflight_store_rollout.present? %>
-                <%= render V2::LiveRelease::ProdRelease::RolloutComponent.new(run.inflight_store_rollout, title: "Upcoming rollout") %>
-              <% end %>
+              <div class="flex flex-col item-gap-default">
+                <% if run.inflight_store_rollout.present? %>
+                  <%= render V2::LiveRelease::ProdRelease::RolloutComponent.new(run.inflight_store_rollout, title: "Upcoming rollout") %>
+                <% end %>
 
-              <% if run.active_store_rollout.present? %>
-                <%= render V2::LiveRelease::ProdRelease::RolloutComponent.new(run.active_store_rollout, title: "Active rollout") %>
-              <% end %>
+                <% if run.active_store_rollout.present? %>
+                  <%= render V2::LiveRelease::ProdRelease::RolloutComponent.new(run.active_store_rollout, title: "Active rollout") %>
+                <% end %>
 
-              <% if run.finished_store_rollout.present? %>
-                <%= render V2::LiveRelease::ProdRelease::RolloutComponent.new(run.finished_store_rollout) %>
-              <% end %>
+                <% if run.finished_store_rollout.present? %>
+                  <%= render V2::LiveRelease::ProdRelease::RolloutComponent.new(run.finished_store_rollout) %>
+                <% end %>
+              </div>
 
               <% older_rollouts = run.older_production_store_rollouts %>
               <% if older_rollouts.any? %>

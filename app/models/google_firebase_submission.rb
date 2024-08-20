@@ -42,7 +42,6 @@ class GoogleFirebaseSubmission < StoreSubmission
     failed: "failed",
     failed_with_action_required: "failed_with_action_required"
   }
-  FINAL_STATES = %w[finished]
 
   enum status: STATES
   aasm safe_state_machine_params do
@@ -66,8 +65,6 @@ class GoogleFirebaseSubmission < StoreSubmission
       transitions to: :failed
     end
   end
-
-  def finished? = status.in? FINAL_STATES
 
   def trigger!
     return unless actionable?

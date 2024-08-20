@@ -36,7 +36,6 @@ class PlayStoreSubmission < StoreSubmission
     prepared
     review_rejected
   ]
-
   STATES = {
     created: "created",
     preprocessing: "preprocessing",
@@ -90,7 +89,7 @@ class PlayStoreSubmission < StoreSubmission
 
   def cancellable? = false
 
-  def finished? = FINAL_STATES.include?(status) # TODO: [V2] can we use another proxy and remove this method. is currently used in view only.
+  def finished? = FINAL_STATES.include?(status) && store_rollout.finished?
 
   def reviewable? = false
 

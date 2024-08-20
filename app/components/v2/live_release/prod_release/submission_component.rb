@@ -3,6 +3,21 @@
 class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
   include Memery
 
+  STATUS = {
+    created: {text: "Not started", status: :inert},
+    preprocessing: {text: "Processing", status: :ongoing},
+    preparing: {text: "Processing", status: :ongoing},
+    prepared: {text: "Ready for review", status: :ongoing},
+    failed_prepare: {text: "Failed to prepare", status: :inert},
+    submitted_for_review: {text: "Submitted for review", status: :inert},
+    review_failed: {text: "Review rejected", status: :failure},
+    approved: {text: "Review approved", status: :ongoing},
+    failed: {text: "Submission failed", status: :failure},
+    failed_with_action_required: {text: "Needs manual submission", status: :failure},
+    cancelled: {text: "Removed from review", status: :inert},
+    finished: {text: "Submitted", status: :success}
+  }
+
   def initialize(submission, inactive: false, title: "Store Submission")
     @submission = submission
     @inactive = inactive
@@ -16,19 +31,6 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
   delegate :id, :inflight?, :actionable?, :release_platform_run, :external_link, :provider, to: :submission
   delegate :release, to: :release_platform_run
 
-  STATUS = {
-    created: {text: "Ready", status: :inert},
-    preparing: {text: "Preparing", status: :ongoing},
-    prepared: {text: "Ready for review", status: :ongoing},
-    failed_prepare: {text: "Failed to prepare", status: :inert},
-    submitted_for_review: {text: "Submitted for review", status: :inert},
-    review_failed: {text: "Review rejected", status: :failure},
-    approved: {text: "Review approved", status: :ongoing},
-    failed: {text: "Submission failed", status: :failure},
-    failed_with_action_required: {text: "Needs manual submission", status: :failure},
-    cancelled: {text: "Removed from review", status: :inert}
-  }
-
   def inflight? = submission.parent_release.inflight?
 
   def inactive? = @inactive
@@ -39,6 +41,7 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
   end
 
   def status
+    return STATUS[:finished] if submission.finished?
     make_status(STATUS, submission.status).merge(kind: :status)
   end
 
