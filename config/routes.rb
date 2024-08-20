@@ -232,8 +232,8 @@ Rails.application.routes.draw do
   end
 
   if Rails.env.development?
-    patch "/store_submissions/:id/mock_reject", to: "app_store_submissions#mock_reject_for_app_store", as: :mock_reject_for_app_store
-    patch "/store_submissions/:id/mock_approve", to: "app_store_submissions#mock_approve_for_app_store", as: :mock_approve_for_app_store
+    patch "/store_submissions/:id/mock_reject", to: "store_submissions#mock_reject_for_app_store", as: :mock_reject_for_app_store
+    patch "/store_submissions/:id/mock_approve", to: "store_submissions#mock_approve_for_app_store", as: :mock_approve_for_app_store
   end
 
   resources :workflow_runs, only: [] do
