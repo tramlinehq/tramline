@@ -768,9 +768,9 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_20_101805) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "store_release"
-    t.string "parent_release_type", null: false
-    t.uuid "parent_release_id", null: false
-    t.jsonb "config", null: false
+    t.string "parent_release_type"
+    t.uuid "parent_release_id"
+    t.jsonb "config"
     t.integer "sequence_number", limit: 2, default: 0, null: false
     t.index ["build_id"], name: "index_store_submissions_on_build_id"
     t.index ["parent_release_type", "parent_release_id"], name: "index_store_submissions_on_parent_release"

@@ -4,10 +4,10 @@
 #
 #  id                      :uuid             not null, primary key
 #  approved_at             :datetime
-#  config                  :jsonb            not null
+#  config                  :jsonb
 #  failure_reason          :string
 #  name                    :string
-#  parent_release_type     :string           not null, indexed => [parent_release_id]
+#  parent_release_type     :string           indexed => [parent_release_id]
 #  prepared_at             :datetime
 #  rejected_at             :datetime
 #  sequence_number         :integer          default(0), not null, indexed
@@ -20,7 +20,7 @@
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_id                :uuid             not null, indexed
-#  parent_release_id       :uuid             not null, indexed => [parent_release_type]
+#  parent_release_id       :uuid             indexed => [parent_release_type]
 #  release_platform_run_id :uuid             not null, indexed
 #
 class TestFlightSubmission < StoreSubmission
