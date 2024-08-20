@@ -2,8 +2,8 @@ require "data-anonymization"
 require "faker"
 
 namespace :anonymize do
-  desc 'Anonymize release train data from source db into local db;
-        Example: rake "anonymize:release_train[ueno-staging-cross-platform,e735400a-3337-4699-95e2-c32b76ead7f3]"'
+  desc 'Anonymize release train data from source db into local db
+        Example: rake "anonymize:release_train[ueno-staging-cross-platform,e735400a-3337-4699-95e2-c32b76ead7f3,ios]"'
   task :release_train, %i[internal_app_slug external_train_id platform] => [:destructive, :environment] do |_, args|
     DataAnon::Utils::Logging.logger.level = Logger::INFO
 
@@ -84,7 +84,7 @@ namespace :anonymize do
       end
 
       table "release_platforms" do
-        continue { |index, record| record["platform"] == platform && Train.exists?(record["train_id"]) }
+        continue { |index, record| record["platform"] == platform || platform == "cross_platform" && Train.exists?(record["train_id"]) }
 
         primary_key "id"
         whitelist "status", "name", "version_seeded_with", "version_current", "slug", "working_branch", "branching_strategy",
@@ -296,24 +296,6 @@ namespace :anonymize do
         whitelist_timestamps
       end
 
-      table "release_health_metrics" do
-        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) && !ReleaseHealthMetric.exists?(record["id"]) }
-        primary_key "id"
-        whitelist "deployment_run_id", "sessions", "sessions_in_last_day", "sessions_with_errors", "daily_users",
-          "daily_users_with_errors", "errors_count", "new_errors_count", "fetched_at", "total_sessions_in_last_day", "external_release_id"
-        whitelist_timestamps
-      end
-
-      table "release_health_events" do
-        continue do |index, record|
-          DeploymentRun.exists?(record["deployment_run_id"]) && ReleaseHealthRule.exists?(record["release_health_rule_id"]) && ReleaseHealthMetric.exists?(record["release_health_metric_id"]) && !ReleaseHealthEvent.exists?(record["id"])
-        end
-
-        primary_key "id"
-        whitelist "deployment_run_id", "release_health_rule_id", "release_health_metric_id", "health_status", "action_triggered", "notification_triggered", "event_timestamp"
-        whitelist_timestamps
-      end
-
       table "passports" do
         continue { |index, record| record["stampable_type"].constantize.exists?(record["stampable_id"]) && !Passport.exists?(record["id"]) }
 
@@ -342,6 +324,67 @@ namespace :anonymize do
     end
     train = app.trains.reload.find(train_id)
     Charts::DevopsReport.warm(train)
+
+    train.release_platforms.each do |release_platform|
+      populate_config(release_platform)
+    end
+
+    populate_v2_models(train)
+  end
+
+  desc 'Anonymize release health metric data from source db into local db
+        Example: rake "anonymize:release_health_metrics[ueno-staging-cross-platform,e735400a-3337-4699-95e2-c32b76ead7f3]"'
+  task :release_health_metrics, %i[internal_app_slug external_train_id] => [:destructive, :environment] do |_, args|
+    DataAnon::Utils::Logging.logger.level = Logger::INFO
+
+    app_slug = args[:internal_app_slug].to_s
+    app = App.find_by slug: app_slug
+    abort "App not found!" unless app
+
+    train_id = args[:external_train_id].to_s
+    abort "Train ID not found!" if train_id.blank?
+    puts "Train with id #{train_id} will be copied to #{app.name}!" if train_id.present?
+
+    train = app.trains.find(train_id)
+    abort "Train not found!" unless train
+
+    database "TramlineDatabase" do
+      strategy DataAnon::Strategy::Whitelist
+      source_db source_db_config
+      destination_db destination_db_config
+
+      table "release_health_metrics" do
+        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) && !ReleaseHealthMetric.exists?(record["id"]) }
+        primary_key "id"
+        whitelist "deployment_run_id", "sessions", "sessions_in_last_day", "sessions_with_errors", "daily_users",
+          "daily_users_with_errors", "errors_count", "new_errors_count", "fetched_at", "total_sessions_in_last_day", "external_release_id"
+        whitelist_timestamps
+      end
+
+      table "release_health_events" do
+        continue do |index, record|
+          DeploymentRun.exists?(record["deployment_run_id"]) &&
+            ReleaseHealthRule.exists?(record["release_health_rule_id"]) &&
+            ReleaseHealthMetric.exists?(record["release_health_metric_id"]) &&
+            !ReleaseHealthEvent.exists?(record["id"])
+        end
+
+        primary_key "id"
+        whitelist "deployment_run_id", "release_health_rule_id", "release_health_metric_id", "health_status", "action_triggered", "notification_triggered", "event_timestamp"
+        whitelist_timestamps
+      end
+    end
+  end
+
+  desc "Populate v2 models for the train"
+  task :populate_v2_models, %i[external_train_id] => [:destructive, :environment] do |_, args|
+    train_id = args[:external_train_id].to_s
+    abort "Train ID not found!" if train_id.blank?
+
+    train = Train.find(train_id)
+    abort "Train not found!" unless train
+
+    populate_v2_models(train)
   end
 
   def source_db_config
@@ -360,5 +403,135 @@ namespace :anonymize do
 
   def whitelist_timestamps
     whitelist "created_at", "updated_at"
+  end
+
+  def populate_v2_models(train)
+    ActiveRecord::Base.transaction do
+      train.releases.where.not(is_v2: true).each do |release|
+        release.release_platform_runs.each do |prun|
+          prun.update!(config: prun.release_platform.config)
+
+          review_step = prun.release_platform.steps.review.first
+          prun.step_runs_for(review_step).each do |srun|
+            create_pre_prod_release!(prun, review_step, srun, "internal")
+          end
+
+          release_step = prun.release_platform.release_step
+          prun.step_runs_for(release_step).each_with_index do |srun, index|
+            build = create_pre_prod_release!(prun, release_step, srun, "release_candidate")
+
+            config = prun.conf.production_release.value
+            production_release = prun.production_releases.create!(
+              config:,
+              build:,
+              status: srun.success? ? "finished" : "stale"
+            )
+
+            production_depl = release_step.deployments.find { |d| d.production_channel? }
+
+            srun.deployment_runs.where(deployment: production_depl).each do |drun|
+              submission_config = prun.conf.production_release.submissions.first
+              submission = submission_config.submission_type.create!(
+                parent_release: production_release,
+                release_platform_run: prun,
+                build: build,
+                sequence_number: 1,
+                config: submission_config.to_h,
+                status: "prepared"
+              )
+
+              if drun.staged_rollout.present?
+                if submission.is_a?(PlayStoreSubmission)
+                  submission.create_play_store_rollout!(
+                    release_platform_run: prun,
+                    current_stage: drun.staged_rollout&.current_stage || 0,
+                    config: submission_config.rollout_config.stages.presence || [],
+                    is_staged_rollout: submission_config.rollout_config.enabled,
+                    status: drun.staged_rollout.stopped? ? "halted" : drun.staged_rollout.status
+                  )
+                elsif submission.is_a?(AppStoreSubmission)
+                  submission.create_app_store_rollout!(
+                    release_platform_run: prun,
+                    current_stage: drun.staged_rollout&.current_stage || 0,
+                    config: submission_config.rollout_config.stages.presence || [],
+                    is_staged_rollout: submission_config.rollout_config.enabled,
+                    status: drun.staged_rollout.stopped? ? "halted" : drun.staged_rollout.status
+                  )
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  def create_pre_prod_release!(release_platform_run, step, step_run, kind)
+    commit = step_run.commit
+
+    if kind == "internal"
+      config = release_platform_run.conf.internal_release
+      pre_prod_release = release_platform_run.internal_releases.create!(config: config.value, commit:)
+      workflow_config = release_platform_run.conf.workflows.pick_internal_workflow
+    else
+      config = release_platform_run.conf.beta_release
+      pre_prod_release = release_platform_run.beta_releases.create!(config: config.value, commit:)
+      workflow_config = release_platform_run.conf.workflows.release_candidate_workflow
+    end
+
+    workflow_run = WorkflowRun.create!(workflow_config: workflow_config.value,
+      triggering_release: pre_prod_release,
+      release_platform_run:,
+      commit:,
+      kind: workflow_config.kind,
+      status: step_run.failed? ? "failed" : "finished")
+
+    build = workflow_run.create_build!(version_name: step_run.release_version,
+      release_platform_run:,
+      generated_at: step_run.build_artifact&.generated_at || step_run.scheduled_at,
+      commit:)
+
+    step.deployments.reject { |d| d.production_channel? }.each_with_index do |deployment, index|
+      submission_config = config.submissions.fetch_by_number(index + 1)
+      create_pre_prod_submissions(release_platform_run, step_run, deployment, submission_config, pre_prod_release, build)
+    end
+    build
+  end
+
+  def create_pre_prod_submissions(release_platform_run, step_run, deployment, config, parent_release, build)
+    step_run.deployment_runs.where(deployment: deployment).each do |drun|
+      submission = config.submission_type.create!(
+        parent_release:,
+        release_platform_run:,
+        build:,
+        sequence_number: config.number,
+        config: config.to_h,
+        status: drun.failed? ? "failed" : success_state(config.submission_type)
+      )
+
+      if submission.is_a?(PlayStoreSubmission)
+        submission.create_play_store_rollout!(
+          release_platform_run:,
+          config: config.rollout_config.stages.presence || [],
+          is_staged_rollout: config.rollout_config.enabled,
+          status: drun.failed? ? "failed" : "completed"
+        )
+      end
+    end
+  end
+
+  def success_state(submission_type)
+    case submission_type.to_s
+    when "PlayStoreSubmission"
+      "prepared"
+    when "AppStoreSubmission"
+      "approved"
+    when "TestFlightSubmission"
+      "finished"
+    when "GoogleFirebaseSubmission"
+      "finished"
+    else
+      raise "Unknown submission type: #{submission_type}"
+    end
   end
 end

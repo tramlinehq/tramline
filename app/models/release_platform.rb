@@ -4,6 +4,7 @@
 #
 #  id                       :uuid             not null, primary key
 #  branching_strategy       :string
+#  config                   :jsonb
 #  description              :string
 #  name                     :string           not null
 #  platform                 :string

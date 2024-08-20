@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_08_20_101805) do
+ActiveRecord::Schema[7.0].define(version: 2024_08_20_145504) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -585,6 +585,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_20_101805) do
     t.string "tag_name"
     t.boolean "in_store_resubmission", default: false
     t.uuid "last_commit_id"
+    t.jsonb "config"
     t.index ["last_commit_id"], name: "index_release_platform_runs_on_last_commit_id"
     t.index ["release_platform_id"], name: "index_release_platform_runs_on_release_platform_id"
   end
@@ -606,6 +607,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_20_101805) do
     t.string "vcs_webhook_id"
     t.uuid "train_id"
     t.string "platform"
+    t.jsonb "config"
     t.index ["app_id"], name: "index_release_platforms_on_app_id"
   end
 

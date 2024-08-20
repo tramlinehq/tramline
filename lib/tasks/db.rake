@@ -57,6 +57,14 @@ end
 def nuke_train(train)
   train.releases.each do |run|
     run.release_platform_runs.each do |prun|
+      prun.store_rollouts&.delete_all
+      prun.store_submissions&.delete_all
+      prun.production_releases&.delete_all
+      prun.builds&.delete_all
+      prun.workflow_runs&.delete_all
+      prun.internal_releases&.delete_all
+      prun.beta_releases&.delete_all
+
       prun.step_runs.each do |srun|
         srun.deployment_runs.each do |drun|
           drun.staged_rollout&.delete

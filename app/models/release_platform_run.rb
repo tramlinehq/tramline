@@ -5,6 +5,7 @@
 #  id                    :uuid             not null, primary key
 #  code_name             :string           not null
 #  completed_at          :datetime
+#  config                :jsonb
 #  in_store_resubmission :boolean          default(FALSE)
 #  release_version       :string
 #  scheduled_at          :datetime         not null
@@ -68,6 +69,7 @@ class ReleasePlatformRun < ApplicationRecord
 
   enum status: STATES
 
+  before_create :set_config, if: -> { release.is_v2? }
   after_create :set_default_release_metadata
   scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
@@ -103,13 +105,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def conf
-    if android?
-      ReleaseConfig::Platform.new(android_config)
-    elsif ios?
-      ReleaseConfig::Platform.new(ios_config)
-    else
-      raise ArgumentError, "Unknown platform: #{platform}"
-    end
+    ReleaseConfig::Platform.new(config)
   end
 
   # TODO: [V2] temp hard coded config
@@ -619,5 +615,9 @@ class ReleasePlatformRun < ApplicationRecord
       .not_failed
       .order(scheduled_at: :asc)
       .last
+  end
+
+  def set_config
+    self.config = release_platform.config
   end
 end
