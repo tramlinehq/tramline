@@ -64,6 +64,7 @@ class ProductionRelease < ApplicationRecord
   end
 
   def actionable?
+    return false if release.blocked_for_production_release?
     ACTIONABLE_STATES.include?(status)
   end
 

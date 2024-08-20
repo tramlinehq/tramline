@@ -23,6 +23,7 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
     @inactive = inactive
     @change_build_prompt = false
     @cancel_prompt = false
+    @blocked_notice = false
     @new_submission_prompt = false
     @title = title
   end
@@ -33,11 +34,27 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
 
   def inflight? = submission.parent_release.inflight?
 
+  def blocked?
+    release.blocked_for_production_release?
+  end
+
   def inactive? = @inactive
 
   def before_render
     compute_prompts
     super
+  end
+
+  def blocked_release_link
+    if release.ongoing?
+      hotfix_release_app_train_releases_path(release.train.app, release.train)
+    else
+      ongoing_release_app_train_releases_path(release.train.app, release.train)
+    end
+  end
+
+  def blocked_release_link_text
+    release.ongoing? ? "current hotfix release" : "current ongoing release"
   end
 
   def status
@@ -73,10 +90,12 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
   end
 
   def changeable?
+    return false if blocked?
     submission.change_build? && available_builds.present?
   end
 
   def compute_prompts
+    return @blocked_notice = true if blocked?
     return if newer_builds.blank?
 
     if submission.change_build?
@@ -89,6 +108,7 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
   end
 
   def action
+    return if blocked?
     return unless actionable?
 
     if submission.created?

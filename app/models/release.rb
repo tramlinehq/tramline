@@ -448,6 +448,11 @@ class Release < ApplicationRecord
     train.ongoing_release == self
   end
 
+  def blocked_for_production_release?
+    return true if upcoming?
+    ongoing? && train.hotfix_release.present?
+  end
+
   def retrigger_for_hotfix?
     hotfix? && !new_hotfix_branch?
   end

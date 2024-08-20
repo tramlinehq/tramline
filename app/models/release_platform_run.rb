@@ -221,7 +221,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def production_release_active?
-    production_releases.active.exists?
+    active_production_release.present?
   end
 
   def latest_beta_release(finished: false)
