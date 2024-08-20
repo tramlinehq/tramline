@@ -133,6 +133,8 @@ class AppStoreSubmission < StoreSubmission
 
   def reviewable? = prepared? && editable?
 
+  def version_bump_required? = true
+
   def trigger!
     return unless actionable?
     return start_prepare! if build_present_in_store?

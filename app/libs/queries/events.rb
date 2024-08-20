@@ -16,7 +16,7 @@ class Queries::Events
   attr_reader :release, :params
 
   def all
-    ids = release.product_v2? ? v2_stampable_ids : stampable_ids
+    ids = release.is_v2? ? v2_stampable_ids : stampable_ids
     Passport.where(stampable_id: ids).order(event_timestamp: :desc)
   end
 

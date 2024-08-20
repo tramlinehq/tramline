@@ -516,8 +516,12 @@ class ReleasePlatformRun < ApplicationRecord
   # Patch fix commit: no bump required
   # --
   def version_bump_required?
-    store_release = latest_deployed_store_release
-    store_release&.status&.in?(DeploymentRun::READY_STATES) && store_release.step_run.basic_build_version == release_version
+    if release.is_v2?
+      latest_production_release&.version_bump_required?
+    else
+      store_release = latest_deployed_store_release
+      store_release&.status&.in?(DeploymentRun::READY_STATES) && store_release.step_run.basic_build_version == release_version
+    end
   end
 
   def patch_fix?

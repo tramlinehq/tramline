@@ -6,7 +6,7 @@ class BuildQueueApplicationJob < ApplicationJob
   def perform(build_queue_id)
     build_queue = BuildQueue.find_by(id: build_queue_id)
 
-    if build_queue.release.product_v2?
+    if build_queue.release.is_v2?
       Signal.build_queue_can_be_applied!(build_queue)
     else
       build_queue.release.with_lock do

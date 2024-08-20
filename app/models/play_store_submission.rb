@@ -96,6 +96,8 @@ class PlayStoreSubmission < StoreSubmission
 
   def requires_review? = false
 
+  def version_bump_required? = false
+
   def trigger!
     return unless actionable?
     return start_prepare! if build_present_in_store?

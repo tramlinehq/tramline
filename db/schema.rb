@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_08_14_192003) do
+ActiveRecord::Schema[7.0].define(version: 2024_08_20_101805) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -628,6 +628,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_14_192003) do
     t.jsonb "internal_notes", default: {}
     t.uuid "release_pilot_id"
     t.string "slug"
+    t.boolean "is_v2", default: false
     t.index ["slug"], name: "index_releases_on_slug", unique: true
     t.index ["train_id"], name: "index_releases_on_train_id"
   end

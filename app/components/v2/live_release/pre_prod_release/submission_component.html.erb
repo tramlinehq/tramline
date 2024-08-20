@@ -23,19 +23,6 @@
       <%= render partial: "shared/show_time_ago", locals: { tooltip_text: last_activity_tooltip, tooltip_placement: "bottom", last_activity_at: } %>
     </div>
 
-    <div class="flex justify-between items-end">
-      <% if submission.triggerable? %>
-        <%= render V2::ButtonComponent.new(label: "Start submission",
-                                           scheme: :default,
-                                           type: :button,
-                                           options: trigger_store_submission_path(submission),
-                                           html_options: html_opts(:patch, "Are you sure?"),
-                                           size: :xxs) do |b| %>
-          <% b.with_icon(submission_logo_bw, size: :md) %>
-        <% end %>
-      <% end %>
-    </div>
-
     <%= render V2::SectionComponent.new(title: "External info", style: :titled, size: :micro) do %>
       <div class="flex justify-between items-center">
         <%= render V2::HorizontalDataSetComponent.new do |component| %>

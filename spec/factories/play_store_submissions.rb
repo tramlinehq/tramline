@@ -27,6 +27,10 @@ FactoryBot.define do
       parent_release { association :production_release }
     end
 
+    trait :created do
+      status { "created" }
+    end
+
     trait :preparing do
       status { "preparing" }
     end

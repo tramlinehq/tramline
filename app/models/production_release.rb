@@ -42,6 +42,12 @@ class ProductionRelease < ApplicationRecord
 
   enum status: STATES
 
+  def version_bump_required?
+    return true if active?
+    return true if store_submission.version_bump_required? && store_submission.finished?
+    false
+  end
+
   def mark_as_stale!
     return if finished?
     update!(status: STATES[:stale])

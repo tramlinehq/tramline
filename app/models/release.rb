@@ -8,6 +8,7 @@
 #  hotfixed_from            :uuid
 #  internal_notes           :jsonb
 #  is_automatic             :boolean          default(FALSE)
+#  is_v2                    :boolean          default(FALSE)
 #  new_hotfix_branch        :boolean          default(FALSE)
 #  original_release_version :string
 #  release_type             :string           not null

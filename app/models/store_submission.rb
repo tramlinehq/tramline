@@ -78,6 +78,8 @@ class StoreSubmission < ApplicationRecord
 
   def cancellable? = raise NotImplementedError
 
+  def version_bump_required? = raise NotImplementedError
+
   def attach_build(_build)
     raise NotImplementedError
   end
