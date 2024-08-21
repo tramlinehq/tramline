@@ -417,14 +417,16 @@ namespace :anonymize do
           end
 
           release_step = prun.release_platform.release_step
-          prun.step_runs_for(release_step).each_with_index do |srun, index|
+          prun.step_runs_for(release_step).each do |srun|
             build = create_pre_prod_release!(prun, release_step, srun, "release_candidate")
 
             config = prun.conf.production_release.value
             production_release = prun.production_releases.create!(
               config:,
               build:,
-              status: srun.success? ? "finished" : "stale"
+              status: srun.success? ? "finished" : "stale",
+              created_at: srun.created_at,
+              updated_at: srun.updated_at
             )
 
             production_depl = release_step.deployments.find { |d| d.production_channel? }
@@ -437,7 +439,9 @@ namespace :anonymize do
                 build: build,
                 sequence_number: 1,
                 config: submission_config.to_h,
-                status: "prepared"
+                status: "prepared",
+                created_at: drun.created_at,
+                updated_at: drun.updated_at
               )
 
               if drun.staged_rollout.present?
@@ -447,7 +451,9 @@ namespace :anonymize do
                     current_stage: drun.staged_rollout&.current_stage || 0,
                     config: submission_config.rollout_config.stages.presence || [],
                     is_staged_rollout: submission_config.rollout_config.enabled,
-                    status: drun.staged_rollout.stopped? ? "halted" : drun.staged_rollout.status
+                    status: drun.staged_rollout.stopped? ? "halted" : drun.staged_rollout.status,
+                    created_at: drun.staged_rollout.created_at,
+                    updated_at: drun.staged_rollout.updated_at
                   )
                 elsif submission.is_a?(AppStoreSubmission)
                   submission.create_app_store_rollout!(
@@ -455,7 +461,9 @@ namespace :anonymize do
                     current_stage: drun.staged_rollout&.current_stage || 0,
                     config: submission_config.rollout_config.stages.presence || [],
                     is_staged_rollout: submission_config.rollout_config.enabled,
-                    status: drun.staged_rollout.stopped? ? "halted" : drun.staged_rollout.status
+                    status: drun.staged_rollout.stopped? ? "halted" : drun.staged_rollout.status,
+                    created_at: drun.staged_rollout.created_at,
+                    updated_at: drun.staged_rollout.updated_at
                   )
                 end
               end
@@ -479,17 +487,26 @@ namespace :anonymize do
       workflow_config = release_platform_run.conf.workflows.release_candidate_workflow
     end
 
-    workflow_run = WorkflowRun.create!(workflow_config: workflow_config.value,
+    workflow_run = WorkflowRun.create!(
+      workflow_config: workflow_config.value,
       triggering_release: pre_prod_release,
       release_platform_run:,
       commit:,
       kind: workflow_config.kind,
-      status: step_run.failed? ? "failed" : "finished")
+      status: step_run.failed? ? "failed" : "finished",
+      created_at: step_run.created_at,
+      updated_at: step_run.updated_at
+    )
 
-    build = workflow_run.create_build!(version_name: step_run.release_version,
+    build = workflow_run.create_build!(
+      version_name: step_run.build_version,
       release_platform_run:,
       generated_at: step_run.build_artifact&.generated_at || step_run.scheduled_at,
-      commit:)
+      build_number: step_run.build_number,
+      created_at: step_run.created_at,
+      updated_at: step_run.updated_at,
+      commit:
+    )
 
     step.deployments.reject { |d| d.production_channel? }.each_with_index do |deployment, index|
       submission_config = config.submissions.fetch_by_number(index + 1)
@@ -506,7 +523,9 @@ namespace :anonymize do
         build:,
         sequence_number: config.number,
         config: config.to_h,
-        status: drun.failed? ? "failed" : success_state(config.submission_type)
+        status: drun.failed? ? "failed" : success_state(config.submission_type),
+        created_at: drun.created_at,
+        updated_at: drun.updated_at
       )
 
       if submission.is_a?(PlayStoreSubmission)
@@ -514,7 +533,9 @@ namespace :anonymize do
           release_platform_run:,
           config: config.rollout_config.stages.presence || [],
           is_staged_rollout: config.rollout_config.enabled,
-          status: drun.failed? ? "failed" : "completed"
+          status: drun.failed? ? "failed" : "completed",
+          created_at: drun.created_at,
+          updated_at: drun.updated_at
         )
       end
     end
