@@ -1,6 +1,8 @@
 module ApplicationHelper
   using RefinedString
 
+  NOT_AVAILABLE = "⃠"
+
   STATUS_COLOR_PALETTE = {
     success: %w[bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300],
     failure: %w[bg-rose-100 text-rose-800 dark:bg-red-900 dark:text-red-300],
@@ -180,5 +182,10 @@ module ApplicationHelper
   end
 
   def comment
+  end
+
+  def duration_in_words(seconds)
+    return NOT_AVAILABLE unless seconds
+    distance_of_time_in_words(0, seconds, include_seconds: true)
   end
 end

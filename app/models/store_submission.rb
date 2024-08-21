@@ -44,6 +44,8 @@ class StoreSubmission < ApplicationRecord
   delegate :version_name, :build_number, to: :build
   delegate :actionable?, to: :parent_release
 
+  scope :production, -> { where.not(production_release: nil) }
+
   def deployment_channel
     conf.submission_config
   end

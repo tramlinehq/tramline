@@ -21,4 +21,8 @@ class V2::PlatformOverviewV2Component < V2::BaseReleaseComponent
   def monitoring_size
     cross_platform? ? size : :default
   end
+
+  def release_breakdown
+    Queries::ReleaseBreakdown.call(release.id, from_cache: release.finished?)
+  end
 end

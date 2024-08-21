@@ -48,6 +48,7 @@ class ReleasePlatformRun < ApplicationRecord
   has_one :finished_production_release, -> { finished }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
   has_many :store_rollouts, dependent: :destroy
   has_many :production_store_rollouts, -> { production }, class_name: "StoreRollout", dependent: :destroy, inverse_of: :release_platform_run
+  has_many :production_store_submissions, -> { production }, class_name: "StoreSubmission", dependent: :destroy, inverse_of: :release_platform_run
 
   # NOTE: deprecated after v2
   has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run

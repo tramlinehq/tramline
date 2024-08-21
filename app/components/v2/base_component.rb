@@ -3,8 +3,6 @@ class V2::BaseComponent < ViewComponent::Base
   include LinkHelper
   include AssetsHelper
 
-  NOT_AVAILABLE = "⃠"
-
   delegate :billing?,
     :billing_link,
     :current_user,
