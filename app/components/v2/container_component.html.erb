@@ -1,61 +1,63 @@
-<% content_for :error_resource do %>
-  <%= render V2::ErrorComponent.new(error_resource) %>
-<% end %>
+<section class="pt-10 container mx-auto">
+  <% content_for :error_resource do %>
+    <%= render V2::ErrorComponent.new(error_resource) %>
+  <% end %>
 
-<% if back_button %>
-  <div class="my-2 mb-4">
-    <%= back_button %>
-  </div>
-<% end %>
+  <% if back_button %>
+    <div class="mb-4">
+      <%= back_button %>
+    </div>
+  <% end %>
 
-<div class="flex justify-between">
-  <div class="flex flex-row justify-between items-center">
-    <div>
-      <div class="flex items-center">
-        <h1 class="heading-1 text-main dark:text-white">
-          <span><%= title %></span>
-        </h1>
+  <div class="flex justify-between">
+    <div class="flex flex-row justify-between items-center">
+      <div>
+        <div class="flex items-center">
+          <h1 class="heading-1 text-main dark:text-white">
+            <span><%= title %></span>
+          </h1>
 
-        <% if side_actions? %>
-          <nav class="flex flex-row flex-wrap items-center space-x-3 ml-3">
-            <% side_actions.each do |side_action| %>
-              <%= side_action %>
-            <% end %>
-          </nav>
+          <% if side_actions? %>
+            <nav class="flex flex-row flex-wrap items-center space-x-3 ml-3">
+              <% side_actions.each do |side_action| %>
+                <%= side_action %>
+              <% end %>
+            </nav>
+          <% end %>
+        </div>
+
+        <% if subtitle %>
+          <div class="mt-2 text-sm text-secondary">
+            <%= subtitle %>
+          </div>
         <% end %>
       </div>
-
-      <% if subtitle %>
-        <div class="mt-2 text-sm text-secondary">
-          <%= subtitle %>
-        </div>
-      <% end %>
     </div>
+
+    <% if actions? %>
+      <nav class="flex flex-wrap gap-2 shrink-0">
+        <% actions.each do |action| %>
+          <%= action %>
+        <% end %>
+      </nav>
+    <% end %>
   </div>
 
-  <% if actions? %>
-    <nav class="flex flex-wrap gap-2 shrink-0">
-      <% actions.each do |action| %>
-        <%= action %>
+  <% if sub_actions? %>
+    <nav class="-mx-1.5 flex flex-row flex-wrap mt-6 sm:space-x-1">
+      <% sub_actions.each do |sub_action| %>
+        <%= sub_action %>
       <% end %>
     </nav>
   <% end %>
-</div>
 
-<% if sub_actions? %>
-  <nav class="-mx-1.5 flex flex-row flex-wrap mt-6 sm:space-x-1">
-    <% sub_actions.each do |sub_action| %>
-      <%= sub_action %>
-    <% end %>
-  </nav>
-<% end %>
-
-<% if empty_state? %>
-  <section class="mt-8">
-    <%= empty_state %>
-  </section>
-<% else %>
-  <section class="mt-8">
-    <%= body %>
-  </section>
-<% end %>
+  <% if empty_state? %>
+    <section class="mt-8">
+      <%= empty_state %>
+    </section>
+  <% else %>
+    <section class="mt-8">
+      <%= body %>
+    </section>
+  <% end %>
+</section>
