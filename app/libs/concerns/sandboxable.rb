@@ -167,6 +167,20 @@ module Sandboxable
     reject!
   end
 
+  def mock_metrics
+    {
+      new_errors_count: rand(100),
+      errors_count: rand(100),
+      sessions_in_last_day: rand(100),
+      sessions: rand(1000),
+      sessions_with_errors: rand(50),
+      daily_users_with_errors: rand(100),
+      daily_users: rand(1000),
+      total_sessions_in_last_day: rand(5000),
+      external_release_id: Faker::Number.number(digits: 6).to_s
+    }
+  end
+
   private
 
   def mocked_store_info(status, phased_release_status, phased_release_day = 0)

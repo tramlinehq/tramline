@@ -12,6 +12,7 @@
 #  release_platform_run_id :uuid             not null, indexed, indexed => [status], indexed => [status], indexed => [status]
 #
 class ProductionRelease < ApplicationRecord
+  include Sandboxable
   include Loggable
   include Passportable
   RELEASE_MONITORING_PERIOD_IN_DAYS = 15
@@ -98,7 +99,12 @@ class ProductionRelease < ApplicationRecord
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
 
-    release_data = monitoring_provider.find_release(platform, version_name, build_number)
+    release_data =
+      if sandbox_mode?
+        mock_metrics
+      else
+        monitoring_provider.find_release(platform, version_name, build_number)
+      end
     return if release_data.blank?
 
     release_health_metrics.create!(fetched_at: Time.current, **release_data)
