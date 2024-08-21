@@ -56,11 +56,11 @@ def populate_config(release_platform)
     config[:internal_release] = {
       auto_promote: true,
       submissions: review_step.deployments.each_with_index.map do |deployment, index|
-        { number: index + 1,
-          submission_type: submission_type(deployment),
-          submission_config: deployment.build_artifact_channel,
-          rollout_config: { enabled: false },
-          auto_promote: true }
+        {number: index + 1,
+         submission_type: submission_type(deployment),
+         submission_config: deployment.build_artifact_channel,
+         rollout_config: {enabled: false},
+         auto_promote: true}
       end.compact
     }
   end
@@ -70,11 +70,11 @@ def populate_config(release_platform)
     submissions: release_step.deployments.each_with_index.map do |deployment, index|
       next if deployment.production_channel?
 
-      { number: index + 1,
-        submission_type: submission_type(deployment),
-        submission_config: deployment.build_artifact_channel,
-        rollout_config: { enabled: false },
-        auto_promote: true }
+      {number: index + 1,
+       submission_type: submission_type(deployment),
+       submission_config: deployment.build_artifact_channel,
+       rollout_config: {enabled: false},
+       auto_promote: true}
     end.compact
   }
 
@@ -87,8 +87,8 @@ def populate_config(release_platform)
           number: 1,
           submission_type: submission_type(production_deployment),
           submission_config: production_deployment.build_artifact_channel,
-          rollout_config: { enabled: production_deployment.is_staged_rollout,
-                            stages: production_deployment.staged_rollout_config },
+          rollout_config: {enabled: production_deployment.is_staged_rollout,
+                           stages: production_deployment.staged_rollout_config},
           auto_promote: false
         }
       ]

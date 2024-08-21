@@ -408,6 +408,7 @@ namespace :anonymize do
   def populate_v2_models(train)
     ActiveRecord::Base.transaction do
       train.releases.where.not(is_v2: true).each do |release|
+        release.update!(is_v2: true)
         release.release_platform_runs.each do |prun|
           prun.update!(config: prun.release_platform.config)
 

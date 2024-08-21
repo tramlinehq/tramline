@@ -1,5 +1,4 @@
 class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
-  # TODO: [V2] Add new monitoring component here
   def initialize(store_rollout, title: "Rollout Status")
     @store_rollout = ::StoreRolloutPresenter.new(store_rollout, self)
     @title = title

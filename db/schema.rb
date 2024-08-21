@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_08_20_145504) do
+ActiveRecord::Schema[7.0].define(version: 2024_08_21_120904) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -505,7 +505,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_20_145504) do
   end
 
   create_table "release_health_metrics", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "deployment_run_id", null: false
+    t.uuid "deployment_run_id"
     t.bigint "sessions"
     t.bigint "sessions_in_last_day"
     t.bigint "sessions_with_errors"
@@ -518,8 +518,10 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_20_145504) do
     t.datetime "updated_at", null: false
     t.bigint "total_sessions_in_last_day"
     t.string "external_release_id"
+    t.uuid "production_release_id"
     t.index ["deployment_run_id"], name: "index_release_health_metrics_on_deployment_run_id"
     t.index ["fetched_at"], name: "index_release_health_metrics_on_fetched_at"
+    t.index ["production_release_id"], name: "index_release_health_metrics_on_production_release_id"
   end
 
   create_table "release_health_rules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -935,6 +937,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_20_145504) do
   add_foreign_key "release_health_events", "release_health_metrics"
   add_foreign_key "release_health_events", "release_health_rules"
   add_foreign_key "release_health_metrics", "deployment_runs"
+  add_foreign_key "release_health_metrics", "production_releases"
   add_foreign_key "release_health_rules", "release_platforms"
   add_foreign_key "release_index_components", "release_indices"
   add_foreign_key "release_indices", "trains"

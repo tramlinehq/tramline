@@ -15,6 +15,7 @@
 #  store_submission_id     :uuid             indexed
 #
 class StoreRollout < ApplicationRecord
+  using RefinedString
   include AASM
   include Loggable
   include Displayable
@@ -87,6 +88,17 @@ class StoreRollout < ApplicationRecord
 
   def notification_params
     store_submission.notification_params.merge(stamp_data)
+  end
+
+  def rollout_percentage_at(day)
+    last_event = passports
+      .where(reason: [:started, :increased, :fully_released])
+      .where("DATE_TRUNC('day', event_timestamp) <= ?", day)
+      .order(:event_timestamp)
+      .last
+    return 0.0 unless last_event
+    return 100.0 if last_event.reason == "fully_released"
+    last_event.metadata["rollout_percentage"].safe_float
   end
 
   protected

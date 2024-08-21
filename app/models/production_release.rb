@@ -24,11 +24,11 @@ class ProductionRelease < ApplicationRecord
   has_many :release_health_events, dependent: :destroy, inverse_of: :production_release
   has_many :release_health_metrics, dependent: :destroy, inverse_of: :production_release
 
-  delegate :app, :train, :release, to: :release_platform_run
+  delegate :app, :train, :release, :platform, to: :release_platform_run
   delegate :monitoring_provider, to: :app
   delegate :store_rollout, to: :store_submission
   delegate :notify!, to: :train
-  delegate :commit, to: :build
+  delegate :commit, :version_name, :build_number, to: :build
 
   STAMPABLE_REASONS = %w[created active finished]
 
@@ -98,10 +98,14 @@ class ProductionRelease < ApplicationRecord
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
 
-    release_data = monitoring_provider.find_release(platform, build_version, build_number)
+    release_data = monitoring_provider.find_release(platform, version_name, build_number)
     return if release_data.blank?
 
     release_health_metrics.create!(fetched_at: Time.current, **release_data)
+  end
+
+  def latest_health_data
+    release_health_metrics.order(fetched_at: :desc).first
   end
 
   def conf = ReleaseConfig::Platform::ReleaseStep.new(config)
@@ -110,15 +114,15 @@ class ProductionRelease < ApplicationRecord
 
   def stamp_data
     {
-      build_number: build.build_number,
-      version: build.version_name
+      build_number: build_number,
+      version: version_name
     }
   end
 
   def notification_params
     release_platform_run.notification_params.merge(
-      build_number: build.build_number,
-      release_version: build.version_name
+      build_number: build_number,
+      release_version: version_name
     )
   end
 

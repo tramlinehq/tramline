@@ -14,14 +14,16 @@
 #  total_sessions_in_last_day :bigint
 #  created_at                 :datetime         not null
 #  updated_at                 :datetime         not null
-#  deployment_run_id          :uuid             not null, indexed
+#  deployment_run_id          :uuid             indexed
 #  external_release_id        :string
+#  production_release_id      :uuid             indexed
 #
 class ReleaseHealthMetric < ApplicationRecord
-  belongs_to :deployment_run
+  belongs_to :deployment_run, optional: true
+  belongs_to :production_release, optional: true
   has_many :release_health_events, dependent: :nullify
 
-  delegate :release_health_rules, to: :deployment_run
+  delegate :release_health_rules, to: :deployment_run, allow_nil: true
 
   after_create_commit :check_release_health
 
@@ -54,10 +56,14 @@ class ReleaseHealthMetric < ApplicationRecord
   end
 
   def staged_rollout
+    if production_release.present?
+      return production_release.store_rollout.last_rollout_percentage
+    end
     deployment_run.rollout_percentage
   end
 
   def check_release_health
+    return if production_release.present? # TODO: [V2] implement health checks for v2 releases
     return if release_health_rules.blank?
     release_health_rules.each do |rule|
       create_health_event(rule)
@@ -69,7 +75,7 @@ class ReleaseHealthMetric < ApplicationRecord
   end
 
   def rules_for_metric(metric_name)
-    release_health_rules.for_metric(metric_name)
+    release_health_rules&.for_metric(metric_name)
   end
 
   def metric_healthy?(metric_name)
