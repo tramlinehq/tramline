@@ -110,6 +110,12 @@ module Installations
         code: 403,
         message_matcher: /has already been used/i,
         decorated_reason: :build_exists_in_build_channel
+      },
+      {
+        status: "PERMISSION_DENIED",
+        code: 403,
+        message_matcher: /You must let us know whether your app uses any Foreground Service permissions/,
+        decorated_reason: :foreground_service_permission_required
       }
     ]
 
