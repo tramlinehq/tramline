@@ -43,7 +43,7 @@ class ReleasesController < SignedInApplicationController
 
   def update
     if @release.update(update_release_params)
-      redirect_to edit_app_train_path(@app, @train), notice: "Release was updated"
+      redirect_to overview_release_path(@release), notice: "Captain's log was updated!"
     else
       render :edit, status: :unprocessable_entity
     end
