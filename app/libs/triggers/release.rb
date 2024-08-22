@@ -31,7 +31,7 @@ class Triggers::Release
     return Response.new(:unprocessable_entity, "Cannot start a train that has no release step. Please add at least one release step to the train.") unless train.release_platforms.all?(&:has_release_step?)
     return Response.new(:unprocessable_entity, "No more releases can be started until the ongoing release is finished!") if train.ongoing_release.present? && automatic
     return Response.new(:unprocessable_entity, "No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present? && !hotfix?
-    return Response.new(:unprocessable_entity, "Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable?
+    return Response.new(:unprocessable_entity, "Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable? && !hotfix?
     return Response.new(:unprocessable_entity, "App is in draft mode, cannot start a release to public channels!") if train.app.in_draft_mode? && train.has_restricted_public_channels?
     return Response.new(:unprocessable_entity, "Hotfix platform - #{hotfix_platform} is not valid!") if invalid_hotfix_platform?
 
