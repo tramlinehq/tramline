@@ -53,7 +53,7 @@ class Triggers::Release
         raise AppInDraftMode.new("App is in draft mode, cannot start a release!") if train.app.in_draft_mode?
         raise ReleaseAlreadyInProgress.new("No more releases can be started until the ongoing release is finished!") if train.ongoing_release.present? && automatic
         raise ReleaseAlreadyInProgress.new("No more releases can be started until the ongoing release is finished!") if train.upcoming_release.present? && !hotfix?
-        raise UpcomingReleaseNotAllowed.new("Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable?
+        raise UpcomingReleaseNotAllowed.new("Upcoming releases are not allowed for your train.") if train.ongoing_release.present? && !train.upcoming_release_startable? && !hotfix?
         raise NothingToRelease.new("No diff since last release") if regular_release? && !train.diff_since_last_release?
         raise NothingToRelease.new("No diff between working and release branch") if train.parallel_working_branch? && !train.diff_for_release?
         train.activate! unless train.active?
