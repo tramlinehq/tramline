@@ -1,19 +1,20 @@
 <%= render V2::PlatformViewComponent.new(release, occupy:) do |platform| %>
-  <% platform.runs do |run| %>
-    <div class="grid gap-y-2 items-end content-end">
-      <%= render partial: "shared/store_versions",
-                 locals: {prod_rollouts: run.production_store_rollouts, show_build:, view_context:} %>
-    </div>
+  <% if store_versions? %>
+    <% platform.runs do |run| %>
+      <div class="grid gap-2">
+        <%= render partial: "shared/store_versions",
+                   locals: { prod_rollouts: run.production_store_rollouts, show_build:, view_context: } %>
+      </div>
+    <% end %>
   <% end %>
 
   <% platform.runs do |run| %>
-    <% platform_summary = release_breakdown[run.platform] %>
-
+    <% breakdown = platform_breakdown(run) %>
     <div>
       <%= render V2::HorizontalDataSetComponent.new do |component| %>
-        <% component.with_data_set(title: "Time spent stabilizing").with_content(duration_in_words(platform_summary.stability_duration)) %>
-        <% component.with_data_set(title: "Internal builds").with_content(platform_summary.internal_builds_count) %>
-        <% component.with_data_set(title: "Release candidates").with_content(platform_summary.release_candidates_count) %>
+        <% component.with_data_set(title: "Time spent stabilizing").with_content(duration_in_words(breakdown.stability_duration)) %>
+        <% component.with_data_set(title: "Internal builds").with_content(breakdown.internal_builds_count) %>
+        <% component.with_data_set(title: "Release candidates").with_content(breakdown.release_candidates_count) %>
       <% end %>
     </div>
   <% end %>
@@ -22,10 +23,9 @@
     <% platform.runs do |run| %>
       <div>
         <% if run.production_store_rollouts.exists? %>
-          <%= render ReleaseMonitoringComponent.new(
-            deployment_run: run.store_submitted_releases.first,
+          <%= render V2::ReleaseMonitoringComponent.new(
+            store_rollout: run.production_store_rollouts.last,
             metrics: [:stability, :adoption_rate, :staged_rollout],
-            show_version_info: false,
             size: monitoring_size,
             num_events: 1) %>
         <% end %>

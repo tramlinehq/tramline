@@ -12,6 +12,8 @@ class Coordinators::FinishPlatformRun
       return unless release.on_track?
       release_platform_run.finish!
 
+      RefreshPlatformBreakdownJob.perform_later(release_platform_run.id) if release.is_v2?
+
       if release.ready_to_be_finalized?
         Coordinators::StartFinalizingRelease.call(release, false)
       else

@@ -100,6 +100,10 @@ class ReleasePlatformRun < ApplicationRecord
     end
   end
 
+  def active?
+    STATES.slice(:created, :on_track).value?(status)
+  end
+
   def metadata_for(language)
     locale_tag = AppStores::Localizable.supported_locale_tag(language, :ios)
     release_metadata&.find_by(locale: locale_tag)
@@ -107,109 +111,6 @@ class ReleasePlatformRun < ApplicationRecord
 
   def conf
     ReleaseConfig::Platform.new(config)
-  end
-
-  # TODO: [V2] temp hard coded config
-  def ios_config
-    {
-      workflows: {
-        internal: nil,
-        release_candidate: {
-          name: "iOS Fastlane Release",
-          id: "54289532",
-          artifact_name_pattern: nil
-        }
-      },
-      internal_release: nil,
-      beta_release: {
-        auto_promote: false,
-        submissions: [
-          {number: 1,
-           submission_type: "TestFlightSubmission",
-           submission_config: {id: "88842956-c143-4692-8998-8d0e1297f59e", name: "tramliners", is_internal: true}}
-        ]
-      },
-      production_release: {
-        auto_promote: false,
-        submissions: [
-          {number: 1,
-           submission_type: "AppStoreSubmission",
-           submission_config: AppStoreIntegration::PROD_CHANNEL,
-           rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
-           auto_promote: false}
-        ]
-      }
-    }
-  end
-
-  def android_config
-    {
-      workflows: {
-        internal: nil,
-        #           {
-        #           name: "Android Debug APK",
-        #           id: "85899119",
-        #           artifact_name_pattern: "pattern"
-        #         },
-        release_candidate: {
-          name: "Android Play Store Release Build AAB",
-          id: "85899120",
-          artifact_name_pattern: "pattern"
-        }
-      },
-      internal_release: nil,
-      #         {
-      #           auto_promote: true,
-      #           submissions: [
-      #             {
-      #               number: 1,
-      #               submission_type: "GoogleFirebaseSubmission",
-      #               submission_config: {id: "projects/946207521855/groups/internal-product-team",
-      #                                   name: "Internal Product Team"},
-      #               auto_promote: true
-      #             }
-      #             # {
-      #             #   number: 1,
-      #             #   submission_type: "PlayStoreSubmission",
-      #             #   submission_config: {id: :internal, name: "internal testing"},
-      #             #   rollout_config: {enabled: false},
-      #             #   auto_promote: true
-      #             # }
-      #           ]
-      #         },
-      beta_release: {
-        auto_promote: false,
-        submissions:
-          [
-            {
-              number: 1,
-              submission_type: "PlayStoreSubmission",
-              submission_config: {id: :alpha, name: "closed testing"},
-              rollout_config: {enabled: false},
-              auto_promote: true
-            },
-            {
-              number: 2,
-              submission_type: "PlayStoreSubmission",
-              submission_config: {id: :beta, name: "open testing"},
-              rollout_config: {enabled: false},
-              auto_promote: false
-            }
-          ]
-      },
-      production_release: {
-        auto_promote: false,
-        submissions: [
-          {
-            number: 1,
-            submission_type: "PlayStoreSubmission",
-            submission_config: GooglePlayStoreIntegration::PROD_CHANNEL,
-            rollout_config: {enabled: true, stages: [1, 2, 10, 20, 50, 100]},
-            auto_promote: false
-          }
-        ]
-      }
-    }
   end
 
   def ready_for_beta_release?

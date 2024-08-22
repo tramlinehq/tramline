@@ -1,4 +1,4 @@
-class RefreshTrainReportsJob < ApplicationJob
+class RefreshReldexJob < ApplicationJob
   include Loggable
   queue_as :high
 
@@ -7,7 +7,11 @@ class RefreshTrainReportsJob < ApplicationJob
 
     Charts::DevopsReport.warm(train)
     train.releases.finished.each do |release|
-      Queries::ReleaseSummary.warm(release.id)
+      if release.is_v2?
+        Queries::ReleaseBreakdown.warm(release.id, [:reldex])
+      else
+        Queries::ReleaseSummary.warm(release.id)
+      end
     end
   end
 end

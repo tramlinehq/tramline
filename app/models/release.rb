@@ -191,6 +191,7 @@ class Release < ApplicationRecord
     %W[#{date}-#{Haikunator.haikunate(0)} #{date}-#{Haikunator.haikunate(1)} #{date}-#{Haikunator.haikunate(10)}]
   end
 
+  # TODO: [V2] use v2 models for the reldex computation
   def index_score
     return if hotfix?
     return unless finished?
@@ -455,10 +456,6 @@ class Release < ApplicationRecord
 
   def retrigger_for_hotfix?
     hotfix? && !new_hotfix_branch?
-  end
-
-  def hotfixes
-    app.releases.hotfix.where(hotfixed_from: self)
   end
 
   def all_hotfixes

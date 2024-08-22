@@ -142,18 +142,21 @@
     <% if devops_report.present? %>
       <%= render V2::SectionComponent.new(style: :titled, title: "Mobile DevOps") do %>
         <div class="grid grid-cols-4 item-gap-default">
-          <%= render ChartComponent.new(devops_report[:mobile_devops][:frequency]) %>
-          <%= render ChartComponent.new(devops_report[:mobile_devops][:duration]) %>
-          <%= render ChartComponent.new(devops_report[:mobile_devops][:hotfixes]) %>
+          <%= render ChartComponent.new(devops_report.frequency) %>
+          <%= render ChartComponent.new(devops_report.duration) %>
+          <%= render ChartComponent.new(devops_report.hotfixes) %>
+
           <% if ios_enabled? %>
-            <%= render ChartComponent.new(devops_report[:mobile_devops][:time_in_review]) %>
+            <%= render ChartComponent.new(devops_report.time_in_review) %>
           <% end %>
+
           <div class="col-span-2">
-            <%= render ChartComponent.new(devops_report[:mobile_devops][:time_in_phases]) %>
+            <%= render ChartComponent.new(devops_report.time_in_phases) %>
           </div>
-          <% if current_user.reldex_enabled? && devops_report[:mobile_devops][:reldex_scores].present? %>
+
+          <% if current_user.reldex_enabled? && devops_report.reldex_scores.present? %>
             <div class="col-span-2">
-              <%= render ChartComponent.new(devops_report[:mobile_devops][:reldex_scores]) %>
+              <%= render ChartComponent.new(devops_report.reldex_scores) %>
             </div>
           <% end %>
         </div>
@@ -161,17 +164,18 @@
 
       <%= render V2::SectionComponent.new(style: :titled, title: "Operational Efficiency") do %>
         <div class="grid grid-cols-4 item-gap-default">
-          <%= render ChartComponent.new(devops_report[:operational_efficiency][:contributors]) %>
-          <%= render ChartComponent.new(devops_report[:operational_efficiency][:stability_contributors]) %>
+          <%= render ChartComponent.new(devops_report.contributors) %>
+          <%= render ChartComponent.new(devops_report.stability_contributors) %>
+
           <div><!-- to maintain grid height --></div>
-          <% if current_organization.team_analysis_enabled? %>
-            <div class="col-span-2">
-              <%= render ChartComponent.new(devops_report[:operational_efficiency][:team_contributors]) %>
-            </div>
-            <div class="col-span-2">
-              <%= render ChartComponent.new(devops_report[:operational_efficiency][:team_stability_contributors]) %>
-            </div>
-          <% end %>
+
+          <div class="col-span-2">
+            <%= render ChartComponent.new(devops_report.team_contributors) %>
+          </div>
+
+          <div class="col-span-2">
+            <%= render ChartComponent.new(devops_report.team_stability_contributors) %>
+          </div>
         </div>
       <% end %>
     <% end %>
@@ -200,7 +204,7 @@
               <% end %>
 
               <% row.with_cell do %>
-                <%= render V2::BadgeComponent.new(text: release_component.branch, kind: :badge) %>
+                <%= render V2::BadgeComponent.new(text: release_component.release_branch, kind: :badge) %>
               <% end %>
 
               <% if reldex_defined? %>

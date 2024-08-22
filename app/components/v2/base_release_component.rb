@@ -5,14 +5,6 @@ class V2::BaseReleaseComponent < V2::BaseComponent
   using RefinedHash
   using RefinedInteger
 
-  RELEASE_PHASE = {
-    completed: ["Complete", :success],
-    finishing: ["Finishing up", :success],
-    kickoff: ["Kickoff", :routine],
-    stabilization: ["Stabilizing the release", :routine],
-    review: ["Under store review", :ongoing],
-    rollout: ["Rolling out to users", :inert]
-  }
   RELEASE_STATUS = {
     finished: ["Completed", :success],
     stopped: ["Stopped", :inert],
@@ -30,7 +22,7 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     @release = release
   end
 
-  delegate :release_branch, :tag_name, to: :release
+  delegate :release_branch, :tag_name, to: :@release
 
   memoize def release_pilot_name
     @release.release_pilot&.full_name || "Tramline"
@@ -130,10 +122,6 @@ class V2::BaseReleaseComponent < V2::BaseComponent
 
   memoize def release_version
     @release.release_version
-  end
-
-  def branch
-    @release.branch_name
   end
 
   def interval

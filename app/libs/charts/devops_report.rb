@@ -227,9 +227,10 @@ class Charts::DevopsReport
     raise NotImplementedError
   end
 
+  attr_reader :train, :organization, :team_colors
+
   private
 
-  attr_reader :train, :organization, :team_colors
   delegate :cache, to: Rails
 
   memoize def finished_releases(n, hotfix: false)

@@ -9,10 +9,14 @@ class V2::ReleaseListComponent < V2::BaseComponent
   end
 
   attr_reader :train, :ongoing_release, :hotfix_release, :upcoming_release
-  delegate :app, :devops_report, :hotfix_from, to: :train
+  delegate :app, :hotfix_from, to: :train
 
   def empty?
     previous_releases.empty? && ongoing_release.nil? && upcoming_release.nil? && hotfix_release.nil? && last_completed_release.nil?
+  end
+
+  memoize def devops_report
+    DevopsReportPresenter.new(train.devops_report)
   end
 
   memoize def previous_releases

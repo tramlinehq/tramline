@@ -424,7 +424,8 @@ class Train < ApplicationRecord
   end
 
   def devops_report
-    Charts::DevopsReport.all(self)
+    return Queries::DevopsReport.new(self) if product_v2?
+    Charts::DevopsReport.new(self)
   end
 
   def has_production_deployment?

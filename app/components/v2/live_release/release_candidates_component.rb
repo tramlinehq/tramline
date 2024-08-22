@@ -1,12 +1,9 @@
 # frozen_string_literal: true
 
-class V2::LiveRelease::ReleaseCandidatesComponent < V2::BaseReleaseComponent
+class V2::LiveRelease::ReleaseCandidatesComponent < V2::BaseComponent
   def initialize(release)
     @release = release
-    super(@release)
   end
-
-  attr_reader :release
 
   def configuration(release_platform_run)
     release_platform_run.conf.beta_release
