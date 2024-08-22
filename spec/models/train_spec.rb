@@ -192,12 +192,22 @@ describe Train do
       expect(train.reload.hotfixable?).to be(false)
     end
 
-    it "is false if there is an ongoing release in progress" do
+    it "is false if there is an ongoing release in rollout stage" do
       ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:, hotfixed_from: release)
       release_platform_run = create(:release_platform_run, release: ongoing_release, release_platform:)
-      _step_run = create(:step_run, :deployment_started, step: step, release_platform_run:)
+      step_run = create(:step_run, :deployment_started, step:, release_platform_run:)
+      create(:deployment_run, :rollout_started, deployment:, step_run:)
 
       expect(train.reload.hotfixable?).to be(false)
+    end
+
+    it "is true if there is an ongoing release is in stability stage" do
+      ongoing_release = create(:release, :on_track, :with_no_platform_runs, train:, hotfixed_from: release)
+      release_platform_run = create(:release_platform_run, release: ongoing_release, release_platform:)
+      step_run = create(:step_run, :deployment_started, step:, release_platform_run:)
+      create(:deployment_run, :started, deployment:, step_run:)
+
+      expect(train.reload.hotfixable?).to be(true)
     end
 
     it "is true when a production train with a release to hotfix is available" do
