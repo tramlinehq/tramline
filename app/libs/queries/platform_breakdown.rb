@@ -41,7 +41,6 @@ class Queries::PlatformBreakdown
         :beta_releases,
         :production_releases,
         :rc_builds,
-        :production_store_submissions,
         :production_store_rollouts
       )
       .sole
@@ -54,7 +53,6 @@ class Queries::PlatformBreakdown
   def data
     prod_releases = run.production_releases
     rollouts = run.production_store_rollouts
-    prod_submissions = run.production_store_submissions
     internal_builds = run.internal_builds
     beta_releases = run.beta_releases
     internal_releases = run.internal_releases
@@ -63,8 +61,8 @@ class Queries::PlatformBreakdown
     stability_s_ts = internal_releases.vmin_by(:created_at) || beta_releases.vmin_by(:created_at)
     stability_e_ts = prod_releases.vmin_by(:created_at) || (run.active? ? Time.current : rc_builds.vmax_by(:updated_at))
 
-    prod_submission_s_ts = prod_submissions.vmax_by(:submitted_at)
-    prod_submission_e_ts = prod_submissions.vmin_by(:prepared_at)
+    prod_submission_s_ts = prod_releases.vmin_by(:created_at)
+    prod_submission_e_ts = rollouts.vmin_by(:created_at)
     prod_submission_time = safe_subtract(prod_submission_e_ts, prod_submission_s_ts)
 
     prod_rollout_s_ts = rollouts.vmin_by(:created_at)

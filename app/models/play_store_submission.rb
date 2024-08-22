@@ -66,7 +66,10 @@ class PlayStoreSubmission < StoreSubmission
     end
 
     event :finish_prepare, after_commit: :on_prepare! do
-      after { set_prepared_at! }
+      after do
+        set_prepared_at!
+        set_approved_at!
+      end
       transitions from: :preparing, to: :prepared
     end
 

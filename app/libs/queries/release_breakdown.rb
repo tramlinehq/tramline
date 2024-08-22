@@ -17,10 +17,8 @@ class Queries::ReleaseBreakdown
     raise ArgumentError, "Invalid parts: #{parts}" if parts.any? { |part| PARTS.exclude?(part) }
   end
 
-  def initialize(release_id, from_cache: true)
+  def initialize(release_id)
     @release_id = release_id
-    @release = fetch_release
-    @from_cache = from_cache || !@release.active?
   end
 
   def warm(parts)
@@ -31,33 +29,37 @@ class Queries::ReleaseBreakdown
   end
 
   def team_stability_commits
-    cache.fetch(cache_key(:team_stability_commits)) if @from_cache
-    release.stability_commits.count_by_team(release.organization)
+    cache.fetch(cache_key(:team_stability_commits)) do
+      release.stability_commits.count_by_team(release.organization)
+    end
   end
 
   def team_release_commits
-    cache.fetch(cache_key(:team_release_commits)) if @from_cache
-    release.release_changelog&.commits_by_team
+    cache.fetch(cache_key(:team_release_commits)) do
+      release.release_changelog&.commits_by_team
+    end
   end
 
   def hotfixes
-    cache.fetch(cache_key(:hotfixes)) if @from_cache
-    release.all_hotfixes.map { |r| [r.release_version, r.live_release_link] }.to_h
+    cache.fetch(cache_key(:hotfixes)) do
+      release.all_hotfixes.map { |r| [r.release_version, r.live_release_link] }.to_h
+    end
   end
 
   def reldex
-    release.index_score
+    cache.fetch(cache_key(:reldex)) do
+      release.index_score
+    end
   end
 
   delegate :validate_parts!, to: self
 
   private
 
-  attr_reader :release
   delegate :cache, to: Rails
 
-  def fetch_release
-    Release
+  def release
+    @release ||= Release
       .where(id: @release_id)
       .includes(:all_commits, :pull_requests, train: [:release_platforms])
       .sole

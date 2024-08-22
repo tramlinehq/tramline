@@ -29,10 +29,10 @@ class Queries::DevopsReport
       refreshed_at: Time.current,
       duration: duration,
       frequency: frequency,
-      time_in_review: nil,
-      hotfixes: nil,
+      time_in_review: time_in_review,
+      hotfixes: hotfixes,
       reldex_scores: reldex_scores,
-      time_in_phases: nil,
+      time_in_phases: time_in_phases,
       stability_contributors: release_stability_contributors,
       contributors: contributors,
       team_stability_contributors: team_stability_contributors,
@@ -44,7 +44,7 @@ class Queries::DevopsReport
   LAST_TIME_PERIOD = 6
 
   memoize def duration(last: LAST_RELEASES)
-    releases_by_version(last).transform_values { { duration: _1.first.duration.seconds } }
+    releases_by_version(last).transform_values { {duration: _1.first.duration.seconds} }
   end
 
   memoize def frequency(period = :month, format = "%b", last: LAST_TIME_PERIOD)
@@ -52,24 +52,24 @@ class Queries::DevopsReport
       .reorder("")
       .group_by_period(period, :completed_at, last: last, current: true, format:)
       .count
-      .transform_values { { releases: _1 } }
+      .transform_values { {releases: _1} }
   end
 
   memoize def reldex_scores(last: 10)
     return if train.release_index.blank?
 
-    releases_by_version(last).transform_values { { reldex: _1.first.index_score&.value } }
+    releases_by_version(last).transform_values { {reldex: _1.first.index_score&.value} }
   end
 
   memoize def release_stability_contributors(last: LAST_RELEASES)
     releases_by_version(last)
       .transform_values { _1.flat_map(&:all_commits).flat_map(&:author_email) }
-      .transform_values { { contributors: _1.uniq.size } }
+      .transform_values { {contributors: _1.uniq.size} }
   end
 
   memoize def contributors(last: LAST_RELEASES)
     releases_by_version(last).transform_values do
-      { contributors: _1.flat_map(&:release_changelog).compact.flat_map(&:unique_authors).size }
+      {contributors: _1.flat_map(&:release_changelog).compact.flat_map(&:unique_authors).size}
     end
   end
 
@@ -89,27 +89,25 @@ class Queries::DevopsReport
     releases_by_version(last)
       .transform_values { |releases| releases.flat_map(&:release_platform_runs).filter(&:ios?) }
       .transform_values { |runs| runs.flat_map(&:production_store_submissions).flat_map(&:review_time) }
-      .transform_values { { time: _1.sum(&:seconds) / _1.size.to_f } }
+      .transform_values { {time: _1.sum / _1.size.to_f} }
   end
 
   memoize def hotfixes(last: LAST_RELEASES)
     releases_by_version(last).transform_values do |releases|
-      {
-        patches: releases.flat_map(&:release_platform_runs).flat_map(&:production_releases).size,
-        hotfixes: releases.flat_map(&:all_hotfixes).size,
-      }
+      platform_runs = releases.flat_map(&:release_platform_runs)
+      platform_runs.group_by(&:platform).transform_values { |run| run[0].production_releases.size.pred }
     end
   end
 
   memoize def time_in_phases(last: LAST_RELEASES)
     releases_by_version(last).transform_values do |releases|
       platform_runs = releases.flat_map(&:release_platform_runs)
-      platform_runs.group_by(&:platform).transform_values do |by_platform|
-        platform_breakdown = platform_breakdown(by_platform[0].id)
+      platform_runs.group_by(&:platform).transform_values do |run|
+        breakdown = platform_breakdown(run[0].id)
         {
-          stability_time: platform_breakdown.stability_duration,
-          submission_time: platform_breakdown.production_releases.submission_duration,
-          rollout_time: platform_breakdown.rollout_duration,
+          stability_time: breakdown.stability_duration,
+          submission_time: breakdown.production_releases.submission_duration,
+          rollout_time: breakdown.production_releases.rollout_duration
         }
       end
     end
@@ -141,8 +139,8 @@ class Queries::DevopsReport
         .finished
         .reorder("completed_at DESC")
         .includes(:release_changelog,
-                  :all_commits,
-                  { release_platform_runs: [:release_platform] })
+          :all_commits,
+          {release_platform_runs: [:release_platform, :production_store_submissions]})
 
     return releases if hotfix
     releases.release
@@ -163,7 +161,7 @@ class Queries::DevopsReport
   end
 
   def platform_breakdown(release_platform_run_id)
-    Queries::PlatformBreakdown.new(release_platform_run_id)
+    Queries::PlatformBreakdown.call(release_platform_run_id)
   end
 
   def thaw

@@ -115,9 +115,11 @@ class Release < ApplicationRecord
   has_many :build_queues, dependent: :destroy
   has_one :active_build_queue, -> { active }, class_name: "BuildQueue", inverse_of: :release, dependent: :destroy
   has_many :hotfixed_releases, class_name: "Release", inverse_of: :hotfixed_from, dependent: :destroy
+
   has_many :store_rollouts, through: :release_platform_runs
-  has_many :production_store_rollouts, -> { production }, through: :release_platform_runs
   has_many :store_submissions, through: :release_platform_runs
+  has_many :production_releases, through: :release_platform_runs
+  has_many :production_store_rollouts, -> { production }, through: :release_platform_runs
 
   scope :completed, -> { where(status: TERMINAL_STATES) }
   scope :pending_release, -> { where.not(status: TERMINAL_STATES) }
@@ -191,7 +193,6 @@ class Release < ApplicationRecord
     %W[#{date}-#{Haikunator.haikunate(0)} #{date}-#{Haikunator.haikunate(1)} #{date}-#{Haikunator.haikunate(10)}]
   end
 
-  # TODO: [V2] use v2 models for the reldex computation
   def index_score
     return if hotfix?
     return unless finished?

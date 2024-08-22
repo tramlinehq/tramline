@@ -104,8 +104,7 @@ class StoreSubmission < ApplicationRecord
   end
 
   def review_time
-    2
-    # approved_at&.to_i - submitted_at&.to_i
+    approved_at.to_i - submitted_at.to_i
   end
 
   protected
