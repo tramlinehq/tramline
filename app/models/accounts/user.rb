@@ -179,10 +179,6 @@ class Accounts::User < ApplicationRecord
     Flipper.enabled?(:release_monitoring, self)
   end
 
-  def reldex_enabled?
-    Flipper.enabled?(:reldex_enabled, self)
-  end
-
   # FIXME: This assumes that the blob is always a BuildArtifact
   # Eventually, make the URLs domain-specific and not blob-based general ones.
   def access_to_blob?(signed_blob_id)

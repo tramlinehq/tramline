@@ -154,7 +154,7 @@
             <%= render ChartComponent.new(devops_report.time_in_phases) %>
           </div>
 
-          <% if current_user.reldex_enabled? && devops_report.reldex_scores.present? %>
+          <% if devops_report.reldex_scores.present? %>
             <div class="col-span-2">
               <%= render ChartComponent.new(devops_report.reldex_scores) %>
             </div>

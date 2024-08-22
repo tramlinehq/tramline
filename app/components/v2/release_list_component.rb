@@ -110,7 +110,7 @@ class V2::ReleaseListComponent < V2::BaseComponent
   end
 
   def reldex_defined?
-    current_user.reldex_enabled? && train.release_index.present?
+    train.release_index.present?
   end
 
   def release_table_columns
