@@ -72,7 +72,7 @@ module Sandboxable
 
   def mock_start_play_store_rollout!
     return unless sandbox_mode?
-    update_stage(4, finish_rollout: false)
+    update_stage(rand(config.size - 1), finish_rollout: true)
     event_stamp!(reason: :started, kind: :notice, data: stamp_data)
     on_start!
   end

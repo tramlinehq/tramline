@@ -88,6 +88,7 @@ class PlayStoreRollout < StoreRollout
   end
 
   def release_fully!
+    return fully_release! if sandbox_mode?
     with_lock do
       return unless may_fully_release?
 
