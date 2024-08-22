@@ -44,7 +44,7 @@ class StoreSubmission < ApplicationRecord
   delegate :version_name, :build_number, to: :build
   delegate :actionable?, to: :parent_release
 
-  scope :production, -> { where.not(production_release: nil) }
+  scope :production, -> { where(parent_release_type: "ProductionRelease") }
 
   def deployment_channel
     conf.submission_config
@@ -101,6 +101,11 @@ class StoreSubmission < ApplicationRecord
     parent_release.notification_params.merge(
       submission_channel: "#{provider.display} - #{deployment_channel_name}"
     )
+  end
+
+  def review_time
+    2
+    # approved_at&.to_i - submitted_at&.to_i
   end
 
   protected
