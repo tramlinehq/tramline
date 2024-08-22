@@ -32,6 +32,7 @@ class V2::LiveRelease::ContainerComponent < V2::BaseComponent
     :active?,
     :partially_finished?,
     :release_branch,
+    :reldex,
     :tag_name,
     :platform,
     :automatic?,

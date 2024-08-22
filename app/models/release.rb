@@ -196,7 +196,14 @@ class Release < ApplicationRecord
     return if hotfix?
     return unless finished?
 
-    train.release_index&.score(**Computations::Release::ReldexParameters.call(self))
+    reldex_params =
+      if is_v2?
+        Queries::ReldexParameters.call(self)
+      else
+        Computations::Release::ReldexParameters.call(self)
+      end
+
+    train.release_index&.score(**reldex_params)
   end
 
   def step_statuses
