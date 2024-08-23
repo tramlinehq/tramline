@@ -419,7 +419,7 @@ class Train < ApplicationRecord
   def hotfixable?
     return false unless startable?
     return false if hotfix_release.present?
-    return false if ongoing_release.present? && ongoing_release.release_step_started?
+    return false if ongoing_release.present? && ongoing_release.production_release_happened? # TODO: remove this once we allow platform-specific hotfixes
     hotfix_from.present? && release_platforms.any?(&:has_production_deployment?)
   end
 
