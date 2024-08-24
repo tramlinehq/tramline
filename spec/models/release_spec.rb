@@ -397,7 +397,7 @@ describe Release do
 
     it "fetches the commits between ongoing release and release branch for upcoming release" do
       ongoing_release = create(:release, :on_track, train:, scheduled_at: 1.day.ago)
-      commits = create_list(:commit, 5, :without_trigger, release: ongoing_release)
+      commits = create_list(:commit, 5, :without_trigger, release: ongoing_release, timestamp: Time.current - rand(1000))
       ongoing_head = commits.first
 
       release.fetch_commit_log
