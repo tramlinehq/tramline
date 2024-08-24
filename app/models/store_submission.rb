@@ -46,11 +46,9 @@ class StoreSubmission < ApplicationRecord
 
   scope :production, -> { where(parent_release_type: "ProductionRelease") }
 
-  def deployment_channel
+  def submission_channel
     conf.submission_config
   end
-
-  delegate :name, to: :deployment_channel, prefix: true
 
   def triggerable?
     created? && actionable?
@@ -60,7 +58,7 @@ class StoreSubmission < ApplicationRecord
     parent_release.production? && parent_release.inflight?
   end
 
-  def deployment_channel_id
+  def submission_channel_id
     conf.submission_config.id.to_s
   end
 
@@ -99,7 +97,7 @@ class StoreSubmission < ApplicationRecord
 
   def notification_params
     parent_release.notification_params.merge(
-      submission_channel: "#{provider.display} - #{deployment_channel_name}"
+      submission_channel: "#{provider.display} - #{submission_channel.name}"
     )
   end
 

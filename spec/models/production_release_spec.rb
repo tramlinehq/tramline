@@ -33,7 +33,8 @@ RSpec.describe ProductionRelease do
 
     it "is true when store submission is finished and version bump is required for the store submission" do
       production_release = create(:production_release, :inflight, build:, release_platform_run:)
-      create(:app_store_submission, :approved, parent_release: production_release)
+      sub = create(:app_store_submission, :approved, parent_release: production_release)
+      create(:store_rollout, :app_store, :completed, store_submission: sub, release_platform_run:)
       expect(production_release.version_bump_required?).to be(true)
     end
   end

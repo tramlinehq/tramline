@@ -74,7 +74,7 @@ class TestFlightSubmission < StoreSubmission
   end
 
   def internal_channel?
-    deployment_channel.is_internal
+    submission_channel.is_internal
   end
 
   def trigger!
@@ -99,7 +99,7 @@ class TestFlightSubmission < StoreSubmission
       return finish!
     end
 
-    result = provider.release_to_testflight(deployment_channel_id, build_number)
+    result = provider.release_to_testflight(submission_channel_id, build_number)
     return fail_with_error!(result.error) unless result.ok?
 
     submit_for_review!
@@ -176,6 +176,6 @@ class TestFlightSubmission < StoreSubmission
   end
 
   def stamp_data
-    super.merge(channels: deployment_channel.name)
+    super.merge(channels: submission_channel.name)
   end
 end

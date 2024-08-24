@@ -16,7 +16,7 @@
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-2">
         <%= render V2::IconComponent.new(submission_logo, size: :xl) %>
-        <%= render V2::BadgeComponent.new(text: submission.deployment_channel_name, kind: :badge) %>
+        <%= render V2::BadgeComponent.new(text: submission.submission_channel.name, kind: :badge) %>
         <%= render V2::BadgeComponent.new(**status) %>
       </div>
 

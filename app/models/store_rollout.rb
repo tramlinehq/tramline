@@ -154,9 +154,3 @@ class StoreRollout < ApplicationRecord
     update! completed_at: Time.current
   end
 end
-
-# TODO: [V2]
-# - handle managed publishing
-# - handle previous staged rollout value in the next rollout
-# - handle rollouts for non-prod
-# - external release in play store?

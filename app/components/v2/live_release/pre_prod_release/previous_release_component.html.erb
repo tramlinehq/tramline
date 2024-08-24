@@ -42,7 +42,7 @@
               <%= render V2::IconComponent.new("v2/slash.svg", size: :md) %>
             <% end %>
 
-            <%= render V2::BadgeComponent.new(text: submission.deployment_channel_name, kind: :badge) do |badge| %>
+            <%= render V2::BadgeComponent.new(text: submission.submission_channel.name, kind: :badge) do |badge| %>
               <% badge.with_icon("integrations/logo_#{submission.provider}.png") %>
             <% end %>
           <% end %>

@@ -51,7 +51,7 @@ describe TestFlightSubmission do
 
       expect(test_flight_submission.submitted_for_review?).to be true
       expect(provider_dbl).to have_received(:release_to_testflight)
-        .with(test_flight_submission.deployment_channel_id, test_flight_submission.build_number).once
+        .with(test_flight_submission.submission_channel_id, test_flight_submission.build_number).once
     end
 
     it "find the build when build is not present in the store" do
@@ -121,7 +121,7 @@ describe TestFlightSubmission do
       it "sends the build to configured test group" do
         test_flight_submission.start_release!
 
-        expect(provider_dbl).to have_received(:release_to_testflight).with(test_flight_submission.deployment_channel_id,
+        expect(provider_dbl).to have_received(:release_to_testflight).with(test_flight_submission.submission_channel_id,
           test_flight_submission.build_number)
       end
 

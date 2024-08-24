@@ -125,7 +125,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     return unless may_finish?
     return mock_finish_firebase_release if sandbox_mode?
 
-    deployment_channels = [deployment_channel_id]
+    deployment_channels = [submission_channel_id]
     result = provider.release(external_id, deployment_channels)
     if result.ok?
       finish!
@@ -156,7 +156,6 @@ class GoogleFirebaseSubmission < StoreSubmission
   def on_finish!
     event_stamp!(reason: :finished, kind: :success, data: stamp_data)
     parent_release.rollout_complete!(self)
-    # notify!("Finished!", :finished, notification_params)
   end
 
   def on_fail!
@@ -183,6 +182,6 @@ class GoogleFirebaseSubmission < StoreSubmission
   end
 
   def stamp_data
-    super.merge(channels: deployment_channel.name)
+    super.merge(channels: submission_channel.name)
   end
 end

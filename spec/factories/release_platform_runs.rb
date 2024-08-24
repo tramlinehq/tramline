@@ -7,6 +7,37 @@ FactoryBot.define do
     status { "on_track" }
     release_version { "1.2.3" }
     in_store_resubmission { false }
+    config {
+      {
+        workflows: {
+          internal: nil,
+          release_candidate: {
+            name: Faker::FunnyName.name,
+            id: Faker::Number.number(digits: 8),
+            artifact_name_pattern: nil
+          }
+        },
+        internal_release: nil,
+        beta_release: {
+          auto_promote: false,
+          submissions: [
+            {number: 1,
+             submission_type: "TestFlightSubmission",
+             submission_config: {id: Faker::FunnyName.name, name: Faker::FunnyName.name, is_internal: true}}
+          ]
+        },
+        production_release: {
+          auto_promote: false,
+          submissions: [
+            {number: 1,
+             submission_type: "AppStoreSubmission",
+             submission_config: AppStoreIntegration::PROD_CHANNEL,
+             rollout_config: {enabled: true, stages: AppStoreIntegration::DEFAULT_PHASED_RELEASE_SEQUENCE},
+             auto_promote: false}
+          ]
+        }
+      }
+    }
 
     trait :created do
       status { "created" }

@@ -201,6 +201,6 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def stamp_data
-    super.merge(track: deployment_channel.name.humanize)
+    super.merge(track: submission_channel.name.humanize)
   end
 end

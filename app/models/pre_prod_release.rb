@@ -153,7 +153,7 @@ class PreProdRelease < ApplicationRecord
       commit_url: commit.url,
       build_number: build.build_number,
       release_version: release.release_version,
-      submission_channels: store_submissions.map { |s| "#{s.provider.display} - #{s.deployment_channel_name}" }.join(", ")
+      submission_channels: store_submissions.map { |s| "#{s.provider.display} - #{s.submission_channel.name}" }.join(", ")
     )
   end
 

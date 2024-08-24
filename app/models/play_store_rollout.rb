@@ -18,7 +18,7 @@ class PlayStoreRollout < StoreRollout
   include Passportable
 
   belongs_to :play_store_submission, foreign_key: :store_submission_id, inverse_of: :play_store_rollout
-  delegate :deployment_channel_id, :deployment_channel, :update_external_status, to: :store_submission
+  delegate :submission_channel_id, :submission_channel, :update_external_status, to: :store_submission
 
   STAMPABLE_REASONS = %w[
     started
@@ -157,6 +157,6 @@ class PlayStoreRollout < StoreRollout
   end
 
   def stamp_data
-    super.merge(track: deployment_channel.name.humanize)
+    super.merge(track: submission_channel.name.humanize)
   end
 end
