@@ -78,6 +78,8 @@ class StoreSubmission < ApplicationRecord
 
   def cancellable? = raise NotImplementedError
 
+  def retryable? = false
+
   def version_bump_required? = raise NotImplementedError
 
   def attach_build(_build)
@@ -105,20 +107,16 @@ class StoreSubmission < ApplicationRecord
     approved_at.to_i - submitted_at.to_i
   end
 
-  protected
-
-  def fail_with_error(error)
+  def fail_with_error!(error)
     elog(error)
     if error.is_a?(Installations::Error)
-      if error.reason == :app_review_rejected
-        fail_with_sync_option!(reason: error.reason) # TODO: Implement this
-      else
-        fail!(reason: error.reason)
-      end
+      fail!(reason: error.reason)
     else
       fail!
     end
   end
+
+  protected
 
   def set_failure_reason(args = nil)
     self.failure_reason = args&.fetch(:reason, :unknown_failure)

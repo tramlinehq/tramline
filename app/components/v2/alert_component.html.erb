@@ -64,23 +64,25 @@
       <% end %>
     </div>
   <% elsif announcement? %>
-    <div class="<%= size %> <%= padding %> <%= style %> <%= border_style %> mb-4">
+    <div class="<%= size %> <%= padding %> <%= style %> <%= border_style %>">
       <div class="flex items-center mb-2">
-        <%= render V2::IconComponent.new("v2/megaphone.svg", size: :md, classes: "mr-2") %>
+        <%= render V2::IconComponent.new("v2/megaphone.svg", size: :lg, classes: "mr-2") %>
         <h3 class="heading-3 !text-inherit"><%= title %></h3>
       </div>
 
       <div><%= content %></div>
 
-      <div class="flex mt-4 gap-x-2">
-        <% announcement_buttons.each do |action| %>
-          <%= render action %>
-        <% end %>
+      <% if announcement_buttons? || announcement_modals? %>
+        <div class="flex mt-4 gap-x-2">
+          <% announcement_buttons.each do |action| %>
+            <%= render action %>
+          <% end %>
 
-        <% announcement_modals.each do |modal| %>
-          <%= render modal %>
-        <% end %>
-      </div>
+          <% announcement_modals.each do |modal| %>
+            <%= render modal %>
+          <% end %>
+        </div>
+      <% end %>
     </div>
   <% end %>
 </div>

@@ -1,0 +1,21 @@
+<% if show %>
+  <%= render V2::AlertComponent.new(size: :md, kind: :announcement, type: :announce, title: "Submissions on the Play Store are currently blocked") do |ann| %>
+    <div class="text-sm flex flex-col paragraph-gap-default">
+      <p>Due to a previous rejection, new changes cannot be submitted to the store from Tramline (store APIs disallow
+        it).
+
+        <% if actionable %>
+          Please submit the
+          current build <strong><%= build.display_name %></strong> for review manually from the Google Play Console by
+          creating a release in the <strong><%= channel_name %></strong> track.
+        <% end %>
+      </p>
+
+      <% if actionable %>
+        <p>
+          Once that's done, you can retry the submission to remove this block, and move forward with the release.
+        </p>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

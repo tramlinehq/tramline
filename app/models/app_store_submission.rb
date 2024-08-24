@@ -157,7 +157,7 @@ class AppStoreSubmission < StoreSubmission
       case result.error.reason
       when :release_not_found then raise PreparedVersionNotFoundError
       when :release_already_exists then fail_prepare!(reason: result.error.reason)
-      else fail_with_error(result.error)
+      else fail_with_error!(result.error)
       end
 
       return
@@ -181,7 +181,7 @@ class AppStoreSubmission < StoreSubmission
 
     unless result.ok?
       return update(failure_reason: result.error.reason) if result.error.reason.in? RETRYABLE_FAILURE_REASONS
-      return fail_with_error(result.error)
+      return fail_with_error!(result.error)
     end
 
     submit_for_review!
@@ -219,7 +219,7 @@ class AppStoreSubmission < StoreSubmission
     result = provider.remove_from_review(build_number, version_name)
 
     unless result.ok?
-      return fail_with_error(result.error)
+      return fail_with_error!(result.error)
     end
 
     update_store_info!(result.value!)

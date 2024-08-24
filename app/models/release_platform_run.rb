@@ -7,6 +7,7 @@
 #  completed_at          :datetime
 #  config                :jsonb
 #  in_store_resubmission :boolean          default(FALSE)
+#  play_store_blocked    :boolean          default(FALSE)
 #  release_version       :string
 #  scheduled_at          :datetime         not null
 #  status                :string           not null
@@ -484,6 +485,14 @@ class ReleasePlatformRun < ApplicationRecord
 
   def store_submitted_releases
     deployment_runs.reached_submission.sort_by(&:scheduled_at).reverse
+  end
+
+  def block_play_store_submissions!
+    update!(play_store_blocked: true)
+  end
+
+  def unblock_play_store_submissions!
+    update!(play_store_blocked: false)
   end
 
   private

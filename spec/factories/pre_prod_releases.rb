@@ -19,5 +19,18 @@ FactoryBot.define do
           auto_promote: true}
        ]}
     }
+
+    trait :single_submission do
+      config {
+        {auto_promote: true,
+         submissions: [
+           {number: 1,
+            submission_type: "PlayStoreSubmission",
+            submission_config: {id: :internal, name: "internal testing"},
+            rollout_config: {enabled: true, stages: [100]},
+            auto_promote: true}
+         ]}
+      }
+    end
   end
 end

@@ -129,7 +129,10 @@ module Coordinators
     end
 
     def self.retry_submission!(submission)
-      # TODO: retry a submission
+      Res.new do
+        raise unless submission.retryable?
+        submission.retry!
+      end
     end
 
     def self.start_new_production_release!(release_platform_run, build_id)

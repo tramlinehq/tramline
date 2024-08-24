@@ -3,6 +3,10 @@
 <% end %>
 
 <div class="flex flex-col item-gap-default">
+  <%= render partial: "shared/play_store_review_rejected", locals: { show: show_blocked_message?,
+                                                                     build: current_build,
+                                                                     actionable: false } %>
+
   <% if @new_submission_prompt %>
     <%= render V2::AlertComponent.new(size: :md, kind: :announcement, type: :announce, title: "New RC Build is available") do |ann| %>
       <% modal = ann.with_announcement_modal(title: "Available builds", subtitle: "Choose a build to send for submission to the store") %>
@@ -93,6 +97,16 @@
     <% end %>
 
     <% card.with_action do %>
+      <% if submission.retryable? %>
+        <%= render V2::ButtonComponent.new(label: "Retry sending to #{submission.provider.display}",
+                                           scheme: :default,
+                                           type: :button,
+                                           options: retry_store_submission_path(submission),
+                                           html_options: html_opts(:patch, "Are you sure?"),
+                                           size: :xxs) do |b| %>
+          <% b.with_icon(submission_logo_bw, size: :md) %>
+        <% end %>
+      <% end %>
       <% if submission.reviewable? %>
         <%= render V2::ModalComponent.new(
           title: "Submission Preview",
@@ -134,6 +148,11 @@
                                                      show_ci: false,
                                                      show_activity: false,
                                                      show_commit: true) %>
+
+      <%= render partial: "shared/play_store_review_rejected", locals: { show: submission.failed_with_action_required?,
+                                                                         build: current_build,
+                                                                         actionable: true,
+                                                                         channel_name: submission.submission_channel.name } %>
 
       <%= render V2::SectionComponent.new(style: :titled, title: "External info", size: :micro) do %>
         <div class="flex">

@@ -27,6 +27,18 @@ FactoryBot.define do
       parent_release { association :production_release }
     end
 
+    trait :with_internal_channel do
+      parent_release { association :pre_prod_release }
+      config {
+        {
+          submission_config: {
+            id: :internal,
+            name: "internal testing"
+          }
+        }
+      }
+    end
+
     trait :created do
       status { "created" }
     end
@@ -49,5 +61,23 @@ FactoryBot.define do
       status { "failed" }
       failure_reason { "unknown_failure" }
     end
+
+    trait :failed_with_action_required do
+      status { "failed_with_action_required" }
+      failure_reason { "app_review_rejected" }
+    end
   end
+end
+
+def play_store_review_error
+  error_body = {
+    "error" =>
+      {
+        "status" => "INVALID_ARGUMENT",
+        "code" => 400,
+        "message" => "Changes cannot be sent for review automatically. Please set the query parameter changesNotSentForReview to true. Once committed, the changes in this edit can be sent for review from the Google Play Console UI"
+      }
+  }
+
+  Installations::Google::PlayDeveloper::Error.new(Google::Apis::ClientError.new("Error", body: error_body.to_json))
 end

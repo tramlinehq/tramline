@@ -16,6 +16,10 @@ class V2::LiveRelease::PreProdRelease::CurrentReleaseComponent < V2::BaseCompone
   attr_reader :pre_prod_release
   delegate :release_platform_run, :store_submissions, :workflow_run, :build, to: :pre_prod_release
 
+  def show_blocked_message?
+    release_platform_run.play_store_blocked? && store_submissions.none?(&:failed_with_action_required?)
+  end
+
   def changed_commits
     pre_prod_release.commits_since_previous
   end

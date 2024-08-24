@@ -92,6 +92,10 @@
     @apply gap-3;
   }
 
+  .paragraph-gap-default {
+    @apply gap-1;
+  }
+
   .box-padding {
     @apply px-4 py-3.5;
   }

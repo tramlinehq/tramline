@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_08_21_120904) do
+ActiveRecord::Schema[7.0].define(version: 2024_08_24_134710) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -588,6 +588,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_08_21_120904) do
     t.boolean "in_store_resubmission", default: false
     t.uuid "last_commit_id"
     t.jsonb "config"
+    t.boolean "play_store_blocked", default: false
     t.index ["last_commit_id"], name: "index_release_platform_runs_on_last_commit_id"
     t.index ["release_platform_id"], name: "index_release_platform_runs_on_release_platform_id"
   end

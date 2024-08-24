@@ -56,33 +56,31 @@ class PlayStoreRollout < StoreRollout
 
   def automatic_rollout? = false
 
-  def start_release!
+  def start_release!(retry_on_review_fail: false)
     if staged_rollout?
       return mock_start_play_store_rollout! if sandbox_mode?
-      move_to_next_stage!
+      move_to_next_stage!(retry_on_review_fail:)
     else
       return mock_complete_play_store_rollout! if sandbox_mode?
-      result = rollout(Release::FULL_ROLLOUT_VALUE)
+      result = rollout(Release::FULL_ROLLOUT_VALUE, retry_on_review_fail:)
       if result.ok?
         complete!
         event_stamp!(reason: :completed, kind: :success, data: stamp_data)
       else
-        elog(result.error)
-        errors.add(:base, result.error)
+        fail!(result.error, review_failure: !retry_on_review_fail)
       end
     end
   end
 
-  def move_to_next_stage!
+  def move_to_next_stage!(retry_on_review_fail: true)
     with_lock do
       return if completed? || fully_released?
 
-      result = rollout(next_rollout_percentage)
+      result = rollout(next_rollout_percentage, retry_on_review_fail:)
       if result.ok?
         update_stage(next_stage, finish_rollout: true)
       else
-        elog(result.error)
-        errors.add(:base, result.error)
+        fail!(result.error, review_failure: !retry_on_review_fail)
       end
     end
   end
@@ -93,13 +91,12 @@ class PlayStoreRollout < StoreRollout
       return unless may_fully_release?
 
       rollout_value = Release::FULL_ROLLOUT_VALUE
-      result = rollout(rollout_value)
+      result = rollout(rollout_value, retry_on_review_fail: true)
       if result.ok?
         fully_release!
         event_stamp!(reason: :fully_released, kind: :success, data: stamp_data)
       else
-        elog(result.error)
-        errors.add(:base, result.error)
+        fail!(result.error)
       end
     end
   end
@@ -108,12 +105,11 @@ class PlayStoreRollout < StoreRollout
     with_lock do
       return unless may_halt?
 
-      result = provider.halt_release(deployment_channel_id, build_number, version_name, last_rollout_percentage)
+      result = provider.halt_release(submission_channel_id, build_number, version_name, last_rollout_percentage, retry_on_review_fail: true)
       if result.ok?
         halt!
       else
-        elog(result.error)
-        errors.add(:base, result.error)
+        fail!(result.error)
       end
     end
   end
@@ -122,22 +118,27 @@ class PlayStoreRollout < StoreRollout
     with_lock do
       return unless may_start?
 
-      result = rollout(last_rollout_percentage)
+      result = rollout(last_rollout_percentage, retry_on_review_fail: true)
       if result.ok?
         start!
         event_stamp!(reason: :resumed, kind: :notice, data: stamp_data)
         notify!("Rollout was resumed", :production_rollout_resumed, notification_params)
       else
-        elog(result.error)
-        errors.add(:base, result.error)
+        fail!(result.error)
       end
     end
   end
 
   private
 
-  def rollout(value)
-    provider.rollout_release(deployment_channel_id, build_number, version_name, value, nil)
+  def fail!(error, review_failure: false)
+    elog(error)
+    errors.add(:base, error)
+    play_store_submission.fail_with_review_rejected!(error) if review_failure
+  end
+
+  def rollout(value, retry_on_review_fail: false)
+    provider.rollout_release(submission_channel_id, build_number, version_name, value, nil, retry_on_review_fail:)
   end
 
   def on_start!

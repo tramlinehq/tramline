@@ -6,7 +6,7 @@ describe PlayStoreRollout do
   describe "#start_release!" do
     let(:release_platform_run) { create(:release_platform_run) }
     let(:production_release) { create(:production_release, release_platform_run:) }
-    let(:store_submission) { create(:play_store_submission, :prod_release, release_platform_run:, parent_release: production_release) }
+    let(:store_submission) { create(:play_store_submission, :prepared, :prod_release, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
     let(:rollout) { create(:store_rollout, :play_store, :created, release_platform_run:, store_submission:) }
     let(:prod_double) { instance_double(ProductionRelease) }
@@ -44,12 +44,29 @@ describe PlayStoreRollout do
         expect(prod_double).to have_received(:rollout_complete!)
       end
     end
+
+    context "when review fails" do
+      before do
+        allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new { raise play_store_review_error })
+      end
+
+      it "marks the submission as failed with action if retry is false" do
+        rollout.start_release!
+        rollout.store_submission.reload
+        expect(rollout.store_submission.failed_with_action_required?).to be(true)
+      end
+
+      it "retries (with skip review) if retry is true" do
+        rollout.start_release!(retry_on_review_fail: true)
+        expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, anything, anything, retry_on_review_fail: true).once
+      end
+    end
   end
 
   describe "#move_to_next_stage!" do
     let(:release_platform_run) { create(:release_platform_run) }
     let(:production_release) { create(:production_release, release_platform_run:) }
-    let(:store_submission) { create(:play_store_submission, :prod_release, release_platform_run:, parent_release: production_release) }
+    let(:store_submission) { create(:play_store_submission, :prepared, :prod_release, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
     before do
@@ -100,7 +117,7 @@ describe PlayStoreRollout do
       rollout.move_to_next_stage!
       expect(providable_dbl).to(
         have_received(:rollout_release)
-          .with(anything, anything, anything, 100, anything)
+          .with(anything, anything, anything, 100, anything, anything)
       )
     end
 
@@ -136,12 +153,22 @@ describe PlayStoreRollout do
       rollout.move_to_next_stage!
       expect(rollout.errors?).to be(true)
     end
+
+    it "retries (with skip review) when review fails" do
+      rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:, config: [1, 80, 100], current_stage: 1)
+      allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+      allow(rollout).to receive(:provider).and_return(providable_dbl)
+
+      rollout.move_to_next_stage!
+
+      expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, anything, anything, retry_on_review_fail: true).once
+    end
   end
 
   describe "#release_fully!" do
     let(:release_platform_run) { create(:release_platform_run) }
     let(:production_release) { create(:production_release, release_platform_run:) }
-    let(:store_submission) { create(:play_store_submission, :prod_release, release_platform_run:, parent_release: production_release) }
+    let(:store_submission) { create(:play_store_submission, :prepared, :prod_release, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
     before do
@@ -208,12 +235,22 @@ describe PlayStoreRollout do
 
       expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_later).with(store_submission.id)
     end
+
+    it "retries (with skip review) when review fails" do
+      rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:, config: [1, 80, 100], current_stage: 1)
+      allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+      allow(rollout).to receive(:provider).and_return(providable_dbl)
+
+      rollout.release_fully!
+
+      expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, anything, anything, retry_on_review_fail: true).once
+    end
   end
 
   describe "#halt_release!" do
     let(:release_platform_run) { create(:release_platform_run) }
     let(:production_release) { create(:production_release, release_platform_run:) }
-    let(:store_submission) { create(:play_store_submission, :prod_release, release_platform_run:, parent_release: production_release) }
+    let(:store_submission) { create(:play_store_submission, :prepared, :prod_release, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
     before do
@@ -259,12 +296,22 @@ describe PlayStoreRollout do
 
       expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_later).with(store_submission.id)
     end
+
+    it "retries (with skip review) when review fails" do
+      rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:, config: [1, 80, 100], current_stage: 1)
+      allow(providable_dbl).to receive(:halt_release).and_return(GitHub::Result.new)
+      allow(rollout).to receive(:provider).and_return(providable_dbl)
+
+      rollout.halt_release!
+
+      expect(providable_dbl).to have_received(:halt_release).with(anything, anything, anything, anything, retry_on_review_fail: true).once
+    end
   end
 
   describe "#resume_release!" do
     let(:release_platform_run) { create(:release_platform_run) }
     let(:production_release) { create(:production_release, release_platform_run:) }
-    let(:store_submission) { create(:play_store_submission, :prod_release, release_platform_run:, parent_release: production_release) }
+    let(:store_submission) { create(:play_store_submission, :prepared, :prod_release, release_platform_run:, parent_release: production_release) }
     let(:providable_dbl) { instance_double(GooglePlayStoreIntegration) }
 
     before do
@@ -275,7 +322,9 @@ describe PlayStoreRollout do
       rollout = create(:store_rollout, :halted, :play_store, release_platform_run:, store_submission:, config: [1, 80], current_stage: 0)
       allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
       allow(rollout).to receive(:provider).and_return(providable_dbl)
+
       rollout.resume_release!
+
       expect(rollout.started?).to be(true)
     end
 
@@ -283,7 +332,9 @@ describe PlayStoreRollout do
       rollout = create(:store_rollout, :halted, :play_store, release_platform_run:, store_submission:, config: [1, 80], current_stage: 0)
       allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new { raise })
       allow(rollout).to receive(:provider).and_return(providable_dbl)
+
       rollout.resume_release!
+
       expect(rollout.halted?).to be(true)
       expect(rollout.errors?).to be(true)
     end
@@ -296,6 +347,16 @@ describe PlayStoreRollout do
       rollout.resume_release!
 
       expect(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to have_received(:perform_later).with(store_submission.id)
+    end
+
+    it "retries (with skip review) when review fails" do
+      rollout = create(:store_rollout, :halted, :play_store, release_platform_run:, store_submission:, config: [1, 80, 100], current_stage: 1)
+      allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
+      allow(rollout).to receive(:provider).and_return(providable_dbl)
+
+      rollout.resume_release!
+
+      expect(providable_dbl).to have_received(:rollout_release).with(anything, anything, anything, anything, anything, retry_on_review_fail: true).once
     end
   end
 end

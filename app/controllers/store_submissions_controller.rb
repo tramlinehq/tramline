@@ -6,6 +6,7 @@ class StoreSubmissionsController < SignedInApplicationController
   before_action :set_submission
   before_action :ensure_triggerable, only: [:trigger]
   before_action :ensure_actionable, only: [:update, :prepare, :submit_for_review, :cancel]
+  before_action :ensure_retryable, only: [:retry]
   before_action :ensure_reviewable, only: [:submit_for_review]
   before_action :ensure_cancellable, only: [:cancel]
 
@@ -65,7 +66,11 @@ class StoreSubmissionsController < SignedInApplicationController
   end
 
   def retry
-    raise NotImplementedError
+    if (result = Action.retry_submission!(@submission)).ok?
+      redirect_back fallback_location: fallback_path, notice: t(".retry.success")
+    else
+      redirect_back fallback_location: fallback_path, flash: {error: t(".retry.failure", errors: result.error.message)}
+    end
   end
 
   protected
@@ -81,6 +86,12 @@ class StoreSubmissionsController < SignedInApplicationController
   def ensure_actionable
     unless @submission.actionable?
       redirect_back fallback_location: root_path, flash: {error: t(".prepare.submission_not_active")}
+    end
+  end
+
+  def ensure_retryable
+    unless @submission.retryable?
+      redirect_back fallback_location: root_path, flash: {error: t(".submission_not_retryable")}
     end
   end
 

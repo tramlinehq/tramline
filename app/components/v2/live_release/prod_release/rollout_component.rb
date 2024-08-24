@@ -14,12 +14,17 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
     :last_rollout_percentage,
     :stage,
     :controllable_rollout?,
+    :store_submission,
     :external_link,
     :automatic_rollout?, :id, to: :store_rollout
   delegate :release, to: :release_platform_run
 
   def monitoring_size
     release_platform_run.app.cross_platform? ? :compact : :default
+  end
+
+  def show_blocked_message?
+    release_platform_run.play_store_blocked? && !store_submission.failed_with_action_required?
   end
 
   def events

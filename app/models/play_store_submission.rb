@@ -35,6 +35,7 @@ class PlayStoreSubmission < StoreSubmission
   STAMPABLE_REASONS = %w[
     prepared
     review_rejected
+    finished_manually
   ]
   STATES = {
     created: "created",
@@ -43,7 +44,8 @@ class PlayStoreSubmission < StoreSubmission
     prepared: "prepared",
     review_failed: "review_failed",
     failed: "failed",
-    failed_with_action_required: "failed_with_action_required"
+    failed_with_action_required: "failed_with_action_required",
+    finished_manually: "finished_manually"
   }
   FINAL_STATES = %w[prepared]
   CHANGEABLE_STATES = %w[created preprocessing failed prepared]
@@ -84,21 +86,43 @@ class PlayStoreSubmission < StoreSubmission
     end
 
     event :fail_with_sync_option, before: :set_failure_reason do
-      transitions from: [:preparing, :prepared, :failed_with_action_required], to: :failed_with_action_required
+      transitions from: [:preparing, :prepared, :failed_with_action_required, :finished_manually], to: :failed_with_action_required
+    end
+
+    event :finish_manually do
+      transitions from: :failed_with_action_required, to: :finished_manually
     end
   end
+
+  delegate :play_store_blocked?, to: :release_platform_run
 
   def change_build? = CHANGEABLE_STATES.include?(status) && editable?
 
   def cancellable? = false
 
-  def finished? = FINAL_STATES.include?(status) && store_rollout.finished?
+  def finished?
+    return true if finished_manually?
+    FINAL_STATES.include?(status) && store_rollout.finished?
+  end
 
   def reviewable? = false
 
   def requires_review? = false
 
   def version_bump_required? = false
+
+  def triggerable?
+    return false if play_store_blocked? && !internal_channel?
+    super
+  end
+
+  def retryable?
+    failed_with_action_required?
+  end
+
+  def internal_channel?
+    submission_channel_id.to_sym == :internal
+  end
 
   def trigger!
     return unless actionable?
@@ -108,17 +132,35 @@ class PlayStoreSubmission < StoreSubmission
     StoreSubmissions::PlayStore::UploadJob.perform_later(id)
   end
 
+  def retry!
+    return unless retryable?
+
+    if provider.build_present_in_channel?(submission_channel_id, build_number)
+      transaction do
+        finish_manually!
+        event_stamp!(reason: :finished_manually, kind: :notice, data: stamp_data)
+        release_platform_run.unblock_play_store_submissions!
+      end
+
+      if parent_release.production?
+        on_prepare!
+      else
+        parent_release.rollout_complete!(self)
+      end
+    end
+  end
+
   def upload_build!
     with_lock do
       return unless may_start_prepare?
-      return fail_with_error("Build not found") if build&.artifact.blank?
+      return fail_with_error!("Build not found") if build&.artifact.blank?
 
       build.artifact.with_open do |file|
         result = provider.upload(file)
         if result.ok?
           start_prepare!
         else
-          fail_with_error(result.error)
+          fail_with_error!(result.error)
         end
       end
     end
@@ -139,12 +181,12 @@ class PlayStoreSubmission < StoreSubmission
   def prepare_for_release!
     return mock_prepare_for_release_for_play_store! if sandbox_mode?
 
-    result = provider.create_draft_release(deployment_channel_id, build_number, version_name, release_notes)
+    result = provider.create_draft_release(submission_channel_id, build_number, version_name, release_notes, retry_on_review_fail: internal_channel?)
     if result.ok?
       finish_prepare!
       update_external_status
     else
-      fail_with_error(result.error)
+      fail_with_error!(result.error)
     end
   end
 
@@ -156,7 +198,7 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def update_store_info!
-    store_data = provider.find_build_in_track(deployment_channel_id, build_number)
+    store_data = provider.find_build_in_track(submission_channel_id, build_number)
     return unless store_data
     self.store_release = store_data
     self.store_status = store_data[:status]
@@ -168,6 +210,24 @@ class PlayStoreSubmission < StoreSubmission
     super.merge(
       requires_review: false
     )
+  end
+
+  def fail_with_error!(error)
+    elog(error)
+
+    return if fail_with_review_rejected!(error)
+    return fail!(reason: error.reason) if error.is_a?(Installations::Google::PlayDeveloper::Error)
+    fail!
+  end
+
+  def fail_with_review_rejected!(error)
+    if error.is_a?(Installations::Google::PlayDeveloper::Error) && error.reason == :app_review_rejected
+      fail_with_sync_option!(reason: error.reason)
+      release_platform_run.block_play_store_submissions!
+      return true
+    end
+
+    false
   end
 
   private
@@ -191,7 +251,7 @@ class PlayStoreSubmission < StoreSubmission
       config: conf.rollout_config.stages.presence || [],
       is_staged_rollout: staged_rollout?
     )
-    play_store_rollout.start_release! if auto_rollout?
+    play_store_rollout.start_release!(retry_on_review_fail: internal_channel?) if auto_rollout?
   end
 
   def build_present_in_store?

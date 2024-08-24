@@ -18,7 +18,7 @@ class StoreSubmissions::TestFlight::FindBuildJob
   sidekiq_retries_exhausted do |msg, ex|
     if ex.is_a?(Installations::Error)
       submission = TestFlightSubmission.find(msg["args"].first)
-      submission.fail_with_error(ex)
+      submission.fail_with_error!(ex)
     end
   end
 

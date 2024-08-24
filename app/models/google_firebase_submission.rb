@@ -86,7 +86,7 @@ class GoogleFirebaseSubmission < StoreSubmission
 
   def upload_build!
     return unless may_prepare?
-    return fail_with_error("Build not found") if build&.artifact.blank?
+    return fail_with_error!("Build not found") if build&.artifact.blank?
 
     result = nil
     filename = build.artifact.file.filename.to_s
@@ -94,7 +94,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     build.artifact.with_open do |file|
       result = provider.upload(file, filename, platform:, variant:)
       unless result.ok?
-        fail_with_error(result.error)
+        fail_with_error!(result.error)
       end
     end
 
@@ -105,7 +105,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     return unless may_prepare?
     result = provider.get_upload_status(op_name)
     unless result.ok?
-      fail_with_error(result.error)
+      fail_with_error!(result.error)
       return
     end
 
@@ -130,7 +130,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     if result.ok?
       finish!
     else
-      fail_with_error(result.error)
+      fail_with_error!(result.error)
     end
   end
 

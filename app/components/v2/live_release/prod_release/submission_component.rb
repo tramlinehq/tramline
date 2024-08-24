@@ -32,6 +32,10 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
   delegate :id, :inflight?, :actionable?, :release_platform_run, :external_link, :provider, to: :submission
   delegate :release, to: :release_platform_run
 
+  def show_blocked_message?
+    release_platform_run.play_store_blocked? && !submission.failed_with_action_required?
+  end
+
   def inflight? = submission.parent_release.inflight?
 
   def blocked?
@@ -68,6 +72,10 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
 
   def store_icon
     "integrations/logo_#{submission.provider}.png"
+  end
+
+  def submission_logo_bw
+    "v2/logo_#{submission.provider}_bw.svg"
   end
 
   memoize def available_builds
