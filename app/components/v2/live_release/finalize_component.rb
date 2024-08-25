@@ -77,4 +77,9 @@ class V2::LiveRelease::FinalizeComponent < V2::BaseComponent
     return "These will be automatically run when the rollout finishes" unless release.finished?
     ""
   end
+
+  def tag_link
+    link = release.tag_url || release.app.config.code_repo_url
+    link_to_external train.vcs_provider.display, link, class: "underline"
+  end
 end
