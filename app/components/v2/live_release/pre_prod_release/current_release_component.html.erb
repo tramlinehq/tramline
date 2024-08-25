@@ -80,11 +80,13 @@
         <%= render V2::LiveRelease::BuildComponent.new(build) %>
       <% end %>
 
-      <div class="flex flex-col item-gap-default">
-        <% store_submissions.each do |submission| %>
-          <%= render V2::LiveRelease::PreProdRelease::SubmissionComponent.new(submission) %>
-        <% end %>
-      </div>
+      <% if store_submissions.exists? %>
+        <div class="flex flex-col item-gap-default">
+          <% store_submissions.each do |submission| %>
+            <%= render V2::LiveRelease::PreProdRelease::SubmissionComponent.new(submission) %>
+          <% end %>
+        </div>
+      <% end %>
     </div>
   <% end %>
 </div>
