@@ -53,7 +53,8 @@
                  locals: { title: "Changes since last build",
                            button_scheme: :naked_icon,
                            subtitle: nil,
-                           commits: changed_commits } %>
+                           changes_path: changes_since_previous_pre_prod_release_path(pre_prod_release),
+                           parent_release: pre_prod_release } %>
     </div>
 
     <%= render V2::LiveRelease::BuildComponent.new(

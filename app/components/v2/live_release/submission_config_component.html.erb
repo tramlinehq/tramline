@@ -5,7 +5,7 @@
     <div class="grid justify-self-start grid-flow-col items-center">
       <div class="border-t mr-1 border-main-300 border-dashed w-5"></div>
       <%= render V2::BadgeComponent.new(text: workflow_config.name, kind: :badge) do |badge| %>
-        <% badge.with_icon("integrations/logo_#{release_platform_run.release_platform.ci_cd_provider}.png") %>
+        <% badge.with_icon(ci_cd_provider_logo) %>
       <% end %>
     </div>
   </div>

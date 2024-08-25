@@ -11,7 +11,12 @@ class V2::BaseComponent < ViewComponent::Base
     :new_app,
     :default_timezones,
     :content_security_policy_nonce,
-    :logout_path, to: :helpers
+    :logout_path,
+    :ci_cd_provider_logo,
+    :vcs_provider_logo,
+    :live_release_tab_configuration,
+    :current_overall_status,
+    to: :helpers
   delegate :team_colors, to: :current_organization
 
   def writer?

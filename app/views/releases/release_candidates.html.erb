@@ -1,6 +1,0 @@
-<%= render V2::LiveRelease::ContainerComponent.new(@release, title: @train.name) do |container| %>
-  <% container.with_back_button %>
-  <% container.with_tab(title: "Release Candidate", icon: live_release_tab_configuration.dig(:stability, :release_candidate, :icon)) do %>
-    <%= render V2::LiveRelease::ReleaseCandidatesComponent.new(@release) %>
-  <% end %>
-<% end %>

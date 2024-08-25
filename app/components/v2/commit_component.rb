@@ -19,14 +19,6 @@ class V2::CommitComponent < V2::BaseComponent
     author_login || author_name
   end
 
-  def integration_provider_logo
-    "integrations/logo_#{ci_cd_provider}.png"
-  end
-
-  def ci_cd_provider
-    @commit.train&.ci_cd_provider
-  end
-
   def detailed? = @detailed
 
   def show_avatar? = @avatar

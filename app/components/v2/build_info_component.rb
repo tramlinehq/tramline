@@ -84,10 +84,6 @@ class V2::BuildInfoComponent < V2::BaseComponent
     ago_in_words(@staged_rollout&.updated_at || @deployment_run.updated_at)
   end
 
-  def build_logo
-    "integrations/logo_#{step.ci_cd_provider}.png"
-  end
-
   def deployment_logo
     "integrations/logo_#{deployment.integration_type}.png"
   end

@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class V2::LiveRelease::InternalBuildsComponent < V2::BaseComponent
-  include Memery
-
   SUBMISSION_STATUS = {
     created: {text: "Ongoing", status: :routine},
     failed: {text: "Failed", status: :failure},
@@ -11,7 +9,6 @@ class V2::LiveRelease::InternalBuildsComponent < V2::BaseComponent
 
   def initialize(release)
     @release = release
-    super(@release)
   end
 
   attr_reader :release

@@ -43,10 +43,6 @@ class V2::LiveRelease::BuildComponent < V2::BaseComponent
     "Build ##{external_number}"
   end
 
-  def build_logo
-    "integrations/logo_#{build.ci_cd_provider}.png"
-  end
-
   def last_activity_at
     ago_in_words(build.updated_at)
   end

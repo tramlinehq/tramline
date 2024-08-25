@@ -50,7 +50,8 @@
                    locals: { title: "Changes since last build",
                              button_scheme: :supporting,
                              subtitle: nil,
-                             commits: changed_commits } %>
+                             changes_path: changes_since_previous_pre_prod_release_path(pre_prod_release),
+                             parent_release: pre_prod_release } %>
       <% end %>
     <% end %>
 

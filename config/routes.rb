@@ -204,9 +204,20 @@ Rails.application.routes.draw do
   end
 
   resources :release_platform_runs, path: :runs, as: :runs, only: [] do
-    post :pre_prod_beta, to: "pre_prod_releases#create_beta"
-    post :pre_prod_internal, to: "pre_prod_releases#create_internal"
+    post :pre_prod_beta, to: "beta_releases#create"
     post :production, to: "production_releases#create"
+
+    resources :pre_prod_releases, shallow: true, only: [] do
+      member do
+        get :changes_since_previous
+      end
+    end
+
+    resources :production_releases, shallow: true, only: [] do
+      member do
+        get :changes_since_previous
+      end
+    end
   end
 
   resources :store_rollouts, only: [], shallow: false, path: :rollouts do

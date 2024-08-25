@@ -39,7 +39,6 @@ class V2::LiveRelease::ContainerComponent < V2::BaseComponent
     :platform,
     :automatic?,
     :stop_release_warning, to: :release
-  delegate :live_release_tab_configuration, :current_overall_status, to: :helpers
 
   def overall_status
     RELEASE_PHASE.fetch(current_overall_status.to_sym)

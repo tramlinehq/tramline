@@ -1,6 +1,0 @@
-<%= render V2::LiveRelease::ContainerComponent.new(@release, title: @train.name) do |container| %>
-  <% container.with_back_button %>
-  <% container.with_tab(title: "Internal Builds", icon: live_release_tab_configuration.dig(:stability, :internal_builds, :icon)) do %>
-    <%= render V2::LiveRelease::InternalBuildsComponent.new(@release) %>
-  <% end %>
-<% end %>

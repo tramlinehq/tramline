@@ -128,7 +128,10 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def latest_internal_release(finished: false)
-    (finished ? internal_releases.finished : internal_releases).order(created_at: :desc).first
+    (finished ? internal_releases.finished : internal_releases)
+      .includes(:commit, :store_submissions, triggered_workflow_run: {build: [:commit, :artifact]}, release_platform_run: [:release])
+      .order(created_at: :desc)
+      .first
   end
 
   def latest_production_release
@@ -152,7 +155,10 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def older_internal_releases
-    internal_releases.order(created_at: :desc).offset(1)
+    internal_releases
+      .order(created_at: :desc)
+      .includes(:commit, :store_submissions, triggered_workflow_run: {build: [:commit, :artifact]}, release_platform_run: [:release])
+      .offset(1)
   end
 
   def older_production_releases

@@ -9,7 +9,8 @@
   <% button.with_icon("v2/diff.svg", size: :lg) %>
 
   <% modal.with_body do %>
-    <%= render partial: "shared/divide_collection",
-               locals: { collection: render(V2::CommitComponent.with_collection(commits)) } %>
+    <%= tag.turbo_frame id: dom_id(parent_release, :changes_since_previous), src: changes_path, loading: :lazy, class: "with-turbo-frame-loader" do %>
+      <%= render V2::LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: true) %>
+    <% end %>
   <% end %>
 <% end %>

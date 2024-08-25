@@ -4,8 +4,8 @@ class ReleasesController < SignedInApplicationController
   include Tabbable
   around_action :set_time_zone
   before_action :require_write_access!, only: %i[create destroy post_release]
-  before_action :set_release, only: %i[show destroy update timeline overview changeset_tracking internal_builds regression_testing release_candidates soak]
-  before_action :set_train_and_app, only: %i[show destroy update timeline overview changeset_tracking internal_builds regression_testing release_candidates soak]
+  before_action :set_release, only: %i[show destroy update timeline overview changeset_tracking regression_testing release_candidates soak]
+  before_action :set_train_and_app, only: %i[show destroy update timeline overview changeset_tracking regression_testing release_candidates soak]
 
   def index
     @train = @app.trains.friendly.find(params[:train_id])
@@ -58,12 +58,41 @@ class ReleasesController < SignedInApplicationController
   end
 
   def internal_builds
+    @release =
+      Release
+        .includes(
+          :all_commits,
+          train: [:app],
+          release_platform_runs: [
+            :internal_builds,
+            :beta_releases,
+            :production_store_rollouts,
+            inflight_production_release: [store_submission: :store_rollout],
+            active_production_release: [store_submission: :store_rollout],
+            finished_production_release: [store_submission: :store_rollout],
+            production_releases: [store_submission: [:store_rollout]],
+            internal_releases: [
+              :store_submissions,
+              triggered_workflow_run: {build: [:artifact]}
+            ],
+            release_platform: {app: [:integrations]}
+          ]
+        )
+        .friendly.find(params[:id])
+
+    Rails.logger.debug { "Release #{@release.id} has finished loading" }
+
+    @train = @release.train
+    @app = @train.app
+
+    render V2::LiveRelease::InternalBuildsComponent.new(@release)
   end
 
   def regression_testing
   end
 
   def release_candidates
+    render V2::LiveRelease::ReleaseCandidatesComponent.new(@release)
   end
 
   def soak
@@ -157,6 +186,31 @@ class ReleasesController < SignedInApplicationController
       Release
         .joins(train: :app)
         .where(apps: {organization: current_organization})
+        .includes(:all_commits, release_platform_runs: [:internal_builds, :beta_releases, :production_releases])
+        .friendly.find(params[:id])
+  end
+
+  def set_release_v2
+    @release =
+      Release
+        .includes(
+          :all_commits,
+          train: [:app],
+          release_platform_runs: [
+            :internal_builds,
+            :beta_releases,
+            :production_store_rollouts,
+            inflight_production_release: [store_submission: :store_rollout],
+            active_production_release: [store_submission: :store_rollout],
+            finished_production_release: [store_submission: :store_rollout],
+            production_releases: [store_submission: [:store_rollout]],
+            internal_releases: [
+              :store_submissions,
+              triggered_workflow_run: {build: [:artifact]}
+            ],
+            release_platform: {app: [:integrations]}
+          ]
+        )
         .friendly.find(params[:id])
   end
 

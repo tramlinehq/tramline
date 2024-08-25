@@ -28,7 +28,9 @@ class SignedInApplicationController < ApplicationController
     :subscribed_org?,
     :billing?,
     :billing_link,
-    :logout_path
+    :logout_path,
+    :ci_cd_provider_logo,
+    :vcs_provider_logo
 
   rescue_from NotAuthorizedError, with: :user_not_authorized
 
@@ -86,7 +88,7 @@ class SignedInApplicationController < ApplicationController
   end
 
   def writer?
-    current_user.writer_for?(current_organization)
+    @is_writer ||= current_user.writer_for?(current_organization)
   end
 
   def set_time_zone
@@ -141,6 +143,14 @@ class SignedInApplicationController < ApplicationController
 
   def new_app
     current_organization.apps.new
+  end
+
+  def vcs_provider_logo
+    @vcs_provider_logo ||= "integrations/logo_#{@app.vcs_provider}.png"
+  end
+
+  def ci_cd_provider_logo
+    @ci_cd_provider_logo ||= "integrations/logo_#{@app.ci_cd_provider}.png"
   end
 
   def default_timezones

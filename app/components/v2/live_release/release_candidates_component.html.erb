@@ -1,43 +1,48 @@
-<%= render V2::PlatformViewComponent.new(@release) do |component| %>
-  <% component.runs do |release_platform_run| %>
-    <%= render V2::LiveRelease::SubmissionConfigComponent.new(configuration(release_platform_run), workflow_config(release_platform_run), release_platform_run:) %>
-  <% end %>
+<%= render V2::LiveRelease::ContainerComponent.new(release, title: release.train.name) do |container| %>
+  <% container.with_back_button %>
+  <% container.with_tab(title: "Release Candidate", icon: live_release_tab_configuration.dig(:stability, :release_candidate, :icon)) do %>
+    <%= render V2::PlatformViewComponent.new(release) do |component| %>
+      <% component.runs do |release_platform_run| %>
+        <%= render V2::LiveRelease::SubmissionConfigComponent.new(configuration(release_platform_run), workflow_config(release_platform_run), release_platform_run:) %>
+      <% end %>
 
-  <% component.runs do |release_platform_run| %>
-    <% beta_release = latest_beta_release(release_platform_run) %>
-    <% if beta_release.present? %>
-      <%= render V2::LiveRelease::PreProdRelease::CurrentReleaseComponent.new(beta_release) %>
-    <% else %>
-      <%= render V2::LiveRelease::PrepareReleaseCandidateComponent.new(release_platform_run) %>
-    <% end %>
-  <% end %>
-
-  <% if component.platform_runs.any? { |sr| sr.external_builds.exists? } %>
-    <% component.runs do |release_platform_run| %>
-      <%= render V2::SectionComponent.new(title: "Build stats", style: :titled, size: :compact) do %>
-        <% if release_platform_run.internal_builds.any? { |build| build.metadata.present? } %>
-          <div>
-            <% "TODO: [V2] Show build health here" %></div>
+      <% component.runs do |release_platform_run| %>
+        <% beta_release = latest_beta_release(release_platform_run) %>
+        <% if beta_release.present? %>
+          <%= render V2::LiveRelease::PreProdRelease::CurrentReleaseComponent.new(beta_release) %>
         <% else %>
-          <%= render V2::EmptyStateComponent.new(
-            title: "No stats for this platform",
-            text: "Please send build metadata to Tramline to see the build stats.",
-            banner_image: "v2/drill.svg",
-            type: :subdued) %>
+          <%= render V2::LiveRelease::PrepareReleaseCandidateComponent.new(release_platform_run) %>
         <% end %>
       <% end %>
-    <% end %>
-  <% end %>
 
-  <% component.runs do |release_platform_run| %>
-    <% previous_betas = previous_beta_releases(release_platform_run) %>
-    <% if previous_betas.present? %>
-      <%= render V2::SectionComponent.new(title: "Other builds (#{previous_betas.size})", style: :titled, size: :compact) do %>
-        <div class="flex flex-col item-gap-default">
-          <% previous_betas.each do |beta_release| %>
-            <%= render V2::LiveRelease::PreProdRelease::PreviousReleaseComponent.new(beta_release) %>
+      <% if component.platform_runs.any? { |sr| sr.external_builds.exists? } %>
+        <% component.runs do |release_platform_run| %>
+          <%= render V2::SectionComponent.new(title: "Build stats", style: :titled, size: :compact) do %>
+            <% if release_platform_run.internal_builds.any? { |build| build.metadata.present? } %>
+              <div>
+                <% "TODO: [V2] Show build health here" %></div>
+            <% else %>
+              <%= render V2::EmptyStateComponent.new(
+                title: "No stats for this platform",
+                text: "Please send build metadata to Tramline to see the build stats.",
+                banner_image: "v2/drill.svg",
+                type: :subdued) %>
+            <% end %>
           <% end %>
-        </div>
+        <% end %>
+      <% end %>
+
+      <% component.runs do |release_platform_run| %>
+        <% previous_betas = previous_beta_releases(release_platform_run) %>
+        <% if previous_betas.present? %>
+          <%= render V2::SectionComponent.new(title: "Other builds (#{previous_betas.size})", style: :titled, size: :compact) do %>
+            <div class="flex flex-col item-gap-default">
+              <% previous_betas.each do |beta_release| %>
+                <%= render V2::LiveRelease::PreProdRelease::PreviousReleaseComponent.new(beta_release) %>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
       <% end %>
     <% end %>
   <% end %>

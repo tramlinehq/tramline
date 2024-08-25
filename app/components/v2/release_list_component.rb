@@ -43,12 +43,13 @@ class V2::ReleaseListComponent < V2::BaseComponent
 
   def release_options
     return [] unless train.manually_startable?
-    return [] if train.ongoing_release && !train.upcoming_release_startable?
+    upcoming_release_startable = train.upcoming_release_startable?
+    return [] if train.ongoing_release && !upcoming_release_startable
 
     start_minor_text = start_release_text
     start_major_text = start_release_text(major: true)
-    start_minor_text = start_upcoming_release_text if train.upcoming_release_startable?
-    start_major_text = start_upcoming_release_text(major: true) if train.upcoming_release_startable?
+    start_minor_text = start_upcoming_release_text if upcoming_release_startable
+    start_major_text = start_upcoming_release_text(major: true) if upcoming_release_startable
 
     [
       {

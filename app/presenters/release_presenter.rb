@@ -31,13 +31,7 @@ class ReleasePresenter < SimpleDelegator
   end
 
   memoize def platform_runs
-    release_platform_runs.includes(:internal_builds,
-      :internal_releases,
-      :beta_releases,
-      :production_releases,
-      :rc_builds,
-      :production_store_submissions,
-      :production_store_rollouts)
+    release_platform_runs
   end
 
   memoize def display_release_version

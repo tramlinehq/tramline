@@ -69,28 +69,32 @@ class Computations::Release::StepStatuses
     return PHASES[:completed] if finished?
     return PHASES[:stopped] if stopped? || stopped_after_partial_finish?
     return PHASES[:finishing] if Release::POST_RELEASE_STATES.include?(status)
-    return PHASES[:rollout] if any_platforms? { |rp| rp.production_store_rollouts.exists? }
+    return PHASES[:rollout] if any_platforms? { |rp| rp.production_store_rollouts.present? }
     return PHASES[:review] if any_platforms? { |rp| rp.active_production_release.present? }
-    return PHASES[:stabilization] if any_platforms? { |rp| rp.pre_prod_releases.exists? }
+    return PHASES[:stabilization] if any_platforms? { |rp| rp.pre_prod_releases.any? }
     PHASES[:kickoff]
   end
 
   private
 
   def new_change?
-    @release.applied_commits != @release.all_commits
+    @new_change ||= (@release.applied_commits != @release.all_commits)
   end
 
   def any_platforms?
-    @release.release_platform_runs.any? do |rp|
+    platform_runs.any? do |rp|
       yield(rp)
     end
   end
 
   def all_platforms?
-    @release.release_platform_runs.all? do |rp|
+    platform_runs.all? do |rp|
       yield(rp)
     end
+  end
+
+  def platform_runs
+    @platform_runs ||= @release.release_platform_runs
   end
 
   delegate :finished?, :stopped?, :stopped_after_partial_finish?, :status, to: :@release

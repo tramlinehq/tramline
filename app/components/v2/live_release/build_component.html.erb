@@ -12,7 +12,7 @@
 
           <% if show_ci %>
             <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
-              <% badge.with_icon(build_logo) %>
+              <% badge.with_icon(ci_cd_provider_logo) %>
               <% badge.with_link(ci_info, external_url) %>
             <% end %>
           <% end %>
