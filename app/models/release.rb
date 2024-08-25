@@ -40,18 +40,12 @@ class Release < ApplicationRecord
 
   DEFAULT_INTERNAL_NOTES = {
     "ops" => [
-      {"insert" => "Write your internal notes, tasks lists, description, pretty much anything really."},
-      {"attributes" => {"align" => "center"}, "insert" => "\n\n"},
-      {"insert" => "Anything interesting about this release you want to remember?"},
-      {"attributes" => {"align" => "center"}, "insert" => "\n"},
-      {"insert" => "Just "},
-      {"attributes" => {"bold" => true}, "insert" => "dump"},
-      {"insert" => " it here."},
-      {"attributes" => {"align" => "center"}, "insert" => "\n\n"},
-      {"insert" => "You can use lists, styles and emojis and a whole bunch more! ⚡️✈️🌈"},
-      {"attributes" => {"align" => "center"}, "insert" => "\n"}
+      {"insert" => "Write your internal notes, task lists, or descriptions about the release. Interesting things you want to remember? \n\nJust "},
+      {"attributes" => {"bold" => true}, "insert" => "stick"},
+      {"insert" => " them here! ⚡️🚃🌈 \n"}
     ]
   }
+
   STAMPABLE_REASONS = %w[
     created
     release_branch_created
