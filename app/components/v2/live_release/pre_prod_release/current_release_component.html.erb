@@ -3,7 +3,7 @@
                                                                      build:,
                                                                      actionable: false } %>
   <% if pre_prod_release.new_build_available? %>
-    <%= render V2::AlertComponent.new(size: :md, kind: :announcement, type: :announce, title: "New Internal Build is available") do |ann| %>
+    <%= render V2::AlertComponent.new(kind: :announcement, type: :announce, title: "New Internal Build is available") do |ann| %>
       <% ann.with_announcement_button(label: "Start Beta release",
                                       scheme: :default,
                                       type: :button,
@@ -24,7 +24,7 @@
   <% end %>
 
   <% if pre_prod_release.new_commit_available? %>
-    <%= render V2::AlertComponent.new(size: :md, kind: :announcement, type: :announce, title: "New changes on the release branch") do |ann| %>
+    <%= render V2::AlertComponent.new(kind: :announcement, type: :announce, title: "New changes on the release branch") do |ann| %>
       <% ann.with_announcement_button(label: "Build release candidate",
                                       scheme: :default,
                                       type: :button,

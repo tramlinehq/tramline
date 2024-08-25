@@ -1,7 +1,7 @@
 <div data-controller="alert">
   <% if alert? %>
     <div data-alert-target="alert"
-         class="flex items-center <%= size %> <%= padding %> <%= style %> <%= border_style %> text-sm justify-between"
+         class="flex items-center w-full <%= padding %> <%= style %> <%= border_style %> text-sm justify-between"
          role="alert">
       <div class="flex mr-6 gap-x-1 items-start">
         <div class="flex justify-start gap-x-1 items-center">
@@ -24,9 +24,9 @@
     </div>
   <% elsif banner? %>
     <div data-alert-target="alert"
-         class="<%= size %> <%= padding %> <%= style %> <%= border_style %> mb-4"
+         class="w-full <%= padding %> <%= style %> <%= border_style %> mb-4"
          role="alert">
-      <div class="flex items-center mb-2">
+      <div class="flex items-center">
         <%= render V2::IconComponent.new("v2/info.svg", size: :md, classes: "mr-2") %>
         <h3 class="heading-3 !text-inherit"><%= title %></h3>
       </div>
@@ -64,7 +64,7 @@
       <% end %>
     </div>
   <% elsif announcement? %>
-    <div class="<%= size %> <%= padding %> <%= style %> <%= border_style %>">
+    <div class="w-full <%= padding %> <%= style %> <%= border_style %>">
       <div class="flex items-center mb-2">
         <%= render V2::IconComponent.new("v2/megaphone.svg", size: :lg, classes: "mr-2") %>
         <h3 class="heading-3 !text-inherit"><%= title %></h3>

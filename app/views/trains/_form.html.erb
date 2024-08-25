@@ -1,12 +1,10 @@
 <% url = train.new_record? ? app_trains_path(app) : app_train_path(app, train) %>
 
 <% if @edit_not_allowed %>
-  <div class="mb-8">
-    <%= render V2::AlertComponent.new(kind: :banner, type: :notice, title: "Train not editable", full_screen: false) do %>
-      The train settings can not be edited while there are active releases. Please stop or finish the releases to make
-      changes.
-    <% end %>
-  </div>
+  <%= render V2::AlertComponent.new(kind: :banner, type: :notice, title: "Train not editable", full_screen: false) do %>
+    The train settings can not be edited while there are active releases. Please stop or finish the releases to make
+    changes.
+  <% end %>
 <% end %>
 
 <div data-controller="branching-selector"

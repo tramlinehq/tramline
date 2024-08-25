@@ -8,7 +8,7 @@
                                                                      actionable: false } %>
 
   <% if @new_submission_prompt %>
-    <%= render V2::AlertComponent.new(size: :md, kind: :announcement, type: :announce, title: "New RC Build is available") do |ann| %>
+    <%= render V2::AlertComponent.new(kind: :announcement, type: :announce, title: "New RC Build is available") do |ann| %>
       <% modal = ann.with_announcement_modal(title: "Available builds", subtitle: "Choose a build to send for submission to the store") %>
       <% modal.with_button(label: "Start a new submission", scheme: :default, type: :action, size: :xxs) %>
       <% modal.with_body do %>
