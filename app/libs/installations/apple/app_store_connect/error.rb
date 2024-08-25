@@ -94,6 +94,7 @@ module Installations
 
     def initialize(response_body = nil)
       @response_body = response_body
+      log
       super(error&.fetch("message", nil), reason: handle)
     end
 
@@ -105,6 +106,7 @@ module Installations
     private
 
     attr_reader :response_body
+    delegate :logger, to: Rails
 
     def match
       @match ||= matched_error
@@ -112,13 +114,24 @@ module Installations
 
     def matched_error
       ERRORS.find do |known_error|
-        error["resource"].eql?(known_error[:resource]) &&
-          error["code"].eql?(known_error[:code])
+        resource.eql?(known_error[:resource]) && code.eql?(known_error[:code])
       end
     end
 
     def error
       response_body&.fetch("error", nil)
+    end
+
+    def code
+      error["code"]
+    end
+
+    def resource
+      error["resource"]
+    end
+
+    def log
+      logger.error(response_body, {error_resource: resource, code: code})
     end
   end
 end
