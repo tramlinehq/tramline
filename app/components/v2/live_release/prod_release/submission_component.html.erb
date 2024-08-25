@@ -10,7 +10,7 @@
   <% if @new_submission_prompt %>
     <%= render V2::AlertComponent.new(size: :md, kind: :announcement, type: :announce, title: "New RC Build is available") do |ann| %>
       <% modal = ann.with_announcement_modal(title: "Available builds", subtitle: "Choose a build to send for submission to the store") %>
-      <% modal.with_button(label: "Start a new submission", scheme: :light, type: :action, size: :xxs) %>
+      <% modal.with_button(label: "Start a new submission", scheme: :default, type: :action, size: :xxs) %>
       <% modal.with_body do %>
         <% render V2::FormComponent.new(model: [release, release_platform_run, release_platform_run.production_releases.new],
                                         scope: :production_release,
@@ -27,6 +27,7 @@
         <%= render V2::LiveRelease::BuildComponent.new(
           newer_builds.first,
           show_metadata: false,
+          show_compact_metadata: true,
           show_ci: false,
           show_activity: false,
           show_commit: false) %>
