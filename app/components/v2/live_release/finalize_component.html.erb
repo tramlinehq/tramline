@@ -1,6 +1,5 @@
 <%= render V2::CardComponent.new(title: title, subtitle: subtitle, separator: true) do |card| %>
-
-  <% if open_prs? %>
+  <% if wrap_up? %>
     <% card.with_action do %>
       <%= render V2::ButtonComponent.new(
         scheme: :default,
@@ -8,7 +7,7 @@
         type: :button,
         size: :xxs,
         label: "Retry") do |b|
-        b.with_icon("v2/repeat.svg", size: :sm)
+        b.with_icon("v2/repeat.svg", size: :md)
       end %>
     <% end %>
   <% end %>
@@ -21,7 +20,7 @@
         type: :link,
         size: :xxs,
         label: "Refresh") do |b|
-        b.with_icon("v2/repeat.svg", size: :sm)
+        b.with_icon("v2/repeat.svg", size: :md)
       end %>
     <% end %>
   <% end %>
@@ -30,10 +29,12 @@
     <%= render V2::LoadingIndicatorComponent.new(skeleton_only: true, turbo_frame: false) %>
   <% else %>
     <div class="flex flex-col gap-2 text-sm text-secondary">
-      <p class="<%= strikethrough %>">
-        ◦ Cut tag <code><%= release.end_ref %></code> and push
-        to <%= link_to_external "GitHub", release.tag_url, class: "underline" %> <%= checked %>
-      </p>
+      <% if train.tag_releases? %>
+        <p class="<%= strikethrough %>">
+          ◦ Cut tag at <code><%= release.last_commit.short_sha %></code> and push
+          to <%= link_to_external "GitHub", release.tag_url, class: "underline" %> <%= checked %>
+        </p>
+      <% end %>
 
       <p class="<%= strikethrough %>">
         ◦ Ensure all unmerged changes are pushed back to <%= release.train.working_branch %> <%= checked %>

@@ -9,6 +9,7 @@ class V2::LiveRelease::FinalizeComponent < V2::BaseComponent
 
   attr_reader :release
   delegate :post_release_prs,
+    :train,
     :backmerge_prs,
     :unmerged_commits,
     :finished?,
@@ -29,6 +30,10 @@ class V2::LiveRelease::FinalizeComponent < V2::BaseComponent
 
   def open_prs?
     post_release_failed? && (open_backmerge_prs? || open_post_release_prs?)
+  end
+
+  def wrap_up?
+    post_release_failed? && !unmerged_changes?
   end
 
   memoize def unmerged_changes
