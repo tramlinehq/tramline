@@ -241,28 +241,6 @@ class ReleasePlatformRun < ApplicationRecord
     train.hotfix_release.next_version if train.hotfix_release&.version_ahead?(self)
   end
 
-  def bump_version_for_fixed_build_number!
-    return unless train.fixed_build_number?
-
-    # bump the build number if it is the first commit of the release or it is patch fix on the release
-    if release.all_commits.size == 1
-      app.bump_build_number!
-    else
-      if version_bump_required?
-        app.bump_build_number!
-        self.in_store_resubmission = true
-      end
-      self.release_version = release_version.to_semverish.bump!(:patch, strategy: versioning_strategy).to_s
-      event_stamp!(
-        reason: :version_changed,
-        kind: :notice,
-        data: {version: release_version}
-      )
-    end
-
-    save!
-  end
-
   def bump_version!
     return unless version_bump_required?
 
@@ -304,15 +282,11 @@ class ReleasePlatformRun < ApplicationRecord
     end
   end
 
-  def allow_blocked_step?
-    Flipper.enabled?(:allow_blocked_step, self)
-  end
-
   def manually_startable_step?(step)
     return false if train.inactive?
     return false unless on_track?
     return false if last_commit.blank?
-    return false if ongoing_release_step?(step) && train.hotfix_release.present? && !allow_blocked_step?
+    return false if ongoing_release_step?(step) && train.hotfix_release.present?
     return true if (hotfix? || patch_fix?) && last_commit.run_for(step, self).blank?
     return false if upcoming_release_step?(step)
     return true if step.first? && step_runs_for(step).empty?
@@ -325,7 +299,6 @@ class ReleasePlatformRun < ApplicationRecord
     return false if train.inactive?
     return false unless on_track?
     return false if last_commit.blank?
-    return false if allow_blocked_step?
     return true if train.hotfix_release.present? && train.hotfix_release != release && step.release?
 
     (next_step == step) && previous_step_run_for(step)&.success? && upcoming_release_step?(step)

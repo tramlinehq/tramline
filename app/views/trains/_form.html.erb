@@ -46,15 +46,6 @@
           </span>
       <% end %>
 
-      <% if train.fixed_build_number? %>
-        <div>
-          <%= section.F.labeled_select :versioning_strategy, "Versioning Strategy",
-                                       options_for_select(Train.versioning_strategies.transform_values(&:titleize).invert, train.versioning_strategy),
-                                       { required: true, },
-                                       { disabled: train.persisted? } %>
-        </div>
-      <% end %>
-
       <div data-controller="domain--version-name-help"
            data-domain--version-name-help-disabled-value="<%= train.persisted? %>">
         <%= section.F.label_only :major_version_seed, "Seed with your current version name (build name)" %>

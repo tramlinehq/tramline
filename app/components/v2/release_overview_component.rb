@@ -7,7 +7,7 @@ class V2::ReleaseOverviewComponent < V2::BaseReleaseComponent
   attr_reader :release
 
   def show_release_unhealthy?
-    current_user.release_monitoring? && release.show_health? && release.unhealthy?
+    release.show_health? && release.unhealthy?
   end
 
   def vcs_icon

@@ -175,10 +175,6 @@ class Accounts::User < ApplicationRecord
       .find(&:accepted?)
   end
 
-  def release_monitoring?
-    Flipper.enabled?(:release_monitoring, self)
-  end
-
   # FIXME: This assumes that the blob is always a BuildArtifact
   # Eventually, make the URLs domain-specific and not blob-based general ones.
   def access_to_blob?(signed_blob_id)

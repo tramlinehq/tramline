@@ -71,18 +71,6 @@ class Accounts::Organization < ApplicationRecord
     Flipper.enabled?(:deploy_action_enabled, self)
   end
 
-  def fixed_build_number?
-    Flipper.enabled?(:fixed_build_number, self)
-  end
-
-  def custom_release_version?
-    Flipper.enabled?(:custom_release_version, self)
-  end
-
-  def team_analysis_enabled?
-    Flipper.enabled?(:team_analysis_enabled, self)
-  end
-
   def owner
     users.includes(:memberships).where(memberships: {role: "owner"}).sole
   end

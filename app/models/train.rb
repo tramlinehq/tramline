@@ -69,7 +69,6 @@ class Train < ApplicationRecord
 
   delegate :ready?, :config, :organization, to: :app
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :monitoring_provider, to: :integrations
-  delegate :fixed_build_number?, :custom_release_version?, to: :organization
 
   enum status: {draft: "draft", active: "active", inactive: "inactive"}
   enum backmerge_strategy: {continuous: "continuous", on_finalize: "on_finalize"}
