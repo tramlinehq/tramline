@@ -24,7 +24,7 @@
   <div class="relative flex flex-col flex-1 overflow-y-scroll overflow-x-hidden h-full">
     <%= render V2::HeaderComponent.new %>
 
-    <main class="mb-20 2xl:mb-0">
+    <main class="mb-20 2xl:mb-10">
       <%= yield :sticky_top_message %>
       <div class="mx-auto">
         <%= render V2::FlashComponent.new(flash) %>

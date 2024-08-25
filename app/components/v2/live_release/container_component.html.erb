@@ -4,14 +4,14 @@
   <% end %>
 
   <div class="grid grid-cols-10">
-    <div class="col-span-2 flex !pt-10 flex-col pl-12 py-3.5 border-default-b border-default-l rounded-bl-lg justify-between border-default-r">
+    <div class="col-span-2 flex flex-col justify-between !pt-10 pl-8 py-3.5 border-default-b border-default-l 2xl:rounded-bl-lg border-default-r">
       <div>
         <div class="flex justify-between">
           <div class="my-2 mb-4">
             <%= back_button %>
           </div>
 
-          <div class="flex flex-col gap-1 items-end pr-6">
+          <div class="flex flex-col gap-1 items-end <%= RIGHT_GUTTER %>">
             <% if hotfix? %>
               <span class="self-end"><%= render V2::BadgeComponent.new(text: "Hotfix", kind: :featured) %></span>
             <% end %>
@@ -43,7 +43,7 @@
           </div>
         </div>
 
-        <div class="flex flex-col gap-2 mt-8 pr-6">
+        <div class="flex flex-col gap-2 mt-8 <%= RIGHT_GUTTER %>">
           <% if reldex %>
             <div class="flex flex-row justify-end">
               <%= render V2::Reldex::StatusComponent.new(release:, reldex_score: reldex) %>
@@ -90,22 +90,23 @@
                                                      size: :compact) %>
           <% end %>
         </div>
+
         <div class="flex flex-col mt-10 gap-10">
           <% sorted_sections.each do |section_name, sorted_configs| %>
             <div>
-              <div class="flex flex-row justify-end heading-5-sc pr-6">
+              <div class="flex flex-row justify-end heading-5-sc <%= RIGHT_GUTTER %>">
                 <%= section_name %>
               </div>
 
               <ul class="text-gray-500 dark:text-gray-400 mt-2">
                 <% sorted_configs.each do |_, config| %>
                   <% config => { title:, path:, icon: } %>
-                  <li class="flex items-center justify-center w-full gap-1.5">
+                  <li class="flex items-center justify-center w-full gap-2">
                     <%= status_icon(config) %>
                     <%= content_tag(sidebar_title_tag(config),
-                                    class: "flex flex-row items-center justify-between w-full rounded-sm hover:text-gray-900 hover:bg-gray-100 #{active_style(path)} pr-6",
+                                    class: "flex flex-row items-center justify-between w-full rounded hover:text-main-900 hover:bg-main-100 #{active_style(path)} mr-2 px-2",
                                     href: path) do %>
-                      <div class="flex gap-2 items-center pl-2">
+                      <div class="flex gap-2 items-center">
                         <span class="text-sm font-normal py-1.5 dark:bg-gray-200"><%= title %></span>
                         <%= coming_soon(config) %>
                       </div>
@@ -120,7 +121,7 @@
         </div>
       </div>
 
-      <div class="self-end mt-10 flex flex-col gap-2 items-end pr-6">
+      <div class="self-end mt-10 flex flex-col gap-2 items-end <%= RIGHT_GUTTER %>">
         <% if partially_finished? %>
           <%= render V2::ButtonComponent.new(
             scheme: :light,

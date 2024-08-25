@@ -10,13 +10,14 @@ class V2::LiveRelease::ContainerComponent < V2::BaseComponent
     review: ["Under store review", :ongoing],
     rollout: ["Rolling out to users", :inert]
   }
-  SELECTED_TAB_STYLE = "active text-main bg-white border-l-3"
+  SELECTED_TAB_STYLE = "active text-main bg-main-100 border-l-2 border-main-400"
   TAB_STATUS_ICON = {
     none: {icon: "v2/circle.svg", classes: STATUS_COLOR_PALETTE[:neutral].join(" ") + " !bg-backgroundLight-50"},
     blocked: {icon: "v2/circle_x.svg", classes: STATUS_COLOR_PALETTE[:inert].join(" ")},
     ongoing: {icon: "v2/circle_dashed.svg", classes: STATUS_COLOR_PALETTE[:ongoing].join(" ")},
     success: {icon: "v2/circle_check_big.svg", classes: STATUS_COLOR_PALETTE[:success].join(" ")}
   }
+  RIGHT_GUTTER = "pr-4"
 
   def initialize(release, title:, error_resource: nil)
     @release = ReleasePresenter.new(release, self)
