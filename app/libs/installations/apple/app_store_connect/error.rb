@@ -80,6 +80,11 @@ module Installations
         resource: "localization",
         code: "not_found",
         decorated_reason: :localization_not_found
+      },
+      {
+        resource: "app_store_connect_api",
+        code: "unauthorized",
+        decorated_reason: :unauthorized
       }
     ]
 
