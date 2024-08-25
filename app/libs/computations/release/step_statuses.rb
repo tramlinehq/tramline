@@ -1,7 +1,7 @@
 class Computations::Release::StepStatuses
   using RefinedArray
   STATUS = [:blocked, :ongoing, :success, :none].zip_map_self
-  PHASES = [:completed, :kickoff, :stabilization, :review, :rollout, :finishing].zip_map_self
+  PHASES = [:completed, :stopped, :kickoff, :stabilization, :review, :rollout, :finishing].zip_map_self
 
   def self.call(release)
     new(release).call
@@ -67,6 +67,7 @@ class Computations::Release::StepStatuses
 
   def current_overall_status
     return PHASES[:completed] if finished?
+    return PHASES[:stopped] if stopped? || stopped_after_partial_finish?
     return PHASES[:finishing] if Release::POST_RELEASE_STATES.include?(status)
     return PHASES[:rollout] if any_platforms? { |rp| rp.production_store_rollouts.exists? }
     return PHASES[:review] if any_platforms? { |rp| rp.active_production_release.present? }
@@ -92,5 +93,5 @@ class Computations::Release::StepStatuses
     end
   end
 
-  delegate :finished?, :status, to: :@release
+  delegate :finished?, :stopped?, :stopped_after_partial_finish?, :status, to: :@release
 end

@@ -7,7 +7,7 @@ class V2::BaseReleaseComponent < V2::BaseComponent
 
   RELEASE_STATUS = {
     finished: ["Completed", :success],
-    stopped: ["Stopped", :inert],
+    stopped: ["Stopped", :failure],
     created: ["Running", :ongoing],
     on_track: ["Running", :ongoing],
     upcoming: ["Upcoming", :inert],
@@ -15,7 +15,7 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     post_release_started: ["Finalizing", :neutral],
     post_release_failed: ["Finalizing", :neutral],
     partially_finished: ["Partially Finished", :ongoing],
-    stopped_after_partial_finish: ["Stopped & Partially Finished", :inert]
+    stopped_after_partial_finish: ["Stopped & Partially Finished", :failure]
   }
 
   def initialize(release)

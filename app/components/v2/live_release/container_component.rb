@@ -8,7 +8,8 @@ class V2::LiveRelease::ContainerComponent < V2::BaseComponent
     kickoff: ["Kickoff", :routine],
     stabilization: ["Stabilizing the release", :routine],
     review: ["Under store review", :ongoing],
-    rollout: ["Rolling out to users", :inert]
+    rollout: ["Rolling out to users", :inert],
+    stopped: ["Stopped", :failure]
   }
   SELECTED_TAB_STYLE = "active text-main bg-main-100 border-l-2 border-main-400"
   TAB_STATUS_ICON = {

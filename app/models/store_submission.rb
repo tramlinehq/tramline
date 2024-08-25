@@ -80,6 +80,8 @@ class StoreSubmission < ApplicationRecord
 
   def retryable? = false
 
+  def failed_with_action_required? = false
+
   def version_bump_required? = raise NotImplementedError
 
   def attach_build(_build)
