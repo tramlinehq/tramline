@@ -13,50 +13,50 @@ class StoreRolloutsController < SignedInApplicationController
   end
 
   def start
-    if Action.start_the_store_rollout!(@store_rollout).ok?
-      redirect_back fallback_location: root_path, notice: t(".start.success")
+    if (res = Action.start_the_store_rollout!(@store_rollout)).ok?
+      redirect_back fallback_location: root_path, notice: t(".success")
     else
-      redirect_back fallback_location: root_path, flash: {error: t(".start.failure")}
+      redirect_back fallback_location: root_path, flash: {error: t(".failure", errors: res.error.message)}
     end
   end
 
   def increase
-    if Action.increase_the_store_rollout!(@store_rollout).ok?
+    if (res = Action.increase_the_store_rollout!(@store_rollout)).ok?
       redirect_back fallback_location: root_path, notice: t(".increase.success")
     else
-      redirect_back fallback_location: root_path, flash: {error: t(".increase.failure")}
+      redirect_back fallback_location: root_path, flash: {error: t(".increase.failure", errors: res.error.message)}
     end
   end
 
   def pause
-    if Action.pause_the_store_rollout!(@store_rollout).ok?
+    if (res = Action.pause_the_store_rollout!(@store_rollout)).ok?
       redirect_back fallback_location: root_path, notice: t(".pause.success")
     else
-      redirect_back fallback_location: root_path, flash: {error: t(".pause.failure")}
+      redirect_back fallback_location: root_path, flash: {error: t(".pause.failure", errors: res.error.message)}
     end
   end
 
   def resume
-    if Action.resume_the_store_rollout!(@store_rollout).ok?
+    if (res = Action.resume_the_store_rollout!(@store_rollout)).ok?
       redirect_back fallback_location: root_path, notice: t(".resume.success")
     else
-      redirect_back fallback_location: root_path, flash: {error: t(".resume.failure")}
+      redirect_back fallback_location: root_path, flash: {error: t(".resume.failure", errors: res.error.message)}
     end
   end
 
   def halt
-    if Action.halt_the_store_rollout!(@store_rollout).ok?
+    if (res = Action.halt_the_store_rollout!(@store_rollout)).ok?
       redirect_back fallback_location: root_path, notice: t(".halt.success")
     else
-      redirect_back fallback_location: root_path, flash: {error: t(".halt.failure")}
+      redirect_back fallback_location: root_path, flash: {error: t(".halt.failure", errors: res.error.message)}
     end
   end
 
   def fully_release
-    if Action.fully_release_the_store_rollout!(@store_rollout).ok?
+    if (res = Action.fully_release_the_store_rollout!(@store_rollout)).ok?
       redirect_back fallback_location: root_path, notice: t(".fully_release.success")
     else
-      redirect_back fallback_location: root_path, flash: {error: t(".fully_release.failure")}
+      redirect_back fallback_location: root_path, flash: {error: t(".fully_release.failure", errors: res.error.message)}
     end
   end
 
@@ -66,21 +66,21 @@ class StoreRolloutsController < SignedInApplicationController
     @store_rollout = StoreRollout.find(params[:id])
   end
 
-  def ensure_user_controlled_rollout
-    unless @store_rollout.controllable_rollout?
-      redirect_back fallback_location: root_path, flash: {error: "The user cannot perform this action!"}
-    end
-  end
-
   def ensure_automatic_rollout
     unless @store_rollout.automatic_rollout?
-      redirect_back fallback_location: root_path, flash: {error: "The user cannot perform this action!"}
+      redirect_back fallback_location: root_path, flash: {error: t(".rollout_not_automatic")}
     end
   end
 
   def ensure_moveable
     if @store_rollout.stale?
-      redirect_back fallback_location: root_path, flash: {error: "The user cannot perform this action!"}
+      redirect_back fallback_location: root_path, flash: {error: t(".rollout_not_moveable")}
+    end
+  end
+
+  def ensure_user_controlled_rollout
+    unless @store_rollout.controllable_rollout?
+      redirect_back fallback_location: root_path, flash: {error: t(".rollout_not_controllable")}
     end
   end
 end

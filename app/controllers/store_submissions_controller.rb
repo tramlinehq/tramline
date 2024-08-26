@@ -19,9 +19,9 @@ class StoreSubmissionsController < SignedInApplicationController
     return mock_trigger_submission if sandbox_mode?
 
     if (result = Action.trigger_submission!(@submission)).ok?
-      redirect_back fallback_location: fallback_path, notice: t(".trigger.success")
+      redirect_back fallback_location: fallback_path, notice: t(".success")
     else
-      redirect_back fallback_location: fallback_path, flash: {error: t(".trigger.failure", errors: result.error.message)}
+      redirect_back fallback_location: fallback_path, flash: {error: t(".failure", errors: result.error.message)}
     end
   end
 
@@ -61,15 +61,15 @@ class StoreSubmissionsController < SignedInApplicationController
     if (result = Action.prepare_production_submission!(@submission)).ok?
       redirect_back fallback_location: fallback_path, notice: t(".prepare.success")
     else
-      redirect_back fallback_location: fallback_path, flash: {error: t(".prepare.failure", errors: result.error.message)}
+      redirect_back fallback_location: fallback_path, flash: {error: t(".failure", errors: result.error.message)}
     end
   end
 
   def retry
     if (result = Action.retry_submission!(@submission)).ok?
-      redirect_back fallback_location: fallback_path, notice: t(".retry.success")
+      redirect_back fallback_location: fallback_path, notice: t(".success")
     else
-      redirect_back fallback_location: fallback_path, flash: {error: t(".retry.failure", errors: result.error.message)}
+      redirect_back fallback_location: fallback_path, flash: {error: t(".failure", errors: result.error.message)}
     end
   end
 
@@ -85,7 +85,7 @@ class StoreSubmissionsController < SignedInApplicationController
 
   def ensure_actionable
     unless @submission.actionable?
-      redirect_back fallback_location: root_path, flash: {error: t(".prepare.submission_not_active")}
+      redirect_back fallback_location: root_path, flash: {error: t(".submission_not_active")}
     end
   end
 

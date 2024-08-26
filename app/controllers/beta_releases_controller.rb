@@ -17,10 +17,11 @@ class BetaReleasesController < SignedInApplicationController
     if (result = Action.start_beta_release!(@release_platform_run, build_id, commit_id)).ok?
       redirect_back fallback_location: root_path, notice: t(".success")
     else
-      Rails.logger.error(result.error)
-      redirect_back fallback_location: root_path, flash: {error: t(".failure")}
+      redirect_back fallback_location: root_path, flash: {error: t(".failure", errors: result.error.message)}
     end
   end
+
+  private
 
   def default_params
     params.require(:pre_prod_release).permit(:build_id, :commit_id)

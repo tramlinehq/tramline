@@ -1,9 +1,24 @@
 en:
+  release_metadata:
+    metadata_not_editable: "Cannot update the release metadata once the production release has begun."
+    update:
+      success: "Release metadata was successfully updated."
+    update_all:
+      success: "Release metadata was successfully updated."
+      generic_failure: "Could not save the release metadata. Please try again."
+  production_releases:
+    create:
+      success: "Production release was successfully created."
+      failure: "Failed to create production release due to %{errors}"
   staged_rollout:
     ios:
       checkbox: "Enable Phased Release"
     android:
       checkbox: "Enable Staged Rollout"
+  beta_releases:
+    create:
+      success: "Beta release was successfully created."
+      failure: "Failed to create beta release due to %{errors}."
   release_health_rules:
     create:
       success: "Rule was successfully created."
@@ -16,9 +31,19 @@ en:
       success: "Release Index config was successfully updated."
       failure: "Failed to update config: %{errors}"
   store_submissions:
+    trigger:
+      success: "Submission was successfully started."
+      failure: "Failed to start submission due to %{errors}"
+    retry:
+      success: "Submission was successfully retried."
+      failure: "Failed to retry submission due to %{errors}"
+    submission_not_active: "Submission is not active."
+    submission_not_retryable: "Submission is not retryable."
     prepare:
       success: "The new release has begun preparing."
       unstartable: "This release can not be prepared for submission."
+      prepare:
+        failure: "Failed to prepare submission due to %{errors}"
     submit_for_review:
       success: "The release has been submitted for review!"
       failure: "Failed to submit for review due to %{errors}"
@@ -37,35 +62,43 @@ en:
       invalid_build: "The build is not valid to start a submission."
   store_rollouts:
     increase:
-      success: "Increased the rollout!"
-      failure: "Failed to increase the rollout. Please retry!"
+      success: "Rollout was successfully increased."
+      failure: "Failed to increase rollout due to %{errors}"
     pause:
-      success: "Paused the rollout!"
-      failure: "Failed to pause the rollout. Please retry!"
+      success: "Rollout was successfully paused."
+      failure: "Failed to pause rollout due to %{errors}"
     resume:
-      success: "Resumed the rollout!"
-      failure: "Failed to resume the rollout. Please retry!"
+      success: "Rollout was successfully resumed."
+      failure: "Failed to resume rollout due to %{errors}"
     halt:
-      success: "Halted the rollout!"
-      failure: "Failed to halt the rollout. Please retry!"
+      success: "Rollout was successfully halted."
+      failure: "Failed to halt rollout due to %{errors}"
     fully_release:
-      success: "Fully released the rollout!"
-      failure: "Failed to fully release the rollout. Please retry!"
+      success: "Rollout was fully released."
+      failure: "Failed to fully release rollout due to %{errors}"
+    start:
+      success: "Rollout was successfully started."
+      failure: "Failed to start rollout due to %{errors}"
+    rollout_not_controllable: "Rollout is not controllable."
+    rollout_not_automatic: "Rollout is not automatic."
+    rollout_not_moveable: "Rollout is not moveable."
   workflow_runs:
     trigger:
-      success: "Triggered workflow run."
+      success: "Workflow run was successfully triggered."
+      failure: "Failed to trigger the workflow due to %{errors}"
     retry:
-      success: "CI workflow retried!"
+      success: "Workflow run was successfully retried."
       error: "Failed to retry the CI workflow! Contact support if the issue persists."
   authentication:
     sso:
       sessions:
         create:
-            no_account: "No Single Sign-On account found."
-            connect_failure: "Failed to connect to the Single Sign-On provider."
-            failure: "Failed to login via Single Sign-On! Please contact support if the issue persists."
+          no_account: "No Single Sign-On account found."
+          connect_failure: "Failed to connect to the Single Sign-On provider."
+          failure: "Failed to login via Single Sign-On! Please contact support if the issue persists."
         saml_redeem:
-            failure: "Failed to accept the response from SSO provider."
+          failure: "Failed to accept the response from SSO provider."
+
   activerecord:
     models:
       slack_integration: "Slack"
@@ -369,6 +402,7 @@ en:
               invalid: "can only contain alphanumerics, underscores and hyphens"
             trigger_rule_expressions:
               duplicate_metrics: "cannot have multiple health conditions with the same metric"
+
   invitation:
     flash:
       invite_issued: "Invitation issued"
@@ -403,6 +437,7 @@ en:
   mailer:
     generic:
       team_name: "The Tramline team"
+
   errors:
     format: "%{attribute} → %{message}"
     messages:
@@ -432,6 +467,7 @@ en:
         password_strength: "Choose a stronger password. Try a mix of letters, numbers, and symbols. <a class='underline' href='https://www.useapassphrase.com'>Use a passphrase</a> can be quite helpful."
       not_authorized_policy: "Not Authorized %{model} on %{query} action"
       not_logged_in: "You must be logged in to access this page"
+
   charts:
     release_summary:
       stability_contributors:
@@ -494,10 +530,3 @@ en:
         title: "Release stability fixes"
         scope: "Last 6 releases. Commits after release start per team."
         help_text: "These are the changes made to the release branch after the release has started by members in these respective teams.\n\nThis is a good indicator of how much the team is involved in the release stability."
-  submissions:
-    trigger:
-      success: "Started the submission!"
-  pre_prod_release:
-    create_beta:
-      success: "Kicked off the beta release!"
-      failure: "Failed to start the beta release"

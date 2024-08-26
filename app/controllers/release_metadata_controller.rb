@@ -26,7 +26,7 @@ class ReleaseMetadataController < SignedInApplicationController
     @release_metadatum = ReleaseMetadata.find(params[:id])
 
     if @release_metadatum.update(release_metadata_params)
-      redirect_to release_path(@release), notice: "Release metadata was successfully updated."
+      redirect_to release_path(@release), notice: t(".success")
     else
       render :edit, status: :unprocessable_entity
     end
@@ -42,7 +42,7 @@ class ReleaseMetadataController < SignedInApplicationController
 
     if ios_id.blank? && android_id.blank?
       set_metadata
-      flash.now[:error] = "Could not save the release metadata. Please try again."
+      flash.now[:error] = t(".generic_failure")
 
       render :index, status: :unprocessable_entity
       return
@@ -57,7 +57,7 @@ class ReleaseMetadataController < SignedInApplicationController
         ios_metadata.update!(ios_params) if ios_id.present?
       end
 
-      redirect_to release_metadata_edit_path(@release), notice: "Release metadata was successfully updated."
+      redirect_to release_metadata_edit_path(@release), notice: t(".success")
     rescue ActiveRecord::RecordInvalid
       set_metadata
       flash.now[:error] ||= []
@@ -106,7 +106,7 @@ class ReleaseMetadataController < SignedInApplicationController
   def ensure_editable
     unless @release_platform_run.metadata_editable?
       redirect_back fallback_location: release_path(@release),
-        flash: {error: "Cannot update the release metadata once the production release has begun."}
+        flash: {error: t(".metadata_not_editable")}
     end
   end
 end

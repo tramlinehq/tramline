@@ -11,8 +11,7 @@ class ProductionReleasesController < SignedInApplicationController
     if result.ok?
       redirect_back fallback_location: root_path, notice: t(".success")
     else
-      Rails.logger.error(result.error)
-      redirect_back fallback_location: root_path, flash: {error: t(".failure")}
+      redirect_back fallback_location: root_path, flash: {error: t(".failure", errors: result.error.message)}
     end
   end
 
