@@ -10,12 +10,12 @@
 #  commit_hash             :string           not null, indexed => [release_id]
 #  message                 :string
 #  parents                 :jsonb
-#  timestamp               :datetime         not null
+#  timestamp               :datetime         not null, indexed => [release_id]
 #  url                     :string
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_queue_id          :uuid             indexed
-#  release_id              :uuid             indexed => [commit_hash]
+#  release_id              :uuid             indexed => [commit_hash], indexed => [timestamp]
 #  release_platform_id     :uuid             indexed
 #  release_platform_run_id :uuid             indexed
 #
