@@ -339,6 +339,7 @@ en:
             key_id:
               app_not_found: "we could not verify the bundle identifier against the credentials, please check!"
               unknown_failure: "an unrecognized error occurred connecting to App Store, please try again!"
+              unauthorized: "you don't have permissions to the access the App Store Connect account, please check your key!"
         bitrise_integration:
           attributes:
             access_token:
