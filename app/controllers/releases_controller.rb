@@ -105,7 +105,7 @@ class ReleasesController < SignedInApplicationController
   end
 
   def destroy
-    @release.stop!
+    Coordinators::StopRelease.call(@release)
     redirect_to train_path, notice: "The release was stopped."
   end
 
