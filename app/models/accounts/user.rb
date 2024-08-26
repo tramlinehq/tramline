@@ -161,6 +161,7 @@ class Accounts::User < ApplicationRecord
     access_for(organization)&.team
   end
 
+  # TODO: [nplus1]
   def writer_for?(organization)
     access_for(organization).writer?
   end

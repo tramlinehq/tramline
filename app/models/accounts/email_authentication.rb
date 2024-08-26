@@ -48,6 +48,7 @@ class Accounts::EmailAuthentication < ApplicationRecord
     email
   end
 
+  # TODO: [nplus1]
   def active_for_authentication?
     super && email_auth_allowed?
   end
