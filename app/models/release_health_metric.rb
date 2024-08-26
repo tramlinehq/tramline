@@ -63,7 +63,7 @@ class ReleaseHealthMetric < ApplicationRecord
   end
 
   def check_release_health
-    return if production_release.present? # TODO: [V2] implement health checks for v2 releases
+    return if production_release.present? # TODO: [V2] [post-alpha] implement health checks for v2 releases
     return if release_health_rules.blank?
     release_health_rules.each do |rule|
       create_health_event(rule)

@@ -15,22 +15,7 @@
         <% end %>
       <% end %>
 
-      <% if component.platform_runs.any? { |sr| sr.external_builds.exists? } %>
-        <% component.runs do |release_platform_run| %>
-          <%= render V2::SectionComponent.new(title: "Build stats", style: :titled, size: :compact) do %>
-            <% if release_platform_run.internal_builds.any? { |build| build.metadata.present? } %>
-              <div>
-                <% "TODO: [V2] Show build health here" %></div>
-            <% else %>
-              <%= render V2::EmptyStateComponent.new(
-                title: "No stats for this platform",
-                text: "Please send build metadata to Tramline to see the build stats.",
-                banner_image: "v2/drill.svg",
-                type: :subdued) %>
-            <% end %>
-          <% end %>
-        <% end %>
-      <% end %>
+      <-- TODO: [V2] [post-alpha] Show build stats here -->
 
       <% component.runs do |release_platform_run| %>
         <% previous_betas = previous_beta_releases(release_platform_run) %>

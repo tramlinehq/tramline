@@ -39,7 +39,6 @@ class V2::BaseReleaseComponent < V2::BaseComponent
     message + "Are you sure you want to stop the release?"
   end
 
-  # TODO: [V2] I don't think this is being used in the v2 stuff, consider removing - kit
   memoize def status
     return RELEASE_STATUS.fetch(:upcoming) if @release.upcoming?
     RELEASE_STATUS.fetch(@release.status.to_sym)

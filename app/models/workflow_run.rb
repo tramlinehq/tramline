@@ -207,7 +207,7 @@ class WorkflowRun < ApplicationRecord
 
   def workflow_inputs
     data = {version_code: build.build_number, build_version: release_version}
-    data[:build_notes] = triggering_release.tester_notes if organization.build_notes_in_workflow? # TODO: [v2] deprecate this feature flag
+    data[:build_notes] = triggering_release.tester_notes if organization.build_notes_in_workflow?
     data
   end
 

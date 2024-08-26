@@ -252,13 +252,6 @@ class AppStoreSubmission < StoreSubmission
 
   private
 
-  def reset_store_info!
-    self.store_release = nil
-    self.store_status = nil
-    self.store_link = nil
-    save!
-  end
-
   def poll_external_status
     StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_later(id, can_retry: true)
   end
@@ -307,7 +300,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def update_store_version
-    # TODO: [V2] update store version details when release metadata changes or build is updated
+    # TODO: [V2] [post-alpha] update store version details when release metadata changes or build is updated
     # update whats new, build
   end
 

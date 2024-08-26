@@ -5,7 +5,7 @@ class V2::ReleaseMonitoringComponent < V2::BaseComponent
     default: {cols: 3}
   }
 
-  # TODO: [V2] Add release health events here
+  # TODO: [V2] [post-alpha] Add release health events here
   def initialize(store_rollout:, metrics: METRICS, size: :default, num_events: 3)
     raise ArgumentError, "metrics must be one of #{METRICS}" unless (metrics - METRICS).empty?
 

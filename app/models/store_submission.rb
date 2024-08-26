@@ -120,6 +120,13 @@ class StoreSubmission < ApplicationRecord
 
   protected
 
+  def reset_store_info!
+    self.store_release = nil
+    self.store_status = nil
+    self.store_link = nil
+    save!
+  end
+
   def set_failure_reason(args = nil)
     self.failure_reason = args&.fetch(:reason, :unknown_failure)
   end
