@@ -10,12 +10,7 @@ class ReleaseMetadataController < SignedInApplicationController
   before_action :ensure_editable, only: %i[edit update]
 
   def index
-    @active_languages = @release.active_languages
-    @language = params[:language] || @active_languages.first
-    @stream_id = "release-metadata"
-
-    @ios_metadata = @release.ios_release_platform_run&.metadata_for(@language)
-    @android_metadata = @release.android_release_platform_run&.metadata_for(@language)
+    set_metadata
 
     respond_to do |format|
       format.html
@@ -46,6 +41,9 @@ class ReleaseMetadataController < SignedInApplicationController
     android_id = android_params&.delete(:id)
 
     if ios_id.blank? && android_id.blank?
+      set_metadata
+      flash.now[:error] = "Could not save the release metadata. Please try again."
+
       render :index, status: :unprocessable_entity
       return
     end
@@ -55,17 +53,31 @@ class ReleaseMetadataController < SignedInApplicationController
 
     begin
       ReleaseMetadata.transaction do
-        android_metadata.update(android_params) if android_id.present?
-        ios_metadata.update(ios_params) if ios_id.present?
+        android_metadata.update!(android_params) if android_id.present?
+        ios_metadata.update!(ios_params) if ios_id.present?
       end
 
       redirect_to release_metadata_edit_path(@release), notice: "Release metadata was successfully updated."
     rescue ActiveRecord::RecordInvalid
+      set_metadata
+      flash.now[:error] ||= []
+      flash.now[:error] << android_metadata&.errors&.full_messages&.to_sentence
+      flash.now[:error] << ios_metadata&.errors&.full_messages&.to_sentence
+
       render :index, status: :unprocessable_entity
     end
   end
 
   private
+
+  def set_metadata
+    @active_languages = @release.active_languages
+    @language = params[:language] || @active_languages.first
+    @stream_id = "release-metadata"
+
+    @ios_metadata = @release.ios_release_platform_run&.metadata_for(@language, :ios)
+    @android_metadata = @release.android_release_platform_run&.metadata_for(@language, :android)
+  end
 
   def release_metadata_params
     params.require(:release_metadata).permit(:release_notes, :promo_text)

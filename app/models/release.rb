@@ -488,6 +488,7 @@ class Release < ApplicationRecord
       .map(&:locale)
       .map { |locale_tag| AppStores::Localizable.supported_store_language(locale_tag) }
       .uniq
+      .sort
   end
 
   def ios_release_platform_run

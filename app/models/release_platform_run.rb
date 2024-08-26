@@ -105,8 +105,8 @@ class ReleasePlatformRun < ApplicationRecord
     STATES.slice(:created, :on_track).value?(status)
   end
 
-  def metadata_for(language)
-    locale_tag = AppStores::Localizable.supported_locale_tag(language, :ios)
+  def metadata_for(language, platform)
+    locale_tag = AppStores::Localizable.supported_locale_tag(language, platform)
     release_metadata&.find_by(locale: locale_tag)
   end
 
