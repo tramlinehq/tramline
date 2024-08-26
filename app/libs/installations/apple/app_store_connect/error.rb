@@ -123,11 +123,11 @@ module Installations
     end
 
     def code
-      error["code"]
+      error&.fetch("code", nil)
     end
 
     def resource
-      error["resource"]
+      error&.fetch("resource", nil)
     end
 
     def log
