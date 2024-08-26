@@ -16,6 +16,8 @@ class Coordinators::CreateBetaRelease
   end
 
   def call
+    return unless release_platform_run.on_track?
+
     transaction do
       beta_release = release_platform_run.beta_releases.new(config:, previous:)
 

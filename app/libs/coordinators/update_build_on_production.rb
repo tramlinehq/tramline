@@ -10,7 +10,7 @@ class Coordinators::UpdateBuildOnProduction
   end
 
   def call
-    return unless production_release.production?
+    return unless production_release.actionable?
     return unless production_release.inflight?
 
     with_lock do

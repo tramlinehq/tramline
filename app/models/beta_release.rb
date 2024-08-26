@@ -43,6 +43,7 @@ class BetaRelease < PreProdRelease
   end
 
   def new_build_available?
+    return unless release_platform_run.on_track?
     return unless carried_over?
     release_platform_run.latest_internal_release(finished: true) != parent_internal_release
   end
@@ -52,6 +53,7 @@ class BetaRelease < PreProdRelease
   end
 
   def new_commit_available?
+    return unless release_platform_run.on_track?
     return if carried_over?
     release_platform_run.last_commit != commit
   end

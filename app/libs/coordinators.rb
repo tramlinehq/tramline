@@ -130,6 +130,7 @@ module Coordinators
 
     def self.retry_submission!(submission)
       Res.new do
+        raise unless submission.actionable?
         raise unless submission.retryable?
         submission.retry!
       end
@@ -145,6 +146,7 @@ module Coordinators
 
     def self.prepare_production_submission!(submission)
       Res.new do
+        raise unless submission.actionable?
         raise unless submission.editable?
         submission.start_prepare!
         submission.notify!("Production submission started", :production_submission_started, submission.notification_params)
@@ -153,6 +155,7 @@ module Coordinators
 
     def self.start_production_review!(submission)
       Res.new do
+        raise unless submission.actionable?
         raise unless submission.editable?
         submission.start_submission!
       end
@@ -160,6 +163,7 @@ module Coordinators
 
     def self.cancel_production_review!(submission)
       Res.new do
+        raise unless submission.actionable?
         raise unless submission.editable?
         submission.start_cancellation!
         submission.notify!("Production submission cancelled", :production_submission_cancelled, submission.notification_params)
@@ -167,6 +171,7 @@ module Coordinators
     end
 
     def self.start_the_store_rollout!(rollout)
+      return Res.new { raise } unless rollout.actionable?
       return Res.new { raise } if rollout.stale?
       return Res.new { raise } unless rollout.created?
       rollout.start_release!
@@ -175,6 +180,7 @@ module Coordinators
     end
 
     def self.increase_the_store_rollout!(rollout)
+      return Res.new { raise } unless rollout.actionable?
       return Res.new { raise } if rollout.stale?
       return Res.new { raise } unless rollout.started?
       rollout.move_to_next_stage!
@@ -183,6 +189,7 @@ module Coordinators
     end
 
     def self.pause_the_store_rollout!(rollout)
+      return Res.new { raise } unless rollout.actionable?
       return Res.new { raise } if rollout.stale?
       return Res.new { raise } unless rollout.started?
       rollout.pause_release!
@@ -191,6 +198,7 @@ module Coordinators
     end
 
     def self.resume_the_store_rollout!(rollout)
+      return Res.new { raise } unless rollout.actionable?
       return Res.new { raise } if rollout.stale?
       return Res.new { raise } unless rollout.halted?
       rollout.resume_release!
@@ -199,6 +207,7 @@ module Coordinators
     end
 
     def self.halt_the_store_rollout!(rollout)
+      return Res.new { raise } unless rollout.actionable?
       return Res.new { raise } if rollout.stale?
       return Res.new { raise } unless rollout.started?
       rollout.halt_release!
@@ -207,6 +216,7 @@ module Coordinators
     end
 
     def self.fully_release_the_store_rollout!(rollout)
+      return Res.new { raise } unless rollout.actionable?
       return Res.new { raise } if rollout.stale?
       return Res.new { raise } unless rollout.started?
       rollout.release_fully!

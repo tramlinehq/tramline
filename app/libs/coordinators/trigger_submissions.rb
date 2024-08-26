@@ -10,6 +10,7 @@ class Coordinators::TriggerSubmissions
   end
 
   def call
+    return unless @workflow_run.release_platform_run.on_track?
     workflow_run.build.attach_artifact!
     workflow_run.triggering_release.trigger_submissions!
   rescue => ex

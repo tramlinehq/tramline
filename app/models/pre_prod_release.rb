@@ -57,7 +57,9 @@ class PreProdRelease < ApplicationRecord
     update!(status: STATES[:failed])
   end
 
-  def actionable? = created?
+  def actionable?
+    created? && release_platform_run.on_track?
+  end
 
   def workflow_run
     triggered_workflow_run || parent_internal_release&.workflow_run
@@ -80,6 +82,8 @@ class PreProdRelease < ApplicationRecord
   end
 
   def rollout_complete!(submission)
+    return unless actionable?
+
     next_submission_config = conf.submissions.fetch_by_number(submission.sequence_number + 1)
     if next_submission_config
       trigger_submission!(next_submission_config)
