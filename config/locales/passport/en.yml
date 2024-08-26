@@ -66,6 +66,8 @@ en:
     beta_release:
       created_html: 'Started a new beta release step for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a>'
       finished_html: 'Finished the beta release for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a>'
+    production_release:
+      finished_html: 'Finished the production release for <span class="emphasize">%{version} (%{build_number})</span>'
     workflow_run:
       triggered_html: 'A new %{kind} workflow run was triggered for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name}</span>'
       retried_html: 'The workflow run <a class="emphasize-link" href="%{url}">#%{ref}</a> was retried for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name} (%{build_number})</span>'
@@ -97,6 +99,7 @@ en:
       started_html: 'Started rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track at <span class="emphasize">%{rollout_percentage}%</span>'
       updated_html: 'Updated the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track to <span class="emphasize">%{rollout_percentage}%</span>'
       halted_html: 'Halted the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track at <span class="emphasize">%{rollout_percentage}%</span>'
+      resumed_html: 'Resumed the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track at <span class="emphasize">%{rollout_percentage}%</span>'
       completed_html: 'Completed the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track at <span class="emphasize">%{rollout_percentage}%</span>'
       fully_released_html: 'Fully released <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track from <span class="emphasize">%{rollout_percentage}%</span>'
       finished_manually_html: 'Marked the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track as finished manually'

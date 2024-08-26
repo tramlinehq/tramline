@@ -23,6 +23,7 @@ class PlayStoreRollout < StoreRollout
   STAMPABLE_REASONS = %w[
     started
     updated
+    resumed
     halted
     completed
     fully_released
