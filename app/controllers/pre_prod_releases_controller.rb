@@ -4,6 +4,7 @@ class PreProdReleasesController < SignedInApplicationController
   before_action :set_app
 
   def changes_since_previous
+    @commits = @pre_prod_release.commits_since_previous
   end
 
   def set_pre_prod_release

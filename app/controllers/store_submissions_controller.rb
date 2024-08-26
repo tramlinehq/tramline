@@ -10,8 +10,8 @@ class StoreSubmissionsController < SignedInApplicationController
   before_action :ensure_reviewable, only: [:submit_for_review]
   before_action :ensure_cancellable, only: [:cancel]
 
-  def edit_all
-    @release = Release.friendly.find(params[:release_id])
+  def index
+    live_release!
     @app = @release.app
   end
 

@@ -7,8 +7,8 @@ class StoreRolloutsController < SignedInApplicationController
   before_action :ensure_user_controlled_rollout, only: [:increase, :halt]
   before_action :ensure_automatic_rollout, only: [:pause]
 
-  def edit_all
-    @release = Release.friendly.find(params[:release_id])
+  def index
+    live_release!
     @app = @release.app
   end
 

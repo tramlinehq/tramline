@@ -1,5 +1,5 @@
 <% component = V2::EnhancedTurboFrameComponent.new(dom_id(@pre_prod_release, :changes_since_previous)) %>
 <% component.with_loading_indicator %>
 <%= render component do %>
-  <%= render partial: "shared/divide_collection", locals: { collection: render(V2::CommitComponent.with_collection(@pre_prod_release.commits_since_previous)) } %>
+  <%= render partial: "shared/divide_collection", locals: { collection: render(V2::CommitComponent.with_collection(@commits)) } %>
 <% end %>

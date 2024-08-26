@@ -6,6 +6,32 @@ module Tabbable
     helper_method :live_release_tab_configuration, :current_overall_status
   end
 
+  def live_release!
+    @release ||=
+      Release
+        .includes(
+          :all_commits,
+          train: [:app],
+          release_platform_runs: [
+            :internal_builds,
+            :beta_releases,
+            :production_store_rollouts,
+            inflight_production_release: [store_submission: :store_rollout],
+            active_production_release: [store_submission: :store_rollout],
+            finished_production_release: [store_submission: :store_rollout],
+            production_releases: [store_submission: [:store_rollout]],
+            internal_releases: [:store_submissions, triggered_workflow_run: {build: [:artifact]}],
+            release_platform: {app: [:integrations]}
+          ]
+        )
+        .friendly
+        .find(params[:id] || params[:release_id])
+  end
+
+  memoize def step_statuses
+    @release.step_statuses
+  end
+
   memoize def live_release_tab_configuration
     sections = {}
     statuses = step_statuses[:statuses]
@@ -29,7 +55,7 @@ module Tabbable
       release_candidate: Release::SECTIONS[:release_candidate],
       soak_period: Release::SECTIONS[:soak_period]
     }
-    sections[:stability][:internal_builds][:path] = internal_builds_release_path(@release)
+    sections[:stability][:internal_builds][:path] = release_internal_builds_path(@release)
     sections[:stability][:internal_builds][:icon] = "v2/drill.svg"
     sections[:stability][:internal_builds][:position] = 3
     sections[:stability][:internal_builds][:status] = statuses[:internal_builds]
@@ -38,7 +64,7 @@ module Tabbable
     sections[:stability][:regression_testing][:position] = 4
     sections[:stability][:regression_testing][:status] = statuses[:regression_testing]
     sections[:stability][:regression_testing][:unavailable] = true
-    sections[:stability][:release_candidate][:path] = release_candidates_release_path(@release)
+    sections[:stability][:release_candidate][:path] = release_release_candidates_path(@release)
     sections[:stability][:release_candidate][:icon] = "v2/gallery_horizontal_end.svg"
     sections[:stability][:release_candidate][:position] = 5
     sections[:stability][:release_candidate][:status] = statuses[:release_candidate]
@@ -86,9 +112,5 @@ module Tabbable
 
   memoize def current_overall_status
     step_statuses[:current_overall_status]
-  end
-
-  memoize def step_statuses
-    @release.step_statuses
   end
 end

@@ -55,8 +55,8 @@
           <%= status_badge("backmerge failed", :inert) %>
         <% end %>
 
-        <% if team.present? %>
-          <%= render V2::TeamPillComponent.new(team) if current_organization.teams_supported? %>
+        <% if teams_supported? && team.present? %>
+          <%= render V2::TeamPillComponent.new(team)%>
         <% end %>
       </div>
     <% end %>

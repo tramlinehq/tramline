@@ -24,6 +24,6 @@ class WorkflowRunsController < SignedInApplicationController
   end
 
   def internal_builds_path
-    internal_builds_release_path(@workflow_run.release)
+    release_internal_builds_path(@workflow_run.release)
   end
 end

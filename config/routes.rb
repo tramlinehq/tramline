@@ -84,9 +84,7 @@ Rails.application.routes.draw do
         member do
           get :overview
           get :changeset_tracking
-          get :internal_builds
           get :regression_testing
-          get :release_candidates
           get :soak
         end
 
@@ -96,10 +94,12 @@ Rails.application.routes.draw do
           end
         end
 
-        get :edit, to: "store_submissions#edit_all", path: :store_submission, as: :store_submission_edit
-        get :edit, to: "store_rollouts#edit_all", path: :rollout, as: :staged_rollout_edit
-        get :edit, to: "release_metadata#edit_all", path: :metadata, as: :metadata_edit
+        get :edit, to: "release_metadata#index", path: :metadata, as: :metadata_edit
         patch :update, to: "release_metadata#update_all", path: :metadata, as: :metadata_update
+        get :index, to: "beta_releases#index", as: :release_candidates, path: :release_candidates
+        get :edit, to: "store_submissions#index", path: :store_submission, as: :store_submission_edit
+        get :edit, to: "store_rollouts#index", path: :rollout, as: :staged_rollout_edit
+        get :index, to: "internal_releases#index", as: :internal_builds, path: :internal_builds
 
         resources :release_platforms, shallow: false, only: [] do
           resources :release_metadata, only: %i[edit update]

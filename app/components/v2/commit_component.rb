@@ -9,7 +9,7 @@ class V2::CommitComponent < V2::BaseComponent
   end
 
   attr_reader :commit
-  delegate :message, :author_name, :author_email, :author_login, :author_url, :timestamp, :short_sha, :url, :team, to: :commit
+  delegate :message, :author_name, :author_email, :author_login, :author_url, :timestamp, :short_sha, :url, to: :commit
 
   def author_link
     author_url || "mailto:#{author_email}"
@@ -32,5 +32,9 @@ class V2::CommitComponent < V2::BaseComponent
   def outer_classes
     return "" unless detailed?
     OUTER_CLASSES
+  end
+
+  def team
+    @team ||= @commit.team
   end
 end

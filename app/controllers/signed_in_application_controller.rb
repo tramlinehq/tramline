@@ -30,7 +30,8 @@ class SignedInApplicationController < ApplicationController
     :billing_link,
     :logout_path,
     :ci_cd_provider_logo,
-    :vcs_provider_logo
+    :vcs_provider_logo,
+    :teams_supported?
 
   rescue_from NotAuthorizedError, with: :user_not_authorized
 
@@ -151,6 +152,10 @@ class SignedInApplicationController < ApplicationController
 
   def ci_cd_provider_logo
     @ci_cd_provider_logo ||= "integrations/logo_#{@app.ci_cd_provider}.png"
+  end
+
+  def teams_supported?
+    @teams_supported ||= current_organization&.teams_supported?
   end
 
   def default_timezones

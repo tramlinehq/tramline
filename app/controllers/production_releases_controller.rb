@@ -17,6 +17,7 @@ class ProductionReleasesController < SignedInApplicationController
   end
 
   def changes_since_previous
+    @commits = @prod_release.commits_since_previous
   end
 
   def default_params
