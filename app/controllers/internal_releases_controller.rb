@@ -5,7 +5,6 @@ class InternalReleasesController < SignedInApplicationController
   def index
     live_release!
     @app = @release.app
-    render V2::LiveRelease::InternalBuildsComponent.new(@release)
   end
 
   def default_params

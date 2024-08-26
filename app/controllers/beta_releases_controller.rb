@@ -6,7 +6,6 @@ class BetaReleasesController < SignedInApplicationController
   def index
     live_release!
     @app = @release.app
-    render V2::LiveRelease::ReleaseCandidatesComponent.new(@release)
   end
 
   def create
