@@ -60,6 +60,10 @@ class ReleasePresenter < SimpleDelegator
     badge
   end
 
+  def backmerge_pr_count
+    backmerge_prs.size
+  end
+
   def commit_count
     [applied_commits.size, 1].max - 1
   end

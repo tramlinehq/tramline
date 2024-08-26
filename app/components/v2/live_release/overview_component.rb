@@ -22,12 +22,12 @@ class V2::LiveRelease::OverviewComponent < V2::BaseComponent
     to: :release
 
   def backmerge_summary
-    "#{release.backmerge_pr_count} merged, #{release.backmerge_failure_count} failed"
+    "#{backmerge_pr_count} merged, #{backmerge_failure_count} failed"
   end
 
   def team_stability_chart
     {
-      data: release.team_stability_commits&.reject { |_, value| value.zero? },
+      data: team_stability_commits&.reject { |_, value| value.zero? },
       colors: team_colors,
       type: "polar-area",
       value_format: "number",
