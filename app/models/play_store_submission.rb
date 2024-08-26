@@ -49,6 +49,7 @@ class PlayStoreSubmission < StoreSubmission
   }
   FINAL_STATES = %w[prepared]
   CHANGEABLE_STATES = %w[created preprocessing failed prepared]
+  MAX_NOTES_LENGTH = 500
 
   enum failure_reason: {
     unknown_failure: "unknown_failure"
@@ -181,7 +182,7 @@ class PlayStoreSubmission < StoreSubmission
   def prepare_for_release!
     return mock_prepare_for_release_for_play_store! if sandbox_mode?
 
-    result = provider.create_draft_release(submission_channel_id, build_number, version_name, release_notes, retry_on_review_fail: internal_channel?)
+    result = provider.create_draft_release(submission_channel_id, build_number, version_name, notes, retry_on_review_fail: internal_channel?)
     if result.ok?
       finish_prepare!
       update_external_status
@@ -236,12 +237,17 @@ class PlayStoreSubmission < StoreSubmission
     StoreSubmissions::PlayStore::PrepareForReleaseJob.perform_later(id)
   end
 
-  # TODO: implement build notes choice
+  def tester_notes
+    parent_release.tester_notes.truncate(MAX_NOTES_LENGTH)
+  end
+
   def release_notes
-    [{
-      language: release_metadatum.locale,
-      text: release_metadatum.release_notes
-    }]
+    release_metadata.map do |metadatum|
+      {
+        language: metadatum.locale,
+        text: metadatum.release_notes
+      }
+    end
   end
 
   def on_prepare!

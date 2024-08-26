@@ -38,7 +38,7 @@ class StoreSubmission < ApplicationRecord
   # rubocop:enable Rails/InverseOf
   belongs_to :build
 
-  delegate :release_metadatum, :train, :release, :app, :platform, to: :release_platform_run
+  delegate :release_metadata, :train, :release, :app, :platform, to: :release_platform_run
   delegate :project_link, :public_icon_img, to: :provider, allow_nil: true
   delegate :notify!, to: :train
   delegate :version_name, :build_number, to: :build
@@ -116,6 +116,22 @@ class StoreSubmission < ApplicationRecord
     else
       fail!
     end
+  end
+
+  def notes
+    if parent_release.release_notes?
+      release_notes
+    elsif parent_release.tester_notes?
+      tester_notes
+    end
+  end
+
+  def tester_notes
+    raise NotImplementedError
+  end
+
+  def release_notes
+    raise NotImplementedError
   end
 
   protected

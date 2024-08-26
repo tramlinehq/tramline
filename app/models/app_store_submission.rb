@@ -151,7 +151,7 @@ class AppStoreSubmission < StoreSubmission
   end
 
   def prepare_for_release!
-    result = provider.prepare_release(build_number, version_name, staged_rollout?, release_metadatum, true)
+    result = provider.prepare_release(build_number, version_name, staged_rollout?, notes, true)
 
     unless result.ok?
       case result.error.reason
@@ -251,6 +251,16 @@ class AppStoreSubmission < StoreSubmission
   end
 
   private
+
+  def release_notes
+    release_metadata.map do |metadata|
+      {
+        whats_new: metadata.release_notes,
+        promotional_text: metadata.promo_text,
+        locale: metadata.locale
+      }
+    end
+  end
 
   def poll_external_status
     StoreSubmissions::AppStore::UpdateExternalReleaseJob.perform_later(id, can_retry: true)

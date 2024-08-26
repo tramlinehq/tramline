@@ -41,6 +41,8 @@ class TestFlightSubmission < StoreSubmission
     failed: "failed"
   }
 
+  NOTES_MAX_LENGTH = 4000
+
   SubmissionNotInTerminalState = Class.new(StandardError)
 
   enum status: STATES
@@ -106,13 +108,12 @@ class TestFlightSubmission < StoreSubmission
   end
 
   def update_build_notes!
-    provider.update_release_notes(build_number, deployment_notes)
+    provider.update_release_notes(build_number, notes)
   end
 
   def on_submit_for_review!
     event_stamp!(reason: :submitted_for_review, kind: :notice, data: stamp_data)
     StoreSubmissions::TestFlight::UpdateExternalBuildJob.perform_async(id)
-    # notify!("Submitted for review!", :submit_for_review, notification_params)
   end
 
   def update_external_release
@@ -143,11 +144,12 @@ class TestFlightSubmission < StoreSubmission
 
   private
 
-  # TODO: Implement this
-  def deployment_notes
-    parent_release.tester_notes.truncate(ReleaseMetadata::NOTES_MAX_LENGTH)
-    # return step_run.build_notes.truncate(ReleaseMetadata::NOTES_MAX_LENGTH) if build_notes?
-    # release_metadatum.release_notes if release_notes?
+  def tester_notes
+    parent_release.tester_notes.truncate(NOTES_MAX_LENGTH)
+  end
+
+  def release_notes
+    release_platform_run.default_release_metadata&.release_notes&.truncate(NOTES_MAX_LENGTH)
   end
 
   def build_present_in_store?
@@ -172,7 +174,6 @@ class TestFlightSubmission < StoreSubmission
   def on_finish!
     event_stamp!(reason: :finished, kind: :success, data: stamp_data)
     parent_release.rollout_complete!(self)
-    # notify!("Finished!", :finished, notification_params)
   end
 
   def stamp_data

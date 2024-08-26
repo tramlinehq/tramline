@@ -81,7 +81,7 @@ en:
       triggered_html: 'Sending <span class="emphasize">%{version} (%{build_number})</span> to TestFlight groups <span class="emphasize">%{channels}</span>'
       finished_html: 'Sent <span class="emphasize">%{version} (%{build_number})</span> to TestFlight groups <span class="emphasize">%{channels}</span>'
       submitted_for_review_html: 'Submitted the TestFlight build for <span class="emphasize">%{version} (%{build_number})</span> for beta review'
-      review_rejected_html: 'Review rejected for the TestFlight build <span class="emphasize">%{version} (%{build_number})</span>'
+      review_rejected_html: 'Beta review rejected for the TestFlight build <span class="emphasize">%{version} (%{build_number})</span>'
       failed_html: 'Failed to send <span class="emphasize">%{version} (%{build_number})</span> to TestFlight groups <span class="emphasize">%{channels}</span>'
     play_store_submission:
       prepared_html: 'Prepared a new Play Store draft release for <span class="emphasize">%{version} (%{build_number})</span>'

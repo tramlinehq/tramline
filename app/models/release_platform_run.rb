@@ -197,6 +197,10 @@ class ReleasePlatformRun < ApplicationRecord
     release_metadata.where(locale: ReleaseMetadata::DEFAULT_LOCALES).first
   end
 
+  def default_release_metadata
+    release_metadata.where(default_locale: true).first
+  end
+
   def show_health?
     deployment_runs.any?(&:show_health?)
   end

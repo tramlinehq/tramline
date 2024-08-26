@@ -26,6 +26,8 @@
 class GoogleFirebaseSubmission < StoreSubmission
   include Sandboxable
 
+  MAX_NOTES_LENGTH = 16_380
+
   UploadNotComplete = Class.new(StandardError)
 
   STAMPABLE_REASONS = %w[
@@ -90,7 +92,7 @@ class GoogleFirebaseSubmission < StoreSubmission
 
     result = nil
     filename = build.artifact.file.filename.to_s
-    variant = nil # FIXME: attach it from the right place
+    variant = nil # TODO: [V2] [post-alpha] attach it from the right place
     build.artifact.with_open do |file|
       result = provider.upload(file, filename, platform:, variant:)
       unless result.ok?
@@ -116,9 +118,8 @@ class GoogleFirebaseSubmission < StoreSubmission
     StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_later(id, op_info.release.id)
   end
 
-  # TODO: [V2] get notes from somewhere
   def update_build_notes!(release_name)
-    provider.update_release_notes(release_name, "NOTES")
+    provider.update_release_notes(release_name, tester_notes)
   end
 
   def prepare_for_release!
@@ -141,6 +142,12 @@ class GoogleFirebaseSubmission < StoreSubmission
   def provider = app.firebase_build_channel_provider
 
   private
+
+  def tester_notes
+    parent_release.tester_notes.truncate(MAX_NOTES_LENGTH)
+  end
+
+  alias_method :release_notes, :tester_notes
 
   def prepare_and_update!(release_info)
     transaction do

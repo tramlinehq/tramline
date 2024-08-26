@@ -31,4 +31,8 @@ class InternalRelease < PreProdRelease
       Signal.internal_release_finished!(build)
     end
   end
+
+  def tester_notes? = true
+
+  def release_notes? = false
 end

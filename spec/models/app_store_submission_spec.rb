@@ -36,8 +36,7 @@ describe AppStoreSubmission do
       it "prepares the release" do
         submission.prepare_for_release!
 
-        release_metadatum = submission.release_platform_run.release_metadatum
-        expect(providable_dbl).to have_received(:prepare_release).with(build.build_number, build.version_name, true, release_metadatum, true).once
+        expect(providable_dbl).to have_received(:prepare_release).with(build.build_number, build.version_name, true, anything, true).once
       end
 
       it "marks the submission as prepared" do
