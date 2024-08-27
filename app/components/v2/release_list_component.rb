@@ -33,10 +33,6 @@ class V2::ReleaseListComponent < V2::BaseComponent
     train.releases.reorder("completed_at DESC").released.first
   end
 
-  def release_component(run)
-    V2::BaseReleaseComponent.new(run)
-  end
-
   def release_startable?
     app.ready? && release_options.present?
   end

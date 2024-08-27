@@ -29,25 +29,25 @@ class Queries::ReleaseBreakdown
   end
 
   def team_stability_commits
-    cache.fetch(cache_key(:team_stability_commits)) do
+    cache_fetch(:team_stability_commits) do
       release.stability_commits.count_by_team(release.organization)
     end
   end
 
   def team_release_commits
-    cache.fetch(cache_key(:team_release_commits)) do
+    cache_fetch(:team_release_commits) do
       release.release_changelog&.commits_by_team
     end
   end
 
   def hotfixes
-    cache.fetch(cache_key(:hotfixes)) do
+    cache_fetch(:hotfixes) do
       release.all_hotfixes.map { |r| [r.release_version, r.live_release_link] }.to_h
     end
   end
 
   def reldex
-    cache.fetch(cache_key(:reldex)) do
+    cache_fetch(:reldex) do
       release.index_score
     end
   end
@@ -71,5 +71,13 @@ class Queries::ReleaseBreakdown
 
   def cache_key(part)
     "release/#{@release_id}/#{part}"
+  end
+
+  def cache_fetch(part)
+    val = cache.fetch(cache_key(part))
+    return val if val.present?
+    val = yield
+    cache.write(cache_key(part), val)
+    val
   end
 end

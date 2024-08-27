@@ -1,17 +1,38 @@
-class V2::ReleaseOverviewComponent < V2::BaseReleaseComponent
+class V2::ReleaseOverviewComponent < V2::BaseComponent
   def initialize(release)
-    @release = release
-    super(@release)
+    @release = ReleasePresenter.new(release, self)
   end
 
   attr_reader :release
+  delegate :internal_notes,
+    :hotfixed_from,
+    :team_stability_commits,
+    :team_release_commits,
+    :backmerge_pr_count,
+    :backmerge_failure_count,
+    :display_start_time,
+    :display_end_time,
+    :duration,
+    :commit_count,
+    :hotfix?,
+    :hotfix_badge,
+    :release_status,
+    :release_branch,
+    :tag_name,
+    :continuous_backmerge?,
+    :release_pilot_avatar,
+    :release_pilot_name,
+    :branch_url,
+    :release_version,
+    :automatic?,
+    :tag_url,
+    :active?,
+    :reldex,
+    :scheduled_badge,
+    to: :release
 
   def show_release_unhealthy?
     release.show_health? && release.unhealthy?
-  end
-
-  def vcs_icon
-    "integrations/logo_#{release.train.vcs_provider}.png"
   end
 
   def striped_header
@@ -24,7 +45,7 @@ class V2::ReleaseOverviewComponent < V2::BaseReleaseComponent
     release.release_platform_runs.flat_map(&:release_version).uniq.size > 1
   end
 
-  def release_version(version)
+  def display_release_version(version)
     content_tag(:h1,
       version,
       class: "heading-2 text-main dark:text-white font-normal")

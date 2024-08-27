@@ -6,7 +6,7 @@
           <% if release_version_drift? %>
             <div class="flex items-center space-x-1">
               <%= render V2::IconComponent.new("v2/android.svg", size: :lg) %>
-              <%= release_version(android_release_version) %>
+              <%= display_release_version(android_release_version) %>
             </div>
 
             <div class="flex items-center">
@@ -15,13 +15,13 @@
 
             <div class="flex items-center space-x-1">
               <%= render V2::IconComponent.new("v2/ios.svg", size: :lg) %>
-              <%= release_version(ios_release_version) %>
+              <%= display_release_version(ios_release_version) %>
             </div>
           <% else %>
-            <%= release_version(release.release_version) %>
+            <%= display_release_version(release_version) %>
           <% end %>
 
-          <%= render V2::BadgeComponent.new(text: status.first, status: status.second) %>
+          <%= render V2::BadgeComponent.new(**release_status) %>
           <% if show_release_unhealthy? %>
             <%= render V2::BadgeComponent.new(text: "Release is unhealthy", status: :failure) %>
           <% end %>
@@ -48,13 +48,13 @@
       <div class="flex justify-start">
         <div class="mt-2 flex gap-y-1 gap-x-2">
           <%= render V2::HorizontalDataSetComponent.new(separator: :solid, bg_color: true) do |component| %>
-            <% component.with_data_set(title: "Started").with_content(start_time) %>
-            <% component.with_data_set(title: "Released").with_content(end_time) %>
+            <% component.with_data_set(title: "Started").with_content(display_start_time) %>
+            <% component.with_data_set(title: "Released").with_content(display_end_time) %>
             <% component.with_data_set(title: "Duration").with_content(duration) %>
             <% component.with_data_set(title: "Stability changes").with_content(commit_count) %>
-            <% if release_summary&.fetch(:reldex, nil) %>
+            <% if reldex %>
               <% component.with_data_set(title: "Reldex") do %>
-                <%= render V2::Reldex::StatusComponent.new(release:, reldex_score: release_summary[:reldex]) %>
+                <%= render V2::Reldex::StatusComponent.new(release:, reldex_score: reldex) %>
               <% end %>
             <% end %>
           <% end %>
@@ -70,7 +70,7 @@
                                              authz: false,
                                              size: :xxs,
                                              arrow: :none) do |b|
-            b.with_icon(vcs_icon, size: :sm)
+            b.with_icon(vcs_provider_logo, size: :sm)
           end %>
         <% end %>
         <% if tag_name.present? %>
@@ -81,7 +81,7 @@
                                              authz: false,
                                              size: :xxs,
                                              arrow: :none) do |b|
-            b.with_icon(vcs_icon, size: :sm)
+            b.with_icon(vcs_provider_logo, size: :sm)
           end %>
         <% end %>
       </div>

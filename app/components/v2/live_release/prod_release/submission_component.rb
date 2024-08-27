@@ -143,7 +143,7 @@ class V2::LiveRelease::ProdRelease::SubmissionComponent < V2::BaseComponent
   end
 
   def build_opts(default: nil)
-    options_for_select(all_builds.map { |b| [build_display_info(b), b.id] }, default.presence || all_builds.first)
+    options_for_select(all_builds.map { |b| [build_display_info(b), b.id] }, (default.presence || all_builds.first).id)
   end
 
   def border_style

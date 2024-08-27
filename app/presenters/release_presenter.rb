@@ -6,6 +6,19 @@ class ReleasePresenter < SimpleDelegator
   delegate :cross_platform?, to: :app
   delegate :automatic?, to: :train
 
+  RELEASE_STATUS = {
+    finished: {text: "Completed", status: :success},
+    stopped: {text: "Stopped", status: :failure},
+    created: {text: "Running", status: :ongoing},
+    on_track: {text: "Running", status: :ongoing},
+    upcoming: {text: "Upcoming", status: :inert},
+    post_release: {text: "Finalizing", status: :neutral},
+    post_release_started: {text: "Finalizing", status: :neutral},
+    post_release_failed: {text: "Finalizing", status: :neutral},
+    partially_finished: {text: "Partially Finished", status: :ongoing},
+    stopped_after_partial_finish: {text: "Stopped & Partially Finished", status: :failure}
+  }
+
   def initialize(release, view_context = nil)
     @view_context = view_context
     super(release)
@@ -26,8 +39,14 @@ class ReleasePresenter < SimpleDelegator
     message + "Are you sure you want to stop the release?"
   end
 
+  def release_status
+    return h.status_picker(RELEASE_STATUS, :upcoming) if upcoming?
+    h.status_picker(RELEASE_STATUS, status)
+  end
+
   memoize def breakdown
-    Queries::ReleaseBreakdown.new(id)
+    return Queries::ReleaseBreakdown.new(id) if is_v2?
+    Queries::ReleaseSummary.all(id)
   end
 
   memoize def platform_runs
@@ -38,7 +57,12 @@ class ReleasePresenter < SimpleDelegator
     release_version
   end
 
-  delegate :team_release_commits, :team_stability_commits, :reldex, to: :breakdown
+  def reldex
+    return breakdown.reldex if is_v2?
+    breakdown&.fetch(:reldex, nil)
+  end
+
+  delegate :team_release_commits, :team_stability_commits, to: :breakdown
 
   def hotfix_badge
     if hotfix?
@@ -69,8 +93,8 @@ class ReleasePresenter < SimpleDelegator
   end
 
   def interval
-    return start_time unless end_time
-    "#{start_time} — #{end_time}"
+    return display_start_time unless display_end_time
+    "#{display_start_time} — #{display_end_time}"
   end
 
   def display_start_time

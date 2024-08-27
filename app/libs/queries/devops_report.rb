@@ -57,7 +57,6 @@ class Queries::DevopsReport
 
   memoize def reldex_scores(last: 10)
     return if train.release_index.blank?
-
     releases_by_version(last).transform_values { {reldex: _1.first.index_score&.value} }
   end
 

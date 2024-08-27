@@ -15,6 +15,7 @@ class Coordinators::UpdateBuildOnProduction
 
     with_lock do
       return unless production_release.inflight?
+      return if production_release.build == build
 
       if submission.attach_build(build)
         production_release.update!(build:)

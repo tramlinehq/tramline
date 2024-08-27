@@ -139,4 +139,6 @@ class DevopsReportPresenter < SimpleDelegator
   def v1?
     !train.product_v2?
   end
+
+  delegate :present?, to: :all
 end
