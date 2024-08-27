@@ -2,7 +2,7 @@
 <% component.with_loading_indicator %>
 <%= render component do %>
   <% if @commits.blank? %>
-    <%= render V2::EmptyStateComponent.new(title: "No changes", text: "There are no changes since the previous release", banner_image: "v2/git_commit.svg", type: :subdued) %>
+    <%= render V2::EmptyStateComponent.new(title: "No changes", text: "There are no changes since the previous release", banner_image: "v2/git_commit.svg", type: :subdued, margin_top: false) %>
   <% else %>
     <%= render partial: "shared/divide_collection", locals: { collection: render(V2::CommitComponent.with_collection(@commits)) } %>
   <% end %>

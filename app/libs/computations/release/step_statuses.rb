@@ -46,12 +46,12 @@ class Computations::Release::StepStatuses
     return STATUS[:none] if all_platforms? { |rp| rp.latest_beta_release.blank? }
     return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_beta_release.blank? }
     return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_beta_release&.actionable? }
-    return STATUS[:ongoing] if all_platforms? { |rp| rp.latest_beta_release&.commit != rp.last_commit }
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_beta_release&.commit != rp.last_commit }
     STATUS[:success]
   end
 
   def notes_status
-    return STATUS[:ongoing] unless finished?
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.metadata_editable_v2? }
     STATUS[:success]
   end
 

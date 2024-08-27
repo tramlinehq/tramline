@@ -49,7 +49,8 @@ class AppStoreSubmission < StoreSubmission
   }
   FINAL_STATES = %w[approved]
   IMMUTABLE_STATES = %w[preparing approved submitting_for_review submitted_for_review cancelling]
-  CHANGEABLE_STATES = STATES.values - IMMUTABLE_STATES
+  PRE_PREPARE_STATES = %w[created preprocessing cancelled review_failed failed]
+  CHANGEABLE_STATES = %w[created preprocessing prepared cancelled review_failed failed]
   CANCELABLE_STATES = %w[submitted_for_review approved]
   STAMPABLE_REASONS = %w[
     prepare_release_failed
@@ -124,6 +125,8 @@ class AppStoreSubmission < StoreSubmission
   end
 
   after_create_commit :poll_external_status
+
+  def pre_review? = PRE_PREPARE_STATES.include?(status) && editable?
 
   def change_build? = CHANGEABLE_STATES.include?(status) && editable?
 

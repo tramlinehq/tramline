@@ -23,4 +23,8 @@ class V2::LiveRelease::MetadataComponent < V2::BaseComponent
     text = "No #{language} locale set for this platform. Please contact support if you'd like to get this added."
     V2::EmptyStateComponent.new(banner_image: "languages.svg", text: text, type: :subdued)
   end
+
+  def editable?
+    @release.release_platform_runs.any?(&:metadata_editable_v2?)
+  end
 end

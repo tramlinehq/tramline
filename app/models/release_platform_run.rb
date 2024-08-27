@@ -284,6 +284,13 @@ class ReleasePlatformRun < ApplicationRecord
     on_track? && !started_store_release?
   end
 
+  def metadata_editable_v2?
+    return unless active?
+    return false if active_production_release.present? && inflight_production_release.blank?
+
+    inflight_production_release.blank? || inflight_production_release.store_submission.pre_review?
+  end
+
   # FIXME: move to release and change it for proper movement UI
   def overall_movement_status
     steps.to_h do |step|

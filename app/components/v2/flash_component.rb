@@ -9,7 +9,7 @@ class V2::FlashComponent < V2::BaseComponent
 
     content_tag(:div) do
       @flash.each do |type, messages|
-        Array(messages).compact.each do |message|
+        Array(messages).compact_blank.each do |message|
           concat render(V2::AlertComponent.new(type:, title: message, dismissible: true, full_screen: @full_screen))
         end
       end

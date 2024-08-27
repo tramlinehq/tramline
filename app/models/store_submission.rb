@@ -72,6 +72,8 @@ class StoreSubmission < ApplicationRecord
     store_link || project_link
   end
 
+  def pre_review? = true
+
   def change_build? = raise NotImplementedError
 
   def reviewable? = raise NotImplementedError

@@ -48,6 +48,7 @@ class PlayStoreSubmission < StoreSubmission
     finished_manually: "finished_manually"
   }
   FINAL_STATES = %w[prepared]
+  PRE_PREPARE_STATES = %w[created preprocessing review_failed failed]
   CHANGEABLE_STATES = %w[created preprocessing failed prepared]
   MAX_NOTES_LENGTH = 500
 
@@ -105,6 +106,8 @@ class PlayStoreSubmission < StoreSubmission
     return true if finished_manually?
     FINAL_STATES.include?(status) && store_rollout.finished?
   end
+
+  def pre_review? = PRE_PREPARE_STATES.include?(status) && editable?
 
   def reviewable? = false
 

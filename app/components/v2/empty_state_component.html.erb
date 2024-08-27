@@ -1,5 +1,5 @@
 <% if giant? %>
-  <div class="flex justify-center mt-24">
+  <div class="flex justify-center <%= margin_top %>">
     <div class="flex flex-col justify-start mt-8">
       <h1 class="text-xl font-semibold text-main dark:text-white"><%= title %></h1>
       <div class="my-6 max-w-[200px] font-medium text-sm dark:text-main-300 text-secondary-50 mr-4">
@@ -12,7 +12,7 @@
     <%= image_tag(banner_image, width: 400, alt: "emptiness", class: "rounded-sm") %>
   </div>
 <% elsif subdued? %>
-  <div class="text-center px-4 mt-12 opacity-80">
+  <div class="text-center px-4 <%= margin_top %> opacity-80">
     <%= render V2::IconComponent.new(banner_image, size: :xl) %>
     <h2 class="text-lg font-semibold text-main dark:text-white"><%= title %></h2>
     <div class="my-2 text-sm text-secondary">

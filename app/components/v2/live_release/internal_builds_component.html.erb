@@ -18,6 +18,14 @@
         <% latest_release = latest_internal_release(release_platform_run) %>
         <% if latest_release.present? %>
           <%= render V2::LiveRelease::PreProdRelease::CurrentReleaseComponent.new(latest_release) %>
+        <% elsif configured?(release_platform_run) %>
+          <%= render V2::EmptyStateComponent.new(
+            title: "Not ready yet",
+            text: "Please wait for changes to be applied before starting.",
+            banner_image: "v2/drill.svg",
+            type: :subdued) %>
+        <% else %>
+          <div><!-- grid maintenance --></div>
         <% end %>
       <% end %>
 
