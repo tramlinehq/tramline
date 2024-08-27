@@ -1,7 +1,7 @@
-<% icon = live_release_tab_configuration.dig(:release, :rollout_to_users, :icon) %>
+<% icon = live_release_tab_configuration.dig(:store_release, :rollout_to_users, :icon) %>
 <%= render V2::LiveRelease::ContainerComponent.new(@release, title: @release.train.name) do |container| %>
   <% container.with_back_button %>
-  <% container.with_tab(title: "Release", icon:) do %>
+  <% container.with_tab(title: "App Rollout", icon:) do %>
     <div class="flex flex-col section-gap-default">
       <% if @release.production_store_rollouts.none? %>
         <%= render V2::EmptyStateComponent.new(

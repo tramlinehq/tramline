@@ -1,4 +1,4 @@
-<%= render V2::PlatformViewComponent.new(release, occupy:) do |platform| %>
+<%= render V2::PlatformViewComponent.new(release, occupy:, detail: false) do |platform| %>
   <% if store_versions? %>
     <% platform.runs do |run| %>
       <div class="grid gap-2">

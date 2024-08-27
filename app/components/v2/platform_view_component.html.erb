@@ -1,13 +1,13 @@
 <div class="grid <%= grid_size %> gap-4 items-start">
   <% if cross_platform? %>
     <% platform_runs.each do |run| %>
-      <div class="flex items-center item-gap-default">
+      <div class="flex flex-col item-gap-default">
         <span class="text-xl text-secondary-50/50 border-b border-main-300/30 py-1 justify-self-start pl-0.5 pr-1.5">
           <%= run.display_attr(:platform) %>
         </span>
 
-        <% unless run.active? %>
-          <%= render V2::BadgeComponent.new(text: "locked", status: :inert, kind: :status) %>
+        <% if @detail && @release.active? && !run.active? %>
+          <%= render V2::AlertComponent.new(title: "The #{run.display_attr(:platform)} release is locked and will not accept new changes.", type: :info, full_screen: false, dismissible: false) %>
         <% end %>
       </div>
     <% end %>

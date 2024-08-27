@@ -92,7 +92,7 @@
     <% end %>
 
     <% unless upcoming? %>
-      <%= render V2::ReleaseMonitoringComponent.new(store_rollout:) %>
+      <%= render V2::ReleaseMonitoringComponent.new(store_rollout:, size: monitoring_size) %>
     <% end %>
   </div>
 </div>

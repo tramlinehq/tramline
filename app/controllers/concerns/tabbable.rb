@@ -88,24 +88,24 @@ module Tabbable
     sections[:metadata][:screenshots][:status] = statuses[:screenshots]
     sections[:metadata][:screenshots][:unavailable] = true
 
-    sections[:release] = {
+    sections[:store_release] = {
       approvals: Release::SECTIONS[:approvals],
       app_submission: Release::SECTIONS[:app_submission],
       rollout_to_users: Release::SECTIONS[:rollout_to_users]
     }
-    sections[:release][:approvals][:path] = root_path
-    sections[:release][:approvals][:icon] = "v2/list_checks.svg"
-    sections[:release][:approvals][:position] = 9
-    sections[:release][:approvals][:status] = statuses[:approvals]
-    sections[:release][:approvals][:unavailable] = true
-    sections[:release][:app_submission][:path] = release_store_submission_edit_path(@release)
-    sections[:release][:app_submission][:icon] = "v2/mail.svg"
-    sections[:release][:app_submission][:position] = 10
-    sections[:release][:app_submission][:status] = statuses[:app_submission]
-    sections[:release][:rollout_to_users][:path] = release_staged_rollout_edit_path(@release)
-    sections[:release][:rollout_to_users][:icon] = "v2/rocket.svg"
-    sections[:release][:rollout_to_users][:position] = 11
-    sections[:release][:rollout_to_users][:status] = statuses[:rollout_to_users]
+    sections[:store_release][:approvals][:path] = root_path
+    sections[:store_release][:approvals][:icon] = "v2/list_checks.svg"
+    sections[:store_release][:approvals][:position] = 9
+    sections[:store_release][:approvals][:status] = statuses[:approvals]
+    sections[:store_release][:approvals][:unavailable] = true
+    sections[:store_release][:app_submission][:path] = release_store_submission_edit_path(@release)
+    sections[:store_release][:app_submission][:icon] = "v2/mail.svg"
+    sections[:store_release][:app_submission][:position] = 10
+    sections[:store_release][:app_submission][:status] = statuses[:app_submission]
+    sections[:store_release][:rollout_to_users][:path] = release_staged_rollout_edit_path(@release)
+    sections[:store_release][:rollout_to_users][:icon] = "v2/rocket.svg"
+    sections[:store_release][:rollout_to_users][:position] = 11
+    sections[:store_release][:rollout_to_users][:status] = statuses[:rollout_to_users]
 
     sections
   end

@@ -68,4 +68,9 @@ class V2::ModalComponent < V2::BaseComponent
   def drawer?
     @type == :drawer
   end
+
+  def content_gap
+    return "mb-4" if subtitle.present?
+    "mb-2.5"
+  end
 end

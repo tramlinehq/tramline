@@ -1,7 +1,8 @@
 class V2::PlatformViewComponent < V2::BaseComponent
-  def initialize(release, occupy: true)
+  def initialize(release, occupy: true, detail: true)
     @release = ReleasePresenter.new(release, self)
     @occupy = occupy
+    @detail = detail
     super(@release)
   end
 
