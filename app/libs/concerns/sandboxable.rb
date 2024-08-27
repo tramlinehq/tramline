@@ -114,7 +114,7 @@ module Sandboxable
     return unless sandbox_mode?
     update!(build_id:)
     parent_release.update!(build_id:)
-    return unless created? || cancelled?
+    return unless status.in?(%w[created cancelled])
 
     case type
     when "AppStoreSubmission"
