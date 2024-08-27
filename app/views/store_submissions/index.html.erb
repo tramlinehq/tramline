@@ -1,6 +1,7 @@
+<% icon = live_release_tab_configuration.dig(:release, :app_submission, :icon) %>
 <%= render V2::LiveRelease::ContainerComponent.new(@release, title: @release.train.name) do |container| %>
   <% container.with_back_button %>
-  <% container.with_tab(title: "App Submission", icon: live_release_tab_configuration.dig(:release, :app_submission, :icon)) do %>
+  <% container.with_tab(title: "App Submission", icon:) do %>
     <%= render V2::PlatformViewComponent.new(@release) do |component| %>
       <% component.platform_runs.each do |run| %>
         <div class="grid grid-cols-1 section-gap-default">
@@ -18,11 +19,19 @@
             <% end %>
           </div>
 
-          <% if run.production_releases.none? %>
+          <% if run.conf.production_release.present? && run.production_releases.none? %>
             <%= render V2::EmptyStateComponent.new(
               title: "Not ready to be submitted",
               text: "Please wait for a Release Candidate to be available to start a submission.",
-              banner_image: "v2/mail.svg",
+              banner_image: icon,
+              type: :subdued) %>
+          <% end %>
+
+          <% if run.conf.production_release.blank? %>
+            <%= render V2::EmptyStateComponent.new(
+              title: "No production release configured",
+              text: "Please configure a production release in the release configuration.",
+              banner_image: icon,
               type: :subdued) %>
           <% end %>
 

@@ -1,10 +1,16 @@
-<ol class="relative border-s border-main-200 dark:border-main-700">
-  <% events.each do |event| %>
-    <li class="mb-2 last:mb-0 ms-4">
-      <div class="absolute w-3 h-3 <%= event_color(event) %> rounded-full mt-1.5 -start-1.5 border"></div>
-      <time class="mb-1 text-xs font-normal leading-none text-secondary-50 dark:text-secondary"><%= event[:timestamp] %></time>
-      <h5 class="heading-5"><%= event[:title] %></h5>
-      <p class="text-xs font-normal text-secondary dark:text-secondary-50"><%= event[:description] %></p>
-    </li>
-  <% end %>
-</ol>
+<% if events.blank? %>
+  <div class="text-secondary">
+    <%= render V2::EmptyStateComponent.new(text: "Events will show up here as actions are performed", title: "No activity yet", type: :subdued, banner_image: "v2/activity.svg") %>
+  </div>
+<% else %>
+  <ol class="relative border-s border-main-200 dark:border-main-700">
+    <% events.each do |event| %>
+      <li class="mb-2 last:mb-0 ms-4">
+        <div class="absolute w-3 h-3 <%= event_color(event) %> rounded-full mt-1.5 -start-1.5 border"></div>
+        <time class="mb-1 text-xs font-normal leading-none text-secondary-50 dark:text-secondary"><%= event[:timestamp] %></time>
+        <h5 class="heading-5"><%= event[:title] %></h5>
+        <p class="text-xs font-normal text-secondary dark:text-secondary-50"><%= raw(event[:description]) %></p>
+      </li>
+    <% end %>
+  </ol>
+<% end %>

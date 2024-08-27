@@ -91,6 +91,8 @@
       </div>
     <% end %>
 
-    <%= render V2::ReleaseMonitoringComponent.new(store_rollout:) %>
+    <% unless upcoming? %>
+      <%= render V2::ReleaseMonitoringComponent.new(store_rollout:) %>
+    <% end %>
   </div>
 </div>

@@ -35,9 +35,8 @@
   <% else %>
     <div data-drawer-reveal hidden>
       <div id="drawer-right-example"
-           class="fixed top-0 right-0 z-40 h-screen p-4 overflow-y-auto bg-white w-full <%= max_width %> dark:bg-gray-800 shadow-lg shadow-main-500"
+           class="fixed top-0 right-0 z-50 h-screen p-4 overflow-y-auto bg-white w-full <%= max_width %> dark:bg-gray-800 shadow-lg shadow-main-500"
            aria-labelledby="drawer-right-label">
-
         <div class="flex flex-col mb-3 pb-2 gap-y-1">
           <div class="flex justify-start items-center gap-x-2 <%= default_separator %>">
             <%= render V2::ButtonComponent.new(
@@ -56,7 +55,7 @@
         <%= body %>
       </div>
 
-      <div class="bg-main-800/50 dark:bg-main-800/80 fixed inset-0 z-30"></div>
+      <div class="bg-main-800/50 dark:bg-main-800/80 fixed inset-0 z-40"></div>
     </div>
   <% end %>
 <% end %>

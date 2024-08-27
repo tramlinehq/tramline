@@ -49,7 +49,7 @@ class StoreRollout < ApplicationRecord
 
   delegate :parent_release, :build, :external_link, to: :store_submission
   delegate :version_name, :build_number, to: :build
-  delegate :train, to: :release_platform_run
+  delegate :train, :platform, to: :release_platform_run
   delegate :notify!, to: :train
 
   scope :production, -> { joins(store_submission: :production_release) }
@@ -82,7 +82,7 @@ class StoreRollout < ApplicationRecord
     config[current_stage]
   end
 
-  def latest_events(n = 3)
+  def latest_events(n = nil)
     passports.order(created_at: :desc).limit(n)
   end
 
@@ -113,7 +113,7 @@ class StoreRollout < ApplicationRecord
     update!(current_stage: stage)
     if may_start?
       start!
-      event_stamp!(reason: :started, kind: :notice, data: stamp_data)
+      event_stamp!(reason: :started, kind: :success, data: stamp_data)
     else
       event_stamp!(reason: :updated, kind: :notice, data: stamp_data)
       notify!("Rollout has been updated", :production_rollout_updated, notification_params)

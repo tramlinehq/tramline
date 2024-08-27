@@ -1,5 +1,9 @@
 <% component = V2::EnhancedTurboFrameComponent.new(dom_id(@pre_prod_release, :changes_since_previous)) %>
 <% component.with_loading_indicator %>
 <%= render component do %>
-  <%= render partial: "shared/divide_collection", locals: { collection: render(V2::CommitComponent.with_collection(@commits)) } %>
+  <% if @commits.blank? %>
+    <%= render V2::EmptyStateComponent.new(title: "No changes", text: "There are no changes since the previous release", banner_image: "v2/git_commit.svg", type: :subdued) %>
+  <% else %>
+    <%= render partial: "shared/divide_collection", locals: { collection: render(V2::CommitComponent.with_collection(@commits)) } %>
+  <% end %>
 <% end %>

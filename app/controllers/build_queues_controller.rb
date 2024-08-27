@@ -16,7 +16,11 @@ class BuildQueuesController < SignedInApplicationController
       end
     end
 
-    redirect_to current_release_path, notice: "Build queue has been applied and emptied."
+    if @release.is_v2?
+      redirect_to changeset_tracking_release_path(@release), notice: "Build queue has been applied and emptied."
+    else
+      redirect_to current_release_path, notice: "Build queue has been applied and emptied."
+    end
   end
 
   private

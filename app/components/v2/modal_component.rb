@@ -7,6 +7,7 @@ class V2::ModalComponent < V2::BaseComponent
     lg: "max-w-xl",
     xxl: "max-w-3xl",
     xl_3: "max-w-4xl",
+    xl_4: "max-w-5xl",
     default: "max-w-2xl"
   }.freeze
 

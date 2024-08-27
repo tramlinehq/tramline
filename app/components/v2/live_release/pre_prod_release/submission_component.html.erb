@@ -43,7 +43,7 @@
       <div class="flex">
         <%= render V2::HorizontalDataSetComponent.new do |component| %>
           <% component.with_data_set(title: "Status").with_content(external_status) %>
-          <% component.with_data_set(title: "Tester groups").with_content(NOT_AVAILABLE) %>
+          <% component.with_data_set(title: "Tester groups").with_content(submission.submission_channel.name.truncate(50)) %>
           <% component.with_data_set(title: "Dashboard") do %>
             <%= render V2::ButtonComponent.new(scheme: :naked_icon,
                                                type: :link_external,

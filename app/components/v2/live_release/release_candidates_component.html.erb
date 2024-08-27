@@ -11,7 +11,7 @@
         <% if beta_release.present? %>
           <%= render V2::LiveRelease::PreProdRelease::CurrentReleaseComponent.new(beta_release) %>
         <% else %>
-          <%= render V2::LiveRelease::PrepareReleaseCandidateComponent.new(release_platform_run) %>
+          <%= render V2::LiveRelease::PreProdRelease::PrepareReleaseCandidateComponent.new(release_platform_run) %>
         <% end %>
       <% end %>
 
@@ -27,6 +27,8 @@
               <% end %>
             </div>
           <% end %>
+        <% else %>
+          <div><!-- grid maintenance --></div>
         <% end %>
       <% end %>
     <% end %>

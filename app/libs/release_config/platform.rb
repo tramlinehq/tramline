@@ -28,7 +28,11 @@ class ReleaseConfig::Platform < Struct.new(:conf)
   end
 
   def production_release
-    ReleaseStep.new(value[:production_release])
+    ReleaseStep.new(value[:production_release]) if production_release?
+  end
+
+  def production_release?
+    value[:production_release].present?
   end
 
   def workflows

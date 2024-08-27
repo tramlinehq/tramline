@@ -111,3 +111,12 @@ en:
       fully_released_html: 'Fully released <span class="emphasize">%{version} (%{build_number})</span> to App Store from phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
       paused_html: 'Paused the rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
       resumed_html: 'Resumed the rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
+    store_rollout:
+      reasons:
+        started: 'Rollout started'
+        paused: 'Rollout paused'
+        resumed: 'Rollout resumed'
+        increased: 'Rollout increased'
+        completed: 'Rollout completed'
+        halted: 'Rollout halted'
+        fully_released: 'Rollout fully released'

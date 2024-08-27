@@ -29,7 +29,7 @@ class WorkflowRun < ApplicationRecord
   belongs_to :commit
   has_one :build, dependent: :destroy
 
-  delegate :organization, :app, :ci_cd_provider, :train, :release_version, :release_branch, :release, to: :release_platform_run
+  delegate :organization, :app, :ci_cd_provider, :train, :release_version, :release_branch, :release, :platform, to: :release_platform_run
   delegate :notify!, to: :train
   delegate :commit_hash, to: :commit
 

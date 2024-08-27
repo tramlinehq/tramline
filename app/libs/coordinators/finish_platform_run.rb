@@ -9,7 +9,7 @@ class Coordinators::FinishPlatformRun
 
   def call
     with_lock do
-      return unless release.on_track?
+      return unless release.active?
       release_platform_run.finish!
 
       RefreshPlatformBreakdownJob.perform_later(release_platform_run.id) if release.is_v2?

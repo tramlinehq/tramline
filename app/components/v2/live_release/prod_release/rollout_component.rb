@@ -15,6 +15,7 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
     :stage,
     :controllable_rollout?,
     :store_submission,
+    :latest_events,
     :external_link,
     :automatic_rollout?, :id, to: :store_rollout
   delegate :release, to: :release_platform_run
@@ -28,30 +29,14 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
   end
 
   def events
-    [{
-      timestamp: time_format(1.day.ago, with_year: false),
-      title: "Rollout increase",
-      description: "The staged rollout for this release has been increased to 50%",
-      type: :success
-    },
+    latest_events.map do |event|
       {
-        timestamp: time_format(2.days.ago, with_year: false),
-        title: "Rollout increase",
-        description: "The staged rollout for this release has been increased to 20%",
-        type: :success
-      },
-      {
-        timestamp: time_format(3.days.ago, with_year: false),
-        title: "Rollout increase",
-        description: "The staged rollout for this release has been increased to 10%",
-        type: :success
-      },
-      {
-        timestamp: time_format(4.days.ago, with_year: false),
-        title: "Rollout increase",
-        description: "The staged rollout for this release has been increased to 1%",
-        type: :success
-      }]
+        timestamp: time_format(event.event_timestamp, with_year: false),
+        title: I18n.t("passport.store_rollout.reasons.#{event.reason}"),
+        description: event.message,
+        type: event.kind.to_sym
+      }
+    end
   end
 
   def stage_help
@@ -159,7 +144,7 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
     if upcoming?
       "60"
     else
-      "80"
+      "88"
     end
   end
 

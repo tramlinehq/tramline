@@ -1,4 +1,4 @@
-<%= render V2::ModalComponent.new(title:, subtitle:, size: :xl_3, authz: false) do |modal| %>
+<%= render V2::ModalComponent.new(title:, subtitle:, size: :xl_4, authz: false) do |modal| %>
   <% if button_scheme == :naked_icon %>
     <% button = modal.with_button(scheme: :naked_icon, type: :action, size: :none) %>
     <% button.with_tooltip(title, placement: "top") %>

@@ -9,7 +9,7 @@ en:
   production_releases:
     create:
       success: "Production release was successfully created."
-      failure: "Failed to create production release due to %{errors}"
+      failure: "Failed to create production release — %{errors}"
   staged_rollout:
     ios:
       checkbox: "Enable Phased Release"
@@ -18,7 +18,7 @@ en:
   beta_releases:
     create:
       success: "Beta release was successfully created."
-      failure: "Failed to create beta release due to %{errors}."
+      failure: "Failed to create beta release — %{errors}."
   release_health_rules:
     create:
       success: "Rule was successfully created."
@@ -33,59 +33,59 @@ en:
   store_submissions:
     trigger:
       success: "Submission was successfully started."
-      failure: "Failed to start submission due to %{errors}"
+      failure: "Failed to start submission — %{errors}"
     retry:
       success: "Submission was successfully retried."
-      failure: "Failed to retry submission due to %{errors}"
+      failure: "Failed to retry submission — %{errors}"
     submission_not_active: "Submission is not active."
     submission_not_retryable: "Submission is not retryable."
     prepare:
       success: "The new release has begun preparing."
       unstartable: "This release can not be prepared for submission."
       prepare:
-        failure: "Failed to prepare submission due to %{errors}"
+        failure: "Failed to prepare submission — %{errors}"
     submit_for_review:
       success: "The release has been submitted for review!"
-      failure: "Failed to submit for review due to %{errors}"
+      failure: "Failed to submit for review — %{errors}"
       unreviewable: "This release can not be submitted for review."
     cancel:
       success: "The release has been removed from review!"
-      failure: "Failed to remove from review due to %{errors}"
+      failure: "Failed to remove from review — %{errors}"
       uncanceleable: "This release submission can not be removed from review."
     update:
       success: "The submission has been updated successfully."
-      failure: "Failed to update submission due to %{errors}"
+      failure: "Failed to update submission — %{errors}"
       invalid_build: "The build is not valid for this submission."
     create:
       success: "The submission has been created successfully."
-      failure: "Failed to create submission due to %{errors}"
+      failure: "Failed to create submission — %{errors}"
       invalid_build: "The build is not valid to start a submission."
   store_rollouts:
     increase:
       success: "Rollout was successfully increased."
-      failure: "Failed to increase rollout due to %{errors}"
+      failure: "Failed to increase rollout — %{errors}"
     pause:
       success: "Rollout was successfully paused."
-      failure: "Failed to pause rollout due to %{errors}"
+      failure: "Failed to pause rollout — %{errors}"
     resume:
       success: "Rollout was successfully resumed."
-      failure: "Failed to resume rollout due to %{errors}"
+      failure: "Failed to resume rollout — %{errors}"
     halt:
       success: "Rollout was successfully halted."
-      failure: "Failed to halt rollout due to %{errors}"
+      failure: "Failed to halt rollout — %{errors}"
     fully_release:
       success: "Rollout was fully released."
-      failure: "Failed to fully release rollout due to %{errors}"
+      failure: "Failed to fully release rollout — %{errors}"
     start:
       success: "Rollout was successfully started."
-      failure: "Failed to start rollout due to %{errors}"
+      failure: "Failed to start rollout — %{errors}"
     rollout_not_controllable: "Rollout is not controllable."
     rollout_not_automatic: "Rollout is not automatic."
     rollout_not_moveable: "Rollout is not moveable."
   workflow_runs:
     trigger:
       success: "Workflow run was successfully triggered."
-      failure: "Failed to trigger the workflow due to %{errors}"
+      failure: "Failed to trigger the workflow — %{errors}"
     retry:
       success: "Workflow run was successfully retried."
       error: "Failed to retry the CI workflow! Contact support if the issue persists."

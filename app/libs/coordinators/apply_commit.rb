@@ -22,6 +22,7 @@ class Coordinators::ApplyCommit
 
   def trigger_release_for(run)
     return if release.hotfix?
+    return unless run.on_track?
 
     run.bump_version!
     run.update!(last_commit: commit)

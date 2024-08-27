@@ -78,7 +78,7 @@ class ProductionRelease < ApplicationRecord
   end
 
   def trigger_submission!
-    return finish! if conf.submissions.blank?
+    return rollout_complete!(nil) if conf.submissions.blank?
 
     submission_config = conf.submissions.first
     submission_config.submission_type.create_and_trigger!(self, submission_config, build)

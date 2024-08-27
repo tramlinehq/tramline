@@ -37,13 +37,16 @@ class Computations::Release::StepStatuses
 
   def internal_builds_status
     return STATUS[:none] if all_platforms? { |rp| rp.internal_builds.none? }
-    return STATUS[:ongoing] if new_change?
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_internal_release&.actionable? }
     STATUS[:success]
   end
 
   def release_candidate_status
-    return STATUS[:none] if all_platforms? { |rp| rp.latest_beta_release&.blank? }
+    return STATUS[:success] if finished?
+    return STATUS[:none] if all_platforms? { |rp| rp.latest_beta_release.blank? }
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_beta_release.blank? }
     return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_beta_release&.actionable? }
+    return STATUS[:ongoing] if all_platforms? { |rp| rp.latest_beta_release&.commit != rp.last_commit }
     STATUS[:success]
   end
 

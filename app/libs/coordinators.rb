@@ -70,7 +70,12 @@ module Coordinators
 
     def self.beta_release_is_finished!(build)
       # start soak, or
-      Coordinators::StartProductionRelease.call(build.release_platform_run, build.id)
+      release_platform_run = build.release_platform_run
+      if release_platform_run.conf.production_release.present?
+        Coordinators::StartProductionRelease.call(release_platform_run, build.id)
+      else
+        Coordinators::FinishPlatformRun.call(release_platform_run)
+      end
     end
 
     def self.production_release_is_complete!(release_platform_run)
@@ -171,56 +176,50 @@ module Coordinators
     end
 
     def self.start_the_store_rollout!(rollout)
-      return Res.new { raise } unless rollout.actionable?
-      return Res.new { raise } if rollout.stale?
-      return Res.new { raise } unless rollout.created?
+      return Res.new { raise "release is not actionable" } unless rollout.actionable?
+      return Res.new { raise "rollout has already started" } unless rollout.created?
       rollout.start_release!
-      return Res.new { raise } if rollout.errors?
+      return Res.new { raise rollout.errors.full_messages.to_sentence } if rollout.errors?
       Res.new { true }
     end
 
     def self.increase_the_store_rollout!(rollout)
-      return Res.new { raise } unless rollout.actionable?
-      return Res.new { raise } if rollout.stale?
-      return Res.new { raise } unless rollout.started?
+      return Res.new { raise "release is not actionable" } unless rollout.actionable?
+      return Res.new { raise "rollout is not started" } unless rollout.started?
       rollout.move_to_next_stage!
-      return Res.new { raise } if rollout.errors?
+      return Res.new { raise rollout.errors.full_messages.to_sentence } if rollout.errors?
       Res.new { true }
     end
 
     def self.pause_the_store_rollout!(rollout)
-      return Res.new { raise } unless rollout.actionable?
-      return Res.new { raise } if rollout.stale?
-      return Res.new { raise } unless rollout.started?
+      return Res.new { raise "release is not actionable" } unless rollout.actionable?
+      return Res.new { raise "rollout is not started" } unless rollout.started?
       rollout.pause_release!
-      return Res.new { raise } if rollout.errors?
+      return Res.new { raise rollout.errors.full_messages.to_sentence } if rollout.errors?
       Res.new { true }
     end
 
     def self.resume_the_store_rollout!(rollout)
-      return Res.new { raise } unless rollout.actionable?
-      return Res.new { raise } if rollout.stale?
-      return Res.new { raise } unless rollout.halted?
+      return Res.new { raise "release is not actionable" } unless rollout.actionable?
+      return Res.new { raise "rollout is not halted or paused" } unless rollout.halted? || rollout.paused?
       rollout.resume_release!
-      return Res.new { raise } if rollout.errors?
+      return Res.new { raise rollout.errors.full_messages.to_sentence } if rollout.errors?
       Res.new { true }
     end
 
     def self.halt_the_store_rollout!(rollout)
-      return Res.new { raise } unless rollout.actionable?
-      return Res.new { raise } if rollout.stale?
-      return Res.new { raise } unless rollout.started?
+      return Res.new { raise "release is not actionable" } unless rollout.actionable?
+      return Res.new { raise "rollout is not started" } unless rollout.started?
       rollout.halt_release!
-      return Res.new { raise } if rollout.errors?
+      return Res.new { raise rollout.errors.full_messages.to_sentence } if rollout.errors?
       Res.new { true }
     end
 
     def self.fully_release_the_store_rollout!(rollout)
-      return Res.new { raise } unless rollout.actionable?
-      return Res.new { raise } if rollout.stale?
-      return Res.new { raise } unless rollout.started?
+      return Res.new { raise "release is not actionable" } unless rollout.actionable?
+      return Res.new { raise "rollout is not started" } unless rollout.started?
       rollout.release_fully!
-      return Res.new { raise } if rollout.errors?
+      return Res.new { raise rollout.errors.full_messages.to_sentence } if rollout.errors?
       Res.new { true }
     end
 

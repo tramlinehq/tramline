@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class V2::LiveRelease::PrepareReleaseCandidateComponent < V2::BaseComponent
+class V2::LiveRelease::PreProdRelease::PrepareReleaseCandidateComponent < V2::BaseComponent
   def initialize(release_platform_run)
     @release_platform_run = release_platform_run
     @latest_internal_release = release_platform_run.latest_internal_release(finished: true)
