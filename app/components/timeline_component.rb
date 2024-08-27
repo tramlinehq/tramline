@@ -7,7 +7,7 @@ class TimelineComponent < ViewComponent::Base
     success: "bg-green-500 border-white dark:border-main-900 dark:bg-green-500",
     error: "bg-red-500 border-white dark:border-main-900 dark:bg-red-500",
     neutral: "bg-main-200 border-white dark:border-main-900 dark:bg-main-700",
-    notice: "bg-indigo-500 border-white dark:border-indigo-900 dark:bg-indigo-700"
+    notice: "bg-sky-500 border-white dark:border-sky-900 dark:bg-sky-700"
   }
 
   def initialize(events:)

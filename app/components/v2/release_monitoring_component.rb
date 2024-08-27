@@ -2,7 +2,8 @@ class V2::ReleaseMonitoringComponent < V2::BaseComponent
   METRICS = [:staged_rollout, :adoption_rate, :adoption_chart, :errors, :stability]
   SIZES = {
     compact: {cols: 2},
-    default: {cols: 3}
+    default: {cols: 3},
+    max: {cols: 4},
   }
 
   # TODO: [V2] [post-alpha] Add release health events here

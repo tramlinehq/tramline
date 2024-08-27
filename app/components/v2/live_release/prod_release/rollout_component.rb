@@ -21,7 +21,7 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
   delegate :release, to: :release_platform_run
 
   def monitoring_size
-    release_platform_run.app.cross_platform? ? :compact : :default
+    release_platform_run.app.cross_platform? ? :compact : :max
   end
 
   def show_blocked_message?
