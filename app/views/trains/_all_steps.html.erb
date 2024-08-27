@@ -17,6 +17,13 @@
           <%= render partial: "trains/step_creation", locals: { app: app, train: train, release_platform: } %>
         </div>
       <% end %>
+
+      <% if train.product_v2? && current_user.super_admin? %>
+        <div class="mt-8">
+          <span class="text-sm font-bold">V2 Config</span>
+          <textarea class="w-full h-96" disabled="disabled"><%= JSON.pretty_generate(release_platform.config) %></textarea>
+        </div>
+      <% end %>
     </section>
   <% end %>
 </div>

@@ -48,6 +48,10 @@ class Accounts::User < ApplicationRecord
   accepts_nested_attributes_for :organizations
   accepts_nested_attributes_for :memberships, allow_destroy: false
 
+  def super_admin?
+    Flipper.enabled?(:super_admin, self)
+  end
+
   def email_authentication
     email_authentications.first
   end
