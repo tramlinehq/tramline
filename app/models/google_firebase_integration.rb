@@ -174,16 +174,16 @@ class GoogleFirebaseIntegration < ApplicationRecord
   end
 
   class ReleaseOpInfo
-    def initialize(release_info)
-      raise ArgumentError, "release_info must be a Hash" unless release_info.is_a?(Hash)
-      @op_info = release_info
+    def initialize(op_info)
+      raise ArgumentError, "release_info must be a Hash" unless op_info.is_a?(Hash)
+      @op_info = op_info
       validate_op
     end
 
     RELEASE_TRANSFORMATIONS = {
-      name: :display_name,
+      name: :displayVersion,
       console_link: :firebaseConsoleUri,
-      build_number: :build,
+      build_number: :buildVersion,
       added_at: :createTime,
       status: :status,
       id: :name

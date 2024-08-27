@@ -114,7 +114,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     op_info = result.value!
     raise UploadNotComplete unless op_info.done?
 
-    prepare_and_update!(op_info.release)
+    prepare_and_update!(op_info.release, op_info.status)
     StoreSubmissions::GoogleFirebase::UpdateBuildNotesJob.perform_later(id, op_info.release.id)
   end
 
@@ -149,10 +149,10 @@ class GoogleFirebaseSubmission < StoreSubmission
 
   alias_method :release_notes, :tester_notes
 
-  def prepare_and_update!(release_info)
+  def prepare_and_update!(release_info, build_status = nil)
     transaction do
       prepare!
-      update_store_info!(release_info)
+      update_store_info!(release_info, build_status)
     end
   end
 
@@ -169,9 +169,9 @@ class GoogleFirebaseSubmission < StoreSubmission
     event_stamp!(reason: :failed, kind: :error, data: stamp_data)
   end
 
-  def update_store_info!(release_info)
+  def update_store_info!(release_info, build_status)
     self.store_link = release_info.console_link
-    self.store_status = release_info.status
+    self.store_status = build_status
     self.store_release = release_info.release
     save!
   end
