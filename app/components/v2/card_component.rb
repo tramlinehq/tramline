@@ -67,7 +67,7 @@ class V2::CardComponent < ViewComponent::Base
   end
 
   def y_gap
-    return "gap-y-3.5" if separator?
+    return "gap-y-2.5" if separator?
     "gap-y-5"
   end
 
