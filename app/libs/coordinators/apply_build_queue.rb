@@ -13,7 +13,10 @@ class Coordinators::ApplyBuildQueue
       raise unless release.committable?
       raise unless build_queue.is_active?
 
-      Coordinators::ApplyCommit.call(release, build_queue.head_commit)
+      if build_queue.head_commit.present?
+        Coordinators::ApplyCommit.call(release, build_queue.head_commit)
+      end
+
       build_queue.update!(applied_at: Time.current, is_active: false)
       release.create_build_queue!
     end
