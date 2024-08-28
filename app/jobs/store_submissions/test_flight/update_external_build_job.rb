@@ -20,6 +20,5 @@ class StoreSubmissions::TestFlight::UpdateExternalBuildJob
     return unless submission.may_finish?
 
     submission.update_external_release
-    submission.finish!
   end
 end
