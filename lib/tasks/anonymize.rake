@@ -387,50 +387,6 @@ namespace :anonymize do
     populate_v2_models(train)
   end
 
-  desc 'Anonymize release health metric data from source db into local db
-        Example: rake "anonymize:release_health_metrics[ueno-staging-cross-platform,e735400a-3337-4699-95e2-c32b76ead7f3]"'
-  task :release_health_metrics, %i[internal_app_slug external_train_id] => [:destructive, :environment] do |_, args|
-    DataAnon::Utils::Logging.logger.level = Logger::INFO
-
-    app_slug = args[:internal_app_slug].to_s
-    app = App.find_by slug: app_slug
-    abort "App not found!" unless app
-
-    train_id = args[:external_train_id].to_s
-    abort "Train ID not found!" if train_id.blank?
-    puts "Train with id #{train_id} will be copied to #{app.name}!" if train_id.present?
-
-    train = app.trains.find(train_id)
-    abort "Train not found!" unless train
-
-    database "TramlineDatabase" do
-      strategy DataAnon::Strategy::Whitelist
-      source_db source_db_config
-      destination_db destination_db_config
-
-      table "release_health_metrics" do
-        continue { |index, record| DeploymentRun.exists?(record["deployment_run_id"]) && !ReleaseHealthMetric.exists?(record["id"]) }
-        primary_key "id"
-        whitelist "deployment_run_id", "sessions", "sessions_in_last_day", "sessions_with_errors", "daily_users",
-          "daily_users_with_errors", "errors_count", "new_errors_count", "fetched_at", "total_sessions_in_last_day", "external_release_id"
-        whitelist_timestamps
-      end
-
-      table "release_health_events" do
-        continue do |index, record|
-          DeploymentRun.exists?(record["deployment_run_id"]) &&
-            ReleaseHealthRule.exists?(record["release_health_rule_id"]) &&
-            ReleaseHealthMetric.exists?(record["release_health_metric_id"]) &&
-            !ReleaseHealthEvent.exists?(record["id"])
-        end
-
-        primary_key "id"
-        whitelist "deployment_run_id", "release_health_rule_id", "release_health_metric_id", "health_status", "action_triggered", "notification_triggered", "event_timestamp"
-        whitelist_timestamps
-      end
-    end
-  end
-
   def source_db_config
     {"adapter" => "postgresql",
      "encoding" => "unicode",
@@ -457,31 +413,45 @@ namespace :anonymize do
           prun.update!(config: prun.release_platform.config)
 
           review_step = prun.release_platform.steps.review.first
-          prun.step_runs_for(review_step).each do |srun|
-            create_pre_prod_release!(prun, review_step, srun, "internal")
+          review_runs = prun.step_runs_for(review_step).to_a
+          review_step_run = review_runs.shift
+          previous = nil
+          idx = 0
+
+          while review_step_run.present?
+            pre_prod_release = create_pre_prod_release!(prun, review_step, review_step_run, previous, idx, "internal")
+            previous = pre_prod_release
+            review_step_run = review_runs.shift
+            idx += 1
           end
 
           release_step = prun.release_platform.release_step
-          prun.step_runs_for(release_step).each do |srun|
-            build = create_pre_prod_release!(prun, release_step, srun, "release_candidate")
+          release_step_runs = prun.step_runs_for(release_step).to_a
 
-            config = prun.conf.production_release.value
+          release_step_run = release_step_runs.shift
+          previous_pre_prod_release = nil
+          previous_production_release = nil
+          idx = 0
+          production_release_config = prun.conf.production_release.value
+          production_depl = release_step.deployments.find { |d| d.production_channel? }
+
+          while release_step_run.present?
+            pre_prod_release = create_pre_prod_release!(prun, release_step, release_step_run, previous_pre_prod_release, idx, "release_candidate")
             production_release = prun.production_releases.create!(
-              config:,
-              build:,
-              status: srun.success? ? "finished" : "stale",
-              created_at: srun.created_at,
-              updated_at: srun.updated_at
+              config: production_release_config,
+              build: pre_prod_release.build,
+              status: compute_production_release_status(release_step_run, idx),
+              previous: previous_production_release,
+              created_at: release_step_run.created_at,
+              updated_at: release_step_run.updated_at
             )
 
-            production_depl = release_step.deployments.find { |d| d.production_channel? }
-
-            srun.deployment_runs.where(deployment: production_depl).each do |drun|
+            release_step_run.deployment_runs.where(deployment: production_depl).each do |drun|
               submission_config = prun.conf.production_release.submissions.first
               submission = submission_config.submission_type.create!(
                 parent_release: production_release,
                 release_platform_run: prun,
-                build: build,
+                build: pre_prod_release.build,
                 sequence_number: 1,
                 config: submission_config.to_h,
                 status: "prepared",
@@ -513,22 +483,28 @@ namespace :anonymize do
                 end
               end
             end
+
+            previous_pre_prod_release = pre_prod_release
+            previous_production_release = production_release
+            release_step_run = release_step_runs.shift
+            idx += 1
           end
         end
       end
     end
   end
 
-  def create_pre_prod_release!(release_platform_run, step, step_run, kind)
+  def create_pre_prod_release!(release_platform_run, step, step_run, previous, idx, kind)
     commit = step_run.commit
+    status = compute_pre_prod_release_status(step_run, idx)
 
     if kind == "internal"
       config = release_platform_run.conf.internal_release
-      pre_prod_release = release_platform_run.internal_releases.create!(config: config.value, commit:)
+      pre_prod_release = release_platform_run.internal_releases.create!(config: config.value, commit:, status:, previous:)
       workflow_config = release_platform_run.conf.workflows.pick_internal_workflow
     else
       config = release_platform_run.conf.beta_release
-      pre_prod_release = release_platform_run.beta_releases.create!(config: config.value, commit:)
+      pre_prod_release = release_platform_run.beta_releases.create!(config: config.value, commit:, status:, previous:)
       workflow_config = release_platform_run.conf.workflows.release_candidate_workflow
     end
 
@@ -538,7 +514,7 @@ namespace :anonymize do
       release_platform_run:,
       commit:,
       kind: workflow_config.kind,
-      status: step_run.failed? ? "failed" : "finished",
+      status: compute_workflow_run_status(step_run),
       created_at: step_run.created_at,
       updated_at: step_run.updated_at
     )
@@ -557,7 +533,7 @@ namespace :anonymize do
       submission_config = config.submissions.fetch_by_number(index + 1)
       create_pre_prod_submissions(release_platform_run, step_run, deployment, submission_config, pre_prod_release, build)
     end
-    build
+    pre_prod_release
   end
 
   def create_pre_prod_submissions(release_platform_run, step_run, deployment, config, parent_release, build)
@@ -583,6 +559,46 @@ namespace :anonymize do
           updated_at: drun.updated_at
         )
       end
+    end
+  end
+
+  def compute_production_release_status(step_run, idx)
+    if step_run.success?
+      "finished"
+    elsif step_run.deployment_started? && idx == 0
+      "active"
+    elsif step_run.active? && idx == 0
+      "inflight"
+    else
+      "stale"
+    end
+  end
+
+  def compute_pre_prod_release_status(step_run, idx)
+    if step_run.success?
+      "finished"
+    elsif step_run.failed?
+      "failed"
+    elsif step_run.deployment_started? && idx == 0
+      "created"
+    else
+      "stale"
+    end
+  end
+
+  def compute_workflow_run_status(step_run)
+    if step_run.ci_workflow_failed?
+      "failed"
+    elsif step_run.ci_workflow_halted?
+      "halted"
+    elsif step_run.ci_workflow_unavailable?
+      "unavailable"
+    elsif step_run.ci_workflow_started?
+      "started"
+    elsif step_run.ci_workflow_triggered?
+      "triggered"
+    else
+      "finished"
     end
   end
 
