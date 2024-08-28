@@ -38,7 +38,7 @@ FactoryBot.define do
 
     trait :with_no_platform_runs do
       after(:build) do |release|
-        def release.create_platform_runs = true
+        def release.create_platform_runs! = true
       end
     end
   end

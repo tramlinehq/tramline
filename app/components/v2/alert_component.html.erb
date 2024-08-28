@@ -1,7 +1,7 @@
 <div data-controller="alert">
   <% if alert? %>
     <div data-alert-target="alert"
-         class="flex <%= size %> items-center p-2.5 mb-4 text-sm rounded-lg <%= style %> justify-between"
+         class="flex items-center w-full <%= padding %> <%= style %> <%= border_style %> text-sm justify-between"
          role="alert">
       <div class="flex mr-6 gap-x-1 items-start">
         <div class="flex justify-start gap-x-1 items-center">
@@ -24,14 +24,14 @@
     </div>
   <% elsif banner? %>
     <div data-alert-target="alert"
-         class="px-6 py-4 mb-4 text-blue-800 border border-blue-300 bg-blue-50 dark:bg-main-800 dark:text-blue-400 dark:border-blue-800 <%= border_style %>"
+         class="w-full <%= padding %> <%= style %> <%= border_style %> mb-4"
          role="alert">
       <div class="flex items-center">
         <%= render V2::IconComponent.new("v2/info.svg", size: :md, classes: "mr-2") %>
         <h3 class="heading-3 !text-inherit"><%= title %></h3>
       </div>
 
-      <div class="mt-2 text-sm">
+      <div class="text-sm">
         <%= content %>
       </div>
 
@@ -59,6 +59,27 @@
               label: "Dismiss",
               html_options: { class: ACTION_BUTTON_STYLES,
                               data: { action: "alert#close" } }) %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% elsif announcement? %>
+    <div class="w-full <%= padding %> <%= style %> <%= border_style %>">
+      <div class="flex items-center mb-2">
+        <%= render V2::IconComponent.new("v2/megaphone.svg", size: :lg, classes: "mr-2") %>
+        <h3 class="heading-3 !text-inherit"><%= title %></h3>
+      </div>
+
+      <div><%= content %></div>
+
+      <% if announcement_buttons? || announcement_modals? %>
+        <div class="flex mt-4 gap-x-2">
+          <% announcement_buttons.each do |action| %>
+            <%= render action %>
+          <% end %>
+
+          <% announcement_modals.each do |modal| %>
+            <%= render modal %>
           <% end %>
         </div>
       <% end %>

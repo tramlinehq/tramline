@@ -60,3 +60,65 @@ en:
       completed_html: 'Staged release completed with <span class="emphasize">%{rollout_percentage}%</span>'
       halted_html: 'Staged release halted at <span class="emphasize">%{rollout_percentage}%</span>'
       fully_released_html: 'Staged release fully released to 100% from <span class="emphasize">%{rollout_percentage}%</span>'
+    internal_release:
+      created_html: 'Started a new internal build step for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a>'
+      finished_html: 'Finished the internal build step for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a>'
+    beta_release:
+      created_html: 'Started a new beta release step for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a>'
+      finished_html: 'Finished the beta release for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a>'
+    production_release:
+      finished_html: 'Finished the production release for <span class="emphasize">%{version} (%{build_number})</span>'
+    workflow_run:
+      triggered_html: 'A new %{kind} workflow run was triggered for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name}</span>'
+      retried_html: 'The workflow run <a class="emphasize-link" href="%{url}">#%{ref}</a> was retried for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name} (%{build_number})</span>'
+      failed_html: 'The %{kind} workflow run <a class="emphasize-link" href="%{url}">#%{ref}</a> failed for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name} (%{build_number})</span>'
+      halted_html: 'The %{kind} workflow run <a class="emphasize-link" href="%{url}">#%{ref}</a> was halted for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name} (%{build_number})</span>'
+      unavailable_html: 'The %{kind} workflow run could not be found for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name} (%{build_number})</span>'
+      finished_html: 'The %{kind} workflow run <a class="emphasize-link" href="%{url}">#%{ref}</a> completed for <a class="emphasize-link" href="%{commit_url}">#%{commit_sha}</a> to build <span class="emphasize">%{version_name} (%{build_number})</span>'
+    google_firebase_submission:
+      triggered_html: 'Sending <span class="emphasize">%{version} (%{build_number})</span> to Google Firebase groups <span class="emphasize">%{channels}</span>'
+      finished_html: 'Sent <span class="emphasize">%{version} (%{build_number})</span> to Google Firebase groups <span class="emphasize">%{channels}</span>'
+      failed_html: 'Failed to send <span class="emphasize">%{version} (%{build_number})</span> to Google Firebase groups <span class="emphasize">%{channels}</span> due to <span class="emphasize">%{failure_reason}</span>'
+    test_flight_submission:
+      triggered_html: 'Sending <span class="emphasize">%{version} (%{build_number})</span> to TestFlight groups <span class="emphasize">%{channels}</span>'
+      finished_html: 'Sent <span class="emphasize">%{version} (%{build_number})</span> to TestFlight groups <span class="emphasize">%{channels}</span>'
+      submitted_for_review_html: 'Submitted the TestFlight build for <span class="emphasize">%{version} (%{build_number})</span> for beta review'
+      review_rejected_html: 'Beta review rejected for the TestFlight build <span class="emphasize">%{version} (%{build_number})</span>'
+      failed_html: 'Failed to send <span class="emphasize">%{version} (%{build_number})</span> to TestFlight groups <span class="emphasize">%{channels}</span> due to <span class="emphasize">%{failure_reason}</span>'
+    play_store_submission:
+      prepared_html: 'Prepared a new draft release for <span class="emphasize">%{version} (%{build_number})</span> to the Play Store track <span class="emphasize">%{track}</span>'
+      review_rejected_html: 'Play Store submission for <span class="emphasize">%{version} (%{build_number})</span> was rejected'
+      failed_html: 'Failed to create a draft release for <span class="emphasize">%{version} (%{build_number})</span> to the Play Store track <span class="emphasize">%{track}</span> due to <span class="emphasize">%{failure_reason}</span>'
+    app_store_submission:
+      prepare_release_failed_html: 'Failed to prepare release for <span class="emphasize">%{version} (%{build_number})</span> to submit for review in the App Store'
+      submitted_for_review_html: 'Submitted release for <span class="emphasize">%{version} (%{build_number})</span> for review to the App Store'
+      resubmitted_for_review_html: 'Release <span class="emphasize">%{version} (%{build_number})</span> was resubmitted for review to the App Store'
+      review_approved_html: 'Review for release for <span class="emphasize">%{version} (%{build_number})</span> approved by the App Store'
+      review_rejected_html: 'Review for release for <span class="emphasize">%{version} (%{build_number})</span> was rejected by the App Store'
+      cancelled_html: 'Release submission to the App Store for <span class="emphasize">%{version} (%{build_number})</span> was cancelled'
+      failed_html: 'Failed to create an inflight store version for <span class="emphasize">%{version} (%{build_number})</span> in the App Store due to <span class="emphasize">%{failure_reason}</span>'
+    play_store_rollout:
+      started_html: 'Started rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track at <span class="emphasize">%{rollout_percentage}%</span>'
+      updated_html: 'Updated the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track to <span class="emphasize">%{rollout_percentage}%</span>'
+      halted_html: 'Halted the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track at <span class="emphasize">%{rollout_percentage}%</span>'
+      resumed_html: 'Resumed the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track at <span class="emphasize">%{rollout_percentage}%</span>'
+      completed_html: 'Completed the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track at <span class="emphasize">%{rollout_percentage}%</span>'
+      fully_released_html: 'Fully released <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track from <span class="emphasize">%{rollout_percentage}%</span>'
+      finished_manually_html: 'Marked the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track as finished manually'
+    app_store_rollout:
+      started_html: 'Started rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
+      updated_html: 'Rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store is at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
+      halted_html: 'Halted the rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
+      completed_html: 'Completed the rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
+      fully_released_html: 'Fully released <span class="emphasize">%{version} (%{build_number})</span> to App Store from phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
+      paused_html: 'Paused the rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
+      resumed_html: 'Resumed the rollout of <span class="emphasize">%{version} (%{build_number})</span> to App Store at phase <span class="emphasize">%{current_stage} (%{rollout_percentage}%)</span>'
+    store_rollout:
+      reasons:
+        started: 'Rollout started'
+        paused: 'Rollout paused'
+        resumed: 'Rollout resumed'
+        increased: 'Rollout increased'
+        completed: 'Rollout completed'
+        halted: 'Rollout halted'
+        fully_released: 'Rollout fully released'

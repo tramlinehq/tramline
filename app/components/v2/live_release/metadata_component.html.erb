@@ -1,4 +1,14 @@
-<%= render V2::FormComponent.new(url: update_metadata_path, method: :patch, free_form: true) do |f| %>
+<div class="mb-7">
+  <% if editable? %>
+    <%= render V2::AlertComponent.new(type: :info, title: "You can edit the release notes until the review process has begun on the stores.", full_screen: false) %>
+  <% else %>
+    <%= render V2::AlertComponent.new(kind: :announcement, type: :announce, title: "Release notes cannot be edited") do %>
+      Unfortunately, you can't edit the release notes once the review process has begun on the stores.
+    <% end %>
+  <% end %>
+</div>
+
+<%= render V2::FormComponent.new(url: update_metadata_path, method: :patch, data: { turbo: false }, free_form: true) do |f| %>
   <div>
     <div class="flex flex-col gap-y-2 mb-6">
       <div class="flex gap-x-4">
@@ -43,17 +53,17 @@
             <%= render V2::ButtonComponent.new(
               scheme: :light,
               options: root_path,
-              type: :button,
+              type: :link,
               disabled: true,
               size: :xxs,
               label: "Copy to all locales",
-              html_options: { data: { turbo_confirm: "This will accept the commits in the queue, are you sure?" } }) do |b|
+              html_options: { data: { turbo_confirm: "This will copy the release notes to all locales, are you sure?" } }) do |b|
               b.with_icon("v2/square_stack.svg", size: :sm)
             end %>
           </div>
 
           <div>
-            <%= f.F.authz_submit "Save current locale", "v2/archive.svg", size: :xxs %>
+            <%= f.F.authz_submit "Save current locale", "v2/archive.svg", size: :xxs, disabled: !editable? %>
           </div>
         </div>
       </div>

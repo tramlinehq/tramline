@@ -137,7 +137,12 @@ describe Deployments::AppStoreConnect::Release do
         described_class.prepare_for_release!(run)
 
         release_metadatum = run.release_platform_run.release_metadatum
-        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, false, release_metadatum, false).once
+        metadata = {
+          whats_new: release_metadatum.release_notes,
+          promotional_text: release_metadatum.promo_text,
+          locale: release_metadatum.locale
+        }
+        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, false, metadata, false).once
       end
 
       it "marks the deployment run as prepared release" do
@@ -151,14 +156,24 @@ describe Deployments::AppStoreConnect::Release do
         described_class.prepare_for_release!(run)
 
         release_metadatum = run.release_platform_run.release_metadatum
-        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, true, release_metadatum, false).once
+        metadata = {
+          whats_new: release_metadatum.release_notes,
+          promotional_text: release_metadatum.promo_text,
+          locale: release_metadatum.locale
+        }
+        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, true, metadata, false).once
       end
 
       it "prepares the release with force" do
         described_class.prepare_for_release!(run, force: true)
 
         release_metadatum = run.release_platform_run.release_metadatum
-        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, false, release_metadatum, true).once
+        metadata = {
+          whats_new: release_metadatum.release_notes,
+          promotional_text: release_metadatum.promo_text,
+          locale: release_metadatum.locale
+        }
+        expect(providable_dbl).to have_received(:prepare_release).with(run.build_number, run.release_version, false, metadata, true).once
       end
     end
 

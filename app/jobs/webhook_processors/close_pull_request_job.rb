@@ -1,7 +1,6 @@
 class WebhookProcessors::ClosePullRequestJob < ApplicationJob
   queue_as :high
 
-  # FIXME: We treat "closed" and "merged" as the same thing
   def perform(train_id, pr_attributes)
     head_ref = pr_attributes[:head_ref]
     number = pr_attributes[:number]

@@ -25,7 +25,7 @@ class WorkflowProcessors::WorkflowRun
   end
 
   attr_reader :step_run
-  delegate :release, to: :step_run
+  delegate :release, :build_artifact_name_pattern, to: :step_run
   delegate :in_progress?, :successful?, :failed?, :halted?, :artifacts_url, to: :runner
 
   def update_status!
@@ -46,7 +46,7 @@ class WorkflowProcessors::WorkflowRun
 
   memoize def runner
     return GITHUB.new(workflow_run) if github_integration?
-    BITRISE.new(step_run.ci_cd_provider, workflow_run, step_run) if bitrise_integration?
+    BITRISE.new(step_run.ci_cd_provider, workflow_run, build_artifact_name_pattern) if bitrise_integration?
   end
 
   delegate :github_integration?, :bitrise_integration?, to: :integration

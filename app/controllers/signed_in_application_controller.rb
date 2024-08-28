@@ -1,8 +1,10 @@
 class SignedInApplicationController < ApplicationController
   include Authenticatable
+  include SiteHttp
   DEFAULT_TIMEZONE = "Asia/Kolkata"
   DEFAULT_TIMEZONE_LIST_REGEX = /Asia\/Kolkata/
   PATH_PARAMS_UNDER_APP = [:id, :app_id, :integration_id, :train_id, :platform_id]
+  Action = Coordinators::Actions
 
   layout -> { ensure_supported_layout("signed_in_application") }
 
@@ -26,7 +28,10 @@ class SignedInApplicationController < ApplicationController
     :subscribed_org?,
     :billing?,
     :billing_link,
-    :logout_path
+    :logout_path,
+    :ci_cd_provider_logo,
+    :vcs_provider_logo,
+    :teams_supported?
 
   rescue_from NotAuthorizedError, with: :user_not_authorized
 
@@ -84,7 +89,7 @@ class SignedInApplicationController < ApplicationController
   end
 
   def writer?
-    current_user.writer_for?(current_organization)
+    @is_writer ||= current_user.writer_for?(current_organization)
   end
 
   def set_time_zone
@@ -139,6 +144,18 @@ class SignedInApplicationController < ApplicationController
 
   def new_app
     current_organization.apps.new
+  end
+
+  def vcs_provider_logo
+    @vcs_provider_logo ||= "integrations/logo_#{@app.vcs_provider}.png"
+  end
+
+  def ci_cd_provider_logo
+    @ci_cd_provider_logo ||= "integrations/logo_#{@app.ci_cd_provider}.png"
+  end
+
+  def teams_supported?
+    @teams_supported ||= current_organization&.teams_supported?
   end
 
   def default_timezones

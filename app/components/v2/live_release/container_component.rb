@@ -1,31 +1,53 @@
-class V2::LiveRelease::ContainerComponent < V2::BaseReleaseComponent
+class V2::LiveRelease::ContainerComponent < V2::BaseComponent
   renders_one :back_button, -> { V2::BackButtonComponent.new(path: app_train_releases_path(release.app, release.train), to: "the train") }
   renders_many :tabs, V2::LiveRelease::StepComponent
 
-  SELECTED_TAB_STYLE = "active text-main bg-white border-l-3"
-
-  TAB_STATUS_ICON = {
-    none: {icon: "v2/circle.svg", classes: STATUS_COLOR_PALETTE[:neutral].join(" ") + " !bg-backgroundLight-50"},
-    blocked: {icon: "v2/circle_x.svg", classes: STATUS_COLOR_PALETTE[:inert].join(" ")},
-    ongoing: {icon: "v2/circle_dashed.svg", classes: STATUS_COLOR_PALETTE[:ongoing].join(" ")},
-    success: {icon: "v2/circle_check_big.svg", classes: STATUS_COLOR_PALETTE[:success].join(" ")}
+  RELEASE_PHASE = {
+    completed: ["Complete", :success],
+    finishing: ["Finishing up", :success],
+    kickoff: ["Kickoff", :routine],
+    stabilization: ["Stabilizing the release", :routine],
+    review: ["Under store review", :ongoing],
+    rollout: ["Rolling out to users", :inert],
+    stopped: ["Stopped", :failure]
   }
+  SELECTED_TAB_STYLE = "active text-main bg-main-100 border-l-2 border-main-400"
+  TAB_STATUS_ICON = {
+    none: {icon: "v2/circle_dashed.svg", classes: STATUS_COLOR_PALETTE[:neutral].join(" ") + " !bg-backgroundLight-50"},
+    blocked: {icon: "v2/circle_x.svg", classes: STATUS_COLOR_PALETTE[:inert].join(" ")},
+    ongoing: {icon: "v2/circle_dashed.svg", classes: STATUS_COLOR_PALETTE[:ongoing].join(" ") + " animate-pulse"},
+    success: {icon: "v2/circle_check_big.svg", classes: STATUS_COLOR_PALETTE[:success].join(" ")},
+    unblocked: {icon: "v2/circle_dashed.svg", classes: STATUS_COLOR_PALETTE[:ongoing].join(" ")}
+  }
+  RIGHT_GUTTER = "pr-4"
 
-  def initialize(release, title:, tab_config: [], error_resource: nil)
-    raise ArgumentError, "tab_config must be a Hash" unless tab_config.is_a?(Hash)
-
-    @release = release
+  def initialize(release, title:, error_resource: nil)
+    @release = ReleasePresenter.new(release, self)
     @title = title
-    @tab_config = tab_config
     @error_resource = error_resource
-    super(@release)
   end
 
-  attr_reader :title, :tab_config, :error_resource, :release
+  attr_reader :title, :error_resource, :release
+  delegate :cross_platform?,
+    :hotfix?,
+    :display_release_version,
+    :finished?,
+    :active?,
+    :partially_finished?,
+    :release_branch,
+    :reldex,
+    :tag_name,
+    :platform,
+    :automatic?,
+    :stop_release_warning, to: :release
+
+  def overall_status
+    RELEASE_PHASE.fetch(current_overall_status.to_sym)
+  end
 
   def sorted_sections
-    tab_config.to_h do |s, configs|
-      [s, configs.sort_by { |_, c| c[:position] }]
+    live_release_tab_configuration.to_h do |s, configs|
+      [s.to_s.humanize, configs.sort_by { |_, c| c[:position] }]
     end
   end
 
@@ -48,25 +70,5 @@ class V2::LiveRelease::ContainerComponent < V2::BaseReleaseComponent
 
   def sidebar_title_tag(config)
     config[:unavailable] ? :div : :a
-  end
-
-  # FIXME: use the new rollout domain object
-  memoize def staged_rollout_status(platform_run)
-    latest_store_release = platform_run.store_releases.first
-    return unless latest_store_release&.staged_rollout?
-
-    staged_rollout = latest_store_release.staged_rollout
-    return if staged_rollout.blank?
-
-    percentage = ""
-
-    if staged_rollout.last_rollout_percentage.present?
-      formatter = (staged_rollout.last_rollout_percentage % 1 == 0) ? "%.0f" : "%.02f"
-      percentage = formatter % staged_rollout.last_rollout_percentage
-    end
-
-    status = (staged_rollout.completed? || staged_rollout.fully_released?) ? :success : :ongoing
-
-    {text: "#{percentage}% rollout", status:}
   end
 end

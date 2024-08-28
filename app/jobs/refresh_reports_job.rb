@@ -6,7 +6,16 @@ class RefreshReportsJob < ApplicationJob
     release = Release.find(release_id)
     train = release.train
 
-    Charts::DevopsReport.warm(train)
-    Queries::ReleaseSummary.warm(release_id)
+    if release.is_v2?
+      Queries::ReleaseBreakdown.warm(release.id)
+    else
+      Queries::ReleaseSummary.warm(release_id)
+    end
+
+    if train.product_v2?
+      Queries::DevopsReport.warm(train)
+    else
+      Charts::DevopsReport.warm(train)
+    end
   end
 end

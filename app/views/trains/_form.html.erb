@@ -1,12 +1,10 @@
 <% url = train.new_record? ? app_trains_path(app) : app_train_path(app, train) %>
 
 <% if @edit_not_allowed %>
-  <div class="mb-8">
-    <%= render V2::AlertComponent.new(kind: :banner, type: :notice, title: "Train not editable", dismissible: false, full_screen: false) do %>
-      The train settings can not be edited while there are active releases. Please stop or finish the releases to make
-      changes.
-    <% end %>
-  </div>
+  <%= render V2::AlertComponent.new(kind: :banner, type: :notice, title: "Train not editable", full_screen: false) do %>
+    The train settings can not be edited while there are active releases. Please stop or finish the releases to make
+    changes.
+  <% end %>
 <% end %>
 
 <div data-controller="branching-selector"
@@ -44,15 +42,6 @@
             <%= link_to_external "docs", "https://docs.tramline.app/automations#version-name", class: "underline" %>
             to learn more about versioning.
           </span>
-      <% end %>
-
-      <% if train.fixed_build_number? %>
-        <div>
-          <%= section.F.labeled_select :versioning_strategy, "Versioning Strategy",
-                                       options_for_select(Train.versioning_strategies.transform_values(&:titleize).invert, train.versioning_strategy),
-                                       { required: true, },
-                                       { disabled: train.persisted? } %>
-        </div>
       <% end %>
 
       <div data-controller="domain--version-name-help"
@@ -149,7 +138,7 @@
         </div>
 
         <div hidden data-branching-selector-target="almostTrunk"></div>
-        <div><!-- this is required to maintain intended grid structure --></div>
+        <div><!-- grid maintenance --></div>
 
         <div hidden data-branching-selector-target="releaseBackMerge">
           <div class="mt-2">

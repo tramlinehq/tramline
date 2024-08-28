@@ -1,72 +1,108 @@
 class StoreSubmissionsController < SignedInApplicationController
-  before_action :require_write_access!
-  before_action :set_release
-  before_action :set_release_platform
-  before_action :set_release_platform_run
-  before_action :set_store_submission, only: [:update, :prepare, :submit_for_review, :cancel]
+  include Mocks::Sandboxable
+  include Tabbable
+
+  before_action :require_write_access!, except: [:index]
+  before_action :set_submission
+  before_action :ensure_triggerable, only: [:trigger]
+  before_action :ensure_actionable, only: [:update, :prepare, :submit_for_review, :cancel]
+  before_action :ensure_retryable, only: [:retry]
   before_action :ensure_reviewable, only: [:submit_for_review]
   before_action :ensure_cancellable, only: [:cancel]
-  before_action :ensure_preparable, only: [:prepare]
 
-  def create
-    build = @release_platform_run.builds.find_by(id: submission_params[:build_id])
-
-    redirect_back fallback_location: root_path, notice: t(".create.invalid_build") unless build
-
-    submission = @release_platform_run.store_submissions.new
-    submission.attach_build!(build)
-    submission.save!
-
-    redirect_back fallback_location: root_path, notice: t(".create.success")
+  def index
+    live_release!
+    @app = @release.app
   end
 
-  def update
-    build = @release_platform_run.builds.find_by(id: submission_params[:build_id])
+  def trigger
+    return mock_trigger_submission if sandbox_mode?
 
-    redirect_back fallback_location: root_path, notice: t(".update.invalid_build") unless build
-
-    if @submission.attach_build!(build)
-      @submission.start_prepare!(force: true)
-      redirect_back fallback_location: root_path, notice: t(".update.success")
+    if (result = Action.trigger_submission!(@submission)).ok?
+      redirect_back fallback_location: fallback_path, notice: t(".success")
     else
-      redirect_back fallback_location: root_path, flash: {error: t(".update.failure", errors: @submission.display_attr(:failure_reason))}
+      redirect_back fallback_location: fallback_path, flash: {error: t(".failure", errors: result.error.message)}
     end
   end
 
   def submit_for_review
-    @submission.start_submission!
+    return mock_submit_for_review_for_app_store if sandbox_mode?
 
-    if @submission.failed?
-      redirect_back fallback_location: root_path, flash: {error: t(".submit_for_review.failure", errors: @submission.display_attr(:failure_reason))}
+    if (result = Action.start_production_review!(@submission)).ok?
+      redirect_back fallback_location: fallback_path, notice: t(".submit_for_review.success")
     else
-      redirect_back fallback_location: root_path, notice: t(".submit_for_review.success")
+      redirect_back fallback_location: fallback_path, flash: {error: t(".submit_for_review.failure", errors: result.error.message)}
     end
   end
 
   def cancel
-    @submission.start_cancellation!
+    return mock_cancel_review_for_app_store if sandbox_mode?
 
-    if @submission.failed?
-      redirect_back fallback_location: root_path, flash: {error: t(".cancel.failure", errors: @submission.display_attr(:failure_reason))}
+    if (result = Action.cancel_production_review!(@submission)).ok?
+      redirect_back fallback_location: fallback_path, notice: t(".cancel.success")
     else
-      redirect_back fallback_location: root_path, notice: t(".cancel.success")
+      redirect_back fallback_location: fallback_path, flash: {error: t(".cancel.failure", errors: result.error.message)}
+    end
+  end
+
+  def update
+    return mock_update_production_build(build_id) if sandbox_mode?
+
+    if (result = Action.update_production_build!(@submission, build_id)).ok?
+      redirect_back fallback_location: fallback_path, notice: t(".update.success")
+    else
+      redirect_back fallback_location: fallback_path, flash: {error: t(".update.failure", errors: result.error.message)}
     end
   end
 
   def prepare
-    @submission.start_prepare!(force: true)
+    return mock_prepare_for_store if sandbox_mode?
 
-    redirect_back fallback_location: root_path, notice: t(".prepare.success")
+    if (result = Action.prepare_production_submission!(@submission)).ok?
+      redirect_back fallback_location: fallback_path, notice: t(".prepare.success")
+    else
+      redirect_back fallback_location: fallback_path, flash: {error: t(".failure", errors: result.error.message)}
+    end
   end
 
-  private
+  def retry
+    if (result = Action.retry_submission!(@submission)).ok?
+      redirect_back fallback_location: fallback_path, notice: t(".success")
+    else
+      redirect_back fallback_location: fallback_path, flash: {error: t(".failure", errors: result.error.message)}
+    end
+  end
 
-  def submission_params
-    params.require(:store_submission).permit(:build_id, :force)
+  protected
+
+  def build_id
+    params.require(:store_submission).permit(:build_id).fetch(:build_id)
+  end
+
+  def set_submission
+    @submission = StoreSubmission.find_by(id: params[:id])
+  end
+
+  def ensure_actionable
+    unless @submission.actionable?
+      redirect_back fallback_location: root_path, flash: {error: t(".submission_not_active")}
+    end
+  end
+
+  def ensure_retryable
+    unless @submission.retryable?
+      redirect_back fallback_location: root_path, flash: {error: t(".submission_not_retryable")}
+    end
+  end
+
+  def ensure_triggerable
+    unless @submission.triggerable?
+      redirect_back fallback_location: fallback_path, flash: {error: t(".trigger.failure")}
+    end
   end
 
   def ensure_cancellable
-    unless @submission.cancelable?
+    unless @submission.may_start_cancellation?
       redirect_back fallback_location: root_path, flash: {error: t(".cancel.uncanceleable")}
     end
   end
@@ -77,25 +113,7 @@ class StoreSubmissionsController < SignedInApplicationController
     end
   end
 
-  def ensure_preparable
-    unless @submission.startable?
-      redirect_back fallback_location: root_path, flash: {error: t(".prepare.unstartable")}
-    end
-  end
-
-  def set_release
-    @release = Release.friendly.find(params[:release_id])
-  end
-
-  def set_release_platform
-    @release_platform = @release.release_platforms.friendly.find_by(platform: params[:platform_id])
-  end
-
-  def set_release_platform_run
-    @release_platform_run = @release.release_platform_runs.find_by(release_platform: @release_platform)
-  end
-
-  def set_store_submission
-    @submission = @release_platform_run.store_submissions.find_by(id: params[:id])
+  def fallback_path
+    overview_release_path(@submission.release)
   end
 end

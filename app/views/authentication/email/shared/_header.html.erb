@@ -11,6 +11,8 @@
   <% end %>
 </div>
 
-<%= render V2::ErrorComponent.new(resource) %>
-<%= render V2::FlashComponent.new(flash) %>
 
+<div class="mb-4">
+  <%= render V2::FlashComponent.new(flash, full_screen: false) %>
+  <%= render V2::ErrorComponent.new(resource, full_screen: false) %>
+</div>

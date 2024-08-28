@@ -406,6 +406,20 @@ describe ReleasePlatformRun do
         expect(release_platform_run).to be_version_bump_required
       end
     end
+
+    context "when product v2" do
+      let(:release) { create(:release, :with_no_platform_runs, is_v2: true) }
+      let(:release_platform_run) { create(:release_platform_run, release:) }
+
+      it "is false when it does not have a production release" do
+        expect(release_platform_run.version_bump_required?).not_to be(true)
+      end
+
+      it "is true when production release requires a version bump" do
+        create(:production_release, release_platform_run:, status: :active)
+        expect(release_platform_run.version_bump_required?).to be(true)
+      end
+    end
   end
 
   describe "#bump_version!" do
@@ -583,47 +597,6 @@ describe ReleasePlatformRun do
 
         expect(ongoing_release_platform_run.release_version).to eq("1.4")
       end
-    end
-  end
-
-  describe "#on_finish!" do
-    it "schedules a platform-specific tag job if cross-platform app" do
-      app = create(:app, :cross_platform)
-      train = create(:train, app:, tag_platform_releases: true)
-      release = create(:release, train:)
-      release_platform = create(:release_platform, train:)
-      release_platform_run = create(:release_platform_run, :on_track, release:, release_platform:)
-      allow(ReleasePlatformRuns::CreateTagJob).to receive(:perform_later)
-
-      release_platform_run.finish!
-
-      expect(ReleasePlatformRuns::CreateTagJob).to have_received(:perform_later).with(release_platform_run.id).once
-    end
-
-    it "does not schedule a platform-specific tag job if cross-platform app tagging all store releases" do
-      app = create(:app, :cross_platform)
-      train = create(:train, app:, tag_platform_releases: true, tag_all_store_releases: true)
-      release = create(:release, train:)
-      release_platform = create(:release_platform, train:)
-      release_platform_run = create(:release_platform_run, :on_track, release:, release_platform:)
-      allow(ReleasePlatformRuns::CreateTagJob).to receive(:perform_later)
-
-      release_platform_run.finish!
-
-      expect(ReleasePlatformRuns::CreateTagJob).not_to have_received(:perform_later).with(release_platform_run.id)
-    end
-
-    it "does not schedule a platform-specific tag job for single-platform apps" do
-      app = create(:app, :android)
-      train = create(:train, app:)
-      release = create(:release, train:)
-      release_platform = create(:release_platform, train:)
-      release_platform_run = create(:release_platform_run, :on_track, release:, release_platform:)
-      allow(ReleasePlatformRuns::CreateTagJob).to receive(:perform_later)
-
-      release_platform_run.finish!
-
-      expect(ReleasePlatformRuns::CreateTagJob).not_to have_received(:perform_later).with(release_platform_run.id)
     end
   end
 

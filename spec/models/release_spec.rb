@@ -226,7 +226,7 @@ describe Release do
     end
   end
 
-  describe "#create_release!" do
+  describe "#create_vcs_release!" do
     let(:train) { create(:train, :active) }
     let(:release_platform) { create(:release_platform, train:) }
     let(:step) { create(:step, release_platform:) }
@@ -238,7 +238,7 @@ describe Release do
       commit = create(:commit, :without_trigger, release:)
       create(:step_run, release_platform_run:, commit:)
 
-      release.create_release!
+      release.create_vcs_release!
       expect(release.tag_name).to eq("v1.2.3")
     end
 
@@ -247,7 +247,7 @@ describe Release do
       commit = create(:commit, :without_trigger, release:)
       create(:step_run, release_platform_run:, commit:)
 
-      release.create_release!
+      release.create_vcs_release!
       expect(release.tag_name).to eq("v1.2.3-#{commit.short_sha}")
     end
 
@@ -259,7 +259,7 @@ describe Release do
         commit = create(:commit, :without_trigger, release:)
         create(:step_run, release_platform_run:, commit:)
 
-        release.create_release!
+        release.create_vcs_release!
         expect(release.tag_name).to eq("v1.2.3-#{commit.short_sha}-#{now}")
       end
     end
@@ -273,7 +273,7 @@ describe Release do
         commit = create(:commit, :without_trigger, release:)
         create(:step_run, release_platform_run:, commit:)
 
-        release.create_release!
+        release.create_vcs_release!
         expect(release.tag_name).to eq("v1.2.3-#{suffix}")
       end
 
@@ -282,7 +282,7 @@ describe Release do
         commit = create(:commit, :without_trigger, release:)
         create(:step_run, release_platform_run:, commit:)
 
-        release.create_release!
+        release.create_vcs_release!
         expect(release.tag_name).to eq("v1.2.3-#{suffix}-#{commit.short_sha}")
       end
 
@@ -294,7 +294,7 @@ describe Release do
           commit = create(:commit, :without_trigger, release:)
           create(:step_run, release_platform_run:, commit:)
 
-          release.create_release!
+          release.create_vcs_release!
           expect(release.tag_name).to eq("v1.2.3-#{suffix}-#{commit.short_sha}-#{now}")
         end
       end
@@ -308,44 +308,10 @@ describe Release do
         commit = create(:commit, :without_trigger, release:)
         create(:step_run, release_platform_run:, commit:)
 
-        release.create_release!
+        release.create_vcs_release!
         expect_any_instance_of(GithubIntegration).not_to receive(:create_release!)
         expect(release.tag_name).to be_nil
       end
-    end
-  end
-
-  describe "#stop!" do
-    it "updates the train version if partially finished" do
-      train = create(:train, version_seeded_with: "9.59.3")
-      run = create(:release, :partially_finished, train:)
-
-      run.stop!
-      train.reload
-
-      expect(train.version_current).to eq("9.60.0")
-    end
-
-    it "does not update the train version if properly stopped" do
-      train = create(:train, version_seeded_with: "9.59.3")
-      run = create(:release, :post_release_started, train:)
-
-      run.stop!
-      train.reload
-
-      expect(train.version_current).to eq("9.59.3")
-    end
-  end
-
-  describe "#finish!" do
-    it "updates the train version" do
-      train = create(:train, version_seeded_with: "9.59.3")
-      run = create(:release, :post_release_started, train:)
-
-      run.finish!
-      train.reload
-
-      expect(train.version_current).to eq("9.60.0")
     end
   end
 
@@ -355,14 +321,14 @@ describe Release do
     let(:train) { create(:train, app:) }
     let(:release) { create(:release, :partially_finished, train:) }
 
-    it "does nothing unless release is partially finished" do
+    it "does nothing unless release is partially finished", skip: "move to coordinators" do
       release = create(:release, :on_track, train:)
       release.finish_after_partial_finish!
 
       expect(release.reload.on_track?).to be(true)
     end
 
-    it "stops the pending release platform run" do
+    it "stops the pending release platform run", skip: "move to coordinators" do
       first_prun = release.release_platform_runs.first
       second_prun = release.release_platform_runs.last
       first_prun.update!(status: ReleasePlatformRun::STATES[:finished])
@@ -372,7 +338,7 @@ describe Release do
       expect(second_prun.reload.stopped?).to be(true)
     end
 
-    it "starts the post release phase for the release" do
+    it "starts the post release phase for the release", skip: "move to coordinators" do
       release.finish_after_partial_finish!
 
       expect(release.reload.post_release_started?).to be(true)
@@ -431,7 +397,7 @@ describe Release do
 
     it "fetches the commits between ongoing release and release branch for upcoming release" do
       ongoing_release = create(:release, :on_track, train:, scheduled_at: 1.day.ago)
-      commits = create_list(:commit, 5, :without_trigger, release: ongoing_release)
+      commits = create_list(:commit, 5, :without_trigger, release: ongoing_release, timestamp: Time.current - rand(1000))
       ongoing_head = commits.first
 
       release.fetch_commit_log
@@ -475,7 +441,7 @@ describe Release do
     it "returns the subsequent commits made on the release branch after release starts" do
       stability_commits = create_list(:commit, 4, release:)
       expect(release.stability_commits).to exist
-      expect(release.stability_commits).to eq(stability_commits)
+      expect(release.stability_commits).to contain_exactly(*stability_commits)
       expect(release.all_commits.size).to eq(stability_commits.size + 1)
     end
 

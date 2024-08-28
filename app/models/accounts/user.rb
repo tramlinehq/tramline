@@ -48,6 +48,10 @@ class Accounts::User < ApplicationRecord
   accepts_nested_attributes_for :organizations
   accepts_nested_attributes_for :memberships, allow_destroy: false
 
+  def super_admin?
+    Flipper.enabled?(:super_admin, self)
+  end
+
   def email_authentication
     email_authentications.first
   end
@@ -161,6 +165,7 @@ class Accounts::User < ApplicationRecord
     access_for(organization)&.team
   end
 
+  # TODO: [nplus1]
   def writer_for?(organization)
     access_for(organization).writer?
   end
@@ -173,14 +178,6 @@ class Accounts::User < ApplicationRecord
     invitations
       .filter { |i| i.organization == organization }
       .find(&:accepted?)
-  end
-
-  def release_monitoring?
-    Flipper.enabled?(:release_monitoring, self)
-  end
-
-  def reldex_enabled?
-    Flipper.enabled?(:reldex_enabled, self)
   end
 
   # FIXME: This assumes that the blob is always a BuildArtifact

@@ -10,7 +10,14 @@ class V2::BaseComponent < ViewComponent::Base
     :default_app,
     :new_app,
     :default_timezones,
-    :logout_path, to: :helpers
+    :content_security_policy_nonce,
+    :logout_path,
+    :ci_cd_provider_logo,
+    :vcs_provider_logo,
+    :live_release_tab_configuration,
+    :current_overall_status,
+    :teams_supported?,
+    to: :helpers
   delegate :team_colors, to: :current_organization
 
   def writer?
@@ -24,4 +31,8 @@ class V2::BaseComponent < ViewComponent::Base
   end
 
   def disabled? = @disabled
+
+  def html_opts(method, message, params: {})
+    {method:, params:, data: {turbo_method: method, turbo_confirm: message}}
+  end
 end

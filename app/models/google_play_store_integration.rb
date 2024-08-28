@@ -26,20 +26,22 @@ class GooglePlayStoreIntegration < ApplicationRecord
   after_create :draft_check
   after_create_commit :refresh_external_app
 
+  PROD_CHANNEL = {id: :production, name: "production", is_production: true}.freeze
   CHANNELS = [
-    {id: :production, name: "production", is_production: true},
+    PROD_CHANNEL,
     {id: :beta, name: "open testing", is_production: false},
     {id: :alpha, name: "closed testing", is_production: false},
     {id: :internal, name: "internal testing", is_production: false}
   ]
   PUBLIC_CHANNELS = %w[production beta alpha]
+  ACTIVE_STORE_STATUSES = %w[completed inProgress].freeze
 
   DEVELOPER_URL_TEMPLATE =
     Addressable::Template.new("https://play.google.com/console/u/0/developers/{project_id}")
   PUBLIC_ICON = "https://storage.googleapis.com/tramline-public-assets/play-console.png".freeze
   MAX_RETRY_ATTEMPTS = 3
   ALLOWED_ERRORS = [:build_exists_in_build_channel]
-  RETRYABLE_ERRORS = [:timeout, :duplicate_call, :unauthorized, :app_review_rejected]
+  RETRYABLE_ERRORS = [:timeout, :duplicate_call, :unauthorized]
 
   def access_key
     StringIO.new(json_key)
@@ -49,26 +51,26 @@ class GooglePlayStoreIntegration < ApplicationRecord
     Installations::Google::PlayDeveloper::Api.new(app.bundle_identifier, access_key)
   end
 
-  def rollout_release(channel, build_number, version, rollout_percentage, release_notes)
-    GitHub::Result.new do
-      installation.create_release(channel, build_number, version, rollout_percentage, release_notes)
+  def create_draft_release(channel, build_number, version, release_notes, retry_on_review_fail: false)
+    execute_with_retry(retry_on_review_fail:) do |skip_review|
+      installation.create_draft_release(channel, build_number, version, release_notes, skip_review:)
     end
   end
 
-  def create_draft_release(channel, build_number, version, release_notes)
-    GitHub::Result.new do
-      installation.create_draft_release(channel, build_number, version, release_notes)
+  def rollout_release(channel, build_number, version, rollout_percentage, release_notes, retry_on_review_fail: false)
+    execute_with_retry(retry_on_review_fail:) do |skip_review|
+      installation.create_release(channel, build_number, version, rollout_percentage, release_notes, skip_review:)
     end
   end
 
-  def halt_release(channel, build_number, version, rollout_percentage)
-    execute_with_retry do |skip_review|
+  def halt_release(channel, build_number, version, rollout_percentage, retry_on_review_fail: true)
+    execute_with_retry(retry_on_review_fail:) do |skip_review|
       installation.halt_release(channel, build_number, version, rollout_percentage, skip_review:)
     end
   end
 
   def upload(file)
-    execute_with_retry do |skip_review|
+    execute_with_retry(retry_on_review_fail: true) do |skip_review|
       installation.upload(file, skip_review:)
     rescue Installations::Google::PlayDeveloper::Error => ex
       raise ex unless ALLOWED_ERRORS.include?(ex.reason)
@@ -77,10 +79,6 @@ class GooglePlayStoreIntegration < ApplicationRecord
 
   def metadata
     {}
-  end
-
-  def find_build(_)
-    raise Integration::UnsupportedAction
   end
 
   def creatable?
@@ -108,17 +106,17 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def draft_check?
-    channel_data.find { |c| c[:name].in?(%w[alpha beta production]) && c[:releases].present? }.blank?
+    channel_data.find { |c| PUBLIC_CHANNELS.include?(c[:name]) && c[:releases].present? }.blank?
   end
 
   def build_present_in_public_track?(build_number)
-    channel_data&.any? { |c| c[:name].in?(%w[alpha beta production]) && build_number.in?(c[:releases].pluck(:build_number)) }
+    channel_data&.any? { |c| PUBLIC_CHANNELS.include?(c[:name]) && build_number.in?(c[:releases].pluck(:build_number)) }
   end
 
   def build_present_in_channel?(channel, build_number)
     track_data = installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS)
     return unless track_data
-    build_number.in?(track_data[:releases].pluck(:build_number))
+    track_data[:releases].any? { |r| r[:build_number].eql?(build_number.to_s) && ACTIVE_STORE_STATUSES.include?(r[:status]) }
   end
 
   def to_s
@@ -130,6 +128,7 @@ class GooglePlayStoreIntegration < ApplicationRecord
   end
 
   def channels
+    channel_data.map(&:with_indifferent_access)
     CHANNELS.map(&:with_indifferent_access)
   end
 
@@ -195,21 +194,33 @@ class GooglePlayStoreIntegration < ApplicationRecord
     installation.find_latest_build_number
   end
 
+  delegate :find_build, to: :installation
+
   def deep_link(_, _)
     nil
   end
 
+  def find_build_in_track(channel, build_number)
+    installation.get_track(channel, CHANNEL_DATA_TRANSFORMATIONS).dig(:releases)&.find { |r| r[:build_number] == build_number.to_s }
+  end
+
   private
 
-  def execute_with_retry
-    attempt = 1
-    skip_review = nil
+  def execute_with_retry(attempt: 0, skip_review: false, retry_on_review_fail: false, &block)
     GitHub::Result.new do
       yield(skip_review)
     rescue Installations::Google::PlayDeveloper::Error => ex
-      attempt += 1
-      skip_review = true if ex.reason == :app_review_rejected
-      retry if RETRYABLE_ERRORS.include?(ex.reason) && attempt <= MAX_RETRY_ATTEMPTS
+      raise ex if attempt >= MAX_RETRY_ATTEMPTS
+      next_attempt = attempt + 1
+
+      if ex.reason == :app_review_rejected && retry_on_review_fail
+        return execute_with_retry(attempt: next_attempt, skip_review: true, retry_on_review_fail:, &block)
+      end
+
+      if RETRYABLE_ERRORS.include?(ex.reason)
+        return execute_with_retry(attempt: next_attempt, retry_on_review_fail:, &block)
+      end
+
       raise ex
     end
   end

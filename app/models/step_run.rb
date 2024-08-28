@@ -318,9 +318,6 @@ class StepRun < ApplicationRecord
 
   def trigger_deployment(deployment = first_deployment)
     Triggers::Deployment.call(step_run: self, deployment: deployment)
-
-    # TODO: This is temporary, to connect old stability to new build
-    create_and_attach_build_to_submission if organization.product_v2? && deployment.first? && step.release?
   end
 
   def resume_deployments
@@ -422,22 +419,6 @@ class StepRun < ApplicationRecord
     update(build_notes_raw: relevant_changes)
   end
 
-  def create_and_attach_build_to_submission
-    build = release_platform_run.builds.create(
-      generated_at: build_artifact&.generated_at || Time.current,
-      build_number: build_number,
-      version_name: release_version,
-      artifact: build_artifact,
-      commit:
-    )
-
-    store_submission = release_platform_run.active_store_submission
-
-    if store_submission.present? && store_submission.build.blank?
-      store_submission.attach_build!(build)
-    end
-  end
-
   def previous_step_run
     release_platform_run
       .step_runs_for(step)
@@ -470,8 +451,7 @@ class StepRun < ApplicationRecord
   end
 
   def update_build_number!
-    build_number = train.fixed_build_number? ? app.build_number : app.bump_build_number!
-    update!(build_number:)
+    update!(build_number: app.bump_build_number!)
   end
 
   def workflow_inputs
@@ -530,6 +510,6 @@ class StepRun < ApplicationRecord
   end
 
   def finalize_release
-    release_platform_run.finish! if release_platform_run.finalizable?
+    Coordinators::FinishPlatformRun.call(release_platform_run) if release_platform_run.finalizable?
   end
 end

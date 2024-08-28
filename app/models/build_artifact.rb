@@ -8,19 +8,18 @@
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
 #  build_id     :uuid             indexed
-#  step_run_id  :uuid             not null, indexed
+#  step_run_id  :uuid             indexed
 #
 require "zip"
 
 class BuildArtifact < ApplicationRecord
   include Rails.application.routes.url_helpers
 
-  belongs_to :step_run, inverse_of: :build_artifact
+  belongs_to :step_run, optional: true, inverse_of: :build_artifact
   belongs_to :build, optional: true, inverse_of: :artifact
   has_one_attached :file
 
   delegate :create_and_upload!, to: ActiveStorage::Blob
-  delegate :unzip_artifact?, to: :step_run
   delegate :signed_id, to: :file
 
   def self.find_by_signed_id(signed_id)
@@ -29,6 +28,10 @@ class BuildArtifact < ApplicationRecord
     attachment = ActiveStorage::Attachment.find_by(blob_id: blob.id)
     return nil if attachment.blank?
     find_by(id: attachment.record_id)
+  end
+
+  def parent
+    step_run || build
   end
 
   def save_file!(artifact_stream)
@@ -40,7 +43,7 @@ class BuildArtifact < ApplicationRecord
   end
 
   def gen_filename(ext)
-    "#{app.slug}-#{step_run.build_version}-build#{ext}"
+    "#{app.slug}-#{parent.build_version}-build#{ext}"
   end
 
   def get_filename
@@ -62,10 +65,10 @@ class BuildArtifact < ApplicationRecord
   end
 
   def app
-    step_run.release_platform.app
+    parent.release_platform_run.app
   end
 
-  delegate :organization, to: :step_run
+  delegate :organization, to: :app
 
   def build_url(params)
     blob_redirect_url(file.signed_id, file.filename, params)

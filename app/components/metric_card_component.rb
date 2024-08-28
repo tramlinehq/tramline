@@ -11,7 +11,7 @@ class MetricCardComponent < V2::BaseComponent
   delegate :current_user, to: :helpers
 
   def health_defined?(val)
-    current_user.release_monitoring? && !val[:is_healthy].nil?
+    !val[:is_healthy].nil?
   end
 
   def metric_color(is_healthy)

@@ -14,18 +14,11 @@
 
     <% section.F.fields_for :providable do |subf| %>
       <%= subf.hidden_field :type, value: integration.providable_type %>
-      <div><%= subf.labeled_text_field :access_token, "Personal Auth Token" %></div>
+      <div><%= subf.labeled_text_field :access_token, "Personal Auth Token", required: true %></div>
     <% end %>
   <% end %>
 
   <% f.with_action do %>
-    <div class="flex items-center" data-controller="reveal">
-      <%= f.F.authz_submit "Create", "plus.svg", size: :xs, html_options: { data: { action: "reveal#toggle" } } %>
-      <div class="ml-5">
-        <div hidden data-reveal>
-          <%= render V2::LoadingIndicatorComponent.new(text: "Verifying...") %>
-        </div>
-      </div>
-    </div>
+    <%= f.F.authz_submit "Create", "plus.svg", size: :xs %>
   <% end %>
 <% end %>

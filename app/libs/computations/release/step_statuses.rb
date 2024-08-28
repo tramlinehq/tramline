@@ -1,6 +1,7 @@
 class Computations::Release::StepStatuses
   using RefinedArray
-  STATUS = [:blocked, :ongoing, :success, :none].zip_map_self
+  STATUS = [:blocked, :unblocked, :ongoing, :success, :none].zip_map_self
+  PHASES = [:completed, :stopped, :kickoff, :stabilization, :review, :rollout, :finishing].zip_map_self
 
   def self.call(release)
     new(release).call
@@ -12,69 +13,96 @@ class Computations::Release::StepStatuses
 
   def call
     {
-      overview: STATUS[:none],
-      changeset_tracking: changeset_tracking_status,
-      internal_builds: internal_builds_status,
-      regression_testing: internal_builds_status,
-      release_candidate: release_candidate_status,
-      soak_period: soak_period_status,
-      notes: notes_status,
-      screenshots: STATUS[:none],
-      approvals: STATUS[:none],
-      app_submission: app_submission_status,
-      rollout_to_users: rollout_to_users_status
+      statuses: {
+        overview: STATUS[:success],
+        changeset_tracking: changeset_tracking_status,
+        internal_builds: internal_builds_status,
+        regression_testing: demo? ? internal_builds_status : STATUS[:blocked],
+        release_candidate: release_candidate_status,
+        soak_period: demo? ? release_candidate_status : STATUS[:blocked],
+        notes: notes_status,
+        screenshots: STATUS[:blocked],
+        approvals: STATUS[:blocked],
+        app_submission: app_submission_status,
+        rollout_to_users: rollout_to_users_status
+      },
+      current_overall_status: current_overall_status
     }
   end
 
   def changeset_tracking_status
-    return STATUS[:ongoing] if @release.applied_commits != @release.all_commits
+    return STATUS[:ongoing] if new_change?
     STATUS[:success]
   end
 
   def internal_builds_status
-    return STATUS[:none] if @release.release_platform_runs.all? { |rp| rp.steps.review.blank? }
-    return STATUS[:ongoing] if @release.release_platform_runs.any? { |rp| rp.step_runs.any? { |sr| sr.step.review? && sr.active? } }
+    return STATUS[:none] if all_platforms? { |rp| rp.internal_builds.none? }
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_internal_release&.actionable? }
     STATUS[:success]
   end
 
   def release_candidate_status
-    return STATUS[:none] if @release.release_platform_runs.all? { |rp| rp.step_runs_for(rp.release_platform.release_step).blank? }
-    return STATUS[:ongoing] if @release.release_platform_runs.any? { |rp| rp.step_runs.any? { |sr| sr.step.release? && sr.active? && !sr.production_release_submitted? } }
-    STATUS[:success]
-  end
-
-  def soak_period_status
-    return STATUS[:blocked] if release_candidate_status == STATUS[:none]
-    return STATUS[:ongoing] if @release.release_platform_runs.any? { |rp| rp.step_runs.any? { |sr| sr.step.release? && sr.deployment_started? && !sr.production_release_submitted? } }
+    return STATUS[:success] if finished?
+    return STATUS[:none] if all_platforms? { |rp| rp.latest_beta_release.blank? }
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_beta_release.blank? }
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_beta_release&.actionable? }
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_beta_release&.commit != rp.last_commit }
     STATUS[:success]
   end
 
   def notes_status
-    return STATUS[:ongoing] unless production_release_submitted?
+    return STATUS[:unblocked] if any_platforms? { |rp| rp.metadata_editable_v2? }
     STATUS[:success]
   end
 
-  def approval_status
-    return STATUS[:success] if @release.finished? || production_release_submitted?
-    STATUS[:ongoing]
-  end
-
   def app_submission_status
-    return STATUS[:blocked] unless @release.release_platform_runs.any? { |rp| rp.step_runs.any? { |sr| sr.step.release? && !sr.status.in?(StepRun::WORKFLOW_NOT_STARTED + StepRun::WORKFLOW_IN_PROGRESS) } }
-    return STATUS[:ongoing] unless production_release_submitted?
+    return STATUS[:blocked] if all_platforms? { |rp| rp.production_releases.none? }
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.inflight_production_release.present? }
     STATUS[:success]
   end
 
   def rollout_to_users_status
-    return STATUS[:blocked] if app_submission_status == STATUS[:blocked]
-    return STATUS[:ongoing] unless @release.production_release_happened?
-    return STATUS[:blocked] unless production_release_submitted?
+    return STATUS[:blocked] if all_platforms? { |rp| rp.production_store_rollouts.none? }
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.active_store_rollout&.present? }
+    return STATUS[:ongoing] if any_platforms? { |rp| rp.inflight_store_rollout&.present? }
     STATUS[:success]
+  end
+
+  def current_overall_status
+    return PHASES[:completed] if finished?
+    return PHASES[:stopped] if stopped? || stopped_after_partial_finish?
+    return PHASES[:finishing] if Release::POST_RELEASE_STATES.include?(status)
+    return PHASES[:rollout] if any_platforms? { |rp| rp.production_store_rollouts.present? }
+    return PHASES[:review] if any_platforms? { |rp| rp.active_production_release.present? }
+    return PHASES[:stabilization] if any_platforms? { |rp| rp.pre_prod_releases.any? }
+    PHASES[:kickoff]
   end
 
   private
 
-  def production_release_submitted?
-    @release.release_platform_runs.any?(&:production_release_submitted?)
+  def new_change?
+    @new_change ||= (@release.applied_commits != @release.all_commits)
   end
+
+  def any_platforms?
+    platform_runs.any? do |rp|
+      yield(rp)
+    end
+  end
+
+  def all_platforms?
+    platform_runs.all? do |rp|
+      yield(rp)
+    end
+  end
+
+  def platform_runs
+    @platform_runs ||= @release.release_platform_runs
+  end
+
+  def demo?
+    @release.organization.demo?
+  end
+
+  delegate :finished?, :stopped?, :stopped_after_partial_finish?, :status, to: :@release
 end

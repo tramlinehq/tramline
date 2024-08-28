@@ -10,7 +10,7 @@
         <%= inline_svg("v2/connect_line.svg", classname: "w-5 h-5 inline-flex") %>
 
         <%= render V2::BadgeComponent.new(kind: :badge) do |badge| %>
-          <% badge.with_icon(build_logo) %>
+          <% badge.with_icon(ci_cd_provider_logo) %>
           <% badge.with_link(ci_info, ci_link) %>
         <% end %>
       <% end %>

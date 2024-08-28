@@ -8,7 +8,13 @@ class NotificationSettingsController < SignedInApplicationController
   around_action :set_time_zone
 
   def index
-    @notification_settings = @train.notification_settings if @train.send_notifications?
+    if @train.send_notifications?
+      @notification_settings = if @train.product_v2?
+        @train.notification_settings.where(kind: NotificationSetting.kinds.values - NotificationSetting::DEPRECATED_KINDS.values)
+      else
+        @train.notification_settings.where(kind: NotificationSetting.kinds.values - NotificationSetting::V2_KINDS.values)
+      end
+    end
     set_tab_configuration
   end
 
@@ -34,8 +40,8 @@ class NotificationSettingsController < SignedInApplicationController
       [1, "General", edit_app_train_path(@app, @train), "v2/cog.svg"],
       [2, "Steps", steps_app_train_path(@app, @train), "v2/route.svg"],
       [3, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"],
-      ([4, "Release Health", rules_app_train_path(@app, @train), "v2/heart_pulse.svg"] if current_user.release_monitoring?),
-      ([5, "Reldex Settings", edit_app_train_release_index_path(@app, @train), "v2/ruler.svg"] if current_user.reldex_enabled?)
+      [4, "Release Health", rules_app_train_path(@app, @train), "v2/heart_pulse.svg"],
+      [5, "Reldex Settings", edit_app_train_release_index_path(@app, @train), "v2/ruler.svg"]
     ].compact
   end
 

@@ -126,15 +126,32 @@ class GoogleFirebaseIntegration < ApplicationRecord
 
   def get_upload_status(op_name)
     GitHub::Result.new do
-      ReleaseInfo.new(installation.get_upload_status(op_name))
+      ReleaseOpInfo.new(installation.get_upload_status(op_name))
     end
   end
 
   delegate :update_release_notes, to: :installation
 
-  def release(release_name, group)
+  def release(release_name, groups)
     GitHub::Result.new do
-      installation.send_to_group(release_name, group_name(group))
+      installation.send_to_group(release_name, group_names(groups))
+    end
+  end
+
+  BUILD_TRANSFORMATIONS = {
+    id: :name,
+    name: :display_version,
+    build_number: :build_version,
+    added_at: :create_time,
+    console_link: :firebase_console_uri,
+    release_notes: :release_notes
+  }
+
+  def find_build_by_build_number(build_number, platform)
+    lookback_period = 2.weeks.ago.rfc3339
+    filters = ["createTime >= \"#{lookback_period}\""]
+    GitHub::Result.new do
+      ReleaseInfo.new(installation.find_build(firebase_app(platform), build_number, and_filters: filters), BUILD_TRANSFORMATIONS)
     end
   end
 
@@ -156,36 +173,58 @@ class GoogleFirebaseIntegration < ApplicationRecord
     "https://appdistribution.firebase.google.com/testerapps/#{firebase_app(platform)}/releases/#{release_name(release)}"
   end
 
-  class ReleaseInfo
-    def initialize(release_info)
-      raise ArgumentError, "release_info must be a Hash" unless release_info.is_a?(Hash)
-      @release_info = release_info
+  class ReleaseOpInfo
+    def initialize(op_info)
+      raise ArgumentError, "release_info must be a Hash" unless op_info.is_a?(Hash)
+      @op_info = op_info
       validate_op
     end
 
-    attr_reader :release_info
+    RELEASE_TRANSFORMATIONS = {
+      name: :displayVersion,
+      console_link: :firebaseConsoleUri,
+      build_number: :buildVersion,
+      added_at: :createTime,
+      status: :status,
+      id: :name
+    }
+
+    attr_reader :op_info
 
     def validate_op
-      raise Installations::Google::Firebase::OpError.new(release_info[:error]) if done? && error?
+      raise Installations::Google::Firebase::OpError.new(op_info[:error]) if done? && error?
     end
 
-    def release = release_info.dig(:response, :release)
+    def release
+      ReleaseInfo.new(op_info.dig(:response, :release), RELEASE_TRANSFORMATIONS) if done?
+    end
 
-    def name = release&.dig(:displayVersion)
+    def status = op_info&.dig(:response, :result)
 
-    def id = release&.dig(:name)
+    def done? = op_info[:done]
 
-    def build_number = release&.dig(:buildVersion)
+    def error? = op_info[:error].present?
+  end
 
-    def added_at = release&.dig(:createTime)
+  class ReleaseInfo
+    def initialize(release, transforms)
+      raise ArgumentError, "release must be a Hash" unless release.is_a?(Hash)
+      @release = Installations::Response::Keys.transform([release], transforms).first
+    end
 
-    def status = release_info&.dig(:response, :result)
+    attr_reader :release
 
-    def console_link = release&.dig(:firebaseConsoleUri)
+    def id = release[:id]
 
-    def done? = release_info[:done]
+    def name = release[:name]
 
-    def error? = release_info[:error].present?
+    def build_number = release[:build_number]
+
+    def added_at = release[:added_at]
+
+    def status = release[:status]
+
+    def console_link = release[:console_link]
   end
 
   private
@@ -198,8 +237,8 @@ class GoogleFirebaseIntegration < ApplicationRecord
     channels&.map { |channel| channel.slice(:id, :name) }
   end
 
-  def group_name(group)
-    group.split("/").last
+  def group_names(groups)
+    groups.map { |group| group.split("/").last }
   end
 
   def release_name(release)

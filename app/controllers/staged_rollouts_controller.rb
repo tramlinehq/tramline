@@ -1,18 +1,10 @@
 class StagedRolloutsController < SignedInApplicationController
-  include Tabbable
-
   before_action :require_write_access!, only: %i[increase halt]
-  before_action :set_release, only: %i[edit_all]
-  before_action :set_deployment_run, except: [:edit_all]
-  before_action :set_staged_rollout, except: [:edit_all]
+  before_action :set_deployment_run
+  before_action :set_staged_rollout
   before_action :ensure_controlled_rolloutable, only: [:increase, :halt]
   before_action :ensure_rolloutable, only: [:fully_release, :resume]
   before_action :ensure_auto_rolloutable, only: [:pause]
-  before_action :set_live_release_tab_configuration, only: %i[edit_all]
-
-  def edit_all
-    @app = @release.app
-  end
 
   def increase
     @staged_rollout.move_to_next_stage!
@@ -105,9 +97,5 @@ class StagedRolloutsController < SignedInApplicationController
 
   def set_deployment_run
     @deployment_run = DeploymentRun.find_by(id: params[:deployment_run_id])
-  end
-
-  def set_release
-    @release = Release.friendly.find(params[:release_id])
   end
 end

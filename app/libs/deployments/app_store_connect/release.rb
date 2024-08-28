@@ -110,7 +110,13 @@ module Deployments
       def prepare_for_release!(force: false)
         return unless app_store_release?
 
-        result = provider.prepare_release(build_number, release_version, staged_rollout?, release_metadatum, force)
+        metadata = {
+          whats_new: release_metadatum.release_notes,
+          promotional_text: release_metadatum.promo_text,
+          locale: release_metadatum.locale
+        }
+
+        result = provider.prepare_release(build_number, release_version, staged_rollout?, metadata, force)
 
         unless result.ok?
           case result.error.reason

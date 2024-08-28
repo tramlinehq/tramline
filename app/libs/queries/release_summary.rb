@@ -61,7 +61,7 @@ class Queries::ReleaseSummary
         commits_count: release.all_commits.size,
         duration: release.duration&.seconds,
         is_hotfix: release.hotfix?,
-        hotfixes: release.hotfixes.map { |r| [r.release_version, r.live_release_link] }.to_h
+        hotfixes: release.all_hotfixes.map { |r| [r.release_version, r.live_release_link] }.to_h
       }
 
       if release.hotfix?

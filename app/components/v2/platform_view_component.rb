@@ -1,9 +1,12 @@
-class V2::PlatformViewComponent < V2::BaseReleaseComponent
-  def initialize(release, occupy: true)
-    @release = release
+class V2::PlatformViewComponent < V2::BaseComponent
+  def initialize(release, occupy: true, detail: true)
+    @release = ReleasePresenter.new(release, self)
     @occupy = occupy
+    @detail = detail
     super(@release)
   end
+
+  delegate :platform_runs, :cross_platform?, to: :@release
 
   def grid_size
     return "grid-cols-2" if platform_runs.size > 1

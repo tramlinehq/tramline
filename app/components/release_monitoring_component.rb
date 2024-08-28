@@ -24,7 +24,7 @@ class ReleaseMonitoringComponent < V2::BaseComponent
   attr_reader :deployment_run, :metrics, :show_version_info, :size
 
   def show_release_health?
-    current_user.release_monitoring? && release_health_rules.present? && show_health?
+    release_health_rules.present? && show_health?
   end
 
   def empty_component?

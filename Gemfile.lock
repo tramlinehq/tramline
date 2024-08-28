@@ -336,7 +336,7 @@ GEM
       mime-types-data (~> 3.2015)
     mime-types-data (3.2024.0702)
     mini_mime (1.1.5)
-    minitest (5.23.1)
+    minitest (5.24.1)
     msgpack (1.6.0)
     multi_json (1.15.0)
     net-imap (0.4.12)
@@ -606,7 +606,7 @@ GEM
     unf_ext (0.0.8.2)
     unicode-display_width (2.4.2)
     uri_template (0.7.0)
-    view_component (2.83.0)
+    view_component (3.13.0)
       activesupport (>= 5.2.0, < 8.0)
       concurrent-ruby (~> 1.0)
       method_source (~> 1.0)
@@ -742,7 +742,7 @@ DEPENDENCIES
   tailwindcss-rails (~> 2.0)
   turbo-rails (~> 1.0)
   tzinfo-data (~> 1.2021)
-  view_component (~> 2.82)
+  view_component (~> 3.0)
   web-console
   webdrivers
   webmock

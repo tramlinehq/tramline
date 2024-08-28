@@ -1,0 +1,19 @@
+models_to_delete:
+  - app/models/step.rb
+  - app/models/step_run.rb
+  - app/models/deployment.rb
+  - app/models/deployment_run.rb
+  - app/models/staged_rollout.rb
+jobs_to_delete:
+  - deployments/*
+  - releases/cancel_step_run.rb
+  - releases/cancel_workflow_run_job.rb
+  - releases/find_build_job.rb
+  - releases/find_workflow_run.rb
+  - releases/trigger_workflow_run_job.rb
+  - releases/upload_artifact.rb
+  - releases/fetch_health_metrics_job.rb
+poros_to_migrate:
+  libs/charts/devops_report.rb: queries/devops.rb
+  libs/triggers/pre_release: coordinators/pre_release
+  libs/triggers/post_release: coordinators/post_release

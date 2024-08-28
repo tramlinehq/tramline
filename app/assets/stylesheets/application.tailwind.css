@@ -3,7 +3,17 @@
 
 /* new styles */
 
+
 @layer base {
+  @supports (font-variation-settings: normal) {
+    @font-face {
+      font-family: "Geist";
+      font-weight: 100 900;
+      font-display: swap;
+      src: url("/fonts/GeistVF.woff2") format("woff2");
+    }
+  }
+
   :root {
     --color-reldex-excellent: theme("colors.reldexExcellent.300");
     --color-reldex-acceptable: theme("colors.reldexAcceptable.300");
@@ -40,6 +50,10 @@
       #ebf7fd 4px,
       #ebf7fd 8px
     );
+  }
+
+  .header-shadow {
+    box-shadow: 0 2px 2px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   }
 
   .small-caps {
@@ -82,6 +96,10 @@
     @apply gap-3;
   }
 
+  .paragraph-gap-default {
+    @apply gap-1;
+  }
+
   .box-padding {
     @apply px-4 py-3.5;
   }
@@ -91,19 +109,19 @@
   }
 
   .border-default-t {
-    @apply border-t border-main-200 dark:border-main-600;
+    @apply border-t border-t-main-200 dark:border-t-main-600;
   }
 
   .border-default-r {
-    @apply border-r border-main-200 dark:border-main-600;
+    @apply border-r border-r-main-200 dark:border-r-main-600;
   }
 
   .border-default-b {
-    @apply border-b border-main-200 dark:border-main-600;
+    @apply border-b border-b-main-200 dark:border-b-main-600;
   }
 
   .border-default-l {
-    @apply border-l border-main-200 dark:border-main-600;
+    @apply border-l border-l-main-200 dark:border-l-main-600;
   }
 
   .border-default {

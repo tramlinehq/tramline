@@ -49,7 +49,7 @@ class FinalSummaryComponent < ViewComponent::Base
   end
 
   def reldex?
-    current_user.reldex_enabled? && reldex.present?
+    reldex.present?
   end
 
   def staged_rollouts(store_version)
@@ -64,7 +64,7 @@ class FinalSummaryComponent < ViewComponent::Base
       store_versions? ? "Store versions" : nil,
       "Step summary",
       pull_requests? ? "Pull requests" : nil,
-      (current_organization.team_analysis_enabled? && teams_present?) ? "Team analysis" : nil
+      teams_present? ? "Team analysis" : nil
     ].compact
   end
 

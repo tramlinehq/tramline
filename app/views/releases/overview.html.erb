@@ -1,8 +1,6 @@
-<%= render V2::LiveRelease::ContainerComponent.new(@release,
-                                                   title: @train.name,
-                                                   tab_config: @tab_configuration) do |container| %>
+<%= render V2::LiveRelease::ContainerComponent.new(@release, title: @train.name) do |container| %>
   <% container.with_back_button %>
-  <% container.with_tab(title: "Overview", icon: @tab_configuration.dig(:kickoff, :overview, :icon)) do %>
+  <% container.with_tab(title: "Overview", icon: live_release_tab_configuration.dig(:kickoff, :overview, :icon)) do %>
     <%= render V2::LiveRelease::OverviewComponent.new(@release) %>
   <% end %>
 <% end %>

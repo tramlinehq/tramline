@@ -144,7 +144,7 @@ describe WebhookProcessors::Push do
         create_deployment_tree(:android, step_traits: [:release], train_traits: [:with_build_queue])
       }
       let(:train) { factory_tree[:train] }
-      let(:release) { create(:release, :on_track, train:) }
+      let(:release) { create(:release, :created, train:) }
 
       before do
         train.update!(build_queue_size: queue_size)
@@ -159,7 +159,7 @@ describe WebhookProcessors::Push do
       end
 
       it "adds the subsequent commits to the queue" do
-        _old_commit = create(:commit, release:, timestamp: 1.minute.ago)
+        _old_commit = create(:commit, release:, timestamp: 1.hour.ago)
         allow(Triggers::StepRun).to receive(:call)
 
         described_class.process(release, head_commit_attributes, [])

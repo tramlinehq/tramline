@@ -1,6 +1,6 @@
 class V2::CommitComponent < V2::BaseComponent
   include ReleasesHelper
-  OUTER_CLASSES = "py-2 px-3 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm"
+  OUTER_CLASSES = "py-1.5 px-2 hover:bg-main-100 hover:border-main-100 hover:first:rounded-sm hover:last:rounded-sm"
 
   def initialize(commit:, avatar: true, detailed: true)
     @commit = commit
@@ -9,7 +9,7 @@ class V2::CommitComponent < V2::BaseComponent
   end
 
   attr_reader :commit
-  delegate :message, :author_name, :author_email, :author_login, :author_url, :timestamp, :short_sha, :url, :team, to: :commit
+  delegate :message, :author_name, :author_email, :author_login, :author_url, :timestamp, :short_sha, :url, to: :commit
 
   def author_link
     author_url || "mailto:#{author_email}"
@@ -19,19 +19,9 @@ class V2::CommitComponent < V2::BaseComponent
     author_login || author_name
   end
 
-  def integration_provider_logo
-    "integrations/logo_#{ci_cd_provider}.png"
-  end
-
-  def ci_cd_provider
-    @commit.train&.ci_cd_provider
-  end
-
   def detailed? = @detailed
 
   def show_avatar? = @avatar
-
-  def show_numbering? = @numbering
 
   def pull_request
     @commit.pull_request
@@ -40,5 +30,9 @@ class V2::CommitComponent < V2::BaseComponent
   def outer_classes
     return "" unless detailed?
     OUTER_CLASSES
+  end
+
+  def team
+    @team ||= @commit.team
   end
 end

@@ -69,7 +69,6 @@ class Train < ApplicationRecord
 
   delegate :ready?, :config, :organization, to: :app
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :monitoring_provider, to: :integrations
-  delegate :fixed_build_number?, :custom_release_version?, to: :organization
 
   enum status: {draft: "draft", active: "active", inactive: "inactive"}
   enum backmerge_strategy: {continuous: "continuous", on_finalize: "on_finalize"}
@@ -137,6 +136,10 @@ class Train < ApplicationRecord
 
   def one_percent_beta_release?
     Flipper.enabled?(:one_percent_beta_release, self)
+  end
+
+  def product_v2?
+    Flipper.enabled?(:product_v2, self)
   end
 
   def version_ahead?(release)
@@ -316,11 +319,18 @@ class Train < ApplicationRecord
   end
 
   def upcoming_release_startable?
-    manually_startable? &&
-      release_platforms.any?(&:has_production_deployment?) &&
-      ongoing_release.present? &&
-      (release_platforms.all?(&:has_review_steps?) || ongoing_release.production_release_happened?) &&
-      upcoming_release.blank?
+    if product_v2?
+      manually_startable? &&
+        ongoing_release.present? &&
+        ongoing_release.production_release_active? &&
+        upcoming_release.blank?
+    else
+      manually_startable? &&
+        release_platforms.any?(&:has_production_deployment?) &&
+        ongoing_release.present? &&
+        (release_platforms.all?(&:has_review_steps?) || ongoing_release.production_release_happened?) &&
+        upcoming_release.blank?
+    end
   end
 
   def continuous_backmerge?
@@ -355,7 +365,7 @@ class Train < ApplicationRecord
     branching_strategy == "almost_trunk"
   end
 
-  def create_release!(branch_name, tag_name)
+  def create_vcs_release!(branch_name, tag_name)
     return false unless active?
     vcs_provider.create_release!(tag_name, branch_name)
   end
@@ -413,7 +423,8 @@ class Train < ApplicationRecord
   end
 
   def devops_report
-    Charts::DevopsReport.all(self)
+    return Queries::DevopsReport.new(self) if product_v2?
+    Charts::DevopsReport.new(self)
   end
 
   def has_production_deployment?

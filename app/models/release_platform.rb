@@ -4,6 +4,7 @@
 #
 #  id                       :uuid             not null, primary key
 #  branching_strategy       :string
+#  config                   :jsonb
 #  description              :string
 #  name                     :string           not null
 #  platform                 :string
@@ -45,7 +46,7 @@ class ReleasePlatform < ApplicationRecord
 
   validate :ready?, on: :create
 
-  delegate :integrations, to: :train
+  delegate :integrations, :ci_cd_provider, to: :train
   delegate :ready?, :default_locale, to: :app
 
   def self.allowed_platforms

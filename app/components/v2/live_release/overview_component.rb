@@ -1,33 +1,28 @@
-class V2::LiveRelease::OverviewComponent < V2::BaseReleaseComponent
+class V2::LiveRelease::OverviewComponent < V2::BaseComponent
   def initialize(release)
-    @release = release
-    @summary ||= Queries::ReleaseSummary.all(@release.id) if @release.finished?
-    super(@release)
+    @release = ReleasePresenter.new(release, self)
   end
 
   attr_reader :release
-  delegate :internal_notes, to: :release
-
-  memoize def commits_since_last
-    @release.release_changelog&.normalized_commits
-  end
-
-  memoize def team_stability_commits
-    return @summary[:team_stability_commits] if @summary.present?
-    @release.stability_commits.count_by_team(current_organization)
-  end
-
-  memoize def team_release_commits
-    return @summary[:team_release_commits] if @summary.present?
-    @release.release_changelog&.commits_by_team
-  end
-
-  def overall_summary
-    @summary[:overall]
-  end
+  delegate :internal_notes,
+    :hotfixed_from,
+    :team_stability_commits,
+    :team_release_commits,
+    :backmerge_pr_count,
+    :backmerge_failure_count,
+    :display_start_time,
+    :display_end_time,
+    :duration,
+    :commit_count,
+    :hotfix?,
+    :continuous_backmerge?,
+    :release_pilot_avatar,
+    :release_pilot_name,
+    :active?,
+    to: :release
 
   def backmerge_summary
-    "#{overall_summary.backmerge_pr_count} merged, #{overall_summary.backmerge_failure_count} failed"
+    "#{backmerge_pr_count} merged, #{backmerge_failure_count} failed"
   end
 
   def team_stability_chart
@@ -44,7 +39,7 @@ class V2::LiveRelease::OverviewComponent < V2::BaseReleaseComponent
 
   def team_release_chart
     {
-      data: team_release_commits&.reject { |_, value| value.zero? },
+      data: release.team_release_commits&.reject { |_, value| value.zero? },
       colors: team_colors,
       type: "polar-area",
       value_format: "number",
@@ -52,13 +47,5 @@ class V2::LiveRelease::OverviewComponent < V2::BaseReleaseComponent
       show_x_axis: false,
       show_y_axis: false
     }
-  end
-
-  def final?
-    @summary.present?
-  end
-
-  def changelog_present?
-    @release.release_changelog.present?
   end
 end

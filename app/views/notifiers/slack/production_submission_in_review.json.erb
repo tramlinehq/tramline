@@ -1,0 +1,20 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": ":memo: The production release *<%= @release_version %> (<%= @build_number %>)* has been <%= submitted_text %> for review."
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "<%= apple_publishing_text %>"
+        }
+      ]
+    }
+  ]
+}

@@ -59,10 +59,6 @@ class Accounts::Organization < ApplicationRecord
     Flipper.enabled?(:demo_mode, self)
   end
 
-  def product_v2?
-    Flipper.enabled?(:product_v2, self)
-  end
-
   def build_notes_in_workflow?
     Flipper.enabled?(:build_notes_in_workflow, self)
   end
@@ -73,18 +69,6 @@ class Accounts::Organization < ApplicationRecord
 
   def deploy_action_enabled?
     Flipper.enabled?(:deploy_action_enabled, self)
-  end
-
-  def fixed_build_number?
-    Flipper.enabled?(:fixed_build_number, self)
-  end
-
-  def custom_release_version?
-    Flipper.enabled?(:custom_release_version, self)
-  end
-
-  def team_analysis_enabled?
-    Flipper.enabled?(:team_analysis_enabled, self)
   end
 
   def owner

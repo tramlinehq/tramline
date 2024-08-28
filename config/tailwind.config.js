@@ -65,7 +65,7 @@ module.exports = {
         blue: '2px solid rgba(0, 112, 244, 0.5)',
       },
       fontFamily: {
-        sans: ['Inter var', ...defaultTheme.fontFamily.sans],
+        sans: ['Geist', 'Inter var', ...defaultTheme.fontFamily.sans],
       },
       fontSize: {
         xs: ['0.75rem', {lineHeight: '1.5'}],
@@ -85,6 +85,9 @@ module.exports = {
       borderWidth: {
         3: '3px',
       },
+      height: {
+        '88': '22rem',
+      },
       minWidth: {
         36: '9rem',
         44: '11rem',
@@ -99,6 +102,18 @@ module.exports = {
       },
       zIndex: {
         60: '60',
+      },
+      keyframes: {
+        'pulse': {
+          '0%, 100%': {opacity: 1},
+          '75%': {opacity: 0.75},
+          '50%': {opacity: 0.5},
+          '25%': {opacity: 0.25},
+          '10%': {opacity: 0.1},
+        },
+      },
+      animation: {
+        'pulse': 'pulse 1.2s cubic-bezier(0.2, 0, 0.6, 1) infinite',
       },
     },
   },

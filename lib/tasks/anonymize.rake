@@ -324,6 +324,12 @@ namespace :anonymize do
     end
     train = app.trains.reload.find(train_id)
     Charts::DevopsReport.warm(train)
+
+    train.release_platforms.each do |release_platform|
+      populate_config(release_platform)
+    end
+
+    populate_v2_models(train)
   end
 
   desc 'Anonymize release health metric data from source db into local db
@@ -370,6 +376,17 @@ namespace :anonymize do
     end
   end
 
+  desc "Populate v2 models for the train"
+  task :populate_v2_models, %i[external_train_id] => [:destructive, :environment] do |_, args|
+    train_id = args[:external_train_id].to_s
+    abort "Train ID not found!" if train_id.blank?
+
+    train = Train.find(train_id)
+    abort "Train not found!" unless train
+
+    populate_v2_models(train)
+  end
+
   def source_db_config
     {"adapter" => "postgresql",
      "encoding" => "unicode",
@@ -386,5 +403,217 @@ namespace :anonymize do
 
   def whitelist_timestamps
     whitelist "created_at", "updated_at"
+  end
+
+  def populate_v2_models(train)
+    ActiveRecord::Base.transaction do
+      train.releases.where.not(is_v2: true).each do |release|
+        release.update!(is_v2: true)
+        release.release_platform_runs.each do |prun|
+          prun.update!(config: prun.release_platform.config)
+
+          review_step = prun.release_platform.steps.review.first
+          review_runs = prun.step_runs_for(review_step).to_a
+          review_step_run = review_runs.shift
+          previous = nil
+          idx = 0
+
+          while review_step_run.present?
+            pre_prod_release = create_pre_prod_release!(prun, review_step, review_step_run, previous, idx, "internal")
+            previous = pre_prod_release
+            review_step_run = review_runs.shift
+            idx += 1
+          end
+
+          release_step = prun.release_platform.release_step
+          release_step_runs = prun.step_runs_for(release_step).to_a
+
+          release_step_run = release_step_runs.shift
+          previous_pre_prod_release = nil
+          previous_production_release = nil
+          idx = 0
+          production_release_config = prun.conf.production_release.value
+          production_depl = release_step.deployments.find { |d| d.production_channel? }
+
+          while release_step_run.present?
+            pre_prod_release = create_pre_prod_release!(prun, release_step, release_step_run, previous_pre_prod_release, idx, "release_candidate")
+            production_release = prun.production_releases.create!(
+              config: production_release_config,
+              build: pre_prod_release.build,
+              status: compute_production_release_status(release_step_run, idx),
+              previous: previous_production_release,
+              created_at: release_step_run.created_at,
+              updated_at: release_step_run.updated_at
+            )
+
+            release_step_run.deployment_runs.where(deployment: production_depl).each do |drun|
+              submission_config = prun.conf.production_release.submissions.first
+              submission = submission_config.submission_type.create!(
+                parent_release: production_release,
+                release_platform_run: prun,
+                build: pre_prod_release.build,
+                sequence_number: 1,
+                config: submission_config.to_h,
+                status: "prepared",
+                created_at: drun.created_at,
+                updated_at: drun.updated_at
+              )
+
+              if drun.staged_rollout.present?
+                if submission.is_a?(PlayStoreSubmission)
+                  submission.create_play_store_rollout!(
+                    release_platform_run: prun,
+                    current_stage: drun.staged_rollout&.current_stage || 0,
+                    config: submission_config.rollout_config.stages.presence || [],
+                    is_staged_rollout: submission_config.rollout_config.enabled,
+                    status: drun.staged_rollout.stopped? ? "halted" : drun.staged_rollout.status,
+                    created_at: drun.staged_rollout.created_at,
+                    updated_at: drun.staged_rollout.updated_at
+                  )
+                elsif submission.is_a?(AppStoreSubmission)
+                  submission.create_app_store_rollout!(
+                    release_platform_run: prun,
+                    current_stage: drun.staged_rollout&.current_stage || 0,
+                    config: submission_config.rollout_config.stages.presence || [],
+                    is_staged_rollout: submission_config.rollout_config.enabled,
+                    status: drun.staged_rollout.stopped? ? "halted" : drun.staged_rollout.status,
+                    created_at: drun.staged_rollout.created_at,
+                    updated_at: drun.staged_rollout.updated_at
+                  )
+                end
+              end
+            end
+
+            previous_pre_prod_release = pre_prod_release
+            previous_production_release = production_release
+            release_step_run = release_step_runs.shift
+            idx += 1
+          end
+        end
+      end
+    end
+  end
+
+  def create_pre_prod_release!(release_platform_run, step, step_run, previous, idx, kind)
+    commit = step_run.commit
+    status = compute_pre_prod_release_status(step_run, idx)
+
+    if kind == "internal"
+      config = release_platform_run.conf.internal_release
+      pre_prod_release = release_platform_run.internal_releases.create!(config: config.value, commit:, status:, previous:)
+      workflow_config = release_platform_run.conf.workflows.pick_internal_workflow
+    else
+      config = release_platform_run.conf.beta_release
+      pre_prod_release = release_platform_run.beta_releases.create!(config: config.value, commit:, status:, previous:)
+      workflow_config = release_platform_run.conf.workflows.release_candidate_workflow
+    end
+
+    workflow_run = WorkflowRun.create!(
+      workflow_config: workflow_config.value,
+      triggering_release: pre_prod_release,
+      release_platform_run:,
+      commit:,
+      kind: workflow_config.kind,
+      status: compute_workflow_run_status(step_run),
+      created_at: step_run.created_at,
+      updated_at: step_run.updated_at
+    )
+
+    build = workflow_run.create_build!(
+      version_name: step_run.build_version,
+      release_platform_run:,
+      generated_at: step_run.build_artifact&.generated_at || step_run.scheduled_at,
+      build_number: step_run.build_number,
+      created_at: step_run.created_at,
+      updated_at: step_run.updated_at,
+      commit:
+    )
+
+    step.deployments.reject { |d| d.production_channel? }.each_with_index do |deployment, index|
+      submission_config = config.submissions.fetch_by_number(index + 1)
+      create_pre_prod_submissions(release_platform_run, step_run, deployment, submission_config, pre_prod_release, build)
+    end
+    pre_prod_release
+  end
+
+  def create_pre_prod_submissions(release_platform_run, step_run, deployment, config, parent_release, build)
+    step_run.deployment_runs.where(deployment: deployment).each do |drun|
+      submission = config.submission_type.create!(
+        parent_release:,
+        release_platform_run:,
+        build:,
+        sequence_number: config.number,
+        config: config.to_h,
+        status: drun.failed? ? "failed" : success_state(config.submission_type),
+        created_at: drun.created_at,
+        updated_at: drun.updated_at
+      )
+
+      if submission.is_a?(PlayStoreSubmission)
+        submission.create_play_store_rollout!(
+          release_platform_run:,
+          config: config.rollout_config.stages.presence || [],
+          is_staged_rollout: config.rollout_config.enabled,
+          status: drun.failed? ? "failed" : "completed",
+          created_at: drun.created_at,
+          updated_at: drun.updated_at
+        )
+      end
+    end
+  end
+
+  def compute_production_release_status(step_run, idx)
+    if step_run.success?
+      "finished"
+    elsif step_run.deployment_started? && idx == 0
+      "active"
+    elsif step_run.active? && idx == 0
+      "inflight"
+    else
+      "stale"
+    end
+  end
+
+  def compute_pre_prod_release_status(step_run, idx)
+    if step_run.success?
+      "finished"
+    elsif step_run.failed?
+      "failed"
+    elsif step_run.deployment_started? && idx == 0
+      "created"
+    else
+      "stale"
+    end
+  end
+
+  def compute_workflow_run_status(step_run)
+    if step_run.ci_workflow_failed?
+      "failed"
+    elsif step_run.ci_workflow_halted?
+      "halted"
+    elsif step_run.ci_workflow_unavailable?
+      "unavailable"
+    elsif step_run.ci_workflow_started?
+      "started"
+    elsif step_run.ci_workflow_triggered?
+      "triggered"
+    else
+      "finished"
+    end
+  end
+
+  def success_state(submission_type)
+    case submission_type.to_s
+    when "PlayStoreSubmission"
+      "prepared"
+    when "AppStoreSubmission"
+      "approved"
+    when "TestFlightSubmission"
+      "finished"
+    when "GoogleFirebaseSubmission"
+      "finished"
+    else
+      raise "Unknown submission type: #{submission_type}"
+    end
   end
 end

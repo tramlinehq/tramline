@@ -116,13 +116,19 @@ module Installations
         .then { |download_url| download_artifact(download_url) }
     end
 
-    private
+    def artifact(artifact_url, transforms)
+      execute(:get, artifact_url, {})
+        .then { |response| Installations::Response::Keys.transform([response["data"]], transforms) }
+        .first
+    end
 
     def download_artifact(download_url)
       # FIXME: return an IO stream instead of a TempFile
       # See issue: https://github.com/janko/down/issues/70
       Down::Http.download(download_url, headers: {"Authorization" => access_token}, follow: {max_hops: 1})
     end
+
+    private
 
     def execute(verb, url, params)
       response = HTTP.auth(access_token.to_s).public_send(verb, url, params)

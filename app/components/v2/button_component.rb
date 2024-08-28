@@ -9,35 +9,17 @@ class V2::ButtonComponent < V2::BaseComponent
   }
   BASE_OPTS = "group inline-flex items-center"
   BUTTON_OPTIONS = {
-    default: {
-      class: "#{BASE_OPTS} shadow-default text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-    },
-    danger: {
-      class: "#{BASE_OPTS} shadow-default text-red-800 bg-white border border-main-300 focus:outline-none enabled:hover:bg-red-800 enabled:hover:text-white enabled:hover:border-main-200 focus:ring-4 focus:ring-red-200 font-medium rounded-lg dark:bg-main dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"
-    },
-    light: {
-      class: "#{BASE_OPTS} shadow-default text-main bg-white border border-main-300 focus:outline-none hover:bg-main-100 focus:ring-4 focus:ring-main-200 font-medium rounded-lg dark:bg-main dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"
-    },
-    supporting: {
-      class: "#{BASE_OPTS} text-secondary hover:bg-main-100 dark:bg-main dark:text-secondary-50 dark:hover:bg-main-700 border-none shadow-none rounded-sm"
-    },
-    link: {
-      class: "#{BASE_OPTS} text-secondary dark:bg-main dark:text-secondary-50 border-none shadow-none hover:underline"
-    },
-    switcher: {
-      class: "text-secondary rounded-lg md:inline-flex hover:text-main hover:bg-main-100 dark:text-secondary-50 dark:hover:text-white dark:hover:bg-main-700 focus:ring-4 focus:ring-main-300 dark:focus:ring-main-600 items-center"
-    },
-    naked_icon: {
-      class: "#{BASE_OPTS} text-secondary rounded-lg hover:text-main dark:text-secondary-50 dark:hover:text-white",
-      icon: true
-    },
-    avatar_icon: {
-      class: "bg-main rounded-full md:mr-0 focus:ring-4 focus:ring-main-300 dark:focus:ring-main-600",
-      icon: true
-    },
-    list_item: {
-      class: "flex items-center rounded justify-between block px-4 py-1.5 hover:bg-main-100 dark:hover:bg-main-600 dark:hover:text-white"
-    },
+    default: {class: "#{BASE_OPTS} shadow-default text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300 font-medium rounded-lg text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"},
+    danger: {class: "#{BASE_OPTS} shadow-default text-red-800 bg-white border border-main-300 focus:outline-none enabled:hover:bg-red-800 enabled:hover:text-white enabled:hover:border-main-200 focus:ring-2 focus:ring-red-200 font-medium rounded-lg dark:bg-main dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"},
+    light: {class: "#{BASE_OPTS} shadow-default text-main bg-white border border-main-300 focus:outline-none hover:bg-main-100 focus:ring-2 focus:ring-main-200 font-medium rounded-lg dark:bg-main dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"},
+    green: {class: "#{BASE_OPTS} shadow-default text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-600 font-medium rounded-lg text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800"},
+    supporting: {class: "#{BASE_OPTS} text-secondary hover:bg-main-100 dark:bg-main dark:text-secondary-50 dark:hover:bg-main-700 border-none shadow-none rounded-sm"},
+    link: {class: "#{BASE_OPTS} text-secondary dark:bg-main dark:text-secondary-50 border-none shadow-none hover:underline"},
+    switcher: {class: "text-secondary rounded-lg md:inline-flex hover:text-main hover:bg-main-100 dark:text-secondary-50 dark:hover:text-white dark:hover:bg-main-700 focus:ring-2 focus:ring-main-300 dark:focus:ring-main-600 items-center"},
+    naked_icon: {class: "#{BASE_OPTS} text-secondary rounded-lg hover:text-main dark:text-secondary-50 dark:hover:text-white", icon: true},
+    avatar_icon: {class: "bg-main rounded-full md:mr-0 focus:ring-4 focus:ring-main-300 dark:focus:ring-main-600", icon: true},
+    list_item: {class: "flex items-center rounded justify-between block px-4 py-1.5 hover:bg-main-100 dark:hover:bg-main-600 dark:hover:text-white"},
+    mock: {class: "#{BASE_OPTS} shadow-default text-lime-800 bg-lime-100 border border-lime-300 focus:outline-none enabled:hover:bg-lime-800 enabled:hover:text-white enabled:hover:border-main-200 focus:ring-2 focus:ring-lime-200 font-medium rounded-lg dark:bg-lime dark:text-white dark:border-main-600 dark:hover:bg-main-700 dark:hover:border-main-600 dark:focus:ring-main-700"},
     none: {class: ""}
   }
   DISABLED_STYLE = "opacity-40 disabled cursor-not-allowed outline-none focus:outline-none focus:ring-0"

@@ -2,23 +2,22 @@
 #
 # Table name: release_platform_runs
 #
-#  id                       :uuid             not null, primary key
-#  branch_name              :string
-#  code_name                :string           not null
-#  commit_sha               :string
-#  completed_at             :datetime
-#  in_store_resubmission    :boolean          default(FALSE)
-#  original_release_version :string
-#  release_version          :string
-#  scheduled_at             :datetime         not null
-#  status                   :string           not null
-#  stopped_at               :datetime
-#  tag_name                 :string
-#  created_at               :datetime         not null
-#  updated_at               :datetime         not null
-#  last_commit_id           :uuid             indexed
-#  release_id               :uuid
-#  release_platform_id      :uuid             not null, indexed
+#  id                    :uuid             not null, primary key
+#  code_name             :string           not null
+#  completed_at          :datetime
+#  config                :jsonb
+#  in_store_resubmission :boolean          default(FALSE)
+#  play_store_blocked    :boolean          default(FALSE)
+#  release_version       :string
+#  scheduled_at          :datetime         not null
+#  status                :string           not null
+#  stopped_at            :datetime
+#  tag_name              :string
+#  created_at            :datetime         not null
+#  updated_at            :datetime         not null
+#  last_commit_id        :uuid             indexed
+#  release_id            :uuid
+#  release_platform_id   :uuid             not null, indexed
 #
 class ReleasePlatformRun < ApplicationRecord
   has_paper_trail
@@ -29,20 +28,34 @@ class ReleasePlatformRun < ApplicationRecord
   include Displayable
   using RefinedString
 
-  # self.ignored_columns += %w[branch_name commit_sha original_release_version]
+  self.ignored_columns += %w[branch_name commit_sha original_release_version]
   self.implicit_order_column = :scheduled_at
 
   belongs_to :release_platform
   belongs_to :release
+  belongs_to :last_commit, class_name: "Commit", inverse_of: :release_platform_runs, optional: true
   has_many :release_metadata, class_name: "ReleaseMetadata", dependent: :destroy, inverse_of: :release_platform_run
-  has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
+  has_many :workflow_runs, dependent: :destroy
   has_many :builds, dependent: :destroy, inverse_of: :release_platform_run
-  has_many :play_store_submissions, dependent: :destroy
-  has_many :app_store_submissions, dependent: :destroy
+  has_many :internal_builds, -> { internal.ready }, class_name: "Build", dependent: :destroy, inverse_of: :release_platform_run
+  has_many :rc_builds, -> { release_candidate.ready.reorder("generated_at DESC") }, class_name: "Build", dependent: :destroy, inverse_of: :release_platform_run
+  has_many :pre_prod_releases, dependent: :destroy
+  has_many :internal_releases, dependent: :destroy
+  has_many :beta_releases, dependent: :destroy
+  has_many :store_submissions, dependent: :destroy
+  has_many :production_releases, dependent: :destroy
+  has_one :inflight_production_release, -> { inflight }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
+  has_one :active_production_release, -> { active }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
+  has_one :finished_production_release, -> { finished }, class_name: "ProductionRelease", inverse_of: :release_platform_run, dependent: :destroy
+  has_many :store_rollouts, dependent: :destroy
+  has_many :production_store_rollouts, -> { production }, class_name: "StoreRollout", dependent: :destroy, inverse_of: :release_platform_run
+  has_many :production_store_submissions, -> { production }, class_name: "StoreSubmission", dependent: :destroy, inverse_of: :release_platform_run
+
+  # NOTE: deprecated after v2
+  has_many :step_runs, dependent: :destroy, inverse_of: :release_platform_run
   has_many :external_builds, through: :step_runs
   has_many :deployment_runs, through: :step_runs
   has_many :running_steps, through: :step_runs, source: :step
-  belongs_to :last_commit, class_name: "Commit", inverse_of: :release_platform_runs, optional: true
 
   scope :sequential, -> { order("release_platform_runs.created_at ASC") }
   scope :have_not_submitted_production, -> { on_track.reject(&:production_release_submitted?) }
@@ -58,69 +71,124 @@ class ReleasePlatformRun < ApplicationRecord
 
   enum status: STATES
 
-  aasm safe_state_machine_params do
-    state :created, initial: true
-    state(*STATES.keys)
+  before_create :set_config, if: -> { release.is_v2? }
+  after_create :set_default_release_metadata
+  scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
 
-    event :start do
-      transitions from: [:created, :on_track], to: :on_track
-    end
+  delegate :all_commits, :original_release_version, :hotfix?, :versioning_strategy, :organization, :release_branch, to: :release
+  delegate :steps, :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, :default_locale, :ci_cd_provider, to: :release_platform
 
-    event :stop, after_commit: -> { event_stamp!(reason: :stopped, kind: :notice, data: {version: release_version}) } do
-      before { self.stopped_at = Time.current }
-      transitions from: [:created, :on_track], to: :stopped
-    end
-
-    event :finish, after_commit: :on_finish! do
-      before { self.completed_at = Time.current }
-      after { finish_release }
-      transitions from: :on_track, to: :finished
+  def start!
+    with_lock do
+      return unless created?
+      update!(status: STATES[:on_track])
     end
   end
 
-  after_create :set_default_release_metadata
-  after_create :create_store_submission, if: -> { organization.product_v2? }
-  scope :pending_release, -> { where.not(status: [:finished, :stopped]) }
+  def stop!
+    with_lock do
+      return if finished?
+      update!(status: STATES[:stopped], stopped_at: Time.current)
+    end
 
-  delegate :all_commits, :original_release_version, :hotfix?, :versioning_strategy, :organization, to: :release
-  delegate :steps, :train, :app, :platform, :active_locales, :store_provider, :ios?, :android?, :default_locale, to: :release_platform
+    event_stamp!(reason: :stopped, kind: :notice, data: {version: release_version})
+  end
 
-  def metadata_for(language)
-    locale_tag = AppStores::Localizable.supported_locale_tag(language, :ios)
+  def finish!
+    with_lock do
+      return unless on_track?
+      update!(status: STATES[:finished], completed_at: Time.current)
+    end
+  end
+
+  def active?
+    STATES.slice(:created, :on_track).value?(status)
+  end
+
+  def metadata_for(language, platform)
+    locale_tag = AppStores::Localizable.supported_locale_tag(language, platform)
     release_metadata&.find_by(locale: locale_tag)
   end
 
-  def store_submissions
-    if android?
-      play_store_submissions
-    elsif ios?
-      app_store_submissions
+  def conf
+    ReleaseConfig::Platform.new(config)
+  end
+
+  def ready_for_beta_release?
+    return true if conf.only_beta_release?
+    latest_internal_release(finished: true).present?
+  end
+
+  def production_release_active?
+    active_production_release.present?
+  end
+
+  def latest_beta_release(finished: false)
+    (finished ? beta_releases.finished : beta_releases).order(created_at: :desc).first
+  end
+
+  # TODO: [V2] eager loading here is too expensive
+  def latest_internal_release(finished: false)
+    (finished ? internal_releases.finished : internal_releases)
+      .includes(:commit, :store_submissions, triggered_workflow_run: {build: [:commit, :artifact]}, release_platform_run: [:release])
+      .order(created_at: :desc)
+      .first
+  end
+
+  def latest_production_release
+    production_releases.order(created_at: :desc).first
+  end
+
+  def inflight_store_rollout
+    inflight_production_release&.store_rollout
+  end
+
+  def active_store_rollout
+    active_production_release&.store_rollout
+  end
+
+  def finished_store_rollout
+    finished_production_release&.store_rollout
+  end
+
+  def older_beta_releases
+    beta_releases.order(created_at: :desc).offset(1)
+  end
+
+  # TODO: [V2] eager loading here is too expensive
+  def older_internal_releases
+    internal_releases
+      .order(created_at: :desc)
+      .includes(:commit, :store_submissions, triggered_workflow_run: {build: [:commit, :artifact]}, release_platform_run: [:release])
+      .offset(1)
+  end
+
+  def older_production_releases
+    production_releases.stale.order(created_at: :desc)
+  end
+
+  def older_production_store_rollouts
+    older_production_releases.includes(store_submission: :store_rollout).map(&:store_rollout).compact
+  end
+
+  def latest_rc_build?(build)
+    rc_builds.first == build
+  end
+
+  def available_rc_builds(after: nil)
+    builds = rc_builds
+      .left_joins(:production_releases)
+      .where(production_releases: {build_id: nil})
+
+    if after
+      builds.where("generated_at > ?", after.generated_at).where.not(id: after.id)
     else
-      raise ArgumentError, "Unknown platform: #{platform}"
+      builds
     end
   end
 
-  def active_store_submission
-    store_submissions.last
-  end
-
-  def previous_store_submissions
-    return unless store_submissions.size > 1
-    store_submissions.where.not(id: active_store_submission.id)
-  end
-
-  def create_store_submission
-    if android?
-      play_store_submissions.create!
-    elsif ios?
-      app_store_submissions.create!
-    else
-      raise ArgumentError, "Unknown platform: #{platform}"
-    end
-  end
-
-  def latest_build?(build)
-    builds.reorder("generated_at DESC").first == build
+  def next_build_sequence_number
+    builds.maximum(:sequence_number).to_i.succ
   end
 
   def check_release_health
@@ -129,6 +197,10 @@ class ReleasePlatformRun < ApplicationRecord
 
   def release_metadatum
     release_metadata.where(locale: ReleaseMetadata::DEFAULT_LOCALES).first
+  end
+
+  def default_release_metadata
+    release_metadata.where(default_locale: true).first
   end
 
   def show_health?
@@ -159,14 +231,6 @@ class ReleasePlatformRun < ApplicationRecord
     release_metadata.create!(base.merge(locale: locale, default_locale: true))
   end
 
-  def finish_release
-    if release.ready_to_be_finalized?
-      release.start_post_release_phase!
-    else
-      release.partially_finish!
-    end
-  end
-
   def correct_version!
     return if release_version.to_semverish.proper?
 
@@ -187,28 +251,6 @@ class ReleasePlatformRun < ApplicationRecord
     return train.next_version if train.version_ahead?(self)
     return train.ongoing_release.next_version if train.ongoing_release&.version_ahead?(self) && !release.hotfix?
     train.hotfix_release.next_version if train.hotfix_release&.version_ahead?(self)
-  end
-
-  def bump_version_for_fixed_build_number!
-    return unless train.fixed_build_number?
-
-    # bump the build number if it is the first commit of the release or it is patch fix on the release
-    if release.all_commits.size == 1
-      app.bump_build_number!
-    else
-      if version_bump_required?
-        app.bump_build_number!
-        self.in_store_resubmission = true
-      end
-      self.release_version = release_version.to_semverish.bump!(:patch, strategy: versioning_strategy).to_s
-      event_stamp!(
-        reason: :version_changed,
-        kind: :notice,
-        data: {version: release_version}
-      )
-    end
-
-    save!
   end
 
   def bump_version!
@@ -244,6 +286,13 @@ class ReleasePlatformRun < ApplicationRecord
     on_track? && !started_store_release?
   end
 
+  def metadata_editable_v2?
+    return unless active?
+    return false if active_production_release.present? && inflight_production_release.blank?
+
+    inflight_production_release.blank? || inflight_production_release.store_submission.pre_review?
+  end
+
   # FIXME: move to release and change it for proper movement UI
   def overall_movement_status
     steps.to_h do |step|
@@ -252,15 +301,11 @@ class ReleasePlatformRun < ApplicationRecord
     end
   end
 
-  def allow_blocked_step?
-    Flipper.enabled?(:allow_blocked_step, self)
-  end
-
   def manually_startable_step?(step)
     return false if train.inactive?
     return false unless on_track?
     return false if last_commit.blank?
-    return false if ongoing_release_step?(step) && train.hotfix_release.present? && !allow_blocked_step?
+    return false if ongoing_release_step?(step) && train.hotfix_release.present?
     return true if (hotfix? || patch_fix?) && last_commit.run_for(step, self).blank?
     return false if upcoming_release_step?(step)
     return true if step.first? && step_runs_for(step).empty?
@@ -273,7 +318,6 @@ class ReleasePlatformRun < ApplicationRecord
     return false if train.inactive?
     return false unless on_track?
     return false if last_commit.blank?
-    return false if allow_blocked_step?
     return true if train.hotfix_release.present? && train.hotfix_release != release && step.release?
 
     (next_step == step) && previous_step_run_for(step)&.success? && upcoming_release_step?(step)
@@ -296,7 +340,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def finalizable?
-    may_finish? && finished_steps?
+    on_track? && finished_steps?
   end
 
   def next_step
@@ -344,12 +388,6 @@ class ReleasePlatformRun < ApplicationRecord
     train.vcs_provider&.tag_url(app.config&.code_repository_name, tag_name)
   end
 
-  def on_finish!
-    ReleasePlatformRuns::CreateTagJob.perform_later(id) if train.tag_platform_at_release_end?
-    event_stamp!(reason: :finished, kind: :success, data: {version: release_version})
-    app.refresh_external_app
-  end
-
   # recursively attempt to create a release tag until a unique one gets created
   # it *can* get expensive in the worst-case scenario, so ideally invoke this in a bg job
   def create_tag!(input_tag_name = base_tag_name)
@@ -373,8 +411,12 @@ class ReleasePlatformRun < ApplicationRecord
   # Patch fix commit: no bump required
   # --
   def version_bump_required?
-    store_release = latest_deployed_store_release
-    store_release&.status&.in?(DeploymentRun::READY_STATES) && store_release.step_run.basic_build_version == release_version
+    if release.is_v2?
+      latest_production_release&.version_bump_required?
+    else
+      store_release = latest_deployed_store_release
+      store_release&.status&.in?(DeploymentRun::READY_STATES) && store_release.step_run.basic_build_version == release_version
+    end
   end
 
   def patch_fix?
@@ -423,7 +465,7 @@ class ReleasePlatformRun < ApplicationRecord
     release.notification_params.merge(
       {
         release_version: release_version,
-        app_platform: release_platform.platform,
+        app_platform: release_platform.display_attr(:platform),
         release_notes: release_metadatum&.release_notes
       }
     )
@@ -435,6 +477,14 @@ class ReleasePlatformRun < ApplicationRecord
 
   def store_submitted_releases
     deployment_runs.reached_submission.sort_by(&:scheduled_at).reverse
+  end
+
+  def block_play_store_submissions!
+    update!(play_store_blocked: true)
+  end
+
+  def unblock_play_store_submissions!
+    update!(play_store_blocked: false)
   end
 
   private
@@ -468,5 +518,9 @@ class ReleasePlatformRun < ApplicationRecord
       .not_failed
       .order(scheduled_at: :asc)
       .last
+  end
+
+  def set_config
+    self.config = release_platform.config
   end
 end

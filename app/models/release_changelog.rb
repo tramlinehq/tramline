@@ -16,11 +16,11 @@ class ReleaseChangelog < ApplicationRecord
   belongs_to :release
 
   def normalized_commits
-    commits.map { NormalizedCommit.new(_1) }.sort_by(&:timestamp).reverse
+    commits.map { NormalizedCommit.new(_1, train: release.train) }.sort_by(&:timestamp).reverse
   end
 
   def commit_messages(first_parent_only = false)
-    ReleaseChangelog.commit_log(normalized_commits.sort_by(&:timestamp).reverse, first_parent_only).map(&:message)
+    ReleaseChangelog.commit_log(normalized_commits.sort_by(&:timestamp).reverse, first_parent_only)&.map(&:message)
   end
 
   def unique_authors
@@ -52,52 +52,5 @@ class ReleaseChangelog < ApplicationRecord
     release.organization.team_names.each { |team_name| by_team[team_name] ||= 0 }
     by_team[Accounts::Team::TRAMLINE_TEAM_NAME] ||= 0
     by_team.sort_by(&:last).reverse.to_h
-  end
-
-  private
-
-  class NormalizedCommit
-    def initialize(commit)
-      @commit = commit
-    end
-
-    def author_name = commit["author_name"]
-
-    def author_login = commit["author_login"]
-
-    def author_email = commit["author_email"]
-
-    def url = commit["url"]
-
-    def author_url = commit["author_url"]
-
-    def timestamp
-      time = commit["author_timestamp"] || commit["timestamp"]
-      Time.zone.parse(time) if time
-    end
-
-    def commit_hash = commit["sha"] || commit["commit_hash"]
-
-    def short_sha = commit_hash[0, 7]
-
-    def truncated_message = commit["message"]&.truncate(70)
-
-    def applied_at = nil
-
-    def parents = commit["parents"]
-
-    def message = commit["message"]
-
-    def team = nil # FIXME: stub
-
-    def train = nil # FIXME: stub
-
-    def pull_request = nil
-
-    def backmerge_failure? = nil
-
-    private
-
-    attr_reader :commit
   end
 end

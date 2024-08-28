@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
+ActiveRecord::Schema[7.0].define(version: 2024_08_26_121331) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
@@ -109,7 +109,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
   end
 
   create_table "build_artifacts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "step_run_id", null: false
+    t.uuid "step_run_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "generated_at", precision: nil
@@ -138,8 +138,16 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
     t.datetime "generated_at", precision: nil
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "workflow_run_id"
+    t.string "external_id"
+    t.string "external_name"
+    t.bigint "size_in_bytes"
+    t.integer "sequence_number", limit: 2, default: 0, null: false
+    t.string "slack_file_id"
     t.index ["commit_id"], name: "index_builds_on_commit_id"
     t.index ["release_platform_run_id"], name: "index_builds_on_release_platform_run_id"
+    t.index ["sequence_number"], name: "index_builds_on_sequence_number"
+    t.index ["workflow_run_id"], name: "index_builds_on_workflow_run_id"
   end
 
   create_table "commit_listeners", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -169,6 +177,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
     t.jsonb "parents"
     t.index ["build_queue_id"], name: "index_commits_on_build_queue_id"
     t.index ["commit_hash", "release_id"], name: "index_commits_on_commit_hash_and_release_id", unique: true
+    t.index ["release_id", "timestamp"], name: "index_commits_on_release_id_and_timestamp"
     t.index ["release_platform_id"], name: "index_commits_on_release_platform_id"
     t.index ["release_platform_run_id"], name: "index_commits_on_release_platform_run_id"
   end
@@ -408,6 +417,39 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
     t.index ["stampable_type", "stampable_id"], name: "index_passports_on_stampable"
   end
 
+  create_table "pre_prod_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_platform_run_id", null: false
+    t.uuid "commit_id", null: false
+    t.uuid "previous_id"
+    t.uuid "parent_internal_release_id"
+    t.string "type", null: false
+    t.string "status", default: "created", null: false
+    t.jsonb "config", default: {}, null: false
+    t.text "tester_notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["commit_id"], name: "index_pre_prod_releases_on_commit_id"
+    t.index ["parent_internal_release_id"], name: "index_pre_prod_releases_on_parent_internal_release_id"
+    t.index ["previous_id"], name: "index_pre_prod_releases_on_previous_id"
+    t.index ["release_platform_run_id"], name: "index_pre_prod_releases_on_release_platform_run_id"
+  end
+
+  create_table "production_releases", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_platform_run_id", null: false
+    t.uuid "build_id", null: false
+    t.uuid "previous_id"
+    t.jsonb "config", default: {}, null: false
+    t.string "status", default: "inflight", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["build_id"], name: "index_production_releases_on_build_id"
+    t.index ["previous_id"], name: "index_production_releases_on_previous_id"
+    t.index ["release_platform_run_id", "status"], name: "index_unique_active_production_release", unique: true, where: "((status)::text = 'active'::text)"
+    t.index ["release_platform_run_id", "status"], name: "index_unique_finished_production_release", unique: true, where: "((status)::text = 'finished'::text)"
+    t.index ["release_platform_run_id", "status"], name: "index_unique_inflight_production_release", unique: true, where: "((status)::text = 'inflight'::text)"
+    t.index ["release_platform_run_id"], name: "index_production_releases_on_release_platform_run_id"
+  end
+
   create_table "pull_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_run_id"
     t.bigint "number", null: false
@@ -464,7 +506,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
   end
 
   create_table "release_health_metrics", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "deployment_run_id", null: false
+    t.uuid "deployment_run_id"
     t.bigint "sessions"
     t.bigint "sessions_in_last_day"
     t.bigint "sessions_with_errors"
@@ -477,8 +519,10 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
     t.datetime "updated_at", null: false
     t.bigint "total_sessions_in_last_day"
     t.string "external_release_id"
+    t.uuid "production_release_id"
     t.index ["deployment_run_id"], name: "index_release_health_metrics_on_deployment_run_id"
     t.index ["fetched_at"], name: "index_release_health_metrics_on_fetched_at"
+    t.index ["production_release_id"], name: "index_release_health_metrics_on_production_release_id"
   end
 
   create_table "release_health_rules", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -544,6 +588,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
     t.string "tag_name"
     t.boolean "in_store_resubmission", default: false
     t.uuid "last_commit_id"
+    t.jsonb "config"
+    t.boolean "play_store_blocked", default: false
     t.index ["last_commit_id"], name: "index_release_platform_runs_on_last_commit_id"
     t.index ["release_platform_id"], name: "index_release_platform_runs_on_release_platform_id"
   end
@@ -565,6 +611,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
     t.string "vcs_webhook_id"
     t.uuid "train_id"
     t.string "platform"
+    t.jsonb "config"
     t.index ["app_id"], name: "index_release_platforms_on_app_id"
   end
 
@@ -587,6 +634,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
     t.jsonb "internal_notes", default: {}
     t.uuid "release_pilot_id"
     t.string "slug"
+    t.boolean "is_v2", default: false
     t.index ["slug"], name: "index_releases_on_slug", unique: true
     t.index ["train_id"], name: "index_releases_on_train_id"
   end
@@ -695,9 +743,24 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
     t.index ["step_number", "release_platform_id"], name: "index_steps_on_step_number_and_release_platform_id", unique: true
   end
 
+  create_table "store_rollouts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_platform_run_id", null: false
+    t.uuid "store_submission_id"
+    t.string "type", null: false
+    t.string "status", null: false
+    t.datetime "completed_at"
+    t.integer "current_stage", limit: 2
+    t.decimal "config", precision: 8, scale: 5, default: [], null: false, array: true
+    t.boolean "is_staged_rollout", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["release_platform_run_id"], name: "index_store_rollouts_on_release_platform_run_id"
+    t.index ["store_submission_id"], name: "index_store_rollouts_on_store_submission_id"
+  end
+
   create_table "store_submissions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "release_platform_run_id", null: false
-    t.uuid "build_id"
+    t.uuid "build_id", null: false
     t.string "status", null: false
     t.string "name"
     t.string "type", null: false
@@ -711,8 +774,14 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "store_release"
+    t.string "parent_release_type"
+    t.uuid "parent_release_id"
+    t.jsonb "config"
+    t.integer "sequence_number", limit: 2, default: 0, null: false
     t.index ["build_id"], name: "index_store_submissions_on_build_id"
+    t.index ["parent_release_type", "parent_release_id"], name: "index_store_submissions_on_parent_release"
     t.index ["release_platform_run_id"], name: "index_store_submissions_on_release_platform_run_id"
+    t.index ["sequence_number"], name: "index_store_submissions_on_sequence_number"
   end
 
   create_table "teams", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -810,6 +879,26 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
   end
 
+  create_table "workflow_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "release_platform_run_id", null: false
+    t.uuid "commit_id", null: false
+    t.uuid "pre_prod_release_id", null: false
+    t.string "status", null: false
+    t.string "kind", default: "release_candidate", null: false
+    t.jsonb "workflow_config"
+    t.string "external_id"
+    t.string "external_url"
+    t.string "external_number"
+    t.string "artifacts_url"
+    t.datetime "started_at"
+    t.datetime "finished_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["commit_id"], name: "index_workflow_runs_on_commit_id"
+    t.index ["pre_prod_release_id"], name: "index_workflow_runs_on_pre_prod_release_id"
+    t.index ["release_platform_run_id"], name: "index_workflow_runs_on_release_platform_run_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "app_configs", "apps"
@@ -819,6 +908,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
   add_foreign_key "build_queues", "releases"
   add_foreign_key "builds", "commits"
   add_foreign_key "builds", "release_platform_runs"
+  add_foreign_key "builds", "workflow_runs"
   add_foreign_key "commit_listeners", "release_platforms"
   add_foreign_key "commits", "build_queues"
   add_foreign_key "commits", "release_platform_runs"
@@ -836,12 +926,20 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "notification_settings", "trains"
+  add_foreign_key "pre_prod_releases", "commits"
+  add_foreign_key "pre_prod_releases", "pre_prod_releases", column: "parent_internal_release_id"
+  add_foreign_key "pre_prod_releases", "pre_prod_releases", column: "previous_id"
+  add_foreign_key "pre_prod_releases", "release_platform_runs"
+  add_foreign_key "production_releases", "builds"
+  add_foreign_key "production_releases", "production_releases", column: "previous_id"
+  add_foreign_key "production_releases", "release_platform_runs"
   add_foreign_key "pull_requests", "release_platform_runs"
   add_foreign_key "release_changelogs", "releases"
   add_foreign_key "release_health_events", "deployment_runs"
   add_foreign_key "release_health_events", "release_health_metrics"
   add_foreign_key "release_health_events", "release_health_rules"
   add_foreign_key "release_health_metrics", "deployment_runs"
+  add_foreign_key "release_health_metrics", "production_releases"
   add_foreign_key "release_health_rules", "release_platforms"
   add_foreign_key "release_index_components", "release_indices"
   add_foreign_key "release_indices", "trains"
@@ -857,9 +955,14 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_28_143541) do
   add_foreign_key "step_runs", "release_platform_runs"
   add_foreign_key "step_runs", "steps"
   add_foreign_key "steps", "release_platforms"
+  add_foreign_key "store_rollouts", "release_platform_runs"
+  add_foreign_key "store_rollouts", "store_submissions"
   add_foreign_key "store_submissions", "builds"
   add_foreign_key "store_submissions", "release_platform_runs"
   add_foreign_key "teams", "organizations"
   add_foreign_key "trains", "apps"
   add_foreign_key "user_authentications", "users"
+  add_foreign_key "workflow_runs", "commits"
+  add_foreign_key "workflow_runs", "pre_prod_releases"
+  add_foreign_key "workflow_runs", "release_platform_runs"
 end

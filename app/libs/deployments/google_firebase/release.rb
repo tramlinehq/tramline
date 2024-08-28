@@ -17,8 +17,8 @@ module Deployments
         new(deployment_run).update_upload_status!(op_name)
       end
 
-      def self.update_build_notes!(deployment_run, release)
-        new(deployment_run).update_build_notes!(release)
+      def self.update_build_notes!(deployment_run, release_id)
+        new(deployment_run).update_build_notes!(release_id)
       end
 
       def self.start_release!(deployment_run)
@@ -76,21 +76,22 @@ module Deployments
           return
         end
 
-        release_info = result.value!
-        raise UploadNotComplete unless release_info.done?
+        op_info = result.value!
+        raise UploadNotComplete unless op_info.done?
 
+        release_info = op_info.release
         run.create_external_release(external_id: release_info.id,
           name: release_info.name,
           build_number: release_info.build_number,
           added_at: release_info.added_at,
-          status: release_info.status,
+          status: op_info.status,
           external_link: release_info.console_link)
         run.upload!
-        Deployments::GoogleFirebase::UpdateBuildNotesJob.perform_later(run.id, release_info.release)
+        Deployments::GoogleFirebase::UpdateBuildNotesJob.perform_later(run.id, release_info.id)
       end
 
-      def update_build_notes!(release)
-        provider.update_release_notes(release, deployment_notes)
+      def update_build_notes!(release_id)
+        provider.update_release_notes(release_id, deployment_notes)
       end
 
       def start_release!
@@ -98,7 +99,7 @@ module Deployments
 
         return run.complete! if deployment_channel == GoogleFirebaseIntegration::EMPTY_CHANNEL[:id].to_s
 
-        result = provider.release(run.external_release.external_id, deployment_channel)
+        result = provider.release(run.external_release.external_id, [deployment_channel])
 
         unless result.ok?
           run.fail_with_error(result.error)

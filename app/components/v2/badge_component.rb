@@ -6,7 +6,7 @@ class V2::BadgeComponent < V2::BaseComponent
 
   KIND = {
     badge: "text-main dark:text-white text-xs font-medium px-1.5 py-0.5 rounded-md dark:text-secondary-50 border border-main-200 dark:border-main-600 bg-main-100 dark:bg-main-700",
-    status_pill: "text-xs font-medium px-2.5 py-0.5 tracking-wideish rounded-md",
+    status_pill: "text-xs font-medium px-2.5 py-0.5 rounded-md",
     status: "text-lg tracking-wide uppercase box-padding-sm border-default-md",
     featured: "text-xs font-medium px-2 py-0.5 rounded-md bg-main-500 text-main-100 tracking-wideish uppercase"
   }
@@ -41,19 +41,26 @@ class V2::BadgeComponent < V2::BaseComponent
     PILL_STATUS_COLOR_PALETTE[@status.to_sym].join(" ")
   end
 
-  def background_style
-    return unless color
-    "background-color: #{lighten_color(color, 20.0)};"
+  def colored_badge_class
+    "badge-#{badge_id}"
   end
 
-  def pill_style
-    return unless color
-    "background-color: #{color};"
+  def colored_pill_class
+    "pill-#{badge_id}"
   end
 
-  def text_style
+  def colored_text_class
+    "text-#{badge_id}"
+  end
+
+  def inline_styles
     return unless color
-    "color: #{darken_color(color, 70.0)};"
+
+    content_tag :style, nonce: content_security_policy_nonce do
+      concat ".#{colored_badge_class} { background-color: #{lighten_color(color, 20.0)}; }"
+      concat ".#{colored_pill_class} { background-color: #{color}; }"
+      concat ".#{colored_text_class} { color: #{darken_color(color, 70.0)}; }"
+    end
   end
 
   def badge_style
@@ -74,5 +81,9 @@ class V2::BadgeComponent < V2::BaseComponent
     color = Color::RGB.from_html(hexcode)
     lighter_color = color.darken_by(amount)
     lighter_color.html
+  end
+
+  def badge_id
+    @badge_id ||= SecureRandom.hex(4)
   end
 end

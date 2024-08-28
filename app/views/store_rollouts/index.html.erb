@@ -1,0 +1,68 @@
+<% icon = live_release_tab_configuration.dig(:store_release, :rollout_to_users, :icon) %>
+<%= render V2::LiveRelease::ContainerComponent.new(@release, title: @release.train.name) do |container| %>
+  <% container.with_back_button %>
+  <% container.with_tab(title: "App Rollout", icon:) do %>
+    <div class="flex flex-col section-gap-default">
+      <% if @release.production_store_rollouts.none? %>
+        <%= render V2::EmptyStateComponent.new(
+          title: "Not ready to roll out",
+          text: "Please wait for a submission to be approved before rolling out.",
+          banner_image: "v2/mail.svg",
+          type: :subdued) %>
+      <% end %>
+
+      <% if @release.production_store_rollouts.exists? %>
+        <%= render V2::PlatformViewComponent.new(@release) do |component| %>
+          <% component.platform_runs.each do |run| %>
+            <div class="grid grid-cols-1 section-gap-default">
+              <div class="flex flex-col item-gap-default">
+                <% if run.inflight_store_rollout.present? %>
+                  <%= render V2::LiveRelease::ProdRelease::RolloutComponent.new(run.inflight_store_rollout, title: "Upcoming rollout") %>
+                <% end %>
+
+                <% if run.active_store_rollout.present? %>
+                  <%= render V2::LiveRelease::ProdRelease::RolloutComponent.new(run.active_store_rollout, title: "Active rollout") %>
+                <% end %>
+
+                <% if run.finished_store_rollout.present? %>
+                  <%= render V2::LiveRelease::ProdRelease::RolloutComponent.new(run.finished_store_rollout) %>
+                <% end %>
+              </div>
+
+              <% if run.conf.production_release.present? && run.production_store_rollouts.none? %>
+                <%= render V2::EmptyStateComponent.new(
+                  title: "Not ready to be rolled out",
+                  text: "Please wait for the production submission to be ready to start the rollout.",
+                  banner_image: icon,
+                  type: :subdued) %>
+              <% end %>
+
+              <% if run.conf.production_release.blank? %>
+                <%= render V2::EmptyStateComponent.new(
+                  title: "No production release configured",
+                  text: "Please setup a production release in the release configuration.",
+                  banner_image: icon,
+                  type: :subdued) %>
+              <% end %>
+
+              <% older_rollouts = run.older_production_store_rollouts %>
+              <% if older_rollouts.any? %>
+                <%= render V2::SectionComponent.new(title: "Attempted rollouts", style: :titled, size: :compact) do %>
+                  <div class="flex flex-col item-gap-default">
+                    <% older_rollouts.each do |rollout| %>
+                      <%= render V2::LiveRelease::ProdRelease::PreviousRolloutComponent.new(rollout) %>
+                    <% end %>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+
+        <div class="flex flex-col">
+          <%= render V2::LiveRelease::FinalizeComponent.new(@release) %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

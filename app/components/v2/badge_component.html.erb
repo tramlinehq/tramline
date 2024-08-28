@@ -1,7 +1,8 @@
 <% if color.present? %>
-  <span class="inline-flex items-center <%= badge_style %>" style="<%= background_style %>">
-    <span class="w-2 h-2 me-2 rounded-full" style="<%= pill_style %>"></span>
-    <span style="<%= text_style %>"><%= text %></span>
+  <%= inline_styles %>
+  <span class="inline-flex items-center <%= badge_style %> <%= colored_badge_class %>">
+    <span class="w-2 h-2 me-2 rounded-full <%= colored_pill_class %>"></span>
+    <span class="<%= colored_text_class %>"><%= text %></span>
   </span>
 <% else %>
   <span class="inline-flex items-center <%= badge_style %>">

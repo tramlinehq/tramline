@@ -6,7 +6,8 @@ class TimelineComponent < ViewComponent::Base
   EVENT_TYPE = {
     success: "bg-green-500 border-white dark:border-main-900 dark:bg-green-500",
     error: "bg-red-500 border-white dark:border-main-900 dark:bg-red-500",
-    neutral: "bg-main-200 border-white dark:border-main-900 dark:bg-main-700"
+    neutral: "bg-main-200 border-white dark:border-main-900 dark:bg-main-700",
+    notice: "bg-sky-500 border-white dark:border-sky-900 dark:bg-sky-700"
   }
 
   def initialize(events:)

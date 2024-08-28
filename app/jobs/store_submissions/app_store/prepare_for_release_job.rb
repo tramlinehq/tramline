@@ -15,7 +15,7 @@ class StoreSubmissions::AppStore::PrepareForReleaseJob
 
   sidekiq_retries_exhausted do |msg, ex|
     submission = AppStoreSubmission.find(msg["args"].first)
-    submission.fail_with_error(ex)
+    submission.fail_with_error!(ex)
   end
 
   def perform(submission_id)

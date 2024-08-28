@@ -5,11 +5,24 @@ class V2::BaseReleaseComponent < V2::BaseComponent
   using RefinedHash
   using RefinedInteger
 
+  RELEASE_STATUS = {
+    finished: ["Completed", :success],
+    stopped: ["Stopped", :failure],
+    created: ["Running", :ongoing],
+    on_track: ["Running", :ongoing],
+    upcoming: ["Upcoming", :inert],
+    post_release: ["Finalizing", :neutral],
+    post_release_started: ["Finalizing", :neutral],
+    post_release_failed: ["Finalizing", :neutral],
+    partially_finished: ["Partially Finished", :ongoing],
+    stopped_after_partial_finish: ["Stopped & Partially Finished", :failure]
+  }
+
   def initialize(release)
     @release = release
   end
 
-  delegate :release_branch, :tag_name, to: :release
+  delegate :release_branch, :tag_name, to: :@release
 
   memoize def release_pilot_name
     @release.release_pilot&.full_name || "Tramline"
@@ -27,8 +40,8 @@ class V2::BaseReleaseComponent < V2::BaseComponent
   end
 
   memoize def status
-    return ReleasesHelper::SHOW_RELEASE_STATUS.fetch(:upcoming) if @release.upcoming?
-    ReleasesHelper::SHOW_RELEASE_STATUS.fetch(@release.status.to_sym)
+    return RELEASE_STATUS.fetch(:upcoming) if @release.upcoming?
+    RELEASE_STATUS.fetch(@release.status.to_sym)
   end
 
   def human_slug
@@ -108,10 +121,6 @@ class V2::BaseReleaseComponent < V2::BaseComponent
 
   memoize def release_version
     @release.release_version
-  end
-
-  def branch
-    @release.branch_name
   end
 
   def interval

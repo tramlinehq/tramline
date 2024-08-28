@@ -10,7 +10,12 @@ class V2::ExternalAppComponent < V2::BaseComponent
 
   def initialize(app:)
     @app = app
-    @latest_external_apps = @app.latest_external_apps
+    @latest_external_apps =
+      if @app.cross_platform?
+        @app.latest_external_apps
+      else
+        @app.latest_external_apps.slice(@app.platform.to_sym)
+      end
   end
 
   attr_reader :app, :latest_external_apps

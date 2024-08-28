@@ -25,7 +25,26 @@ class NotificationSettingsComponent < ViewComponent::Base
     deployment_failed: {icon: "v2/alert_circle.svg", description: "The distribution to a channel failed"},
     release_ended: {icon: "v2/sparkles.svg", description: "The release finished successfully"},
     release_stopped: {icon: "v2/stop_circle.svg", description: "The release was stopped before it finished"},
-    release_health_events: {icon: "v2/heart_pulse.svg", description: "A health event has occurred for the release"}
+    release_health_events: {icon: "v2/heart_pulse.svg", description: "A health event has occurred for the release"},
+    build_available_v2: {icon: "v2/drill.svg", description: "A new build is available for a direct download"},
+    internal_release_finished: {icon: "v2/sparkles.svg", description: "The release finished successfully"},
+    internal_release_failed: {icon: "v2/alert_circle.svg", description: "The release failed"},
+    beta_submission_finished: {icon: "v2/sparkles.svg", description: "The beta submission finished successfully"},
+    submission_failed: {icon: "v2/alert_circle.svg", description: "The beta submission failed"},
+    production_submission_started: {icon: "v2/play.svg", description: "A production submission started"},
+    production_submission_in_review: {icon: "v2/clipboard_list.svg", description: "A production submission is in review"},
+    production_submission_approved: {icon: "v2/clipboard_check.svg", description: "A production submission was approved by the store"},
+    production_submission_rejected: {icon: "v2/alert_circle.svg", description: "A production submission was rejected by the store"},
+    production_submission_cancelled: {icon: "v2/alert_circle.svg", description: "A production submission was cancelled"},
+    production_rollout_started: {icon: "v2/play.svg", description: "A production rollout started"},
+    production_rollout_paused: {icon: "v2/pause.svg", description: "A production rollout was paused"},
+    production_rollout_resumed: {icon: "v2/play.svg", description: "A production rollout was resumed"},
+    production_rollout_halted: {icon: "v2/stop_circle.svg", description: "A production rollout was halted"},
+    production_rollout_updated: {icon: "v2/arrow_big_up_dash.svg", description: "A production rollout was updated"},
+    production_release_finished: {icon: "v2/sparkles.svg", description: "A production release finished"},
+    workflow_run_failed: {icon: "v2/alert_circle.svg", description: "A workflow run failed"},
+    workflow_run_halted: {icon: "v2/stop_circle.svg", description: "A workflow run was halted"},
+    workflow_run_unavailable: {icon: "v2/alert_circle.svg", description: "A workflow run was not found"}
   }.map
     .with_index { |(key, value), index| [key, value.merge(number: index.succ)] }
     .to_h

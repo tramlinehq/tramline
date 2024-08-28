@@ -44,6 +44,10 @@
       <% modal.with_button(label: "Prepare new release", scheme: :default, type: :action, size: :xxs, disabled: !release_startable?)
               .with_icon("play.svg", size: :md) %>
       <% modal.with_body do %>
+        <div class="mb-6">
+          <%= render V2::EmptyStateComponent.new(text: branch_help, banner_image: "v2/git_branch.svg", type: :tiny) %>
+        </div>
+
         <%= render V2::FormComponent.new(model: [app, train, train.releases.new], url: app_train_releases_path(app, train), free_form: true) do |form| %>
           <div data-controller="reveal">
             <%= render V2::OptionCardsComponent.new(form: form.F, options: release_options) %>
@@ -122,7 +126,6 @@
                                         type: :notice,
                                         title: "App is not ready",
                                         info: { label: "Configure", link: app_integrations_path(app) },
-                                        dismissible: false,
                                         full_screen: false) do %>
         Please finish configuring the required integrations before you can start creating releases.
       <% end %>
@@ -139,18 +142,21 @@
     <% if devops_report.present? %>
       <%= render V2::SectionComponent.new(style: :titled, title: "Mobile DevOps") do %>
         <div class="grid grid-cols-4 item-gap-default">
-          <%= render ChartComponent.new(devops_report[:mobile_devops][:frequency]) %>
-          <%= render ChartComponent.new(devops_report[:mobile_devops][:duration]) %>
-          <%= render ChartComponent.new(devops_report[:mobile_devops][:hotfixes]) %>
+          <%= render ChartComponent.new(devops_report.frequency) %>
+          <%= render ChartComponent.new(devops_report.duration) %>
+          <%= render ChartComponent.new(devops_report.hotfixes) %>
+
           <% if ios_enabled? %>
-            <%= render ChartComponent.new(devops_report[:mobile_devops][:time_in_review]) %>
+            <%= render ChartComponent.new(devops_report.time_in_review) %>
           <% end %>
+
           <div class="col-span-2">
-            <%= render ChartComponent.new(devops_report[:mobile_devops][:time_in_phases]) %>
+            <%= render ChartComponent.new(devops_report.time_in_phases) %>
           </div>
-          <% if current_user.reldex_enabled? && devops_report[:mobile_devops][:reldex_scores].present? %>
+
+          <% if devops_report.reldex_scores.present? %>
             <div class="col-span-2">
-              <%= render ChartComponent.new(devops_report[:mobile_devops][:reldex_scores]) %>
+              <%= render ChartComponent.new(devops_report.reldex_scores) %>
             </div>
           <% end %>
         </div>
@@ -158,17 +164,18 @@
 
       <%= render V2::SectionComponent.new(style: :titled, title: "Operational Efficiency") do %>
         <div class="grid grid-cols-4 item-gap-default">
-          <%= render ChartComponent.new(devops_report[:operational_efficiency][:contributors]) %>
-          <%= render ChartComponent.new(devops_report[:operational_efficiency][:stability_contributors]) %>
-          <div><!-- to maintain grid height --></div>
-          <% if current_organization.team_analysis_enabled? %>
-            <div class="col-span-2">
-              <%= render ChartComponent.new(devops_report[:operational_efficiency][:team_contributors]) %>
-            </div>
-            <div class="col-span-2">
-              <%= render ChartComponent.new(devops_report[:operational_efficiency][:team_stability_contributors]) %>
-            </div>
-          <% end %>
+          <%= render ChartComponent.new(devops_report.contributors) %>
+          <%= render ChartComponent.new(devops_report.stability_contributors) %>
+
+          <div><!-- grid maintenance --></div>
+
+          <div class="col-span-2">
+            <%= render ChartComponent.new(devops_report.team_contributors) %>
+          </div>
+
+          <div class="col-span-2">
+            <%= render ChartComponent.new(devops_report.team_stability_contributors) %>
+          </div>
         </div>
       <% end %>
     <% end %>
@@ -177,41 +184,40 @@
       <% if previous_releases.exists? %>
         <%= render V2::TableComponent.new(columns: release_table_columns, size: :default) do |table| %>
           <% previous_releases.each do |release| %>
-            <% release_component = release_component(release) %>
-
+            <% release = ReleasePresenter.new(release, view_context) %>
             <% table.with_row do |row| %>
               <% row.with_cell(style: "") do %>
                 <div class="flex space-x-2">
-                  <%= render V2::BadgeComponent.new(text: release_component.status[0], status: release_component.status[1]) %>
-                  <%= render(release_component.hotfix_badge) unless release_component.hotfix_badge.nil? %>
-                  <%= render(release_component.scheduled_badge) if release_component.automatic? %>
+                  <%= render V2::BadgeComponent.new(**release.release_status) %>
+                  <%= render(release.hotfix_badge) unless release.hotfix_badge.nil? %>
+                  <%= render(release.scheduled_badge) if release.automatic? %>
                 </div>
               <% end %>
 
               <% row.with_cell(style: "font-medium") do %>
                 <% if release.completed_at %>
-                  <%= render V2::BadgeComponent.new(text: release_component.release_version, kind: :badge) %>
+                  <%= render V2::BadgeComponent.new(text: release.release_version, kind: :badge) %>
                 <% else %>
-                  <%= render V2::BadgeComponent.new(text: version_in_progress(release_component.release_version), kind: :badge) %>
+                  <%= render V2::BadgeComponent.new(text: version_in_progress(release.release_version), kind: :badge) %>
                 <% end %>
               <% end %>
 
               <% row.with_cell do %>
-                <%= render V2::BadgeComponent.new(text: release_component.branch, kind: :badge) %>
+                <%= render V2::BadgeComponent.new(text: release.release_branch, kind: :badge) %>
               <% end %>
 
               <% if reldex_defined? %>
                 <% row.with_cell do %>
-                  <% if (reldex = release_component.release_summary&.fetch(:reldex, nil)) %>
+                  <% if (reldex = release.reldex) %>
                     <%= render V2::Reldex::StatusComponent.new(release:, reldex_score: reldex) %>
                   <% else %>
-                    –
+                    <%= NOT_AVAILABLE %>
                   <% end %>
                 <% end %>
               <% end %>
 
               <% row.with_cell do %>
-                <div><%= release_component.interval %></div>
+                <div><%= release.interval %></div>
               <% end %>
 
               <% row.with_cell(style: "text-right w-2") do %>

@@ -83,11 +83,8 @@ Rails.application.routes.draw do
       resources :releases, only: %i[show create destroy index update], shallow: true do
         member do
           get :overview
-          get :change_queue
-          get :store_submissions
-          get :internal_builds
+          get :changeset_tracking
           get :regression_testing
-          get :release_candidates
           get :soak
         end
 
@@ -97,22 +94,15 @@ Rails.application.routes.draw do
           end
         end
 
-        get :edit, to: "staged_rollouts#edit_all", path: :rollout, as: :staged_rollout_edit
-        get :edit, to: "release_metadata#edit_all", path: :metadata, as: :metadata_edit
+        get :edit, to: "release_metadata#index", path: :metadata, as: :metadata_edit
         patch :update, to: "release_metadata#update_all", path: :metadata, as: :metadata_update
+        get :index, to: "beta_releases#index", as: :release_candidates, path: :release_candidates
+        get :index, to: "store_submissions#index", path: :store_submission, as: :store_submissions
+        get :index, to: "store_rollouts#index", path: :rollout, as: :store_rollouts
+        get :index, to: "internal_releases#index", as: :internal_builds, path: :internal_builds
 
         resources :release_platforms, shallow: false, only: [] do
           resources :release_metadata, only: %i[edit update]
-        end
-
-        resources :platforms, shallow: false, only: [] do
-          resources :store_submissions, only: [:create, :update], path: :submissions do
-            member do
-              patch :submit_for_review
-              patch :prepare
-              patch :cancel
-            end
-          end
         end
 
         resources :build_queues, only: [], shallow: false do
@@ -211,6 +201,57 @@ Rails.application.routes.draw do
     end
 
     get "/integrations/build_artifact_channels", to: "integrations#build_artifact_channels"
+  end
+
+  resources :release_platform_runs, path: :runs, as: :runs, only: [] do
+    post :pre_prod_beta, to: "beta_releases#create"
+    post :production, to: "production_releases#create"
+
+    resources :pre_prod_releases, shallow: true, only: [] do
+      member do
+        get :changes_since_previous
+      end
+    end
+
+    resources :production_releases, shallow: true, only: [] do
+      member do
+        get :changes_since_previous
+      end
+    end
+  end
+
+  resources :store_rollouts, only: [], shallow: false, path: :rollouts do
+    member do
+      patch :start
+      patch :increase
+      patch :pause
+      patch :resume
+      patch :halt
+      patch :fully_release
+    end
+  end
+
+  resources :store_submissions, only: [:update], shallow: false, path: :store_submissions do
+    member do
+      patch :retry
+      patch :trigger
+      patch :submit_for_review
+      patch :prepare
+      patch :cancel
+      patch :remove_from_review
+    end
+  end
+
+  if Rails.env.development?
+    patch "/store_submissions/:id/mock_reject", to: "store_submissions#mock_reject_for_app_store", as: :mock_reject_for_app_store
+    patch "/store_submissions/:id/mock_approve", to: "store_submissions#mock_approve_for_app_store", as: :mock_approve_for_app_store
+  end
+
+  resources :workflow_runs, only: [] do
+    member do
+      patch :retry
+      patch :trigger
+    end
   end
 
   namespace :admin do

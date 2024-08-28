@@ -6,7 +6,7 @@ class Accounts::UsersController < SignedInApplicationController
 
   def update
     if @user.update(parsed_user_params)
-      redirect_back fallback_location: root_path, flash: {notice: "Account was successfully updated."}
+      redirect_back fallback_location: root_path, notice: "Account was successfully updated."
     else
       render :edit, status: :unprocessable_entity
     end

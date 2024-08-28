@@ -13,20 +13,13 @@
 
     <% section.F.fields_for :providable do |subf| %>
       <%= subf.hidden_field :type, value: integration.providable_type %>
-      <div><%= subf.labeled_text_field :key_id, "Key ID" %></div>
-      <div><%= subf.labeled_text_field :issuer_id, "Issuer ID" %></div>
-      <div><%= subf.labeled_file_field :p8_key_file, "Upload key file", "Only .p8 files.", accept: ".p8" %></div>
+      <div><%= subf.labeled_text_field :key_id, "Key ID", required: true %></div>
+      <div><%= subf.labeled_text_field :issuer_id, "Issuer ID", required: true %></div>
+      <div><%= subf.labeled_file_field :p8_key_file, "Upload key file", "Only .p8 files.", accept: ".p8", required: true %></div>
     <% end %>
   <% end %>
 
   <% f.with_action do %>
-    <div class="flex items-center" data-controller="reveal">
-      <%= f.F.authz_submit "Create", "plus.svg", size: :xs, html_options: { data: { action: "reveal#toggle" } } %>
-      <div class="ml-5">
-        <div hidden data-reveal>
-          <%= render V2::LoadingIndicatorComponent.new(text: "Verifying...") %>
-        </div>
-      </div>
-    </div>
+    <%= f.F.authz_submit "Create", "plus.svg", size: :xs %>
   <% end %>
 <% end %>

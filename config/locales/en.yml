@@ -1,9 +1,27 @@
 en:
+  release_metadata:
+    metadata_not_editable: "Cannot update the release metadata once the production release has begun."
+    update:
+      success: "Release metadata was successfully updated."
+    update_all:
+      success: "Release metadata was successfully updated."
+      generic_failure: "Could not save the release metadata. Please try again."
+  build_queues:
+    apply:
+      failure: "Failed to apply the build queue — %{errors}"
+  production_releases:
+    create:
+      success: "Production release was successfully created."
+      failure: "Failed to create production release — %{errors}"
   staged_rollout:
     ios:
       checkbox: "Enable Phased Release"
     android:
       checkbox: "Enable Staged Rollout"
+  beta_releases:
+    create:
+      success: "Beta release was successfully created."
+      failure: "Failed to create beta release — %{errors}."
   release_health_rules:
     create:
       success: "Rule was successfully created."
@@ -16,34 +34,74 @@ en:
       success: "Release Index config was successfully updated."
       failure: "Failed to update config: %{errors}"
   store_submissions:
+    trigger:
+      success: "Submission was successfully started."
+      failure: "Failed to start submission — %{errors}"
+    retry:
+      success: "Submission was successfully retried."
+      failure: "Failed to retry submission — %{errors}"
+    submission_not_active: "Submission is not active."
+    submission_not_retryable: "Submission is not retryable."
     prepare:
       success: "The new release has begun preparing."
       unstartable: "This release can not be prepared for submission."
+      prepare:
+        failure: "Failed to prepare submission — %{errors}"
     submit_for_review:
       success: "The release has been submitted for review!"
-      failure: "Failed to submit for review due to %{errors}"
+      failure: "Failed to submit for review — %{errors}"
       unreviewable: "This release can not be submitted for review."
     cancel:
       success: "The release has been removed from review!"
-      failure: "Failed to remove from review due to %{errors}"
+      failure: "Failed to remove from review — %{errors}"
       uncanceleable: "This release submission can not be removed from review."
     update:
       success: "The submission has been updated successfully."
-      failure: "Failed to update submission due to %{errors}"
+      failure: "Failed to update submission — %{errors}"
       invalid_build: "The build is not valid for this submission."
     create:
       success: "The submission has been created successfully."
-      failure: "Failed to create submission due to %{errors}"
+      failure: "Failed to create submission — %{errors}"
       invalid_build: "The build is not valid to start a submission."
+  store_rollouts:
+    increase:
+      success: "Rollout was successfully increased."
+      failure: "Failed to increase rollout — %{errors}"
+    pause:
+      success: "Rollout was successfully paused."
+      failure: "Failed to pause rollout — %{errors}"
+    resume:
+      success: "Rollout was successfully resumed."
+      failure: "Failed to resume rollout — %{errors}"
+    halt:
+      success: "Rollout was successfully halted."
+      failure: "Failed to halt rollout — %{errors}"
+    fully_release:
+      success: "Rollout was fully released."
+      failure: "Failed to fully release rollout — %{errors}"
+    start:
+      success: "Rollout was successfully started."
+      failure: "Failed to start rollout — %{errors}"
+    rollout_not_controllable: "Rollout is not controllable."
+    rollout_not_automatic: "Rollout is not automatic."
+    rollout_not_moveable: "Rollout is not moveable."
+  workflow_runs:
+    trigger:
+      success: "Workflow run was successfully triggered."
+      failure: "Failed to trigger the workflow — %{errors}"
+    retry:
+      success: "Workflow run was successfully retried."
+      error: "Failed to retry the CI workflow! Contact support if the issue persists."
   authentication:
     sso:
       sessions:
         create:
-            no_account: "No Single Sign-On account found."
-            connect_failure: "Failed to connect to the Single Sign-On provider."
-            failure: "Failed to login via Single Sign-On! Please contact support if the issue persists."
+          no_account: "No Single Sign-On account found."
+          connect_failure: "Failed to connect to the Single Sign-On provider."
+          failure: "Failed to login via Single Sign-On! Please contact support if the issue persists."
         saml_redeem:
-            failure: "Failed to accept the response from SSO provider."
+          failure: "Failed to accept the response from SSO provider."
+
   activerecord:
     models:
       slack_integration: "Slack"
@@ -83,6 +141,25 @@ en:
           staged_rollout_fully_released: "Staged rollout bypassed to release to 100%"
           build_available: "New build generated"
           release_health_events: "Release health events"
+          build_available_v2: "New build generated"
+          internal_release_finished: "Internal release finished"
+          internal_release_failed: "Internal release failed"
+          beta_submission_finished: "Beta submission finished"
+          submission_failed: "Submission failed"
+          production_submission_started: "Production submission started"
+          production_submission_in_review: "Production submission in review"
+          production_submission_approved: "Production submission approved"
+          production_submission_rejected: "Production submission rejected"
+          production_submission_cancelled: "Production submission cancelled"
+          production_rollout_started: "Production rollout started"
+          production_rollout_paused: "Production rollout paused"
+          production_rollout_resumed: "Production rollout resumed"
+          production_rollout_halted: "Production rollout halted"
+          production_rollout_updated: "Production rollout updated"
+          production_release_finished: "Production release finished"
+          workflow_run_failed: "Workflow run failed"
+          workflow_run_halted: "Workflow run halted"
+          workflow_run_unavailable: "Workflow run unavailable"
       deployment_run:
         failure_reason:
           unknown_failure: "an unknown error, contact support!"
@@ -191,6 +268,63 @@ en:
           stability_changes: "The number of commits it took to stabilize the build for release."
           rollout_changes: "The number of commits that went into the patch fixes for the release."
           days_since_last_release: "The number of days since the last release."
+      play_store_submission:
+        failure_reason:
+          unknown_failure: "an unknown error, contact support!"
+          build_exists_in_build_channel: "the build already being present in the deployment channel"
+          app_not_found: "the app not being available in store"
+          build_not_upgradable: "the build number being lower than the current build in the deployment channel"
+          permission_denied: "permission denied by the store"
+          api_disabled: "api disabled in the store"
+          invalid_api_package: "the build artifact being invalid for the store"
+          apks_not_allowed: "the build artifact being an apk, which is not accepted by the store"
+          app_review_rejected: "the build needs to be uploaded manually on Google Play Console UI as a previous build was rejected by the store"
+          release_on_draft_app: "the app being in draft mode, please make a manual release to a public channel (alpha, beta, production) before releasing from Tramline"
+          wrong_package_name: "the app having a different package name than the one configured in Tramline"
+          release_does_not_have_country_set: "the channel not having a targeting country configured"
+          first_release_cannot_be_made_from_tramline: "this being the very first release to this track, which cannot be a staged rollout"
+          duplicate_call: "there is another request running against the store"
+          exact_alarm_permission_required: "the app needing the USE_EXACT_ALARM permission to continue"
+          unsigned_bundle: "the appbundle not being signed correctly"
+          timeout: "the request to the store timed out"
+          unauthorized: "the request to the store failed due to authorization error"
+          foreground_service_permission_required: "the app has not declared the required Foreground Service permissions in the Play Console"
+      app_store_submission:
+        failure_reason:
+          unknown_failure: "an unknown error, contact support!"
+          invalid_release: "the release is not valid for current build"
+          app_not_found: "the app not being available in store"
+          build_not_found: "the build not being available in App Store"
+          missing_export_compliance: "the release missing export compliance"
+          release_not_found: "the release not being present in store"
+          build_not_submittable: "the build not being submittable"
+          build_mismatch: "the build not matching the release that exists in store"
+          review_in_progress: "a review already being in progress"
+          review_submission_exists: "a release already being added for review in the store"
+          phased_release_not_found: "the release not being phased release enabled"
+          release_already_exists: "a release already being present in the store"
+          release_fully_live: "the release is already fully live"
+          release_already_halted: "the release is already halted"
+          version_already_exists: "the version already being released in the store"
+          attachment_upload_in_progress: "store version is not in a valid state to submit for review, attachment uploads still in progress"
+          localization_not_found: "the locale for release metadata doesn't exist in the store"
+          unauthorized: "the request to the store failed due to authorization error"
+      test_flight_submission:
+        failure_reason:
+          unknown_failure: "an unknown error, contact support!"
+          app_not_found: "the app not being available in store"
+          build_not_found: "the build not being available in TestFlight"
+          missing_export_compliance: "the build missing export compliance"
+          beta_group_not_found: "the beta group not existing in store"
+          localization_not_found: "the locale for release metadata doesn't exist in the store"
+          unauthorized: "the request to the store failed due to authorization error"
+      google_firebase_submission:
+        failure_reason:
+          unknown_failure: "an unknown error, contact support!"
+          permission_denied: "permission denied by the channel"
+          invalid_config: "configuration is invalid, please check!"
+          invalid_api_package: "the build artifact being invalid for the channel"
+          firebase_processing_error: "the build was uploaded to Firebase, but Firebase threw an error while processing it. This could be due to degradation or an invalid package"
     attributes:
       integration:
         categories:
@@ -327,6 +461,7 @@ en:
               invalid: "can only contain alphanumerics, underscores and hyphens"
             trigger_rule_expressions:
               duplicate_metrics: "cannot have multiple health conditions with the same metric"
+
   invitation:
     flash:
       invite_issued: "Invitation issued"
@@ -361,6 +496,7 @@ en:
   mailer:
     generic:
       team_name: "The Tramline team"
+
   errors:
     format: "%{attribute} → %{message}"
     messages:
@@ -390,6 +526,7 @@ en:
         password_strength: "Choose a stronger password. Try a mix of letters, numbers, and symbols. <a class='underline' href='https://www.useapassphrase.com'>Use a passphrase</a> can be quite helpful."
       not_authorized_policy: "Not Authorized %{model} on %{query} action"
       not_logged_in: "You must be logged in to access this page"
+
   charts:
     release_summary:
       stability_contributors:

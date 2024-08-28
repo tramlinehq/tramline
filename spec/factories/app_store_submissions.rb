@@ -1,7 +1,17 @@
 FactoryBot.define do
   factory :app_store_submission do
-    release_platform_run { association :release_platform_run }
+    parent_release { association :production_release }
+    build { association :build, release_platform_run: parent_release.release_platform_run }
+    release_platform_run { parent_release.release_platform_run }
+    sequence_number { 1 }
+
     status { "created" }
+    config {
+      {
+        submission_config: {id: :production, name: "production"},
+        rollout_config: {enabled: true, stages: [1, 5, 10, 50, 100]}
+      }
+    }
 
     trait :created do
       status { "created" }
@@ -38,10 +48,6 @@ FactoryBot.define do
     trait :failed do
       status { "failed" }
       failure_reason { "unknown_failure" }
-    end
-
-    trait :with_build do
-      build { association :build }
     end
   end
 end

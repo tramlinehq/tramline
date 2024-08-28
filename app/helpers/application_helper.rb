@@ -1,6 +1,8 @@
 module ApplicationHelper
   using RefinedString
 
+  NOT_AVAILABLE = "⃠"
+
   STATUS_COLOR_PALETTE = {
     success: %w[bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300],
     failure: %w[bg-rose-100 text-rose-800 dark:bg-red-900 dark:text-red-300],
@@ -8,6 +10,12 @@ module ApplicationHelper
     neutral: %w[bg-slate-100 text-slate-500],
     ongoing: %w[bg-indigo-100 text-indigo-600],
     inert: %w[bg-amber-100 text-amber-800]
+  }
+
+  STATUS_BORDER_COLOR_PALETTE = {
+    success: "border-green-700",
+    failure: "border-red-700",
+    neutral: "border-slate-200"
   }
 
   PILL_STATUS_COLOR_PALETTE = {
@@ -23,6 +31,10 @@ module ApplicationHelper
     default: "bg-blue-600 dark:bg-blue-500",
     inert: "bg-main-400 dark:bg-main-200"
   }
+
+  def status_picker(picker, status)
+    picker[status.to_sym] || {text: status.humanize, status: :neutral}
+  end
 
   def resolve_color(color)
     if color.to_sym.in?(%i[excellent acceptable mediocre])
@@ -167,5 +179,13 @@ module ApplicationHelper
 
   def safe_simple_format(text)
     simple_format(h(text))
+  end
+
+  def comment
+  end
+
+  def duration_in_words(seconds)
+    return NOT_AVAILABLE unless seconds
+    distance_of_time_in_words(0, seconds, include_seconds: true)
   end
 end

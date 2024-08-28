@@ -10,12 +10,12 @@
 #  commit_hash             :string           not null, indexed => [release_id]
 #  message                 :string
 #  parents                 :jsonb
-#  timestamp               :datetime         not null
+#  timestamp               :datetime         not null, indexed => [release_id]
 #  url                     :string
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #  build_queue_id          :uuid             indexed
-#  release_id              :uuid             indexed => [commit_hash]
+#  release_id              :uuid             indexed => [commit_hash], indexed => [timestamp]
 #  release_platform_id     :uuid             indexed
 #  release_platform_run_id :uuid             indexed
 #
@@ -44,7 +44,7 @@ class Commit < ApplicationRecord
   delegate :release_platform_runs, :notify!, :train, :platform, to: :release
 
   def self.commit_messages(first_parent_only = false)
-    Commit.commit_log(all.reorder("timestamp DESC"), first_parent_only).map(&:message)
+    Commit.commit_log(all.reorder("timestamp DESC"), first_parent_only)&.map(&:message)
   end
 
   def self.count_by_team(org)
@@ -121,7 +121,7 @@ class Commit < ApplicationRecord
 
   def trigger_step_runs_for(platform_run, force: false)
     return if release.hotfix? && !force
-    train.fixed_build_number? ? platform_run.bump_version_for_fixed_build_number! : platform_run.bump_version!
+    platform_run.bump_version!
     platform_run.update!(last_commit: self)
 
     platform_run.release_platform.ordered_steps_until(platform_run.current_step_number).each do |step|

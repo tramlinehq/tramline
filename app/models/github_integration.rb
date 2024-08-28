@@ -45,7 +45,8 @@ class GithubIntegration < ApplicationRecord
 
   WORKFLOW_RUN_TRANSFORMATIONS = {
     ci_ref: :id,
-    ci_link: :html_url
+    ci_link: :html_url,
+    number: :run_number
   }
 
   INSTALLATION_TRANSFORMATIONS = {
@@ -96,6 +97,14 @@ class GithubIntegration < ApplicationRecord
         description: :description
       }
     }
+  }
+
+  ARTIFACTS_TRANSFORMATIONS = {
+    id: :id,
+    name: :name,
+    size_in_bytes: :size_in_bytes,
+    archive_download_url: :archive_download_url,
+    generated_at: :created_at
   }
 
   def install_path
@@ -246,14 +255,28 @@ class GithubIntegration < ApplicationRecord
   # we currently only select the largest artifact from github, since we have no information about the file types
   # in the future, this could be smarter and/or a user input
   def get_artifact(artifacts_url, artifact_name_pattern)
-    installation
-      .artifacts(artifacts_url)
-      .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern) }
-      .then { |artifacts| API.find_biggest(artifacts) }
-      .tap { |artifact| raise Installations::Errors::ArtifactsNotFound if artifact.blank? }
+    select_artifact(artifacts_url, artifact_name_pattern)
       .then { |artifact| installation.artifact_download_url(artifact) }
       .then { |url| installation.artifact_io_stream(url) }
       .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true) }
+  end
+
+  def select_artifact(artifacts_url, artifact_name_pattern)
+    installation
+      .artifacts(artifacts_url, ARTIFACTS_TRANSFORMATIONS)
+      .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern) }
+      .then { |artifacts| API.find_biggest(artifacts) }
+      .tap { |artifact| raise Installations::Errors::ArtifactsNotFound if artifact.blank? }
+  end
+
+  def get_artifact_v2(artifacts_url, artifact_name_pattern)
+    artifact = select_artifact(artifacts_url, artifact_name_pattern)
+
+    artifact_stream = installation.artifact_download_url(artifact)
+      .then { |url| installation.artifact_io_stream(url) }
+      .then { |zip_file| Artifacts::Stream.new(zip_file, is_archive: true) }
+
+    {artifact:, stream: artifact_stream}
   end
 
   def branch_exists?(branch_name)

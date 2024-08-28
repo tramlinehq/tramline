@@ -1,0 +1,20 @@
+{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": ":sparkles: The RC build *<%= @release_version %> (<%= @build_number %>)* for commit <<%= @commit_url %>|<%= @commit_sha %>> has been sent to <%= @submission_channel %>."
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "- Changes since the last release are sent within this message thread."
+        }
+      ]
+    }
+  ]
+}

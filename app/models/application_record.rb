@@ -1,14 +1,15 @@
 class ApplicationRecord < ActiveRecord::Base
   primary_abstract_class
   self.implicit_order_column = :created_at
+  Signal = Coordinators::Signals
 
   # - column used is always `status`
   # - row-lock is always taken before update
   # - plays well with rails scopes and enums
-  def self.safe_state_machine_params
+  def self.safe_state_machine_params(with_lock: true)
     {
       column: :status,
-      requires_lock: true,
+      requires_lock: with_lock,
       requires_new_transaction: false,
       enum: true,
       create_scopes: false

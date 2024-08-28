@@ -1,0 +1,52 @@
+<% icon = live_release_tab_configuration.dig(:store_release, :app_submission, :icon) %>
+<%= render V2::LiveRelease::ContainerComponent.new(@release, title: @release.train.name) do |container| %>
+  <% container.with_back_button %>
+  <% container.with_tab(title: "App Submission", icon:) do %>
+    <%= render V2::PlatformViewComponent.new(@release) do |component| %>
+      <% component.platform_runs.each do |run| %>
+        <div class="grid grid-cols-1 section-gap-default">
+          <div class="flex flex-col item-gap-default">
+            <% if run.inflight_production_release.present? %>
+              <%= render V2::LiveRelease::ProdRelease::SubmissionComponent.new(run.inflight_production_release.store_submission, title: "In-flight Submission") %>
+            <% end %>
+
+            <% if run.active_production_release.present? %>
+              <%= render V2::LiveRelease::ProdRelease::SubmissionComponent.new(run.active_production_release.store_submission, inactive: run.inflight_production_release.present?, title: "Active Submission") %>
+            <% end %>
+
+            <% if run.finished_production_release.present? %>
+              <%= render V2::LiveRelease::ProdRelease::SubmissionComponent.new(run.finished_production_release.store_submission, inactive: true, title: "Completed Submission") %>
+            <% end %>
+          </div>
+
+          <% if run.conf.production_release.present? && run.production_releases.none? %>
+            <%= render V2::EmptyStateComponent.new(
+              title: "Not ready to be submitted",
+              text: "Please wait for a Release Candidate to be available to start a submission.",
+              banner_image: icon,
+              type: :subdued) %>
+          <% end %>
+
+          <% if run.conf.production_release.blank? %>
+            <%= render V2::EmptyStateComponent.new(
+              title: "No production release configured",
+              text: "Please setup a production release in the release configuration.",
+              banner_image: icon,
+              type: :subdued) %>
+          <% end %>
+
+          <% older_releases = run.older_production_releases %>
+          <% if older_releases.any? %>
+            <%= render V2::SectionComponent.new(style: :titled, title: "Previous submissions", size: :compact) do %>
+              <div class="flex flex-col item-gap-default">
+                <% older_releases.each do |prod_release| %>
+                  <%= render V2::LiveRelease::ProdRelease::PreviousSubmissionComponent.new(prod_release.store_submission) %>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
