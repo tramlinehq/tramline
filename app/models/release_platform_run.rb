@@ -465,7 +465,7 @@ class ReleasePlatformRun < ApplicationRecord
     release.notification_params.merge(
       {
         release_version: release_version,
-        app_platform: release_platform.platform,
+        app_platform: release_platform.display_attr(:platform),
         release_notes: release_metadatum&.release_notes
       }
     )

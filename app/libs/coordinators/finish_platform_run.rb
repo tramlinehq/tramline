@@ -24,7 +24,6 @@ class Coordinators::FinishPlatformRun
     ReleasePlatformRuns::CreateTagJob.perform_later(release_platform_run.id) if train.tag_platform_at_release_end?
     release_platform_run.event_stamp!(reason: :finished, kind: :success, data: {version: release_platform_run.version})
     app.refresh_external_app
-    # TODO: [V2] [post-alpha] notify properly
   end
 
   attr_reader :release_platform_run
