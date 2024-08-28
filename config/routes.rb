@@ -97,8 +97,8 @@ Rails.application.routes.draw do
         get :edit, to: "release_metadata#index", path: :metadata, as: :metadata_edit
         patch :update, to: "release_metadata#update_all", path: :metadata, as: :metadata_update
         get :index, to: "beta_releases#index", as: :release_candidates, path: :release_candidates
-        get :edit, to: "store_submissions#index", path: :store_submission, as: :store_submission_edit
-        get :edit, to: "store_rollouts#index", path: :rollout, as: :staged_rollout_edit
+        get :index, to: "store_submissions#index", path: :store_submission, as: :store_submissions
+        get :index, to: "store_rollouts#index", path: :rollout, as: :store_rollouts
         get :index, to: "internal_releases#index", as: :internal_builds, path: :internal_builds
 
         resources :release_platforms, shallow: false, only: [] do

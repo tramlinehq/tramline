@@ -98,11 +98,11 @@ module Tabbable
     sections[:store_release][:approvals][:position] = 9
     sections[:store_release][:approvals][:status] = statuses[:approvals]
     sections[:store_release][:approvals][:unavailable] = true
-    sections[:store_release][:app_submission][:path] = release_store_submission_edit_path(@release)
+    sections[:store_release][:app_submission][:path] = release_store_submissions_path(@release)
     sections[:store_release][:app_submission][:icon] = "v2/mail.svg"
     sections[:store_release][:app_submission][:position] = 10
     sections[:store_release][:app_submission][:status] = statuses[:app_submission]
-    sections[:store_release][:rollout_to_users][:path] = release_staged_rollout_edit_path(@release)
+    sections[:store_release][:rollout_to_users][:path] = release_store_rollouts_path(@release)
     sections[:store_release][:rollout_to_users][:icon] = "v2/rocket.svg"
     sections[:store_release][:rollout_to_users][:position] = 11
     sections[:store_release][:rollout_to_users][:status] = statuses[:rollout_to_users]
