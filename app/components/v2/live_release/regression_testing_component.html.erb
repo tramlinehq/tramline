@@ -1,10 +1,6 @@
 <div class="flex flex-col section-gap-default">
   <div class="flex flex-col item-gap-default">
-    <%= render V2::AlertComponent.new(type: :info, title: "A new build #239 is available. Switch to a newer build under test.") %>
-
-    <div class="flex flex-col item-gap-default justify-start items-start">
-      <%= render V2::BadgeComponent.new(**testing_status, kind: :status) %>
-    </div>
+    <%= render V2::AlertComponent.new(type: :info, title: "A new build #239 is available. Switch to a newer build under test.", full_screen: false) %>
 
     <%= render V2::CardComponent.new(title: "Status", size: :full, separator: false) do |card| %>
       <% card.with_action do %>
@@ -28,6 +24,10 @@
       <% end %>
 
       <div class="flex flex-col item-gap-default">
+        <div class="flex flex-col item-gap-default justify-start items-start">
+          <%= render V2::BadgeComponent.new(**testing_status, kind: :status) %>
+        </div>
+
         <%= render V2::LiveRelease::BuildComponent.new(Build.first) %>
 
         <div class="text-secondary text-xs">
@@ -48,22 +48,10 @@
 
   <% size = rand(1..5) %>
   <%= render V2::SectionComponent.new(title: "Past tests (#{size})", style: :titled, size: :compact) do %>
-    <%= render V2::TableComponent.new(columns: ["Build", "Status", "Last Updated"], size: :default) do |table| %>
-      <% [1, 2, 3, 4, 5].take(size).each do |rollout| %>
-        <% table.with_row do |row| %>
-          <% row.with_cell do %>
-            <%= render V2::LiveRelease::BuildComponent.new(Build.first) %>
-          <% end %>
-
-          <% row.with_cell do %>
-            <%= render V2::BadgeComponent.new(text: "Passed", status: :success) %>
-          <% end %>
-
-          <% row.with_cell do %>
-            2 days ago
-          <% end %>
-        <% end %>
+    <div class="flex flex-col item-gap-default">
+      <% size.times.each do %>
+        <%= render V2::LiveRelease::PreProdRelease::PreviousReleaseComponent.new(BetaRelease.first) %>
       <% end %>
-    <% end %>
+    </div>
   <% end %>
 </div>
