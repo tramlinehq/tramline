@@ -103,6 +103,18 @@ module.exports = {
       zIndex: {
         60: '60',
       },
+      keyframes: {
+        'pulse': {
+          '0%, 100%': {opacity: 1},
+          '75%': {opacity: 0.75},
+          '50%': {opacity: 0.5},
+          '25%': {opacity: 0.25},
+          '10%': {opacity: 0.1},
+        },
+      },
+      animation: {
+        'pulse': 'pulse 1.2s cubic-bezier(0.2, 0, 0.6, 1) infinite',
+      },
     },
   },
   plugins: [

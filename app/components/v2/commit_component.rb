@@ -23,8 +23,6 @@ class V2::CommitComponent < V2::BaseComponent
 
   def show_avatar? = @avatar
 
-  def show_numbering? = @numbering
-
   def pull_request
     @commit.pull_request
   end

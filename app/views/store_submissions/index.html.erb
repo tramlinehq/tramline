@@ -30,7 +30,7 @@
           <% if run.conf.production_release.blank? %>
             <%= render V2::EmptyStateComponent.new(
               title: "No production release configured",
-              text: "Please configure a production release in the release configuration.",
+              text: "Please setup a production release in the release configuration.",
               banner_image: icon,
               type: :subdued) %>
           <% end %>

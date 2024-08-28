@@ -38,7 +38,7 @@
           size: :xxs,
           disabled: !release.committable?,
           label: "Apply now",
-          html_options: { data: { turbo_confirm: "This will accept the commits in the queue, are you sure?" } }) do |b|
+          html_options: { data: { turbo_confirm: "This will apply all the commits from the queue, are you sure?" } }) do |b|
           b.with_icon("arrow_down_wide_narrow.svg", size: :sm)
         end %>
       <% end %>

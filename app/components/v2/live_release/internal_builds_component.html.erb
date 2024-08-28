@@ -1,6 +1,7 @@
+<% icon = view_context.live_release_tab_configuration.dig(:stability, :internal_builds, :icon) %>
 <%= render V2::LiveRelease::ContainerComponent.new(release, title: release.train.name) do |container| %>
   <% container.with_back_button %>
-  <% container.with_tab(title: "Internal Builds", icon: view_context.live_release_tab_configuration.dig(:stability, :internal_builds, :icon)) do %>
+  <% container.with_tab(title: "Internal Builds", icon:) do %>
     <%= render V2::PlatformViewComponent.new(release) do |component| %>
       <% component.runs do |release_platform_run| %>
         <% if configured?(release_platform_run) %>
@@ -22,7 +23,7 @@
           <%= render V2::EmptyStateComponent.new(
             title: "Not ready yet",
             text: "Please wait for changes to be applied before starting.",
-            banner_image: "v2/drill.svg",
+            banner_image: icon,
             type: :subdued) %>
         <% else %>
           <div><!-- grid maintenance --></div>

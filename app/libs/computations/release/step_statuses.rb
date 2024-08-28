@@ -1,6 +1,6 @@
 class Computations::Release::StepStatuses
   using RefinedArray
-  STATUS = [:blocked, :ongoing, :success, :none].zip_map_self
+  STATUS = [:blocked, :unblocked, :ongoing, :success, :none].zip_map_self
   PHASES = [:completed, :stopped, :kickoff, :stabilization, :review, :rollout, :finishing].zip_map_self
 
   def self.call(release)
@@ -51,7 +51,7 @@ class Computations::Release::StepStatuses
   end
 
   def notes_status
-    return STATUS[:ongoing] if any_platforms? { |rp| rp.metadata_editable_v2? }
+    return STATUS[:unblocked] if any_platforms? { |rp| rp.metadata_editable_v2? }
     STATUS[:success]
   end
 
