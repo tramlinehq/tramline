@@ -128,7 +128,7 @@ class TestFlightSubmission < StoreSubmission
     update_store_info!(release_info)
 
     if release_info.success?
-      finished!
+      finish!
     elsif release_info.review_failed?
       reject!
     else

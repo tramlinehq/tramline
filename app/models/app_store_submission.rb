@@ -204,7 +204,7 @@ class AppStoreSubmission < StoreSubmission
     update_store_info!(release_info)
 
     if release_info.success?
-      approved!
+      approve!
       return
     elsif release_info.review_cancelled?
       cancel! unless cancelled?
