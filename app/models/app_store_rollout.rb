@@ -86,6 +86,7 @@ class AppStoreRollout < StoreRollout
 
   def track_live_release_status
     return if completed? || fully_released?
+    return unless actionable?
 
     result = provider.find_live_release
     unless result.ok?

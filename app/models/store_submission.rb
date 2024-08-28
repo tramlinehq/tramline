@@ -56,7 +56,7 @@ class StoreSubmission < ApplicationRecord
   end
 
   def editable?
-    parent_release.production? && parent_release.inflight?
+    parent_release.production? && parent_release.inflight? && actionable?
   end
 
   def submission_channel_id
