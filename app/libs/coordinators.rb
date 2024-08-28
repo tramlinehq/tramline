@@ -131,15 +131,15 @@ module Coordinators
 
     def self.trigger_submission!(submission)
       Res.new do
-        raise unless submission.actionable?
+        raise "submission is not actionable" unless submission.actionable?
         submission.trigger!
       end
     end
 
     def self.retry_submission!(submission)
       Res.new do
-        raise unless submission.actionable?
-        raise unless submission.retryable?
+        raise "submission is not actionable" unless submission.actionable?
+        raise "submission is not retryable" unless submission.retryable?
         submission.retry!
       end
     end
@@ -157,8 +157,7 @@ module Coordinators
 
     def self.prepare_production_submission!(submission)
       Res.new do
-        raise unless submission.actionable?
-        raise unless submission.editable?
+        raise "production release is not editable" unless submission.editable?
         submission.start_prepare!
         submission.notify!("Production submission started", :production_submission_started, submission.notification_params)
       end
@@ -166,16 +165,14 @@ module Coordinators
 
     def self.start_production_review!(submission)
       Res.new do
-        raise unless submission.actionable?
-        raise unless submission.editable?
+        raise "production release is not editable" unless submission.editable?
         submission.start_submission!
       end
     end
 
     def self.cancel_production_review!(submission)
       Res.new do
-        raise unless submission.actionable?
-        raise unless submission.editable?
+        raise "production release is not editable" unless submission.editable?
         submission.start_cancellation!
         submission.notify!("Production submission cancelled", :production_submission_cancelled, submission.notification_params)
       end

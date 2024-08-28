@@ -10,8 +10,8 @@ class Coordinators::UpdateBuildOnProduction
   end
 
   def call
-    return unless production_release.actionable?
-    return unless production_release.inflight?
+    raise "production release is not actionable" unless submission.actionable?
+    raise "production release is not editable" unless production_release.inflight?
 
     with_lock do
       return unless production_release.inflight?
