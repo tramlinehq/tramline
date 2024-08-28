@@ -1,13 +1,14 @@
 class WorkflowRuns::FindJob
   include Sidekiq::Job
-  include Loggable
+  extend Loggable
+  extend Backoffable
 
   queue_as :high
   sidekiq_options retry: 25
 
   sidekiq_retry_in do |count, exception|
     if exception.is_a?(Installations::Errors::WorkflowRunNotFound)
-      10 * (count + 1)
+      backoff_in(attempt: count, period: :minutes).to_i
     else
       elog(exception)
       :kill
@@ -16,9 +17,8 @@ class WorkflowRuns::FindJob
 
   sidekiq_retries_exhausted do |msg, ex|
     if ex.is_a?(Installations::Errors::WorkflowRunNotFound)
-      run = StepRun.find(msg["args"].first)
-      run.ci_unavailable! if run.may_ci_unavailable?
-      run.event_stamp!(reason: :ci_workflow_unavailable, kind: :error, data: {})
+      run = WorkflowRun.find(msg["args"].first)
+      run.unavailable! if run.may_unavailable?
       elog(ex)
     end
   end
