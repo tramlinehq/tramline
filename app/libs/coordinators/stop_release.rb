@@ -9,6 +9,7 @@ class Coordinators::StopRelease
 
   def call
     with_lock do
+      raise "release is not active" unless release.active?
       release.stop!
       release.release_platform_runs.each(&:stop!)
     end

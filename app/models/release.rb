@@ -223,15 +223,6 @@ class Release < ApplicationRecord
     release_platform_runs.all?(&:production_release_active?)
   end
 
-  # TODO: [V2] move this out to signals
-  def finish_after_partial_finish!
-    with_lock do
-      return unless partially_finished?
-      release_platform_runs.pending_release.map(&:stop!)
-      start_post_release_phase!
-    end
-  end
-
   def backmerge_failure_count
     return 0 unless continuous_backmerge?
     all_commits.size - backmerge_prs.size - 1

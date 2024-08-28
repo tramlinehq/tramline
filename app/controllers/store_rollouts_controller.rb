@@ -1,7 +1,7 @@
 class StoreRolloutsController < SignedInApplicationController
   include Tabbable
 
-  before_action :require_write_access!
+  before_action :require_write_access!, except: [:index]
   before_action :set_store_rollout, only: %i[start increase pause resume halt fully_release]
   before_action :ensure_moveable, only: %i[start increase pause resume halt fully_release]
   before_action :ensure_user_controlled_rollout, only: [:increase, :halt]

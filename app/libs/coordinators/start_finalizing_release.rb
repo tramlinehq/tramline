@@ -10,8 +10,8 @@ class Coordinators::StartFinalizingRelease
 
   def call
     with_lock do
-      return unless Release::FINALIZE_STATES.include?(release.status)
-      return unless release.ready_to_be_finalized?
+      raise "release is not ready to be finalized" unless Release::FINALIZE_STATES.include?(release.status)
+      raise "release is not ready to be finalized" unless release.ready_to_be_finalized?
       release.start_post_release_phase!
     end
 

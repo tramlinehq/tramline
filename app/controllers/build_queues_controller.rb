@@ -5,20 +5,19 @@ class BuildQueuesController < SignedInApplicationController
   before_action :set_build_queue, only: %i[apply]
 
   def apply
-    if @release.train.product_v2?
-      Action.apply_build_queue!(@build_queue)
+    if @release.is_v2?
+      if (result = Action.apply_build_queue!(@build_queue)).ok?
+        redirect_to changeset_tracking_release_path(@release), notice: "Build queue has been applied and emptied."
+      else
+        redirect_to current_release_path, flash: {error: t(".failure", errors: result.error.message)}
+      end
     else
       @release.with_lock do
         locked_release_error and return unless @release.committable?
         already_triggered_error and return unless @build_queue.is_active?
-
         @build_queue.apply!
       end
-    end
 
-    if @release.is_v2?
-      redirect_to changeset_tracking_release_path(@release), notice: "Build queue has been applied and emptied."
-    else
       redirect_to current_release_path, notice: "Build queue has been applied and emptied."
     end
   end

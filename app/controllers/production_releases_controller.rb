@@ -1,5 +1,5 @@
 class ProductionReleasesController < SignedInApplicationController
-  before_action :require_write_access!
+  before_action :require_write_access!, only: [:create]
   before_action :set_release_platform_run, only: %i[create]
   before_action :set_prod_release, only: %i[changes_since_previous]
   before_action :set_app, only: %i[changes_since_previous]

@@ -1,4 +1,5 @@
 class WorkflowRunsController < SignedInApplicationController
+  before_action :require_write_access!
   before_action :set_workflow_run, only: [:trigger, :retry]
 
   def trigger

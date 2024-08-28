@@ -123,8 +123,10 @@ module Coordinators
     end
 
     def self.start_beta_release!(release_platform_run, build_id, commit_id)
-      # Handle error when release platform run is not active
-      Res.new { Coordinators::CreateBetaRelease.call(release_platform_run, build_id, commit_id) }
+      Res.new do
+        raise "release is not active" unless release_platform_run.active?
+        Coordinators::CreateBetaRelease.call(release_platform_run, build_id, commit_id)
+      end
     end
 
     def self.trigger_submission!(submission)
@@ -143,7 +145,10 @@ module Coordinators
     end
 
     def self.start_new_production_release!(release_platform_run, build_id)
-      Res.new { Coordinators::StartProductionRelease.call(release_platform_run, build_id) }
+      Res.new do
+        raise "release is not active" unless release_platform_run.active?
+        Coordinators::StartProductionRelease.call(release_platform_run, build_id)
+      end
     end
 
     def self.update_production_build!(submission, build_id)
@@ -174,6 +179,10 @@ module Coordinators
         submission.start_cancellation!
         submission.notify!("Production submission cancelled", :production_submission_cancelled, submission.notification_params)
       end
+    end
+
+    def self.stop_release!(release)
+      Res.new { Coordinators::StopRelease.call(release) }
     end
 
     def self.start_the_store_rollout!(rollout)
@@ -225,7 +234,18 @@ module Coordinators
     end
 
     def self.complete_release!(release)
-      Coordinators::StartFinalizingRelease.call(release, true)
+      Res.new { Coordinators::StartFinalizingRelease.call(release, true) }
+    end
+
+    def self.mark_release_as_finished!(release)
+      Res.new do
+        release.with_lock do
+          raise "release is not partially finished" unless release.partially_finished?
+          release.release_platform_runs.pending_release.map(&:stop!)
+        end
+
+        Coordinators::StartFinalizingRelease.call(release)
+      end
     end
   end
 end

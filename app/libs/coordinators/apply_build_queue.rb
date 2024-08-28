@@ -10,8 +10,8 @@ class Coordinators::ApplyBuildQueue
 
   def call
     release.with_lock do
-      raise unless release.committable?
-      raise unless build_queue.is_active?
+      raise "cannot apply a build queue to a locked release." unless release.committable?
+      raise "cannot re-apply a build queue to a release!" unless build_queue.is_active?
 
       if build_queue.head_commit.present?
         Coordinators::ApplyCommit.call(release, build_queue.head_commit)

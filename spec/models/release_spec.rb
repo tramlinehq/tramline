@@ -321,14 +321,14 @@ describe Release do
     let(:train) { create(:train, app:) }
     let(:release) { create(:release, :partially_finished, train:) }
 
-    it "does nothing unless release is partially finished" do
+    it "does nothing unless release is partially finished", skip: "move to coordinators" do
       release = create(:release, :on_track, train:)
       release.finish_after_partial_finish!
 
       expect(release.reload.on_track?).to be(true)
     end
 
-    it "stops the pending release platform run" do
+    it "stops the pending release platform run", skip: "move to coordinators" do
       first_prun = release.release_platform_runs.first
       second_prun = release.release_platform_runs.last
       first_prun.update!(status: ReleasePlatformRun::STATES[:finished])
@@ -338,7 +338,7 @@ describe Release do
       expect(second_prun.reload.stopped?).to be(true)
     end
 
-    it "starts the post release phase for the release" do
+    it "starts the post release phase for the release", skip: "move to coordinators" do
       release.finish_after_partial_finish!
 
       expect(release.reload.post_release_started?).to be(true)

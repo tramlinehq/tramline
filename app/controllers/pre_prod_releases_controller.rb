@@ -1,5 +1,4 @@
 class PreProdReleasesController < SignedInApplicationController
-  before_action :require_write_access!
   before_action :set_pre_prod_release
   before_action :set_app
 

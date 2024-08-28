@@ -1,6 +1,5 @@
 class InternalReleasesController < SignedInApplicationController
   include Tabbable
-  before_action :require_write_access!
 
   def index
     live_release!

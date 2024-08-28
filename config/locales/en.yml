@@ -6,6 +6,9 @@ en:
     update_all:
       success: "Release metadata was successfully updated."
       generic_failure: "Could not save the release metadata. Please try again."
+  build_queues:
+    apply:
+      failure: "Failed to apply the build queue — %{errors}"
   production_releases:
     create:
       success: "Production release was successfully created."

@@ -2,7 +2,7 @@ class StoreSubmissionsController < SignedInApplicationController
   include Mocks::Sandboxable
   include Tabbable
 
-  before_action :require_write_access!
+  before_action :require_write_access!, except: [:index]
   before_action :set_submission
   before_action :ensure_triggerable, only: [:trigger]
   before_action :ensure_actionable, only: [:update, :prepare, :submit_for_review, :cancel]
