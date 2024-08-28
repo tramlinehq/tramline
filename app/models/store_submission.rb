@@ -29,6 +29,7 @@ class StoreSubmission < ApplicationRecord
   include Loggable
   include Displayable
   include Sandboxable
+  include Displayable
 
   has_one :store_rollout, dependent: :destroy
   belongs_to :release_platform_run
@@ -103,7 +104,8 @@ class StoreSubmission < ApplicationRecord
 
   def notification_params
     parent_release.notification_params.merge(
-      submission_channel: "#{provider.display} - #{submission_channel.name}"
+      submission_channel: "#{provider.display} - #{submission_channel.name}",
+      submission_failure_reason: (display_attr(:failure_reason) if failure_reason.present?)
     )
   end
 
@@ -168,7 +170,8 @@ class StoreSubmission < ApplicationRecord
   def stamp_data
     {
       version: version_name,
-      build_number: build_number
+      build_number: build_number,
+      failure_reason: (display_attr(:failure_reason) if failure_reason.present?)
     }
   end
 

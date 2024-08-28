@@ -36,6 +36,7 @@ class PlayStoreSubmission < StoreSubmission
     prepared
     review_rejected
     finished_manually
+    failed
   ]
   STATES = {
     created: "created",
@@ -83,7 +84,7 @@ class PlayStoreSubmission < StoreSubmission
       transitions from: :prepared, to: :review_failed
     end
 
-    event :fail, before: :set_failure_reason do
+    event :fail, before: :set_failure_reason, after_commit: :on_fail! do
       transitions to: :failed
     end
 
@@ -261,6 +262,11 @@ class PlayStoreSubmission < StoreSubmission
       is_staged_rollout: staged_rollout?
     )
     play_store_rollout.start_release!(retry_on_review_fail: internal_channel?) if auto_rollout?
+  end
+
+  def on_fail!
+    event_stamp!(reason: :fail, kind: :notice, data: stamp_data)
+    notify!("Submission failed", :submission_failed, notification_params)
   end
 
   def build_present_in_store?

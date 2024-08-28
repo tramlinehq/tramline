@@ -78,16 +78,17 @@ en:
     google_firebase_submission:
       triggered_html: 'Sending <span class="emphasize">%{version} (%{build_number})</span> to Google Firebase groups <span class="emphasize">%{channels}</span>'
       finished_html: 'Sent <span class="emphasize">%{version} (%{build_number})</span> to Google Firebase groups <span class="emphasize">%{channels}</span>'
-      failed_html: 'Failed to send <span class="emphasize">%{version} (%{build_number})</span> to Google Firebase groups <span class="emphasize">%{channels}</span>'
+      failed_html: 'Failed to send <span class="emphasize">%{version} (%{build_number})</span> to Google Firebase groups <span class="emphasize">%{channels}</span> due to <span class="emphasize">%{failure_reason}</span>'
     test_flight_submission:
       triggered_html: 'Sending <span class="emphasize">%{version} (%{build_number})</span> to TestFlight groups <span class="emphasize">%{channels}</span>'
       finished_html: 'Sent <span class="emphasize">%{version} (%{build_number})</span> to TestFlight groups <span class="emphasize">%{channels}</span>'
       submitted_for_review_html: 'Submitted the TestFlight build for <span class="emphasize">%{version} (%{build_number})</span> for beta review'
       review_rejected_html: 'Beta review rejected for the TestFlight build <span class="emphasize">%{version} (%{build_number})</span>'
-      failed_html: 'Failed to send <span class="emphasize">%{version} (%{build_number})</span> to TestFlight groups <span class="emphasize">%{channels}</span>'
+      failed_html: 'Failed to send <span class="emphasize">%{version} (%{build_number})</span> to TestFlight groups <span class="emphasize">%{channels}</span> due to <span class="emphasize">%{failure_reason}</span>'
     play_store_submission:
-      prepared_html: 'Prepared a new Play Store draft release for <span class="emphasize">%{version} (%{build_number})</span>'
+      prepared_html: 'Prepared a new draft release for <span class="emphasize">%{version} (%{build_number})</span> to the Play Store track <span class="emphasize">%{track}</span>'
       review_rejected_html: 'Play Store submission for <span class="emphasize">%{version} (%{build_number})</span> was rejected'
+      failed_html: 'Failed to create a draft release for <span class="emphasize">%{version} (%{build_number})</span> to the Play Store track <span class="emphasize">%{track}</span> due to <span class="emphasize">%{failure_reason}</span>'
     app_store_submission:
       prepare_release_failed_html: 'Failed to prepare release for <span class="emphasize">%{version} (%{build_number})</span> to submit for review in the App Store'
       submitted_for_review_html: 'Submitted release for <span class="emphasize">%{version} (%{build_number})</span> for review to the App Store'
@@ -95,6 +96,7 @@ en:
       review_approved_html: 'Review for release for <span class="emphasize">%{version} (%{build_number})</span> approved by the App Store'
       review_rejected_html: 'Review for release for <span class="emphasize">%{version} (%{build_number})</span> was rejected by the App Store'
       cancelled_html: 'Release submission to the App Store for <span class="emphasize">%{version} (%{build_number})</span> was cancelled'
+      failed_html: 'Failed to create an inflight store version for <span class="emphasize">%{version} (%{build_number})</span> in the App Store due to <span class="emphasize">%{failure_reason}</span>'
     play_store_rollout:
       started_html: 'Started rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track at <span class="emphasize">%{rollout_percentage}%</span>'
       updated_html: 'Updated the rollout of <span class="emphasize">%{version} (%{build_number})</span> to Play Store <span class="emphasize">%{track}</span> track to <span class="emphasize">%{rollout_percentage}%</span>'

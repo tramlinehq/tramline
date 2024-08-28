@@ -24,6 +24,8 @@
 #  release_platform_run_id :uuid             not null, indexed
 #
 class TestFlightSubmission < StoreSubmission
+  using RefinedArray
+
   STAMPABLE_REASONS = %w[
     triggered
     submitted_for_review
@@ -46,6 +48,9 @@ class TestFlightSubmission < StoreSubmission
   SubmissionNotInTerminalState = Class.new(StandardError)
 
   enum status: STATES
+  enum failure_reason: {
+    unknown_failure: "unknown_failure"
+  }.merge(Installations::Apple::AppStoreConnect::Error.reasons.zip_map_self)
 
   aasm safe_state_machine_params do
     state :created, initial: true
@@ -169,6 +174,7 @@ class TestFlightSubmission < StoreSubmission
 
   def on_fail!
     event_stamp!(reason: :failed, kind: :error, data: stamp_data)
+    notify!("Submission failed", :submission_failed, notification_params)
   end
 
   def on_finish!

@@ -30,12 +30,11 @@ class NotificationSettingsComponent < ViewComponent::Base
     internal_release_finished: {icon: "v2/sparkles.svg", description: "The release finished successfully"},
     internal_release_failed: {icon: "v2/alert_circle.svg", description: "The release failed"},
     beta_submission_finished: {icon: "v2/sparkles.svg", description: "The beta submission finished successfully"},
-    beta_submission_failed: {icon: "v2/alert_circle.svg", description: "The beta submission failed"},
+    submission_failed: {icon: "v2/alert_circle.svg", description: "The beta submission failed"},
     production_submission_started: {icon: "v2/play.svg", description: "A production submission started"},
     production_submission_in_review: {icon: "v2/clipboard_list.svg", description: "A production submission is in review"},
     production_submission_approved: {icon: "v2/clipboard_check.svg", description: "A production submission was approved by the store"},
     production_submission_rejected: {icon: "v2/alert_circle.svg", description: "A production submission was rejected by the store"},
-    production_submission_failed: {icon: "v2/alert_circle.svg", description: "A production submission failed"},
     production_submission_cancelled: {icon: "v2/alert_circle.svg", description: "A production submission was cancelled"},
     production_rollout_started: {icon: "v2/play.svg", description: "A production rollout started"},
     production_rollout_paused: {icon: "v2/pause.svg", description: "A production rollout was paused"},
@@ -51,9 +50,9 @@ class NotificationSettingsComponent < ViewComponent::Base
     .to_h
     .with_indifferent_access
 
-  # unless Set.new(NOTIFICATIONS.keys).eql?(Set.new(NotificationSetting.kinds.keys))
-  #   raise InvalidNotificationSettings
-  # end
+  unless Set.new(NOTIFICATIONS.keys).eql?(Set.new(NotificationSetting.kinds.keys))
+    raise InvalidNotificationSettings
+  end
 
   def initialize(settings:, train:)
     @train = train

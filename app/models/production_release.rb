@@ -131,6 +131,8 @@ class ProductionRelease < ApplicationRecord
 
   def notification_params
     release_platform_run.notification_params.merge(
+      commit_sha: commit.short_sha,
+      commit_url: commit.url,
       build_number: build_number,
       release_version: version_name
     )

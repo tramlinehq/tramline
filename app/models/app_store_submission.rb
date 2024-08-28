@@ -59,6 +59,7 @@ class AppStoreSubmission < StoreSubmission
     review_approved
     review_rejected
     cancelled
+    failed
   ]
 
   PreparedVersionNotFoundError = Class.new(StandardError)
@@ -66,7 +67,6 @@ class AppStoreSubmission < StoreSubmission
 
   enum status: STATES
   enum failure_reason: {
-    developer_rejected: "developer_rejected",
     invalid_release: "invalid_release",
     unknown_failure: "unknown_failure"
   }.merge(Installations::Apple::AppStoreConnect::Error.reasons.zip_map_self)
@@ -119,7 +119,7 @@ class AppStoreSubmission < StoreSubmission
       transitions from: [:submitted_for_review, :approved, :cancelling], to: :cancelled
     end
 
-    event :fail, before: :set_failure_reason do
+    event :fail, before: :set_failure_reason, after_commit: :on_fail! do
       transitions to: :failed
     end
   end
@@ -297,10 +297,12 @@ class AppStoreSubmission < StoreSubmission
 
   def on_reject!
     event_stamp!(reason: :review_rejected, kind: :error, data: stamp_data)
+    notify!("Production submission rejected", :production_submission_rejected, notification_params)
   end
 
   def on_approve!
     event_stamp!(reason: :review_approved, kind: :success, data: stamp_data)
+    notify!("Production submission approved", :production_submission_approved, notification_params)
     create_app_store_rollout!(
       release_platform_run:,
       config: staged_rollout? ? conf.rollout_config.stages : [],
@@ -310,6 +312,12 @@ class AppStoreSubmission < StoreSubmission
 
   def on_fail_prepare!
     event_stamp!(reason: :prepare_release_failed, kind: :error, data: stamp_data)
+    notify!("Submission failed", :submission_failed, notification_params)
+  end
+
+  def on_fail!
+    event_stamp!(reason: :failed, kind: :error, data: stamp_data)
+    notify!("Submission failed", :submission_failed, notification_params)
   end
 
   def update_store_version

@@ -167,6 +167,7 @@ class GoogleFirebaseSubmission < StoreSubmission
 
   def on_fail!
     event_stamp!(reason: :failed, kind: :error, data: stamp_data)
+    notify!("Submission failed", :submission_failed, notification_params)
   end
 
   def update_store_info!(release_info, build_status)
