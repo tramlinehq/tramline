@@ -123,7 +123,7 @@ class WorkflowRun < ApplicationRecord
   end
 
   def active?
-    release_platform_run.on_track? && FAILED_STATES.exclude?(status)
+    triggering_release.actionable? && FAILED_STATES.exclude?(status)
   end
 
   def find_and_update_external
