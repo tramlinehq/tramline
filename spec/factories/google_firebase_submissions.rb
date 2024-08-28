@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :google_firebase_submission do
-    parent_release { association :pre_prod_release }
+    parent_release { association :internal_release }
     build { association :build, release_platform_run: parent_release.release_platform_run }
     release_platform_run { parent_release.release_platform_run }
     sequence_number { 1 }

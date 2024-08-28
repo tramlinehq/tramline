@@ -56,9 +56,11 @@ describe GoogleFirebaseSubmission do
   end
 
   describe "#upload_build!" do
-    let(:build) { create(:build, :with_artifact) }
-    let(:release_platform_run) { build.release_platform_run }
-    let(:submission) { create(:google_firebase_submission, :preprocessing, build:, release_platform_run:) }
+    let(:parent_release) { create(:internal_release) }
+    let(:release_platform_run) { parent_release.release_platform_run }
+    let(:workflow_run) { create(:workflow_run, :finished, triggering_release: parent_release) }
+    let(:build) { create(:build, :with_artifact, workflow_run:) }
+    let(:submission) { create(:google_firebase_submission, :preprocessing, build:, release_platform_run:, parent_release:) }
     let(:providable_dbl) { instance_double(GoogleFirebaseIntegration) }
 
     before do
@@ -97,9 +99,11 @@ describe GoogleFirebaseSubmission do
   end
 
   describe "#update_upload_status!" do
-    let(:build) { create(:build, :with_artifact) }
-    let(:release_platform_run) { build.release_platform_run }
-    let(:submission) { create(:google_firebase_submission, :preprocessing, build:, release_platform_run:) }
+    let(:parent_release) { create(:internal_release) }
+    let(:release_platform_run) { parent_release.release_platform_run }
+    let(:workflow_run) { create(:workflow_run, :finished, triggering_release: parent_release) }
+    let(:build) { create(:build, :with_artifact, workflow_run:) }
+    let(:submission) { create(:google_firebase_submission, :preprocessing, build:, release_platform_run:, parent_release:) }
     let(:providable_dbl) { instance_double(GoogleFirebaseIntegration) }
     let(:op_info) {
       {

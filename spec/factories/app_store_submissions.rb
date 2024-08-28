@@ -9,7 +9,7 @@ FactoryBot.define do
     config {
       {
         submission_config: {id: :production, name: "production"},
-        rollout_config: {enabled: true}
+        rollout_config: {enabled: true, stages: [1, 5, 10, 50, 100]}
       }
     }
 
