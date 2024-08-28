@@ -1,6 +1,6 @@
 class BetaReleasesController < SignedInApplicationController
   include Tabbable
-  before_action :require_write_access!
+  before_action :require_write_access!, except: %i[index]
   before_action :set_release_platform_run, only: %i[create]
 
   def index
