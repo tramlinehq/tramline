@@ -26,6 +26,7 @@
 class PlayStoreSubmission < StoreSubmission
   using RefinedArray
   using RefinedString
+  include Displayable
 
   has_one :play_store_rollout,
     foreign_key: :store_submission_id,
@@ -184,8 +185,7 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def prepare_for_release!
-    return mock_prepare_for_release_for_play_store! if sandbox_mode?
-
+    # return mock_prepare_for_release_for_play_store! if sandbox_mode?
     result = provider.create_draft_release(submission_channel_id, build_number, version_name, notes, retry_on_review_fail: internal_channel?)
     if result.ok?
       finish_prepare!
@@ -198,7 +198,7 @@ class PlayStoreSubmission < StoreSubmission
   def provider = app.android_store_provider
 
   def update_external_status
-    return if sandbox_mode?
+    # return if sandbox_mode?
     StoreSubmissions::PlayStore::UpdateExternalReleaseJob.perform_later(id)
   end
 
@@ -213,7 +213,8 @@ class PlayStoreSubmission < StoreSubmission
 
   def notification_params
     super.merge(
-      requires_review: false
+      requires_review: false,
+      submission_channel: "#{display} - #{submission_channel.name}"
     )
   end
 
@@ -270,8 +271,7 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def build_present_in_store?
-    return mock_build_present_in_play_store? if sandbox_mode?
-
+    # return mock_build_present_in_play_store? if sandbox_mode?
     provider.find_build(build_number).present?
   end
 

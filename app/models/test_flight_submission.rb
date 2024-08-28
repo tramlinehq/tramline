@@ -25,6 +25,7 @@
 #
 class TestFlightSubmission < StoreSubmission
   using RefinedArray
+  include Displayable
 
   STAMPABLE_REASONS = %w[
     triggered
@@ -88,7 +89,7 @@ class TestFlightSubmission < StoreSubmission
     return unless actionable?
 
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
-    return mock_start_release_in_testflight if sandbox_mode?
+    # return mock_start_release_in_testflight if sandbox_mode?
     return start_release! if build_present_in_store?
 
     preprocess!
@@ -146,6 +147,10 @@ class TestFlightSubmission < StoreSubmission
   end
 
   def provider = app.ios_store_provider
+
+  def notification_params
+    super.merge(submission_channel: "#{display} - #{submission_channel.name}")
+  end
 
   private
 

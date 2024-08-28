@@ -1,5 +1,5 @@
 class StoreSubmissionsController < SignedInApplicationController
-  include Mocks::Sandboxable
+  # include Mocks::Sandboxable
   include Tabbable
 
   before_action :require_write_access!, except: [:index]
@@ -16,8 +16,7 @@ class StoreSubmissionsController < SignedInApplicationController
   end
 
   def trigger
-    return mock_trigger_submission if sandbox_mode?
-
+    # return mock_trigger_submission if sandbox_mode?
     if (result = Action.trigger_submission!(@submission)).ok?
       redirect_back fallback_location: fallback_path, notice: t(".success")
     else
@@ -26,8 +25,7 @@ class StoreSubmissionsController < SignedInApplicationController
   end
 
   def submit_for_review
-    return mock_submit_for_review_for_app_store if sandbox_mode?
-
+    # return mock_submit_for_review_for_app_store if sandbox_mode?
     if (result = Action.start_production_review!(@submission)).ok?
       redirect_back fallback_location: fallback_path, notice: t(".submit_for_review.success")
     else
@@ -36,8 +34,7 @@ class StoreSubmissionsController < SignedInApplicationController
   end
 
   def cancel
-    return mock_cancel_review_for_app_store if sandbox_mode?
-
+    # return mock_cancel_review_for_app_store if sandbox_mode?
     if (result = Action.cancel_production_review!(@submission)).ok?
       redirect_back fallback_location: fallback_path, notice: t(".cancel.success")
     else
@@ -46,8 +43,7 @@ class StoreSubmissionsController < SignedInApplicationController
   end
 
   def update
-    return mock_update_production_build(build_id) if sandbox_mode?
-
+    # return mock_update_production_build(build_id) if sandbox_mode?
     if (result = Action.update_production_build!(@submission, build_id)).ok?
       redirect_back fallback_location: fallback_path, notice: t(".update.success")
     else
@@ -56,8 +52,7 @@ class StoreSubmissionsController < SignedInApplicationController
   end
 
   def prepare
-    return mock_prepare_for_store if sandbox_mode?
-
+    # return mock_prepare_for_store if sandbox_mode?
     if (result = Action.prepare_production_submission!(@submission)).ok?
       redirect_back fallback_location: fallback_path, notice: t(".prepare.success")
     else

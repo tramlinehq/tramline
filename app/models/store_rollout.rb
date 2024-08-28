@@ -19,7 +19,7 @@ class StoreRollout < ApplicationRecord
   include AASM
   include Loggable
   include Displayable
-  include Sandboxable
+  # include Sandboxable
 
   belongs_to :store_submission
   belongs_to :release_platform_run

@@ -27,18 +27,19 @@ class ReleasePlatform < ApplicationRecord
   using RefinedString
   extend FriendlyId
   include Displayable
-
   # self.ignored_columns += %w[branching_strategy description release_backmerge_branch release_branch version_current version_seeded_with working_branch vcs_webhook_id status]
+  NATURAL_ORDER = Arel.sql("CASE WHEN platform = 'android' THEN 1 WHEN platform = 'ios' THEN 2 ELSE 3 END")
 
   belongs_to :app
   belongs_to :train
-
   has_many :release_health_rules, -> { kept }, dependent: :destroy, inverse_of: :release_platform
   has_many :all_release_health_rules, dependent: :destroy, inverse_of: :release_platform, class_name: "ReleaseHealthRule"
   has_many :release_platform_runs, inverse_of: :release_platform, dependent: :destroy
   has_many :steps, -> { kept.order(:step_number) }, inverse_of: :release_platform, dependent: :destroy
   has_many :all_steps, -> { order(:step_number) }, class_name: "Step", inverse_of: :release_platform, dependent: :destroy
   has_many :deployments, through: :steps
+
+  scope :sequential, -> { order(NATURAL_ORDER) }
 
   enum platform: {android: "android", ios: "ios"}
 

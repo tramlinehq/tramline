@@ -113,6 +113,10 @@ en:
       github_integration: "GitHub"
       google_firebase_integration: "Firebase App Distribution"
       deployment: "Distribution"
+      app_store_submission: "App Store"
+      test_flight_submission: "TestFlight"
+      google_firebase_submission: "Firebase App Distribution"
+      play_store_submission: "Google Play Store"
     values:
       app:
         platform:

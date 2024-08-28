@@ -26,6 +26,7 @@
 class AppStoreSubmission < StoreSubmission
   using RefinedArray
   using RefinedString
+  include Displayable
 
   has_one :app_store_rollout,
     foreign_key: :store_submission_id,
@@ -249,7 +250,8 @@ class AppStoreSubmission < StoreSubmission
 
   def notification_params
     super.merge(
-      requires_review: false
+      requires_review: true,
+      submission_channel: submission_channel.name
     )
   end
 

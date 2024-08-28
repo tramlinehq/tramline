@@ -1,4 +1,4 @@
-<%= render V2::PlatformViewComponent.new(release, occupy:) do |platform_component| %>
+<%= render V2::PlatformViewComponent.new(release, occupy:, detail: false) do |platform_component| %>
   <% platform_component.platform_runs.each do |run| %>
     <div class="grid gap-y-2 items-end content-end">
       <% store_releases = run.store_submitted_releases %>

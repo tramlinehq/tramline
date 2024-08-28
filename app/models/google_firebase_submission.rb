@@ -24,7 +24,8 @@
 #  release_platform_run_id :uuid             not null, indexed
 #
 class GoogleFirebaseSubmission < StoreSubmission
-  include Sandboxable
+  # include Sandboxable
+  include Displayable
 
   MAX_NOTES_LENGTH = 16_380
 
@@ -73,7 +74,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     return unless may_prepare?
 
     event_stamp!(reason: :triggered, kind: :notice, data: stamp_data)
-    return mock_upload_to_firebase if sandbox_mode?
+    # return mock_upload_to_firebase if sandbox_mode?
 
     if build_present_in_store?
       release_info = @build.value!
@@ -124,7 +125,7 @@ class GoogleFirebaseSubmission < StoreSubmission
 
   def prepare_for_release!
     return unless may_finish?
-    return mock_finish_firebase_release if sandbox_mode?
+    # return mock_finish_firebase_release if sandbox_mode?
 
     deployment_channels = [submission_channel_id]
     result = provider.release(external_id, deployment_channels)
@@ -136,6 +137,10 @@ class GoogleFirebaseSubmission < StoreSubmission
   end
 
   def provider = app.firebase_build_channel_provider
+
+  def notification_params
+    super.merge(submission_channel: "#{display} - #{submission_channel.name}")
+  end
 
   private
 

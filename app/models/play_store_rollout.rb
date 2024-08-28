@@ -59,10 +59,10 @@ class PlayStoreRollout < StoreRollout
 
   def start_release!(retry_on_review_fail: false)
     if staged_rollout?
-      return mock_start_play_store_rollout! if sandbox_mode?
+      # return mock_start_play_store_rollout! if sandbox_mode?
       move_to_next_stage!(retry_on_review_fail:)
     else
-      return mock_complete_play_store_rollout! if sandbox_mode?
+      # return mock_complete_play_store_rollout! if sandbox_mode?
       result = rollout(Release::FULL_ROLLOUT_VALUE, retry_on_review_fail:)
       if result.ok?
         complete!
@@ -87,7 +87,7 @@ class PlayStoreRollout < StoreRollout
   end
 
   def release_fully!
-    return fully_release! if sandbox_mode?
+    # return fully_release! if sandbox_mode?
     with_lock do
       return unless may_fully_release?
 

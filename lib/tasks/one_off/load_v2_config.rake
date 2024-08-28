@@ -77,7 +77,7 @@ def populate_config(release_platform)
        submission_type: submission_type(deployment),
        submission_config: deployment.build_artifact_channel,
        rollout_config: {enabled: false},
-       auto_promote: true}
+       auto_promote: index.zero? ? true : release_step.auto_deploy?}
     end.compact
   }
 
