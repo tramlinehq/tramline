@@ -110,19 +110,20 @@ module Coordinators
 
     def self.start_workflow_run!(workflow_run)
       Res.new do
-        raise unless workflow_run.triggering_release.actionable?
+        raise "release is not actionable" unless workflow_run.triggering_release.actionable?
         workflow_run.initiate!
       end
     end
 
     def self.retry_workflow_run!(workflow_run)
       Res.new do
-        raise unless workflow_run.triggering_release.actionable?
+        raise "release is not actionable" unless workflow_run.triggering_release.actionable?
         workflow_run.retry!
       end
     end
 
     def self.start_beta_release!(release_platform_run, build_id, commit_id)
+      # Handle error when release platform run is not active
       Res.new { Coordinators::CreateBetaRelease.call(release_platform_run, build_id, commit_id) }
     end
 

@@ -127,6 +127,7 @@ class ReleasePlatformRun < ApplicationRecord
     (finished ? beta_releases.finished : beta_releases).order(created_at: :desc).first
   end
 
+  # TODO: [V2] eager loading here is too expensive
   def latest_internal_release(finished: false)
     (finished ? internal_releases.finished : internal_releases)
       .includes(:commit, :store_submissions, triggered_workflow_run: {build: [:commit, :artifact]}, release_platform_run: [:release])
@@ -154,6 +155,7 @@ class ReleasePlatformRun < ApplicationRecord
     beta_releases.order(created_at: :desc).offset(1)
   end
 
+  # TODO: [V2] eager loading here is too expensive
   def older_internal_releases
     internal_releases
       .order(created_at: :desc)

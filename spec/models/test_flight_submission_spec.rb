@@ -82,11 +82,12 @@ describe TestFlightSubmission do
       before do
         allow(provider_dbl).to receive(:update_release_notes)
         allow(provider_dbl).to receive(:find_build).and_return(GitHub::Result.new { build_info })
+        allow(StoreSubmissions::TestFlight::UpdateBuildNotesJob).to receive(:perform_later)
       end
 
       it "updates the build notes" do
         test_flight_submission.start_release!
-        expect(provider_dbl).to have_received(:update_release_notes)
+        expect(StoreSubmissions::TestFlight::UpdateBuildNotesJob).to have_received(:perform_later).with(test_flight_submission.id).once
       end
 
       it "finishes the release" do
@@ -109,31 +110,28 @@ describe TestFlightSubmission do
         allow(provider_dbl).to receive(:update_release_notes)
         allow(provider_dbl).to receive(:find_build).and_return(GitHub::Result.new { build_info })
         allow(provider_dbl).to receive(:release_to_testflight).and_return(GitHub::Result.new { build_info })
+        allow(StoreSubmissions::TestFlight::UpdateBuildNotesJob).to receive(:perform_later)
         allow(StoreSubmissions::TestFlight::UpdateExternalBuildJob).to receive(:perform_async)
       end
 
       it "updates the build notes" do
         test_flight_submission.start_release!
-
-        expect(provider_dbl).to have_received(:update_release_notes)
+        expect(StoreSubmissions::TestFlight::UpdateBuildNotesJob).to have_received(:perform_later).with(test_flight_submission.id).once
       end
 
       it "sends the build to configured test group" do
         test_flight_submission.start_release!
-
         expect(provider_dbl).to have_received(:release_to_testflight).with(test_flight_submission.submission_channel_id,
           test_flight_submission.build_number)
       end
 
       it "submits for review" do
         test_flight_submission.start_release!
-
         expect(test_flight_submission.submitted_for_review?).to be true
       end
 
       it "starts find external build job" do
         test_flight_submission.start_release!
-
         expect(StoreSubmissions::TestFlight::UpdateExternalBuildJob).to have_received(:perform_async).with(test_flight_submission.id)
       end
     end
