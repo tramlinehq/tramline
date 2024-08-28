@@ -25,7 +25,7 @@
 
   <% if pre_prod_release.new_commit_available? %>
     <%= render V2::AlertComponent.new(kind: :announcement, type: :announce, title: "New changes on the release branch") do |ann| %>
-      <% ann.with_announcement_button(label: "Build release candidate",
+      <% ann.with_announcement_button(label: "Create Release Candidate",
                                       scheme: :default,
                                       type: :button,
                                       options: run_pre_prod_beta_path(release_platform_run),
