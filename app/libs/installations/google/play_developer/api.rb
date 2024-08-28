@@ -149,7 +149,6 @@ module Installations
       params = release_params.merge(status: rollout_status)
       params[:release_notes] = @release_notes if @release_notes.present?
       params[:user_fraction] = user_fraction if @rollout_percentage && user_fraction < 1.0
-      Rails.logger.debug params
       ANDROID_PUBLISHER::TrackRelease.new(**params)
     end
 

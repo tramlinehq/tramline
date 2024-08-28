@@ -100,6 +100,7 @@ class ProductionRelease < ApplicationRecord
   end
 
   def fetch_health_data!
+    return if store_rollout.blank?
     return if beyond_monitoring_period?
     return if monitoring_provider.blank?
 
