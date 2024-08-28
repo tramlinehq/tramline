@@ -3,7 +3,7 @@ class V2::ReleaseMonitoringComponent < V2::BaseComponent
   SIZES = {
     compact: {cols: 2},
     default: {cols: 3},
-    max: {cols: 4},
+    max: {cols: 4}
   }
 
   # TODO: [V2] [post-alpha] Add release health events here

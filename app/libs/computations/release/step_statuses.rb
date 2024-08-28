@@ -17,9 +17,9 @@ class Computations::Release::StepStatuses
         overview: STATUS[:success],
         changeset_tracking: changeset_tracking_status,
         internal_builds: internal_builds_status,
-        regression_testing: STATUS[:blocked],
+        regression_testing: demo? ? internal_builds_status : STATUS[:blocked],
         release_candidate: release_candidate_status,
-        soak_period: STATUS[:blocked],
+        soak_period: demo? ? release_candidate_status : STATUS[:blocked],
         notes: notes_status,
         screenshots: STATUS[:blocked],
         approvals: STATUS[:blocked],
@@ -98,6 +98,10 @@ class Computations::Release::StepStatuses
 
   def platform_runs
     @platform_runs ||= @release.release_platform_runs
+  end
+
+  def demo?
+    @release.organization.demo?
   end
 
   delegate :finished?, :stopped?, :stopped_after_partial_finish?, :status, to: :@release
