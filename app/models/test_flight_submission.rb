@@ -98,7 +98,7 @@ class TestFlightSubmission < StoreSubmission
   def start_release!
     return unless may_submit_for_review?
 
-    update_build_notes!
+    StoreSubmissions::TestFlight::UpdateBuildNotesJob.perform_later(id)
 
     if internal_channel?
       release_info = find_build.value!

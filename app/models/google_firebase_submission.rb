@@ -135,10 +135,6 @@ class GoogleFirebaseSubmission < StoreSubmission
     end
   end
 
-  def send_notes?
-    true
-  end
-
   def provider = app.firebase_build_channel_provider
 
   private
