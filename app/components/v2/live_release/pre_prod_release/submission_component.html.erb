@@ -1,7 +1,7 @@
 <%= render V2::CardComponent.new(title: "submission", separator: false, custom_box_style:) do |card| %>
   <% card.with_action do %>
     <% if submission.triggerable? %>
-      <%= render V2::ButtonComponent.new(label: "Send to #{submission.provider.display}",
+      <%= render V2::ButtonComponent.new(label: "Send to #{submission.display}",
                                          scheme: :default,
                                          type: :button,
                                          options: trigger_store_submission_path(submission),
@@ -11,7 +11,7 @@
       <% end %>
     <% end %>
     <% if submission.retryable? %>
-      <%= render V2::ButtonComponent.new(label: "Retry sending to #{submission.provider.display}",
+      <%= render V2::ButtonComponent.new(label: "Retry sending to #{submission.display}",
                                          scheme: :default,
                                          type: :button,
                                          options: retry_store_submission_path(submission),
