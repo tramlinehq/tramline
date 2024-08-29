@@ -8,7 +8,7 @@ class V2::CardComponent < ViewComponent::Base
   SIZE = {
     xs: "max-h-80",
     base: "max-h-96",
-    full: "max-h-full"
+    full: "max-h-fit"
   }
 
   BORDER_STYLES = [:solid, :dotted, :dashed, :double]
