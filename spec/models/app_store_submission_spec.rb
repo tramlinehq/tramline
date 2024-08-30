@@ -285,4 +285,58 @@ describe AppStoreSubmission do
       expect(submission.reload.failed?).to be(false)
     end
   end
+
+  describe ".remove_from_review!" do
+    let(:providable_dbl) { instance_double(AppStoreIntegration) }
+    let(:build) { create(:build) }
+    let(:submission) { create(:app_store_submission, :cancelling, build: build) }
+    let(:remove_from_review_info) {
+      AppStoreIntegration::AppStoreReleaseInfo.new(
+        {
+          external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+          name: build.version_name,
+          build_number: build.build_number,
+          added_at: 1.day.ago,
+          phased_release_status: "INACTIVE",
+          phased_release_day: 0
+        }
+      )
+    }
+    let(:release_info) {
+      AppStoreIntegration::AppStoreReleaseInfo.new(
+        {
+          external_id: "bd31faa6-6a9a-4958-82de-d271ddc639a8",
+          name: build.version_name,
+          build_number: build.build_number,
+          added_at: 1.day.ago,
+          status: "PENDING_DEVELOPER_RELEASE"
+        }
+      )
+    }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:public_icon_img)
+      allow(providable_dbl).to receive(:project_link)
+    end
+
+    it "removes the release from review" do
+      allow(providable_dbl).to receive(:remove_from_review).and_return(GitHub::Result.new { remove_from_review_info })
+      submission.remove_from_review!
+
+      expect(providable_dbl).to have_received(:remove_from_review).with(build.build_number, build.version_name).once
+      expect(submission.reload.cancelled?).to be(true)
+    end
+
+    it "rechecks external status if submission is not found" do
+      submission_not_found = Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "submission", "code" => "not_found"}})
+      allow(providable_dbl).to receive(:remove_from_review).and_return(GitHub::Result.new { raise(submission_not_found) })
+      allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { release_info })
+      submission.remove_from_review!
+
+      expect(providable_dbl).to have_received(:remove_from_review).with(build.build_number, build.version_name).once
+      expect(providable_dbl).to have_received(:find_release).with(build.build_number).once
+      expect(submission.reload.approved?).to be(true)
+    end
+  end
 end

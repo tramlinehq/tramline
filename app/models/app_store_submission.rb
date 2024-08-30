@@ -51,14 +51,15 @@ class AppStoreSubmission < StoreSubmission
   FINAL_STATES = %w[approved]
   IMMUTABLE_STATES = %w[preparing approved submitting_for_review submitted_for_review cancelling]
   PRE_PREPARE_STATES = %w[created preprocessing cancelled review_failed failed]
-  CHANGEABLE_STATES = %w[created preprocessing prepared cancelled review_failed failed]
-  CANCELABLE_STATES = %w[submitted_for_review approved]
+  CHANGEABLE_STATES = %w[created preprocessing prepared cancelled review_failed failed approved]
+  CANCELABLE_STATES = %w[submitted_for_review]
   STAMPABLE_REASONS = %w[
     prepare_release_failed
     submitted_for_review
     resubmitted_for_review
     review_approved
     review_rejected
+    cancellation_failed
     cancelled
     failed
   ]
@@ -109,11 +110,11 @@ class AppStoreSubmission < StoreSubmission
 
     event :approve, after_commit: :on_approve! do
       after { set_approved_at! }
-      transitions from: :submitted_for_review, to: :approved
+      transitions from: [:submitted_for_review, :cancelling], to: :approved
     end
 
     event :start_cancellation, after_commit: :on_start_cancellation! do
-      transitions from: [:submitted_for_review, :approved], to: :cancelling
+      transitions from: :submitted_for_review, to: :cancelling
     end
 
     event :cancel, after_commit: :on_cancel! do
@@ -222,12 +223,17 @@ class AppStoreSubmission < StoreSubmission
   def remove_from_review!
     result = provider.remove_from_review(build_number, version_name)
 
-    unless result.ok?
-      return fail_with_error!(result.error)
-    end
+    if result.ok?
+      update_store_info!(result.value!)
+      cancel!
+    else
+      if result.error.reason == :submission_not_found
+        update_external_release
+      end
 
-    update_store_info!(result.value!)
-    cancel!
+      failure_reason = "the submission being not in a cancellable state on the App Store"
+      event_stamp!(reason: :cancellation_failed, kind: :error, data: stamp_data.merge(failure_reason:))
+    end
   end
 
   def attach_build(build)

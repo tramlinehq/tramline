@@ -85,6 +85,11 @@ module Installations
         resource: "app_store_connect_api",
         code: "unauthorized",
         decorated_reason: :unauthorized
+      },
+      {
+        resource: "submission",
+        code: "not_found",
+        decorated_reason: :submission_not_found
       }
     ]
 
