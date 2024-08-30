@@ -343,7 +343,7 @@ namespace :anonymize do
 
     train_id = args[:external_train_id].to_s
     abort "Train ID not found!" if train_id.blank?
-    puts "Train with id #{train_id} will be copied to #{app.name}!" if train_id.present?
+    puts "Release health data for train with id #{train_id} will be copied to #{app.name}!" if train_id.present?
 
     train = app.trains.find(train_id)
     abort "Train not found!" unless train
@@ -374,6 +374,8 @@ namespace :anonymize do
         whitelist_timestamps
       end
     end
+
+    populate_v2_metrics_models(train)
   end
 
   desc "Populate v2 models for the train"
@@ -385,6 +387,15 @@ namespace :anonymize do
     abort "Train not found!" unless train
 
     populate_v2_models(train)
+
+    train.releases.finished.each do |release|
+      release.release_platform_runs.each do |release_platform_run|
+        Queries::PlatformBreakdown.warm(release_platform_run.id)
+      end
+      Queries::ReleaseBreakdown.warm(release.id)
+    end
+
+    Queries::DevopsReport.warm(train)
   end
 
   def source_db_config
@@ -437,16 +448,16 @@ namespace :anonymize do
 
           while release_step_run.present?
             pre_prod_release = create_pre_prod_release!(prun, release_step, release_step_run, previous_pre_prod_release, idx, "release_candidate")
-            production_release = prun.production_releases.create!(
-              config: production_release_config,
-              build: pre_prod_release.build,
-              status: compute_production_release_status(release_step_run, idx),
-              previous: previous_production_release,
-              created_at: release_step_run.created_at,
-              updated_at: release_step_run.updated_at
-            )
-
             release_step_run.deployment_runs.where(deployment: production_depl).each do |drun|
+              production_release = prun.production_releases.create!(
+                id: drun.id,
+                config: production_release_config,
+                build: pre_prod_release.build,
+                status: compute_production_release_status(release_step_run, idx),
+                previous: previous_production_release,
+                created_at: release_step_run.created_at,
+                updated_at: release_step_run.updated_at
+              )
               submission_config = prun.conf.production_release.submissions.first
               submission = submission_config.submission_type.create!(
                 parent_release: production_release,
@@ -482,13 +493,27 @@ namespace :anonymize do
                   )
                 end
               end
+
+              previous_pre_prod_release = pre_prod_release
+              previous_production_release = production_release
+              idx += 1
             end
 
-            previous_pre_prod_release = pre_prod_release
-            previous_production_release = production_release
             release_step_run = release_step_runs.shift
-            idx += 1
           end
+        end
+      end
+    end
+  end
+
+  def populate_v2_metrics_models(train)
+    ActiveRecord::Base.transaction do
+      train.releases.where(is_v2: true).each do |release|
+        release.deployment_runs.each do |drun|
+          next unless ProductionRelease.exists?(drun.id)
+          # rubocop:disable Rails/SkipsModelValidations
+          drun.release_health_metrics.update_all(production_release_id: drun.id)
+          # rubocop:enable Rails/SkipsModelValidations
         end
       end
     end
