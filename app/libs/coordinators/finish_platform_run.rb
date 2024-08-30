@@ -12,18 +12,18 @@ class Coordinators::FinishPlatformRun
       return unless release.active?
       release_platform_run.finish!
 
-      RefreshPlatformBreakdownJob.perform_later(release_platform_run.id) if release.is_v2?
-
       if release.ready_to_be_finalized?
-        Coordinators::StartFinalizingRelease.call(release, false)
+        release.start_post_release_phase!
       else
         release.partially_finish!
       end
     end
 
+    RefreshPlatformBreakdownJob.perform_later(release_platform_run.id) if release.is_v2?
     ReleasePlatformRuns::CreateTagJob.perform_later(release_platform_run.id) if train.tag_platform_at_release_end?
     release_platform_run.event_stamp!(reason: :finished, kind: :success, data: {version: release_platform_run.version})
     app.refresh_external_app
+    V2::FinalizeReleaseJob.perform_later(release.id) if release.post_release_started?
   end
 
   attr_reader :release_platform_run

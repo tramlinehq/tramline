@@ -231,7 +231,15 @@ module Coordinators
     end
 
     def self.complete_release!(release)
-      Res.new { Coordinators::StartFinalizingRelease.call(release, true) }
+      Res.new do
+        with_lock do
+          raise "release is not ready to be finalized" unless Release::FINALIZE_STATES.include?(release.status)
+          raise "release is not ready to be finalized" unless release.ready_to_be_finalized?
+          release.start_post_release_phase!
+        end
+
+        V2::FinalizeReleaseJob.perform_later(release.id, true)
+      end
     end
 
     def self.mark_release_as_finished!(release)
@@ -239,9 +247,10 @@ module Coordinators
         release.with_lock do
           raise "release is not partially finished" unless release.partially_finished?
           release.release_platform_runs.pending_release.map(&:stop!)
+          release.start_post_release_phase!
         end
 
-        Coordinators::StartFinalizingRelease.call(release)
+        V2::FinalizeReleaseJob.perform_later(release.id)
       end
     end
   end
