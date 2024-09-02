@@ -1,8 +1,7 @@
 require_relative "boot"
-
 require "rails/all"
 require_relative "../lib/logging_extensions"
-require_relative "../lib/core_extensions/intercom_rails/auto_include"
+# require_relative "../lib/core_extensions/intercom_rails/auto_include"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -10,12 +9,13 @@ Bundler.require(*Rails.groups)
 
 module Site
   class Application < Rails::Application
-    if %w[development test].include? Rails.env
-      Dotenv::Railtie.load if defined? Dotenv
-    end
-
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 7.0
+    config.load_defaults 7.1
+
+    # Please, add to the `ignore` list any other `lib` subdirectories that do
+    # not contain `.rb` files, or that should not be reloaded or eager loaded.
+    # Common ones are `templates`, `generators`, or `middleware`, for example.
+    config.autoload_lib(ignore: %w(assets tasks))
 
     # Configuration for the application, engines, and railties goes here.
     #
@@ -23,7 +23,6 @@ module Site
     # in config/environments, which are processed later.
     #
     # config.time_zone = "Central Time (US & Canada)"
-
     config.eager_load_paths << Rails.root.join("lib")
     config.active_job.queue_adapter = :sidekiq
     config.active_model.i18n_customize_full_message = true
@@ -41,11 +40,11 @@ module Site
       Rails.application.config.credentials.content_path =
         Rails.root.join("config/credentials/#{ENV["RAILS_PIPELINE_ENV"]}.yml.enc")
     end
-    app_redirect_mapping = ENV["APP_REDIRECT_MAPPING_JSON"]
-    config.x.app_redirect = app_redirect_mapping ? JSON.parse(app_redirect_mapping) : {}
+
+    config.x.app_redirect = ENV["APP_REDIRECT_MAPPING_JSON"] ? JSON.parse(ENV["APP_REDIRECT_MAPPING_JSON"]) : {}
   end
 
-  require "site_extensions"
-  require "site_http"
-  require "site_analytics"
+  # require "site_extensions"
+  # require "site_http"
+  # require "site_analytics"
 end
