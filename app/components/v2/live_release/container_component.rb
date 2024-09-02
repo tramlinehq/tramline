@@ -39,6 +39,7 @@ class V2::LiveRelease::ContainerComponent < V2::BaseComponent
     :tag_name,
     :platform,
     :automatic?,
+    :scheduled_badge,
     :stop_release_warning, to: :release
 
   def overall_status
