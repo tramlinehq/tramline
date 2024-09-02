@@ -136,13 +136,13 @@ class ProductionRelease < ApplicationRecord
   end
 
   def commits_since_previous
-    changes_since_last_release = release.release_changelog&.normalized_commits
-    last_successful_run = previous
-    changes_since_last_run = release.all_commits.between_commits(last_successful_run&.commit, commit)
+    changes_since_last_release = release.release_changelog&.normalized_commits || []
+    changes_since_last_run = release.all_commits.between_commits(previous&.commit, commit) || []
 
-    return changes_since_last_run if last_successful_run.present?
-
-    return (changes_since_last_release || []) if previous.blank?
-    ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq { |c| c.commit_hash }
+    if previous
+      changes_since_last_run
+    else
+      changes_since_last_release
+    end
   end
 end
