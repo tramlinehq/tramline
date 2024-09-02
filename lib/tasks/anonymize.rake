@@ -238,7 +238,7 @@ namespace :anonymize do
         primary_key "id"
         whitelist "release_platform_id", "code_name", "scheduled_at", "commit_sha", "status", "branch_name",
           "release_version", "completed_at", "stopped_at", "original_release_version", "release_id",
-          "tag_name", "in_store_resubmission", "last_commit_id"
+          "tag_name", "in_store_resubmission", "last_commit_id", "play_store_blocked"
         whitelist_timestamps
       end
 
