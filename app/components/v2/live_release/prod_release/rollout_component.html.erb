@@ -66,7 +66,7 @@
           </div>
         </div>
 
-        <% unless upcoming? %>
+        <% unless created? %>
           <%= render V2::SectionComponent.new(title: "More actions", style: :titled, size: :micro) do %>
             <div class="flex justify-between items-center">
               <div class="flex flex-row gap-2">
@@ -91,7 +91,7 @@
       </div>
     <% end %>
 
-    <% unless upcoming? %>
+    <% unless created? %>
       <%= render V2::ReleaseMonitoringComponent.new(store_rollout:, size: monitoring_size) %>
     <% end %>
   </div>

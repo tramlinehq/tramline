@@ -28,6 +28,6 @@ class V2::PlatformOverviewV2Component < V2::BaseComponent
   end
 
   def store_versions?
-    platform_runs.any? { |run| run.production_store_rollouts.exists? }
+    platform_runs.any? { |run| run.production_releases.exists? }
   end
 end
