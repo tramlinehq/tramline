@@ -10,7 +10,7 @@
 #   ["@ivar", "Hello"]
 #
 module LogFriendExtensions
-  if Rails.env.development? || Rails.env.test?
+  if Rails.env.local?
     # This Regexp is used to find the name of the thing being logged, so that we can then
     # print out the name along with the value of the object logged.
     CALL_SITE_REGEXP = /^\s*d\s*\(?(.*)\)?\s*$/

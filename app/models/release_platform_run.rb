@@ -69,7 +69,7 @@ class ReleasePlatformRun < ApplicationRecord
     finished: "finished"
   }
 
-  enum status: STATES
+  enum :status, STATES
 
   before_create :set_config, if: -> { release.is_v2? }
   after_create :set_default_release_metadata
@@ -168,7 +168,7 @@ class ReleasePlatformRun < ApplicationRecord
   end
 
   def older_production_store_rollouts
-    older_production_releases.includes(store_submission: :store_rollout).map(&:store_rollout).compact
+    older_production_releases.includes(store_submission: :store_rollout).filter_map(&:store_rollout)
   end
 
   def latest_rc_build?(build)
@@ -215,6 +215,7 @@ class ReleasePlatformRun < ApplicationRecord
     step_runs.last&.failure?
   end
 
+  # rubocop:disable Rails/SkipsModelValidations
   def set_default_release_metadata
     base = {
       release_notes: ReleaseMetadata::DEFAULT_RELEASE_NOTES,
@@ -230,6 +231,7 @@ class ReleasePlatformRun < ApplicationRecord
     locale = default_locale || ReleaseMetadata::DEFAULT_LOCALE
     release_metadata.create!(base.merge(locale: locale, default_locale: true))
   end
+  # rubocop:enable Rails/SkipsModelValidations
 
   def correct_version!
     return if release_version.to_semverish.proper?
@@ -450,7 +452,7 @@ class ReleasePlatformRun < ApplicationRecord
   def previous_successful_run_before(step_run)
     step_runs
       .where(step: step_run.step)
-      .where("scheduled_at <= ?", step_run.scheduled_at)
+      .where(scheduled_at: ..step_run.scheduled_at)
       .where.not(id: step_run.id)
       .success
       .order(scheduled_at: :asc)

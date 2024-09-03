@@ -183,7 +183,7 @@ class Accounts::User < ApplicationRecord
   # FIXME: This assumes that the blob is always a BuildArtifact
   # Eventually, make the URLs domain-specific and not blob-based general ones.
   def access_to_blob?(signed_blob_id)
-    build = BuildArtifact.find_by_signed_id(signed_blob_id)
+    build = BuildArtifact.find_via_signed_id(signed_blob_id)
     return false if build.blank?
     access_for(build.organization).present?
   end

@@ -33,7 +33,7 @@ describe Installations::Gitlab::Api, type: :integration do
           avatar_url: "https://gitlab.example.com/uploads/project/avatar/4/uploads/avatar.png"
         }
       ]
-      expect(result).to contain_exactly(*expected_projects)
+      expect(result).to match_array(expected_projects)
     end
   end
 end

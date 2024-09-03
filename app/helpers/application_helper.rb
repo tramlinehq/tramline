@@ -173,8 +173,8 @@ module ApplicationHelper
     sha[0, 7]
   end
 
-  def user_avatar(name, **options)
-    Initials.svg(name, **options)
+  def user_avatar(name, **)
+    Initials.svg(name, **)
   end
 
   def safe_simple_format(text)

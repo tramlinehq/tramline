@@ -6,7 +6,6 @@ Rails.application.routes.draw do
 
   mount ActionCable.server => "/cable"
   mount Easymon::Engine => "/up"
-  # get "up" => "rails/health#show", as: :rails_health_check
 
   root "authentication/sessions#root"
   get "/admin", to: "admin/settings#index", as: :authenticated_admin_root

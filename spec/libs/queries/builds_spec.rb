@@ -58,7 +58,7 @@ describe Queries::Builds, type: :model do
       ]
 
       actual = described_class.all(app:, params:).first.attributes.keys
-      expect(actual).to contain_exactly(*expected_keys)
+      expect(actual).to match_array(expected_keys)
     end
   end
 end

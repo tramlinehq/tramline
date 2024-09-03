@@ -60,7 +60,7 @@ class VersioningStrategies::Semverish
     new_version = clone
     strategy_config = STRATEGIES[strategy.to_sym]
     new_value = INCREMENTS[strategy_config[term]].call(public_send(term))
-    new_version.public_send("#{term}=", new_value)
+    new_version.public_send(:"#{term}=", new_value)
     if term == :major
       new_version.minor = 0 unless strategy_config[:update_minor_on_major_bump]
       new_version.minor = INCREMENTS[strategy_config[:minor]].call(public_send(:minor)) if strategy_config[:update_minor_on_major_bump]

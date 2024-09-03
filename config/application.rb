@@ -1,7 +1,5 @@
 require_relative "boot"
 require "rails/all"
-require_relative "../lib/logging_extensions"
-# require_relative "../lib/core_extensions/intercom_rails/auto_include"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -15,7 +13,7 @@ module Site
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w(assets tasks))
+    config.autoload_lib(ignore: %w[assets tasks])
 
     # Configuration for the application, engines, and railties goes here.
     #
@@ -32,6 +30,7 @@ module Site
     PaperTrail.config.version_limit = 10
     config.active_storage.draw_routes = false
 
+    require "logging_extensions"
     require "json_logger"
     config.log_formatter = LoggingExtensions.default_log_formatter
     config.logger = ActiveSupport::TaggedLogging.new(JsonLogger.new(Rails.root.join("log", "#{Rails.env}.log")))
@@ -43,8 +42,4 @@ module Site
 
     config.x.app_redirect = ENV["APP_REDIRECT_MAPPING_JSON"] ? JSON.parse(ENV["APP_REDIRECT_MAPPING_JSON"]) : {}
   end
-
-  # require "site_extensions"
-  # require "site_http"
-  # require "site_analytics"
 end

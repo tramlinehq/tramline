@@ -46,8 +46,7 @@ module Installations
         edit = client.insert_edit(package_name)
         client.list_edit_bundles(package_name, edit.id)
           &.bundles
-          &.sort_by(&:version_code)
-          &.last
+          &.max_by(&:version_code)
           &.version_code
       end
     end

@@ -15,7 +15,7 @@ class RuleExpression < ApplicationRecord
   include Displayable
   belongs_to :release_health_rule
 
-  enum comparator: {
+  enum :comparator, {
     lt: "lt",
     lte: "lte",
     gt: "gt",

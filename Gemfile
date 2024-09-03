@@ -93,6 +93,8 @@ group :development, :test do
   gem "rubocop-rails", require: false
   gem "rubocop-rspec", require: false
   gem "rubocop-performance", require: false
+  gem "rubocop-factory_bot", require: false
+  gem "rubocop-rspec_rails", require: false
   gem "stateoscope"
   gem "error_highlight"
 end
@@ -108,7 +110,6 @@ end
 
 group :test do
   gem "webmock"
-  gem "capybara"
   gem "simplecov"
   gem "webdrivers"
   gem "selenium-webdriver"

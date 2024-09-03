@@ -48,8 +48,8 @@ class TestFlightSubmission < StoreSubmission
 
   SubmissionNotInTerminalState = Class.new(StandardError)
 
-  enum status: STATES
-  enum failure_reason: {
+  enum :status, STATES
+  enum :failure_reason, {
     unknown_failure: "unknown_failure"
   }.merge(Installations::Apple::AppStoreConnect::Error.reasons.zip_map_self)
 

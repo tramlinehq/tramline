@@ -145,7 +145,7 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
       ]
     }
 
-    actions_by_status[store_rollout.status.to_sym]&.map do |action|
+    actions_by_status[store_rollout.status.to_sym]&.filter_map do |action|
       V2::ButtonComponent.new(
         label: action[:text],
         scheme: action[:scheme],
@@ -154,7 +154,7 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
         size: :xxs,
         html_options: html_opts(:patch, "Are you sure?")
       )
-    end&.compact || []
+    end || []
   end
 
   def card_height

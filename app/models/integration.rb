@@ -52,11 +52,8 @@ class Integration < ApplicationRecord
     }
   }.with_indifferent_access
 
-  enum category: ALLOWED_INTEGRATIONS_FOR_APP.values.map(&:keys).flatten.uniq.zip_map_self
-  enum status: {
-    connected: "connected",
-    disconnected: "disconnected"
-  }
+  enum :category, ALLOWED_INTEGRATIONS_FOR_APP.values.map(&:keys).flatten.uniq.zip_map_self
+  enum :status, {connected: "connected", disconnected: "disconnected"}
 
   CATEGORY_DESCRIPTIONS = {
     version_control: "Automatically create release branches and tags, and merge release PRs.",

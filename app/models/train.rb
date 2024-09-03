@@ -70,9 +70,9 @@ class Train < ApplicationRecord
   delegate :ready?, :config, :organization, to: :app
   delegate :vcs_provider, :ci_cd_provider, :notification_provider, :monitoring_provider, to: :integrations
 
-  enum status: {draft: "draft", active: "active", inactive: "inactive"}
-  enum backmerge_strategy: {continuous: "continuous", on_finalize: "on_finalize"}
-  enum versioning_strategy: VersioningStrategies::Semverish::STRATEGIES.keys.zip_map_self.transform_values(&:to_s)
+  enum :status, {draft: "draft", active: "active", inactive: "inactive"}
+  enum :backmerge_strategy, {continuous: "continuous", on_finalize: "on_finalize"}
+  enum :versioning_strategy, VersioningStrategies::Semverish::STRATEGIES.keys.zip_map_self.transform_values(&:to_s)
 
   friendly_id :name, use: :slugged
   auto_strip_attributes :name, squish: true
@@ -234,6 +234,7 @@ class Train < ApplicationRecord
     end
   end
 
+  # rubocop:disable Rails/SkipsModelValidations
   def create_default_notification_settings
     return if notification_channel.blank?
     vals = NotificationSetting.kinds.map do |_, kind|
@@ -246,6 +247,7 @@ class Train < ApplicationRecord
     end
     NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
   end
+  # rubocop:enable Rails/SkipsModelValidations
 
   def display_name
     name&.parameterize

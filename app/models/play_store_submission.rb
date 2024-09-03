@@ -54,10 +54,10 @@ class PlayStoreSubmission < StoreSubmission
   CHANGEABLE_STATES = %w[created preprocessing failed prepared]
   MAX_NOTES_LENGTH = 500
 
-  enum failure_reason: {
+  enum :failure_reason, {
     unknown_failure: "unknown_failure"
   }.merge(Installations::Google::PlayDeveloper::Error.reasons.zip_map_self)
-  enum status: STATES
+  enum :status, STATES
 
   aasm safe_state_machine_params do
     state :created, initial: true

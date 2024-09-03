@@ -28,25 +28,26 @@ class PullRequest < ApplicationRecord
   belongs_to :release
   belongs_to :commit, optional: true
 
-  enum phase: {
+  enum :phase, {
     pre_release: "pre_release",
     mid_release: "mid_release",
     ongoing: "ongoing",
     post_release: "post_release"
   }
 
-  enum state: {
+  enum :state, {
     open: "open",
     closed: "closed"
   }
 
-  enum source: {
+  enum :source, {
     github: "github",
     gitlab: "gitlab"
   }
 
   scope :automatic, -> { where(phase: [:ongoing, :post_release]) }
 
+  # rubocop:disable Rails/SkipsModelValidations
   def update_or_insert!(attributes)
     PullRequest
       .upsert(normalize_attributes(attributes), unique_by: [:release_id, :phase, :number])
@@ -55,6 +56,7 @@ class PullRequest < ApplicationRecord
       .first
       .then { |id| PullRequest.find_by(id: id) }
   end
+  # rubocop:enable Rails/SkipsModelValidations
 
   def close!
     self.closed_at = Time.current

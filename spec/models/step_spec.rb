@@ -68,7 +68,7 @@ describe Step do
 
     it "returns next element" do
       first_step = steps.first
-      expect(first_step.next).to be_eql(steps.second)
+      expect(first_step.next).to eql(steps.second)
     end
 
     it "returns nil for final element" do

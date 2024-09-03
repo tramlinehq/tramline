@@ -441,7 +441,7 @@ describe Release do
     it "returns the subsequent commits made on the release branch after release starts" do
       stability_commits = create_list(:commit, 4, release:)
       expect(release.stability_commits).to exist
-      expect(release.stability_commits).to contain_exactly(*stability_commits)
+      expect(release.stability_commits).to match_array(stability_commits)
       expect(release.all_commits.size).to eq(stability_commits.size + 1)
     end
 
@@ -456,7 +456,7 @@ describe Release do
       release = create(:release)
       hotfixes = create_list(:release, 3, :hotfix, hotfixed_from: release)
 
-      expect(release.all_hotfixes).to contain_exactly(*hotfixes)
+      expect(release.all_hotfixes).to match_array(hotfixes)
     end
 
     it "returns hotfixes of hotfixes" do

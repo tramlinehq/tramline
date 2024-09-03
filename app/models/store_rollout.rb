@@ -45,7 +45,7 @@ class StoreRollout < ApplicationRecord
     fully_released: "fully_released"
   }
 
-  enum status: STATES
+  enum :status, STATES
 
   delegate :parent_release, :build, :external_link, to: :store_submission
   delegate :version_name, :build_number, to: :build

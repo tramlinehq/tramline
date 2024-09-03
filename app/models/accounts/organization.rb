@@ -29,7 +29,7 @@ class Accounts::Organization < ApplicationRecord
   has_many :releases, through: :apps
   has_many :invites, dependent: :destroy
 
-  enum status: {active: "active", dormant: "dormant", guest: "guest"}
+  enum :status, {active: "active", dormant: "dormant", guest: "guest"}
 
   encrypts :api_key, deterministic: true
 

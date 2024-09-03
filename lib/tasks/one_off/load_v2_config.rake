@@ -58,19 +58,19 @@ def populate_config(release_platform)
   if review_step
     config[:internal_release] = {
       auto_promote: true,
-      submissions: review_step.deployments.each_with_index.map do |deployment, index|
+      submissions: review_step.deployments.each_with_index.filter_map do |deployment, index|
         {number: index + 1,
          submission_type: submission_type(deployment),
          submission_config: deployment.build_artifact_channel,
          rollout_config: {enabled: false},
          auto_promote: true}
-      end.compact
+      end
     }
   end
 
   config[:beta_release] = {
     auto_promote: false,
-    submissions: release_step.deployments.each_with_index.map do |deployment, index|
+    submissions: release_step.deployments.each_with_index.filter_map do |deployment, index|
       next if deployment.production_channel?
 
       {number: index + 1,
@@ -78,7 +78,7 @@ def populate_config(release_platform)
        submission_config: deployment.build_artifact_channel,
        rollout_config: {enabled: false},
        auto_promote: index.zero? ? true : release_step.auto_deploy?}
-    end.compact
+    end
   }
 
   production_deployment = release_step.deployments.find { |deployment| deployment.production_channel? }

@@ -1,5 +1,6 @@
 require "rails_helper"
 
+# rubocop:disable Rails/DurationArithmetic
 describe ScheduleTrainReleasesJob do
   it "schedules release for active trains" do
     train = create(:train, :active, :with_schedule)
@@ -32,3 +33,4 @@ describe ScheduleTrainReleasesJob do
     expect(train.reload.scheduled_releases.count).to eq(1)
   end
 end
+# rubocop:enable Rails/DurationArithmetic
