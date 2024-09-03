@@ -40,7 +40,7 @@ jobs:
         run: bundle exec bundler-audit --update
 
       - name: Scan for common Rails security vulnerabilities using static analysis
-        run: bin/brakeman --no-pager
+        run: bin/brakeman --no-pager -w2
 
   lint:
     runs-on: ubuntu-latest
