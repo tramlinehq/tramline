@@ -534,6 +534,7 @@ GEM
     retriable (3.1.2)
     retryable (3.0.5)
     rexml (3.3.6)
+      strscan
     rgeo (2.4.0)
     rgeo-geojson (2.1.1)
       rgeo (>= 1.0.0)
@@ -661,6 +662,7 @@ GEM
     strong_migrations (1.8.0)
       activerecord (>= 5.2)
     strong_password (0.0.10)
+    strscan (3.1.0)
     tailwindcss-rails (2.7.3)
       railties (>= 7.0.0)
     tailwindcss-rails (2.7.3-aarch64-linux)
@@ -836,7 +838,7 @@ DEPENDENCIES
   webmock
 
 RUBY VERSION
-   ruby 3.3.5p100
+   ruby 3.3.4p94
 
 BUNDLED WITH
-   2.5.16
+   2.5.11

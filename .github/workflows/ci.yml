@@ -7,37 +7,21 @@ on:
     branches: [ "main" ]
 
 jobs:
-  test:
+  scan_js:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:14-alpine
-        ports:
-          - "5432:5432"
-        env:
-          POSTGRES_DB: rails_test
-          POSTGRES_USER: rails
-          POSTGRES_PASSWORD: password
-      redis:
-        image: redis:alpine
-        ports: [ "6379:6379" ]
-        options: --entrypoint redis-server
-    env:
-      RAILS_ENV: test
-      DATABASE_URL: "postgres://rails:password@localhost:5432/rails_test"
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Install Ruby and gems
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
+          ruby-version: .ruby-version
           bundler-cache: true
-      - name: Set up database schema
-        run: bin/rails db:schema:load
-      - name: Run asset pre compilation
-        run: bundle exec rails assets:precompile
-      - name: Run tests
-        run: bundle exec rspec
+
+      - name: Scan for security vulnerabilities in JavaScript dependencies
+        run: bin/importmap audit
 
   scan_ruby:
     runs-on: ubuntu-latest
@@ -57,22 +41,6 @@ jobs:
 
       - name: Scan for common Rails security vulnerabilities using static analysis
         run: bin/brakeman --no-pager
-
-  scan_js:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: .ruby-version
-          bundler-cache: true
-
-      - name: Scan for security vulnerabilities in JavaScript dependencies
-        run: bin/importmap audit
 
   lint:
     runs-on: ubuntu-latest
@@ -110,3 +78,40 @@ jobs:
 
       - name: Check auto-loading
         run: bundle exec rails zeitwerk:check
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14-alpine
+        ports:
+          - "5432:5432"
+        env:
+          POSTGRES_DB: rails_test
+          POSTGRES_USER: rails
+          POSTGRES_PASSWORD: password
+      redis:
+        image: redis:alpine
+        ports: [ "6379:6379" ]
+        options: --entrypoint redis-server
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: "postgres://rails:password@localhost:5432/rails_test"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Set up database schema
+        run: bin/rails db:schema:load
+
+      - name: Run asset pre compilation
+        run: bundle exec rails assets:precompile
+
+      - name: Run tests
+        run: bundle exec rspec
