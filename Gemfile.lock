@@ -138,7 +138,7 @@ GEM
       irb (~> 1.10)
       reline (>= 0.3.8)
     declarative (0.0.20)
-    descope (1.0.5)
+    descope (1.0.6)
       addressable (~> 2.8)
       jwt (~> 2.7)
       rest-client (~> 2.1)
@@ -500,7 +500,7 @@ GEM
     rake (13.2.1)
     rdoc (6.7.0)
       psych (>= 4.0.0)
-    redis (4.8.0)
+    redis (4.8.1)
     redis-actionpack (5.4.0)
       actionpack (>= 5, < 8)
       redis-rack (>= 2.1.0, < 4)
@@ -521,7 +521,7 @@ GEM
       uber (< 0.2.0)
     request_store (1.7.0)
       rack (>= 1.4)
-    requestjs-rails (0.0.11)
+    requestjs-rails (0.0.12)
       railties (>= 6.1.0)
     responders (3.1.1)
       actionpack (>= 5.2)
@@ -534,11 +534,10 @@ GEM
     retriable (3.1.2)
     retryable (3.0.5)
     rexml (3.3.6)
-      strscan
     rgeo (2.4.0)
     rgeo-geojson (2.1.1)
       rgeo (>= 1.0.0)
-    rspec-core (3.13.0)
+    rspec-core (3.13.1)
       rspec-support (~> 3.13.0)
     rspec-expectations (3.13.2)
       diff-lcs (>= 1.2.0, < 2.0)
@@ -546,10 +545,10 @@ GEM
     rspec-mocks (3.13.1)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-rails (6.1.4)
-      actionpack (>= 6.1)
-      activesupport (>= 6.1)
-      railties (>= 6.1)
+    rspec-rails (7.0.1)
+      actionpack (>= 7.0)
+      activesupport (>= 7.0)
+      railties (>= 7.0)
       rspec-core (~> 3.13)
       rspec-expectations (~> 3.13)
       rspec-mocks (~> 3.13)
@@ -662,7 +661,6 @@ GEM
     strong_migrations (1.8.0)
       activerecord (>= 5.2)
     strong_password (0.0.10)
-    strscan (3.1.0)
     tailwindcss-rails (2.7.3)
       railties (>= 7.0.0)
     tailwindcss-rails (2.7.3-aarch64-linux)
@@ -838,7 +836,7 @@ DEPENDENCIES
   webmock
 
 RUBY VERSION
-   ruby 3.2.0p0
+   ruby 3.3.5p100
 
 BUNDLED WITH
-   2.5.18
+   2.5.16
