@@ -18,7 +18,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: .ruby-version
-          bundler-cache: false
+          bundler-cache: true
 
       - name: Scan for security vulnerabilities in JavaScript dependencies
         run: bin/importmap audit
@@ -34,7 +34,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: .ruby-version
-          bundler-cache: false
+          bundler-cache: true
 
       - name: Security bundler audit dependencies
         run: bundle exec bundler-audit --update
@@ -68,7 +68,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: .ruby-version
-          bundler-cache: false
+          bundler-cache: true
 
       - name: Lint Ruby files
         run: bin/rubocop -f github
@@ -105,7 +105,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: .ruby-version
-          bundler-cache: false
+          bundler-cache: true
 
       - name: Set up database schema
         run: bin/rails db:schema:load
