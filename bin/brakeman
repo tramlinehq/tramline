@@ -1,7 +1,14 @@
-#!/usr/bin/env ruby
-require "rubygems"
-require "bundler/setup"
+#!/usr/bin/env bash
+set -o errexit
 
-ARGV.unshift("--ensure-latest")
+# Check if brakeman gem is installed
+if ! gem list brakeman -i &>/dev/null; then
+  echo "Error: brakeman gem is not installed. Please install it using 'gem install brakeman'."
+  exit 1
+fi
 
-load Gem.bin_path("brakeman", "brakeman")
+# Add --ensure-latest to the beginning of the arguments
+set -- --ensure-latest "$@"
+
+# Run brakeman with the provided arguments
+bundle exec brakeman "$@"
