@@ -28,7 +28,6 @@ class ReleaseHealthRule < ApplicationRecord
   accepts_nested_attributes_for :trigger_rule_expressions
   accepts_nested_attributes_for :filter_rule_expressions
 
-  # auto_strip_attributes :name, squish: true
   normalizes :name, with: ->(name) { name.squish }
   after_create_commit :check_release_health
 

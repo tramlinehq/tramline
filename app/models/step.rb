@@ -57,7 +57,6 @@ class Step < ApplicationRecord
   }
 
   friendly_id :name, use: :slugged
-  # auto_strip_attributes :name, :build_artifact_name_pattern, squish: true
   normalizes :name, with: ->(name) { name.squish }
   normalizes :build_artifact_name_pattern, with: ->(pattern) { pattern.squish }
   accepts_nested_attributes_for :deployments, allow_destroy: false, reject_if: :reject_deployments?

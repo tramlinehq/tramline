@@ -39,7 +39,6 @@ class Accounts::Organization < ApplicationRecord
 
   friendly_id :name, use: :slugged
 
-  # auto_strip_attributes :name, squish: true
   normalizes :name, with: ->(name) { name.squish }
 
   scope :sequential, -> { reorder("organizations.created_at ASC") }

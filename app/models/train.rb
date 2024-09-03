@@ -75,7 +75,6 @@ class Train < ApplicationRecord
   enum :versioning_strategy, VersioningStrategies::Semverish::STRATEGIES.keys.zip_map_self.transform_values(&:to_s)
 
   friendly_id :name, use: :slugged
-  # auto_strip_attributes :name, squish: true
   normalizes :name, with: ->(name) { name.squish }
   attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed
   attr_accessor :build_queue_wait_time_unit, :build_queue_wait_time_value
