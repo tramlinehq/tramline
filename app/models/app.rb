@@ -52,7 +52,8 @@ class App < ApplicationRecord
   end
 
   friendly_id :name, use: :slugged
-  auto_strip_attributes :name, squish: true
+  # auto_strip_attributes :name, squish: true
+  normalizes :name, with: -> name { name.squish }
 
   delegate :vcs_provider,
     :ci_cd_provider,

@@ -43,7 +43,9 @@ class Accounts::User < ApplicationRecord
     source_type: "Accounts::EmailAuthentication"
 
   friendly_id :full_name, use: :slugged
-  auto_strip_attributes :full_name, :preferred_name, squish: true
+  # auto_strip_attributes :full_name, :preferred_name, squish: true
+  normalizes :name, with: -> name { name.squish }
+  normalizes :preferred_name, with: -> name { name.squish }
 
   accepts_nested_attributes_for :organizations
   accepts_nested_attributes_for :memberships, allow_destroy: false

@@ -86,8 +86,6 @@ GEM
       activerecord (>= 3.2, < 8.0)
       rake (>= 10.4, < 14.0)
     ast (2.4.2)
-    auto_strip_attributes (2.6.0)
-      activerecord (>= 4.0)
     awesome_print (1.9.2)
     base64 (0.2.0)
     bcrypt (3.1.20)
@@ -738,7 +736,6 @@ DEPENDENCIES
   after_commit_everywhere (~> 1.2)
   amazing_print (~> 1.4)
   annotate
-  auto_strip_attributes (~> 2.6)
   awesome_print
   bcrypt (~> 3.1.7)
   bootsnap (~> 1.10)
