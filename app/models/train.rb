@@ -76,7 +76,7 @@ class Train < ApplicationRecord
 
   friendly_id :name, use: :slugged
   # auto_strip_attributes :name, squish: true
-  normalizes :name, with: -> name { name.squish }
+  normalizes :name, with: ->(name) { name.squish }
   attr_accessor :major_version_seed, :minor_version_seed, :patch_version_seed
   attr_accessor :build_queue_wait_time_unit, :build_queue_wait_time_value
   attr_accessor :repeat_duration_unit, :repeat_duration_value, :release_schedule_enabled
