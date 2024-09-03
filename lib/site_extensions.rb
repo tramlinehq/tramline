@@ -2,7 +2,7 @@ module SiteExtensions
   require "ostruct"
 
   def self.determine_git_ref
-    OpenStruct.new(ref: `git rev-parse --short HEAD`.chomp, at: `git show -s --format=%ci HEAD`.chomp)
+    OpenStruct.new(ref: "1".chomp)
   end
 
   GIT_REF = determine_git_ref
