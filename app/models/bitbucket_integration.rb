@@ -81,6 +81,12 @@ class BitbucketIntegration < ApplicationRecord
     avatar_url: [:links, :avatar]
   }
 
+  WEBHOOK_TRANSFORMATIONS = {
+    id: :uuid,
+    url: :url,
+    events: :events
+  }
+
   def repos
     with_api_retries { installation.list_repos(REPOS_TRANSFORMATIONS) }
   end
@@ -128,6 +134,14 @@ class BitbucketIntegration < ApplicationRecord
       bitbucket_callback_url(host: ENV["HOST_NAME"], port: "3000", protocol: "https")
     else
       bitbucket_callback_url(host: ENV["HOST_NAME"], protocol: "https")
+    end
+  end
+
+  def events_url(params)
+    if Rails.env.development?
+      bitbucket_events_url(host: ENV["WEBHOOK_HOST_NAME"], **params)
+    else
+      bitbucket_events_url(host: ENV["HOST_NAME"], protocol: "https", **params)
     end
   end
 end

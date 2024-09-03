@@ -4,6 +4,8 @@ module Installations
     attr_reader :oauth_access_token
 
     REPOS_URL = Addressable::Template.new "https://api.bitbucket.org/2.0/repositories/{workspace}"
+    WEBHOOK_URL = Addressable::Template.new "https://api.bitbucket.org/2.0/repositories/{workspace}/{repo_slug}/hooks"
+    WEBHOOK_EVENTS = %w[repo:push pullrequest:created pullrequest:updated pullrequest:fulfilled pullrequest:rejected]
 
     class << self
       include Vaultable
@@ -54,6 +56,22 @@ module Installations
     def list_repos(transforms)
       execute(:get, REPOS_URL.expand(workspace: @workspace).to_s)
         .then { |responses| Installations::Response::Keys.transform(responses["values"], transforms) }
+    end
+
+    def create_repo_webhook!(repo_slug, url, transforms)
+      params = {
+        json: {
+          description: "Tramline",
+          url:,
+          active: true,
+          secret: nil,
+          events: WEBHOOK_EVENTS
+        }
+      }
+
+      execute(:post, WEBHOOK_URL.expand(workspace: @workspace, repo_slug:).to_s, params)
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     private
