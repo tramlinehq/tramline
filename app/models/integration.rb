@@ -30,21 +30,21 @@ class Integration < ApplicationRecord
 
   ALLOWED_INTEGRATIONS_FOR_APP = {
     ios: {
-      "version_control" => %w[GithubIntegration GitlabIntegration],
+      "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
       "ci_cd" => %w[BitriseIntegration GithubIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[AppStoreIntegration GoogleFirebaseIntegration],
       "monitoring" => %w[BugsnagIntegration]
     },
     android: {
-      "version_control" => %w[GithubIntegration GitlabIntegration],
+      "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
       "ci_cd" => %w[BitriseIntegration GithubIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration],
       "monitoring" => %w[BugsnagIntegration]
     },
     cross_platform: {
-      "version_control" => %w[GithubIntegration GitlabIntegration],
+      "version_control" => %w[GithubIntegration GitlabIntegration BitbucketIntegration],
       "ci_cd" => %w[BitriseIntegration GithubIntegration],
       "notification" => %w[SlackIntegration],
       "build_channel" => %w[GooglePlayStoreIntegration SlackIntegration GoogleFirebaseIntegration AppStoreIntegration],

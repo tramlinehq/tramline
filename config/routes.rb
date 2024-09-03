@@ -279,6 +279,10 @@ Rails.application.routes.draw do
     post "/events/:train_id", to: "integration_listeners/gitlab#events", as: :gitlab_events
   end
 
+  scope :bitbucket do
+    get :callback, controller: "integration_listeners/bitbucket", as: :bitbucket_callback
+  end
+
   scope :slack do
     get :callback, controller: "integration_listeners/slack", as: :slack_callback
   end
