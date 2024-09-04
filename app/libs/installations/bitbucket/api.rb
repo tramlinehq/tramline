@@ -4,7 +4,9 @@ module Installations
     attr_reader :oauth_access_token
 
     REPOS_URL = Addressable::Template.new "https://api.bitbucket.org/2.0/repositories/{workspace}"
-    WEBHOOK_URL = Addressable::Template.new "https://api.bitbucket.org/2.0/repositories/{workspace}/{repo_slug}/hooks"
+    REPO_HOOKS_URL = Addressable::Template.new "https://api.bitbucket.org/2.0/repositories/{workspace}/{repo_slug}/hooks"
+    REPO_HOOK_URL = Addressable::Template.new "https://api.bitbucket.org/2.0/repositories/{workspace}/{repo_slug}/hooks/{hook_id}"
+
     WEBHOOK_EVENTS = %w[repo:push pullrequest:created pullrequest:updated pullrequest:fulfilled pullrequest:rejected]
 
     class << self
@@ -59,17 +61,19 @@ module Installations
     end
 
     def create_repo_webhook!(repo_slug, url, transforms)
-      params = {
-        json: {
-          description: "Tramline",
-          url:,
-          active: true,
-          secret: nil,
-          events: WEBHOOK_EVENTS
-        }
-      }
+      execute(:post, REPO_HOOKS_URL.expand(workspace: @workspace, repo_slug:).to_s, webhook_params(url))
+        .then { |response| puts response.to_s; Installations::Response::Keys.transform([response], transforms) }
+        .first
+    end
 
-      execute(:post, WEBHOOK_URL.expand(workspace: @workspace, repo_slug:).to_s, params)
+    def update_repo_webhook!(repo_slug, hook_id, url, transforms)
+      execute(:put, REPO_HOOK_URL.expand(workspace: @workspace, repo_slug:, hook_id:).to_s, webhook_params(url))
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
+    end
+
+    def find_webhook(repo_slug, hook_id, transforms)
+      execute(:get, REPO_HOOK_URL.expand(workspace: @workspace, repo_slug:, hook_id:).to_s)
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
@@ -85,6 +89,18 @@ module Installations
 
     def error?(code)
       code.between?(400, 499)
+    end
+
+    def webhook_params(url)
+      {
+        json: {
+          description: "Tramline",
+          url:,
+          active: true,
+          secret: nil,
+          events: WEBHOOK_EVENTS
+        }
+      }
     end
   end
 end

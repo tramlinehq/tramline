@@ -140,7 +140,6 @@ class GitlabIntegration < ApplicationRecord
       if id
         webhook = with_api_retries { installation.find_webhook(code_repository_name, id, WEBHOOK_TRANSFORMATIONS) }
 
-        # is the && ever true because the transform doesn't look up merge_request_events
         if webhook[:url] == events_url(train_id:) && installation.class::WEBHOOK_PERMISSIONS.keys.all? { |k| webhook[k] }
           webhook
         else
