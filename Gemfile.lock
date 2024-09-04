@@ -111,6 +111,7 @@ GEM
       bigdecimal
       rexml
     crass (1.0.6)
+    csv (3.3.0)
     data-anonymization (0.8.10)
       activerecord (~> 7.1)
       activesupport (~> 7.1)
@@ -119,9 +120,9 @@ GEM
       rgeo (~> 2.4.0)
       rgeo-geojson (~> 2.1.1)
       thor (~> 1.2.1)
-    data_migrate (8.5.0)
-      activerecord (>= 5.0)
-      railties (>= 5.0)
+    data_migrate (11.0.0.rc3)
+      activerecord (>= 6.1)
+      railties (>= 6.1)
     datadog-ci (0.8.3)
       msgpack
     date (3.3.4)
@@ -743,8 +744,9 @@ DEPENDENCIES
   bugsnag-api (~> 3.0)
   bundler-audit
   color (~> 1.8)
+  csv (~> 3.3)
   data-anonymization
-  data_migrate (~> 8.1)
+  data_migrate (= 11.0.0.rc3)
   ddtrace (~> 1.4)
   debug
   descope (~> 1.0)
