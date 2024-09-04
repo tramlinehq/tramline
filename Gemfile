@@ -53,7 +53,7 @@ gem "amazing_print", "~> 1.4"
 gem "ddtrace", "~> 1.4"
 gem "dogstatsd-ruby", "~> 5.5"
 gem "memery", "~> 1.4"
-gem "data_migrate", "~> 8.1"
+gem "data_migrate", "11.0.0.rc3"
 gem "device_detector", "~> 1.0"
 gem "strong_migrations", "~> 1.4"
 gem "fast_blank", "~> 1.0"
@@ -78,6 +78,7 @@ gem "json-schema", "~> 4.1"
 gem "color", "~> 1.8"
 gem "descope", "~> 1.0"
 gem "invisible_captcha", "~> 2.3"
+gem "csv", "~> 3.3"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
