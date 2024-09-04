@@ -11,6 +11,7 @@ module Installations
     REPO_BRANCH_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/refs/branches/{branch_name}"
     REPO_TAGS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/refs/tags"
     REPO_TAG_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/refs/tags/{tag_name}"
+    DIFFSTAT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/diffstat/{from_sha}..{to_sha}"
 
     WEBHOOK_EVENTS = %w[repo:push pullrequest:created pullrequest:updated pullrequest:fulfilled pullrequest:rejected]
 
@@ -131,7 +132,22 @@ module Installations
       false
     end
 
+    def diff?(repo_slug, from_branch, to_branch)
+      from_sha = get_branch_short_sha(repo_slug, from_branch)
+      to_sha = get_branch_short_sha(repo_slug, to_branch)
+
+      execute(:get, DIFFSTAT_URL.expand(workspace: @workspace, repo_slug:, from_sha:, to_sha:).to_s)
+        .dig("size")
+        .positive?
+    end
+
     private
+
+    def get_branch_short_sha(repo_slug, branch_name)
+      get_branch(repo_slug, branch_name)
+        .dig("target", "hash")
+        .then { |s| Commit.new(commit_hash: s).short_sha }
+    end
 
     def get_branch(repo_slug, branch_name)
       execute(:get, REPO_BRANCH_URL.expand(workspace: @workspace, repo_slug:, branch_name:).to_s)
