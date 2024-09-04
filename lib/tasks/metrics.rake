@@ -77,7 +77,7 @@ namespace :metrics do
 
   desc "Backfill user and org data in analytics db"
   task backfill_users: [:environment] do
-    Accounts::User.all.each do |user|
+    Accounts::User.find_each do |user|
       SiteAnalytics.identify(user)
       user.organizations.each do |org|
         SiteAnalytics.group(user, org)

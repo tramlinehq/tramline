@@ -12,11 +12,10 @@ describe PlayStoreRollout do
     let(:prod_double) { instance_double(ProductionRelease) }
 
     before do
-      allow(rollout).to receive(:provider).and_return(providable_dbl)
       allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
       allow(prod_double).to receive(:rollout_started!)
       allow(prod_double).to receive(:rollout_complete!)
-      allow(rollout).to receive(:parent_release).and_return(prod_double)
+      allow(rollout).to receive_messages(provider: providable_dbl, parent_release: prod_double)
       allow(StoreSubmissions::PlayStore::UpdateExternalReleaseJob).to receive(:perform_later)
     end
 
@@ -200,8 +199,7 @@ describe PlayStoreRollout do
       allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
 
       rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:)
-      allow(rollout).to receive(:provider).and_return(providable_dbl)
-      allow(rollout).to receive(:parent_release).and_return(production_release)
+      allow(rollout).to receive_messages(provider: providable_dbl, parent_release: production_release)
       allow(production_release).to receive(:rollout_complete!)
 
       rollout.release_fully!
@@ -214,8 +212,7 @@ describe PlayStoreRollout do
       allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new { raise })
 
       rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:)
-      allow(rollout).to receive(:provider).and_return(providable_dbl)
-      allow(rollout).to receive(:parent_release).and_return(production_release)
+      allow(rollout).to receive_messages(provider: providable_dbl, parent_release: production_release)
       allow(production_release).to receive(:rollout_complete!)
 
       rollout.release_fully!
@@ -227,8 +224,7 @@ describe PlayStoreRollout do
     it "updates the submission external release" do
       rollout = create(:store_rollout, :started, :play_store, release_platform_run:, store_submission:)
       allow(providable_dbl).to receive(:rollout_release).and_return(GitHub::Result.new)
-      allow(rollout).to receive(:provider).and_return(providable_dbl)
-      allow(rollout).to receive(:parent_release).and_return(production_release)
+      allow(rollout).to receive_messages(provider: providable_dbl, parent_release: production_release)
       allow(production_release).to receive(:rollout_complete!)
 
       rollout.release_fully!

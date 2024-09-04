@@ -18,7 +18,7 @@ class ReleaseHealthEvent < ApplicationRecord
 
   self.implicit_order_column = :event_timestamp
 
-  enum health_status: {healthy: "healthy", unhealthy: "unhealthy"}
+  enum :health_status, {healthy: "healthy", unhealthy: "unhealthy"}
 
   belongs_to :deployment_run
   belongs_to :release_health_rule

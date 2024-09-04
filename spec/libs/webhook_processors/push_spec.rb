@@ -177,7 +177,7 @@ describe WebhookProcessors::Push do
 
         expect(release.applied_commits.reload.size).to be(1)
         expect(release.all_commits.reload.size).to be(3)
-        release.all_commits.where.not(id: old_commit.id).each do |c|
+        release.all_commits.where.not(id: old_commit.id).find_each do |c|
           expect(c.build_queue).to eq(release.active_build_queue)
         end
       end

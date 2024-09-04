@@ -8,7 +8,7 @@ spec:
   bundle exec rspec
 
 lint:
-  bundle exec rubocop --autocorrect
+  bin/rubocop --autocorrect
 
 devlog log_lines="1000":
   tail -f -n {{ log_lines }} log/development.log

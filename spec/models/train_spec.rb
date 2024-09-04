@@ -38,7 +38,7 @@ describe Train do
       train = create(:train, app:)
 
       expect(train.reload.release_platforms.size).to eq(2)
-      expect(train.reload.release_platforms.pluck(:platform)).to contain_exactly(*ReleasePlatform.platforms.keys)
+      expect(train.reload.release_platforms.pluck(:platform)).to match_array(ReleasePlatform.platforms.keys)
     end
   end
 

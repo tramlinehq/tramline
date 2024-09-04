@@ -4,11 +4,15 @@ FactoryBot.define do
 
     trait :as_developer do
       transient do
-        member_organization { create(:organization) }
+        member_organization { nil }
       end
 
       after(:create) do |user, evaluator|
-        create(:membership, :developer, user: user, organization: evaluator.member_organization)
+        if evaluator.member_organization.nil?
+          create(:membership, :developer, user: user)
+        else
+          create(:membership, :developer, user: user, organization: evaluator.member_organization)
+        end
       end
     end
 

@@ -42,7 +42,7 @@ class ProductionRelease < ApplicationRecord
   INITIAL_STATE = STATES[:inflight]
   ACTIONABLE_STATES = [STATES[:inflight], STATES[:active]]
 
-  enum status: STATES
+  enum :status, STATES
 
   def tester_notes? = false
 

@@ -16,8 +16,8 @@ class Computations::Release::ReldexParameters
     rollout_changes = 0
     days_since_last_release = 0
 
-    submitted_at = deployment_runs.map(&:submitted_at).compact.min
-    rollout_started_at = deployment_runs.map(&:release_started_at).compact.min
+    submitted_at = deployment_runs.filter_map(&:submitted_at).min
+    rollout_started_at = deployment_runs.filter_map(&:release_started_at).min
     platform_store_versions = deployment_runs.reached_production.group_by(&:platform)
     max_store_versions = platform_store_versions.transform_values(&:size).values.max
     first_store_version = platform_store_versions.values.flatten.min_by(&:created_at)

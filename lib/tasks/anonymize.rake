@@ -418,7 +418,7 @@ namespace :anonymize do
 
   def populate_v2_models(train)
     ActiveRecord::Base.transaction do
-      train.releases.where.not(is_v2: true).each do |release|
+      train.releases.where.not(is_v2: true).find_each do |release|
         release.update!(is_v2: true)
         release.release_platform_runs.each do |prun|
           prun.update!(config: prun.release_platform.config)
@@ -448,7 +448,7 @@ namespace :anonymize do
 
           while release_step_run.present?
             pre_prod_release = create_pre_prod_release!(prun, release_step, release_step_run, previous_pre_prod_release, idx, "release_candidate")
-            release_step_run.deployment_runs.where(deployment: production_depl).each do |drun|
+            release_step_run.deployment_runs.where(deployment: production_depl).find_each do |drun|
               production_release = prun.production_releases.create!(
                 id: drun.id,
                 config: production_release_config,
@@ -508,7 +508,7 @@ namespace :anonymize do
 
   def populate_v2_metrics_models(train)
     ActiveRecord::Base.transaction do
-      train.releases.where(is_v2: true).each do |release|
+      train.releases.where(is_v2: true).find_each do |release|
         release.deployment_runs.each do |drun|
           next unless ProductionRelease.exists?(drun.id)
           # rubocop:disable Rails/SkipsModelValidations
@@ -562,7 +562,7 @@ namespace :anonymize do
   end
 
   def create_pre_prod_submissions(release_platform_run, step_run, deployment, config, parent_release, build)
-    step_run.deployment_runs.where(deployment: deployment).each do |drun|
+    step_run.deployment_runs.where(deployment: deployment).find_each do |drun|
       submission = config.submission_type.create!(
         parent_release:,
         release_platform_run:,

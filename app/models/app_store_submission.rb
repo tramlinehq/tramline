@@ -67,8 +67,8 @@ class AppStoreSubmission < StoreSubmission
   PreparedVersionNotFoundError = Class.new(StandardError)
   SubmissionNotInTerminalState = Class.new(StandardError)
 
-  enum status: STATES
-  enum failure_reason: {
+  enum :status, STATES
+  enum :failure_reason, {
     invalid_release: "invalid_release",
     unknown_failure: "unknown_failure"
   }.merge(Installations::Apple::AppStoreConnect::Error.reasons.zip_map_self)

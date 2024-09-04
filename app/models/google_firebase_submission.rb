@@ -46,7 +46,7 @@ class GoogleFirebaseSubmission < StoreSubmission
     failed_with_action_required: "failed_with_action_required"
   }
 
-  enum status: STATES
+  enum :status, STATES
   aasm safe_state_machine_params do
     state :created, initial: true
     state(*STATES.keys)

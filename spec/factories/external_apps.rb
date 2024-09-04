@@ -4,13 +4,13 @@ FactoryBot.define do
     fetched_at { Time.current }
 
     trait :ios do
-      association :app, :ios
+      app factory: %i[app ios]
       platform { "ios" }
       channel_data { IOS_CHANNEL_DATA }
     end
 
     trait :android do
-      association :app, :android
+      app factory: %i[app android]
       platform { "android" }
       channel_data { ANDROID_CHANNEL_DATA }
     end

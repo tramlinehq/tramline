@@ -365,7 +365,6 @@ describe DeploymentRun do
 
       it "returns false if a rule is unhealthy" do
         create(:release_health_event, :unhealthy, release_health_rule: user_stability_rule, deployment_run:)
-
         expect(deployment_run.healthy?).to be(false)
       end
 

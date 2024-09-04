@@ -44,7 +44,7 @@ class StagedRollout < ApplicationRecord
     fully_released: "fully_released"
   }
 
-  enum status: STATES
+  enum :status, STATES
   aasm safe_state_machine_params do
     state :created, initial: true, before_enter: -> { deployment_run.rolloutable? }
     state(*STATES.keys)
@@ -181,7 +181,7 @@ class StagedRollout < ApplicationRecord
   end
 
   def resume_release!
-    return unless (paused? && deployment_run.automatic_rollout?) || (stopped? && deployment_run.controllable_rollout?)
+    return if (deployment_run.automatic_rollout? && !paused?) || (deployment_run.controllable_rollout? && !stopped?)
 
     deployment_run.on_resume_release! do |result|
       if result.ok?

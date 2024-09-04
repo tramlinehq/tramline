@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :release_health_metric do
-    association :deployment_run
+    deployment_run
 
     daily_users { 100 }
     daily_users_with_errors { 10 }

@@ -96,9 +96,9 @@ module ButtonHelper
   end
 
   # auth-aware styled button with path
-  def authz_button_to(style, name = nil, options = nil, html_options = nil, &block)
+  def authz_button_to(style, name = nil, options = nil, html_options = nil, &)
     style = :disabled unless writer?
-    decorated_button_to(style, name, options, html_options, &block)
+    decorated_button_to(style, name, options, html_options, &)
   end
 
   class AuthzForms < ActionView::Helpers::FormBuilder
@@ -112,9 +112,9 @@ module ButtonHelper
       end
     end
 
-    def authz_submit(style, value = nil, options = nil, &block)
+    def authz_submit(style, value = nil, options = nil, &)
       style = :disabled unless @template.writer?
-      decorated_submit(style, value, options, &block)
+      decorated_submit(style, value, options, &)
     end
   end
 end

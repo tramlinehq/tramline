@@ -44,7 +44,7 @@ class App < ApplicationRecord
   validates :build_number, numericality: {greater_than_or_equal_to: :build_number_was}, on: :update
   validates :build_number, numericality: {less_than: 2100000000}
 
-  enum platform: {android: "android", ios: "ios", cross_platform: "cross_platform"}
+  enum :platform, {android: "android", ios: "ios", cross_platform: "cross_platform"}
 
   after_initialize :initialize_config, if: :new_record?
   before_destroy :ensure_deletable, prepend: true do
@@ -52,7 +52,7 @@ class App < ApplicationRecord
   end
 
   friendly_id :name, use: :slugged
-  auto_strip_attributes :name, squish: true
+  normalizes :name, with: ->(name) { name.squish }
 
   delegate :vcs_provider,
     :ci_cd_provider,

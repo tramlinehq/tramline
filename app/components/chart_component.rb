@@ -133,7 +133,7 @@ class ChartComponent < V2::BaseComponent
   def y_annotations
     return [] if chart[:y_annotations].blank?
 
-    chart[:y_annotations].map do |a|
+    chart[:y_annotations].filter_map do |a|
       {
         y: a[:y].is_a?(Range) ? a[:y].begin : a[:y],
         y2: a[:y].is_a?(Range) ? a[:y].end : nil,
@@ -150,7 +150,7 @@ class ChartComponent < V2::BaseComponent
           text: a[:text]
         }
       }
-    end.compact
+    end
   end
 
   # Input:

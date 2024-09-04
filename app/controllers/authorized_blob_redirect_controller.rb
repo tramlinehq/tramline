@@ -23,6 +23,6 @@ class AuthorizedBlobRedirectController < ActiveStorage::Blobs::RedirectControlle
   private
 
   def current_user
-    @current_user ||= (current_email_authentication&.user || @current_sso_user)
+    @current_user ||= current_email_authentication&.user || @current_sso_user
   end
 end

@@ -330,8 +330,7 @@ describe AppStoreSubmission do
 
     it "rechecks external status if submission is not found" do
       submission_not_found = Installations::Apple::AppStoreConnect::Error.new({"error" => {"resource" => "submission", "code" => "not_found"}})
-      allow(providable_dbl).to receive(:remove_from_review).and_return(GitHub::Result.new { raise(submission_not_found) })
-      allow(providable_dbl).to receive(:find_release).and_return(GitHub::Result.new { release_info })
+      allow(providable_dbl).to receive_messages(remove_from_review: GitHub::Result.new { raise(submission_not_found) }, find_release: GitHub::Result.new { release_info })
       submission.remove_from_review!
 
       expect(providable_dbl).to have_received(:remove_from_review).with(build.build_number, build.version_name).once

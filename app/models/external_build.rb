@@ -15,6 +15,7 @@ class ExternalBuild < ApplicationRecord
 
   belongs_to :step_run, inverse_of: :external_build
 
+  # rubocop:disable Rails/SkipsModelValidations
   def update_or_insert!(new_metadata)
     validate_metadata_schema(new_metadata)
     return self if errors.present?
@@ -25,6 +26,7 @@ class ExternalBuild < ApplicationRecord
       on_duplicate: Arel.sql("metadata = COALESCE(external_builds.metadata, '{}'::jsonb) || COALESCE(EXCLUDED.metadata, '{}'::jsonb), updated_at = CURRENT_TIMESTAMP")
     ).rows.first.first.then { |id| ExternalBuild.find_by(id: id) }
   end
+  # rubocop:enable Rails/SkipsModelValidations
 
   def attributes_for_upsert(new_metadata)
     {metadata: new_metadata.index_by { |item| item[:identifier] },

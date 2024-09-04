@@ -2,15 +2,17 @@ require:
   - standard
   - rubocop-rails
   - rubocop-rspec
+  - rubocop-rspec_rails
+  - rubocop-factory_bot
   - rubocop-performance
 
 inherit_gem:
-  standard: config/ruby-3.0.yml
+  standard: config/ruby-3.3.yml
 
 inherit_from: .rubocop_todo.yml
 
 AllCops:
-  TargetRubyVersion: 3.1
+  TargetRubyVersion: 3.3
   NewCops: enable
   Exclude:
     - .irbrc
@@ -20,20 +22,14 @@ AllCops:
     - vendor/**/*
     - tmp/**/*
     - db/schema.rb
-    - db/migrate/2022*
+    - db/data/*
+    - db/migrate/*
 
 Rails:
   Enabled: true
 
-Rails/SkipsModelValidations:
-  Exclude:
-    - db/**/*
-    - app/refinements/refined_string.rb
-    - app/models/pull_request.rb # intentional use of upsert
-    - app/models/external_build.rb # intentional use of upsert
-    - app/models/train.rb # intentional use of upsert all
-    - app/models/notification_setting.rb # intentional use of upsert all
-    - app/models/release_platform_run.rb # intentional use of insert all
+Rails/EnumSyntax:
+  Enabled: true
 
 Rails/TransactionExitStatement:
   Enabled: false # intentional use of return inside transactions
@@ -43,14 +39,6 @@ Rails/ReversibleMigration:
 
 Rails/UniqBeforePluck:
   Enabled: false # https://github.com/rubocop/rubocop/issues/3148
-
-Rails/DurationArithmetic:
-  Exclude:
-    - spec/jobs/schedule_train_releases_job_spec.rb
-
-Rails/DynamicFindBy:
-  Exclude:
-    - app/models/accounts/user.rb
 
 RSpec:
   Enabled: true

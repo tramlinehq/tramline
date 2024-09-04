@@ -13,7 +13,7 @@ describe Coordinators::FinalizeRelease::ParallelBranches do
     allow(release.train).to receive(:create_release!)
 
     described_class.call(release)
-    expect(release.status).to be_eql("finished")
+    expect(release.status).to eql("finished")
     expect(release.train).to have_received(:create_release!).with(branch: "production")
     expect(repo_integration).to have_received(:create_pr!).with(nil,
       "dev",

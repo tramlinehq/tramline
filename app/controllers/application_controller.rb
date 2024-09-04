@@ -37,7 +37,7 @@ class ApplicationController < ActionController::Base
   end
 
   def current_user
-    @current_user ||= (current_email_authentication&.user || @current_sso_user)
+    @current_user ||= current_email_authentication&.user || @current_sso_user
   end
 
   protected

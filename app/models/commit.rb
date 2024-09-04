@@ -44,7 +44,7 @@ class Commit < ApplicationRecord
   delegate :release_platform_runs, :notify!, :train, :platform, to: :release
 
   def self.commit_messages(first_parent_only = false)
-    Commit.commit_log(all.reorder("timestamp DESC"), first_parent_only)&.map(&:message)
+    Commit.commit_log(reorder("timestamp DESC"), first_parent_only)&.map(&:message)
   end
 
   def self.count_by_team(org)
@@ -81,7 +81,7 @@ class Commit < ApplicationRecord
         .where("timestamp > ? AND timestamp <= ?", base_commit.timestamp, head_commit.timestamp)
     else
       base_condition
-        .where("timestamp <= ?", head_commit.timestamp)
+        .where(timestamp: ..head_commit.timestamp)
     end
   end
 

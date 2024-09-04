@@ -12,7 +12,7 @@ class Notifiers::Slack::Renderers::Base
 
   def initialize(**args)
     args.each do |key, value|
-      instance_variable_set("@#{key}", value)
+      instance_variable_set(:"@#{key}", value)
       self.class.send(:attr_accessor, key)
     end
 
