@@ -35,7 +35,10 @@ describe Installations::Bitbucket::Api, type: :integration do
 
       allow_any_instance_of(described_class).to receive(:execute).and_return(response)
 
-      result = described_class.new(access_token, workspace).create_repo_webhook!(repo_slug, url, BitbucketIntegration::WEBHOOK_TRANSFORMATIONS)
+      result = described_class
+        .new(access_token, workspace)
+        .create_repo_webhook!(repo_slug, url, BitbucketIntegration::WEBHOOK_TRANSFORMATIONS)
+
       expect(result).to eq({
         "events" => %w[pullrequest:created pullrequest:fulfilled repo:push pullrequest:rejected pullrequest:updated],
         "id" => "{cffc8461-e355-4ab2-9eb9-bb2e800240dc}",
@@ -44,4 +47,3 @@ describe Installations::Bitbucket::Api, type: :integration do
     end
   end
 end
-

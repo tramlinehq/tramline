@@ -62,7 +62,7 @@ module Installations
 
     def create_repo_webhook!(repo_slug, url, transforms)
       execute(:post, REPO_HOOKS_URL.expand(workspace: @workspace, repo_slug:).to_s, webhook_params(url))
-        .then { |response| puts response.to_s; Installations::Response::Keys.transform([response], transforms) }
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
 

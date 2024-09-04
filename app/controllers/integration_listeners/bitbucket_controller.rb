@@ -8,7 +8,6 @@ class IntegrationListeners::BitbucketController < IntegrationListenerController
 
   # TODO: what do we want to do when these events come in
   def events
-    puts "Un bitbucket event", event_type
     case event_type&.split(":")&.first
     when "repo"
       handle_push
