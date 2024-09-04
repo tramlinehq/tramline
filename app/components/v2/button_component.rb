@@ -62,6 +62,7 @@ class V2::ButtonComponent < V2::BaseComponent
   def before_render
     super
     @html_options = apply_html_options(@html_options)
+    @label = @label&.humanize if button? || action?
   end
 
   def render_component
