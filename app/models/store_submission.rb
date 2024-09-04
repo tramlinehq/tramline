@@ -38,7 +38,6 @@ class StoreSubmission < ApplicationRecord
   belongs_to :build
 
   delegate :release_metadata, :train, :release, :app, :platform, to: :release_platform_run
-  delegate :project_link, :public_icon_img, to: :provider, allow_nil: true
   delegate :notify!, to: :train
   delegate :version_name, :build_number, to: :build
   delegate :actionable?, to: :parent_release
@@ -68,7 +67,7 @@ class StoreSubmission < ApplicationRecord
   def auto_rollout? = !parent_release.production?
 
   def external_link
-    store_link || project_link
+    store_link || provider&.project_link
   end
 
   def pre_review? = true
@@ -102,7 +101,10 @@ class StoreSubmission < ApplicationRecord
 
   def notification_params
     parent_release.notification_params.merge(
-      submission_failure_reason: (display_attr(:failure_reason) if failure_reason.present?)
+      submission_failure_reason: (display_attr(:failure_reason) if failure_reason.present?),
+      submission_asset_link: provider&.public_icon_img,
+      project_link: external_link,
+      # deep_link: provider&.deep_link(external_release&.external_id, platform),
     )
   end
 
