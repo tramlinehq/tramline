@@ -12,6 +12,8 @@ module Installations
     REPO_TAGS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/refs/tags"
     REPO_TAG_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/refs/tags/{tag_name}"
     DIFFSTAT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/diffstat/{from_sha}..{to_sha}"
+    PRS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests"
+    PR_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests/{pr_number}"
 
     WEBHOOK_EVENTS = %w[repo:push pullrequest:created pullrequest:updated pullrequest:fulfilled pullrequest:rejected]
 
@@ -130,6 +132,44 @@ module Installations
     # replace this with a granular error
     rescue Installations::Bitbucket::Error
       false
+    end
+
+    def create_pr!(repo_slug, to, from, title, description, transforms)
+      params = {
+        json: {
+          title:,
+          source: { branch: { name: from } },
+          destination: { branch: { name: to } },
+          description:
+        }
+      }
+
+      execute(:post, PRS_URL.expand(workspace: @workspace, repo_slug:).to_s, params)
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
+    end
+
+    def find_pr(repo_slug, to, from, transforms)
+      params = {
+        params: {
+          q: <<~QUERY
+            state="OPEN" AND
+            source.branch.name="#{from}" AND
+            destination.branch.name="#{to}
+          QUERY
+        }
+      }
+
+      execute(:get, PRS_URL.expand(workspace: @workspace, repo_slug:).to_s, params)
+        .then { |response| Installations::Response::Keys.transform(response["values"], transforms) }
+        .first
+    end
+
+    def get_pr(repo, pr_number, transforms)
+      # TODO: Not Found throws a JSON::ParserError
+      execute(:get, PR_URL.expand(workspace: @workspace, repo_slug: repo, pr_number:).to_s)
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def diff?(repo_slug, from_branch, to_branch)

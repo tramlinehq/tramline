@@ -87,6 +87,18 @@ class BitbucketIntegration < ApplicationRecord
     events: :events
   }
 
+  PR_TRANSFORMATIONS = {
+    source_id: :id,
+    number: :id,
+    title: :title,
+    body: :description,
+    url: [:links, :html, :href],
+    state: :state,
+    head_ref: [:source, :branch, :name],
+    base_ref: [:destination, :branch, :name],
+    opened_at: :created_on
+  }
+
   def repos
     with_api_retries { installation.list_repos(REPOS_TRANSFORMATIONS) }
   end
