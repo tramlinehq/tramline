@@ -106,7 +106,7 @@
                                            scheme: :default,
                                            type: :button,
                                            options: retry_store_submission_path(submission),
-                                           html_options: html_opts(:patch, "Are you sure?"),
+                                           html_options: html_opts(:patch, "Are you sure you want to retry the submission to #{submission.display}?"),
                                            size: :xxs) do |b| %>
           <% b.with_icon(submission_logo_bw, size: :md) %>
         <% end %>

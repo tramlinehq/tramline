@@ -114,7 +114,7 @@
         label: "Remove",
         options: app_train_path(app, train),
         type: :link,
-        html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } }) do |b|
+        html_options: { method: :delete, data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to remove this train?" } }) do |b|
         b.with_icon("v2/trash.svg")
       end %>
     <% end %>

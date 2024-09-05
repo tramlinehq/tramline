@@ -10,7 +10,7 @@
                                       options: run_pre_prod_beta_path(release_platform_run),
                                       size: :xxs,
                                       turbo: false,
-                                      html_options: html_opts(:post, "Are you sure?", params: { pre_prod_release: rc_params })) %>
+                                      html_options: html_opts(:post, "Are you sure you want to start the beta release?", params: { pre_prod_release: rc_params })) %>
       <div class="flex flex-col gap-2">
         <%= render V2::LiveRelease::BuildComponent.new(
           latest_internal_release.build,
@@ -57,7 +57,7 @@
                                            scheme: :default,
                                            options: trigger_workflow_run_path(workflow_run),
                                            size: :xxs,
-                                           html_options: html_opts(:patch, "Are you sure?")) %>
+                                           html_options: html_opts(:patch, "Are you sure you want to create a new build?")) %>
       <% end %>
     <% end %>
 
@@ -68,7 +68,7 @@
                                            scheme: :default,
                                            options: retry_workflow_run_path(workflow_run),
                                            size: :xxs,
-                                           html_options: html_opts(:patch, "Are you sure?")) %>
+                                           html_options: html_opts(:patch, "Are you sure you want to retrigger the build?")) %>
       <% end %>
     <% end %>
 
