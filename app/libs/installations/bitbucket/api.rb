@@ -1,5 +1,7 @@
 module Installations
   class Bitbucket::Api
+    require "down/http"
+
     include Vaultable
     attr_reader :oauth_access_token
 
@@ -14,6 +16,13 @@ module Installations
     DIFFSTAT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/diffstat/{from_sha}..{to_sha}"
     PRS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests"
     PR_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests/{pr_number}"
+
+    WORKSPACES_URL = "#{BASE_URL}/workspaces"
+    PIPELINES_CONFIG_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines_config"
+    PIPELINES_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines"
+    PIPELINE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines/{pipeline_id}"
+    LIST_FILES_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/downloads"
+    GET_FILE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/downloads/{file_name}"
 
     WEBHOOK_EVENTS = %w[repo:push pullrequest:created pullrequest:updated pullrequest:fulfilled pullrequest:rejected]
 
@@ -63,8 +72,10 @@ module Installations
       @workspace = workspace
     end
 
-    def list_repos(transforms)
-      execute(:get, REPOS_URL.expand(workspace: @workspace).to_s)
+    attr_reader :workspace
+
+    def list_workspaces(transforms)
+      execute(:get, WORKSPACES_URL)
         .then { |responses| Installations::Response::Keys.transform(responses["values"], transforms) }
     end
 
@@ -102,7 +113,7 @@ module Installations
       params = {
         json: {
           name: new_branch_name,
-          target: { hash: ref }
+          target: {hash: ref}
         }
       }
 
@@ -113,7 +124,7 @@ module Installations
       params = {
         json: {
           name: tag_name,
-          target: { hash: sha }
+          target: {hash: sha}
         }
       }
 
@@ -122,14 +133,14 @@ module Installations
 
     def branch_exists?(repo_slug, branch_name)
       get_branch(repo_slug, branch_name).present?
-    # replace this with a granular error
+      # replace this with a granular error
     rescue Installations::Bitbucket::Error
       false
     end
 
     def tag_exists?(repo_slug, tag_name)
       get_tag(repo_slug, tag_name).present?
-    # replace this with a granular error
+      # replace this with a granular error
     rescue Installations::Bitbucket::Error
       false
     end
@@ -138,8 +149,8 @@ module Installations
       params = {
         json: {
           title:,
-          source: { branch: { name: from } },
-          destination: { branch: { name: to } },
+          source: {branch: {name: from}},
+          destination: {branch: {name: to}},
           description:
         }
       }
@@ -181,6 +192,64 @@ module Installations
         .positive?
     end
 
+    def list_repos(transforms)
+      execute(:get, REPOS_URL.expand(workspace:).to_s)
+        .then { |responses| Installations::Response::Keys.transform(responses["values"], transforms) }
+    end
+
+    def list_pipelines(repo_slug, transforms)
+      execute(:get, PIPELINES_URL.expand(workspace:, repo_slug:).to_s)
+        .then { |responses| Installations::Response::Keys.transform(responses["values"], transforms) }
+    end
+
+    def get_pipeline_config(repo_slug)
+      execute(:get, PIPELINES_CONFIG_URL.expand(workspace:, repo_slug:).to_s)
+    end
+
+    def trigger_pipeline(repo_slug, branch_name, inputs, commit_hash)
+      params = {
+        json: {
+          target: {
+            commit: {
+              hash: commit_hash,
+              type: "commit"
+            },
+            type: "pipeline_commit_target",
+            selector: {
+              type: "custom",
+              pattern: "android-debug-apk"
+            }
+          },
+          variables: [
+            {
+              key: "VERSION_NAME",
+              value: inputs[:build_version]
+            },
+            {
+              key: "VERSION_CODE",
+              value: inputs[:version_code]
+            }
+          ]
+        }
+      }
+
+      execute(:post, PIPELINES_URL.expand(workspace:, repo_slug:).to_s, params)
+    end
+
+    def get_pipeline(repo_slug, pipeline_id)
+      execute(:get, PIPELINE_URL.expand(workspace:, repo_slug:, pipeline_id:).to_s)&.with_indifferent_access
+    end
+
+    def get_file(repo_slug, file_name, transforms)
+      list_files(LIST_FILES_URL.expand(workspace:, repo_slug:).to_s, [], file_name)
+        &.then { |file| Installations::Response::Keys.transform([file], transforms) }
+        &.first
+    end
+
+    def download_artifact(download_url)
+      Down::Http.download(download_url, follow: {max_hops: 2})
+    end
+
     private
 
     def get_branch_short_sha(repo_slug, branch_name)
@@ -195,6 +264,28 @@ module Installations
 
     def get_tag(repo_slug, tag_name)
       execute(:get, REPO_TAG_URL.expand(workspace: @workspace, repo_slug:, tag_name:).to_s)
+    end
+
+    MAX_PAGES = 10
+
+    def list_files(url, files, file_name, page = 0)
+      return if page == MAX_PAGES
+
+      response = fetch_files(url)
+      new_files = response["values"]
+      next_page_url = response["next"]
+      return if new_files.blank?
+
+      files.concat(new_files)
+      found_file = files.find { |f| f["name"] == file_name }
+      return found_file if found_file.present?
+
+      return if next_page_url.blank?
+      list_files(next_page_url, files, file_name, page.inc)
+    end
+
+    def fetch_files(url)
+      execute(:get, url)
     end
 
     def execute(verb, url, params = {})

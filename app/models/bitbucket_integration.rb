@@ -23,7 +23,7 @@ class BitbucketIntegration < ApplicationRecord
 
   attr_accessor :code
   before_create :complete_access
-  delegate :code_repository_name, :code_repo_namespace, :working_branch, to: :app_config
+  delegate :code_repo_name_only, to: :app_config
 
   def install_path
     unless integration.version_control? || integration.ci_cd?
@@ -44,7 +44,7 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def installation
-    Installations::Bitbucket::Api.new(oauth_access_token, "tramline")
+    Installations::Bitbucket::Api.new(oauth_access_token, workspace)
   end
 
   def to_s
@@ -67,6 +67,15 @@ class BitbucketIntegration < ApplicationRecord
   def further_setup?
     return true if integration.version_control?
     false
+  end
+
+  WORKSPACE_TRANSFORMATIONS = {
+    id: :slug,
+    name: :name
+  }
+
+  def workspaces
+    with_api_retries { installation.list_workspaces(WORKSPACE_TRANSFORMATIONS) }
   end
 
   # VCS
@@ -104,6 +113,59 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   # CI/CD
+
+  WORKFLOWS_TRANSFORMATIONS = {
+    id: :uuid,
+    name: :name
+  }
+
+  WORKFLOW_RUN_TRANSFORMATIONS = {
+    ci_ref: :uuid,
+    number: :build_number
+  }
+
+  ARTIFACTS_TRANSFORMATIONS = {
+    id: :id,
+    name: :name,
+    size_in_bytes: :size,
+    archive_download_url: [:links, :self, :href],
+    generated_at: :created_at
+  }
+
+  def workflows
+    return [] unless integration.ci_cd?
+    with_api_retries { installation.list_pipelines(code_repo_name_only, WORKFLOWS_TRANSFORMATIONS) }
+  end
+
+  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
+    with_api_retries do
+      res = installation.run_workflow!(code_repo_name_only, ci_cd_channel, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
+      res.merge(ci_link: "https://bitbucket.org/#{workspace}/#{code_repo_name_only}/pipelines/results/#{res[:number]}")
+    end
+  end
+
+  def cancel_workflow_run!(ci_ref)
+    installation.cancel_workflow!(code_repo_name_only, ci_ref)
+  end
+
+  def find_workflow_run(_workflow_id, _branch, _commit_sha)
+    raise Integrations::UnsupportedAction
+  end
+
+  def get_workflow_run(pipeline_id)
+    installation.get_pipeline(code_repo_name_only, pipeline_id)
+  end
+
+  def get_artifact_v2(_, artifact_name)
+    raise Integration::NoBuildArtifactAvailable if artifact_name.blank?
+
+    artifact = with_api_retries { installation.get_file(code_repo_name_only, artifact_name, ARTIFACTS_TRANSFORMATIONS) }
+    raise Integration::NoBuildArtifactAvailable if artifact.blank?
+
+    Rails.logger.info "Downloading artifact #{artifact}"
+    stream = with_api_retries { installation.download_artifact(artifact[:archive_download_url]) }
+    {artifact:, stream: Artifacts::Stream.new(stream)}
+  end
 
   private
 
@@ -155,5 +217,9 @@ class BitbucketIntegration < ApplicationRecord
     else
       bitbucket_events_url(host: ENV["HOST_NAME"], protocol: "https", **params)
     end
+  end
+
+  def workspace
+    "tramline"
   end
 end
