@@ -104,7 +104,7 @@ class StoreSubmission < ApplicationRecord
       submission_failure_reason: (display_attr(:failure_reason) if failure_reason.present?),
       submission_asset_link: provider&.public_icon_img,
       project_link: external_link,
-      # deep_link: provider&.deep_link(external_release&.external_id, platform),
+      deep_link: deep_link
     )
   end
 
@@ -135,6 +135,10 @@ class StoreSubmission < ApplicationRecord
 
   def release_notes
     raise NotImplementedError
+  end
+
+  def deep_link
+    nil
   end
 
   protected
