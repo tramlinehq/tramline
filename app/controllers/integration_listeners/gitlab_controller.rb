@@ -34,7 +34,7 @@ class IntegrationListeners::GitlabController < IntegrationListenerController
         WebhookHandlers::Push.process(train, push_params)
       end
 
-    Rails.logger.debug response.body
+    Rails.logger.debug { response.body }
     head response.status
   end
 
@@ -47,7 +47,7 @@ class IntegrationListeners::GitlabController < IntegrationListenerController
         WebhookHandlers::PullRequest.process(train, pull_request_params)
       end
 
-    Rails.logger.debug response.body
+    Rails.logger.debug { response.body }
     head response.status
   end
 
