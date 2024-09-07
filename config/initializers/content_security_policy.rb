@@ -35,5 +35,5 @@ Rails.application.config.content_security_policy do |policy|
 end
 
 Rails.application.config.content_security_policy_nonce_generator = ->(request) { Base64.strict_encode64(request.session.id.to_s) }
-Rails.application.config.content_security_policy_nonce_directives = %w[script-src style-src]
+Rails.application.config.content_security_policy_nonce_directives = %w[script-src]
 Rails.application.config.content_security_policy_report_only = report_only
