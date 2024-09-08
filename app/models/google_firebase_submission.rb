@@ -187,7 +187,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   end
 
   def external_id
-    store_release["id"]
+    store_release.try(:[], "id")
   end
 
   def deep_link
