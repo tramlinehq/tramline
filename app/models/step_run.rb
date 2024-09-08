@@ -246,7 +246,7 @@ class StepRun < ApplicationRecord
   end
 
   def deployment_start_blocked?(deployment)
-    release.upcoming? && deployment.production_channel?
+    release.upcoming? && deployment.production_channel? && !release_platform_run.temporary_unblock_upcoming?
   end
 
   def last_deployment_run

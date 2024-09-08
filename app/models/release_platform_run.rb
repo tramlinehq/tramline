@@ -325,8 +325,12 @@ class ReleasePlatformRun < ApplicationRecord
     (next_step == step) && previous_step_run_for(step)&.success? && upcoming_release_step?(step)
   end
 
+  def temporary_unblock_upcoming?
+    Flipper.enabled?(:temporary_unblock_upcoming, self)
+  end
+
   def upcoming_release_step?(step)
-    step.release? && release.upcoming?
+    step.release? && release.upcoming? && !temporary_unblock_upcoming?
   end
 
   def ongoing_release_step?(step)

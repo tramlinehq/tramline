@@ -329,6 +329,8 @@ class GithubIntegration < ApplicationRecord
 
   def diff_between?(from_branch, to_branch)
     installation.diff?(code_repository_name, from_branch, to_branch)
+  rescue Installations::Errors::ResourceNotFound
+    true
   end
 
   def public_icon_img
