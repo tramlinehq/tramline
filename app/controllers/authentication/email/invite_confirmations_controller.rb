@@ -20,9 +20,9 @@ class Authentication::Email::InviteConfirmationsController < ApplicationControll
 
   def create
     if @invite && Accounts::User.add_via_email(@invite)
-      redirect_to new_user_session_path, notice: t("invitation.flash.accepted")
+      redirect_to root_path, notice: t("invitation.flash.accepted")
     else
-      redirect_to new_user_session_path, flash: {error: t("invitation.flash.failed")}
+      redirect_to root_path, flash: {error: t("invitation.flash.failed")}
     end
   end
 
