@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :trigger_rule_expression do
-    association :release_health_rule
+    release_health_rule
 
     comparator { "lt" }
     threshold_value { 90.0 }

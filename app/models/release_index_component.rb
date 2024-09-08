@@ -36,8 +36,8 @@ class ReleaseIndexComponent < ApplicationRecord
   end
 
   belongs_to :release_index
-  enum name: DEFAULT_COMPONENTS.keys.map(&:to_s).zip_map_self
-  enum tolerable_unit: TOLERANCE_UNITS.map(&:to_s).zip_map_self
+  enum :name, DEFAULT_COMPONENTS.keys.map(&:to_s).zip_map_self
+  enum :tolerable_unit, TOLERANCE_UNITS.map(&:to_s).zip_map_self
 
   attr_accessor :tolerable_min, :tolerable_max, :weight_percentage
 

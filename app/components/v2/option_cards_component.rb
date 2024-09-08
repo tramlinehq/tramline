@@ -1,5 +1,6 @@
 class V2::OptionCardsComponent < V2::BaseComponent
   LABEL_CLASSES = "inline-flex items-center justify-between w-full p-3 text-secondary bg-white border border-main-200 rounded-lg cursor-pointer dark:hover:text-main-300 dark:border-main-700 dark:peer-checked:text-blue-700 peer-checked:border-blue-800 peer-checked:text-blue-800 hover:text-main-600 peer-checked:bg-main-100 hover:bg-main-100 dark:text-secondary-50 dark:bg-main-800 dark:peer-checked:bg-main-700 dark:hover:bg-main-700"
+  DEFAULT_OPTS = {class: "hidden peer", required: true}
 
   def initialize(form:, options:)
     raise ArgumentError, "form is required" unless form
@@ -17,7 +18,7 @@ class V2::OptionCardsComponent < V2::BaseComponent
       base_id += "_#{option[:opt_value]}" if option[:opt_value]
       option[:id] = base_id
       option[:icon] = V2::IconComponent.new(option[:icon], size: :xl)
-      option[:options] = {class: "hidden peer", required: true}.merge(option[:options] || {})
+      option[:options] = DEFAULT_OPTS.merge(option[:options] || {})
       option
     end
   end

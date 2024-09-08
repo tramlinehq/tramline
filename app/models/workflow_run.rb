@@ -66,8 +66,8 @@ class WorkflowRun < ApplicationRecord
   WORKFLOW_IMMUTABLE = %w[unavailable failed halted finished cancelled cancelling cancelled_before_start]
   FAILED_STATES = %w[failed halted unavailable cancelled cancelled_before_start cancelling]
 
-  enum status: STATES
-  enum kind: KINDS
+  enum :status, STATES
+  enum :kind, KINDS
 
   aasm safe_state_machine_params do
     state :created, initial: true

@@ -3,7 +3,7 @@
     <% platform.runs do |run| %>
       <div class="grid gap-2">
         <%= render partial: "shared/store_versions",
-                   locals: { prod_rollouts: run.production_store_rollouts, show_build:, view_context: } %>
+                   locals: { production_releases: run.production_releases, show_build:, view_context: } %>
       </div>
     <% end %>
   <% end %>

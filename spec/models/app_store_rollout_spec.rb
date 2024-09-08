@@ -67,8 +67,7 @@ describe AppStoreRollout do
       allow(providable_dbl).to receive(:complete_phased_release).and_return(GitHub::Result.new { release_info })
 
       rollout = create(:store_rollout, :started, :app_store, release_platform_run:, store_submission:)
-      allow(rollout).to receive(:provider).and_return(providable_dbl)
-      allow(rollout).to receive(:parent_release).and_return(production_release)
+      allow(rollout).to receive_messages(provider: providable_dbl, parent_release: production_release)
       allow(production_release).to receive(:rollout_complete!)
 
       rollout.release_fully!
@@ -81,8 +80,7 @@ describe AppStoreRollout do
       allow(providable_dbl).to receive(:complete_phased_release).and_return(GitHub::Result.new { raise })
 
       rollout = create(:store_rollout, :started, :app_store, release_platform_run:, store_submission:)
-      allow(rollout).to receive(:provider).and_return(providable_dbl)
-      allow(rollout).to receive(:parent_release).and_return(production_release)
+      allow(rollout).to receive_messages(provider: providable_dbl, parent_release: production_release)
       allow(production_release).to receive(:rollout_complete!)
 
       rollout.release_fully!

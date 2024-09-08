@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :train do
-    association :app, factory: [:app, :android]
+    app factory: %i[app android]
     version_seeded_with { "1.1.1" }
     name { "train" }
     description { "train description" }

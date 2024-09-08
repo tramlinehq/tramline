@@ -24,8 +24,7 @@ describe Triggers::PullRequest do
 
   describe ".create_and_merge!" do
     it "creates a PR for the release and closes it after merging" do
-      allow(repo_integration).to receive(:create_pr!).and_return(create_payload)
-      allow(repo_integration).to receive(:merge_pr!).and_return(merge_payload)
+      allow(repo_integration).to receive_messages(create_pr!: create_payload, merge_pr!: merge_payload)
 
       result = described_class.create_and_merge!(
         release: release,

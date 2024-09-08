@@ -36,7 +36,7 @@ describe Installations::Slack::Api, type: :integration do
           member_count: 4
         }
       ]
-      expect(result[:channels]).to contain_exactly(*expected_projects)
+      expect(result[:channels]).to match_array(expected_projects)
       expect(result[:next_cursor]).to eq("dGVhbTpDMDYxRkE1UEI=")
     end
   end

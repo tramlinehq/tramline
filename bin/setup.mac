@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
-
 set -euo pipefail
 
 {
   RUBY_VERSION=$(cat .ruby-version)
 } >/dev/null 2>&1
 
-BUNDLER_VERSION=2.3.3
+BUNDLER_VERSION=2.5.11
 
 init() {
 	echo '🍺 run_brew'

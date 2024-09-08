@@ -12,7 +12,7 @@ describe "Accounts::Releases::Releases::StepRuns" do
 
       sign_in user
       post start_release_step_run_path(release, step)
-      expect(step.status).to be_eql("on_track")
+      expect(step.status).to eql("on_track")
     end
   end
 end

@@ -24,7 +24,7 @@ require "rspec/rails"
 
 # Checks for pending migrations and applies them before tests are run.
 # If you are not using ActiveRecord, you can remove these lines.
-Dir[Rails.root.join("spec/support/**/*.rb")].sort.each { |f| require f }
+Rails.root.glob("spec/support/**/*.rb").sort.each { |f| require f }
 
 begin
   ActiveRecord::Migration.maintain_test_schema!

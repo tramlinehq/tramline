@@ -59,7 +59,7 @@ class NotificationSetting < ApplicationRecord
     workflow_run_unavailable: "workflow_run_unavailable"
   }
 
-  enum kind: {
+  enum :kind, {
     release_started: "release_started",
     release_stopped: "release_stopped",
     release_ended: "release_ended",
@@ -96,8 +96,10 @@ class NotificationSetting < ApplicationRecord
     errors.add(:notification_channels, :at_least_one) if active? && notification_channels.blank?
   end
 
+  # rubocop:disable Rails/SkipsModelValidations
   def self.replicate(new_train)
     vals = all.map { _1.attributes.with_indifferent_access.except(:id).update_key(:train_id) { new_train.id } }
     NotificationSetting.upsert_all(vals, unique_by: [:train_id, :kind])
   end
+  # rubocop:enable Rails/SkipsModelValidations
 end

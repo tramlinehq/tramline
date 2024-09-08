@@ -3,7 +3,7 @@ require "ddtrace"
 require "datadog/statsd"
 
 # Allow running via an ENV var (for development usage, for example), otherwise exclude some envs by default
-DATADOG_ENABLED = ENV["DATADOG_ENABLED"] || !(Rails.env.development? || Rails.env.test?)
+DATADOG_ENABLED = ENV["DATADOG_ENABLED"] || !Rails.env.local?
 
 Datadog.configure do |c|
   c.tracing.enabled = DATADOG_ENABLED

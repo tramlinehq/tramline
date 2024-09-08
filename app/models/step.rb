@@ -46,18 +46,19 @@ class Step < ApplicationRecord
   before_save -> { self.build_artifact_name_pattern = build_artifact_name_pattern.downcase }, if: -> { build_artifact_name_pattern.present? }
   after_create :set_ci_cd_provider
 
-  enum status: {
+  enum :status, {
     active: "active",
     inactive: "inactive"
   }
 
-  enum kind: {
+  enum :kind, {
     review: "review",
     release: "release"
   }
 
   friendly_id :name, use: :slugged
-  auto_strip_attributes :name, :build_artifact_name_pattern, squish: true
+  normalizes :name, with: ->(name) { name.squish }
+  normalizes :build_artifact_name_pattern, with: ->(pattern) { pattern.squish }
   accepts_nested_attributes_for :deployments, allow_destroy: false, reject_if: :reject_deployments?
 
   delegate :app, :train, to: :release_platform
@@ -82,7 +83,7 @@ class Step < ApplicationRecord
 
     # historical release only
     all_deployments
-      .where("created_at <= ?", release.end_time)
+      .where(created_at: ..release.end_time)
       .where("discarded_at IS NULL OR discarded_at >= ?", release.end_time)
   end
 
@@ -122,7 +123,7 @@ class Step < ApplicationRecord
   end
 
   def previous
-    release_platform.steps.where("step_number < ?", step_number).last
+    release_platform.steps.where(step_number: ...step_number).last
   end
 
   def notification_params

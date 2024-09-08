@@ -41,7 +41,7 @@ class ReleasePlatform < ApplicationRecord
 
   scope :sequential, -> { order(NATURAL_ORDER) }
 
-  enum platform: {android: "android", ios: "ios"}
+  enum :platform, {android: "android", ios: "ios"}
 
   friendly_id :name, use: :slugged
 
@@ -64,7 +64,7 @@ class ReleasePlatform < ApplicationRecord
 
     # historical release only
     all_steps
-      .where("created_at <= ?", release.end_time)
+      .where(created_at: ..release.end_time)
       .where("discarded_at IS NULL OR discarded_at >= ?", release.end_time)
   end
 
@@ -91,7 +91,7 @@ class ReleasePlatform < ApplicationRecord
   end
 
   def ordered_steps_until(step_number)
-    steps.where("step_number <= ?", step_number).order(:step_number)
+    steps.where(step_number: ..step_number).order(:step_number)
   end
 
   def in_creation?

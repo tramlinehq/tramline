@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :beta_release do
-    association :release_platform_run
-    association :commit
+    release_platform_run
+    commit
     type { "BetaRelease" }
     status { "created" }
     config {

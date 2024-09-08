@@ -1,15 +1,24 @@
 class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
   def initialize(store_rollout, title: "Rollout Status")
-    @store_rollout = ::StoreRolloutPresenter.new(store_rollout, self)
+    @store_rollout = store_rollout
     @title = title
   end
 
+  STATUS = {
+    created: {text: "Ready", status: :routine},
+    started: {text: "Active", status: :ongoing},
+    failed: {text: "Failed", status: :failure},
+    completed: {text: "Completed", status: :success},
+    halted: {text: "Halted", status: :inert},
+    fully_released: {text: "Released to all users", status: :success},
+    paused: {text: "Paused phased release", status: :ongoing}
+  }
+
   attr_reader :store_rollout
   delegate :release_platform_run,
-    :upcoming?,
-    :decorated_status,
-    :store_icon,
+    :created?,
     :build,
+    :status,
     :provider,
     :last_rollout_percentage,
     :stage,
@@ -19,6 +28,14 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
     :external_link,
     :automatic_rollout?, :id, to: :store_rollout
   delegate :release, to: :release_platform_run
+
+  def decorated_status
+    status_picker(STATUS, status)
+  end
+
+  def store_icon
+    "integrations/logo_#{provider}.png"
+  end
 
   def monitoring_size
     release_platform_run.app.cross_platform? ? :compact : :max
@@ -128,7 +145,7 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
       ]
     }
 
-    actions_by_status[store_rollout.status.to_sym]&.map do |action|
+    actions_by_status[store_rollout.status.to_sym]&.filter_map do |action|
       V2::ButtonComponent.new(
         label: action[:text],
         scheme: action[:scheme],
@@ -137,11 +154,11 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
         size: :xxs,
         html_options: html_opts(:patch, "Are you sure?")
       )
-    end&.compact || []
+    end || []
   end
 
   def card_height
-    if upcoming?
+    if created?
       "60"
     else
       "88"
@@ -149,6 +166,6 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
   end
 
   def border_style
-    :dashed if upcoming?
+    :dashed if created?
   end
 end

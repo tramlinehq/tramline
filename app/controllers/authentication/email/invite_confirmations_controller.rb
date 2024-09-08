@@ -14,7 +14,7 @@ class Authentication::Email::InviteConfirmationsController < ApplicationControll
 
     if current_user.present? && @invite.recipient != current_user
       @acceptable = false
-      flash[:error] = t("invitation.flash.already_signed_in.existing_user", current_email: current_user.email, new_email: @invite.recipient.email)
+      flash.now[:error] = t("invitation.flash.already_signed_in.existing_user", current_email: current_user.email, new_email: @invite.recipient.email)
     end
   end
 

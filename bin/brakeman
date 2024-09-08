@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -o errexit
+
+# Add --ensure-latest to the beginning of the arguments
+set -- --ensure-latest "$@"
+
+# Run brakeman with the provided arguments
+bundle exec brakeman "$@"

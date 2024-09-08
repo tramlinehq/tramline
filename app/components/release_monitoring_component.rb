@@ -68,11 +68,11 @@ class ReleaseMonitoringComponent < V2::BaseComponent
     return if event.healthy?
     metric = event.release_health_metric
     triggers = event.release_health_rule.triggers
-    triggers.map do |expr|
+    triggers.filter_map do |expr|
       value = metric.evaluate(expr.metric)
       expr.evaluation(value) => { is_healthy:, expression: }
       expression unless is_healthy
-    end.compact.join(", ")
+    end.join(", ")
   end
 
   def release_healthy?
