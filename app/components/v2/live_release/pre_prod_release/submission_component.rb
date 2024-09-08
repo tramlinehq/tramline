@@ -69,4 +69,16 @@ class V2::LiveRelease::PreProdRelease::SubmissionComponent < V2::BaseComponent
   def submission_logo
     "integrations/logo_#{submission.provider}.png"
   end
+
+  def active?
+    !@inactive
+  end
+
+  def title
+    if active?
+      "submission"
+    else
+      "upcoming submission"
+    end
+  end
 end

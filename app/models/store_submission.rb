@@ -141,6 +141,8 @@ class StoreSubmission < ApplicationRecord
     nil
   end
 
+  def conf = ReleaseConfig::Platform::Submission.new(config)
+
   protected
 
   def reset_store_info!
@@ -177,6 +179,4 @@ class StoreSubmission < ApplicationRecord
       failure_reason: (display_attr(:failure_reason) if failure_reason.present?)
     }
   end
-
-  def conf = ReleaseConfig::Platform::Submission.new(config)
 end

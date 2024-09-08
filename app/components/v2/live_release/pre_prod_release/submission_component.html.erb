@@ -1,4 +1,4 @@
-<%= render V2::CardComponent.new(title: "submission", separator: false, custom_box_style:) do |card| %>
+<%= render V2::CardComponent.new(title:, separator: false, custom_box_style:) do |card| %>
   <% card.with_action do %>
     <% if submission.triggerable? %>
       <%= render V2::ButtonComponent.new(label: "Send to #{submission.display}",
