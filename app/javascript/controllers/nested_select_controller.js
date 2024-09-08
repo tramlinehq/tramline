@@ -14,7 +14,6 @@ export default class extends Controller {
 
   updateNestedOptions() {
     const selectedValue = JSON.parse(this.primaryTarget.selectedOptions[0].value)
-    console.log(selectedValue)
     const releaseStages = this.optionsValue.find((option) => option.id === selectedValue.id).release_stages
     this.populateNestedDropdowns(releaseStages)
   }
