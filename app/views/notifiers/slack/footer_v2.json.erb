@@ -1,0 +1,79 @@
+{
+  "blocks": [
+    {
+      "type": "divider"
+    },
+    <% if @release_url.present? %>
+    {
+      "type": "context",
+      "elements": [
+        <% if @submission_asset_link && @project_link %>
+        {
+          "type": "image",
+          "image_url": "<%= @submission_asset_link %>",
+          "alt_text": "console"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @project_link %>|Console>"
+        },
+        <% end %>
+        <% if @submission_asset_link && @deep_link %>
+        {
+          "type": "image",
+          "image_url": "<%= @submission_asset_link %>",
+          "alt_text": "console"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @deep_link %>|Install>"
+        },
+        <% end %>
+        <% if @artifact_download_link %>
+        {
+          "type": "image",
+          "image_url": "https://storage.googleapis.com/tramline-public-assets/download_link_ico.png",
+          "alt_text": "build"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @artifact_download_link %>|Download from Tramline>"
+        },
+        <% end %>
+
+        {
+          "type": "image",
+          "image_url": "https://storage.googleapis.com/tramline-public-assets/tramline-small.png",
+          "alt_text": "tramline"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @release_url %>|Release>"
+        },
+        {
+          "type": "image",
+          "image_url": "<%= @vcs_public_icon_img %>",
+          "alt_text": "vcs"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "<<%= @release_branch_url %>|<%= @release_branch %>>"
+        }
+      ]
+    },
+    <% end %>
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "plain_text",
+          "text": "Train: <%= @train_name %>",
+          "emoji": true
+        }
+      ]
+    },
+    {
+      "type": "divider"
+    }
+  ]
+}

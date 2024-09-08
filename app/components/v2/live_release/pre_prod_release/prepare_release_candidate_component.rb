@@ -40,7 +40,7 @@ class V2::LiveRelease::PreProdRelease::PrepareReleaseCandidateComponent < V2::Ba
         {commit_id: commit.id}
       end
 
-    html_opts(:post, "Are you sure?", params: {pre_prod_release: rc_params})
+    html_opts(:post, "Are you sure you want to start the beta release?", params: {pre_prod_release: rc_params})
   end
 
   def create_release_candidate_path

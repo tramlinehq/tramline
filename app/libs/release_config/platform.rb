@@ -121,6 +121,14 @@ class ReleaseConfig::Platform < Struct.new(:conf)
       }
     end
 
+    def hash
+      [number, submission_type].hash
+    end
+
+    def ==(other)
+      hash == other.hash
+    end
+
     def value
       current.with_indifferent_access
     end

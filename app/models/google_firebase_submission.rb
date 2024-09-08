@@ -28,7 +28,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   include Displayable
 
   MAX_NOTES_LENGTH = 16_380
-
+  DEEP_LINK = Addressable::Template.new("https://appdistribution.firebase.google.com/testerapps/{platform}/releases/{external_release_id}")
   UploadNotComplete = Class.new(StandardError)
 
   STAMPABLE_REASONS = %w[
@@ -179,7 +179,7 @@ class GoogleFirebaseSubmission < StoreSubmission
   end
 
   def find_build
-    @build ||= provider.find_build_by_build_number(build_number, release_platform_run.platform)
+    @build ||= provider.find_build_by_build_number(build_number, platform)
   end
 
   def build_present_in_store?
@@ -187,7 +187,12 @@ class GoogleFirebaseSubmission < StoreSubmission
   end
 
   def external_id
-    store_release["id"]
+    store_release.try(:[], "id")
+  end
+
+  def deep_link
+    return if external_id.blank?
+    DEEP_LINK.expand(platform:, external_release_id: external_id).to_s
   end
 
   def stamp_data

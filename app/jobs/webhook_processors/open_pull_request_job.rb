@@ -2,7 +2,7 @@ class WebhookProcessors::OpenPullRequestJob < ApplicationJob
   queue_as :high
 
   def perform(train_id, pr_attributes)
-    Rails.logger.debug "Create/update PR with attributes", pr_attributes
+    Rails.logger.debug { "Create/update PR with attributes: #{pr_attributes}" }
 
     base_ref = pr_attributes[:base_ref]
 

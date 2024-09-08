@@ -1,11 +1,11 @@
-<%= render V2::CardComponent.new(title: "submission", separator: false, custom_box_style:) do |card| %>
+<%= render V2::CardComponent.new(title:, separator: false, custom_box_style:) do |card| %>
   <% card.with_action do %>
     <% if submission.triggerable? %>
       <%= render V2::ButtonComponent.new(label: "Send to #{submission.display}",
                                          scheme: :default,
                                          type: :button,
                                          options: trigger_store_submission_path(submission),
-                                         html_options: html_opts(:patch, "Are you sure?"),
+                                         html_options: html_opts(:patch, "Are you sure you want to send this submission to #{submission.display}?"),
                                          size: :xxs) do |b| %>
         <% b.with_icon(submission_logo_bw, size: :md) %>
       <% end %>
@@ -15,7 +15,7 @@
                                          scheme: :default,
                                          type: :button,
                                          options: retry_store_submission_path(submission),
-                                         html_options: html_opts(:patch, "Are you sure?"),
+                                         html_options: html_opts(:patch, "Are you sure you want to retry the submission to #{submission.display}?"),
                                          size: :xxs) do |b| %>
         <% b.with_icon(submission_logo_bw, size: :md) %>
       <% end %>

@@ -31,7 +31,7 @@ class Triggers::PreRelease
           GitHub::Result.new { value }
         end
       rescue Installations::Errors::TagReferenceAlreadyExists
-        logger.debug("Release creation: did not create branch, since #{release_branch} already existed")
+        logger.debug { "Pre-release branch already exists: #{release_branch}" }
       end
     end
 
