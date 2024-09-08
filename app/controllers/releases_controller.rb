@@ -105,7 +105,7 @@ class ReleasesController < SignedInApplicationController
   end
 
   def destroy
-    if (res = Action.stop_release!(@release))
+    if (res = Action.stop_release!(@release)).ok?
       redirect_to train_path, notice: "The release was stopped."
     else
       redirect_to train_path, flash: {error: res.error.message}
@@ -117,7 +117,7 @@ class ReleasesController < SignedInApplicationController
   def post_release
     @release = Release.friendly.find(params[:id])
 
-    if Action.complete_release!(@release)
+    if Action.complete_release!(@release).ok?
       redirect_back fallback_location: root_path, notice: "Performing post-release steps."
     else
       redirect_back fallback_location: root_path, notice: "Train could not be finalized."
@@ -127,7 +127,7 @@ class ReleasesController < SignedInApplicationController
   def finish_release
     @release = Release.friendly.find(params[:id])
 
-    if Action.mark_release_as_finished!(@release)
+    if Action.mark_release_as_finished!(@release).ok?
       redirect_back fallback_location: root_path, notice: "Performing post-release steps."
     else
       redirect_back fallback_location: root_path, notice: "Release is not partially finished. You cannot mark it as finished yet."
