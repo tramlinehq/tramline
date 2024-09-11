@@ -8,7 +8,7 @@
   <% end %>
 </div>
 
-<%= render V2::FormComponent.new(url: update_metadata_path, method: :patch, data: { turbo: false }, free_form: true) do |f| %>
+<%= render V2::FormComponent.new(model: ReleaseMetadata.new(release: @release), url: update_metadata_path, method: :patch, data: { turbo: false }, free_form: true) do |f| %>
   <div>
     <div class="flex flex-col gap-y-2 mb-6">
       <div class="flex gap-x-4">
