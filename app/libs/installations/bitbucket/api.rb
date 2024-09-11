@@ -16,6 +16,7 @@ module Installations
     DIFFSTAT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/diffstat/{from_sha}..{to_sha}"
     PRS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests"
     PR_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests/{pr_number}"
+    PR_MERGE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests/{pr_number}/merge"
 
     WORKSPACES_URL = "#{BASE_URL}/workspaces"
     PIPELINES_CONFIG_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines_config"
@@ -183,6 +184,9 @@ module Installations
         .first
     end
 
+    def merge_pr!(repo_slug, pr_number)
+      execute(:post, PR_MERGE_URL.expand(workspace: @workspace, repo_slug:, pr_number:).to_s)
+    end
     def diff?(repo_slug, from_branch, to_branch)
       from_sha = get_branch_short_sha(repo_slug, from_branch)
       to_sha = get_branch_short_sha(repo_slug, to_branch)
