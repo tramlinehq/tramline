@@ -10,6 +10,10 @@ module Installations
       {
         message_matcher: /OAuth2 access token expired. Use your refresh token to obtain a new access token/i,
         decorated_reason: :token_expired
+      },
+      {
+        message_matcher: /is not a valid hook/i,
+        decorated_reason: :webhook_not_found
       }
     ]
 

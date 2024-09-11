@@ -148,10 +148,6 @@ class BitriseIntegration < ApplicationRecord
     {artifact:, stream: Artifacts::Stream.new(stream)}
   end
 
-  def unzip_artifact?
-    false
-  end
-
   def public_icon_img
     PUBLIC_ICON
   end

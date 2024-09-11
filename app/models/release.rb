@@ -351,15 +351,15 @@ class Release < ApplicationRecord
   end
 
   def branch_url
-    train.vcs_provider&.branch_url(app.config&.code_repository_name, release_branch)
+    train.vcs_provider&.branch_url(release_branch)
   end
 
   def tag_url
-    train.vcs_provider&.tag_url(app.config&.code_repository_name, tag_name)
+    train.vcs_provider&.tag_url(tag_name)
   end
 
   def pull_requests_url(open = false)
-    train.vcs_provider&.pull_requests_url(app.config&.code_repository_name, branch_name, open:)
+    train.vcs_provider&.pull_requests_url(branch_name, open:)
   end
 
   def metadata_editable?

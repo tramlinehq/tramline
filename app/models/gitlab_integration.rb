@@ -173,22 +173,22 @@ class GitlabIntegration < ApplicationRecord
     installation.user_info(USER_INFO_TRANSFORMATIONS)
   end
 
-  def pull_requests_url(repo, branch_name, open: false)
+  def pull_requests_url(branch_name, open: false)
     state = open ? "opened" : "all"
     q = URI.encode_www_form("state" => state, "target_branch" => branch_name)
-    "https://gitlab.com/#{repo}/-/merge_requests?#{q}"
+    "https://gitlab.com/#{code_repository_name}/-/merge_requests?#{q}"
   end
 
-  def branch_url(repo, branch_name)
-    "https://gitlab.com/#{repo}/tree/#{branch_name}"
+  def branch_url(branch_name)
+    "https://gitlab.com/#{code_repository_name}/tree/#{branch_name}"
   end
 
-  def tag_url(repo, tag_name)
-    "https://gitlab.com/#{repo}/-/tags/#{tag_name}"
+  def tag_url(tag_name)
+    "https://gitlab.com/#{code_repository_name}/-/tags/#{tag_name}"
   end
 
   def compare_url(to_branch, from_branch)
-    "https://gitlab.com/tramline/ueno/-/compare/#{to_branch}...#{from_branch}?straight=true"
+    "https://gitlab.com/#{code_repository_name}/-/compare/#{to_branch}...#{from_branch}?straight=true"
   end
 
   def installation
@@ -242,7 +242,7 @@ class GitlabIntegration < ApplicationRecord
     with_api_retries { installation.commits_between(code_repository_name, from_branch, to_branch, COMMITS_BETWEEN_TRANSFORMATIONS) }
   end
 
-  def diff_between?(from_branch, to_branch)
+  def diff_between?(from_branch, to_branch, _)
     with_api_retries { installation.diff?(code_repository_name, from_branch, to_branch) }
   end
 
@@ -275,6 +275,14 @@ class GitlabIntegration < ApplicationRecord
 
   def bot_name
     nil
+  end
+
+  def pr_closed?(pr)
+    %w[closed merged].include?(pr[:state])
+  end
+
+  def pr_open?(pr)
+    %w[opened locked].include?(pr[:state])
   end
 
   private

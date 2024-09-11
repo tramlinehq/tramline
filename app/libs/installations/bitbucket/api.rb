@@ -13,7 +13,7 @@ module Installations
     REPO_BRANCH_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/refs/branches/{branch_name}"
     REPO_TAGS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/refs/tags"
     REPO_TAG_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/refs/tags/{tag_name}"
-    DIFFSTAT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/diffstat/{from_sha}..{to_sha}"
+    DIFFSTAT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/diffstat/{to_sha}..{from_sha}"
     PRS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests"
     PR_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests/{pr_number}"
     PR_MERGE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests/{pr_number}/merge"
@@ -25,8 +25,10 @@ module Installations
     PIPELINES_CONFIG_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines_config"
     PIPELINES_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines"
     PIPELINE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines/{pipeline_id}"
+    STOP_PIPELINE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines/{pipeline_id}/stopPipeline"
     LIST_FILES_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/downloads"
     GET_FILE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/downloads/{file_name}"
+    USER_INFO_URL = "#{BASE_URL}/user"
 
     WEBHOOK_EVENTS = %w[repo:push pullrequest:created pullrequest:updated pullrequest:fulfilled pullrequest:rejected]
 
@@ -74,6 +76,12 @@ module Installations
     def initialize(oauth_access_token, workspace)
       @oauth_access_token = oauth_access_token
       @workspace = workspace
+    end
+
+    def user_info(transforms)
+      execute(:get, USER_INFO_URL)
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def list_workspaces(transforms)
@@ -195,9 +203,17 @@ module Installations
         .then { |commits| Installations::Response::Keys.transform(commits, transforms) }
     end
 
-    def diff?(repo_slug, from_branch, to_branch)
-      from_sha = get_branch_short_sha(repo_slug, from_branch)
-      to_sha = get_branch_short_sha(repo_slug, to_branch)
+    def diff?(repo_slug, from_branch, to_branch, from_type)
+      from_sha = if from_type == :branch
+        head(repo_slug, from_branch, sha_only: true)
+      elsif from_type == :tag
+        get_tag(repo_slug, from_branch).dig("target", "hash")
+      elsif from_type == :commit
+        from_branch
+      else
+        raise ArgumentError, "Invalid ref type"
+      end
+      to_sha = head(repo_slug, to_branch, sha_only: true)
 
       execute(:get, DIFFSTAT_URL.expand(workspace:, repo_slug:, from_sha:, to_sha:).to_s)
         .dig("size")
@@ -232,7 +248,8 @@ module Installations
       execute(:get, PIPELINES_CONFIG_URL.expand(workspace:, repo_slug:).to_s)
     end
 
-    def trigger_pipeline(repo_slug, _pipeline_config, _branch_name, inputs, commit_hash, transforms) # TODO: pipeline config
+    def trigger_pipeline!(repo_slug, _pipeline_config, _branch_name, inputs, commit_hash, transforms)
+      # TODO: pipeline config
       params = {
         json: {
           target: {
@@ -266,6 +283,10 @@ module Installations
 
     def get_pipeline(repo_slug, pipeline_id)
       execute(:get, PIPELINE_URL.expand(workspace:, repo_slug:, pipeline_id:).to_s)&.with_indifferent_access
+    end
+
+    def cancel_pipeline!(repo_slug, pipeline_id)
+      execute(:post, STOP_PIPELINE_URL.expand(workspace:, repo_slug:, pipeline_id:).to_s)
     end
 
     def get_file(repo_slug, file_name, transforms)
@@ -314,8 +335,13 @@ module Installations
 
     def execute(verb, url, params = {})
       response = HTTP.auth("Bearer #{oauth_access_token}").public_send(verb, url, params)
+      return if response.status.no_content?
+
+      raise Installations::Bitbucket::Error.new({"error" => {"message" => "Service Unavailable"}}) if response.status.server_error?
+
       body = JSON.parse(response.body.to_s)
-      return body unless error?(response.status)
+      return body unless response.status.client_error?
+
       raise Installations::Bitbucket::Error.new(body)
     end
 
@@ -329,10 +355,6 @@ module Installations
       return values if next_page_url.blank?
 
       paginated_execute(verb, next_page_url, params, values, page + 1)
-    end
-
-    def error?(code)
-      code.between?(400, 499)
     end
 
     def webhook_params(url)

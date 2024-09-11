@@ -10,6 +10,7 @@
 #
 class BitbucketIntegration < ApplicationRecord
   has_paper_trail
+  using RefinedHash
   include Vaultable
   include Providable
   include Displayable
@@ -24,7 +25,7 @@ class BitbucketIntegration < ApplicationRecord
 
   attr_accessor :code
   before_create :complete_access
-  delegate :code_repo_name_only, to: :app_config
+  delegate :code_repo_name_only, :code_repository_name, to: :app_config
 
   def install_path
     unless integration.version_control? || integration.ci_cd?
@@ -48,22 +49,15 @@ class BitbucketIntegration < ApplicationRecord
     Installations::Bitbucket::Api.new(oauth_access_token, workspace)
   end
 
-  def to_s
-    "bitbucket"
-  end
+  def to_s = "bitbucket"
 
-  def creatable?
-    false
-  end
+  def creatable? = false
 
-  def connectable?
-    true
-  end
+  def connectable? = true
 
-  def connection_data
-    return unless integration.metadata
-    "Organization: #{integration.metadata["account_name"]} (#{integration.metadata["account_id"]})"
-  end
+  def store? = false
+
+  def project_link = nil
 
   def further_setup?
     return true if integration.version_control?
@@ -79,8 +73,24 @@ class BitbucketIntegration < ApplicationRecord
     name: :name
   }
 
+  USER_INFO_TRANSFORMATIONS = {
+    id: :uuid,
+    username: :username,
+    name: :display_name,
+    avatar_url: [:links, :avatar, :href]
+  }
+
   def workspaces
     with_api_retries { installation.list_workspaces(WORKSPACE_TRANSFORMATIONS) }
+  end
+
+  def metadata
+    with_api_retries { installation.user_info(USER_INFO_TRANSFORMATIONS) }
+  end
+
+  def connection_data
+    return unless integration.metadata
+    "Added by user: #{integration.metadata["name"]} (#{integration.metadata["username"]})"
   end
 
   # VCS
@@ -142,8 +152,21 @@ class BitbucketIntegration < ApplicationRecord
     author_name: [:author, :raw],
     author_login: [:author, :raw],
     timestamp: :date,
-    parents: [:parents]
+    parents: {
+      parents: {
+        url: [:links, :html, :href],
+        sha: [:hash]
+      }
+    }
   }
+
+  def pr_closed?(pr)
+    pr[:state] == "MERGED"
+  end
+
+  def pr_open?(pr)
+    pr[:state] == "OPEN"
+  end
 
   def repos
     with_api_retries { installation.list_repos(REPOS_TRANSFORMATIONS) }
@@ -161,7 +184,8 @@ class BitbucketIntegration < ApplicationRecord
       else
         with_api_retries { installation.create_repo_webhook!(code_repo_name_only, events_url(train_id:), WEBHOOK_TRANSFORMATIONS) }
       end
-    rescue Installations::Errors::ResourceNotFound
+    rescue Installations::Bitbucket::Error => ex
+      raise ex unless ex.reason == :webhook_not_found
       with_api_retries { installation.create_repo_webhook!(code_repo_name_only, events_url(train_id:), WEBHOOK_TRANSFORMATIONS) }
     end
   end
@@ -170,10 +194,12 @@ class BitbucketIntegration < ApplicationRecord
     with_api_retries { installation.create_branch!(code_repo_name_only, from, to, source_type:) }
   end
 
-  # TODO: Implement
   def commit_log(from_branch, to_branch)
-    nil
-    # installation.commits_between(code_repo_name_only, from_branch, to_branch, COMMITS_TRANSFORMATIONS)
+    installation.commits_between(code_repo_name_only, from_branch, to_branch, COMMITS_TRANSFORMATIONS)
+  end
+
+  def diff_between?(from_branch, to_branch, from_type: :branch)
+    with_api_retries { installation.diff?(code_repo_name_only, from_branch, to_branch, from_type) }
   end
 
   def branch_head_sha(branch, sha_only: true)
@@ -186,22 +212,65 @@ class BitbucketIntegration < ApplicationRecord
     false
   end
 
-  def branch_url(repo, branch_name)
-    "https://bitbucket.org/#{repo}/src/#{branch_name}"
+  def branch_url(branch_name)
+    "https://bitbucket.org/#{code_repository_name}/branch/#{branch_name}"
   end
 
-  def tag_url(repo, tag_name)
-    "https://bitbucket.org/#{repo}/src/#{tag_name}"
+  def tag_url(tag_name)
+    "https://bitbucket.org/#{code_repository_name}/src/#{tag_name}"
   end
 
   def compare_url(to_branch, from_branch)
-    "https://bitbucket.org/#{repo}/compare/#{to_branch}..#{from_branch}"
+    "https://bitbucket.org/#{code_repository_name}/compare/#{to_branch}..#{from_branch}"
   end
 
-  alias_method :create_release!, :create_tag!
+  def pull_requests_url(branch_name, open: false)
+    state = open ? "OPEN" : "ALL"
+    q = URI.encode_www_form("state" => state, "at" => branch_name)
+    "https://bitbucket.org/#{code_repository_name}/pull-requests/?#{q}"
+  end
+
+  def tag_exists?(tag_name)
+    with_api_retries { installation.tag_exists?(code_repo_name_only, tag_name) }
+  end
+
+  def create_release!(tag_name, branch_name) = create_tag!(tag_name, branch_name)
 
   def create_tag!(tag_name, sha)
     with_api_retries { installation.create_tag!(code_repo_name_only, tag_name, sha) }
+  end
+
+  def create_pr!(to_branch_ref, from_branch_ref, title, description)
+    with_api_retries do
+      installation
+        .create_pr!(code_repo_name_only, to_branch_ref, from_branch_ref, title, description, PR_TRANSFORMATIONS)
+        .merge_if_present(source: :bitbucket)
+    end
+  end
+
+  def find_pr(to_branch_ref, from_branch_ref)
+    with_api_retries do
+      installation
+        .find_pr(code_repo_name_only, to_branch_ref, from_branch_ref, PR_TRANSFORMATIONS)
+        .merge_if_present(source: :bitbucket)
+    end
+  end
+
+  def get_pr(pr_number)
+    with_api_retries { installation.get_pr(code_repo_name_only, pr_number, PR_TRANSFORMATIONS).merge_if_present(source: :bitbucket) }
+  end
+
+  def merge_pr!(pr_number)
+    with_api_retries { installation.merge_pr!(code_repo_name_only, pr_number) }
+  end
+
+  def create_patch_pr!(to_branch, patch_branch, commit_hash, pr_title_prefix)
+    # FIXME
+    {}.merge_if_present(source: :gitlab)
+  end
+
+  def enable_auto_merge!(pr_number)
+    # FIXME
   end
 
   # CI/CD
@@ -234,15 +303,21 @@ class BitbucketIntegration < ApplicationRecord
     # with_api_retries { installation.list_pipelines(code_repo_name_only, WORKFLOWS_TRANSFORMATIONS) }
   end
 
+  def workflow_retriable? = false
+
   def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
     with_api_retries do
-      res = installation.trigger_pipeline(code_repo_name_only, ci_cd_channel, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
+      res = installation.trigger_pipeline!(code_repo_name_only, ci_cd_channel, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
       res.merge(ci_link: "https://bitbucket.org/#{workspace}/#{code_repo_name_only}/pipelines/results/#{res[:number]}")
     end
   end
 
+  def retry_workflow_run!(_ci_ref)
+    raise Integrations::UnsupportedAction
+  end
+
   def cancel_workflow_run!(ci_ref)
-    with_api_retries { installation.cancel_workflow!(code_repo_name_only, ci_ref) }
+    with_api_retries { installation.cancel_pipeline!(code_repo_name_only, ci_ref) }
   end
 
   def find_workflow_run(_workflow_id, _branch, _commit_sha)
@@ -262,6 +337,14 @@ class BitbucketIntegration < ApplicationRecord
     Rails.logger.info "Downloading artifact #{artifact}"
     stream = with_api_retries { installation.download_artifact(artifact[:archive_download_url]) }
     {artifact:, stream: Artifacts::Stream.new(stream)}
+  end
+
+  def artifact_url
+    raise Integrations::UnsupportedAction
+  end
+
+  def get_artifact(_, _)
+    raise Integrations::UnsupportedAction
   end
 
   private

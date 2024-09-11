@@ -197,14 +197,20 @@ class Train < ApplicationRecord
   end
 
   def diff_since_last_release?
-    return vcs_provider.diff_between?(ongoing_release.first_commit.commit_hash, working_branch) if ongoing_release
+    return vcs_provider.diff_between?(ongoing_release.first_commit.commit_hash, working_branch, from_type: :commit) if ongoing_release
     return true if last_finished_release.blank?
-    vcs_provider.diff_between?(last_finished_release.tag_name || last_finished_release.last_commit.commit_hash, working_branch)
+
+    if last_finished_release.tag_name.present?
+      from_branch, from_type = last_finished_release.tag_name, :tag
+    else
+      from_branch, from_type = last_finished_release.last_commit.commit_hash, :commit
+    end
+    vcs_provider.diff_between?(from_branch, working_branch, from_type:)
   end
 
   def diff_for_release?
     return false unless parallel_working_branch?
-    vcs_provider.diff_between?(release_branch, working_branch)
+    vcs_provider.diff_between?(release_branch, working_branch, from_type: :branch)
   end
 
   def create_webhook!

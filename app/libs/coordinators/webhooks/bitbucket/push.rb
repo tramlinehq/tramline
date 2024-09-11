@@ -46,7 +46,7 @@ class Coordinators::Webhooks::Bitbucket::Push
 
   def commits
     return [] if new_branch?
-    payload_change["commits"].presence || []
+    payload.dig("push", "changes", 0, "commits").presence || []
   end
 
   def head_sha
