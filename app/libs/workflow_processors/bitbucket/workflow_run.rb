@@ -52,11 +52,11 @@ class WorkflowProcessors::Bitbucket::WorkflowRun
   end
 
   def started_at
-    workflow_run[:triggered_at]
+    workflow_run[:created_on]
   end
 
   def finished_at
-    workflow_run[:finished_at]
+    workflow_run[:completed_on]
   end
 
   private

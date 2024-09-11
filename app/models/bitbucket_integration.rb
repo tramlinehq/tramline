@@ -187,15 +187,21 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def branch_url(repo, branch_name)
-    "https://bitbucket.org/#{workspace}/#{repo}/src/#{branch_name}"
+    "https://bitbucket.org/#{repo}/src/#{branch_name}"
   end
 
   def tag_url(repo, tag_name)
-    "https://bitbucket.org/#{workspace}/#{repo}/src/#{tag_name}"
+    "https://bitbucket.org/#{repo}/src/#{tag_name}"
   end
 
   def compare_url(to_branch, from_branch)
-    "https://bitbucket.org/#{workspace}/#{repo}/compare/#{to_branch}..#{from_branch}"
+    "https://bitbucket.org/#{repo}/compare/#{to_branch}..#{from_branch}"
+  end
+
+  alias_method :create_release!, :create_tag!
+
+  def create_tag!(tag_name, sha)
+    with_api_retries { installation.create_tag!(code_repo_name_only, tag_name, sha) }
   end
 
   # CI/CD
