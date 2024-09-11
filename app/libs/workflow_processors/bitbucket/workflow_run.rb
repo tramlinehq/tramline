@@ -1,8 +1,9 @@
 class WorkflowProcessors::Bitbucket::WorkflowRun
-  def initialize(integration, workflow_run, build_artifact_name_pattern)
+  def initialize(integration, workflow_run, version_name, build_number)
     @integration = integration
     @workflow_run = workflow_run
-    @build_artifact_name_pattern = build_artifact_name_pattern
+    @version_name = version_name
+    @build_number = build_number
   end
 
   # "state"=>{"name"=>"PARSING", "type"=>"pipeline_state_parsing", "stage"=>{"name"=>"PARSING", "type"=>"pipeline_state_parsing_parsing"}},
@@ -44,8 +45,10 @@ class WorkflowProcessors::Bitbucket::WorkflowRun
     status == "STOPPED" && status_type == "pipeline_state_completed_stopped"
   end
 
+  # TODO: Implement
   def artifacts_url
-    @integration.artifact_url(workflow_run[:slug], @build_artifact_name_pattern)
+    return unless successful?
+    "app-prod-debug-#{@version_name}-#{@build_number}.apk"
   end
 
   def started_at

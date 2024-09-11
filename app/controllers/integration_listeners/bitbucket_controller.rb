@@ -8,10 +8,10 @@ class IntegrationListeners::BitbucketController < IntegrationListenerController
 
   # TODO: what do we want to do when these events come in
   def events
-    case event_type&.split(":")&.first
-    when "repo"
+    case event_type
+    when "repo:push"
       handle_push
-    when "pull_request"
+    when "repo:pull_request"
       handle_pull_request
     else
       head :ok
@@ -24,6 +24,11 @@ class IntegrationListeners::BitbucketController < IntegrationListenerController
   end
 
   def handle_push
+    result = Action.process_push_webhook(train, push_params)
+    response = result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing push, error: #{result.error}")
+
+    Rails.logger.debug response.body
+    head response.status
   end
 
   def handle_pull_request
@@ -34,11 +39,56 @@ class IntegrationListeners::BitbucketController < IntegrationListenerController
   end
 
   def train
+    @train ||= Train.find(params[:train_id])
   end
 
   def pull_request_params
   end
 
   def push_params
+    params.permit(
+      push: [
+        changes:
+          [
+            :created,
+            :forced,
+            :closed,
+            new: [
+              :name,
+              :type,
+              :merge_strategies, # NOTE: these two can be used for later merges
+              :default_merge_strategy,
+              target: [
+                :type,
+                :hash,
+                :date,
+                :message,
+                parents: [
+                  :hash,
+                  :type,
+                  links: [html: [:href]]
+                ],
+                author: [:type, :raw],
+                links: [html: [:href]]
+              ],
+              links: [html: [:href]]
+            ],
+            commits: [
+              :type,
+              :hash,
+              :date,
+              :message,
+              author: [:type, :raw],
+              links: [html: [:href]],
+              parents: [
+                :hash,
+                :type,
+                links: [html: [:href]]
+              ]
+            ]
+          ]
+      ],
+      repository: [:name, :full_name]
+    )
   end
 end

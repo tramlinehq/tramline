@@ -2,6 +2,7 @@ class WorkflowProcessors::WorkflowRunV2
   include Memery
   GITHUB = WorkflowProcessors::Github::WorkflowRun
   BITRISE = WorkflowProcessors::Bitrise::WorkflowRun
+  BITBUCKET = WorkflowProcessors::Bitbucket::WorkflowRun
 
   class WorkflowRunUnknownStatus < StandardError; end
 
@@ -26,7 +27,7 @@ class WorkflowProcessors::WorkflowRunV2
 
   attr_reader :workflow_run
   delegate :in_progress?, :successful?, :failed?, :halted?, :artifacts_url, :started_at, :finished_at, to: :runner
-  delegate :github_integration?, :bitrise_integration?, to: :integration
+  delegate :github_integration?, :bitrise_integration?, :bitbucket_integration?, to: :integration
   delegate :build_artifact_name_pattern, to: :workflow_run
 
   def update_status!
@@ -44,7 +45,8 @@ class WorkflowProcessors::WorkflowRunV2
 
   memoize def runner
     return GITHUB.new(external_workflow_run) if github_integration?
-    BITRISE.new(workflow_run.ci_cd_provider, external_workflow_run, build_artifact_name_pattern) if bitrise_integration?
+    return BITRISE.new(workflow_run.ci_cd_provider, external_workflow_run, build_artifact_name_pattern) if bitrise_integration?
+    BITBUCKET.new(workflow_run.ci_cd_provider, external_workflow_run, workflow_run.release_version, workflow_run.build.build_number) if bitbucket_integration?
   end
 
   def integration

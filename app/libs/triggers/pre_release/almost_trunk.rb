@@ -1,7 +1,5 @@
 class Triggers::PreRelease
   class AlmostTrunk
-    include ApplicationHelper
-
     def self.call(release, release_branch)
       new(release, release_branch).call
     end
@@ -25,12 +23,10 @@ class Triggers::PreRelease
     def create_branch
       GitHub::Result.new do
         source = source_ref
-        train.create_branch!(source[:ref], release_branch, source_type: source[:type]).then do |value|
-          stamp_data = {working_branch: source[:ref], release_branch:}
-          release.event_stamp_now!(reason: :release_branch_created, kind: :success, data: stamp_data)
-          GitHub::Result.new { value }
-        end
-      rescue Installations::Errors::TagReferenceAlreadyExists
+        train.create_branch!(source[:ref], release_branch, source_type: source[:type])
+        stamp_data = {working_branch: source[:ref], release_branch:}
+        release.event_stamp_now!(reason: :release_branch_created, kind: :success, data: stamp_data)
+      rescue Installations::Errors::TagReferenceAlreadyExists # TODO: move this to reason-based error handling
         logger.debug("Release creation: did not create branch, since #{release_branch} already existed")
       end
     end

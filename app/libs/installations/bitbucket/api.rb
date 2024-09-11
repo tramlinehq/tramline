@@ -19,6 +19,7 @@ module Installations
     PR_MERGE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests/{pr_number}/merge"
     REPO_COMMITS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/commits"
     REPO_COMMIT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/commit/{sha}"
+    GET_COMMIT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/commit/{commit_sha}"
 
     WORKSPACES_URL = "#{BASE_URL}/workspaces"
     PIPELINES_CONFIG_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines_config"
@@ -75,27 +76,25 @@ module Installations
       @workspace = workspace
     end
 
-    attr_reader :workspace
-
     def list_workspaces(transforms)
       execute(:get, WORKSPACES_URL)
         .then { |responses| Installations::Response::Keys.transform(responses["values"], transforms) }
     end
 
     def create_repo_webhook!(repo_slug, url, transforms)
-      execute(:post, REPO_HOOKS_URL.expand(workspace: @workspace, repo_slug:).to_s, webhook_params(url))
+      execute(:post, REPO_HOOKS_URL.expand(workspace:, repo_slug:).to_s, webhook_params(url))
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
 
     def update_repo_webhook!(repo_slug, hook_id, url, transforms)
-      execute(:put, REPO_HOOK_URL.expand(workspace: @workspace, repo_slug:, hook_id:).to_s, webhook_params(url))
+      execute(:put, REPO_HOOK_URL.expand(workspace:, repo_slug:, hook_id:).to_s, webhook_params(url))
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
 
     def find_webhook(repo_slug, hook_id, transforms)
-      execute(:get, REPO_HOOK_URL.expand(workspace: @workspace, repo_slug:, hook_id:).to_s)
+      execute(:get, REPO_HOOK_URL.expand(workspace:, repo_slug:, hook_id:).to_s)
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
@@ -108,7 +107,7 @@ module Installations
         when :branch
           get_branch(repo_slug, source_name).dig("target", "hash")
         when :tag
-
+          get_tag(repo_slug, source_name).dig("target", "hash")
         else
           raise ArgumentError, "source can only be a branch, tag or commit"
         end
@@ -120,7 +119,7 @@ module Installations
         }
       }
 
-      execute(:post, REPO_BRANCHES_URL.expand(workspace: @workspace, repo_slug:).to_s, params)
+      execute(:post, REPO_BRANCHES_URL.expand(workspace:, repo_slug:).to_s, params)
     end
 
     def create_tag!(repo_slug, tag_name, sha)
@@ -131,21 +130,15 @@ module Installations
         }
       }
 
-      execute(:post, REPO_TAGS_URL.expand(workspace: @workspace, repo_slug:).to_s, params)
+      execute(:post, REPO_TAGS_URL.expand(workspace:, repo_slug:).to_s, params)
     end
 
     def branch_exists?(repo_slug, branch_name)
       get_branch(repo_slug, branch_name).present?
-      # replace this with a granular error
-    rescue Installations::Bitbucket::Error
-      false
     end
 
     def tag_exists?(repo_slug, tag_name)
       get_tag(repo_slug, tag_name).present?
-      # replace this with a granular error
-    rescue Installations::Bitbucket::Error
-      false
     end
 
     def create_pr!(repo_slug, to, from, title, description, transforms)
@@ -158,7 +151,7 @@ module Installations
         }
       }
 
-      execute(:post, PRS_URL.expand(workspace: @workspace, repo_slug:).to_s, params)
+      execute(:post, PRS_URL.expand(workspace:, repo_slug:).to_s, params)
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
@@ -174,14 +167,14 @@ module Installations
         }
       }
 
-      execute(:get, PRS_URL.expand(workspace: @workspace, repo_slug:).to_s, params)
+      execute(:get, PRS_URL.expand(workspace:, repo_slug:).to_s, params)
         .then { |response| Installations::Response::Keys.transform(response["values"], transforms) }
         .first
     end
 
     def get_pr(repo, pr_number, transforms)
       # TODO: Not Found throws a JSON::ParserError
-      execute(:get, PR_URL.expand(workspace: @workspace, repo_slug: repo, pr_number:).to_s)
+      execute(:get, PR_URL.expand(workspace:, repo_slug: repo, pr_number:).to_s)
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end
@@ -194,7 +187,7 @@ module Installations
       params = {
         params: {
           include: to_branch,
-          exclude: from_branch,
+          exclude: from_branch
         }
       }
 
@@ -206,7 +199,7 @@ module Installations
       from_sha = get_branch_short_sha(repo_slug, from_branch)
       to_sha = get_branch_short_sha(repo_slug, to_branch)
 
-      execute(:get, DIFFSTAT_URL.expand(workspace: @workspace, repo_slug:, from_sha:, to_sha:).to_s)
+      execute(:get, DIFFSTAT_URL.expand(workspace:, repo_slug:, from_sha:, to_sha:).to_s)
         .dig("size")
         .positive?
     end
@@ -239,7 +232,7 @@ module Installations
       execute(:get, PIPELINES_CONFIG_URL.expand(workspace:, repo_slug:).to_s)
     end
 
-    def trigger_pipeline(repo_slug, branch_name, inputs, commit_hash)
+    def trigger_pipeline(repo_slug, _pipeline_config, _branch_name, inputs, commit_hash, transforms) # TODO: pipeline config
       params = {
         json: {
           target: {
@@ -267,6 +260,8 @@ module Installations
       }
 
       execute(:post, PIPELINES_URL.expand(workspace:, repo_slug:).to_s, params)
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def get_pipeline(repo_slug, pipeline_id)
@@ -274,7 +269,7 @@ module Installations
     end
 
     def get_file(repo_slug, file_name, transforms)
-      list_files(LIST_FILES_URL.expand(workspace:, repo_slug:).to_s, [], file_name)
+      find_file(LIST_FILES_URL.expand(workspace:, repo_slug:).to_s, [], file_name)
         &.then { |file| Installations::Response::Keys.transform([file], transforms) }
         &.first
     end
@@ -285,23 +280,19 @@ module Installations
 
     private
 
-    def get_branch_short_sha(repo_slug, branch_name)
-      get_branch(repo_slug, branch_name)
-        .dig("target", "hash")
-        .then { |s| Commit.new(commit_hash: s).short_sha }
-    end
+    attr_reader :workspace
 
     def get_branch(repo_slug, branch_name)
-      execute(:get, REPO_BRANCH_URL.expand(workspace: @workspace, repo_slug:, branch_name:).to_s)
+      execute(:get, REPO_BRANCH_URL.expand(workspace:, repo_slug:, branch_name:).to_s)
     end
 
     def get_tag(repo_slug, tag_name)
-      execute(:get, REPO_TAG_URL.expand(workspace: @workspace, repo_slug:, tag_name:).to_s)
+      execute(:get, REPO_TAG_URL.expand(workspace:, repo_slug:, tag_name:).to_s)
     end
 
     MAX_PAGES = 10
 
-    def list_files(url, files, file_name, page = 0)
+    def find_file(url, files, file_name, page = 0)
       return if page == MAX_PAGES
 
       response = fetch_files(url)
