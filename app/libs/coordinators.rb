@@ -232,7 +232,7 @@ module Coordinators
 
     def self.complete_release!(release)
       Res.new do
-        with_lock do
+        release.with_lock do
           raise "release is not ready to be finalized" unless Release::FINALIZE_STATES.include?(release.status)
           raise "release is not ready to be finalized" unless release.ready_to_be_finalized?
           release.start_post_release_phase!
