@@ -17,6 +17,7 @@ module Installations
     PRS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests"
     PR_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests/{pr_number}"
     PR_MERGE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests/{pr_number}/merge"
+    REPO_COMMITS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/commits"
     REPO_COMMIT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/commit/{sha}"
 
     WORKSPACES_URL = "#{BASE_URL}/workspaces"
@@ -188,6 +189,19 @@ module Installations
     def merge_pr!(repo_slug, pr_number)
       execute(:post, PR_MERGE_URL.expand(workspace: @workspace, repo_slug:, pr_number:).to_s)
     end
+
+    def commits_between(repo, from_branch, to_branch, transforms)
+      params = {
+        params: {
+          include: to_branch,
+          exclude: from_branch,
+        }
+      }
+
+      paginated_execute(:get, REPO_COMMITS_URL.expand(workspace: @workspace, repo_slug: repo).to_s, params)
+        .then { |commits| Installations::Response::Keys.transform(commits, transforms) }
+    end
+
     def diff?(repo_slug, from_branch, to_branch)
       from_sha = get_branch_short_sha(repo_slug, from_branch)
       to_sha = get_branch_short_sha(repo_slug, to_branch)
@@ -312,6 +326,18 @@ module Installations
       body = JSON.parse(response.body.to_s)
       return body unless error?(response.status)
       raise Installations::Bitbucket::Error.new(body)
+    end
+
+    def paginated_execute(verb, url, params = {}, values = [], page = 0)
+      return values if page == MAX_PAGES
+      body = execute(verb, url, params)
+      new_values = body["values"]
+      values.concat(new_values)
+
+      next_page_url = body["next"]
+      return values if next_page_url.blank?
+
+      paginated_execute(verb, next_page_url, params, values, page + 1)
     end
 
     def error?(code)
