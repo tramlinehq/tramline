@@ -144,6 +144,8 @@ class V2::ButtonComponent < V2::BaseComponent
     options[:data] ||= {}
     if @turbo
       options[:data][:turbo] = @turbo
+    else
+      options[:data][:turbo_frame] = "_top"
     end
 
     if tooltip_allowed?
