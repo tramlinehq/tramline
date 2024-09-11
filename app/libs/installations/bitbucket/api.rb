@@ -17,6 +17,7 @@ module Installations
     PRS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests"
     PR_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests/{pr_number}"
     PR_MERGE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pullrequests/{pr_number}/merge"
+    REPO_COMMIT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/commit/{sha}"
 
     WORKSPACES_URL = "#{BASE_URL}/workspaces"
     PIPELINES_CONFIG_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines_config"
@@ -194,6 +195,20 @@ module Installations
       execute(:get, DIFFSTAT_URL.expand(workspace: @workspace, repo_slug:, from_sha:, to_sha:).to_s)
         .dig("size")
         .positive?
+    end
+
+    def head(repo_slug, branch_name, sha_only: true, commit_transforms: nil)
+      raise ArgumentError, "transforms must be supplied when querying head object" if !sha_only && !commit_transforms
+
+      sha = get_branch(repo_slug, branch_name).dig("target", "hash")
+      return sha if sha_only
+      get_commit(repo_slug, sha, commit_transforms)
+    end
+
+    def get_commit(repo_slug, sha, transforms)
+      execute(:get, REPO_COMMIT_URL.expand(workspace: @workspace, repo_slug:, sha:).to_s)
+        .then { |response| Installations::Response::Keys.transform([response], transforms) }
+        .first
     end
 
     def list_repos(transforms)

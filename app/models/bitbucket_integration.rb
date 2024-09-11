@@ -108,6 +108,24 @@ class BitbucketIntegration < ApplicationRecord
     opened_at: :created_on
   }
 
+  COMMITS_TRANSFORMATIONS = {
+    url: [:links, :html, :href],
+    commit_hash: :hash,
+    message: :message,
+    # TODO: author information is not available when user does
+    # not match on atlassian
+    author_name: [:author, :user, :display_name],
+    # TODO: email is not available
+    author_email: :author_email,
+    timestamp: :date,
+    parents: {
+      parents: {
+        url: [:links, :html, :href],
+        sha: [:hash]
+      }
+    }
+  }
+
   def repos
     with_api_retries { installation.list_repos(REPOS_TRANSFORMATIONS) }
   end
