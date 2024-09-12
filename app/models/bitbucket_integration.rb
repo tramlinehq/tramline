@@ -332,13 +332,14 @@ class BitbucketIntegration < ApplicationRecord
     with_api_retries { installation.get_pipeline(code_repo_name_only, pipeline_id) }
   end
 
-  def get_artifact_v2(artifact_name, _)
-    raise Integration::NoBuildArtifactAvailable if artifact_name.blank?
+  def get_artifact_v2(_, _, external_workflow_run_id:)
+    raise Integration::NoBuildArtifactAvailable if external_workflow_run_id.blank?
 
+    artifact_name = "build-#{external_workflow_run_id}".gsub(/{/, "").gsub(/}/, "")
     artifact = with_api_retries { installation.get_file(code_repo_name_only, artifact_name, ARTIFACTS_TRANSFORMATIONS) }
     raise Integration::NoBuildArtifactAvailable if artifact.blank?
 
-    Rails.logger.info "Downloading artifact #{artifact}"
+    Rails.logger.debug { "Downloading artifact #{artifact}" }
     stream = with_api_retries { installation.download_artifact(artifact[:archive_download_url]) }
     {artifact:, stream: Artifacts::Stream.new(stream)}
   end
@@ -403,6 +404,7 @@ class BitbucketIntegration < ApplicationRecord
     end
   end
 
+  # TODO: fix this
   def workspace
     "tramline"
   end

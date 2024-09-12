@@ -138,7 +138,7 @@ class BitriseIntegration < ApplicationRecord
     Artifacts::Stream.new(installation.artifact_io_stream(artifact_url))
   end
 
-  def get_artifact_v2(artifact_url, _)
+  def get_artifact_v2(artifact_url, _, _)
     raise Integration::NoBuildArtifactAvailable if artifact_url.blank?
 
     artifact = installation.artifact(artifact_url, ARTIFACTS_TRANSFORMATIONS)

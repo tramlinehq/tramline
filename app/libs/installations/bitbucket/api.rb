@@ -150,6 +150,8 @@ module Installations
     end
 
     def create_pr!(repo_slug, to, from, title, description, transforms)
+      raise Installations::Error.new("Should not create a Pull Request without a diff", reason: :pull_request_without_commits) unless diff?(repo_slug, from, to, :branch)
+
       params = {
         json: {
           title:,
@@ -318,7 +320,7 @@ module Installations
       return found_file if found_file.present?
 
       return if next_page_url.blank?
-      list_files(next_page_url, files, file_name, page.inc)
+      find_file(next_page_url, files, file_name, page.succ)
     end
 
     def fetch_files(url)

@@ -46,7 +46,7 @@ module Installations
     end
 
     def log
-      logger.error(error_message, error_body)
+      logger.error(error_message: error_message, error_body: error_body)
     end
   end
 end
