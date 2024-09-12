@@ -16,6 +16,7 @@
   <%= javascript_importmap_tags %>
   <meta name="environment" content="<%= Rails.env %>"/>
   <meta name="sentryDSNUrl" content="<%= ENV["FRONTEND_SENTRY_DSN"] %>"/>
+  <meta name="turbo-prefetch" content="false">
   <!-- current deploy: <%= Site.git_ref %> at <%= Site.git_ref_at %> -->
 </head>
 
