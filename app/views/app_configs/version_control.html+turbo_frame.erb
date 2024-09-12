@@ -8,10 +8,8 @@
       <div>
         <%= section.F.labeled_select :code_repository,
                                      "Code Repository",
-                                     options_for_select(
-                                       display_channels(@code_repositories) { |chan| chan[:full_name] },
-                                       @config.code_repository.to_json
-                                     ) %>
+                                     options_for_select(display_channels(@code_repositories) { |chan| chan[:full_name] },
+                                                        @config.code_repository.to_json) %>
       </div>
     <% end %>
 

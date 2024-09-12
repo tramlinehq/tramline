@@ -10,6 +10,7 @@ class IntegrationsController < SignedInApplicationController
   end
 
   def index
+    @pre_open_category = Integration.categories[params[:integration_category]]
     set_integrations_by_categories
     set_tab_configuration
   end

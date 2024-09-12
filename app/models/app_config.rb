@@ -20,9 +20,7 @@ class AppConfig < ApplicationRecord
   include Notifiable
   include PlatformAwareness
 
-  MINIMUM_REQUIRED_CONFIG = %i[code_repository]
   PLATFORM_AWARE_CONFIG_SCHEMA = Rails.root.join("config/schema/platform_aware_integration_config.json")
-
   # self.ignored_columns += ["bugsnag_project_id"]
 
   belongs_to :app
@@ -40,7 +38,10 @@ class AppConfig < ApplicationRecord
   after_initialize :set_bugsnag_config, if: :persisted?
 
   def ready?
-    MINIMUM_REQUIRED_CONFIG.all? { |config| public_send(config).present? } && firebase_ready? && bitrise_ready? && bugsnag_ready?
+    further_setup_by_category?
+      .values
+      .pluck(:ready)
+      .all?
   end
 
   def code_repository_name
@@ -64,20 +65,39 @@ class AppConfig < ApplicationRecord
     bitrise_project_id&.fetch("id", nil)
   end
 
-  def further_build_channel_setup?
-    app.integrations.build_channel.map(&:providable).any?(&:further_setup?)
-  end
+  def further_setup_by_category?
+    integrations = app.integrations
+    categories = {}.with_indifferent_access
 
-  def further_ci_cd_setup?
-    app.integrations.ci_cd_provider.further_setup?
-  end
+    if integrations.vcs_provider.present?
+      categories[:version_control] = {
+        further_setup: integrations.vcs_provider.further_setup?,
+        ready: code_repository.present?
+      }
+    end
 
-  def further_monitoring_setup?
-    app.integrations.monitoring_provider&.further_setup?
-  end
+    if integrations.ci_cd_provider.present?
+      categories[:ci_cd] = {
+        further_setup: integrations.ci_cd_provider.further_setup?,
+        ready: bitrise_ready?
+      }
+    end
 
-  def further_code_repository_setup?
-    app.integrations.vcs_provider.further_setup?
+    if integrations.build_channel.present?
+      categories[:build_channel] = {
+        further_setup: integrations.build_channel.map(&:providable).any?(&:further_setup?),
+        ready: firebase_ready?
+      }
+    end
+
+    if integrations.monitoring_provider.present?
+      categories[:monitoring] = {
+        further_setup: integrations.monitoring_provider.further_setup?,
+        ready: bugsnag_ready?
+      }
+    end
+
+    categories
   end
 
   def firebase_app(platform, variant: nil)

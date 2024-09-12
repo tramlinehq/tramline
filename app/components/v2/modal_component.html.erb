@@ -15,7 +15,7 @@
             type: :action,
             size: :none,
             authz: false,
-            html_options: { data: { action: "dialog#close" } }) do |b|
+            html_options: { autofocus: false, tabindex: "-1", data: { action: "dialog#close" } }) do |b|
             b.with_icon("close_icon.svg", size: :md)
           end %>
         </div>
