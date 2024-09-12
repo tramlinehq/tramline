@@ -1,6 +1,6 @@
 class Computations::Release::StepStatuses
   using RefinedArray
-  STATUS = [:blocked, :unblocked, :ongoing, :success, :none].zip_map_self
+  STATUS = [:blocked, :unblocked, :ongoing, :success, :none, :hidden].zip_map_self
   PHASES = [:completed, :stopped, :kickoff, :stabilization, :review, :rollout, :finishing].zip_map_self
 
   def self.call(release)
@@ -17,7 +17,7 @@ class Computations::Release::StepStatuses
         overview: STATUS[:success],
         changeset_tracking: changeset_tracking_status,
         internal_builds: internal_builds_status,
-        regression_testing: demo? ? internal_builds_status : STATUS[:blocked],
+        regression_testing: regression_testing_status,
         release_candidate: release_candidate_status,
         soak_period: demo? ? release_candidate_status : STATUS[:blocked],
         notes: notes_status,
@@ -36,9 +36,16 @@ class Computations::Release::StepStatuses
   end
 
   def internal_builds_status
+    return STATUS[:hidden] unless any_platforms? { |rp| rp.conf.internal_release? }
     return STATUS[:none] if all_platforms? { |rp| rp.latest_internal_release.blank? }
     return STATUS[:ongoing] if any_platforms? { |rp| rp.latest_internal_release&.actionable? }
     STATUS[:success]
+  end
+
+  def regression_testing_status
+    return STATUS[:hidden] unless any_platforms? { |rp| rp.conf.internal_release? }
+    return internal_builds_status if demo?
+    STATUS[:blocked]
   end
 
   def release_candidate_status
