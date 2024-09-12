@@ -116,6 +116,12 @@ module Installations
         code: 403,
         message_matcher: /You must let us know whether your app uses any Foreground Service permissions/,
         decorated_reason: :foreground_service_permission_required
+      },
+      {
+        status: "PERMISSION_DENIED",
+        code: 403,
+        message_matcher: /There are issues with your account which mean you can't publish changes to your app or send changes for review/i,
+        decorated_reason: :account_issues
       }
     ]
 
@@ -173,7 +179,7 @@ module Installations
     end
 
     def log
-      logger.error(api_error, {error_message: error_message, status: status, code: code})
+      logger.error(api_error: api_error, error_message: error_message, status: status, code: code)
     end
   end
 end
