@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -o errexit
+
+# Get the absolute path to the script's directory
+script_dir="$(dirname "$(realpath "$0")")"
+
+# Construct the path to the .rubocop.yml file in the parent directory
+rubocop_config="$script_dir/../.rubocop.yml"
+
+# Run rubocop with the specified config file
+bundle exec rubocop --config "$rubocop_config" "$@"

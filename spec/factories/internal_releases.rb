@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :internal_release do
-    association :release_platform_run
-    association :commit
+    release_platform_run
+    commit
     type { "InternalRelease" }
     status { "created" }
     config {

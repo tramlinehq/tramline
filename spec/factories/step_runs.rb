@@ -2,7 +2,7 @@ FactoryBot.define do
   factory :step_run do
     sequence(:build_number) { |n| 123 + n }
     sequence(:build_version) { |n| "1.1.#{n}-dev" }
-    association :commit
+    commit
     step { association :step, :with_deployment }
     release_platform_run { association :release_platform_run, release_platform: step.release_platform }
     scheduled_at { Time.current }
@@ -79,7 +79,7 @@ FactoryBot.define do
     end
 
     trait :with_release_step do
-      association :step, factory: [:step, :release, :with_deployment]
+      step factory: %i[step release with_deployment]
     end
   end
 end

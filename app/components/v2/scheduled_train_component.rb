@@ -16,7 +16,7 @@ class V2::ScheduledTrainComponent < V2::BaseComponent
         Time.current
       end
 
-    @past_releases = train.scheduled_releases.where("scheduled_at < ?", previous_time).order(scheduled_at: :asc).last(2)
+    @past_releases = train.scheduled_releases.where(scheduled_at: ...previous_time).order(scheduled_at: :asc).last(2)
     @future_release = train.scheduled_releases.pending.order(scheduled_at: :asc).first
   end
 

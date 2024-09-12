@@ -51,7 +51,7 @@ module Installations
     end
 
     def initialize(response_body)
-      Rails.logger.debug "GitLab error", response_body
+      Rails.logger.debug { "GitLab error: #{response_body}" }
       @response_body = response_body
     end
 

@@ -27,7 +27,7 @@ describe Installations::Bitrise::Api, type: :integration do
           avatar_url: nil
         }
       ]
-      expect(result).to contain_exactly(*expected_apps)
+      expect(result).to match_array(expected_apps)
     end
   end
 
@@ -58,7 +58,7 @@ describe Installations::Bitrise::Api, type: :integration do
           name: "primary"
         }
       ]
-      expect(result).to contain_exactly(*expected)
+      expect(result).to match_array(expected)
     end
   end
 

@@ -65,6 +65,8 @@ describe GoogleFirebaseSubmission do
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:public_icon_img)
+      allow(providable_dbl).to receive(:project_link)
     end
 
     it "starts the upload" do
@@ -111,7 +113,7 @@ describe GoogleFirebaseSubmission do
         response: {
           result: "SUCCESS",
           release: {
-            name: Faker::String.random(length: 10),
+            name: Faker::Lorem.sentence,
             firebaseConsoleUri: Faker::Internet.url
           }
         }
@@ -121,6 +123,8 @@ describe GoogleFirebaseSubmission do
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:public_icon_img)
+      allow(providable_dbl).to receive(:project_link)
     end
 
     it "prepares and updates the submission" do
@@ -192,6 +196,8 @@ describe GoogleFirebaseSubmission do
 
     before do
       allow_any_instance_of(described_class).to receive(:provider).and_return(providable_dbl)
+      allow(providable_dbl).to receive(:public_icon_img)
+      allow(providable_dbl).to receive(:project_link)
     end
 
     it "finishes the release" do

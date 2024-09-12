@@ -94,7 +94,7 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
         scheme: :light,
         options: start_store_rollout_path(id),
         size: :xxs,
-        html_options: html_opts(:patch, "Are you sure?")
+        html_options: html_opts(:patch, "Are you sure you want to start the rollout?")
       )
     end
 
@@ -104,7 +104,7 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
         scheme: :default,
         options: increase_store_rollout_path(id),
         size: :xxs,
-        html_options: html_opts(:patch, "Are you sure?")
+        html_options: html_opts(:patch, "Are you sure you want to increase the rollout?")
       )
     end
   end
@@ -115,46 +115,51 @@ class V2::LiveRelease::ProdRelease::RolloutComponent < V2::BaseComponent
         {
           text: "Halt rollout",
           path: halt_store_rollout_path(id),
-          scheme: :danger
+          scheme: :danger,
+          confirm: "Are you sure you want to halt the rollout?"
         },
         {
           text: "Release to all",
           path: fully_release_store_rollout_path(id),
-          scheme: :light
+          scheme: :light,
+          confirm: "Are you sure you want to rollout to all users?"
         },
         {
           text: "Pause rollout",
           path: pause_store_rollout_path(id),
           scheme: :danger,
-          disabled: !automatic_rollout?
+          disabled: !automatic_rollout?,
+          confirm: "Are you sure you want to pause the rollout?"
         }
       ],
       paused: [
         {
           text: "Resume rollout",
           path: resume_store_rollout_path(id),
-          scheme: :light
+          scheme: :light,
+          confirm: "Are you sure you want to resume the rollout?"
         }
       ],
       halted: [
         {
           text: "Resume rollout",
           path: resume_store_rollout_path(id),
-          scheme: :light
+          scheme: :light,
+          confirm: "Are you sure you want to resume the rollout?"
         }
       ]
     }
 
-    actions_by_status[store_rollout.status.to_sym]&.map do |action|
+    actions_by_status[store_rollout.status.to_sym]&.filter_map do |action|
       V2::ButtonComponent.new(
         label: action[:text],
         scheme: action[:scheme],
         options: action[:path],
         disabled: action[:disabled],
         size: :xxs,
-        html_options: html_opts(:patch, "Are you sure?")
+        html_options: html_opts(:patch, action[:confirm])
       )
-    end&.compact || []
+    end || []
   end
 
   def card_height

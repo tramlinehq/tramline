@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :release do
-    association :train
+    train
     scheduled_at { Time.current }
     status { "on_track" }
     branch_name { "branch" }

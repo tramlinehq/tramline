@@ -52,7 +52,7 @@ describe ReleaseIndex do
       reldex = create(:release_index, tolerable_range: 0.5..0.8)
 
       score = reldex.score(**metrics)
-      expect(score.components.map(&:value)).to match_array([0.0, 0.2, 0.0, 0.0, 0.15, 0.15])
+      expect(score.components.map(&:value)).to contain_exactly(0.0, 0.2, 0.0, 0.0, 0.15, 0.15)
     end
 
     it "contains the release index itself" do

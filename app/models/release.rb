@@ -120,11 +120,8 @@ class Release < ApplicationRecord
   scope :released, -> { where(status: :finished).where.not(completed_at: nil) }
   scope :sequential, -> { order("releases.scheduled_at DESC") }
 
-  enum status: STATES
-  enum release_type: {
-    hotfix: "hotfix",
-    release: "release"
-  }
+  enum :status, STATES
+  enum :release_type, {hotfix: "hotfix", release: "release"}
 
   aasm safe_state_machine_params(with_lock: false) do
     state :created, initial: true
@@ -503,7 +500,7 @@ class Release < ApplicationRecord
     return base_conditions.first if completed_at.blank?
 
     base_conditions
-      .where("completed_at < ?", completed_at)
+      .where(completed_at: ...completed_at)
       .first
   end
 

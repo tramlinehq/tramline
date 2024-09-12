@@ -26,7 +26,7 @@ class Deployment < ApplicationRecord
   belongs_to :step, inverse_of: :deployments
   belongs_to :integration, optional: true
 
-  enum notes: {build_notes: "build_notes", release_notes: "release_notes", no_notes: "no_notes"}
+  enum :notes, {build_notes: "build_notes", release_notes: "release_notes", no_notes: "no_notes"}
 
   validates :deployment_number, presence: true
   validates :build_artifact_channel, uniqueness: {scope: [:integration_id, :step_id], conditions: -> { kept }}
@@ -85,7 +85,7 @@ class Deployment < ApplicationRecord
   end
 
   def previous
-    step.deployments.where("deployment_number < ?", deployment_number).last
+    step.deployments.where(deployment_number: ...deployment_number).last
   end
 
   def deployment_channel

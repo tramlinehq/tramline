@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :release_health_rule do
-    association :release_platform
+    release_platform
 
     name { Faker::Lorem.word }
 

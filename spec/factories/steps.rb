@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :step do
     release_platform { association :release_platform }
-    association :integration
+    integration
     name { Faker::Lorem.word }
     description { Faker::Lorem.sentence }
     sequence(:ci_cd_channel) { |n| Faker::Lorem.word + n.to_s }

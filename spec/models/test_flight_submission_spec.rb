@@ -108,8 +108,7 @@ describe TestFlightSubmission do
 
       before do
         allow(provider_dbl).to receive(:update_release_notes)
-        allow(provider_dbl).to receive(:find_build).and_return(GitHub::Result.new { build_info })
-        allow(provider_dbl).to receive(:release_to_testflight).and_return(GitHub::Result.new { build_info })
+        allow(provider_dbl).to receive_messages(find_build: GitHub::Result.new { build_info }, release_to_testflight: GitHub::Result.new { build_info })
         allow(StoreSubmissions::TestFlight::UpdateBuildNotesJob).to receive(:perform_later)
         allow(StoreSubmissions::TestFlight::UpdateExternalBuildJob).to receive(:perform_async)
       end

@@ -43,7 +43,8 @@ class Accounts::User < ApplicationRecord
     source_type: "Accounts::EmailAuthentication"
 
   friendly_id :full_name, use: :slugged
-  auto_strip_attributes :full_name, :preferred_name, squish: true
+  normalizes :name, with: ->(name) { name.squish }
+  normalizes :preferred_name, with: ->(name) { name.squish }
 
   accepts_nested_attributes_for :organizations
   accepts_nested_attributes_for :memberships, allow_destroy: false
@@ -183,7 +184,7 @@ class Accounts::User < ApplicationRecord
   # FIXME: This assumes that the blob is always a BuildArtifact
   # Eventually, make the URLs domain-specific and not blob-based general ones.
   def access_to_blob?(signed_blob_id)
-    build = BuildArtifact.find_by_signed_id(signed_blob_id)
+    build = BuildArtifact.find_via_signed_id(signed_blob_id)
     return false if build.blank?
     access_for(build.organization).present?
   end

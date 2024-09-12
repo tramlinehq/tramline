@@ -44,7 +44,7 @@ class PreProdRelease < ApplicationRecord
   }
   INACTIVE = STATES.values - ["created"]
 
-  enum status: STATES
+  enum :status, STATES
 
   def mark_as_stale!
     with_lock do
@@ -101,7 +101,7 @@ class PreProdRelease < ApplicationRecord
 
     return changes_since_last_run if last_successful_run.present?
 
-    return (changes_since_last_release || []) if previous.blank?
+    return changes_since_last_release || [] if previous.blank?
     ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq { |c| c.commit_hash }
   end
 
@@ -113,8 +113,8 @@ class PreProdRelease < ApplicationRecord
       .between_commits(last_successful_run&.commit, commit)
       &.commit_messages(true)
 
-    return (changes_since_last_run || []) if last_successful_run.present?
-    return (changes_since_last_release || []) if previous.blank?
+    return changes_since_last_run || [] if last_successful_run.present?
+    return changes_since_last_release || [] if previous.blank?
     ((changes_since_last_run || []) + (changes_since_last_release || [])).uniq
   end
 
@@ -124,7 +124,7 @@ class PreProdRelease < ApplicationRecord
       .map { |str| str&.strip }
       .flat_map { |line| train.compact_build_notes? ? line.split("\n").first : line.split("\n") }
       .map { |line| line.gsub(/\p{Emoji_Presentation}\s*/, "") }
-      .map { |line| line.gsub(/"/, "\\\"") }
+      .map { |line| line.gsub('"', "\\\"") }
       .reject { |line| line =~ /\AMerge|\ACo-authored-by|\A---------/ }
       .compact_blank
       .uniq

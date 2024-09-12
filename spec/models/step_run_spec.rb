@@ -529,7 +529,7 @@ describe StepRun do
         "feat: 4"
       ]
 
-      expect(latest.relevant_changes).to contain_exactly(*expected)
+      expect(latest.relevant_changes).to match_array(expected)
     end
 
     it "only shows the current message if the previous success was the last one" do
@@ -552,7 +552,7 @@ describe StepRun do
         "message 2"
       ]
 
-      expect(latest.relevant_changes).to contain_exactly(*expected)
+      expect(latest.relevant_changes).to match_array(expected)
     end
 
     it "shows all the messages of the release if a step is run for the first time after several commits" do
@@ -568,7 +568,7 @@ describe StepRun do
         "feat: 4"
       ]
 
-      expect(second_step_run.relevant_changes).to contain_exactly(*expected)
+      expect(second_step_run.relevant_changes).to match_array(expected)
     end
   end
 

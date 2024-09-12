@@ -10,7 +10,7 @@ Rails.application.configure do
   # In the development environment your application's code is reloaded any time
   # it changes. This slows down response time but is perfect for development
   # since you don't have to restart the web server when you make code changes.
-  config.cache_classes = false
+  config.enable_reloading = true
 
   # Do not eager load code on boot.
   config.eager_load = false
@@ -88,12 +88,14 @@ Rails.application.configure do
 
   # Allow web console to be triggered when fired against external webhooks
   config.web_console.whiny_requests = false
+  # config.web_console.permissions = "127.0.0.1"
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
-end
 
-# Set a longer session timeout to make things easier on developers
-Devise.setup do |config|
-  config.timeout_in = 48.hours
+  # Highlight code that enqueued background job in logs.
+  config.active_job.verbose_enqueue_logs = true
+
+  # Raise error when a before_action's only/except options reference missing actions
+  config.action_controller.raise_on_missing_callback_actions = true
 end

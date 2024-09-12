@@ -25,7 +25,7 @@ describe ReleasePlatformRun do
       expect(run.release_metadatum.locale).to eq("en-US")
       expect(run.release_metadatum.release_notes).to eq("This latest version includes bugfixes for the android platform.")
       expect(run.release_metadata.size).to eq(2)
-      expect(run.release_metadata.pluck(:locale)).to match_array(["en-US", "en-AU"])
+      expect(run.release_metadata.pluck(:locale)).to contain_exactly("en-US", "en-AU")
     end
   end
 

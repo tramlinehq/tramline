@@ -104,7 +104,7 @@ class StepRun < ApplicationRecord
   WORKFLOW_IMMUTABLE = STATES.keys - END_STATES - WORKFLOW_IN_PROGRESS - WORKFLOW_NOT_STARTED
   FAILED_STATES = %w[ci_workflow_failed ci_workflow_halted build_not_found_in_store build_unavailable deployment_failed failed_with_action_required cancelled_before_start]
 
-  enum status: STATES
+  enum :status, STATES
 
   aasm safe_state_machine_params do
     state :on_track, initial: true
@@ -173,7 +173,7 @@ class StepRun < ApplicationRecord
     end
   end
 
-  enum approval_status: {pending: "pending", approved: "approved", rejected: "rejected"}, _prefix: "approval"
+  enum :approval_status, {pending: "pending", approved: "approved", rejected: "rejected"}, prefix: "approval"
 
   attr_accessor :current_user
   attr_accessor :artifacts_url
@@ -246,7 +246,7 @@ class StepRun < ApplicationRecord
   end
 
   def deployment_start_blocked?(deployment)
-    release.upcoming? && deployment.production_channel?
+    release.upcoming? && deployment.production_channel? && !release_platform_run.temporary_unblock_upcoming?
   end
 
   def last_deployment_run
@@ -373,7 +373,7 @@ class StepRun < ApplicationRecord
       .map { |str| str&.strip }
       .flat_map { |line| train.compact_build_notes? ? line.split("\n").first : line.split("\n") }
       .map { |line| line.gsub(/\p{Emoji_Presentation}\s*/, "") }
-      .map { |line| line.gsub(/"/, "\\\"") }
+      .map { |line| line.gsub('"', "\\\"") }
       .reject { |line| line =~ /\AMerge|\ACo-authored-by|\A---------/ }
       .compact_blank
       .uniq
@@ -422,7 +422,7 @@ class StepRun < ApplicationRecord
   def previous_step_run
     release_platform_run
       .step_runs_for(step)
-      .where("scheduled_at < ?", scheduled_at)
+      .where(scheduled_at: ...scheduled_at)
       .where.not(id: id)
       .order(:scheduled_at)
       .last

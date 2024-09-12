@@ -37,7 +37,7 @@ Rails.application.routes.draw do
   end
 
   namespace :authentication do
-    resources :invite_confirmations, only: %i[new create]
+    resources :invite_confirmations, only: %i[new create], controller: "email/invite_confirmations"
   end
 
   namespace :accounts do

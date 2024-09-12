@@ -29,7 +29,7 @@ class Accounts::Organization < ApplicationRecord
   has_many :releases, through: :apps
   has_many :invites, dependent: :destroy
 
-  enum status: {active: "active", dormant: "dormant", guest: "guest"}
+  enum :status, {active: "active", dormant: "dormant", guest: "guest"}
 
   encrypts :api_key, deterministic: true
 
@@ -39,7 +39,7 @@ class Accounts::Organization < ApplicationRecord
 
   friendly_id :name, use: :slugged
 
-  auto_strip_attributes :name, squish: true
+  normalizes :name, with: ->(name) { name.squish }
 
   scope :sequential, -> { reorder("organizations.created_at ASC") }
 

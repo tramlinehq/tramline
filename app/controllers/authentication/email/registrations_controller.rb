@@ -107,8 +107,9 @@ class Authentication::Email::RegistrationsController < Devise::RegistrationsCont
     return unless resource.persisted?
 
     tracking_org = resource.organization
-    SiteAnalytics.identify_and_group(resource, tracking_org)
-    SiteAnalytics.track(resource, tracking_org, DeviceDetector.new(request.user_agent), "Signup")
+    tracking_user = resource.user
+    SiteAnalytics.identify_and_group(tracking_user, tracking_org)
+    SiteAnalytics.track(tracking_user, tracking_org, DeviceDetector.new(request.user_agent), "Signup")
   end
 
   def act_as_spam

@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :staged_rollout do
-    association :deployment_run
+    deployment_run
 
     config { [1, 100] }
     current_stage { nil }
