@@ -96,7 +96,8 @@ class Build < ApplicationRecord
 
   def get_build_artifact
     ci_cd_provider.get_artifact_v2(artifacts_url, build_artifact_name_pattern)
-  rescue Installations::Errors::ArtifactsNotFound => e
+  rescue Installations::Error => ex
+    raise ex unless ex.reason == :artifact_not_found
     elog(e)
     nil
   end

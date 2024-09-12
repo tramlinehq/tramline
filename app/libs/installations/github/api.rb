@@ -59,7 +59,7 @@ module Installations
           .then { |workflow_runs| workflow_runs.sort_by { |workflow_run| workflow_run[:run_number] }.reverse! }
           .then { |responses| Installations::Response::Keys.transform(responses, transforms) }
           .first
-          .then { |run| run&.presence || raise(Installations::Errors::WorkflowRunNotFound) }
+          .then { |run| run&.presence || raise(Installations::Error.new("Could not find the workflow run", reason: :workflow_run_not_found)) }
       end
     end
 
@@ -67,7 +67,7 @@ module Installations
       execute do
         @client
           .workflow_run(repo, run_id)
-          .then { |run| run.to_h.presence || raise(Installations::Errors::WorkflowRunNotFound) }
+          .then { |run| run.to_h.presence || raise(Installations::Error.new("Could not find the workflow run", reason: :workflow_run_not_found)) }
       end
     end
 
@@ -99,7 +99,7 @@ module Installations
       execute do
         @client
           .workflow_dispatch(repo, id, ref, inputs: inputs)
-          .then { |ok| ok.presence || raise(Installations::Errors::WorkflowTriggerFailed) }
+          .then { |ok| ok.presence || raise(Installations::Error.new("Could not trigger the workflow", reason: :workflow_trigger_failed)) }
       end
     end
 
@@ -204,7 +204,7 @@ module Installations
     # creates a lightweight tag and a GitHub release simultaneously
     def create_release!(repo, tag_name, branch_name)
       execute do
-        raise Installations::Errors::TagReferenceAlreadyExists if tag_exists?(repo, tag_name)
+        raise Installations::Error.new("Should not create a tag", reason: :tag_reference_already_exists) if tag_exists?(repo, tag_name)
         @client.create_release(repo, tag_name, target_commitish: branch_name, generate_release_notes: false)
       end
     end
@@ -215,8 +215,6 @@ module Installations
         # It returns a single element if there is an exact match
         !@client.ref(repo, "tags/#{tag_name}").is_a?(Array)
       end
-    rescue Installations::Errors::ResourceNotFound
-      false
     end
 
     def branch_exists?(repo, branch_name)
@@ -226,7 +224,7 @@ module Installations
     end
 
     def create_pr!(repo, to, from, title, body, transforms)
-      raise Installations::Errors::PullRequestWithoutCommits unless diff?(repo, to, from)
+      raise Installations::Error.new("Should not create a Pull Request without a diff", reason: :pull_request_without_commits) unless diff?(repo, to, from)
 
       execute do
         @client
@@ -341,8 +339,8 @@ module Installations
           .first
           .tap { |pr| assign_pr(repo, pr[:number], commit_to_pick_login) }
       end
-    rescue Installations::Errors::MergeConflict => e
-      @client.delete_branch(repo, patch_branch_name)
+    rescue Installations::Error => e
+      @client.delete_branch(repo, patch_branch_name) if e.reason == :merge_conflict
       raise e
     end
 
@@ -359,7 +357,7 @@ module Installations
 
       response = client.post "/graphql", {query: find_pr_id_query}.to_json
       pull_request_id = response.dig(:data, :repository, :pullRequest, :id)
-      raise Installations::Errors::ResourceNotFound unless pull_request_id
+      raise Installations::Error.new("Could not find the Pull Request", reason: :not_found) unless pull_request_id
 
       enable_auto_merge = <<-GRAPHQL
         mutation {
@@ -401,7 +399,7 @@ module Installations
       set_client
       retry
     rescue Octokit::NotFound, Octokit::UnprocessableEntity, Octokit::MethodNotAllowed, Octokit::Conflict => e
-      raise Installations::Github::Error.handle(e)
+      raise Installations::Github::Error.new(e)
     end
 
     API_VERSION = "2022-11-28"

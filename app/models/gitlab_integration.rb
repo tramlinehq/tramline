@@ -148,7 +148,8 @@ class GitlabIntegration < ApplicationRecord
       else
         create_webhook!(train_id:)
       end
-    rescue Installations::Errors::ResourceNotFound
+    rescue Installations::Error => ex
+      raise ex unless ex.reason == :not_found
       create_webhook!(train_id:)
     end
   end
@@ -265,12 +266,16 @@ class GitlabIntegration < ApplicationRecord
 
   def branch_exists?(branch)
     with_api_retries { installation.branch_exists?(code_repository_name, branch) }
-  rescue Installations::Errors::ResourceNotFound
+  rescue Installations::Error => ex
+    raise ex unless ex.reason == :not_found
     false
   end
 
   def tag_exists?(tag_name)
     with_api_retries { installation.tag_exists?(code_repository_name, tag_name) }
+  rescue Installations::Error => ex
+    raise ex unless ex.reason == :not_found
+    false
   end
 
   def bot_name
@@ -288,10 +293,25 @@ class GitlabIntegration < ApplicationRecord
   private
 
   # retry once (2 attempts in total)
-  ATTEMPTS = 2
-  def with_api_retries
-    retryables = [Installations::Gitlab::Api::TokenExpired]
-    Retryable.retryable(on: retryables, tries: ATTEMPTS, sleep: 0, exception_cb: proc { reset_tokens! }) { yield }
+  MAX_RETRY_ATTEMPTS = 2
+  RETRYABLE_ERRORS = []
+
+  def with_api_retries(attempt: 0, &)
+    yield
+  rescue Installations::Gitlab::Error => ex
+    raise ex if attempt >= MAX_RETRY_ATTEMPTS
+    next_attempt = attempt + 1
+
+    if ex.reason == :token_expired
+      reset_tokens!
+      return with_api_retries(attempt: next_attempt, &)
+    end
+
+    if RETRYABLE_ERRORS.include?(ex.reason)
+      return with_api_retries(attempt: next_attempt, &)
+    end
+
+    raise ex
   end
 
   def reset_tokens!

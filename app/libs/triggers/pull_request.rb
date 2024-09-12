@@ -47,19 +47,23 @@ class Triggers::PullRequest
   memoize def create
     GitHub::Result.new do
       repo_integration.create_pr!(to_branch_ref, from_branch_ref, title, description)
-    rescue Installations::Errors::PullRequestAlreadyExists
-      repo_integration.find_pr(to_branch_ref, from_branch_ref)
-    rescue Installations::Errors::PullRequestWithoutCommits
-      raise CreateError, "Could not create a Pull Request"
+    rescue Installations::Error => ex
+      return repo_integration.find_pr(to_branch_ref, from_branch_ref) if ex.reason == :pull_request_already_exists
+      raise CreateError, "Could not create a Pull Request" if ex.reason == :pull_request_without_commits
+      raise ex
     end
   end
 
   memoize def merge
     GitHub::Result.new do
       repo_integration.merge_pr!(@pull_request.number)
-    rescue Installations::Errors::PullRequestNotMergeable
-      release.event_stamp!(reason: :pull_request_not_mergeable, kind: :error, data: {url: @pull_request.url, number: @pull_request.number})
-      raise MergeError, "Failed to merge the Pull Request"
+    rescue Installations::Error => ex
+      if ex.reason == :pull_request_not_mergeable
+        release.event_stamp!(reason: :pull_request_not_mergeable, kind: :error, data: {url: @pull_request.url, number: @pull_request.number})
+        raise MergeError, "Failed to merge the Pull Request"
+      else
+        raise ex
+      end
     end
   end
 

@@ -232,6 +232,8 @@ describe Release do
     let(:step) { create(:step, release_platform:) }
     let(:release) { create(:release, train:) }
     let(:release_platform_run) { create(:release_platform_run, :on_track, release:, release_platform:) }
+    let(:tag_exists_error) { Installations::Error.new("Should not create a tag", reason: :tag_reference_already_exists) }
+    let(:release_exists_error) { Installations::Error.new("Should not create a release", reason: :tagged_release_already_exists) }
 
     it "saves a new tag with the base name" do
       allow_any_instance_of(GithubIntegration).to receive(:create_release!)
@@ -243,7 +245,7 @@ describe Release do
     end
 
     it "saves base name + last commit sha" do
-      raise_times(GithubIntegration, Installations::Errors::TaggedReleaseAlreadyExists, :create_release!, 1)
+      raise_times(GithubIntegration, tag_exists_error, :create_release!, 1)
       commit = create(:commit, :without_trigger, release:)
       create(:step_run, release_platform_run:, commit:)
 
@@ -252,7 +254,7 @@ describe Release do
     end
 
     it "saves base name + last commit sha + time" do
-      raise_times(GithubIntegration, Installations::Errors::TaggedReleaseAlreadyExists, :create_release!, 2)
+      raise_times(GithubIntegration, tag_exists_error, :create_release!, 2)
 
       freeze_time do
         now = Time.now.to_i
@@ -278,7 +280,7 @@ describe Release do
       end
 
       it "saves base name + suffix + last commit sha" do
-        raise_times(GithubIntegration, Installations::Errors::TaggedReleaseAlreadyExists, :create_release!, 1)
+        raise_times(GithubIntegration, release_exists_error, :create_release!, 1)
         commit = create(:commit, :without_trigger, release:)
         create(:step_run, release_platform_run:, commit:)
 
@@ -287,7 +289,7 @@ describe Release do
       end
 
       it "saves base name + suffix + last commit sha + time" do
-        raise_times(GithubIntegration, Installations::Errors::TaggedReleaseAlreadyExists, :create_release!, 2)
+        raise_times(GithubIntegration, release_exists_error, :create_release!, 2)
 
         freeze_time do
           now = Time.now.to_i

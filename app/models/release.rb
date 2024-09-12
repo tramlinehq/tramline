@@ -343,7 +343,8 @@ class Release < ApplicationRecord
     train.create_vcs_release!(release_branch, input_tag_name)
     update!(tag_name: input_tag_name)
     event_stamp!(reason: :vcs_release_created, kind: :notice, data: {provider: vcs_provider.display, tag: tag_name})
-  rescue Installations::Errors::TagReferenceAlreadyExists, Installations::Errors::TaggedReleaseAlreadyExists
+  rescue Installations::Error => ex
+    raise unless [:tag_reference_already_exists, :tagged_release_already_exists].include?(ex.reason)
     create_vcs_release!(unique_tag_name(input_tag_name))
   end
 

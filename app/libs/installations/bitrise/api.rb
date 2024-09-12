@@ -83,7 +83,7 @@ module Installations
       }
 
       execute(:post, TRIGGER_WORKFLOW_URL.expand(app_slug:).to_s, params)
-        .tap { |response| raise Installations::Errors::WorkflowTriggerFailed if response.blank? }
+        .tap { |response| raise Installations::Error.new("Could not trigger the workflow", reason: :workflow_trigger_failed) if response.blank? }
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
     end

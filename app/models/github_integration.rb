@@ -140,7 +140,8 @@ class GithubIntegration < ApplicationRecord
       else
         create_webhook!(train_id:)
       end
-    rescue Installations::Errors::ResourceNotFound
+    rescue Installations::Error => ex
+      raise ex unless ex.reason == :not_found
       create_webhook!(train_id:)
     end
   end
@@ -233,7 +234,7 @@ class GithubIntegration < ApplicationRecord
 
   def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
     deploy_action_enabled = organization.deploy_action_enabled? || app.deploy_action_enabled?
-    raise WorkflowRun unless installation.run_workflow!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash, deploy_action_enabled)
+    installation.run_workflow!(code_repository_name, ci_cd_channel, branch_name, inputs, commit_hash, deploy_action_enabled)
   end
 
   def cancel_workflow_run!(ci_ref)
@@ -277,12 +278,16 @@ class GithubIntegration < ApplicationRecord
 
   def branch_exists?(branch_name)
     installation.branch_exists?(code_repository_name, branch_name)
-  rescue Installations::Errors::ResourceNotFound
+  rescue Installations::Error => ex
+    raise ex unless ex.reason == :not_found
     false
   end
 
   def tag_exists?(tag_name)
     installation.tag_exists?(code_repository_name, tag_name)
+  rescue Installations::Error => ex
+    raise ex unless ex.reason == :not_found
+    false
   end
 
   def create_pr!(to_branch_ref, from_branch_ref, title, description)
@@ -321,7 +326,8 @@ class GithubIntegration < ApplicationRecord
 
   def diff_between?(from_branch, to_branch, _)
     installation.diff?(code_repository_name, from_branch, to_branch)
-  rescue Installations::Errors::ResourceNotFound
+  rescue Installations::Error => ex
+    raise ex unless ex.reason == :not_found
     true
   end
 
@@ -344,7 +350,7 @@ class GithubIntegration < ApplicationRecord
       .artifacts(artifacts_url, ARTIFACTS_TRANSFORMATIONS)
       .then { |artifacts| API.filter_by_name(artifacts, artifact_name_pattern) }
       .then { |artifacts| API.find_biggest(artifacts) }
-      .tap { |artifact| raise Installations::Errors::ArtifactsNotFound if artifact.blank? }
+      .tap { |artifact| raise Installations::Github::Error.new("Could not find the artifact", reason: :artifact_not_found) if artifact.blank? }
   end
 
   def namespaced_branch(branch_name)

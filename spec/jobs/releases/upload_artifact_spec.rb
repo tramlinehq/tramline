@@ -20,7 +20,7 @@ describe Releases::UploadArtifact do
 
     it "retries if artifacts are not found" do
       expect(
-        described_class.sidekiq_retry_in_block.call(1, Installations::Errors::ArtifactsNotFound.new)
+        described_class.sidekiq_retry_in_block.call(1, Installations::Error.new("Could not find the artifact", reason: :artifact_not_found))
       ).to be >= 10.seconds
     end
 
