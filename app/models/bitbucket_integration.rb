@@ -207,8 +207,9 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def branch_exists?(branch_name)
-    with_api_retries { installation.branch_exists?(code_repo_name_only, branch_name) }
-  rescue Installations::Errors::ResourceNotFound
+    with_api_retries { installation.get_branch(code_repo_name_only, branch_name) }.present?
+  rescue Installations::Error => ex
+    raise ex unless ex.reason == :not_found
     false
   end
 
@@ -231,7 +232,10 @@ class BitbucketIntegration < ApplicationRecord
   end
 
   def tag_exists?(tag_name)
-    with_api_retries { installation.tag_exists?(code_repo_name_only, tag_name) }
+    with_api_retries { installation.get_tag(code_repo_name_only, tag_name) }.present?
+  rescue Installations::Error => ex
+    raise ex unless ex.reason == :not_found
+    false
   end
 
   def create_release!(tag_name, branch_name) = create_tag!(tag_name, branch_name)
@@ -352,7 +356,7 @@ class BitbucketIntegration < ApplicationRecord
   MAX_RETRY_ATTEMPTS = 2
   RETRYABLE_ERRORS = []
 
-  def with_api_retries(attempt: 0, &block)
+  def with_api_retries(attempt: 0, &)
     yield
   rescue Installations::Bitbucket::Error => ex
     raise ex if attempt >= MAX_RETRY_ATTEMPTS
@@ -360,11 +364,11 @@ class BitbucketIntegration < ApplicationRecord
 
     if ex.reason == :token_expired
       reset_tokens!
-      return with_api_retries(attempt: next_attempt, &block)
+      return with_api_retries(attempt: next_attempt, &)
     end
 
     if RETRYABLE_ERRORS.include?(ex.reason)
-      return with_api_retries(attempt: next_attempt, &block)
+      return with_api_retries(attempt: next_attempt, &)
     end
 
     raise ex

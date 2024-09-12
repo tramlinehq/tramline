@@ -141,12 +141,12 @@ module Installations
       execute(:post, REPO_TAGS_URL.expand(workspace:, repo_slug:).to_s, params)
     end
 
-    def branch_exists?(repo_slug, branch_name)
-      get_branch(repo_slug, branch_name).present?
+    def get_branch(repo_slug, branch_name)
+      execute(:get, REPO_BRANCH_URL.expand(workspace:, repo_slug:, branch_name:).to_s)
     end
 
-    def tag_exists?(repo_slug, tag_name)
-      get_tag(repo_slug, tag_name).present?
+    def get_tag(repo_slug, tag_name)
+      execute(:get, REPO_TAG_URL.expand(workspace:, repo_slug:, tag_name:).to_s)
     end
 
     def create_pr!(repo_slug, to, from, title, description, transforms)
@@ -302,14 +302,6 @@ module Installations
     private
 
     attr_reader :workspace
-
-    def get_branch(repo_slug, branch_name)
-      execute(:get, REPO_BRANCH_URL.expand(workspace:, repo_slug:, branch_name:).to_s)
-    end
-
-    def get_tag(repo_slug, tag_name)
-      execute(:get, REPO_TAG_URL.expand(workspace:, repo_slug:, tag_name:).to_s)
-    end
 
     MAX_PAGES = 10
 

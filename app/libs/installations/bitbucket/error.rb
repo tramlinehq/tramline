@@ -1,7 +1,5 @@
 module Installations
   class Bitbucket::Error < Installations::Error
-    using RefinedString
-
     ERRORS = [
       {
         message_matcher: /Token is invalid or not supported for this endpoint/i,
@@ -16,10 +14,6 @@ module Installations
         decorated_reason: :webhook_not_found
       }
     ]
-
-    def self.reasons
-      ERRORS.pluck(:decorated_reason).uniq.map(&:to_s)
-    end
 
     def initialize(error_body)
       @error_body = error_body

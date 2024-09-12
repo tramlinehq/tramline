@@ -6,7 +6,6 @@ class IntegrationListeners::BitbucketController < IntegrationListenerController
     super.merge(code: code)
   end
 
-  # TODO: what do we want to do when these events come in
   def events
     case event_type
     when "repo:push"
@@ -19,9 +18,6 @@ class IntegrationListeners::BitbucketController < IntegrationListenerController
   end
 
   private
-
-  def handle_ping
-  end
 
   def handle_push
     result = Action.process_push_webhook(train, push_params)
