@@ -1,5 +1,5 @@
 module Installations
-  class Gitlab::Error < Installations::Error«
+  class Gitlab::Error < Installations::Error
     ERRORS = [
       {
         error: "invalid_token",

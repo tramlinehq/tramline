@@ -242,7 +242,7 @@ module Installations
       response = HTTP.auth("Bearer #{oauth_access_token}").public_send(verb, url, params)
       body = JSON.parse(response.body.to_s)
       return body unless error?(response.status)
-      raise Installations::Gitlab::Error.handle(body)
+      raise Installations::Gitlab::Error.new(body)
     end
 
     def error?(code)
