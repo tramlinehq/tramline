@@ -113,7 +113,7 @@ describe GoogleFirebaseSubmission do
         response: {
           result: "SUCCESS",
           release: {
-            name: Faker::String.random(length: 10),
+            name: Faker::Lorem.sentence,
             firebaseConsoleUri: Faker::Internet.url
           }
         }
