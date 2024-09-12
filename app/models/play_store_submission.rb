@@ -266,7 +266,7 @@ class PlayStoreSubmission < StoreSubmission
   end
 
   def on_fail!
-    event_stamp!(reason: :fail, kind: :notice, data: stamp_data)
+    event_stamp!(reason: :failed, kind: :error, data: stamp_data)
     notify!("Submission failed", :submission_failed, notification_params)
   end
 

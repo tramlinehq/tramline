@@ -274,7 +274,7 @@ en:
           days_since_last_release: "The number of days since the last release."
       play_store_submission:
         failure_reason:
-          unknown_failure: "an unknown error, contact support!"
+          unknown_failure: "an unknown error, contact support"
           build_exists_in_build_channel: "the build already being present in the deployment channel"
           app_not_found: "the app not being available in store"
           build_not_upgradable: "the build number being lower than the current build in the deployment channel"
@@ -293,6 +293,7 @@ en:
           timeout: "the request to the store timed out"
           unauthorized: "the request to the store failed due to authorization error"
           foreground_service_permission_required: "the app has not declared the required Foreground Service permissions in the Play Console"
+          account_issues: "the Play Console account has issues, cannot publish changes to the app from Tramline"
       app_store_submission:
         failure_reason:
           unknown_failure: "an unknown error, contact support!"
