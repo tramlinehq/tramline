@@ -161,7 +161,7 @@ class BitbucketIntegration < ApplicationRecord
   }
 
   def pr_closed?(pr)
-    pr[:state] == "MERGED"
+    %w[MERGED DECLINED].include?(pr[:state])
   end
 
   def pr_open?(pr)

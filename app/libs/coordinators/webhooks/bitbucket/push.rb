@@ -41,7 +41,7 @@ class Coordinators::Webhooks::Bitbucket::Push
   end
 
   def new_branch?
-    payload_change.dig("type") == "branch" && payload_change.dig("created") == true
+    payload_change.dig("type") == "branch" && payload.dig("push", "changes", 0, "created") == true
   end
 
   def commits

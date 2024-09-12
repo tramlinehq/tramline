@@ -11,7 +11,7 @@ class IntegrationListeners::BitbucketController < IntegrationListenerController
     case event_type
     when "repo:push"
       handle_push
-    when "repo:pull_request"
+    when "pullrequest:created", "pullrequest:fulfilled", "pullrequest:rejected", "pullrequest:updated"
       handle_pull_request
     else
       head :ok
@@ -32,6 +32,11 @@ class IntegrationListeners::BitbucketController < IntegrationListenerController
   end
 
   def handle_pull_request
+    result = Action.process_pull_request_webhook(train, pull_request_params)
+    response = result.ok? ? result.value! : Response.new(:unprocessable_entity, "Error processing pull request")
+
+    Rails.logger.debug response.body
+    head response.status
   end
 
   def event_type
@@ -43,6 +48,20 @@ class IntegrationListeners::BitbucketController < IntegrationListenerController
   end
 
   def pull_request_params
+    params.permit(
+      repository: [:name, :full_name],
+      pullrequest: [
+        :id,
+        :title,
+        :description,
+        :state,
+        :created_on,
+        :updated_on,
+        links: [html: [:href]],
+        destination: [branch: [:name], commit: [:hash]],
+        source: [branch: [:name], commit: [:hash]]
+      ]
+    )
   end
 
   def push_params

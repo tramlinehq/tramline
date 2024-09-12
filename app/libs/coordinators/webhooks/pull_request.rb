@@ -19,7 +19,8 @@ class Coordinators::Webhooks::PullRequest < Coordinators::Webhooks::Base
 
   memoize def runner
     return GITHUB::PullRequest.new(payload) if vcs_provider.integration.github_integration?
-    GITLAB::PullRequest.new(payload) if vcs_provider.integration.gitlab_integration?
+    return GITLAB::PullRequest.new(payload) if vcs_provider.integration.gitlab_integration?
+    BITBUCKET::PullRequest.new(payload) if vcs_provider.integration.bitbucket_integration?
   end
 
   memoize def open_active_prs?
