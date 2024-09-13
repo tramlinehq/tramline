@@ -57,7 +57,7 @@
         </div>
         <% components.each do |component| %>
           <div class="" data-controller="domain--release-index-component">
-            <div class="px-1 py-3 grid grid-cols-6 items-center gap-x-10 text-sm">
+            <div class="px-1 py-3 grid grid-cols-6 items-start gap-x-10 text-sm">
               <% section.F.fields_for :release_index_components, component do |component_fields| %>
                 <div class="col-span-2">
                   <div class="flex items-center gap-1.5">
@@ -72,9 +72,9 @@
                         <% end %>
                       <% end %>
                     <% end %>
-                    <div hidden data-domain--release-index-component-target="inactive">
-                      <%= render V2::BadgeComponent.new(text: "Excluded", kind: :badge) %>
-                    </div>
+                  </div>
+                  <div hidden data-domain--release-index-component-target="inactive">
+                    <%= render V2::BadgeComponent.new(text: "Excluded", kind: :badge) %>
                   </div>
                 </div>
                 <div class="col-span-1">

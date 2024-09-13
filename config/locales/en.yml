@@ -256,12 +256,12 @@ en:
       release_index_component:
         name:
           hotfixes: "Hotfixes"
-          rollout_fixes: "Rollout Fixes"
-          rollout_duration: "Rollout Duration"
-          duration: "Release Duration"
-          stability_duration: "Stability Duration"
-          stability_changes: "Stability Changes"
-          rollout_changes: "Rollout Changes"
+          rollout_fixes: "Rollout fixes"
+          rollout_duration: "Rollout duration"
+          duration: "Release duration"
+          stability_duration: "Stability duration"
+          stability_changes: "Stability changes"
+          rollout_changes: "Rollout changes"
           days_since_last_release: "Days since last release"
         description:
           hotfixes: "These are the fixes that are done after the release has reached all the users."
