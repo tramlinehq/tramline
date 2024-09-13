@@ -331,6 +331,7 @@ en:
           invalid_config: "configuration is invalid, please check!"
           invalid_api_package: "the build artifact being invalid for the channel"
           firebase_processing_error: "the build was uploaded to Firebase, but Firebase threw an error while processing it. This could be due to degradation or an invalid package"
+          not_found: "the app/project was not found in Firebase App Distribution"
     attributes:
       integration:
         categories:
