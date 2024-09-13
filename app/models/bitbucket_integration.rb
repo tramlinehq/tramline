@@ -127,30 +127,9 @@ class BitbucketIntegration < ApplicationRecord
     url: [:links, :html, :href],
     commit_hash: :hash,
     message: :message,
-    # TODO: author information is not available when user does
-    # not match on atlassian
-    author_name: [:author, :user, :display_name],
-    # TODO: email is not available
-    author_email: :author_email,
+    author_raw: [:author, :raw],
     author_login: [:author, :user, :nickname],
     author_url: [:author, :links, :html, :href],
-    timestamp: :date,
-    parents: {
-      parents: {
-        url: [:links, :html, :href],
-        sha: [:hash]
-      }
-    }
-  }
-
-  # TODO: fix with real transformations
-  COMMITS_HOOK_TRANSFORMATIONS = {
-    url: [:links, :html, :href],
-    commit_hash: :hash,
-    message: :message,
-    author_email: [:author, :raw],
-    author_name: [:author, :raw],
-    author_login: [:author, :raw],
     timestamp: :date,
     parents: {
       parents: {

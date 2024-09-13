@@ -71,6 +71,18 @@ module Installations
           .then.detect(&:present?)
           .then { |tokens| OpenStruct.new tokens }
       end
+
+      def parse_author_info(commit)
+        if commit[:author_raw] =~ /(.*)<(.*)>/
+          commit[:author_name] = $1.strip
+          commit[:author_email] = $2.strip
+        else
+          commit[:author_name] = commit[:author_raw]
+          commit[:author_email] = commit[:author_raw]
+        end
+        commit.delete(:author_raw)
+        commit
+      end
     end
 
     def initialize(oauth_access_token, workspace)
@@ -208,6 +220,7 @@ module Installations
 
       paginated_execute(:get, REPO_COMMITS_URL.expand(workspace: @workspace, repo_slug: repo).to_s, params)
         .then { |commits| Installations::Response::Keys.transform(commits, transforms) }
+        .map { |commit| self.class.parse_author_info(commit) }
     end
 
     def diff?(repo_slug, from_branch, to_branch, from_type)
@@ -239,6 +252,7 @@ module Installations
       execute(:get, REPO_COMMIT_URL.expand(workspace: @workspace, repo_slug:, sha:).to_s)
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
+        .then { |commit| self.class.parse_author_info(commit) }
     end
 
     # CI/CD
@@ -262,7 +276,7 @@ module Installations
     end
 
     def trigger_pipeline!(repo_slug, pipeline_config, inputs, commit_hash, transforms)
-      type, pattern = pipeline_config.split(":").each(&:strip)
+      type, pattern = pipeline_config.split(":").map(&:strip)
       params = {
         json: {
           target: {

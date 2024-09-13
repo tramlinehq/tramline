@@ -8,7 +8,9 @@ class Coordinators::Webhooks::Bitbucket::Push
 
   def head_commit
     if head_commit_payload
-      Installations::Response::Keys.transform([head_commit_payload], BitbucketIntegration::COMMITS_HOOK_TRANSFORMATIONS).first
+      Installations::Response::Keys.transform([head_commit_payload], BitbucketIntegration::COMMITS_TRANSFORMATIONS)
+        .first
+        .then { |commit| Installations::Bitbucket::Api.parse_author_info(commit) }
     else
       train.vcs_provider.head(repository_name, branch_name)
     end
@@ -60,6 +62,7 @@ class Coordinators::Webhooks::Bitbucket::Push
   end
 
   def commits_payload
-    Installations::Response::Keys.transform(commits, BitbucketIntegration::COMMITS_HOOK_TRANSFORMATIONS)
+    Installations::Response::Keys.transform(commits, BitbucketIntegration::COMMITS_TRANSFORMATIONS)
+      .map { |commit| Installations::Bitbucket::Api.parse_author_info(commit) }
   end
 end
