@@ -1,11 +1,14 @@
 module Installations
   class Bitbucket::Api
     require "down/http"
+    require "yaml"
 
     include Vaultable
     attr_reader :oauth_access_token
 
     BASE_URL = "https://api.bitbucket.org/2.0"
+    USER_INFO_URL = "#{BASE_URL}/user"
+    WORKSPACES_URL = "#{BASE_URL}/workspaces"
     REPOS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}"
     REPO_HOOKS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/hooks"
     REPO_HOOK_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/hooks/{hook_id}"
@@ -20,15 +23,12 @@ module Installations
     REPO_COMMITS_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/commits"
     REPO_COMMIT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/commit/{sha}"
     GET_COMMIT_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/commit/{commit_sha}"
-
-    WORKSPACES_URL = "#{BASE_URL}/workspaces"
-    PIPELINES_CONFIG_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines_config"
     PIPELINES_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines"
     PIPELINE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines/{pipeline_id}"
     STOP_PIPELINE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/pipelines/{pipeline_id}/stopPipeline"
     LIST_FILES_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/downloads"
     GET_FILE_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/downloads/{file_name}"
-    USER_INFO_URL = "#{BASE_URL}/user"
+    PIPELINE_YAML_URL = Addressable::Template.new "#{BASE_URL}/repositories/{workspace}/{repo_slug}/src/{branch_name}/bitbucket-pipelines.yml"
 
     WEBHOOK_EVENTS = %w[repo:push pullrequest:created pullrequest:updated pullrequest:fulfilled pullrequest:rejected]
 
@@ -86,6 +86,11 @@ module Installations
 
     def list_workspaces(transforms)
       execute(:get, WORKSPACES_URL)
+        .then { |responses| Installations::Response::Keys.transform(responses["values"], transforms) }
+    end
+
+    def list_repos(transforms)
+      execute(:get, REPOS_URL.expand(workspace:).to_s)
         .then { |responses| Installations::Response::Keys.transform(responses["values"], transforms) }
     end
 
@@ -236,22 +241,28 @@ module Installations
         .first
     end
 
-    def list_repos(transforms)
-      execute(:get, REPOS_URL.expand(workspace:).to_s)
-        .then { |responses| Installations::Response::Keys.transform(responses["values"], transforms) }
+    # CI/CD
+
+    def list_pipeline_selectors(repo_slug)
+      yaml_content = fetch_pipeline_yaml(repo_slug)
+      pipeline_config = YAML.safe_load(yaml_content)
+      selectors = []
+
+      # Add default pipeline if it exists
+      selectors << {name: "Default", type: "default", id: "default"} if pipeline_config["pipelines"]["default"]
+
+      # Add custom pipelines
+      pipeline_config["pipelines"]["custom"]&.each do |custom_name, _|
+        selectors << {name: "Custom: #{custom_name}", id: "custom: #{custom_name}"}
+      end
+
+      selectors
+    rescue => e
+      raise Installations::Error.new("Failed to parse bitbucket-pipelines.yml: #{e.message}", reason: :pipeline_yaml_parse_error)
     end
 
-    def list_pipelines(repo_slug, transforms)
-      execute(:get, PIPELINES_URL.expand(workspace:, repo_slug:).to_s)
-        .then { |responses| Installations::Response::Keys.transform(responses["values"], transforms) }
-    end
-
-    def get_pipeline_config(repo_slug)
-      execute(:get, PIPELINES_CONFIG_URL.expand(workspace:, repo_slug:).to_s)
-    end
-
-    def trigger_pipeline!(repo_slug, _pipeline_config, _branch_name, inputs, commit_hash, transforms)
-      # TODO: pipeline config
+    def trigger_pipeline!(repo_slug, pipeline_config, inputs, commit_hash, transforms)
+      type, pattern = pipeline_config.split(":").each(&:strip)
       params = {
         json: {
           target: {
@@ -261,8 +272,8 @@ module Installations
             },
             type: "pipeline_commit_target",
             selector: {
-              type: "custom",
-              pattern: "android-debug-apk"
+              type:,
+              pattern:
             }
           },
           variables: [
@@ -327,13 +338,19 @@ module Installations
       execute(:get, url)
     end
 
-    def execute(verb, url, params = {})
-      response = HTTP.auth("Bearer #{oauth_access_token}").public_send(verb, url, params)
-      return if response.status.no_content?
+    def fetch_pipeline_yaml(repo_slug, branch_name = "main")
+      execute(:get, PIPELINE_YAML_URL.expand(workspace:, repo_slug:, branch_name:).to_s, {}, false)
+    rescue Installations::Bitbucket::Error => e
+      raise Installations::Error.new("Failed to fetch bitbucket-pipelines.yml: #{e.message}", reason: :pipeline_yaml_not_found)
+    end
 
+    def execute(verb, url, params = {}, parse_json = true)
+      response = HTTP.auth("Bearer #{oauth_access_token}").public_send(verb, url, params)
+
+      return if response.status.no_content?
       raise Installations::Bitbucket::Error.new({"error" => {"message" => "Service Unavailable"}}) if response.status.server_error?
 
-      body = JSON.parse(response.body.to_s)
+      body = parse_json ? JSON.parse(response.body.to_s) : response.body.to_s
       return body unless response.status.client_error?
 
       raise Installations::Bitbucket::Error.new(body)

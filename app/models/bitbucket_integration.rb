@@ -279,8 +279,8 @@ class BitbucketIntegration < ApplicationRecord
 
   # CI/CD
 
-  WORKFLOWS_TRANSFORMATIONS = {
-    id: :uuid,
+  WORKFLOW_TRANSFORMATIONS = {
+    id: :id,
     name: :name
   }
 
@@ -297,21 +297,16 @@ class BitbucketIntegration < ApplicationRecord
     generated_at: :created_on
   }
 
-  # TODO: Implement
   def workflows
     return [] unless integration.ci_cd?
-    [{
-      id: "custom:android-debug-apk",
-      name: "Android Debug APK"
-    }]
-    # with_api_retries { installation.list_pipelines(code_repo_name_only, WORKFLOWS_TRANSFORMATIONS) }
+    with_api_retries { installation.list_pipeline_selectors(code_repo_name_onlym, WORKFLOW_TRANSFORMATIONS) }
   end
 
   def workflow_retriable? = false
 
-  def trigger_workflow_run!(ci_cd_channel, branch_name, inputs, commit_hash = nil)
+  def trigger_workflow_run!(ci_cd_channel, _branch_name, inputs, commit_hash = nil)
     with_api_retries do
-      res = installation.trigger_pipeline!(code_repo_name_only, ci_cd_channel, branch_name, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
+      res = installation.trigger_pipeline!(code_repo_name_only, ci_cd_channel, inputs, commit_hash, WORKFLOW_RUN_TRANSFORMATIONS)
       res.merge(ci_link: "https://bitbucket.org/#{workspace}/#{code_repo_name_only}/pipelines/results/#{res[:number]}")
     end
   end
