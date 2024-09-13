@@ -31,10 +31,11 @@ class ReleaseIndicesController < SignedInApplicationController
 
   def set_tab_configuration
     @tab_configuration = [
-      [1, "General", edit_app_train_path(@app, @train), "v2/cog.svg"],
-      [2, "Steps", steps_app_train_path(@app, @train), "v2/route.svg"],
+      [1, "Release Settings", edit_app_train_path(@app, @train), "v2/cog.svg"],
+      # [2, "Workflow Settings", steps_app_train_path(@app, @train), "v2/route.svg"],
+      [2, "Submissions Settings", edit_app_train_platform_path(@app, @train, @train.release_platforms.first.platform), "v2/route.svg"],
       [3, "Notification Settings", app_train_notification_settings_path(@app, @train), "bell.svg"],
-      [4, "Release Health", rules_app_train_path(@app, @train), "v2/heart_pulse.svg"],
+      [4, "Release Health Rules", rules_app_train_path(@app, @train), "v2/heart_pulse.svg"],
       [5, "Reldex Settings", edit_app_train_release_index_path(@app, @train), "v2/ruler.svg"]
     ].compact
   end

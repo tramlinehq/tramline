@@ -1,0 +1,30 @@
+<%= render V2::SimpleTabComponent.new(groups: ["Configure Android", "Configure iOS"]) do |component| %>
+  <% [selected_platform, other_platform].each do |platform| %>
+    <% component.with_tab do %>
+      <%= render V2::FormComponent.new(model: [app, train, platform], url: app_train_platform_path(app, train, platform)) do |f| %>
+        <% f.with_section(heading: "Configure CI Workflows") do |section| %>
+          <% section.with_description do %>
+            You must have at least one RC workflow defined. The internal workflow is optional.
+          <% end %>
+
+          <div><%= section.F.labeled_text_field :name, "Name", required: true %></div>
+          <div><%= section.F.labeled_textarea :description, "Description" %></div>
+        <% end %>
+
+        <% f.with_section(heading: "Configure Releases") do |section| %>
+          <% section.with_description do %>
+            Configure your Beta/RC channels.
+          <% end %>
+
+          <div><%= section.F.labeled_text_field :name, "Name", required: true %></div>
+          <div><%= section.F.labeled_textarea :description, "Description" %></div>
+        <% end %>
+      <% end %>
+
+      <div class="mt-8">
+        <span class="text-sm font-bold"><%= platform %></span>
+        <textarea class="w-full h-96" disabled="disabled"><%= JSON.pretty_generate(platform.config) %></textarea>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

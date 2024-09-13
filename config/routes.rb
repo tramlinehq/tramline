@@ -75,7 +75,7 @@ Rails.application.routes.draw do
 
       resources :notification_settings, only: %i[index update edit]
 
-      resources :release_platforms, only: [], path: :platforms, as: :platforms do
+      resources :release_platforms, only: %i[edit update], path: :platforms, as: :platforms do
         resources :steps, only: %i[new create update]
         resources :release_health_rules, path: :rules
       end
