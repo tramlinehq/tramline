@@ -63,13 +63,20 @@ class Coordinators::ProcessCommits
 
   # TODO: fetch parents for Gitlab commits also
   def commit_log
-    return @commit_log ||= [train.vcs_provider.get_commit(head_commit[:commit_hash])] if rest_commits.empty?
+    return @commit_log ||= [fetch_commit_parents(head_commit)] if rest_commits.empty?
 
     @commit_log ||= train.vcs_provider.commit_log(rest_commits.first[:commit_hash], head_commit[:commit_hash])
-    @commit_log << train.vcs_provider.get_commit(rest_commits.first[:commit_hash])
+    @commit_log << fetch_commit_parents(rest_commits.first)
   rescue => e
     elog(e)
     @commit_log = []
+  end
+
+  def fetch_commit_parents(commit)
+    return if commit.blank?
+    return commit if commit[:parents].present?
+
+    train.vcs_provider.get_commit(commit_hash)
   end
 
   delegate :train, to: :release
