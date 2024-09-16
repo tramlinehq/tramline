@@ -25,7 +25,7 @@ class PreProdRelease < ApplicationRecord
   belongs_to :commit
   has_one :next, class_name: "PreProdRelease", inverse_of: :previous, dependent: :nullify
   has_one :triggered_workflow_run, class_name: "WorkflowRun", dependent: :destroy, inverse_of: :triggering_release
-  has_many :store_submissions, -> { sequential }, as: :parent_release, dependent: :destroy
+  has_many :store_submissions, -> { sequential }, as: :parent_release, dependent: :destroy, inverse_of: :parent_release
 
   scope :inactive, -> { where(status: INACTIVE) }
 
