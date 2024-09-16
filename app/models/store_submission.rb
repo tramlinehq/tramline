@@ -42,6 +42,7 @@ class StoreSubmission < ApplicationRecord
   delegate :version_name, :build_number, to: :build
   delegate :actionable?, to: :parent_release
 
+  scope :sequential, -> { reorder("store_submissions.sequence_number ASC") }
   scope :production, -> { where(parent_release_type: "ProductionRelease") }
 
   def submission_channel
