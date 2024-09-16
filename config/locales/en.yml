@@ -402,6 +402,7 @@ en:
               not_available: "could not find the working branch in the configured git repo"
             backmerge_strategy:
               continuous_not_allowed: "continuous backmerge only allowed for Almost Trunk branching strategy"
+              disabled_for_bitbucket: "continuous backmerge is not allowed for Bitbucket at the moment"
         notification_setting:
           attributes:
             notification_channels:

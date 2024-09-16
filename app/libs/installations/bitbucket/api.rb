@@ -2,7 +2,7 @@ module Installations
   class Bitbucket::Api
     require "down/http"
     require "yaml"
-
+    using RefinedString
     include Vaultable
     attr_reader :oauth_access_token
 
@@ -200,7 +200,6 @@ module Installations
     end
 
     def get_pr(repo, pr_number, transforms)
-      # TODO: Not Found throws a JSON::ParserError
       execute(:get, PR_URL.expand(workspace:, repo_slug: repo, pr_number:).to_s)
         .then { |response| Installations::Response::Keys.transform([response], transforms) }
         .first
@@ -364,7 +363,7 @@ module Installations
       return if response.status.no_content?
       raise Installations::Bitbucket::Error.new({"error" => {"message" => "Service Unavailable"}}) if response.status.server_error?
 
-      body = parse_json ? JSON.parse(response.body.to_s) : response.body.to_s
+      body = parse_json ? response.body.to_s.safe_json_parse : response.body.to_s
       return body unless response.status.client_error?
 
       raise Installations::Bitbucket::Error.new(body)
